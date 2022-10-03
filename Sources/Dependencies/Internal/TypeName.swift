@@ -7,7 +7,7 @@ func typeName(_ type: Any.Type) -> String {
   let sanitizedName =
     name
     .replacingOccurrences(
-      of: #"<.+>|\(unknown context at \$[[:xdigit:]]+\)\."#,
+      of: #"\(unknown context at \$[[:xdigit:]]+\)\."#,
       with: "",
       options: .regularExpression
     )

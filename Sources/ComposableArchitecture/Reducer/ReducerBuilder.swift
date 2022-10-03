@@ -52,28 +52,7 @@ public enum ReducerBuilder<State, Action> {
     reducer
   }
 
-  #if swift(>=5.7)
-    @_disfavoredOverload
-    @available(
-      *,
-      deprecated,
-      message:
-        """
-        Reducer bodies should return 'some ReducerProtocol<State, Action>' instead of 'Reduce<State, Action>'.
-        """
-    )
-    @inlinable
-    public static func buildFinalResult<R: ReducerProtocol>(_ reducer: R) -> Reduce<State, Action>
-    where R.State == State, R.Action == Action {
-      Reduce(reducer)
-    }
-
-    @_disfavoredOverload
-    @inlinable
-    public static func buildFinalResult(_ reducer: Reduce<State, Action>) -> Reduce<State, Action> {
-      reducer
-    }
-  #else
+  #if swift(<5.7)
     @_disfavoredOverload
     @inlinable
     public static func buildFinalResult<R: ReducerProtocol>(_ reducer: R) -> Reduce<State, Action>

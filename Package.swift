@@ -52,12 +52,26 @@ let package = Package(
       dependencies: [
         "ComposableArchitecture"
       ]
+      //      ,
+      //      swiftSettings: [
+      //        .unsafeFlags([
+      //          "-Xfrontend", "-warn-concurrency",
+      //          "-Xfrontend", "-enable-actor-data-race-checks",
+      //        ])
+      //      ]
     ),
     .target(
       name: "Dependencies",
       dependencies: [
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
         .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
+      ]
+    ),
+    .testTarget(
+      name: "DependenciesTests",
+      dependencies: [
+        "ComposableArchitecture",
+        "Dependencies"
       ]
     ),
     .executableTarget(

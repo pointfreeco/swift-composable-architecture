@@ -3,9 +3,9 @@ import Foundation
 import SwiftUI
 import XCTestDynamicOverlay
 
-/// The ``Effect`` type encapsulates a unit of work that can be run in the outside world, and can
-/// feed actions back to the ``Store``. It is the perfect place to do side effects, such as network
-/// requests, saving/loading from disk, creating timers, interacting with dependencies, and more.
+/// A type encapsulates a unit of work that can be run in the outside world, and can feed actions
+/// back to the ``Store``. It is the perfect place to do side effects, such as network requests,
+/// saving/loading from disk, creating timers, interacting with dependencies, and more.
 ///
 /// Effects are returned from reducers so that the ``Store`` can perform the effects after the
 /// reducer is done running.
@@ -121,10 +121,10 @@ extension Effect where Failure == Never {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Self {
-    let dependencies = DependencyValues.current
+    let dependencies = DependencyValues._current
     return Self(
       operation: .run(priority) { send in
-        await DependencyValues.$current.withValue(dependencies) {
+        await DependencyValues.$_current.withValue(dependencies) {
           do {
             try await send(operation())
           } catch is CancellationError {
@@ -208,10 +208,10 @@ extension Effect where Failure == Never {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Self {
-    let dependencies = DependencyValues.current
+    let dependencies = DependencyValues._current
     return Self(
       operation: .run(priority) { send in
-        await DependencyValues.$current.withValue(dependencies) {
+        await DependencyValues.$_current.withValue(dependencies) {
           do {
             try await operation(send)
           } catch is CancellationError {

@@ -19,7 +19,7 @@ public struct NavigationState<Element: Hashable>:
 
     @usableFromInline
     init(id: ID? = nil, element: Element) {
-      self.id = id ?? DependencyValues.current.navigationID.next()
+      self.id = id ?? DependencyValues._current.navigationID.next()
       self.element = element
     }
   }
@@ -217,7 +217,7 @@ extension NavigationState.Destination: Decodable where Element: Decodable {
     {
       self.id = id
     } else {
-      self.id = DependencyValues.current.navigationID.next()
+      self.id = DependencyValues._current.navigationID.next()
     }
     self.element = try container.decode(Element.self, forKey: .element)
   }
@@ -437,9 +437,9 @@ where Destinations.State: Hashable {
       for id in presentedIDs {
         effect = effect.merge(
           with: .task {
-            var dependencies = DependencyValues.current
+            var dependencies = DependencyValues._current
             dependencies.navigationID.current = id
-            return try await DependencyValues.$current.withValue(dependencies) {
+            return try await DependencyValues.$_current.withValue(dependencies) {
               try await withTaskCancellation(id: DismissID.self) {
                 try await Task.never()
               }

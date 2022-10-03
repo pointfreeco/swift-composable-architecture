@@ -125,7 +125,7 @@ public final class Store<State, Action> {
   var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
   var parentCancellable: AnyCancellable?
-  #if swift(>=5.7) && !DEBUG
+  #if swift(>=5.7)
     private let reducer: any ReducerProtocol<State, Action>
   #else
     private let reducer: (inout State, Action) -> Effect<Action, Never>
@@ -297,7 +297,7 @@ public final class Store<State, Action> {
   ) -> Store<ChildState, ChildAction> {
     self.threadCheck(status: .scope)
 
-    #if swift(>=5.7) && !DEBUG
+    #if swift(>=5.7)
       return self.reducer.rescope(self, state: toChildState, action: fromChildAction)
     #else
       return (self.scope ?? StoreScope(root: self))
@@ -348,7 +348,7 @@ public final class Store<State, Action> {
     while index < self.bufferedActions.endIndex {
       defer { index += 1 }
       let action = self.bufferedActions[index]
-      #if swift(>=5.7) && !DEBUG
+      #if swift(>=5.7)
         let effect = self.reducer.reduce(into: &currentState, action: action)
       #else
         let effect = self.reducer(&currentState, action)
@@ -426,7 +426,6 @@ public final class Store<State, Action> {
     }
   }
 
-  // TODO: move docs for this into overloads of scope
   /// Returns a "stateless" store by erasing state to `Void`.
   public var stateless: Store<Void, Action> {
     self.scope(state: { _ in () })
@@ -537,7 +536,7 @@ public final class Store<State, Action> {
     mainThreadChecksEnabled: Bool
   ) where R.State == State, R.Action == Action {
     self.state = CurrentValueSubject(initialState)
-    #if swift(>=5.7) && !DEBUG
+    #if swift(>=5.7)
       self.reducer = reducer
     #else
       self.reducer = reducer.reduce
@@ -564,7 +563,7 @@ public final class Store<State, Action> {
 /// ```
 public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
 
-#if swift(>=5.7) && !DEBUG
+#if swift(>=5.7)
   fileprivate extension ReducerProtocol {
     func rescope<ChildState, ChildAction>(
       _ store: Store<State, Action>,
@@ -581,6 +580,7 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
   >: ReducerProtocol {
     let rootStore: Store<RootState, RootAction>
     let toScopedState: (RootState) -> ScopedState
+    private let parentStores: [Any]
     let fromScopedAction: (ScopedAction) -> RootAction
     private(set) var isSending = false
 
@@ -589,6 +589,7 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     where RootState == ScopedState, RootAction == ScopedAction {
       self.rootStore = rootStore
       self.toScopedState = { $0 }
+      self.parentStores = []
       self.fromScopedAction = { $0 }
     }
 
@@ -596,11 +597,13 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     init(
       rootStore: Store<RootState, RootAction>,
       state toScopedState: @escaping (RootState) -> ScopedState,
-      action fromScopedAction: @escaping (ScopedAction) -> RootAction
+      action fromScopedAction: @escaping (ScopedAction) -> RootAction,
+      parentStores: [Any]
     ) {
       self.rootStore = rootStore
       self.toScopedState = toScopedState
       self.fromScopedAction = fromScopedAction
+      self.parentStores = parentStores
     }
 
     @inlinable
@@ -629,19 +632,18 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
   }
 
   extension ScopedReducer: AnyScopedReducer {
-    // TODO: Is `toRescopedState` necessary here when it's not necessary in the <5.7 implementation?
     @inlinable
     func rescope<ScopedState, ScopedAction, RescopedState, RescopedAction>(
       _ store: Store<ScopedState, ScopedAction>,
       state toRescopedState: @escaping (ScopedState) -> RescopedState,
       action fromRescopedAction: @escaping (RescopedAction) -> ScopedAction
     ) -> Store<RescopedState, RescopedAction> {
-      let toScopedState = self.toScopedState as! (RootState) -> ScopedState
       let fromScopedAction = self.fromScopedAction as! (ScopedAction) -> RootAction
       let reducer = ScopedReducer<RootState, RootAction, RescopedState, RescopedAction>(
         rootStore: self.rootStore,
-        state: { toRescopedState(toScopedState($0)) },
-        action: { fromScopedAction(fromRescopedAction($0)) }
+        state: { _ in toRescopedState(store.state.value) },
+        action: { fromScopedAction(fromRescopedAction($0)) },
+        parentStores: self.parentStores + [store]
       )
       let childStore = Store<RescopedState, RescopedAction>(
         initialState: toRescopedState(store.state.value),

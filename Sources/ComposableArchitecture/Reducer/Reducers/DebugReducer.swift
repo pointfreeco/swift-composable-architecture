@@ -5,35 +5,35 @@ extension ReducerProtocol {
   ///
   /// - Returns: A reducer that prints debug messages for all received actions.
   @inlinable
-  public func debug() -> _DebugReducer<Self, CustomDumpDebugStrategy> {
-    _DebugReducer(base: self, strategy: .customDump)
+  public func _printChanges() -> _PrintChangesReducer<Self, _CustomDumpPrinter> {
+    _PrintChangesReducer(base: self, printer: .customDump)
   }
 
   /// Enhances a reducer with debug logging of received actions and state mutations for the given
-  /// ``DebugStrategy``.
+  /// printer.
   ///
   /// > Note: Printing is only done in `DEBUG` configurations.
   ///
-  /// - Parameter strategy: A strategy for printing debug messages.
+  /// - Parameter printer: A printer for printing debug messages.
   /// - Returns: A reducer that prints debug messages for all received actions.
   @inlinable
-  public func debug<Strategy: DebugStrategy>(
-    _ strategy: Strategy?
-  ) -> ReducerBuilder<State, Action>._Conditional<_DebugReducer<Self, Strategy>, Self> {
-    strategy.map { .first(_DebugReducer(base: self, strategy: $0)) } ?? .second(self)
+  public func _printChanges<Printer: _ReducerPrinter>(
+    _ printer: Printer?
+  ) -> ReducerBuilder<State, Action>._Conditional<_PrintChangesReducer<Self, Printer>, Self> {
+    printer.map { .first(_PrintChangesReducer(base: self, printer: $0)) } ?? .second(self)
   }
 }
 
-public protocol DebugStrategy {
-  func debug<Action, State>(receivedAction: Action, oldState: State, newState: State)
+public protocol _ReducerPrinter {
+  func printChange<Action, State>(receivedAction: Action, oldState: State, newState: State)
 }
 
-extension DebugStrategy where Self == CustomDumpDebugStrategy {
+extension _ReducerPrinter where Self == _CustomDumpPrinter {
   public static var customDump: Self { Self() }
 }
 
-public struct CustomDumpDebugStrategy: DebugStrategy {
-  public func debug<Action, State>(receivedAction: Action, oldState: State, newState: State) {
+public struct _CustomDumpPrinter: _ReducerPrinter {
+  public func printChange<Action, State>(receivedAction: Action, oldState: State, newState: State) {
     var target = ""
     target.write("received action:\n")
     CustomDump.customDump(receivedAction, to: &target, indent: 2)
@@ -43,27 +43,29 @@ public struct CustomDumpDebugStrategy: DebugStrategy {
   }
 }
 
-extension DebugStrategy where Self == ActionLabelsDebugStrategy {
+extension _ReducerPrinter where Self == _ActionLabelsPrinter {
   public static var actionLabels: Self { Self() }
 }
 
-public struct ActionLabelsDebugStrategy: DebugStrategy {
-  public func debug<Action, State>(receivedAction: Action, oldState: State, newState: State) {
+public struct _ActionLabelsPrinter: _ReducerPrinter {
+  public func printChange<Action, State>(receivedAction: Action, oldState: State, newState: State) {
     print("received action: \(debugCaseOutput(receivedAction))")
   }
 }
 
-public struct _DebugReducer<Base: ReducerProtocol, Strategy: DebugStrategy>: ReducerProtocol {
+public struct _PrintChangesReducer<
+  Base: ReducerProtocol, Printer: _ReducerPrinter
+>: ReducerProtocol {
   @usableFromInline
   let base: Base
 
   @usableFromInline
-  let strategy: Strategy
+  let printer: Printer
 
   @inlinable
-  init(base: Base, strategy: Strategy) {
+  init(base: Base, printer: Printer) {
     self.base = base
-    self.strategy = strategy
+    self.printer = printer
   }
 
   @usableFromInline
@@ -79,7 +81,7 @@ public struct _DebugReducer<Base: ReducerProtocol, Strategy: DebugStrategy>: Red
         let effects = self.base.reduce(into: &state, action: action)
         return effects.merge(
           with: .fireAndForget { [newState = state] in
-            self.strategy.debug(receivedAction: action, oldState: oldState, newState: newState)
+            self.printer.printChange(receivedAction: action, oldState: oldState, newState: newState)
           }
         )
       }

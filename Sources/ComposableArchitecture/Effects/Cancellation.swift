@@ -33,7 +33,7 @@ extension Effect {
     case .none:
       return .none
     case let .publisher(publisher):
-      let navigationID = DependencyValues.current.navigationID.current
+      let navigationID = DependencyValues._current.navigationID.current
       return Self(
         operation: .publisher(
           Deferred {
@@ -82,7 +82,7 @@ extension Effect {
         )
       )
     case let .run(priority, operation):
-      let navigationID = DependencyValues.current.navigationID.current
+      let navigationID = DependencyValues._current.navigationID.current
       return Self(
         operation: .run(priority) { send in
           await DependencyValues.withValues {
@@ -123,7 +123,7 @@ extension Effect {
   /// - Returns: A new effect that will cancel any currently in-flight effect with the given
   ///   identifier.
   public static func cancel(id: AnyHashable) -> Self {
-    let navigationID = DependencyValues.current.navigationID.current
+    let navigationID = DependencyValues._current.navigationID.current
     return .fireAndForget {
       cancellablesLock.sync {
         cancellationCancellables[.init(id: id, navigationID: navigationID)]?.forEach { $0.cancel() }
@@ -209,28 +209,24 @@ public func withTaskCancellation<T: Sendable>(
   cancelInFlight: Bool = false,
   operation: @Sendable @escaping () async throws -> T
 ) async rethrows -> T {
-  let navigationID = DependencyValues.current.navigationID.current
-  let task = { () -> Task<T, Error> in
-    cancellablesLock.lock()
-    let id = CancelToken(id: id, navigationID: navigationID)
+  let id = CancelToken(id: id, navigationID: DependencyValues._current.navigationID.current)
+  let (cancellable, task) = cancellablesLock.sync { () -> (AnyCancellable, Task<T, Error>) in
     if cancelInFlight {
       cancellationCancellables[id]?.forEach { $0.cancel() }
     }
     let task = Task { try await operation() }
-    var cancellable: AnyCancellable!
-    cancellable = AnyCancellable {
-      task.cancel()
-      cancellablesLock.sync {
-        cancellationCancellables[id]?.remove(cancellable)
-        if cancellationCancellables[id]?.isEmpty == .some(true) {
-          cancellationCancellables[id] = nil
-        }
+    let cancellable = AnyCancellable { task.cancel() }
+    cancellationCancellables[id, default: []].insert(cancellable)
+    return (cancellable, task)
+  }
+  defer {
+    cancellablesLock.sync {
+      cancellationCancellables[id]?.remove(cancellable)
+      if cancellationCancellables[id]?.isEmpty == .some(true) {
+        cancellationCancellables[id] = nil
       }
     }
-    cancellationCancellables[id, default: []].insert(cancellable)
-    cancellablesLock.unlock()
-    return task
-  }()
+  }
   do {
     return try await task.cancellableValue
   } catch {
@@ -266,14 +262,9 @@ extension Task where Success == Never, Failure == Never {
   /// Cancel any currently in-flight operation with the given identifier.
   ///
   /// - Parameter id: An identifier.
-  public static func cancel<ID: Hashable & Sendable>(id: ID) async {
-    let navigationID = DependencyValues.current.navigationID.current
-    await MainActor.run {
-      cancellablesLock.sync {
-        cancellationCancellables[.init(id: id, navigationID: navigationID)]?
-          .forEach { $0.cancel() }
-      }
-    }
+  public static func cancel<ID: Hashable & Sendable>(id: ID) {
+    let id = CancelToken(id: id, navigationID: DependencyValues._current.navigationID.current)
+    cancellablesLock.sync { cancellationCancellables[id]?.forEach { $0.cancel() } }
   }
 
   /// Cancel any currently in-flight operation with the given identifier.
@@ -282,8 +273,8 @@ extension Task where Success == Never, Failure == Never {
   /// identifier.
   ///
   /// - Parameter id: A unique type identifying the operation.
-  public static func cancel(id: Any.Type) async {
-    await self.cancel(id: ObjectIdentifier(id))
+  public static func cancel(id: Any.Type) {
+    self.cancel(id: ObjectIdentifier(id))
   }
 }
 
@@ -292,9 +283,9 @@ struct CancelToken: Hashable {
   let navigationID: AnyHashable?
   let discriminator: ObjectIdentifier
 
-  init(id: AnyHashable, navigationID: AnyHashable?) {
+  init(id: AnyHashable, navigationID: AnyHashable? = nil) {
     self.id = id
-    self.navigationID = navigationID
+    self.navigationID = navigationID ?? DependencyValues._current.navigationID.current
     self.discriminator = ObjectIdentifier(type(of: id.base))
   }
 }

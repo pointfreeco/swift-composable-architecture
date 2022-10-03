@@ -10,15 +10,10 @@ The Composable Architecture (TCA, for short) is a library for building applicati
 * [Learn more](#learn-more)
 * [Examples](#examples)
 * [Basic usage](#basic-usage)
-* [Supplemental libraries](#supplementary-libraries)
-* [FAQ](#faq)
-* [Requirements](#requirements)
-* [Installation](#installation)
 * [Documentation](#documentation)
+* [Installation](#installation)
 * [Help](#help)
 * [Translations](#translations)
-* [Credits and thanks](#credits-and-thanks)
-* [Other libraries](#other-libraries)
 
 ## What is the Composable Architecture?
 
@@ -398,20 +393,16 @@ struct NumberFactClient {
 }
 ```
 
-And then registering that type with the dependency management system, which is quite similar to how SwiftUI's environment values works, except you specify both a live and test implementation of the dependency:
+And then registering that type with the dependency management system, which is quite similar to how SwiftUI's environment values works, except you specify the live implementation of the dependency to be used by default:
 
 ```swift
-private enum NumberFactClientKey: LiveDependencyValue {
+private enum NumberFactClientKey: DependencyKey {
   static let liveValue = NumberFactClient(
     fetch: {
       let (data, _) = try await URLSession.shared
         .data(from: .init(string: "http://numbersapi.com/\(number)")!)
       return String(decoding: data, using: UTF8.self)
     }
-  )
-  
-  static let testValue = NumberFactClient(
-    fetch: { "\($0) is a good number Brent" }
   )
 }
 
@@ -452,13 +443,17 @@ struct MyApp: App {
 }
 ```
 
-And the test store can be constructed without specifying any dependencies:
+And the test store can be constructed without specifying any dependencies, but you can still override any dependency you need to for the purpose of the test:
 
 ```swift
 let store = TestStore(
   initialState: Feature.State(),
   reducer: Feature()
 )
+
+store.dependencies.numberFact.fetch = { "\($0) is a good number Brent" }
+
+…
 ```
 
 That is the basics of building and testing a feature in the Composable Architecture. There are _a lot_ more things to be explored, such as composition, modularity, adaptability, and complex effects. The [Examples](./Examples) directory has a bunch of projects to explore to see more advanced usages.
@@ -489,57 +484,18 @@ The Composable Architecture comes with a number of tools to aid in debugging.
 
     <img src="https://s3.amazonaws.com/pointfreeco-production/point-free-pointers/0044-signposts-cover.jpg" width="600">
 
-## Supplementary libraries
-
-One of the most important principles of the Composable Architecture is that side effects are never performed directly, but instead are wrapped in the `Effect` type, returned from reducers, and then the `Store` later performs the effect. This is crucial for simplifying how data flows through an application, and for gaining testability on the full end-to-end cycle of user action to effect execution.
-
-However, this also means that many libraries and SDKs you interact with on a daily basis need to be retrofitted to be a little more friendly to the Composable Architecture style. That's why we'd like to ease the pain of using some of Apple's most popular frameworks by providing wrapper libraries that expose their functionality in a way that plays nicely with our library. So far we support:
-
-* [`ComposableCoreLocation`](https://github.com/pointfreeco/composable-core-location): A wrapper around `CLLocationManager` that makes it easy to use from a reducer, and easy to write tests for how your logic interacts with `CLLocationManager`'s functionality.
-* [`ComposableCoreMotion`](https://github.com/pointfreeco/composable-core-motion): A wrapper around `CMMotionManager` that makes it easy to use from a reducer, and easy to write tests for how your logic interacts with `CMMotionManager`'s functionality.
-* More to come soon. Keep an eye out 😉
-
-If you are interested in contributing a wrapper library for a framework that we have not yet covered, feel free to open an issue expressing your interest so that we can discuss a path forward.
-
-## FAQ
-
-* How does the Composable Architecture compare to Elm, Redux, and others?
-  <details>
-    <summary>Expand to see answer</summary>
-    The Composable Architecture (TCA) is built on a foundation of ideas popularized by the Elm Architecture (TEA) and Redux, but made to feel at home in the Swift language and on Apple's platforms.
-
-    In some ways TCA is a little more opinionated than the other libraries. For example, Redux is not prescriptive with how one executes side effects, but TCA requires all side effects to be modeled in the `Effect` type and returned from the reducer.
-
-    In other ways TCA is a little more lax than the other libraries. For example, Elm controls what kinds of effects can be created via the `Cmd` type, but TCA allows an escape hatch to any kind of effect since `Effect` conforms to the Combine `Publisher` protocol.
-
-    And then there are certain things that TCA prioritizes highly that are not points of focus for Redux, Elm, or most other libraries. For example, composition is very important aspect of TCA, which is the process of breaking down large features into smaller units that can be glued together. This is accomplished with the `pullback` and `combine` operators on reducers, and it aids in handling complex features as well as modularization for a better-isolated code base and improved compile times.
-  </details>
-
-## Requirements
-
-The Composable Architecture depends on the Combine framework, so it requires minimum deployment targets of iOS 13, macOS 10.15, Mac Catalyst 13, tvOS 13, and watchOS 6. If your application must support older OSes, there are forks for [ReactiveSwift](https://github.com/trading-point/reactiveswift-composable-architecture) and [RxSwift](https://github.com/dannyhertz/rxswift-composable-architecture) that you can adopt!
-
-## Installation
-
-You can add ComposableArchitecture to an Xcode project by adding it as a package dependency.
-
-  1. From the **File** menu, select **Add Packages...**
-  2. Enter "https://github.com/pointfreeco/swift-composable-architecture" into the package repository URL text field
-  3. Depending on how your project is structured:
-      - If you have a single application target that needs access to the library, then add **ComposableArchitecture** directly to your application.
-      - If you want to use this library from multiple Xcode targets, or mixing Xcode targets and SPM targets, you must create a shared framework that depends on **ComposableArchitecture** and then depend on that framework in all of your targets. For an example of this, check out the [Tic-Tac-Toe](./Examples/TicTacToe) demo application, which splits lots of features into modules and consumes the static library in this fashion using the **tic-tac-toe** Swift package.
-
 ## Documentation
 
 The documentation for releases and `main` are available here:
 
 * [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture)
-* [0.40.0](https://pointfreeco.github.io/swift-composable-architecture/0.40.0/documentation/composablearchitecture/)
+* [0.41.0](https://pointfreeco.github.io/swift-composable-architecture/0.41.0/documentation/composablearchitecture/)
 <details>
   <summary>
   Other versions
   </summary>
 
+  * [0.40.2](https://pointfreeco.github.io/swift-composable-architecture/0.40.2/documentation/composablearchitecture/)
   * [0.39.0](https://pointfreeco.github.io/swift-composable-architecture/0.39.0/documentation/composablearchitecture/)
   * [0.38.0](https://pointfreeco.github.io/swift-composable-architecture/0.38.0/documentation/composablearchitecture/)
   * [0.37.0](https://pointfreeco.github.io/swift-composable-architecture/0.37.0/documentation/composablearchitecture)
@@ -547,18 +503,14 @@ The documentation for releases and `main` are available here:
   * [0.35.0](https://pointfreeco.github.io/swift-composable-architecture/0.35.0/documentation/composablearchitecture)
   * [0.34.0](https://pointfreeco.github.io/swift-composable-architecture/0.34.0/documentation/composablearchitecture)
   * [0.33.1](https://pointfreeco.github.io/swift-composable-architecture/0.33.1/documentation/composablearchitecture)
-  * [0.33.0](https://pointfreeco.github.io/swift-composable-architecture/0.33.0/documentation/composablearchitecture)
   * [0.32.0](https://pointfreeco.github.io/swift-composable-architecture/0.32.0/documentation/composablearchitecture)
   * [0.31.0](https://pointfreeco.github.io/swift-composable-architecture/0.31.0/documentation/composablearchitecture)
   * [0.30.0](https://pointfreeco.github.io/swift-composable-architecture/0.30.0/documentation/composablearchitecture)
   * [0.29.0](https://pointfreeco.github.io/swift-composable-architecture/0.29.0/documentation/composablearchitecture)
   * [0.28.1](https://pointfreeco.github.io/swift-composable-architecture/0.28.1/documentation/composablearchitecture)
-  * [0.28.0](https://pointfreeco.github.io/swift-composable-architecture/0.28.0/documentation/composablearchitecture)
   * [0.27.1](https://pointfreeco.github.io/swift-composable-architecture/0.27.1/documentation/composablearchitecture)
-  * [0.27.0](https://pointfreeco.github.io/swift-composable-architecture/0.27.0/documentation/composablearchitecture)
   * [0.26.0](https://pointfreeco.github.io/swift-composable-architecture/0.26.0/documentation/composablearchitecture)
   * [0.25.1](https://pointfreeco.github.io/swift-composable-architecture/0.25.1/documentation/composablearchitecture)
-  * [0.25.0](https://pointfreeco.github.io/swift-composable-architecture/0.25.0/documentation/composablearchitecture)
   * [0.24.0](https://pointfreeco.github.io/swift-composable-architecture/0.24.0/documentation/composablearchitecture)
   * [0.23.0](https://pointfreeco.github.io/swift-composable-architecture/0.23.0/documentation/composablearchitecture)
   * [0.22.0](https://pointfreeco.github.io/swift-composable-architecture/0.22.0/documentation/composablearchitecture)
@@ -583,12 +535,17 @@ The documentation for releases and `main` are available here:
   * [0.3.0](https://pointfreeco.github.io/swift-composable-architecture/0.3.0/documentation/composablearchitecture)
   * [0.2.0](https://pointfreeco.github.io/swift-composable-architecture/0.2.0/documentation/composablearchitecture)
   * [0.1.5](https://pointfreeco.github.io/swift-composable-architecture/0.1.5/documentation/composablearchitecture)
-  * [0.1.4](https://pointfreeco.github.io/swift-composable-architecture/0.1.4/documentation/composablearchitecture)
-  * [0.1.3](https://pointfreeco.github.io/swift-composable-architecture/0.1.3/documentation/composablearchitecture)
-  * [0.1.2](https://pointfreeco.github.io/swift-composable-architecture/0.1.2/documentation/composablearchitecture)
-  * [0.1.1](https://pointfreeco.github.io/swift-composable-architecture/0.1.1/documentation/composablearchitecture)
-  * [0.1.0](https://pointfreeco.github.io/swift-composable-architecture/0.1.0/documentation/composablearchitecture)
 </details>
+
+## Installation
+
+You can add ComposableArchitecture to an Xcode project by adding it as a package dependency.
+
+  1. From the **File** menu, select **Add Packages...**
+  2. Enter "https://github.com/pointfreeco/swift-composable-architecture" into the package repository URL text field
+  3. Depending on how your project is structured:
+      - If you have a single application target that needs access to the library, then add **ComposableArchitecture** directly to your application.
+      - If you want to use this library from multiple Xcode targets, or mixing Xcode targets and SPM targets, you must create a shared framework that depends on **ComposableArchitecture** and then depend on that framework in all of your targets. For an example of this, check out the [Tic-Tac-Toe](./Examples/TicTacToe) demo application, which splits lots of features into modules and consumes the static library in this fashion using the **tic-tac-toe** Swift package.
 
 ## Help
 
@@ -609,6 +566,20 @@ The following translations of this README have been contributed by members of th
 * [Spanish](https://gist.github.com/pitt500/f5e32fccb575ce112ffea2827c7bf942)
 
 If you'd like to contribute a translation, please [open a PR](https://github.com/pointfreeco/swift-composable-architecture/edit/main/README.md) with a link to a [Gist](https://gist.github.com)!
+
+## FAQ
+
+* How does the Composable Architecture compare to Elm, Redux, and others?
+  <details>
+    <summary>Expand to see answer</summary>
+    The Composable Architecture (TCA) is built on a foundation of ideas popularized by the Elm Architecture (TEA) and Redux, but made to feel at home in the Swift language and on Apple's platforms.
+
+    In some ways TCA is a little more opinionated than the other libraries. For example, Redux is not prescriptive with how one executes side effects, but TCA requires all side effects to be modeled in the `Effect` type and returned from the reducer.
+
+    In other ways TCA is a little more lax than the other libraries. For example, Elm controls what kinds of effects can be created via the `Cmd` type, but TCA allows an escape hatch to any kind of effect since `Effect` conforms to the Combine `Publisher` protocol.
+
+    And then there are certain things that TCA prioritizes highly that are not points of focus for Redux, Elm, or most other libraries. For example, composition is very important aspect of TCA, which is the process of breaking down large features into smaller units that can be glued together. This is accomplished with the `pullback` and `combine` operators on reducers, and it aids in handling complex features as well as modularization for a better-isolated code base and improved compile times.
+  </details>
 
 ## Credits and thanks
 

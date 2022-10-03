@@ -1,7 +1,6 @@
 import Combine
+import ComposableArchitecture
 import XCTest
-
-@testable import ComposableArchitecture
 
 @MainActor
 final class EffectTests: XCTestCase {
@@ -13,17 +12,17 @@ final class EffectTests: XCTestCase {
 
     Future<Int, Error> { $0(.success(42)) }
       .catchToEffect()
-      .sink { XCTAssertNoDifference($0, .success(42)) }
+      .sink { XCTAssertEqual($0, .success(42)) }
       .store(in: &self.cancellables)
 
     Future<Int, Error> { $0(.failure(Error())) }
       .catchToEffect()
-      .sink { XCTAssertNoDifference($0, .failure(Error())) }
+      .sink { XCTAssertEqual($0, .failure(Error())) }
       .store(in: &self.cancellables)
 
     Future<Int, Never> { $0(.success(42)) }
       .eraseToEffect()
-      .sink { XCTAssertNoDifference($0, 42) }
+      .sink { XCTAssertEqual($0, 42) }
       .store(in: &self.cancellables)
 
     Future<Int, Error> { $0(.success(42)) }
@@ -35,7 +34,7 @@ final class EffectTests: XCTestCase {
           return -1
         }
       }
-      .sink { XCTAssertNoDifference($0, 42) }
+      .sink { XCTAssertEqual($0, 42) }
       .store(in: &self.cancellables)
 
     Future<Int, Error> { $0(.failure(Error())) }
@@ -47,7 +46,7 @@ final class EffectTests: XCTestCase {
           return -1
         }
       }
-      .sink { XCTAssertNoDifference($0, -1) }
+      .sink { XCTAssertEqual($0, -1) }
       .store(in: &self.cancellables)
   }
 
@@ -62,19 +61,19 @@ final class EffectTests: XCTestCase {
 
     effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
 
-    XCTAssertNoDifference(values, [])
+    XCTAssertEqual(values, [])
 
     self.mainQueue.advance(by: 1)
-    XCTAssertNoDifference(values, [1])
+    XCTAssertEqual(values, [1])
 
     self.mainQueue.advance(by: 2)
-    XCTAssertNoDifference(values, [1, 2])
+    XCTAssertEqual(values, [1, 2])
 
     self.mainQueue.advance(by: 3)
-    XCTAssertNoDifference(values, [1, 2, 3])
+    XCTAssertEqual(values, [1, 2, 3])
 
     self.mainQueue.run()
-    XCTAssertNoDifference(values, [1, 2, 3])
+    XCTAssertEqual(values, [1, 2, 3])
   }
 
   func testConcatenateOneEffect() {
@@ -86,13 +85,13 @@ final class EffectTests: XCTestCase {
 
     effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
 
-    XCTAssertNoDifference(values, [])
+    XCTAssertEqual(values, [])
 
     self.mainQueue.advance(by: 1)
-    XCTAssertNoDifference(values, [1])
+    XCTAssertEqual(values, [1])
 
     self.mainQueue.run()
-    XCTAssertNoDifference(values, [1])
+    XCTAssertEqual(values, [1])
   }
 
   func testMerge() {
@@ -105,16 +104,16 @@ final class EffectTests: XCTestCase {
     var values: [Int] = []
     effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
 
-    XCTAssertNoDifference(values, [])
+    XCTAssertEqual(values, [])
 
     self.mainQueue.advance(by: 1)
-    XCTAssertNoDifference(values, [1])
+    XCTAssertEqual(values, [1])
 
     self.mainQueue.advance(by: 1)
-    XCTAssertNoDifference(values, [1, 2])
+    XCTAssertEqual(values, [1, 2])
 
     self.mainQueue.advance(by: 1)
-    XCTAssertNoDifference(values, [1, 2, 3])
+    XCTAssertEqual(values, [1, 2, 3])
   }
 
   func testEffectSubscriberInitializer() {
@@ -138,18 +137,18 @@ final class EffectTests: XCTestCase {
       .sink(receiveCompletion: { _ in isComplete = true }, receiveValue: { values.append($0) })
       .store(in: &self.cancellables)
 
-    XCTAssertNoDifference(values, [1, 2])
-    XCTAssertNoDifference(isComplete, false)
+    XCTAssertEqual(values, [1, 2])
+    XCTAssertEqual(isComplete, false)
 
     self.mainQueue.advance(by: 1)
 
-    XCTAssertNoDifference(values, [1, 2, 3])
-    XCTAssertNoDifference(isComplete, false)
+    XCTAssertEqual(values, [1, 2, 3])
+    XCTAssertEqual(isComplete, false)
 
     self.mainQueue.advance(by: 1)
 
-    XCTAssertNoDifference(values, [1, 2, 3, 4])
-    XCTAssertNoDifference(isComplete, true)
+    XCTAssertEqual(values, [1, 2, 3, 4])
+    XCTAssertEqual(isComplete, true)
   }
 
   func testEffectSubscriberInitializer_WithCancellation() {
@@ -171,8 +170,8 @@ final class EffectTests: XCTestCase {
       .sink(receiveCompletion: { _ in isComplete = true }, receiveValue: { values.append($0) })
       .store(in: &self.cancellables)
 
-    XCTAssertNoDifference(values, [1])
-    XCTAssertNoDifference(isComplete, false)
+    XCTAssertEqual(values, [1])
+    XCTAssertEqual(isComplete, false)
 
     Effect<Void, Never>.cancel(id: CancelID.self)
       .sink(receiveValue: { _ in })
@@ -180,8 +179,8 @@ final class EffectTests: XCTestCase {
 
     self.mainQueue.advance(by: 1)
 
-    XCTAssertNoDifference(values, [1])
-    XCTAssertNoDifference(isComplete, true)
+    XCTAssertEqual(values, [1])
+    XCTAssertEqual(isComplete, true)
   }
 
   func testEffectErrorCrash() {
@@ -212,22 +211,24 @@ final class EffectTests: XCTestCase {
     XCTAssertEqual(result, 42)
   }
 
-  func testUnimplemented() {
-    let effect = Effect<Never, Never>.unimplemented("unimplemented")
-    XCTExpectFailure {
-      effect
-        .sink(receiveValue: { _ in })
-        .store(in: &self.cancellables)
-    } issueMatcher: { issue in
-      issue.compactDescription == "unimplemented - An unimplemented effect ran."
+  #if DEBUG
+    func testUnimplemented() {
+      let effect = Effect<Never, Never>.unimplemented("unimplemented")
+      XCTExpectFailure {
+        effect
+          .sink(receiveValue: { _ in })
+          .store(in: &self.cancellables)
+      } issueMatcher: { issue in
+        issue.compactDescription == "unimplemented - An unimplemented effect ran."
+      }
     }
-  }
+  #endif
 
   func testTask() async {
     guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
     let effect = Effect<Int, Never>.task { 42 }
     for await result in effect.values {
-      XCTAssertNoDifference(result, 42)
+      XCTAssertEqual(result, 42)
     }
   }
 
@@ -251,5 +252,42 @@ final class EffectTests: XCTestCase {
     self.cancellables = []
 
     _ = XCTWaiter.wait(for: [.init()], timeout: 1.1)
+  }
+
+  func testDependenciesTransferredToEffects() async {
+    struct Feature: ReducerProtocol {
+      enum Action: Equatable {
+        case tap
+        case response(Int)
+      }
+      @Dependency(\.date) var date
+      func reduce(into state: inout Int, action: Action) -> Effect<Action, Never> {
+        switch action {
+        case .tap:
+          return .merge(
+            .task {
+              .response(Int(self.date.now.timeIntervalSinceReferenceDate))
+            },
+            .run { send in
+              await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
+            }
+          )
+        case let .response(value):
+          state = value
+          return .none
+        }
+      }
+    }
+    let store = TestStore(
+      initialState: 0,
+      reducer: Feature()
+        .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1234567890)))
+    )
+
+    await store.send(.tap)
+    await store.receive(.response(1234567890)) {
+      $0 = 1234567890
+    }
+    await store.receive(.response(1234567890))
   }
 }

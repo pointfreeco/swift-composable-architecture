@@ -10,8 +10,8 @@ private let readMe = """
   complex.
 
   A feature can give itself the ability to "favorite" part of its state by embedding the domain of \
-  favoriting, using the `favorite` higher-order reducer, and passing an appropriately scoped store \
-  to `FavoriteButton`.
+  favoriting, using the `Favoriting` reducer, and passing an appropriately scoped store to \
+  `FavoriteButton`.
 
   Tapping the favorite button on a row will instantly reflect in the UI and fire off an effect to \
   do any necessary work, like writing to a database or making an API request. We have simulated a \
@@ -19,71 +19,52 @@ private let readMe = """
   favorite state and rendering an alert.
   """
 
-// MARK: - Favorite domain
+// MARK: - Reusable favorite component
 
-// TODO: can we get rid of ID and just use AnyHashable? But how do we handle Sendable? AnyHashableSendable?
 struct FavoritingState<ID: Hashable & Sendable>: Equatable {
   var alert: AlertState<FavoritingAction>?
   let id: ID
   var isFavorite: Bool
 }
+
 enum FavoritingAction: Equatable {
   case alertDismissed
   case buttonTapped
   case response(TaskResult<Bool>)
 }
-extension ReducerProtocol {
-  func favorite<ID: Hashable>(
-    favorite: @escaping @Sendable (ID, Bool) async throws -> Bool,
-    state toFavoriteState: WritableKeyPath<State, FavoritingState<ID>>,
-    action toFavoriteAction: CasePath<Action, FavoritingAction>
-  ) -> _FavoritingComponent<Self, ID> {
-    .init(
-      parent: self,
-      favorite: favorite,
-      toFavoriteState: toFavoriteState,
-      toFavoriteAction: toFavoriteAction
-    )
-  }
-}
-struct _FavoritingComponent<Parent: ReducerProtocol, ID: Hashable & Sendable>: ReducerProtocol {
-  let parent: Parent
+
+struct Favoriting<ID: Hashable & Sendable>: ReducerProtocol {
   let favorite: @Sendable (ID, Bool) async throws -> Bool
-  let toFavoriteState: WritableKeyPath<Parent.State, FavoritingState<ID>>
-  let toFavoriteAction: CasePath<Parent.Action, FavoritingAction>
 
   private struct CancelID: Hashable {
     let id: AnyHashable
   }
 
-  var body: some ReducerProtocol<Parent.State, Parent.Action> {
-    Scope(state: self.toFavoriteState, action: self.toFavoriteAction) {
-      Reduce { state, action in
-        switch action {
-        case .alertDismissed:
-          state.alert = nil
-          state.isFavorite.toggle()
-          return .none
+  func reduce(
+    into state: inout FavoritingState<ID>, action: FavoritingAction
+  ) -> Effect<FavoritingAction, Never> {
+    switch action {
+    case .alertDismissed:
+      state.alert = nil
+      state.isFavorite.toggle()
+      return .none
 
-        case .buttonTapped:
-          state.isFavorite.toggle()
+    case .buttonTapped:
+      state.isFavorite.toggle()
 
-          return .task { [id = state.id, isFavorite = state.isFavorite, favorite] in
-            await .response(TaskResult { try await favorite(id, isFavorite) })
-          }
-          .cancellable(id: CancelID(id: state.id), cancelInFlight: true)
-
-        case let .response(.failure(error)):
-          state.alert = AlertState(title: TextState(error.localizedDescription))
-          return .none
-
-        case let .response(.success(isFavorite)):
-          state.isFavorite = isFavorite
-          return .none
-        }
+      return .task { [id = state.id, isFavorite = state.isFavorite, favorite] in
+        await .response(TaskResult { try await favorite(id, isFavorite) })
       }
+      .cancellable(id: CancelID(id: state.id), cancelInFlight: true)
+
+    case let .response(.failure(error)):
+      state.alert = AlertState(title: TextState(error.localizedDescription))
+      return .none
+
+    case let .response(.success(isFavorite)):
+      state.isFavorite = isFavorite
+      return .none
     }
-    self.parent
   }
 }
 
@@ -123,14 +104,9 @@ struct Episode: ReducerProtocol {
   let favorite: @Sendable (UUID, Bool) async throws -> Bool
 
   var body: some ReducerProtocol<State, Action> {
-    Reduce { state, action in
-      .none
+    Scope(state: \.favorite, action: /Action.favorite) {
+      Favoriting(favorite: self.favorite)
     }
-    .favorite(
-      favorite: self.favorite,
-      state: \.favorite,
-      action: /Action.favorite
-    )
   }
 }
 

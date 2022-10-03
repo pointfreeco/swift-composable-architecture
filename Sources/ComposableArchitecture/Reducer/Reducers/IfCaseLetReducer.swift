@@ -1,5 +1,43 @@
 extension ReducerProtocol {
-  /// Embeds a child reducer in a parent domain that works on a case of parent state.
+  /// Embeds a child reducer in a parent domain that works on a case of parent enum state.
+  ///
+  /// For example, if a parent feature's state is expressed as an enum of multiple children states,
+  /// then `ifCaseLet` can run a child reducer on a particular case of the enum:
+  ///
+  /// ```swift
+  /// struct Parent: ReducerProtocol {
+  ///   enum State {
+  ///     case loggedIn(Authenticated.State)
+  ///     case loggedOut(Unauthenticated.State)
+  ///   }
+  ///   enum Action {
+  ///     case loggedIn(Authenticated.Action)
+  ///     case loggedOut(Unauthenticated.Action)
+  ///     // ...
+  ///   }
+  ///
+  ///   var body: some ReducerProtocol<State, Action> {
+  ///     Reduce { state, action in
+  ///       // Core logic for parent feature
+  ///     }
+  ///     .ifCaseLet(/State.loggedIn, action: /Action.loggedIn) {
+  ///       Authenticated()
+  ///     }
+  ///     .ifCaseLet(/State.loggedOut, action: /Action.loggedOut) {
+  ///       Unauthenticated()
+  ///     }
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// The `ifCaseLet` forces a specific order of operations for the child and parent features. It
+  /// runs the child first, and then the parent. If the order was reversed, then it would be
+  /// possible for the parent feature to change the case of the enum, in which case the child
+  /// feature would not be able to react to that action. That can cause subtle bugs.
+  ///
+  /// It is still possible for a parent feature higher up in the application to change the case of
+  /// the enum before the child has a chance to react to the action. In such cases a runtime warning
+  /// is shown in Xcode to let you know that there's a potential problem.
   ///
   /// - Parameters:
   ///   - toCaseState: A case path from parent state to a case containing child state.

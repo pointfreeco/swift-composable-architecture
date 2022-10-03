@@ -1,4 +1,4 @@
-import ComposableArchitecture
+import Dependencies
 import SwiftUI
 import XCTestDynamicOverlay
 
@@ -29,8 +29,7 @@ extension DependencyValues {
   private enum TemporaryDirectoryKey: DependencyKey {
     static let liveValue: @Sendable () -> URL = { URL(fileURLWithPath: NSTemporaryDirectory()) }
     static let testValue: @Sendable () -> URL = XCTUnimplemented(
-      #"@Dependency(\.temporaryDirectory"#,
-      placeholder: URL(fileURLWithPath: NSTemporaryDirectory())
+      #"@Dependency(\.temporaryDirectory)"#
     )
   }
 }

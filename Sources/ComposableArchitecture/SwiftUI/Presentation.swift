@@ -9,7 +9,7 @@ public enum PresentationState<State> {
   public init(wrappedValue: State? = nil) {
     self =
       wrappedValue
-      .map { .presented(id: DependencyValues.current.navigationID.next(), $0) }
+      .map { .presented(id: DependencyValues._current.navigationID.next(), $0) }
       ?? .dismissed
   }
 
@@ -101,7 +101,7 @@ extension PresentationState: Hashable where State: Hashable {
 //}
 
 public enum PresentationAction<State, Action> {
-  case present(id: AnyHashable = DependencyValues.current.uuid(), State? = nil)
+  case present(id: AnyHashable = DependencyValues._current.uuid(), State? = nil)
   case presented(Action)
   case dismiss
 
@@ -262,9 +262,9 @@ public struct _PresentationDestinationReducer<
     if let id = state[keyPath: self.toPresentedState].id, id != presentedState.id {
       effect = effect.merge(
         with: .task {
-          var dependencies = DependencyValues.current
+          var dependencies = DependencyValues._current
           dependencies.navigationID.current = id
-          return try await DependencyValues.$current.withValue(dependencies) {
+          return try await DependencyValues.$_current.withValue(dependencies) {
             try await withTaskCancellation(id: DismissID.self) {
               try await Task.never()
             }

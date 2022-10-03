@@ -38,7 +38,7 @@ final class BindingTests: XCTestCase {
 
       viewStore.binding(\.$nested.field).wrappedValue = "Hello"
 
-      XCTAssertNoDifference(viewStore.state, .init(nested: .init(field: "Hello!")))
+      XCTAssertEqual(viewStore.state, .init(nested: .init(field: "Hello!")))
     }
   #endif
 }

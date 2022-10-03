@@ -9,7 +9,12 @@ on:
   push:
     branches:
       - main
+      - protocol-beta
   workflow_dispatch:
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -57,32 +62,35 @@ jobs:
         run: >
           rm -rf docs-out/.git;
           rm -rf docs-out/main;
-          rm -rf docs-out/protocol;
+          rm -rf docs-out/protocol-beta;
 
-          for tag in $(echo "main"; echo "protocol"; git tag);
+          for tag in $(echo "main"; echo "protocol-beta"; git tag);
           do
             echo "⏳ Generating documentation for "$tag" release.";
 
             if [ -d "docs-out/$tag" ] 
             then 
-                echo "✅ Documentation for "$tag" already exists.";
+              echo "✅ Documentation for "$tag" already exists.";
             else 
+              for target in ComposableArchitecture Dependencies;
+              do 
+                git checkout .;
                 git checkout "$tag";
-                mkdir -p Sources/ComposableArchitecture/Documentation.docc;
+                mkdir -p Sources/"$target"/Documentation.docc;
                 export DOCC_HTML_DIR="$(pwd)/swift-docc-render/dist";
 
                 rm -rf .build/symbol-graphs;
                 mkdir -p .build/symbol-graphs;
                 swift build \
-                  --target ComposableArchitecture \
+                  --target "$target" \
                   -Xswiftc \
                   -emit-symbol-graph \
                   -Xswiftc \
                   -emit-symbol-graph-dir \
                   -Xswiftc \
                   .build/symbol-graphs \
-                  && swift-docc/.build/release/docc convert Sources/ComposableArchitecture/Documentation.docc \
-                    --fallback-display-name ComposableArchitecture \
+                  && swift-docc/.build/release/docc convert Sources/"$target"/Documentation.docc \
+                    --fallback-display-name "$target" \
                     --fallback-bundle-identifier co.pointfree.ComposableArchitecture \
                     --fallback-bundle-version 0.0.0 \
                     --additional-symbol-graph-dir \
@@ -92,6 +100,7 @@ jobs:
                     --output-path docs-out/"$tag" \
                     && echo "✅ Documentation generated for "$tag" release." \
                     || echo "⚠️ Documentation skipped for "$tag".";
+              done;
             fi;
           done
 

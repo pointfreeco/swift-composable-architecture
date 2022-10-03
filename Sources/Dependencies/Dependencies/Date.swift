@@ -69,6 +69,13 @@ import XCTestDynamicOverlay
       set { self.generate = { newValue } }
     }
 
+    /// Initializes a date generator that generates a date from a closure.
+    ///
+    /// - Parameter generate: A closure that returns the current date when called.
+    public init(_ generate: @escaping @Sendable () -> Date) {
+      self.generate = generate
+    }
+
     public func callAsFunction() -> Date {
       self.generate()
     }

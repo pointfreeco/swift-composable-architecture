@@ -19,12 +19,14 @@ struct Focus: ReducerProtocol {
     case randomButtonClicked
   }
 
-  var randomElement: () -> Int = { (1..<11).randomElement()! }
+  @Dependency(\.withRandomNumberGenerator) var withRandomNumberGenerator
 
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     switch action {
     case .randomButtonClicked:
-      state.currentFocus = self.randomElement()
+      state.currentFocus = self.withRandomNumberGenerator {
+        (1..<11).randomElement(using: &$0)!
+      }
       return .none
     }
   }

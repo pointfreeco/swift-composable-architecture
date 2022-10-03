@@ -18,9 +18,9 @@ final class MemoryManagementTests: XCTestCase {
     var count = 0
     viewStore.publisher.sink { count = $0 }.store(in: &self.cancellables)
 
-    XCTAssertNoDifference(count, 0)
+    XCTAssertEqual(count, 0)
     viewStore.send(())
-    XCTAssertNoDifference(count, 1)
+    XCTAssertEqual(count, 1)
   }
 
   func testOwnership_ViewStoreHoldsOntoStore() {
@@ -33,8 +33,40 @@ final class MemoryManagementTests: XCTestCase {
     var count = 0
     viewStore.publisher.sink { count = $0 }.store(in: &self.cancellables)
 
-    XCTAssertNoDifference(count, 0)
+    XCTAssertEqual(count, 0)
     viewStore.send(())
-    XCTAssertNoDifference(count, 1)
+    XCTAssertEqual(count, 1)
+  }
+
+  func testEffectWithMultipleScopes() {
+    let expectation = self.expectation(description: "")
+
+    enum Action { case tap, response }
+    let store = Store(
+      initialState: false,
+      reducer: Reduce<Bool, Action> { state, action in
+        switch action {
+        case .tap:
+          state = false
+          return .task { .response }
+        case .response:
+          state = true
+          return .fireAndForget {
+            expectation.fulfill()
+          }
+        }
+      }
+    )
+    let viewStore = ViewStore(store.scope(state: { $0 }).scope(state: { $0 }))
+
+    var values: [Bool] = []
+    viewStore.publisher
+      .sink(receiveValue: { values.append($0 )})
+      .store(in: &self.cancellables)
+
+    XCTAssertEqual(values, [false])
+    viewStore.send(.tap)
+    self.wait(for: [expectation], timeout: 1)
+    XCTAssertEqual(values, [false, true])
   }
 }

@@ -49,22 +49,22 @@ struct LongLivingEffects: ReducerProtocol {
 
 extension DependencyValues {
   var screenshots: @Sendable () async -> AsyncStream<Void> {
-    get { self[ScreenshotsKeys.self] }
-    set { self[ScreenshotsKeys.self] = newValue }
+    get { self[ScreenshotsKey.self] }
+    set { self[ScreenshotsKey.self] = newValue }
   }
+}
 
-  private enum ScreenshotsKeys: DependencyKey {
-    static let liveValue: @Sendable () async -> AsyncStream<Void> = {
-      await AsyncStream(
-        NotificationCenter.default
-          .notifications(named: UIApplication.userDidTakeScreenshotNotification)
-          .map { _ in }
-      )
-    }
-    static let testValue: @Sendable () async -> AsyncStream<Void> = XCTUnimplemented(
-      #"@Dependency(\.screenshots)"#, placeholder: .finished
+private enum ScreenshotsKey: DependencyKey {
+  static let liveValue: @Sendable () async -> AsyncStream<Void> = {
+    await AsyncStream(
+      NotificationCenter.default
+        .notifications(named: UIApplication.userDidTakeScreenshotNotification)
+        .map { _ in }
     )
   }
+  static let testValue: @Sendable () async -> AsyncStream<Void> = XCTUnimplemented(
+    #"@Dependency(\.screenshots)"#, placeholder: .finished
+  )
 }
 
 // MARK: - SwiftUI view

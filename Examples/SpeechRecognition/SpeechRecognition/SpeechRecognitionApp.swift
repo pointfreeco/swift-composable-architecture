@@ -8,7 +8,7 @@ struct SpeechRecognitionApp: App {
       SpeechRecognitionView(
         store: Store(
           initialState: SpeechRecognition.State(),
-          reducer: SpeechRecognition().debug()
+          reducer: SpeechRecognition()._printChanges()
         )
       )
     }

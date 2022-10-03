@@ -11,9 +11,9 @@ allowing you to plug protocol-style reducers into old-style reducers, and vice-v
 
 Although we recommend migrating your code when you have time, the newest version of the library
 is still 100% backwards compatible with all previous versions. The ``Reducer`` type is now
-"soft" deprecated, which means we consider it deprecated but you will not get any warnings about it.
-Some time in the future we will officially deprecate it, and then sometime even later we will remove
-it so that we can rename the protocol to `Reducer`.
+"soft" deprecated, which means we consider it deprecated, and it says so in the documentation, but 
+you will not get any warnings about it. Some time in the future we will officially deprecate it, 
+and then sometime even later we will remove it so that we can rename the protocol to `Reducer`.
 
 This article outlines a number of strategies you can employ to convert your reducers to the protocol
 when you are ready:
@@ -142,10 +142,10 @@ enum ParentAction {
 }
 ```
 
-And then the `parentReducer` can be fixed by making use of the helper ``AnyReducer/init(_:)`` which
-aids in converting protocol-style reducers into old-style reducers. It is initialized with a closure 
-that is passed an environment, which is the one thing protocol-style reducers don't have, and you 
-are to return a protocol-style reducer:
+And then the `parentReducer` can be fixed by making use of the helper ``AnyReducer/init(_:)-42p1a``
+which aids in converting protocol-style reducers into old-style reducers. It is initialized with a
+closure  that is passed an environment, which is the one thing protocol-style reducers don't have,
+and you  are to return a protocol-style reducer:
 
 ```swift
 let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combine(
@@ -515,7 +515,6 @@ application:
 ```swift
 private enum APIClientKey: DependencyKey {
   static let liveValue = APIClient.live
-  static let testValue = APIClient.unimplemented
 }
 extension DependencyValues {
   var apiClient: APIClient {

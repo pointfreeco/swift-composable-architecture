@@ -71,32 +71,27 @@ return .task { [count = state.count] in
 ### Accessing dependencies in an effect
 
 In the Composable Architecture, one provides dependencies to a reducer so that it can interact with
-the outside world in a determinstic and controlled manner. Dependencies are typically accessed 
-inside the effect, which means it must be `Sendable`, otherwise we will get the following warning 
-(and error in Swift 6):
+the outside world in a determinstic and controlled manner. Those dependencies can be used from
+asynchronous and concurrent contexts, and so must be `Sendable`.
+
+If your dependency is not sendable, you will be notified at the time of registering it with the
+library. In particular, when extending `DependencyValues` to provide the computed property:
 
 ```swift
-struct Feature: ReducerProtocol {
-  struct State { … } 
-  enum Action { … }
-  @Dependency(\.factClient) var factClient
-
-  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-    switch action {
-    case .numberFactButtonTapped:
-      return .task { [count = state.count] in
-        await .numberFactResponse(
-          TaskResult { try await self.factClient.fetch(count) }
-        )
-        // ⚠️ Capture of 'self' with non-sendable type 'Feature' 
-        //    in a `@Sendable` closure
-      }
-    }
+extension DependencyValues {
+  var factClient: FactClient {
+    get { self[FactClient.self] }
+    set { self[FactClient.self] = newValue }
   }
 }
 ```
 
-To fix this we need to make each dependency client `Sendable`. This usually just means making sure 
+If `FactClient` is not `Sendable`, for whatever reason, you will get a warning in the `get`
+and `set` lines:
+
+>⚠️ Type 'AudioPlayerClient' does not conform to the 'Sendable' protocol
+
+To fix this you need to make each dependency `Sendable`. This usually just means making sure 
 that the interface type only holds onto `Sendable` data, and in particular, any closure-based 
 endpoints should be annotated as `@Sendable`:
 
