@@ -2,15 +2,114 @@
   /// A protocol that describes how to evolve the current state of an application to the next state,
   /// given an action, and describes what ``Effect``s should be executed later by the store, if any.
   ///
-  /// There are two ways to define a reducer:
+  /// Conform types to this protocol to represent the domain, logic and behavior for your feature.
+  /// The domain is specified by the "state" and "actions", which can be nested types inside the
+  /// conformance:
   ///
-  ///   1. You can either implement the ``reduce(into:action:)-4nzr2`` method, which is given direct
-  ///      mutable access to application ``State`` whenever an ``Action`` is fed into the system,
-  ///      and returns an ``Effect`` that can communicate with the outside world and feed additional
-  ///      ``Action``s back into the system.
+  /// ```swift
+  /// struct Feature: ReducerProtocol {
+  ///   struct State {
+  ///     var count = 0
+  ///   }
+  ///   enum Action {
+  ///     case decrementButtonTapped
+  ///     case incrementButtonTapped
+  ///   }
+  ///
+  ///   // ...
+  /// }
+  /// ```
+  ///
+  /// The logic of your feature is implementing by mutating the feature's current state when an action
+  /// comes into the system. This is most easily done by implementing the
+  /// ``ReducerProtocol/reduce(into:action:)-4nzr2`` method of the protocol.
+  ///
+  /// ```swift
+  /// struct Feature: ReducerProtocol {
+  ///   // ...
+  ///
+  ///   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  ///     switch action {
+  ///     case .decrementButtonTapped:
+  ///       state.count -= 1
+  ///       return .none
+  ///
+  ///     case .incrementButtonTapped:
+  ///       state.count += 1
+  ///       return .none
+  ///     }
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// The `reduce` method's first responsibility is to mutate the feature's current state given an
+  /// action. It's second responsibility is to return effects that will be executed asynchronously
+  /// and feed their data back into the system. Currently `Feature` does not need to run any effects,
+  /// and so ``Effect/none`` is returned.
+  ///
+  /// If the feature does need to do effectful work, then more would need to be done. For example,
+  /// suppose the feature has the ability to start and stop a timer, and with each tick of the timer
+  /// the `count` was incremented. That could be done like so:
+  ///
+  /// ```swift
+  /// struct Feature: ReducerProtocol {
+  ///   struct State {
+  ///     var count = 0
+  ///   }
+  ///   enum Action {
+  ///     case decrementButtonTapped
+  ///     case incrementButtonTapped
+  ///     case startTimerButtonTapped
+  ///     case stopTimerButtonTapped
+  ///     case timerTick
+  ///   }
+  ///   enum TimerID {}
+  ///
+  ///   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  ///     switch action {
+  ///     case .decrementButtonTapped:
+  ///       state.count -= 1
+  ///       return .none
+  ///
+  ///     case .incrementButtonTapped:
+  ///       state.count += 1
+  ///       return .none
+  ///
+  ///     case startTimerButtonTapped:
+  ///       return .run { send in
+  ///         for await _ in ContinuousClock().timer(interval: .seconds(1)) {
+  ///           await send(.timerTick
+  ///         }
+  ///       }
+  ///       .cancellable(TimerID.self)
+  ///
+  ///     case stopTimerButtonTapped:
+  ///       return .cancel(TimerID.self)
+  ///
+  ///     case timerTick:
+  ///       state.count += 1
+  ///       return .none
+  ///     }
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// > Note: This sample makes use of a `timer` method on `ContinuousClock` that ships with our
+  /// [Swift Clocks][swift-clocks] library, which is automatically included with the Composable
+  /// Architecture. Also, it is typically better to inject a clock dependency into features rather
+  /// than calling out to live, uncontrollable clocks like `ContinuousClock`. Read
+  /// the <doc:DependencyManagement> and <doc:Testing> articles for more information.
+  ///
+  /// That is the basics of implementing a feature as a conformance to ``ReducerProtocol``. There are
+  /// actually two ways to define a reducer:
+  ///
+  ///   1. You can either implement the ``reduce(into:action:)-4nzr2`` method, as shown above, which
+  ///   is given direct mutable access to application ``State`` whenever an ``Action`` is fed into
+  ///   the system, and returns an ``Effect`` that can communicate with the outside world and feed
+  ///   additional ``Action``s back into the system.
   ///
   ///   2. Or you can implement the ``body-swift.property-7foai`` property, which combines one or
-  ///      more reducers together.
+  ///   more reducers together.
   ///
   /// At most one of these requirements should be implemented. If a conformance implements both
   /// requirements, only ``reduce(into:action:)-4nzr2`` will be called by the ``Store``. If your
@@ -58,6 +157,8 @@
   ///   }
   /// }
   /// ```
+  ///
+  /// [swift-clocks]: http://github.com/pointfreeco/swift-clocks
   public protocol ReducerProtocol<State, Action> {
     /// A type that holds the current state of the reducer.
     associatedtype State

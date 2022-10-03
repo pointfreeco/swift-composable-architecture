@@ -3,11 +3,33 @@ import XCTestDynamicOverlay
 
 // TODO: should we have `@Dependency(\.runtimeWarningsEnabled)` and/or `@Dependency(\.treatWarningsAsErrors)`?
 
-/// A collection of dependencies propagated through a reducer hierarchy.
+/// A collection of dependencies that is globally available.
 ///
-/// The Composable Architecture exposes a collection of values to your app's reducers in an
-/// ``DependencyValues`` structure. This is similar to the `EnvironmentValues` structure SwiftUI
-/// exposes to views.
+/// To access a particular dependency from the collection you use the ``Dependency`` property
+/// wrapper:
+///
+/// ```swift
+/// @Dependency(\.date) var date
+/// let now = date.now
+/// ```
+///
+/// To change a dependency for a well-defined scope you can use the
+/// ``withValues(_:operation:file:line:)-2atnb`` method:
+///
+/// ```swift
+/// @Dependency(\.date) var date
+/// let now = date.now
+///
+/// DependencyValues.withValues {
+///   $0.date.now = Date(timeIntervalSinceReferenceDate: 1234567890)
+/// } operation: {
+///   @Dependency(\.date) var date
+///   let now = date.now.timeIntervalSinceReferenceDate // 1234567890
+/// }
+/// ```
+///
+/// The dependencies will be changed only for the lifetime of the `operation` scope, which can be
+/// synchronous or asynchronous.
 ///
 /// To register a dependency with this storage, you first conform a type to ``DependencyKey``:
 ///
@@ -27,8 +49,7 @@ import XCTestDynamicOverlay
 /// }
 /// ```
 ///
-/// To access a dependency from ``DependencyValues`` you declare a variable using the ``Dependency``
-/// property wrapper:
+/// With those steps done you can access the dependency using the ``Dependency`` property wrapper:
 ///
 /// ```swift
 /// @Dependency(\.myValue) var myValue

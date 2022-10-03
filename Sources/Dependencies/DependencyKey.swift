@@ -11,11 +11,11 @@ import XCTestDynamicOverlay
 /// ``liveValue`` is accessed while your feature runs in a `TestStore` a test failure will be
 /// triggered.
 ///
-/// `DependencyKey` inherits two overridable requirements from ``TestDependencyKey``:
-/// ``TestDependencyKey/testValue``, which should return a default value for the purpose of
-/// testing, and ``TestDependencyKey/previewValue-8u2sy``, which can return a default value suitable
-/// for Xcode previews. When left unimplemented, these endpoints will return the ``liveValue``,
-/// instead.
+/// `DependencyKey` inherits from ``TestDependencyKey``, which has two other overridable
+/// requirements: ``TestDependencyKey/testValue``, which should return a default value for the
+/// purpose of testing, and ``TestDependencyKey/previewValue-8u2sy``, which can return a default
+/// value suitable for Xcode previews. When left unimplemented, these endpoints will return the
+/// ``liveValue``, instead.
 ///
 /// If you plan on separating your interface from your live implementation, conform to
 /// ``TestDependencyKey`` in your interface module, and extend this conformance to `DependencyKey`
