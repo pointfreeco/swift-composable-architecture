@@ -22,22 +22,20 @@ final class NavigationTests: XCTestCase {
     XCTAssertNoDifference(
       String(decoding: encoded, as: UTF8.self),
       """
-      {
-        "path" : [
-          {
-            "element" : {
-              "profile" : {
-                "_0" : {
-                  "bio" : "Blobbed around the world.",
-                  "name" : "Blob"
-                }
+      [
+        {
+          "element" : {
+            "profile" : {
+              "_0" : {
+                "bio" : "Blobbed around the world.",
+                "name" : "Blob"
               }
-            },
-            "idString" : "1",
-            "idTypeName" : "Swift.Int"
-          }
-        ]
-      }
+            }
+          },
+          "idString" : "1",
+          "idTypeName" : "Swift.Int"
+        }
+      ]
       """
     )
     let decoded = try JSONDecoder().decode(NavigationState<Route>.self, from: encoded)
