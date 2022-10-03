@@ -64,9 +64,9 @@ jobs:
           rm -rf docs-out/.git;
           rm -rf docs-out/main;
           rm -rf docs-out/protocol-beta;
-          git tag -l --sort=-v:refname | tail -n +10 | xargs rm -rf;
+          git tag -l --sort=-v:refname | tail -n +10 | xargs -I {} rm -rf docs-out/{};
 
-          for tag in $(echo "main"; echo "protocol-beta"; git tag);
+          for tag in $(echo "main"; echo "protocol-beta"; git tag -l --sort=-v:refname | head -10);
           do
             echo "⏳ Generating documentation for "$tag" release.";
 
