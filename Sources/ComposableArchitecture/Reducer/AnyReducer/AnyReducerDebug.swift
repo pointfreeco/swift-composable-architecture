@@ -60,8 +60,6 @@ extension AnyReducer {
     )
   }
 
-  // TODO: Add protocol support for this API.
-
   /// The API that used this type has been soft-deprecated in favor of ``ReducerProtocol/debug()``.
   /// Read <doc:ReducerProtocol> for more information.
   ///
