@@ -5,6 +5,7 @@
 ### Implementing a reducer
 
 - ``reduce(into:action:)-4nzr2``
+- ``body-swift.property-97ymy``
 - ``State``
 - ``Action``
 - ``Effect``
