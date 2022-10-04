@@ -7,10 +7,10 @@ public struct Reduce<State, Action>: ReducerProtocol {
   let reduce: (inout State, Action) -> Effect<Action, Never>
 
   @usableFromInline
-  static func create(
+  init(
     internal reduce: @escaping (inout State, Action) -> Effect<Action, Never>
-  ) -> Self {
-    Self(reduce)
+  ) {
+    self.reduce = reduce
   }
 
   /// Initializes a reducer with a `reduce` function.
@@ -18,7 +18,7 @@ public struct Reduce<State, Action>: ReducerProtocol {
   /// - Parameter reduce: A function that is called when ``reduce(into:action:)`` is invoked.
   @inlinable
   public init(_ reduce: @escaping (inout State, Action) -> Effect<Action, Never>) {
-    self = .create(internal: reduce)
+    self.init(internal: reduce)
   }
 
   /// Type-erases a reducer.
@@ -27,7 +27,7 @@ public struct Reduce<State, Action>: ReducerProtocol {
   @inlinable
   public init<R: ReducerProtocol>(_ reducer: R)
   where R.State == State, R.Action == Action {
-    self = .create(internal: reducer.reduce)
+    self.init(internal: reducer.reduce)
   }
 
   @inlinable

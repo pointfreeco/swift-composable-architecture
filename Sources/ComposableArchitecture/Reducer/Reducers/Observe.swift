@@ -12,7 +12,6 @@ public struct _Observe<Reducers: ReducerProtocol>: ReducerProtocol {
     self.init(internal: build)
   }
 
-  @_disfavoredOverload
   @usableFromInline
   init(
     internal reducers: @escaping (Reducers.State, Reducers.Action) -> Reducers
