@@ -20,6 +20,9 @@ jobs:
   build:
     runs-on: macos-12
     steps:
+      - name: Select Xcode 14.0.1
+        run: sudo xcode-select -s /Applications/Xcode_14.0.1.app
+
       - name: Checkout Package
         uses: actions/checkout@v2
         with:
@@ -31,12 +34,14 @@ jobs:
           repository: apple/swift-docc
           ref: main
           path: swift-docc
+
       - name: Cache DocC
         id: cache-docc
         uses: actions/cache@v2
         with:
           key: swift-url-docc-build
           path: swift-docc/.build
+
       - name: Build swift-docc
         if: ${{ !steps.cache-docc.outputs.cache-hit }}
         run: |
@@ -48,6 +53,7 @@ jobs:
           repository: apple/swift-docc-render
           ref: main
           path: swift-docc-render
+
       - name: Build swift-docc-render
         run: |
           cd swift-docc-render; npm install && npm run build; cd ..
@@ -63,8 +69,9 @@ jobs:
           rm -rf docs-out/.git;
           rm -rf docs-out/main;
           rm -rf docs-out/protocol-beta;
+          git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | tail -n +10 | xargs -I {} rm -rf docs-out/{};
 
-          for tag in $(echo "main"; echo "protocol-beta"; git tag);
+          for tag in $(echo "main"; echo "protocol-beta"; git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | head -10);
           do
             echo "⏳ Generating documentation for "$tag" release.";
 
@@ -106,6 +113,7 @@ jobs:
 
       - name: Fix permissions
         run: 'sudo chown -R $USER docs-out'
+
       - name: Publish documentation to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@4.1.7
         with:

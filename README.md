@@ -498,44 +498,6 @@ The documentation for releases and `main` are available here:
   * [0.40.2](https://pointfreeco.github.io/swift-composable-architecture/0.40.2/documentation/composablearchitecture/)
   * [0.39.0](https://pointfreeco.github.io/swift-composable-architecture/0.39.0/documentation/composablearchitecture/)
   * [0.38.0](https://pointfreeco.github.io/swift-composable-architecture/0.38.0/documentation/composablearchitecture/)
-  * [0.37.0](https://pointfreeco.github.io/swift-composable-architecture/0.37.0/documentation/composablearchitecture)
-  * [0.36.0](https://pointfreeco.github.io/swift-composable-architecture/0.36.0/documentation/composablearchitecture)
-  * [0.35.0](https://pointfreeco.github.io/swift-composable-architecture/0.35.0/documentation/composablearchitecture)
-  * [0.34.0](https://pointfreeco.github.io/swift-composable-architecture/0.34.0/documentation/composablearchitecture)
-  * [0.33.1](https://pointfreeco.github.io/swift-composable-architecture/0.33.1/documentation/composablearchitecture)
-  * [0.32.0](https://pointfreeco.github.io/swift-composable-architecture/0.32.0/documentation/composablearchitecture)
-  * [0.31.0](https://pointfreeco.github.io/swift-composable-architecture/0.31.0/documentation/composablearchitecture)
-  * [0.30.0](https://pointfreeco.github.io/swift-composable-architecture/0.30.0/documentation/composablearchitecture)
-  * [0.29.0](https://pointfreeco.github.io/swift-composable-architecture/0.29.0/documentation/composablearchitecture)
-  * [0.28.1](https://pointfreeco.github.io/swift-composable-architecture/0.28.1/documentation/composablearchitecture)
-  * [0.27.1](https://pointfreeco.github.io/swift-composable-architecture/0.27.1/documentation/composablearchitecture)
-  * [0.26.0](https://pointfreeco.github.io/swift-composable-architecture/0.26.0/documentation/composablearchitecture)
-  * [0.25.1](https://pointfreeco.github.io/swift-composable-architecture/0.25.1/documentation/composablearchitecture)
-  * [0.24.0](https://pointfreeco.github.io/swift-composable-architecture/0.24.0/documentation/composablearchitecture)
-  * [0.23.0](https://pointfreeco.github.io/swift-composable-architecture/0.23.0/documentation/composablearchitecture)
-  * [0.22.0](https://pointfreeco.github.io/swift-composable-architecture/0.22.0/documentation/composablearchitecture)
-  * [0.21.0](https://pointfreeco.github.io/swift-composable-architecture/0.21.0/documentation/composablearchitecture)
-  * [0.20.0](https://pointfreeco.github.io/swift-composable-architecture/0.20.0/documentation/composablearchitecture)
-  * [0.19.0](https://pointfreeco.github.io/swift-composable-architecture/0.19.0/documentation/composablearchitecture)
-  * [0.18.0](https://pointfreeco.github.io/swift-composable-architecture/0.18.0/documentation/composablearchitecture)
-  * [0.17.0](https://pointfreeco.github.io/swift-composable-architecture/0.17.0/documentation/composablearchitecture)
-  * [0.16.0](https://pointfreeco.github.io/swift-composable-architecture/0.16.0/documentation/composablearchitecture)
-  * [0.15.0](https://pointfreeco.github.io/swift-composable-architecture/0.15.0/documentation/composablearchitecture)
-  * [0.14.0](https://pointfreeco.github.io/swift-composable-architecture/0.14.0/documentation/composablearchitecture)
-  * [0.13.0](https://pointfreeco.github.io/swift-composable-architecture/0.13.0/documentation/composablearchitecture)
-  * [0.12.0](https://pointfreeco.github.io/swift-composable-architecture/0.12.0/documentation/composablearchitecture)
-  * [0.11.0](https://pointfreeco.github.io/swift-composable-architecture/0.11.0/documentation/composablearchitecture)
-  * [0.10.0](https://pointfreeco.github.io/swift-composable-architecture/0.10.0/documentation/composablearchitecture)
-  * [0.9.0](https://pointfreeco.github.io/swift-composable-architecture/0.9.0/documentation/composablearchitecture)
-  * [0.8.0](https://pointfreeco.github.io/swift-composable-architecture/0.8.0/documentation/composablearchitecture)
-  * [0.7.0](https://pointfreeco.github.io/swift-composable-architecture/0.7.0/documentation/composablearchitecture)
-  * [0.6.0](https://pointfreeco.github.io/swift-composable-architecture/0.6.0/documentation/composablearchitecture)
-  * [0.5.0](https://pointfreeco.github.io/swift-composable-architecture/0.5.0/documentation/composablearchitecture)
-  * [0.4.0](https://pointfreeco.github.io/swift-composable-architecture/0.4.0/documentation/composablearchitecture)
-  * [0.3.0](https://pointfreeco.github.io/swift-composable-architecture/0.3.0/documentation/composablearchitecture)
-  * [0.2.0](https://pointfreeco.github.io/swift-composable-architecture/0.2.0/documentation/composablearchitecture)
-  * [0.1.5](https://pointfreeco.github.io/swift-composable-architecture/0.1.5/documentation/composablearchitecture)
-</details>
 
 ## Installation
 
@@ -546,6 +508,17 @@ You can add ComposableArchitecture to an Xcode project by adding it as a package
   3. Depending on how your project is structured:
       - If you have a single application target that needs access to the library, then add **ComposableArchitecture** directly to your application.
       - If you want to use this library from multiple Xcode targets, or mixing Xcode targets and SPM targets, you must create a shared framework that depends on **ComposableArchitecture** and then depend on that framework in all of your targets. For an example of this, check out the [Tic-Tac-Toe](./Examples/TicTacToe) demo application, which splits lots of features into modules and consumes the static library in this fashion using the **tic-tac-toe** Swift package.
+
+* [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture)
+* [0.40.0](https://pointfreeco.github.io/swift-composable-architecture/0.40.0/documentation/composablearchitecture/)
+<details>
+  <summary>
+  Past versions
+  </summary>
+
+  * [0.39.0](https://pointfreeco.github.io/swift-composable-architecture/0.39.0/documentation/composablearchitecture/)
+  * [0.38.0](https://pointfreeco.github.io/swift-composable-architecture/0.38.0/documentation/composablearchitecture/)
+</details>
 
 ## Help
 
