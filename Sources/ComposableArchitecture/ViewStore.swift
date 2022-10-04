@@ -92,7 +92,7 @@ public final class ViewStore<State, Action>: ObservableObject {
       }
   }
 
-  internal init(_ viewStore: ViewStore<State, Action>) {
+  init(_ viewStore: ViewStore<State, Action>) {
     self._send = viewStore._send
     self._state = viewStore._state
     self.objectWillChange = viewStore.objectWillChange
