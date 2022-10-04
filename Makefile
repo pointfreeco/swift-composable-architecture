@@ -36,7 +36,6 @@ test-library-evolution:
 		-Xswiftc \
 		-enable-library-evolution
 
-
 DOC_WARNINGS := $(shell xcodebuild clean docbuild \
 	-scheme ComposableArchitecture \
 	-destination platform="$(PLATFORM_MACOS)" \
