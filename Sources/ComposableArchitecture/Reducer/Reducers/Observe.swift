@@ -6,10 +6,17 @@ public struct _Observe<Reducers: ReducerProtocol>: ReducerProtocol {
   ///
   /// - Parameter build: A reducer builder that has access to the current state and action.
   @inlinable
-  public init<State, Action>(
-    @ReducerBuilder<State, Action> _ build: @escaping (State, Action) -> Reducers
+  public init(
+    @ReducerBuilderOf<Reducers> _ build: @escaping (Reducers.State, Reducers.Action) -> Reducers
   ) where Reducers.State == State, Reducers.Action == Action {
-    self.reducers = build
+    self.init(internal: build)
+  }
+
+  @usableFromInline
+  init(
+    internal reducers: @escaping (Reducers.State, Reducers.Action) -> Reducers
+  ) {
+    self.reducers = reducers
   }
 
   @inlinable

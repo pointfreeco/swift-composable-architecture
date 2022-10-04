@@ -36,7 +36,7 @@ public struct _DependencyKeyWritingReducer<Base: ReducerProtocol>: ReducerProtoc
   @usableFromInline
   let update: (inout DependencyValues) -> Void
 
-  @inlinable
+  @usableFromInline
   init(base: Base, update: @escaping (inout DependencyValues) -> Void) {
     self.base = base
     self.update = update

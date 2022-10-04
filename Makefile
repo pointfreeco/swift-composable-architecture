@@ -29,6 +29,14 @@ test-library-release:
 	  done; \
 	done
 
+test-library-evolution:
+	swift build -c release \
+		-Xswiftc \
+		-emit-module-interface \
+		-Xswiftc \
+		-enable-library-evolution
+
+
 DOC_WARNINGS := $(shell xcodebuild clean docbuild \
 	-scheme ComposableArchitecture \
 	-destination platform="$(PLATFORM_MACOS)" \

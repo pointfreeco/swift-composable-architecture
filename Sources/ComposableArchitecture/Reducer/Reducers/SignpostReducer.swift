@@ -33,23 +33,22 @@ extension ReducerProtocol {
 }
 
 public struct _SignpostReducer<Base: ReducerProtocol>: ReducerProtocol {
-  @usableFromInline
-  let base: Base
+  //@usableFromInline
+  public let base: Base
+
+  //@usableFromInline
+  public let prefix: String
+
+  //@usableFromInline
+  public let log: OSLog
 
   @usableFromInline
-  let prefix: String
-
-  @usableFromInline
-  let log: OSLog
-
-  @inlinable
   init(
     base: Base,
     prefix: String,
     log: OSLog
   ) {
     self.base = base
-    // NB: Prevent rendering as "N/A" in Instruments
     let zeroWidthSpace = "\u{200B}"
     self.prefix = prefix.isEmpty ? zeroWidthSpace : "[\(prefix)] "
     self.log = log

@@ -62,7 +62,7 @@ public struct _PrintChangesReducer<
   @usableFromInline
   let printer: Printer
 
-  @inlinable
+  @usableFromInline
   init(base: Base, printer: Printer) {
     self.base = base
     self.printer = printer

@@ -110,6 +110,17 @@ public struct Scope<ParentState, ParentAction, Child: ReducerProtocol>: ReducerP
   public let toChildAction: CasePath<ParentAction, Child.Action>
   public let child: Child
 
+  @usableFromInline
+  init(
+    toChildState: StatePath,
+    toChildAction: CasePath<ParentAction, Child.Action>,
+    child: Child
+  ) {
+    self.toChildState = toChildState
+    self.toChildAction = toChildAction
+    self.child = child
+  }
+
   /// Initializes a reducer that runs the given child reducer against a slice of parent state and
   /// actions.
   ///
@@ -137,9 +148,11 @@ public struct Scope<ParentState, ParentAction, Child: ReducerProtocol>: ReducerP
     action toChildAction: CasePath<ParentAction, Child.Action>,
     @ReducerBuilderOf<Child> _ child: () -> Child
   ) {
-    self.toChildState = .keyPath(toChildState)
-    self.toChildAction = toChildAction
-    self.child = child()
+    self.init(
+      toChildState: .keyPath(toChildState),
+      toChildAction: toChildAction,
+      child: child()
+    )
   }
 
   /// Initializes a reducer that runs the given child reducer against a slice of parent state and
@@ -210,9 +223,11 @@ public struct Scope<ParentState, ParentAction, Child: ReducerProtocol>: ReducerP
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) {
-    self.toChildState = .casePath(toChildState, file: file, fileID: fileID, line: line)
-    self.toChildAction = toChildAction
-    self.child = child()
+    self.init(
+      toChildState: .casePath(toChildState, file: file, fileID: fileID, line: line),
+      toChildAction: toChildAction,
+      child: child()
+    )
   }
 
   @inlinable

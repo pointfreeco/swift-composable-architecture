@@ -85,7 +85,7 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
   @usableFromInline
   let line: UInt
 
-  @inlinable
+  @usableFromInline
   init(
     parent: Parent,
     child: Child,

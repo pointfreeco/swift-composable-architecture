@@ -5,7 +5,12 @@ public struct BindingReducer<State, Action>: ReducerProtocol
 where Action: BindableAction, State == Action.State {
   /// Initializes a reducer that updates bindable state when it receives binding actions.
   @inlinable
-  public init() {}
+  public init() {
+    self.init(internal: ())
+  }
+
+  @usableFromInline
+  init(internal: Void) {}
 
   @inlinable
   public func reduce(
