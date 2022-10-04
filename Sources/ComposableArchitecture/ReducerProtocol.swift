@@ -20,7 +20,7 @@
   /// }
   /// ```
   ///
-  /// The logic of your feature is implementing by mutating the feature's current state when an action
+  /// The logic of your feature is implemented by mutating the feature's current state when an action
   /// comes into the system. This is most easily done by implementing the
   /// ``ReducerProtocol/reduce(into:action:)-4nzr2`` method of the protocol.
   ///
@@ -78,7 +78,7 @@
   ///     case startTimerButtonTapped:
   ///       return .run { send in
   ///         for await _ in ContinuousClock().timer(interval: .seconds(1)) {
-  ///           await send(.timerTick
+  ///           await send(.timerTick)
   ///         }
   ///       }
   ///       .cancellable(TimerID.self)
