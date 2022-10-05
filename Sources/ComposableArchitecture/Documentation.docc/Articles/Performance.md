@@ -97,7 +97,7 @@ struct AppView: View {
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
-      TabView(selection: viewStore.binding(send: AppAction.tabSelected) {
+      TabView(selection: viewStore.binding(send: AppAction.tabSelected)) {
         ActivityView(
           store: self.store.scope(state: \.activity, action: AppAction.activity)
         )
@@ -126,7 +126,7 @@ the state the view needs. In this case the view only needs a single field:
 
 ```swift
 WithViewStore(self.store, observe: \.selectedTab) { viewStore in
-  TabView(selection: viewStore.binding(send: AppAction.tabSelected) {
+  TabView(selection: viewStore.binding(send: AppAction.tabSelected)) {
     // ...
   }
 }
