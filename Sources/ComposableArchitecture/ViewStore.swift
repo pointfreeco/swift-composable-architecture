@@ -62,14 +62,78 @@ import SwiftUI
 /// > all interactions must happen on the _main_ thread. See the documentation of the ``Store``
 /// > class for more information as to why this decision was made.
 @dynamicMemberLookup
-public final class ViewStore<State, Action>: ObservableObject {
+public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   // N.B. `ViewStore` does not use a `@Published` property, so `objectWillChange`
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
   public private(set) lazy var objectWillChange = ObservableObjectPublisher()
 
-  private let _send: (Action) -> Task<Void, Never>?
-  fileprivate let _state: CurrentValueRelay<State>
+  private let _send: (ViewAction) -> Task<Void, Never>?
+  fileprivate let _state: CurrentValueRelay<ViewState>
   private var viewCancellable: AnyCancellable?
+
+  /// Initializes a view store from a store which observes changes to state.
+  ///
+  /// It is recommended that the `observe` argument transform the store's state into the bare
+  /// minimum of data needed for the feature to do its job in order to not hinder performance.
+  /// This is especially true for root level features, and less important for leaf features.
+  ///
+  /// To read more about this performance technique, read the <doc:Performance> article.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - toViewState: A transformation of `ViewState` to the state that will be observed for
+  ///   changes.
+  ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
+  ///   equal, repeat view computations are removed.
+  public init<State>(
+    _ store: Store<State, ViewAction>,
+    observe toViewState: @escaping (State) -> ViewState,
+    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool
+  ) {
+    self._send = { store.send($0) }
+    self._state = CurrentValueRelay(toViewState(store.state.value))
+    self.viewCancellable = store.state
+      .map(toViewState)
+      .removeDuplicates(by: isDuplicate)
+      .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
+        guard let objectWillChange = objectWillChange, let _state = _state else { return }
+        objectWillChange.send()
+        _state.value = $0
+      }
+  }
+
+  /// Initializes a view store from a store which observes changes to state.
+  ///
+  /// It is recommended that the `observe` argument transform the store's state into the bare
+  /// minimum of data needed for the feature to do its job in order to not hinder performance.
+  /// This is especially true for root level features, and less important for leaf features.
+  ///
+  /// To read more about this performance technique, read the <doc:Performance> article.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - toViewState: A transformation of `ViewState` to the state that will be observed for
+  ///   changes.
+  ///   - fromViewAction: A transformation of `ViewAction` that describes what actions can be sent.
+  ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
+  ///   equal, repeat view computations are removed.
+  public init<State, Action>(
+    _ store: Store<State, Action>,
+    observe toViewState: @escaping (State) -> ViewState,
+    send fromViewAction: @escaping (ViewAction) -> Action,
+    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool
+  ) {
+    self._send = { store.send(fromViewAction($0)) }
+    self._state = CurrentValueRelay(toViewState(store.state.value))
+    self.viewCancellable = store.state
+      .map(toViewState)
+      .removeDuplicates(by: isDuplicate)
+      .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
+        guard let objectWillChange = objectWillChange, let _state = _state else { return }
+        objectWillChange.send()
+        _state.value = $0
+      }
+  }
 
   /// Initializes a view store from a store.
   ///
@@ -77,9 +141,29 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///   - store: A store.
   ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
   ///     equal, repeat view computations are removed.
+  @available(
+    iOS,
+    deprecated: 9999.0,
+    message: "Use 'init(_:observe:removeDuplicates:)' to make state observation explicit."
+  )
+  @available(
+    macOS,
+    deprecated: 9999.0,
+    message: "Use 'init(_:observe:removeDuplicates:)' to make state observation explicit."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999.0,
+    message: "Use 'init(_:observe:removeDuplicates:)' to make state observation explicit."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999.0,
+    message: "Use 'init(_:observe:removeDuplicates:)' to make state observation explicit."
+  )
   public init(
-    _ store: Store<State, Action>,
-    removeDuplicates isDuplicate: @escaping (State, State) -> Bool
+    _ store: Store<ViewState, ViewAction>,
+    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool
   ) {
     self._send = { store.send($0) }
     self._state = CurrentValueRelay(store.state.value)
@@ -92,7 +176,7 @@ public final class ViewStore<State, Action>: ObservableObject {
       }
   }
 
-  internal init(_ viewStore: ViewStore<State, Action>) {
+  init(_ viewStore: ViewStore<ViewState, ViewAction>) {
     self._send = viewStore._send
     self._state = viewStore._state
     self.objectWillChange = viewStore.objectWillChange
@@ -124,17 +208,17 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///   bearing on the order the `.sink` closures are called. This means the work performed inside
   ///   `viewStore.publisher.sink` closures should be completely independent of each other. Later
   ///   closures cannot assume that earlier ones have already run.
-  public var publisher: StorePublisher<State> {
+  public var publisher: StorePublisher<ViewState> {
     StorePublisher(viewStore: self)
   }
 
   /// The current state.
-  public var state: State {
+  public var state: ViewState {
     self._state.value
   }
 
   /// Returns the resulting value of a given key path.
-  public subscript<Value>(dynamicMember keyPath: KeyPath<State, Value>) -> Value {
+  public subscript<Value>(dynamicMember keyPath: KeyPath<ViewState, Value>) -> Value {
     self._state.value[keyPath: keyPath]
   }
 
@@ -158,7 +242,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// - Returns: A ``ViewStoreTask`` that represents the lifecycle of the effect executed when
   ///   sending the action.
   @discardableResult
-  public func send(_ action: Action) -> ViewStoreTask {
+  public func send(_ action: ViewAction) -> ViewStoreTask {
     .init(rawValue: self._send(action))
   }
 
@@ -170,7 +254,7 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///   - action: An action.
   ///   - animation: An animation.
   @discardableResult
-  public func send(_ action: Action, animation: Animation?) -> ViewStoreTask {
+  public func send(_ action: ViewAction, animation: Animation?) -> ViewStoreTask {
     withAnimation(animation) {
       self.send(action)
     }
@@ -247,9 +331,10 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///
   /// - Parameters:
   ///   - action: An action.
-  ///   - predicate: A predicate on `State` that determines for how long this method should suspend.
+  ///   - predicate: A predicate on `ViewState` that determines for how long this method should
+  ///                suspend.
   @MainActor
-  public func send(_ action: Action, while predicate: @escaping (State) -> Bool) async {
+  public func send(_ action: ViewAction, while predicate: @escaping (ViewState) -> Bool) async {
     let task = self.send(action)
     await withTaskCancellationHandler {
       await self.yield(while: predicate)
@@ -265,12 +350,13 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// - Parameters:
   ///   - action: An action.
   ///   - animation: The animation to perform when the action is sent.
-  ///   - predicate: A predicate on `State` that determines for how long this method should suspend.
+  ///   - predicate: A predicate on `ViewState` that determines for how long this method should
+  ///                suspend.
   @MainActor
   public func send(
-    _ action: Action,
+    _ action: ViewAction,
     animation: Animation?,
-    while predicate: @escaping (State) -> Bool
+    while predicate: @escaping (ViewState) -> Bool
   ) async {
     let task = withAnimation(animation) { self.send(action) }
     await withTaskCancellationHandler {
@@ -285,10 +371,10 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// If you want to suspend at the same time you send an action to the view store, use
   /// ``send(_:while:)``.
   ///
-  /// - Parameter predicate: A predicate on `State` that determines for how long this method should
-  ///   suspend.
+  /// - Parameter predicate: A predicate on `ViewState` that determines for how long this method
+  ///                        should suspend.
   @MainActor
-  public func yield(while predicate: @escaping (State) -> Bool) async {
+  public func yield(while predicate: @escaping (ViewState) -> Bool) async {
     if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
       _ = await self.publisher
         .values
@@ -344,8 +430,8 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///     sent to the store.
   /// - Returns: A binding.
   public func binding<Value>(
-    get: @escaping (State) -> Value,
-    send valueToAction: @escaping (Value) -> Action
+    get: @escaping (ViewState) -> Value,
+    send valueToAction: @escaping (Value) -> ViewAction
   ) -> Binding<Value> {
     ObservedObject(wrappedValue: self)
       .projectedValue[get: .init(rawValue: get), send: .init(rawValue: valueToAction)]
@@ -377,8 +463,8 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///   - action: The action to send when the binding is written to.
   /// - Returns: A binding.
   public func binding<Value>(
-    get: @escaping (State) -> Value,
-    send action: Action
+    get: @escaping (ViewState) -> Value,
+    send action: ViewAction
   ) -> Binding<Value> {
     self.binding(get: get, send: { _ in action })
   }
@@ -409,8 +495,8 @@ public final class ViewStore<State, Action>: ObservableObject {
   ///     sent to the store.
   /// - Returns: A binding.
   public func binding(
-    send valueToAction: @escaping (State) -> Action
-  ) -> Binding<State> {
+    send valueToAction: @escaping (ViewState) -> ViewAction
+  ) -> Binding<ViewState> {
     self.binding(get: { $0 }, send: valueToAction)
   }
 
@@ -437,27 +523,62 @@ public final class ViewStore<State, Action>: ObservableObject {
   /// - Parameters:
   ///   - action: The action to send when the binding is written to.
   /// - Returns: A binding.
-  public func binding(send action: Action) -> Binding<State> {
+  public func binding(send action: ViewAction) -> Binding<ViewState> {
     self.binding(send: { _ in action })
   }
 
   private subscript<Value>(
-    get state: HashableWrapper<(State) -> Value>,
-    send action: HashableWrapper<(Value) -> Action>
+    get state: HashableWrapper<(ViewState) -> Value>,
+    send action: HashableWrapper<(Value) -> ViewAction>
   ) -> Value {
     get { state.rawValue(self.state) }
     set { self.send(action.rawValue(newValue)) }
   }
 }
 
-extension ViewStore where State: Equatable {
-  public convenience init(_ store: Store<State, Action>) {
+extension ViewStore where ViewState: Equatable {
+  public convenience init<State>(
+    _ store: Store<State, ViewAction>,
+    observe toViewState: @escaping (State) -> ViewState
+  ) {
+    self.init(store, observe: toViewState, removeDuplicates: ==)
+  }
+
+  public convenience init<State, Action>(
+    _ store: Store<State, Action>,
+    observe toViewState: @escaping (State) -> ViewState,
+    send fromViewAction: @escaping (ViewAction) -> Action
+  ) {
+    self.init(store, observe: toViewState, send: fromViewAction, removeDuplicates: ==)
+  }
+
+  @available(
+    iOS,
+    deprecated: 9999.0,
+    message: "Use 'init(_:observe:)' to make state observation explicit."
+  )
+  @available(
+    macOS,
+    deprecated: 9999.0,
+    message: "Use 'init(_:observe:)' to make state observation explicit."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999.0,
+    message: "Use 'init(_:observe:)' to make state observation explicit."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999.0,
+    message: "Use 'init(_:observe:)' to make state observation explicit."
+  )
+  public convenience init(_ store: Store<ViewState, ViewAction>) {
     self.init(store, removeDuplicates: ==)
   }
 }
 
-extension ViewStore where State == Void {
-  public convenience init(_ store: Store<Void, Action>) {
+extension ViewStore where ViewState == Void {
+  public convenience init(_ store: Store<Void, ViewAction>) {
     self.init(store, removeDuplicates: ==)
   }
 }

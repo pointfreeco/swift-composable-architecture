@@ -268,13 +268,13 @@ extension BindableAction {
   }
 }
 
-extension ViewStore where Action: BindableAction, Action.State == State {
+extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
   /// Returns a binding to the resulting bindable state of a given key path.
   ///
   /// - Parameter keyPath: A key path to a specific bindable state.
   /// - Returns: A new binding.
   public func binding<Value: Equatable>(
-    _ keyPath: WritableKeyPath<State, BindableState<Value>>,
+    _ keyPath: WritableKeyPath<ViewState, BindableState<Value>>,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -284,14 +284,14 @@ extension ViewStore where Action: BindableAction, Action.State == State {
       send: { value in
         #if DEBUG
           let debugger = BindableActionViewStoreDebugger(
-            value: value, bindableActionType: Action.self, file: file, fileID: fileID, line: line
+            value: value, bindableActionType: ViewAction.self, file: file, fileID: fileID, line: line
           )
-          let set: (inout State) -> Void = {
+          let set: (inout ViewState) -> Void = {
             $0[keyPath: keyPath].wrappedValue = value
             debugger.wasCalled = true
           }
         #else
-          let set: (inout State) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
+          let set: (inout ViewState) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
         #endif
         return .binding(.init(keyPath: keyPath, set: set, value: value))
       }
