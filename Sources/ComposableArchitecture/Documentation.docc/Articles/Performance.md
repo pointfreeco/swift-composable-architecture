@@ -97,7 +97,9 @@ struct AppView: View {
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
-      TabView(selection: viewStore.binding(send: AppAction.tabSelected) {
+      TabView(
+        selection: viewStore.binding(state: \.selectedTab, send: AppAction.tabSelected
+      ) {
         ActivityView(
           store: self.store.scope(state: \.activity, action: AppAction.activity)
         )
