@@ -113,7 +113,7 @@ extension TBCTestStore where LocalState: Equatable {
         case let .exhaustive(store):
             store.send(action, update, file: file, line: line)
         case let .nonExhaustive(store):
-            store.send(action, file: file, line: line, update)
+            store.send(action, update, file: file, line: line)
         }
     }
 
@@ -129,7 +129,7 @@ extension TBCTestStore where LocalState: Equatable {
         case let .exhaustive(store):
             return await TBCTestStoreTask(store.send(action, update, file: file, line: line))
         case let .nonExhaustive(store):
-            return TBCTestStoreTask(store.send(action, file: file, line: line, update))
+            return await TBCTestStoreTask(store.send(action, update, file: file, line: line))
         }
     }
 
@@ -142,8 +142,8 @@ extension TBCTestStore where LocalState: Equatable {
         switch storeImplementation {
         case let .exhaustive(store):
             return await store.finish(timeout: nanoseconds, file: file, line: line)
-        case .nonExhaustive:
-            return
+        case let .nonExhaustive(store):
+            return await store.finish(timeout: nanoseconds, file: file, line: line)
         }
     }
 }
@@ -179,7 +179,7 @@ extension TBCTestStore where LocalState: Equatable, Action: Equatable {
         case let .exhaustive(store):
             store.receive(expectedAction, update, file: file, line: line)
         case let .nonExhaustive(store):
-            store.receive(expectedAction, file: file, line: line, update)
+            store.receive(expectedAction, update, file: file, line: line)
         }
     }
 
@@ -194,7 +194,7 @@ extension TBCTestStore where LocalState: Equatable, Action: Equatable {
         case let .exhaustive(store):
             return await store.receive(expectedAction, update, file: file, line: line)
         case let .nonExhaustive(store):
-            store.receive(expectedAction, file: file, line: line, update)
+            return await store.receive(expectedAction, update, file: file, line: line)
         }
     }
 }
