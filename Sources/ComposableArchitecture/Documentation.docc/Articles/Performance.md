@@ -128,7 +128,7 @@ the state the view needs. In this case the view only needs a single field:
 
 ```swift
 WithViewStore(self.store, observe: \.selectedTab) { viewStore in
-  TabView(selection: viewStore.binding(send: AppAction.tabSelected) {
+  TabView(selection: viewStore.binding(send: AppAction.tabSelected)) {
     // ...
   }
 }
