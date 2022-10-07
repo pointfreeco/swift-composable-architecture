@@ -39,10 +39,7 @@
       self.store = Store(
         initialState: initialState,
         reducer: Reducer<State, TCATestStoreType.TestAction, Void> { [weak self] state, action, _ in
-          guard let self = self else {
-            XCTFail("Received an action after store was \(Self.self) was already gone.")
-            return .none
-          }
+          guard let self = self else { return .none }
           let effects: Effect<Action, Never>
           switch action.origin {
           case let .send(localAction):
@@ -323,7 +320,7 @@
       /// - Parameter duration: The amount of time to wait before asserting.
       @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
       @MainActor
-      public func finish(
+      func finish(
         timeout duration: Duration? = nil,
         file: StaticString = #file,
         line: UInt = #line
