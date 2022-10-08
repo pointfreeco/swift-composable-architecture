@@ -96,7 +96,7 @@ public struct ForEachStore<
   where
     Data == IdentifiedArray<ID, EachState>,
     Content == WithViewStore<
-      OrderedSet<ID>, (ID, EachAction), ForEach<OrderedSet<ID>, ID, EachContent>
+      OrderedSet<ID>, (ID, EachAction), ForEach<OrderedSet<ID>, ID, Row<EachState, EachAction, EachContent>>
     >
   {
     self.data = store.state.value
@@ -106,21 +106,33 @@ public struct ForEachStore<
         observe: { $0.ids },
         removeDuplicates: areOrderedSetsDuplicates
       ) { viewStore in
-        ForEach(viewStore.state, id: \.self) { id -> EachContent in
+        ForEach(viewStore.state, id: \.self) { id -> Row<EachState, EachAction, EachContent> in
           // NB: We cache elements here to avoid a potential crash where SwiftUI may re-evaluate
           //     views for elements no longer in the collection.
           //
           // Feedback filed: https://gist.github.com/stephencelis/cdf85ae8dab437adc998fb0204ed9a6b
           var element = store.state.value[id: id]!
-          return content(
-            store.scope(
+
+          return Row(
+            store: store.scope(
               state: {
                 element = $0[id: id] ?? element
                 return element
               },
               action: { (id, $0) }
-            )
+            ),
+            content: content
           )
+
+//          return content(
+//            store.scope(
+//              state: {
+//                element = $0[id: id] ?? element
+//                return element
+//              },
+//              action: { (id, $0) }
+//            )
+//          )
         }
       }
     }
@@ -130,6 +142,23 @@ public struct ForEachStore<
     self.content()
   }
 }
+
+public struct Row<EachState, EachAction, EachContent: View>: View {
+  @StateObject var store: StoreObservableObject<EachState, EachAction>
+  let content: (Store<EachState, EachAction>) -> EachContent
+
+  init(
+    store: Store<EachState, EachAction>,
+    content: @escaping (Store<EachState, EachAction>) -> EachContent
+  ) {
+    self.content = content
+    self._store = .init(wrappedValue: .init(store: store))
+  }
+  public var body: some View {
+    self.content(self.store.wrappedValue)
+  }
+}
+
 
 private func areOrderedSetsDuplicates<ID: Hashable>(lhs: OrderedSet<ID>, rhs: OrderedSet<ID>)
   -> Bool
