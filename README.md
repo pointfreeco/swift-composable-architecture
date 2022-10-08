@@ -397,11 +397,13 @@ struct NumberFactClient {
 }
 ```
 
-And then registering that type with the dependency management system, which is quite similar to how SwiftUI's environment values works, except you specify the live implementation of the dependency to be used by default:
+And then registering that type with the dependency management system by conforming the client to
+the `DependencyKey` protocol, which requires you to specify the live value to use when running the
+application in simulators or devices:
 
 ```swift
-private enum NumberFactClientKey: DependencyKey {
-  static let liveValue = NumberFactClient(
+extension NumberFactClient: DependencyKey {
+  static let liveValue = Self(
     fetch: {
       let (data, _) = try await URLSession.shared
         .data(from: .init(string: "http://numbersapi.com/\(number)")!)
@@ -412,8 +414,8 @@ private enum NumberFactClientKey: DependencyKey {
 
 extension DependencyValues {
   var numberFact: NumberFactClient {
-    get { self[NumberFactClientKey.self] }
-    set { self[NumberFactClientKey.self] = newValue }
+    get { self[NumberFactClient.self] }
+    set { self[NumberFactClient.self] = newValue }
   }
 }
 ```
