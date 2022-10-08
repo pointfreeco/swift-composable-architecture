@@ -36,9 +36,9 @@ This library provides a few core tools that can be used to build applications of
 
 ## Learn More
 
-The Composable Architecture was designed over the course of many episodes on [Point-Free](https://www.pointfree.co), a video series exploring functional programming and the Swift language, hosted by [Brandon Williams](https://twitter.com/mbrandonw) and [Stephen Celis](https://twitter.com/stephencelis).
+The Composable Architecture was designed over the course of many episodes on [Point-Free][pointfreeco], a video series exploring functional programming and the Swift language, hosted by [Brandon Williams][mbrandonw] and [Stephen Celis][stephencelis].
 
-You can watch all of the episodes [here](https://www.pointfree.co/collections/composable-architecture), as well as a dedicated, multipart tour of the architecture from scratch: [part 1](https://www.pointfree.co/collections/composable-architecture/a-tour-of-the-composable-architecture/ep100-a-tour-of-the-composable-architecture-part-1), [part 2](https://www.pointfree.co/collections/composable-architecture/a-tour-of-the-composable-architecture/ep101-a-tour-of-the-composable-architecture-part-2), [part 3](https://www.pointfree.co/collections/composable-architecture/a-tour-of-the-composable-architecture/ep102-a-tour-of-the-composable-architecture-part-3) and [part 4](https://www.pointfree.co/collections/composable-architecture/a-tour-of-the-composable-architecture/ep103-a-tour-of-the-composable-architecture-part-4).
+You can watch all of the episodes [here][tca-episode-collection], as well as a dedicated, [multipart tour][tca-tour] of the architecture from scratch.
 
 <a href="https://www.pointfree.co/collections/composable-architecture">
   <img alt="video poster image" src="https://d3rccdn33rt8ze.cloudfront.net/episodes/0069.jpeg" width="600">
@@ -64,7 +64,7 @@ This repo comes with _lots_ of examples to demonstrate how to solve common and c
 * [Todos](./Examples/Todos)
 * [Voice memos](./Examples/VoiceMemos)
 
-Looking for something more substantial? Check out the source code for [isowords](https://github.com/pointfreeco/isowords), an iOS word search game built in SwiftUI and the Composable Architecture.
+Looking for something more substantial? Check out the source code for [isowords][gh-isowords], an iOS word search game built in SwiftUI and the Composable Architecture.
 
 ## Basic Usage
 
@@ -277,6 +277,8 @@ And that is enough to get something on the screen to play around with. It's defi
 
 ### Testing
 
+> For more in-depth information on testing, see the dedicated [testing][testing-article] article. 
+
 To test use a `TestStore`, which can be created with the same information as the `Store`, but it does extra work to allow you to assert how your feature evolves as actions are sent:
 
 ```swift
@@ -306,8 +308,8 @@ Further, if a step causes an effect to be executed, which feeds data back into t
 ```swift
 await store.send(.numberFactButtonTapped)
 
-await store.receive(.numberFactResponse(.success("???"))) {
-  $0.numberFactAlert = "???"
+await store.receive(.numberFactResponse(.success(???))) {
+  $0.numberFactAlert = ???
 }
 ```
 
@@ -385,6 +387,8 @@ await store.send(.factAlertDismissed) {
 
 We can also improve the ergonomics of using the `numberFact` dependency in our application. Over time the application may evolve into many features, and some of those features may also want access to `numberFact`, and explicitly passing it through all layers can get annoying. There is a process you can follow to “register” dependencies with the library, making them instantly available to any layer in the application.
 
+> For more in-depth information on dependency management, see the dedicated [dependencies][dependencies-article] article. 
+
 We can start by wrapping the number fact functionality in a new type:
 
 ```swift
@@ -458,32 +462,6 @@ store.dependencies.numberFact.fetch = { "\($0) is a good number Brent" }
 
 That is the basics of building and testing a feature in the Composable Architecture. There are _a lot_ more things to be explored, such as composition, modularity, adaptability, and complex effects. The [Examples](./Examples) directory has a bunch of projects to explore to see more advanced usages.
 
-### Debugging
-
-The Composable Architecture comes with a number of tools to aid in debugging.
-
-* `.debug()` enhances a reducer with debug-printing that describes every action the reducer receives and every mutation it makes to state.
-
-    ``` diff
-    received action:
-      AppAction.todoCheckboxTapped(id: UUID(5834811A-83B4-4E5E-BCD3-8A38F6BDCA90))
-      Todos.State(
-        todos: [
-          Todo(
-    -       isComplete: false,
-    +       isComplete: true,
-            description: "Milk",
-            id: 5834811A-83B4-4E5E-BCD3-8A38F6BDCA90
-          ),
-          … (2 unchanged)
-        ]
-      )
-    ```
-
-* `.signpost()` instruments a reducer with signposts so that you can gain insight into how long actions take to execute, and when effects are running.
-
-    <img src="https://s3.amazonaws.com/pointfreeco-production/point-free-pointers/0044-signposts-cover.jpg" width="600">
-
 ## Documentation
 
 The documentation for releases and `main` are available here:
@@ -498,6 +476,8 @@ The documentation for releases and `main` are available here:
   * [0.40.2](https://pointfreeco.github.io/swift-composable-architecture/0.40.2/documentation/composablearchitecture/)
   * [0.39.0](https://pointfreeco.github.io/swift-composable-architecture/0.39.0/documentation/composablearchitecture/)
   * [0.38.0](https://pointfreeco.github.io/swift-composable-architecture/0.38.0/documentation/composablearchitecture/)
+  </summary>
+</details>
 
 ## Installation
 
@@ -509,20 +489,9 @@ You can add ComposableArchitecture to an Xcode project by adding it as a package
       - If you have a single application target that needs access to the library, then add **ComposableArchitecture** directly to your application.
       - If you want to use this library from multiple Xcode targets, or mixing Xcode targets and SPM targets, you must create a shared framework that depends on **ComposableArchitecture** and then depend on that framework in all of your targets. For an example of this, check out the [Tic-Tac-Toe](./Examples/TicTacToe) demo application, which splits lots of features into modules and consumes the static library in this fashion using the **tic-tac-toe** Swift package.
 
-* [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture)
-* [0.40.0](https://pointfreeco.github.io/swift-composable-architecture/0.40.0/documentation/composablearchitecture/)
-<details>
-  <summary>
-  Past versions
-  </summary>
-
-  * [0.39.0](https://pointfreeco.github.io/swift-composable-architecture/0.39.0/documentation/composablearchitecture/)
-  * [0.38.0](https://pointfreeco.github.io/swift-composable-architecture/0.38.0/documentation/composablearchitecture/)
-</details>
-
 ## Help
 
-If you want to discuss the Composable Architecture or have a question about how to use it to solve a particular problem, you can start a topic in the [discussions](https://github.com/pointfreeco/swift-composable-architecture/discussions) tab of this repo, or ask around on [its Swift forum](https://forums.swift.org/c/related-projects/swift-composable-architecture).
+If you want to discuss the Composable Architecture or have a question about how to use it to solve a particular problem, you can start a topic in the [discussions][gh-discussions] tab of this repo, or ask around on [its Swift forum][swift-forum].
 
 ## Translations
 
@@ -558,7 +527,7 @@ If you'd like to contribute a translation, please [open a PR](https://github.com
 
 The following people gave feedback on the library at its early stages and helped make the library what it is today:
 
-Paul Colton, Kaan Dedeoglu, Matt Diephouse, Josef Doležal, Eimantas, Matthew Johnson, George Kaimakas, Nikita Leonov, Christopher Liscio, Jeffrey Macko, Alejandro Martinez, Shai Mishali, Willis Plummer, Simon-Pierre Roy, Justin Price, Sven A. Schmidt, Kyle Sherman, Petr Šíma, Jasdev Singh, Maxim Smirnov, Ryan Stone, Daniel Hollis Tavares, and all of the [Point-Free](https://www.pointfree.co) subscribers 😁.
+Paul Colton, Kaan Dedeoglu, Matt Diephouse, Josef Doležal, Eimantas, Matthew Johnson, George Kaimakas, Nikita Leonov, Christopher Liscio, Jeffrey Macko, Alejandro Martinez, Shai Mishali, Willis Plummer, Simon-Pierre Roy, Justin Price, Sven A. Schmidt, Kyle Sherman, Petr Šíma, Jasdev Singh, Maxim Smirnov, Ryan Stone, Daniel Hollis Tavares, and all of the [Point-Free][pointfreeco] subscribers 😁.
 
 Special thanks to [Chris Liscio](https://twitter.com/liscio) who helped us work through many strange SwiftUI quirks and helped refine the final API.
 
@@ -587,3 +556,14 @@ There are also many architecture libraries in the Swift and iOS community. Each 
 ## License
 
 This library is released under the MIT license. See [LICENSE](LICENSE) for details.
+
+[pointfreeco]: https://www.pointfree.co
+[mbrandonw]: https://twitter.com/mbrandonw
+[stephencelis]: https://twitter.com/stephencelis
+[tca-episode-collection]: https://www.pointfree.co/collections/composable-architecture
+[tca-tour]: https://www.pointfree.co/collections/tours/composable-architecture
+[gh-isowords]: https://github.com/pointfreeco/isowords
+[gh-discussions]: https://github.com/pointfreeco/swift-composable-architecture/discussions
+[swift-forum]: https://forums.swift.org/c/related-projects/swift-composable-architecture
+[testing-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/testing
+[dependencies-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/dependencymanagement
