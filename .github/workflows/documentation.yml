@@ -69,9 +69,9 @@ jobs:
           rm -rf docs-out/.git;
           rm -rf docs-out/main;
           rm -rf docs-out/protocol-beta;
-          git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.\d" | tail -n +6 | xargs -I {} rm -rf docs-out/{};
+          git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | tail -n +6 | xargs -I {} rm -rf docs-out/{};
 
-          for tag in $(echo "main"; echo "protocol-beta"; git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.\d" | head -6);
+          for tag in $(echo "main"; echo "protocol-beta"; git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | head -6);
           do
             echo "⏳ Generating documentation for "$tag" release.";
 
