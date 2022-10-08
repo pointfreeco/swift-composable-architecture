@@ -244,6 +244,7 @@ public struct DependencyValues: Sendable {
         case .live:
           guard let value = _liveValue(Key.self) as? Key.Value
           else {
+            // TODO: add test coverage to this logic
             if !Self.isSetting {
               var dependencyDescription = ""
               if

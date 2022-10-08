@@ -481,6 +481,18 @@ The documentation for releases and `main` are available here:
   </summary>
 </details>
 
+<br>
+
+There are a number of articles in the documentation that you may find helpful as you become more comfortable with the library:
+
+* [Getting started][getting-started-article]
+* [Dependency management][dependencies-article]
+* [Testing][testing-article]
+* [Performance][performance-article]
+* [Concurrency][concurrency-article]
+* [Bindings][bindings-article]
+* [Migrating to the reducer protocol][migrating-article]
+
 ## Installation
 
 You can add ComposableArchitecture to an Xcode project by adding it as a package dependency.
@@ -569,3 +581,8 @@ This library is released under the MIT license. See [LICENSE](LICENSE) for detai
 [swift-forum]: https://forums.swift.org/c/related-projects/swift-composable-architecture
 [testing-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/testing
 [dependencies-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/dependencymanagement
+[getting-started-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/gettingstarted
+[performance-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance
+[concurrency-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/swiftconcurrency
+[bindings-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/bindings
+[migrating-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingtothereducerprotocol
