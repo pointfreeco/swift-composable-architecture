@@ -41,7 +41,7 @@ The Composable Architecture was designed over the course of many episodes on [Po
 You can watch all of the episodes [here][tca-episode-collection], as well as a dedicated, [multipart tour][tca-tour] of the architecture from scratch.
 
 <a href="https://www.pointfree.co/collections/composable-architecture">
-  <img alt="video poster image" src="https://d3rccdn33rt8ze.cloudfront.net/episodes/0069.jpeg" width="600">
+  <img alt="video poster image" src="https://i.vimeocdn.com/video/1492464398-1f5189a415136097aabf5b0b4845928bbb5d425a149069e4e0a848b67618a6f3-d?mw=1900&mh=1069&q=70" width="600">
 </a>
 
 ## Examples
