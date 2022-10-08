@@ -81,9 +81,7 @@ public struct DependencyValues: Sendable {
   public static func withValue<Value, R>(
     _ keyPath: WritableKeyPath<DependencyValues, Value>,
     _ value: Value,
-    operation: () throws -> R,
-    file: String = #fileID,
-    line: UInt = #line
+    operation: () throws -> R
   ) rethrows -> R {
     try Self.$isSetting.withValue(true) {
       var dependencies = Self._current
@@ -114,9 +112,7 @@ public struct DependencyValues: Sendable {
   public static func withValue<Value, R>(
     _ keyPath: WritableKeyPath<DependencyValues, Value>,
     _ value: Value,
-    operation: () async throws -> R,
-    file: String = #fileID,
-    line: UInt = #line
+    operation: () async throws -> R
   ) async rethrows -> R {
     try await Self.$isSetting.withValue(true) {
       var dependencies = Self._current
@@ -142,15 +138,13 @@ public struct DependencyValues: Sendable {
   /// ```
   ///
   /// - Parameters:
-  ///   - updateForOperation: A closure for updating the current dependency values for the duration
-  ///     of the operation.
+  ///   - updateValuesForOperation: A closure for updating the current dependency values for the
+  ///     duration of the operation.
   ///   - operation: An operation to perform wherein dependencies have been overridden.
   /// - Returns: The result returned from `operation`.
   public static func withValues<R>(
     _ updateValuesForOperation: (inout Self) throws -> Void,
-    operation: () throws -> R,
-    file: String = #fileID,
-    line: UInt = #line
+    operation: () throws -> R
   ) rethrows -> R {
     try Self.$isSetting.withValue(true) {
       var dependencies = Self._current
@@ -176,15 +170,13 @@ public struct DependencyValues: Sendable {
   /// ```
   ///
   /// - Parameters:
-  ///   - updateForOperation: A closure for updating the current dependency values for the duration
-  ///     of the operation.
+  ///   - updateValuesForOperation: A closure for updating the current dependency values for the
+  ///     duration of the operation.
   ///   - operation: An operation to perform wherein dependencies have been overridden.
   /// - Returns: The result returned from `operation`.
   public static func withValues<R>(
     _ updateValuesForOperation: (inout Self) async throws -> Void,
-    operation: () async throws -> R,
-    file: String = #fileID,
-    line: UInt = #line
+    operation: () async throws -> R
   ) async rethrows -> R {
     try await Self.$isSetting.withValue(true) {
       var dependencies = Self._current
