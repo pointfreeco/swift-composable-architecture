@@ -96,7 +96,7 @@
   /// ```
   ///
   /// > Note: This sample emulates a timer by performing an infinite loop with a `Task.sleep`
-  /// inside. This is simple to do, but is also inaccurate since small impercisions can accumulate.
+  /// inside. This is simple to do, but is also inaccurate since small imprecisions can accumulate.
   /// It would be better to inject a Combine scheduler into the feature and use its async-friendly
   /// `timer` method. Read the <doc:DependencyManagement> and <doc:Testing> articles for more
   /// information.
