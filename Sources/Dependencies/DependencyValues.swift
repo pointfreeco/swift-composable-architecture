@@ -61,8 +61,85 @@ public struct DependencyValues: Sendable {
   @TaskLocal static var isSetting = false
   @TaskLocal static var currentDependency = CurrentDependency()
 
-  /// Binds the task-local dependencies to the updated value for the duration of the synchronous
-  /// operation.
+  /// Updates a single dependency for the duration of a synchronous operation.
+  ///
+  /// For example, if you wanted to force the ``DependencyValues/date`` dependency to be a
+  /// particular date, you can do:
+  ///
+  /// ```swift
+  /// DependencyValues.withValue(\.date.now, Date(timeIntervalSince1970: 1234567890)) {
+  ///   // References to date in here are pinned to 1234567890.
+  /// }
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - keyPath: A key path that indicates the property of the `DependencyValues` structure to
+  ///     update.
+  ///   - value: The new value to set for the item specified by `keyPath`.
+  ///   - operation: The operation to run with the updated dependencies.
+  /// - Returns: The result returned from `operation`.
+  public static func withValue<Value, R>(
+    _ keyPath: WritableKeyPath<DependencyValues, Value>,
+    _ value: Value,
+    operation: () throws -> R,
+    file: String = #fileID,
+    line: UInt = #line
+  ) rethrows -> R {
+    try Self.$isSetting.withValue(true) {
+      var dependencies = Self._current
+      dependencies[keyPath: keyPath] = value
+      return try Self.$_current.withValue(dependencies) {
+        try operation()
+      }
+    }
+  }
+
+  /// Updates a single dependency for the duration of an asynchronous operation.
+  ///
+  /// For example, if you wanted to force the ``DependencyValues/date`` dependency to be a
+  /// particular date, you can do:
+  ///
+  /// ```swift
+  /// await DependencyValues.withValue(\.date.now, Date(timeIntervalSince1970: 1234567890)) {
+  ///   // References to date in here are pinned to 1234567890.
+  /// }
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - keyPath: A key path that indicates the property of the `DependencyValues` structure to
+  ///     update.
+  ///   - value: The new value to set for the item specified by `keyPath`.
+  ///   - operation: The operation to run with the updated dependencies.
+  /// - Returns: The result returned from `operation`.
+  public static func withValue<Value, R>(
+    _ keyPath: WritableKeyPath<DependencyValues, Value>,
+    _ value: Value,
+    operation: () async throws -> R,
+    file: String = #fileID,
+    line: UInt = #line
+  ) async rethrows -> R {
+    try await Self.$isSetting.withValue(true) {
+      var dependencies = Self._current
+      dependencies[keyPath: keyPath] = value
+      return try await Self.$_current.withValue(dependencies) {
+        try await operation()
+      }
+    }
+  }
+
+  /// Updates the dependencies for the duration of a synchronous operation.
+  ///
+  /// Any mutations made to ``DependencyValues`` inside `updateValuesForOperation` will be visible
+  /// to everything executed in the operation. For example, if you wanted to force the
+  /// ``DependencyValues/date`` dependency to be a particular date, you can do:
+  ///
+  /// ```swift
+  /// DependencyValues.withValues {
+  ///   $0.date.now = Date(timeIntervalSince1970: 1234567890)
+  /// } operation: {
+  ///   // References to date in here are pinned to 1234567890.
+  /// }
+  /// ```
   ///
   /// - Parameters:
   ///   - updateForOperation: A closure for updating the current dependency values for the duration
@@ -84,8 +161,19 @@ public struct DependencyValues: Sendable {
     }
   }
 
-  /// Binds the task-local dependencies to the updated value for the duration of the asynchronous
-  /// operation.
+  /// Updates the dependencies for the duration of an asynchronous operation.
+  ///
+  /// Any mutations made to ``DependencyValues`` inside `updateValuesForOperation` will be visible
+  /// to everything executed in the operation. For example, if you wanted to force the
+  /// ``DependencyValues/date`` dependency to be a particular date, you can do:
+  ///
+  /// ```swift
+  /// await DependencyValues.withValues {
+  ///   $0.date.now = Date(timeIntervalSince1970: 1234567890)
+  /// } operation: {
+  ///   // References to date in here are pinned to 1234567890.
+  /// }
+  /// ```
   ///
   /// - Parameters:
   ///   - updateForOperation: A closure for updating the current dependency values for the duration

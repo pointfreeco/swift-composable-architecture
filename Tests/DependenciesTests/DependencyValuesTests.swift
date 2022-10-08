@@ -46,4 +46,41 @@ final class DependencyValuesTests: XCTestCase {
       }
     #endif
   }
+
+  func testWithValues() {
+    let date = DependencyValues.withValues {
+      $0.date.now = Date(timeIntervalSince1970: 1234567890)
+    } operation: {
+      @Dependency(\.date) var date
+      return date.now
+    }
+
+    let defaultDate = DependencyValues.withValues {
+      $0.context = .live
+    } operation: {
+      @Dependency(\.date) var date
+      return date.now
+    }
+
+    XCTAssertEqual(date, Date(timeIntervalSince1970: 1234567890))
+    XCTAssertNotEqual(
+      defaultDate,
+      Date(timeIntervalSince1970: 1234567890)
+    )
+  }
+
+  func testWithValue() {
+    DependencyValues.withValue(\.context, .live) {
+      let date = DependencyValues.withValue(\.date.now,  Date(timeIntervalSince1970: 1234567890)) {
+        @Dependency(\.date) var date
+        return date.now
+      }
+
+      XCTAssertEqual(date, Date(timeIntervalSince1970: 1234567890))
+      XCTAssertNotEqual(
+        DependencyValues._current.date.now,
+        Date(timeIntervalSince1970: 1234567890)
+      )
+    }
+  }
 }
