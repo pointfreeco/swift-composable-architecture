@@ -57,6 +57,9 @@ extension ReducerProtocol {
   /// }
   /// ```
   ///
+  /// See ``dependencies(_:)`` for a similar method that can modify multiple dependencies at once,
+  /// and allows you to inspect the current dependency when overriding.
+  ///
   /// - Parameters:
   ///   - keyPath: A key path that indicates the property of the `DependencyValues` structure to
   ///     update.
