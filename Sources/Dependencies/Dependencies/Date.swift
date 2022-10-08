@@ -8,7 +8,7 @@ import XCTestDynamicOverlay
     /// By default, a ``DateGenerator/live`` generator is supplied. When used from a `TestStore`, an
     /// ``DateGenerator/unimplemented`` generator is supplied, unless explicitly overridden.
     ///
-    /// You can access the current date from a reducer by introducing a `Dependency` property
+    /// You can access the current date from a feature by introducing a `Dependency` property
     /// wrapper to the generator's ``DateGenerator/now`` property:
     ///
     /// ```swift

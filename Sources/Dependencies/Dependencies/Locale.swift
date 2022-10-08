@@ -3,7 +3,7 @@ import XCTestDynamicOverlay
 
 #if swift(>=5.6)
   extension DependencyValues {
-    /// The current locale that reducers should use.
+    /// The current locale that features should use.
     ///
     /// By default, the locale returned from `Locale.autoupdatingCurrent` is supplied. When used
     /// from a `TestStore`, access will call to `XCTFail` when invoked, unless explicitly

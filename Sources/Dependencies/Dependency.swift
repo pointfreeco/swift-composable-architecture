@@ -1,7 +1,20 @@
 /// A property wrapper for accessing dependencies.
 ///
 /// All dependencies are stored in ``DependencyValues`` and one uses this property wrapper to
-/// gain access to a particular dependency. Typically it used to provide dependencies to reducers:
+/// gain access to a particular dependency. Typically it used to provide dependencies to features
+/// such as an observable object:
+///
+/// ```swift
+/// final class FeatureModel: ObservableObject {
+///   @Dependency(\.apiClient) var apiClient
+///   @Dependency(\.mainQueue) var mainQueue
+///   @Dependency(\.uuid) var uuid
+///
+///   // ...
+/// }
+/// ```
+///
+/// Or, if you are using the Composable Architecture:
 ///
 /// ```swift
 /// struct Feature: ReducerProtocol {
@@ -44,7 +57,7 @@ public struct Dependency<Value>: @unchecked Sendable {
   /// reflect:
   ///
   /// ```swift
-  /// struct Feature: ReducerProtocol {
+  /// final class FeatureModel: ObservableObject {
   ///   @Dependency(\.date) var date
   ///
   ///   // ...
