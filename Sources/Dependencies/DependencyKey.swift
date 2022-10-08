@@ -18,8 +18,8 @@ import XCTestDynamicOverlay
 /// ``liveValue``, instead.
 ///
 /// If you plan on separating your interface from your live implementation, conform to
-/// ``TestDependencyKey`` in your interface module, and extend this conformance to `DependencyKey`
-/// in your implementation module.
+/// ``TestDependencyKey`` in your interface module, and conform to `DependencyKey` in your
+/// implementation module.
 public protocol DependencyKey: TestDependencyKey {
   /// The live value for the dependency key.
   ///
