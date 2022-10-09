@@ -18,7 +18,7 @@ test-library:
 			-configuration $(CONFIG) \
 			-workspace ComposableArchitecture.xcworkspace \
 			-scheme $(SCHEME) \
-			-destination platform="$$platform"; \
+			-destination platform="$$platform" || exit 1; \
 	done;
 
 DOC_WARNINGS := $(shell xcodebuild clean docbuild \
