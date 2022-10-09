@@ -284,12 +284,12 @@ private protocol _ErrorMechanism {
 }
 
 extension _ErrorMechanism {
-  internal func _rethrowError() rethrows -> Never {
+  func _rethrowError() rethrows -> Never {
     _ = try _rethrowGet()
     fatalError()
   }
 
-  internal func _rethrowGet() rethrows -> Output {
+  func _rethrowGet() rethrows -> Output {
     return try get()
   }
 }

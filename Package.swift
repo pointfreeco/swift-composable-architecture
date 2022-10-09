@@ -18,7 +18,7 @@ let package = Package(
     .library(
       name: "Dependencies",
       targets: ["Dependencies"]
-    )
+    ),
   ],
   dependencies: [
     .package(name: "Benchmark", url: "https://github.com/google/swift-benchmark", from: "0.1.0"),
@@ -39,26 +39,12 @@ let package = Package(
         .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
         .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
       ]
-//      ,
-//      swiftSettings: [
-//        .unsafeFlags([
-//          "-Xfrontend", "-warn-concurrency",
-//          "-Xfrontend", "-enable-actor-data-race-checks",
-//        ])
-//      ]
     ),
     .testTarget(
       name: "ComposableArchitectureTests",
       dependencies: [
         "ComposableArchitecture"
       ]
-      //      ,
-      //      swiftSettings: [
-      //        .unsafeFlags([
-      //          "-Xfrontend", "-warn-concurrency",
-      //          "-Xfrontend", "-enable-actor-data-race-checks",
-      //        ])
-      //      ]
     ),
     .target(
       name: "Dependencies",
@@ -71,7 +57,7 @@ let package = Package(
       name: "DependenciesTests",
       dependencies: [
         "ComposableArchitecture",
-        "Dependencies"
+        "Dependencies",
       ]
     ),
     .executableTarget(
@@ -83,6 +69,16 @@ let package = Package(
     ),
   ]
 )
+
+for target in package.targets {
+  target.swiftSettings = target.swiftSettings ?? []
+  target.swiftSettings?.append(
+    .unsafeFlags([
+       //"-Xfrontend", "-warn-concurrency",
+       //"-Xfrontend", "-enable-actor-data-race-checks",
+    ])
+  )
+}
 
 #if swift(>=5.6)
   // Add the documentation compiler plugin if possible

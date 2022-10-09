@@ -18,10 +18,17 @@ import XCTestDynamicOverlay
 /// ``liveValue``, instead.
 ///
 /// If you plan on separating your interface from your live implementation, conform to
-/// ``TestDependencyKey`` in your interface module, and extend this conformance to `DependencyKey`
-/// in your implementation module.
+/// ``TestDependencyKey`` in your interface module, and conform to `DependencyKey` in your
+/// implementation module.
 public protocol DependencyKey: TestDependencyKey {
   /// The live value for the dependency key.
+  ///
+  /// This is the value used by default when running the application in a simulator or on a device.
+  /// Using a live dependency in a test context will lead to a test failure as you should mock
+  /// your dependencies for tests.
+  ///
+  /// To automatically supply a test dependency in a test context, consider implementing the
+  /// ``testValue-535kh`` requirement.
   static var liveValue: Value { get }
 
   // NB: The associated type and requirements of TestDependencyKey are repeated in this protocol

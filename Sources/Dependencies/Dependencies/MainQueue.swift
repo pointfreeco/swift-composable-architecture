@@ -5,7 +5,7 @@
   extension DependencyValues {
     /// The "main" queue.
     ///
-    /// Introduce controllable timing to your reducer by using the ``Dependency`` property wrapper
+    /// Introduce controllable timing to your features by using the ``Dependency`` property wrapper
     /// with a key path to this property. The wrapped value is a Combine scheduler with the time
     /// type and options of a dispatch queue. By default, `DispatchQueue.main` will be provided,
     /// with the exception of a `TestStore`, in which an "unimplemented" scheduler will be provided.

@@ -3,20 +3,22 @@
 Learn how to improve the performance of features built in the Composable Architecture.
 
 As your features and application grow you may run into performance problems, such as reducers
-becoming slow to execute, SwiftUI view bodies executing more often than expected, and more.
-<!--memory usage growing.-->
+becoming slow to execute, SwiftUI view bodies executing more often than expected, and more. This
+article outlines a few common pitfalls when developing features in the library, and how to fix
+them.
 
 * [View stores](#View-stores)
+* [Sharing logic with actions](#Sharing-logic-with-actions)
 * [CPU-intensive calculations](#CPU-intensive-calculations)
 * [High-frequency actions](#High-frequency-actions)
 * [Compiler performance](#Compiler-performance)
-<!--* [Memory usage](#Memory-usage)-->
 
 ### View stores
 
-A common performance pitfall when using the library comes from constructing ``ViewStore``s. When 
-constructed naively, using either view store's initializer ``ViewStore/init(_:)-1pfeq`` or the 
-SwiftUI helper ``WithViewStore``, it will observe every change to state in the store:
+A common performance pitfall when using the library comes from constructing ``ViewStore``s, which
+is the object that observes changes to your feature's state. When constructed naively, using either 
+view store's initializer ``ViewStore/init(_:)-1pfeq`` or the SwiftUI helper ``WithViewStore``, it 
+will observe every change to state in the store:
 
 ```swift
 WithViewStore(self.store, observe: { $0 }) { viewStore in 
@@ -97,7 +99,9 @@ struct AppView: View {
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
-      TabView(selection: viewStore.binding(send: AppAction.tabSelected) {
+      TabView(
+        selection: viewStore.binding(state: \.selectedTab, send: AppAction.tabSelected
+      ) {
         ActivityView(
           store: self.store.scope(state: \.activity, action: AppAction.activity)
         )
@@ -126,7 +130,7 @@ the state the view needs. In this case the view only needs a single field:
 
 ```swift
 WithViewStore(self.store, observe: \.selectedTab) { viewStore in
-  TabView(selection: viewStore.binding(send: AppAction.tabSelected) {
+  TabView(selection: viewStore.binding(send: AppAction.tabSelected)) {
     // ...
   }
 }
@@ -201,6 +205,178 @@ what's necessary. If you are going to employ this technique you will get the mos
 applying it to views closer to the root. At leaf features and views that need access to most
 of the state, it is fine to continue using `observe: { $0 }` to observe all of the state in the 
 store.
+
+### Sharing logic with actions
+
+There is a common pattern of using actions to share logic across multiple parts of a reducer.
+This is an ineffecient way to share logic. Sending actions is not as lightweight of an operation
+as, say, caling a method on a class. Actions travel through multiple layers of an application, and 
+at each layer a reducer can intercept and reinterpret the action.
+
+It is far better to share logic via simple methods on your ``ReducerProtocol`` conformance.
+The helper methods can take `inout State` as an argument if it needs to make mutations, and it
+can return an `Effect<Action, Never>`. This allows you to share logic without incurring the cost
+of sending needless actions.
+
+For example, suppose that there are 3 UI components in your feature such that when any is changed
+you want to update the corresponding field of state, but then you also want to make some mutations
+and execute an effect. That common mutation and effect could be put into its own action and then
+each user action can return an effect that immediately emits that shared action:
+
+```swift
+struct Feature: ReducerProtocol {
+  struct State {
+    // ...
+  }
+  enum Action {
+    // ...
+  }
+
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    switch action {
+    case .buttonTapped:
+      state.count += 1
+      return Effect(value: .sharedComputation)
+
+    case .toggleChanged:
+      state.isEnabled.toggle()
+      return Effect(value: .sharedComputation)
+
+    case let .textFieldChanged(text):
+      state.description = = text
+      return Effect(value: .sharedComputation)
+
+    case .sharedComputation:
+      // Some shared work to compute something.
+      return .run { send in
+        // A shared effect to compute something
+      }
+    }
+  }
+}
+```
+
+This is one way of sharing the logic and effect, but we are now incurring the cost of two actions
+even though the user performed a single action. That is not going to be as efficient as it would
+be if only a single action was sent.
+
+Besides just performance concerns, there are two other reasons why you should not follow this 
+pattern. First, this style of sharing logic is not very flexible. Because the shared logic is 
+relegated to a separate action it must always be run after the initial logic. But what if
+instead you need to run some shared logic _before_ the core logic? This style cannot accomodate
+for that.
+
+Second, this style of sharing logic also muddies tests. When you send a user action you have to 
+further assert on receiving the shared action and assert on how state changed. This bloats tests
+with unnecessary internal details, and the test no longer reads as a script from top-to-bottom of
+actions the user is taking in the feature:
+
+```swift
+let store = TestStore(
+  initialState: Feature.State(), 
+  reducer: Feature()
+)
+
+store.send(.buttonTapped) {
+  $0.count = 1
+}
+store.receive(.sharedComputation) {
+  // Assert on shared logic
+}
+store.send(.toggleChnaged) {
+  $0.isEnabled = true
+}
+store.receive(.sharedComputation) {
+  // Assert on shared logic
+}
+store.send(.textFieldChanged("Hello") {
+  $0.description = "Hello"
+}
+store.receive(.sharedComputation) {
+  // Assert on shared logic
+}
+```
+
+So, we do not recommend sharing logic in a reducer by having dedicated actions for the logic
+and executing synchronous effects.
+
+Instead, we recommend sharing logic with methods defined in your feature's reducer. The method has
+full access to all depedencies, it can take an `inout State` if it needs to make mutations to 
+state, and it can return an `Effect<Action, Never>` if it needs to execute effects.
+
+The above example can be refactored like so:
+
+```swift
+struct Feature: ReducerProtocol {
+  struct State {
+    // ...
+  }
+  enum Action {
+    // ...
+  }
+
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    switch action {
+    case .buttonTapped:
+      state.count += 1
+      return self.sharedComputation(state: &state)
+
+    case .toggleChanged:
+      state.isEnabled.toggle()
+      return self.sharedComputation(state: &state)
+
+    case let .textFieldChanged(text):
+      state.description = = text
+      return self.sharedComputation(state: &state)
+    }
+  }
+
+  func sharedComputation(state: inout State) -> Effect<Action, Never> {
+    // Some shared work to compute something.
+    return .run { send in
+      // A shared effect to compute something
+    }
+  }
+}
+```
+
+This effectively works the same as before, but now when a user action is sent all logic is executed
+at once without sending an additional action. This also fixes the other problems we mentioned above.
+
+For example, if you need to execute the shared logic _before_ the core logic, you can do so easily:
+
+```swift
+case .buttonTapped:
+  let sharedEffect = self.sharedComputation(state: &state)
+  state.count += 1
+  return sharedEffect
+```
+
+You have complete flexibility to decide how, when and where you want to execute the shared logic.
+
+Further, tests become more streamlined since you do not have to assert on internal details of 
+shared actions being sent around. The test reads  like a user script of what the user is doing
+in the feature:
+
+```swift
+let store = TestStore(
+  initialState: Feature.State(), 
+  reducer: Feature()
+)
+
+store.send(.buttonTapped) {
+  $0.count = 1
+  // Assert on shared logic
+}
+store.send(.toggleChnaged) {
+  $0.isEnabled = true
+  // Assert on shared logic
+}
+store.send(.textFieldChanged("Hello") {
+  $0.description = "Hello"
+  // Assert on shared logic
+}
+```
 
 ### CPU intensive calculations
 

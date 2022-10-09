@@ -4,7 +4,7 @@ import XCTestDynamicOverlay
 extension DependencyValues {
   /// A dependency that generates UUIDs.
   ///
-  /// Introduce controllable UUID generation to your reducer by using the ``Dependency`` property
+  /// Introduce controllable UUID generation to your features by using the ``Dependency`` property
   /// wrapper with a key path to this property. The wrapped value is an instance of
   /// ``UUIDGenerator``, which can be called with a closure to create UUIDs. (It can be called
   /// directly because it defines ``UUIDGenerator/callAsFunction()``, which is called when you

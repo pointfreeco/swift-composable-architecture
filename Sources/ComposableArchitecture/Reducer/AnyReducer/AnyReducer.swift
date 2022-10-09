@@ -1,8 +1,8 @@
 import CasePaths
 import Combine
 
-/// This API has been soft-deprecated in favor of ``ReducerProtocol``. Read <doc:ReducerProtocol>
-/// for more information.
+/// This API has been soft-deprecated in favor of ``ReducerProtocol``.
+/// Read <doc:MigratingToTheReducerProtocol> for more information.
 ///
 /// A type alias to ``AnyReducer`` for source compatibility. This alias will be removed.
 @available(
@@ -51,8 +51,8 @@ import Combine
 )
 public typealias Reducer = AnyReducer
 
-/// This API has been soft-deprecated in favor of ``ReducerProtocol``. Read <doc:ReducerProtocol>
-/// for more information.
+/// This API has been soft-deprecated in favor of ``ReducerProtocol``.
+/// Read <doc:MigratingToTheReducerProtocol> for more information.
 ///
 /// A reducer describes how to evolve the current state of an application to the next state, given
 /// an action, and describes what ``Effect``s should be executed later by the store, if any.
@@ -109,8 +109,8 @@ public typealias Reducer = AnyReducer
 public struct AnyReducer<State, Action, Environment> {
   private let reducer: (inout State, Action, Environment) -> Effect<Action, Never>
 
-  /// > This API has been soft-deprecated in favor of ``ReducerProtocol``. Read <doc:ReducerProtocol>
-  /// for more information.
+  /// > This API has been soft-deprecated in favor of ``ReducerProtocol``.
+  /// Read <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// Initializes a reducer from a simple reducer function signature.
   ///
@@ -177,8 +177,8 @@ public struct AnyReducer<State, Action, Environment> {
     self.reducer = reducer
   }
 
-  /// This API has been soft-deprecated in favor of ``EmptyReducer``. Read <doc:ReducerProtocol>
-  /// for more information.
+  /// This API has been soft-deprecated in favor of ``EmptyReducer``.
+  /// Read <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// A reducer that performs no state mutations and returns no effects.
   @available(
@@ -218,7 +218,7 @@ public struct AnyReducer<State, Action, Environment> {
   }
 
   /// This API has been soft-deprecated in favor of combining reducers in a ``ReducerBuilder``. Read
-  /// <doc:ReducerProtocol> for more information.
+  /// <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// Combines many reducers into a single one by running each one on state in order, and merging
   /// all of the effects.
@@ -308,7 +308,7 @@ public struct AnyReducer<State, Action, Environment> {
   }
 
   /// This API has been soft-deprecated in favor of combining reducers in a ``ReducerBuilder``. Read
-  /// <doc:ReducerProtocol> for more information.
+  /// <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// Combines many reducers into a single one by running each one on state in order, and merging
   /// all of the effects.
@@ -358,7 +358,7 @@ public struct AnyReducer<State, Action, Environment> {
   }
 
   /// This API has been soft-deprecated in favor of combining reducers in a ``ReducerBuilder``. Read
-  /// <doc:ReducerProtocol> for more information.
+  /// <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// Combines the receiving reducer with one other reducer, running the second after the first and
   /// merging all of the effects.
@@ -408,8 +408,8 @@ public struct AnyReducer<State, Action, Environment> {
     }
   }
 
-  /// This API has been soft-deprecated in favor of ``Scope``. Read <doc:ReducerProtocol> for more
-  /// information.
+  /// This API has been soft-deprecated in favor of ``Scope``. Read
+  /// <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// Transforms a reducer that works on child state, action, and environment into one that works on
   /// parent state, action and environment. It accomplishes this by providing 3 transformations to
@@ -500,8 +500,8 @@ public struct AnyReducer<State, Action, Environment> {
 
   /// This API has been soft-deprecated in favor of
   /// ``ReducerProtocol/ifCaseLet(_:action:then:file:fileID:line:)`` and
-  /// ``Scope/init(state:action:_:file:fileID:line:)``. Read <doc:ReducerProtocol> for more
-  /// information.
+  /// ``Scope/init(state:action:_:file:fileID:line:)``. Read <doc:MigratingToTheReducerProtocol>
+  /// for more information.
   ///
   /// Transforms a reducer that works on child state, action, and environment into one that works on
   /// parent state, action and environment.
@@ -766,8 +766,8 @@ public struct AnyReducer<State, Action, Environment> {
   }
 
   /// This API has been soft-deprecated in favor of
-  /// ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)``. Read <doc:ReducerProtocol> for
-  /// more information.
+  /// ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)``. Read
+  /// <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// Transforms a reducer that works on non-optional state into one that works on optional state by
   /// only running the non-optional reducer when state is non-nil.
@@ -1003,8 +1003,8 @@ public struct AnyReducer<State, Action, Environment> {
   }
 
   /// This API has been soft-deprecated in favor of
-  /// ``ReducerProtocol/forEach(_:action:_:file:fileID:line:)``. Read <doc:ReducerProtocol> for
-  /// more information.
+  /// ``ReducerProtocol/forEach(_:action:_:file:fileID:line:)``. Read
+  /// <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// A version of ``pullback(state:action:environment:)`` that transforms a reducer that works on
   /// an element into one that works on an identified array of elements.
@@ -1209,7 +1209,7 @@ public struct AnyReducer<State, Action, Environment> {
   }
 
   /// This API has been soft-deprecated in favor of ``ReducerProtocol/reduce(into:action:)-4nzr2``.
-  /// Read <doc:ReducerProtocol> for more information.
+  /// Read <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// Runs the reducer.
   ///
@@ -1259,7 +1259,7 @@ public struct AnyReducer<State, Action, Environment> {
   }
 
   /// This API has been soft-deprecated in favor of ``ReducerProtocol/reduce(into:action:)-4nzr2``.
-  /// Read <doc:ReducerProtocol> for more information.
+  /// Read <doc:MigratingToTheReducerProtocol> for more information.
   @available(
     iOS,
     deprecated: 9999.0,
