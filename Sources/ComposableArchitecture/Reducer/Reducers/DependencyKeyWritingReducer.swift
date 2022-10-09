@@ -100,7 +100,6 @@ extension ReducerProtocol {
   /// - Parameter update: A closure that is handed a mutable instance of dependency values.
   @inlinable
   public func dependencies(_ update: @escaping (inout DependencyValues) -> Void)
-  // TODO: this isn't actually true, but we also can't use `some` until dropping support for swift 5.6
   // NB: We should not return `some ReducerProtocol<State, Action>` here. That would prevent the
   //     specialization defined below from being called, which fuses chained calls to `dependency`.
   -> _DependencyKeyWritingReducer<Self> {
