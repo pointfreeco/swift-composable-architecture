@@ -258,7 +258,7 @@ dependency you are registering is a type that you own, then you can conform it d
 protocol:
 
 ```swift
-private enum APIClient: DependencyKey {
+extension APIClient: DependencyKey {
   static let liveValue = APIClient.live
 }
 
