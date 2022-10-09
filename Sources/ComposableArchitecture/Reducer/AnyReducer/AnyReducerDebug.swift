@@ -3,7 +3,7 @@ import Dispatch
 
 extension AnyReducer {
   /// This API has been soft-deprecated in favor of ``ReducerProtocol/debug()``. Read
-  /// <doc:ReducerProtocol> for more information.
+  /// <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// Prints debug messages describing all received actions and state mutations.
   ///
@@ -61,7 +61,7 @@ extension AnyReducer {
   }
 
   /// The API that used this type has been soft-deprecated in favor of ``ReducerProtocol/debug()``.
-  /// Read <doc:ReducerProtocol> for more information.
+  /// Read <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// Prints debug messages describing all received actions.
   ///
@@ -119,7 +119,7 @@ extension AnyReducer {
   }
 
   /// This API has been soft-deprecated in favor of ``ReducerProtocol/debug()``. Read
-  /// <doc:ReducerProtocol> for more information.
+  /// <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// Prints debug messages describing all received actions and state mutations.
   ///
@@ -272,7 +272,7 @@ public enum ActionFormat: Sendable {
 }
 
 /// The API that used this type has been soft-deprecated in favor of
-/// ``ReducerProtocol/debug()`` Read <doc:ReducerProtocol> for more
+/// ``ReducerProtocol/debug()`` Read <doc:MigratingToTheReducerProtocol> for more
 /// information.
 ///
 /// An environment for debug-printing reducers.
