@@ -69,6 +69,7 @@ final class ReducerTests: XCTestCase {
     await mainQueue.advance(by: 1)
     XCTAssertEqual(fastValue, 42)
     XCTAssertEqual(slowValue, 1729)
+    await store.finish()
   }
 
   func testCombine() async {
