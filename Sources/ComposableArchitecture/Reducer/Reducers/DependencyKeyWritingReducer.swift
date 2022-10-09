@@ -57,8 +57,8 @@ extension ReducerProtocol {
   /// }
   /// ```
   ///
-  /// See ``dependencies(_:)`` for a similar method that can modify multiple dependencies at once,
-  /// and allows you to inspect the current dependency when overriding.
+  /// See ``transformDependency(_:transform:)`` for a similar method that can inspect and modify the
+  /// current dependency when overriding.
   ///
   /// - Parameters:
   ///   - keyPath: A key path that indicates the property of the `DependencyValues` structure to
@@ -71,15 +71,15 @@ extension ReducerProtocol {
     _ value: Value
   )
   // NB: We should not return `some ReducerProtocol<State, Action>` here. That would prevent the
-  //     specialization defined below from being called, which fuses chained calls to `dependency`.
+  //     specialization defined below from being called, which fuses chained calls.
   -> _DependencyKeyWritingReducer<Self> {
     _DependencyKeyWritingReducer(base: self) { $0[keyPath: keyPath] = value }
   }
 
-  /// Modifies a reducer's dependencies with a closure.
+  /// Transform a reducer's dependency value at the specified key path with the given function.
   ///
-  /// This is similar to ``dependency(_:_:)``, except it allows you to mutate all depependencies
-  /// at once. This can be handy when you want to alter a dependency but still use its current
+  /// This is similar to ``dependency(_:_:)``, except it allows you to mutate a dependency value
+  /// directly. This can be handy when you want to alter a dependency but still use its current
   /// value.
   ///
   /// For example, suppose you want to see when a particular endpoint of a dependency gets called
@@ -88,22 +88,28 @@ extension ReducerProtocol {
   ///
   /// ```swift
   ///   Feature()
-  ///     .dependencies { values in
-  ///       let current = speechClient.requestAuthorization
-  ///       values.speechClient.requestAuthorization = {
+  ///     .transformDependency(\.speechClient) { speechClient in
+  ///       speechClient.requestAuthorization = {
   ///         print("requestAuthorization")
-  /// 🔵      try await current()
+  ///         try await speechClient.requestAuthorization()
   ///       }
   ///     }
   /// ```
   ///
-  /// - Parameter update: A closure that is handed a mutable instance of dependency values.
+  /// - Parameters:
+  ///   - keyPath: A key path that indicates the property of the `DependencyValues` structure to
+  ///     transform.
+  ///   - transform: A closure that is handed a mutable instance of the value specified by the key
+  ///     path.
   @inlinable
-  public func dependencies(_ update: @escaping (inout DependencyValues) -> Void)
+  public func transformDependency<V>(
+    _ keyPath: WritableKeyPath<DependencyValues, V>,
+    transform: @escaping (inout V) -> Void
+  )
   // NB: We should not return `some ReducerProtocol<State, Action>` here. That would prevent the
-  //     specialization defined below from being called, which fuses chained calls to `dependency`.
+  //     specialization defined below from being called, which fuses chained calls.
   -> _DependencyKeyWritingReducer<Self> {
-    _DependencyKeyWritingReducer(base: self, update: update)
+    _DependencyKeyWritingReducer(base: self) { transform(&$0[keyPath: keyPath]) }
   }
 }
 
@@ -124,7 +130,7 @@ public struct _DependencyKeyWritingReducer<Base: ReducerProtocol>: ReducerProtoc
   public func reduce(
     into state: inout Base.State, action: Base.Action
   ) -> Effect<Base.Action, Never> {
-    return DependencyValues.withValues {
+    DependencyValues.withValues {
       self.update(&$0)
     } operation: {
       self.base.reduce(into: &state, action: action)
@@ -136,9 +142,17 @@ public struct _DependencyKeyWritingReducer<Base: ReducerProtocol>: ReducerProtoc
     _ keyPath: WritableKeyPath<DependencyValues, Value>,
     _ value: Value
   ) -> Self {
-    .init(base: self.base) { values in
+    Self(base: self.base) { values in
       values[keyPath: keyPath] = value
       self.update(&values)
     }
+  }
+
+  @inlinable
+  public func transformDependency<V>(
+    _ keyPath: WritableKeyPath<DependencyValues, V>,
+    transform: @escaping (inout V) -> Void
+  ) -> Self {
+    Self(base: self.base) { transform(&$0[keyPath: keyPath]) }
   }
 }
