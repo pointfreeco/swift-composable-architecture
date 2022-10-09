@@ -67,9 +67,9 @@ final class ReducerTests: XCTestCase {
     // Waiting one more second causes the slow effect to fire. This proves that the effects
     // are merged together, as opposed to concatenated.
     await mainQueue.advance(by: 1)
+    await store.finish()
     XCTAssertEqual(fastValue, 42)
     XCTAssertEqual(slowValue, 1729)
-    await store.finish()
   }
 
   func testCombine() async {
