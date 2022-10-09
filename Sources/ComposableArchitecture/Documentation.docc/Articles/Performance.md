@@ -3,21 +3,22 @@
 Learn how to improve the performance of features built in the Composable Architecture.
 
 As your features and application grow you may run into performance problems, such as reducers
-becoming slow to execute, SwiftUI view bodies executing more often than expected, and more.
-<!--memory usage growing.-->
+becoming slow to execute, SwiftUI view bodies executing more often than expected, and more. This
+article outlines a few common pitfalls when developing features in the library, and how to fix
+them.
 
 * [View stores](#View-stores)
 * [Sharing logic with actions](#Sharing-logic-with-actions)
 * [CPU-intensive calculations](#CPU-intensive-calculations)
 * [High-frequency actions](#High-frequency-actions)
 * [Compiler performance](#Compiler-performance)
-<!--* [Memory usage](#Memory-usage)-->
 
 ### View stores
 
-A common performance pitfall when using the library comes from constructing ``ViewStore``s. When 
-constructed naively, using either view store's initializer ``ViewStore/init(_:)-1pfeq`` or the 
-SwiftUI helper ``WithViewStore``, it will observe every change to state in the store:
+A common performance pitfall when using the library comes from constructing ``ViewStore``s, which
+is the object that observes changes to your feature's state. When constructed naively, using either 
+view store's initializer ``ViewStore/init(_:)-1pfeq`` or the SwiftUI helper ``WithViewStore``, it 
+will observe every change to state in the store:
 
 ```swift
 WithViewStore(self.store, observe: { $0 }) { viewStore in 
@@ -296,9 +297,12 @@ store.receive(.sharedComputation) {
 }
 ```
 
-The alternative to sharing logic with actions is to share it with methods in your feature reducer.
-The method can take an `inout State` if it needs to make mutations to state, and it can return
-an `Effect<Action, Never>`.
+So, we do not recommend sharing logic in a reducer by having dedicated actions for the logic
+and executing synchronous effects.
+
+Instead, we recommend sharing logic with methods defined in your feature's reducer. The method has
+full access to all depedencies, it can take an `inout State` if it needs to make mutations to 
+state, and it can return an `Effect<Action, Never>` if it needs to execute effects.
 
 The above example can be refactored like so:
 
@@ -335,9 +339,6 @@ struct Feature: ReducerProtocol {
   }
 }
 ```
-
-The `sharedComputation` method can also access any dependencies it needs since they are properties
-on the reducer.
 
 This effectively works the same as before, but now when a user action is sent all logic is executed
 at once without sending an additional action. This also fixes the other problems we mentioned above.
