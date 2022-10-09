@@ -73,12 +73,12 @@ jobs:
 
           for tag in $(echo "main"; echo "protocol-beta"; git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | head -6);
           do
-            echo "⏳ Generating documentation for "$tag" release.";
-
             if [ -d "docs-out/$tag" ] 
             then 
               echo "✅ Documentation for "$tag" already exists.";
             else 
+              echo "⏳ Generating documentation for "$target" @ "$tag" release.";
+
               for target in ComposableArchitecture Dependencies;
               do 
                 git checkout .;
@@ -105,8 +105,8 @@ jobs:
                     --transform-for-static-hosting \
                     --hosting-base-path /swift-composable-architecture/"$tag" \
                     --output-path docs-out/"$tag" \
-                    && echo "✅ Documentation generated for "$tag" release." \
-                    || echo "⚠️ Documentation skipped for "$tag".";
+                    && echo "✅ Documentation generated for "$target" @ "$tag" release." \
+                    || echo "⚠️ Documentation skipped for "$target" @ "$tag".";
               done;
             fi;
           done
