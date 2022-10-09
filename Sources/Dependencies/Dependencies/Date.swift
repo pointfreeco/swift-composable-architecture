@@ -8,18 +8,27 @@ import XCTestDynamicOverlay
     /// By default, a ``DateGenerator/live`` generator is supplied. When used from a `TestStore`, an
     /// ``DateGenerator/unimplemented`` generator is supplied, unless explicitly overridden.
     ///
-    /// You can access the current date from a feature by introducing a `Dependency` property
+    /// You can access the current date from a feature by introducing a ``Dependency`` property
     /// wrapper to the generator's ``DateGenerator/now`` property:
     ///
     /// ```swift
-    /// struct MyFeature: ReducerProtocol {
+    /// final class FeatureModel: ReducerProtocol {
     ///   @Dependency(\.date.now) var now
     ///   // ...
     /// }
     /// ```
     ///
-    /// To override the current date in tests, you can assign the generator's ``DateGenerator/now``
-    /// property:
+    /// To override the current date in tests, you can override the generator's
+    /// ``DateGenerator/now`` property using ``withValue(_:_:operation:)-705n``:
+
+    /// ```swift
+    /// DependencyValues.withValue(\.date.now, Date(timeIntervalSince1970: 0)) {
+    ///   // Assertions...
+    /// }
+    /// ```
+    ///
+    /// Or, if you are using the Composable Architecture, you can override dependencies directly
+    /// on the `TestStore`:
     ///
     /// ```swift
     /// let store = TestStore(
@@ -35,8 +44,11 @@ import XCTestDynamicOverlay
     }
 
     private enum DateGeneratorKey: DependencyKey {
-      static let liveValue: DateGenerator = .live
-      static let testValue: DateGenerator = .unimplemented
+      static let liveValue = DateGenerator { Date() }
+      static let testValue = DateGenerator {
+        XCTFail(#"Unimplemented: @Dependency(\.date)"#)
+        return Date()
+      }
     }
   }
 
@@ -52,15 +64,6 @@ import XCTestDynamicOverlay
     /// - Returns: A generator that always returns the given date.
     public static func constant(_ now: Date) -> Self {
       Self { now }
-    }
-
-    /// A generator that calls `Date()` under the hood.
-    public static let live = Self { Date() }
-
-    /// A generator that calls `XCTFail` when it is invoked.
-    public static let unimplemented = Self {
-      XCTFail(#"Unimplemented: @Dependency(\.date)"#)
-      return Date()
     }
 
     /// The current date.

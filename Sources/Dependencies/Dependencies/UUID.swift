@@ -76,8 +76,11 @@ extension DependencyValues {
   }
 
   private enum UUIDGeneratorKey: DependencyKey {
-    static let liveValue: UUIDGenerator = .live
-    static let testValue: UUIDGenerator = .unimplemented
+    static let liveValue = UUIDGenerator { UUID() }
+    static let testValue = UUIDGenerator {
+      XCTFail(#"Unimplemented: @Dependency(\.uuid)"#)
+      return UUID()
+    }
   }
 }
 
@@ -110,13 +113,11 @@ public struct UUIDGenerator: Sendable {
     return Self { generator() }
   }
 
-  /// A generator that calls `UUID()` under the hood.
-  public static let live = Self { UUID() }
-
-  /// A generator that calls `XCTFail` when it is invoked.
-  public static let unimplemented = Self {
-    XCTFail(#"Unimplemented: @Dependency(\.uuid)"#)
-    return UUID()
+  /// Initializes a UUID generator that generates a UUID from a closure.
+  ///
+  /// - Parameter generate: A closure that returns the current date when called.
+  public init(_ generate: @escaping @Sendable () -> UUID) {
+    self.generate = generate
   }
 
   public func callAsFunction() -> UUID {

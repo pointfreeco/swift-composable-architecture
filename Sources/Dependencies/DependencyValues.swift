@@ -70,6 +70,9 @@ public struct DependencyValues: Sendable {
   /// }
   /// ```
   ///
+  /// See ``withValues(_:operation:)-9prz8`` to update multiple dependencies at once without nesting
+  /// calls to `withValue`.
+  ///
   /// - Parameters:
   ///   - keyPath: A key path that indicates the property of the `DependencyValues` structure to
   ///     update.
@@ -101,6 +104,9 @@ public struct DependencyValues: Sendable {
   /// }
   /// ```
   ///
+  /// See ``withValues(_:operation:)-1oaja`` to update multiple dependencies at once without nesting
+  /// calls to `withValue`.
+  ///
   /// - Parameters:
   ///   - keyPath: A key path that indicates the property of the `DependencyValues` structure to
   ///     update.
@@ -124,8 +130,8 @@ public struct DependencyValues: Sendable {
   /// Updates the dependencies for the duration of a synchronous operation.
   ///
   /// Any mutations made to ``DependencyValues`` inside `updateValuesForOperation` will be visible
-  /// to everything executed in the operation. For example, if you wanted to force the
-  /// ``DependencyValues/date`` dependency to be a particular date, you can do:
+  /// to everything executed in the operation. For example, if you wanted to force the ``date``
+  /// dependency to be a particular date, you can do:
   ///
   /// ```swift
   /// DependencyValues.withValues {
@@ -134,6 +140,8 @@ public struct DependencyValues: Sendable {
   ///   // References to date in here are pinned to 1234567890.
   /// }
   /// ```
+  ///
+  /// See ``withValue(_:_:operation:)-3yj9d`` to update a single dependency with a constant value.
   ///
   /// - Parameters:
   ///   - updateValuesForOperation: A closure for updating the current dependency values for the
@@ -167,6 +175,8 @@ public struct DependencyValues: Sendable {
   /// }
   /// ```
   ///
+  /// See ``withValue(_:_:operation:)-705n`` to update a single dependency with a constant value.
+  ///
   /// - Parameters:
   ///   - updateValuesForOperation: A closure for updating the current dependency values for the
   ///     duration of the operation.
@@ -190,9 +200,8 @@ public struct DependencyValues: Sendable {
   /// Creates a dependency values instance.
   ///
   /// You don't typically create an instance of ``DependencyValues`` directly. Doing so would
-  /// provide access only to default values. Instead, you rely on an dependency values' instance
-  /// that the Composable Architecture manages for you when you use the ``Dependency`` property
-  /// wrapper and the `ReducerProtocol/dependency(_:_:)`` modifier.
+  /// provide access only to default values. Instead, you rely on the dependency values' instance
+  /// that the library manages for you when you use the ``Dependency`` property wrapper.
   public init() {}
 
   /// Accesses the dependency value associated with a custom key.
@@ -215,8 +224,8 @@ public struct DependencyValues: Sendable {
   /// ```
   ///
   /// You use custom dependency values the same way you use system-provided values, setting a value
-  /// with the `ReducerProtocol/dependency(_:_:)` modifier, and reading values with the
-  /// ``Dependency`` property wrapper.
+  /// with ``withValue(_:_:operation:)-705n``, and reading values with the ``Dependency`` property
+  /// wrapper.
   public subscript<Key: TestDependencyKey>(
     key: Key.Type,
     file: StaticString = #file,

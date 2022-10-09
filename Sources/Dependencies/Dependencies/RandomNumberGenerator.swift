@@ -11,8 +11,8 @@ extension DependencyValues {
   /// ``WithRandomNumberGenerator/callAsFunction(_:)``, which is called when you invoke the instance
   /// as you would invoke a function.)
   ///
-  /// For example, you could introduce controllable randomness to a reducer that models rolling a
-  /// couple dice:
+  /// For example, you could introduce controllable randomness to a Composable Architecture reducer
+  /// that models rolling a couple dice:
   ///
   /// ```swift
   /// struct Game: ReducerProtocol {
