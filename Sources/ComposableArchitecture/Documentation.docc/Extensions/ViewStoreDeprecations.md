@@ -8,6 +8,11 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 ## Topics
 
+### Creating a view store
+
+- ``ViewStore/init(_:removeDuplicates:)``
+- ``ViewStore/init(_:)-1pfeq``
+
 ### Interacting with Concurrency
 
 - ``ViewStore/suspend(while:)``

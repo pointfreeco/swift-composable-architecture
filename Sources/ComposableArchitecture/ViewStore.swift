@@ -137,6 +137,13 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
 
   /// Initializes a view store from a store.
   ///
+  /// > Warning: This initializer is deprecated. Use
+  /// ``ViewStore/init(_:observe:removeDuplicates:)`` to make state observation explicit.
+  /// >
+  /// > When using ``ViewStore`` you should take care to observe only the pieces of state that
+  /// your view needs to do its job, especially towards the root of the application. See
+  /// <doc:Performance> for more details.
+  ///
   /// - Parameters:
   ///   - store: A store.
   ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
@@ -144,22 +151,46 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   @available(
     iOS,
     deprecated: 9999.0,
-    message: "Use 'init(_:observe:removeDuplicates:)' to make state observation explicit."
+    message: """
+      Use 'init(_:observe:removeDuplicates:)' to make state observation explicit.
+
+      When using ViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
+      """
   )
   @available(
     macOS,
     deprecated: 9999.0,
-    message: "Use 'init(_:observe:removeDuplicates:)' to make state observation explicit."
+    message: """
+      Use 'init(_:observe:removeDuplicates:)' to make state observation explicit.
+
+      When using ViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
+      """
   )
   @available(
     tvOS,
     deprecated: 9999.0,
-    message: "Use 'init(_:observe:removeDuplicates:)' to make state observation explicit."
+    message: """
+      Use 'init(_:observe:removeDuplicates:)' to make state observation explicit.
+
+      When using ViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
+      """
   )
   @available(
     watchOS,
     deprecated: 9999.0,
-    message: "Use 'init(_:observe:removeDuplicates:)' to make state observation explicit."
+    message: """
+      Use 'init(_:observe:removeDuplicates:)' to make state observation explicit.
+
+      When using ViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
+      """
   )
   public init(
     _ store: Store<ViewState, ViewAction>,
@@ -552,25 +583,60 @@ extension ViewStore where ViewState: Equatable {
     self.init(store, observe: toViewState, send: fromViewAction, removeDuplicates: ==)
   }
 
+  /// Initializes a view store from a store.
+  ///
+  /// > Warning: This initializer is deprecated. Use
+  /// ``ViewStore/init(_:observe:)`` to make state observation explicit.
+  /// >
+  /// > When using ``ViewStore`` you should take care to observe only the pieces of state that
+  /// your view needs to do its job, especially towards the root of the application. See
+  /// <doc:Performance> for more details.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
   @available(
     iOS,
     deprecated: 9999.0,
-    message: "Use 'init(_:observe:)' to make state observation explicit."
+    message: """
+      Use 'init(_:observe:)' to make state observation explicit.
+
+      When using ViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
+      """
   )
   @available(
     macOS,
     deprecated: 9999.0,
-    message: "Use 'init(_:observe:)' to make state observation explicit."
+    message: """
+      Use 'init(_:observe:)' to make state observation explicit.
+
+      When using ViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
+      """
   )
   @available(
     tvOS,
     deprecated: 9999.0,
-    message: "Use 'init(_:observe:)' to make state observation explicit."
+    message: """
+      Use 'init(_:observe:)' to make state observation explicit.
+
+      When using ViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
+      """
   )
   @available(
     watchOS,
     deprecated: 9999.0,
-    message: "Use 'init(_:observe:)' to make state observation explicit."
+    message: """
+      Use 'init(_:observe:)' to make state observation explicit.
+
+      When using ViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
+      """
   )
   public convenience init(_ store: Store<ViewState, ViewAction>) {
     self.init(store, removeDuplicates: ==)

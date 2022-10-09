@@ -4,14 +4,15 @@
 
 ### Creating a View Store
 
-- ``init(_:removeDuplicates:)``
+- ``init(_:observe:removeDuplicates:)``
+- ``init(_:observe:)``
 - ``init(_:)-4il0f``
 <!--NB: DocC fails to resolve the following topic-->
 <!--- ``init(_:)-1pfeq`-->
 
 ### Accessing State
 
-- ``state``
+- ``state-swift.property``
 - ``subscript(dynamicMember:)-kwxk``
 
 ### Sending Actions
