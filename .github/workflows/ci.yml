@@ -21,12 +21,13 @@ jobs:
       matrix:
         xcode: ['13.4.1', '14.0']
         config: ['debug', 'release']
+        scheme: ['Dependencies', 'ComposableArchitecture']
     steps:
       - uses: actions/checkout@v2
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
-      - name: Run ${{ matrix.config }} tests
-        run: make test-library-${{ matrix.config }}
+      - name: Run ${{ matrix.scheme }} ${{ matrix.config }} tests
+        run: CONFIG=${{ matrix.config }} SCHEME=${{ matrix.scheme }} make test-library
       - name: Compile documentation
         if: ${{ matrix.xcode == '14.0' }}
         run: make test-docs
