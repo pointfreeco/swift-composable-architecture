@@ -1,8 +1,6 @@
 import Foundation
 import XCTestDynamicOverlay
 
-// TODO: should we have `@Dependency(\.runtimeWarningsEnabled)` and/or `@Dependency(\.treatWarningsAsErrors)`?
-
 /// A collection of dependencies that is globally available.
 ///
 /// To access a particular dependency from the collection you use the ``Dependency`` property
@@ -332,3 +330,5 @@ private let defaultContext: DependencyContext = {
     return .live
   }
 }()
+
+// TODO: should we have `@Dependency(\.runtimeWarningsEnabled)` and/or `@Dependency(\.treatWarningsAsErrors)`?
