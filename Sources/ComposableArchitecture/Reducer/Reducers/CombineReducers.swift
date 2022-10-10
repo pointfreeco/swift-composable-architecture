@@ -16,7 +16,8 @@
 /// }
 /// ```
 public struct CombineReducers<Reducers: ReducerProtocol>: ReducerProtocol {
-  public let reducers: Reducers
+  @usableFromInline
+  let reducers: Reducers
 
   /// Initializes a reducer that combines all of the reducers in the given build block.
   ///

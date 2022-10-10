@@ -3,7 +3,8 @@
 /// ``Reduce`` is useful for injecting logic into a reducer tree without the overhead of introducing
 /// a new type that conforms to ``ReducerProtocol``.
 public struct Reduce<State, Action>: ReducerProtocol {
-  public let reduce: (inout State, Action) -> Effect<Action, Never>
+  @usableFromInline
+  let reduce: (inout State, Action) -> Effect<Action, Never>
 
   /// Initializes a reducer with a `reduce` function.
   ///
