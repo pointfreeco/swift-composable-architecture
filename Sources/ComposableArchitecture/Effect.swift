@@ -456,6 +456,12 @@ extension Effect {
     case .none:
       return .none
     case let .publisher(publisher):
+      let dependencies = DependencyValues._current
+      let transform = { action in
+        DependencyValues.$_current.withValue(dump(dependencies)) {
+          transform(action)
+        }
+      }
       return .init(operation: .publisher(publisher.map(transform).eraseToAnyPublisher()))
     case let .run(priority, operation):
       return .init(

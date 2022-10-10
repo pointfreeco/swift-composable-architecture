@@ -65,7 +65,7 @@ public struct DependencyValues: Sendable {
   /// particular date, you can do:
   ///
   /// ```swift
-  /// DependencyValues.withValue(\.date.now, Date(timeIntervalSince1970: 1234567890)) {
+  /// DependencyValues.withValue(\.date, .constant(Date(timeIntervalSince1970: 1234567890))) {
   ///   // References to date in here are pinned to 1234567890.
   /// }
   /// ```
@@ -99,7 +99,7 @@ public struct DependencyValues: Sendable {
   /// particular date, you can do:
   ///
   /// ```swift
-  /// await DependencyValues.withValue(\.date.now, Date(timeIntervalSince1970: 1234567890)) {
+  /// await DependencyValues.withValue(\.date, .constant(Date(timeIntervalSince1970: 1234567890))) {
   ///   // References to date in here are pinned to 1234567890.
   /// }
   /// ```

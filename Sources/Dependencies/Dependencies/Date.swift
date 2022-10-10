@@ -18,11 +18,11 @@ import XCTestDynamicOverlay
     /// }
     /// ```
     ///
-    /// To override the current date in tests, you can override the generator's
-    /// ``DateGenerator/now`` property using ``withValue(_:_:operation:)-705n``:
-
+    /// To override the current date in tests, you can override the generator using
+    /// ``withValue(_:_:operation:)-705n``:
+    ///
     /// ```swift
-    /// DependencyValues.withValue(\.date.now, Date(timeIntervalSince1970: 0)) {
+    /// DependencyValues.withValue(\.date, .constant(Date(timeIntervalSince1970: 0))) {
     ///   // Assertions...
     /// }
     /// ```
@@ -68,8 +68,7 @@ import XCTestDynamicOverlay
 
     /// The current date.
     public var now: Date {
-      get { self.generate() }
-      set { self.generate = { newValue } }
+      self.generate()
     }
 
     /// Initializes a date generator that generates a date from a closure.

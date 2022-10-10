@@ -49,7 +49,7 @@ final class DependencyValuesTests: XCTestCase {
 
   func testWithValues() {
     let date = DependencyValues.withValues {
-      $0.date.now = someDate
+      $0.date = .constant(someDate)
     } operation: { () -> Date in
       @Dependency(\.date) var date
       return date.now
@@ -68,7 +68,7 @@ final class DependencyValuesTests: XCTestCase {
 
   func testWithValue() {
     DependencyValues.withValue(\.context, .live) {
-      let date = DependencyValues.withValue(\.date.now, someDate) { () -> Date in
+      let date = DependencyValues.withValue(\.date, .constant(someDate)) { () -> Date in
         @Dependency(\.date) var date
         return date.now
       }
