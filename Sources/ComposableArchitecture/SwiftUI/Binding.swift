@@ -137,7 +137,8 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
       send: { value in
         #if DEBUG
           let debugger = BindableActionViewStoreDebugger(
-            value: value, bindableActionType: ViewAction.self, file: file, fileID: fileID, line: line
+            value: value, bindableActionType: ViewAction.self, file: file, fileID: fileID,
+            line: line
           )
           let set: (inout ViewState) -> Void = {
             $0[keyPath: keyPath].wrappedValue = value
