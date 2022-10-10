@@ -284,7 +284,7 @@ final class EffectTests: XCTestCase {
         .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1234567890)))
     )
 
-    await store.send(.tap)
+    await store.send(.tap).finish()
     await store.receive(.response(1234567890)) {
       $0 = 1234567890
     }

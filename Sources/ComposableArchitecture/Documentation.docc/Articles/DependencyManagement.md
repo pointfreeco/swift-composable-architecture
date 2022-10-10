@@ -179,7 +179,7 @@ func testTodos() async {
     reducer: Todos()
   )
 
-  store.dependencies.date.now = Date(timeIntervalSinceReferenceDate: 1234567890)
+  store.dependencies.date = .constant(Date(timeIntervalSinceReferenceDate: 1234567890))
   store.dependencies.mainQueue = .immediate
   store.dependencies.uuid = .incrementing
 

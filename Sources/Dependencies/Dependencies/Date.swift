@@ -36,7 +36,7 @@ import XCTestDynamicOverlay
     ///   reducer: MyFeature()
     /// )
     ///
-    /// store.dependencies.date.now = Date(timeIntervalSince1970: 0)
+    /// store.dependencies.date = .constant(Date(timeIntervalSince1970: 0))
     /// ```
     public var date: DateGenerator {
       get { self[DateGeneratorKey.self] }

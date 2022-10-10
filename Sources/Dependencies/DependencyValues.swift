@@ -19,7 +19,7 @@ import XCTestDynamicOverlay
 /// let now = date.now
 ///
 /// DependencyValues.withValues {
-///   $0.date.now = Date(timeIntervalSinceReferenceDate: 1234567890)
+///   $0.date = .constant(Date(timeIntervalSinceReferenceDate: 1234567890))
 /// } operation: {
 ///   @Dependency(\.date) var date
 ///   let now = date.now.timeIntervalSinceReferenceDate // 1234567890
@@ -135,7 +135,7 @@ public struct DependencyValues: Sendable {
   ///
   /// ```swift
   /// DependencyValues.withValues {
-  ///   $0.date.now = Date(timeIntervalSince1970: 1234567890)
+  ///   $0.date = .constant(Date(timeIntervalSince1970: 1234567890))
   /// } operation: {
   ///   // References to date in here are pinned to 1234567890.
   /// }
@@ -169,7 +169,7 @@ public struct DependencyValues: Sendable {
   ///
   /// ```swift
   /// await DependencyValues.withValues {
-  ///   $0.date.now = Date(timeIntervalSince1970: 1234567890)
+  ///   $0.date = .constant(Date(timeIntervalSince1970: 1234567890))
   /// } operation: {
   ///   // References to date in here are pinned to 1234567890.
   /// }
