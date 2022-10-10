@@ -74,7 +74,7 @@ class CounterTests: XCTestCase {
 > Tip: Test cases that use ``TestStore`` should be annotated as `@MainActor` and test methods should 
 be marked as `async` since most assertion helpers on ``TestStore`` can suspend.
 
-Test stores have a ``TestStore/send(_:_:file:line:)-3pf4p`` method, but it behaves differently from
+Test stores have a ``TestStore/send(_:_:file:line:)-6s1gq`` method, but it behaves differently from
 stores and view stores. You provide an action to send into the system, but then you must also
 provide a trailing closure to describe how the state of the feature changed after sending the
 action:
@@ -95,7 +95,7 @@ await store.send(.incrementButtonTapped) {
 }
 ```
 
-> The ``TestStore/send(_:_:file:line:)-3pf4p`` method is `async` for technical reasons that we do
+> The ``TestStore/send(_:_:file:line:)-6s1gq`` method is `async` for technical reasons that we do
 not have to worry about right now.
 
 If your mutation is incorrect, meaning you perform a mutation that is different from what happened
@@ -146,7 +146,7 @@ await store.send(.decrementButtonTapped) {
 > by one, but we haven't proven we know the precise value of `count` at each step of the way.
 >
 > In general, the less logic you have in the trailing closure of
-> ``TestStore/send(_:_:file:line:)-3pf4p``, the stronger your assertion will be. It is best to use
+> ``TestStore/send(_:_:file:line:)-6s1gq``, the stronger your assertion will be. It is best to use
 > simple, hard coded data for the mutation.
 
 Test stores do expose a ``TestStore/state`` property, which can be useful for performing assertions
@@ -160,7 +160,7 @@ store.send(.incrementButtonTapped) {
 XCTAssertTrue(store.state.isPrime)
 ```
 
-However, when inside the trailing closure of ``TestStore/send(_:_:file:line:)-3pf4p``, the 
+However, when inside the trailing closure of ``TestStore/send(_:_:file:line:)-6s1gq``, the 
 ``TestStore/state`` property is equal to the state _before_ sending the action, not after. That 
 prevents you from being able to use an escape hatch to get around needing to actually describe the 
 state mutation, like so:
