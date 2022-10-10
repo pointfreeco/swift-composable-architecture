@@ -21,6 +21,13 @@ test-library:
 			-destination platform="$$platform" || exit 1; \
 	done;
 
+build-for-library-evolution:
+	swift build \
+		-c release \
+		--target ComposableArchitecture \
+		-Xswiftc -emit-module-interface \
+		-Xswiftc -enable-library-evolution
+
 DOC_WARNINGS := $(shell xcodebuild clean docbuild \
 	-scheme ComposableArchitecture \
 	-destination platform="$(PLATFORM_MACOS)" \

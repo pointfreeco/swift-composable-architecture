@@ -43,9 +43,9 @@ extension Reduce {
     _ reducer: AnyReducer<State, Action, Environment>,
     environment: Environment
   ) {
-    self.init { state, action in
+    self.init(internal: { state, action in
       reducer.run(&state, action, environment)
-    }
+    })
   }
 }
 

@@ -29,6 +29,18 @@ jobs:
       - name: Run ${{ matrix.scheme }} ${{ matrix.config }} tests
         run: CONFIG=${{ matrix.config }} SCHEME=${{ matrix.scheme }} make test-library
 
+  library-evolution:
+    runs-on: macos-12
+    strategy:
+      matrix:
+        xcode: ['13.4.1', '14.0']
+    steps:
+      - uses: actions/checkout@v2
+      - name: Select Xcode ${{ matrix.xcode }}
+        run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
+      - name: Build for library evolution
+        run: make build-for-library-evolution
+
   benchmarks:
     runs-on: macos-12
     steps:

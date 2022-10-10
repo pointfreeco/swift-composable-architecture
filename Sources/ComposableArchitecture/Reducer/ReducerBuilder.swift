@@ -115,7 +115,7 @@ public enum ReducerBuilder<State, Action> {
     @usableFromInline
     let wrapped: Wrapped?
 
-    @inlinable
+    @usableFromInline
     init(wrapped: Wrapped?) {
       self.wrapped = wrapped
     }
@@ -141,7 +141,7 @@ public enum ReducerBuilder<State, Action> {
     @usableFromInline
     let r1: R1
 
-    @inlinable
+    @usableFromInline
     init(_ r0: R0, _ r1: R1) {
       self.r0 = r0
       self.r1 = r1
@@ -158,7 +158,7 @@ public enum ReducerBuilder<State, Action> {
     @usableFromInline
     let reducers: [Element]
 
-    @inlinable
+    @usableFromInline
     init(reducers: [Element]) {
       self.reducers = reducers
     }

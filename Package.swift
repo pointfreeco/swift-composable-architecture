@@ -38,6 +38,13 @@ let package = Package(
         .product(name: "CustomDump", package: "swift-custom-dump"),
         .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
         .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
+      ],
+      swiftSettings: [
+        .unsafeFlags([
+          // "-enable-library-evolution"
+          // "-Xfrontend", "-warn-concurrency",
+          // "-Xfrontend", "-enable-actor-data-race-checks",
+        ])
       ]
     ),
     .testTarget(

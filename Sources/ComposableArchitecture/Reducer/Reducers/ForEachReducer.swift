@@ -94,7 +94,7 @@ public struct _ForEachReducer<
   @usableFromInline
   let line: UInt
 
-  @inlinable
+  @usableFromInline
   init(
     parent: Parent,
     toElementsState: WritableKeyPath<Parent.State, IdentifiedArray<ID, Element.State>>,
