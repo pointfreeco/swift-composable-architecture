@@ -2,75 +2,55 @@ import ComposableArchitecture
 import SwiftUI
 
 private let readMe = """
-  This screen demonstrates how the `Reducer` struct can be extended to enhance reducers with extra \
-  functionality.
-
-  In it we introduce an interface for constructing reducers that need to be called recursively in \
-  order to handle nested state and actions. It is handed itself as its first argument.
+  This screen demonstrates how `ReducerProtocol` bodies can recursively nest themselves.
 
   Tap "Add row" to add a row to the current screen's list. Tap the left-hand side of a row to edit \
-  its description, or tap the right-hand side of a row to navigate to its own associated list of \
-  rows.
+  its name, or tap the right-hand side of a row to navigate to its own associated list of rows.
   """
 
-extension Reducer {
-  static func recurse(
-    _ reducer: @escaping (Self, inout State, Action, Environment) -> Effect<Action, Never>
-  ) -> Self {
-
-    var `self`: Self!
-    self = Self { state, action, environment in
-      reducer(self, &state, action, environment)
-    }
-    return self
+struct Nested: ReducerProtocol {
+  struct State: Equatable, Identifiable {
+    let id: UUID
+    var name: String = ""
+    var rows: IdentifiedArrayOf<State> = []
   }
-}
 
-struct NestedState: Equatable, Identifiable {
-  let id: UUID
-  var name: String = ""
-  var rows: IdentifiedArrayOf<NestedState> = []
-}
+  enum Action: Equatable {
+    case addRowButtonTapped
+    case nameTextFieldChanged(String)
+    case onDelete(IndexSet)
+    indirect case row(id: State.ID, action: Action)
+  }
 
-enum NestedAction: Equatable {
-  case addRowButtonTapped
-  case nameTextFieldChanged(String)
-  case onDelete(IndexSet)
-  indirect case row(id: NestedState.ID, action: NestedAction)
-}
+  @Dependency(\.uuid) var uuid
 
-struct NestedEnvironment {
-  var uuid: () -> UUID
-}
+  var body: some ReducerProtocol<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .addRowButtonTapped:
+        state.rows.append(State(id: self.uuid()))
+        return .none
 
-let nestedReducer = Reducer<
-  NestedState, NestedAction, NestedEnvironment
->.recurse { `self`, state, action, environment in
-  switch action {
-  case .addRowButtonTapped:
-    state.rows.append(NestedState(id: environment.uuid()))
-    return .none
+      case let .nameTextFieldChanged(name):
+        state.name = name
+        return .none
 
-  case let .nameTextFieldChanged(name):
-    state.name = name
-    return .none
+      case let .onDelete(indexSet):
+        state.rows.remove(atOffsets: indexSet)
+        return .none
 
-  case let .onDelete(indexSet):
-    state.rows.remove(atOffsets: indexSet)
-    return .none
-
-  case .row:
-    return self.forEach(
-      state: \.rows,
-      action: /NestedAction.row(id:action:),
-      environment: { $0 }
-    )
-    .run(&state, action, environment)
+      case .row:
+        return .none
+      }
+    }
+    .forEach(\.rows, action: /Action.row(id:action:)) {
+      Self()
+    }
   }
 }
 
 struct NestedView: View {
-  let store: Store<NestedState, NestedAction>
+  let store: StoreOf<Nested>
 
   var body: some View {
     WithViewStore(self.store, observe: \.name) { viewStore in
@@ -80,16 +60,16 @@ struct NestedView: View {
         }
 
         ForEachStore(
-          self.store.scope(state: \.rows, action: NestedAction.row(id:action:))
-        ) { childStore in
-          WithViewStore(childStore, observe: \.name) { childViewStore in
+          self.store.scope(state: \.rows, action: Nested.Action.row(id:action:))
+        ) { rowStore in
+          WithViewStore(rowStore, observe: \.name) { rowViewStore in
             NavigationLink(
-              destination: NestedView(store: childStore)
+              destination: NestedView(store: rowStore)
             ) {
               HStack {
                 TextField(
                   "Untitled",
-                  text: childViewStore.binding(send: NestedAction.nameTextFieldChanged)
+                  text: rowViewStore.binding(send: Nested.Action.nameTextFieldChanged)
                 )
                 Text("Next")
                   .font(.callout)
@@ -110,27 +90,27 @@ struct NestedView: View {
   }
 }
 
-extension NestedState {
-  static let mock = NestedState(
+extension Nested.State {
+  static let mock = Nested.State(
     id: UUID(),
     name: "Foo",
     rows: [
-      NestedState(
+      Nested.State(
         id: UUID(),
         name: "Bar",
         rows: [
-          NestedState(id: UUID(), name: "", rows: [])
+          Nested.State(id: UUID(), name: "", rows: []),
         ]
       ),
-      NestedState(
+      Nested.State(
         id: UUID(),
         name: "Baz",
         rows: [
-          NestedState(id: UUID(), name: "Fizz", rows: []),
-          NestedState(id: UUID(), name: "Buzz", rows: []),
+          Nested.State(id: UUID(), name: "Fizz", rows: []),
+          Nested.State(id: UUID(), name: "Buzz", rows: []),
         ]
       ),
-      NestedState(id: UUID(), name: "", rows: []),
+      Nested.State(id: UUID(), name: "", rows: []),
     ]
   )
 }
@@ -142,10 +122,7 @@ extension NestedState {
         NestedView(
           store: Store(
             initialState: .mock,
-            reducer: nestedReducer,
-            environment: NestedEnvironment(
-              uuid: UUID.init
-            )
+            reducer: Nested()
           )
         )
       }

@@ -11,6 +11,7 @@
 		CA93D05E249BF46E00A6F65D /* Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA93D05D249BF46E00A6F65D /* Helpers.swift */; };
 		CABAB49028A2B5F900122307 /* RecordingMemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = CABAB48F28A2B5F900122307 /* RecordingMemo.swift */; };
 		DC1394342469E59600EE1157 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC1394332469E59600EE1157 /* ComposableArchitecture */; };
+		DC52A010288F01B30092F7DB /* Dependencies.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC52A00F288F01B30092F7DB /* Dependencies.swift */; };
 		DC5BDCB024589177009C65A3 /* VoiceMemosApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5BDCAF24589177009C65A3 /* VoiceMemosApp.swift */; };
 		DC5BDCB224589177009C65A3 /* VoiceMemos.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5BDCB124589177009C65A3 /* VoiceMemos.swift */; };
 		DC5BDCB424589178009C65A3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC5BDCB324589178009C65A3 /* Assets.xcassets */; };
@@ -19,8 +20,6 @@
 		DC5BDF3A245893C1009C65A3 /* LiveAudioRecorderClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5BDF39245893C1009C65A3 /* LiveAudioRecorderClient.swift */; };
 		DC5BDF3D245893E6009C65A3 /* AudioPlayerClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5BDF3C245893E6009C65A3 /* AudioPlayerClient.swift */; };
 		DC5BDF3F24589406009C65A3 /* LiveAudioPlayerClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5BDF3E24589406009C65A3 /* LiveAudioPlayerClient.swift */; };
-		DC94F0102458E09900082DE9 /* UnimplementedAudioPlayerClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC94F00F2458E09900082DE9 /* UnimplementedAudioPlayerClient.swift */; };
-		DC94F0122458E0AA00082DE9 /* UnimplementedAudioRecorderClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC94F0112458E0AA00082DE9 /* UnimplementedAudioRecorderClient.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,6 +60,7 @@
 		CA93D05B249BF42500A6F65D /* VoiceMemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceMemo.swift; sourceTree = "<group>"; };
 		CA93D05D249BF46E00A6F65D /* Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Helpers.swift; sourceTree = "<group>"; };
 		CABAB48F28A2B5F900122307 /* RecordingMemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingMemo.swift; sourceTree = "<group>"; };
+		DC52A00F288F01B30092F7DB /* Dependencies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dependencies.swift; sourceTree = "<group>"; };
 		DC5BDCAA24589177009C65A3 /* VoiceMemos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VoiceMemos.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC5BDCAF24589177009C65A3 /* VoiceMemosApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceMemosApp.swift; sourceTree = "<group>"; };
 		DC5BDCB124589177009C65A3 /* VoiceMemos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceMemos.swift; sourceTree = "<group>"; };
@@ -73,8 +73,6 @@
 		DC5BDF39245893C1009C65A3 /* LiveAudioRecorderClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveAudioRecorderClient.swift; sourceTree = "<group>"; };
 		DC5BDF3C245893E6009C65A3 /* AudioPlayerClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerClient.swift; sourceTree = "<group>"; };
 		DC5BDF3E24589406009C65A3 /* LiveAudioPlayerClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveAudioPlayerClient.swift; sourceTree = "<group>"; };
-		DC94F00F2458E09900082DE9 /* UnimplementedAudioPlayerClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnimplementedAudioPlayerClient.swift; sourceTree = "<group>"; };
-		DC94F0112458E0AA00082DE9 /* UnimplementedAudioRecorderClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnimplementedAudioRecorderClient.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -120,6 +118,7 @@
 			isa = PBXGroup;
 			children = (
 				DC5BDCBB24589178009C65A3 /* Info.plist */,
+				DC52A00F288F01B30092F7DB /* Dependencies.swift */,
 				CA93D05D249BF46E00A6F65D /* Helpers.swift */,
 				CABAB48F28A2B5F900122307 /* RecordingMemo.swift */,
 				CA93D05B249BF42500A6F65D /* VoiceMemo.swift */,
@@ -145,7 +144,6 @@
 			children = (
 				DC5BDF352458939C009C65A3 /* AudioRecorderClient.swift */,
 				DC5BDF39245893C1009C65A3 /* LiveAudioRecorderClient.swift */,
-				DC94F0112458E0AA00082DE9 /* UnimplementedAudioRecorderClient.swift */,
 			);
 			path = AudioRecorderClient;
 			sourceTree = "<group>";
@@ -155,7 +153,6 @@
 			children = (
 				DC5BDF3C245893E6009C65A3 /* AudioPlayerClient.swift */,
 				DC5BDF3E24589406009C65A3 /* LiveAudioPlayerClient.swift */,
-				DC94F00F2458E09900082DE9 /* UnimplementedAudioPlayerClient.swift */,
 			);
 			path = AudioPlayerClient;
 			sourceTree = "<group>";
@@ -268,12 +265,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				DC5BDF362458939C009C65A3 /* AudioRecorderClient.swift in Sources */,
-				DC94F0122458E0AA00082DE9 /* UnimplementedAudioRecorderClient.swift in Sources */,
 				DC5BDF3D245893E6009C65A3 /* AudioPlayerClient.swift in Sources */,
 				CA93D05E249BF46E00A6F65D /* Helpers.swift in Sources */,
 				DC5BDF3A245893C1009C65A3 /* LiveAudioRecorderClient.swift in Sources */,
 				DC5BDF3F24589406009C65A3 /* LiveAudioPlayerClient.swift in Sources */,
-				DC94F0102458E09900082DE9 /* UnimplementedAudioPlayerClient.swift in Sources */,
+				DC52A010288F01B30092F7DB /* Dependencies.swift in Sources */,
 				CA93D05C249BF42500A6F65D /* VoiceMemo.swift in Sources */,
 				DC5BDCB024589177009C65A3 /* VoiceMemosApp.swift in Sources */,
 				CABAB49028A2B5F900122307 /* RecordingMemo.swift in Sources */,

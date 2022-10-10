@@ -6,46 +6,44 @@ private let readMe = """
   If you tap the "Sign in" button while a field is empty, the focus will be changed to that field.
   """
 
-struct FocusDemoState: Equatable {
-  @BindableState var focusedField: Field?
-  @BindableState var password: String = ""
-  @BindableState var username: String = ""
+struct FocusDemo: ReducerProtocol {
+  struct State: Equatable {
+    @BindableState var focusedField: Field?
+    @BindableState var password: String = ""
+    @BindableState var username: String = ""
 
-  enum Field: String, Hashable {
-    case username, password
-  }
-}
-
-enum FocusDemoAction: BindableAction, Equatable {
-  case binding(BindingAction<FocusDemoState>)
-  case signInButtonTapped
-}
-
-struct FocusDemoEnvironment {}
-
-let focusDemoReducer = Reducer<
-  FocusDemoState,
-  FocusDemoAction,
-  FocusDemoEnvironment
-> { state, action, _ in
-  switch action {
-  case .binding:
-    return .none
-
-  case .signInButtonTapped:
-    if state.username.isEmpty {
-      state.focusedField = .username
-    } else if state.password.isEmpty {
-      state.focusedField = .password
+    enum Field: String, Hashable {
+      case username, password
     }
-    return .none
+  }
+
+  enum Action: BindableAction, Equatable {
+    case binding(BindingAction<State>)
+    case signInButtonTapped
+  }
+
+  var body: some ReducerProtocol<State, Action> {
+    BindingReducer()
+    Reduce { state, action in
+      switch action {
+      case .binding:
+        return .none
+
+      case .signInButtonTapped:
+        if state.username.isEmpty {
+          state.focusedField = .username
+        } else if state.password.isEmpty {
+          state.focusedField = .password
+        }
+        return .none
+      }
+    }
   }
 }
-.binding()
 
 struct FocusDemoView: View {
-  let store: Store<FocusDemoState, FocusDemoAction>
-  @FocusState var focusedField: FocusDemoState.Field?
+  let store: StoreOf<FocusDemo>
+  @FocusState var focusedField: FocusDemo.State.Field?
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -87,9 +85,8 @@ struct FocusDemo_Previews: PreviewProvider {
     NavigationView {
       FocusDemoView(
         store: Store(
-          initialState: FocusDemoState(),
-          reducer: focusDemoReducer,
-          environment: FocusDemoEnvironment()
+          initialState: FocusDemo.State(),
+          reducer: FocusDemo()
         )
       )
     }

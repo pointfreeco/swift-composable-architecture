@@ -9,30 +9,30 @@ private let readMe = """
   state of the application and any actions that can affect that state or the outside world.
   """
 
-struct CounterState: Equatable {
-  var count = 0
-}
+struct Counter: ReducerProtocol {
+  struct State: Equatable {
+    var count = 0
+  }
 
-enum CounterAction: Equatable {
-  case decrementButtonTapped
-  case incrementButtonTapped
-}
+  enum Action: Equatable {
+    case decrementButtonTapped
+    case incrementButtonTapped
+  }
 
-struct CounterEnvironment {}
-
-let counterReducer = Reducer<CounterState, CounterAction, CounterEnvironment> { state, action, _ in
-  switch action {
-  case .decrementButtonTapped:
-    state.count -= 1
-    return .none
-  case .incrementButtonTapped:
-    state.count += 1
-    return .none
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    switch action {
+    case .decrementButtonTapped:
+      state.count -= 1
+      return .none
+    case .incrementButtonTapped:
+      state.count += 1
+      return .none
+    }
   }
 }
 
 struct CounterView: View {
-  let store: Store<CounterState, CounterAction>
+  let store: StoreOf<Counter>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -57,7 +57,7 @@ struct CounterView: View {
 }
 
 struct CounterDemoView: View {
-  let store: Store<CounterState, CounterAction>
+  let store: StoreOf<Counter>
 
   var body: some View {
     Form {
@@ -80,9 +80,8 @@ struct CounterView_Previews: PreviewProvider {
     NavigationView {
       CounterDemoView(
         store: Store(
-          initialState: CounterState(),
-          reducer: counterReducer,
-          environment: CounterEnvironment()
+          initialState: Counter.State(),
+          reducer: Counter()
         )
       )
     }

@@ -1,3 +1,4 @@
+#if DEBUG
 import Combine
 import XCTest
 
@@ -43,3 +44,4 @@ final class TaskCancellationTests: XCTestCase {
     XCTAssertEqual(cancellationCancellables.count, 0)
   }
 }
+#endif

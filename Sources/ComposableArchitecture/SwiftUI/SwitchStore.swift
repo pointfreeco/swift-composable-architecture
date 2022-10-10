@@ -6,7 +6,7 @@ import SwiftUI
 /// user is logged-in or not:
 ///
 /// ```swift
-/// enum AppState {
+/// enum State {
 ///   case loggedIn(LoggedInState)
 ///   case loggedOut(LoggedOutState)
 /// }
@@ -17,14 +17,14 @@ import SwiftUI
 ///
 /// ```swift
 /// struct AppView: View {
-///   let store: Store<AppState, AppAction>
+///   let store: StoreOf<App>
 ///
 ///   var body: some View {
 ///     SwitchStore(self.store) {
-///       CaseLet(state: /AppState.loggedIn, action: AppAction.loggedIn) { loggedInStore in
+///       CaseLet(state: /App.State.loggedIn, action: App.Action.loggedIn) { loggedInStore in
 ///         LoggedInView(store: loggedInStore)
 ///       }
-///       CaseLet(state: /AppState.loggedOut, action: AppAction.loggedOut) { loggedOutStore in
+///       CaseLet(state: /App.State.loggedOut, action: App.Action.loggedOut) { loggedOutStore in
 ///         LoggedOutView(store: loggedOutStore)
 ///       }
 ///     }
@@ -50,9 +50,9 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// - See also: ``Reducer/pullback(state:action:environment:file:fileID:line:)``, a method that aids
-///   in transforming reducers that operate on each case of an enum into reducers that operate on
-///   the entire enum.
+/// See ``ReducerProtocol/ifCaseLet(_:action:then:file:fileID:line:)`` and
+/// ``Scope/init(state:action:_:file:fileID:line:)`` for embedding reducers that operate on each
+/// case of an enum in reducers that operate on the entire enum.
 public struct SwitchStore<State, Action, Content: View>: View {
   public let store: Store<State, Action>
   public let content: () -> Content
@@ -1233,7 +1233,7 @@ public struct _ExhaustivityCheckView<State, Action>: View {
   }
 }
 
-private class StoreObservableObject<State, Action>: ObservableObject {
+private final class StoreObservableObject<State, Action>: ObservableObject {
   let wrappedValue: Store<State, Action>
 
   init(store: Store<State, Action>) {

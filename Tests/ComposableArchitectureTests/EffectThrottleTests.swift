@@ -1,7 +1,6 @@
 import Combine
+import ComposableArchitecture
 import XCTest
-
-@testable import ComposableArchitecture
 
 @MainActor
 final class EffectThrottleTests: XCTestCase {
@@ -33,14 +32,14 @@ final class EffectThrottleTests: XCTestCase {
     await mainQueue.advance()
 
     // A value emits right away.
-    XCTAssertNoDifference(values, [1])
+    XCTAssertEqual(values, [1])
 
     runThrottledEffect(value: 2)
 
     await mainQueue.advance()
 
     // A second value is throttled.
-    XCTAssertNoDifference(values, [1])
+    XCTAssertEqual(values, [1])
 
     await mainQueue.advance(by: 0.25)
 
@@ -55,12 +54,12 @@ final class EffectThrottleTests: XCTestCase {
     runThrottledEffect(value: 5)
 
     // A third value is throttled.
-    XCTAssertNoDifference(values, [1])
+    XCTAssertEqual(values, [1])
 
     await mainQueue.advance(by: 0.25)
 
     // The latest value emits.
-    XCTAssertNoDifference(values, [1, 5])
+    XCTAssertEqual(values, [1, 5])
   }
 
   func testThrottleFirst() async {
@@ -88,14 +87,14 @@ final class EffectThrottleTests: XCTestCase {
     await mainQueue.advance()
 
     // A value emits right away.
-    XCTAssertNoDifference(values, [1])
+    XCTAssertEqual(values, [1])
 
     runThrottledEffect(value: 2)
 
     await mainQueue.advance()
 
     // A second value is throttled.
-    XCTAssertNoDifference(values, [1])
+    XCTAssertEqual(values, [1])
 
     await mainQueue.advance(by: 0.25)
 
@@ -112,7 +111,7 @@ final class EffectThrottleTests: XCTestCase {
     await mainQueue.advance(by: 0.25)
 
     // The second (throttled) value emits.
-    XCTAssertNoDifference(values, [1, 2])
+    XCTAssertEqual(values, [1, 2])
 
     await mainQueue.advance(by: 0.25)
 
@@ -121,14 +120,14 @@ final class EffectThrottleTests: XCTestCase {
     await mainQueue.advance(by: 0.50)
 
     // A third value is throttled.
-    XCTAssertNoDifference(values, [1, 2])
+    XCTAssertEqual(values, [1, 2])
 
     runThrottledEffect(value: 7)
 
     await mainQueue.advance(by: 0.25)
 
     // The third (throttled) value emits.
-    XCTAssertNoDifference(values, [1, 2, 6])
+    XCTAssertEqual(values, [1, 2, 6])
   }
 
   func testThrottleAfterInterval() async {
@@ -156,7 +155,7 @@ final class EffectThrottleTests: XCTestCase {
     await mainQueue.advance()
 
     // A value emits right away.
-    XCTAssertNoDifference(values, [1])
+    XCTAssertEqual(values, [1])
 
     await mainQueue.advance(by: 2)
 
@@ -165,7 +164,7 @@ final class EffectThrottleTests: XCTestCase {
     await mainQueue.advance()
 
     // A second value is emitted right away.
-    XCTAssertNoDifference(values, [1, 2])
+    XCTAssertEqual(values, [1, 2])
 
     await mainQueue.advance(by: 2)
 
@@ -174,7 +173,7 @@ final class EffectThrottleTests: XCTestCase {
     await mainQueue.advance()
 
     // A third value is emitted right away.
-    XCTAssertNoDifference(values, [1, 2, 3])
+    XCTAssertEqual(values, [1, 2, 3])
   }
 
   func testThrottleEmitsFirstValueOnce() async {
@@ -202,7 +201,7 @@ final class EffectThrottleTests: XCTestCase {
     await mainQueue.advance()
 
     // A value emits right away.
-    XCTAssertNoDifference(values, [1])
+    XCTAssertEqual(values, [1])
 
     await mainQueue.advance(by: 0.5)
 
@@ -213,6 +212,6 @@ final class EffectThrottleTests: XCTestCase {
     runThrottledEffect(value: 3)
 
     // A second value is emitted right away.
-    XCTAssertNoDifference(values, [1, 2])
+    XCTAssertEqual(values, [1, 2])
   }
 }

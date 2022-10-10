@@ -7,16 +7,14 @@ import XCTest
 final class TwoFactorCoreTests: XCTestCase {
   func testFlow_Success() async {
     let store = TestStore(
-      initialState: TwoFactorState(token: "deadbeefdeadbeef"),
-      reducer: twoFactorReducer,
-      environment: TwoFactorEnvironment(
-        authenticationClient: .unimplemented
-      )
+      initialState: TwoFactor.State(token: "deadbeefdeadbeef"),
+      reducer: TwoFactor()
     )
 
-    store.environment.authenticationClient.twoFactor = { _ in
+    store.dependencies.authenticationClient.twoFactor = { _ in
       AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
     }
+
     await store.send(.codeChanged("1")) {
       $0.code = "1"
     }
@@ -44,14 +42,11 @@ final class TwoFactorCoreTests: XCTestCase {
 
   func testFlow_Failure() async {
     let store = TestStore(
-      initialState: TwoFactorState(token: "deadbeefdeadbeef"),
-      reducer: twoFactorReducer,
-      environment: TwoFactorEnvironment(
-        authenticationClient: .unimplemented
-      )
+      initialState: TwoFactor.State(token: "deadbeefdeadbeef"),
+      reducer: TwoFactor()
     )
 
-    store.environment.authenticationClient.twoFactor = { _ in
+    store.dependencies.authenticationClient.twoFactor = { _ in
       throw AuthenticationError.invalidTwoFactor
     }
 

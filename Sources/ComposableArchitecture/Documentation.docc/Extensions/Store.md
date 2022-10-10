@@ -2,22 +2,20 @@
 
 ## Topics
 
-### Creating a Store
+### Creating a store
 
-- ``init(initialState:reducer:environment:)``
+- ``init(initialState:reducer:)``
+- ``StoreOf``
 
-### Scoping Stores
+### Scoping stores
 
 - ``scope(state:action:)``
-- ``scope(state:)``
-- ``stateless``
-- ``actionless``
 
-### Combine Integration
+### Combine integration
 
 - ``StorePublisher``
 
-### UIKit Integration
+### UIKit integration
 
 - ``ifLet(then:else:)``
 
