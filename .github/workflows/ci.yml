@@ -29,7 +29,7 @@ jobs:
       - name: Run ${{ matrix.scheme }} ${{ matrix.config }} tests
         run: CONFIG=${{ matrix.config }} SCHEME=${{ matrix.scheme }} make test-library
 
-  benchmarks:
+  library-evolution:
     runs-on: macos-12
     strategy:
       matrix:
