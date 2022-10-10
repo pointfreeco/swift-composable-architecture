@@ -9,14 +9,14 @@ struct VoiceMemos: ReducerProtocol {
     var audioRecorderPermission = RecorderPermission.undetermined
     var recordingMemo: RecordingMemo.State?
     var voiceMemos: IdentifiedArrayOf<VoiceMemo.State> = []
-    
+
     enum RecorderPermission {
       case allowed
       case denied
       case undetermined
     }
   }
-  
+
   enum Action: Equatable {
     case alertDismissed
     case openSettingsButtonTapped
@@ -208,7 +208,6 @@ struct RecordButton: View {
     }
   }
 }
-
 
 struct VoiceMemos_Previews: PreviewProvider {
   static var previews: some View {

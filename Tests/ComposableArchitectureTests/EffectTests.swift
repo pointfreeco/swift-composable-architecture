@@ -281,20 +281,21 @@ final class EffectTests: XCTestCase {
     let store = TestStore(
       initialState: 0,
       reducer: Feature()
-        .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1234567890)))
+        .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1_234_567_890)))
     )
 
     await store.send(.tap).finish()
-    await store.receive(.response(1234567890)) {
-      $0 = 1234567890
+    await store.receive(.response(1_234_567_890)) {
+      $0 = 1_234_567_890
     }
-    await store.receive(.response(1234567890))
+    await store.receive(.response(1_234_567_890))
   }
 
   func testMap() async {
     @Dependency(\.date) var date
-    let effect = DependencyValues
-      .withValue(\.date, .init { Date(timeIntervalSince1970: 1234567890) }) {
+    let effect =
+      DependencyValues
+      .withValue(\.date, .init { Date(timeIntervalSince1970: 1_234_567_890) }) {
         Effect<Void, Never>(value: ())
           .map { date() }
       }
@@ -302,16 +303,17 @@ final class EffectTests: XCTestCase {
     effect
       .sink { output = $0 }
       .store(in: &self.cancellables)
-    XCTAssertEqual(output, Date(timeIntervalSince1970: 1234567890))
+    XCTAssertEqual(output, Date(timeIntervalSince1970: 1_234_567_890))
 
     if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
-      let effect = DependencyValues
-        .withValue(\.date, .init { Date(timeIntervalSince1970: 1234567890) }) {
+      let effect =
+        DependencyValues
+        .withValue(\.date, .init { Date(timeIntervalSince1970: 1_234_567_890) }) {
           Effect<Void, Never>.task {}
             .map { date() }
         }
       output = await effect.values.first(where: { _ in true })
-      XCTAssertEqual(output, Date(timeIntervalSince1970: 1234567890))
+      XCTAssertEqual(output, Date(timeIntervalSince1970: 1_234_567_890))
     }
   }
 }

@@ -61,8 +61,7 @@ final class VoiceMemosTests: XCTestCase {
     await store.receive(.recordingMemo(.audioRecorderDidFinish(.success(true))))
     try await store.receive(
       .recordingMemo(.delegate(.didFinish(.success(XCTUnwrap(store.state.recordingMemo)))))
-    )
-    {
+    ) {
       $0.recordingMemo = nil
       $0.voiceMemos = [
         VoiceMemo.State(

@@ -99,7 +99,7 @@ extension Nested.State {
         id: UUID(),
         name: "Bar",
         rows: [
-          Nested.State(id: UUID(), name: "", rows: []),
+          Nested.State(id: UUID(), name: "", rows: [])
         ]
       ),
       Nested.State(

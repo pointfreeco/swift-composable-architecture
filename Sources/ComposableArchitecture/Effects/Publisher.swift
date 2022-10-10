@@ -457,7 +457,8 @@ extension Publisher {
         transform(action)
       }
     }
-    return self
+    return
+      self
       .map { transform(.success($0)) }
       .catch { Just(transform(.failure($0))) }
       .eraseToEffect()

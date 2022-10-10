@@ -70,9 +70,10 @@ extension ReducerProtocol {
     _ keyPath: WritableKeyPath<DependencyValues, Value>,
     _ value: Value
   )
-  // NB: We should not return `some ReducerProtocol<State, Action>` here. That would prevent the
-  //     specialization defined below from being called, which fuses chained calls.
-  -> _DependencyKeyWritingReducer<Self> {
+    // NB: We should not return `some ReducerProtocol<State, Action>` here. That would prevent the
+    //     specialization defined below from being called, which fuses chained calls.
+    -> _DependencyKeyWritingReducer<Self>
+  {
     _DependencyKeyWritingReducer(base: self) { $0[keyPath: keyPath] = value }
   }
 
@@ -106,9 +107,10 @@ extension ReducerProtocol {
     _ keyPath: WritableKeyPath<DependencyValues, V>,
     transform: @escaping (inout V) -> Void
   )
-  // NB: We should not return `some ReducerProtocol<State, Action>` here. That would prevent the
-  //     specialization defined below from being called, which fuses chained calls.
-  -> _DependencyKeyWritingReducer<Self> {
+    // NB: We should not return `some ReducerProtocol<State, Action>` here. That would prevent the
+    //     specialization defined below from being called, which fuses chained calls.
+    -> _DependencyKeyWritingReducer<Self>
+  {
     _DependencyKeyWritingReducer(base: self) { transform(&$0[keyPath: keyPath]) }
   }
 }

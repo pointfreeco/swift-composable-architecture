@@ -15,13 +15,13 @@ struct NavigateAndLoad: ReducerProtocol {
     var isNavigationActive = false
     var optionalCounter: Counter.State?
   }
-  
+
   enum Action: Equatable {
     case optionalCounter(Counter.Action)
     case setNavigation(isActive: Bool)
     case setNavigationIsActiveDelayCompleted
   }
-  
+
   @Dependency(\.mainQueue) var mainQueue
   private enum CancelID {}
 
