@@ -85,8 +85,7 @@ final class EffectCancellationTests: XCTestCase {
         .store(in: &self.cancellables)
     }
 
-    _ = XCTWaiter.wait(for: [self.expectation(description: "")], timeout: 0.3)
-
+    _ = XCTWaiter.wait(for: [self.expectation(description: "")], timeout: 1)
     XCTAssertEqual(value, nil)
   }
 
