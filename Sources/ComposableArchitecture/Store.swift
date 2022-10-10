@@ -564,8 +564,8 @@ public final class Store<State, Action> {
 public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
 
 #if swift(>=5.7)
-  fileprivate extension ReducerProtocol {
-    func rescope<ChildState, ChildAction>(
+  extension ReducerProtocol {
+    fileprivate func rescope<ChildState, ChildAction>(
       _ store: Store<State, Action>,
       state toChildState: @escaping (State) -> ChildState,
       action fromChildAction: @escaping (ChildAction) -> Action

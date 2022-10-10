@@ -377,7 +377,8 @@ extension WithViewStore: View where Content: View {
   @available(
     iOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       Use 'init(_:observe:removeDuplicates:content:)' to make state observation explicit.
 
       When using WithViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
@@ -388,7 +389,8 @@ extension WithViewStore: View where Content: View {
   @available(
     macOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       Use 'init(_:observe:removeDuplicates:content:)' to make state observation explicit.
 
       When using WithViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
@@ -399,7 +401,8 @@ extension WithViewStore: View where Content: View {
   @available(
     tvOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       Use 'init(_:observe:removeDuplicates:content:)' to make state observation explicit.
 
       When using WithViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
@@ -410,7 +413,8 @@ extension WithViewStore: View where Content: View {
   @available(
     watchOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       Use 'init(_:observe:removeDuplicates:content:)' to make state observation explicit.
 
       When using WithViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
@@ -623,7 +627,8 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   @available(
     iOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       Use 'init(_:observe:content:)' to make state observation explicit.
 
       When using WithViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
@@ -634,7 +639,8 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   @available(
     macOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       Use 'init(_:observe:content:)' to make state observation explicit.
 
       When using WithViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
@@ -645,7 +651,8 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   @available(
     tvOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       Use 'init(_:observe:content:)' to make state observation explicit.
 
       When using WithViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
@@ -656,7 +663,8 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   @available(
     watchOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       Use 'init(_:observe:content:)' to make state observation explicit.
 
       When using WithViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:

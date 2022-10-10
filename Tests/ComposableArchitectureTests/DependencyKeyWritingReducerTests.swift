@@ -6,7 +6,8 @@ final class DependencyKeyWritingReducerTests: XCTestCase {
   func testWritingFusion() async {
     let reducer: _DependencyKeyWritingReducer<Feature> = Feature()
       .dependency(\.myValue, 42)
-    let _: _DependencyKeyWritingReducer<Feature> = reducer
+    let _: _DependencyKeyWritingReducer<Feature> =
+      reducer
       .dependency(\.myValue, 1729)
       .dependency(\.myValue, 1)
       .dependency(\.myValue, 2)
@@ -48,7 +49,11 @@ final class DependencyKeyWritingReducerTests: XCTestCase {
   func testDependency_EffectOfEffect() async {
     struct Feature: ReducerProtocol {
       struct State: Equatable { var count = 0 }
-      enum Action: Equatable { case tap, response(Int), otherResponse(Int) }
+      enum Action: Equatable {
+        case tap
+        case response(Int)
+        case otherResponse(Int)
+      }
       @Dependency(\.myValue) var myValue
 
       func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
@@ -83,7 +88,7 @@ final class DependencyKeyWritingReducerTests: XCTestCase {
     await store.receive(.otherResponse(42))
   }
 }
- 
+
 private struct Feature: ReducerProtocol {
   @Dependency(\.myValue) var myValue
   struct State: Equatable { var value = 0 }

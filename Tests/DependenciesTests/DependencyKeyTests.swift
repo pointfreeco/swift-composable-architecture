@@ -141,7 +141,7 @@ final class DependencyKeyTests: XCTestCase {
             'testValue' requirement of the 'DependencyKey' protocol.
             """
         }
-    }
+      }
     #endif
   }
 }
@@ -150,8 +150,8 @@ private enum LiveKey: DependencyKey {
   static let liveValue = 42
 }
 
-private extension DependencyValues {
-  var missingTestDependency: Int {
+extension DependencyValues {
+  fileprivate var missingTestDependency: Int {
     get { self[LiveKey.self] }
     set { self[LiveKey.self] = newValue }
   }

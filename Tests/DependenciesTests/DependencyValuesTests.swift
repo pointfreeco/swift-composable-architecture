@@ -79,4 +79,4 @@ final class DependencyValuesTests: XCTestCase {
   }
 }
 
-private let someDate = Date(timeIntervalSince1970: 1234567890)
+private let someDate = Date(timeIntervalSince1970: 1_234_567_890)
