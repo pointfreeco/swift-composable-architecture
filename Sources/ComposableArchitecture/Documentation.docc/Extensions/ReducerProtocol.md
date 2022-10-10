@@ -29,7 +29,7 @@
 ### Reducer modifiers
 
 - ``dependency(_:_:)``
-- ``dependencies(_:)``
+- ``transformDependency(_:transform:)``
 - ``signpost(_:log:)``
 - ``debug()``
 

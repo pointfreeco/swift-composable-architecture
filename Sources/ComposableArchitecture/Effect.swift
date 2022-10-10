@@ -3,12 +3,12 @@ import Foundation
 import SwiftUI
 import XCTestDynamicOverlay
 
-/// A type encapsulates a unit of work that can be run in the outside world, and can feed actions
-/// back to the ``Store``. It is the perfect place to do side effects, such as network requests,
-/// saving/loading from disk, creating timers, interacting with dependencies, and more.
+/// A type that encapsulates a unit of work that can be run in the outside world, and can feed
+/// actions back to the ``Store``.
 ///
-/// Effects are returned from reducers so that the ``Store`` can perform the effects after the
-/// reducer is done running.
+/// Effects are the perfect place to do side effects, such as network requests, saving/loading
+/// from disk, creating timers, interacting with dependencies, and more. They are returned from
+/// reducers so that the ``Store`` can perform the effects after the reducer is done running.
 ///
 /// There are 2 distinct ways to create an `Effect`: one using Swift's native concurrency tools, and
 /// the other using Apple's Combine framework:
@@ -456,6 +456,12 @@ extension Effect {
     case .none:
       return .none
     case let .publisher(publisher):
+      let dependencies = DependencyValues._current
+      let transform = { action in
+        DependencyValues.$_current.withValue(dependencies) {
+          transform(action)
+        }
+      }
       return .init(operation: .publisher(publisher.map(transform).eraseToAnyPublisher()))
     case let .run(priority, operation):
       return .init(

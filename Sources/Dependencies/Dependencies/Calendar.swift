@@ -3,11 +3,20 @@ import XCTestDynamicOverlay
 
 #if swift(>=5.6)
   extension DependencyValues {
-    /// The current calendar that reducers should use when handling dates.
+    /// The current calendar that features should use when handling dates.
     ///
     /// By default, the calendar returned from `Calendar.autoupdatingCurrent` is supplied. When used
-    /// from a `TestStore`, access will call to `XCTFail` when invoked, unless explicitly
-    /// overridden:
+    /// in a testing context, access will call to `XCTFail` when invoked, unless explicitly
+    /// overridden using ``withValue(_:_:operation:)-705n``:
+    ///
+    /// ```swift
+    /// DependencyValues.withValue(\.calendar, Calendar(identifier: .gregorian)) {
+    ///   // Assertions...
+    /// }
+    /// ```
+    ///
+    /// Or, if you are using the Composable Architecture, you can override dependencies directly
+    /// on the `TestStore`:
     ///
     /// ```swift
     /// let store = TestStore(

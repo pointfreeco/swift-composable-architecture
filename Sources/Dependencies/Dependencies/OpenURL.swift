@@ -11,6 +11,7 @@ import XCTestDynamicOverlay
 #endif
 
 extension DependencyValues {
+  /// A dependency that opens a URL.
   @available(iOS 13, macOS 10.15, tvOS 13, watchOS 7, *)
   public var openURL: OpenURLEffect {
     get { self[OpenURLKey.self] }

@@ -77,7 +77,8 @@
   ///
   ///     case startTimerButtonTapped:
   ///       return .run { send in
-  ///         for await _ in ContinuousClock().timer(interval: .seconds(1)) {
+  ///         while true {
+  ///           try await Task.sleep(for: .seconds(1))
   ///           await send(.timerTick)
   ///         }
   ///       }
@@ -94,11 +95,11 @@
   /// }
   /// ```
   ///
-  /// > Note: This sample makes use of a `timer` method on `ContinuousClock` that ships with our
-  /// [Swift Clocks][swift-clocks] library, which is automatically included with the Composable
-  /// Architecture. Also, it is typically better to inject a clock dependency into features rather
-  /// than calling out to live, uncontrollable clocks like `ContinuousClock`. Read
-  /// the <doc:DependencyManagement> and <doc:Testing> articles for more information.
+  /// > Note: This sample emulates a timer by performing an infinite loop with a `Task.sleep`
+  /// inside. This is simple to do, but is also inaccurate since small imprecisions can accumulate.
+  /// It would be better to inject a Combine scheduler into the feature and use its async-friendly
+  /// `timer` method. Read the <doc:DependencyManagement> and <doc:Testing> articles for more
+  /// information.
   ///
   /// That is the basics of implementing a feature as a conformance to ``ReducerProtocol``. There are
   /// actually two ways to define a reducer:
@@ -158,7 +159,6 @@
   /// }
   /// ```
   ///
-  /// [swift-clocks]: http://github.com/pointfreeco/swift-clocks
   public protocol ReducerProtocol<State, Action> {
     /// A type that holds the current state of the reducer.
     associatedtype State
@@ -184,7 +184,7 @@
     ///
     /// Implement this requirement for "primitive" reducers, or reducers that work on leaf node
     /// features. To define a reducer by combining the logic of other reducers together, implement
-    /// the ``body-swift.property-7foai`` requirement instead.
+    /// the ``body-swift.property-97ymy`` requirement instead.
     ///
     /// - Parameters:
     ///   - state: The current state of the reducer.
@@ -346,3 +346,27 @@ extension ReducerProtocol where Body: ReducerProtocol, Body.State == State, Body
     self.body.reduce(into: &state, action: action)
   }
 }
+
+// NB: This is available only in Swift 5.7.1 due to the following bug:
+//     https://github.com/apple/swift/issues/60550
+#if swift(>=5.7.1)
+  /// A convenience for constraining a ``ReducerProtocol`` conformance. Available only in Swift
+  /// 5.7.1.
+  ///
+  /// This allows you to specify the `body` of a ``ReducerProtocol`` conformance like so:
+  ///
+  /// ```swift
+  /// var body: some ReducerProtocolOf<Self> {
+  ///   // ...
+  /// }
+  /// ```
+  ///
+  /// …instead of the more verbose:
+  ///
+  /// ```swift
+  /// var body: some ReducerProtocol<State, Action> {
+  ///   // ...
+  /// }
+  /// ```
+  public typealias ReducerProtocolOf<R: ReducerProtocol> = ReducerProtocol<R.State, R.Action>
+#endif

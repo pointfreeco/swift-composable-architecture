@@ -8,18 +8,27 @@ import XCTestDynamicOverlay
     /// By default, a ``DateGenerator/live`` generator is supplied. When used from a `TestStore`, an
     /// ``DateGenerator/unimplemented`` generator is supplied, unless explicitly overridden.
     ///
-    /// You can access the current date from a reducer by introducing a `Dependency` property
+    /// You can access the current date from a feature by introducing a ``Dependency`` property
     /// wrapper to the generator's ``DateGenerator/now`` property:
     ///
     /// ```swift
-    /// struct MyFeature: ReducerProtocol {
+    /// final class FeatureModel: ReducerProtocol {
     ///   @Dependency(\.date.now) var now
     ///   // ...
     /// }
     /// ```
     ///
-    /// To override the current date in tests, you can assign the generator's ``DateGenerator/now``
-    /// property:
+    /// To override the current date in tests, you can override the generator using
+    /// ``withValue(_:_:operation:)-705n``:
+    ///
+    /// ```swift
+    /// DependencyValues.withValue(\.date, .constant(Date(timeIntervalSince1970: 0))) {
+    ///   // Assertions...
+    /// }
+    /// ```
+    ///
+    /// Or, if you are using the Composable Architecture, you can override dependencies directly
+    /// on the `TestStore`:
     ///
     /// ```swift
     /// let store = TestStore(
@@ -35,8 +44,11 @@ import XCTestDynamicOverlay
     }
 
     private enum DateGeneratorKey: DependencyKey {
-      static let liveValue: DateGenerator = .live
-      static let testValue: DateGenerator = .unimplemented
+      static let liveValue = DateGenerator { Date() }
+      static let testValue = DateGenerator {
+        XCTFail(#"Unimplemented: @Dependency(\.date)"#)
+        return Date()
+      }
     }
   }
 
@@ -54,19 +66,9 @@ import XCTestDynamicOverlay
       Self { now }
     }
 
-    /// A generator that calls `Date()` under the hood.
-    public static let live = Self { Date() }
-
-    /// A generator that calls `XCTFail` when it is invoked.
-    public static let unimplemented = Self {
-      XCTFail(#"Unimplemented: @Dependency(\.date)"#)
-      return Date()
-    }
-
     /// The current date.
     public var now: Date {
-      get { self.generate() }
-      set { self.generate = { newValue } }
+      self.generate()
     }
 
     /// Initializes a date generator that generates a date from a closure.

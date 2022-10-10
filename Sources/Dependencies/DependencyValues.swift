@@ -1,8 +1,6 @@
 import Foundation
 import XCTestDynamicOverlay
 
-// TODO: should we have `@Dependency(\.runtimeWarningsEnabled)` and/or `@Dependency(\.treatWarningsAsErrors)`?
-
 /// A collection of dependencies that is globally available.
 ///
 /// To access a particular dependency from the collection you use the ``Dependency`` property
@@ -61,19 +59,98 @@ public struct DependencyValues: Sendable {
   @TaskLocal static var isSetting = false
   @TaskLocal static var currentDependency = CurrentDependency()
 
-  /// Binds the task-local dependencies to the updated value for the duration of the synchronous
-  /// operation.
+  /// Updates a single dependency for the duration of a synchronous operation.
+  ///
+  /// For example, if you wanted to force the ``DependencyValues/date`` dependency to be a
+  /// particular date, you can do:
+  ///
+  /// ```swift
+  /// DependencyValues.withValue(\.date, .constant(Date(timeIntervalSince1970: 1234567890))) {
+  ///   // References to date in here are pinned to 1234567890.
+  /// }
+  /// ```
+  ///
+  /// See ``withValues(_:operation:)-9prz8`` to update multiple dependencies at once without nesting
+  /// calls to `withValue`.
   ///
   /// - Parameters:
-  ///   - updateForOperation: A closure for updating the current dependency values for the duration
-  ///     of the operation.
+  ///   - keyPath: A key path that indicates the property of the `DependencyValues` structure to
+  ///     update.
+  ///   - value: The new value to set for the item specified by `keyPath`.
+  ///   - operation: The operation to run with the updated dependencies.
+  /// - Returns: The result returned from `operation`.
+  public static func withValue<Value, R>(
+    _ keyPath: WritableKeyPath<DependencyValues, Value>,
+    _ value: Value,
+    operation: () throws -> R
+  ) rethrows -> R {
+    try Self.$isSetting.withValue(true) {
+      var dependencies = Self._current
+      dependencies[keyPath: keyPath] = value
+      return try Self.$_current.withValue(dependencies) {
+        try operation()
+      }
+    }
+  }
+
+  /// Updates a single dependency for the duration of an asynchronous operation.
+  ///
+  /// For example, if you wanted to force the ``DependencyValues/date`` dependency to be a
+  /// particular date, you can do:
+  ///
+  /// ```swift
+  /// await DependencyValues.withValue(\.date, .constant(Date(timeIntervalSince1970: 1234567890))) {
+  ///   // References to date in here are pinned to 1234567890.
+  /// }
+  /// ```
+  ///
+  /// See ``withValues(_:operation:)-1oaja`` to update multiple dependencies at once without nesting
+  /// calls to `withValue`.
+  ///
+  /// - Parameters:
+  ///   - keyPath: A key path that indicates the property of the `DependencyValues` structure to
+  ///     update.
+  ///   - value: The new value to set for the item specified by `keyPath`.
+  ///   - operation: The operation to run with the updated dependencies.
+  /// - Returns: The result returned from `operation`.
+  public static func withValue<Value, R>(
+    _ keyPath: WritableKeyPath<DependencyValues, Value>,
+    _ value: Value,
+    operation: () async throws -> R
+  ) async rethrows -> R {
+    try await Self.$isSetting.withValue(true) {
+      var dependencies = Self._current
+      dependencies[keyPath: keyPath] = value
+      return try await Self.$_current.withValue(dependencies) {
+        try await operation()
+      }
+    }
+  }
+
+  /// Updates the dependencies for the duration of a synchronous operation.
+  ///
+  /// Any mutations made to ``DependencyValues`` inside `updateValuesForOperation` will be visible
+  /// to everything executed in the operation. For example, if you wanted to force the ``date``
+  /// dependency to be a particular date, you can do:
+  ///
+  /// ```swift
+  /// DependencyValues.withValues {
+  ///   $0.date.now = Date(timeIntervalSince1970: 1234567890)
+  /// } operation: {
+  ///   // References to date in here are pinned to 1234567890.
+  /// }
+  /// ```
+  ///
+  /// See ``withValue(_:_:operation:)-3yj9d`` to update a single dependency with a constant value.
+  ///
+  /// - Parameters:
+  ///   - updateValuesForOperation: A closure for updating the current dependency values for the
+  ///     duration of the operation.
   ///   - operation: An operation to perform wherein dependencies have been overridden.
   /// - Returns: The result returned from `operation`.
   public static func withValues<R>(
     _ updateValuesForOperation: (inout Self) throws -> Void,
-    operation: () throws -> R,
-    file: String = #fileID,
-    line: UInt = #line
+    operation: () throws -> R
   ) rethrows -> R {
     try Self.$isSetting.withValue(true) {
       var dependencies = Self._current
@@ -84,19 +161,30 @@ public struct DependencyValues: Sendable {
     }
   }
 
-  /// Binds the task-local dependencies to the updated value for the duration of the asynchronous
-  /// operation.
+  /// Updates the dependencies for the duration of an asynchronous operation.
+  ///
+  /// Any mutations made to ``DependencyValues`` inside `updateValuesForOperation` will be visible
+  /// to everything executed in the operation. For example, if you wanted to force the
+  /// ``DependencyValues/date`` dependency to be a particular date, you can do:
+  ///
+  /// ```swift
+  /// await DependencyValues.withValues {
+  ///   $0.date.now = Date(timeIntervalSince1970: 1234567890)
+  /// } operation: {
+  ///   // References to date in here are pinned to 1234567890.
+  /// }
+  /// ```
+  ///
+  /// See ``withValue(_:_:operation:)-705n`` to update a single dependency with a constant value.
   ///
   /// - Parameters:
-  ///   - updateForOperation: A closure for updating the current dependency values for the duration
-  ///     of the operation.
+  ///   - updateValuesForOperation: A closure for updating the current dependency values for the
+  ///     duration of the operation.
   ///   - operation: An operation to perform wherein dependencies have been overridden.
   /// - Returns: The result returned from `operation`.
   public static func withValues<R>(
     _ updateValuesForOperation: (inout Self) async throws -> Void,
-    operation: () async throws -> R,
-    file: String = #fileID,
-    line: UInt = #line
+    operation: () async throws -> R
   ) async rethrows -> R {
     try await Self.$isSetting.withValue(true) {
       var dependencies = Self._current
@@ -112,9 +200,8 @@ public struct DependencyValues: Sendable {
   /// Creates a dependency values instance.
   ///
   /// You don't typically create an instance of ``DependencyValues`` directly. Doing so would
-  /// provide access only to default values. Instead, you rely on an dependency values' instance
-  /// that the Composable Architecture manages for you when you use the ``Dependency`` property
-  /// wrapper and the `ReducerProtocol/dependency(_:_:)`` modifier.
+  /// provide access only to default values. Instead, you rely on the dependency values' instance
+  /// that the library manages for you when you use the ``Dependency`` property wrapper.
   public init() {}
 
   /// Accesses the dependency value associated with a custom key.
@@ -137,8 +224,8 @@ public struct DependencyValues: Sendable {
   /// ```
   ///
   /// You use custom dependency values the same way you use system-provided values, setting a value
-  /// with the `ReducerProtocol/dependency(_:_:)` modifier, and reading values with the
-  /// ``Dependency`` property wrapper.
+  /// with ``withValue(_:_:operation:)-705n``, and reading values with the ``Dependency`` property
+  /// wrapper.
   public subscript<Key: TestDependencyKey>(
     key: Key.Type,
     file: StaticString = #file,
@@ -156,6 +243,7 @@ public struct DependencyValues: Sendable {
         case .live:
           guard let value = _liveValue(Key.self) as? Key.Value
           else {
+            // TODO: add test coverage to this logic
             if !Self.isSetting {
               var dependencyDescription = ""
               if
@@ -251,3 +339,5 @@ private let defaultContext: DependencyContext = {
     return .live
   }
 }()
+
+// TODO: should we have `@Dependency(\.runtimeWarningsEnabled)` and/or `@Dependency(\.treatWarningsAsErrors)`?

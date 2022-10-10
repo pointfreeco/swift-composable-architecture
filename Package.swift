@@ -52,13 +52,6 @@ let package = Package(
       dependencies: [
         "ComposableArchitecture"
       ]
-      //      ,
-      //      swiftSettings: [
-      //        .unsafeFlags([
-      //          "-Xfrontend", "-warn-concurrency",
-      //          "-Xfrontend", "-enable-actor-data-race-checks",
-      //        ])
-      //      ]
     ),
     .target(
       name: "Dependencies",
@@ -83,6 +76,16 @@ let package = Package(
     ),
   ]
 )
+
+for target in package.targets {
+  target.swiftSettings = target.swiftSettings ?? []
+  target.swiftSettings?.append(
+    .unsafeFlags([
+       //"-Xfrontend", "-warn-concurrency",
+       //"-Xfrontend", "-enable-actor-data-race-checks",
+    ])
+  )
+}
 
 #if swift(>=5.6)
   // Add the documentation compiler plugin if possible

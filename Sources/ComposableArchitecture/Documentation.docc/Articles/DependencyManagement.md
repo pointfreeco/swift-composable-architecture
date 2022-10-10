@@ -253,6 +253,25 @@ func testFetchUser() async {
 }
 ```
 
+Often times it is not necessary to create a whole new type to conform to `DependencyKey`. If the
+dependency you are registering is a type that you own, then you can conform it directly to the 
+protocol:
+
+```swift
+extension APIClient: DependencyKey {
+  static let liveValue = APIClient.live
+}
+
+extension DependencyValues {
+  var apiClient: APIClient {
+    get { self[APIClient.self] }
+    set { self[APIClient.self] = newValue }
+  }
+}
+```
+
+That can save a little bit of boilerplate.
+
 ## Live, preview and test dependencies
 
 In the previous section we showed that to conform to [`DependencyKey`][dependency-key-docs] you must

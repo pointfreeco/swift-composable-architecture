@@ -20,6 +20,9 @@ jobs:
   build:
     runs-on: macos-12
     steps:
+      - name: Select Xcode 14.0.1
+        run: sudo xcode-select -s /Applications/Xcode_14.0.1.app
+
       - name: Checkout Package
         uses: actions/checkout@v2
         with:
@@ -31,12 +34,14 @@ jobs:
           repository: apple/swift-docc
           ref: main
           path: swift-docc
+
       - name: Cache DocC
         id: cache-docc
         uses: actions/cache@v2
         with:
           key: swift-url-docc-build
           path: swift-docc/.build
+
       - name: Build swift-docc
         if: ${{ !steps.cache-docc.outputs.cache-hit }}
         run: |
@@ -48,6 +53,7 @@ jobs:
           repository: apple/swift-docc-render
           ref: main
           path: swift-docc-render
+
       - name: Build swift-docc-render
         run: |
           cd swift-docc-render; npm install && npm run build; cd ..
@@ -63,15 +69,16 @@ jobs:
           rm -rf docs-out/.git;
           rm -rf docs-out/main;
           rm -rf docs-out/protocol-beta;
+          git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | tail -n +6 | xargs -I {} rm -rf {};
 
-          for tag in $(echo "main"; echo "protocol-beta"; git tag);
+          for tag in $(echo "main"; echo "protocol-beta"; git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | head -6);
           do
-            echo "⏳ Generating documentation for "$tag" release.";
-
             if [ -d "docs-out/$tag" ] 
             then 
               echo "✅ Documentation for "$tag" already exists.";
             else 
+              echo "⏳ Generating documentation for "$target" @ "$tag" release.";
+
               for target in ComposableArchitecture Dependencies;
               do 
                 git checkout .;
@@ -98,14 +105,15 @@ jobs:
                     --transform-for-static-hosting \
                     --hosting-base-path /swift-composable-architecture/"$tag" \
                     --output-path docs-out/"$tag" \
-                    && echo "✅ Documentation generated for "$tag" release." \
-                    || echo "⚠️ Documentation skipped for "$tag".";
+                    && echo "✅ Documentation generated for "$target" @ "$tag" release." \
+                    || echo "⚠️ Documentation skipped for "$target" @ "$tag".";
               done;
             fi;
           done
 
       - name: Fix permissions
         run: 'sudo chown -R $USER docs-out'
+
       - name: Publish documentation to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@4.1.7
         with:
