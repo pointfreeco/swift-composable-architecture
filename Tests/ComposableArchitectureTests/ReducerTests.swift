@@ -20,7 +20,7 @@ final class ReducerTests: XCTestCase {
     XCTAssertEqual(state, 1)
   }
 
-  func testCombine_EffectsAreMerged() async {
+  func testCombine_EffectsAreMerged() async throws {
     typealias Scheduler = AnySchedulerOf<DispatchQueue>
     enum Action: Equatable {
       case increment
@@ -62,6 +62,7 @@ final class ReducerTests: XCTestCase {
     }
     // Waiting a second causes the fast effect to fire.
     await mainQueue.advance(by: 1)
+    try await Task.sleep(nanoseconds: NSEC_PER_SEC / 3)
     XCTAssertEqual(fastValue, 42)
     XCTAssertEqual(slowValue, nil)
     // Waiting one more second causes the slow effect to fire. This proves that the effects
