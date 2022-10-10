@@ -59,7 +59,7 @@ jobs:
                   --target "$target" \
                   --output-path docs-out/"$tag" \
                   --transform-for-static-hosting \
-                  --hosting-base-path /swift-composable-architecture/"$tag"
+                  --hosting-base-path /swift-composable-architecture/"$tag" \
                   && echo "✅ Documentation generated for "$target" @ "$tag" release." \
                   || echo "⚠️ Documentation skipped for "$target" @ "$tag".";
               done;
