@@ -5,6 +5,14 @@ import XCTestDynamicOverlay
 
 // MARK: - Deprecated after 0.41.0:
 
+extension ViewStore {
+  @available(*, deprecated, renamed: "ViewState")
+  public typealias State = ViewState
+
+  @available(*, deprecated, renamed: "ViewAction")
+  public typealias Action = ViewAction
+}
+
 extension ReducerProtocol {
   @available(*, deprecated, renamed: "_printChanges")
   public func debug() -> _PrintChangesReducer<Self, _CustomDumpPrinter> {
@@ -541,7 +549,7 @@ extension Effect {
 extension ViewStore {
   @available(*, deprecated, renamed: "yield(while:)")
   @MainActor
-  public func suspend(while predicate: @escaping (State) -> Bool) async {
+  public func suspend(while predicate: @escaping (ViewState) -> Bool) async {
     await self.yield(while: predicate)
   }
 }
@@ -909,7 +917,7 @@ extension Store {
   }
 }
 
-extension ViewStore where Action: BindableAction, Action.State == State {
+extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
   @available(
     *, deprecated,
     message:
@@ -922,7 +930,7 @@ extension ViewStore where Action: BindableAction, Action.State == State {
   )
   @MainActor
   public subscript<Value: Equatable>(
-    dynamicMember keyPath: WritableKeyPath<State, BindableState<Value>>
+    dynamicMember keyPath: WritableKeyPath<ViewState, BindableState<Value>>
   ) -> Binding<Value> {
     self.binding(
       get: { $0[keyPath: keyPath].wrappedValue },
@@ -1000,8 +1008,8 @@ extension ViewStore {
   )
   @MainActor
   public func binding<Value: Equatable>(
-    keyPath: WritableKeyPath<State, Value>,
-    send action: @escaping (BindingAction<State>) -> Action
+    keyPath: WritableKeyPath<ViewState, Value>,
+    send action: @escaping (BindingAction<ViewState>) -> ViewAction
   ) -> Binding<Value> {
     self.binding(
       get: { $0[keyPath: keyPath] },
