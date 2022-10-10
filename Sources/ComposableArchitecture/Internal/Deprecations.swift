@@ -651,7 +651,7 @@ extension AnyReducer {
 
 // MARK: - Deprecated after 0.29.0:
 
-extension TestStore where ScopedState: Equatable, Reducer.Action: Equatable {
+extension TestStore where ScopedState: Equatable, Action: Equatable {
   @available(
     *, deprecated, message: "Use 'TestStore.send' and 'TestStore.receive' directly, instead."
   )
@@ -759,7 +759,7 @@ extension TestStore where ScopedState: Equatable, Reducer.Action: Equatable {
 
     @available(*, deprecated, message: "Call 'TestStore.receive' directly, instead.")
     public static func receive(
-      _ action: Reducer.Action,
+      _ action: Action,
       file: StaticString = #file,
       line: UInt = #line,
       _ update: ((inout ScopedState) throws -> Void)? = nil
@@ -771,7 +771,7 @@ extension TestStore where ScopedState: Equatable, Reducer.Action: Equatable {
     public static func environment(
       file: StaticString = #file,
       line: UInt = #line,
-      _ update: @escaping (inout Context) throws -> Void
+      _ update: @escaping (inout Environment) throws -> Void
     ) -> Step {
       Step(.environment(update), file: file, line: line)
     }
@@ -805,8 +805,8 @@ extension TestStore where ScopedState: Equatable, Reducer.Action: Equatable {
 
     fileprivate indirect enum StepType {
       case send(ScopedAction, ((inout ScopedState) throws -> Void)?)
-      case receive(Reducer.Action, ((inout ScopedState) throws -> Void)?)
-      case environment((inout Context) throws -> Void)
+      case receive(Action, ((inout ScopedState) throws -> Void)?)
+      case environment((inout Environment) throws -> Void)
       case `do`(() throws -> Void)
       case sequence([Step])
     }
