@@ -45,24 +45,21 @@ jobs:
             then 
               echo "✅ Documentation for "$tag" already exists.";
             else 
-              rm -fr "docs-out/$tag";
-              echo "⏳ Generating documentation for "$target" @ "$tag" release.";
+              echo "⏳ Generating documentation for ComposableArchitecture @ "$tag" release.";
+              rm -rf "docs-out/$tag";
 
-              for target in ComposableArchitecture Dependencies;
-              do 
-                git checkout .;
-                git checkout "$tag";
-                mkdir -p Sources/"$target"/Documentation.docc;
-                swift package \
-                  --allow-writing-to-directory docs-out/"$tag" \
-                  generate-documentation \
-                  --target "$target" \
-                  --output-path docs-out/"$tag" \
-                  --transform-for-static-hosting \
-                  --hosting-base-path /swift-composable-architecture/"$tag" \
-                  && echo "✅ Documentation generated for "$target" @ "$tag" release." \
-                  || echo "⚠️ Documentation skipped for "$target" @ "$tag".";
-              done;
+              git checkout .;
+              git checkout "$tag";
+
+              swift package \
+                --allow-writing-to-directory docs-out/"$tag" \
+                generate-documentation \
+                --target ComposableArchitecture \
+                --output-path docs-out/"$tag" \
+                --transform-for-static-hosting \
+                --hosting-base-path /swift-composable-architecture/"$tag" \
+                && echo "✅ Documentation generated for ComposableArchitecture @ "$tag" release." \
+                || echo "⚠️ Documentation skipped for ComposableArchitecture @ "$tag".";
             fi;
           done
 
