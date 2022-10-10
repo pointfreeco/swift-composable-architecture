@@ -3,31 +3,31 @@ import ComposableArchitecture
 import SwiftUI
 import UIKit
 
-struct CounterListState: Equatable {
-  var counters: IdentifiedArrayOf<CounterState> = []
+struct CounterList: ReducerProtocol {
+  struct State: Equatable {
+    var counters: IdentifiedArrayOf<Counter.State> = []
+  }
+
+  enum Action: Equatable {
+    case counter(id: Counter.State.ID, action: Counter.Action)
+  }
+
+  var body: some ReducerProtocol<State, Action> {
+    EmptyReducer()
+      .forEach(\.counters, action: /Action.counter) {
+        Counter()
+      }
+  }
 }
-
-enum CounterListAction: Equatable {
-  case counter(id: CounterState.ID, action: CounterAction)
-}
-
-struct CounterListEnvironment {}
-
-let counterListReducer: Reducer<CounterListState, CounterListAction, CounterListEnvironment> =
-  counterReducer.forEach(
-    state: \CounterListState.counters,
-    action: /CounterListAction.counter(id:action:),
-    environment: { _ in CounterEnvironment() }
-  )
 
 let cellIdentifier = "Cell"
 
 final class CountersTableViewController: UITableViewController {
-  let store: Store<CounterListState, CounterListAction>
-  let viewStore: ViewStore<CounterListState, CounterListAction>
+  let store: StoreOf<CounterList>
+  let viewStore: ViewStoreOf<CounterList>
   var cancellables: Set<AnyCancellable> = []
 
-  init(store: Store<CounterListState, CounterListAction>) {
+  init(store: StoreOf<CounterList>) {
     self.store = store
     self.viewStore = ViewStore(store)
     super.init(nibName: nil, bundle: nil)
@@ -82,15 +82,14 @@ struct CountersTableViewController_Previews: PreviewProvider {
     let vc = UINavigationController(
       rootViewController: CountersTableViewController(
         store: Store(
-          initialState: CounterListState(
+          initialState: CounterList.State(
             counters: [
-              CounterState(),
-              CounterState(),
-              CounterState(),
+              Counter.State(),
+              Counter.State(),
+              Counter.State(),
             ]
           ),
-          reducer: counterListReducer,
-          environment: CounterListEnvironment()
+          reducer: CounterList()
         )
       )
     )

@@ -21,85 +21,78 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct EffectsBasicsState: Equatable {
-  var count = 0
-  var isNumberFactRequestInFlight = false
-  var numberFact: String?
-}
+struct EffectsBasics: ReducerProtocol {
+  struct State: Equatable {
+    var count = 0
+    var isNumberFactRequestInFlight = false
+    var numberFact: String?
+  }
 
-enum EffectsBasicsAction: Equatable {
-  case decrementButtonTapped
-  case decrementDelayResponse
-  case incrementButtonTapped
-  case numberFactButtonTapped
-  case numberFactResponse(TaskResult<String>)
-}
+  enum Action: Equatable {
+    case decrementButtonTapped
+    case decrementDelayResponse
+    case incrementButtonTapped
+    case numberFactButtonTapped
+    case numberFactResponse(TaskResult<String>)
+  }
 
-struct EffectsBasicsEnvironment {
-  var fact: FactClient
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
+  @Dependency(\.factClient) var factClient
+  @Dependency(\.mainQueue) var mainQueue
+  private enum DelayID {}
 
-// MARK: - Feature business logic
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    switch action {
+    case .decrementButtonTapped:
+      state.count -= 1
+      state.numberFact = nil
+      // Return an effect that re-increments the count after 1 second if the count is negative
+      return state.count >= 0
+        ? .none
+        : .task {
+          try await self.mainQueue.sleep(for: 1)
+          return .decrementDelayResponse
+        }
+        .cancellable(id: DelayID.self)
 
-let effectsBasicsReducer = Reducer<
-  EffectsBasicsState,
-  EffectsBasicsAction,
-  EffectsBasicsEnvironment
-> { state, action, environment in
-  enum DelayID {}
-
-  switch action {
-  case .decrementButtonTapped:
-    state.count -= 1
-    state.numberFact = nil
-    // Return an effect that re-increments the count after 1 second if the count is negative
-    return state.count >= 0
-      ? .none
-      : .task {
-        try await environment.mainQueue.sleep(for: 1)
-        return .decrementDelayResponse
+    case .decrementDelayResponse:
+      if state.count < 0 {
+        state.count += 1
       }
-      .cancellable(id: DelayID.self)
+      return .none
 
-  case .decrementDelayResponse:
-    if state.count < 0 {
+    case .incrementButtonTapped:
       state.count += 1
+      state.numberFact = nil
+      return state.count >= 0
+        ? .cancel(id: DelayID.self)
+        : .none
+
+    case .numberFactButtonTapped:
+      state.isNumberFactRequestInFlight = true
+      state.numberFact = nil
+      // Return an effect that fetches a number fact from the API and returns the
+      // value back to the reducer's `numberFactResponse` action.
+      return .task { [count = state.count] in
+        await .numberFactResponse(TaskResult { try await self.factClient.fetch(count) })
+      }
+
+    case let .numberFactResponse(.success(response)):
+      state.isNumberFactRequestInFlight = false
+      state.numberFact = response
+      return .none
+
+    case .numberFactResponse(.failure):
+      // NB: This is where we could handle the error is some way, such as showing an alert.
+      state.isNumberFactRequestInFlight = false
+      return .none
     }
-    return .none
-
-  case .incrementButtonTapped:
-    state.count += 1
-    state.numberFact = nil
-    return state.count >= 0
-      ? .cancel(id: DelayID.self)
-      : .none
-
-  case .numberFactButtonTapped:
-    state.isNumberFactRequestInFlight = true
-    state.numberFact = nil
-    // Return an effect that fetches a number fact from the API and returns the
-    // value back to the reducer's `numberFactResponse` action.
-    return .task { [count = state.count] in
-      await .numberFactResponse(TaskResult { try await environment.fact.fetch(count) })
-    }
-
-  case let .numberFactResponse(.success(response)):
-    state.isNumberFactRequestInFlight = false
-    state.numberFact = response
-    return .none
-
-  case .numberFactResponse(.failure):
-    // NB: This is where we could handle the error is some way, such as showing an alert.
-    state.isNumberFactRequestInFlight = false
-    return .none
   }
 }
 
 // MARK: - Feature view
 
 struct EffectsBasicsView: View {
-  let store: Store<EffectsBasicsState, EffectsBasicsAction>
+  let store: StoreOf<EffectsBasics>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -164,12 +157,8 @@ struct EffectsBasicsView_Previews: PreviewProvider {
     NavigationView {
       EffectsBasicsView(
         store: Store(
-          initialState: EffectsBasicsState(),
-          reducer: effectsBasicsReducer,
-          environment: EffectsBasicsEnvironment(
-            fact: .live,
-            mainQueue: .main
-          )
+          initialState: EffectsBasics.State(),
+          reducer: EffectsBasics()
         )
       )
     }

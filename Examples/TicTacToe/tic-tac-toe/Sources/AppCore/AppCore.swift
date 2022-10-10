@@ -4,59 +4,48 @@ import Dispatch
 import LoginCore
 import NewGameCore
 
-public enum AppState: Equatable {
-  case login(LoginState)
-  case newGame(NewGameState)
+public struct TicTacToe: ReducerProtocol {
+  public enum State: Equatable {
+    case login(Login.State)
+    case newGame(NewGame.State)
 
-  public init() { self = .login(LoginState()) }
-}
-
-public enum AppAction: Equatable {
-  case login(LoginAction)
-  case newGame(NewGameAction)
-}
-
-public struct AppEnvironment {
-  public var authenticationClient: AuthenticationClient
-
-  public init(
-    authenticationClient: AuthenticationClient
-  ) {
-    self.authenticationClient = authenticationClient
+    public init() { self = .login(Login.State()) }
   }
-}
 
-public let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
-  loginReducer.pullback(
-    state: /AppState.login,
-    action: /AppAction.login,
-    environment: {
-      LoginEnvironment(
-        authenticationClient: $0.authenticationClient
-      )
+  public enum Action: Equatable {
+    case login(Login.Action)
+    case newGame(NewGame.Action)
+  }
+
+  public init() {}
+
+  public var body: some ReducerProtocol<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .login(.twoFactor(.twoFactorResponse(.success))):
+        state = .newGame(NewGame.State())
+        return .none
+
+      case let .login(.loginResponse(.success(response))) where !response.twoFactorRequired:
+        state = .newGame(NewGame.State())
+        return .none
+
+      case .login:
+        return .none
+
+      case .newGame(.logoutButtonTapped):
+        state = .login(Login.State())
+        return .none
+
+      case .newGame:
+        return .none
+      }
     }
-  ),
-  newGameReducer.pullback(
-    state: /AppState.newGame,
-    action: /AppAction.newGame,
-    environment: { _ in NewGameEnvironment() }
-  ),
-  Reducer { state, action, _ in
-    switch action {
-    case let .login(.twoFactor(.twoFactorResponse(.success(response)))),
-      let .login(.loginResponse(.success(response))) where !response.twoFactorRequired:
-      state = .newGame(NewGameState())
-      return .none
-
-    case .login:
-      return .none
-
-    case .newGame(.logoutButtonTapped):
-      state = .login(LoginState())
-      return .none
-
-    case .newGame:
-      return .none
+    .ifCaseLet(/State.login, action: /Action.login) {
+      Login()
+    }
+    .ifCaseLet(/State.newGame, action: /Action.newGame) {
+      NewGame()
     }
   }
-)
+}

@@ -14,7 +14,11 @@ let package = Package(
     .library(
       name: "ComposableArchitecture",
       targets: ["ComposableArchitecture"]
-    )
+    ),
+    .library(
+      name: "Dependencies",
+      targets: ["Dependencies"]
+    ),
   ],
   dependencies: [
     .package(name: "Benchmark", url: "https://github.com/google/swift-benchmark", from: "0.1.0"),
@@ -28,17 +32,39 @@ let package = Package(
     .target(
       name: "ComposableArchitecture",
       dependencies: [
+        "Dependencies",
         .product(name: "CasePaths", package: "swift-case-paths"),
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
         .product(name: "CustomDump", package: "swift-custom-dump"),
         .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
         .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
+      ],
+      swiftSettings: [
+        .unsafeFlags([
+          // "-enable-library-evolution"
+          // "-Xfrontend", "-warn-concurrency",
+          // "-Xfrontend", "-enable-actor-data-race-checks",
+        ])
       ]
     ),
     .testTarget(
       name: "ComposableArchitectureTests",
       dependencies: [
         "ComposableArchitecture"
+      ]
+    ),
+    .target(
+      name: "Dependencies",
+      dependencies: [
+        .product(name: "CombineSchedulers", package: "combine-schedulers"),
+        .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
+      ]
+    ),
+    .testTarget(
+      name: "DependenciesTests",
+      dependencies: [
+        "ComposableArchitecture",
+        "Dependencies",
       ]
     ),
     .executableTarget(
@@ -50,6 +76,17 @@ let package = Package(
     ),
   ]
 )
+
+for target in package.targets {
+  target.swiftSettings = target.swiftSettings ?? []
+  target.swiftSettings?.append(
+    .unsafeFlags([
+      //"-Xfrontend", "-warn-concurrency",
+      //"-Xfrontend", "-enable-actor-data-race-checks",
+      //"-enable-library-evolution",
+    ])
+  )
+}
 
 #if swift(>=5.6)
   // Add the documentation compiler plugin if possible

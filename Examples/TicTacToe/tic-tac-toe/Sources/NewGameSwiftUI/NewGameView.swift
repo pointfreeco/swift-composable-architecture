@@ -5,7 +5,7 @@ import NewGameCore
 import SwiftUI
 
 public struct NewGameView: View {
-  let store: Store<NewGameState, NewGameAction>
+  let store: StoreOf<NewGame>
 
   struct ViewState: Equatable {
     var isGameActive: Bool
@@ -13,7 +13,7 @@ public struct NewGameView: View {
     var oPlayerName: String
     var xPlayerName: String
 
-    init(state: NewGameState) {
+    init(state: NewGame.State) {
       self.isGameActive = state.game != nil
       self.isLetsPlayButtonDisabled = state.oPlayerName.isEmpty || state.xPlayerName.isEmpty
       self.oPlayerName = state.oPlayerName
@@ -29,12 +29,12 @@ public struct NewGameView: View {
     case xPlayerNameChanged(String)
   }
 
-  public init(store: Store<NewGameState, NewGameAction>) {
+  public init(store: StoreOf<NewGame>) {
     self.store = store
   }
 
   public var body: some View {
-    WithViewStore(self.store, observe: ViewState.init, send: NewGameAction.init) {
+    WithViewStore(self.store, observe: ViewState.init, send: NewGame.Action.init) {
       viewStore in
       Form {
         Section {
@@ -62,7 +62,7 @@ public struct NewGameView: View {
         }
 
         NavigationLink(
-          destination: IfLetStore(self.store.scope(state: \.game, action: NewGameAction.game)) {
+          destination: IfLetStore(self.store.scope(state: \.game, action: NewGame.Action.game)) {
             GameView(store: $0)
           },
           isActive: viewStore.binding(
@@ -80,7 +80,7 @@ public struct NewGameView: View {
   }
 }
 
-extension NewGameAction {
+extension NewGame.Action {
   init(action: NewGameView.ViewAction) {
     switch action {
     case .gameDismissed:
@@ -102,9 +102,8 @@ struct NewGame_Previews: PreviewProvider {
     NavigationView {
       NewGameView(
         store: Store(
-          initialState: NewGameState(),
-          reducer: newGameReducer,
-          environment: NewGameEnvironment()
+          initialState: NewGame.State(),
+          reducer: NewGame()
         )
       )
     }

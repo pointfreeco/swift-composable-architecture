@@ -26,8 +26,8 @@ import XCTestDynamicOverlay
 /// Then you can model your dependency as using simple `async` and `throws` functionality:
 ///
 /// ```swift
-/// struct FeatureEnvironment {
-///   var numberFact: (Int) async throws -> String
+/// struct NumberFactClient {
+///   var fetch: (Int) async throws -> String
 /// }
 /// ```
 ///
@@ -39,7 +39,7 @@ import XCTestDynamicOverlay
 /// case .factButtonTapped:
 ///   return .task {
 ///     await .factResponse(
-///       TaskResult { try await environment.numberFact(state.number) }
+///       TaskResult { try await self.numberFact.fetch(state.number) }
 ///     )
 ///   }
 ///
@@ -71,7 +71,7 @@ import XCTestDynamicOverlay
 /// ```swift
 /// // Set up a failing dependency
 /// struct RefreshFailure: Error {}
-/// store.environment.apiClient.fetchFeed = { throw RefreshFailure() }
+/// store.dependencies.apiClient.fetchFeed = { throw RefreshFailure() }
 ///
 /// // Simulate pull-to-refresh
 /// store.send(.refresh) { $0.isLoading = true }
@@ -89,7 +89,7 @@ import XCTestDynamicOverlay
 /// ```swift
 /// // Set up a failing dependency
 /// struct RefreshFailure: Error, Equatable {} // 👈
-/// store.environment.apiClient.fetchFeed = { throw RefreshFailure() }
+/// store.dependencies.apiClient.fetchFeed = { throw RefreshFailure() }
 ///
 /// // Simulate pull-to-refresh
 /// store.send(.refresh) { $0.isLoading = true }
@@ -279,27 +279,4 @@ extension TaskResult {
   public func get() throws -> Success {
     try self.value
   }
-}
-
-private enum _Witness<A> {}
-
-private protocol _AnyEquatable {
-  static func _isEqual(_ lhs: Any, _ rhs: Any) -> Bool
-}
-
-extension _Witness: _AnyEquatable where A: Equatable {
-  static func _isEqual(_ lhs: Any, _ rhs: Any) -> Bool {
-    guard
-      let lhs = lhs as? A,
-      let rhs = rhs as? A
-    else { return false }
-    return lhs == rhs
-  }
-}
-
-private func _isEqual(_ a: Any, _ b: Any) -> Bool? {
-  func `do`<A>(_: A.Type) -> Bool? {
-    (_Witness<A>.self as? _AnyEquatable.Type)?._isEqual(a, b)
-  }
-  return _openExistential(type(of: a), do: `do`)
 }

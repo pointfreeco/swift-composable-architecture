@@ -2,20 +2,20 @@ import ComposableArchitecture
 @preconcurrency import SwiftUI  // NB: SwiftUI.Animation is not Sendable yet.
 
 private let readMe = """
-  This screen demonstrates how the `Reducer` struct can be extended to enhance reducers with \
+  This screen demonstrates how the `AnyReducer` struct can be extended to enhance reducers with \
   extra functionality.
 
   In this example we introduce a declarative interface for describing long-running effects, \
   inspired by Elm's `subscriptions` API.
   """
 
-extension Reducer {
+extension AnyReducer {
   static func subscriptions(
     _ subscriptions: @escaping (State, Environment) -> [AnyHashable: Effect<Action, Never>]
   ) -> Self {
     var activeSubscriptions: [AnyHashable: Effect<Action, Never>] = [:]
 
-    return Reducer { state, _, environment in
+    return AnyReducer { state, _, environment in
       let currentSubscriptions = subscriptions(state, environment)
       defer { activeSubscriptions = currentSubscriptions }
       return .merge(
@@ -48,8 +48,8 @@ struct ClockEnvironment {
   var mainQueue: AnySchedulerOf<DispatchQueue>
 }
 
-let clockReducer = Reducer<ClockState, ClockAction, ClockEnvironment>.combine(
-  Reducer { state, action, environment in
+let clockReducer = AnyReducer<ClockState, ClockAction, ClockEnvironment>.combine(
+  AnyReducer { state, action, environment in
     switch action {
     case .timerTicked:
       state.secondsElapsed += 1
