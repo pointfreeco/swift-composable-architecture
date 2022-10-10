@@ -458,7 +458,7 @@ extension Effect {
     case let .publisher(publisher):
       let dependencies = DependencyValues._current
       let transform = { action in
-        DependencyValues.$_current.withValue(dump(dependencies)) {
+        DependencyValues.$_current.withValue(dependencies) {
           transform(action)
         }
       }
