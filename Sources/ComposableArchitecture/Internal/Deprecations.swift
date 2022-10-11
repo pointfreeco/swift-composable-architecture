@@ -15,8 +15,8 @@ extension ViewStore {
 
 extension ReducerProtocol {
   @available(*, deprecated, renamed: "_printChanges")
-  public func debug() -> _PrintChangesReducer<Self, _CustomDumpPrinter> {
-    _PrintChangesReducer(base: self, printer: .customDump)
+  public func debug() -> _PrintChangesReducer<Self> {
+    self._printChanges()
   }
 }
 
