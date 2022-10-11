@@ -26,7 +26,7 @@ func runtimeWarn(
           message
         )
       #else
-        fputs("\(formatter.string(from: Date())) [\(category)] \(message)", stderr)
+        fputs("\(formatter.string(from: Date())) [\(category)] \(message)\n", stderr)
       #endif
     }
   #endif
