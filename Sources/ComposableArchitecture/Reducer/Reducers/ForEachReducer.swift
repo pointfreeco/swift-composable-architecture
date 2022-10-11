@@ -127,12 +127,12 @@ public struct _ForEachReducer<
   ) -> Effect<Parent.Action, Never> {
     guard let (id, elementAction) = self.toElementAction.extract(from: action) else { return .none }
     if state[keyPath: self.toElementsState][id: id] == nil {
-      runtimeWarning(
+      runtimeWarn(
         """
-        A "forEach" at "%@:%d" received an action for a missing element.
+        A "forEach" at "\(self.fileID):\(self.line)" received an action for a missing element.
 
           Action:
-            %@
+            \(debugCaseOutput(action))
 
         This is generally considered an application logic error, and can happen for a few reasons:
 
@@ -148,11 +148,6 @@ public struct _ForEachReducer<
         fix this make sure that actions for this reducer can only be sent from a view store when \
         its state contains an element at this id. In SwiftUI applications, use "ForEachStore".
         """,
-        [
-          "\(self.fileID)",
-          line,
-          debugCaseOutput(action),
-        ],
         file: self.file,
         line: self.line
       )

@@ -2,9 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:Sources/Dependencies/Documentation.docc/Extensions/DependencyValuesWithValue.md">
-   </FileRef>
-   <FileRef
       location = "group:">
    </FileRef>
    <FileRef

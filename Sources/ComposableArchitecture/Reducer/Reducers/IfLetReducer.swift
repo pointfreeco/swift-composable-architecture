@@ -119,12 +119,13 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     guard state[keyPath: self.toChildState] != nil else {
-      runtimeWarning(
+      runtimeWarn(
         """
-        An "ifLet" at "%@:%d" received a child action when child state was "nil". …
+        An "ifLet" at "\(self.fileID):\(self.line)" received a child action when child state was \
+        "nil". …
 
           Action:
-            %@
+            \(debugCaseOutput(action))
 
         This is generally considered an application logic error, and can happen for a few reasons:
 
@@ -140,12 +141,6 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
         reducer can only be sent from a view store when state is non-"nil". In SwiftUI \
         applications, use "IfLetStore".
         """,
-        [
-          "\(self.fileID)",
-          self.line,
-          debugCaseOutput(action),
-          typeName(Child.State.self),
-        ],
         file: self.file,
         line: self.line
       )
