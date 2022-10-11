@@ -1,5 +1,5 @@
 extension Task where Failure == Error {
-  var cancellableValue: Success {
+  @_spi(Internals) public var cancellableValue: Success {
     get async throws {
       try await withTaskCancellationHandler {
         try await self.value

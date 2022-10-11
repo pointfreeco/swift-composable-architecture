@@ -237,7 +237,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   private let fromScopedAction: (ScopedAction) -> Action
   private var line: UInt
   let reducer: TestReducer<State, Action>
-  private var store: Store<State, TestReducer<State, Action>.TestAction>!
+  private let store: Store<State, TestReducer<State, Action>.TestAction>
   private let toScopedState: (State) -> ScopedState
 
   public init<Reducer: ReducerProtocol>(
@@ -1129,7 +1129,7 @@ class TestReducer<State, Action>: ReducerProtocol {
 }
 
 extension Task where Success == Never, Failure == Never {
-  static func megaYield(count: Int = 10) async {
+  @_spi(Internals) public static func megaYield(count: Int = 10) async {
     for _ in 1...count {
       await Task<Void, Never>.detached(priority: .low) { await Task.yield() }.value
     }

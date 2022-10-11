@@ -122,7 +122,7 @@ import Foundation
 /// store are also checked to make sure that work is performed on the main thread.
 public final class Store<State, Action> {
   private var bufferedActions: [Action] = []
-  var effectCancellables: [UUID: AnyCancellable] = [:]
+  @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
   var parentCancellable: AnyCancellable?
   #if swift(>=5.7)
@@ -317,7 +317,7 @@ public final class Store<State, Action> {
     self.scope(state: toChildState, action: { $0 })
   }
 
-  func send(
+  @_spi(Internals) public func send(
     _ action: Action,
     originatingFrom originatingAction: Action? = nil
   ) -> Task<Void, Never>? {
