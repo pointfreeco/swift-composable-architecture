@@ -1,6 +1,10 @@
 import Foundation
 import XCTestDynamicOverlay
 
+#if canImport(FoundationNetworking)
+  import FoundationNetworking
+#endif
+
 extension DependencyValues {
   /// The URL session that features should use to make URL requests.
   ///

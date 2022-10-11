@@ -394,20 +394,16 @@ extension BindingAction: CustomDumpReflectable {
 
     deinit {
       guard self.wasCalled else {
-        runtimeWarning(
+        runtimeWarn(
           """
-          A binding action sent from a view store at "%@:%d" was not handled. …
+          A binding action sent from a view store at "\(self.fileID):\(self.line)" was not \
+          handled. …
 
             Action:
-              %@
+              \(typeName(self.bindableActionType)).binding(.set(_, \(self.value)))
 
           To fix this, invoke "BindingReducer()" from your feature reducer's "body".
           """,
-          [
-            "\(self.fileID)",
-            self.line,
-            "\(typeName(self.bindableActionType)).binding(.set(_, \(self.value)))",
-          ],
           file: self.file,
           line: self.line
         )

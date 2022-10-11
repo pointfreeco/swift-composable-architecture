@@ -134,20 +134,15 @@ extension Effect where Failure == Never {
               #if DEBUG
                 var errorDump = ""
                 customDump(error, to: &errorDump, indent: 4)
-                runtimeWarning(
+                runtimeWarn(
                   """
-                  An 'Effect.task' returned from "%@:%d" threw an unhandled error. …
+                  An "Effect.task" returned from "\(fileID):\(line)" threw an unhandled error. …
 
-                  %@
+                  \(errorDump)
 
-                  All non-cancellation errors must be explicitly handled via the 'catch' parameter \
-                  on 'Effect.task', or via a 'do' block.
+                  All non-cancellation errors must be explicitly handled via the "catch" parameter \
+                  on "Effect.task", or via a "do" block.
                   """,
-                  [
-                    "\(fileID)",
-                    line,
-                    errorDump,
-                  ],
                   file: file,
                   line: line
                 )
@@ -221,20 +216,15 @@ extension Effect where Failure == Never {
               #if DEBUG
                 var errorDump = ""
                 customDump(error, to: &errorDump, indent: 4)
-                runtimeWarning(
+                runtimeWarn(
                   """
-                  An 'Effect.run' returned from "%@:%d" threw an unhandled error. …
+                  An "Effect.run" returned from "\(fileID):\(line)" threw an unhandled error. …
 
-                  %@
+                  \(errorDump)
 
-                  All non-cancellation errors must be explicitly handled via the 'catch' parameter \
-                  on 'Effect.run', or via a 'do' block.
+                  All non-cancellation errors must be explicitly handled via the "catch" parameter \
+                  on "Effect.run", or via a "do" block.
                   """,
-                  [
-                    "\(fileID)",
-                    line,
-                    errorDump,
-                  ],
                   file: file,
                   line: line
                 )

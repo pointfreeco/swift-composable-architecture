@@ -122,21 +122,22 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     guard var childState = self.toChildState.extract(from: state) else {
-      runtimeWarning(
+      runtimeWarn(
         """
-        An "ifCaseLet" at "%@:%d" received a child action when child state was set to a different \
-        case. …
+        An "ifCaseLet" at "\(self.fileID):\(self.line)" received a child action when child state \
+        was set to a different case. …
 
           Action:
-            %@
+            \(debugCaseOutput(action))
           State:
-            %@
+            \(debugCaseOutput(state))
 
         This is generally considered an application logic error, and can happen for a few reasons:
 
-        • A parent reducer set "%@" to a different case before this reducer ran. This reducer must \
-        run before any other reducer sets child state to a different case. This ensures that child \
-        reducers can handle their actions while their state is still available.
+        • A parent reducer set "\(typeName(Parent.State.self))" to a different case before this \
+        reducer ran. This reducer must run before any other reducer sets child state to a \
+        different case. This ensures that child reducers can handle their actions while their \
+        state is still available.
 
         • An in-flight effect emitted this action when child state was unavailable. While it may \
         be perfectly reasonable to ignore this action, consider canceling the associated effect \
@@ -146,13 +147,6 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
         for this reducer can only be sent from a view store when state is set to the appropriate \
         case. In SwiftUI applications, use "SwitchStore".
         """,
-        [
-          "\(self.fileID)",
-          self.line,
-          debugCaseOutput(action),
-          debugCaseOutput(state),
-          typeName(Parent.State.self),
-        ],
         file: self.file,
         line: self.line
       )

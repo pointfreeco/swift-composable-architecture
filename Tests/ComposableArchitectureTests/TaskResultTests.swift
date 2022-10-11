@@ -15,13 +15,13 @@ final class TaskResultTests: XCTestCase {
         )
       } issueMatcher: {
         $0.compactDescription == """
-          'Failure' is not equatable. …
+          "TaskResultTests.Failure" is not equatable. …
 
-          To test two values of this type, it must conform to the 'Equatable' protocol. For example:
+          To test two values of this type, it must conform to the "Equatable" protocol. For example:
 
-              extension Failure: Equatable {}
+              extension TaskResultTests.Failure: Equatable {}
 
-          See the documentation of 'TaskResult' for more information.
+          See the documentation of "TaskResult" for more information.
           """
       }
     }
@@ -62,13 +62,13 @@ final class TaskResultTests: XCTestCase {
         _ = TaskResult<Never>.failure(Failure(message: "Something went wrong")).hashValue
       } issueMatcher: {
         $0.compactDescription == """
-          'Failure' is not hashable. …
+          "TaskResultTests.Failure" is not hashable. …
 
-          To hash a value of this type, it must conform to the 'Hashable' protocol. For example:
+          To hash a value of this type, it must conform to the "Hashable" protocol. For example:
 
-              extension Failure: Hashable {}
+              extension TaskResultTests.Failure: Hashable {}
 
-          See the documentation of 'TaskResult' for more information.
+          See the documentation of "TaskResult" for more information.
           """
       }
     }

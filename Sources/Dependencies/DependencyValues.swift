@@ -271,24 +271,20 @@ public struct DependencyValues: Sendable {
                   """
               )
 
-              runtimeWarning(
+              runtimeWarn(
                 """
-                @Dependency(\\.%@) has no live implementation, but was accessed from a live context.
+                "@Dependency(\\.\(function))" has no live implementation, but was accessed from a \
+                live context.
 
-                %@
+                \(dependencyDescription)
 
-                Every dependency registered with the library must conform to 'DependencyKey', and \
+                Every dependency registered with the library must conform to "DependencyKey", and \
                 that conformance must be visible to the running application.
 
-                To fix, make sure that '%@' conforms to 'DependencyKey' by providing a live \
-                implementation of your dependency, and make sure that the conformance is linked \
-                with this current application.
+                To fix, make sure that "\(typeName(Key.self))" conforms to "DependencyKey" by \
+                providing a live implementation of your dependency, and make sure that the \
+                conformance is linked with this current application.
                 """,
-                [
-                  "\(function)",
-                  dependencyDescription,
-                  typeName(Key.self),
-                ],
                 file: Self.currentDependency.file ?? file,
                 line: Self.currentDependency.line ?? line
               )
