@@ -181,7 +181,9 @@ import XCTestDynamicOverlay
 /// This test is proving that the debounced network requests are correctly canceled when we do not
 /// wait longer than the 0.5 seconds, because if it wasn't and it delivered an action when we did
 /// not expect it would cause a test failure.
-public final class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
+open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
+  public var kind: Kind = .exhaustive
+
   /// The current dependencies.
   ///
   /// The dependencies define the execution context that your feature runs in. They can be
@@ -401,13 +403,14 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
           If you are not yet using a scheduler, or can not use a scheduler, \(timeoutMessage).
           """
 
-        XCTFail(
+        XCTFailHelper(
           """
           Expected effects to finish, but there are still effects in-flight\
           \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds" : "").
 
           \(suggestion)
           """,
+          kind: self.kind,
           file: file,
           line: line
         )
@@ -418,6 +421,13 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   }
 
   deinit {
+    //    switch self.kind {
+    //    case .exhaustive:
+    //      break
+    //    case .nonExhaustive:
+    //      self.skipReceivedActions(prefix: "✅ Skipped assertions: …")
+    //      self.skipInFlightEffects(prefix: "✅ Skipped assertions: …")
+    //    }
     self.completed()
   }
 
@@ -425,18 +435,20 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     if !self.reducer.receivedActions.isEmpty {
       var actions = ""
       customDump(self.reducer.receivedActions.map(\.action), to: &actions)
-      XCTFail(
+      XCTFailHelper(
         """
         The store received \(self.reducer.receivedActions.count) unexpected \
         action\(self.reducer.receivedActions.count == 1 ? "" : "s") after this one: …
 
         Unhandled actions: \(actions)
         """,
-        file: self.file, line: self.line
+        kind: self.kind,
+        file: self.file,
+        line: self.line
       )
     }
     for effect in self.reducer.inFlightEffects {
-      XCTFail(
+      XCTFailHelper(
         """
         An effect returned for this action is still running. It must complete before the end of \
         the test. …
@@ -458,8 +470,9 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
         returning a corresponding cancellation effect ("Effect.cancel") from another action, or, \
         if your effect is driven by a Combine subject, send it a completion.
         """,
-        file: effect.file,
-        line: effect.line
+        kind: self.kind,
+        file: effect.action.file,
+        line: effect.action.line
       )
     }
   }
@@ -539,16 +552,28 @@ extension TestStore where ScopedState: Equatable {
     if !self.reducer.receivedActions.isEmpty {
       var actions = ""
       customDump(self.reducer.receivedActions.map(\.action), to: &actions)
-      XCTFail(
+      XCTFailHelper(
         """
         Must handle \(self.reducer.receivedActions.count) received \
         action\(self.reducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
 
         Unhandled actions: \(actions)
         """,
-        file: file, line: line
+        kind: self.kind,
+        file: file,
+        line: line
       )
     }
+
+    switch kind {
+    case .exhaustive:
+      break
+    case .nonExhaustive(showInfo: true):
+      self.skipReceivedActions()
+    case .nonExhaustive(showInfo: false):
+      self.reducer.receivedActions = []
+    }
+
     var expectedState = self.toScopedState(self.state)
     let previousState = self.reducer.state
     let task = self.store
@@ -623,16 +648,28 @@ extension TestStore where ScopedState: Equatable {
     if !self.reducer.receivedActions.isEmpty {
       var actions = ""
       customDump(self.reducer.receivedActions.map(\.action), to: &actions)
-      XCTFail(
+      XCTFailHelper(
         """
         Must handle \(self.reducer.receivedActions.count) received \
         action\(self.reducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
 
         Unhandled actions: \(actions)
         """,
-        file: file, line: line
+        kind: self.kind,
+        file: file,
+        line: line
       )
     }
+
+    switch kind {
+    case .exhaustive:
+      break
+    case .nonExhaustive(showInfo: true):
+      self.skipReceivedActions()
+    case .nonExhaustive(showInfo: false):
+      self.reducer.receivedActions = []
+    }
+
     var expectedState = self.toScopedState(self.state)
     let previousState = self.state
     let task = self.store
@@ -667,11 +704,44 @@ extension TestStore where ScopedState: Equatable {
     line: UInt
   ) throws {
     let current = expected
+
+    var expectedWhenGivenPreviousState = expected
     if let modify = modify {
-      try modify(&expected)
+      try modify(&expectedWhenGivenPreviousState)
+    }
+    expected = expectedWhenGivenPreviousState
+
+    var expectedWhenGivenActualState = actual
+    if let modify = modify {
+      try modify(&expectedWhenGivenActualState)
     }
 
-    if expected != actual {
+    if self.kind == .exhaustive && expectedWhenGivenPreviousState != actual {
+      helper(expected: expectedWhenGivenPreviousState, actual: actual, modifyIsNil: modify != nil)
+    } else if self.kind != .exhaustive && expectedWhenGivenActualState != actual {
+      let previous = self.kind
+      self.kind = .exhaustive
+      helper(expected: expectedWhenGivenActualState, actual: actual, modifyIsNil: modify != nil)
+      self.kind = previous
+    } else if self.kind == .nonExhaustive(showInfo: true) && expectedWhenGivenActualState == actual
+      && expectedWhenGivenPreviousState != actual
+    {
+      helper(expected: expectedWhenGivenPreviousState, actual: actual, modifyIsNil: modify != nil)
+    } else if expected == current && modify != nil {
+      XCTFailHelper(
+        """
+        Expected state to change, but no change occurred.
+
+        The trailing closure made no observable modifications to state. If no change to state is \
+        expected, omit the trailing closure.
+        """,
+        kind: self.kind,
+        file: file,
+        line: line
+      )
+    }
+
+    func helper(expected: ScopedState, actual: ScopedState, modifyIsNil: Bool) {
       let difference =
         diff(expected, actual, format: .proportional)
         .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
@@ -684,33 +754,26 @@ extension TestStore where ScopedState: Equatable {
         """
 
       let messageHeading =
-        modify != nil
+        modifyIsNil
         ? "A state change does not match expectation"
         : "State was not expected to change, but a change occurred"
-      XCTFail(
+      XCTFailHelper(
         """
         \(messageHeading): …
 
         \(difference)
         """,
+        kind: self.kind,
         file: file,
         line: line
-      )
-    } else if expected == current && modify != nil {
-      XCTFail(
-        """
-        Expected state to change, but no change occurred.
-
-        The trailing closure made no observable modifications to state. If no change to state is \
-        expected, omit the trailing closure.
-        """,
-        file: file, line: line
       )
     }
   }
 }
 
 extension TestStore where ScopedState: Equatable, Action: Equatable {
+  // TODO: support receive with case path?
+  
   /// Asserts an action was received from an effect and asserts when state changes.
   ///
   /// - Parameters:
@@ -734,11 +797,44 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
         """
         Expected to receive an action, but received none.
         """,
-        file: file, line: line
+        file: file,
+        line: line
       )
       return
     }
+
+    if self.kind != .exhaustive {
+      guard self.reducer.receivedActions.contains(where: { $0.action == expectedAction }) else {
+        XCTFail(
+          """
+          Expected to receive an action \(expectedAction), but didn't get one.
+          """,
+          file: file, line: line
+        )
+        return
+      }
+
+      while let receivedAction = self.reducer.receivedActions.first,
+        receivedAction.action != expectedAction
+      {
+        XCTFailHelper(
+          """
+          ✅ Skipped assertions: …
+          Skipped receiving \(receivedAction.action)
+          """,
+          kind: self.kind,
+          file: file,
+          line: line
+        )
+        let previous = self.kind
+        self.kind = .nonExhaustive(showInfo: false)
+        self.receive(receivedAction.action)
+        self.kind = previous
+      }
+    }
+
     let (receivedAction, state) = self.reducer.receivedActions.removeFirst()
+
     if expectedAction != receivedAction {
       let difference = TaskResultDebugging.$emitRuntimeWarnings.withValue(false) {
         diff(expectedAction, receivedAction, format: .proportional)
@@ -752,13 +848,15 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
           """
       }
 
-      XCTFail(
+      XCTFailHelper(
         """
         Received unexpected action: …
 
         \(difference)
         """,
-        file: file, line: line
+        kind: self.kind,
+        file: file,
+        line: line
       )
     }
     var expectedState = self.toScopedState(self.state)
@@ -928,6 +1026,60 @@ extension TestStore {
   ) -> TestStore<State, Action, S, ScopedAction, Environment> {
     self.scope(state: toScopedState, action: { $0 })
   }
+
+  public func skipReceivedActions(
+    strict: Bool = false,
+    prefix: String = "",
+    file: StaticString = #file,
+    line: UInt = #line
+  ) {
+    if strict && self.reducer.receivedActions.isEmpty {
+      XCTFail("There were no received actions to skip.")
+      return
+    }
+    guard !self.reducer.receivedActions.isEmpty
+    else { return }
+    var actions = ""
+    customDump(self.reducer.receivedActions.map { $0.action }, to: &actions)
+    XCTFailHelper(
+      """
+      \(prefix.isEmpty ? "" : "\(prefix)\n\n")Received actions were skipped: \(actions)
+      """,
+      kind: .nonExhaustive(showInfo: true),
+      file: file,
+      line: line
+    )
+    self.reducer.receivedActions = []
+  }
+
+  public func skipInFlightEffects(
+    strict: Bool = true,
+    prefix: String = "",
+    file: StaticString = #file,
+    line: UInt = #line
+  ) {
+    if strict && self.reducer.inFlightEffects.isEmpty {
+      XCTFail("There were no in-flight effects to skip.")
+      return
+    }
+    guard !self.reducer.inFlightEffects.isEmpty
+    else { return }
+    var actions = ""
+    customDump(self.reducer.inFlightEffects.map { $0.action }, to: &actions)
+    XCTFailHelper(
+      """
+      \(prefix.isEmpty ? "" : "\(prefix)\n\n")In-flight effects were skipped, originating \
+      from: \(actions)
+      """,
+      kind: .nonExhaustive(showInfo: true),
+      file: file,
+      line: line
+    )
+    for effect in self.reducer.inFlightEffects {
+      _ = Effect<Never, Never>.cancel(id: effect.id).sink { _ in }
+    }
+    self.reducer.inFlightEffects = []
+  }
 }
 
 /// The type returned from ``TestStore/send(_:_:file:line:)-6s1gq`` that represents the lifecycle
@@ -1083,7 +1235,7 @@ class TestReducer<State, Action>: ReducerProtocol {
       return .none
 
     case .publisher, .run:
-      let effect = LongLivingEffect(file: action.file, line: action.line)
+      let effect = LongLivingEffect(action: action)
       return
         effects
         .handleEvents(
@@ -1104,8 +1256,7 @@ class TestReducer<State, Action>: ReducerProtocol {
 
   struct LongLivingEffect: Hashable {
     let id = UUID()
-    let file: StaticString
-    let line: UInt
+    let action: TestAction
 
     static func == (lhs: Self, rhs: Self) -> Bool {
       lhs.id == rhs.id
@@ -1147,3 +1298,51 @@ extension Task where Success == Never, Failure == Never {
     }
   }
 #endif
+
+public enum Kind: Equatable {
+  case exhaustive
+  case nonExhaustive(showInfo: Bool)  // TODO: make prefix customizable with "✅"?
+}
+
+private func XCTFailHelper(
+  _ message: String = "",
+  kind: Kind,
+  file: StaticString,
+  line: UInt
+) {
+  switch kind {
+  case .exhaustive:
+    XCTFail(message, file: file, line: line)
+  case .nonExhaustive(showInfo: true):
+    _XCTExpectFailure {
+      XCTFail(message, file: file, line: line)
+    }
+  case .nonExhaustive(showInfo: false):
+    break
+  }
+}
+
+// TODO: Move to XCTest Dynamic Overlay
+func _XCTExpectFailure(
+  _ failureReason: String? = nil,
+  strict: Bool = true,
+  failingBlock: () -> Void
+) {
+  guard
+    let XCTExpectedFailureOptions = NSClassFromString("XCTExpectedFailureOptions")
+      as Any as? NSObjectProtocol,
+    let options = strict
+      ? XCTExpectedFailureOptions
+        .perform(NSSelectorFromString("alloc"))?.takeUnretainedValue()
+        .perform(NSSelectorFromString("init"))?.takeUnretainedValue()
+      : XCTExpectedFailureOptions
+        .perform(NSSelectorFromString("nonStrictOptions"))?.takeUnretainedValue()
+  else { return }
+
+  let XCTExpectFailureWithOptionsInBlock = unsafeBitCast(
+    dlsym(dlopen(nil, RTLD_LAZY), "XCTExpectFailureWithOptionsInBlock"),
+    to: (@convention(c) (String?, AnyObject, () -> Void) -> Void).self
+  )
+
+  XCTExpectFailureWithOptionsInBlock(failureReason, options, failingBlock)
+}
