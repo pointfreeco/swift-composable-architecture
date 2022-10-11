@@ -734,7 +734,7 @@ extension TestStore where ScopedState: Equatable {
     {
       var expectedWhenGivenPreviousState = expected
       if let modify = modify {
-        _XCTExpectFailure {
+        _XCTExpectFailure(strict: false) {
           do {
             try modify(&expectedWhenGivenPreviousState)
           } catch {
