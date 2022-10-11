@@ -177,3 +177,43 @@ private struct Root: ReducerProtocol {
     #endif
   }
 }
+
+private struct IfLetExample: ReducerProtocol {
+  struct State {
+    var optional: Int?
+  }
+
+  enum Action {}
+
+  var body: some ReducerProtocol<State, Action> {
+    EmptyReducer().ifLet(\.optional, action: .self) { EmptyReducer() }
+  }
+}
+
+private struct IfCaseLetExample: ReducerProtocol {
+  enum State {
+    case value(Int)
+  }
+
+  enum Action {}
+
+  var body: some ReducerProtocol<State, Action> {
+    EmptyReducer().ifCaseLet(/State.value, action: .self) { EmptyReducer() }
+  }
+}
+
+private struct ForEachExample: ReducerProtocol {
+  struct Element: Identifiable { let id: Int }
+
+  struct State {
+    var values: IdentifiedArrayOf<Element>
+  }
+
+  enum Action {
+    case value(id: Element.ID, action: Never)
+  }
+
+  var body: some ReducerProtocol<State, Action> {
+    EmptyReducer().forEach(\.values, action: /Action.value) { EmptyReducer() }
+  }
+}
