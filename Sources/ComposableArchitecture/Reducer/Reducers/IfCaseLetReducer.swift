@@ -50,7 +50,9 @@ extension ReducerProtocol {
     public func ifCaseLet<CaseState, CaseAction>(
       _ toCaseState: CasePath<State, CaseState>,
       action toCaseAction: CasePath<Action, CaseAction>,
-      @ReducerBuilder<CaseState, CaseAction> then case: () -> some ReducerProtocol<CaseState, CaseAction>,
+      @ReducerBuilder<CaseState, CaseAction> then case: () -> some ReducerProtocol<
+        CaseState, CaseAction
+      >,
       file: StaticString = #file,
       fileID: StaticString = #fileID,
       line: UInt = #line
