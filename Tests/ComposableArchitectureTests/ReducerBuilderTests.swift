@@ -177,3 +177,61 @@ private struct Root: ReducerProtocol {
     #endif
   }
 }
+
+private struct IfLetExample: ReducerProtocol {
+  struct State {
+    var optional: Int?
+  }
+
+  enum Action {}
+
+  #if swift(>=5.7)
+    var body: some ReducerProtocol<State, Action> {
+      EmptyReducer().ifLet(\.optional, action: .self) { EmptyReducer() }
+    }
+  #else
+    var body: Reduce<State, Action> {
+      EmptyReducer().ifLet(\.optional, action: .self) { EmptyReducer() }
+    }
+  #endif
+}
+
+private struct IfCaseLetExample: ReducerProtocol {
+  enum State {
+    case value(Int)
+  }
+
+  enum Action {}
+
+  #if swift(>=5.7)
+    var body: some ReducerProtocol<State, Action> {
+      EmptyReducer().ifCaseLet(/State.value, action: .self) { EmptyReducer() }
+    }
+  #else
+    var body: Reduce<State, Action> {
+      EmptyReducer().ifCaseLet(/State.value, action: .self) { EmptyReducer() }
+    }
+  #endif
+}
+
+private struct ForEachExample: ReducerProtocol {
+  struct Element: Identifiable { let id: Int }
+
+  struct State {
+    var values: IdentifiedArrayOf<Element>
+  }
+
+  enum Action {
+    case value(id: Element.ID, action: Never)
+  }
+
+  #if swift(>=5.7)
+    var body: some ReducerProtocol<State, Action> {
+      EmptyReducer().forEach(\.values, action: /Action.value) { EmptyReducer() }
+    }
+  #else
+    var body: Reduce<State, Action> {
+      EmptyReducer().forEach(\.values, action: /Action.value) { EmptyReducer() }
+    }
+  #endif
+}
