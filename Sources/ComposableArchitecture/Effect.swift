@@ -609,10 +609,10 @@ extension EffectPublisher {
 }
 
 // MARK: - Transitory Deprecation
+
 @available(
   iOS,
   deprecated: 9999.0,
-  renamed: "EffectPublisher",
   message:
     """
     'Effect' has been deprecated in favor of 'EffectTask' when `Failure == Never`, or
@@ -627,7 +627,6 @@ extension EffectPublisher {
 @available(
   macOS,
   deprecated: 9999.0,
-  renamed: "EffectPublisher",
   message:
     """
     'Effect' has been deprecated in favor of 'EffectTask' when `Failure == Never`, or
@@ -642,7 +641,6 @@ extension EffectPublisher {
 @available(
   tvOS,
   deprecated: 9999.0,
-  renamed: "EffectPublisher",
   message:
     """
     'Effect' has been deprecated in favor of 'EffectTask' when `Failure == Never`, or
@@ -657,7 +655,6 @@ extension EffectPublisher {
 @available(
   watchOS,
   deprecated: 9999.0,
-  renamed: "EffectPublisher",
   message:
     """
     'Effect' has been deprecated in favor of 'EffectTask' when `Failure == Never`, or
