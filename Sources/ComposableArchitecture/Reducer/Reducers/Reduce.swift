@@ -4,11 +4,11 @@
 /// a new type that conforms to ``ReducerProtocol``.
 public struct Reduce<State, Action>: ReducerProtocol {
   @usableFromInline
-  let reduce: (inout State, Action) -> Effect<Action, Never>
+  let reduce: (inout State, Action) -> EffectOf<Action>
 
   @usableFromInline
   init(
-    internal reduce: @escaping (inout State, Action) -> Effect<Action, Never>
+    internal reduce: @escaping (inout State, Action) -> EffectOf<Action>
   ) {
     self.reduce = reduce
   }
@@ -17,7 +17,7 @@ public struct Reduce<State, Action>: ReducerProtocol {
   ///
   /// - Parameter reduce: A function that is called when ``reduce(into:action:)`` is invoked.
   @inlinable
-  public init(_ reduce: @escaping (inout State, Action) -> Effect<Action, Never>) {
+  public init(_ reduce: @escaping (inout State, Action) -> EffectOf<Action>) {
     self.init(internal: reduce)
   }
 
@@ -31,7 +31,7 @@ public struct Reduce<State, Action>: ReducerProtocol {
   }
 
   @inlinable
-  public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  public func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
     self.reduce(&state, action)
   }
 }

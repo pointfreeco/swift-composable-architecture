@@ -25,7 +25,7 @@ struct SpeechRecognition: ReducerProtocol {
 
   @Dependency(\.speechClient) var speechClient
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
     switch action {
     case .authorizationStateAlertDismissed:
       state.alert = nil

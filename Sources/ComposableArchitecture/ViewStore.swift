@@ -316,7 +316,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   }
   ///   @Dependency(\.fetch) var fetch
   ///
-  ///   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  ///   func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
   ///     switch action {
   ///     case .pulledToRefresh:
   ///       state.isLoading = true

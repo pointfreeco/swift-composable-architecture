@@ -60,6 +60,22 @@ extension Effect {
   }
 }
 
+/// A convenience type alias for referring to an effect that can never fail, like the kind of
+/// ``Effect`` returned by a reducer after processing an action.
+///
+/// Instead of specifying `Never` as `Failure`:
+///
+/// ```swift
+/// func reduce(into state: inout State, action: Action) -> EffectOf<Action> { … }
+/// ```
+///
+/// You can specify a single generic:
+///
+/// ```swift
+/// func reduce(into state: inout State, action: Action) -> EffectOf<Action>  { … }
+/// ```
+public typealias EffectOf<Action> = Effect<Action, Never>
+
 extension Effect where Failure == Never {
   /// Wraps an asynchronous unit of work in an effect.
   ///
@@ -79,7 +95,7 @@ extension Effect where Failure == Never {
   ///   }
   ///   @Dependency(\.numberFact) var numberFact
   ///
-  ///   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  ///   func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
   ///     switch action {
   ///       case .factButtonTapped:
   ///         return .task { [number = state.number] in
@@ -516,7 +532,7 @@ extension Effect {
   ///
   /// ```swift
   /// struct CounterEnvironment {
-  ///   let playAlertSound: () -> Effect<Never, Never>
+  ///   let playAlertSound: () -> EffectOf<Never>
   /// }
   /// ```
   ///

@@ -15,7 +15,7 @@ where Action: BindableAction, State == Action.State {
   @inlinable
   public func reduce(
     into state: inout State, action: Action
-  ) -> Effect<Action, Never> {
+  ) -> EffectOf<Action> {
     guard let bindingAction = (/Action.binding).extract(from: action)
     else { return .none }
 

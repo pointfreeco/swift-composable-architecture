@@ -29,7 +29,7 @@ extension Effect where Failure == Never {
   ///   @Dependency(\.mainQueue) var mainQueue
   ///   struct TimerID: Hashable {}
   ///
-  ///   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  ///   func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
   ///     switch action {
   ///     case .startButtonTapped:
   ///       return Effect.timer(id: TimerID(), every: 1, on: self.mainQueue)

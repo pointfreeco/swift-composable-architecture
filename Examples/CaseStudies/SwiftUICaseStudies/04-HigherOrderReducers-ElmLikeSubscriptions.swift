@@ -11,9 +11,9 @@ private let readMe = """
 
 extension AnyReducer {
   static func subscriptions(
-    _ subscriptions: @escaping (State, Environment) -> [AnyHashable: Effect<Action, Never>]
+    _ subscriptions: @escaping (State, Environment) -> [AnyHashable: EffectOf<Action>]
   ) -> Self {
-    var activeSubscriptions: [AnyHashable: Effect<Action, Never>] = [:]
+    var activeSubscriptions: [AnyHashable: EffectOf<Action>] = [:]
 
     return AnyReducer { state, _, environment in
       let currentSubscriptions = subscriptions(state, environment)

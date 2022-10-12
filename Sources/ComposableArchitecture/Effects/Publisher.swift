@@ -120,7 +120,7 @@ extension Effect {
   /// For example, to create an effect that delivers an integer after waiting a second:
   ///
   /// ```swift
-  /// Effect<Int, Never>.future { callback in
+  /// EffectOf<Int>.future { callback in
   ///   DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
   ///     callback(.success(42))
   ///   }
@@ -131,7 +131,7 @@ extension Effect {
   /// discarded:
   ///
   /// ```swift
-  /// Effect<Int, Never>.future { callback in
+  /// EffectOf<Int>.future { callback in
   ///   DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
   ///     callback(.success(42))
   ///     callback(.success(1729)) // Will not be emitted by the effect
@@ -414,7 +414,7 @@ extension Publisher {
     watchOS, deprecated: 9999.0,
     message: "Iterate over 'Publisher.values' in an 'Effect.run', instead."
   )
-  public func catchToEffect() -> Effect<Result<Output, Failure>, Never> {
+  public func catchToEffect() -> EffectOf<Result<Output, Failure>> {
     self.catchToEffect { $0 }
   }
 
@@ -450,7 +450,7 @@ extension Publisher {
   )
   public func catchToEffect<T>(
     _ transform: @escaping (Result<Output, Failure>) -> T
-  ) -> Effect<T, Never> {
+  ) -> EffectOf<T> {
     let dependencies = DependencyValues._current
     let transform = { action in
       DependencyValues.$_current.withValue(dependencies) {

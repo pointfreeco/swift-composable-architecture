@@ -19,8 +19,8 @@ struct LifecycleReducer<Wrapped: ReducerProtocol>: ReducerProtocol {
   }
 
   let wrapped: Wrapped
-  let onAppear: Effect<Wrapped.Action, Never>
-  let onDisappear: Effect<Never, Never>
+  let onAppear: EffectOf<Wrapped.Action>
+  let onDisappear: EffectOf<Never>
 
   var body: some ReducerProtocol<Wrapped.State?, Action> {
     Reduce { state, lifecycleAction in
@@ -45,8 +45,8 @@ extension LifecycleReducer.Action: Equatable where Wrapped.Action: Equatable {}
 
 extension ReducerProtocol {
   func lifecycle(
-    onAppear: Effect<Action, Never>,
-    onDisappear: Effect<Never, Never> = .none
+    onAppear: EffectOf<Action>,
+    onDisappear: EffectOf<Never> = .none
   ) -> LifecycleReducer<Self> {
     LifecycleReducer(wrapped: self, onAppear: onAppear, onDisappear: onDisappear)
   }

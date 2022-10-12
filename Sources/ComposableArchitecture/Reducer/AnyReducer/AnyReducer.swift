@@ -107,7 +107,7 @@ public typealias Reducer = AnyReducer
     """
 )
 public struct AnyReducer<State, Action, Environment> {
-  private let reducer: (inout State, Action, Environment) -> Effect<Action, Never>
+  private let reducer: (inout State, Action, Environment) -> EffectOf<Action>
 
   /// > This API has been soft-deprecated in favor of ``ReducerProtocol``.
   /// Read <doc:MigratingToTheReducerProtocol> for more information.
@@ -173,7 +173,7 @@ public struct AnyReducer<State, Action, Environment> {
       This API has been soft-deprecated in favor of 'ReducerProtocol'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
-  public init(_ reducer: @escaping (inout State, Action, Environment) -> Effect<Action, Never>) {
+  public init(_ reducer: @escaping (inout State, Action, Environment) -> EffectOf<Action>) {
     self.reducer = reducer
   }
 
@@ -1230,7 +1230,7 @@ public struct AnyReducer<State, Action, Environment> {
     _ state: inout State,
     _ action: Action,
     _ environment: Environment
-  ) -> Effect<Action, Never> {
+  ) -> EffectOf<Action> {
     self.reducer(&state, action, environment)
   }
 
@@ -1272,7 +1272,7 @@ public struct AnyReducer<State, Action, Environment> {
     _ state: inout State,
     _ action: Action,
     _ environment: Environment
-  ) -> Effect<Action, Never> {
+  ) -> EffectOf<Action> {
     self.reducer(&state, action, environment)
   }
 }

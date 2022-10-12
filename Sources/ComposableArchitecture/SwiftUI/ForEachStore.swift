@@ -23,7 +23,7 @@ import SwiftUI
 ///     case descriptionChanged(String)
 ///   }
 ///
-///   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> { ... }
+///   func reduce(into state: inout State, action: Action) -> EffectOf<Action> { ... }
 /// }
 /// ```
 ///

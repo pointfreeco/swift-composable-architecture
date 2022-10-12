@@ -32,7 +32,7 @@ struct EffectsCancellation: ReducerProtocol {
   @Dependency(\.factClient) var factClient
   private enum NumberFactRequestID {}
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
     switch action {
     case .cancelButtonTapped:
       state.isFactRequestInFlight = false

@@ -27,7 +27,7 @@ struct Timers: ReducerProtocol {
   @Dependency(\.mainQueue) var mainQueue
   private enum TimerID {}
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
     switch action {
     case .onDisappear:
       return .cancel(id: TimerID.self)

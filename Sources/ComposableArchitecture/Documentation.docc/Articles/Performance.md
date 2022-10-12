@@ -215,7 +215,7 @@ at each layer a reducer can intercept and reinterpret the action.
 
 It is far better to share logic via simple methods on your ``ReducerProtocol`` conformance.
 The helper methods can take `inout State` as an argument if it needs to make mutations, and it
-can return an `Effect<Action, Never>`. This allows you to share logic without incurring the cost
+can return an `EffectOf<Action>`. This allows you to share logic without incurring the cost
 of sending needless actions.
 
 For example, suppose that there are 3 UI components in your feature such that when any is changed
@@ -232,7 +232,7 @@ struct Feature: ReducerProtocol {
     // ...
   }
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
     switch action {
     case .buttonTapped:
       state.count += 1
@@ -302,7 +302,7 @@ and executing synchronous effects.
 
 Instead, we recommend sharing logic with methods defined in your feature's reducer. The method has
 full access to all depedencies, it can take an `inout State` if it needs to make mutations to 
-state, and it can return an `Effect<Action, Never>` if it needs to execute effects.
+state, and it can return an `EffectOf<Action>` if it needs to execute effects.
 
 The above example can be refactored like so:
 
@@ -315,7 +315,7 @@ struct Feature: ReducerProtocol {
     // ...
   }
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
     switch action {
     case .buttonTapped:
       state.count += 1
@@ -331,7 +331,7 @@ struct Feature: ReducerProtocol {
     }
   }
 
-  func sharedComputation(state: inout State) -> Effect<Action, Never> {
+  func sharedComputation(state: inout State) -> EffectOf<Action> {
     // Some shared work to compute something.
     return .run { send in
       // A shared effect to compute something

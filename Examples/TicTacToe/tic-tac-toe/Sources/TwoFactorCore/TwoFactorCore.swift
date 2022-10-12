@@ -29,7 +29,7 @@ public struct TwoFactor: ReducerProtocol, Sendable {
 
   public init() {}
 
-  public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  public func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
     switch action {
     case .alertDismissed:
       state.alert = nil
