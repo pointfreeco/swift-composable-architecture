@@ -78,22 +78,15 @@ extension DependencyValues {
 /// See ``DependencyValues/withRandomNumberGenerator`` for more information.
 public final class WithRandomNumberGenerator: @unchecked Sendable {
   private var generator: RandomNumberGenerator
-  private let lock: os_unfair_lock_t
+  private let lock = NSLock()
 
   public init<T: RandomNumberGenerator & Sendable>(_ generator: T) {
     self.generator = generator
-    self.lock = os_unfair_lock_t.allocate(capacity: 1)
-    self.lock.initialize(to: os_unfair_lock())
-  }
-
-  deinit {
-    self.lock.deinitialize(count: 1)
-    self.lock.deallocate()
   }
 
   public func callAsFunction<R>(_ work: (inout RandomNumberGenerator) -> R) -> R {
-    os_unfair_lock_lock(self.lock)
-    defer { os_unfair_lock_unlock(self.lock) }
+    self.lock.lock()
+    defer { self.lock.unlock() }
     return work(&self.generator)
   }
 }

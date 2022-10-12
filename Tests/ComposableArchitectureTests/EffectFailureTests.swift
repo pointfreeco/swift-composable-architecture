@@ -13,14 +13,14 @@
       var line: UInt!
       XCTExpectFailure {
         $0.compactDescription == """
-          An 'Effect.task' returned from \
+          An "Effect.task" returned from \
           "ComposableArchitectureTests/EffectFailureTests.swift:\(line+1)" threw an unhandled \
           error. …
 
               EffectFailureTests.Unexpected()
 
-          All non-cancellation errors must be explicitly handled via the 'catch' parameter on \
-          'Effect.task', or via a 'do' block.
+          All non-cancellation errors must be explicitly handled via the "catch" parameter on \
+          "Effect.task", or via a "do" block.
           """
       }
 
@@ -39,14 +39,14 @@
       var line: UInt!
       XCTExpectFailure {
         $0.compactDescription == """
-          An 'Effect.run' returned from \
+          An "Effect.run" returned from \
           "ComposableArchitectureTests/EffectFailureTests.swift:\(line+1)" threw an unhandled \
           error. …
 
               EffectFailureTests.Unexpected()
 
-          All non-cancellation errors must be explicitly handled via the 'catch' parameter on \
-          'Effect.run', or via a 'do' block.
+          All non-cancellation errors must be explicitly handled via the "catch" parameter on \
+          "Effect.run", or via a "do" block.
           """
       }
 

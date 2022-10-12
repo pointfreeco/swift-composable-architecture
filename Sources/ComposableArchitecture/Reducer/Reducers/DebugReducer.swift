@@ -1,14 +1,4 @@
 extension ReducerProtocol {
-  /// Enhances a reducer with debug logging of received actions and state mutations.
-  ///
-  /// > Note: Printing is only done in `DEBUG` configurations.
-  ///
-  /// - Returns: A reducer that prints debug messages for all received actions.
-  @inlinable
-  public func _printChanges() -> _PrintChangesReducer<Self, _CustomDumpPrinter> {
-    _PrintChangesReducer(base: self, printer: .customDump)
-  }
-
   /// Enhances a reducer with debug logging of received actions and state mutations for the given
   /// printer.
   ///
@@ -17,53 +7,55 @@ extension ReducerProtocol {
   /// - Parameter printer: A printer for printing debug messages.
   /// - Returns: A reducer that prints debug messages for all received actions.
   @inlinable
-  public func _printChanges<Printer: _ReducerPrinter>(
-    _ printer: Printer?
-  ) -> ReducerBuilder<State, Action>._Conditional<_PrintChangesReducer<Self, Printer>, Self> {
-    printer.map { .first(_PrintChangesReducer(base: self, printer: $0)) } ?? .second(self)
+  public func _printChanges(
+    _ printer: _ReducerPrinter<State, Action>? = .customDump
+  ) -> _PrintChangesReducer<Self> {
+    _PrintChangesReducer<Self>(base: self, printer: printer)
   }
 }
 
-public protocol _ReducerPrinter {
-  func printChange<Action, State>(receivedAction: Action, oldState: State, newState: State)
-}
+public struct _ReducerPrinter<State, Action> {
+  private let _printChange: (_ receivedAction: Action, _ oldState: State, _ newState: State) -> Void
 
-extension _ReducerPrinter where Self == _CustomDumpPrinter {
-  public static var customDump: Self { Self() }
-}
+  public init(
+    printChange: @escaping (_ receivedAction: Action, _ oldState: State, _ newState: State) -> Void
+  ) {
+    self._printChange = printChange
+  }
 
-public struct _CustomDumpPrinter: _ReducerPrinter {
-  public func printChange<Action, State>(receivedAction: Action, oldState: State, newState: State) {
-    var target = ""
-    target.write("received action:\n")
-    CustomDump.customDump(receivedAction, to: &target, indent: 2)
-    target.write("\n")
-    target.write(diff(oldState, newState).map { "\($0)\n" } ?? "  (No state changes)\n")
-    print(target)
+  public func printChange(receivedAction: Action, oldState: State, newState: State) {
+    self._printChange(receivedAction, oldState, newState)
   }
 }
 
-extension _ReducerPrinter where Self == _ActionLabelsPrinter {
-  public static var actionLabels: Self { Self() }
-}
+extension _ReducerPrinter {
+  public static var customDump: Self {
+    Self { receivedAction, oldState, newState in
+      var target = ""
+      target.write("received action:\n")
+      CustomDump.customDump(receivedAction, to: &target, indent: 2)
+      target.write("\n")
+      target.write(diff(oldState, newState).map { "\($0)\n" } ?? "  (No state changes)\n")
+      print(target)
+    }
+  }
 
-public struct _ActionLabelsPrinter: _ReducerPrinter {
-  public func printChange<Action, State>(receivedAction: Action, oldState: State, newState: State) {
-    print("received action: \(debugCaseOutput(receivedAction))")
+  public static var actionLabels: Self {
+    Self { receivedAction, _, _ in
+      print("received action: \(debugCaseOutput(receivedAction))")
+    }
   }
 }
 
-public struct _PrintChangesReducer<
-  Base: ReducerProtocol, Printer: _ReducerPrinter
->: ReducerProtocol {
+public struct _PrintChangesReducer<Base: ReducerProtocol>: ReducerProtocol {
   @usableFromInline
   let base: Base
 
   @usableFromInline
-  let printer: Printer
+  let printer: _ReducerPrinter<Base.State, Base.Action>?
 
   @usableFromInline
-  init(base: Base, printer: Printer) {
+  init(base: Base, printer: _ReducerPrinter<Base.State, Base.Action>?) {
     self.base = base
     self.printer = printer
   }
@@ -76,12 +68,12 @@ public struct _PrintChangesReducer<
     into state: inout Base.State, action: Base.Action
   ) -> Effect<Base.Action, Never> {
     #if DEBUG
-      if self.context != .test {
+      if self.context != .test, let printer = self.printer {
         let oldState = state
         let effects = self.base.reduce(into: &state, action: action)
         return effects.merge(
           with: .fireAndForget { [newState = state] in
-            self.printer.printChange(receivedAction: action, oldState: oldState, newState: newState)
+            printer.printChange(receivedAction: action, oldState: oldState, newState: newState)
           }
         )
       }

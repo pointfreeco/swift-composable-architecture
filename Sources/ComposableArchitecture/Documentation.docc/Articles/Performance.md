@@ -283,7 +283,7 @@ store.send(.buttonTapped) {
 store.receive(.sharedComputation) {
   // Assert on shared logic
 }
-store.send(.toggleChnaged) {
+store.send(.toggleChanged) {
   $0.isEnabled = true
 }
 store.receive(.sharedComputation) {
@@ -368,7 +368,7 @@ store.send(.buttonTapped) {
   $0.count = 1
   // Assert on shared logic
 }
-store.send(.toggleChnaged) {
+store.send(.toggleChanged) {
   $0.isEnabled = true
   // Assert on shared logic
 }

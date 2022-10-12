@@ -213,21 +213,20 @@ extension TaskResult: Equatable where Success: Equatable {
     case let (.failure(lhs), .failure(rhs)):
       return _isEqual(lhs, rhs) ?? {
         #if DEBUG
-          if TaskResultDebugging.emitRuntimeWarnings, type(of: lhs) == type(of: rhs) {
-            runtimeWarning(
+          let lhsType = type(of: lhs)
+          if TaskResultDebugging.emitRuntimeWarnings, lhsType == type(of: rhs) {
+            let lhsTypeName = typeName(lhsType)
+            runtimeWarn(
               """
-              '%1$@' is not equatable. …
+              "\(lhsTypeName)" is not equatable. …
 
-              To test two values of this type, it must conform to the 'Equatable' protocol. For \
+              To test two values of this type, it must conform to the "Equatable" protocol. For \
               example:
 
-                  extension %1$@: Equatable {}
+                  extension \(lhsTypeName): Equatable {}
 
-              See the documentation of 'TaskResult' for more information.
-              """,
-              [
-                "\(type(of: lhs))",
-              ]
+              See the documentation of "TaskResult" for more information.
+              """
             )
           }
         #endif
@@ -252,19 +251,17 @@ extension TaskResult: Hashable where Success: Hashable {
       } else {
         #if DEBUG
           if TaskResultDebugging.emitRuntimeWarnings {
-            runtimeWarning(
+            let errorType = typeName(type(of: error))
+            runtimeWarn(
               """
-              '%1$@' is not hashable. …
+              "\(errorType)" is not hashable. …
 
-              To hash a value of this type, it must conform to the 'Hashable' protocol. For example:
+              To hash a value of this type, it must conform to the "Hashable" protocol. For example:
 
-                  extension %1$@: Hashable {}
+                  extension \(errorType): Hashable {}
 
-              See the documentation of 'TaskResult' for more information.
-              """,
-              [
-                "\(type(of: error))",
-              ]
+              See the documentation of "TaskResult" for more information.
+              """
             )
           }
         #endif

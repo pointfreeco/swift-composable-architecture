@@ -15,8 +15,8 @@ extension ViewStore {
 
 extension ReducerProtocol {
   @available(*, deprecated, renamed: "_printChanges")
-  public func debug() -> _PrintChangesReducer<Self, _CustomDumpPrinter> {
-    _PrintChangesReducer(base: self, printer: .customDump)
+  public func debug() -> _PrintChangesReducer<Self> {
+    self._printChanges()
   }
 }
 
@@ -1071,15 +1071,15 @@ extension AnyReducer {
         return .none
       }
       if index >= parentState[keyPath: toElementsState].endIndex {
-        runtimeWarning(
+        runtimeWarn(
           """
-          A "forEach" reducer at "%@:%d" received an action when state contained no element at \
-          that index. …
+          A "forEach" reducer at "\(fileID):\(line)" received an action when state contained no \
+          element at that index. …
 
             Action:
-              %@
+              \(debugCaseOutput(action))
             Index:
-              %d
+              \(index)
 
           This is generally considered an application logic error, and can happen for a few \
           reasons:
@@ -1101,12 +1101,6 @@ extension AnyReducer {
           when its state contains an element at this index. In SwiftUI applications, use \
           "ForEachStore".
           """,
-          [
-            "\(fileID)",
-            line,
-            debugCaseOutput(action),
-            index,
-          ],
           file: file,
           line: line
         )
