@@ -130,7 +130,7 @@ final class EffectCancellationTests: XCTestCase {
       .sink(receiveValue: { _ in })
       .store(in: &self.cancellables)
 
-    EffectTask<Int>.cancel(id: id)
+    EffectPublisher<Int, Never>.cancel(id: id)
       .sink(receiveValue: { _ in })
       .store(in: &self.cancellables)
 
@@ -198,7 +198,7 @@ final class EffectCancellationTests: XCTestCase {
     let ids = (1...10).map { _ in UUID() }
 
     let effect = EffectPublisher.merge(
-      (1...1_000).map { idx -> EffectTask<Int> in
+      (1...1_000).map { idx -> EffectPublisher<Int, Never> in
         let id = ids[idx % 10]
 
         return EffectPublisher.merge(
