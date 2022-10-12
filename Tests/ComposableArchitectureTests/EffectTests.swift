@@ -284,7 +284,7 @@ final class EffectTests: XCTestCase {
         .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1_234_567_890)))
     )
 
-    await store.send(.tap).finish()
+    await store.send(.tap).finish(timeout: NSEC_PER_SEC)
     await store.receive(.response(1_234_567_890)) {
       $0 = 1_234_567_890
     }
