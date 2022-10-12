@@ -421,13 +421,6 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
   }
 
   deinit {
-    //    switch self.exhaustivity {
-    //    case .exhaustive:
-    //      break
-    //    case .nonExhaustive:
-    //      self.skipReceivedActions(prefix: "✅ Skipped assertions: …")
-    //      self.skipInFlightEffects(prefix: "✅ Skipped assertions: …")
-    //    }
     self.completed()
   }
 
