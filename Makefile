@@ -7,17 +7,17 @@ PLATFORM_WATCHOS = watchOS Simulator,name=Apple Watch Series 7 (45mm)
 default: test-all
 
 test-all: test-examples
-	CONFIG=debug SCHEME=ComposableArchitecture test-library 
-	CONFIG=release SCHEME=ComposableArchitecture test-library 
-	CONFIG=debug SCHEME=Dependencies test-library 
-	CONFIG=release SCHEME=Dependencies test-library 
+	CONFIG=debug test-library 
+	CONFIG=release test-library 
+	CONFIG=debug test-library 
+	CONFIG=release test-library 
 
 test-library:
 	for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_MAC_CATALYST)" "$(PLATFORM_TVOS)" "$(PLATFORM_WATCHOS)"; do \
 		xcodebuild test \
 			-configuration $(CONFIG) \
 			-workspace ComposableArchitecture.xcworkspace \
-			-scheme $(SCHEME) \
+			-scheme ComposableArchitecture
 			-destination platform="$$platform" || exit 1; \
 	done;
 
