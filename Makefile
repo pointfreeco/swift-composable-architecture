@@ -17,7 +17,7 @@ test-library:
 		xcodebuild test \
 			-configuration $(CONFIG) \
 			-workspace ComposableArchitecture.xcworkspace \
-			-scheme ComposableArchitecture
+			-scheme ComposableArchitecture \
 			-destination platform="$$platform" || exit 1; \
 	done;
 
