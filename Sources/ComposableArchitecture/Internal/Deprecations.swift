@@ -3,6 +3,24 @@ import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
+// MARK: - Deprecated after 0.42.0:
+
+/// This API has been soft-deprecated in favor of ``ReducerProtocol``.
+/// Read <doc:MigratingToTheReducerProtocol> for more information.
+///
+/// A type alias to ``AnyReducer`` for source compatibility. This alias will be removed.
+@available(
+  *,
+  renamed: "AnyReducer",
+  message:
+    """
+    'Reducer' has been deprecated in favor of 'ReducerProtocol'.
+
+    See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+    """
+)
+public typealias Reducer = AnyReducer
+
 // MARK: - Deprecated after 0.41.0:
 
 extension ViewStore {
