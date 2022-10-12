@@ -469,13 +469,14 @@ That is the basics of building and testing a feature in the Composable Architect
 The documentation for releases and `main` are available here:
 
 * [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture)
-* [0.41.0](https://pointfreeco.github.io/swift-composable-architecture/0.41.0/documentation/composablearchitecture/)
+* [0.42.0](https://pointfreeco.github.io/swift-composable-architecture/0.42.0/documentation/composablearchitecture/)
 <details>
   <summary>
   Other versions
   </summary>
 
-  * [0.40.2](https://pointfreeco.github.io/swift-composable-architecture/0.40.2/documentation/composablearchitecture/)
+  * [0.41.2](https://pointfreeco.github.io/swift-composable-architecture/0.41.0/documentation/composablearchitecture/)
+  * [0.40.2](https://pointfreeco.github.io/swift-composable-architecture/0.40.0/documentation/composablearchitecture/)
   * [0.39.0](https://pointfreeco.github.io/swift-composable-architecture/0.39.0/documentation/composablearchitecture/)
   * [0.38.0](https://pointfreeco.github.io/swift-composable-architecture/0.38.0/documentation/composablearchitecture/)
   </summary>
