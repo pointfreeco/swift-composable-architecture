@@ -182,7 +182,7 @@ import XCTestDynamicOverlay
 /// wait longer than the 0.5 seconds, because if it wasn't and it delivered an action when we did
 /// not expect it would cause a test failure.
 open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
-  public var kind: Kind = .exhaustive
+  public var exhaustivity: Exhaustivity = .exhaustive
 
   /// The current dependencies.
   ///
@@ -410,7 +410,7 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
 
           \(suggestion)
           """,
-          kind: self.kind,
+          exhaustivity: self.exhaustivity,
           file: file,
           line: line
         )
@@ -421,7 +421,7 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
   }
 
   deinit {
-    //    switch self.kind {
+    //    switch self.exhaustivity {
     //    case .exhaustive:
     //      break
     //    case .nonExhaustive:
@@ -442,7 +442,7 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
 
         Unhandled actions: \(actions)
         """,
-        kind: self.kind,
+        exhaustivity: self.exhaustivity,
         file: self.file,
         line: self.line
       )
@@ -470,7 +470,7 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
         returning a corresponding cancellation effect ("Effect.cancel") from another action, or, \
         if your effect is driven by a Combine subject, send it a completion.
         """,
-        kind: self.kind,
+        exhaustivity: self.exhaustivity,
         file: effect.action.file,
         line: effect.action.line
       )
@@ -559,22 +559,22 @@ extension TestStore where ScopedState: Equatable {
 
         Unhandled actions: \(actions)
         """,
-        kind: self.kind,
+        exhaustivity: self.exhaustivity,
         file: file,
         line: line
       )
     }
 
-    switch kind {
+    switch self.exhaustivity {
     case .exhaustive:
       break
-    case .nonExhaustive(showInfo: true):
+    case .partial:
       self.skipReceivedActions()
-    case .nonExhaustive(showInfo: false):
+    case .none:
       self.reducer.receivedActions = []
     }
 
-    var expectedState = self.toScopedState(self.state)
+    let expectedState = self.toScopedState(self.state)
     let previousState = self.reducer.state
     let task = self.store
       .send(.init(origin: .send(self.fromScopedAction(action)), file: file, line: line))
@@ -585,7 +585,7 @@ extension TestStore where ScopedState: Equatable {
       defer { self.reducer.state = currentState }
 
       try self.expectedStateShouldMatch(
-        expected: &expectedState,
+        expected: expectedState,
         actual: self.toScopedState(currentState),
         modify: updateExpectingResult,
         file: file,
@@ -655,22 +655,22 @@ extension TestStore where ScopedState: Equatable {
 
         Unhandled actions: \(actions)
         """,
-        kind: self.kind,
+        exhaustivity: self.exhaustivity,
         file: file,
         line: line
       )
     }
 
-    switch kind {
+    switch self.exhaustivity {
     case .exhaustive:
       break
-    case .nonExhaustive(showInfo: true):
+    case .partial:
       self.skipReceivedActions()
-    case .nonExhaustive(showInfo: false):
+    case .none:
       self.reducer.receivedActions = []
     }
 
-    var expectedState = self.toScopedState(self.state)
+    let expectedState = self.toScopedState(self.state)
     let previousState = self.state
     let task = self.store
       .send(.init(origin: .send(self.fromScopedAction(action)), file: file, line: line))
@@ -680,7 +680,7 @@ extension TestStore where ScopedState: Equatable {
       defer { self.reducer.state = currentState }
 
       try self.expectedStateShouldMatch(
-        expected: &expectedState,
+        expected: expectedState,
         actual: self.toScopedState(currentState),
         modify: updateExpectingResult,
         file: file,
@@ -697,39 +697,42 @@ extension TestStore where ScopedState: Equatable {
   }
 
   private func expectedStateShouldMatch(
-    expected: inout ScopedState,
+    expected: ScopedState,
     actual: ScopedState,
     modify: ((inout ScopedState) throws -> Void)? = nil,
     file: StaticString,
     line: UInt
   ) throws {
     let current = expected
+    var expected = expected
 
-    switch self.kind {
+    switch self.exhaustivity {
     case .exhaustive:
       var expectedWhenGivenPreviousState = expected
       if let modify = modify {
         try modify(&expectedWhenGivenPreviousState)
       }
       expected = expectedWhenGivenPreviousState
+
       if expectedWhenGivenPreviousState != actual {
         expectationFailure(expected: expectedWhenGivenPreviousState)
       } else {
         tryUnnecessaryModifyFailure()
       }
 
-    case let .nonExhaustive(showInfo: showInfo):
+    case .none, .partial:
       var expectedWhenGivenActualState = actual
       if let modify = modify {
         try modify(&expectedWhenGivenActualState)
       }
+      expected = expectedWhenGivenActualState
 
       if expectedWhenGivenActualState != actual {
-        self.withKind(.exhaustive) {
+        self.withExhaustivity(.exhaustive) {
           expectationFailure(expected: expectedWhenGivenActualState)
         }
-      } else if showInfo && expectedWhenGivenActualState == actual {
-        var expectedWhenGivenPreviousState = expected
+      } else if self.exhaustivity == .partial && expectedWhenGivenActualState == actual {
+        var expectedWhenGivenPreviousState = current
         if let modify = modify {
           _XCTExpectFailure(strict: false) {
             do {
@@ -748,23 +751,6 @@ extension TestStore where ScopedState: Equatable {
       } else {
         tryUnnecessaryModifyFailure()
       }
-    }
-
-    func tryUnnecessaryModifyFailure() {
-      guard expected == current && modify != nil
-      else { return }
-
-      XCTFailHelper(
-        """
-        Expected state to change, but no change occurred.
-
-        The trailing closure made no observable modifications to state. If no change to state is \
-        expected, omit the trailing closure.
-        """,
-        kind: self.kind,
-        file: file,
-        line: line
-      )
     }
 
     func expectationFailure(expected: ScopedState) {
@@ -788,18 +774,35 @@ extension TestStore where ScopedState: Equatable {
 
         \(difference)
         """,
-        kind: self.kind,
+        exhaustivity: self.exhaustivity,
+        file: file,
+        line: line
+      )
+    }
+
+    func tryUnnecessaryModifyFailure() {
+      guard expected == current && modify != nil
+      else { return }
+
+      XCTFailHelper(
+        """
+        Expected state to change, but no change occurred.
+
+        The trailing closure made no observable modifications to state. If no change to state is \
+        expected, omit the trailing closure.
+        """,
+        exhaustivity: self.exhaustivity,
         file: file,
         line: line
       )
     }
   }
 
-  private func withKind(_ kind: Kind, operation: () -> Void) {
-    let previous = self.kind
-    self.kind = kind
+  private func withExhaustivity(_ exhaustivity: Exhaustivity, operation: () -> Void) {
+    let previous = self.exhaustivity
+    self.exhaustivity = exhaustivity
     operation()
-    self.kind = previous
+    self.exhaustivity = previous
   }
 }
 
@@ -835,7 +838,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
       return
     }
 
-    if self.kind != .exhaustive {
+    if self.exhaustivity != .exhaustive {
       guard self.reducer.receivedActions.contains(where: { $0.action == expectedAction }) else {
         XCTFail(
           """
@@ -854,14 +857,13 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
           Skipped assertions: …
           Skipped receiving \(receivedAction.action)
           """,
-          kind: self.kind,
+          exhaustivity: self.exhaustivity,
           file: file,
           line: line
         )
-        let previous = self.kind
-        self.kind = .nonExhaustive(showInfo: false)
-        self.receive(receivedAction.action)
-        self.kind = previous
+        self.withExhaustivity(.none) {
+          self.receive(receivedAction.action)
+        }
       }
     }
 
@@ -886,15 +888,15 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
 
         \(difference)
         """,
-        kind: self.kind,
+        exhaustivity: self.exhaustivity,
         file: file,
         line: line
       )
     }
-    var expectedState = self.toScopedState(self.state)
+    let expectedState = self.toScopedState(self.state)
     do {
-      try expectedStateShouldMatch(
-        expected: &expectedState,
+      try self.expectedStateShouldMatch(
+        expected: expectedState,
         actual: self.toScopedState(state),
         modify: updateExpectingResult,
         file: file,
@@ -1077,7 +1079,7 @@ extension TestStore {
       """
       \(prefix.isEmpty ? "" : "\(prefix)\n\n")Received actions were skipped: \(actions)
       """,
-      kind: .nonExhaustive(showInfo: true),
+      exhaustivity: .partial,
       file: file,
       line: line
     )
@@ -1103,7 +1105,7 @@ extension TestStore {
       \(prefix.isEmpty ? "" : "\(prefix)\n\n")In-flight effects were skipped, originating \
       from: \(actions)
       """,
-      kind: .nonExhaustive(showInfo: true),
+      exhaustivity: .partial,
       file: file,
       line: line
     )
@@ -1331,25 +1333,26 @@ extension Task where Success == Never, Failure == Never {
   }
 #endif
 
-public enum Kind: Equatable {
+public enum Exhaustivity {
   case exhaustive
-  case nonExhaustive(showInfo: Bool)  // TODO: make prefix customizable with "✅"?
+  case none
+  case partial
 }
 
 private func XCTFailHelper(
   _ message: String = "",
-  kind: Kind,
+  exhaustivity: Exhaustivity,
   file: StaticString,
   line: UInt
 ) {
-  switch kind {
+  switch exhaustivity {
   case .exhaustive:
     XCTFail(message, file: file, line: line)
-  case .nonExhaustive(showInfo: true):
+  case .partial:
     _XCTExpectFailure {
       XCTFail(message, file: file, line: line)
     }
-  case .nonExhaustive(showInfo: false):
+  case .none:
     break
   }
 }

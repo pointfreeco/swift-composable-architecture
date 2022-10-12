@@ -7,10 +7,9 @@ final class TestStoreNonExhaustiveTests: XCTestCase {
   func testSkipReceivedActions() {
     let store = TestStore(
       initialState: 0,
-      reducer: Reducer<Int, Bool, Void> { _, action, _ in
+      reducer: Reduce<Int, Bool> { _, action in
         action ? .init(value: false) : .none
-      },
-      environment: ()
+      }
     )
 
     store.send(true)
@@ -32,12 +31,11 @@ final class TestStoreNonExhaustiveTests: XCTestCase {
   func testIgnoreReceiveActions_NonExhaustive_ShowInfo() {
     let store = TestStore(
       initialState: 0,
-      reducer: Reducer<Int, Bool, Void> { _, action, _ in
+      reducer: Reduce<Int, Bool> { _, action in
         action ? .init(value: false) : .none
-      },
-      environment: ()
+      }
     )
-    store.kind = .nonExhaustive(showInfo: true)
+    store.exhaustivity = .partial
 
     store.send(true)
   }
@@ -45,12 +43,11 @@ final class TestStoreNonExhaustiveTests: XCTestCase {
   func testIgnoreReceiveActions_NonExhaustive_HideInfo() {
     let store = TestStore(
       initialState: 0,
-      reducer: Reducer<Int, Bool, Void> { _, action, _ in
+      reducer: Reduce<Int, Bool> { _, action in
         action ? .init(value: false) : .none
-      },
-      environment: ()
+      }
     )
-    store.kind = .nonExhaustive(showInfo: false)
+    store.exhaustivity = .none
 
     store.send(true)
   }
@@ -62,7 +59,7 @@ final class TestStoreNonExhaustiveTests: XCTestCase {
           .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
       }
     )
-    store.kind = .nonExhaustive(showInfo: true)
+    store.exhaustivity = .partial
 
     store.send(true)
   }
@@ -74,7 +71,7 @@ final class TestStoreNonExhaustiveTests: XCTestCase {
           .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
       }
     )
-    store.kind = .nonExhaustive(showInfo: false)
+    store.exhaustivity = .none
 
     store.send(true)
   }
@@ -85,8 +82,9 @@ final class TestStoreNonExhaustiveTests: XCTestCase {
       initialState: Counter.State(),
       reducer: Counter()
     )
-    store.kind = .nonExhaustive(showInfo: true)
+    store.exhaustivity = .partial
 
+    // TODO: where's the info?
     store.send(.increment) {
       $0.count = 1
       // Ignoring state change: isEven = false
@@ -149,7 +147,7 @@ final class TestStoreNonExhaustiveTests: XCTestCase {
       initialState: Feature.State(),
       reducer: Feature()
     )
-    store.kind = .nonExhaustive(showInfo: true)
+    store.exhaustivity = .partial
 
     store.send(.increment) {
       $0.count = 1
@@ -167,7 +165,7 @@ final class TestStoreNonExhaustiveTests: XCTestCase {
       initialState: Counter.State(),
       reducer: Counter()
     )
-    store.kind = .nonExhaustive(showInfo: true)
+    store.exhaustivity = .partial
 
     store.send(.increment)
     store.send(.increment)
@@ -183,7 +181,7 @@ final class TestStoreNonExhaustiveTests: XCTestCase {
       initialState: NonExhaustiveReceive.State(),
       reducer: NonExhaustiveReceive()
     )
-    store.kind = .nonExhaustive(showInfo: true)
+    store.exhaustivity = .partial
 
     await store.send(.onAppear)
     await store.receive(.response1(42)) {
@@ -202,7 +200,7 @@ final class TestStoreNonExhaustiveTests: XCTestCase {
       initialState: NonExhaustiveReceive.State(),
       reducer: NonExhaustiveReceive()
     )
-    store.kind = .nonExhaustive(showInfo: true)
+    store.exhaustivity = .partial
 
     await store.send(.onAppear)
     // Ignored received action: .response1(42)

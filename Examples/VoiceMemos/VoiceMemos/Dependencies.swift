@@ -29,7 +29,8 @@ extension DependencyValues {
   private enum TemporaryDirectoryKey: DependencyKey {
     static let liveValue: @Sendable () -> URL = { URL(fileURLWithPath: NSTemporaryDirectory()) }
     static let testValue: @Sendable () -> URL = XCTUnimplemented(
-      #"@Dependency(\.temporaryDirectory)"#
+      #"@Dependency(\.temporaryDirectory)"#,
+      placeholder: URL(fileURLWithPath: NSTemporaryDirectory())
     )
   }
 }
