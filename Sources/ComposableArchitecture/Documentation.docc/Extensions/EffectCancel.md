@@ -1,4 +1,4 @@
-# ``ComposableArchitecture/Effect/cancel(id:)-7vmd9``
+# ``ComposableArchitecture/EffectPublisher/cancel(id:)-7vmd9``
 
 ## Topics
 

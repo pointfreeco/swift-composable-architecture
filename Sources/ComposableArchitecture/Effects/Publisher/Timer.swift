@@ -1,7 +1,7 @@
 import Combine
 import CombineSchedulers
 
-extension Effect where Failure == Never {
+extension EffectPublisher where Failure == Never {
   /// Returns an effect that repeatedly emits the current time of the given scheduler on the given
   /// interval.
   ///
@@ -15,12 +15,12 @@ extension Effect where Failure == Never {
   /// we can see how effects emit. However, because `Timer.publish` takes a concrete `RunLoop` as
   /// its scheduler, we can't substitute in a `TestScheduler` during tests`.
   ///
-  /// That is why we provide `Effect.timer`. It allows you to create a timer that works with any
+  /// That is why we provide `EffectTask.timer`. It allows you to create a timer that works with any
   /// scheduler, not just a run loop, which means you can use a `DispatchQueue` or `RunLoop` when
   /// running your live app, but use a `TestScheduler` in tests.
   ///
   /// To start and stop a timer in your feature you can create the timer effect from an action
-  /// and then use the ``Effect/cancel(id:)-iun1`` effect to stop the timer:
+  /// and then use the ``EffectPublisher/cancel(id:)-iun1`` effect to stop the timer:
   ///
   /// ```swift
   /// struct Feature: ReducerProtocol {
@@ -32,7 +32,7 @@ extension Effect where Failure == Never {
   ///   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
   ///     switch action {
   ///     case .startButtonTapped:
-  ///       return Effect.timer(id: TimerID(), every: 1, on: self.mainQueue)
+  ///       return EffectTask.timer(id: TimerID(), every: 1, on: self.mainQueue)
   ///         .map { _ in .timerTicked }
   ///
   ///     case .stopButtonTapped:
@@ -89,11 +89,17 @@ extension Effect where Failure == Never {
   ///   - tolerance: The allowed timing variance when emitting events. Defaults to `nil`, which
   ///     allows any variance.
   ///   - options: Scheduler options passed to the timer. Defaults to `nil`.
-  @available(iOS, deprecated: 9999.0, message: "Use 'scheduler.timer' in 'Effect.run', instead.")
-  @available(macOS, deprecated: 9999.0, message: "Use 'scheduler.timer' in 'Effect.run', instead.")
-  @available(tvOS, deprecated: 9999.0, message: "Use 'scheduler.timer' in 'Effect.run', instead.")
   @available(
-    watchOS, deprecated: 9999.0, message: "Use 'scheduler.timer' in 'Effect.run', instead."
+    iOS, deprecated: 9999.0, message: "Use 'scheduler.timer' in 'EffectTask.run', instead."
+  )
+  @available(
+    macOS, deprecated: 9999.0, message: "Use 'scheduler.timer' in 'EffectTask.run', instead."
+  )
+  @available(
+    tvOS, deprecated: 9999.0, message: "Use 'scheduler.timer' in 'EffectTask.run', instead."
+  )
+  @available(
+    watchOS, deprecated: 9999.0, message: "Use 'scheduler.timer' in 'EffectTask.run', instead."
   )
   public static func timer<S: Scheduler>(
     id: AnyHashable,
@@ -112,8 +118,8 @@ extension Effect where Failure == Never {
   /// Returns an effect that repeatedly emits the current time of the given scheduler on the given
   /// interval.
   ///
-  /// A convenience for calling ``Effect/timer(id:every:tolerance:on:options:)-4exe6`` with a
-  /// static type as the effect's unique identifier.
+  /// A convenience for calling ``EffectPublisher/timer(id:every:tolerance:on:options:)-4exe6`` with
+  /// a static type as the effect's unique identifier.
   ///
   /// - Parameters:
   ///   - id: A unique type identifying the effect.
@@ -123,11 +129,17 @@ extension Effect where Failure == Never {
   ///   - tolerance: The allowed timing variance when emitting events. Defaults to `nil`, which
   ///     allows any variance.
   ///   - options: Scheduler options passed to the timer. Defaults to `nil`.
-  @available(iOS, deprecated: 9999.0, message: "Use 'scheduler.timer' in 'Effect.run', instead.")
-  @available(macOS, deprecated: 9999.0, message: "Use 'scheduler.timer' in 'Effect.run', instead.")
-  @available(tvOS, deprecated: 9999.0, message: "Use 'scheduler.timer' in 'Effect.run', instead.")
   @available(
-    watchOS, deprecated: 9999.0, message: "Use 'scheduler.timer' in 'Effect.run', instead."
+    iOS, deprecated: 9999.0, message: "Use 'scheduler.timer' in 'EffectTask.run', instead."
+  )
+  @available(
+    macOS, deprecated: 9999.0, message: "Use 'scheduler.timer' in 'EffectTask.run', instead."
+  )
+  @available(
+    tvOS, deprecated: 9999.0, message: "Use 'scheduler.timer' in 'EffectTask.run', instead."
+  )
+  @available(
+    watchOS, deprecated: 9999.0, message: "Use 'scheduler.timer' in 'EffectTask.run', instead."
   )
   public static func timer<S: Scheduler>(
     id: Any.Type,

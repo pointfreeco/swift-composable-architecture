@@ -1,7 +1,7 @@
 import Combine
 import SwiftUI
 
-extension Effect {
+extension EffectPublisher {
   /// Wraps the emission of each element with SwiftUI's `withAnimation`.
   ///
   /// ```swift

@@ -1,12 +1,12 @@
 import Combine
 import Foundation
 
-extension Effect {
+extension EffectPublisher {
   /// Turns an effect into one that is capable of being canceled.
   ///
   /// To turn an effect into a cancellable one you must provide an identifier, which is used in
-  /// ``Effect/cancel(id:)-iun1`` to identify which in-flight effect should be canceled. Any
-  /// hashable value can be used for the identifier, such as a string, but you can add a bit of
+  /// ``EffectPublisher/cancel(id:)-iun1`` to identify which in-flight effect should be canceled.
+  /// Any hashable value can be used for the identifier, such as a string, but you can add a bit of
   /// protection against typos by defining a new type for the identifier:
   ///
   /// ```swift
@@ -93,8 +93,8 @@ extension Effect {
 
   /// Turns an effect into one that is capable of being canceled.
   ///
-  /// A convenience for calling ``Effect/cancellable(id:cancelInFlight:)-17skv`` with a static type
-  /// as the effect's unique identifier.
+  /// A convenience for calling ``EffectPublisher/cancellable(id:cancelInFlight:)-17skv`` with a
+  /// static type as the effect's unique identifier.
   ///
   /// - Parameters:
   ///   - id: A unique type identifying the effect.
@@ -120,8 +120,8 @@ extension Effect {
 
   /// An effect that will cancel any currently in-flight effect with the given identifier.
   ///
-  /// A convenience for calling ``Effect/cancel(id:)-iun1`` with a static type as the effect's
-  /// unique identifier.
+  /// A convenience for calling ``EffectPublisher/cancel(id:)-iun1`` with a static type as the
+  /// effect's unique identifier.
   ///
   /// - Parameter id: A unique type identifying the effect.
   /// - Returns: A new effect that will cancel any currently in-flight effect with the given
@@ -136,19 +136,19 @@ extension Effect {
   /// - Returns: A new effect that will cancel any currently in-flight effects with the given
   ///   identifiers.
   public static func cancel(ids: [AnyHashable]) -> Self {
-    .merge(ids.map(Effect.cancel(id:)))
+    .merge(ids.map(EffectPublisher.cancel(id:)))
   }
 
   /// An effect that will cancel multiple currently in-flight effects with the given identifiers.
   ///
-  /// A convenience for calling ``Effect/cancel(ids:)-dmwy`` with a static type as the effect's
-  /// unique identifier.
+  /// A convenience for calling ``EffectPublisher/cancel(ids:)-dmwy`` with a static type as the
+  /// effect's unique identifier.
   ///
   /// - Parameter ids: An array of unique types identifying the effects.
   /// - Returns: A new effect that will cancel any currently in-flight effects with the given
   ///   identifiers.
   public static func cancel(ids: [Any.Type]) -> Self {
-    .merge(ids.map(Effect.cancel(id:)))
+    .merge(ids.map(EffectPublisher.cancel(id:)))
   }
 }
 

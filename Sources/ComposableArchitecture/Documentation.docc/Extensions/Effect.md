@@ -1,4 +1,4 @@
-# ``ComposableArchitecture/Effect``
+# ``ComposableArchitecture/EffectPublisher``
 
 ## Topics
 

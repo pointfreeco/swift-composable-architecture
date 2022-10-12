@@ -46,13 +46,13 @@ final class EffectRunTests: XCTestCase {
       var line: UInt!
       XCTExpectFailure(nil, enabled: nil, strict: nil) {
         $0.compactDescription == """
-          An "Effect.run" returned from \
+          An "EffectTask.run" returned from \
           "ComposableArchitectureTests/EffectRunTests.swift:\(line+1)" threw an unhandled error. …
 
               EffectRunTests.Failure()
 
           All non-cancellation errors must be explicitly handled via the "catch" parameter on \
-          "Effect.run", or via a "do" block.
+          "EffectTask.run", or via a "do" block.
           """
       }
       struct State: Equatable {}

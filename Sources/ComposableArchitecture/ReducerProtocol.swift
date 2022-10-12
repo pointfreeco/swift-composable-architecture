@@ -1,6 +1,7 @@
 #if compiler(>=5.7)
   /// A protocol that describes how to evolve the current state of an application to the next state,
-  /// given an action, and describes what ``Effect``s should be executed later by the store, if any.
+  /// given an action, and describes what ``EffectTask``s should be executed later by the store, if
+  /// any.
   ///
   /// Conform types to this protocol to represent the domain, logic and behavior for your feature.
   /// The domain is specified by the "state" and "actions", which can be nested types inside the
@@ -45,7 +46,7 @@
   /// The `reduce` method's first responsibility is to mutate the feature's current state given an
   /// action. It's second responsibility is to return effects that will be executed asynchronously
   /// and feed their data back into the system. Currently `Feature` does not need to run any effects,
-  /// and so ``Effect/none`` is returned.
+  /// and so ``EffectPublisher/none`` is returned.
   ///
   /// If the feature does need to do effectful work, then more would need to be done. For example,
   /// suppose the feature has the ability to start and stop a timer, and with each tick of the timer
@@ -106,8 +107,8 @@
   ///
   ///   1. You can either implement the ``reduce(into:action:)-4nzr2`` method, as shown above, which
   ///   is given direct mutable access to application ``State`` whenever an ``Action`` is fed into
-  ///   the system, and returns an ``Effect`` that can communicate with the outside world and feed
-  ///   additional ``Action``s back into the system.
+  ///   the system, and returns an ``EffectTask`` that can communicate with the outside world and
+  ///   feed additional ``Action``s back into the system.
   ///
   ///   2. Or you can implement the ``body-swift.property-7foai`` property, which combines one or
   ///   more reducers together.
@@ -164,7 +165,7 @@
     associatedtype State
 
     /// A type that holds all possible actions that cause the ``State`` of the reducer to change
-    /// and/or kick off a side ``Effect`` that can communicate with the outside world.
+    /// and/or kick off a side ``EffectTask`` that can communicate with the outside world.
     associatedtype Action
 
     // NB: For Xcode to favor autocompleting `var body: Body` over `var body: Never` we must use a
@@ -211,14 +212,15 @@
   }
 #else
   /// A protocol that describes how to evolve the current state of an application to the next state,
-  /// given an action, and describes what ``Effect``s should be executed later by the store, if any.
+  /// given an action, and describes what ``EffectTask``s should be executed later by the store, if
+  /// any.
   ///
   /// There are two ways to define a reducer:
   ///
   ///   1. You can either implement the ``reduce(into:action:)-4nzr2`` method, which is given direct
   ///      mutable access to application ``State`` whenever an ``Action`` is fed into the system,
-  ///      and returns an ``Effect`` that can communicate with the outside world and feed additional
-  ///      ``Action``s back into the system.
+  ///      and returns an ``EffectTask`` that can communicate with the outside world and feed
+///        additional ``Action``s back into the system.
   ///
   ///   2. Or you can implement the ``body-swift.property-7foai`` property, which combines one or
   ///      more reducers together.
@@ -273,7 +275,7 @@
     associatedtype State
 
     /// A type that holds all possible actions that cause the ``State`` of the reducer to change
-    /// and/or kick off a side ``Effect`` that can communicate with the outside world.
+    /// and/or kick off a side ``EffectTask`` that can communicate with the outside world.
     associatedtype Action
 
     // NB: For Xcode to favor autocompleting `var body: Body` over `var body: Never` we must use a

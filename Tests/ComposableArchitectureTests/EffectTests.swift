@@ -54,9 +54,9 @@ final class EffectTests: XCTestCase {
     var values: [Int] = []
 
     let effect = EffectTask<Int>.concatenate(
-      Effect(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect(),
-      Effect(value: 2).delay(for: 2, scheduler: mainQueue).eraseToEffect(),
-      Effect(value: 3).delay(for: 3, scheduler: mainQueue).eraseToEffect()
+      EffectTask(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect(),
+      EffectTask(value: 2).delay(for: 2, scheduler: mainQueue).eraseToEffect(),
+      EffectTask(value: 3).delay(for: 3, scheduler: mainQueue).eraseToEffect()
     )
 
     effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
@@ -80,7 +80,7 @@ final class EffectTests: XCTestCase {
     var values: [Int] = []
 
     let effect = EffectTask<Int>.concatenate(
-      Effect(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect()
+      EffectTask(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect()
     )
 
     effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
@@ -96,9 +96,9 @@ final class EffectTests: XCTestCase {
 
   func testMerge() {
     let effect = EffectTask<Int>.merge(
-      Effect(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect(),
-      Effect(value: 2).delay(for: 2, scheduler: mainQueue).eraseToEffect(),
-      Effect(value: 3).delay(for: 3, scheduler: mainQueue).eraseToEffect()
+      EffectTask(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect(),
+      EffectTask(value: 2).delay(for: 2, scheduler: mainQueue).eraseToEffect(),
+      EffectTask(value: 3).delay(for: 3, scheduler: mainQueue).eraseToEffect()
     )
 
     var values: [Int] = []
@@ -187,7 +187,7 @@ final class EffectTests: XCTestCase {
     let expectation = self.expectation(description: "Complete")
 
     // This crashes on iOS 13 if Effect.init(error:) is implemented using the Fail publisher.
-    Effect<Never, Error>(error: NSError(domain: "", code: 1))
+    EffectPublisher<Never, Error>(error: NSError(domain: "", code: 1))
       .retry(3)
       .catch { _ in Fail(error: NSError(domain: "", code: 1)) }
       .sink(

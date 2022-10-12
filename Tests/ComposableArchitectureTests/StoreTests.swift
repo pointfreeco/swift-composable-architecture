@@ -185,13 +185,13 @@ final class StoreTests: XCTestCase {
       switch action {
       case .tap:
         return .merge(
-          Effect(value: .next1),
-          Effect(value: .next2),
+          EffectTask(value: .next1),
+          EffectTask(value: .next2),
           .fireAndForget { values.append(1) }
         )
       case .next1:
         return .merge(
-          Effect(value: .end),
+          EffectTask(value: .end),
           .fireAndForget { values.append(2) }
         )
       case .next2:
@@ -214,7 +214,7 @@ final class StoreTests: XCTestCase {
       switch action {
       case .incr:
         state += 1
-        return state >= 100_000 ? Effect(value: .noop) : Effect(value: .incr)
+        return state >= 100_000 ? EffectTask(value: .noop) : EffectTask(value: .incr)
       case .noop:
         return .none
       }
@@ -355,9 +355,9 @@ final class StoreTests: XCTestCase {
         switch action {
         case 0:
           return .merge(
-            Effect(value: 1),
-            Effect(value: 2),
-            Effect(value: 3)
+            EffectTask(value: 1),
+            EffectTask(value: 2),
+            EffectTask(value: 3)
           )
         default:
           state = action

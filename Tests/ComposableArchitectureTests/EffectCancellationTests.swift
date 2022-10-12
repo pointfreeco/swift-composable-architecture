@@ -15,7 +15,7 @@ final class EffectCancellationTests: XCTestCase {
     var values: [Int] = []
 
     let subject = PassthroughSubject<Int, Never>()
-    let effect = Effect(subject)
+    let effect = EffectPublisher(subject)
       .cancellable(id: CancelID())
 
     effect
@@ -40,7 +40,7 @@ final class EffectCancellationTests: XCTestCase {
     var values: [Int] = []
 
     let subject = PassthroughSubject<Int, Never>()
-    Effect(subject)
+    EffectPublisher(subject)
       .cancellable(id: CancelID(), cancelInFlight: true)
       .sink { values.append($0) }
       .store(in: &self.cancellables)
@@ -51,7 +51,7 @@ final class EffectCancellationTests: XCTestCase {
     subject.send(2)
     XCTAssertEqual(values, [1, 2])
 
-    Effect(subject)
+    EffectPublisher(subject)
       .cancellable(id: CancelID(), cancelInFlight: true)
       .sink { values.append($0) }
       .store(in: &self.cancellables)
@@ -141,7 +141,7 @@ final class EffectCancellationTests: XCTestCase {
     var values: [Int] = []
 
     let subject = PassthroughSubject<Int, Never>()
-    let effect = Effect(subject)
+    let effect = EffectPublisher(subject)
       .cancellable(id: CancelID())
       .cancellable(id: CancelID())
 
@@ -165,7 +165,7 @@ final class EffectCancellationTests: XCTestCase {
     var values: [Int] = []
 
     let subject = PassthroughSubject<Int, Never>()
-    let effect = Effect(subject)
+    let effect = EffectPublisher(subject)
       .cancellable(id: CancelID())
 
     effect
@@ -197,11 +197,11 @@ final class EffectCancellationTests: XCTestCase {
     ]
     let ids = (1...10).map { _ in UUID() }
 
-    let effect = Effect.merge(
+    let effect = EffectPublisher.merge(
       (1...1_000).map { idx -> EffectTask<Int> in
         let id = ids[idx % 10]
 
-        return Effect.merge(
+        return EffectPublisher.merge(
           Just(idx)
             .delay(
               for: .milliseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
@@ -213,7 +213,7 @@ final class EffectCancellationTests: XCTestCase {
             .delay(
               for: .milliseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
             )
-            .flatMap { Effect.cancel(id: id) }
+            .flatMap { EffectPublisher.cancel(id: id) }
             .eraseToEffect()
         )
       }
@@ -298,7 +298,7 @@ final class EffectCancellationTests: XCTestCase {
   }
 
   func testNestedMergeCancellation() {
-    let effect = EffectTask<Int>.merge(
+    let effect = EffectPublisher<Int, Never>.merge(
       (1...2).publisher
         .eraseToEffect()
         .cancellable(id: 1)

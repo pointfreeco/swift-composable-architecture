@@ -55,15 +55,15 @@ public typealias Reducer = AnyReducer
 /// Read <doc:MigratingToTheReducerProtocol> for more information.
 ///
 /// A reducer describes how to evolve the current state of an application to the next state, given
-/// an action, and describes what ``Effect``s should be executed later by the store, if any.
+/// an action, and describes what ``EffectTask``s should be executed later by the store, if any.
 ///
 /// Reducers have 3 generics:
 ///
 ///   * `State`: A type that holds the current state of the application.
 ///   * `Action`: A type that holds all possible actions that cause the state of the application to
 ///     change.
-///   * `Environment`: A type that holds all dependencies needed in order to produce ``Effect``s,
-///     such as API clients, analytics clients, random number generators, etc.
+///   * `Environment`: A type that holds all dependencies needed in order to produce
+///     ``EffectTask``s, such as API clients, analytics clients, random number generators, etc.
 ///
 /// > Important: The thread on which effects output is important. An effect's output is immediately
 ///   sent back into the store, and ``Store`` is not thread safe. This means all effects must
@@ -71,9 +71,10 @@ public typealias Reducer = AnyReducer
 ///   output must be on the main thread. You can use the `Publisher` method `receive(on:)` for make
 ///   the effect output its values on the thread of your choice.
 /// >
-/// > This is only an issue if using the Combine interface of ``Effect`` as mentioned above. If you
-///   you are only using Swift's concurrency tools and the `.task`, `.run` and `.fireAndForget`
-///   functions on ``Effect``, then the threading is automatically handled for you.
+/// > This is only an issue if using the Combine interface of ``EffectPublisher`` as mentioned
+///   above. If you are only using Swift's concurrency tools and the `.task`, `.run` and
+///   `.fireAndForget` functions on ``EffectTask``, then the threading is automatically handled for
+///   you.
 @available(
   iOS,
   deprecated: 9999.0,
@@ -117,7 +118,7 @@ public struct AnyReducer<State, Action, Environment> {
   /// The reducer takes three arguments: state, action and environment. The state is `inout` so that
   /// you can make any changes to it directly inline. The reducer must return an effect, which
   /// typically would be constructed by using the dependencies inside the `environment` value. If
-  /// no effect needs to be executed, a ``Effect/none`` effect can be returned.
+  /// no effect needs to be executed, a ``EffectPublisher/none`` effect can be returned.
   ///
   /// For example:
   ///

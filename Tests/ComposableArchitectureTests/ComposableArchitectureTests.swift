@@ -20,13 +20,13 @@ final class ComposableArchitectureTests: XCTestCase {
         switch action {
         case .incrAndSquareLater:
           return .merge(
-            Effect(value: .incrNow)
+            EffectTask(value: .incrNow)
               .delay(for: 2, scheduler: self.mainQueue)
               .eraseToEffect(),
-            Effect(value: .squareNow)
+            EffectTask(value: .squareNow)
               .delay(for: 1, scheduler: self.mainQueue)
               .eraseToEffect(),
-            Effect(value: .squareNow)
+            EffectTask(value: .squareNow)
               .delay(for: 2, scheduler: self.mainQueue)
               .eraseToEffect()
           )

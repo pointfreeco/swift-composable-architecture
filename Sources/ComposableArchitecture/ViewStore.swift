@@ -270,8 +270,8 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   /// > Important: ``ViewStore`` is not thread safe and you should only send actions to it from the
   /// > main thread. If you want to send actions on background threads due to the fact that the
   /// > reducer is performing computationally expensive work, then a better way to handle this is to
-  /// > wrap that work in an ``Effect`` that is performed on a background thread so that the result
-  /// > can be fed back into the store.
+  /// > wrap that work in an ``EffectTask`` that is performed on a background thread so that the
+  /// > result can be fed back into the store.
   ///
   /// - Parameter action: An action.
   /// - Returns: A ``ViewStoreTask`` that represents the lifecycle of the effect executed when
