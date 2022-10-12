@@ -49,10 +49,6 @@ public struct EffectPublisher<Action, Failure: Error> {
   }
 }
 
-// TODO: Soft deprecation
-@available(*, deprecated)
-public typealias Effect = EffectPublisher
-
 // MARK: - Creating Effects
 
 extension EffectPublisher {
@@ -611,3 +607,66 @@ extension EffectPublisher {
     }
   }
 }
+
+// MARK: - Transitory Deprecation
+@available(
+  iOS,
+  deprecated: 9999.0,
+  renamed: "EffectPublisher",
+  message:
+    """
+    'Effect' has been deprecated in favor of 'EffectTask' when `Failure == Never`, or
+    `EffectPublisher<Output, Failure>` in general.
+    
+    You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
+    concurrency to model dependencies that can fail.
+
+    See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
+    """
+)
+@available(
+  macOS,
+  deprecated: 9999.0,
+  renamed: "EffectPublisher",
+  message:
+    """
+    'Effect' has been deprecated in favor of 'EffectTask' when `Failure == Never`, or
+    `EffectPublisher<Output, Failure>` in general.
+    
+    You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
+    concurrency to model dependencies that can fail.
+
+    See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
+    """
+)
+@available(
+  tvOS,
+  deprecated: 9999.0,
+  renamed: "EffectPublisher",
+  message:
+    """
+    'Effect' has been deprecated in favor of 'EffectTask' when `Failure == Never`, or
+    `EffectPublisher<Output, Failure>` in general.
+    
+    You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
+    concurrency to model dependencies that can fail.
+
+    See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
+    """
+)
+@available(
+  watchOS,
+  deprecated: 9999.0,
+  renamed: "EffectPublisher",
+  message:
+    """
+    'Effect' has been deprecated in favor of 'EffectTask' when `Failure == Never`, or
+    `EffectPublisher<Output, Failure>` in general.
+    
+    You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
+    concurrency to model dependencies that can fail.
+
+    See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
+    """
+)
+public typealias Effect = EffectPublisher
