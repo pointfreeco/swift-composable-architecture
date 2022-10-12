@@ -404,10 +404,10 @@ application in simulators or devices:
 ```swift
 extension NumberFactClient: DependencyKey {
   static let liveValue = Self(
-    fetch: {
+    fetch: { number in
       let (data, _) = try await URLSession.shared
         .data(from: .init(string: "http://numbersapi.com/\(number)")!)
-      return String(decoding: data, using: UTF8.self)
+      return String(decoding: data, as: UTF8.self)
     }
   )
 }
