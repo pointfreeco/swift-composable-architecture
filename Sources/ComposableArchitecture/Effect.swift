@@ -66,7 +66,7 @@ extension Effect {
 /// Instead of specifying `Never` as `Failure`:
 ///
 /// ```swift
-/// func reduce(into state: inout State, action: Action) -> EffectOf<Action> { … }
+/// func reduce(into state: inout State, action: Action) -> Effect<Action, Never> { … }
 /// ```
 ///
 /// You can specify a single generic:
