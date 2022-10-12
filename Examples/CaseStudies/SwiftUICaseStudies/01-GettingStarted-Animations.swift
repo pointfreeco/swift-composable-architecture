@@ -39,7 +39,7 @@ struct Animations: ReducerProtocol {
 
   @Dependency(\.mainQueue) var mainQueue
 
-  func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     enum CancelID {}
 
     switch action {

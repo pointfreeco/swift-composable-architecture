@@ -13,7 +13,7 @@ public struct EmptyReducer<State, Action>: ReducerProtocol {
   init(internal: Void) {}
 
   @inlinable
-  public func reduce(into _: inout State, action _: Action) -> EffectOf<Action> {
+  public func reduce(into _: inout State, action _: Action) -> EffectTask<Action> {
     .none
   }
 }

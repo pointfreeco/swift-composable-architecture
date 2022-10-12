@@ -5,18 +5,18 @@ import Foundation
 
 let effectSuite = BenchmarkSuite(name: "Effects") {
   $0.benchmark("Merged Effect.none (create, flat)") {
-    doNotOptimizeAway(EffectOf<Int>.merge((1...100).map { _ in .none }))
+    doNotOptimizeAway(EffectTask<Int>.merge((1...100).map { _ in .none }))
   }
 
   $0.benchmark("Merged Effect.none (create, nested)") {
-    var effect = EffectOf<Int>.none
+    var effect = EffectTask<Int>.none
     for _ in 1...100 {
       effect = effect.merge(with: .none)
     }
     doNotOptimizeAway(effect)
   }
 
-  let effect = EffectOf<Int>.merge((1...100).map { _ in .none })
+  let effect = EffectTask<Int>.merge((1...100).map { _ in .none })
   var didComplete = false
   $0.benchmark("Merged Effect.none (sink)") {
     doNotOptimizeAway(

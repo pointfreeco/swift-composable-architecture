@@ -128,7 +128,7 @@ public final class Store<State, Action> {
   #if swift(>=5.7)
     private let reducer: any ReducerProtocol<State, Action>
   #else
-    private let reducer: (inout State, Action) -> EffectOf<Action>
+    private let reducer: (inout State, Action) -> EffectTask<Action>
     fileprivate var scope: AnyStoreScope?
   #endif
   var state: CurrentValueSubject<State, Never>
@@ -603,7 +603,7 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     @inlinable
     func reduce(
       into state: inout ScopedState, action: ScopedAction
-    ) -> EffectOf<ScopedAction> {
+    ) -> EffectTask<ScopedAction> {
       self.isSending = true
       defer {
         state = self.toScopedState(self.rootStore.state.value)

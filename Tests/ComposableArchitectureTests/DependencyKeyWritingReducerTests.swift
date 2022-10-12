@@ -46,7 +46,7 @@ final class DependencyKeyWritingReducerTests: XCTestCase {
     }
   }
 
-  func testDependency_EffectOfEffect() async {
+  func testDependency_EffectTaskEffect() async {
     struct Feature: ReducerProtocol {
       struct State: Equatable { var count = 0 }
       enum Action: Equatable {
@@ -56,7 +56,7 @@ final class DependencyKeyWritingReducerTests: XCTestCase {
       }
       @Dependency(\.myValue) var myValue
 
-      func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
+      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
         switch action {
         case .tap:
           state.count += 1
@@ -93,7 +93,7 @@ private struct Feature: ReducerProtocol {
   @Dependency(\.myValue) var myValue
   struct State: Equatable { var value = 0 }
   enum Action { case tap }
-  func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .tap:
       state.value = self.myValue

@@ -86,7 +86,7 @@ struct SharedState: ReducerProtocol {
       case isPrimeButtonTapped
     }
 
-    func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
+    func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
       switch action {
       case .alertDismissed:
         state.alert = nil
@@ -138,7 +138,7 @@ struct SharedState: ReducerProtocol {
       case resetCounterButtonTapped
     }
 
-    func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
+    func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
       switch action {
       case .resetCounterButtonTapped:
         state.resetCount()

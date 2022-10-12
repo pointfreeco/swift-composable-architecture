@@ -48,7 +48,7 @@ struct Todos: ReducerProtocol {
     // ...
   }
 
-  func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .addButtonTapped:
       state.todos.append(Todo(id: UUID())

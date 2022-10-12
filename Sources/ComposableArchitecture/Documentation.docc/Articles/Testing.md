@@ -24,7 +24,7 @@ struct Feature: ReducerProtocol {
   struct State: Equatable { var count = 0 }
   enum Action { case incrementButtonTapped, decrementButtonTapped }
 
-  func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .incrementButtonTapped:
       state.count += 1
@@ -193,7 +193,7 @@ struct Feature: ReducerProtocol {
   enum Action {  case startTimerButtonTapped, timerTick }
   enum TimerID {}
 
-  func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .startTimerButtonTapped:
       state.count = 0

@@ -28,7 +28,7 @@
   /// struct Feature: ReducerProtocol {
   ///   // ...
   ///
-  ///   func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
+  ///   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
   ///     switch action {
   ///     case .decrementButtonTapped:
   ///       state.count -= 1
@@ -65,7 +65,7 @@
   ///   }
   ///   enum TimerID {}
   ///
-  ///   func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
+  ///   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
   ///     switch action {
   ///     case .decrementButtonTapped:
   ///       state.count -= 1
@@ -138,7 +138,7 @@
   ///   Settings()
   /// }
   ///
-  /// func core(state: inout State, action: Action) -> EffectOf<Action> {
+  /// func core(state: inout State, action: Action) -> EffectTask<Action> {
   ///   // extra logic
   /// }
   /// ```
@@ -192,7 +192,7 @@
     ///     side effect that can communicate with the outside world.
     /// - Returns: An effect that can communicate with the outside world and feed actions back into
     ///   the system.
-    func reduce(into state: inout State, action: Action) -> EffectOf<Action>
+    func reduce(into state: inout State, action: Action) -> EffectTask<Action>
 
     /// The content and behavior of a reducer that is composed from other reducers.
     ///
@@ -301,7 +301,7 @@
     ///     a side effect that can communicate with the outside world.
     /// - Returns: An effect that can communicate with the outside world and feed actions back into
     ///   the system.
-    func reduce(into state: inout State, action: Action) -> EffectOf<Action>
+    func reduce(into state: inout State, action: Action) -> EffectTask<Action>
 
     /// The content and behavior of a reducer that is composed from other reducers.
     ///
@@ -342,7 +342,7 @@ extension ReducerProtocol where Body: ReducerProtocol, Body.State == State, Body
   @inlinable
   public func reduce(
     into state: inout Body.State, action: Body.Action
-  ) -> EffectOf<Body.Action> {
+  ) -> EffectTask<Body.Action> {
     self.body.reduce(into: &state, action: action)
   }
 }

@@ -28,7 +28,7 @@ final class EffectCancellationTests: XCTestCase {
     subject.send(2)
     XCTAssertEqual(values, [1, 2])
 
-    EffectOf<Never>.cancel(id: CancelID())
+    EffectTask<Never>.cancel(id: CancelID())
       .sink { _ in }
       .store(in: &self.cancellables)
 
@@ -75,7 +75,7 @@ final class EffectCancellationTests: XCTestCase {
     XCTAssertEqual(value, nil)
 
     DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-      EffectOf<Never>.cancel(id: CancelID())
+      EffectTask<Never>.cancel(id: CancelID())
         .sink { _ in }
         .store(in: &self.cancellables)
     }
@@ -98,7 +98,7 @@ final class EffectCancellationTests: XCTestCase {
     XCTAssertEqual(value, nil)
 
     mainQueue.advance(by: 1)
-    EffectOf<Never>.cancel(id: CancelID())
+    EffectTask<Never>.cancel(id: CancelID())
       .sink { _ in }
       .store(in: &self.cancellables)
 
@@ -130,7 +130,7 @@ final class EffectCancellationTests: XCTestCase {
       .sink(receiveValue: { _ in })
       .store(in: &self.cancellables)
 
-    EffectOf<Int>.cancel(id: id)
+    EffectTask<Int>.cancel(id: id)
       .sink(receiveValue: { _ in })
       .store(in: &self.cancellables)
 
@@ -153,7 +153,7 @@ final class EffectCancellationTests: XCTestCase {
     subject.send(1)
     XCTAssertEqual(values, [1])
 
-    EffectOf<Never>.cancel(id: CancelID())
+    EffectTask<Never>.cancel(id: CancelID())
       .sink { _ in }
       .store(in: &self.cancellables)
 
@@ -178,7 +178,7 @@ final class EffectCancellationTests: XCTestCase {
     subject.send(completion: .finished)
     XCTAssertEqual(values, [1])
 
-    EffectOf<Never>.cancel(id: CancelID())
+    EffectTask<Never>.cancel(id: CancelID())
       .sink { _ in }
       .store(in: &self.cancellables)
 
@@ -198,7 +198,7 @@ final class EffectCancellationTests: XCTestCase {
     let ids = (1...10).map { _ in UUID() }
 
     let effect = Effect.merge(
-      (1...1_000).map { idx -> EffectOf<Int> in
+      (1...1_000).map { idx -> EffectTask<Int> in
         let id = ids[idx % 10]
 
         return Effect.merge(
@@ -298,7 +298,7 @@ final class EffectCancellationTests: XCTestCase {
   }
 
   func testNestedMergeCancellation() {
-    let effect = EffectOf<Int>.merge(
+    let effect = EffectTask<Int>.merge(
       (1...2).publisher
         .eraseToEffect()
         .cancellable(id: 1)
@@ -329,11 +329,11 @@ final class EffectCancellationTests: XCTestCase {
         .cancellable(id: id)
     }
 
-    EffectOf<AnyHashable>.merge(effects)
+    EffectTask<AnyHashable>.merge(effects)
       .sink { output.append($0) }
       .store(in: &self.cancellables)
 
-    EffectOf<AnyHashable>
+    EffectTask<AnyHashable>
       .cancel(ids: [A(), C()])
       .sink { _ in }
       .store(in: &self.cancellables)

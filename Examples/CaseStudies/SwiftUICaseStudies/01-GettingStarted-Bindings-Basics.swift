@@ -33,7 +33,7 @@ struct BindingBasics: ReducerProtocol {
     case toggleChanged(isOn: Bool)
   }
 
-  func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case let .sliderValueChanged(value):
       state.sliderValue = value

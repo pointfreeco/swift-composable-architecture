@@ -53,7 +53,7 @@ final class EffectTests: XCTestCase {
   func testConcatenate() {
     var values: [Int] = []
 
-    let effect = EffectOf<Int>.concatenate(
+    let effect = EffectTask<Int>.concatenate(
       Effect(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect(),
       Effect(value: 2).delay(for: 2, scheduler: mainQueue).eraseToEffect(),
       Effect(value: 3).delay(for: 3, scheduler: mainQueue).eraseToEffect()
@@ -79,7 +79,7 @@ final class EffectTests: XCTestCase {
   func testConcatenateOneEffect() {
     var values: [Int] = []
 
-    let effect = EffectOf<Int>.concatenate(
+    let effect = EffectTask<Int>.concatenate(
       Effect(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect()
     )
 
@@ -95,7 +95,7 @@ final class EffectTests: XCTestCase {
   }
 
   func testMerge() {
-    let effect = EffectOf<Int>.merge(
+    let effect = EffectTask<Int>.merge(
       Effect(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect(),
       Effect(value: 2).delay(for: 2, scheduler: mainQueue).eraseToEffect(),
       Effect(value: 3).delay(for: 3, scheduler: mainQueue).eraseToEffect()
@@ -117,7 +117,7 @@ final class EffectTests: XCTestCase {
   }
 
   func testEffectSubscriberInitializer() {
-    let effect = EffectOf<Int>.run { subscriber in
+    let effect = EffectTask<Int>.run { subscriber in
       subscriber.send(1)
       subscriber.send(2)
       self.mainQueue.schedule(after: self.mainQueue.now.advanced(by: .seconds(1))) {
@@ -154,7 +154,7 @@ final class EffectTests: XCTestCase {
   func testEffectSubscriberInitializer_WithCancellation() {
     enum CancelID {}
 
-    let effect = EffectOf<Int>.run { subscriber in
+    let effect = EffectTask<Int>.run { subscriber in
       subscriber.send(1)
       self.mainQueue.schedule(after: self.mainQueue.now.advanced(by: .seconds(1))) {
         subscriber.send(2)
@@ -173,7 +173,7 @@ final class EffectTests: XCTestCase {
     XCTAssertEqual(values, [1])
     XCTAssertEqual(isComplete, false)
 
-    EffectOf<Void>.cancel(id: CancelID.self)
+    EffectTask<Void>.cancel(id: CancelID.self)
       .sink(receiveValue: { _ in })
       .store(in: &self.cancellables)
 
@@ -213,7 +213,7 @@ final class EffectTests: XCTestCase {
 
   #if DEBUG
     func testUnimplemented() {
-      let effect = EffectOf<Never>.unimplemented("unimplemented")
+      let effect = EffectTask<Never>.unimplemented("unimplemented")
       XCTExpectFailure {
         effect
           .sink(receiveValue: { _ in })
@@ -226,7 +226,7 @@ final class EffectTests: XCTestCase {
 
   func testTask() async {
     guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
-    let effect = EffectOf<Int>.task { 42 }
+    let effect = EffectTask<Int>.task { 42 }
     for await result in effect.values {
       XCTAssertEqual(result, 42)
     }
@@ -242,7 +242,7 @@ final class EffectTests: XCTestCase {
       return 42
     }
 
-    EffectOf<Int>.task { await work() }
+    EffectTask<Int>.task { await work() }
       .sink(
         receiveCompletion: { _ in XCTFail() },
         receiveValue: { _ in XCTFail() }
@@ -261,7 +261,7 @@ final class EffectTests: XCTestCase {
         case response(Int)
       }
       @Dependency(\.date) var date
-      func reduce(into state: inout Int, action: Action) -> EffectOf<Action> {
+      func reduce(into state: inout Int, action: Action) -> EffectTask<Action> {
         switch action {
         case .tap:
           return .merge(
@@ -296,7 +296,7 @@ final class EffectTests: XCTestCase {
     let effect =
       DependencyValues
       .withValue(\.date, .init { Date(timeIntervalSince1970: 1_234_567_890) }) {
-        EffectOf<Void>(value: ())
+        EffectTask<Void>(value: ())
           .map { date() }
       }
     var output: Date?
@@ -309,7 +309,7 @@ final class EffectTests: XCTestCase {
       let effect =
         DependencyValues
         .withValue(\.date, .init { Date(timeIntervalSince1970: 1_234_567_890) }) {
-          EffectOf<Void>.task {}
+          EffectTask<Void>.task {}
             .map { date() }
         }
       output = await effect.values.first(where: { _ in true })

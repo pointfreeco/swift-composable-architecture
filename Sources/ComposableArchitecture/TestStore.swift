@@ -51,7 +51,7 @@ import XCTestDynamicOverlay
 ///
 ///   func reduce(
 ///     into state: inout State, action: Action
-///   ) -> EffectOf<Action> {
+///   ) -> EffectTask<Action> {
 ///     switch action {
 ///     case .decrementButtonTapped:
 ///       state.count -= 1
@@ -110,7 +110,7 @@ import XCTestDynamicOverlay
 ///
 ///   func reduce(
 ///     into state: inout State, action: Action
-///   ) -> EffectOf<Action> {
+///   ) -> EffectTask<Action> {
 ///     switch action {
 ///     case let .queryChanged(query):
 ///       enum SearchID {}
@@ -1063,10 +1063,10 @@ class TestReducer<State, Action>: ReducerProtocol {
     self.state = initialState
   }
 
-  func reduce(into state: inout State, action: TestAction) -> EffectOf<TestAction> {
+  func reduce(into state: inout State, action: TestAction) -> EffectTask<TestAction> {
     let reducer = self.base.dependency(\.self, self.dependencies)
 
-    let effects: EffectOf<Action>
+    let effects: EffectTask<Action>
     switch action.origin {
     case let .send(action):
       effects = reducer.reduce(into: &state, action: action)

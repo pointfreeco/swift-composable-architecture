@@ -104,7 +104,7 @@ struct Feature: ReducerProtocol {
   struct State: Equatable { … }
   enum Action: Equatable { … }
   
-  func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
       case .factAlertDismissed:
         state.numberFactAlert = nil

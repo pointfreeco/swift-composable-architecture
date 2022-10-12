@@ -72,9 +72,9 @@ extension Effect {
 /// You can specify a single generic:
 ///
 /// ```swift
-/// func reduce(into state: inout State, action: Action) -> EffectOf<Action>  { … }
+/// func reduce(into state: inout State, action: Action) -> EffectTask<Action>  { … }
 /// ```
-public typealias EffectOf<Action> = Effect<Action, Never>
+public typealias EffectTask<Action> = Effect<Action, Never>
 
 extension Effect where Failure == Never {
   /// Wraps an asynchronous unit of work in an effect.
@@ -95,7 +95,7 @@ extension Effect where Failure == Never {
   ///   }
   ///   @Dependency(\.numberFact) var numberFact
   ///
-  ///   func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
+  ///   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
   ///     switch action {
   ///       case .factButtonTapped:
   ///         return .task { [number = state.number] in
@@ -532,7 +532,7 @@ extension Effect {
   ///
   /// ```swift
   /// struct CounterEnvironment {
-  ///   let playAlertSound: () -> EffectOf<Never>
+  ///   let playAlertSound: () -> EffectTask<Never>
   /// }
   /// ```
   ///

@@ -26,7 +26,7 @@ extension DependencyValues {
   ///
   ///   @Dependency(\.withRandomNumberGenerator) var withRandomNumberGenerator
   ///
-  ///   func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
+  ///   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
   ///     switch action {
   ///     case .rollDice:
   ///       self.withRandomNumberGenerator { generator in

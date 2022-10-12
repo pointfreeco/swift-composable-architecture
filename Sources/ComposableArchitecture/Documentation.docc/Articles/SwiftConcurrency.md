@@ -32,7 +32,7 @@ struct Feature: ReducerProtocol {
   struct State { … }
   enum Action { … }
 
-  func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .buttonTapped:
       return .task {

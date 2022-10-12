@@ -81,7 +81,7 @@ struct Feature: ReducerProtocol {
 
   let date: () -> Date
 
-  func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     // ...
     }
@@ -187,7 +187,7 @@ struct TabA: ReducerProtocol {
   enum Action {
     // ...
   }
-  func reduce(into state: inout State, action: Action) -> EffectOf<Action> {
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     // ...
   }
 }

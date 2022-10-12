@@ -66,7 +66,7 @@ public struct _PrintChangesReducer<Base: ReducerProtocol>: ReducerProtocol {
   @inlinable
   public func reduce(
     into state: inout Base.State, action: Base.Action
-  ) -> EffectOf<Base.Action> {
+  ) -> EffectTask<Base.Action> {
     #if DEBUG
       if self.context != .test, let printer = self.printer {
         let oldState = state
