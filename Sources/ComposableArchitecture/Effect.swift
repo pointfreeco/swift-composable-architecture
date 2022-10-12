@@ -608,8 +608,6 @@ extension EffectPublisher {
   }
 }
 
-// MARK: - Transitory Deprecation
-
 @available(
   iOS,
   deprecated: 9999.0,
