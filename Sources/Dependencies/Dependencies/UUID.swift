@@ -30,7 +30,7 @@ extension DependencyValues {
   ///
   ///   @Dependency(\.uuid) var uuid
   ///
-  ///   func reduce(into state: inout State, action: Action) -> Effect<Action> {
+  ///   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
   ///     switch action {
   ///     case .create:
   ///       state.append(Todo(id: self.uuid())
