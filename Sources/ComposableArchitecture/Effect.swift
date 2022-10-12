@@ -619,7 +619,7 @@ extension EffectPublisher {
     `EffectPublisher<Output, Failure>` in general.
     
     You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
-    concurrency to model dependencies that can fail.
+    concurrency to model failable streams of values.
 
     See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
     """
@@ -634,7 +634,7 @@ extension EffectPublisher {
     `EffectPublisher<Output, Failure>` in general.
     
     You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
-    concurrency to model dependencies that can fail.
+    concurrency to model failable streams of values.
 
     See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
     """
@@ -649,7 +649,7 @@ extension EffectPublisher {
     `EffectPublisher<Output, Failure>` in general.
     
     You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
-    concurrency to model dependencies that can fail.
+    concurrency to model failable streams of values.
 
     See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
     """
@@ -664,7 +664,7 @@ extension EffectPublisher {
     `EffectPublisher<Output, Failure>` in general.
     
     You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
-    concurrency to model dependencies that can fail.
+    concurrency to model failable streams of values.
 
     See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
     """
