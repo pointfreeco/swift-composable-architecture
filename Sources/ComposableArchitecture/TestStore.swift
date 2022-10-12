@@ -704,49 +704,56 @@ extension TestStore where ScopedState: Equatable {
     line: UInt
   ) throws {
     let current = expected
-    //
-    //    var expectedWhenGivenPreviousState = expected
-    //    if let modify = modify {
-    //      try modify(&expectedWhenGivenPreviousState)
-    //    }
-    //    expected = expectedWhenGivenPreviousState
 
-    var expectedWhenGivenActualState = actual
-    if let modify = modify {
-      try modify(&expectedWhenGivenActualState)
-    }
-
-    if self.kind == .exhaustive {
+    switch self.kind {
+    case .exhaustive:
       var expectedWhenGivenPreviousState = expected
       if let modify = modify {
         try modify(&expectedWhenGivenPreviousState)
       }
       expected = expectedWhenGivenPreviousState
       if expectedWhenGivenPreviousState != actual {
-        helper(expected: expectedWhenGivenPreviousState, actual: actual, modifyIsNil: modify != nil)
+        expectationFailure(expected: expectedWhenGivenPreviousState)
+      } else {
+        tryUnnecessaryModifyFailure()
       }
-    } else if self.kind != .exhaustive && expectedWhenGivenActualState != actual {
-      let previous = self.kind
-      self.kind = .exhaustive
-      helper(expected: expectedWhenGivenActualState, actual: actual, modifyIsNil: modify != nil)
-      self.kind = previous
-    } else if self.kind == .nonExhaustive(showInfo: true) && expectedWhenGivenActualState == actual
-    {
-      var expectedWhenGivenPreviousState = expected
+
+    case let .nonExhaustive(showInfo: showInfo):
+      var expectedWhenGivenActualState = actual
       if let modify = modify {
-        _XCTExpectFailure(strict: false) {
-          do {
-            try modify(&expectedWhenGivenPreviousState)
-          } catch {
-            XCTFail("Threw error: \(error)", file: file, line: line)
+        try modify(&expectedWhenGivenActualState)
+      }
+
+      if expectedWhenGivenActualState != actual {
+        self.withKind(.exhaustive) {
+          expectationFailure(expected: expectedWhenGivenActualState)
+        }
+      } else if showInfo && expectedWhenGivenActualState == actual {
+        var expectedWhenGivenPreviousState = expected
+        if let modify = modify {
+          _XCTExpectFailure(strict: false) {
+            do {
+              try modify(&expectedWhenGivenPreviousState)
+            } catch {
+              XCTFail("Threw error: \(error)", file: file, line: line)
+            }
           }
         }
+        expected = expectedWhenGivenPreviousState
+        if expectedWhenGivenPreviousState != actual {
+          expectationFailure(expected: expectedWhenGivenPreviousState)
+        } else {
+          tryUnnecessaryModifyFailure()
+        }
+      } else {
+        tryUnnecessaryModifyFailure()
       }
-      expected = expectedWhenGivenPreviousState
-      if expectedWhenGivenPreviousState != actual {
-        helper(expected: expectedWhenGivenPreviousState, actual: actual, modifyIsNil: modify != nil)
-      }
-    } else if expected == current && modify != nil {
+    }
+
+    func tryUnnecessaryModifyFailure() {
+      guard expected == current && modify != nil
+      else { return }
+
       XCTFailHelper(
         """
         Expected state to change, but no change occurred.
@@ -760,7 +767,7 @@ extension TestStore where ScopedState: Equatable {
       )
     }
 
-    func helper(expected: ScopedState, actual: ScopedState, modifyIsNil: Bool) {
+    func expectationFailure(expected: ScopedState) {
       let difference =
         diff(expected, actual, format: .proportional)
         .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
@@ -771,9 +778,8 @@ extension TestStore where ScopedState: Equatable {
         Actual:
         \(String(describing: actual).indent(by: 2))
         """
-
       let messageHeading =
-        modifyIsNil
+        modify != nil
         ? "A state change does not match expectation"
         : "State was not expected to change, but a change occurred"
       XCTFailHelper(
@@ -787,6 +793,13 @@ extension TestStore where ScopedState: Equatable {
         line: line
       )
     }
+  }
+
+  private func withKind(_ kind: Kind, operation: () -> Void) {
+    let previous = self.kind
+    self.kind = kind
+    operation()
+    self.kind = previous
   }
 }
 
@@ -838,7 +851,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
       {
         XCTFailHelper(
           """
-          ✅ Skipped assertions: …
+          Skipped assertions: …
           Skipped receiving \(receivedAction.action)
           """,
           kind: self.kind,
