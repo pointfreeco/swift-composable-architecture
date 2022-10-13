@@ -182,15 +182,15 @@ Effects form a major part of a feature's logic. They can perform network request
 services, load and save data to disk, start and stop timers, interact with Apple frameworks (Core
 Location, Core Motion, Speech Recognition, etc.), and more.
 
-As a simple example, suppose we have a feature with a button such that when you tap it it starts
+As a simple example, suppose we have a feature with a button such that when you tap it, it starts
 a timer that counts up until you reach 5, and then stops. This can be accomplished using the
-``Effect/run(priority:operation:catch:file:fileID:line:)`` helper, which provides you an
+``Effect/run(priority:operation:catch:file:fileID:line:)`` helper, which provides you with an
 asynchronous context to operate in and can send multiple actions back into the system:
 
 ```swift
 struct Feature: ReducerProtocol {
   struct State: Equatable { var count = 0 }
-  enum Action {  case startTimerButtonTapped, timerTick }
+  enum Action { case startTimerButtonTapped, timerTick }
   enum TimerID {}
 
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
@@ -304,7 +304,7 @@ await store.receive(.timerTick, timeout: .seconds(2)) {
 Now the full test suite passes, and we have exhaustively proven how effects are executed in this
 feature. If in the future we tweak the logic of the effect, like say have it emit 10 times instead 
 of 5, then we will immediately get a test failure letting us know that we have not properly 
-asserted on how the features evolves over time.
+asserted on how the features evolve over time.
 
 However, there is something not ideal about how this feature is structured, and that is the fact
 that we are doing actual, uncontrolled time-based asynchrony in the effect:
