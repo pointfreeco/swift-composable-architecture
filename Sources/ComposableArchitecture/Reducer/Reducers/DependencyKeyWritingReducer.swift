@@ -102,7 +102,7 @@ extension ReducerProtocol {
   /// ```swift
   /// Feature()
   ///   .transformDependency(\.self) { dependencyValues in
-  ///     // ...
+  ///     // Access to all dependencies in here
   ///   }
   /// ```
   ///
