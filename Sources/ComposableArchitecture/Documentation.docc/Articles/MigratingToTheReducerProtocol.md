@@ -558,7 +558,7 @@ declaration:
 ```swift
 let store: StoreOf<Feature>
 // Expands to:
-// let store: Store<Feature.State, Feature.Action>
+//     let store: Store<Feature.State, Feature.Action>
 ```
 
 ## Testing
