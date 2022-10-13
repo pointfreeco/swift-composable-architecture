@@ -337,6 +337,8 @@ private let defaultContext: DependencyContext = {
 
 // NB: Swift 5.5 shipped with fewer sendable types, so sendable checking should be more lenient
 #if swift(>=5.6)
+  /// A type alias to Swift's `Sendable` protocol used to maintain backwards compatibility with
+  /// Swift 5.5.
   public typealias _Sendable = Sendable
 #else
   public typealias _Sendable = Any
