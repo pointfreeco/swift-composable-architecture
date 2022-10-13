@@ -471,7 +471,7 @@ which can help a feature to seem less intimidating.
 ## Overriding dependencies
 
 It is possible to change the dependencies for just one particular reducer inside a larger composed
-reducer. This can be handy in running a feature in a more controlled environment where it may not be
+reducer. This can be handy when running a feature in a more controlled environment where it may not be
 appropriate to communicate with the outside world.
 
 For example, suppose you want to teach users how to use your feature through an onboarding
