@@ -1134,40 +1134,48 @@ extension AnyReducer {
   }
 }
 
-//extension ForEachStore {
-//  @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead.")
-//  public init(
-//    _ store: Store<Data, (Data.Index, EachAction)>,
-//    id: KeyPath<EachState, ID>,
-//    @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
-//  ) {
-//    let data = store.state.value
-//    self.data = data
-//    self.content = WithViewStore(store.scope(state: { $0.map { $0[keyPath: id] } })) { viewStore in
-//      ForEach(Array(viewStore.state.enumerated()), id: \.element) { index, _ in
-//        content(
-//          store.scope(
-//            state: { index < $0.endIndex ? $0[index] : data[index] },
-//            action: { (index, $0) }
-//          )
-//        )
-//      }
-//    }
-//  }
-//
-//  @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead.")
-//  public init<EachContent>(
-//    _ store: Store<Data, (Data.Index, EachAction)>,
-//    @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
-//  )
-//  where
-//    Data == [EachState],
-//    Content == WithViewStore<
-//      [ID], (Data.Index, EachAction), ForEach<[(offset: Int, element: ID)], ID, EachContent>
-//    >,
-//    EachState: Identifiable,
-//    EachState.ID == ID
-//  {
-//    self.init(store, id: \.id, content: content)
-//  }
-//}
+extension ForEachStore {
+  @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead.")
+  public init<EachContent>(
+    _ store: Store<Data, (Data.Index, EachAction)>,
+    id: KeyPath<EachState, ID>,
+    @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
+  )
+  where
+    Data == [EachState],
+    Content == WithViewStore<
+      [ID], (Data.Index, EachAction), ForEach<[(offset: Int, element: ID)], ID, EachContent>
+    >
+  {
+    let data = store.state.value
+    self.data = data
+    self.content = {
+      WithViewStore(store.scope(state: { $0.map { $0[keyPath: id] } })) { viewStore in
+        ForEach(Array(viewStore.state.enumerated()), id: \.element) { index, _ in
+          content(
+            store.scope(
+              state: { index < $0.endIndex ? $0[index] : data[index] },
+              action: { (index, $0) }
+            )
+          )
+        }
+      }
+    }
+  }
+
+  @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead.")
+  public init<EachContent>(
+    _ store: Store<Data, (Data.Index, EachAction)>,
+    @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
+  )
+  where
+    Data == [EachState],
+    Content == WithViewStore<
+      [ID], (Data.Index, EachAction), ForEach<[(offset: Int, element: ID)], ID, EachContent>
+    >,
+    EachState: Identifiable,
+    EachState.ID == ID
+  {
+    self.init(store, id: \.id, content: content)
+  }
+}
