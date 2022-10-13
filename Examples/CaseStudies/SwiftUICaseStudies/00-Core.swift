@@ -1,6 +1,5 @@
 import Combine
 import ComposableArchitecture
-import UIKit
 import XCTestDynamicOverlay
 
 struct Root: ReducerProtocol {
