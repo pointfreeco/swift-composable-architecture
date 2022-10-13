@@ -70,7 +70,7 @@ struct EffectsCancellation: ReducerProtocol {
 struct EffectsCancellationView: View {
   let store: StoreOf<EffectsCancellation>
   @Environment(\.openURL) var openURL
-  
+
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
