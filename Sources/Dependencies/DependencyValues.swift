@@ -231,7 +231,7 @@ public struct DependencyValues: Sendable {
     file: StaticString = #file,
     function: StaticString = #function,
     line: UInt = #line
-  ) -> Key.Value where Key.Value: Sendable {
+  ) -> Key.Value where Key.Value: _Sendable {
     get {
       guard let dependency = self.storage[ObjectIdentifier(key)]?.base as? Key.Value
       else {
@@ -313,7 +313,7 @@ public struct DependencyValues: Sendable {
 private struct AnySendable: @unchecked Sendable {
   let base: Any
 
-  init<Base: Sendable>(_ base: Base) {
+  init<Base: _Sendable>(_ base: Base) {
     self.base = base
   }
 }
@@ -336,3 +336,9 @@ private let defaultContext: DependencyContext = {
 }()
 
 // TODO: should we have `@Dependency(\.runtimeWarningsEnabled)` and/or `@Dependency(\.treatWarningsAsErrors)`?
+
+#if swift(>=5.6)
+  public typealias _Sendable = Sendable
+#else
+  public typealias _Sendable = Any
+#endif
