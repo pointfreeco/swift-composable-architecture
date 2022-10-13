@@ -23,7 +23,7 @@
   ///
   /// The logic of your feature is implemented by mutating the feature's current state when an action
   /// comes into the system. This is most easily done by implementing the
-  /// ``ReducerProtocol/reduce(into:action:)-4nzr2`` method of the protocol.
+  /// ``ReducerProtocol/reduce(into:action:)-8yinq`` method of the protocol.
   ///
   /// ```swift
   /// struct Feature: ReducerProtocol {
@@ -105,7 +105,7 @@
   /// That is the basics of implementing a feature as a conformance to ``ReducerProtocol``. There are
   /// actually two ways to define a reducer:
   ///
-  ///   1. You can either implement the ``reduce(into:action:)-4nzr2`` method, as shown above, which
+  ///   1. You can either implement the ``reduce(into:action:)-8yinq`` method, as shown above, which
   ///   is given direct mutable access to application ``State`` whenever an ``Action`` is fed into
   ///   the system, and returns an ``EffectTask`` that can communicate with the outside world and
   ///   feed additional ``Action``s back into the system.
@@ -114,7 +114,7 @@
   ///   more reducers together.
   ///
   /// At most one of these requirements should be implemented. If a conformance implements both
-  /// requirements, only ``reduce(into:action:)-4nzr2`` will be called by the ``Store``. If your
+  /// requirements, only ``reduce(into:action:)-8yinq`` will be called by the ``Store``. If your
   /// reducer assembles a body from other reducers _and_ has additional business logic it needs to
   /// layer onto the feature, introduce this logic into the body instead, either with ``Reduce``:
   ///
@@ -145,7 +145,7 @@
   /// ```
   ///
   /// If you are implementing a custom reducer operator that transforms an existing reducer,
-  /// _always_ invoke the ``reduce(into:action:)-4nzr2`` method, never the
+  /// _always_ invoke the ``reduce(into:action:)-8yinq`` method, never the
   /// ``body-swift.property-7foai``. For example, this operator that logs all actions sent to the
   /// reducer:
   ///
@@ -177,7 +177,7 @@
     /// When you create a custom reducer by implementing the ``body-swift.property-7foai``, Swift
     /// infers this type from the value returned.
     ///
-    /// If you create a custom reducer by implementing the ``reduce(into:action:)-4nzr2``, Swift
+    /// If you create a custom reducer by implementing the ``reduce(into:action:)-8yinq``, Swift
     /// infers this type to be `Never`.
     typealias Body = _Body
 
@@ -202,8 +202,8 @@
     ///
     /// Do not invoke this property directly.
     ///
-    /// > Important: if your reducer implements the ``reduce(into:action:)-4nzr2`` method, it will
-    /// > take precedence over this property, and only ``reduce(into:action:)-4nzr2`` will be called
+    /// > Important: if your reducer implements the ``reduce(into:action:)-8yinq`` method, it will
+    /// > take precedence over this property, and only ``reduce(into:action:)-8yinq`` will be called
     /// > by the ``Store``. If your reducer assembles a body from other reducers and has additional
     /// > business logic it needs to layer into the system, introduce this logic into the body
     /// > instead, either with ``Reduce``, or with a separate, dedicated conformance.
@@ -217,7 +217,7 @@
   ///
   /// There are two ways to define a reducer:
   ///
-  ///   1. You can either implement the ``reduce(into:action:)-4nzr2`` method, which is given direct
+  ///   1. You can either implement the ``reduce(into:action:)-8yinq`` method, which is given direct
   ///      mutable access to application ``State`` whenever an ``Action`` is fed into the system,
   ///      and returns an ``EffectTask`` that can communicate with the outside world and feed
 ///        additional ``Action``s back into the system.
@@ -226,7 +226,7 @@
   ///      more reducers together.
   ///
   /// At most one of these requirements should be implemented. If a conformance implements both
-  /// requirements, only ``reduce(into:action:)-4nzr2`` will be called by the ``Store``. If your
+  /// requirements, only ``reduce(into:action:)-8yinq`` will be called by the ``Store``. If your
   /// reducer assembles a body from other reducers _and_ has additional business logic it needs to
   /// layer onto the feature, introduce this logic into the body instead, either with ``Reduce``:
   ///
@@ -256,7 +256,7 @@
   /// ```
   ///
   /// If you are implementing a custom reducer operator that transforms an existing reducer,
-  /// _always_ invoke the ``reduce(into:action:)-4nzr2`` method, never the
+  /// _always_ invoke the ``reduce(into:action:)-8yinq`` method, never the
   /// ``body-swift.property-7foai``. For example, this operator that logs all actions sent to the
   /// reducer:
   ///
@@ -287,7 +287,7 @@
     /// When you create a custom reducer by implementing the ``body-swift.property-7foai``, Swift
     /// infers this type from the value returned.
     ///
-    /// If you create a custom reducer by implementing the ``reduce(into:action:)-4nzr2``, Swift
+    /// If you create a custom reducer by implementing the ``reduce(into:action:)-8yinq``, Swift
     /// infers this type to be `Never`.
     typealias Body = _Body
 
@@ -312,8 +312,8 @@
     ///
     /// Do not invoke this property directly.
     ///
-    /// > Important: if your reducer implements the ``reduce(into:action:)-4nzr2`` method, it will
-    /// > take precedence over this property, and only ``reduce(into:action:)-4nzr2`` will be called
+    /// > Important: if your reducer implements the ``reduce(into:action:)-8yinq`` method, it will
+    /// > take precedence over this property, and only ``reduce(into:action:)-8yinq`` will be called
     /// > by the ``Store``. If your reducer assembles a body from other reducers and has additional
     /// > business logic it needs to layer into the system, introduce this logic into the body
     /// > instead, either with ``Reduce``, or with a separate, dedicated conformance.
@@ -340,7 +340,7 @@ extension ReducerProtocol where Body == Never {
 }
 
 extension ReducerProtocol where Body: ReducerProtocol, Body.State == State, Body.Action == Action {
-  /// Invokes the ``Body-40qdd``'s implementation of ``reduce(into:action:)-4nzr2``.
+  /// Invokes the ``Body-40qdd``'s implementation of ``reduce(into:action:)-8yinq``.
   @inlinable
   public func reduce(
     into state: inout Body.State, action: Body.Action

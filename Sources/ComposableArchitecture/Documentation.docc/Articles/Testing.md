@@ -251,7 +251,7 @@ supposed to be running, or perhaps the data it feeds into the system later is wr
 requires all effects to finish.
 
 To get this test passing we need to assert on the actions that are sent back into the system
-by the effect. We do this by using the ``TestStore/receive(_:timeout:_:file:line:)`` method,
+by the effect. We do this by using the ``TestStore/receive(_:timeout:_:file:line:)-8yd62`` method,
 which allows you to assert which action you expect to receive from an effect, as well as how the
 state changes after receiving that effect:
 
@@ -269,7 +269,7 @@ going to be received, but after waiting around for a small amount of time no act
 ```
 
 This is because our timer is on a 1 second interval, and by default
-``TestStore/receive(_:timeout:_:file:line:)`` only waits for a fraction of a second. This is
+``TestStore/receive(_:timeout:_:file:line:)-8yd62`` only waits for a fraction of a second. This is
 because typically you should not be performing real time-based asynchrony in effects, and instead
 using a controlled entity, such as a scheduler or clock, that can be sped up in tests. We will
 demonstrate this in a moment, so for now let's increase the timeout:
@@ -369,7 +369,7 @@ store.dependencies.mainQueue = .immediate
 ```
 
 With that small change we can drop the `timeout` arguments from the
-``TestStore/receive(_:timeout:_:file:line:)`` invocations:
+``TestStore/receive(_:timeout:_:file:line:)-8yd62`` invocations:
 
 ```swift
 await store.receive(.timerTick) {

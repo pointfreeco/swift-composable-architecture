@@ -20,7 +20,7 @@ extension EffectPublisher where Failure == Never {
   /// running your live app, but use a `TestScheduler` in tests.
   ///
   /// To start and stop a timer in your feature you can create the timer effect from an action
-  /// and then use the ``EffectPublisher/cancel(id:)-iun1`` effect to stop the timer:
+  /// and then use the ``EffectPublisher/cancel(id:)-6hzsl`` effect to stop the timer:
   ///
   /// ```swift
   /// struct Feature: ReducerProtocol {
@@ -118,7 +118,7 @@ extension EffectPublisher where Failure == Never {
   /// Returns an effect that repeatedly emits the current time of the given scheduler on the given
   /// interval.
   ///
-  /// A convenience for calling ``EffectPublisher/timer(id:every:tolerance:on:options:)-4exe6`` with
+  /// A convenience for calling ``EffectPublisher/timer(id:every:tolerance:on:options:)-6yv2m`` with
   /// a static type as the effect's unique identifier.
   ///
   /// - Parameters:

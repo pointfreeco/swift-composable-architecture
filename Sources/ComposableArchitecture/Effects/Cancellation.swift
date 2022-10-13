@@ -5,7 +5,7 @@ extension EffectPublisher {
   /// Turns an effect into one that is capable of being canceled.
   ///
   /// To turn an effect into a cancellable one you must provide an identifier, which is used in
-  /// ``EffectPublisher/cancel(id:)-iun1`` to identify which in-flight effect should be canceled.
+  /// ``EffectPublisher/cancel(id:)-6hzsl`` to identify which in-flight effect should be canceled.
   /// Any hashable value can be used for the identifier, such as a string, but you can add a bit of
   /// protection against typos by defining a new type for the identifier:
   ///
@@ -93,7 +93,7 @@ extension EffectPublisher {
 
   /// Turns an effect into one that is capable of being canceled.
   ///
-  /// A convenience for calling ``EffectPublisher/cancellable(id:cancelInFlight:)-17skv`` with a
+  /// A convenience for calling ``EffectPublisher/cancellable(id:cancelInFlight:)-29q60`` with a
   /// static type as the effect's unique identifier.
   ///
   /// - Parameters:
@@ -120,7 +120,7 @@ extension EffectPublisher {
 
   /// An effect that will cancel any currently in-flight effect with the given identifier.
   ///
-  /// A convenience for calling ``EffectPublisher/cancel(id:)-iun1`` with a static type as the
+  /// A convenience for calling ``EffectPublisher/cancel(id:)-6hzsl`` with a static type as the
   /// effect's unique identifier.
   ///
   /// - Parameter id: A unique type identifying the effect.
@@ -141,7 +141,7 @@ extension EffectPublisher {
 
   /// An effect that will cancel multiple currently in-flight effects with the given identifiers.
   ///
-  /// A convenience for calling ``EffectPublisher/cancel(ids:)-dmwy`` with a static type as the
+  /// A convenience for calling ``EffectPublisher/cancel(ids:)-1cqqx`` with a static type as the
   /// effect's unique identifier.
   ///
   /// - Parameter ids: An array of unique types identifying the effects.

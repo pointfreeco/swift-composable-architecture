@@ -14,12 +14,7 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 ### Cancellation
 
-- ``EffectPublisher/cancel(ids:)-9tnmm``
-
-### Composition
-
-- ``EffectPublisher/concatenate(_:)-3awnj``
-- ``EffectPublisher/concatenate(_:)-8x6rz``
+- ``EffectPublisher/cancel(ids:)-8q1hl``
 
 ### Testing
 
@@ -34,17 +29,17 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 - ``EffectPublisher/init(error:)``
 - ``EffectPublisher/upstream``
 - ``EffectPublisher/catching(_:)``
-- ``EffectPublisher/debounce(id:for:scheduler:options:)-8x633``
-- ``EffectPublisher/debounce(id:for:scheduler:options:)-76yye``
+- ``EffectPublisher/debounce(id:for:scheduler:options:)-1xdnj``
+- ``EffectPublisher/debounce(id:for:scheduler:options:)-1oaak``
 - ``EffectPublisher/deferred(for:scheduler:options:)``
 - ``EffectPublisher/fireAndForget(_:)``
 - ``EffectPublisher/future(_:)``
 - ``EffectPublisher/receive(subscriber:)``
 - ``EffectPublisher/result(_:)``
 - ``EffectPublisher/run(_:)``
-- ``EffectPublisher/throttle(id:for:scheduler:latest:)-9kwd5``
-- ``EffectPublisher/throttle(id:for:scheduler:latest:)-5jfpx``
-- ``EffectPublisher/timer(id:every:tolerance:on:options:)-4exe6``
-- ``EffectPublisher/timer(id:every:tolerance:on:options:)-7po0d``
+- ``EffectPublisher/throttle(id:for:scheduler:latest:)-3gibe``
+- ``EffectPublisher/throttle(id:for:scheduler:latest:)-85y01``
+- ``EffectPublisher/timer(id:every:tolerance:on:options:)-6yv2m``
+- ``EffectPublisher/timer(id:every:tolerance:on:options:)-8t3is``
 - ``EffectPublisher/Subscriber``
 <!--DocC: Can't currently document `Publisher` extensions. -->

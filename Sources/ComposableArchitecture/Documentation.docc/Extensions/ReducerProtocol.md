@@ -4,7 +4,7 @@
 
 ### Implementing a reducer
 
-- ``reduce(into:action:)-4nzr2``
+- ``reduce(into:action:)-8yinq``
 - ``State``
 - ``Action``
 - ``EffectPublisher``

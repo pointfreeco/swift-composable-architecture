@@ -69,7 +69,7 @@ extension EffectPublisher {
 
   /// Turns an effect into one that can be debounced.
   ///
-  /// A convenience for calling ``EffectPublisher/debounce(id:for:scheduler:options:)-76yye`` with a
+  /// A convenience for calling ``EffectPublisher/debounce(id:for:scheduler:options:)-1xdnj`` with a
   /// static type as the effect's unique identifier.
   ///
   /// - Parameters:

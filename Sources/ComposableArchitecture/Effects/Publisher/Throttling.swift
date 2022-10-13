@@ -67,7 +67,7 @@ extension EffectPublisher {
 
   /// Throttles an effect so that it only publishes one output per given interval.
   ///
-  /// A convenience for calling ``EffectPublisher/throttle(id:for:scheduler:latest:)-5jfpx`` with a
+  /// A convenience for calling ``EffectPublisher/throttle(id:for:scheduler:latest:)-3gibe`` with a
   /// static type as the effect's unique identifier.
   ///
   /// - Parameters:

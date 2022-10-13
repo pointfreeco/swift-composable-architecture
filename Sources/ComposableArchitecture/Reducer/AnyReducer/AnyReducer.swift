@@ -1185,7 +1185,7 @@ public struct AnyReducer<State, Action, Environment> {
     }
   }
 
-  /// This API has been soft-deprecated in favor of ``ReducerProtocol/reduce(into:action:)-4nzr2``.
+  /// This API has been soft-deprecated in favor of ``ReducerProtocol/reduce(into:action:)-8yinq``.
   /// Read <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// Runs the reducer.
@@ -1235,7 +1235,7 @@ public struct AnyReducer<State, Action, Environment> {
     self.reducer(&state, action, environment)
   }
 
-  /// This API has been soft-deprecated in favor of ``ReducerProtocol/reduce(into:action:)-4nzr2``.
+  /// This API has been soft-deprecated in favor of ``ReducerProtocol/reduce(into:action:)-8yinq``.
   /// Read <doc:MigratingToTheReducerProtocol> for more information.
   @available(
     iOS,
