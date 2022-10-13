@@ -105,7 +105,7 @@ struct EffectsCancellationView: View {
 
         Section {
           Button("Number facts provided by numbersapi.com") {
-            openURL(URL(string: "http://numbersapi.com")!)
+            self.openURL(URL(string: "http://numbersapi.com")!)
           }
           .foregroundStyle(.secondary)
           .frame(maxWidth: .infinity)
