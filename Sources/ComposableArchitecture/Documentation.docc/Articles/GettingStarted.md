@@ -313,7 +313,7 @@ However, how do we know what fact is going to be sent back to us?
 
 Currently our reducer is using an effect that reaches out into the real world to hit an API server, 
 and that means we have no way to control its behavior. We are at the whims of our internet 
-connectivity and the availabilty of the API server in order to write this test.
+connectivity and the availability of the API server in order to write this test.
 
 It would be better for this dependency to be passed to the reducer so that we can use a live 
 dependency when running the application on a device, but use a mocked dependency for tests. We 
