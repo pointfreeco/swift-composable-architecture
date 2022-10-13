@@ -1,5 +1,5 @@
 import Combine
-import ComposableArchitecture
+@_spi(Canary) import ComposableArchitecture
 import XCTest
 
 @MainActor
@@ -315,6 +315,7 @@ final class EffectTests: XCTestCase {
       $0 = 1_234_567_890
     }
   }
+
   func testMap() async {
     @Dependency(\.date) var date
     let effect =
@@ -338,6 +339,19 @@ final class EffectTests: XCTestCase {
         }
       output = await effect.values.first(where: { _ in true })
       XCTAssertEqual(output, Date(timeIntervalSince1970: 1_234_567_890))
+    }
+  }
+
+  func testCanary1() async {
+    for _ in 1...100 {
+      let task = TestStoreTask(rawValue: Task {}, timeout: NSEC_PER_SEC)
+      await task.finish()
+    }
+  }
+  func testCanary2() async {
+    for _ in 1...100 {
+      let task = TestStoreTask(rawValue: nil, timeout: NSEC_PER_SEC)
+      await task.finish()
     }
   }
 }

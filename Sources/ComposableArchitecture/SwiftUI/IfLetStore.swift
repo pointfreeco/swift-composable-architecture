@@ -49,9 +49,10 @@ public struct IfLetStore<State, Action, Content: View>: View {
   public init<IfContent, ElseContent>(
     _ store: Store<State?, Action>,
     @ViewBuilder then ifContent: @escaping (Store<State, Action>) -> IfContent,
-    @ViewBuilder else elseContent: @escaping () -> ElseContent
+    @ViewBuilder else elseContent: () -> ElseContent
   ) where Content == _ConditionalContent<IfContent, ElseContent> {
     self.store = store
+    let elseContent = elseContent()
     self.content = { viewStore in
       if var state = viewStore.state {
         return ViewBuilder.buildEither(
@@ -63,7 +64,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
           )
         )
       } else {
-        return ViewBuilder.buildEither(second: elseContent())
+        return ViewBuilder.buildEither(second: elseContent)
       }
     }
   }
