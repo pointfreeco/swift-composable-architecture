@@ -55,18 +55,18 @@ import SwiftUI
 /// case of an enum in reducers that operate on the entire enum.
 public struct SwitchStore<State, Action, Content: View>: View {
   public let store: Store<State, Action>
-  public let content: () -> Content
+  public let content: Content
 
   init(
     store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> Content
+    @ViewBuilder content: () -> Content
   ) {
     self.store = store
-    self.content = content
+    self.content = content()
   }
 
   public var body: some View {
-    self.content()
+    self.content
       .environmentObject(StoreObservableObject(store: self.store))
   }
 }

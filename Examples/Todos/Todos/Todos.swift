@@ -123,6 +123,8 @@ struct AppView: View {
     }
   }
 
+  @State var count = 0
+
   var body: some View {
     NavigationView {
       VStack(alignment: .leading) {
@@ -144,12 +146,17 @@ struct AppView: View {
         List {
           ForEachStore(
             self.store.scope(state: \.filteredTodos, action: Todos.Action.todo(id:action:))
-          ) {
-            TodoView(store: $0)
+          ) { store in
+            VStack {
+              TodoView(store: store)
+              Text("Count: \(self.count)")
+              Button { self.count += 1 } label: { Text("Increment") }
+            }
           }
           .onDelete { self.viewStore.send(.delete($0)) }
           .onMove { self.viewStore.send(.move($0, $1)) }
         }
+        .buttonStyle(.borderless)
       }
       .navigationTitle("Todos")
       .navigationBarItems(
