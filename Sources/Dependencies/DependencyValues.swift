@@ -231,7 +231,7 @@ public struct DependencyValues: Sendable {
     file: StaticString = #file,
     function: StaticString = #function,
     line: UInt = #line
-  ) -> Key.Value where Key.Value: _Sendable {
+  ) -> Key.Value where Key.Value: Sendable {
     get {
       guard let dependency = self.storage[ObjectIdentifier(key)]?.base as? Key.Value
       else {
@@ -313,7 +313,7 @@ public struct DependencyValues: Sendable {
 private struct AnySendable: @unchecked Sendable {
   let base: Any
 
-  init<Base: _Sendable>(_ base: Base) {
+  init<Base: Sendable>(_ base: Base) {
     self.base = base
   }
 }
@@ -334,12 +334,3 @@ private let defaultContext: DependencyContext = {
     return .live
   }
 }()
-
-// NB: Swift 5.5 shipped with fewer sendable types, so sendable checking should be more lenient
-#if swift(>=5.6)
-  /// A type alias to Swift's `Sendable` protocol used to maintain backwards compatibility with
-  /// Swift 5.5.
-  public typealias _Sendable = Sendable
-#else
-  public typealias _Sendable = Any
-#endif
