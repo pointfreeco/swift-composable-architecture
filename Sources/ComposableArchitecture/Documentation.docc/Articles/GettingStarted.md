@@ -14,7 +14,7 @@ let package = Package(
   dependencies: [
     .package(
       url: "https://github.com/pointfreeco/swift-composable-architecture",
-      from: "0.41.0"
+      from: "0.42.0"
     ),
   ],
   targets: [
@@ -47,7 +47,7 @@ your domain:
     so that the store can run the reducer and effects, and you can observe state changes in the
     store so that you can update UI.
 
-The benefits of doing this is that you will instantly unlock testability of your feature, and you
+The benefits of doing this are that you will instantly unlock testability of your feature, and you
 will be able to break large, complex features into smaller domains that can be glued together.
 
 As a basic example, consider a UI that shows a number along with "+" and "−" buttons that increment 
@@ -95,7 +95,7 @@ struct Feature: ReducerProtocol {
 ```
 
 And then we implement the ``ReducerProtocol/reduce(into:action:)-4nzr2`` method which is responsible 
-for handling the actual logic and  behavior for the feature. It describes how to change the current 
+for handling the actual logic and behavior for the feature. It describes how to change the current 
 state to the next state, and describes what effects need to be executed. Some actions don't need to 
 execute effects, and they can return `.none` to represent that:
 
@@ -244,7 +244,7 @@ class FeatureViewController: UIViewController {
 ```
 
 Once we are ready to display this view, for example in the app's entry point, we can construct a 
-store. This can be done by specify the initial state to start the application in, as well as the 
+store. This can be done by specifying the initial state to start the application in, as well as the 
 reducer that will power the application:
 
 ```swift
@@ -358,7 +358,7 @@ struct MyApp: App {
 }
 ```
 
-But in tests we can use a mock dependency that immediately returns a determinstic, predictable fact: 
+But in tests we can use a mock dependency that immediately returns a deterministic, predictable fact: 
 
 ```swift
 @MainActor
@@ -478,6 +478,6 @@ await store.receive(.numberFactResponse(.success("0 is a good number Brent"))) {
 That is the basics of building and testing a feature in the Composable Architecture. There are 
 _a lot_ more things to be explored, such as <doc:DependencyManagement>, <doc:Performance>,
 <doc:SwiftConcurrency> and more about <doc:Testing>. Also, the [Examples][examples] directory has 
-a bunch of projects to explore to see more  advanced usages.
+a bunch of projects to explore to see more advanced usages.
 
 [examples]: https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples

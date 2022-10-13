@@ -11,7 +11,7 @@ to servers, but also seemingly innocuous things such as `UUID` and `Date` initia
 schedulers and clocks, can be thought of as dependencies.
 
 By controlling the dependencies our features need to do their job we gain the ability to completely
-alter the execution context a features runs in. This means in tests and Xcode previews you can 
+alter the execution context a feature runs in. This means in tests and Xcode previews you can 
 provide a mock version of an API client that immediately returns some stubbed data rather than 
 making a live network request to a server.
 
@@ -290,7 +290,7 @@ Further, we highly recommend you consider making your `testValue` dependency int
 call an "unimplemented" dependency. This is a version of your dependency that performs an `XCTFail`
 in each endpoint so that if it is ever invoked in tests it will cause a test failure. This allows
 you to be more explicit about what dependencies are actually needed to test a particular user
-flow in you feature.
+flow in your feature.
 
 For example, suppose you have an API client with endpoints for fetching a list of users or fetching
 a particular user by id:
@@ -471,11 +471,11 @@ which can help a feature to seem less intimidating.
 ## Overriding dependencies
 
 It is possible to change the dependencies for just one particular reducer inside a larger composed
-reducer. This can be handy running a feature in a more controlled environment where it may not be
+reducer. This can be handy when running a feature in a more controlled environment where it may not be
 appropriate to communicate with the outside world.
 
-For example, suppose you want to teach users how to user your feature through on onboarding
-experience. In such an experience it may not be appropriate for the users's actions to cause
+For example, suppose you want to teach users how to use your feature through an onboarding
+experience. In such an experience it may not be appropriate for the user's actions to cause
 data to be written to disk, or user defaults to be written, or any number of things. It would be
 better to use mock versions of those dependencies so that the user can interact with your feature
 in a fully controlled environment.

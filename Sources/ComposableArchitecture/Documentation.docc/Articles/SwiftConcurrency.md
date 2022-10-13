@@ -71,7 +71,7 @@ return .task { [count = state.count] in
 ### Accessing dependencies in an effect
 
 In the Composable Architecture, one provides dependencies to a reducer so that it can interact with
-the outside world in a determinstic and controlled manner. Those dependencies can be used from
+the outside world in a deterministic and controlled manner. Those dependencies can be used from
 asynchronous and concurrent contexts, and so must be `Sendable`.
 
 If your dependency is not sendable, you will be notified at the time of registering it with the
@@ -101,5 +101,5 @@ struct FactClient {
 }
 ```
 
-This will restrict the kinds of closures that can be used when construct `FactClient` values, thus 
+This will restrict the kinds of closures that can be used when constructing `FactClient` values, thus 
 making the entire `FactClient` sendable itself.
