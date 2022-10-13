@@ -335,8 +335,7 @@ private let defaultContext: DependencyContext = {
   }
 }()
 
-// TODO: should we have `@Dependency(\.runtimeWarningsEnabled)` and/or `@Dependency(\.treatWarningsAsErrors)`?
-
+// NB: Swift 5.5 shipped with fewer sendable types, so sendable checking should be more lenient
 #if swift(>=5.6)
   public typealias _Sendable = Sendable
 #else
