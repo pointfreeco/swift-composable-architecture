@@ -20,15 +20,15 @@ final class TestStoreNonExhaustiveTests: XCTestCase {
     let store = TestStore(
       initialState: 0,
       reducer: Reduce<Int, Bool> { _, action in
-          .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
+        .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
       }
     )
- 
+
     store.send(true)
     store.skipInFlightEffects()
   }
 
-  func testIgnoreReceiveActions_NonExhaustive_ShowInfo() {
+  func testIgnoreReceiveActions_PartialExhaustive() {
     let store = TestStore(
       initialState: 0,
       reducer: Reduce<Int, Bool> { _, action in
@@ -40,7 +40,7 @@ final class TestStoreNonExhaustiveTests: XCTestCase {
     store.send(true)
   }
 
-  func testIgnoreReceiveActions_NonExhaustive_HideInfo() {
+  func testIgnoreReceiveActions_NonExhaustive() {
     let store = TestStore(
       initialState: 0,
       reducer: Reduce<Int, Bool> { _, action in
@@ -48,6 +48,18 @@ final class TestStoreNonExhaustiveTests: XCTestCase {
       }
     )
     store.exhaustivity = .none
+
+    store.send(true)
+  }
+
+  func testIgnoreInFlightEffects_PartialExhaustive() {
+    let store = TestStore(
+      initialState: 0,
+      reducer: Reduce<Int, Bool> { _, action in
+        .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
+      }
+    )
+    store.exhaustivity = .partial
 
     store.send(true)
   }
@@ -56,19 +68,7 @@ final class TestStoreNonExhaustiveTests: XCTestCase {
     let store = TestStore(
       initialState: 0,
       reducer: Reduce<Int, Bool> { _, action in
-          .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
-      }
-    )
-    store.exhaustivity = .partial
-
-    store.send(true)
-  }
-
-  func testIgnoreInFlightEffects_NonExhaustive_HideInfo() {
-    let store = TestStore(
-      initialState: 0,
-      reducer: Reduce<Int, Bool> { _, action in
-          .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
+        .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
       }
     )
     store.exhaustivity = .none
@@ -77,7 +77,7 @@ final class TestStoreNonExhaustiveTests: XCTestCase {
   }
 
   // Confirms that you don't have to assert on all state changes in a non-exhaustive test store.
-  func testNonExhaustiveSend() {
+  func testNonExhaustiveSend_PartialExhaustive() {
     let store = TestStore(
       initialState: Counter.State(),
       reducer: Counter()
@@ -112,6 +112,19 @@ final class TestStoreNonExhaustiveTests: XCTestCase {
 
         (Expected: −, Actual: +)
         """
+    }
+  }
+
+  func testNonExhaustiveSend_NonExhaustive() {
+    let store = TestStore(
+      initialState: Counter.State(),
+      reducer: Counter()
+    )
+    store.exhaustivity = .none
+
+    store.send(.increment) {
+      $0.count = 1
+      // Ignoring state change: isEven = false
     }
   }
 
@@ -154,6 +167,7 @@ final class TestStoreNonExhaustiveTests: XCTestCase {
     // Ignored received action: .loggedInResponse(true)
     store.send(.decrement) {
       $0.count = 0
+      // Ignored state change: isLoggedIn = true
     }
   }
 

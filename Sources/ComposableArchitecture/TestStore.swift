@@ -883,7 +883,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
       while let receivedAction = self.reducer.receivedActions.first,
         receivedAction.action != expectedAction
       {
-        XCTFailHelper(
+        XCTFailHelper( // TODO: Finesse copy
           """
           Skipped assertions: …
           Skipped receiving \(receivedAction.action)
