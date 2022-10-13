@@ -315,10 +315,10 @@ extension APIClient {
 ```
 
 Unfortunately, `XCTFail` cannot be used in non-test targets, and so this instance cannot be defined
-in the same file where your dependency is registered. To work around this you can use our 
-[XCTestDynamicOverlay][xctest-dynamic-overlay-gh] library that dynamically invokes `XCTFail`, and
-it is automatically accessibly when using the Composable Architecture. It also comes with some
-helpers to make constructing these unimplemented values more easily:
+in the same file where your dependency is registered. To work around this you can use our
+[XCTestDynamicOverlay][xctest-dynamic-overlay-gh] library that dynamically invokes `XCTFail` and
+it is automatically accessible when using the Composable Architecture. It also comes with some
+helpers to ease the construction of these unimplemented values:
 
 ```swift
 import XCTestDynamicOverlay
