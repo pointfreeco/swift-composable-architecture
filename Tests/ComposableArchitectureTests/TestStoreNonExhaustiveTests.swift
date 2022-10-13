@@ -96,23 +96,25 @@ final class TestStoreNonExhaustiveTests: XCTestCase {
       $0.count = 3
       $0.isEven = false
     }
-    XCTExpectFailure {
-      _ = store.send(.increment) {
-        $0.count = 0
+    #if DEBUG
+      XCTExpectFailure {
+        _ = store.send(.increment) {
+          $0.count = 0
+        }
+      } issueMatcher: {
+        $0.compactDescription == """
+          A state change does not match expectation: …
+
+                Counter.State(
+              −   count: 0,
+              +   count: 4,
+                  isEven: true
+                )
+
+          (Expected: −, Actual: +)
+          """
       }
-    } issueMatcher: {
-      $0.compactDescription == """
-        A state change does not match expectation: …
-
-              Counter.State(
-            −   count: 0,
-            +   count: 4,
-                isEven: true
-              )
-
-        (Expected: −, Actual: +)
-        """
-    }
+    #endif
   }
 
   func testNonExhaustiveSend_NonExhaustive() {
