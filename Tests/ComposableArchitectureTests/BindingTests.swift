@@ -40,5 +40,40 @@ final class BindingTests: XCTestCase {
 
       XCTAssertEqual(viewStore.state, .init(nested: .init(field: "Hello!")))
     }
+  
+  func testToggleBindableState() {
+    struct BindingTest: ReducerProtocol {
+      struct State: Equatable {
+        @BindableState var boolValue = false
+      }
+
+      enum Action: BindableAction, Equatable {
+        case binding(BindingAction<State>)
+      }
+
+      var body: some ReducerProtocol<State, Action> {
+        BindingReducer()
+        Reduce { state, action in
+          switch action {
+          case .binding: return .none
+          }
+        }
+      }
+    }
+
+    let store = Store(initialState: BindingTest.State(), reducer: BindingTest())
+
+    let viewStore = ViewStore(store)
+
+    XCTAssertEqual(viewStore.state, .init(boolValue: false))
+    
+    viewStore.send(.toggle(\.$boolValue))
+    
+    XCTAssertEqual(viewStore.state, .init(boolValue: true))
+    
+    viewStore.send(.toggle(\.$boolValue))
+
+    XCTAssertEqual(viewStore.state, .init(boolValue: false))
+  }
   #endif
 }

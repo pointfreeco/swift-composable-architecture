@@ -119,6 +119,17 @@ extension BindableAction {
   ) -> Self {
     self.binding(.set(keyPath, value))
   }
+    
+  /// Constructs a binding action for the given key path with toggled value.
+  ///
+  /// Shorthand for `.binding(.toggle(\.$keyPath))`.
+  ///
+  /// - Returns: A binding action.
+  public static func toggle<Value: Equatable>(
+    _ keyPath: WritableKeyPath<State, BindableState<Value>>
+  ) -> Self where Value == Bool  {
+    self.binding(.toggle(keyPath))
+  }
 }
 
 extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
@@ -191,6 +202,25 @@ extension BindingAction {
       set: { $0[keyPath: keyPath].wrappedValue = value },
       value: value
     )
+  }
+    
+  /// Returns an action that describes toggle to some root state at a writable key path
+  /// to bindable state.
+  ///
+  /// - Parameters:
+  ///   - keyPath: A key path to the property that should be mutated. This property must be
+  ///     annotated with the ``BindableState`` property wrapper.
+  /// - Returns: An action that describes simple mutations to some root state at a writable key
+  ///   path.
+  public static func toggle<Value: Equatable>(
+    _ keyPath: WritableKeyPath<Root, BindableState<Value>>
+  ) -> Self where Value == Bool  {
+      return .init(
+        keyPath: keyPath,
+        set: { $0[keyPath: keyPath].wrappedValue = !$0[keyPath: keyPath].wrappedValue },
+        value: true,
+        valueIsEqualTo: { $0 as? Value == true }
+      )
   }
 
   /// Matches a binding action by its key path.
