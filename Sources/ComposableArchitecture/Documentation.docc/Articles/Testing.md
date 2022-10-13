@@ -7,10 +7,9 @@ The testability of features built in the Composable Architecture is the #1 prior
 It should be possible to test not only how state changes when actions are sent into the store,
 but also how effects are executed and feed data back into the system.
 
-<!--* [Testing state changes][Testing-state-changes]-->
-<!--* [Testing effects][Testing-effects]-->
-<!--* [Designing dependencies][Designing-dependencies]-->
-<!--* [Unimplemented dependencies][Unimplemented-dependencies]-->
+* [Testing state changes][Testing-state-changes]
+* [Testing effects][Testing-effects]
+* [Non-exhaustive testing][Non-exhaustive-testing]
 
 ## Testing state changes
 
@@ -398,10 +397,155 @@ The more time you take to control the dependencies your features use, the easier
 write tests for your features. To learn more about designing dependencies and how to best leverage 
 dependencies, read the <doc:DependencyManagement> article.
 
+## Non-exhaustive testing
+
+The previous sections describe in detail how to write tests in the Composable Architecture that
+exhaustively prove how the entire feature evolves over time. You must assert on how every piece
+of state changes, how every effect feeds data back into the system, and you must even make sure
+that all effects complete before the test store is deallocated. This can be powerful, but it can
+also be a nuisance, especially for highly composed features. This is why sometimes you may want
+to test in a non-exhaustive style.
+
+> Tip: The concept of "non-exhaustive test store" was first introduced by
+[Krzysztof Zabłocki][merowing.info] in a [blog post][exhaustive-testing-in-tca] and 
+[conference talk][Composable-Architecture-at-Scale], and then later became integrated into the
+core library.
+
+Suppose you have a tab-based application where the 3rd tab is a login screen. The user can fill in
+some data on the screen, then tap the "Submit" button, and then a series of events happens to 
+log the user in. Once the user is logged in, the 3rd tab switches from a login screen to a profile
+screen, _and_ the selected tab switches to the first tab, which is an activity screen.
+
+In order to test such a complex feature we must actually test the integration of multiple features.
+There's the login feature, and how it manages submitting the form data with an API request, and
+there's the app-level feature that listens for when login happens and switches to the activity
+tab.
+
+We can emulate this flow in a test by sending actions that mimic the user logging in, and then
+eventually assert that the selected tab switched to activity:
+
+```swift
+let store = TestStore(
+  initialState: App.State(),
+  reducer: App()
+)
+
+// 1️⃣ Emulate user tapping on submit button.
+await store.send(.login(.submitButtonTapped)) {
+  $0.isLoading = true
+}
+
+// 2️⃣ Login feature performs API request to login, and 
+// sends response back into system.
+await store.receive(.login(.loginResponse(.success))) {
+  $0.isLoading = false
+}
+
+// 3️⃣ Login feature sends a delegate action to let parent
+// feature know it has successfully logged in.
+await store.receive(.login(.delegate(.didLogin))) {
+  $0.authenticatedTab = .loggedIn(
+    Profile.State(...)
+  )
+  // 4️⃣ Assert that tab switches to activity.
+  $0.selectedTab = .activity
+}
+```
+
+Doing this with exhaustive testing is verbose, and there are a few problems with this:
+
+* We need to be intimately knowledgeable in how the login feature works so that we can assert
+on how its state changes and how its effects feed data back into the system. 
+* If the login feature were to change its logic we may get test failures here even though the logic 
+we are acutally trying to test doesn't really care about those changes.
+* This test is very long, and so if there are other similar but slightly different flows we want to
+test we will be tempted to copy-and-paste the whole thing, leading to lots of duplicated, fragile
+tests.
+
+Non-exhaustive testing allows us to test the high-level flow that we are concerned with, that of
+login causing the selected tab to switch to activity, without having to worry about what is 
+happening inside the login feature. To do this, we can turn off ``TestStore/exhaustivity`` in the
+test store, and then just assert on what we are interested in:
+
+```swift
+let store = TestStore(
+  initialState: App.State(),
+  reducer: App()
+)
+store.exhaustivity = .none
+
+await store.send(.login(.submitButtonTapped))
+await store.receive(.login(.delegate(.didLogin))) {
+  $0.selectedTab = .activity
+}
+```
+
+In particular, we did not assert on how the login's state changed or how the login's effects fed
+data back into the system. We just assert that when the "Submit" button is tapped that eventually
+we get the `didLogin` delegate action and that causes the selected tab to flip to activity. Now
+the login feature is free to make any change it wants to make without affecting this integration
+test.
+
+Using ``Exhaustivity/none`` for ``TestStore/exhaustivity`` causes all un-asserted changes to pass
+without any notification. If you would like to see what test failures are being supressed without
+actually causing a failure, you can use ``Exhaustivity/partial``:
+
+```swift
+let store = TestStore(
+  initialState: App.State(),
+  reducer: App()
+)
+store.exhaustivity = .partial // ⬅️
+
+await store.send(.login(.submitButtonTapped))
+await store.receive(.login(.delegate(.didLogin))) {
+  $0.selectedTab = .profile
+}
+```
+
+When this is run you will get grey, informational boxes on each assertion where some change wasn't
+fully asserted on:
+
+```
+◽️ A state change does not match expectation: …
+
+     App.State(
+       authenticatedTab: .loggedOut(
+         Login.State(
+   −       isLoading: false
+   +       isLoading: true,
+           …
+         )
+       )
+     )
+   
+   (Expected: −, Actual: +)
+
+◽️ Skipped receiving .login(.loginResponse(.success))
+
+◽️ A state change does not match expectation: …
+
+     App.State(
+   −   authenticatedTab: .loggedOut(…)
+   +   authenticatedTab: .loggedIn(
+         Profile.State(…)
+       ),
+       …
+     )
+   
+   (Expected: −, Actual: +)
+```
+
+The test still passes, and none of these notifications are test failures. They just let you know
+what things you are not explicitly asserting against, and can be useful to see when tracking down
+bugs that happen in production but that aren't currently detected in tests.
+
 [Testing-state-changes]: #Testing-state-changes
 [Testing-effects]: #Testing-effects
-[Designing-dependencies]: #Designing-dependencies
-[Unimplemented-dependencies]: #Unimplemented-dependencies
 [gh-combine-schedulers]: http://github.com/pointfreeco/combine-schedulers
 [gh-xctest-dynamic-overlay]: http://github.com/pointfreeco/xctest-dynamic-overlay
 [tca-examples]: https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples
+[Non-exhaustive-testing]: #Non-exhaustive-testing
+[merowing.info]: https://www.merowing.info
+[exhaustive-testing-in-tca]: https://www.merowing.info/exhaustive-testing-in-tca/
+[Composable-Architecture-at-Scale]: https://vimeo.com/751173570

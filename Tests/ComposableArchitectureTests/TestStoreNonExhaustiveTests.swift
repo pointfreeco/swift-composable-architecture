@@ -23,7 +23,7 @@ final class TestStoreNonExhaustiveTests: XCTestCase {
           .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
       }
     )
-
+ 
     store.send(true)
     store.skipInFlightEffects()
   }
@@ -84,7 +84,6 @@ final class TestStoreNonExhaustiveTests: XCTestCase {
     )
     store.exhaustivity = .partial
 
-    // TODO: where's the info?
     store.send(.increment) {
       $0.count = 1
       // Ignoring state change: isEven = false

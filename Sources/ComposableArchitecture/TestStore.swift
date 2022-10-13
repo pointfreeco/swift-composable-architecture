@@ -10,6 +10,10 @@ import XCTestDynamicOverlay
 /// step of the way you must assert exactly how state changed, and how effect emissions were fed
 /// back into the system.
 ///
+/// See the dedicated <doc:Testing> article for detailed information on testing.
+///
+/// ## Exhaustive testing
+///
 /// There are multiple ways the test store forces you to exhaustively assert on how your feature
 /// behaves:
 ///
@@ -178,11 +182,42 @@ import XCTestDynamicOverlay
 /// }
 /// ```
 ///
-/// This test is proving that the debounced network requests are correctly canceled when we do not
+/// This test is proving that the debounced network requests are correctly cancelled when we do not
 /// wait longer than the 0.5 seconds, because if it wasn't and it delivered an action when we did
 /// not expect it would cause a test failure.
+///
+/// ## Non-exhaustive testing
+///
+/// While exhaustive testing can be powerful, it can also be a nuisance, especially for highly
+/// composed features. This is why sometimes you may want to test in a non-exhaustive style.
+///
+/// > Tip: The concept of "non-exhaustive test store" was first introduced by
+/// [Krzysztof Zabłocki][merowing.info] in a [blog post][exhaustive-testing-in-tca] and
+/// [conference talk][Composable-Architecture-at-Scale], and then later became integrated into the
+/// core library.
+///
+/// Test stores are exhaustive by default, which means yu must assert on every state change, and
+/// how ever effect feeds data back into the system, and you must make sure that all effects
+/// complete before the test is finished. To turn of exhaustivity you can set ``exhaustivity``
+/// to ``Exhaustivity/none``. When that is done the ``TestStore``'s behavior changes:
+///
+/// * The trailing closures of ``send(_:_:file:line:)-6s1gq`` and
+/// ``receive(_:timeout:_:file:line:)-8yd62`` no longer need to assert on all state changes. They
+/// can assert on any subset of changes, including none, and only if they make an incorrect mutation
+/// will a test failure be raised.
+/// * The ``send(_:_:file:line:)-6s1gq`` and ``receive(_:timeout:_:file:line:)-8yd62`` methods are
+/// allowed to be called even when actions have been received from effects that have not been
+/// asserted on yet. Any pending actions will be cleared.
+/// * Tests are allowed to finish with unasserted, received actions and inflight effects. No test
+/// failures will be raised.
+///
+/// There is also a third option between full and no exhaustivity called ``Exhaustivity/partial``.
+/// When it is set the test store behaves like when ``Exhaustivity/none`` is set, but with the added
+/// behavior that any unasserted change causes a grey, informational box to appear next to each
+/// assertion detailing the changes that were not asserted against. This allows you to see what
+/// information you are choosing to ignore without causing a test failure. It can be useful in
+/// tracking down bugs that happen in production but that aren't currently detected in tests.
 open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
-  public var exhaustivity: Exhaustivity = .exhaustive
 
   /// The current dependencies.
   ///
@@ -193,6 +228,9 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
     _read { yield self.reducer.dependencies }
     _modify { yield &self.reducer.dependencies }
   }
+
+  /// The current exhaustivity level of the test store.
+  public var exhaustivity: Exhaustivity = .exhaustive
 
   /// The current environment.
   ///
@@ -1326,9 +1364,18 @@ extension Task where Success == Never, Failure == Never {
   }
 #endif
 
+/// The level of exhaustivity for the test store.
 public enum Exhaustivity {
+  /// Full exhaustivity, which means you must explicitly assert on how all state changes and all
+  /// received actions from effects.
   case exhaustive
+  /// No exhaustivity, which means you can assert on any subset of state changes and any subset
+  /// of received actions from effects.
   case none
+  /// Partial exhaustivity, which behaves exactly like ``none``, except any state not asserted
+  /// on or receive actions skipped will be reported in a grey informational box next to the
+  /// assertion. This is handy for when you want non-exhaustivity but you still want to know
+  /// what all you are missing from your assertions.
   case partial
 }
 
