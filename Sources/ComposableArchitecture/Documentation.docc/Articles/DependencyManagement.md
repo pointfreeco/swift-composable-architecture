@@ -475,7 +475,7 @@ reducer. This can be handy when running a feature in a more controlled environme
 appropriate to communicate with the outside world.
 
 For example, suppose you want to teach users how to use your feature through an onboarding
-experience. In such an experience it may not be appropriate for the users' actions to cause
+experience. In such an experience it may not be appropriate for the user's actions to cause
 data to be written to disk, or user defaults to be written, or any number of things. It would be
 better to use mock versions of those dependencies so that the user can interact with your feature
 in a fully controlled environment.
