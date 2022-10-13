@@ -276,7 +276,7 @@ That can save a little bit of boilerplate.
 
 In the previous section we showed that to conform to [`DependencyKey`][dependency-key-docs] you must
 provide _at least_ a `liveValue`, which is the default version of the dependency that is used when
-running on a device or simulator. The `DependencyKey` protocol inherts from a base protocol,
+running on a device or simulator. The `DependencyKey` protocol inherits from a base protocol,
 [`TestDependencyKey`][test-dependency-key-docs], which has 2 other requirements, `testValue`
 and `previewValue`. Both are optional and delegate to `liveValue` if not implemented.
 
