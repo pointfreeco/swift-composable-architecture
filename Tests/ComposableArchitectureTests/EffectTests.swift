@@ -1,5 +1,5 @@
 import Combine
-import ComposableArchitecture
+@_spi(Canary) import ComposableArchitecture
 import XCTest
 
 @MainActor
@@ -254,7 +254,7 @@ final class EffectTests: XCTestCase {
     _ = XCTWaiter.wait(for: [.init()], timeout: 1.1)
   }
 
-  func testDependenciesTransferredToEffects() async {
+  func testDependenciesTransferredToEffects_Task() async {
     struct Feature: ReducerProtocol {
       enum Action: Equatable {
         case tap
@@ -264,14 +264,9 @@ final class EffectTests: XCTestCase {
       func reduce(into state: inout Int, action: Action) -> EffectTask<Action> {
         switch action {
         case .tap:
-          return .merge(
-            .task {
-              .response(Int(self.date.now.timeIntervalSinceReferenceDate))
-            },
-            .run { send in
-              await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
-            }
-          )
+          return .task {
+            .response(Int(self.date.now.timeIntervalSinceReferenceDate))
+          }
         case let .response(value):
           state = value
           return .none
@@ -288,7 +283,37 @@ final class EffectTests: XCTestCase {
     await store.receive(.response(1_234_567_890)) {
       $0 = 1_234_567_890
     }
-    await store.receive(.response(1_234_567_890))
+  }
+
+  func testDependenciesTransferredToEffects_Run() async {
+    struct Feature: ReducerProtocol {
+      enum Action: Equatable {
+        case tap
+        case response(Int)
+      }
+      @Dependency(\.date) var date
+      func reduce(into state: inout Int, action: Action) -> Effect<Action, Never> {
+        switch action {
+        case .tap:
+          return .run { send in
+            await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
+          }
+        case let .response(value):
+          state = value
+          return .none
+        }
+      }
+    }
+    let store = TestStore(
+      initialState: 0,
+      reducer: Feature()
+        .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1_234_567_890)))
+    )
+
+    await store.send(.tap).finish(timeout: NSEC_PER_SEC)
+    await store.receive(.response(1_234_567_890)) {
+      $0 = 1_234_567_890
+    }
   }
 
   func testMap() async {
@@ -314,6 +339,19 @@ final class EffectTests: XCTestCase {
         }
       output = await effect.values.first(where: { _ in true })
       XCTAssertEqual(output, Date(timeIntervalSince1970: 1_234_567_890))
+    }
+  }
+
+  func testCanary1() async {
+    for _ in 1...100 {
+      let task = TestStoreTask(rawValue: Task {}, timeout: NSEC_PER_SEC)
+      await task.finish()
+    }
+  }
+  func testCanary2() async {
+    for _ in 1...100 {
+      let task = TestStoreTask(rawValue: nil, timeout: NSEC_PER_SEC)
+      await task.finish()
     }
   }
 }

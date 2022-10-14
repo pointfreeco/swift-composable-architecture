@@ -838,7 +838,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     await Task.megaYield()
     let start = DispatchTime.now().uptimeNanoseconds
     while !Task.isCancelled {
-      await Task.detached(priority: .low) { await Task.yield() }.value
+      await Task.detached(priority: .background) { await Task.yield() }.value
 
       guard self.reducer.receivedActions.isEmpty
       else { break }
@@ -962,6 +962,11 @@ extension TestStore {
 public struct TestStoreTask: Hashable, Sendable {
   fileprivate let rawValue: Task<Void, Never>?
   fileprivate let timeout: UInt64
+
+  @_spi(Canary) public init(rawValue: Task<Void, Never>?, timeout: UInt64) {
+    self.rawValue = rawValue
+    self.timeout = timeout
+  }
 
   /// Cancels the underlying task and waits for it to finish.
   public func cancel() async {
@@ -1131,7 +1136,7 @@ class TestReducer<State, Action>: ReducerProtocol {
 extension Task where Success == Never, Failure == Never {
   @_spi(Internals) public static func megaYield(count: Int = 10) async {
     for _ in 1...count {
-      await Task<Void, Never>.detached(priority: .low) { await Task.yield() }.value
+      await Task<Void, Never>.detached(priority: .background) { await Task.yield() }.value
     }
   }
 }

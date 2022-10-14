@@ -38,7 +38,7 @@ extension EffectPublisher where Failure == Never {
   ///     case .stopButtonTapped:
   ///       return .cancel(id: TimerID())
   ///
-  ///     case let .timerTicked:
+  ///     case .timerTicked:
   ///       state.count += 1
   ///       return .none
   ///   }

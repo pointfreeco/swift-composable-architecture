@@ -12,7 +12,7 @@ allowing you to plug protocol-style reducers into old-style reducers, and vice-v
 Although we recommend migrating your code when you have time, the newest version of the library
 is still 100% backwards compatible with all previous versions. The ``Reducer`` type is now
 "soft" deprecated, which means we consider it deprecated, and it says so in the documentation, but 
-you will not get any warnings about it. Some time in the future we will officially deprecate it, 
+you will not get any warnings about it. Sometime in the future, we will officially deprecate it, 
 and then sometime even later we will remove it so that we can rename the protocol to `Reducer`.
 
 This article outlines a number of strategies you can employ to convert your reducers to the protocol
@@ -89,7 +89,7 @@ struct Feature: ReducerProtocol {
 }
 ```
 
-Once this feature's domain and reducer is converted to the protocol-style you will invariably have 
+Once this feature's domain and reducer are converted to the protocol-style you will invariably have 
 compiler errors wherever you were referring to the old types. For example, suppose you have a 
 parent feature that is currently trying to embed the old-style domain and reducer into its domain
 and reducer:
@@ -117,7 +117,7 @@ let parentReducer = Reducer<ParentState, ParentAction, ParentEnvironment>.combin
       state: \.feature, 
       action: /ParentAction.feature, 
       environment: {  
-        FeatureAEnvironment(date: $0.date)
+        FeatureEnvironment(date: $0.date)
       }
     ),
 
@@ -144,7 +144,7 @@ enum ParentAction {
 
 And then the `parentReducer` can be fixed by making use of the helper ``AnyReducer/init(_:)-42p1a``
 which aids in converting protocol-style reducers into old-style reducers. It is initialized with a
-closure  that is passed an environment, which is the one thing protocol-style reducers don't have,
+closure that is passed an environment, which is the one thing protocol-style reducers don't have,
 and you  are to return a protocol-style reducer:
 
 ```swift
@@ -174,10 +174,10 @@ leaf node feature to the new ``ReducerProtocol``-style of doing things.
 ## Composition of features
 
 Some features in your application are an amalgamation of other features. For example, a tab-based
-application may have a separate domain and reducer for each tab, and then a app-level domain and
+application may have a separate domain and reducer for each tab, and then an app-level domain and
 reducer that composes everything together.
 
-Suppose that all of the tab features have already be converted to the protocol-style:
+Suppose that all of the tab features have already been converted to the protocol-style:
 
 ```swift
 struct TabA: ReducerProtocol {
@@ -367,10 +367,10 @@ let parentReducer = Reducer<
 Now the question is, how do we migrate `parentReducer` to a protocol conformance?
 
 This gives us an opportunity to improve the correctness of this code. It turns out there is a gotcha 
-with the `optional` operator: it must be run _before_ the parent logic runs. If it is  not, then it 
-is possible for a child action to come into the system, the parent observe the action  and decide to 
-`nil` out the child state, and then the child  reducer will not get a chance to react to the action. 
-This can cause subtle bugs, and so we have documentation advising you to order things  the correct 
+with the `optional` operator: it must be run _before_ the parent logic runs. If it is not, then it 
+is possible for a child action to come into the system, the parent observes the action and decides to 
+`nil` out the child state, and then the child reducer will not get a chance to react to the action.
+This can cause subtle bugs, and so we have documentation advising you to order things the correct 
 way, and if we detect a child action while state is `nil` we display a runtime warning.
 
 A `Parent` reducer conformances can be made by implementing the 

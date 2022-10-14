@@ -4,56 +4,6 @@ import Combine
 /// This API has been soft-deprecated in favor of ``ReducerProtocol``.
 /// Read <doc:MigratingToTheReducerProtocol> for more information.
 ///
-/// A type alias to ``AnyReducer`` for source compatibility. This alias will be removed.
-@available(
-  iOS,
-  deprecated: 9999.0,
-  renamed: "AnyReducer",
-  message:
-    """
-    'Reducer' has been deprecated in favor of 'ReducerProtocol'.
-
-    See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
-    """
-)
-@available(
-  macOS,
-  deprecated: 9999.0,
-  renamed: "AnyReducer",
-  message:
-    """
-    'Reducer' has been deprecated in favor of 'ReducerProtocol'.
-
-    See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
-    """
-)
-@available(
-  tvOS,
-  deprecated: 9999.0,
-  renamed: "AnyReducer",
-  message:
-    """
-    'Reducer' has been deprecated in favor of 'ReducerProtocol'.
-
-    See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
-    """
-)
-@available(
-  watchOS,
-  deprecated: 9999.0,
-  renamed: "AnyReducer",
-  message:
-    """
-    'Reducer' has been deprecated in favor of 'ReducerProtocol'.
-
-    See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
-    """
-)
-public typealias Reducer = AnyReducer
-
-/// This API has been soft-deprecated in favor of ``ReducerProtocol``.
-/// Read <doc:MigratingToTheReducerProtocol> for more information.
-///
 /// A reducer describes how to evolve the current state of an application to the next state, given
 /// an action, and describes what ``EffectTask``s should be executed later by the store, if any.
 ///

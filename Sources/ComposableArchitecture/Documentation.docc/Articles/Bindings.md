@@ -11,7 +11,7 @@ such communication with your application's store.
 ### Ad hoc bindings
 
 The simplest tool for creating bindings that communicate with your store is 
-``ViewStore/binding(get:send:)-65xes``, which is handed two closures: one that describe how to
+``ViewStore/binding(get:send:)-65xes``, which is handed two closures: one that describes how to
 transform state into the binding's value, and one that describes how to transform the binding's
 value into an action that can be fed back into the store.
 
@@ -197,7 +197,7 @@ struct Settings: ReducerProtocol {
 }
 ```
 
-Each annotated field is directly to bindable to SwiftUI controls, like pickers, toggles, and text
+Each annotated field is directly bindable to SwiftUI controls, like pickers, toggles, and text
 fields. Notably, the `isLoading` property is _not_ annotated as being bindable, which prevents the
 view from mutating this value directly.
 
