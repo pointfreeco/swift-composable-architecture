@@ -33,15 +33,13 @@ import XCTestDynamicOverlay
 /// you are using Swift's concurrency tools and the `.task`, `.run` and `.fireAndForget` functions
 /// on ``Effect``, then threading is automatically handled for you.
 public struct Effect<Action, Failure: Error> {
-  @usableFromInline
-  enum Operation {
+  public enum Operation {
     case none
     case publisher(AnyPublisher<Action, Failure>)
     case run(TaskPriority? = nil, @Sendable (Send<Action>) async -> Void)
   }
 
-  @usableFromInline
-  let operation: Operation
+  public let operation: Operation
 
   @usableFromInline
   init(operation: Operation) {

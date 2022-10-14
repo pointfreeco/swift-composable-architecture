@@ -181,6 +181,7 @@ import XCTestDynamicOverlay
 /// This test is proving that the debounced network requests are correctly canceled when we do not
 /// wait longer than the 0.5 seconds, because if it wasn't and it delivered an action when we did
 /// not expect it would cause a test failure.
+@available(*, deprecated, message: "import ComposableArchitectureTestSupport")
 public final class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
   /// The current dependencies.
   ///
