@@ -328,7 +328,7 @@ public final class Store<State, Action> {
 
     self.isSending = true
     var currentState = self.state.value
-    let tasks = Box<[Task<Void, Never>]>(wrappedValue: [])
+    let tasks = Box<[WeakTask<Void, Never>]>(wrappedValue: [])
     defer {
       withExtendedLifetime(self.bufferedActions) {
         self.bufferedActions.removeAll()
@@ -339,7 +339,7 @@ public final class Store<State, Action> {
         if let task = self.send(
           self.bufferedActions.removeLast(), originatingFrom: originatingAction
         ) {
-          tasks.wrappedValue.append(task)
+          tasks.wrappedValue.append(.init(task))
         }
       }
     }
@@ -379,7 +379,7 @@ public final class Store<State, Action> {
             receiveValue: { [weak self] effectAction in
               guard let self = self else { return }
               if let task = self.send(effectAction, originatingFrom: action) {
-                tasks.wrappedValue.append(task)
+                tasks.wrappedValue.append(.init(task))
               }
             }
           )
@@ -390,20 +390,22 @@ public final class Store<State, Action> {
             effectCancellable.cancel()
           }
           boxedTask.wrappedValue = task
-          tasks.wrappedValue.append(task)
+          tasks.wrappedValue.append(.init(task))
           self.effectCancellables[uuid] = effectCancellable
         }
       case let .run(priority, operation):
         tasks.wrappedValue.append(
-          Task(priority: priority) {
-            await operation(
-              Send {
-                if let task = self.send($0, originatingFrom: action) {
-                  tasks.wrappedValue.append(task)
+          .init(
+            Task(priority: priority) {
+              await operation(
+                Send {
+                  if let task = self.send($0, originatingFrom: action) {
+                    tasks.wrappedValue.append(.init(task))
+                  }
                 }
-              }
-            )
-          }
+              )
+            }
+          )
         )
       }
     }
@@ -714,3 +716,33 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     }
   }
 #endif
+
+private struct WeakTask<Success: Sendable, Failure: Error> {
+  private weak var _task: AnyObject?
+
+  var task: Task<Success, Failure>? {
+    self._task as? Task<Success, Failure>
+  }
+
+  init(_ task: Task<Success, Failure>) {
+    self._task = task as AnyObject
+  }
+
+  var value: Success? {
+    get async throws {
+      try await self.task?.value
+    }
+  }
+
+  func cancel() {
+    self.task?.cancel()
+  }
+}
+
+extension WeakTask where Failure == Never {
+  var value: Success? {
+    get async {
+      await self.task?.value
+    }
+  }
+}
