@@ -82,6 +82,8 @@ As a basic example, consider a UI that shows a number along with "+" and "−" b
 To implement this feature we create a new type that will house the domain and behavior of the feature by conforming to `ReducerProtocol`:
 
 ```swift
+import ComposableArchitecture
+
 struct Feature: ReducerProtocol {
 }
 ```
@@ -134,13 +136,13 @@ struct Feature: ReducerProtocol {
         return .none
 
       case .numberFactButtonTapped:
-        return .task { [count = state.count] in 
+        return .task { [number = state.count] in 
           await .numberFactResponse(
             TaskResult { 
               String(
                 decoding: try await URLSession.shared
                   .data(from: URL(string: "http://numbersapi.com/\(number)/trivia")!).0,
-                using: UTF8.self
+                as: UTF8.self
               )
             }
           )
@@ -260,17 +262,43 @@ It is also straightforward to have a UIKit controller driven off of this store. 
 Once we are ready to display this view, for example in the app's entry point, we can construct a store. This can be done by specifying the initial state to start the application in, as well as the reducer that will power the application:
 
 ```swift
+import ComposableArchitecture
+
 @main
 struct MyApp: App {
   var body: some Scene {
-    FeatureView(
-      store: Store(
-        initialState: Feature.State(),
-        reducer: Feature()
+    WindowGroup {
+      FeatureView(
+        store: Store(
+          initialState: Feature.State(),
+          reducer: Feature()
+        )
       )
-    )
+    }
   }
 }
+```
+
+You may also find that the HTTP API request to numbersapi.com is blocked by the OS as only HTTPS connections are permitted.  If this happens you can add an exception to the project settings to allow HTTP requests just for the numbersapi.com domain.
+
+```
+<key>NSAppTransportSecurity</key>
+<dict>
+  <key>NSAllowsArbitraryLoads</key>
+  <false/>
+  <key>NSExceptionDomains</key>
+  <dict>
+    <key>numbersapi.com</key>
+    <dict>
+      <key>NSIncludesSubdomains</key>
+      <true/>
+      <key>NSTemporaryExceptionAllowsInsecureHTTPLoads</key>
+      <true/>
+      <key>NSTemporaryExceptionMinimumTLSVersion</key>
+      <string>TLSv1.1</string>
+    </dict>
+  </dict>
+</dict>
 ```
 
 And that is enough to get something on the screen to play around with. It's definitely a few more steps than if you were to do this in a vanilla SwiftUI way, but there are a few benefits. It gives us a consistent manner to apply state mutations, instead of scattering logic in some observable objects and in various action closures of UI components. It also gives us a concise way of expressing side effects. And we can immediately test this logic, including the effects, without doing much additional work.
