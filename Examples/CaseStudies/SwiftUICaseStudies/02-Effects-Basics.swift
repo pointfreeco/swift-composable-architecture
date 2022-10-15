@@ -1,4 +1,3 @@
-import Combine
 import ComposableArchitecture
 import SwiftUI
 
@@ -151,7 +150,7 @@ struct EffectsBasicsView: View {
   }
 }
 
-// MARK: - Feature SwiftUI previews
+// MARK: - SwiftUI previews
 
 struct EffectsBasicsView_Previews: PreviewProvider {
   static var previews: some View {

@@ -13,6 +13,8 @@ private let readMe = """
   It is instructive to compare this case study to the "Binding Basics" case study.
   """
 
+// MARK: - Feature domain
+
 struct BindingForm: ReducerProtocol {
   struct State: Equatable {
     @BindableState var sliderValue = 5.0
@@ -44,6 +46,8 @@ struct BindingForm: ReducerProtocol {
     }
   }
 }
+
+// MARK: - Feature view
 
 struct BindingFormView: View {
   let store: StoreOf<BindingForm>
@@ -105,6 +109,8 @@ private func alternate(_ string: String) -> String {
     }
     .joined()
 }
+
+// MARK: - SwiftUI previews
 
 struct BindingFormView_Previews: PreviewProvider {
   static var previews: some View {
