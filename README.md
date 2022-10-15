@@ -126,15 +126,15 @@ struct Feature: ReducerProtocol {
       case .factAlertDismissed:
         state.numberFactAlert = nil
         return .none
-        
+
       case .decrementButtonTapped:
         state.count -= 1
         return .none
-        
+
       case .incrementButtonTapped:
         state.count += 1
         return .none
-        
+
       case .numberFactButtonTapped:
         return .task { [number = state.count] in
           await .numberFactResponse(
@@ -147,11 +147,11 @@ struct Feature: ReducerProtocol {
             }
           )
         }
-        
+
       case let .numberFactResponse(.success(fact)):
         state.numberFactAlert = fact
         return .none
-        
+
       case .numberFactResponse(.failure):
         state.numberFactAlert = "Could not load a number fact :("
         return .none
