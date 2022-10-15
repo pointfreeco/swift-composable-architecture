@@ -287,7 +287,7 @@ struct MyApp: App {
 }
 ```
 
-You may also find that the HTTP API request to numbersapi.com is blocked by the OS as only HTTPS connections are permitted.  If this happens you can add an exception to the project settings to allow HTTP requests just for the numbersapi.com domain.
+You may also find that the HTTP API request to numbersapi.com is blocked as only HTTPS connections are permitted.  If this happens you can add an exception to the project settings to allow HTTP requests just for the numbersapi.com domain.
 
 ```
 <key>NSAppTransportSecurity</key>
