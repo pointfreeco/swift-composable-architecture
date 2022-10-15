@@ -479,7 +479,6 @@ The documentation for releases and `main` are available here:
   * [0.40.2](https://pointfreeco.github.io/swift-composable-architecture/0.40.0/documentation/composablearchitecture/)
   * [0.39.0](https://pointfreeco.github.io/swift-composable-architecture/0.39.0/documentation/composablearchitecture/)
   * [0.38.0](https://pointfreeco.github.io/swift-composable-architecture/0.38.0/documentation/composablearchitecture/)
-  </summary>
 </details>
 
 <br>
