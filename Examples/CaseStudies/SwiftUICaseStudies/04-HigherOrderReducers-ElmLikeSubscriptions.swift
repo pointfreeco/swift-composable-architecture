@@ -34,6 +34,8 @@ extension AnyReducer {
   }
 }
 
+// MARK: - Feature domain
+
 struct ClockState: Equatable {
   var isTimerActive = false
   var secondsElapsed = 0
@@ -71,6 +73,8 @@ let clockReducer = AnyReducer<ClockState, ClockAction, ClockEnvironment>.combine
     ]
   }
 )
+
+// MARK: - Feature view
 
 struct ClockView: View {
   let store: Store<ClockState, ClockAction>
@@ -132,6 +136,8 @@ struct ClockView: View {
     }
   }
 }
+
+// MARK: - SwiftUI previews
 
 struct Subscriptions_Previews: PreviewProvider {
   static var previews: some View {

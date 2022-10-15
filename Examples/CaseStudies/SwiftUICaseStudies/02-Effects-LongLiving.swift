@@ -15,7 +15,7 @@ private let readMe = """
   the screen, and restarted when entering the screen.
   """
 
-// MARK: - Application domain
+// MARK: - Feature domain
 
 struct LongLivingEffects: ReducerProtocol {
   struct State: Equatable {
@@ -66,7 +66,7 @@ private enum ScreenshotsKey: DependencyKey {
   )
 }
 
-// MARK: - SwiftUI view
+// MARK: - Feature view
 
 struct LongLivingEffectsView: View {
   let store: StoreOf<LongLivingEffects>

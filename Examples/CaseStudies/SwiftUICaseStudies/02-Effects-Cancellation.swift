@@ -12,7 +12,7 @@ private let readMe = """
   request is in-flight will also cancel it.
   """
 
-// MARK: - Demo app domain
+// MARK: - Feature domain
 
 struct EffectsCancellation: ReducerProtocol {
   struct State: Equatable {
@@ -64,7 +64,7 @@ struct EffectsCancellation: ReducerProtocol {
   }
 }
 
-// MARK: - Application view
+// MARK: - Feature view
 
 struct EffectsCancellationView: View {
   let store: StoreOf<EffectsCancellation>

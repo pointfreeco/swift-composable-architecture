@@ -18,6 +18,8 @@ private let readMe = """
   toggle at the bottom of the screen.
   """
 
+// MARK: - Feature domain
+
 struct Animations: ReducerProtocol {
   struct State: Equatable {
     var alert: AlertState<Action>?
@@ -85,6 +87,8 @@ struct Animations: ReducerProtocol {
   }
 }
 
+// MARK: - Feature view
+
 struct AnimationsView: View {
   let store: StoreOf<Animations>
 
@@ -135,6 +139,8 @@ struct AnimationsView: View {
     }
   }
 }
+
+// MARK: - SwiftUI previews
 
 struct AnimationsView_Previews: PreviewProvider {
   static var previews: some View {
