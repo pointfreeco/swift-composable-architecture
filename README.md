@@ -118,17 +118,8 @@ And then we implement the `reduce` method which is responsible for handling the 
 
 ```swift
 struct Feature: ReducerProtocol {
-  struct State: Equatable {
-    var count = 0
-    var numberFactAlert: String?
-  }
-  enum Action: Equatable {
-    case factAlertDismissed
-    case decrementButtonTapped
-    case incrementButtonTapped
-    case numberFactButtonTapped
-    case numberFactResponse(TaskResult<String>)
-  }
+  struct State: Equatable { … }
+  enum Action: Equatable { … }
   
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     switch action {
