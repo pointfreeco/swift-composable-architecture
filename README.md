@@ -118,44 +118,52 @@ And then we implement the `reduce` method which is responsible for handling the 
 
 ```swift
 struct Feature: ReducerProtocol {
-  struct State: Equatable { … }
-  enum Action: Equatable { … }
+  struct State: Equatable {
+    var count = 0
+    var numberFactAlert: String?
+  }
+  enum Action: Equatable {
+    case factAlertDismissed
+    case decrementButtonTapped
+    case incrementButtonTapped
+    case numberFactButtonTapped
+    case numberFactResponse(TaskResult<String>)
+  }
   
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     switch action {
-      case .factAlertDismissed:
-        state.numberFactAlert = nil
-        return .none
-
-      case .decrementButtonTapped:
-        state.count -= 1
-        return .none
-
-      case .incrementButtonTapped:
-        state.count += 1
-        return .none
-
-      case .numberFactButtonTapped:
-        return .task { [number = state.count] in 
-          await .numberFactResponse(
-            TaskResult { 
-              String(
-                decoding: try await URLSession.shared
-                  .data(from: URL(string: "http://numbersapi.com/\(number)/trivia")!).0,
-                as: UTF8.self
-              )
-            }
-          )
-        }
-
-      case let .numberFactResponse(.success(fact)):
-        state.numberFactAlert = fact
-        return .none
-
-      case .numberFactResponse(.failure):
-        state.numberFactAlert = "Could not load a number fact :("
-        return .none
-      } 
+    case .factAlertDismissed:
+      state.numberFactAlert = nil
+      return .none
+      
+    case .decrementButtonTapped:
+      state.count -= 1
+      return .none
+      
+    case .incrementButtonTapped:
+      state.count += 1
+      return .none
+      
+    case .numberFactButtonTapped:
+      return .task { [number = state.count] in
+        await .numberFactResponse(
+          TaskResult {
+            String(
+              decoding: try await URLSession.shared
+                .data(from: URL(string: "http://numbersapi.com/\(number)/trivia")!).0,
+              as: UTF8.self
+            )
+          }
+        )
+      }
+      
+    case let .numberFactResponse(.success(fact)):
+      state.numberFactAlert = fact
+      return .none
+      
+    case .numberFactResponse(.failure):
+      state.numberFactAlert = "Could not load a number fact :("
+      return .none
     }
   }
 }
