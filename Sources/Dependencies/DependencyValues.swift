@@ -338,32 +338,32 @@ private let defaultContext: DependencyContext = {
 extension TestDependencyKey {
   static var stableOpenedLiveValue: Value? {
     let id = DefaultValueID(key: Self.self, context: .live)
-    return defaultValueStorageLock.withLock {
-      if let value = defaultValueStorage[id] as? Value { return value }
-      let value = _liveValue(Self.self) as? Value
-      defaultValueStorage[id] = value
-      return value
-    }
+    defaultValueStorageLock.lock()
+    defer { defaultValueStorageLock.unlock() }
+    if let value = defaultValueStorage[id] as? Value { return value }
+    let value = _liveValue(Self.self) as? Value
+    defaultValueStorage[id] = value
+    return value
   }
   
   static var stableTestValue: Value {
     let id = DefaultValueID(key: Self.self, context: .test)
-    return defaultValueStorageLock.withLock {
-      if let value = defaultValueStorage[id] as? Value { return value }
-      let value = self.testValue
-      defaultValueStorage[id] = value
-      return value
-    }
+    defaultValueStorageLock.lock()
+    defer { defaultValueStorageLock.unlock() }
+    if let value = defaultValueStorage[id] as? Value { return value }
+    let value = self.testValue
+    defaultValueStorage[id] = value
+    return value
   }
   
   static var stablePreviewValue: Value {
     let id = DefaultValueID(key: Self.self, context: .preview)
-    return defaultValueStorageLock.withLock {
-      if let value = defaultValueStorage[id] as? Value { return value }
-      let value = self.previewValue
-      defaultValueStorage[id] = value
-      return value
-    }
+    defaultValueStorageLock.lock()
+    defer { defaultValueStorageLock.unlock() }
+    if let value = defaultValueStorage[id] as? Value { return value }
+    let value = self.previewValue
+    defaultValueStorage[id] = value
+    return value    
   }
 }
 
