@@ -337,44 +337,37 @@ private let defaultContext: DependencyContext = {
 
 extension TestDependencyKey {
   static var stableOpenedLiveValue: Value? {
-    let id = DefaultValueID(key: Self.self, context: .live)
-    defaultValueStorageLock.lock()
-    defer { defaultValueStorageLock.unlock() }
-    if let value = defaultValueStorage[id] as? Value { return value }
-    let value = _liveValue(Self.self) as? Value
-    defaultValueStorage[id] = value
-    return value
+    self.stableDefaultValue(for: .live, default: _liveValue(Self.self) as? Value)
   }
-  
+
   static var stableTestValue: Value {
-    let id = DefaultValueID(key: Self.self, context: .test)
-    defaultValueStorageLock.lock()
-    defer { defaultValueStorageLock.unlock() }
-    if let value = defaultValueStorage[id] as? Value { return value }
-    let value = self.testValue
-    defaultValueStorage[id] = value
-    return value
+    self.stableDefaultValue(for: .test, default: self.testValue)
   }
-  
+
   static var stablePreviewValue: Value {
-    let id = DefaultValueID(key: Self.self, context: .preview)
+    self.stableDefaultValue(for: .preview, default: self.previewValue)
+  }
+
+  static func stableDefaultValue<V>(
+    for context: DependencyContext,
+    default: @autoclosure () -> V
+  ) -> V {
+    let id = DefaultValueID(key: ObjectIdentifier(self), context: context)
     defaultValueStorageLock.lock()
     defer { defaultValueStorageLock.unlock() }
-    if let value = defaultValueStorage[id] as? Value { return value }
-    let value = self.previewValue
+    if let value = defaultValueStorage[id] as? Value { return value as! V }
+    let value = `default`()
     defaultValueStorage[id] = value
     return value
   }
 }
-
-private var defaultValueStorage: [DefaultValueID: Any] = [:]
-private var defaultValueStorageLock = NSRecursiveLock()
 
 private struct DefaultValueID: Hashable {
   let key: ObjectIdentifier
   let context: DependencyContext
-  init<Key>(key: Key.Type, context: DependencyContext) {
-    self.key = ObjectIdentifier(key)
-    self.context = context
-  }
 }
+
+private var defaultValueStorage: [DefaultValueID: Any] = [:]
+private let defaultValueStorageLock = NSRecursiveLock()
+
+
