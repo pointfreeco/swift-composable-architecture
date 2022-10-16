@@ -195,7 +195,7 @@ struct AppView: View {
 }
 ```
 
-This gives you maximum flexibilty in the future for adding new fields to `ViewState` without making
+This gives you maximum flexibility in the future for adding new fields to `ViewState` without making
 your view convoluated.
 
 This technique for reducing view re-computations is most effective towards the root of your app
@@ -209,8 +209,8 @@ store.
 ### Sharing logic with actions
 
 There is a common pattern of using actions to share logic across multiple parts of a reducer.
-This is an ineffecient way to share logic. Sending actions is not as lightweight of an operation
-as, say, caling a method on a class. Actions travel through multiple layers of an application, and 
+This is an inefficient way to share logic. Sending actions is not as lightweight of an operation
+as, say, calling a method on a class. Actions travel through multiple layers of an application, and 
 at each layer a reducer can intercept and reinterpret the action.
 
 It is far better to share logic via simple methods on your ``ReducerProtocol`` conformance.
@@ -263,8 +263,7 @@ be if only a single action was sent.
 Besides just performance concerns, there are two other reasons why you should not follow this 
 pattern. First, this style of sharing logic is not very flexible. Because the shared logic is 
 relegated to a separate action it must always be run after the initial logic. But what if
-instead you need to run some shared logic _before_ the core logic? This style cannot accomodate
-for that.
+instead you need to run some shared logic _before_ the core logic? This style cannot accommodate that.
 
 Second, this style of sharing logic also muddies tests. When you send a user action you have to 
 further assert on receiving the shared action and assert on how state changed. This bloats tests
@@ -301,7 +300,7 @@ So, we do not recommend sharing logic in a reducer by having dedicated actions f
 and executing synchronous effects.
 
 Instead, we recommend sharing logic with methods defined in your feature's reducer. The method has
-full access to all depedencies, it can take an `inout State` if it needs to make mutations to 
+full access to all dependencies, it can take an `inout State` if it needs to make mutations to 
 state, and it can return an `Effect<Action, Never>` if it needs to execute effects.
 
 The above example can be refactored like so:
@@ -430,7 +429,7 @@ calls that one does with classes, such as `ObservableObject` conformances. When 
 into the system there are multiple layers of features that can intercept and interpret it, and 
 the resulting state changes can reverberate throughout the entire application.
 
-Because of this, sending actions do come with a cost. You should aim to only send "significant" 
+Because of this, sending actions does come with a cost. You should aim to only send "significant" 
 actions into the system, that is, actions that cause the execution of important logic and effects
 for your application. High-frequency actions, such as sending dozens of actions per second, 
 should be avoided unless your application truly needs that volume of actions in order to implement
@@ -486,7 +485,7 @@ incurring unnecessary costs for sending actions.
 
 In very large SwiftUI applications you may experience degraded compiler performance causing long
 compile times, and possibly even compiler failures due to "complex expressions." The
-``WithViewStore``  helpers that comes with the library can exacerbate that problem for very complex
+``WithViewStore``  helpers that come with the library can exacerbate that problem for very complex
 views. If you are running into issues using ``WithViewStore`` you can make a small change to your
 view to use an `@ObservedObject` directly.
 

@@ -81,7 +81,7 @@ public struct ForEachStore<
   EachState, EachAction, Data: Collection, ID: Hashable, Content: View
 >: DynamicViewContent {
   public let data: Data
-  let content: () -> Content
+  let content: Content
 
   /// Initializes a structure that computes views on demand from a store on a collection of data and
   /// an identified action.
@@ -100,34 +100,32 @@ public struct ForEachStore<
     >
   {
     self.data = store.state.value
-    self.content = {
-      WithViewStore(
-        store,
-        observe: { $0.ids },
-        removeDuplicates: areOrderedSetsDuplicates
-      ) { viewStore in
-        ForEach(viewStore.state, id: \.self) { id -> EachContent in
-          // NB: We cache elements here to avoid a potential crash where SwiftUI may re-evaluate
-          //     views for elements no longer in the collection.
-          //
-          // Feedback filed: https://gist.github.com/stephencelis/cdf85ae8dab437adc998fb0204ed9a6b
-          var element = store.state.value[id: id]!
-          return content(
-            store.scope(
-              state: {
-                element = $0[id: id] ?? element
-                return element
-              },
-              action: { (id, $0) }
-            )
+    self.content = WithViewStore(
+      store,
+      observe: { $0.ids },
+      removeDuplicates: areOrderedSetsDuplicates
+    ) { viewStore in
+      ForEach(viewStore.state, id: \.self) { id -> EachContent in
+        // NB: We cache elements here to avoid a potential crash where SwiftUI may re-evaluate
+        //     views for elements no longer in the collection.
+        //
+        // Feedback filed: https://gist.github.com/stephencelis/cdf85ae8dab437adc998fb0204ed9a6b
+        var element = store.state.value[id: id]!
+        return content(
+          store.scope(
+            state: {
+              element = $0[id: id] ?? element
+              return element
+            },
+            action: { (id, $0) }
           )
-        }
+        )
       }
     }
   }
 
   public var body: some View {
-    self.content()
+    self.content
   }
 }
 

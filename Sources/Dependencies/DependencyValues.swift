@@ -334,5 +334,3 @@ private let defaultContext: DependencyContext = {
     return .live
   }
 }()
-
-// TODO: should we have `@Dependency(\.runtimeWarningsEnabled)` and/or `@Dependency(\.treatWarningsAsErrors)`?

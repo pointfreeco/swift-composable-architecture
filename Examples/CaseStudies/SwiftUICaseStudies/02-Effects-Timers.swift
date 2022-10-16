@@ -1,4 +1,3 @@
-import Combine
 import ComposableArchitecture
 @preconcurrency import SwiftUI  // NB: SwiftUI.Animation is not Sendable yet.
 
@@ -10,7 +9,7 @@ private let readMe = """
   `AsyncSequence`-friendly API for dealing with timers in asynchronous code.
   """
 
-// MARK: - Timer feature domain
+// MARK: - Feature domain
 
 struct Timers: ReducerProtocol {
   struct State: Equatable {
@@ -49,7 +48,7 @@ struct Timers: ReducerProtocol {
   }
 }
 
-// MARK: - Timer feature view
+// MARK: - Feature view
 
 struct TimersView: View {
   let store: StoreOf<Timers>

@@ -1149,16 +1149,14 @@ extension ForEachStore {
   {
     let data = store.state.value
     self.data = data
-    self.content = {
-      WithViewStore(store.scope(state: { $0.map { $0[keyPath: id] } })) { viewStore in
-        ForEach(Array(viewStore.state.enumerated()), id: \.element) { index, _ in
-          content(
-            store.scope(
-              state: { index < $0.endIndex ? $0[index] : data[index] },
-              action: { (index, $0) }
-            )
+    self.content = WithViewStore(store.scope(state: { $0.map { $0[keyPath: id] } })) { viewStore in
+      ForEach(Array(viewStore.state.enumerated()), id: \.element) { index, _ in
+        content(
+          store.scope(
+            state: { index < $0.endIndex ? $0[index] : data[index] },
+            action: { (index, $0) }
           )
-        }
+        )
       }
     }
   }

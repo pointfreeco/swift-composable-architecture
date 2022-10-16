@@ -1,4 +1,3 @@
-import Combine
 import ComposableArchitecture
 import SwiftUI
 
@@ -13,7 +12,7 @@ private let readMe = """
   request is in-flight will also cancel it.
   """
 
-// MARK: - Demo app domain
+// MARK: - Feature domain
 
 struct EffectsCancellation: ReducerProtocol {
   struct State: Equatable {
@@ -65,10 +64,11 @@ struct EffectsCancellation: ReducerProtocol {
   }
 }
 
-// MARK: - Application view
+// MARK: - Feature view
 
 struct EffectsCancellationView: View {
   let store: StoreOf<EffectsCancellation>
+  @Environment(\.openURL) var openURL
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -104,7 +104,7 @@ struct EffectsCancellationView: View {
 
         Section {
           Button("Number facts provided by numbersapi.com") {
-            UIApplication.shared.open(URL(string: "http://numbersapi.com")!)
+            self.openURL(URL(string: "http://numbersapi.com")!)
           }
           .foregroundStyle(.secondary)
           .frame(maxWidth: .infinity)

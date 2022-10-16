@@ -1181,6 +1181,11 @@ public struct TestStoreTask: Hashable, Sendable {
   fileprivate let rawValue: Task<Void, Never>?
   fileprivate let timeout: UInt64
 
+  @_spi(Canary) public init(rawValue: Task<Void, Never>?, timeout: UInt64) {
+    self.rawValue = rawValue
+    self.timeout = timeout
+  }
+
   /// Cancels the underlying task and waits for it to finish.
   public func cancel() async {
     self.rawValue?.cancel()

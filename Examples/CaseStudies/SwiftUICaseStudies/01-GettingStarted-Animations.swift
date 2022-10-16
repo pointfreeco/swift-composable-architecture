@@ -1,4 +1,3 @@
-import Combine
 import ComposableArchitecture
 @preconcurrency import SwiftUI  // NB: SwiftUI.Color and SwiftUI.Animation are not Sendable yet.
 
@@ -18,6 +17,8 @@ private let readMe = """
   Try it out by tapping or dragging anywhere on the screen to move the dot, and by flipping the \
   toggle at the bottom of the screen.
   """
+
+// MARK: - Feature domain
 
 struct Animations: ReducerProtocol {
   struct State: Equatable {
@@ -86,6 +87,8 @@ struct Animations: ReducerProtocol {
   }
 }
 
+// MARK: - Feature view
+
 struct AnimationsView: View {
   let store: StoreOf<Animations>
 
@@ -136,6 +139,8 @@ struct AnimationsView: View {
     }
   }
 }
+
+// MARK: - SwiftUI previews
 
 struct AnimationsView_Previews: PreviewProvider {
   static var previews: some View {
