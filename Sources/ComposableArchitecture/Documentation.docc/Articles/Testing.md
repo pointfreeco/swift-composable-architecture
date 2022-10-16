@@ -411,18 +411,25 @@ to test in a non-exhaustive style.
 [conference talk][Composable-Architecture-at-Scale], and then later became integrated into the
 core library.
 
-Suppose you have a tab-based application where the 3rd tab is a login screen. The user can fill in
-some data on the screen, then tap the "Submit" button, and then a series of events happens to 
-log the user in. Once the user is logged in, the 3rd tab switches from a login screen to a profile
-screen, _and_ the selected tab switches to the first tab, which is an activity screen.
+This style of testing is most useful for testing the integration of multiple features where you want
+to focus on just a certain slice of the behavior. Exhaustive testing can still be important to use
+for leaf node features, where you truly do want to assert on everything happening inside the 
+feature.
+ 
+For example, suppose you have a tab-based application where the 3rd tab is a login screen. The user 
+can fill in some data on the screen, then tap the "Submit" button, and then a series of events 
+happens to  log the user in. Once the user is logged in, the 3rd tab switches from a login screen 
+to a profile screen, _and_ the selected tab switches to the first tab, which is an activity screen.
 
-In order to test such a complex feature we must actually test the integration of multiple features.
-There's the login feature, and how it manages submitting the form data with an API request, and
-there's the app-level feature that listens for when login happens and switches to the activity
-tab.
+When writing tests for the login feature we will want to do that in the exhaustive style so that we
+can prove exactly how the feature would behave in production. But, suppose we wanted to write an
+integration test that proves after the user taps the "Login" button that ultimately the selected
+tab switches to the first tab.
 
-We can emulate this flow in a test by sending actions that mimic the user logging in, and then
-eventually assert that the selected tab switched to activity:
+In order to test such a complex flow we must test the integration of multiple features, which means
+dealing with complex, nested state and effects. We can emulate this flow in a test by sending 
+actions that mimic the user logging in, and then eventually assert that the selected tab switched 
+to activity:
 
 ```swift
 let store = TestStore(
@@ -436,18 +443,19 @@ await store.send(.login(.submitButtonTapped)) {
 }
 
 // 2️⃣ Login feature performs API request to login, and 
-// sends response back into system.
+//    sends response back into system.
 await store.receive(.login(.loginResponse(.success))) {
   $0.isLoading = false
 }
 
 // 3️⃣ Login feature sends a delegate action to let parent
-// feature know it has successfully logged in.
+//    feature know it has successfully logged in.
 await store.receive(.login(.delegate(.didLogin))) {
+  // 4️⃣ Assert how all of app state changes due to that action.
   $0.authenticatedTab = .loggedIn(
     Profile.State(...)
   )
-  // 4️⃣ Assert that tab switches to activity.
+  // 4️⃣ *Finally* assert that the selected tab switches to activity.
   $0.selectedTab = .activity
 }
 ```
@@ -472,7 +480,7 @@ let store = TestStore(
   initialState: App.State(),
   reducer: App()
 )
-store.exhaustivity = .none
+store.exhaustivity = .none // ⬅️
 
 await store.send(.login(.submitButtonTapped))
 await store.receive(.login(.delegate(.didLogin))) {
@@ -528,8 +536,8 @@ fully asserted on:
      App.State(
    −   authenticatedTab: .loggedOut(…)
    +   authenticatedTab: .loggedIn(
-         Profile.State(…)
-       ),
+   +     Profile.State(…)
+   +   ),
        …
      )
    

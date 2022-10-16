@@ -34,11 +34,12 @@ import XCTestDynamicOverlay
 ///     behaves in reality.
 ///
 ///   * All effects must complete by the time the assertion has finished running the steps you
-///     specify.
+///     specify, and all effect actions must be asserted on.
 ///
-///     If at the end of the assertion there is still an in-flight effect running, the assertion
-///     will fail. This helps exhaustively prove that you know what effects are in flight and
-///     forces you to prove that effects will not cause any future changes to your state.
+///     If at the end of the assertion there is still an in-flight effect running or an unreceived
+///     action, the assertion will fail. This helps exhaustively prove that you know what effects
+///     are in flight and forces you to prove that effects will not cause any future changes to
+///     your state.
 ///
 /// For example, given a simple counter reducer:
 ///
@@ -94,8 +95,28 @@ import XCTestDynamicOverlay
 /// mutable value of the state before the action was sent, and it is our job to mutate the value
 /// to match the state after the action was sent. In this case the `count` field changes to `1`.
 ///
-/// For a more complex example, consider the following bare-bones search feature that uses a
-/// scheduler and cancel token to debounce requests:
+/// If the change made in the closure does not reflect reality, you will get a test failure with
+/// a nicely formatted failure message letting you know exactly what went wrong:
+///
+/// ```swift
+/// await store.send(.incrementButtonTapped) {
+///   $0.count = 42
+/// }
+/// ```
+///
+/// ```
+/// 🛑 A state change does not match expectation: …
+///
+///      TestStoreFailureTests.State(
+///     −   count: 42
+///     +   count: 1
+///      )
+///
+/// (Expected: −, Actual: +)
+/// ```
+///
+/// For a more complex example involving effects, consider the following bare-bones search feature
+/// that uses an API client to search when a text field changes:
 ///
 /// ```swift
 /// struct Search: ReducerProtocol {
@@ -106,11 +127,10 @@ import XCTestDynamicOverlay
 ///
 ///   enum Action: Equatable {
 ///     case queryChanged(String)
-///     case response([String])
+///     case searchResponse(TaskResult<[String]>)
 ///   }
 ///
 ///   @Dependency(\.apiClient) var apiClient
-///   @Dependency(\.mainQueue) var mainQueue
 ///
 ///   func reduce(
 ///     into state: inout State, action: Action
@@ -120,36 +140,34 @@ import XCTestDynamicOverlay
 ///       enum SearchID {}
 ///
 ///       state.query = query
-///       return .run { send in
-///         try await self.mainQueue.sleep(for: 0.5)
-///
-///         guard let results = try? await self.apiClient.search(query)
-///         else { return }
-///
-///         await send(.response(results))
+///       return .task { [query] in
+///         await .searchResponse(
+///           TaskResult {
+///             try await self.apiClient.search(query)
+///           }
+///         )
 ///       }
-///       .cancellable(id: SearchID.self, cancelInFlight: true)
 ///
-///     case let .response(results):
+///     case let .searchResponse(.success(results)):
 ///       state.results = results
+///       return .none
+///
+///     case .searchResponse(.failure):
+///       // Do error handling here.
 ///       return .none
 ///     }
 ///   }
 /// }
 /// ```
 ///
-/// It can be fully tested by overriding the `mainQueue` and `apiClient` dependencies with values
-/// that are fully controlled and deterministic:
+/// It can be fully tested by overriding the `apiClient` dependency with values that are fully
+/// controlled and deterministic:
 ///
 /// ```swift
 /// let store = TestStore(
 ///   initialState: Search.State(),
-///   reducer: Search
+///   reducer: Search()
 /// )
-///
-/// // Create a test dispatch scheduler to control the timing of effects
-/// let mainQueue = DispatchQueue.test
-/// store.dependencies.mainQueue = mainQueue.eraseToAnyScheduler()
 ///
 /// // Simulate a search response with one item
 /// store.dependencies.mainQueue.apiClient.search = { _ in
@@ -158,54 +176,84 @@ import XCTestDynamicOverlay
 ///
 /// // Change the query
 /// await store.send(.searchFieldChanged("c") {
-///   // Assert that state updates accordingly
 ///   $0.query = "c"
 /// }
 ///
-/// // Advance the queue by a period shorter than the debounce
-/// await mainQueue.advance(by: 0.25)
-///
-/// // Change the query again
-/// await store.send(.searchFieldChanged("co") {
-///   $0.query = "co"
-/// }
-///
-/// // Advance the queue by a period shorter than the debounce
-/// await mainQueue.advance(by: 0.25)
-/// // Advance the scheduler to the debounce
-/// await scheduler.advance(by: 0.25)
-///
 /// // Assert that the expected response is received
-/// await store.receive(.response(["Composable Architecture"])) {
-///   // Assert that state updates accordingly
+/// await store.receive(.searchResponse(.success(["Composable Architecture"]))) {
 ///   $0.results = ["Composable Architecture"]
 /// }
 /// ```
 ///
-/// This test is proving that the debounced network requests are correctly cancelled when we do not
-/// wait longer than the 0.5 seconds, because if it wasn't and it delivered an action when we did
-/// not expect it would cause a test failure.
+/// This test is proving that when the search query changes some search responses are delivered
+/// and state updates accordingly.
+///
+/// If we did not assert that the `searchResponse` action was received, we would get the following
+/// test failure:
+///
+/// ```
+/// 🛑 The store received 1 unexpected action after this one: …
+///
+///     Unhandled actions: [
+///       [0]: Search.Action.seachResponse
+///     ]
+/// ```
+///
+/// This helpfully lets us know that we have no asserted on everything that happened in the feature,
+/// which could be hiding a bug from us.
+///
+/// Or if we had sent another action before handling the effect's action we would have also gotten
+/// a test failure:
+///
+/// ```
+/// 🛑 Must handle 1 received action before sending an action: …
+///
+///     Unhandled actions: [
+///       [0]: Search.Action.seachResponse
+///     ]
+/// ```
+///
+/// All of these types of failures help you prove that you know exactly how your feature evolves
+/// as actions are sent into the system. If the library did not produce a test failure in these
+/// situations it could be hiding subtle bugs in your code. For example, when the user clears the
+/// search query you probably expect that the results are cleared and no search request is executed
+/// since there is no query. This can be done like so:
+///
+/// ```swift
+/// store.send(.queryChanged("")) {
+///   $0.query = ""
+///   $0.results = []
+/// }
+///
+/// // No need to perform `store.receive` since you do not expect a search
+/// // effect to execute.
+/// ```
+///
+/// But, if in the future a bug is introduced causing a search request to be executed even when the
+/// query is empty, you will get a test failure because a new effect is being created that is
+/// not being asserted on. This is the power of exhaustive testing.
 ///
 /// ## Non-exhaustive testing
 ///
-/// While exhaustive testing can be powerful, it can also be a nuisance, especially for highly
-/// composed features. This is why sometimes you may want to test in a non-exhaustive style.
+/// While exhaustive testing can be powerful, it can also be a nuisance, especially when testing
+/// how many features integrate together. This is why sometimes you may want to selectively test
+/// in a non-exhaustive style.
 ///
 /// > Tip: The concept of "non-exhaustive test store" was first introduced by
 /// [Krzysztof Zabłocki][merowing.info] in a [blog post][exhaustive-testing-in-tca] and
 /// [conference talk][Composable-Architecture-at-Scale], and then later became integrated into the
 /// core library.
 ///
-/// Test stores are exhaustive by default, which means yu must assert on every state change, and
+/// Test stores are exhaustive by default, which means you must assert on every state change, and
 /// how ever effect feeds data back into the system, and you must make sure that all effects
 /// complete before the test is finished. To turn of exhaustivity you can set ``exhaustivity``
 /// to ``Exhaustivity/none``. When that is done the ``TestStore``'s behavior changes:
 ///
 /// * The trailing closures of ``send(_:_:file:line:)-6s1gq`` and
-/// ``receive(_:timeout:_:file:line:)-8yd62`` no longer need to assert on all state changes. They
-/// can assert on any subset of changes, including none, and only if they make an incorrect mutation
-/// will a test failure be raised.
-/// * The ``send(_:_:file:line:)-6s1gq`` and ``receive(_:timeout:_:file:line:)-8yd62`` methods are
+/// ``receive(_:timeout:_:file:line:)`` no longer need to assert on all state changes. They
+/// can assert on any subset of changes, and only if they make an incorrect mutation will a test
+/// failure be raised.
+/// * The ``send(_:_:file:line:)-6s1gq`` and ``receive(_:timeout:_:file:line:)`` methods are
 /// allowed to be called even when actions have been received from effects that have not been
 /// asserted on yet. Any pending actions will be cleared.
 /// * Tests are allowed to finish with unasserted, received actions and inflight effects. No test
@@ -217,6 +265,143 @@ import XCTestDynamicOverlay
 /// assertion detailing the changes that were not asserted against. This allows you to see what
 /// information you are choosing to ignore without causing a test failure. It can be useful in
 /// tracking down bugs that happen in production but that aren't currently detected in tests.
+///
+/// This style of testing is most useful for testing the integration of multiple features where you want
+/// to focus on just a certain slice of the behavior. Exhaustive testing can still be important to use
+/// for leaf node features, where you truly do want to assert on everything happening inside the
+/// feature.
+///
+/// For example, suppose you have a tab-based application where the 3rd tab is a login screen. The user
+/// can fill in some data on the screen, then tap the "Submit" button, and then a series of events
+/// happens to  log the user in. Once the user is logged in, the 3rd tab switches from a login screen
+/// to a profile screen, _and_ the selected tab switches to the first tab, which is an activity screen.
+/// 
+/// When writing tests for the login feature we will want to do that in the exhaustive style so that we
+/// can prove exactly how the feature would behave in production. But, suppose we wanted to write an
+/// integration test that proves after the user taps the "Login" button that ultimately the selected
+/// tab switches to the first tab.
+/// 
+/// In order to test such a complex flow we must test the integration of multiple features, which means
+/// dealing with complex, nested state and effects. We can emulate this flow in a test by sending
+/// actions that mimic the user logging in, and then eventually assert that the selected tab switched
+/// to activity:
+/// 
+/// ```swift
+/// let store = TestStore(
+///   initialState: App.State(),
+///   reducer: App()
+/// )
+/// 
+/// // 1️⃣ Emulate user tapping on submit button.
+/// await store.send(.login(.submitButtonTapped)) {
+///   $0.isLoading = true
+/// }
+/// 
+/// // 2️⃣ Login feature performs API request to login, and
+/// //    sends response back into system.
+/// await store.receive(.login(.loginResponse(.success))) {
+///   $0.isLoading = false
+/// }
+/// 
+/// // 3️⃣ Login feature sends a delegate action to let parent
+/// //    feature know it has successfully logged in.
+/// await store.receive(.login(.delegate(.didLogin))) {
+///   // 4️⃣ Assert how all of app state changes due to that action.
+///   $0.authenticatedTab = .loggedIn(
+///     Profile.State(...)
+///   )
+///   // 4️⃣ *Finally* assert that the selected tab switches to activity.
+///   $0.selectedTab = .activity
+/// }
+/// ```
+/// 
+/// Doing this with exhaustive testing is verbose, and there are a few problems with this:
+/// 
+/// * We need to be intimately knowledgeable in how the login feature works so that we can assert
+/// on how its state changes and how its effects feed data back into the system.
+/// * If the login feature were to change its logic we may get test failures here even though the logic
+/// we are acutally trying to test doesn't really care about those changes.
+/// * This test is very long, and so if there are other similar but slightly different flows we want to
+/// test we will be tempted to copy-and-paste the whole thing, leading to lots of duplicated, fragile
+/// tests.
+/// 
+/// Non-exhaustive testing allows us to test the high-level flow that we are concerned with, that of
+/// login causing the selected tab to switch to activity, without having to worry about what is
+/// happening inside the login feature. To do this, we can turn off ``TestStore/exhaustivity`` in the
+/// test store, and then just assert on what we are interested in:
+/// 
+/// ```swift
+/// let store = TestStore(
+///   initialState: App.State(),
+///   reducer: App()
+/// )
+/// store.exhaustivity = .none // ⬅️
+/// 
+/// await store.send(.login(.submitButtonTapped))
+/// await store.receive(.login(.delegate(.didLogin))) {
+///   $0.selectedTab = .activity
+/// }
+/// ```
+/// 
+/// In particular, we did not assert on how the login's state changed or how the login's effects fed
+/// data back into the system. We just assert that when the "Submit" button is tapped that eventually
+/// we get the `didLogin` delegate action and that causes the selected tab to flip to activity. Now
+/// the login feature is free to make any change it wants to make without affecting this integration
+/// test.
+/// 
+/// Using ``Exhaustivity/none`` for ``TestStore/exhaustivity`` causes all un-asserted changes to pass
+/// without any notification. If you would like to see what test failures are being supressed without
+/// actually causing a failure, you can use ``Exhaustivity/partial``:
+/// 
+/// ```swift
+/// let store = TestStore(
+///   initialState: App.State(),
+///   reducer: App()
+/// )
+/// store.exhaustivity = .partial // ⬅️
+/// 
+/// await store.send(.login(.submitButtonTapped))
+/// await store.receive(.login(.delegate(.didLogin))) {
+///   $0.selectedTab = .profile
+/// }
+/// ```
+/// 
+/// When this is run you will get grey, informational boxes on each assertion where some change wasn't
+/// fully asserted on:
+/// 
+/// ```
+/// ◽️ A state change does not match expectation: …
+/// 
+///      App.State(
+///        authenticatedTab: .loggedOut(
+///          Login.State(
+///    −       isLoading: false
+///    +       isLoading: true,
+///            …
+///          )
+///        )
+///      )
+/// 
+///    (Expected: −, Actual: +)
+/// 
+/// ◽️ Skipped receiving .login(.loginResponse(.success))
+/// 
+/// ◽️ A state change does not match expectation: …
+/// 
+///      App.State(
+///    −   authenticatedTab: .loggedOut(…)
+///    +   authenticatedTab: .loggedIn(
+///    +     Profile.State(…)
+///    +   ),
+///        …
+///      )
+/// 
+///    (Expected: −, Actual: +)
+/// ```
+/// 
+/// The test still passes, and none of these notifications are test failures. They just let you know
+/// what things you are not explicitly asserting against, and can be useful to see when tracking down
+/// bugs that happen in production but that aren't currently detected in tests.
 open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
 
   /// The current dependencies.
