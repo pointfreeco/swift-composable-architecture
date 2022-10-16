@@ -363,7 +363,7 @@ extension TestDependencyKey {
     if let value = defaultValueStorage[id] as? Value { return value }
     let value = self.previewValue
     defaultValueStorage[id] = value
-    return value    
+    return value
   }
 }
 
