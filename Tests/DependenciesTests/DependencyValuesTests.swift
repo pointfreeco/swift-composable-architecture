@@ -12,6 +12,20 @@ private enum TestKey: TestDependencyKey {
   static let testValue = 42
 }
 
+extension DependencyValues {
+  fileprivate var reusedDependency: Int {
+    self[ReusedDependencyKey.self]
+  }
+}
+
+private var reusedDependencyDefaultValue = 0
+private enum ReusedDependencyKey: TestDependencyKey {
+  static var testValue: Int {
+    defer { reusedDependencyDefaultValue += 1 }
+    return reusedDependencyDefaultValue
+  }
+}
+
 final class DependencyValuesTests: XCTestCase {
   func testMissingLiveValue() {
     #if DEBUG
@@ -76,6 +90,18 @@ final class DependencyValuesTests: XCTestCase {
       XCTAssertEqual(date, someDate)
       XCTAssertNotEqual(DependencyValues._current.date.now, someDate)
     }
+  }
+  
+  @Dependency(\.reusedDependency) var reusedDependency
+  func testDependencyDefaultIsReused() {
+    // Accessing `testValue` from `reusedDependency` returns `reusedDependencyDefaultValue` and
+    // increments this value by 1.
+    reusedDependencyDefaultValue = 42
+    XCTAssertEqual(reusedDependency, 42)
+    XCTAssertEqual(reusedDependencyDefaultValue, 43)
+    // Access again. This shouldn't activate `testValue`.
+    XCTAssertEqual(reusedDependency, 42)
+    XCTAssertEqual(reusedDependencyDefaultValue, 43)
   }
 }
 
