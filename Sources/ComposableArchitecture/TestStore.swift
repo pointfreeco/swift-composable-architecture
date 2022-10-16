@@ -600,7 +600,7 @@ extension TestStore where ScopedState: Equatable {
     case .exhaustive:
       break
     case .partial:
-      self.skipReceivedActions()
+      self.flushReceivedActions()
     case .none:
       self.reducer.receivedActions = []
     }
@@ -696,7 +696,7 @@ extension TestStore where ScopedState: Equatable {
     case .exhaustive:
       break
     case .partial:
-      self.skipReceivedActions()
+      self.flushReceivedActions()
     case .none:
       self.reducer.receivedActions = []
     }
@@ -1092,14 +1092,14 @@ extension TestStore {
     self.scope(state: toScopedState, action: { $0 })
   }
 
-  public func skipReceivedActions(
+  public func flushReceivedActions(
     strict: Bool = false,
     prefix: String = "",
     file: StaticString = #file,
     line: UInt = #line
   ) {
     if strict && self.reducer.receivedActions.isEmpty {
-      XCTFail("There were no received actions to skip.")
+      XCTFail("There were no received actions to flush.") // TODO: update copy?
       return
     }
     guard !self.reducer.receivedActions.isEmpty
@@ -1114,17 +1114,18 @@ extension TestStore {
       file: file,
       line: line
     )
+    self.reducer.state = self.reducer.receivedActions.last!.state
     self.reducer.receivedActions = []
   }
 
-  public func skipInFlightEffects(
+  public func cancelInFlightEffects(
     strict: Bool = true,
     prefix: String = "",
     file: StaticString = #file,
     line: UInt = #line
   ) {
     if strict && self.reducer.inFlightEffects.isEmpty {
-      XCTFail("There were no in-flight effects to skip.")
+      XCTFail("There were no in-flight effects to cancel.") // TODO: update copy?
       return
     }
     guard !self.reducer.inFlightEffects.isEmpty

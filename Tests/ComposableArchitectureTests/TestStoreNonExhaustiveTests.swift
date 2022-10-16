@@ -1,5 +1,4 @@
 #if DEBUG
-  import Combine
   import ComposableArchitecture
   import XCTest
 
@@ -8,13 +7,21 @@
     func testSkipReceivedActions() {
       let store = TestStore(
         initialState: 0,
-        reducer: Reduce<Int, Bool> { _, action in
-          action ? .init(value: false) : .none
+        reducer: Reduce<Int, Bool> { state, action in
+          if action {
+            state += 1
+            return .init(value: false)
+          } else {
+            state += 1
+            return .none
+          }
         }
       )
 
-      store.send(true)
-      store.skipReceivedActions()
+      store.send(true) { $0 = 1 }
+      XCTAssertEqual(store.state, 1)
+      store.flushReceivedActions()
+      XCTAssertEqual(store.state, 2)
     }
 
     func testSkipInFlightEffects() {
@@ -26,7 +33,7 @@
       )
 
       store.send(true)
-      store.skipInFlightEffects()
+      store.cancelInFlightEffects()
     }
 
     func testIgnoreReceiveActions_PartialExhaustive() {
@@ -184,10 +191,15 @@
       store.exhaustivity = .partial
 
       store.send(.increment)
+      XCTAssertEqual(store.state, Counter.State(count: 1, isEven: false))
+
       store.send(.increment)
+      XCTAssertEqual(store.state, Counter.State(count: 2, isEven: true))
+
       store.send(.increment) {
         $0.count = 3
       }
+      XCTAssertEqual(store.state, Counter.State(count: 3, isEven: false))
     }
 
     // Confirms that you don't have to assert on all state changes when receiving an action from an
@@ -200,14 +212,19 @@
       store.exhaustivity = .partial
 
       await store.send(.onAppear)
+      XCTAssertEqual(store.state, NonExhaustiveReceive.State(count: 0, int: 0, string: ""))
+
       await store.receive(.response1(42)) {
         // Ignored state change: count = 1
         $0.int = 42
       }
+      XCTAssertEqual(store.state, NonExhaustiveReceive.State(count: 1, int: 42, string: ""))
+
       await store.receive(.response2("Hello")) {
         // Ignored state change: count = 2
         $0.string = "Hello"
       }
+      XCTAssertEqual(store.state, NonExhaustiveReceive.State(count: 2, int: 42, string: "Hello"))
     }
 
     // Confirms that you can skip receiving certain effect actions in a non-exhaustive test store.
@@ -219,11 +236,121 @@
       store.exhaustivity = .partial
 
       await store.send(.onAppear)
+      XCTAssertEqual(store.state, NonExhaustiveReceive.State(count: 0, int: 0, string: ""))
+
       // Ignored received action: .response1(42)
+
       await store.receive(.response2("Hello")) {
         $0.count = 2
         $0.string = "Hello"
       }
+      XCTAssertEqual(store.state, NonExhaustiveReceive.State(count: 2, int: 42, string: "Hello"))
+    }
+
+    // Confirms that you are allowed to send actions without having received all actions queued
+    // from effects.
+    func testSendWithUnreceivedAction() async {
+      let store = TestStore(
+        initialState: NonExhaustiveReceive.State(),
+        reducer: NonExhaustiveReceive()
+      )
+      store.exhaustivity = .partial
+
+      await store.send(.onAppear)
+      // Ignored received action: .response1(42)
+      // Ignored received action: .response2("Hello")
+
+      await store.send(.onAppear)
+      // Ignored received action: .response1(42)
+      // Ignored received action: .response2("Hello")
+    }
+
+    // Confirms that when you send an action the test store flushes any unreceived actions
+    // automatically.
+    func testSendWithUnreceivedActions_FlushesActions() async {
+      struct Feature: ReducerProtocol {
+        enum Action: Equatable {
+          case tap
+          case response(Int)
+        }
+        func reduce(into state: inout Int, action: Action) -> Effect<Action, Never> {
+          switch action {
+          case .tap:
+            state += 1
+            return .task { [state] in .response(state + 42) }
+          case let .response(number):
+            state = number
+            return .none
+          }
+        }
+      }
+
+      let store = TestStore(
+        initialState: 0,
+        reducer: Feature()
+      )
+      store.exhaustivity = .none
+
+      await store.send(.tap)
+      XCTAssertEqual(store.state, 1)
+
+      // Ignored received action: .response(43)
+      await store.send(.tap)
+      XCTAssertEqual(store.state, 44)
+
+      store.flushReceivedActions()
+      XCTAssertEqual(store.state, 86)
+    }
+
+    // This example comes from Krzysztof Zabłocki's blog post:
+    // https://www.merowing.info/exhaustive-testing-in-tca/
+    func testKrzysztofExample1() {
+      let store = TestStore(
+        initialState: KrzysztofExample.State(),
+        reducer: KrzysztofExample()
+      )
+      store.exhaustivity = .none
+
+      store.send(.changeIdentity(name: "Marek", surname: "Ignored")) {
+        $0.name = "Marek"
+      }
+    }
+
+    // This example comes from Krzysztof Zabłocki's blog post:
+    // https://www.merowing.info/exhaustive-testing-in-tca/
+    func testKrzysztofExample2() {
+      let store = TestStore(
+        initialState: KrzysztofExample.State(),
+        reducer: KrzysztofExample()
+      )
+      store.exhaustivity = .none
+
+      store.send(.changeIdentity(name: "Adam", surname: "Stern"))
+      store.send(.changeIdentity(name: "Piotr", surname: "Galiszewski"))
+      store.send(.changeIdentity(name: "Merowing", surname: "Info")) {
+        $0.name = "Merowing"
+        $0.surname = "Info"
+      }
+    }
+
+    // This example comes from Krzysztof Zabłocki's blog post:
+    // https://www.merowing.info/exhaustive-testing-in-tca/
+    func testKrzysztofExample3() {
+      let mainQueue = DispatchQueue.test
+
+      let store = TestStore(
+        initialState: KrzysztofExample.State(),
+        reducer: KrzysztofExample()
+      )
+      store.exhaustivity = .none
+      store.dependencies.mainQueue = mainQueue.eraseToAnyScheduler()
+
+      store.send(.advanceAgeAndMoodAfterDelay)
+      mainQueue.advance(by: 1)
+      store.receive(.changeAge(34)) {
+        $0.age = 34
+      }
+      XCTAssertEqual(store.state.age, 34)
     }
   }
 
@@ -276,6 +403,49 @@
       case let .response2(string):
         state.count += 1
         state.string = string
+        return .none
+      }
+    }
+  }
+
+  // This example comes from Krzysztof Zabłocki's blog post:
+  // https://www.merowing.info/exhaustive-testing-in-tca/
+  struct KrzysztofExample: ReducerProtocol {
+    struct State: Equatable {
+      var name: String = "Krzysztof"
+      var surname: String = "Zabłocki"
+      var age: Int = 33
+      var mood: Int = 0
+    }
+    enum Action: Equatable {
+      case changeIdentity(name: String, surname: String)
+      case changeAge(Int)
+      case changeMood(Int)
+      case advanceAgeAndMoodAfterDelay
+    }
+
+    @Dependency(\.mainQueue) var mainQueue
+
+    func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+      switch action {
+      case let .changeIdentity(name, surname):
+        state.name = name
+        state.surname = surname
+        return .none
+
+      case .advanceAgeAndMoodAfterDelay:
+        return .merge(
+          .init(value: .changeAge(state.age + 1)),
+          .init(value: .changeMood(state.mood + 1))
+        )
+        .delay(for: 1, scheduler: self.mainQueue)
+        .eraseToEffect()
+
+      case let .changeAge(age):
+        state.age = age
+        return .none
+      case let .changeMood(mood):
+        state.mood = mood
         return .none
       }
     }
