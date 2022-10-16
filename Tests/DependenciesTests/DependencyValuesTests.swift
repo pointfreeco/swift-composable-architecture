@@ -97,10 +97,10 @@ final class DependencyValuesTests: XCTestCase {
     // Accessing `testValue` from `reusedDependency` returns `reusedDependencyDefaultValue` and
     // increments this value by 1.
     reusedDependencyDefaultValue = 42
-    XCTAssertEqual(reusedDependency, 42)
+    XCTAssertEqual(self.reusedDependency, 42)
     XCTAssertEqual(reusedDependencyDefaultValue, 43)
     // Access again. This shouldn't activate `testValue`.
-    XCTAssertEqual(reusedDependency, 42)
+    XCTAssertEqual(self.reusedDependency, 42)
     XCTAssertEqual(reusedDependencyDefaultValue, 43)
   }
 }
