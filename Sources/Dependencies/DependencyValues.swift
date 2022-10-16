@@ -241,7 +241,7 @@ public struct DependencyValues: Sendable {
 
         switch context {
         case .live:
-          guard let value = _liveValue(Key.self) as? Key.Value
+          guard let value = Key.stableOpenedLiveValue
           else {
             // TODO: add test coverage to this logic
             if !Self.isSetting {
@@ -289,16 +289,16 @@ public struct DependencyValues: Sendable {
                 line: Self.currentDependency.line ?? line
               )
             }
-            return Key.testValue
+            return Key.stableTestValue
           }
           return value
         case .preview:
-          return Key.previewValue
+          return Key.stablePreviewValue
         case .test:
           var currentDependency = Self.currentDependency
           currentDependency.name = function
           return Self.$currentDependency.withValue(currentDependency) {
-            Key.testValue
+            Key.stableTestValue
           }
         }
       }
@@ -334,3 +334,47 @@ private let defaultContext: DependencyContext = {
     return .live
   }
 }()
+
+extension TestDependencyKey {
+  static var stableOpenedLiveValue: Value? {
+    let id = DefaultValueID(key: Self.self, context: .live)
+    return defaultValueStorageLock.withLock {
+      if let value = defaultValueStorage[id] as? Value { return value }
+      let value = _liveValue(Self.self) as? Value
+      defaultValueStorage[id] = value
+      return value
+    }
+  }
+  
+  static var stableTestValue: Value {
+    let id = DefaultValueID(key: Self.self, context: .test)
+    return defaultValueStorageLock.withLock {
+      if let value = defaultValueStorage[id] as? Value { return value }
+      let value = self.testValue
+      defaultValueStorage[id] = value
+      return value
+    }
+  }
+  
+  static var stablePreviewValue: Value {
+    let id = DefaultValueID(key: Self.self, context: .preview)
+    return defaultValueStorageLock.withLock {
+      if let value = defaultValueStorage[id] as? Value { return value }
+      let value = self.previewValue
+      defaultValueStorage[id] = value
+      return value
+    }
+  }
+}
+
+private var defaultValueStorage: [DefaultValueID: Any] = [:]
+private var defaultValueStorageLock = NSRecursiveLock()
+
+private struct DefaultValueID: Hashable {
+  let key: ObjectIdentifier
+  let context: DependencyContext
+  init<Key>(key: Key.Type, context: DependencyContext) {
+    self.key = ObjectIdentifier(key)
+    self.context = context
+  }
+}
