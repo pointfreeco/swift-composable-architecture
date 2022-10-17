@@ -103,6 +103,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     self._state = CurrentValueRelay(toViewState(store.state.value))
     self.instrumentation = store.instrumentation
     self.viewCancellable = store.state
+      // TODO: measure `viewStoreToLocalState`?
       .map(toViewState)
       .removeDuplicates(by: isDuplicate)
       .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
@@ -146,6 +147,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     self._state = CurrentValueRelay(toViewState(store.state.value))
     self.instrumentation = store.instrumentation
     self.viewCancellable = store.state
+      // TODO: measure `viewStoreToLocalState`?
       .map(toViewState)
       .removeDuplicates(by: isDuplicate)
       .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
