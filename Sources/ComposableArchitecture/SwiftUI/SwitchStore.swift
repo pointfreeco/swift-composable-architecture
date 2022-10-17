@@ -188,7 +188,7 @@ extension SwitchStore {
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line,
-    @ViewBuilder content: @escaping () -> CaseLet<State, Action, State1, Action1, Content1>
+    @ViewBuilder content: () -> CaseLet<State, Action, State1, Action1, Content1>
   )
   where
     Content == WithViewStore<
