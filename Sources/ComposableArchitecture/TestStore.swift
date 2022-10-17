@@ -785,7 +785,7 @@ extension TestStore where ScopedState: Equatable {
     case .exhaustive:
       break
     case .partial:
-      self.flushReceivedActions()
+      await self.skipReceivedActions()
     case .none:
       self.reducer.receivedActions = []
     }
@@ -881,7 +881,7 @@ extension TestStore where ScopedState: Equatable {
     case .exhaustive:
       break
     case .partial:
-      self.flushReceivedActions()
+      self.skipReceivedActions()
     case .none:
       self.reducer.receivedActions = []
     }
@@ -955,7 +955,7 @@ extension TestStore where ScopedState: Equatable {
               try modify(&expectedWhenGivenPreviousState)
             } catch {
               XCTFail(
-                "\(self.exhaustivity.prefix.map { "\($0) " } ?? "") Threw error: \(error)",
+                "\(self.exhaustivity.prefix ?? "") Threw error: \(error)",
                 file: file,
                 line: line
               )
@@ -1303,14 +1303,22 @@ extension TestStore {
   /// - Parameters:
   ///   - strict: When true and there are no received actions to flush, a test failure will be
   ///   raised.
-  public func flushReceivedActions(
-    strict: Bool = false,  // TODO: default true?
+  public func skipReceivedActions(
+    strict: Bool = true,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) async {
+    await Task.megaYield()
+    _ = { self.skipReceivedActions(strict: strict, file: file, line: line) }()
+  }
+
+  func skipReceivedActions(
+    strict: Bool = true,
     file: StaticString = #file,
     line: UInt = #line
   ) {
-    // TODO: should this be async+@MainActor so that we can megaYield inside?
     if strict && self.reducer.receivedActions.isEmpty {
-      XCTFail("There were no received actions to flush.")  // TODO: update copy?
+      XCTFail("There were no received actions to skip.")
       return
     }
     guard !self.reducer.receivedActions.isEmpty
@@ -1358,14 +1366,22 @@ extension TestStore {
   /// - Parameters:
   ///   - strict: When true and there are no inflight actions to cancel, a test failure will be
   ///   raised.
-  public func cancelInFlightEffects(
-    strict: Bool = false,  // TODO: default true?
+  public func skipInFlightEffects(
+    strict: Bool = true,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) async {
+    await Task.megaYield()
+    _ = { self.skipInFlightEffects(strict: strict, file: file, line: line) }
+  }
+
+  func skipInFlightEffects(
+    strict: Bool = true,
     file: StaticString = #file,
     line: UInt = #line
   ) {
-    // TODO: should this be async+@MainActor so that we can megaYield inside?
     if strict && self.reducer.inFlightEffects.isEmpty {
-      XCTFail("There were no in-flight effects to cancel.")  // TODO: update copy?
+      XCTFail("There were no in-flight effects to skip.")
       return
     }
     guard !self.reducer.inFlightEffects.isEmpty
@@ -1653,7 +1669,7 @@ public enum Exhaustivity: Equatable {
   /// what all you are missing from your assertions.
   case partial(prefix: String? = nil)
 
-  public static let partial = partial()
+  public static let partial = partial(prefix: "Partial assertions skipped. …\n\n")
   fileprivate var isPartial: Bool {
     guard case .partial = self else {
       return false
@@ -1679,7 +1695,7 @@ private func XCTFailHelper(
     XCTFail(message, file: file, line: line)
   case let .partial(prefix: prefix):
     _XCTExpectFailure {
-      XCTFail(prefix.map { "\($0) \(message)" } ?? message, file: file, line: line)
+      XCTFail((prefix ?? "") + message, file: file, line: line)
     }
   case .none:
     break

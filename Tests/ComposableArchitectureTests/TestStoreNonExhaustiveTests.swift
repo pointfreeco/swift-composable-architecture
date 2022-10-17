@@ -4,7 +4,7 @@
 
   @MainActor
   final class TestStoreNonExhaustiveTests: XCTestCase {
-    func testFlushReceivedActions() {
+    func testFlushReceivedActions_NonStrict() async {
       let store = TestStore(
         initialState: 0,
         reducer: Reduce<Int, Bool> { state, action in
@@ -18,13 +18,13 @@
         }
       )
 
-      store.send(true) { $0 = 1 }
+      await store.send(true) { $0 = 1 }
       XCTAssertEqual(store.state, 1)
-      store.flushReceivedActions()
+      await store.skipReceivedActions(strict: false)
       XCTAssertEqual(store.state, 2)
     }
 
-    func testFlushReceivedActions_Strict() {
+    func testFlushReceivedActions_Strict() async {
       let store = TestStore(
         initialState: 0,
         reducer: Reduce<Int, Bool> { state, action in
@@ -38,44 +38,42 @@
         }
       )
 
-      store.send(true) { $0 = 1 }
+      await store.send(true) { $0 = 1 }
       XCTAssertEqual(store.state, 1)
-      store.receive(false) { $0 = 2 }
+      await store.receive(false) { $0 = 2 }
       XCTAssertEqual(store.state, 2)
       XCTExpectFailure {
-        store.flushReceivedActions(strict: true)
-      } issueMatcher: { 
         $0.compactDescription == "There were no received actions to flush."
       }
+      await store.skipReceivedActions(strict: true)
     }
 
-    func testCancelInFlightEffects() {
+    func testCancelInFlightEffects_NonStrict() async {
       let store = TestStore(
         initialState: 0,
         reducer: Reduce<Int, Bool> { _, action in
-            .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
+          .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
         }
       )
 
-      store.send(true)
-      store.cancelInFlightEffects()
+      await store.send(true)
+      await store.skipInFlightEffects(strict: false)
     }
 
     func testCancelInFlightEffects_Strict() async {
       let store = TestStore(
         initialState: 0,
         reducer: Reduce<Int, Bool> { _, action in
-            .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC / 4) }
+          .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC / 4) }
         }
       )
 
       let task = await store.send(true)
       await task.finish(timeout: NSEC_PER_SEC / 2)
       XCTExpectFailure {
-        store.cancelInFlightEffects(strict: true)
-      } issueMatcher: {
         $0.compactDescription == "There were no in-flight effects to cancel."
       }
+      await store.skipInFlightEffects(strict: true)
     }
 
     func testIgnoreReceiveActions_PartialExhaustive() {
@@ -405,7 +403,7 @@
       await store.send(.tap)
       XCTAssertEqual(store.state, 44)
 
-      store.flushReceivedActions()
+      await store.skipReceivedActions()
       XCTAssertEqual(store.state, 86)
     }
 
@@ -432,7 +430,7 @@
           }
         }
       )
-      store.exhaustivity = .partial(prefix: "✅")
+      store.exhaustivity = .partial(prefix: "✅\n\n")
 
       await store.send(.buttonTapped)
       // Ignored state mutation: state = 1
@@ -443,8 +441,8 @@
       }
 
       await testScheduler.advance(by: .milliseconds(500))
-      store.cancelInFlightEffects()
-      store.flushReceivedActions()
+      await store.skipInFlightEffects()
+      await store.skipReceivedActions()
       // Ignored received action: .response(42)
       // Ignored received action: .response(1729)
       // Ignore in-flight effect
