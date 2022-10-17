@@ -136,12 +136,12 @@ struct Feature: ReducerProtocol {
         return .none
 
       case .numberFactButtonTapped:
-        return .task { [number = state.count] in
+        return .task { [count = state.count] in
           await .numberFactResponse(
             TaskResult {
               String(
                 decoding: try await URLSession.shared
-                  .data(from: URL(string: "http://numbersapi.com/\(number)/trivia")!).0,
+                  .data(from: URL(string: "http://numbersapi.com/\(count)/trivia")!).0,
                 as: UTF8.self
               )
             }
@@ -276,28 +276,6 @@ struct MyApp: App {
     }
   }
 }
-```
-
-You may also find that the HTTP API request to numbersapi.com is blocked as only HTTPS connections are permitted.  If this happens you can add an exception to the project settings to allow HTTP requests just for the numbersapi.com domain.
-
-```
-<key>NSAppTransportSecurity</key>
-<dict>
-  <key>NSAllowsArbitraryLoads</key>
-  <false/>
-  <key>NSExceptionDomains</key>
-  <dict>
-    <key>numbersapi.com</key>
-    <dict>
-      <key>NSIncludesSubdomains</key>
-      <true/>
-      <key>NSTemporaryExceptionAllowsInsecureHTTPLoads</key>
-      <true/>
-      <key>NSTemporaryExceptionMinimumTLSVersion</key>
-      <string>TLSv1.1</string>
-    </dict>
-  </dict>
-</dict>
 ```
 
 And that is enough to get something on the screen to play around with. It's definitely a few more steps than if you were to do this in a vanilla SwiftUI way, but there are a few benefits. It gives us a consistent manner to apply state mutations, instead of scattering logic in some observable objects and in various action closures of UI components. It also gives us a concise way of expressing side effects. And we can immediately test this logic, including the effects, without doing much additional work.
