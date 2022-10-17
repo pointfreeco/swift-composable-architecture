@@ -9,13 +9,13 @@ let viewStoreSuite = BenchmarkSuite(name: "ViewStore") {
     reducer: EmptyReducer<Int, Void>()
   )
 
-  $0.benchmark("Create to send action") {
+  $0.benchmark("Create view store to send action") {
     doNotOptimizeAway(ViewStore(store).send(()))
   }
 
   let viewStore = ViewStore(store)
 
-  $0.benchmark("Send action to pre-created") {
+  $0.benchmark("Send action to pre-created view store") {
     doNotOptimizeAway(viewStore.send(()))
   }
 }
