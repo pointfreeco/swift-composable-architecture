@@ -241,9 +241,7 @@ final class ViewStoreTests: XCTestCase {
       reducer: Reduce<Int, Action> { state, action in
         switch action {
         case .tap:
-          return .task {
-            return .response(42)
-          }
+          return .run { await $0(.response(42)) }
         case let .response(value):
           state = value
           return .none
@@ -268,9 +266,9 @@ final class ViewStoreTests: XCTestCase {
       reducer: Reduce<Int, Action> { state, action in
         switch action {
         case .tap:
-          return .task {
+          return .run { send in
             try await Task.sleep(nanoseconds: NSEC_PER_SEC)
-            return .response(42)
+            await send(.response(42))
           }
         case let .response(value):
           state = value

@@ -334,7 +334,7 @@ final class EffectTests: XCTestCase {
       let effect =
         DependencyValues
         .withValue(\.date, .init { Date(timeIntervalSince1970: 1_234_567_890) }) {
-          EffectTask<Void>.task {}
+          EffectTask<Void>.run { await $0(()) }
             .map { date() }
         }
       output = await effect.values.first(where: { _ in true })

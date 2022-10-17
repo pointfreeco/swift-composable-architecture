@@ -174,11 +174,11 @@ extension EffectPublisher {
 /// ```swift
 /// enum CancelID {}
 ///
-/// return .task {
+/// return .run { send in
 ///   await withTaskCancellation(id: CancelID.self, cancelInFlight: true) {
 ///     try await environment.scheduler.sleep(for: .seconds(0.3))
-///     return await .debouncedResponse(
-///       TaskResult { try await environment.request() }
+///     await send(
+///       .debouncedResponse(TaskResult { try await environment.request() })
 ///     )
 ///   }
 /// }

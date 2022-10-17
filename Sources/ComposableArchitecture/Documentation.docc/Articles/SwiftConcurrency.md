@@ -35,9 +35,9 @@ struct Feature: ReducerProtocol {
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .buttonTapped:
-      return .task {
+      return .run { send in
         try await Task.sleep(nanoseconds: NSEC_PER_SEC)
-        return .delayed(state.count) 
+        await send(.delayed(state.count))
         // 🛑 Mutable capture of 'inout' parameter 'state' is 
         //    not allowed in concurrently-executing code
       }
@@ -52,9 +52,9 @@ To work around this you must explicitly capture the state as an immutable value 
 closure:
 
 ```swift
-return .task { [state] in 
+return .run { [state] send in 
   try await Task.sleep(nanoseconds: NSEC_PER_SEC)
-  return .delayed(state.count) // ✅
+  await send(.delayed(state.count)) // ✅
 }
 ```
 
@@ -62,9 +62,9 @@ You can also capture just the minimal parts of the state you need for the effect
 variable name for the capture:
 
 ```swift
-return .task { [count = state.count] in 
+return .run { [count = state.count] in 
   try await Task.sleep(nanoseconds: NSEC_PER_SEC)
-  return .delayed(count) // ✅
+  await send(.delayed(count)) // ✅
 }
 ```
 

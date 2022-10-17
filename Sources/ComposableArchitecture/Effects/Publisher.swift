@@ -238,8 +238,9 @@ extension EffectPublisher {
     tvOS, deprecated: 9999.0, message: "Use the async version of 'EffectTask.run', instead."
   )
   @available(
-    watchOS, deprecated: 9999.0, message: "Use the async version of 'Effect.run', instead."
+    watchOS, deprecated: 9999.0, message: "Use the async version of 'EffectTask.run', instead."
   )
+  @_disfavoredOverload
   public static func run(
     _ work: @escaping (EffectPublisher.Subscriber) -> Cancellable
   ) -> Self {

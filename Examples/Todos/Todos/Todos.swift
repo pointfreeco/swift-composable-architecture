@@ -76,9 +76,9 @@ struct Todos: ReducerProtocol {
 
         state.todos.move(fromOffsets: source, toOffset: destination)
 
-        return .task {
+        return .run { send in
           try await self.mainQueue.sleep(for: .milliseconds(100))
-          return .sortCompletedTodos
+          await send(.sortCompletedTodos)
         }
 
       case .sortCompletedTodos:

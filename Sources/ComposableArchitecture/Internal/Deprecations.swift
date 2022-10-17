@@ -901,7 +901,7 @@ extension Store {
             let task = self.send(fromChildAction(childAction))
             childState = extractChildState(self.state.value) ?? childState
             if let task = task {
-              return .fireAndForget { await task.cancellableValue }
+              return .run { _ in await task.cancellableValue }
             } else {
               return .none
             }

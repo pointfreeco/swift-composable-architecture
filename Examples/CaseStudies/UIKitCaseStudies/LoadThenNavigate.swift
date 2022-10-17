@@ -27,9 +27,9 @@ struct LazyNavigation: ReducerProtocol {
 
       case .setNavigation(isActive: true):
         state.isActivityIndicatorHidden = false
-        return .task {
+        return .run { send in
           try await self.mainQueue.sleep(for: 1)
-          return .setNavigationIsActiveDelayCompleted
+          await send(.setNavigationIsActiveDelayCompleted)
         }
         .cancellable(id: CancelID.self)
 

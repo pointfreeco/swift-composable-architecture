@@ -35,13 +35,13 @@ struct RecordingMemo: ReducerProtocol {
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .audioRecorderDidFinish(.success(true)):
-      return .task { [state] in .delegate(.didFinish(.success(state))) }
+      return .run { [state] send in await send(.delegate(.didFinish(.success(state)))) }
 
     case .audioRecorderDidFinish(.success(false)):
-      return .task { .delegate(.didFinish(.failure(Failed()))) }
+      return .run { send in await send(.delegate(.didFinish(.failure(Failed())))) }
 
     case let .audioRecorderDidFinish(.failure(error)):
-      return .task { .delegate(.didFinish(.failure(error))) }
+      return .run { send in await send(.delegate(.didFinish(.failure(error)))) }
 
     case .delegate:
       return .none
@@ -109,9 +109,7 @@ struct RecordingMemoView: View {
           .frame(width: 70, height: 70)
         }
       }
-      .task {
-        await viewStore.send(.task).finish()
-      }
+      .task { await viewStore.send(.task).finish() }
     }
   }
 }

@@ -147,7 +147,7 @@
           let store = TestStore(
             initialState: 0,
             reducer: Reduce<Int, Void> { state, action in
-              .task { try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
+              .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
             }
           )
           store.send(())

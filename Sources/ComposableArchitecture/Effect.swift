@@ -98,8 +98,10 @@ extension EffectPublisher where Failure == Never {
   ///   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
   ///     switch action {
   ///       case .factButtonTapped:
-  ///         return .task { [number = state.number] in
-  ///           await .factResponse(TaskResult { try await self.numberFact.fetch(number) })
+  ///         return .run { [number = state.number] send in
+  ///           await send(
+  ///             .factResponse(TaskResult { try await self.numberFact.fetch(number) })
+  ///           )
   ///         }
   ///
   ///       case .factResponse(.success(fact)):

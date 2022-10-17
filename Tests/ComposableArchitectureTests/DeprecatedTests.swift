@@ -15,7 +15,7 @@ final class DeprecatedTests: XCTestCase {
             reducer: AnyReducer<Int, Void, XCTestExpectation> { state, _, expectation in
               state += 1
               if state == 2 {
-                return .fireAndForget { expectation.fulfill() }
+                return .run { _ in expectation.fulfill() }
               }
               return .none
             },

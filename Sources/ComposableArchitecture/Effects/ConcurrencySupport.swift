@@ -267,7 +267,7 @@ extension Task where Success == Never, Failure == Never {
 /// func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
 ///   switch action {
 ///   case .buttonTapped:
-///     return .fireAndForget { try await self.analytics.track("Button Tapped") }
+///     return .run { _ in try await self.analytics.track("Button Tapped") }
 ///   }
 /// }
 /// ```

@@ -31,7 +31,7 @@
     ///     case .task:
     ///       return .run { send in
     ///         for await _ in self.mainQueue.timer(interval: .seconds(1)) {
-    ///           send(.timerTicked)
+    ///           await send(.timerTicked)
     ///         }
     ///       }
     ///

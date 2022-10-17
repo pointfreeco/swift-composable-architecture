@@ -91,7 +91,7 @@ final class ComposableArchitectureTests: XCTestCase {
     let reducer = Reduce<Int, Action> { state, action in
       switch action {
       case .end:
-        return .fireAndForget {
+        return .run { _ in
           effect.continuation.finish()
         }
       case .incr:
@@ -133,9 +133,9 @@ final class ComposableArchitectureTests: XCTestCase {
 
       case .incr:
         state += 1
-        return .task { [state] in
+        return .run { [state] send in
           try await mainQueue.sleep(for: .seconds(1))
-          return .response(state * state)
+          await send(.response(state * state))
         }
         .cancellable(id: CancelID.self)
 

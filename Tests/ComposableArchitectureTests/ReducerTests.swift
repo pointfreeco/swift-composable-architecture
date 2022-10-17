@@ -36,7 +36,7 @@ final class ReducerTests: XCTestCase {
 
       func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
         state += 1
-        return .fireAndForget {
+        return .run { _ in
           try await self.mainQueue.sleep(for: self.delay)
           await self.setValue()
         }
@@ -83,7 +83,7 @@ final class ReducerTests: XCTestCase {
       let effect: @Sendable () async -> Void
       func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
         state += 1
-        return .fireAndForget {
+        return .run { _ in
           await self.effect()
         }
       }

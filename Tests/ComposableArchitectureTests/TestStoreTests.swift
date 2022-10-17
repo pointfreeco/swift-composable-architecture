@@ -70,7 +70,7 @@ final class TestStoreTests: XCTestCase {
       reducer: Reduce<Int, Action> { state, action in
         switch action {
         case .tap:
-          return .task { .response(42) }
+          return .run { await $0(.response(42)) }
         case let .response(number):
           state = number
           return .none

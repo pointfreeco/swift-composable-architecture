@@ -601,16 +601,14 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     }
 
     @inlinable
-    func reduce(
-      into state: inout ScopedState, action: ScopedAction
-    ) -> EffectTask<ScopedAction> {
+    func reduce(into state: inout ScopedState, action: ScopedAction) -> EffectTask<ScopedAction> {
       self.isSending = true
       defer {
         state = self.toScopedState(self.rootStore.state.value)
         self.isSending = false
       }
       if let task = self.rootStore.send(self.fromScopedAction(action)) {
-        return .fireAndForget { await task.cancellableValue }
+        return .run { _ in await task.cancellableValue }
       } else {
         return .none
       }
@@ -693,7 +691,7 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
           let task = self.root.send(fromScopedAction(fromRescopedAction(rescopedAction)))
           rescopedState = toRescopedState(scopedStore.state.value)
           if let task = task {
-            return .fireAndForget { await task.cancellableValue }
+            return .run { _ in await task.cancellableValue }
           } else {
             return .none
           }

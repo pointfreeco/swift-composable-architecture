@@ -446,16 +446,16 @@ final class StoreTests: XCTestCase {
     let reducer = Reduce<Int, Action>({ state, action in
       switch action {
       case .task:
-        return .task { .response }
+        return .run { await $0(.response) }
       case .response:
         return .merge(
           Empty(completeImmediately: false).eraseToEffect(),
-          .task { .response1 }
+          .run { await $0(.response1) }
         )
       case .response1:
         return .merge(
           Empty(completeImmediately: false).eraseToEffect(),
-          .task { .response2 }
+          .run { await $0(.response2) }
         )
       case .response2:
         return Empty(completeImmediately: false).eraseToEffect()
@@ -482,7 +482,7 @@ final class StoreTests: XCTestCase {
       reducer: Reduce<Int, Action>({ state, action in
         switch action {
         case .task:
-          return .fireAndForget { try await Task.never() }
+          return .run { _ in try await Task.never() }
         }
       })
     )
@@ -496,7 +496,7 @@ final class StoreTests: XCTestCase {
     let store = Store(
       initialState: (),
       reducer: Reduce<Void, Void>({ _, _ in
-        .fireAndForget {
+        .run { _ in
           try await neverEndingTask.value
         }
       })

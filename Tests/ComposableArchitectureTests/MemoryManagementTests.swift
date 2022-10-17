@@ -48,10 +48,10 @@ final class MemoryManagementTests: XCTestCase {
         switch action {
         case .tap:
           state = false
-          return .task { .response }
+          return .run { send in await send(.response) }
         case .response:
           state = true
-          return .fireAndForget {
+          return .run { _ in
             expectation.fulfill()
           }
         }

@@ -6,8 +6,8 @@ extension EffectPublisher {
   ///
   /// ```swift
   /// case .buttonTapped:
-  ///   return .task {
-  ///     .activityResponse(await self.apiClient.fetchActivity())
+  ///   return .run { send in
+  ///     await send(.activityResponse(self.apiClient.fetchActivity()))
   ///   }
   ///   .animation()
   /// ```

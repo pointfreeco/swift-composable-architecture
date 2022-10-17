@@ -10,7 +10,7 @@ final class EffectTaskTests: XCTestCase {
     let reducer = Reduce<State, Action> { state, action in
       switch action {
       case .tapped:
-        return .task { .response }
+        return .run { await $0(.response) }
       case .response:
         return .none
       }

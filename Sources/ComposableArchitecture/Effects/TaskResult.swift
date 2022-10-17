@@ -37,9 +37,9 @@ import XCTestDynamicOverlay
 ///
 /// ```swift
 /// case .factButtonTapped:
-///   return .task {
-///     await .factResponse(
-///       TaskResult { try await self.numberFact.fetch(state.number) }
+///   return .run { send in
+///     await send(
+///       .factResponse(TaskResult { try await self.numberFact.fetch(state.number) })
 ///     )
 ///   }
 ///
