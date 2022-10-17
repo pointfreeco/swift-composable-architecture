@@ -273,8 +273,8 @@ going to be received, but after waiting around for a small amount of time no act
 This is because our timer is on a 1 second interval, and by default
 ``TestStore/receive(_:timeout:_:file:line:)`` only waits for a fraction of a second. This is
 because typically you should not be performing real time-based asynchrony in effects, and instead
-using a controlled entity, such as a scheduler or clock, that can be sped up in tests. We will
-demonstrate this in a moment, so for now let's increase the timeout:
+using a controlled entity, such as a clock, that can be sped up in tests. We will demonstrate this 
+in a moment, so for now let's increase the timeout:
 
 ```swift
 await store.receive(.timerTick, timeout: .seconds(2)) {
@@ -403,7 +403,6 @@ dependencies, read the <doc:DependencyManagement> article.
 [Testing-effects]: #Testing-effects
 [Designing-dependencies]: #Designing-dependencies
 [Unimplemented-dependencies]: #Unimplemented-dependencies
-[gh-combine-schedulers]: http://github.com/pointfreeco/combine-schedulers
 [gh-xctest-dynamic-overlay]: http://github.com/pointfreeco/xctest-dynamic-overlay
 [tca-examples]: https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples
 [gh-swift-clocks]: http://github.com/pointfreeco/swift-clocks

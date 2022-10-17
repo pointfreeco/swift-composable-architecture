@@ -8,7 +8,7 @@ any reducer.
 Dependencies in an application are the types and functions that need to interact with outside 
 systems that you do not control. Classic examples of this are API clients that make network requests
 to servers, but also seemingly innocuous things such as `UUID` and `Date` initializers, and even
-schedulers and clocks, can be thought of as dependencies.
+clocks, can be thought of as dependencies.
 
 By controlling the dependencies our features need to do their job we gain the ability to completely
 alter the execution context a feature runs in. This means in tests and Xcode previews you can 
