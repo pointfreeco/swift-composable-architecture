@@ -287,8 +287,16 @@ struct ScreenAView: View {
           HStack {
             Text("\(viewStore.count)")
             Spacer()
-            Button("-") { viewStore.send(.decrementButtonTapped) }
-            Button("+") { viewStore.send(.incrementButtonTapped) }
+            Button {
+              viewStore.send(.decrementButtonTapped)
+            } label: {
+              Image(systemName: "minus")
+            }
+            Button {
+              viewStore.send(.incrementButtonTapped)
+            } label: {
+              Image(systemName: "plus")
+            }
           }
           .buttonStyle(.borderless)
 
