@@ -18,7 +18,7 @@ let package = Package(
     .library(
       name: "Dependencies",
       targets: ["Dependencies"]
-    )
+    ),
   ],
   dependencies: [
     .package(name: "Benchmark", url: "https://github.com/google/swift-benchmark", from: "0.1.0"),
@@ -39,13 +39,13 @@ let package = Package(
         .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
         .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
       ]
-//      ,
-//      swiftSettings: [
-//        .unsafeFlags([
-//          "-Xfrontend", "-warn-concurrency",
-//          "-Xfrontend", "-enable-actor-data-race-checks",
-//        ])
-//      ]
+      //      ,
+      //      swiftSettings: [
+      //        .unsafeFlags([
+      //          "-Xfrontend", "-warn-concurrency",
+      //          "-Xfrontend", "-enable-actor-data-race-checks",
+      //        ])
+      //      ]
     ),
     .testTarget(
       name: "ComposableArchitectureTests",
@@ -71,7 +71,7 @@ let package = Package(
       name: "DependenciesTests",
       dependencies: [
         "ComposableArchitecture",
-        "Dependencies"
+        "Dependencies",
       ]
     ),
     .executableTarget(

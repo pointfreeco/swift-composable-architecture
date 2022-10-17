@@ -11,9 +11,10 @@ extension ReducerProtocol {
     _ keyPath: WritableKeyPath<DependencyValues, Value>,
     _ value: Value
   )
-  // NB: We should not return `some ReducerProtocol<State, Action>` here. That would prevent the
-  //     specialization defined below from being called, which fuses chained calls to `dependency`.
-  -> _DependencyKeyWritingReducer<Self> {
+    // NB: We should not return `some ReducerProtocol<State, Action>` here. That would prevent the
+    //     specialization defined below from being called, which fuses chained calls to `dependency`.
+    -> _DependencyKeyWritingReducer<Self>
+  {
     _DependencyKeyWritingReducer(base: self) { $0[keyPath: keyPath] = value }
   }
 
@@ -22,9 +23,10 @@ extension ReducerProtocol {
   /// - Parameter update: A closure that is handed a mutable instance of dependency values.
   @inlinable
   public func dependencies(_ update: @escaping (inout DependencyValues) -> Void)
-  // NB: We should not return `some ReducerProtocol<State, Action>` here. That would prevent the
-  //     specialization defined below from being called, which fuses chained calls to `dependency`.
-  -> _DependencyKeyWritingReducer<Self> {
+    // NB: We should not return `some ReducerProtocol<State, Action>` here. That would prevent the
+    //     specialization defined below from being called, which fuses chained calls to `dependency`.
+    -> _DependencyKeyWritingReducer<Self>
+  {
     _DependencyKeyWritingReducer(base: self, update: update)
   }
 }

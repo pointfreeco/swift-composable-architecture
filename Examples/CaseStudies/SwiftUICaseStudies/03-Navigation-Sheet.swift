@@ -79,37 +79,37 @@ struct SheetDemoView: View {
           viewStore.send(.sheet(.present(.counter(Counter.State()))))
         }
       }
-//      .sheet(
-//        store: self.store.scope(state: \.$sheet, action: SheetDemo.Action.sheet)
-//      ) { store in
-//        VStack {
-//          HStack {
-//            Button("Swap") {
-//              viewStore.send(.swap, animation: .default)
-//            }
-//            Button("Close") {
-//              viewStore.send(.sheet(.dismiss))
-//            }
-//          }
-//          .padding()
-//
-//          SwitchStore(store) {
-//            CaseLet(
-//              state: /SheetDemo.Destinations.State.animations,
-//              action: SheetDemo.Destinations.Action.animations,
-//              then: AnimationsView.init(store:)
-//            )
-//            CaseLet(
-//              state: /SheetDemo.Destinations.State.counter,
-//              action: SheetDemo.Destinations.Action.counter,
-//              then: CounterView.init(store:)
-//            )
-//          }
-//          .transition(.slide.combined(with: .opacity))
-//
-//          Spacer()
-//        }
-//      }
+      //      .sheet(
+      //        store: self.store.scope(state: \.$sheet, action: SheetDemo.Action.sheet)
+      //      ) { store in
+      //        VStack {
+      //          HStack {
+      //            Button("Swap") {
+      //              viewStore.send(.swap, animation: .default)
+      //            }
+      //            Button("Close") {
+      //              viewStore.send(.sheet(.dismiss))
+      //            }
+      //          }
+      //          .padding()
+      //
+      //          SwitchStore(store) {
+      //            CaseLet(
+      //              state: /SheetDemo.Destinations.State.animations,
+      //              action: SheetDemo.Destinations.Action.animations,
+      //              then: AnimationsView.init(store:)
+      //            )
+      //            CaseLet(
+      //              state: /SheetDemo.Destinations.State.counter,
+      //              action: SheetDemo.Destinations.Action.counter,
+      //              then: CounterView.init(store:)
+      //            )
+      //          }
+      //          .transition(.slide.combined(with: .opacity))
+      //
+      //          Spacer()
+      //        }
+      //      }
       .sheet(
         store: self.store.scope(state: \.$sheet, action: SheetDemo.Action.sheet),
         state: /SheetDemo.Destinations.State.animations,

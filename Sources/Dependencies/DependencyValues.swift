@@ -137,8 +137,7 @@ public struct DependencyValues: Sendable {
           else {
             if !Self.isSetting {
               var dependencyDescription = ""
-              if
-                let fileID = Self.currentDependency.fileID,
+              if let fileID = Self.currentDependency.fileID,
                 let line = Self.currentDependency.line
               {
                 dependencyDescription.append(

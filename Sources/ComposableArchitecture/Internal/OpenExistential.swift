@@ -8,8 +8,8 @@ import Foundation
     try (type as? any Decodable.Type)?.init(from: data)
   }
 
-  private extension Decodable {
-    init(from data: Data) throws {
+  extension Decodable {
+    fileprivate init(from data: Data) throws {
       self = try decoder.decode(Self.self, from: data)
     }
   }
@@ -20,8 +20,8 @@ import Foundation
     try (value as? any Encodable)?.encode()
   }
 
-  private extension Encodable {
-    func encode() throws -> Data {
+  extension Encodable {
+    fileprivate func encode() throws -> Data {
       try encoder.encode(self)
     }
   }
@@ -32,8 +32,8 @@ import Foundation
     (lhs as? any Equatable)?.isEqual(other: rhs)
   }
 
-  private extension Equatable {
-    func isEqual(other: Any) -> Bool {
+  extension Equatable {
+    fileprivate func isEqual(other: Any) -> Bool {
       self == other as? Self
     }
   }

@@ -19,28 +19,32 @@ extension AnyReducer {
   @available(
     iOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     macOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     tvOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     watchOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
@@ -79,28 +83,32 @@ extension AnyReducer {
   @available(
     iOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     macOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     tvOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     watchOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
@@ -139,28 +147,32 @@ extension AnyReducer {
   @available(
     iOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     macOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     tvOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   @available(
     watchOS,
     deprecated: 9999.0,
-    message: """
+    message:
+      """
       This API has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
@@ -224,28 +236,32 @@ extension AnyReducer {
 @available(
   iOS,
   deprecated: 9999.0,
-  message: """
+  message:
+    """
     This API that used this type has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
     """
 )
 @available(
   macOS,
   deprecated: 9999.0,
-  message: """
+  message:
+    """
     This API that used this type has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
     """
 )
 @available(
   tvOS,
   deprecated: 9999.0,
-  message: """
+  message:
+    """
     This API that used this type has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
     """
 )
 @available(
   watchOS,
   deprecated: 9999.0,
-  message: """
+  message:
+    """
     This API that used this type has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
     """
 )
@@ -281,28 +297,32 @@ public enum ActionFormat: Sendable {
 @available(
   iOS,
   deprecated: 9999.0,
-  message: """
+  message:
+    """
     This API that used this type has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
     """
 )
 @available(
   macOS,
   deprecated: 9999.0,
-  message: """
+  message:
+    """
     This API that used this type has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
     """
 )
 @available(
   tvOS,
   deprecated: 9999.0,
-  message: """
+  message:
+    """
     This API that used this type has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
     """
 )
 @available(
   watchOS,
   deprecated: 9999.0,
-  message: """
+  message:
+    """
     This API that used this type has been soft-deprecated in favor of 'ReducerProtocol.debug'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
     """
 )

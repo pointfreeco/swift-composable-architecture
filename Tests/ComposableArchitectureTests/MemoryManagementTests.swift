@@ -61,7 +61,7 @@ final class MemoryManagementTests: XCTestCase {
 
     var values: [Bool] = []
     viewStore.publisher
-      .sink(receiveValue: { values.append($0 )})
+      .sink(receiveValue: { values.append($0) })
       .store(in: &self.cancellables)
 
     XCTAssertEqual(values, [false])

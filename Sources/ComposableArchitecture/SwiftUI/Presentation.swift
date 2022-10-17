@@ -217,7 +217,7 @@ public struct _PresentationDestinationReducer<
           """
           A "presentationDestination" at "%@:%d" received a destination action when destination \
           state was absent. …
-          
+
             Action:
               %@
 

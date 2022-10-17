@@ -22,15 +22,16 @@ struct NavigationDemo: ReducerProtocol {
     Reduce { state, action in
       switch action {
       case .cancelTimersButtonTapped:
-        return .merge(state.$path.compactMap { destination in
-          switch destination.element {
-          case .screenA, .screenB:
-            return nil
+        return .merge(
+          state.$path.compactMap { destination in
+            switch destination.element {
+            case .screenA, .screenB:
+              return nil
 
-          case .screenC:
-            return .cancel(id: destination.id)
-          }
-        })
+            case .screenC:
+              return .cancel(id: destination.id)
+            }
+          })
 
       case let .goBackToScreen(n):
         state.path.removeLast(n)

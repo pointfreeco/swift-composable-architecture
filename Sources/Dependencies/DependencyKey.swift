@@ -138,8 +138,7 @@ extension DependencyKey {
   /// which will take precedence over this implementation.
   public static var testValue: Value {
     var dependencyDescription = ""
-    if
-      let fileID = DependencyValues.currentDependency.fileID,
+    if let fileID = DependencyValues.currentDependency.fileID,
       let line = DependencyValues.currentDependency.line
     {
       dependencyDescription.append(

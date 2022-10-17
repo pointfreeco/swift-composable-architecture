@@ -32,7 +32,7 @@ public struct DismissEffect: Sendable {
         """#,
         [
           "\(fileID)",
-          line
+          line,
         ],
         file: file,
         line: line

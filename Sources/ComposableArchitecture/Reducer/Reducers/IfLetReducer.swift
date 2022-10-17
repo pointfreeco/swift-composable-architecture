@@ -109,7 +109,7 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
     into state: inout Parent.State, action: Parent.Action
   ) -> Effect<Parent.Action, Never> {
     self.reduceChild(into: &state, action: action)
-      .merge(with:  self.parent.reduce(into: &state, action: action))
+      .merge(with: self.parent.reduce(into: &state, action: action))
   }
 
   @inlinable

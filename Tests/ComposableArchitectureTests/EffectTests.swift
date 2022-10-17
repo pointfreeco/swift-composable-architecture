@@ -281,13 +281,13 @@ final class EffectTests: XCTestCase {
     let store = TestStore(
       initialState: 0,
       reducer: Feature()
-        .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1234567890)))
+        .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1_234_567_890)))
     )
 
     await store.send(.tap)
-    await store.receive(.response(1234567890)) {
-      $0 = 1234567890
+    await store.receive(.response(1_234_567_890)) {
+      $0 = 1_234_567_890
     }
-    await store.receive(.response(1234567890))
+    await store.receive(.response(1_234_567_890))
   }
 }
