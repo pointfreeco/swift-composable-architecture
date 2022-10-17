@@ -9,7 +9,6 @@ on:
   push:
     branches:
       - main
-      - protocol-beta
   workflow_dispatch:
 
 concurrency:
