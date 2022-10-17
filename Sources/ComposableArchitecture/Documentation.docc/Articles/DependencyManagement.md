@@ -145,8 +145,8 @@ control dependencies that interact with outside systems.
 ## Using library dependencies
 
 The library comes with many common dependencies that can be used in a controllable manner, such as
-date generators, schedulers, random number generators, UUID generators, and more. A full
-list can be seen in the documentation for [`DependencyValues`][dependency-values-docs].
+date generators, schedulers, random number generators, UUID generators, and more. <!-- A full
+list can be seen in the documentation for [`DependencyValues`][dependency-values-docs]. -->
 
 For example, suppose you have a feature that needs access to a date initializer, the main queue
 for time-based asynchrony, and a UUID initializer. All 3 dependencies can be added to your feature's
