@@ -11,7 +11,7 @@ final class StoreTests: XCTestCase {
 
     XCTAssertEqual(store.effectCancellables.count, 0)
 
-      _ = store.send(())
+    _ = store.send(())
 
     XCTAssertEqual(store.effectCancellables.count, 0)
   }
@@ -36,11 +36,11 @@ final class StoreTests: XCTestCase {
 
     XCTAssertEqual(store.effectCancellables.count, 0)
 
-      enum Action { case start, end }
+    _ = store.send(.start)
 
     XCTAssertEqual(store.effectCancellables.count, 1)
 
-      XCTAssertEqual(store.effectCancellables.count, 0)
+    mainQueue.advance(by: 2)
 
     XCTAssertEqual(store.effectCancellables.count, 0)
   }
@@ -490,9 +490,8 @@ final class StoreTests: XCTestCase {
     await store.send(.task).cancel()
   }
 
-  #if DEBUG
-    func testScopeCancellation() async throws {
-      let neverEndingTask = Task<Void, Error> { try await Task.never() }
+  func testScopeCancellation() async throws {
+    let neverEndingTask = Task<Void, Error> { try await Task.never() }
 
     let store = Store(
       initialState: (),
@@ -504,12 +503,11 @@ final class StoreTests: XCTestCase {
     )
     let scopedStore = store.scope(state: { $0 })
 
-      let sendTask = scopedStore.send(())
-      await Task.yield()
-      neverEndingTask.cancel()
-      try await XCTUnwrap(sendTask).value
-      XCTAssertEqual(store.effectCancellables.count, 0)
-      XCTAssertEqual(scopedStore.effectCancellables.count, 0)
-    }
-  #endif
+    let sendTask = scopedStore.send(())
+    await Task.yield()
+    neverEndingTask.cancel()
+    try await XCTUnwrap(sendTask).value
+    XCTAssertEqual(store.effectCancellables.count, 0)
+    XCTAssertEqual(scopedStore.effectCancellables.count, 0)
+  }
 }
