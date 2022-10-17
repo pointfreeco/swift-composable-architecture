@@ -96,8 +96,7 @@ This is why controlling dependencies is important. It allows us to substitute a 
 is deterministic in tests, such as one that simply increments by 1 every time it is invoked.
 
 The library comes with a controlled UUID generator and can be accessed by using the 
-[`@Dependency`][dependency-property-wrapper-docs] property wrapper to add a dependency to the 
-`Todos` reducer:
+`@Dependency` property wrapper to add a dependency to the `Todos` reducer:
 
 ```swift
 struct Todos: ReducerProtocol {
@@ -145,8 +144,7 @@ control dependencies that interact with outside systems.
 ## Using library dependencies
 
 The library comes with many common dependencies that can be used in a controllable manner, such as
-date generators, schedulers, random number generators, UUID generators, and more. A full
-list can be seen in the documentation for [`DependencyValues`][dependency-values-docs].
+date generators, schedulers, random number generators, UUID generators, and more.
 
 For example, suppose you have a feature that needs access to a date initializer, the main queue
 for time-based asynchrony, and a UUID initializer. All 3 dependencies can be added to your feature's
@@ -191,13 +189,12 @@ func testTodos() async {
 
 Although the library comes with many controllable dependencies out of the box, there are still 
 times when you want to register your own dependencies with the library so that you can use the
-[`@Dependency`][dependency-property-wrapper-docs] property wrapper. Doing this is quite similar to 
-registering an [environment value][environment-values-docs] in SwiftUI.
+`@Dependency` property wrapper. Doing this is quite similar to  registering an
+[environment value][environment-values-docs] in SwiftUI.
 
-First you create a type that conforms to the [`DependencyKey`][dependency-key-docs]
-protocol. The minimum implementation you must provide is a `liveValue`, which is the value used
-when running the app in a simulator or on device, and so it's appropriate for it to actually make
-network requests to an external server:
+First you create a type that conforms to the `DependencyKey` protocol. The minimum implementation
+you must provide is a `liveValue`, which is the value used when running the app in a simulator or
+on device, and so it's appropriate for it to actually make network requests to an external server:
 
 ```swift
 private enum APIClientKey: DependencyKey {
@@ -211,8 +208,8 @@ will be used while running features in an Xcode preview. You don't need to worry
 values when you are just getting started, and instead can 
 [add them later](#Live-preview-and-test-dependencies).
 
-Finally, an extension must be made to [`DependencyValues`][dependency-values-docs] to expose a
-computed property for the dependency:
+Finally, an extension must be made to `DependencyValues` to expose a computed property for the
+dependency:
 
 ```swift
 extension DependencyValues {
@@ -224,7 +221,7 @@ extension DependencyValues {
 ```
 
 With those few steps completed you can instantly access your API client dependency from any 
-feature's reducer by using the [`@Dependency`][dependency-property-wrapper-docs] property wrapper:
+feature's reducer by using the `@Dependency` property wrapper:
 
 ```swift
 struct Todos: ReducerProtocol {
@@ -274,11 +271,11 @@ That can save a little bit of boilerplate.
 
 ## Live, preview and test dependencies
 
-In the previous section we showed that to conform to [`DependencyKey`][dependency-key-docs] you must
-provide _at least_ a `liveValue`, which is the default version of the dependency that is used when
-running on a device or simulator. The `DependencyKey` protocol inherits from a base protocol,
-[`TestDependencyKey`][test-dependency-key-docs], which has 2 other requirements, `testValue`
-and `previewValue`. Both are optional and delegate to `liveValue` if not implemented.
+In the previous section we showed that to conform to `DependencyKey` you must provide _at least_
+a `liveValue`, which is the default version of the dependency that is used when running on a
+device or simulator. The `DependencyKey` protocol inherits from a base protocol,
+`TestDependencyKey`, which has 2 other requirements, `testValue` and `previewValue`. Both are
+optional and delegate to `liveValue` if not implemented.
 
 If you implement a static `testValue` property on your key, that value will be used when running 
 your feature in a ``TestStore``. This is a great opportunity to supply a mocked version of the 
@@ -339,12 +336,11 @@ extension APIClient: TestDependencyKey {
 }
 ```
 
-The other requirement of [`TestDependencyKey`][test-dependency-key-docs] is `previewValue`, and if
-this value is implemented it will be used whenever your feature is run in an Xcode preview.
-Previews are similar to tests in that you usually do not want to interact with the outside world,
-such as making network requests. In fact, many of Apple's frameworks do not work in previews, such
-as CoreLocation, and so it will be hard to interact with your feature in previews if it touches
-those frameworks.
+The other requirement of `TestDependencyKey` is `previewValue`, and if this value is implemented
+it will be used whenever your feature is run in an Xcode preview. Previews are similar to tests in
+that you usually do not want to interact with the outside world, such as making network requests.
+In fact, many of Apple's frameworks do not work in previews, such as Core Location, and so it will
+be hard to interact with your feature in previews if it touches those frameworks.
 
 However, previews are dissimilar to tests in that it's fine for dependencies to return some mock 
 data. There's no need to deal with "unimplemented" clients for proving which dependencies are 
@@ -499,10 +495,6 @@ struct Onboarding: ReducerProtocol {
 This will cause the `Feature` reducer to use a mock user defaults and database dependency, as well
 as any reducer `Feature` uses under the hood, _and_ any effects produced by `Feature`.
 
-[dependency-values-docs]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/dependencies/dependencyvalues
 [swift-identified-collections]: https://github.com/pointfreeco/swift-identified-collections
-[dependency-property-wrapper-docs]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/dependencies/dependency
 [environment-values-docs]: https://developer.apple.com/documentation/swiftui/environmentvalues
-[dependency-key-docs]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/dependencies/dependencykey
-[test-dependency-key-docs]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/dependencies/testdependencykey
 [xctest-dynamic-overlay-gh]: http://github.com/pointfreeco/xctest-dynamic-overlay
