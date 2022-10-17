@@ -1,4 +1,3 @@
-import Combine
 import ComposableArchitecture
 import SwiftUI
 
@@ -300,6 +299,8 @@ struct RootView: View {
     }
   }
 }
+
+// MARK: - SwiftUI previews
 
 struct RootView_Previews: PreviewProvider {
   static var previews: some View {

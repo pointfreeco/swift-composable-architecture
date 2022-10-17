@@ -122,7 +122,7 @@ import Foundation
 /// store are also checked to make sure that work is performed on the main thread.
 public final class Store<State, Action> {
   private var bufferedActions: [Action] = []
-  var effectCancellables: [UUID: AnyCancellable] = [:]
+  @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
   var parentCancellable: AnyCancellable?
   #if swift(>=5.7)
@@ -317,7 +317,7 @@ public final class Store<State, Action> {
     self.scope(state: toChildState, action: { $0 })
   }
 
-  func send(
+  @_spi(Internals) public func send(
     _ action: Action,
     originatingFrom originatingAction: Action? = nil
   ) -> Task<Void, Never>? {
@@ -452,12 +452,12 @@ public final class Store<State, Action> {
 
       switch status {
       case let .effectCompletion(action):
-        runtimeWarning(
+        runtimeWarn(
           """
           An effect completed on a non-main thread. …
 
             Effect returned from:
-              %@
+              \(debugCaseOutput(action))
 
           Make sure to use ".receive(on:)" on any effects that execute on background threads to \
           receive their output on the main thread.
@@ -465,12 +465,11 @@ public final class Store<State, Action> {
           The "Store" class is not thread-safe, and so all interactions with an instance of \
           "Store" (including all of its scopes and derived view stores) must be done on the main \
           thread.
-          """,
-          [debugCaseOutput(action)]
+          """
         )
 
       case .`init`:
-        runtimeWarning(
+        runtimeWarn(
           """
           A store initialized on a non-main thread. …
 
@@ -481,7 +480,7 @@ public final class Store<State, Action> {
         )
 
       case .scope:
-        runtimeWarning(
+        runtimeWarn(
           """
           "Store.scope" was called on a non-main thread. …
 
@@ -492,27 +491,26 @@ public final class Store<State, Action> {
         )
 
       case let .send(action, originatingAction: nil):
-        runtimeWarning(
+        runtimeWarn(
           """
-          "ViewStore.send" was called on a non-main thread with: %@ …
+          "ViewStore.send" was called on a non-main thread with: \(debugCaseOutput(action)) …
 
           The "Store" class is not thread-safe, and so all interactions with an instance of \
           "Store" (including all of its scopes and derived view stores) must be done on the main \
           thread.
-          """,
-          [debugCaseOutput(action)]
+          """
         )
 
       case let .send(action, originatingAction: .some(originatingAction)):
-        runtimeWarning(
+        runtimeWarn(
           """
           An effect published an action on a non-main thread. …
 
             Effect published:
-              %@
+              \(debugCaseOutput(action))
 
             Effect returned from:
-              %@
+              \(debugCaseOutput(originatingAction))
 
           Make sure to use ".receive(on:)" on any effects that execute on background threads to \
           receive their output on the main thread.
@@ -520,11 +518,7 @@ public final class Store<State, Action> {
           The "Store" class is not thread-safe, and so all interactions with an instance of \
           "Store" (including all of its scopes and derived view stores) must be done on the main \
           thread.
-          """,
-          [
-            debugCaseOutput(action),
-            debugCaseOutput(originatingAction),
-          ]
+          """
         )
       }
     #endif

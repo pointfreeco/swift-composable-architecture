@@ -10,18 +10,21 @@
     func testTaskUnexpectedThrows() async {
       guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
 
+      var line: UInt!
       XCTExpectFailure {
         $0.compactDescription == """
-          An 'Effect.task' returned from "ComposableArchitectureTests/EffectFailureTests.swift:25" \
-          threw an unhandled error. …
+          An "Effect.task" returned from \
+          "ComposableArchitectureTests/EffectFailureTests.swift:\(line+1)" threw an unhandled \
+          error. …
 
               EffectFailureTests.Unexpected()
 
-          All non-cancellation errors must be explicitly handled via the 'catch' parameter on \
-          'Effect.task', or via a 'do' block.
+          All non-cancellation errors must be explicitly handled via the "catch" parameter on \
+          "Effect.task", or via a "do" block.
           """
       }
 
+      line = #line
       let effect = Effect<Void, Never>.task {
         struct Unexpected: Error {}
         throw Unexpected()
@@ -33,18 +36,21 @@
     func testRunUnexpectedThrows() async {
       guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
 
+      var line: UInt!
       XCTExpectFailure {
         $0.compactDescription == """
-          An 'Effect.run' returned from "ComposableArchitectureTests/EffectFailureTests.swift:48" \
-          threw an unhandled error. …
+          An "Effect.run" returned from \
+          "ComposableArchitectureTests/EffectFailureTests.swift:\(line+1)" threw an unhandled \
+          error. …
 
               EffectFailureTests.Unexpected()
 
-          All non-cancellation errors must be explicitly handled via the 'catch' parameter on \
-          'Effect.run', or via a 'do' block.
+          All non-cancellation errors must be explicitly handled via the "catch" parameter on \
+          "Effect.run", or via a "do" block.
           """
       }
 
+      line = #line
       let effect = Effect<Void, Never>.run { _ in
         struct Unexpected: Error {}
         throw Unexpected()

@@ -151,7 +151,12 @@ extension Effect {
   public static func future(
     _ attemptToFulfill: @escaping (@escaping (Result<Action, Failure>) -> Void) -> Void
   ) -> Self {
-    Deferred { Future(attemptToFulfill) }.eraseToEffect()
+    let dependencies = DependencyValues._current
+    return Deferred {
+      DependencyValues.$_current.withValue(dependencies) {
+        Future(attemptToFulfill)
+      }
+    }.eraseToEffect()
   }
 
   /// Initializes an effect that lazily executes some work in the real world and synchronously sends
@@ -184,7 +189,7 @@ extension Effect {
   @available(tvOS, deprecated: 9999.0, message: "Use 'Effect.task', instead.")
   @available(watchOS, deprecated: 9999.0, message: "Use 'Effect.task', instead.")
   public static func result(_ attemptToFulfill: @escaping () -> Result<Action, Failure>) -> Self {
-    Deferred { Future { $0(attemptToFulfill()) } }.eraseToEffect()
+    .future { $0(attemptToFulfill()) }
   }
 
   /// Initializes an effect from a callback that can send as many values as it wants, and can send
@@ -230,7 +235,13 @@ extension Effect {
   public static func run(
     _ work: @escaping (Effect.Subscriber) -> Cancellable
   ) -> Self {
-    AnyPublisher.create(work).eraseToEffect()
+    let dependencies = DependencyValues._current
+    return AnyPublisher.create { subscriber in
+      DependencyValues.$_current.withValue(dependencies) {
+        work(subscriber)
+      }
+    }
+    .eraseToEffect()
   }
 
   /// Creates an effect that executes some work in the real world that doesn't need to feed data
@@ -404,9 +415,7 @@ extension Publisher {
     message: "Iterate over 'Publisher.values' in an 'Effect.run', instead."
   )
   public func catchToEffect() -> Effect<Result<Output, Failure>, Never> {
-    self.map(Result.success)
-      .catch { Just(.failure($0)) }
-      .eraseToEffect()
+    self.catchToEffect { $0 }
   }
 
   /// Turns any publisher into an ``Effect`` that cannot fail by wrapping its output and failure
@@ -442,7 +451,14 @@ extension Publisher {
   public func catchToEffect<T>(
     _ transform: @escaping (Result<Output, Failure>) -> T
   ) -> Effect<T, Never> {
-    self
+    let dependencies = DependencyValues._current
+    let transform = { action in
+      DependencyValues.$_current.withValue(dependencies) {
+        transform(action)
+      }
+    }
+    return
+      self
       .map { transform(.success($0)) }
       .catch { Just(transform(.failure($0))) }
       .eraseToEffect()

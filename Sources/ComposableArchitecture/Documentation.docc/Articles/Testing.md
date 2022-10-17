@@ -74,7 +74,7 @@ class CounterTests: XCTestCase {
 > Tip: Test cases that use ``TestStore`` should be annotated as `@MainActor` and test methods should 
 be marked as `async` since most assertion helpers on ``TestStore`` can suspend.
 
-Test stores have a ``TestStore/send(_:_:file:line:)-3pf4p`` method, but it behaves differently from
+Test stores have a ``TestStore/send(_:_:file:line:)-6s1gq`` method, but it behaves differently from
 stores and view stores. You provide an action to send into the system, but then you must also
 provide a trailing closure to describe how the state of the feature changed after sending the
 action:
@@ -95,8 +95,8 @@ await store.send(.incrementButtonTapped) {
 }
 ```
 
-> The ``TestStore/send(_:_:file:line:)-3pf4p`` method is `async` for technical reasons that we do
-not have to worry about right now.
+> The ``TestStore/send(_:_:file:line:)-6s1gq`` method is `async` for technical reasons that we do
+> not have to worry about right now.
 
 If your mutation is incorrect, meaning you perform a mutation that is different from what happened
 in the ``Reducer``, then you will get a test failure with a nicely formatted message showing exactly
@@ -146,7 +146,7 @@ await store.send(.decrementButtonTapped) {
 > by one, but we haven't proven we know the precise value of `count` at each step of the way.
 >
 > In general, the less logic you have in the trailing closure of
-> ``TestStore/send(_:_:file:line:)-3pf4p``, the stronger your assertion will be. It is best to use
+> ``TestStore/send(_:_:file:line:)-6s1gq``, the stronger your assertion will be. It is best to use
 > simple, hard coded data for the mutation.
 
 Test stores do expose a ``TestStore/state`` property, which can be useful for performing assertions
@@ -160,7 +160,7 @@ store.send(.incrementButtonTapped) {
 XCTAssertTrue(store.state.isPrime)
 ```
 
-However, when inside the trailing closure of ``TestStore/send(_:_:file:line:)-3pf4p``, the 
+However, when inside the trailing closure of ``TestStore/send(_:_:file:line:)-6s1gq``, the 
 ``TestStore/state`` property is equal to the state _before_ sending the action, not after. That 
 prevents you from being able to use an escape hatch to get around needing to actually describe the 
 state mutation, like so:
@@ -182,15 +182,15 @@ Effects form a major part of a feature's logic. They can perform network request
 services, load and save data to disk, start and stop timers, interact with Apple frameworks (Core
 Location, Core Motion, Speech Recognition, etc.), and more.
 
-As a simple example, suppose we have a feature with a button such that when you tap it it starts
+As a simple example, suppose we have a feature with a button such that when you tap it, it starts
 a timer that counts up until you reach 5, and then stops. This can be accomplished using the
-``Effect/run(priority:operation:catch:file:fileID:line:)`` helper, which provides you an
+``Effect/run(priority:operation:catch:file:fileID:line:)`` helper, which provides you with an
 asynchronous context to operate in and can send multiple actions back into the system:
 
 ```swift
 struct Feature: ReducerProtocol {
   struct State: Equatable { var count = 0 }
-  enum Action {  case startTimerButtonTapped, timerTick }
+  enum Action { case startTimerButtonTapped, timerTick }
   enum TimerID {}
 
   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
@@ -304,7 +304,7 @@ await store.receive(.timerTick, timeout: .seconds(2)) {
 Now the full test suite passes, and we have exhaustively proven how effects are executed in this
 feature. If in the future we tweak the logic of the effect, like say have it emit 10 times instead 
 of 5, then we will immediately get a test failure letting us know that we have not properly 
-asserted on how the features evolves over time.
+asserted on how the features evolve over time.
 
 However, there is something not ideal about how this feature is structured, and that is the fact
 that we are doing actual, uncontrolled time-based asynchrony in the effect:

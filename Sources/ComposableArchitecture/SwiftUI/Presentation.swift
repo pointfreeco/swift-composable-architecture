@@ -207,19 +207,19 @@ public struct _PresentationDestinationReducer<
         effect = effect.merge(
           with: self.presented
             .dependency(\.navigationID.current, id)
-            .dependency(\.dismiss, DismissEffect { await Task.cancel(id: DismissID.self) })
+            .dependency(\.dismiss, DismissEffect { Task.cancel(id: DismissID.self) })
             .reduce(into: &presentedState, action: presentedAction)
             .map { self.toPresentedAction.embed(.presented($0)) }
             .cancellable(id: id)
         )
       } else {
-        runtimeWarning(
+        runtimeWarn(
           """
-          A "presentationDestination" at "%@:%d" received a destination action when destination \
-          state was absent. …
+          A "presentationDestination" at "\(self.fileID):\(self.line)" received a destination \
+          action when destination state was absent. …
 
             Action:
-              %@
+              \(debugCaseOutput(action))
 
           This is generally considered an application logic error, and can happen for a few \
           reasons:
@@ -233,11 +233,6 @@ public struct _PresentationDestinationReducer<
           from effects that start from this reducer. In SwiftUI applications, use a Composable \
           Architecture view modifier like "sheet(store:…)".
           """,
-          [
-            "\(self.fileID)",
-            self.line,
-            debugCaseOutput(action),
-          ],
           file: self.file,
           line: self.line
         )

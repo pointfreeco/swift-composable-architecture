@@ -26,7 +26,12 @@ public struct CombineReducers<Reducers: ReducerProtocol>: ReducerProtocol {
   public init(
     @ReducerBuilderOf<Reducers> _ build: () -> Reducers
   ) {
-    self.reducers = build()
+    self.init(internal: build())
+  }
+
+  @usableFromInline
+  init(internal reducers: Reducers) {
+    self.reducers = reducers
   }
 
   @inlinable

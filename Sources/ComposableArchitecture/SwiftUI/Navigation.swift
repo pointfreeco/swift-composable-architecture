@@ -356,23 +356,19 @@ where Destinations.State: Hashable {
     case let .dismiss(id):
       guard let index = state[keyPath: self.toNavigationState].destinations.index(forKey: id)
       else {
-        runtimeWarning(
+        runtimeWarn(
           """
-          A "navigationDestination" at "%@:%d" requested dismissal of a missing element.
+          A "navigationDestination" at "\(self.fileID):\(self.line)" requested dismissal of a \
+          missing element.
 
             ID:
-              %@
+              \(id)
 
           This is generally considered an application logic error, and can happen for a few \
           reasons:
 
           • TODO
           """,
-          [
-            "\(self.fileID)",
-            self.line,
-            "\(id)",
-          ],
           file: self.file,
           line: self.line
         )
@@ -391,23 +387,19 @@ where Destinations.State: Hashable {
     case let .element(id, localAction):
       guard let index = state[keyPath: self.toNavigationState].firstIndex(where: { $0.id == id })
       else {
-        runtimeWarning(
+        runtimeWarn(
           """
-          A "navigationDestination" at "%@:%d" received an action for a missing element.
+          A "navigationDestination" at "\(self.fileID):\(self.line)" received an action for a \
+          missing element.
 
             Action:
-              %@
+              \(debugCaseOutput(action))
 
           This is generally considered an application logic error, and can happen for a few \
           reasons:
 
           • TODO
           """,
-          [
-            "\(self.fileID)",
-            self.line,
-            debugCaseOutput(action),
-          ],
           file: self.file,
           line: self.line
         )
@@ -416,7 +408,7 @@ where Destinations.State: Hashable {
       effect = effect.merge(
         with: self.destinations
           .dependency(\.navigationID.current, id)
-          .dependency(\.dismiss, DismissEffect { await Task.cancel(id: DismissID.self) })
+          .dependency(\.dismiss, DismissEffect { Task.cancel(id: DismissID.self) })
           .reduce(
             into: &state[keyPath: self.toNavigationState][index].element,
             action: localAction

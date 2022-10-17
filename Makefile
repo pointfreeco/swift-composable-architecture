@@ -6,28 +6,27 @@ PLATFORM_WATCHOS = watchOS Simulator,name=Apple Watch Series 7 (45mm)
 
 default: test-all
 
-test-all: test-library-debug test-library-release test-examples
+test-all: test-examples
+	CONFIG=debug test-library 
+	CONFIG=release test-library 
+	CONFIG=debug test-library 
+	CONFIG=release test-library 
 
-test-library-debug:
-	for scheme in Dependencies ComposableArchitecture; do \
-	  for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_MAC_CATALYST)" "$(PLATFORM_TVOS)" "$(PLATFORM_WATCHOS)"; do \
-			xcodebuild test \
-				-workspace ComposableArchitecture.xcworkspace \
-				-scheme $$scheme \
-				-destination platform="$$platform"; \
-	  done; \
-	done
+test-library:
+	for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_MAC_CATALYST)" "$(PLATFORM_TVOS)" "$(PLATFORM_WATCHOS)"; do \
+		xcodebuild test \
+			-configuration $(CONFIG) \
+			-workspace ComposableArchitecture.xcworkspace \
+			-scheme ComposableArchitecture \
+			-destination platform="$$platform" || exit 1; \
+	done;
 
-test-library-release:
-	for scheme in Dependencies ComposableArchitecture; do \
-	  for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_MAC_CATALYST)" "$(PLATFORM_TVOS)" "$(PLATFORM_WATCHOS)"; do \
-			xcodebuild test \
-				-configuration release \
-				-workspace ComposableArchitecture.xcworkspace \
-				-scheme $$scheme \
-				-destination platform="$$platform"; \
-	  done; \
-	done
+build-for-library-evolution:
+	swift build \
+		-c release \
+		--target ComposableArchitecture \
+		-Xswiftc -emit-module-interface \
+		-Xswiftc -enable-library-evolution
 
 DOC_WARNINGS := $(shell xcodebuild clean docbuild \
 	-scheme ComposableArchitecture \

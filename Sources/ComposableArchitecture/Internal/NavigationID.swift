@@ -1,3 +1,5 @@
+import Foundation
+
 extension DependencyValues {
   @usableFromInline
   var navigationID: NavigationID {
@@ -14,7 +16,7 @@ public struct NavigationID: @unchecked Sendable {
 
 extension NavigationID: DependencyKey {
   public static let liveValue = {
-    let id = UUIDGenerator.live
+    let id = UUIDGenerator { UUID() }
     return Self { id() }
   }()
 

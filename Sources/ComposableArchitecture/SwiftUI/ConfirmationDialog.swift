@@ -106,7 +106,10 @@ import SwiftUI
 ///   // Also verify that favoriting logic executed correctly
 /// }
 /// ```
-@available(iOS 13, macOS 12, tvOS 13, watchOS 6, *)
+@available(iOS 13, *)
+@available(macOS 12, *)
+@available(tvOS 13, *)
+@available(watchOS 6, *)
 public struct ConfirmationDialogState<Action> {
   public let id = UUID()
   public var buttons: [Button]

@@ -43,15 +43,16 @@ final class EffectTaskTests: XCTestCase {
 
   #if DEBUG
     func testTaskUnhandledFailure() async {
+      var line: UInt!
       XCTExpectFailure(nil, enabled: nil, strict: nil) {
         $0.compactDescription == """
-          An 'Effect.task' returned from "ComposableArchitectureTests/EffectTaskTests.swift:62" \
-          threw an unhandled error. …
+          An "Effect.task" returned from \
+          "ComposableArchitectureTests/EffectTaskTests.swift:\(line+1)" threw an unhandled error. …
 
               EffectTaskTests.Failure()
 
-          All non-cancellation errors must be explicitly handled via the 'catch' parameter on \
-          'Effect.task', or via a 'do' block.
+          All non-cancellation errors must be explicitly handled via the "catch" parameter on \
+          "Effect.task", or via a "do" block.
           """
       }
       struct State: Equatable {}
@@ -59,6 +60,7 @@ final class EffectTaskTests: XCTestCase {
       let reducer = Reduce<State, Action> { state, action in
         switch action {
         case .tapped:
+          line = #line
           return .task {
             struct Failure: Error {}
             throw Failure()

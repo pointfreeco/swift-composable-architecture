@@ -1,4 +1,4 @@
-// swift-tools-version:5.5
+// swift-tools-version:5.6
 
 import PackageDescription
 
@@ -21,7 +21,8 @@ let package = Package(
     ),
   ],
   dependencies: [
-    .package(name: "Benchmark", url: "https://github.com/google/swift-benchmark", from: "0.1.0"),
+    .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"),
+    .package(url: "https://github.com/google/swift-benchmark", from: "0.1.0"),
     .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.7.4"),
     .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "0.8.0"),
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "0.3.0"),
@@ -39,26 +40,12 @@ let package = Package(
         .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
         .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
       ]
-      //      ,
-      //      swiftSettings: [
-      //        .unsafeFlags([
-      //          "-Xfrontend", "-warn-concurrency",
-      //          "-Xfrontend", "-enable-actor-data-race-checks",
-      //        ])
-      //      ]
     ),
     .testTarget(
       name: "ComposableArchitectureTests",
       dependencies: [
         "ComposableArchitecture"
       ]
-      //      ,
-      //      swiftSettings: [
-      //        .unsafeFlags([
-      //          "-Xfrontend", "-warn-concurrency",
-      //          "-Xfrontend", "-enable-actor-data-race-checks",
-      //        ])
-      //      ]
     ),
     .target(
       name: "Dependencies",
@@ -78,15 +65,19 @@ let package = Package(
       name: "swift-composable-architecture-benchmark",
       dependencies: [
         "ComposableArchitecture",
-        .product(name: "Benchmark", package: "Benchmark"),
+        .product(name: "Benchmark", package: "swift-benchmark"),
       ]
     ),
   ]
 )
 
-#if swift(>=5.6)
-  // Add the documentation compiler plugin if possible
-  package.dependencies.append(
-    .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0")
-  )
-#endif
+//for target in package.targets {
+//  target.swiftSettings = target.swiftSettings ?? []
+//  target.swiftSettings?.append(
+//    .unsafeFlags([
+//      "-Xfrontend", "-warn-concurrency",
+//      "-Xfrontend", "-enable-actor-data-race-checks",
+//      "-enable-library-evolution",
+//    ])
+//  )
+//}

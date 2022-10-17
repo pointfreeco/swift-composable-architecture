@@ -4,15 +4,15 @@ import XCTestDynamicOverlay
 extension DependencyValues {
   /// A dependency that yields a random number generator to a closure.
   ///
-  /// Introduce controllable randomness to your reducer by using the ``Dependency`` property wrapper
-  /// with a key path to this property. The wrapped value is an instance of
+  /// Introduce controllable randomness to your features by using the ``Dependency`` property
+  /// wrapper with a key path to this property. The wrapped value is an instance of
   /// ``WithRandomNumberGenerator``, which can be called with a closure to yield a random number
   /// generator. (It can be called directly because it defines
   /// ``WithRandomNumberGenerator/callAsFunction(_:)``, which is called when you invoke the instance
   /// as you would invoke a function.)
   ///
-  /// For example, you could introduce controllable randomness to a reducer that models rolling a
-  /// couple dice:
+  /// For example, you could introduce controllable randomness to a Composable Architecture reducer
+  /// that models rolling a couple dice:
   ///
   /// ```swift
   /// struct Game: ReducerProtocol {
@@ -26,7 +26,7 @@ extension DependencyValues {
   ///
   ///   @Dependency(\.withRandomNumberGenerator) var withRandomNumberGenerator
   ///
-  ///   func reduce(into state: inout State, action: Action) -> Effect<Action> {
+  ///   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
   ///     switch action {
   ///     case .rollDice:
   ///       self.withRandomNumberGenerator { generator in
@@ -78,22 +78,15 @@ extension DependencyValues {
 /// See ``DependencyValues/withRandomNumberGenerator`` for more information.
 public final class WithRandomNumberGenerator: @unchecked Sendable {
   private var generator: RandomNumberGenerator
-  private let lock: os_unfair_lock_t
+  private let lock = NSLock()
 
   public init<T: RandomNumberGenerator & Sendable>(_ generator: T) {
     self.generator = generator
-    self.lock = os_unfair_lock_t.allocate(capacity: 1)
-    self.lock.initialize(to: os_unfair_lock())
-  }
-
-  deinit {
-    self.lock.deinitialize(count: 1)
-    self.lock.deallocate()
   }
 
   public func callAsFunction<R>(_ work: (inout RandomNumberGenerator) -> R) -> R {
-    os_unfair_lock_lock(self.lock)
-    defer { os_unfair_lock_unlock(self.lock) }
+    self.lock.lock()
+    defer { self.lock.unlock() }
     return work(&self.generator)
   }
 }

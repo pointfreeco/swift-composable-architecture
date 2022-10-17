@@ -11,6 +11,8 @@ private let readMe = """
   currently fetching data so that it knows to continue showing the loading indicator.
   """
 
+// MARK: - Feature domain
+
 struct Refreshable: ReducerProtocol {
   struct State: Equatable {
     var count = 0
@@ -61,6 +63,8 @@ struct Refreshable: ReducerProtocol {
   }
 }
 
+// MARK: - Feature view
+
 struct RefreshableView: View {
   @State var isLoading = false
   let store: StoreOf<Refreshable>
@@ -109,6 +113,8 @@ struct RefreshableView: View {
     }
   }
 }
+
+// MARK: - SwiftUI previews
 
 struct Refreshable_Previews: PreviewProvider {
   static var previews: some View {

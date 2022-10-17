@@ -26,8 +26,8 @@ final class DependencyValuesTests: XCTestCase {
         }
       } issueMatcher: {
         $0.compactDescription == """
-          @Dependency(\\.missingLiveDependency) has no live implementation, but was accessed from \
-          a live context.
+          "@Dependency(\\.missingLiveDependency)" has no live implementation, but was accessed \
+          from a live context.
 
             Location:
               DependenciesTests/DependencyValuesTests.swift:\(line)
@@ -36,14 +36,47 @@ final class DependencyValuesTests: XCTestCase {
             Value:
               Int
 
-          Every dependency registered with the library must conform to 'DependencyKey', and that \
+          Every dependency registered with the library must conform to "DependencyKey", and that \
           conformance must be visible to the running application.
 
-          To fix, make sure that 'TestKey' conforms to 'DependencyKey' by providing a live \
+          To fix, make sure that "TestKey" conforms to "DependencyKey" by providing a live \
           implementation of your dependency, and make sure that the conformance is linked with \
           this current application.
           """
       }
     #endif
   }
+
+  func testWithValues() {
+    let date = DependencyValues.withValues {
+      $0.date = .constant(someDate)
+    } operation: { () -> Date in
+      @Dependency(\.date) var date
+      return date.now
+    }
+
+    let defaultDate = DependencyValues.withValues {
+      $0.context = .live
+    } operation: { () -> Date in
+      @Dependency(\.date) var date
+      return date.now
+    }
+
+    XCTAssertEqual(date, someDate)
+    XCTAssertNotEqual(defaultDate, someDate)
+  }
+
+  func testWithValue() {
+    DependencyValues.withValue(\.context, .live) {
+      let date = DependencyValues.withValue(\.date, .constant(someDate)) { () -> Date in
+        @Dependency(\.date) var date
+        return date.now
+      }
+
+      XCTAssertEqual(date, someDate)
+      XCTAssertNotEqual(DependencyValues._current.date.now, someDate)
+    }
+  }
 }
+
+private let someDate = Date(timeIntervalSince1970: 1_234_567_890)

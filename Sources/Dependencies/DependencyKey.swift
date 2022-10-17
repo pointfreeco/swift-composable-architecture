@@ -11,17 +11,24 @@ import XCTestDynamicOverlay
 /// ``liveValue`` is accessed while your feature runs in a `TestStore` a test failure will be
 /// triggered.
 ///
-/// `DependencyKey` inherits two overridable requirements from ``TestDependencyKey``:
-/// ``TestDependencyKey/testValue``, which should return a default value for the purpose of
-/// testing, and ``TestDependencyKey/previewValue-8u2sy``, which can return a default value suitable
-/// for Xcode previews. When left unimplemented, these endpoints will return the ``liveValue``,
-/// instead.
+/// `DependencyKey` inherits from ``TestDependencyKey``, which has two other overridable
+/// requirements: ``TestDependencyKey/testValue``, which should return a default value for the
+/// purpose of testing, and ``TestDependencyKey/previewValue-8u2sy``, which can return a default
+/// value suitable for Xcode previews. When left unimplemented, these endpoints will return the
+/// ``liveValue``, instead.
 ///
 /// If you plan on separating your interface from your live implementation, conform to
-/// ``TestDependencyKey`` in your interface module, and extend this conformance to `DependencyKey`
-/// in your implementation module.
+/// ``TestDependencyKey`` in your interface module, and conform to `DependencyKey` in your
+/// implementation module.
 public protocol DependencyKey: TestDependencyKey {
   /// The live value for the dependency key.
+  ///
+  /// This is the value used by default when running the application in a simulator or on a device.
+  /// Using a live dependency in a test context will lead to a test failure as you should mock
+  /// your dependencies for tests.
+  ///
+  /// To automatically supply a test dependency in a test context, consider implementing the
+  /// ``testValue-535kh`` requirement.
   static var liveValue: Value { get }
 
   // NB: The associated type and requirements of TestDependencyKey are repeated in this protocol

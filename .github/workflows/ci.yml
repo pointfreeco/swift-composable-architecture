@@ -19,25 +19,56 @@ jobs:
     runs-on: macos-12
     strategy:
       matrix:
+<<<<<<< HEAD
         xcode: ['13.4.1', '14.0']
+=======
+        xcode: ['13.4.1', '14.0.1']
+>>>>>>> origin/main
         config: ['debug', 'release']
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
       - name: Run ${{ matrix.config }} tests
+<<<<<<< HEAD
         run: make test-library-${{ matrix.config }}
       - name: Compile documentation
         if: ${{ matrix.xcode == '14.0' }}
         run: make test-docs
+=======
+        run: CONFIG=${{ matrix.config }} make test-library
+
+  library-evolution:
+    runs-on: macos-12
+    strategy:
+      matrix:
+        xcode: ['13.4.1', '14.0.1']
+    steps:
+      - uses: actions/checkout@v3
+      - name: Select Xcode ${{ matrix.xcode }}
+        run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
+      - name: Build for library evolution
+        run: make build-for-library-evolution
+
+  benchmarks:
+    runs-on: macos-12
+    steps:
+      - uses: actions/checkout@v3
+      - name: Select Xcode ${{ matrix.xcode }}
+        run: sudo xcode-select -s /Applications/Xcode_14.0.1.app
+>>>>>>> origin/main
       - name: Run benchmark
         run: make benchmark
 
   examples:
     runs-on: macos-12
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Select Xcode ${{ matrix.xcode }}
+<<<<<<< HEAD
         run: sudo xcode-select -s /Applications/Xcode_14.0.app
+=======
+        run: sudo xcode-select -s /Applications/Xcode_14.0.1.app
+>>>>>>> origin/main
       - name: Run tests
         run: make test-examples

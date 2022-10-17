@@ -20,37 +20,13 @@ jobs:
   build:
     runs-on: macos-12
     steps:
+      - name: Select Xcode 14.0.1
+        run: sudo xcode-select -s /Applications/Xcode_14.0.1.app
+
       - name: Checkout Package
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-
-      - name: Checkout swift-docc
-        uses: actions/checkout@v2
-        with:
-          repository: apple/swift-docc
-          ref: main
-          path: swift-docc
-      - name: Cache DocC
-        id: cache-docc
-        uses: actions/cache@v2
-        with:
-          key: swift-url-docc-build
-          path: swift-docc/.build
-      - name: Build swift-docc
-        if: ${{ !steps.cache-docc.outputs.cache-hit }}
-        run: |
-          cd swift-docc; swift build --product docc -c release; cd ..
-
-      - name: Checkout swift-docc-render
-        uses: actions/checkout@v2
-        with:
-          repository: apple/swift-docc-render
-          ref: main
-          path: swift-docc-render
-      - name: Build swift-docc-render
-        run: |
-          cd swift-docc-render; npm install && npm run build; cd ..
 
       - name: Checkout gh-pages Branch
         uses: actions/checkout@v2
@@ -62,16 +38,21 @@ jobs:
         run: >
           rm -rf docs-out/.git;
           rm -rf docs-out/main;
+<<<<<<< HEAD
           rm -rf docs-out/protocol-beta;
 
           for tag in $(echo "main"; echo "protocol-beta"; git tag);
-          do
-            echo "⏳ Generating documentation for "$tag" release.";
+=======
+          git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | tail -n +6 | xargs -I {} rm -rf {};
 
-            if [ -d "docs-out/$tag" ] 
+          for tag in $(echo "main"; git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | head -6);
+>>>>>>> origin/main
+          do
+            if [ -d "docs-out/$tag/data/documentation/composablearchitecture" ] 
             then 
               echo "✅ Documentation for "$tag" already exists.";
             else 
+<<<<<<< HEAD
               for target in ComposableArchitecture Dependencies;
               do 
                 git checkout .;
@@ -101,11 +82,29 @@ jobs:
                     && echo "✅ Documentation generated for "$tag" release." \
                     || echo "⚠️ Documentation skipped for "$tag".";
               done;
+=======
+              echo "⏳ Generating documentation for ComposableArchitecture @ "$tag" release.";
+              rm -rf "docs-out/$tag";
+
+              git checkout .;
+              git checkout "$tag";
+
+              swift package \
+                --allow-writing-to-directory docs-out/"$tag" \
+                generate-documentation \
+                --target ComposableArchitecture \
+                --output-path docs-out/"$tag" \
+                --transform-for-static-hosting \
+                --hosting-base-path /swift-composable-architecture/"$tag" \
+                && echo "✅ Documentation generated for ComposableArchitecture @ "$tag" release." \
+                || echo "⚠️ Documentation skipped for ComposableArchitecture @ "$tag".";
+>>>>>>> origin/main
             fi;
           done
 
       - name: Fix permissions
         run: 'sudo chown -R $USER docs-out'
+
       - name: Publish documentation to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@4.1.7
         with:

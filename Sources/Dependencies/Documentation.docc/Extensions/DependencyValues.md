@@ -9,7 +9,8 @@
 
 ### Overriding values
 
-- ``withValues(_:operation:file:line:)-2atnb``
+- ``withValue(_:_:operation:)-3yj9d``
+- ``withValues(_:operation:)-1oaja``
 
 ### Dependency values
 

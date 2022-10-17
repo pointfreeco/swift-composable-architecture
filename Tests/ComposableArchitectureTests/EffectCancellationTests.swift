@@ -1,11 +1,6 @@
 import Combine
+@_spi(Internals) import ComposableArchitecture
 import XCTest
-
-#if DEBUG
-  @testable import ComposableArchitecture
-#else
-  import ComposableArchitecture
-#endif
 
 final class EffectCancellationTests: XCTestCase {
   struct CancelID: Hashable {}
@@ -85,8 +80,7 @@ final class EffectCancellationTests: XCTestCase {
         .store(in: &self.cancellables)
     }
 
-    _ = XCTWaiter.wait(for: [self.expectation(description: "")], timeout: 0.3)
-
+    _ = XCTWaiter.wait(for: [self.expectation(description: "")], timeout: 1)
     XCTAssertEqual(value, nil)
   }
 
@@ -123,9 +117,8 @@ final class EffectCancellationTests: XCTestCase {
         .sink(receiveValue: { _ in })
         .store(in: &self.cancellables)
 
-      XCTAssertNil(cancellationCancellables[CancelToken(id: id)])
-    }
-  #endif
+    XCTAssertNil(_cancellationCancellables[_CancelToken(id: id)])
+  }
 
   #if DEBUG
     func testCancellablesCleanUp_OnCancel() {
@@ -143,9 +136,8 @@ final class EffectCancellationTests: XCTestCase {
         .sink(receiveValue: { _ in })
         .store(in: &self.cancellables)
 
-      XCTAssertNil(cancellationCancellables[CancelToken(id: id)])
-    }
-  #endif
+    XCTAssertNil(_cancellationCancellables[_CancelToken(id: id)])
+  }
 
   func testDoubleCancellation() {
     var values: [Int] = []
@@ -242,6 +234,19 @@ final class EffectCancellationTests: XCTestCase {
           "cancellationCancellables should not contain id \(id)"
         )
       }
+    )
+
+    let expectation = self.expectation(description: "wait")
+    effect
+      .sink(receiveCompletion: { _ in expectation.fulfill() }, receiveValue: { _ in })
+      .store(in: &self.cancellables)
+    self.wait(for: [expectation], timeout: 999)
+
+    for id in ids {
+      XCTAssertNil(
+        _cancellationCancellables[_CancelToken(id: id)],
+        "cancellationCancellables should not contain id \(id)"
+      )
     }
   #endif
 
@@ -265,7 +270,15 @@ final class EffectCancellationTests: XCTestCase {
 
       XCTAssertNil(cancellationCancellables[CancelToken(id: id)])
     }
-  #endif
+
+    effect
+      .sink(receiveValue: { _ in })
+      .store(in: &cancellables)
+
+    cancellables.removeAll()
+
+    XCTAssertNil(_cancellationCancellables[_CancelToken(id: id)])
+  }
 
   func testSharedId() {
     let mainQueue = DispatchQueue.test

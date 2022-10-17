@@ -5,7 +5,12 @@
 public struct EmptyReducer<State, Action>: ReducerProtocol {
   /// Initializes a reducer that does nothing.
   @inlinable
-  public init() {}
+  public init() {
+    self.init(internal: ())
+  }
+
+  @usableFromInline
+  init(internal: Void) {}
 
   @inlinable
   public func reduce(into _: inout State, action _: Action) -> Effect<Action, Never> {

@@ -277,6 +277,7 @@ extension Task where Success == Never, Failure == Never {
 /// a safe way we should use an actor, and ``ActorIsolated`` makes this easy:
 ///
 /// ```swift
+/// @MainActor
 /// func testAnalytics() async {
 ///   let store = TestStore(…)
 ///

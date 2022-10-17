@@ -8,12 +8,12 @@ let dependenciesSuite = BenchmarkSuite(name: "Dependencies") { suite in
   #if swift(>=5.7)
     let reducer: some ReducerProtocol<Int, Void> = EmptyReducer()
       .dependency(\.calendar, .autoupdatingCurrent)
-      .dependency(\.date, .live)
+      .dependency(\.date, .init { Date() })
       .dependency(\.locale, .autoupdatingCurrent)
       .dependency(\.mainQueue, .immediate)
       .dependency(\.mainRunLoop, .immediate)
       .dependency(\.timeZone, .autoupdatingCurrent)
-      .dependency(\.uuid, .live)
+      .dependency(\.uuid, .init { UUID() })
 
     suite.benchmark("Dependency key writing") {
       var state = 0

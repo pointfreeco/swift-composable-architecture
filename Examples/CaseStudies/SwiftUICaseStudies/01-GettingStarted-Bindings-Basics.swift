@@ -18,6 +18,8 @@ private let readMe = """
   component changes, which means you can keep using a unidirectional style for your feature.
   """
 
+// MARK: - Feature domain
+
 struct BindingBasics: ReducerProtocol {
   struct State: Equatable {
     var sliderValue = 5.0
@@ -54,6 +56,8 @@ struct BindingBasics: ReducerProtocol {
     }
   }
 }
+
+// MARK: - Feature view
 
 struct BindingBasicsView: View {
   let store: StoreOf<BindingBasics>
@@ -118,6 +122,8 @@ private func alternate(_ string: String) -> String {
     }
     .joined()
 }
+
+// MARK: - SwiftUI previews
 
 struct BindingBasicsView_Previews: PreviewProvider {
   static var previews: some View {

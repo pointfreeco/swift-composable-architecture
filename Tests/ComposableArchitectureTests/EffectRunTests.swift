@@ -43,15 +43,16 @@ final class EffectRunTests: XCTestCase {
 
   #if DEBUG
     func testRunUnhandledFailure() async {
+      var line: UInt!
       XCTExpectFailure(nil, enabled: nil, strict: nil) {
         $0.compactDescription == """
-          An 'Effect.run' returned from "ComposableArchitectureTests/EffectRunTests.swift:62" \
-          threw an unhandled error. …
+          An "Effect.run" returned from \
+          "ComposableArchitectureTests/EffectRunTests.swift:\(line+1)" threw an unhandled error. …
 
               EffectRunTests.Failure()
 
-          All non-cancellation errors must be explicitly handled via the 'catch' parameter on \
-          'Effect.run', or via a 'do' block.
+          All non-cancellation errors must be explicitly handled via the "catch" parameter on \
+          "Effect.run", or via a "do" block.
           """
       }
       struct State: Equatable {}
@@ -59,6 +60,7 @@ final class EffectRunTests: XCTestCase {
       let reducer = Reduce<State, Action> { state, action in
         switch action {
         case .tapped:
+          line = #line
           return .run { send in
             struct Failure: Error {}
             throw Failure()

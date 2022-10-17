@@ -3,12 +3,38 @@ import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
+// MARK: - Deprecated after 0.42.0:
+
+/// This API has been deprecated in favor of ``ReducerProtocol``.
+/// Read <doc:MigratingToTheReducerProtocol> for more information.
+///
+/// A type alias to ``AnyReducer`` for source compatibility. This alias will be removed.
+@available(
+  *,
+  renamed: "AnyReducer",
+  message:
+    """
+    'Reducer' has been deprecated in favor of 'ReducerProtocol'.
+
+    See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+    """
+)
+public typealias Reducer = AnyReducer
+
 // MARK: - Deprecated after 0.41.0:
+
+extension ViewStore {
+  @available(*, deprecated, renamed: "ViewState")
+  public typealias State = ViewState
+
+  @available(*, deprecated, renamed: "ViewAction")
+  public typealias Action = ViewAction
+}
 
 extension ReducerProtocol {
   @available(*, deprecated, renamed: "_printChanges")
-  public func debug() -> _PrintChangesReducer<Self, _CustomDumpPrinter> {
-    _PrintChangesReducer(base: self, printer: .customDump)
+  public func debug() -> _PrintChangesReducer<Self> {
+    self._printChanges()
   }
 }
 
@@ -541,7 +567,7 @@ extension Effect {
 extension ViewStore {
   @available(*, deprecated, renamed: "yield(while:)")
   @MainActor
-  public func suspend(while predicate: @escaping (State) -> Bool) async {
+  public func suspend(while predicate: @escaping (ViewState) -> Bool) async {
     await self.yield(while: predicate)
   }
 }
@@ -651,7 +677,7 @@ extension AnyReducer {
 
 // MARK: - Deprecated after 0.29.0:
 
-extension TestStore where ScopedState: Equatable, Reducer.Action: Equatable {
+extension TestStore where ScopedState: Equatable, Action: Equatable {
   @available(
     *, deprecated, message: "Use 'TestStore.send' and 'TestStore.receive' directly, instead."
   )
@@ -759,7 +785,7 @@ extension TestStore where ScopedState: Equatable, Reducer.Action: Equatable {
 
     @available(*, deprecated, message: "Call 'TestStore.receive' directly, instead.")
     public static func receive(
-      _ action: Reducer.Action,
+      _ action: Action,
       file: StaticString = #file,
       line: UInt = #line,
       _ update: ((inout ScopedState) throws -> Void)? = nil
@@ -771,7 +797,7 @@ extension TestStore where ScopedState: Equatable, Reducer.Action: Equatable {
     public static func environment(
       file: StaticString = #file,
       line: UInt = #line,
-      _ update: @escaping (inout Context) throws -> Void
+      _ update: @escaping (inout Environment) throws -> Void
     ) -> Step {
       Step(.environment(update), file: file, line: line)
     }
@@ -805,8 +831,8 @@ extension TestStore where ScopedState: Equatable, Reducer.Action: Equatable {
 
     fileprivate indirect enum StepType {
       case send(ScopedAction, ((inout ScopedState) throws -> Void)?)
-      case receive(Reducer.Action, ((inout ScopedState) throws -> Void)?)
-      case environment((inout Context) throws -> Void)
+      case receive(Action, ((inout ScopedState) throws -> Void)?)
+      case environment((inout Environment) throws -> Void)
       case `do`(() throws -> Void)
       case sequence([Step])
     }
@@ -909,7 +935,7 @@ extension Store {
   }
 }
 
-extension ViewStore where Action: BindableAction, Action.State == State {
+extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
   @available(
     *, deprecated,
     message:
@@ -922,7 +948,7 @@ extension ViewStore where Action: BindableAction, Action.State == State {
   )
   @MainActor
   public subscript<Value: Equatable>(
-    dynamicMember keyPath: WritableKeyPath<State, BindableState<Value>>
+    dynamicMember keyPath: WritableKeyPath<ViewState, BindableState<Value>>
   ) -> Binding<Value> {
     self.binding(
       get: { $0[keyPath: keyPath].wrappedValue },
@@ -1000,8 +1026,8 @@ extension ViewStore {
   )
   @MainActor
   public func binding<Value: Equatable>(
-    keyPath: WritableKeyPath<State, Value>,
-    send action: @escaping (BindingAction<State>) -> Action
+    keyPath: WritableKeyPath<ViewState, Value>,
+    send action: @escaping (BindingAction<ViewState>) -> ViewAction
   ) -> Binding<Value> {
     self.binding(
       get: { $0[keyPath: keyPath] },
@@ -1063,15 +1089,15 @@ extension AnyReducer {
         return .none
       }
       if index >= parentState[keyPath: toElementsState].endIndex {
-        runtimeWarning(
+        runtimeWarn(
           """
-          A "forEach" reducer at "%@:%d" received an action when state contained no element at \
-          that index. …
+          A "forEach" reducer at "\(fileID):\(line)" received an action when state contained no \
+          element at that index. …
 
             Action:
-              %@
+              \(debugCaseOutput(action))
             Index:
-              %d
+              \(index)
 
           This is generally considered an application logic error, and can happen for a few \
           reasons:
@@ -1093,12 +1119,6 @@ extension AnyReducer {
           when its state contains an element at this index. In SwiftUI applications, use \
           "ForEachStore".
           """,
-          [
-            "\(fileID)",
-            line,
-            debugCaseOutput(action),
-            index,
-          ],
           file: file,
           line: line
         )
@@ -1129,16 +1149,14 @@ extension ForEachStore {
   {
     let data = store.state.value
     self.data = data
-    self.content = {
-      WithViewStore(store.scope(state: { $0.map { $0[keyPath: id] } })) { viewStore in
-        ForEach(Array(viewStore.state.enumerated()), id: \.element) { index, _ in
-          content(
-            store.scope(
-              state: { index < $0.endIndex ? $0[index] : data[index] },
-              action: { (index, $0) }
-            )
+    self.content = WithViewStore(store.scope(state: { $0.map { $0[keyPath: id] } })) { viewStore in
+      ForEach(Array(viewStore.state.enumerated()), id: \.element) { index, _ in
+        content(
+          store.scope(
+            state: { index < $0.endIndex ? $0[index] : data[index] },
+            action: { (index, $0) }
           )
-        }
+        )
       }
     }
   }

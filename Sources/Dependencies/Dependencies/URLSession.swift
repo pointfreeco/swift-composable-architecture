@@ -1,8 +1,12 @@
 import Foundation
 import XCTestDynamicOverlay
 
+#if canImport(FoundationNetworking)
+  import FoundationNetworking
+#endif
+
 extension DependencyValues {
-  /// The URL session that reducers should use to make URL requests.
+  /// The URL session that features should use to make URL requests.
   ///
   /// By default, the session returned from `URLSession.shared` is supplied. When used from a
   /// `TestStore`, access will call to `XCTFail` when invoked, unless explicitly overridden:

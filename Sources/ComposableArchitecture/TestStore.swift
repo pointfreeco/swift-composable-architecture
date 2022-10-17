@@ -181,7 +181,7 @@ import XCTestDynamicOverlay
 /// This test is proving that the debounced network requests are correctly canceled when we do not
 /// wait longer than the 0.5 seconds, because if it wasn't and it delivered an action when we did
 /// not expect it would cause a test failure.
-public final class TestStore<Reducer: ReducerProtocol, ScopedState, ScopedAction, Context> {
+public final class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
   /// The current dependencies.
   ///
   /// The dependencies define the execution context that your feature runs in. They can be
@@ -213,46 +213,47 @@ public final class TestStore<Reducer: ReducerProtocol, ScopedState, ScopedAction
   ///   …
   /// }
   /// ```
-  public var environment: Context {
+  public var environment: Environment {
     _read { yield self._environment.wrappedValue }
     _modify { yield &self._environment.wrappedValue }
   }
 
   /// The current state.
   ///
-  /// When read from a trailing closure assertion in ``send(_:_:file:line:)-3pf4p`` or
+  /// When read from a trailing closure assertion in ``send(_:_:file:line:)-6s1gq`` or
   /// ``receive(_:timeout:_:file:line:)``, it will equal the `inout` state passed to the closure.
-  public var state: Reducer.State {
+  public var state: State {
     self.reducer.state
   }
 
   /// The timeout to await for in-flight effects.
   ///
   /// This is the default timeout used in all methods that take an optional timeout, such as
-  /// ``send(_:_:file:line:)-3pf4p``, ``receive(_:timeout:_:file:line:)`` and
-  /// ``finish(timeout:file:line:)``.
+  /// ``receive(_:timeout:_:file:line:)`` and ``finish(timeout:file:line:)``.
   public var timeout: UInt64
 
-  private var _environment: Box<Context>
+  private var _environment: Box<Environment>
   private let file: StaticString
-  private let fromScopedAction: (ScopedAction) -> Reducer.Action
+  private let fromScopedAction: (ScopedAction) -> Action
   private var line: UInt
-  let reducer: TestReducer<Reducer>
-  private var store: Store<Reducer.State, TestReducer<Reducer>.Action>!
-  private let toScopedState: (Reducer.State) -> ScopedState
+  let reducer: TestReducer<State, Action>
+  private let store: Store<State, TestReducer<State, Action>.TestAction>
+  private let toScopedState: (State) -> ScopedState
 
-  public init(
-    initialState: Reducer.State,
+  public init<Reducer: ReducerProtocol>(
+    initialState: State,
     reducer: Reducer,
     file: StaticString = #file,
     line: UInt = #line
   )
   where
-    Reducer.State == ScopedState,
-    Reducer.Action == ScopedAction,
-    Context == Void
+    Reducer.State == State,
+    Reducer.Action == Action,
+    State == ScopedState,
+    Action == ScopedAction,
+    Environment == Void
   {
-    let reducer = TestReducer(reducer, initialState: initialState)
+    let reducer = TestReducer(Reduce(reducer), initialState: initialState)
     self._environment = .init(wrappedValue: ())
     self.file = file
     self.fromScopedAction = { $0 }
@@ -305,14 +306,12 @@ public final class TestStore<Reducer: ReducerProtocol, ScopedState, ScopedAction
   )
   public init(
     initialState: ScopedState,
-    reducer: AnyReducer<ScopedState, ScopedAction, Context>,
-    environment: Context,
+    reducer: AnyReducer<ScopedState, ScopedAction, Environment>,
+    environment: Environment,
     file: StaticString = #file,
     line: UInt = #line
   )
-  where
-    Reducer == Reduce<ScopedState, ScopedAction>
-  {
+  where State == ScopedState, Action == ScopedAction {
     let environment = Box(wrappedValue: environment)
     let reducer = TestReducer(
       Reduce(
@@ -332,14 +331,14 @@ public final class TestStore<Reducer: ReducerProtocol, ScopedState, ScopedAction
   }
 
   init(
-    _environment: Box<Context>,
+    _environment: Box<Environment>,
     file: StaticString,
-    fromScopedAction: @escaping (ScopedAction) -> Reducer.Action,
+    fromScopedAction: @escaping (ScopedAction) -> Action,
     line: UInt,
-    reducer: TestReducer<Reducer>,
-    store: Store<Reducer.State, TestReducer<Reducer>.Action>,
+    reducer: TestReducer<State, Action>,
+    store: Store<State, TestReducer<State, Action>.Action>,
     timeout: UInt64 = 100 * NSEC_PER_MSEC,
-    toScopedState: @escaping (Reducer.State) -> ScopedState
+    toScopedState: @escaping (State) -> ScopedState
   ) {
     self._environment = _environment
     self.file = file
@@ -711,7 +710,7 @@ extension TestStore where ScopedState: Equatable {
   }
 }
 
-extension TestStore where ScopedState: Equatable, Reducer.Action: Equatable {
+extension TestStore where ScopedState: Equatable, Action: Equatable {
   /// Asserts an action was received from an effect and asserts when state changes.
   ///
   /// - Parameters:
@@ -725,7 +724,7 @@ extension TestStore where ScopedState: Equatable, Reducer.Action: Equatable {
   @available(tvOS, deprecated: 9999.0, message: "Call the async-friendly 'receive' instead.")
   @available(watchOS, deprecated: 9999.0, message: "Call the async-friendly 'receive' instead.")
   public func receive(
-    _ expectedAction: Reducer.Action,
+    _ expectedAction: Action,
     _ updateExpectingResult: ((inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
@@ -795,7 +794,7 @@ extension TestStore where ScopedState: Equatable, Reducer.Action: Equatable {
     @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
     @MainActor
     public func receive(
-      _ expectedAction: Reducer.Action,
+      _ expectedAction: Action,
       timeout duration: Duration,
       _ updateExpectingResult: ((inout ScopedState) throws -> Void)? = nil,
       file: StaticString = #file,
@@ -822,7 +821,7 @@ extension TestStore where ScopedState: Equatable, Reducer.Action: Equatable {
   ///     expected.
   @MainActor
   public func receive(
-    _ expectedAction: Reducer.Action,
+    _ expectedAction: Action,
     timeout nanoseconds: UInt64? = nil,
     _ updateExpectingResult: ((inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
@@ -839,7 +838,7 @@ extension TestStore where ScopedState: Equatable, Reducer.Action: Equatable {
     await Task.megaYield()
     let start = DispatchTime.now().uptimeNanoseconds
     while !Task.isCancelled {
-      await Task.detached(priority: .low) { await Task.yield() }.value
+      await Task.detached(priority: .background) { await Task.yield() }.value
 
       guard self.reducer.receivedActions.isEmpty
       else { break }
@@ -904,7 +903,7 @@ extension TestStore {
   public func scope<S, A>(
     state toScopedState: @escaping (ScopedState) -> S,
     action fromScopedAction: @escaping (A) -> ScopedAction
-  ) -> TestStore<Reducer, S, A, Context> {
+  ) -> TestStore<State, Action, S, A, Environment> {
     .init(
       _environment: self._environment,
       file: self.file,
@@ -926,12 +925,12 @@ extension TestStore {
   ///   view store state transformations.
   public func scope<S>(
     state toScopedState: @escaping (ScopedState) -> S
-  ) -> TestStore<Reducer, S, ScopedAction, Context> {
+  ) -> TestStore<State, Action, S, ScopedAction, Environment> {
     self.scope(state: toScopedState, action: { $0 })
   }
 }
 
-/// The type returned from ``TestStore/send(_:_:file:line:)-3pf4p`` that represents the lifecycle
+/// The type returned from ``TestStore/send(_:_:file:line:)-6s1gq`` that represents the lifecycle
 /// of the effect started from sending an action.
 ///
 /// You can use this value in tests to cancel the effect started from sending an action:
@@ -963,6 +962,11 @@ extension TestStore {
 public struct TestStoreTask: Hashable, Sendable {
   fileprivate let rawValue: Task<Void, Never>?
   fileprivate let timeout: UInt64
+
+  @_spi(Canary) public init(rawValue: Task<Void, Never>?, timeout: UInt64) {
+    self.rawValue = rawValue
+    self.timeout = timeout
+  }
 
   /// Cancels the underlying task and waits for it to finish.
   public func cancel() async {
@@ -1044,8 +1048,8 @@ public struct TestStoreTask: Hashable, Sendable {
   }
 }
 
-class TestReducer<Base: ReducerProtocol>: ReducerProtocol {
-  let base: Base
+class TestReducer<State, Action>: ReducerProtocol {
+  let base: Reduce<State, Action>
   var dependencies = { () -> DependencyValues in
     var dependencies = DependencyValues()
     dependencies.context = .test
@@ -1053,21 +1057,21 @@ class TestReducer<Base: ReducerProtocol>: ReducerProtocol {
   }()
   let effectDidSubscribe = AsyncStream<Void>.streamWithContinuation()
   var inFlightEffects: Set<LongLivingEffect> = []
-  var receivedActions: [(action: Base.Action, state: Base.State)] = []
-  var state: Base.State
+  var receivedActions: [(action: Action, state: State)] = []
+  var state: State
 
   init(
-    _ base: Base,
-    initialState: Base.State
+    _ base: Reduce<State, Action>,
+    initialState: State
   ) {
     self.base = base
     self.state = initialState
   }
 
-  func reduce(into state: inout Base.State, action: Action) -> Effect<Action, Never> {
+  func reduce(into state: inout State, action: TestAction) -> Effect<TestAction, Never> {
     let reducer = self.base.dependency(\.self, self.dependencies)
 
-    let effects: Effect<Base.Action, Never>
+    let effects: Effect<Action, Never>
     switch action.origin {
     case let .send(action):
       effects = reducer.reduce(into: &state, action: action)
@@ -1117,22 +1121,22 @@ class TestReducer<Base: ReducerProtocol>: ReducerProtocol {
     }
   }
 
-  struct Action {
+  struct TestAction {
     let origin: Origin
     let file: StaticString
     let line: UInt
 
     enum Origin {
-      case send(Base.Action)
-      case receive(Base.Action)
+      case send(Action)
+      case receive(Action)
     }
   }
 }
 
 extension Task where Success == Never, Failure == Never {
-  static func megaYield(count: Int = 10) async {
+  @_spi(Internals) public static func megaYield(count: Int = 10) async {
     for _ in 1...count {
-      await Task<Void, Never>.detached(priority: .low) { await Task.yield() }.value
+      await Task<Void, Never>.detached(priority: .background) { await Task.yield() }.value
     }
   }
 }
