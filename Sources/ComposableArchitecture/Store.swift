@@ -368,7 +368,7 @@ public final class Store<State, Action> {
               self?.threadCheck(status: .effectCompletion(action))
               self?.effectCancellables[uuid] = nil
             }
-          )
+          ) 
           .sink(
             receiveCompletion: { [weak self] _ in
               self?.threadCheck(status: .effectCompletion(action))

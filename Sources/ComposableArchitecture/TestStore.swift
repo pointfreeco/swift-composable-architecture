@@ -551,7 +551,7 @@ extension TestStore where ScopedState: Equatable {
     }
     var expectedState = self.toScopedState(self.state)
     let previousState = self.reducer.state
-    let task = self.store
+    let task = self.store 
       .send(.init(origin: .send(self.fromScopedAction(action)), file: file, line: line))
     await self.reducer.effectDidSubscribe.stream.first(where: { _ in true })
     do {
@@ -1087,10 +1087,9 @@ class TestReducer<State, Action>: ReducerProtocol {
       self.effectDidSubscribe.continuation.yield()
       return .none
 
-    case .publisher, .run:
+    case let .publisher(publisher):
       let effect = LongLivingEffect(file: action.file, line: action.line)
-      return
-        effects
+      return publisher
         .handleEvents(
           receiveSubscription: { [effectDidSubscribe, weak self] _ in
             self?.inFlightEffects.insert(effect)
@@ -1104,6 +1103,18 @@ class TestReducer<State, Action>: ReducerProtocol {
         )
         .map { .init(origin: .receive($0), file: action.file, line: action.line) }
         .eraseToEffect()
+
+    case let .run(priority, operation):
+      let effect = LongLivingEffect(file: action.file, line: action.line)
+      self.inFlightEffects.insert(effect)
+      return .run(priority: priority) { @MainActor [effectDidSubscribe, weak self] send in
+        defer { self?.inFlightEffects.remove(effect) }
+        await Task.megaYield()
+        effectDidSubscribe.continuation.yield()
+        await operation(Send {
+          send(.init(origin: .receive($0), file: action.file, line: action.line))
+        })
+      }
     }
   }
 

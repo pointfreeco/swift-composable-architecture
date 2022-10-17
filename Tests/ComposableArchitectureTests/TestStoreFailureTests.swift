@@ -142,7 +142,7 @@
     }
 
     func testEffectInFlightAfterDeinit() {
-      XCTExpectFailure {
+      XCTExpectFailure { 
         do {
           let store = TestStore(
             initialState: 0,
