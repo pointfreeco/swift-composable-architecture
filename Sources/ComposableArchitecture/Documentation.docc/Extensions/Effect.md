@@ -1,4 +1,4 @@
-# ``ComposableArchitecture/Effect``
+# ``ComposableArchitecture/EffectPublisher``
 
 ## Topics
 
@@ -12,16 +12,16 @@
 
 ### Cancellation
 
-- ``cancellable(id:cancelInFlight:)-499iv``
-- ``cancel(id:)-7vmd9``
-- ``cancel(ids:)-8gan2``
-- ``withTaskCancellation(id:cancelInFlight:operation:)-88kxz``
+- ``cancellable(id:cancelInFlight:)-29q60``
+- ``cancel(id:)-6hzsl``
+- ``cancel(ids:)-1cqqx``
+- ``withTaskCancellation(id:cancelInFlight:operation:)-4dtr6``
 
 ### Composition
 
-- ``map(_:)-28ghh``
-- ``merge(_:)-3al9f``
-- ``merge(_:)-4n451``
+- ``map(_:)-yn70``
+- ``merge(_:)-45guh``
+- ``merge(_:)-3d54p``
 
 ### Concurrency
 
