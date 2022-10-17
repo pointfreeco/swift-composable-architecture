@@ -220,7 +220,7 @@
   ///   1. You can either implement the ``reduce(into:action:)-8yinq`` method, which is given direct
   ///      mutable access to application ``State`` whenever an ``Action`` is fed into the system,
   ///      and returns an ``EffectTask`` that can communicate with the outside world and feed
-///        additional ``Action``s back into the system.
+  ///        additional ``Action``s back into the system.
   ///
   ///   2. Or you can implement the ``body-swift.property-7foai`` property, which combines one or
   ///      more reducers together.
