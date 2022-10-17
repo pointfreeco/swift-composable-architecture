@@ -33,6 +33,7 @@ extension EffectPublisher {
     case .none:
       return .none
     case let .publisher(publisher):
+      let navigationID = DependencyValues._current.navigationID.current
       return Self(
         operation: .publisher(
           Deferred {
@@ -45,7 +46,7 @@ extension EffectPublisher {
             _cancellablesLock.lock()
             defer { _cancellablesLock.unlock() }
 
-            let id = _CancelToken(id: id)
+            let id = _CancelToken(id: id, navigationID: navigationID)
             if cancelInFlight {
               _cancellationCancellables[id]?.forEach { $0.cancel() }
             }
@@ -81,10 +82,15 @@ extension EffectPublisher {
         )
       )
     case let .run(priority, operation):
+      let navigationID = DependencyValues._current.navigationID.current
       return Self(
         operation: .run(priority) { send in
-          await withTaskCancellation(id: id, cancelInFlight: cancelInFlight) {
-            await operation(send)
+          await DependencyValues.withValues {
+            $0.navigationID.current = navigationID
+          } operation: {
+            await withTaskCancellation(id: id, cancelInFlight: cancelInFlight) {
+              await operation(send)
+            }
           }
         }
       )
@@ -101,8 +107,14 @@ extension EffectPublisher {
   ///   - cancelInFlight: Determines if any in-flight effect with the same identifier should be
   ///     canceled before starting this new one.
   /// - Returns: A new effect that is capable of being canceled by an identifier.
-  public func cancellable(id: Any.Type, cancelInFlight: Bool = false) -> Self {
-    self.cancellable(id: ObjectIdentifier(id), cancelInFlight: cancelInFlight)
+  public func cancellable(
+    id: Any.Type,
+    cancelInFlight: Bool = false
+  ) -> Self {
+    self.cancellable(
+      id: ObjectIdentifier(id),
+      cancelInFlight: cancelInFlight
+    )
   }
 
   /// An effect that will cancel any currently in-flight effect with the given identifier.
@@ -111,9 +123,11 @@ extension EffectPublisher {
   /// - Returns: A new effect that will cancel any currently in-flight effect with the given
   ///   identifier.
   public static func cancel(id: AnyHashable) -> Self {
-    .fireAndForget {
+    let navigationID = DependencyValues._current.navigationID.current
+    return .fireAndForget {
       _cancellablesLock.sync {
-        _cancellationCancellables[.init(id: id)]?.forEach { $0.cancel() }
+        _cancellationCancellables[.init(id: id, navigationID: navigationID)]?
+          .forEach { $0.cancel() }
       }
     }
   }
@@ -196,7 +210,7 @@ public func withTaskCancellation<T: Sendable>(
   cancelInFlight: Bool = false,
   operation: @Sendable @escaping () async throws -> T
 ) async rethrows -> T {
-  let id = _CancelToken(id: id)
+  let id = _CancelToken(id: id, navigationID: DependencyValues._current.navigationID.current)
   let (cancellable, task) = _cancellablesLock.sync { () -> (AnyCancellable, Task<T, Error>) in
     if cancelInFlight {
       _cancellationCancellables[id]?.forEach { $0.cancel() }
@@ -250,7 +264,8 @@ extension Task where Success == Never, Failure == Never {
   ///
   /// - Parameter id: An identifier.
   public static func cancel<ID: Hashable & Sendable>(id: ID) {
-    _cancellablesLock.sync { _cancellationCancellables[.init(id: id)]?.forEach { $0.cancel() } }
+    let id = _CancelToken(id: id, navigationID: DependencyValues._current.navigationID.current)
+    _cancellablesLock.sync { _cancellationCancellables[id]?.forEach { $0.cancel() } }
   }
 
   /// Cancel any currently in-flight operation with the given identifier.
@@ -266,10 +281,12 @@ extension Task where Success == Never, Failure == Never {
 
 @_spi(Internals) public struct _CancelToken: Hashable {
   let id: AnyHashable
+  let navigationID: AnyHashable?
   let discriminator: ObjectIdentifier
 
-  public init(id: AnyHashable) {
+  public init(id: AnyHashable, navigationID: AnyHashable? = nil) {
     self.id = id
+    self.navigationID = navigationID ?? DependencyValues._current.navigationID.current
     self.discriminator = ObjectIdentifier(type(of: id.base))
   }
 }

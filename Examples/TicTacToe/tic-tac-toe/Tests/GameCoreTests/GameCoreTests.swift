@@ -12,7 +12,7 @@ final class GameCoreTests: XCTestCase {
     reducer: Game()
   )
 
-  func testFlow_Winner_Quit() async {
+  func testFlow_Winner() async {
     await self.store.send(.cellTapped(row: 0, column: 0)) {
       $0.board[0][0] = .x
       $0.currentPlayer = .o
@@ -32,7 +32,6 @@ final class GameCoreTests: XCTestCase {
     await self.store.send(.cellTapped(row: 2, column: 0)) {
       $0.board[2][0] = .x
     }
-    await self.store.send(.quitButtonTapped)
   }
 
   func testFlow_Tie() async {

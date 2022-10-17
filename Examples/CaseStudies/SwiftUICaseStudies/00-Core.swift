@@ -20,8 +20,10 @@ struct Root: ReducerProtocol {
     var map = MapApp.State(cityMaps: .mocks)
     var navigateAndLoad = NavigateAndLoad.State()
     var navigateAndLoadList = NavigateAndLoadList.State()
+    var navigation = NavigationDemo.State()
     var nested = Nested.State.mock
     var optionalBasics = OptionalBasics.State()
+    var presentation = SheetDemo.State()
     var presentAndLoad = PresentAndLoad.State()
     var refreshable = Refreshable.State()
     var shared = SharedState.State()
@@ -49,9 +51,11 @@ struct Root: ReducerProtocol {
     case map(MapApp.Action)
     case navigateAndLoad(NavigateAndLoad.Action)
     case navigateAndLoadList(NavigateAndLoadList.Action)
+    case navigation(NavigationDemo.Action)
     case nested(Nested.Action)
     case optionalBasics(OptionalBasics.Action)
     case onAppear
+    case presentation(SheetDemo.Action)
     case presentAndLoad(PresentAndLoad.Action)
     case refreshable(Refreshable.Action)
     case shared(SharedState.Action)
@@ -128,11 +132,17 @@ struct Root: ReducerProtocol {
     Scope(state: \.navigateAndLoadList, action: /Action.navigateAndLoadList) {
       NavigateAndLoadList()
     }
+    Scope(state: \.navigation, action: /Action.navigation) {
+      NavigationDemo()
+    }
     Scope(state: \.nested, action: /Action.nested) {
       Nested()
     }
     Scope(state: \.optionalBasics, action: /Action.optionalBasics) {
       OptionalBasics()
+    }
+    Scope(state: \.presentation, action: /Action.presentation) {
+      SheetDemo()
     }
     Scope(state: \.presentAndLoad, action: /Action.presentAndLoad) {
       PresentAndLoad()

@@ -292,7 +292,7 @@ final class EffectTests: XCTestCase {
         case response(Int)
       }
       @Dependency(\.date) var date
-      func reduce(into state: inout Int, action: Action) -> Effect<Action, Never> {
+      func reduce(into state: inout Int, action: Action) -> EffectTask<Action> {
         switch action {
         case .tap:
           return .run { send in

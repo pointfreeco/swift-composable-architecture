@@ -2,8 +2,8 @@ import CasePaths
 import Dispatch
 
 extension AnyReducer {
-  /// This API has been soft-deprecated in favor of ``ReducerProtocol/debug()``. Read
-  /// <doc:MigratingToTheReducerProtocol> for more information.
+  /// > This API has been soft-deprecated in favor of ``ReducerProtocol/debug()``. Read
+  /// > <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// Prints debug messages describing all received actions and state mutations.
   ///
@@ -64,8 +64,8 @@ extension AnyReducer {
     )
   }
 
-  /// The API that used this type has been soft-deprecated in favor of ``ReducerProtocol/debug()``.
-  /// Read <doc:MigratingToTheReducerProtocol> for more information.
+  /// > The API that used this type has been soft-deprecated in favor of
+  /// > ``ReducerProtocol/debug()``. Read <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// Prints debug messages describing all received actions.
   ///
@@ -126,8 +126,8 @@ extension AnyReducer {
     )
   }
 
-  /// This API has been soft-deprecated in favor of ``ReducerProtocol/debug()``. Read
-  /// <doc:MigratingToTheReducerProtocol> for more information.
+  /// > This API has been soft-deprecated in favor of ``ReducerProtocol/debug()``. Read
+  /// > <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// Prints debug messages describing all received actions and state mutations.
   ///
@@ -287,9 +287,8 @@ public enum ActionFormat: Sendable {
   case prettyPrint
 }
 
-/// The API that used this type has been soft-deprecated in favor of
-/// ``ReducerProtocol/debug()`` Read <doc:MigratingToTheReducerProtocol> for more
-/// information.
+/// > The API that used this type has been soft-deprecated in favor of
+/// > ``ReducerProtocol/debug()`` Read <doc:MigratingToTheReducerProtocol> for more information.
 ///
 /// An environment for debug-printing reducers.
 @available(

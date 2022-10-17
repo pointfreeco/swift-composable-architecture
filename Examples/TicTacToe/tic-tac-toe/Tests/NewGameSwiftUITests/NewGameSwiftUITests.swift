@@ -23,9 +23,5 @@ final class NewGameSwiftUITests: XCTestCase {
     await self.store.send(.letsPlayButtonTapped) {
       $0.isGameActive = true
     }
-    await self.store.send(.gameDismissed) {
-      $0.isGameActive = false
-    }
-    await self.store.send(.logoutButtonTapped)
   }
 }

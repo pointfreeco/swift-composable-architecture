@@ -18,7 +18,7 @@ struct LoadThenNavigateList: ReducerProtocol {
       Row(count: 42, id: UUID()),
       Row(count: 100, id: UUID()),
     ]
-    var selection: Identified<Row.ID, Counter.State>?
+    @PresentationStateOf<Counter> var selection
 
     struct Row: Equatable, Identifiable {
       var count: Int
@@ -28,10 +28,8 @@ struct LoadThenNavigateList: ReducerProtocol {
   }
 
   enum Action: Equatable {
-    case counter(Counter.Action)
-    case onDisappear
-    case setNavigation(selection: UUID?)
-    case setNavigationSelectionDelayCompleted(UUID)
+    case selection(PresentationActionOf<Counter>)
+    case selectionDelayCompleted(UUID)
   }
 
   @Dependency(\.mainQueue) var mainQueue
@@ -40,42 +38,31 @@ struct LoadThenNavigateList: ReducerProtocol {
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
-      case .counter:
-        return .none
+      case let .selection(.present(id as UUID, _)):
+        enum CancelID {}
 
-      case .onDisappear:
-        return .cancel(id: CancelID.self)
-
-      case let .setNavigation(selection: .some(navigatedId)):
         for row in state.rows {
-          state.rows[id: row.id]?.isActivityIndicatorVisible = row.id == navigatedId
+          state.rows[id: row.id]?.isActivityIndicatorVisible = row.id == id
         }
         return .task {
           try await self.mainQueue.sleep(for: 1)
-          return .setNavigationSelectionDelayCompleted(navigatedId)
+          return .selectionDelayCompleted(id)
         }
         .cancellable(id: CancelID.self, cancelInFlight: true)
 
-      case .setNavigation(selection: .none):
-        if let selection = state.selection {
-          state.rows[id: selection.id]?.count = selection.count
-        }
-        state.selection = nil
-        return .cancel(id: CancelID.self)
+      case .selection:
+        return .none
 
-      case let .setNavigationSelectionDelayCompleted(id):
+      case let .selectionDelayCompleted(id):
         state.rows[id: id]?.isActivityIndicatorVisible = false
-        state.selection = Identified(
-          Counter.State(count: state.rows[id: id]?.count ?? 0),
-          id: id
-        )
+        if let count = state.rows[id: id]?.count {
+          state.selection = Counter.State(count: count)
+        }
         return .none
       }
     }
-    .ifLet(\.selection, action: /Action.counter) {
-      Scope(state: \Identified<State.Row.ID, Counter.State>.value, action: /.self) {
-        Counter()
-      }
+    .presentationDestination(\.$selection, action: /Action.selection) {
+      Counter()
     }
   }
 }
@@ -92,21 +79,9 @@ struct LoadThenNavigateListView: View {
           AboutView(readMe: readMe)
         }
         ForEach(viewStore.rows) { row in
-          NavigationLink(
-            destination: IfLetStore(
-              self.store.scope(
-                state: \.selection?.value,
-                action: LoadThenNavigateList.Action.counter
-              )
-            ) {
-              CounterView(store: $0)
-            },
-            tag: row.id,
-            selection: viewStore.binding(
-              get: \.selection?.id,
-              send: LoadThenNavigateList.Action.setNavigation(selection:)
-            )
-          ) {
+          Button {
+            viewStore.send(.selection(.present(id: row.id)))
+          } label: {
             HStack {
               Text("Load optional counter that starts from \(row.count)")
               if row.isActivityIndicatorVisible {
@@ -117,8 +92,14 @@ struct LoadThenNavigateListView: View {
           }
         }
       }
+      .navigationDestination(
+        store: self.store.scope(
+          state: \.$selection,
+          action: LoadThenNavigateList.Action.selection
+        ),
+        destination: CounterView.init(store:)
+      )
       .navigationTitle("Load then navigate")
-      .onDisappear { viewStore.send(.onDisappear) }
     }
   }
 }
@@ -127,7 +108,7 @@ struct LoadThenNavigateListView: View {
 
 struct LoadThenNavigateListView_Previews: PreviewProvider {
   static var previews: some View {
-    NavigationView {
+    NavigationStack {
       LoadThenNavigateListView(
         store: Store(
           initialState: LoadThenNavigateList.State(

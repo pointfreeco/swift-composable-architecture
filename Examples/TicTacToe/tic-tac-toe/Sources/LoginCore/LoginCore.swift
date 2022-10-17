@@ -10,7 +10,7 @@ public struct Login: ReducerProtocol {
     public var isFormValid = false
     public var isLoginRequestInFlight = false
     public var password = ""
-    public var twoFactor: TwoFactor.State?
+    @PresentationStateOf<TwoFactor> public var twoFactor
 
     public init() {}
   }
@@ -19,10 +19,8 @@ public struct Login: ReducerProtocol {
     case alertDismissed
     case emailChanged(String)
     case passwordChanged(String)
-    case loginButtonTapped
     case loginResponse(TaskResult<AuthenticationResponse>)
-    case twoFactor(TwoFactor.Action)
-    case twoFactorDismissed
+    case twoFactor(PresentationActionOf<TwoFactor>)
   }
 
   @Dependency(\.authenticationClient) var authenticationClient
@@ -58,7 +56,7 @@ public struct Login: ReducerProtocol {
         state.isFormValid = !state.email.isEmpty && !state.password.isEmpty
         return .none
 
-      case .loginButtonTapped:
+      case .twoFactor(.present):
         state.isLoginRequestInFlight = true
         return .task { [email = state.email, password = state.password] in
           .loginResponse(
@@ -72,13 +70,9 @@ public struct Login: ReducerProtocol {
 
       case .twoFactor:
         return .none
-
-      case .twoFactorDismissed:
-        state.twoFactor = nil
-        return .cancel(id: TwoFactor.TearDownToken.self)
       }
     }
-    .ifLet(\.twoFactor, action: /Action.twoFactor) {
+    .presentationDestination(\.$twoFactor, action: /Action.twoFactor) {
       TwoFactor()
     }
   }

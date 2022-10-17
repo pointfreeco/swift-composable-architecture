@@ -96,7 +96,7 @@ await store.send(.incrementButtonTapped) {
 ```
 
 > The ``TestStore/send(_:_:file:line:)-6s1gq`` method is `async` for technical reasons that we do
-not have to worry about right now.
+> not have to worry about right now.
 
 If your mutation is incorrect, meaning you perform a mutation that is different from what happened
 in the ``Reducer``, then you will get a test failure with a nicely formatted message showing exactly
