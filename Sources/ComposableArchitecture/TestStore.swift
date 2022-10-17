@@ -1702,8 +1702,7 @@ private func XCTFailHelper(
   }
 }
 
-// TODO: Move to XCTest Dynamic Overlay
-func _XCTExpectFailure(
+private func _XCTExpectFailure(
   _ failureReason: String? = nil,
   strict: Bool = true,
   failingBlock: () -> Void
