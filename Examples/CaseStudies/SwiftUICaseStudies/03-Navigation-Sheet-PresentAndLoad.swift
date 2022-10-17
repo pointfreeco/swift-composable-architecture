@@ -8,41 +8,28 @@ private let readMe = """
   state and fires off an effect that will load this state a second later.
   """
 
-struct PresentAndLoadState: Equatable {
-  var optionalCounter: CounterState?
-  var isSheetPresented = false
-}
+struct PresentAndLoad: ReducerProtocol {
+  struct State: Equatable {
+    var optionalCounter: Counter.State?
+    var isSheetPresented = false
+  }
 
-enum PresentAndLoadAction {
-  case optionalCounter(CounterAction)
-  case setSheet(isPresented: Bool)
-  case setSheetIsPresentedDelayCompleted
-}
+  enum Action {
+    case optionalCounter(Counter.Action)
+    case setSheet(isPresented: Bool)
+    case setSheetIsPresentedDelayCompleted
+  }
 
-struct PresentAndLoadEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
+  @Dependency(\.mainQueue) var mainQueue
+  private enum CancelID {}
 
-let presentAndLoadReducer =
-  counterReducer
-  .optional()
-  .pullback(
-    state: \.optionalCounter,
-    action: /PresentAndLoadAction.optionalCounter,
-    environment: { _ in CounterEnvironment() }
-  )
-  .combined(
-    with: Reducer<
-      PresentAndLoadState, PresentAndLoadAction, PresentAndLoadEnvironment
-    > { state, action, environment in
-
-      enum CancelID {}
-
+  var body: some ReducerProtocol<State, Action> {
+    Reduce { state, action in
       switch action {
       case .setSheet(isPresented: true):
         state.isSheetPresented = true
         return .task {
-          try await environment.mainQueue.sleep(for: 1)
+          try await self.mainQueue.sleep(for: 1)
           return .setSheetIsPresentedDelayCompleted
         }
         .cancellable(id: CancelID.self)
@@ -53,17 +40,21 @@ let presentAndLoadReducer =
         return .cancel(id: CancelID.self)
 
       case .setSheetIsPresentedDelayCompleted:
-        state.optionalCounter = CounterState()
+        state.optionalCounter = Counter.State()
         return .none
 
       case .optionalCounter:
         return .none
       }
     }
-  )
+    .ifLet(\.optionalCounter, action: /Action.optionalCounter) {
+      Counter()
+    }
+  }
+}
 
 struct PresentAndLoadView: View {
-  let store: Store<PresentAndLoadState, PresentAndLoadAction>
+  let store: StoreOf<PresentAndLoad>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -78,13 +69,13 @@ struct PresentAndLoadView: View {
       .sheet(
         isPresented: viewStore.binding(
           get: \.isSheetPresented,
-          send: PresentAndLoadAction.setSheet(isPresented:)
+          send: PresentAndLoad.Action.setSheet(isPresented:)
         )
       ) {
         IfLetStore(
           self.store.scope(
             state: \.optionalCounter,
-            action: PresentAndLoadAction.optionalCounter
+            action: PresentAndLoad.Action.optionalCounter
           )
         ) {
           CounterView(store: $0)
@@ -102,11 +93,8 @@ struct PresentAndLoadView_Previews: PreviewProvider {
     NavigationView {
       PresentAndLoadView(
         store: Store(
-          initialState: PresentAndLoadState(),
-          reducer: presentAndLoadReducer,
-          environment: PresentAndLoadEnvironment(
-            mainQueue: .main
-          )
+          initialState: PresentAndLoad.State(),
+          reducer: PresentAndLoad()
         )
       )
     }

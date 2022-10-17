@@ -14,7 +14,6 @@
 		CACC04222447C66C000C5725 /* Client.swift in Sources */ = {isa = PBXBuildFile; fileRef = CACC04212447C66C000C5725 /* Client.swift */; };
 		CACC04242447D96D000C5725 /* Live.swift in Sources */ = {isa = PBXBuildFile; fileRef = CACC04232447D96D000C5725 /* Live.swift */; };
 		CACC04272447DBAF000C5725 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = CACC04262447DBAF000C5725 /* Models.swift */; };
-		CACC04292447DF0B000C5725 /* Unimplemented.swift in Sources */ = {isa = PBXBuildFile; fileRef = CACC04282447DF0B000C5725 /* Unimplemented.swift */; };
 		DC1394162469E34200EE1157 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC1394152469E34200EE1157 /* ComposableArchitecture */; };
 /* End PBXBuildFile section */
 
@@ -63,7 +62,6 @@
 		CACC04212447C66C000C5725 /* Client.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Client.swift; sourceTree = "<group>"; };
 		CACC04232447D96D000C5725 /* Live.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Live.swift; sourceTree = "<group>"; };
 		CACC04262447DBAF000C5725 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
-		CACC04282447DF0B000C5725 /* Unimplemented.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Unimplemented.swift; sourceTree = "<group>"; };
 		DCB9EA3F26B21ED000497C03 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -132,7 +130,6 @@
 				CACC04212447C66C000C5725 /* Client.swift */,
 				CACC04232447D96D000C5725 /* Live.swift */,
 				CACC04262447DBAF000C5725 /* Models.swift */,
-				CACC04282447DF0B000C5725 /* Unimplemented.swift */,
 			);
 			path = SpeechClient;
 			sourceTree = "<group>";
@@ -244,7 +241,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				CACC04242447D96D000C5725 /* Live.swift in Sources */,
-				CACC04292447DF0B000C5725 /* Unimplemented.swift in Sources */,
 				CA2332102447ACFA00B818EB /* SpeechRecognitionApp.swift in Sources */,
 				CA2332122447ACFA00B818EB /* SpeechRecognition.swift in Sources */,
 				CACC04222447C66C000C5725 /* Client.swift in Sources */,

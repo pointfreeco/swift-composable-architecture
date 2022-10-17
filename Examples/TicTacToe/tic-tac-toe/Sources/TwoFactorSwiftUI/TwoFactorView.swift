@@ -4,16 +4,16 @@ import SwiftUI
 import TwoFactorCore
 
 public struct TwoFactorView: View {
-  let store: Store<TwoFactorState, TwoFactorAction>
+  let store: StoreOf<TwoFactor>
 
   struct ViewState: Equatable {
-    var alert: AlertState<TwoFactorAction>?
+    var alert: AlertState<TwoFactor.Action>?
     var code: String
     var isActivityIndicatorVisible: Bool
     var isFormDisabled: Bool
     var isSubmitButtonDisabled: Bool
 
-    init(state: TwoFactorState) {
+    init(state: TwoFactor.State) {
       self.alert = state.alert
       self.code = state.code
       self.isActivityIndicatorVisible = state.isTwoFactorRequestInFlight
@@ -28,13 +28,13 @@ public struct TwoFactorView: View {
     case submitButtonTapped
   }
 
-  public init(store: Store<TwoFactorState, TwoFactorAction>) {
+  public init(store: StoreOf<TwoFactor>) {
     self.store = store
   }
 
   public var body: some View {
     WithViewStore(
-      self.store, observe: ViewState.init, send: TwoFactorAction.init
+      self.store, observe: ViewState.init, send: TwoFactor.Action.init
     ) { viewStore in
       Form {
         Text(#"To confirm the second factor enter "1234" into the form."#)
@@ -73,7 +73,7 @@ public struct TwoFactorView: View {
   }
 }
 
-extension TwoFactorAction {
+extension TwoFactor.Action {
   init(action: TwoFactorView.ViewAction) {
     switch action {
     case .alertDismissed:
@@ -91,16 +91,14 @@ struct TwoFactorView_Previews: PreviewProvider {
     NavigationView {
       TwoFactorView(
         store: Store(
-          initialState: TwoFactorState(token: "deadbeef"),
-          reducer: twoFactorReducer,
-          environment: TwoFactorEnvironment(
-            authenticationClient: AuthenticationClient(
-              login: { _ in AuthenticationResponse(token: "deadbeef", twoFactorRequired: false) },
-              twoFactor: { _ in
-                AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
-              }
-            )
-          )
+          initialState: TwoFactor.State(token: "deadbeef"),
+          reducer: TwoFactor()
+            .dependency(\.authenticationClient.login) { _ in
+              AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
+            }
+            .dependency(\.authenticationClient.twoFactor) { _ in
+              AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
+            }
         )
       )
     }

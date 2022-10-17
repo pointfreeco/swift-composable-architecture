@@ -2,75 +2,77 @@ import ComposableArchitecture
 import XCTest
 
 final class TaskResultTests: XCTestCase {
-  func testEqualityNonEquatableError() {
-    struct Failure: Error {
-      let message: String
+  #if DEBUG
+    func testEqualityNonEquatableError() {
+      struct Failure: Error {
+        let message: String
+      }
+
+      XCTExpectFailure {
+        XCTAssertNotEqual(
+          TaskResult<Never>.failure(Failure(message: "Something went wrong")),
+          TaskResult<Never>.failure(Failure(message: "Something went wrong"))
+        )
+      } issueMatcher: {
+        $0.compactDescription == """
+          "TaskResultTests.Failure" is not equatable. …
+
+          To test two values of this type, it must conform to the "Equatable" protocol. For example:
+
+              extension TaskResultTests.Failure: Equatable {}
+
+          See the documentation of "TaskResult" for more information.
+          """
+      }
     }
 
-    XCTExpectFailure {
-      XCTAssertNotEqual(
-        TaskResult<Never>.failure(Failure(message: "Something went wrong")),
-        TaskResult<Never>.failure(Failure(message: "Something went wrong"))
-      )
-    } issueMatcher: {
-      $0.compactDescription == """
-        'Failure' is not equatable. …
+    func testEqualityMismatchingError() {
+      struct Failure1: Error {
+        let message: String
+      }
+      struct Failure2: Error {
+        let message: String
+      }
 
-        To test two values of this type, it must conform to the 'Equatable' protocol. For example:
+      XCTExpectFailure {
+        XCTAssertNoDifference(
+          TaskResult<Never>.failure(Failure1(message: "Something went wrong")),
+          TaskResult<Never>.failure(Failure2(message: "Something went wrong"))
+        )
+      } issueMatcher: {
+        $0.compactDescription == """
+          XCTAssertNoDifference failed: …
 
-            extension Failure: Equatable {}
+              TaskResult.failure(
+            −   TaskResultTests.Failure1(message: "Something went wrong")
+            +   TaskResultTests.Failure2(message: "Something went wrong")
+              )
 
-        See the documentation of 'TaskResult' for more information.
-        """
-    }
-  }
-
-  func testEqualityMismatchingError() {
-    struct Failure1: Error {
-      let message: String
-    }
-    struct Failure2: Error {
-      let message: String
-    }
-
-    XCTExpectFailure {
-      XCTAssertNoDifference(
-        TaskResult<Never>.failure(Failure1(message: "Something went wrong")),
-        TaskResult<Never>.failure(Failure2(message: "Something went wrong"))
-      )
-    } issueMatcher: {
-      $0.compactDescription == """
-        XCTAssertNoDifference failed: …
-
-            TaskResult.failure(
-          −   TaskResultTests.Failure1(message: "Something went wrong")
-          +   TaskResultTests.Failure2(message: "Something went wrong")
-            )
-
-        (First: −, Second: +)
-        """
-    }
-  }
-
-  func testHashabilityNonHashableError() {
-    struct Failure: Error {
-      let message: String
+          (First: −, Second: +)
+          """
+      }
     }
 
-    XCTExpectFailure {
-      _ = TaskResult<Never>.failure(Failure(message: "Something went wrong")).hashValue
-    } issueMatcher: {
-      $0.compactDescription == """
-        'Failure' is not hashable. …
+    func testHashabilityNonHashableError() {
+      struct Failure: Error {
+        let message: String
+      }
 
-        To hash a value of this type, it must conform to the 'Hashable' protocol. For example:
+      XCTExpectFailure {
+        _ = TaskResult<Never>.failure(Failure(message: "Something went wrong")).hashValue
+      } issueMatcher: {
+        $0.compactDescription == """
+          "TaskResultTests.Failure" is not hashable. …
 
-            extension Failure: Hashable {}
+          To hash a value of this type, it must conform to the "Hashable" protocol. For example:
 
-        See the documentation of 'TaskResult' for more information.
-        """
+              extension TaskResultTests.Failure: Hashable {}
+
+          See the documentation of "TaskResult" for more information.
+          """
+      }
     }
-  }
+  #endif
 
   func testEquality_EquatableError() {
     enum Failure: Error, Equatable {

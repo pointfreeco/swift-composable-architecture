@@ -3,7 +3,7 @@ import GameCore
 import SwiftUI
 
 public struct GameView: View {
-  let store: Store<GameState, GameAction>
+  let store: StoreOf<Game>
 
   struct ViewState: Equatable, Sendable {
     var board: [[String]]
@@ -11,7 +11,7 @@ public struct GameView: View {
     var isPlayAgainButtonVisible: Bool
     var title: String
 
-    init(state: GameState) {
+    init(state: Game.State) {
       self.board = state.board.map { $0.map { $0?.label ?? "" } }
       self.isGameDisabled = state.board.hasWinner || state.board.isFilled
       self.isPlayAgainButtonVisible = state.board.hasWinner || state.board.isFilled
@@ -24,7 +24,7 @@ public struct GameView: View {
     }
   }
 
-  public init(store: Store<GameState, GameAction>) {
+  public init(store: StoreOf<Game>) {
     self.store = store
   }
 
@@ -63,7 +63,7 @@ public struct GameView: View {
   func rowView(
     row: Int,
     proxy: GeometryProxy,
-    viewStore: ViewStore<ViewState, GameAction>
+    viewStore: ViewStore<ViewState, Game.Action>
   ) -> some View {
     HStack(spacing: 0.0) {
       self.cellView(row: row, column: 0, proxy: proxy, viewStore: viewStore)
@@ -76,7 +76,7 @@ public struct GameView: View {
     row: Int,
     column: Int,
     proxy: GeometryProxy,
-    viewStore: ViewStore<ViewState, GameAction>
+    viewStore: ViewStore<ViewState, Game.Action>
   ) -> some View {
     Button(action: {
       viewStore.send(.cellTapped(row: row, column: column))
@@ -97,9 +97,8 @@ struct Game_Previews: PreviewProvider {
     NavigationView {
       GameView(
         store: Store(
-          initialState: GameState(oPlayerName: "Blob Jr.", xPlayerName: "Blob Sr."),
-          reducer: gameReducer,
-          environment: GameEnvironment()
+          initialState: Game.State(oPlayerName: "Blob Jr.", xPlayerName: "Blob Sr."),
+          reducer: Game()
         )
       )
     }

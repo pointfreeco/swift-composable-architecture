@@ -1,6 +1,7 @@
 import Combine
 import ComposableArchitecture
 import SwiftUI
+import XCTestDynamicOverlay
 
 private let readMe = """
   This application demonstrates how to handle long-living effects, for example notifications from \
@@ -17,43 +18,59 @@ private let readMe = """
 
 // MARK: - Application domain
 
-struct LongLivingEffectsState: Equatable {
-  var screenshotCount = 0
-}
-
-enum LongLivingEffectsAction {
-  case task
-  case userDidTakeScreenshotNotification
-}
-
-struct LongLivingEffectsEnvironment {
-  var screenshots: @Sendable () async -> AsyncStream<Void>
-}
-
-// MARK: - Business logic
-
-let longLivingEffectsReducer = Reducer<
-  LongLivingEffectsState, LongLivingEffectsAction, LongLivingEffectsEnvironment
-> { state, action, environment in
-  switch action {
-  case .task:
-    // When the view appears, start the effect that emits when screenshots are taken.
-    return .run { send in
-      for await _ in await environment.screenshots() {
-        await send(.userDidTakeScreenshotNotification)
-      }
-    }
-
-  case .userDidTakeScreenshotNotification:
-    state.screenshotCount += 1
-    return .none
+struct LongLivingEffects: ReducerProtocol {
+  struct State: Equatable {
+    var screenshotCount = 0
   }
+
+  enum Action: Equatable {
+    case task
+    case userDidTakeScreenshotNotification
+  }
+
+  @Dependency(\.screenshots) var screenshots
+
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    switch action {
+    case .task:
+      // When the view appears, start the effect that emits when screenshots are taken.
+      return .run { send in
+        for await _ in await self.screenshots() {
+          await send(.userDidTakeScreenshotNotification)
+        }
+      }
+
+    case .userDidTakeScreenshotNotification:
+      state.screenshotCount += 1
+      return .none
+    }
+  }
+}
+
+extension DependencyValues {
+  var screenshots: @Sendable () async -> AsyncStream<Void> {
+    get { self[ScreenshotsKey.self] }
+    set { self[ScreenshotsKey.self] = newValue }
+  }
+}
+
+private enum ScreenshotsKey: DependencyKey {
+  static let liveValue: @Sendable () async -> AsyncStream<Void> = {
+    await AsyncStream(
+      NotificationCenter.default
+        .notifications(named: UIApplication.userDidTakeScreenshotNotification)
+        .map { _ in }
+    )
+  }
+  static let testValue: @Sendable () async -> AsyncStream<Void> = XCTUnimplemented(
+    #"@Dependency(\.screenshots)"#, placeholder: .finished
+  )
 }
 
 // MARK: - SwiftUI view
 
 struct LongLivingEffectsView: View {
-  let store: Store<LongLivingEffectsState, LongLivingEffectsAction>
+  let store: StoreOf<LongLivingEffects>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -94,11 +111,8 @@ struct EffectsLongLiving_Previews: PreviewProvider {
   static var previews: some View {
     let appView = LongLivingEffectsView(
       store: Store(
-        initialState: LongLivingEffectsState(),
-        reducer: longLivingEffectsReducer,
-        environment: LongLivingEffectsEnvironment(
-          screenshots: { .init { _ in } }
-        )
+        initialState: LongLivingEffects.State(),
+        reducer: LongLivingEffects()
       )
     )
 

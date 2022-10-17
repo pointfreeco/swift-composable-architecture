@@ -1,9 +1,9 @@
 import AVFoundation
-import ComposableArchitecture
+import ComposableArchitecture  // TODO: Should `UncheckedSendable` live in `Dependencies`?
 import Foundation
 
-extension AudioRecorderClient {
-  static var live: Self {
+extension AudioRecorderClient: DependencyKey {
+  static let liveValue: Self = {
     let audioRecorder = AudioRecorder()
     return Self(
       currentTime: { await audioRecorder.currentTime },
@@ -11,7 +11,7 @@ extension AudioRecorderClient {
       startRecording: { url in try await audioRecorder.start(url: url) },
       stopRecording: { await audioRecorder.stop() }
     )
-  }
+  }()
 }
 
 private actor AudioRecorder {

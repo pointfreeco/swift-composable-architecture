@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: format-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   swift_format:
     name: swift-format
@@ -12,11 +16,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Xcode Select
-        run: sudo xcode-select -s /Applications/Xcode_13.4.1.app
+        run: sudo xcode-select -s /Applications/Xcode_14.0.1.app
       - name: Tap
         run: brew tap pointfreeco/formulae
       - name: Install
-        run: brew install Formulae/swift-format@5.6
+        run: brew install Formulae/swift-format@5.7
       - name: Format
         run: make format
       - uses: stefanzweifel/git-auto-commit-action@v4

@@ -11,24 +11,27 @@ import SwiftUI
 /// For example, a todos app may define the domain and logic associated with an individual todo:
 ///
 /// ```swift
-/// struct TodoState: Equatable, Identifiable {
-///   let id: UUID
-///   var description = ""
-///   var isComplete = false
+/// struct Todo: ReducerProtocol {
+///   struct State: Equatable, Identifiable {
+///     let id: UUID
+///     var description = ""
+///     var isComplete = false
+///   }
+///
+///   enum Action {
+///     case isCompleteToggled(Bool)
+///     case descriptionChanged(String)
+///   }
+///
+///   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> { ... }
 /// }
-/// enum TodoAction {
-///   case isCompleteToggled(Bool)
-///   case descriptionChanged(String)
-/// }
-/// struct TodoEnvironment {}
-/// let todoReducer = Reducer<TodoState, TodoAction, TodoEnvironment { ... }
 /// ```
 ///
 /// As well as a view with a domain-specific store:
 ///
 /// ```swift
 /// struct TodoView: View {
-///   let store: Store<TodoState, TodoAction>
+///   let store: StoreOf<Todo>
 ///   var body: some View { ... }
 /// }
 /// ```
@@ -37,27 +40,31 @@ import SwiftUI
 /// state:
 ///
 /// ```swift
-/// struct AppState: Equatable {
-///   var todos: IdentifiedArrayOf<TodoState> = []
-/// }
+/// struct Todos: ReducerProtocol { {
+///   struct State: Equatable {
+///     var todos: IdentifiedArrayOf<TodoState> = []
+///   }
 /// ```
 ///
 /// Define a case to handle actions sent to the child domain:
 ///
 /// ```swift
-/// enum AppAction {
+/// enum Action {
 ///   case todo(id: TodoState.ID, action: TodoAction)
 /// }
 /// ```
 ///
-/// Enhance its reducer using ``Reducer/forEach(state:action:environment:file:fileID:line:)-n7qj``:
+/// Enhance its core reducer using ``ReducerProtocol/forEach(_:action:_:file:fileID:line:)``:
 ///
 /// ```swift
-/// let appReducer = todoReducer.forEach(
-///   state: \.todos,
-///   action: /AppAction.todo(id:action:),
-///   environment: { _ in TodoEnvironment() }
-/// )
+/// var body: some ReducerProtocol<State, Action> {
+///   Reduce { state, action in
+///     ...
+///   }
+///   .forEach(state: \.todos, action: /Action.todo(id:action:)) {
+///     Todo()
+///   }
+/// }
 /// ```
 ///
 /// And finally render a list of `TodoView`s using ``ForEachStore``:

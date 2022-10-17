@@ -4,17 +4,17 @@ import TwoFactorCore
 import UIKit
 
 public final class TwoFactorViewController: UIViewController {
-  let store: Store<TwoFactorState, TwoFactorAction>
+  let store: StoreOf<TwoFactor>
   let viewStore: ViewStore<ViewState, ViewAction>
   private var cancellables: Set<AnyCancellable> = []
 
   struct ViewState: Equatable {
-    let alert: AlertState<TwoFactorAction>?
+    let alert: AlertState<TwoFactor.Action>?
     let code: String?
     let isActivityIndicatorHidden: Bool
     let isLoginButtonEnabled: Bool
 
-    init(state: TwoFactorState) {
+    init(state: TwoFactor.State) {
       self.alert = state.alert
       self.code = state.code
       self.isActivityIndicatorHidden = !state.isTwoFactorRequestInFlight
@@ -28,9 +28,9 @@ public final class TwoFactorViewController: UIViewController {
     case loginButtonTapped
   }
 
-  public init(store: Store<TwoFactorState, TwoFactorAction>) {
+  public init(store: StoreOf<TwoFactor>) {
     self.store = store
-    self.viewStore = ViewStore(store.scope(state: ViewState.init, action: TwoFactorAction.init))
+    self.viewStore = ViewStore(store.scope(state: ViewState.init, action: TwoFactor.Action.init))
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -118,7 +118,7 @@ public final class TwoFactorViewController: UIViewController {
   }
 }
 
-extension TwoFactorAction {
+extension TwoFactor.Action {
   init(action: TwoFactorViewController.ViewAction) {
     switch action {
     case .alertDismissed:

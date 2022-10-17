@@ -1,8 +1,8 @@
 @preconcurrency import AVFoundation
-import ComposableArchitecture
+import Dependencies
 
-extension AudioPlayerClient {
-  static let live = Self { url in
+extension AudioPlayerClient: DependencyKey {
+  static let liveValue = Self { url in
     let stream = AsyncThrowingStream<Bool, Error> { continuation in
       do {
         let delegate = try Delegate(

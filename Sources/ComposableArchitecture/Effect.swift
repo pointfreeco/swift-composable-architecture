@@ -3,12 +3,12 @@ import Foundation
 import SwiftUI
 import XCTestDynamicOverlay
 
-/// The ``Effect`` type encapsulates a unit of work that can be run in the outside world, and can
-/// feed actions back to the ``Store``. It is the perfect place to do side effects, such as network
-/// requests, saving/loading from disk, creating timers, interacting with dependencies, and more.
+/// A type that encapsulates a unit of work that can be run in the outside world, and can feed
+/// actions back to the ``Store``.
 ///
-/// Effects are returned from reducers so that the ``Store`` can perform the effects after the
-/// reducer is done running.
+/// Effects are the perfect place to do side effects, such as network requests, saving/loading
+/// from disk, creating timers, interacting with dependencies, and more. They are returned from
+/// reducers so that the ``Store`` can perform the effects after the reducer is done running.
 ///
 /// There are 2 distinct ways to create an `Effect`: one using Swift's native concurrency tools, and
 /// the other using Apple's Combine framework:
@@ -19,19 +19,19 @@ import XCTestDynamicOverlay
 ///   * ``Effect/task(priority:operation:catch:file:fileID:line:)``
 ///   * ``Effect/run(priority:operation:catch:file:fileID:line:)``
 ///   * ``Effect/fireAndForget(priority:_:)``
-/// * If using Combine in your application, in particular the dependencies of your feature's
-/// environment, then you can create effects by making use of any of Combine's operators, and then
-/// erasing the publisher type to ``Effect`` with either `eraseToEffect` or `catchToEffect`. Note
-/// that the Combine interface to ``Effect`` is considered soft deprecated, and you should
-/// eventually port to Swift's native concurrency tools.
+/// * If using Combine in your application, in particular for the dependencies of your feature
+/// then you can create effects by making use of any of Combine's operators, and then erasing the
+/// publisher type to ``Effect`` with either `eraseToEffect` or `catchToEffect`. Note that the
+/// Combine interface to ``Effect`` is considered soft deprecated, and you should eventually port
+/// to Swift's native concurrency tools.
 ///
 /// > Important: ``Store`` is not thread safe, and so all effects must receive values on the same
-/// thread. This is typically the main thread,  **and** if the store is being used to drive UI
-/// then it must receive values on the main thread.
+/// thread. This is typically the main thread,  **and** if the store is being used to drive UI then
+/// it must receive values on the main thread.
 /// >
 /// > This is only an issue if using the Combine interface of ``Effect`` as mentioned above. If you
-/// you are using Swift's concurrency tools and the `.task`, `.run` and `.fireAndForget`
-/// functions on ``Effect``, then threading is automatically handled for you.
+/// you are using Swift's concurrency tools and the `.task`, `.run` and `.fireAndForget` functions
+/// on ``Effect``, then threading is automatically handled for you.
 public struct Effect<Action, Failure: Error> {
   @usableFromInline
   enum Operation {
@@ -66,34 +66,34 @@ extension Effect where Failure == Never {
   /// This function is useful for executing work in an asynchronous context and capturing the result
   /// in an ``Effect`` so that the reducer, a non-asynchronous context, can process it.
   ///
-  /// For example, if your environment contains a dependency that exposes an `async` function, you
-  /// can use ``task(priority:operation:catch:file:fileID:line:)`` to provide an asynchronous
-  /// context for invoking that endpoint:
+  /// For example, if your dependency exposes an `async` function, you can use
+  /// ``task(priority:operation:catch:file:fileID:line:)`` to provide an asynchronous context for
+  /// invoking that endpoint:
   ///
   /// ```swift
-  /// struct FeatureEnvironment {
-  ///   var numberFact: (Int) async throws -> String
-  /// }
+  /// struct Feature: ReducerProtocol {
+  ///   struct State { … }
+  ///   enum FeatureAction {
+  ///     case factButtonTapped
+  ///     case faceResponse(TaskResult<String>)
+  ///   }
+  ///   @Dependency(\.numberFact) var numberFact
   ///
-  /// enum FeatureAction {
-  ///   case factButtonTapped
-  ///   case faceResponse(TaskResult<String>)
-  /// }
+  ///   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  ///     switch action {
+  ///       case .factButtonTapped:
+  ///         return .task { [number = state.number] in
+  ///           await .factResponse(TaskResult { try await self.numberFact.fetch(number) })
+  ///         }
   ///
-  /// let featureReducer = Reducer<State, Action, Environment> { state, action, environment in
-  ///   switch action {
-  ///     case .factButtonTapped:
-  ///       return .task { [number = state.number] in
-  ///         await .factResponse(TaskResult { try await environment.numberFact(number) })
-  ///       }
+  ///       case .factResponse(.success(fact)):
+  ///         // do something with fact
   ///
-  ///     case .factResponse(.success(fact)):
-  ///       // do something with fact
+  ///       case .factResponse(.failure):
+  ///         // handle error
   ///
-  ///     case .factResponse(.failure):
-  ///       // handle error
-  ///
-  ///     ...
+  ///       ...
+  ///     }
   ///   }
   /// }
   /// ```
@@ -121,38 +121,36 @@ extension Effect where Failure == Never {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Self {
-    Self(
+    let dependencies = DependencyValues._current
+    return Self(
       operation: .run(priority) { send in
-        do {
-          try await send(operation())
-        } catch is CancellationError {
-          return
-        } catch {
-          guard let handler = handler else {
-            #if DEBUG
-              var errorDump = ""
-              customDump(error, to: &errorDump, indent: 4)
-              runtimeWarning(
-                """
-                An 'Effect.task' returned from "%@:%d" threw an unhandled error. …
-
-                %@
-
-                All non-cancellation errors must be explicitly handled via the 'catch' parameter \
-                on 'Effect.task', or via a 'do' block.
-                """,
-                [
-                  "\(fileID)",
-                  line,
-                  errorDump,
-                ],
-                file: file,
-                line: line
-              )
-            #endif
+        await DependencyValues.$_current.withValue(dependencies) {
+          do {
+            try await send(operation())
+          } catch is CancellationError {
             return
+          } catch {
+            guard let handler = handler else {
+              #if DEBUG
+                var errorDump = ""
+                customDump(error, to: &errorDump, indent: 4)
+                runtimeWarn(
+                  """
+                  An "Effect.task" returned from "\(fileID):\(line)" threw an unhandled error. …
+
+                  \(errorDump)
+
+                  All non-cancellation errors must be explicitly handled via the "catch" parameter \
+                  on "Effect.task", or via a "do" block.
+                  """,
+                  file: file,
+                  line: line
+                )
+              #endif
+              return
+            }
+            await send(handler(error))
           }
-          await send(handler(error))
         }
       }
     )
@@ -163,10 +161,10 @@ extension Effect where Failure == Never {
   /// This effect is similar to ``task(priority:operation:catch:file:fileID:line:)`` except it is
   /// capable of emitting 0 or more times, not just once.
   ///
-  /// For example, if you had an async stream in your environment:
+  /// For example, if you had an async stream in a dependency client:
   ///
   /// ```swift
-  /// struct FeatureEnvironment {
+  /// struct EventsClient {
   ///   var events: () -> AsyncStream<Event>
   /// }
   /// ```
@@ -177,7 +175,7 @@ extension Effect where Failure == Never {
   /// ```swift
   /// case .startButtonTapped:
   ///   return .run { send in
-  ///     for await event in environment.events() {
+  ///     for await event in self.events() {
   ///       send(.event(event))
   ///     }
   ///   }
@@ -205,38 +203,36 @@ extension Effect where Failure == Never {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Self {
-    Self(
+    let dependencies = DependencyValues._current
+    return Self(
       operation: .run(priority) { send in
-        do {
-          try await operation(send)
-        } catch is CancellationError {
-          return
-        } catch {
-          guard let handler = handler else {
-            #if DEBUG
-              var errorDump = ""
-              customDump(error, to: &errorDump, indent: 4)
-              runtimeWarning(
-                """
-                An 'Effect.run' returned from "%@:%d" threw an unhandled error. …
-
-                %@
-
-                All non-cancellation errors must be explicitly handled via the 'catch' parameter \
-                on 'Effect.run', or via a 'do' block.
-                """,
-                [
-                  "\(fileID)",
-                  line,
-                  errorDump,
-                ],
-                file: file,
-                line: line
-              )
-            #endif
+        await DependencyValues.$_current.withValue(dependencies) {
+          do {
+            try await operation(send)
+          } catch is CancellationError {
             return
+          } catch {
+            guard let handler = handler else {
+              #if DEBUG
+                var errorDump = ""
+                customDump(error, to: &errorDump, indent: 4)
+                runtimeWarn(
+                  """
+                  An "Effect.run" returned from "\(fileID):\(line)" threw an unhandled error. …
+
+                  \(errorDump)
+
+                  All non-cancellation errors must be explicitly handled via the "catch" parameter \
+                  on "Effect.run", or via a "do" block.
+                  """,
+                  file: file,
+                  line: line
+                )
+              #endif
+              return
+            }
+            await handler(error, send)
           }
-          await handler(error, send)
         }
       }
     )
@@ -252,7 +248,7 @@ extension Effect where Failure == Never {
   /// ```swift
   /// case .buttonTapped:
   ///   return .fireAndForget {
-  ///     try await environment.analytics.track("Button Tapped")
+  ///     try self.analytics.track("Button Tapped")
   ///   }
   /// ```
   ///
@@ -282,7 +278,7 @@ extension Effect where Failure == Never {
 /// return .run { send in
 ///   send(.started)
 ///   defer { send(.finished) }
-///   for await event in environment.events {
+///   for await event in self.events {
 ///     send(.event(event))
 ///   }
 /// }
@@ -450,6 +446,12 @@ extension Effect {
     case .none:
       return .none
     case let .publisher(publisher):
+      let dependencies = DependencyValues._current
+      let transform = { action in
+        DependencyValues.$_current.withValue(dependencies) {
+          transform(action)
+        }
+      }
       return .init(operation: .publisher(publisher.map(transform).eraseToAnyPublisher()))
     case let .run(priority, operation):
       return .init(
@@ -521,7 +523,7 @@ extension Effect {
   /// Now that we've defined the domain, we can describe the logic in a reducer:
   ///
   /// ```swift
-  /// let counterReducer = Reducer<
+  /// let counterReducer = AnyReducer<
   ///   CounterState, CounterAction, CounterEnvironment
   /// > { state, action, environment in
   ///   switch action {

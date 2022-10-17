@@ -10,31 +10,32 @@ private let readMe = """
   to reset its focus.
   """
 
-struct FocusState: Equatable {
-  var currentFocus = 1
-}
+struct Focus: ReducerProtocol {
+  struct State: Equatable {
+    var currentFocus = 1
+  }
 
-enum FocusAction {
-  case randomButtonClicked
-}
+  enum Action {
+    case randomButtonClicked
+  }
 
-struct FocusEnvironment {
-  var randomElement: () -> Int = { (1..<11).randomElement()! }
-}
+  @Dependency(\.withRandomNumberGenerator) var withRandomNumberGenerator
 
-let focusReducer = Reducer<FocusState, FocusAction, FocusEnvironment> {
-  state, action, environment in
-  switch action {
-  case .randomButtonClicked:
-    state.currentFocus = environment.randomElement()
-    return .none
+  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    switch action {
+    case .randomButtonClicked:
+      state.currentFocus = self.withRandomNumberGenerator {
+        (1..<11).randomElement(using: &$0)!
+      }
+      return .none
+    }
   }
 }
 
 #if swift(>=5.3)
   @available(tvOS 14.0, *)
   struct FocusView: View {
-    let store: Store<FocusState, FocusAction>
+    let store: StoreOf<Focus>
 
     @Environment(\.resetFocus) var resetFocus
     @Namespace private var namespace
@@ -76,9 +77,8 @@ let focusReducer = Reducer<FocusState, FocusAction, FocusEnvironment> {
     static var previews: some View {
       FocusView(
         store: Store(
-          initialState: FocusState(),
-          reducer: focusReducer,
-          environment: FocusEnvironment()
+          initialState: Focus.State(),
+          reducer: Focus()
         )
       )
     }
