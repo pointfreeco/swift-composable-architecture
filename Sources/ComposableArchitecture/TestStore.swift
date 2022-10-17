@@ -275,34 +275,34 @@ import XCTestDynamicOverlay
 /// can fill in some data on the screen, then tap the "Submit" button, and then a series of events
 /// happens to  log the user in. Once the user is logged in, the 3rd tab switches from a login screen
 /// to a profile screen, _and_ the selected tab switches to the first tab, which is an activity screen.
-/// 
+///
 /// When writing tests for the login feature we will want to do that in the exhaustive style so that we
 /// can prove exactly how the feature would behave in production. But, suppose we wanted to write an
 /// integration test that proves after the user taps the "Login" button that ultimately the selected
 /// tab switches to the first tab.
-/// 
+///
 /// In order to test such a complex flow we must test the integration of multiple features, which means
 /// dealing with complex, nested state and effects. We can emulate this flow in a test by sending
 /// actions that mimic the user logging in, and then eventually assert that the selected tab switched
 /// to activity:
-/// 
+///
 /// ```swift
 /// let store = TestStore(
 ///   initialState: App.State(),
 ///   reducer: App()
 /// )
-/// 
+///
 /// // 1️⃣ Emulate user tapping on submit button.
 /// await store.send(.login(.submitButtonTapped)) {
 ///   $0.isLoading = true
 /// }
-/// 
+///
 /// // 2️⃣ Login feature performs API request to login, and
 /// //    sends response back into system.
 /// await store.receive(.login(.loginResponse(.success))) {
 ///   $0.isLoading = false
 /// }
-/// 
+///
 /// // 3️⃣ Login feature sends a delegate action to let parent
 /// //    feature know it has successfully logged in.
 /// await store.receive(.login(.delegate(.didLogin))) {
@@ -314,9 +314,9 @@ import XCTestDynamicOverlay
 ///   $0.selectedTab = .activity
 /// }
 /// ```
-/// 
+///
 /// Doing this with exhaustive testing is verbose, and there are a few problems with this:
-/// 
+///
 /// * We need to be intimately knowledgeable in how the login feature works so that we can assert
 /// on how its state changes and how its effects feed data back into the system.
 /// * If the login feature were to change its logic we may get test failures here even though the logic
@@ -324,54 +324,54 @@ import XCTestDynamicOverlay
 /// * This test is very long, and so if there are other similar but slightly different flows we want to
 /// test we will be tempted to copy-and-paste the whole thing, leading to lots of duplicated, fragile
 /// tests.
-/// 
+///
 /// Non-exhaustive testing allows us to test the high-level flow that we are concerned with, that of
 /// login causing the selected tab to switch to activity, without having to worry about what is
 /// happening inside the login feature. To do this, we can turn off ``TestStore/exhaustivity`` in the
 /// test store, and then just assert on what we are interested in:
-/// 
+///
 /// ```swift
 /// let store = TestStore(
 ///   initialState: App.State(),
 ///   reducer: App()
 /// )
 /// store.exhaustivity = .none // ⬅️
-/// 
+///
 /// await store.send(.login(.submitButtonTapped))
 /// await store.receive(.login(.delegate(.didLogin))) {
 ///   $0.selectedTab = .activity
 /// }
 /// ```
-/// 
+///
 /// In particular, we did not assert on how the login's state changed or how the login's effects fed
 /// data back into the system. We just assert that when the "Submit" button is tapped that eventually
 /// we get the `didLogin` delegate action and that causes the selected tab to flip to activity. Now
 /// the login feature is free to make any change it wants to make without affecting this integration
 /// test.
-/// 
+///
 /// Using ``Exhaustivity/none`` for ``TestStore/exhaustivity`` causes all un-asserted changes to pass
 /// without any notification. If you would like to see what test failures are being supressed without
 /// actually causing a failure, you can use ``Exhaustivity/partial``:
-/// 
+///
 /// ```swift
 /// let store = TestStore(
 ///   initialState: App.State(),
 ///   reducer: App()
 /// )
 /// store.exhaustivity = .partial // ⬅️
-/// 
+///
 /// await store.send(.login(.submitButtonTapped))
 /// await store.receive(.login(.delegate(.didLogin))) {
 ///   $0.selectedTab = .profile
 /// }
 /// ```
-/// 
+///
 /// When this is run you will get grey, informational boxes on each assertion where some change wasn't
 /// fully asserted on:
-/// 
+///
 /// ```
 /// ◽️ A state change does not match expectation: …
-/// 
+///
 ///      App.State(
 ///        authenticatedTab: .loggedOut(
 ///          Login.State(
@@ -381,13 +381,13 @@ import XCTestDynamicOverlay
 ///          )
 ///        )
 ///      )
-/// 
+///
 ///    (Expected: −, Actual: +)
-/// 
+///
 /// ◽️ Skipped receiving .login(.loginResponse(.success))
-/// 
+///
 /// ◽️ A state change does not match expectation: …
-/// 
+///
 ///      App.State(
 ///    −   authenticatedTab: .loggedOut(…)
 ///    +   authenticatedTab: .loggedIn(
@@ -395,10 +395,10 @@ import XCTestDynamicOverlay
 ///    +   ),
 ///        …
 ///      )
-/// 
+///
 ///    (Expected: −, Actual: +)
 /// ```
-/// 
+///
 /// The test still passes, and none of these notifications are test failures. They just let you know
 /// what things you are not explicitly asserting against, and can be useful to see when tracking down
 /// bugs that happen in production but that aren't currently detected in tests.
@@ -947,14 +947,18 @@ extension TestStore where ScopedState: Equatable {
         self.withExhaustivity(.exhaustive) {
           expectationFailure(expected: expectedWhenGivenActualState)
         }
-      } else if self.exhaustivity == .partial && expectedWhenGivenActualState == actual {
+      } else if self.exhaustivity.isPartial && expectedWhenGivenActualState == actual {
         var expectedWhenGivenPreviousState = current
         if let modify = modify {
           _XCTExpectFailure(strict: false) {
             do {
               try modify(&expectedWhenGivenPreviousState)
             } catch {
-              XCTFail("Threw error: \(error)", file: file, line: line)
+              XCTFail(
+                "\(self.exhaustivity.prefix.map { "\($0) " } ?? "") Threw error: \(error)",
+                file: file,
+                line: line
+              )
             }
           }
         }
@@ -1068,7 +1072,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
       while let receivedAction = self.reducer.receivedActions.first,
         receivedAction.action != expectedAction
       {
-        XCTFailHelper( // TODO: Finesse copy
+        XCTFailHelper(  // TODO: Finesse copy
           """
           Skipped assertions: …
           Skipped receiving \(receivedAction.action)
@@ -1277,25 +1281,54 @@ extension TestStore {
     self.scope(state: toScopedState, action: { $0 })
   }
 
+  /// Clears the queue of received actions from effects.
+  ///
+  /// Can be handy if you are writing an exhaustive test for a particular part of your feature,
+  /// but you don't want to explicitly deal with all of the received actions:
+  ///
+  /// ```swift
+  /// let store = TestStore(…)
+  ///
+  /// await store.send(.buttonTapped) {
+  ///   // Assert on how state changed
+  /// }
+  /// await store.receive(.response(…)) {
+  ///   // Assert on how state changed
+  /// }
+  ///
+  /// // Make it explicit you do not want to assert on any other received actions.
+  /// store.flushReceivedActions()
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - strict: When true and there are no received actions to flush, a test failure will be
+  ///   raised.
   public func flushReceivedActions(
-    strict: Bool = false,
-    prefix: String = "",
+    strict: Bool = false,  // TODO: default true?
     file: StaticString = #file,
     line: UInt = #line
   ) {
+    // TODO: should this be async+@MainActor so that we can megaYield inside?
     if strict && self.reducer.receivedActions.isEmpty {
-      XCTFail("There were no received actions to flush.") // TODO: update copy?
+      XCTFail("There were no received actions to flush.")  // TODO: update copy?
       return
     }
     guard !self.reducer.receivedActions.isEmpty
     else { return }
     var actions = ""
-    customDump(self.reducer.receivedActions.map { $0.action }, to: &actions)
+    if self.reducer.receivedActions.count == 1 {
+      customDump(self.reducer.receivedActions[0].action, to: &actions)
+    } else {
+      customDump(self.reducer.receivedActions.map { $0.action }, to: &actions)
+    }
     XCTFailHelper(
       """
-      \(prefix.isEmpty ? "" : "\(prefix)\n\n")Received actions were skipped: \(actions)
+      \(self.reducer.receivedActions.count) received action\
+      \(self.reducer.receivedActions.count == 1 ? " was" : "s were") flushed:
+
+      \(actions)
       """,
-      exhaustivity: .partial,
+      exhaustivity: .partial(prefix: self.exhaustivity.prefix),
       file: file,
       line: line
     )
@@ -1303,29 +1336,60 @@ extension TestStore {
     self.reducer.receivedActions = []
   }
 
+  /// Cancels any currently inflight effects.
+  ///
+  /// Can be handy if you are writing an exhaustive test for a particular part of your feature,
+  /// but you don't want to explicitly deal with all effects:
+  ///
+  /// ```swift
+  /// let store = TestStore(…)
+  ///
+  /// await store.send(.buttonTapped) {
+  ///   // Assert on how state changed
+  /// }
+  /// await store.receive(.response(…)) {
+  ///   // Assert on how state changed
+  /// }
+  ///
+  /// // Make it explicit you do not want to assert on how any other effects behave.
+  /// store.cancelInFlightEffects()
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - strict: When true and there are no inflight actions to cancel, a test failure will be
+  ///   raised.
   public func cancelInFlightEffects(
-    strict: Bool = true,
-    prefix: String = "",
+    strict: Bool = false,  // TODO: default true?
     file: StaticString = #file,
     line: UInt = #line
   ) {
+    // TODO: should this be async+@MainActor so that we can megaYield inside?
     if strict && self.reducer.inFlightEffects.isEmpty {
-      XCTFail("There were no in-flight effects to cancel.") // TODO: update copy?
+      XCTFail("There were no in-flight effects to cancel.")  // TODO: update copy?
       return
     }
     guard !self.reducer.inFlightEffects.isEmpty
     else { return }
+
     var actions = ""
-    customDump(self.reducer.inFlightEffects.map { $0.action }, to: &actions)
+    if self.reducer.inFlightEffects.count == 1 {
+      customDump(self.reducer.inFlightEffects.first!.action.origin.action, to: &actions)
+    } else {
+      customDump(self.reducer.inFlightEffects.map { $0.action.origin.action }, to: &actions)
+    }
+
     XCTFailHelper(
       """
-      \(prefix.isEmpty ? "" : "\(prefix)\n\n")In-flight effects were skipped, originating \
-      from: \(actions)
+      \(self.reducer.inFlightEffects.count) in-flight effect\
+      \(self.reducer.inFlightEffects.count == 1 ? " was" : "s were") cancelled, originating from:
+
+      \(actions)
       """,
-      exhaustivity: .partial,
+      exhaustivity: .partial(prefix: self.exhaustivity.prefix),
       file: file,
       line: line
     )
+
     for effect in self.reducer.inFlightEffects {
       _ = Effect<Never, Never>.cancel(id: effect.id).sink { _ in }
     }
@@ -1372,6 +1436,20 @@ public struct TestStoreTask: Hashable, Sendable {
   }
 
   /// Cancels the underlying task and waits for it to finish.
+  ///
+  /// This can be handy when a feature needs to start a long-living effect when the feature appears,
+  /// but cancellation of that effect is handled by the parent when the feature disappears. Such
+  /// a feature is difficult to exhaustively test in isolation beceause there is no action in its
+  /// domain that cancels the effect:
+  ///
+  /// ```swift
+  /// let store = TestStore(...)
+  ///
+  /// let onAppearTask = await store.send(.onAppear)
+  /// // Assert what is happening in the feature
+  ///
+  /// await onAppearTask.cancel() // ✅ Cancel the task to simulate the feature disappearing.
+  /// ```
   public func cancel() async {
     self.rawValue?.cancel()
     await self.rawValue?.cancellableValue
@@ -1529,8 +1607,14 @@ class TestReducer<State, Action>: ReducerProtocol {
     let line: UInt
 
     enum Origin {
-      case send(Action)
       case receive(Action)
+      case send(Action)
+      fileprivate var action: Action {
+        switch self {
+        case let .receive(action), let .send(action):
+          return action
+        }
+      }
     }
   }
 }
@@ -1556,7 +1640,7 @@ extension Task where Success == Never, Failure == Never {
 #endif
 
 /// The level of exhaustivity for the test store.
-public enum Exhaustivity {
+public enum Exhaustivity: Equatable {
   /// Full exhaustivity, which means you must explicitly assert on how all state changes and all
   /// received actions from effects.
   case exhaustive
@@ -1567,7 +1651,21 @@ public enum Exhaustivity {
   /// on or receive actions skipped will be reported in a grey informational box next to the
   /// assertion. This is handy for when you want non-exhaustivity but you still want to know
   /// what all you are missing from your assertions.
-  case partial
+  case partial(prefix: String? = nil)
+
+  public static let partial = partial()
+  fileprivate var isPartial: Bool {
+    guard case .partial = self else {
+      return false
+    }
+    return true
+  }
+  fileprivate var prefix: String? {
+    guard case let .partial(prefix: prefix) = self else {
+      return nil
+    }
+    return prefix
+  }
 }
 
 private func XCTFailHelper(
@@ -1579,9 +1677,9 @@ private func XCTFailHelper(
   switch exhaustivity {
   case .exhaustive:
     XCTFail(message, file: file, line: line)
-  case .partial:
+  case let .partial(prefix: prefix):
     _XCTExpectFailure {
-      XCTFail(message, file: file, line: line)
+      XCTFail(prefix.map { "\($0) \(message)" } ?? message, file: file, line: line)
     }
   case .none:
     break
@@ -1612,3 +1710,4 @@ func _XCTExpectFailure(
 
   XCTExpectFailureWithOptionsInBlock(failureReason, options, failingBlock)
 }
+

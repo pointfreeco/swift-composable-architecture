@@ -4,7 +4,7 @@
 
   @MainActor
   final class TestStoreNonExhaustiveTests: XCTestCase {
-    func testSkipReceivedActions() {
+    func testFlushReceivedActions() {
       let store = TestStore(
         initialState: 0,
         reducer: Reduce<Int, Bool> { state, action in
@@ -24,16 +24,58 @@
       XCTAssertEqual(store.state, 2)
     }
 
-    func testSkipInFlightEffects() {
+    func testFlushReceivedActions_Strict() {
+      let store = TestStore(
+        initialState: 0,
+        reducer: Reduce<Int, Bool> { state, action in
+          if action {
+            state += 1
+            return .init(value: false)
+          } else {
+            state += 1
+            return .none
+          }
+        }
+      )
+
+      store.send(true) { $0 = 1 }
+      XCTAssertEqual(store.state, 1)
+      store.receive(false) { $0 = 2 }
+      XCTAssertEqual(store.state, 2)
+      XCTExpectFailure {
+        store.flushReceivedActions(strict: true)
+      } issueMatcher: { 
+        $0.compactDescription == "There were no received actions to flush."
+      }
+    }
+
+    func testCancelInFlightEffects() {
       let store = TestStore(
         initialState: 0,
         reducer: Reduce<Int, Bool> { _, action in
-          .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
+            .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
         }
       )
 
       store.send(true)
       store.cancelInFlightEffects()
+    }
+
+    func testCancelInFlightEffects_Strict() async {
+      let store = TestStore(
+        initialState: 0,
+        reducer: Reduce<Int, Bool> { _, action in
+            .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC / 4) }
+        }
+      )
+
+      let task = await store.send(true)
+      await task.finish(timeout: NSEC_PER_SEC / 2)
+      XCTExpectFailure {
+        store.cancelInFlightEffects(strict: true)
+      } issueMatcher: {
+        $0.compactDescription == "There were no in-flight effects to cancel."
+      }
     }
 
     func testIgnoreReceiveActions_PartialExhaustive() {
@@ -104,6 +146,17 @@
         $0.count = 3
         $0.isEven = false
       }
+    }
+
+    // Confirms that you don't have to assert on all state changes in a non-exhaustive test store,
+    // *but* if you make an incorrect mutation you will still get a failure.
+    func testNonExhaustiveSend_PartialExhaustive_BadAssertion() {
+      let store = TestStore(
+        initialState: Counter.State(),
+        reducer: Counter()
+      )
+      store.exhaustivity = .partial
+
       #if DEBUG
         XCTExpectFailure {
           _ = store.send(.increment) {
@@ -115,8 +168,8 @@
 
                   Counter.State(
                 −   count: 0,
-                +   count: 4,
-                    isEven: true
+                +   count: 1,
+                    isEven: false
                   )
 
             (Expected: −, Actual: +)
@@ -125,6 +178,8 @@
       #endif
     }
 
+    // Confirms that you don't have to assert on all state changes in a non-exhaustive test store,
+    // *and* that informational boxes of what was not asserted on is not shown.
     func testNonExhaustiveSend_NonExhaustive() {
       let store = TestStore(
         initialState: Counter.State(),
@@ -138,8 +193,8 @@
       }
     }
 
-    // Confirms that you can send actions without having received all effect actions in non-exhaustive
-    // test stores.
+    // Confirms that you can send actions without having received all effect actions in
+    // non-exhaustive test stores.
     func testSend_SkipReceivedActions() {
       struct Feature: ReducerProtocol {
         struct State: Equatable {
@@ -178,6 +233,58 @@
       store.send(.decrement) {
         $0.count = 0
         // Ignored state change: isLoggedIn = true
+      }
+    }
+
+    // Confirms that if you receive an action in a non-exhaustive test store with a bad assertion
+    // you will still get a failure.
+    func testSend_SkipReceivedActions_BadAssertion() {
+      struct Feature: ReducerProtocol {
+        struct State: Equatable {
+          var count = 0
+          var isLoggedIn = false
+        }
+        enum Action: Equatable {
+          case increment
+          case loggedInResponse(Bool)
+        }
+        func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+          switch action {
+          case .increment:
+            state.count += 1
+            return Effect(value: .loggedInResponse(true))
+          case let .loggedInResponse(response):
+            state.isLoggedIn = response
+            return .none
+          }
+        }
+      }
+      let store = TestStore(
+        initialState: Feature.State(),
+        reducer: Feature()
+      )
+      store.exhaustivity = .partial
+
+      store.send(.increment) {
+        $0.count = 1
+      }
+      XCTExpectFailure {
+        store.receive(.loggedInResponse(true)) {
+          $0.count = 2
+          $0.isLoggedIn = true
+        }
+      } issueMatcher: {
+        $0.compactDescription == """
+          A state change does not match expectation: …
+
+                TestStoreNonExhaustiveTests.Feature.State(
+              −   count: 2,
+              +   count: 1,
+                  isLoggedIn: true
+                )
+
+          (Expected: −, Actual: +)
+          """
       }
     }
 
@@ -300,6 +407,47 @@
 
       store.flushReceivedActions()
       XCTAssertEqual(store.state, 86)
+    }
+
+    func testPartialExhaustivityPrefix() async {
+      let testScheduler = DispatchQueue.test
+      enum Action {
+        case buttonTapped
+        case response(Int)
+      }
+      let store = TestStore(
+        initialState: 0,
+        reducer: Reduce<Int, Action> { state, action in
+          switch action {
+          case .buttonTapped:
+            state += 1
+            return .run { send in
+              await send(.response(42))
+              try await testScheduler.sleep(for: .seconds(1))
+              await send(.response(1729))
+            }
+          case let .response(number):
+            state = number
+            return .none
+          }
+        }
+      )
+      store.exhaustivity = .partial(prefix: "✅")
+
+      await store.send(.buttonTapped)
+      // Ignored state mutation: state = 1
+      // Ignored received action: .response(42)
+      await testScheduler.advance(by: .milliseconds(500))
+      await store.send(.buttonTapped) {
+        $0 = 43
+      }
+
+      await testScheduler.advance(by: .milliseconds(500))
+      store.cancelInFlightEffects()
+      store.flushReceivedActions()
+      // Ignored received action: .response(42)
+      // Ignored received action: .response(1729)
+      // Ignore in-flight effect
     }
 
     // This example comes from Krzysztof Zabłocki's blog post:
