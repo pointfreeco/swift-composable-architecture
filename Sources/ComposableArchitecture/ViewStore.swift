@@ -92,14 +92,14 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ) {
     self._send = { store.send($0) }
     self._state = CurrentValueRelay(toViewState(store.state.value))
-//    self.viewCancellable = store.state
-//      .map(toViewState)
-//      .removeDuplicates(by: isDuplicate)
-//      .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
-//        guard let objectWillChange = objectWillChange, let _state = _state else { return }
-//        objectWillChange.send()
-//        _state.value = $0
-//      }
+    self.viewCancellable = store.state
+      .map(toViewState)
+      .removeDuplicates(by: isDuplicate)
+      .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
+        guard let objectWillChange = objectWillChange, let _state = _state else { return }
+        objectWillChange.send()
+        _state.value = $0
+      }
   }
 
   /// Initializes a view store from a store which observes changes to state.
@@ -125,14 +125,14 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ) {
     self._send = { store.send(fromViewAction($0)) }
     self._state = CurrentValueRelay(toViewState(store.state.value))
-//    self.viewCancellable = store.state
-//      .map(toViewState)
-//      .removeDuplicates(by: isDuplicate)
-//      .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
-//        guard let objectWillChange = objectWillChange, let _state = _state else { return }
-//        objectWillChange.send()
-//        _state.value = $0
-//      }
+    self.viewCancellable = store.state
+      .map(toViewState)
+      .removeDuplicates(by: isDuplicate)
+      .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
+        guard let objectWillChange = objectWillChange, let _state = _state else { return }
+        objectWillChange.send()
+        _state.value = $0
+      }
   }
 
   /// Initializes a view store from a store.
@@ -202,13 +202,13 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ) {
     self._send = { store.send($0) }
     self._state = CurrentValueRelay(store.state.value)
-//    self.viewCancellable = store.state
-//      .removeDuplicates(by: isDuplicate)
-//      .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
-//        guard let objectWillChange = objectWillChange, let _state = _state else { return }
-//        objectWillChange.send()
-//        _state.value = $0
-//      }
+    self.viewCancellable = store.state
+      .removeDuplicates(by: isDuplicate)
+      .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
+        guard let objectWillChange = objectWillChange, let _state = _state else { return }
+        objectWillChange.send()
+        _state.value = $0
+      }
   }
 
   init(_ viewStore: ViewStore<ViewState, ViewAction>) {
