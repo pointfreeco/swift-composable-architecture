@@ -195,6 +195,7 @@ public struct DependencyValues: Sendable {
     }
   }
 
+  private var defaults = Defaults()
   private var storage: [ObjectIdentifier: AnySendable] = [:]
 
   /// Creates a dependency values instance.
@@ -237,17 +238,17 @@ public struct DependencyValues: Sendable {
       else {
         let context =
           self.storage[ObjectIdentifier(DependencyContextKey.self)]?.base as? DependencyContext
-          ?? defaultContext
+            ?? defaultContext
 
         switch context {
         case .live:
-          guard let value = Key.stableOpenedLiveValue
+          guard let value = self.defaults.openedLiveValue(Key.self)
           else {
             // TODO: add test coverage to this logic
             if !Self.isSetting {
               var dependencyDescription = ""
               if let fileID = Self.currentDependency.fileID,
-                let line = Self.currentDependency.line
+                 let line = Self.currentDependency.line
               {
                 dependencyDescription.append(
                   """
@@ -289,16 +290,16 @@ public struct DependencyValues: Sendable {
                 line: Self.currentDependency.line ?? line
               )
             }
-            return Key.stableTestValue
+            return self.defaults.testValue(Key.self)
           }
           return value
         case .preview:
-          return Key.stablePreviewValue
+          return self.defaults.previewValue(Key.self)
         case .test:
           var currentDependency = Self.currentDependency
           currentDependency.name = function
           return Self.$currentDependency.withValue(currentDependency) {
-            Key.stableTestValue
+            self.defaults.testValue(Key.self)
           }
         }
       }
@@ -335,39 +336,51 @@ private let defaultContext: DependencyContext = {
   }
 }()
 
-extension TestDependencyKey {
-  static var stableOpenedLiveValue: Value? {
-    self.stableDefaultValue(for: .live, default: _liveValue(Self.self) as? Value)
-  }
+extension DependencyValues {
+  final class Defaults: @unchecked Sendable {
+    struct StorageKey: Hashable, Sendable {
+      let id: ObjectIdentifier
+      let context: DependencyContext
+    }
 
-  static var stableTestValue: Value {
-    self.stableDefaultValue(for: .test, default: self.testValue)
-  }
+    private let lock = NSRecursiveLock()
+    private var storage = [StorageKey: AnySendable]()
 
-  static var stablePreviewValue: Value {
-    self.stableDefaultValue(for: .preview, default: self.previewValue)
-  }
+    func openedLiveValue<Key: TestDependencyKey>(_ key: Key.Type)
+      -> Key.Value?
+    {
+      let storageKey = StorageKey(id: ObjectIdentifier(key), context: .live)
+      return self.lock.sync {
+        if let value = self.storage[storageKey]?.base as? Key.Value { return value }
+        guard let value = _liveValue(key) as? Key.Value else { return nil }
+        self.storage[storageKey] = AnySendable(value)
+        return value
+      }
+    }
+    
+    func previewValue<Key: TestDependencyKey>(_ key: Key.Type)
+      -> Key.Value
+    {
+      let storageKey = StorageKey(id: ObjectIdentifier(key), context: .preview)
+      return self.lock.sync {
+        if let value = self.storage[storageKey]?.base as? Key.Value { return value }
+        let value = Key.previewValue
+        self.storage[storageKey] = AnySendable(value)
+        return value
+      }
+    }
 
-  static func stableDefaultValue<V>(
-    for context: DependencyContext,
-    default: @autoclosure () -> V
-  ) -> V {
-    let id = DefaultValueID(key: ObjectIdentifier(self), context: context)
-    defaultValueStorageLock.lock()
-    defer { defaultValueStorageLock.unlock() }
-    if let value = defaultValueStorage[id] as? Value { return value as! V }
-    let value = `default`()
-    defaultValueStorage[id] = value
-    return value
+    func testValue<Key: TestDependencyKey>(_ key: Key.Type)
+      -> Key.Value
+    {
+      let storageKey = StorageKey(id: ObjectIdentifier(key), context: .test)
+      return self.lock.sync {
+        if let value = self.storage[storageKey]?.base as? Key.Value { return value }
+        let value = Key.testValue
+        self.storage[storageKey] = AnySendable(value)
+        return value
+      }
+    }
   }
 }
-
-private struct DefaultValueID: Hashable {
-  let key: ObjectIdentifier
-  let context: DependencyContext
-}
-
-private var defaultValueStorage: [DefaultValueID: Any] = [:]
-private let defaultValueStorageLock = NSRecursiveLock()
-
 
