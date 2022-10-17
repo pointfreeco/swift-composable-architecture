@@ -157,6 +157,6 @@ final class ComposableArchitectureTests: XCTestCase {
 
     await store.send(.incr) { $0 = 2 }
     await store.send(.cancel)
-    await store.finish()
+    await store.finish(timeout: NSEC_PER_SEC)
   }
 }

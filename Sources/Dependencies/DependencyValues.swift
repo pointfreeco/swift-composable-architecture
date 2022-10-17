@@ -312,6 +312,9 @@ public struct DependencyValues: Sendable {
 
 private struct AnySendable: @unchecked Sendable {
   let base: Any
+  #if swift(>=5.7)
+  // NB: Replace `AnySendable` with `any Sendable` when we drop Swift 5.6 support.
+  #endif
 
   init<Base: Sendable>(_ base: Base) {
     self.base = base
