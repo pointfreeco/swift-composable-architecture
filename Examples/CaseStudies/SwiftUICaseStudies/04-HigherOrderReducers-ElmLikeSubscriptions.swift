@@ -80,7 +80,7 @@ struct ClockView: View {
   let store: Store<ClockState, ClockAction>
 
   var body: some View {
-    WithViewStore(store) { viewStore in
+    WithViewStore(self.store) { viewStore in
       Form {
         AboutView(readMe: readMe)
 
