@@ -3,9 +3,9 @@
   import Foundation
   import XCTestDynamicOverlay
 
-  final class NonExhaustiveTestStore<State, LocalState, Action: Equatable, LocalAction, Environment> {
+  public final class NonExhaustiveTestStore<State, LocalState, Action: Equatable, LocalAction, Environment> {
     typealias TCATestStoreType = TestStore<State, LocalState, Action, LocalAction, Environment>
-    var environment: Environment
+    public var environment: Environment
     public var timeout: UInt64 = NSEC_PER_SEC
 
     private let effectDidSubscribe = AsyncStream<Void>.streamWithContinuation()
@@ -18,6 +18,9 @@
     private var store: Store<State, TCATestStoreType.TestAction>!
     private let toLocalState: (State) -> LocalState
     private(set) var snapshotState: State
+
+    // remove once updated to 0.42.0
+    public var state: State { snapshotState }
 
     init(
       environment: Environment,
@@ -109,7 +112,7 @@
   }
 
   extension NonExhaustiveTestStore where State == LocalState, Action == LocalAction {
-    internal convenience init(
+    public convenience init(
       initialState: State,
       reducer: Reducer<State, Action, Environment>,
       environment: Environment,
@@ -131,7 +134,7 @@
   extension NonExhaustiveTestStore where LocalState: Equatable {
     @MainActor
     @discardableResult
-    internal func send(
+    public func send(
       _ action: LocalAction,
       _ update: ((inout LocalState) throws -> Void)? = nil,
       file: StaticString = #file,
@@ -147,7 +150,7 @@
     @available(macOS, deprecated: 9999.0, message: "Call the async-friendly 'send' instead.")
     @available(tvOS, deprecated: 9999.0, message: "Call the async-friendly 'send' instead.")
     @available(watchOS, deprecated: 9999.0, message: "Call the async-friendly 'send' instead.")
-    internal func send(
+    public func send(
       _ action: LocalAction,
       _ update: ((inout LocalState) throws -> Void)? = nil,
       file: StaticString = #file,
@@ -178,7 +181,7 @@
     ///     store after processing the given action. Do not provide a closure if no change is
     ///     expected.
     @MainActor
-    func receive(
+    public func receive(
       _ expectedAction: Action,
       timeout nanoseconds: UInt64? = nil,
       _ updateExpectingResult: ((inout LocalState) throws -> Void)? = nil,
@@ -245,7 +248,7 @@
       await Task.megaYield()
     }
 
-    internal func receive(
+    public func receive(
       _ action: Action,
       _ update: ((inout LocalState) throws -> Void)? = nil,
       file: StaticString = #file,
@@ -336,7 +339,7 @@
     /// - Parameter nanoseconds: The amount of time to wait before asserting.
     @_disfavoredOverload
     @MainActor
-    func finish(
+    public func finish(
       timeout nanoseconds: UInt64? = nil,
       file: StaticString = #file,
       line: UInt = #line
