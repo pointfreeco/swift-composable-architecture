@@ -66,9 +66,7 @@ final class DependencyValuesTests: XCTestCase {
   }
 
   func testDependencyDefaultIsReused() {
-    DependencyValues.withValues {
-      $0 = DependencyValues()
-    } operation: {
+    DependencyValues.withValue(\.self, .init()) {
       @Dependency(\.reuseClient) var reuseClient: ReuseClient
 
       XCTAssertEqual(reuseClient.count(), 0)
@@ -78,9 +76,7 @@ final class DependencyValuesTests: XCTestCase {
   }
 
   func testDependencyDefaultIsReused_SegmentedByContext() {
-    DependencyValues.withValues {
-      $0 = DependencyValues()
-    } operation: {
+    DependencyValues.withValue(\.self, .init()) {
       @Dependency(\.reuseClient) var reuseClient: ReuseClient
 
       XCTAssertEqual(reuseClient.count(), 0)
