@@ -64,7 +64,7 @@ You can convert this to the protocol style by:
 `Action`.
 1. Move the fields on the environment to be fields on this new reducer type, and delete the 
 environment type.
-1. Move the reducer's closure implementation to the ``ReducerProtocol/reduce(into:action:)-4nzr2`` 
+1. Move the reducer's closure implementation to the ``ReducerProtocol/reduce(into:action:)-8yinq`` 
 method.
 
 Performing these 4 steps on the feature produces the following:
@@ -81,7 +81,7 @@ struct Feature: ReducerProtocol {
 
   let date: () -> Date
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     // ...
     }
@@ -187,7 +187,7 @@ struct TabA: ReducerProtocol {
   enum Action {
     // ...
   }
-  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     // ...
   }
 }

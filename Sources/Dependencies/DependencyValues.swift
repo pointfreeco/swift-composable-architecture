@@ -12,7 +12,7 @@ import XCTestDynamicOverlay
 /// ```
 ///
 /// To change a dependency for a well-defined scope you can use the
-/// ``withValues(_:operation:file:line:)-2atnb`` method:
+/// ``withValues(_:operation:)-1oaja`` method:
 ///
 /// ```swift
 /// @Dependency(\.date) var date

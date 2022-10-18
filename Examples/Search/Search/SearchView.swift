@@ -42,7 +42,7 @@ struct Search: ReducerProtocol {
   private enum SearchLocationID {}
   private enum SearchWeatherID {}
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .forecastResponse(_, .failure):
       state.weather = nil

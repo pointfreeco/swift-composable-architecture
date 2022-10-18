@@ -40,7 +40,7 @@ struct Favoriting<ID: Hashable & Sendable>: ReducerProtocol {
 
   func reduce(
     into state: inout FavoritingState<ID>, action: FavoritingAction
-  ) -> Effect<FavoritingAction, Never> {
+  ) -> EffectTask<FavoritingAction> {
     switch action {
     case .alertDismissed:
       state.alert = nil

@@ -140,7 +140,7 @@ public struct _ForEachReducer<
   @inlinable
   public func reduce(
     into state: inout Parent.State, action: Parent.Action
-  ) -> Effect<Parent.Action, Never> {
+  ) -> EffectTask<Parent.Action> {
     self.reduceForEach(into: &state, action: action)
       .merge(with: self.parent.reduce(into: &state, action: action))
   }
@@ -148,7 +148,7 @@ public struct _ForEachReducer<
   @inlinable
   func reduceForEach(
     into state: inout Parent.State, action: Parent.Action
-  ) -> Effect<Parent.Action, Never> {
+  ) -> EffectTask<Parent.Action> {
     guard let (id, elementAction) = self.toElementAction.extract(from: action) else { return .none }
     if state[keyPath: self.toElementsState][id: id] == nil {
       runtimeWarn(

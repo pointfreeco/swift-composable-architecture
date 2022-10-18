@@ -58,7 +58,7 @@ public struct _SignpostReducer<Base: ReducerProtocol>: ReducerProtocol {
   @inlinable
   public func reduce(
     into state: inout Base.State, action: Base.Action
-  ) -> Effect<Base.Action, Never> {
+  ) -> EffectTask<Base.Action> {
     var actionOutput: String!
     if self.log.signpostsEnabled {
       actionOutput = debugCaseOutput(action)

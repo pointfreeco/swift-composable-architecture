@@ -82,6 +82,8 @@ As a basic example, consider a UI that shows a number along with "+" and "−" b
 To implement this feature we create a new type that will house the domain and behavior of the feature by conforming to `ReducerProtocol`:
 
 ```swift
+import ComposableArchitecture
+
 struct Feature: ReducerProtocol {
 }
 ```
@@ -119,7 +121,7 @@ struct Feature: ReducerProtocol {
   struct State: Equatable { … }
   enum Action: Equatable { … }
   
-  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
       case .factAlertDismissed:
         state.numberFactAlert = nil
@@ -134,13 +136,13 @@ struct Feature: ReducerProtocol {
         return .none
 
       case .numberFactButtonTapped:
-        return .task { [count = state.count] in 
+        return .task { [count = state.count] in
           await .numberFactResponse(
-            TaskResult { 
+            TaskResult {
               String(
                 decoding: try await URLSession.shared
-                  .data(from: URL(string: "http://numbersapi.com/\(number)/trivia")!).0,
-                using: UTF8.self
+                  .data(from: URL(string: "http://numbersapi.com/\(count)/trivia")!).0,
+                as: UTF8.self
               )
             }
           )
@@ -153,7 +155,6 @@ struct Feature: ReducerProtocol {
       case .numberFactResponse(.failure):
         state.numberFactAlert = "Could not load a number fact :("
         return .none
-      } 
     }
   }
 }
@@ -260,15 +261,19 @@ It is also straightforward to have a UIKit controller driven off of this store. 
 Once we are ready to display this view, for example in the app's entry point, we can construct a store. This can be done by specifying the initial state to start the application in, as well as the reducer that will power the application:
 
 ```swift
+import ComposableArchitecture
+
 @main
 struct MyApp: App {
   var body: some Scene {
-    FeatureView(
-      store: Store(
-        initialState: Feature.State(),
-        reducer: Feature()
+    WindowGroup {
+      FeatureView(
+        store: Store(
+          initialState: Feature.State(),
+          reducer: Feature()
+        )
       )
-    )
+    }
   }
 }
 ```

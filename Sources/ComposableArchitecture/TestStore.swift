@@ -51,7 +51,7 @@ import XCTestDynamicOverlay
 ///
 ///   func reduce(
 ///     into state: inout State, action: Action
-///   ) -> Effect<Action, Never> {
+///   ) -> EffectTask<Action> {
 ///     switch action {
 ///     case .decrementButtonTapped:
 ///       state.count -= 1
@@ -110,7 +110,7 @@ import XCTestDynamicOverlay
 ///
 ///   func reduce(
 ///     into state: inout State, action: Action
-///   ) -> Effect<Action, Never> {
+///   ) -> EffectTask<Action> {
 ///     switch action {
 ///     case let .queryChanged(query):
 ///       enum SearchID {}
@@ -221,7 +221,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   /// The current state.
   ///
   /// When read from a trailing closure assertion in ``send(_:_:file:line:)-6s1gq`` or
-  /// ``receive(_:timeout:_:file:line:)``, it will equal the `inout` state passed to the closure.
+  /// ``receive(_:timeout:_:file:line:)-8yd62``, it will equal the `inout` state passed to the closure.
   public var state: State {
     self.reducer.state
   }
@@ -229,7 +229,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   /// The timeout to await for in-flight effects.
   ///
   /// This is the default timeout used in all methods that take an optional timeout, such as
-  /// ``receive(_:timeout:_:file:line:)`` and ``finish(timeout:file:line:)``.
+  /// ``receive(_:timeout:_:file:line:)-8yd62`` and ``finish(timeout:file:line:)-7pmv3``.
   public var timeout: UInt64
 
   private var _environment: Box<Environment>
@@ -469,8 +469,8 @@ extension TestStore where ScopedState: Equatable {
   /// Sends an action to the store and asserts when state changes.
   ///
   /// This method suspends in order to allow any effects to start. For example, if you
-  /// track an analytics event in a ``Effect/fireAndForget(priority:_:)`` when an action is sent,
-  /// you can assert on that behavior immediately after awaiting `store.send`:
+  /// track an analytics event in a ``EffectPublisher/fireAndForget(priority:_:)`` when an action is
+  /// sent, you can assert on that behavior immediately after awaiting `store.send`:
   ///
   /// ```swift
   /// @MainActor
@@ -955,7 +955,7 @@ extension TestStore {
 /// await store.send(.stopTimerButtonTapped).finish()
 /// ```
 ///
-/// See ``TestStore/finish(timeout:file:line:)`` for the ability to await all in-flight effects in
+/// See ``TestStore/finish(timeout:file:line:)-7pmv3`` for the ability to await all in-flight effects in
 /// the test store.
 ///
 /// See ``ViewStoreTask`` for the analog provided to ``ViewStore``.
@@ -1068,10 +1068,10 @@ class TestReducer<State, Action>: ReducerProtocol {
     self.state = initialState
   }
 
-  func reduce(into state: inout State, action: TestAction) -> Effect<TestAction, Never> {
+  func reduce(into state: inout State, action: TestAction) -> EffectTask<TestAction> {
     let reducer = self.base.dependency(\.self, self.dependencies)
 
-    let effects: Effect<Action, Never>
+    let effects: EffectTask<Action>
     switch action.origin {
     case let .send(action):
       effects = reducer.reduce(into: &state, action: action)

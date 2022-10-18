@@ -270,8 +270,8 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   /// > Important: ``ViewStore`` is not thread safe and you should only send actions to it from the
   /// > main thread. If you want to send actions on background threads due to the fact that the
   /// > reducer is performing computationally expensive work, then a better way to handle this is to
-  /// > wrap that work in an ``Effect`` that is performed on a background thread so that the result
-  /// > can be fed back into the store.
+  /// > wrap that work in an ``EffectTask`` that is performed on a background thread so that the
+  /// > result can be fed back into the store.
   ///
   /// - Parameter action: An action.
   /// - Returns: A ``ViewStoreTask`` that represents the lifecycle of the effect executed when
@@ -316,7 +316,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   }
   ///   @Dependency(\.fetch) var fetch
   ///
-  ///   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  ///   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
   ///     switch action {
   ///     case .pulledToRefresh:
   ///       state.isLoading = true
@@ -406,6 +406,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///
   /// - Parameter predicate: A predicate on `ViewState` that determines for how long this method
   ///                        should suspend.
+  @MainActor
   public func yield(while predicate: @escaping (ViewState) -> Bool) async {
     if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
       _ = await self.publisher
