@@ -152,7 +152,6 @@ struct SpeechRecognitionView_Previews: PreviewProvider {
       store: Store(
         initialState: SpeechRecognition.State(transcribedText: "Test test 123"),
         reducer: SpeechRecognition()
-          .dependency(\.speechClient, .liveValue)
       )
     )
   }

@@ -19,7 +19,7 @@ struct SpeechClient {
 }
 
 extension SpeechClient: TestDependencyKey {
-  static let previewValue = {
+  static var previewValue: Self {
     let isRecording = ActorIsolated(false)
 
     return Self(
@@ -64,8 +64,8 @@ extension SpeechClient: TestDependencyKey {
         }
       }
     )
-  }()
-
+  }
+ 
   static let testValue = Self(
     finishTask: XCTUnimplemented("\(Self.self).finishTask"),
     requestAuthorization: XCTUnimplemented(
