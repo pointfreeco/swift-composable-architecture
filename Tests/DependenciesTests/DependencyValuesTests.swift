@@ -92,14 +92,16 @@ final class DependencyValuesTests: XCTestCase {
       XCTAssertEqual(reuseClient.count(), 42)
 
       DependencyValues.withValue(\.context, .live) {
-        XCTExpectFailure {
-          $0.compactDescription.contains(
-            """
-            @Dependency(\\.reuseClient)" has no live implementation, but was accessed from a live \
-            context.
-            """
-          )
-        }
+        #if DEBUG
+          XCTExpectFailure {
+            $0.compactDescription.contains(
+              """
+              @Dependency(\\.reuseClient)" has no live implementation, but was accessed from a live \
+              context.
+              """
+            )
+          }
+        #endif
         XCTAssertEqual(reuseClient.count(), 0)
         reuseClient.setCount(-42)
         XCTAssertEqual(
@@ -121,14 +123,16 @@ final class DependencyValuesTests: XCTestCase {
         XCTAssertEqual($0.reuseClient.count(), 0)
         XCTAssertEqual(reuseClient.count(), 0)
       } operation: {
-        XCTExpectFailure {
-          $0.compactDescription.contains(
-            """
-            @Dependency(\\.reuseClient)" has no live implementation, but was accessed from a live \
-            context.
-            """
-          )
-        }
+        #if DEBUG
+          XCTExpectFailure {
+            $0.compactDescription.contains(
+              """
+              @Dependency(\\.reuseClient)" has no live implementation, but was accessed from a live \
+              context.
+              """
+            )
+          }
+        #endif
         XCTAssertEqual(reuseClient.count(), 0)
       }
     }
