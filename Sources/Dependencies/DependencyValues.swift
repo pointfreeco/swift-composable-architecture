@@ -346,40 +346,30 @@ extension DependencyValues {
     private let lock = NSRecursiveLock()
     private var storage = [StorageKey: AnySendable]()
 
-    func openedLiveValue<Key: TestDependencyKey>(_ key: Key.Type)
-      -> Key.Value?
-    {
-      let storageKey = StorageKey(id: ObjectIdentifier(key), context: .live)
-      return self.lock.sync {
-        if let value = self.storage[storageKey]?.base as? Key.Value { return value }
-        guard let value = _liveValue(key) as? Key.Value else { return nil }
-        self.storage[storageKey] = AnySendable(value)
-        return value
-      }
+    func openedLiveValue<Key: TestDependencyKey>(_ key: Key.Type) -> Key.Value?  {
+      self.value(key, context: .live, default: _liveValue(key) as? Key.Value)
     }
     
-    func previewValue<Key: TestDependencyKey>(_ key: Key.Type)
-      -> Key.Value
-    {
-      let storageKey = StorageKey(id: ObjectIdentifier(key), context: .preview)
-      return self.lock.sync {
-        if let value = self.storage[storageKey]?.base as? Key.Value { return value }
-        let value = Key.previewValue
-        self.storage[storageKey] = AnySendable(value)
-        return value
-      }
+    func previewValue<Key: TestDependencyKey>(_ key: Key.Type) -> Key.Value {
+      self.value(key, context: .preview, default: Key.previewValue)!
     }
 
-    func testValue<Key: TestDependencyKey>(_ key: Key.Type)
-      -> Key.Value
-    {
-      let storageKey = StorageKey(id: ObjectIdentifier(key), context: .test)
-      return self.lock.sync {
-        if let value = self.storage[storageKey]?.base as? Key.Value { return value }
-        let value = Key.testValue
-        self.storage[storageKey] = AnySendable(value)
-        return value
-      }
+    func testValue<Key: TestDependencyKey>(_ key: Key.Type) -> Key.Value {
+      self.value(key, context: .test, default: Key.testValue)!
+    }
+    
+    func value<Key: TestDependencyKey>(
+      _ key: Key.Type,
+      context: DependencyContext,
+      default: @autoclosure () -> Key.Value?
+    ) -> Key.Value? {
+      let storageKey = StorageKey(id: ObjectIdentifier(key), context: context)
+      self.lock.lock()
+      defer { self.lock.unlock() }
+      if let value = self.storage[storageKey]?.base as? Key.Value { return value }
+      guard let value = `default`() else { return nil }
+      self.storage[storageKey] = AnySendable(value)
+      return value
     }
   }
 }
