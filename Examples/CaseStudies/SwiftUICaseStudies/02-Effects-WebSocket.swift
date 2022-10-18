@@ -206,7 +206,14 @@ struct WebSocketClient {
 }
 
 extension WebSocketClient: DependencyKey {
-  static let liveValue: Self = {
+  static var liveValue: Self {
+    return Self(
+      open: { await WebSocketActor.shared.open(id: $0, url: $1, protocols: $2) },
+      receive: { try await WebSocketActor.shared.receive(id: $0) },
+      send: { try await WebSocketActor.shared.send(id: $0, message: $1) },
+      sendPing: { try await WebSocketActor.shared.sendPing(id: $0) }
+    )
+
     final actor WebSocketActor: GlobalActor {
       final class Delegate: NSObject, URLSessionWebSocketDelegate {
         var continuation: AsyncStream<Action>.Continuation?
@@ -305,14 +312,7 @@ extension WebSocketClient: DependencyKey {
         self.dependencies[id] = nil
       }
     }
-
-    return Self(
-      open: { await WebSocketActor.shared.open(id: $0, url: $1, protocols: $2) },
-      receive: { try await WebSocketActor.shared.receive(id: $0) },
-      send: { try await WebSocketActor.shared.send(id: $0, message: $1) },
-      sendPing: { try await WebSocketActor.shared.sendPing(id: $0) }
-    )
-  }()
+  }
 
   static let testValue = Self(
     open: XCTUnimplemented("\(Self.self).open", placeholder: AsyncStream.never),

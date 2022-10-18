@@ -11,7 +11,7 @@ struct AudioRecorderClient {
 }
 
 extension AudioRecorderClient: TestDependencyKey {
-  static let previewValue = {
+  static var previewValue: Self {
     let isRecording = ActorIsolated(false)
     let currentTime = ActorIsolated(0.0)
 
@@ -31,7 +31,7 @@ extension AudioRecorderClient: TestDependencyKey {
         await currentTime.setValue(0)
       }
     )
-  }()
+  }
 
   static let testValue = Self(
     currentTime: XCTUnimplemented("\(Self.self).currentTime", placeholder: nil),
