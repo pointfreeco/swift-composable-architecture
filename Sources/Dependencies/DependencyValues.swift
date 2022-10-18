@@ -195,7 +195,7 @@ public struct DependencyValues: Sendable {
     }
   }
 
-  private var defaults = Defaults()
+  private var defaultValues = DefaultValues()
   private var storage: [ObjectIdentifier: AnySendable] = [:]
 
   /// Creates a dependency values instance.
@@ -242,7 +242,7 @@ public struct DependencyValues: Sendable {
 
         switch context {
         case .live:
-          guard let value = self.defaults.openedLiveValue(Key.self)
+          guard let value = self.defaultValues.openedLive(Key.self)
           else {
             // TODO: add test coverage to this logic
             if !Self.isSetting {
@@ -290,16 +290,16 @@ public struct DependencyValues: Sendable {
                 line: Self.currentDependency.line ?? line
               )
             }
-            return self.defaults.testValue(Key.self)
+            return self.defaultValues.test(Key.self)
           }
           return value
         case .preview:
-          return self.defaults.previewValue(Key.self)
+          return self.defaultValues.preview(Key.self)
         case .test:
           var currentDependency = Self.currentDependency
           currentDependency.name = function
           return Self.$currentDependency.withValue(currentDependency) {
-            self.defaults.testValue(Key.self)
+            self.defaultValues.test(Key.self)
           }
         }
       }
@@ -337,7 +337,7 @@ private let defaultContext: DependencyContext = {
 }()
 
 extension DependencyValues {
-  final class Defaults: @unchecked Sendable {
+  final class DefaultValues: @unchecked Sendable {
     struct StorageKey: Hashable, Sendable {
       let id: ObjectIdentifier
       let context: DependencyContext
@@ -346,15 +346,15 @@ extension DependencyValues {
     private let lock = NSRecursiveLock()
     private var storage = [StorageKey: AnySendable]()
 
-    func openedLiveValue<Key: TestDependencyKey>(_ key: Key.Type) -> Key.Value?  {
+    func openedLive<Key: TestDependencyKey>(_ key: Key.Type) -> Key.Value?  {
       self.value(key, context: .live, default: _liveValue(key) as? Key.Value)
     }
     
-    func previewValue<Key: TestDependencyKey>(_ key: Key.Type) -> Key.Value {
+    func preview<Key: TestDependencyKey>(_ key: Key.Type) -> Key.Value {
       self.value(key, context: .preview, default: Key.previewValue)!
     }
 
-    func testValue<Key: TestDependencyKey>(_ key: Key.Type) -> Key.Value {
+    func test<Key: TestDependencyKey>(_ key: Key.Type) -> Key.Value {
       self.value(key, context: .test, default: Key.testValue)!
     }
     
