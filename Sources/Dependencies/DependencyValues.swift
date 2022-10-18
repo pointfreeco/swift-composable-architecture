@@ -248,7 +248,7 @@ public struct DependencyValues: Sendable {
             if !Self.isSetting {
               var dependencyDescription = ""
               if let fileID = Self.currentDependency.fileID,
-                 let line = Self.currentDependency.line
+                let line = Self.currentDependency.line
               {
                 dependencyDescription.append(
                   """
