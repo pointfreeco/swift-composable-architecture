@@ -358,7 +358,7 @@ extension DependencyValues {
       self.value(key, context: .test, default: Key.testValue)!
     }
     
-    func value<Key: TestDependencyKey>(
+    private func value<Key: TestDependencyKey>(
       _ key: Key.Type,
       context: DependencyContext,
       default: @autoclosure () -> Key.Value?
