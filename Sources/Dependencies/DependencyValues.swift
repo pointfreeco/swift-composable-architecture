@@ -238,7 +238,7 @@ public struct DependencyValues: Sendable {
       else {
         let context =
           self.storage[ObjectIdentifier(DependencyContextKey.self)]?.base as? DependencyContext
-            ?? defaultContext
+          ?? defaultContext
 
         switch context {
         case .live:
