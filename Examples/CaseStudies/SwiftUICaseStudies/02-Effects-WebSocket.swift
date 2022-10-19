@@ -111,7 +111,9 @@ struct WebSocket: ReducerProtocol {
       .cancellable(id: WebSocketID.self)
 
     case .sendResponse(didSucceed: false):
-      state.alert = AlertState(title: TextState("Could not send socket message. Connect to the server first, and try again."))
+      state.alert = AlertState(
+        title: TextState(
+          "Could not send socket message. Connect to the server first, and try again."))
       return .none
 
     case .sendResponse(didSucceed: true):
@@ -145,10 +147,10 @@ struct WebSocketView: View {
           VStack(alignment: .leading) {
             Button(
               viewStore.connectivityState == .connected
-              ? "Disconnect"
-              : viewStore.connectivityState == .disconnected
-                ? "Connect"
-                : "Connecting..."
+                ? "Disconnect"
+                : viewStore.connectivityState == .disconnected
+                  ? "Connect"
+                  : "Connecting..."
             ) {
               viewStore.send(.connectButtonTapped)
             }
@@ -175,8 +177,8 @@ struct WebSocketView: View {
           Text("Status: \(viewStore.connectivityState.rawValue)")
             .foregroundStyle(.secondary)
           Text(viewStore.receivedMessages.reversed().joined(separator: "\n"))
-        } header: { 
-          Text("Received messages") 
+        } header: {
+          Text("Received messages")
         }
       }
       .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
