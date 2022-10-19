@@ -4,7 +4,7 @@ import ComposableArchitecture
 private struct Counter: ReducerProtocol {
   typealias State = Int
   typealias Action = Bool
-  func reduce(into state: inout Int, action: Bool) -> Effect<Bool, Never> {
+  func reduce(into state: inout Int, action: Bool) -> EffectTask<Bool> {
     if action {
       state += 1
       return .none

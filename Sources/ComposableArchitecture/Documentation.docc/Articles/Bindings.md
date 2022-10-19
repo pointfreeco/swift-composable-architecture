@@ -54,7 +54,7 @@ struct Settings: ReducerProtocol {
   
   func reduce(
     into state: inout State, action: Action
-  ) -> Effect<Action, Never> {
+  ) -> EffectTask<Action> {
     switch action {
     case let .isHapticFeedbackEnabledChanged(isEnabled):
       state.isHapticFeedbackEnabled = isEnabled
@@ -146,7 +146,7 @@ struct Settings: ReducerProtocol {
 
   func reduce(
     into state: inout State, action: Action
-  ) -> Effect<Action, Never> {
+  ) -> EffectTask<Action> {
     switch action {
     case let digestChanged(digest):
       state.digest = digest

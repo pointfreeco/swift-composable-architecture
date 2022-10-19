@@ -482,19 +482,19 @@ extension TestStore {
 
 // MARK: - Deprecated after 0.38.2:
 
-extension Effect {
+extension EffectPublisher {
   @available(*, deprecated)
   public var upstream: AnyPublisher<Action, Failure> {
     self.publisher
   }
 }
 
-extension Effect where Failure == Error {
+extension EffectPublisher where Failure == Error {
   @_disfavoredOverload
   @available(
     *,
     deprecated,
-    message: "Use the non-failing version of 'Effect.task'"
+    message: "Use the non-failing version of 'EffectTask.task'"
   )
   public static func task(
     priority: TaskPriority? = nil,
@@ -552,7 +552,7 @@ extension Store {
 
 // MARK: - Deprecated after 0.38.0:
 
-extension Effect {
+extension EffectPublisher {
   @available(iOS, deprecated: 9999.0, renamed: "unimplemented")
   @available(macOS, deprecated: 9999.0, renamed: "unimplemented")
   @available(tvOS, deprecated: 9999.0, renamed: "unimplemented")
@@ -574,7 +574,7 @@ extension ViewStore {
 
 // MARK: - Deprecated after 0.34.0:
 
-extension Effect {
+extension EffectPublisher {
   @available(
     *,
     deprecated,

@@ -37,7 +37,7 @@ public struct CombineReducers<Reducers: ReducerProtocol>: ReducerProtocol {
   @inlinable
   public func reduce(
     into state: inout Reducers.State, action: Reducers.Action
-  ) -> Effect<Reducers.Action, Never> {
+  ) -> EffectTask<Reducers.Action> {
     self.reducers.reduce(into: &state, action: action)
   }
 }

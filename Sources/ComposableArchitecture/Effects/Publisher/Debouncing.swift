@@ -1,6 +1,6 @@
 import Combine
 
-extension Effect {
+extension EffectPublisher {
   /// Turns an effect into one that can be debounced.
   ///
   /// To turn an effect into a debounce-able one you must provide an identifier, which is used to
@@ -27,22 +27,22 @@ extension Effect {
   @available(
     iOS,
     deprecated: 9999.0,
-    message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'Effect.run', instead."
+    message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'EffectTask.run', instead."
   )
   @available(
     macOS,
     deprecated: 9999.0,
-    message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'Effect.run', instead."
+    message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'EffectTask.run', instead."
   )
   @available(
     tvOS,
     deprecated: 9999.0,
-    message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'Effect.run', instead."
+    message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'EffectTask.run', instead."
   )
   @available(
     watchOS,
     deprecated: 9999.0,
-    message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'Effect.run', instead."
+    message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'EffectTask.run', instead."
   )
   public func debounce<S: Scheduler>(
     id: AnyHashable,
@@ -69,8 +69,8 @@ extension Effect {
 
   /// Turns an effect into one that can be debounced.
   ///
-  /// A convenience for calling ``Effect/debounce(id:for:scheduler:options:)-76yye`` with a static
-  /// type as the effect's unique identifier.
+  /// A convenience for calling ``EffectPublisher/debounce(id:for:scheduler:options:)-1xdnj`` with a
+  /// static type as the effect's unique identifier.
   ///
   /// - Parameters:
   ///   - id: A unique type identifying the effect.
