@@ -43,7 +43,7 @@
       await store.receive(false) { $0 = 2 }
       XCTAssertEqual(store.state, 2)
       XCTExpectFailure {
-        $0.compactDescription == "There were no received actions to flush."
+        $0.compactDescription == "There were no received actions to skip."
       }
       await store.skipReceivedActions(strict: true)
     }
@@ -71,7 +71,7 @@
       let task = await store.send(true)
       await task.finish(timeout: NSEC_PER_SEC / 2)
       XCTExpectFailure {
-        $0.compactDescription == "There were no in-flight effects to cancel."
+        $0.compactDescription == "There were no in-flight effects to skip."
       }
       await store.skipInFlightEffects(strict: true)
     }

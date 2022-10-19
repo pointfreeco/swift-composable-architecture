@@ -785,7 +785,7 @@ extension TestStore where ScopedState: Equatable {
     case .exhaustive:
       break
     case .partial:
-      await self.skipReceivedActions()
+      await self.skipReceivedActions(strict: false)
     case .none:
       self.reducer.receivedActions = []
     }
@@ -881,7 +881,7 @@ extension TestStore where ScopedState: Equatable {
     case .exhaustive:
       break
     case .partial:
-      self.skipReceivedActions()
+      self.skipReceivedActions(strict: false)
     case .none:
       self.reducer.receivedActions = []
     }
@@ -1303,6 +1303,7 @@ extension TestStore {
   /// - Parameters:
   ///   - strict: When true and there are no received actions to flush, a test failure will be
   ///   raised.
+  @MainActor
   public func skipReceivedActions(
     strict: Bool = true,
     file: StaticString = #file,
@@ -1312,7 +1313,7 @@ extension TestStore {
     _ = { self.skipReceivedActions(strict: strict, file: file, line: line) }()
   }
 
-  func skipReceivedActions(
+  public func skipReceivedActions(
     strict: Bool = true,
     file: StaticString = #file,
     line: UInt = #line
@@ -1372,7 +1373,7 @@ extension TestStore {
     line: UInt = #line
   ) async {
     await Task.megaYield()
-    _ = { self.skipInFlightEffects(strict: strict, file: file, line: line) }
+    _ = { self.skipInFlightEffects(strict: strict, file: file, line: line) }()
   }
 
   func skipInFlightEffects(
