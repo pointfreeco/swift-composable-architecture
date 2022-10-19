@@ -217,6 +217,10 @@ public struct _PresentationDestinationReducer<
           self.presented
             .dependency(\.dismiss, DismissEffect { Task.cancel(id: DismissID.self) })
             .dependency(\.navigationID.current, id)
+//            .transformDependency(\.self) {
+//              $0.navigationID.current = id
+//              $0.dismiss = DismissEffect { Task.cancel(id: DismissID.self, navigationID: id) }
+//            }
             .reduce(into: &presentedState, action: presentedAction)
             .map { self.toPresentedAction.embed(.presented($0)) }
             .cancellable(id: id)
@@ -394,6 +398,8 @@ extension View {
     }
   }
 
+  // TODO: kinda confusing to have navigationDestination defined for both PresentationState
+  //       and NavigationState.
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func navigationDestination<State, Action, Destination: View>(
     store: Store<PresentationState<State>, PresentationAction<State, Action>>,
@@ -446,7 +452,9 @@ private struct Item: Identifiable {
     destinations: PresentationState<Destinations>,
     destination toDestination: (Destinations) -> Destination?
   ) {
-    guard case let .presented(id, destinations) = destinations, toDestination(destinations) != nil
+    guard
+      case let .presented(id, destinations) = destinations,
+        toDestination(destinations) != nil
     else { return nil }
 
     self.id = id
