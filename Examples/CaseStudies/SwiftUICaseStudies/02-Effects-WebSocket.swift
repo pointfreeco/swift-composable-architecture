@@ -315,10 +315,10 @@ extension WebSocketClient: DependencyKey {
   }
 
   static let testValue = Self(
-    open: XCTUnimplemented("\(Self.self).open", placeholder: AsyncStream.never),
-    receive: XCTUnimplemented("\(Self.self).receive"),
-    send: XCTUnimplemented("\(Self.self).send"),
-    sendPing: XCTUnimplemented("\(Self.self).sendPing")
+    open: unimplemented("\(Self.self).open", placeholder: AsyncStream.never),
+    receive: unimplemented("\(Self.self).receive"),
+    send: unimplemented("\(Self.self).send"),
+    sendPing: unimplemented("\(Self.self).sendPing")
   )
 }
 
