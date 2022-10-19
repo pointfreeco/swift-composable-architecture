@@ -1,6 +1,7 @@
 import SwiftUI
 
 // TODO: `@dynamicMemberLookup`? `Sendable where State: Sendable`
+// TODO: copy-on-write box better than indirect enum?
 @propertyWrapper
 public enum PresentationState<State> {
   case dismissed
@@ -190,7 +191,8 @@ public struct _PresentationDestinationReducer<
 
   @inlinable
   public func reduce(
-    into state: inout Presenter.State, action: Presenter.Action
+    into state: inout Presenter.State,
+    action: Presenter.Action
   ) -> EffectTask<Presenter.Action> {
     var effect: EffectTask<Presenter.Action> = .none
 
@@ -418,12 +420,13 @@ extension View {
   }
 }
 
-private func areDestinationsEqual<State>(
-  _ lhs: PresentationState<State>,
-  _ rhs: PresentationState<State>
-) -> Bool {
-  lhs.id == rhs.id
-}
+// TODO: needed?
+//private func areDestinationsEqual<State>(
+//  _ lhs: PresentationState<State>,
+//  _ rhs: PresentationState<State>
+//) -> Bool {
+//  lhs.id == rhs.id
+//}
 
 private struct Item: Identifiable {
   let id: AnyHashable

@@ -1,7 +1,7 @@
 import OrderedCollections
 import SwiftUI
 
-// TODO: Other names? `NavigationPathState`? `NavigationStatePath`?
+// TODO: Other names? `NavigationPathState`? `NavigationStatePath`? `PathState`?
 // TODO: Should `NavigationState` flatten to just work on `Identifiable` elements?
 // TODO: `Sendable where Element: Sendable`
 // TODO: Get a better handle on how explicit `ID`s are handled for various navigation scenarios.
@@ -482,6 +482,7 @@ public struct NavigationStackStore<Element: Hashable, Content: View>: View {
     guard lhs.count == rhs.count
     else { return false }
 
+    // TODO: memcmp ids and then fallback to comparing enum tags?
     for (lhs, rhs) in zip(lhs, rhs) {
       guard lhs.id == rhs.id && enumTag(lhs.element) == enumTag(rhs.element)
       else { return false }
