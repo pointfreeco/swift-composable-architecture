@@ -1337,7 +1337,8 @@ extension TestStore {
 
       \(actions)
       """,
-      exhaustivity: .partial(prefix: self.exhaustivity.prefix),
+      // TODO: get test coverage on this logic
+      exhaustivity: self.exhaustivity == .none ? .none : .partial(prefix: self.exhaustivity.prefix),
       file: file,
       line: line
     )
@@ -1402,7 +1403,8 @@ extension TestStore {
 
       \(actions)
       """,
-      exhaustivity: .partial(prefix: self.exhaustivity.prefix),
+      // TODO: get test coverage on this logic
+      exhaustivity: self.exhaustivity == .none ? .none : .partial(prefix: self.exhaustivity.prefix),
       file: file,
       line: line
     )
