@@ -16,8 +16,6 @@ final class PresentationTests: XCTestCase {
     await store.send(.child1(.dismiss)) {
       $0.child1 = nil
     }
-    // TODO: possible to not send this action if we detect it was already sent?
-    await store.receive(.child1(.dismiss))
   }
 
   func testChildDismissing() async {

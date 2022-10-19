@@ -253,20 +253,10 @@ public struct _PresentationDestinationReducer<
 
     if case .dismiss = presentedAction, case let .presented(id, _) = currentPresentedState {
       state[keyPath: self.toPresentedState].wrappedValue = nil
-      effects.append(
-        DependencyValues.withValue(\.navigationID.current, id) {
-          .cancel(id: DismissID.self)
-        }
-      )
       effects.append(.cancel(id: id))
     } else if case let .presented(id, _) = currentPresentedState,
       state[keyPath: self.toPresentedState].id != id
     {
-      effects.append(
-        DependencyValues.withValue(\.navigationID.current, id) {
-          .cancel(id: DismissID.self)
-        }
-      )
       effects.append(.cancel(id: id))
     }
 
@@ -285,6 +275,7 @@ public struct _PresentationDestinationReducer<
             throw error
           }
         }
+          .cancellable(id: id)
       )
     }
 

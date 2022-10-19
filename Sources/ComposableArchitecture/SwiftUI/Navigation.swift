@@ -405,13 +405,15 @@ where Destinations.State: Hashable {
       }
       effect = effect.merge(
         with: self.destinations
+
         // TODO: 👇
         // .dependency(\.popToRoot, ...)
         // .dependency(\.navigation.dismiss, ...)
         // .dependency(\.navigation.id, ...)
         // .dependency(\.navigation.popToRoot, ...)
-        // .dependency(\.navigation.popLast(...), ...)
+        // .dependency(\.navigation.popLast(...), ....)
         // .dependency(\.navigation.currentStack(...), ...)
+
           .dependency(\.dismiss, DismissEffect { Task.cancel(id: DismissID.self) })
           .dependency(\.navigationID.current, id)
           .reduce(
