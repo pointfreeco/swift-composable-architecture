@@ -102,7 +102,7 @@ extension PresentationState: Hashable where State: Hashable {
 //}
 
 public enum PresentationAction<State, Action> {
-  // TODO: is present(nil) the same thing as dismiss?
+  // NB: sending present(id, nil) from the view means let the reducer hydrate state
   case present(id: AnyHashable = DependencyValues._current.uuid(), State? = nil)
   case presented(Action)
   case dismiss
@@ -195,6 +195,9 @@ public struct _PresentationDestinationReducer<
     into state: inout Presenter.State,
     action: Presenter.Action
   ) -> EffectTask<Presenter.Action> {
+    // TODO: explore more performance impliciations
+    //       Doing effect = effect.merge may be faster on the creation side and slower on the run side,
+    //       because it creates a lot of nested TaskGroups
     var effects: [EffectTask<Presenter.Action>] = []
 
     let currentPresentedState = state[keyPath: self.toPresentedState]
@@ -245,7 +248,7 @@ public struct _PresentationDestinationReducer<
         return .none
       }
 
-    case .dismiss, .present(_, .none), .none:
+    case .present(_, .none), .dismiss, .none:
       break
     }
 

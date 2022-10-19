@@ -22,16 +22,26 @@ struct NavigationDemo: ReducerProtocol {
     Reduce { state, action in
       switch action {
       case .cancelTimersButtonTapped:
-        return .merge(
-          state.$path.compactMap { destination in
-            switch destination.element {
-            case .screenA, .screenB:
-              return nil
-
-            case .screenC:
-              return .cancel(id: destination.id)
-            }
-          })
+        return .cancel(id: ScreenC.TimerID.self)
+        // TODO: support 3 use cases of cancellation
+        //       You can either:
+        //         * Cancel all timers across all screen C's in the state
+        //           return .cancel(id: ScreenC.TimerID.self)
+        //         * Cancel all effects inside a particular screen in the stack
+        //           return .cancel(navigationID: id)
+        //         * Cancel a particular effect inside a particular screen in the stack
+        //           return .cancel(id: ScreenC.TimerID.self, navigationID: id)
+//        return .merge(
+//          state.$path.compactMap { destination in
+//            switch destination.element {
+//            case .screenA, .screenB:
+//              return nil
+//
+//            case .screenC:
+//              // .cancel(id: ScreenC.TimerID.self, navigationID: id)
+//              return .init(value: .path(.element(id: destination.id, .screenC(.stopButtonTapped))))
+//            }
+//          })
 
       case let .goBackToScreen(n):
         state.path.removeLast(n)
@@ -395,9 +405,9 @@ struct ScreenC: ReducerProtocol {
   }
 
   @Dependency(\.mainQueue) var mainQueue
+  enum TimerID {}
 
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
-    enum TimerID {}
 
     switch action {
     case .startButtonTapped:
@@ -408,6 +418,7 @@ struct ScreenC: ReducerProtocol {
         }
       }
       .cancellable(id: TimerID.self)
+      .concatenate(with: .init(value: .stopButtonTapped))
 
     case .stopButtonTapped:
       state.isTimerRunning = false
