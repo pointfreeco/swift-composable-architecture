@@ -15,7 +15,7 @@ extension AudioPlayerClient: TestDependencyKey {
   )
 
   static let testValue = Self(
-    play: XCTUnimplemented("\(Self.self).play")
+    play: unimplemented("\(Self.self).play")
   )
 }
 

@@ -34,12 +34,12 @@ extension AudioRecorderClient: TestDependencyKey {
   }
 
   static let testValue = Self(
-    currentTime: XCTUnimplemented("\(Self.self).currentTime", placeholder: nil),
-    requestRecordPermission: XCTUnimplemented(
+    currentTime: unimplemented("\(Self.self).currentTime", placeholder: nil),
+    requestRecordPermission: unimplemented(
       "\(Self.self).requestRecordPermission", placeholder: false
     ),
-    startRecording: XCTUnimplemented("\(Self.self).startRecording", placeholder: false),
-    stopRecording: XCTUnimplemented("\(Self.self).stopRecording")
+    startRecording: unimplemented("\(Self.self).startRecording", placeholder: false),
+    stopRecording: unimplemented("\(Self.self).stopRecording")
   )
 }
 

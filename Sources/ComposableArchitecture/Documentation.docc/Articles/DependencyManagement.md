@@ -315,24 +315,17 @@ Unfortunately, `XCTFail` cannot be used in non-test targets, and so this instanc
 in the same file where your dependency is registered. To work around this you can use our
 [XCTestDynamicOverlay][xctest-dynamic-overlay-gh] library that dynamically invokes `XCTFail` and
 it is automatically accessible when using the Composable Architecture. It also comes with some
-helpers to ease the construction of these unimplemented values:
+helpers to ease the construction of these unimplemented values, which we can use when defining the
+`testValue` of your dependency:
 
 ```swift
 import XCTestDynamicOverlay
 
 extension APIClient {
-  static let unimplemented = Self(
-    fetchUser: XCTUnimplemented("APIClient.fetchUser")
-    fetchUsers: XCTUnimplemented("APIClient.fetchUsers")
+  static let testValue = Self(
+    fetchUser: unimplemented("APIClient.fetchUser")
+    fetchUsers: unimplemented("APIClient.fetchUsers")
   )
-}
-```
-
-This is now the value that is most appropriate to use as the `testValue` of your dependency:
-
-```swift
-extension APIClient: TestDependencyKey {
-  static let testValue = APIClient.unimplemented
 }
 ```
 
