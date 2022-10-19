@@ -1,6 +1,6 @@
 import Combine
 import CombineSchedulers
-import ComposableArchitecture
+@_spi(Internals) import ComposableArchitecture
 import XCTest
 
 @MainActor
@@ -129,6 +129,10 @@ final class ComposableArchitectureTests: XCTestCase {
 
       switch action {
       case .cancel:
+        XCTAssertEqual(
+          _cancellationCancellables[_CancelToken(id: ObjectIdentifier(CancelID.self))]?.count,
+          1
+        )
         return .cancel(id: CancelID.self)
 
       case .incr:
