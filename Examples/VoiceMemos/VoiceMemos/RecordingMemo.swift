@@ -32,7 +32,7 @@ struct RecordingMemo: ReducerProtocol {
   @Dependency(\.audioRecorder) var audioRecorder
   @Dependency(\.mainRunLoop) var mainRunLoop
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .audioRecorderDidFinish(.success(true)):
       return .task { [state] in .delegate(.didFinish(.success(state))) }

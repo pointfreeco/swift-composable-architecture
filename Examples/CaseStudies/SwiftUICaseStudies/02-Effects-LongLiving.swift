@@ -29,7 +29,7 @@ struct LongLivingEffects: ReducerProtocol {
 
   @Dependency(\.screenshots) var screenshots
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .task:
       // When the view appears, start the effect that emits when screenshots are taken.

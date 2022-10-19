@@ -106,13 +106,13 @@ final class DemandBuffer<S: Subscriber>: @unchecked Sendable {
 
 extension AnyPublisher {
   private init(
-    _ callback: @escaping (Effect<Output, Failure>.Subscriber) -> Cancellable
+    _ callback: @escaping (EffectPublisher<Output, Failure>.Subscriber) -> Cancellable
   ) {
     self = Publishers.Create(callback: callback).eraseToAnyPublisher()
   }
 
   static func create(
-    _ factory: @escaping (Effect<Output, Failure>.Subscriber) -> Cancellable
+    _ factory: @escaping (EffectPublisher<Output, Failure>.Subscriber) -> Cancellable
   ) -> AnyPublisher<Output, Failure> {
     AnyPublisher(factory)
   }
@@ -120,9 +120,9 @@ extension AnyPublisher {
 
 extension Publishers {
   fileprivate class Create<Output, Failure: Swift.Error>: Publisher {
-    private let callback: (Effect<Output, Failure>.Subscriber) -> Cancellable
+    private let callback: (EffectPublisher<Output, Failure>.Subscriber) -> Cancellable
 
-    init(callback: @escaping (Effect<Output, Failure>.Subscriber) -> Cancellable) {
+    init(callback: @escaping (EffectPublisher<Output, Failure>.Subscriber) -> Cancellable) {
       self.callback = callback
     }
 
@@ -139,7 +139,7 @@ extension Publishers.Create {
     private var cancellable: Cancellable?
 
     init(
-      callback: @escaping (Effect<Output, Failure>.Subscriber) -> Cancellable,
+      callback: @escaping (EffectPublisher<Output, Failure>.Subscriber) -> Cancellable,
       downstream: Downstream
     ) {
       self.buffer = DemandBuffer(subscriber: downstream)
@@ -170,7 +170,7 @@ extension Publishers.Create.Subscription: CustomStringConvertible {
   }
 }
 
-extension Effect {
+extension EffectPublisher {
   public struct Subscriber {
     private let _send: (Action) -> Void
     private let _complete: (Subscribers.Completion<Failure>) -> Void

@@ -140,7 +140,7 @@ private struct Root: ReducerProtocol {
       case action
     }
 
-    func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+    func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
       .none
     }
   }

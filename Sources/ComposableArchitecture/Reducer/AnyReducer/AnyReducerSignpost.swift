@@ -85,7 +85,7 @@ extension AnyReducer {
   }
 }
 
-extension Effect where Failure == Never {
+extension EffectPublisher where Failure == Never {
   @usableFromInline
   func effectSignpost(
     _ prefix: String,

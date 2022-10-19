@@ -11,7 +11,7 @@ final class TimerTests: XCTestCase {
 
     var count = 0
 
-    Effect.timer(id: 1, every: .seconds(1), on: mainQueue)
+    EffectPublisher.timer(id: 1, every: .seconds(1), on: mainQueue)
       .sink { _ in count += 1 }
       .store(in: &self.cancellables)
 
@@ -34,11 +34,11 @@ final class TimerTests: XCTestCase {
     var count2 = 0
     var count3 = 0
 
-    Effect.merge(
-      Effect.timer(id: 1, every: .seconds(2), on: mainQueue)
+    EffectPublisher.merge(
+      EffectPublisher.timer(id: 1, every: .seconds(2), on: mainQueue)
         .handleEvents(receiveOutput: { _ in count2 += 1 })
         .eraseToEffect(),
-      Effect.timer(id: 2, every: .seconds(3), on: mainQueue)
+      EffectPublisher.timer(id: 2, every: .seconds(3), on: mainQueue)
         .handleEvents(receiveOutput: { _ in count3 += 1 })
         .eraseToEffect()
     )
@@ -67,7 +67,7 @@ final class TimerTests: XCTestCase {
 
     struct CancelToken: Hashable {}
 
-    Effect.timer(id: CancelToken(), every: .seconds(2), on: mainQueue)
+    EffectPublisher.timer(id: CancelToken(), every: .seconds(2), on: mainQueue)
       .handleEvents(receiveOutput: { _ in firstCount += 1 })
       .eraseToEffect()
       .sink { _ in }
@@ -81,7 +81,7 @@ final class TimerTests: XCTestCase {
 
     XCTAssertEqual(firstCount, 2)
 
-    Effect.timer(id: CancelToken(), every: .seconds(2), on: mainQueue)
+    EffectPublisher.timer(id: CancelToken(), every: .seconds(2), on: mainQueue)
       .handleEvents(receiveOutput: { _ in secondCount += 1 })
       .eraseToEffect()
       .sink { _ in }
@@ -103,7 +103,7 @@ final class TimerTests: XCTestCase {
 
     var count = 0
 
-    Effect.timer(id: 1, every: .seconds(1), on: mainQueue)
+    EffectPublisher.timer(id: 1, every: .seconds(1), on: mainQueue)
       .prefix(3)
       .sink { _ in count += 1 }
       .store(in: &self.cancellables)

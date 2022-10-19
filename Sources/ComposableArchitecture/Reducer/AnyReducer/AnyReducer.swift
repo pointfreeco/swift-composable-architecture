@@ -5,15 +5,15 @@ import Combine
 /// Read <doc:MigratingToTheReducerProtocol> for more information.
 ///
 /// A reducer describes how to evolve the current state of an application to the next state, given
-/// an action, and describes what ``Effect``s should be executed later by the store, if any.
+/// an action, and describes what ``EffectTask``s should be executed later by the store, if any.
 ///
 /// Reducers have 3 generics:
 ///
 ///   * `State`: A type that holds the current state of the application.
 ///   * `Action`: A type that holds all possible actions that cause the state of the application to
 ///     change.
-///   * `Environment`: A type that holds all dependencies needed in order to produce ``Effect``s,
-///     such as API clients, analytics clients, random number generators, etc.
+///   * `Environment`: A type that holds all dependencies needed in order to produce
+///     ``EffectTask``s, such as API clients, analytics clients, random number generators, etc.
 ///
 /// > Important: The thread on which effects output is important. An effect's output is immediately
 ///   sent back into the store, and ``Store`` is not thread safe. This means all effects must
@@ -21,9 +21,10 @@ import Combine
 ///   output must be on the main thread. You can use the `Publisher` method `receive(on:)` for make
 ///   the effect output its values on the thread of your choice.
 /// >
-/// > This is only an issue if using the Combine interface of ``Effect`` as mentioned above. If you
-///   you are only using Swift's concurrency tools and the `.task`, `.run` and `.fireAndForget`
-///   functions on ``Effect``, then the threading is automatically handled for you.
+/// > This is only an issue if using the Combine interface of ``EffectPublisher`` as mentioned
+///   above. If you are only using Swift's concurrency tools and the `.task`, `.run` and
+///   `.fireAndForget` functions on ``EffectTask``, then the threading is automatically handled for
+///   you.
 @available(
   iOS,
   deprecated: 9999.0,
@@ -57,7 +58,7 @@ import Combine
     """
 )
 public struct AnyReducer<State, Action, Environment> {
-  private let reducer: (inout State, Action, Environment) -> Effect<Action, Never>
+  private let reducer: (inout State, Action, Environment) -> EffectTask<Action>
 
   /// > This API has been soft-deprecated in favor of ``ReducerProtocol``.
   /// Read <doc:MigratingToTheReducerProtocol> for more information.
@@ -67,7 +68,7 @@ public struct AnyReducer<State, Action, Environment> {
   /// The reducer takes three arguments: state, action and environment. The state is `inout` so that
   /// you can make any changes to it directly inline. The reducer must return an effect, which
   /// typically would be constructed by using the dependencies inside the `environment` value. If
-  /// no effect needs to be executed, a ``Effect/none`` effect can be returned.
+  /// no effect needs to be executed, a ``EffectPublisher/none`` effect can be returned.
   ///
   /// For example:
   ///
@@ -123,7 +124,7 @@ public struct AnyReducer<State, Action, Environment> {
       This API has been soft-deprecated in favor of 'ReducerProtocol'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
-  public init(_ reducer: @escaping (inout State, Action, Environment) -> Effect<Action, Never>) {
+  public init(_ reducer: @escaping (inout State, Action, Environment) -> EffectTask<Action>) {
     self.reducer = reducer
   }
 
@@ -1134,7 +1135,7 @@ public struct AnyReducer<State, Action, Environment> {
     }
   }
 
-  /// This API has been soft-deprecated in favor of ``ReducerProtocol/reduce(into:action:)-4nzr2``.
+  /// This API has been soft-deprecated in favor of ``ReducerProtocol/reduce(into:action:)-8yinq``.
   /// Read <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// Runs the reducer.
@@ -1180,11 +1181,11 @@ public struct AnyReducer<State, Action, Environment> {
     _ state: inout State,
     _ action: Action,
     _ environment: Environment
-  ) -> Effect<Action, Never> {
+  ) -> EffectTask<Action> {
     self.reducer(&state, action, environment)
   }
 
-  /// This API has been soft-deprecated in favor of ``ReducerProtocol/reduce(into:action:)-4nzr2``.
+  /// This API has been soft-deprecated in favor of ``ReducerProtocol/reduce(into:action:)-8yinq``.
   /// Read <doc:MigratingToTheReducerProtocol> for more information.
   @available(
     iOS,
@@ -1222,7 +1223,7 @@ public struct AnyReducer<State, Action, Environment> {
     _ state: inout State,
     _ action: Action,
     _ environment: Environment
-  ) -> Effect<Action, Never> {
+  ) -> EffectTask<Action> {
     self.reducer(&state, action, environment)
   }
 }

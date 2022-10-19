@@ -17,7 +17,7 @@ final class TestStoreTests: XCTestCase {
       switch action {
       case .a:
         return .merge(
-          Effect.concatenate(.init(value: .b1), .init(value: .c1))
+          EffectTask.concatenate(.init(value: .b1), .init(value: .c1))
             .delay(for: 1, scheduler: mainQueue)
             .eraseToEffect(),
           Empty(completeImmediately: false)
@@ -26,11 +26,11 @@ final class TestStoreTests: XCTestCase {
         )
       case .b1:
         return
-          Effect
+          EffectTask
           .concatenate(.init(value: .b2), .init(value: .b3))
       case .c1:
         return
-          Effect
+          EffectTask
           .concatenate(.init(value: .c2), .init(value: .c3))
       case .b2, .b3, .c2, .c3:
         return .none
@@ -100,7 +100,7 @@ final class TestStoreTests: XCTestCase {
         switch action {
         case .increment:
           state.isChanging = true
-          return Effect(value: .changed(from: state.count, to: state.count + 1))
+          return EffectTask(value: .changed(from: state.count, to: state.count + 1))
         case .changed(let from, let to):
           state.isChanging = false
           if state.count == from {
@@ -145,7 +145,7 @@ final class TestStoreTests: XCTestCase {
       let reducer = Reduce<State, Action> { state, action in
         switch action {
         case .noop:
-          return Effect(value: .finished)
+          return EffectTask(value: .finished)
         case .finished:
           return .none
         }

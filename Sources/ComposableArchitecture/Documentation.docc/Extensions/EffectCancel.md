@@ -1,7 +1,7 @@
-# ``ComposableArchitecture/Effect/cancel(id:)-7vmd9``
+# ``ComposableArchitecture/EffectPublisher/cancel(id:)-6hzsl``
 
 ## Topics
 
 ### Overloads
 
-- ``cancel(id:)-iun1``
+- ``cancel(id:)-1c1dw``
