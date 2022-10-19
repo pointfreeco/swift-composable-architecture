@@ -11,6 +11,44 @@ import XCTestDynamicOverlay
 /// ``liveValue`` is accessed while your feature runs in a `TestStore` a test failure will be
 /// triggered.
 ///
+/// To add a `UserClient` dependency that can fetch and save user values can be done like so:
+///
+/// ```swift
+/// // The user client dependency.
+/// struct UserClient {
+///   var fetchUser: (User.ID) async throws -> User
+///   var saveUser: (User) async throws -> Void
+/// }
+/// // Conform to DependencyKey to provide a live implementation of
+/// // the interface.
+/// extension UserClient: DependencyKey {
+///   static let liveValue = Self(
+///     fetchUser: { /* Make request to fetch user */ },
+///     saveUser: { /* Make request to save user */ }
+///   )
+/// }
+/// // Register the dependency within DependencyValues.
+/// extension DependencyValues {
+///   var userClient: UserClient {
+///     get { self[UserClient.self] }
+///     set { self[UserClient.self] = newValue }
+///   }
+/// }
+/// ```
+///
+/// When a dependency is first accessed its value is cached so that it will not be requested again.
+/// This means if your `liveValue` is implemented as a computed property instead of a `static let`,
+/// then it will only be called a single time:
+///
+/// ```swift
+/// extension UserClient: DependencyKey {
+///   static var liveValue: Self {
+///     // Only called once when dependency is first accessed.
+///     return Self(…)
+///   }
+/// }
+/// ```
+///
 /// `DependencyKey` inherits from ``TestDependencyKey``, which has two other overridable
 /// requirements: ``TestDependencyKey/testValue``, which should return a default value for the
 /// purpose of testing, and ``TestDependencyKey/previewValue-8u2sy``, which can return a default

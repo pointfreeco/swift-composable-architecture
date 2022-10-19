@@ -207,7 +207,7 @@
       struct DebuggedReducer: ReducerProtocol {
         typealias State = Int
         typealias Action = Bool
-        func reduce(into state: inout Int, action: Bool) -> Effect<Bool, Never> {
+        func reduce(into state: inout Int, action: Bool) -> EffectTask<Bool> {
           state += action ? 1 : -1
           return .none
         }
