@@ -633,7 +633,6 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
 
           \(suggestion)
           """,
-          exhaustivity: self.exhaustivity,
           file: file,
           line: line
         )
@@ -658,7 +657,6 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
 
         Unhandled actions: \(actions)
         """,
-        exhaustivity: self.exhaustivity,
         file: self.file,
         line: self.line
       )
@@ -686,7 +684,6 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
         returning a corresponding cancellation effect ("Effect.cancel") from another action, or, \
         if your effect is driven by a Combine subject, send it a completion.
         """,
-        exhaustivity: self.exhaustivity,
         file: effect.action.file,
         line: effect.action.line
       )
@@ -775,7 +772,6 @@ extension TestStore where ScopedState: Equatable {
 
         Unhandled actions: \(actions)
         """,
-        exhaustivity: self.exhaustivity,
         file: file,
         line: line
       )
@@ -871,7 +867,6 @@ extension TestStore where ScopedState: Equatable {
 
         Unhandled actions: \(actions)
         """,
-        exhaustivity: self.exhaustivity,
         file: file,
         line: line
       )
@@ -994,7 +989,6 @@ extension TestStore where ScopedState: Equatable {
 
         \(difference)
         """,
-        exhaustivity: self.exhaustivity,
         file: file,
         line: line
       )
@@ -1011,7 +1005,6 @@ extension TestStore where ScopedState: Equatable {
         The trailing closure made no observable modifications to state. If no change to state is \
         expected, omit the trailing closure.
         """,
-        exhaustivity: self.exhaustivity,
         file: file,
         line: line
       )
@@ -1077,7 +1070,6 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
           Skipped assertions: …
           Skipped receiving \(receivedAction.action)
           """,
-          exhaustivity: self.exhaustivity,
           file: file,
           line: line
         )
@@ -1108,7 +1100,6 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
 
         \(difference)
         """,
-        exhaustivity: self.exhaustivity,
         file: file,
         line: line
       )
@@ -1338,7 +1329,9 @@ extension TestStore {
       \(actions)
       """,
       // TODO: get test coverage on this logic
-      exhaustivity: self.exhaustivity == .none ? .none : .partial(prefix: self.exhaustivity.prefix),
+      overrideExhaustivity: self.exhaustivity == .none
+        ? self.exhaustivity
+        : .partial(prefix: self.exhaustivity.prefix),
       file: file,
       line: line
     )
@@ -1404,7 +1397,9 @@ extension TestStore {
       \(actions)
       """,
       // TODO: get test coverage on this logic
-      exhaustivity: self.exhaustivity == .none ? .none : .partial(prefix: self.exhaustivity.prefix),
+      overrideExhaustivity: self.exhaustivity == .none
+        ? self.exhaustivity
+        : .partial(prefix: self.exhaustivity.prefix),
       file: file,
       line: line
     )
@@ -1414,6 +1409,26 @@ extension TestStore {
     }
     self.reducer.inFlightEffects = []
   }
+
+  private func XCTFailHelper(
+    _ message: String = "",
+    overrideExhaustivity exhaustivity: Exhaustivity? = nil,
+    file: StaticString,
+    line: UInt
+  ) {
+    let exhaustivity = exhaustivity ?? self.exhaustivity
+    switch exhaustivity {
+    case .exhaustive:
+      XCTFail(message, file: file, line: line)
+    case let .partial(prefix: prefix):
+      _XCTExpectFailure {
+        XCTFail((prefix ?? "") + message, file: file, line: line)
+      }
+    case .none:
+      break
+    }
+  }
+
 }
 
 /// The type returned from ``TestStore/send(_:_:file:line:)-6s1gq`` that represents the lifecycle
@@ -1687,24 +1702,6 @@ public enum Exhaustivity: Equatable {
   }
 }
 
-private func XCTFailHelper(
-  _ message: String = "",
-  exhaustivity: Exhaustivity,
-  file: StaticString,
-  line: UInt
-) {
-  switch exhaustivity {
-  case .exhaustive:
-    XCTFail(message, file: file, line: line)
-  case let .partial(prefix: prefix):
-    _XCTExpectFailure {
-      XCTFail((prefix ?? "") + message, file: file, line: line)
-    }
-  case .none:
-    break
-  }
-}
-
 private func _XCTExpectFailure(
   _ failureReason: String? = nil,
   strict: Bool = true,
@@ -1728,4 +1725,3 @@ private func _XCTExpectFailure(
 
   XCTExpectFailureWithOptionsInBlock(failureReason, options, failingBlock)
 }
-
