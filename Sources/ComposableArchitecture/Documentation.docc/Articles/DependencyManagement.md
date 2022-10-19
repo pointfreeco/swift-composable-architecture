@@ -439,16 +439,6 @@ extension AudioPlayerClient: DependencyKey {
 }
 ```
 
-> Tip: The live, preview and test values provided to the `DependencyKey` conformance should
-typically be `static let`'s, and never computed `static var`'s. If you need to perform some work
-to construct the value, then you can wrap it in a closure that is invoked immediately:
->
-> ```swift
-> static let liveValue = {
->   // …
-> }()
-> ```
-
 If you design your dependencies in this way you can pick which dependency endpoints you need in your
 feature. For example, if you have a feature that needs an audio player to do its job, but it only
 needs the `play` endpoint, and doesn't need to loop, set volume or stop audio, then you can specify

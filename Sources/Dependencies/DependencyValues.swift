@@ -55,9 +55,18 @@ import XCTestDynamicOverlay
 /// ```
 public struct DependencyValues: Sendable {
   @TaskLocal public static var _current = Self()
-
-  @TaskLocal static var isSetting = false
+  @TaskLocal fileprivate static var isSetting = false
   @TaskLocal static var currentDependency = CurrentDependency()
+
+  private var cachedValues = CachedValues()
+  private var storage: [ObjectIdentifier: AnySendable] = [:]
+
+  /// Creates a dependency values instance.
+  ///
+  /// You don't typically create an instance of ``DependencyValues`` directly. Doing so would
+  /// provide access only to default values. Instead, you rely on the dependency values' instance
+  /// that the library manages for you when you use the ``Dependency`` property wrapper.
+  public init() {}
 
   /// Updates a single dependency for the duration of a synchronous operation.
   ///
@@ -88,7 +97,9 @@ public struct DependencyValues: Sendable {
       var dependencies = Self._current
       dependencies[keyPath: keyPath] = value
       return try Self.$_current.withValue(dependencies) {
-        try operation()
+        try Self.$isSetting.withValue(false) {
+          try operation()
+        }
       }
     }
   }
@@ -122,7 +133,9 @@ public struct DependencyValues: Sendable {
       var dependencies = Self._current
       dependencies[keyPath: keyPath] = value
       return try await Self.$_current.withValue(dependencies) {
-        try await operation()
+        try await Self.$isSetting.withValue(false) {
+          try await operation()
+        }
       }
     }
   }
@@ -156,7 +169,9 @@ public struct DependencyValues: Sendable {
       var dependencies = Self._current
       try updateValuesForOperation(&dependencies)
       return try Self.$_current.withValue(dependencies) {
-        try operation()
+        try Self.$isSetting.withValue(false) {
+          try operation()
+        }
       }
     }
   }
@@ -190,19 +205,12 @@ public struct DependencyValues: Sendable {
       var dependencies = Self._current
       try await updateValuesForOperation(&dependencies)
       return try await Self.$_current.withValue(dependencies) {
-        try await operation()
+        try await Self.$isSetting.withValue(false) {
+          try await operation()
+        }
       }
     }
   }
-
-  private var storage: [ObjectIdentifier: AnySendable] = [:]
-
-  /// Creates a dependency values instance.
-  ///
-  /// You don't typically create an instance of ``DependencyValues`` directly. Doing so would
-  /// provide access only to default values. Instead, you rely on the dependency values' instance
-  /// that the library manages for you when you use the ``Dependency`` property wrapper.
-  public init() {}
 
   /// Accesses the dependency value associated with a custom key.
   ///
@@ -240,65 +248,25 @@ public struct DependencyValues: Sendable {
           ?? defaultContext
 
         switch context {
-        case .live:
-          guard let value = _liveValue(Key.self) as? Key.Value
-          else {
-            // TODO: add test coverage to this logic
-            if !Self.isSetting {
-              var dependencyDescription = ""
-              if let fileID = Self.currentDependency.fileID,
-                let line = Self.currentDependency.line
-              {
-                dependencyDescription.append(
-                  """
-                    Location:
-                      \(fileID):\(line)
-
-                  """
-                )
-              }
-              dependencyDescription.append(
-                Key.self == Key.Value.self
-                  ? """
-                    Dependency:
-                      \(typeName(Key.Value.self))
-                  """
-                  : """
-                    Key:
-                      \(typeName(Key.self))
-                    Value:
-                      \(typeName(Key.Value.self))
-                  """
-              )
-
-              runtimeWarn(
-                """
-                "@Dependency(\\.\(function))" has no live implementation, but was accessed from a \
-                live context.
-
-                \(dependencyDescription)
-
-                Every dependency registered with the library must conform to "DependencyKey", and \
-                that conformance must be visible to the running application.
-
-                To fix, make sure that "\(typeName(Key.self))" conforms to "DependencyKey" by \
-                providing a live implementation of your dependency, and make sure that the \
-                conformance is linked with this current application.
-                """,
-                file: Self.currentDependency.file ?? file,
-                line: Self.currentDependency.line ?? line
-              )
-            }
-            return Key.testValue
-          }
-          return value
-        case .preview:
-          return Key.previewValue
+        case .live, .preview:
+          return self.cachedValues.value(
+            for: Key.self,
+            context: context,
+            file: file,
+            function: function,
+            line: line
+          )
         case .test:
           var currentDependency = Self.currentDependency
           currentDependency.name = function
           return Self.$currentDependency.withValue(currentDependency) {
-            Key.testValue
+            self.cachedValues.value(
+              for: Key.self,
+              context: context,
+              file: file,
+              function: function,
+              line: line
+            )
           }
         }
       }
@@ -312,7 +280,7 @@ public struct DependencyValues: Sendable {
 
 private struct AnySendable: @unchecked Sendable {
   let base: Any
-
+  @inlinable
   init<Base: Sendable>(_ base: Base) {
     self.base = base
   }
@@ -334,3 +302,93 @@ private let defaultContext: DependencyContext = {
     return .live
   }
 }()
+
+private final class CachedValues: @unchecked Sendable {
+  struct CacheKey: Hashable, Sendable {
+    let id: ObjectIdentifier
+    let context: DependencyContext
+  }
+
+  private let lock = NSRecursiveLock()
+  private var cached = [CacheKey: AnySendable]()
+
+  func value<Key: TestDependencyKey>(
+    for key: Key.Type,
+    context: DependencyContext,
+    file: StaticString = #file,
+    function: StaticString = #function,
+    line: UInt = #line
+  ) -> Key.Value {
+    self.lock.lock()
+    defer { self.lock.unlock() }
+
+    let cacheKey = CacheKey(id: ObjectIdentifier(key), context: context)
+    guard let value = self.cached[cacheKey]?.base as? Key.Value
+    else {
+      let value: Key.Value?
+      switch context {
+      case .live:
+        value = _liveValue(key) as? Key.Value
+      case .preview:
+        value = Key.previewValue
+      case .test:
+        value = Key.testValue
+      }
+
+      guard let value = value
+      else {
+        if !DependencyValues.isSetting {
+          var dependencyDescription = ""
+          if let fileID = DependencyValues.currentDependency.fileID,
+            let line = DependencyValues.currentDependency.line
+          {
+            dependencyDescription.append(
+              """
+                Location:
+                  \(fileID):\(line)
+
+              """
+            )
+          }
+          dependencyDescription.append(
+            Key.self == Key.Value.self
+              ? """
+                Dependency:
+                  \(typeName(Key.Value.self))
+              """
+              : """
+                Key:
+                  \(typeName(Key.self))
+                Value:
+                  \(typeName(Key.Value.self))
+              """
+          )
+
+          runtimeWarn(
+            """
+            "@Dependency(\\.\(function))" has no live implementation, but was accessed from a \
+            live context.
+
+            \(dependencyDescription)
+
+            Every dependency registered with the library must conform to "DependencyKey", and \
+            that conformance must be visible to the running application.
+
+            To fix, make sure that "\(typeName(Key.self))" conforms to "DependencyKey" by \
+            providing a live implementation of your dependency, and make sure that the \
+            conformance is linked with this current application.
+            """,
+            file: DependencyValues.currentDependency.file ?? file,
+            line: DependencyValues.currentDependency.line ?? line
+          )
+        }
+        return Key.testValue
+      }
+
+      self.cached[cacheKey] = AnySendable(value)
+      return value
+    }
+
+    return value
+  }
+}
