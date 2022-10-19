@@ -82,22 +82,13 @@ struct NavigationDemo: ReducerProtocol {
     }
 
     var body: some ReducerProtocol<State, Action> {
-      Scope(
-        state: /State.screenA,
-        action: /Action.screenA
-      ) {
+      Scope(state: /State.screenA, action: /Action.screenA) {
         ScreenA()
       }
-      Scope(
-        state: /State.screenB,
-        action: /Action.screenB
-      ) {
+      Scope(state: /State.screenB, action: /Action.screenB) {
         ScreenB()
       }
-      Scope(
-        state: /State.screenC,
-        action: /Action.screenC
-      ) {
+      Scope(state: /State.screenC, action: /Action.screenC) {
         ScreenC()
       }
     }
@@ -171,7 +162,7 @@ struct NavigationDemoView: View {
 struct FloatingMenuView: View {
   let store: StoreOf<NavigationDemo>
 
-  struct State: Equatable {
+  struct ViewState: Equatable {
     var currentStack: [String]
     var total: Int
     init(state: NavigationDemo.State) {
@@ -193,7 +184,7 @@ struct FloatingMenuView: View {
   }
 
   var body: some View {
-    WithViewStore(self.store.scope(state: State.init)) { viewStore in
+    WithViewStore(self.store.scope(state: ViewState.init)) { viewStore in
       if viewStore.currentStack.count > 0 {
         VStack(alignment: .leading) {
           Text("Total count: \(viewStore.total)")

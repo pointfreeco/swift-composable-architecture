@@ -210,6 +210,7 @@ public func withTaskCancellation<T: Sendable>(
   cancelInFlight: Bool = false,
   operation: @Sendable @escaping () async throws -> T
 ) async rethrows -> T {
+  // TODO: do we need to pass navigationID here if we `??` coalesce it in _CancelToken
   let id = _CancelToken(id: id, navigationID: DependencyValues._current.navigationID.current)
   let (cancellable, task) = _cancellablesLock.sync { () -> (AnyCancellable, Task<T, Error>) in
     if cancelInFlight {
@@ -264,6 +265,7 @@ extension Task where Success == Never, Failure == Never {
   ///
   /// - Parameter id: An identifier.
   public static func cancel<ID: Hashable & Sendable>(id: ID) {
+    // TODO: do we need to pass navigationID here if we `??` coalesce it in _CancelToken
     let id = _CancelToken(id: id, navigationID: DependencyValues._current.navigationID.current)
     _cancellablesLock.sync { _cancellationCancellables[id]?.forEach { $0.cancel() } }
   }

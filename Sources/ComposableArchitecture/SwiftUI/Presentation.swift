@@ -102,6 +102,7 @@ extension PresentationState: Hashable where State: Hashable {
 //}
 
 public enum PresentationAction<State, Action> {
+  // TODO: is present(nil) the same thing as dismiss?
   case present(id: AnyHashable = DependencyValues._current.uuid(), State? = nil)
   case presented(Action)
   case dismiss
@@ -194,20 +195,23 @@ public struct _PresentationDestinationReducer<
     into state: inout Presenter.State,
     action: Presenter.Action
   ) -> EffectTask<Presenter.Action> {
-    var effect: EffectTask<Presenter.Action> = .none
+    var effects: [EffectTask<Presenter.Action>] = []
 
-    let presentedState = state[keyPath: self.toPresentedState]
+    let currentPresentedState = state[keyPath: self.toPresentedState]
     let presentedAction = self.toPresentedAction.extract(from: action)
+
+    // TODO: should we extract id from `presentedAction` at the very beginning, and then wrap
+    //       everything below in a `withValue(\.navigationID, id)` ?
 
     switch presentedAction {
     case let .present(id, .some(presentedState)):
       state[keyPath: self.toPresentedState] = .presented(id: id, presentedState)
 
     case let .presented(presentedAction):
-      if case .presented(let id, var presentedState) = presentedState {
+      if case .presented(let id, var presentedState) = currentPresentedState {
         defer { state[keyPath: self.toPresentedState] = .presented(id: id, presentedState) }
-        effect = effect.merge(
-          with: self.presented
+        effects.append(
+          self.presented
             .dependency(\.dismiss, DismissEffect { Task.cancel(id: DismissID.self) })
             .dependency(\.navigationID.current, id)
             .reduce(into: &presentedState, action: presentedAction)
@@ -241,37 +245,50 @@ public struct _PresentationDestinationReducer<
         return .none
       }
 
-    case .present(_, .none), .dismiss, .none:
+    case .dismiss, .present(_, .none), .none:
       break
     }
 
-    effect = effect.merge(with: self.presenter.reduce(into: &state, action: action))
+    effects.append(self.presenter.reduce(into: &state, action: action))
 
-    if case .dismiss = presentedAction, case let .presented(id, _) = presentedState {
+    if case .dismiss = presentedAction, case let .presented(id, _) = currentPresentedState {
       state[keyPath: self.toPresentedState].wrappedValue = nil
-      effect = effect.merge(with: .cancel(id: id))
-    } else if case let .presented(id, _) = presentedState,
+      effects.append(
+        DependencyValues.withValue(\.navigationID.current, id) {
+          .cancel(id: DismissID.self)
+        }
+      )
+      effects.append(.cancel(id: id))
+    } else if case let .presented(id, _) = currentPresentedState,
       state[keyPath: self.toPresentedState].id != id
     {
-      effect = effect.merge(with: .cancel(id: id))
+      effects.append(
+        DependencyValues.withValue(\.navigationID.current, id) {
+          .cancel(id: DismissID.self)
+        }
+      )
+      effects.append(.cancel(id: id))
     }
 
-    if let id = state[keyPath: self.toPresentedState].id, id != presentedState.id {
-      effect = effect.merge(
-        with: .task {
-          var dependencies = DependencyValues._current
-          dependencies.navigationID.current = id
-          return try await DependencyValues.$_current.withValue(dependencies) {
-            try await withTaskCancellation(id: DismissID.self) {
-              try await Task.never()
+    if let id = state[keyPath: self.toPresentedState].id, id != currentPresentedState.id {
+      effects.append(
+        .run { send in
+          do {
+            try await DependencyValues.withValue(\.navigationID.current, id) {
+              try await withTaskCancellation(id: DismissID.self) {
+                try await Task.never()
+              }
             }
+          } catch is CancellationError {
+            await send(self.toPresentedAction.embed(.dismiss))
+          } catch {
+            throw error
           }
         }
-        .concatenate(with: Effect(value: self.toPresentedAction.embed(.dismiss)))
       )
     }
 
-    return effect
+    return .merge(effects)
   }
 }
 

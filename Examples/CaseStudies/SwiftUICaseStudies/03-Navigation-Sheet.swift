@@ -3,37 +3,41 @@ import SwiftUI
 
 struct SheetDemo: ReducerProtocol {
   struct State: Equatable {
-    @PresentationStateOf<Destinations> var sheet
+    @PresentationStateOf<Destinations> var destination
   }
 
   enum Action: Equatable {
-    case sheet(PresentationActionOf<Destinations>)
+    case destination(PresentationActionOf<Destinations>)
     case swap
   }
 
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
-      case .sheet(.presented(.counter(.decrementButtonTapped))):
-        state.sheet = .counter(Counter.State())
+      case .destination(.presented(.counter(.decrementButtonTapped))):
+        if case let .counter(counterState) = state.destination,
+          counterState.count < 0
+        {
+          state.destination = nil
+        }
         return .none
 
-      case .sheet:
+      case .destination:
         return .none
 
       case .swap:
-        switch state.sheet {
+        switch state.destination {
         case .some(.animations):
-          state.sheet = .counter(Counter.State())
+          state.destination = .counter(Counter.State())
         case .some(.counter):
-          state.sheet = .animations(Animations.State())
+          state.destination = .animations(Animations.State())
         case .none:
           break
         }
         return .none
       }
     }
-    .presentationDestination(\.$sheet, action: /Action.sheet) {
+    .presentationDestination(\.$destination, action: /Action.destination) {
       Destinations()
     }
   }
@@ -50,16 +54,10 @@ struct SheetDemo: ReducerProtocol {
     }
 
     var body: some ReducerProtocol<State, Action> {
-      Scope(
-        state: /State.animations,
-        action: /Action.animations
-      ) {
+      Scope(state: /State.animations, action: /Action.animations) {
         Animations()
       }
-      Scope(
-        state: /State.counter,
-        action: /Action.counter
-      ) {
+      Scope(state: /State.counter, action: /Action.counter) {
         Counter()
       }
     }
@@ -73,10 +71,10 @@ struct SheetDemoView: View {
     WithViewStore(self.store.stateless) { viewStore in
       Form {
         Button("Animations") {
-          viewStore.send(.sheet(.present(.animations(Animations.State()))))
+          viewStore.send(.destination(.present(.animations(Animations.State()))))
         }
         Button("Counter") {
-          viewStore.send(.sheet(.present(.counter(Counter.State()))))
+          viewStore.send(.destination(.present(.counter(Counter.State()))))
         }
       }
       //      .sheet(
@@ -111,7 +109,7 @@ struct SheetDemoView: View {
       //        }
       //      }
       .sheet(
-        store: self.store.scope(state: \.$sheet, action: SheetDemo.Action.sheet),
+        store: self.store.scope(state: \.$destination, action: SheetDemo.Action.destination),
         state: /SheetDemo.Destinations.State.animations,
         action: SheetDemo.Destinations.Action.animations
       ) { store in
@@ -121,7 +119,7 @@ struct SheetDemoView: View {
               viewStore.send(.swap, animation: .default)
             }
             Button("Close") {
-              viewStore.send(.sheet(.dismiss))
+              viewStore.send(.destination(.dismiss))
             }
           }
           .padding()
@@ -131,7 +129,7 @@ struct SheetDemoView: View {
         }
       }
       .sheet(
-        store: self.store.scope(state: \.$sheet, action: SheetDemo.Action.sheet),
+        store: self.store.scope(state: \.$destination, action: SheetDemo.Action.destination),
         state: /SheetDemo.Destinations.State.counter,
         action: SheetDemo.Destinations.Action.counter
       ) { store in
@@ -141,7 +139,7 @@ struct SheetDemoView: View {
               viewStore.send(.swap, animation: .default)
             }
             Button("Close") {
-              viewStore.send(.sheet(.dismiss))
+              viewStore.send(.destination(.dismiss))
             }
           }
           .padding()
