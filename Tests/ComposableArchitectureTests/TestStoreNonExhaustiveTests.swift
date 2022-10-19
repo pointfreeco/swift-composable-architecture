@@ -76,6 +76,7 @@
       await store.skipInFlightEffects(strict: true)
     }
 
+    // Confirms that you don't have to receive all actions before the test completes.
     func testIgnoreReceiveActions_PartialExhaustive() {
       let store = TestStore(
         initialState: 0,
@@ -88,6 +89,7 @@
       store.send(true)
     }
 
+    // Confirms that you don't have to receive all actions before the test completes.
     func testIgnoreReceiveActions_NonExhaustive() {
       let store = TestStore(
         initialState: 0,
@@ -100,6 +102,7 @@
       store.send(true)
     }
 
+    // Confirms that all effects do not need to complete before the test completes.
     func testIgnoreInFlightEffects_PartialExhaustive() {
       let store = TestStore(
         initialState: 0,
@@ -112,6 +115,7 @@
       store.send(true)
     }
 
+    // Confirms that all effects do not need to complete before the test completes.
     func testIgnoreInFlightEffects_NonExhaustive() {
       let store = TestStore(
         initialState: 0,
