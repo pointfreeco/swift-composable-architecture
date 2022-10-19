@@ -10,41 +10,36 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 ### Creating an effect
 
-- ``Effect/task(priority:operation:)``
+- ``EffectPublisher/task(priority:operation:)``
 
 ### Cancellation
 
-- ``Effect/cancel(ids:)-9tnmm``
-
-### Composition
-
-- ``Effect/concatenate(_:)-3awnj``
-- ``Effect/concatenate(_:)-8x6rz``
+- ``EffectPublisher/cancel(ids:)-8q1hl``
 
 ### Testing
 
-- ``Effect/failing(_:)``
-- ``Effect/unimplemented(_:)``
+- ``EffectPublisher/failing(_:)``
+- ``EffectPublisher/unimplemented(_:)``
 
 ### Combine integration
 
-- ``Effect/Output``
-- ``Effect/init(_:)``
-- ``Effect/init(value:)``
-- ``Effect/init(error:)``
-- ``Effect/upstream``
-- ``Effect/catching(_:)``
-- ``Effect/debounce(id:for:scheduler:options:)-8x633``
-- ``Effect/debounce(id:for:scheduler:options:)-76yye``
-- ``Effect/deferred(for:scheduler:options:)``
-- ``Effect/fireAndForget(_:)``
-- ``Effect/future(_:)``
-- ``Effect/receive(subscriber:)``
-- ``Effect/result(_:)``
-- ``Effect/run(_:)``
-- ``Effect/throttle(id:for:scheduler:latest:)-9kwd5``
-- ``Effect/throttle(id:for:scheduler:latest:)-5jfpx``
-- ``Effect/timer(id:every:tolerance:on:options:)-4exe6``
-- ``Effect/timer(id:every:tolerance:on:options:)-7po0d``
-- ``Effect/Subscriber``
+- ``EffectPublisher/Output``
+- ``EffectPublisher/init(_:)``
+- ``EffectPublisher/init(value:)``
+- ``EffectPublisher/init(error:)``
+- ``EffectPublisher/upstream``
+- ``EffectPublisher/catching(_:)``
+- ``EffectPublisher/debounce(id:for:scheduler:options:)-1xdnj``
+- ``EffectPublisher/debounce(id:for:scheduler:options:)-1oaak``
+- ``EffectPublisher/deferred(for:scheduler:options:)``
+- ``EffectPublisher/fireAndForget(_:)``
+- ``EffectPublisher/future(_:)``
+- ``EffectPublisher/receive(subscriber:)``
+- ``EffectPublisher/result(_:)``
+- ``EffectPublisher/run(_:)``
+- ``EffectPublisher/throttle(id:for:scheduler:latest:)-3gibe``
+- ``EffectPublisher/throttle(id:for:scheduler:latest:)-85y01``
+- ``EffectPublisher/timer(id:every:tolerance:on:options:)-6yv2m``
+- ``EffectPublisher/timer(id:every:tolerance:on:options:)-8t3is``
+- ``EffectPublisher/Subscriber``
 <!--DocC: Can't currently document `Publisher` extensions. -->

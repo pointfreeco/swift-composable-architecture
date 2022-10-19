@@ -16,17 +16,17 @@ final class ComposableArchitectureTests: XCTestCase {
         case squareNow
       }
       @Dependency(\.mainQueue) var mainQueue
-      func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
         switch action {
         case .incrAndSquareLater:
           return .merge(
-            Effect(value: .incrNow)
+            EffectTask(value: .incrNow)
               .delay(for: 2, scheduler: self.mainQueue)
               .eraseToEffect(),
-            Effect(value: .squareNow)
+            EffectTask(value: .squareNow)
               .delay(for: 1, scheduler: self.mainQueue)
               .eraseToEffect(),
-            Effect(value: .squareNow)
+            EffectTask(value: .squareNow)
               .delay(for: 2, scheduler: self.mainQueue)
               .eraseToEffect()
           )
@@ -80,8 +80,8 @@ final class ComposableArchitectureTests: XCTestCase {
 
   func testLongLivingEffects() async {
     typealias Environment = (
-      startEffect: Effect<Void, Never>,
-      stopEffect: Effect<Never, Never>
+      startEffect: EffectTask<Void>,
+      stopEffect: EffectTask<Never>
     )
 
     enum Action { case end, incr, start }

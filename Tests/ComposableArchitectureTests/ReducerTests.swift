@@ -33,7 +33,7 @@ final class ReducerTests: XCTestCase {
       let delay: Duration
       let setValue: @Sendable () async -> Void
 
-      func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
         state += 1
         return .fireAndForget {
           try await self.clock.sleep(for: self.delay)
@@ -80,7 +80,7 @@ final class ReducerTests: XCTestCase {
     struct One: ReducerProtocol {
       typealias State = Int
       let effect: @Sendable () async -> Void
-      func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
         state += 1
         return .fireAndForget {
           await self.effect()

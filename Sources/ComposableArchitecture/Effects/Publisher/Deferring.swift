@@ -1,6 +1,6 @@
 import Combine
 
-extension Effect {
+extension EffectPublisher {
   /// Returns an effect that will be executed after given `dueTime`.
   ///
   /// ```swift

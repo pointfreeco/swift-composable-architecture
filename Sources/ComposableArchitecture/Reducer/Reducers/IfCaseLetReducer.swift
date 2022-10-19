@@ -134,7 +134,7 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
   @inlinable
   public func reduce(
     into state: inout Parent.State, action: Parent.Action
-  ) -> Effect<Parent.Action, Never> {
+  ) -> EffectTask<Parent.Action> {
     self.reduceChild(into: &state, action: action)
       .merge(with: self.parent.reduce(into: &state, action: action))
   }
@@ -142,7 +142,7 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
   @inlinable
   func reduceChild(
     into state: inout Parent.State, action: Parent.Action
-  ) -> Effect<Parent.Action, Never> {
+  ) -> EffectTask<Parent.Action> {
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     guard var childState = self.toChildState.extract(from: state) else {

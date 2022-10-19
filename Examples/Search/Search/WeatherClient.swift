@@ -50,8 +50,8 @@ extension WeatherClient: TestDependencyKey {
   )
 
   static let testValue = Self(
-    forecast: XCTUnimplemented("\(Self.self).forecast"),
-    search: XCTUnimplemented("\(Self.self).search")
+    forecast: unimplemented("\(Self.self).forecast"),
+    search: unimplemented("\(Self.self).search")
   )
 }
 

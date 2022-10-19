@@ -24,7 +24,7 @@ struct Feature: ReducerProtocol {
   struct State: Equatable { var count = 0 }
   enum Action { case incrementButtonTapped, decrementButtonTapped }
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .incrementButtonTapped:
       state.count += 1
@@ -177,8 +177,8 @@ store.send(.incrementButtonTapped) {
 
 Testing state mutations as shown in the previous section is powerful, but is only half the story
 when it comes to testing features built in the Composable Architecture. The second responsibility of
-``Reducer``s, after mutating state from an action, is to return an ``Effect`` that encapsulates a
-unit of work that runs in the outside world and feeds data back into the system.
+``Reducer``s, after mutating state from an action, is to return an ``EffectTask`` that encapsulates 
+a unit of work that runs in the outside world and feeds data back into the system.
 
 Effects form a major part of a feature's logic. They can perform network requests to external
 services, load and save data to disk, start and stop timers, interact with Apple frameworks (Core
@@ -186,8 +186,8 @@ Location, Core Motion, Speech Recognition, etc.), and more.
 
 As a simple example, suppose we have a feature with a button such that when you tap it, it starts
 a timer that counts up until you reach 5, and then stops. This can be accomplished using the
-``Effect/run(priority:operation:catch:file:fileID:line:)`` helper, which provides you with an
-asynchronous context to operate in and can send multiple actions back into the system:
+``EffectPublisher/run(priority:operation:catch:file:fileID:line:)`` helper, which provides you with 
+an asynchronous context to operate in and can send multiple actions back into the system:
 
 ```swift
 struct Feature: ReducerProtocol {
@@ -195,7 +195,7 @@ struct Feature: ReducerProtocol {
   enum Action { case startTimerButtonTapped, timerTick }
   enum TimerID {}
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .startTimerButtonTapped:
       state.count = 0
@@ -253,7 +253,7 @@ supposed to be running, or perhaps the data it feeds into the system later is wr
 requires all effects to finish.
 
 To get this test passing we need to assert on the actions that are sent back into the system
-by the effect. We do this by using the ``TestStore/receive(_:timeout:_:file:line:)`` method,
+by the effect. We do this by using the ``TestStore/receive(_:timeout:_:file:line:)-8yd62`` method,
 which allows you to assert which action you expect to receive from an effect, as well as how the
 state changes after receiving that effect:
 
@@ -271,7 +271,7 @@ going to be received, but after waiting around for a small amount of time no act
 ```
 
 This is because our timer is on a 1 second interval, and by default
-``TestStore/receive(_:timeout:_:file:line:)`` only waits for a fraction of a second. This is
+``TestStore/receive(_:timeout:_:file:line:)-8yd62`` only waits for a fraction of a second. This is
 because typically you should not be performing real time-based asynchrony in effects, and instead
 using a controlled entity, such as a clock, that can be sped up in tests. We will demonstrate this 
 in a moment, so for now let's increase the timeout:
@@ -370,7 +370,7 @@ store.dependencies.continuousClock = ImmediateClock()
 ```
 
 With that small change we can drop the `timeout` arguments from the
-``TestStore/receive(_:timeout:_:file:line:)`` invocations:
+``TestStore/receive(_:timeout:_:file:line:)-8yd62`` invocations:
 
 ```swift
 await store.receive(.timerTick) {

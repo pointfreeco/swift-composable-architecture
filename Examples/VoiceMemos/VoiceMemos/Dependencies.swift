@@ -16,7 +16,7 @@ extension DependencyValues {
         UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
       }
     }
-    static let testValue: @Sendable () async -> Void = XCTUnimplemented(
+    static let testValue: @Sendable () async -> Void = unimplemented(
       #"@Dependency(\.openSettings)"#
     )
   }
@@ -28,7 +28,7 @@ extension DependencyValues {
 
   private enum TemporaryDirectoryKey: DependencyKey {
     static let liveValue: @Sendable () -> URL = { URL(fileURLWithPath: NSTemporaryDirectory()) }
-    static let testValue: @Sendable () -> URL = XCTUnimplemented(
+    static let testValue: @Sendable () -> URL = unimplemented(
       #"@Dependency(\.temporaryDirectory)"#
     )
   }

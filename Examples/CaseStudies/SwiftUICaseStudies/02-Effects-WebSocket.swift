@@ -7,7 +7,7 @@ private let readMe = """
 
   A lightweight wrapper is made for `URLSession`'s API for web sockets so that we can send, \
   receive and ping a socket endpoint. To test, connect to the socket server, and then send a \
-  message. The socket server should immediately reply with the exact message you send it.
+  message. The socket server should immediately reply with the exact message you sent in.
   """
 
 // MARK: - Feature domain
@@ -40,7 +40,7 @@ struct WebSocket: ReducerProtocol {
   @Dependency(\.webSocket) var webSocket
   private enum WebSocketID {}
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .alertDismissed:
       state.alert = nil
@@ -111,7 +111,9 @@ struct WebSocket: ReducerProtocol {
       .cancellable(id: WebSocketID.self)
 
     case .sendResponse(didSucceed: false):
-      state.alert = AlertState(title: TextState("Could not send socket message. Try again."))
+      state.alert = AlertState(
+        title: TextState(
+          "Could not send socket message. Connect to the server first, and try again."))
       return .none
 
     case .sendResponse(didSucceed: true):
@@ -123,6 +125,7 @@ struct WebSocket: ReducerProtocol {
 
     case .webSocket(.didOpen):
       state.connectivityState = .connected
+      state.receivedMessages.removeAll()
       return .none
     }
   }
@@ -135,41 +138,49 @@ struct WebSocketView: View {
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
-      VStack(alignment: .leading) {
-        AboutView(readMe: readMe)
-          .padding(.bottom)
+      Form {
+        Section {
+          AboutView(readMe: readMe)
+        }
 
-        HStack {
-          TextField(
-            "Message to send",
-            text: viewStore.binding(
-              get: \.messageToSend, send: WebSocket.Action.messageToSendChanged)
-          )
+        Section {
+          VStack(alignment: .leading) {
+            Button(
+              viewStore.connectivityState == .connected
+                ? "Disconnect"
+                : viewStore.connectivityState == .disconnected
+                  ? "Connect"
+                  : "Connecting..."
+            ) {
+              viewStore.send(.connectButtonTapped)
+            }
+            .buttonStyle(.bordered)
+            .tint(viewStore.connectivityState == .connected ? .red : .green)
 
-          Button(
-            viewStore.connectivityState == .connected
-              ? "Disconnect"
-              : viewStore.connectivityState == .disconnected
-                ? "Connect"
-                : "Connecting..."
-          ) {
-            viewStore.send(.connectButtonTapped)
+            HStack {
+              TextField(
+                "Type message here",
+                text: viewStore.binding(
+                  get: \.messageToSend, send: WebSocket.Action.messageToSendChanged)
+              )
+              .textFieldStyle(.roundedBorder)
+
+              Button("Send") {
+                viewStore.send(.sendButtonTapped)
+              }
+              .buttonStyle(.borderless)
+            }
           }
         }
 
-        Button("Send message") {
-          viewStore.send(.sendButtonTapped)
+        Section {
+          Text("Status: \(viewStore.connectivityState.rawValue)")
+            .foregroundStyle(.secondary)
+          Text(viewStore.receivedMessages.reversed().joined(separator: "\n"))
+        } header: {
+          Text("Received messages")
         }
-
-        Spacer()
-
-        Text("Status: \(viewStore.connectivityState.rawValue)")
-          .foregroundStyle(.secondary)
-        Text("Received messages:")
-          .foregroundStyle(.secondary)
-        Text(viewStore.receivedMessages.joined(separator: "\n"))
       }
-      .padding()
       .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
       .navigationTitle("Web Socket")
     }
@@ -206,7 +217,14 @@ struct WebSocketClient {
 }
 
 extension WebSocketClient: DependencyKey {
-  static let liveValue: Self = {
+  static var liveValue: Self {
+    return Self(
+      open: { await WebSocketActor.shared.open(id: $0, url: $1, protocols: $2) },
+      receive: { try await WebSocketActor.shared.receive(id: $0) },
+      send: { try await WebSocketActor.shared.send(id: $0, message: $1) },
+      sendPing: { try await WebSocketActor.shared.sendPing(id: $0) }
+    )
+
     final actor WebSocketActor: GlobalActor {
       final class Delegate: NSObject, URLSessionWebSocketDelegate {
         var continuation: AsyncStream<Action>.Continuation?
@@ -305,20 +323,13 @@ extension WebSocketClient: DependencyKey {
         self.dependencies[id] = nil
       }
     }
-
-    return Self(
-      open: { await WebSocketActor.shared.open(id: $0, url: $1, protocols: $2) },
-      receive: { try await WebSocketActor.shared.receive(id: $0) },
-      send: { try await WebSocketActor.shared.send(id: $0, message: $1) },
-      sendPing: { try await WebSocketActor.shared.sendPing(id: $0) }
-    )
-  }()
+  }
 
   static let testValue = Self(
-    open: XCTUnimplemented("\(Self.self).open", placeholder: AsyncStream.never),
-    receive: XCTUnimplemented("\(Self.self).receive"),
-    send: XCTUnimplemented("\(Self.self).send"),
-    sendPing: XCTUnimplemented("\(Self.self).sendPing")
+    open: unimplemented("\(Self.self).open", placeholder: AsyncStream.never),
+    receive: unimplemented("\(Self.self).receive"),
+    send: unimplemented("\(Self.self).send"),
+    sendPing: unimplemented("\(Self.self).sendPing")
   )
 }
 
@@ -336,7 +347,7 @@ struct WebSocketView_Previews: PreviewProvider {
     NavigationView {
       WebSocketView(
         store: Store(
-          initialState: WebSocket.State(receivedMessages: ["Echo"]),
+          initialState: WebSocket.State(receivedMessages: ["Hi"]),
           reducer: WebSocket()
         )
       )

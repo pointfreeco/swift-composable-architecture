@@ -39,7 +39,7 @@ struct VoiceMemo: ReducerProtocol {
   @Dependency(\.continuousClock) var clock
   private enum PlayID {}
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .audioPlayerClient:
       state.mode = .notPlaying
