@@ -267,7 +267,6 @@ extension Task where Success == Never, Failure == Never {
   ///
   /// - Parameter id: A unique type identifying the operation.
   public static func cancel(id: Any.Type) async {
-    await Task.megaYield()
     await self.cancel(id: ObjectIdentifier(id))
   }
 }
