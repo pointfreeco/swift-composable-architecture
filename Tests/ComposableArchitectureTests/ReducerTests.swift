@@ -19,57 +19,58 @@ final class ReducerTests: XCTestCase {
     XCTAssertEqual(state, 1)
   }
 
-  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   func testCombine_EffectsAreMerged() async throws {
-    enum Action: Equatable {
-      case increment
-    }
+    if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
+      enum Action: Equatable {
+        case increment
+      }
 
-    struct Delayed: ReducerProtocol {
-      typealias State = Int
+      struct Delayed: ReducerProtocol {
+        typealias State = Int
 
-      @Dependency(\.continuousClock) var clock
+        @Dependency(\.continuousClock) var clock
 
-      let delay: Duration
-      let setValue: @Sendable () async -> Void
+        let delay: Duration
+        let setValue: @Sendable () async -> Void
 
-      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
-        state += 1
-        return .fireAndForget {
-          try await self.clock.sleep(for: self.delay)
-          await self.setValue()
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          state += 1
+          return .fireAndForget {
+            try await self.clock.sleep(for: self.delay)
+            await self.setValue()
+          }
         }
       }
-    }
 
-    var fastValue: Int? = nil
-    var slowValue: Int? = nil
+      var fastValue: Int? = nil
+      var slowValue: Int? = nil
 
-    let store = TestStore(
-      initialState: 0,
-      reducer: CombineReducers {
-        Delayed(delay: .seconds(1), setValue: { @MainActor in fastValue = 42 })
-        Delayed(delay: .seconds(2), setValue: { @MainActor in slowValue = 1729 })
+      let store = TestStore(
+        initialState: 0,
+        reducer: CombineReducers {
+          Delayed(delay: .seconds(1), setValue: { @MainActor in fastValue = 42 })
+          Delayed(delay: .seconds(2), setValue: { @MainActor in slowValue = 1729 })
+        }
+      )
+
+      let clock = TestClock()
+      store.dependencies.continuousClock = clock
+
+      await store.send(.increment) {
+        $0 = 2
       }
-    )
-
-    let clock = TestClock()
-    store.dependencies.continuousClock = clock
-
-    await store.send(.increment) {
-      $0 = 2
+      // Waiting a second causes the fast effect to fire.
+      await clock.advance(by: .seconds(1))
+      try await Task.sleep(nanoseconds: NSEC_PER_SEC / 3)
+      XCTAssertEqual(fastValue, 42)
+      XCTAssertEqual(slowValue, nil)
+      // Waiting one more second causes the slow effect to fire. This proves that the effects
+      // are merged together, as opposed to concatenated.
+      await clock.advance(by: .seconds(1))
+      await store.finish()
+      XCTAssertEqual(fastValue, 42)
+      XCTAssertEqual(slowValue, 1729)
     }
-    // Waiting a second causes the fast effect to fire.
-    await clock.advance(by: .seconds(1))
-    try await Task.sleep(nanoseconds: NSEC_PER_SEC / 3)
-    XCTAssertEqual(fastValue, 42)
-    XCTAssertEqual(slowValue, nil)
-    // Waiting one more second causes the slow effect to fire. This proves that the effects
-    // are merged together, as opposed to concatenated.
-    await clock.advance(by: .seconds(1))
-    await store.finish()
-    XCTAssertEqual(fastValue, 42)
-    XCTAssertEqual(slowValue, 1729)
   }
 
   func testCombine() async {

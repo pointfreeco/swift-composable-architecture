@@ -210,13 +210,7 @@ final class ViewStoreTests: XCTestCase {
           return .none
         case .tapped:
           state = true
-<<<<<<< HEAD
           return .task { .response }
-=======
-          return EffectTask(value: .response)
-            .receive(on: DispatchQueue.main)
-            .eraseToEffect()
->>>>>>> origin/main
         }
       }
 

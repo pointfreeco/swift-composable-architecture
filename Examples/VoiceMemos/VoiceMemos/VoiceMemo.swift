@@ -59,7 +59,7 @@ struct VoiceMemo: ReducerProtocol {
           )
 
           var start: TimeInterval = 0
-          for await _ in  self.clock.timer(interval: .milliseconds(500)) {
+          for await _ in self.clock.timer(interval: .milliseconds(500)) {
             start += 0.5
             await send(.timerUpdated(start))
           }
@@ -94,7 +94,6 @@ extension InstantProtocol {
     fatalError()
   }
 }
-
 
 struct VoiceMemoView: View {
   let store: StoreOf<VoiceMemo>

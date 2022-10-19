@@ -21,7 +21,7 @@ struct NavigateAndLoad: ReducerProtocol {
     case setNavigation(isActive: Bool)
     case setNavigationIsActiveDelayCompleted
   }
-  
+
   @Dependency(\.continuousClock) var clock
   private enum CancelID {}
 
