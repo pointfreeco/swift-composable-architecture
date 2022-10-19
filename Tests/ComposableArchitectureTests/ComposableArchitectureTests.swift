@@ -133,7 +133,17 @@ final class ComposableArchitectureTests: XCTestCase {
           _cancellationCancellables[_CancelToken(id: ObjectIdentifier(CancelID.self))]?.count,
           1
         )
-        return .cancel(id: CancelID.self)
+        return .run { _ in
+          XCTAssertEqual(
+            _cancellationCancellables[_CancelToken(id: ObjectIdentifier(CancelID.self))]?.count,
+            1
+          )
+          await Task.cancel(id: CancelID.self)
+          XCTAssertEqual(
+            _cancellationCancellables[_CancelToken(id: ObjectIdentifier(CancelID.self))]?.count,
+            nil
+          )
+        }
 
       case .incr:
         state += 1

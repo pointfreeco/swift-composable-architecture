@@ -83,7 +83,7 @@ final class EffectRunTests: XCTestCase {
       switch action {
       case .tapped:
         return .run { send in
-          Task.cancel(id: CancelID.self)
+          await Task.cancel(id: CancelID.self)
           try Task.checkCancellation()
           await send(.response)
         }
@@ -104,7 +104,7 @@ final class EffectRunTests: XCTestCase {
       switch action {
       case .tapped:
         return .run { send in
-          Task.cancel(id: CancelID.self)
+          await Task.cancel(id: CancelID.self)
           try Task.checkCancellation()
           await send(.responseA)
         } catch: { @Sendable _, send in  // NB: Explicit '@Sendable' required in 5.5.2

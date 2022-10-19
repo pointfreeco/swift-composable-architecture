@@ -48,6 +48,7 @@ extension EffectPublisher {
             let id = _CancelToken(id: id)
             if cancelInFlight {
               _cancellationCancellables[id]?.forEach { $0.cancel() }
+              _cancellationCancellables[id] = nil
             }
 
             let cancellationSubject = PassthroughSubject<Void, Never>()
@@ -114,6 +115,7 @@ extension EffectPublisher {
     .fireAndForget {
       _cancellablesLock.sync {
         _cancellationCancellables[.init(id: id)]?.forEach { $0.cancel() }
+        _cancellationCancellables[.init(id: id)] = nil
       }
     }
   }
@@ -200,6 +202,7 @@ public func withTaskCancellation<T: Sendable>(
   let (cancellable, task) = _cancellablesLock.sync { () -> (AnyCancellable, Task<T, Error>) in
     if cancelInFlight {
       _cancellationCancellables[id]?.forEach { $0.cancel() }
+      _cancellationCancellables[id] = nil
     }
     let task = Task { try await operation() }
     let cancellable = AnyCancellable { task.cancel() }
@@ -249,8 +252,12 @@ extension Task where Success == Never, Failure == Never {
   /// Cancel any currently in-flight operation with the given identifier.
   ///
   /// - Parameter id: An identifier.
-  public static func cancel<ID: Hashable & Sendable>(id: ID) {
-    _cancellablesLock.sync { _cancellationCancellables[.init(id: id)]?.forEach { $0.cancel() } }
+  public static func cancel<ID: Hashable & Sendable>(id: ID) async {
+    await Task.megaYield()
+    _cancellablesLock.sync {
+      _cancellationCancellables[.init(id: id)]?.forEach { $0.cancel() }
+      _cancellationCancellables[.init(id: id)] = nil
+    }
   }
 
   /// Cancel any currently in-flight operation with the given identifier.
@@ -259,8 +266,9 @@ extension Task where Success == Never, Failure == Never {
   /// identifier.
   ///
   /// - Parameter id: A unique type identifying the operation.
-  public static func cancel(id: Any.Type) {
-    self.cancel(id: ObjectIdentifier(id))
+  public static func cancel(id: Any.Type) async {
+    await Task.megaYield()
+    await self.cancel(id: ObjectIdentifier(id))
   }
 }
 

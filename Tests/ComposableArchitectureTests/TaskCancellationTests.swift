@@ -18,7 +18,7 @@
         }
       }
       await stream.first(where: { true })
-      Task.cancel(id: ID.self)
+      await Task.cancel(id: ID.self)
       await Task.megaYield(count: 20)
       XCTAssertEqual(_cancellablesLock.sync { _cancellationCancellables }, [:])
       do {
