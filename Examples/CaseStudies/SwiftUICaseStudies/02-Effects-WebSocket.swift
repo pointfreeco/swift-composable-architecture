@@ -171,11 +171,12 @@ struct WebSocketView: View {
           }
         }
 
-        Section(
-          header: Text("Received messages")) {
-            Text("Status: \(viewStore.connectivityState.rawValue)")
-              .foregroundStyle(.secondary)
-            Text(viewStore.receivedMessages.reversed().joined(separator: "\n"))
+        Section {
+          Text("Status: \(viewStore.connectivityState.rawValue)")
+            .foregroundStyle(.secondary)
+          Text(viewStore.receivedMessages.reversed().joined(separator: "\n"))
+        } header: { 
+          Text("Received messages") 
         }
       }
       .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
