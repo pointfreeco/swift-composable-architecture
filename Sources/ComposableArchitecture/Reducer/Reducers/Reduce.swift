@@ -8,7 +8,8 @@ public struct Reduce<State, Action>: ReducerProtocol {
 
   @usableFromInline
   init(
-    internal reduce: @escaping (inout State, Action) -> EffectTask<Action>
+    internal: (),
+    reduce: @escaping (inout State, Action) -> EffectTask<Action>
   ) {
     self.reduce = reduce
   }
@@ -18,7 +19,7 @@ public struct Reduce<State, Action>: ReducerProtocol {
   /// - Parameter reduce: A function that is called when ``reduce(into:action:)`` is invoked.
   @inlinable
   public init(_ reduce: @escaping (inout State, Action) -> EffectTask<Action>) {
-    self.init(internal: reduce)
+    self.init(internal: (), reduce: reduce)
   }
 
   /// Type-erases a reducer.
@@ -27,7 +28,7 @@ public struct Reduce<State, Action>: ReducerProtocol {
   @inlinable
   public init<R: ReducerProtocol>(_ reducer: R)
   where R.State == State, R.Action == Action {
-    self.init(internal: reducer.reduce)
+    self.init(internal: (), reduce: reducer.reduce)
   }
 
   @inlinable
