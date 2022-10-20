@@ -1,5 +1,4 @@
 import Foundation
-import XCTestDynamicOverlay
 
 extension DependencyValues {
   /// The current calendar that features should use when handling dates.
@@ -33,7 +32,7 @@ extension DependencyValues {
   private enum CalendarKey: DependencyKey {
     static let liveValue = Calendar.autoupdatingCurrent
     static var testValue: Calendar {
-      XCTFail(#"Unimplemented: @Dependency(\.calendar)"#)
+//      XCTFail(#"Unimplemented: @Dependency(\.calendar)"#)
       return .autoupdatingCurrent
     }
   }

@@ -1,5 +1,4 @@
 import Foundation
-import XCTestDynamicOverlay
 
 extension DependencyValues {
   /// A dependency that generates UUIDs.
@@ -78,7 +77,7 @@ extension DependencyValues {
   private enum UUIDGeneratorKey: DependencyKey {
     static let liveValue = UUIDGenerator { UUID() }
     static let testValue = UUIDGenerator {
-      XCTFail(#"Unimplemented: @Dependency(\.uuid)"#)
+//      XCTFail(#"Unimplemented: @Dependency(\.uuid)"#)
       return UUID()
     }
   }

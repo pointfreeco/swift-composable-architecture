@@ -4,6 +4,10 @@
 
   @MainActor
   final class TestStoreFailureTests: XCTestCase {
+      override class func setUp() {
+          ComposableArchitecture.XCTFail = XCTFail
+          ComposableArchitecture.XCTFail3 = XCTFail
+      }
     func testNoStateChangeFailure() {
       enum Action { case first, second }
       let store = TestStore(

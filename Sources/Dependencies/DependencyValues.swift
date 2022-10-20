@@ -1,5 +1,4 @@
 import Foundation
-import XCTestDynamicOverlay
 
 /// A collection of dependencies that is globally available.
 ///
@@ -294,13 +293,14 @@ struct CurrentDependency {
 }
 
 private let defaultContext: DependencyContext = {
-  if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
-    return .preview
-  } else if _XCTIsTesting {
     return .test
-  } else {
-    return .live
-  }
+//  if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+//    return .preview
+//  } else if _XCTIsTesting {
+//    return .test
+//  } else {
+//    return .live
+//  }
 }()
 
 private final class CachedValues: @unchecked Sendable {

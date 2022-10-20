@@ -7,6 +7,11 @@ final class EffectTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
   let mainQueue = DispatchQueue.test
 
+    override class func setUp() {
+        ComposableArchitecture.XCTFail = XCTFail
+        ComposableArchitecture.XCTFail3 = XCTFail
+    }
+    
   func testCatchToEffect() {
     struct Error: Swift.Error, Equatable {}
 
@@ -219,7 +224,7 @@ final class EffectTests: XCTestCase {
           .sink(receiveValue: { _ in })
           .store(in: &self.cancellables)
       } issueMatcher: { issue in
-        issue.compactDescription == "unimplemented - An unimplemented effect ran."
+        issue.compactDescription == "failed - unimplemented - An unimplemented effect ran."
       }
     }
   #endif

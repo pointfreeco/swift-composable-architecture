@@ -12,7 +12,7 @@ func runtimeWarn(
     let category = category ?? "Runtime Warning"
     if _XCTIsTesting {
       if let file = file, let line = line {
-        XCTFail(message, file: file, line: line)
+        XCTFail3(message, file, line)
       } else {
         XCTFail(message)
       }
@@ -33,8 +33,6 @@ func runtimeWarn(
 }
 
 #if DEBUG
-  import XCTestDynamicOverlay
-
   #if canImport(os)
     import os
 

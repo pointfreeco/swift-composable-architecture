@@ -5,6 +5,10 @@ import XCTest
 
 @MainActor
 final class AnimationTests: XCTestCase {
+    override class func setUp() {
+        ComposableArchitecture.XCTFail = XCTFail
+        ComposableArchitecture.XCTFail3 = XCTFail
+    }
   func testRainbow() async {
     let store = TestStore(
       initialState: Animations.State(),
@@ -16,7 +20,7 @@ final class AnimationTests: XCTestCase {
 
     await store.send(.rainbowButtonTapped)
     await store.receive(.setColor(.red)) {
-      $0.circleColor = .red
+      $0.circleColor = .blue
     }
 
     await mainQueue.advance(by: .seconds(1))
@@ -68,7 +72,7 @@ final class AnimationTests: XCTestCase {
 
     await store.send(.rainbowButtonTapped)
     await store.receive(.setColor(.red)) {
-      $0.circleColor = .red
+      $0.circleColor = .blue
     }
 
     await mainQueue.advance(by: .seconds(1))

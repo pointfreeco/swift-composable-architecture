@@ -4,6 +4,10 @@ import XCTest
 
 @MainActor
 final class EffectTaskTests: XCTestCase {
+    override class func setUp() {
+        ComposableArchitecture.XCTFail = XCTFail
+        ComposableArchitecture.XCTFail3 = XCTFail
+    }
   func testTask() async {
     struct State: Equatable {}
     enum Action: Equatable { case tapped, response }
@@ -46,7 +50,7 @@ final class EffectTaskTests: XCTestCase {
       var line: UInt!
       XCTExpectFailure(nil, enabled: nil, strict: nil) {
         $0.compactDescription == """
-          An "EffectTask.task" returned from \
+          failed - An "EffectTask.task" returned from \
           "ComposableArchitectureTests/EffectTaskTests.swift:\(line+1)" threw an unhandled error. …
 
               EffectTaskTests.Failure()

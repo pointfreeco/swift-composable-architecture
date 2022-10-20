@@ -10,13 +10,13 @@ func runtimeWarn(
   #if DEBUG
     let message = message()
     let category = category ?? "Runtime Warning"
-    if _XCTIsTesting {
-      if let file = file, let line = line {
-        XCTFail(message, file: file, line: line)
-      } else {
-        XCTFail(message)
-      }
-    } else {
+//    if _XCTIsTesting {
+//      if let file = file, let line = line {
+//        XCTFail3(message, file, line)
+//      } else {
+//        XCTFail(message)
+//      }
+//    } else {
       #if canImport(os)
         os_log(
           .fault,
@@ -28,13 +28,12 @@ func runtimeWarn(
       #else
         fputs("\(formatter.string(from: Date())) [\(category)] \(message)\n", stderr)
       #endif
-    }
+//    }
   #endif
 }
 
 #if DEBUG
-  import XCTestDynamicOverlay
-
+  
   #if canImport(os)
     import os
 

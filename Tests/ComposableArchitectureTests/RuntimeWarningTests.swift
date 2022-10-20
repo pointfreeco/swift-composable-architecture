@@ -4,6 +4,11 @@
   import XCTest
 
   final class RuntimeWarningTests: XCTestCase {
+      override func setUp() {
+          ComposableArchitecture.XCTFail = XCTFail
+          ComposableArchitecture.XCTFail3 = XCTFail
+          ComposableArchitecture._XCTIsTesting = true
+      }
     func testStoreCreationMainThread() {
       XCTExpectFailure {
         $0.compactDescription == """
@@ -23,7 +28,7 @@
     func testEffectFinishedMainThread() {
       XCTExpectFailure {
         $0.compactDescription == """
-          An effect completed on a non-main thread. …
+          failed - An effect completed on a non-main thread. …
 
             Effect returned from:
               RuntimeWarningTests.Action.tap
@@ -58,7 +63,7 @@
       XCTExpectFailure {
         [
           """
-          "Store.scope" was called on a non-main thread. …
+          failed - "Store.scope" was called on a non-main thread. …
 
           The "Store" class is not thread-safe, and so all interactions with an instance of \
           "Store" (including all of its scopes and derived view stores) must be done on the main \
@@ -84,7 +89,7 @@
       XCTExpectFailure {
         [
           """
-          "ViewStore.send" was called on a non-main thread with: () …
+          failed - "ViewStore.send" was called on a non-main thread with: () …
 
           The "Store" class is not thread-safe, and so all interactions with an instance of \
           "Store" (including all of its scopes and derived view stores) must be done on the main \
@@ -206,7 +211,7 @@
         ViewStore(store).binding(\.$value).wrappedValue = 42
       } issueMatcher: {
         $0.compactDescription == """
-          A binding action sent from a view store at \
+          failed - A binding action sent from a view store at \
           "ComposableArchitectureTests/RuntimeWarningTests.swift:\(line + 1)" was not handled. …
 
             Action:

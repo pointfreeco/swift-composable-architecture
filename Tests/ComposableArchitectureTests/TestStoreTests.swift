@@ -4,6 +4,10 @@ import XCTest
 
 @MainActor
 final class TestStoreTests: XCTestCase {
+    override class func setUp() {
+        ComposableArchitecture.XCTFail = XCTFail
+        ComposableArchitecture.XCTFail3 = XCTFail
+    }
   func testEffectConcatenation() async {
     struct State: Equatable {}
 

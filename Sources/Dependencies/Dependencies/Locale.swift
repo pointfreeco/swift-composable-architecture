@@ -1,5 +1,4 @@
 import Foundation
-import XCTestDynamicOverlay
 
 extension DependencyValues {
   /// The current locale that features should use.
@@ -45,7 +44,7 @@ extension DependencyValues {
   private enum LocaleKey: DependencyKey {
     static let liveValue = Locale.autoupdatingCurrent
     static var testValue: Locale {
-      XCTFail(#"Unimplemented: @Dependency(\.locale)"#)
+//      XCTFail(#"Unimplemented: @Dependency(\.locale)"#)
       return .autoupdatingCurrent
     }
   }

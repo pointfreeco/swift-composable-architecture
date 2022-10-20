@@ -1,5 +1,4 @@
 import Foundation
-import XCTestDynamicOverlay
 
 extension DependencyValues {
   /// A dependency that yields a random number generator to a closure.
@@ -95,7 +94,7 @@ private struct UnimplementedRandomNumberGenerator: RandomNumberGenerator {
   var generator = SystemRandomNumberGenerator()
 
   mutating func next() -> UInt64 {
-    XCTFail(#"Unimplemented: @Dependency(\.withRandomNumberGenerator)"#)
+//    XCTFail(#"Unimplemented: @Dependency(\.withRandomNumberGenerator)"#)
     return generator.next()
   }
 }

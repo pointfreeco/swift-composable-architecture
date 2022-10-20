@@ -1,5 +1,4 @@
 import Foundation
-import XCTestDynamicOverlay
 
 extension DependencyValues {
   /// The current time zone that features should use when handling dates.
@@ -24,7 +23,7 @@ extension DependencyValues {
   private enum TimeZoneKey: DependencyKey {
     static let liveValue = TimeZone.autoupdatingCurrent
     static var testValue: TimeZone {
-      XCTFail(#"Unimplemented: @Dependency(\.timeZone)"#)
+//      XCTFail(#"Unimplemented: @Dependency(\.timeZone)"#)
       return .autoupdatingCurrent
     }
   }

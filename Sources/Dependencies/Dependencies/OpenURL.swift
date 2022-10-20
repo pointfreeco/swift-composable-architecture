@@ -1,4 +1,3 @@
-import XCTestDynamicOverlay
 
 #if canImport(AppKit)
   import AppKit
@@ -55,7 +54,7 @@ import XCTestDynamicOverlay
       return await stream.first(where: { _ in true }) ?? false
     }
     static let testValue = OpenURLEffect { _ in
-      XCTFail(#"Unimplemented: @Dependency(\.openURL)"#)
+//      XCTFail(#"Unimplemented: @Dependency(\.openURL)"#)
       return false
     }
   }

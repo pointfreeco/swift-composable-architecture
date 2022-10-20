@@ -1,6 +1,5 @@
 import ComposableArchitecture
 import SwiftUI
-import XCTestDynamicOverlay
 
 private let readMe = """
   This application demonstrates how to work with a web socket in the Composable Architecture.
@@ -325,12 +324,12 @@ extension WebSocketClient: DependencyKey {
     }
   }
 
-  static let testValue = Self(
-    open: unimplemented("\(Self.self).open", placeholder: AsyncStream.never),
-    receive: unimplemented("\(Self.self).receive"),
-    send: unimplemented("\(Self.self).send"),
-    sendPing: unimplemented("\(Self.self).sendPing")
-  )
+//  static let testValue = Self(
+//    open: unimplemented("\(Self.self).open", placeholder: AsyncStream.never),
+//    receive: unimplemented("\(Self.self).receive"),
+//    send: unimplemented("\(Self.self).send"),
+//    sendPing: unimplemented("\(Self.self).sendPing")
+//  )
 }
 
 extension DependencyValues {

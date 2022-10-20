@@ -1,7 +1,6 @@
 import CasePaths
 import Combine
 import SwiftUI
-import XCTestDynamicOverlay
 
 // MARK: - Deprecated after 0.42.0:
 
@@ -710,7 +709,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
         if !self.reducer.receivedActions.isEmpty {
           var actions = ""
           customDump(self.reducer.receivedActions.map(\.action), to: &actions)
-          XCTFail(
+          XCTFail3(
             """
             Must handle \(self.reducer.receivedActions.count) received \
             action\(self.reducer.receivedActions.count == 1 ? "" : "s") before performing this \
@@ -718,20 +717,20 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
 
             Unhandled actions: \(actions)
             """,
-            file: step.file, line: step.line
+            step.file, step.line
           )
         }
         do {
           try work(&self.environment)
         } catch {
-          XCTFail("Threw error: \(error)", file: step.file, line: step.line)
+          XCTFail3("Threw error: \(error)", step.file, step.line)
         }
 
       case let .do(work):
         if !self.reducer.receivedActions.isEmpty {
           var actions = ""
           customDump(self.reducer.receivedActions.map(\.action), to: &actions)
-          XCTFail(
+          XCTFail3(
             """
             Must handle \(self.reducer.receivedActions.count) received \
             action\(self.reducer.receivedActions.count == 1 ? "" : "s") before performing this \
@@ -739,13 +738,13 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
 
             Unhandled actions: \(actions)
             """,
-            file: step.file, line: step.line
+            step.file, step.line
           )
         }
         do {
           try work()
         } catch {
-          XCTFail("Threw error: \(error)", file: step.file, line: step.line)
+          XCTFail3("Threw error: \(error)", step.file, step.line)
         }
 
       case let .sequence(subSteps):

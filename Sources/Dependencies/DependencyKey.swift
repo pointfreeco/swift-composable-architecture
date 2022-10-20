@@ -1,4 +1,3 @@
-import XCTestDynamicOverlay
 
 /// A key for accessing dependencies.
 ///
@@ -208,24 +207,24 @@ extension DependencyKey {
         """
     )
     // TODO: Make this error message configurable to avoid TCA-specific language outside of TCA?
-    XCTFail(
-      """
-      \(DependencyValues.currentDependency.name.map { "@Dependency(\\.\($0))" } ?? "A dependency") \
-      has no test implementation, but was accessed from a test context:
-
-      \(dependencyDescription)
-
-      Dependencies registered with the library are not allowed to use their default, live \
-      implementations when run from tests.
-
-      To fix, override \
-      \(DependencyValues.currentDependency.name.map { "'\($0)'" } ?? "the dependency") with a mock \
-      value in your test. If you are using the Composable Architecture, mutate the 'dependencies' \
-      property on your 'TestStore'. Otherwise, use 'DependencyValues.withValues' to define a scope \
-      for the override. If you'd like to provide a default value for all tests, implement the \
-      'testValue' requirement of the 'DependencyKey' protocol.
-      """
-    )
+//    XCTFail(
+//      """
+//      \(DependencyValues.currentDependency.name.map { "@Dependency(\\.\($0))" } ?? "A dependency") \
+//      has no test implementation, but was accessed from a test context:
+//
+//      \(dependencyDescription)
+//
+//      Dependencies registered with the library are not allowed to use their default, live \
+//      implementations when run from tests.
+//
+//      To fix, override \
+//      \(DependencyValues.currentDependency.name.map { "'\($0)'" } ?? "the dependency") with a mock \
+//      value in your test. If you are using the Composable Architecture, mutate the 'dependencies' \
+//      property on your 'TestStore'. Otherwise, use 'DependencyValues.withValues' to define a scope \
+//      for the override. If you'd like to provide a default value for all tests, implement the \
+//      'testValue' requirement of the 'DependencyKey' protocol.
+//      """
+//    )
     return Self.liveValue
   }
 }

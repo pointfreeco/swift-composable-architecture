@@ -27,7 +27,6 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "0.8.0"),
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "0.3.0"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "0.3.2"),
-    .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "0.3.2"),
   ],
   targets: [
     .target(
@@ -38,7 +37,6 @@ let package = Package(
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
         .product(name: "CustomDump", package: "swift-custom-dump"),
         .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
-        .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
       ]
     ),
     .testTarget(
@@ -51,7 +49,6 @@ let package = Package(
       name: "Dependencies",
       dependencies: [
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
-        .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
       ]
     ),
     .testTarget(

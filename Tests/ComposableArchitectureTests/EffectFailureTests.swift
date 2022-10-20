@@ -6,6 +6,11 @@
   @MainActor
   final class EffectFailureTests: XCTestCase {
     var cancellables: Set<AnyCancellable> = []
+      
+      override class func setUp() {
+          ComposableArchitecture.XCTFail = XCTFail
+          ComposableArchitecture.XCTFail3 = XCTFail
+      }
 
     func testTaskUnexpectedThrows() async {
       guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
@@ -13,7 +18,7 @@
       var line: UInt!
       XCTExpectFailure {
         $0.compactDescription == """
-          An "EffectTask.task" returned from \
+          failed - An "EffectTask.task" returned from \
           "ComposableArchitectureTests/EffectFailureTests.swift:\(line+1)" threw an unhandled \
           error. …
 
@@ -39,7 +44,7 @@
       var line: UInt!
       XCTExpectFailure {
         $0.compactDescription == """
-          An "EffectTask.run" returned from \
+          failed - An "EffectTask.run" returned from \
           "ComposableArchitectureTests/EffectFailureTests.swift:\(line+1)" threw an unhandled \
           error. …
 

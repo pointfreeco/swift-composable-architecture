@@ -1,5 +1,4 @@
 import Foundation
-import XCTestDynamicOverlay
 
 #if canImport(FoundationNetworking)
   import FoundationNetworking
@@ -79,7 +78,7 @@ extension DependencyValues {
   private enum URLSessionKey: DependencyKey {
     static let liveValue = URLSession.shared
     static var testValue: URLSession {
-      XCTFail(#"Unimplemented: @Dependency(\.urlSession)"#)
+//      XCTFail(#"Unimplemented: @Dependency(\.urlSession)"#)
       let configuration = URLSessionConfiguration.ephemeral
       configuration.protocolClasses = [UnimplementedURLProtocol.self]
       return URLSession(configuration: configuration)
