@@ -266,25 +266,26 @@ import XCTestDynamicOverlay
 /// information you are choosing to ignore without causing a test failure. It can be useful in
 /// tracking down bugs that happen in production but that aren't currently detected in tests.
 ///
-/// This style of testing is most useful for testing the integration of multiple features where you want
-/// to focus on just a certain slice of the behavior. Exhaustive testing can still be important to use
-/// for leaf node features, where you truly do want to assert on everything happening inside the
-/// feature.
+/// This style of testing is most useful for testing the integration of multiple features where you
+/// want to focus on just a certain slice of the behavior. Exhaustive testing can still be important
+/// to use for leaf node features, where you truly do want to assert on everything happening inside
+/// the feature.
 ///
-/// For example, suppose you have a tab-based application where the 3rd tab is a login screen. The user
-/// can fill in some data on the screen, then tap the "Submit" button, and then a series of events
-/// happens to  log the user in. Once the user is logged in, the 3rd tab switches from a login screen
-/// to a profile screen, _and_ the selected tab switches to the first tab, which is an activity screen.
+/// For example, suppose you have a tab-based application where the 3rd tab is a login screen. The
+/// user can fill in some data on the screen, then tap the "Submit" button, and then a series of
+/// events happens to  log the user in. Once the user is logged in, the 3rd tab switches from a
+/// login screen to a profile screen, _and_ the selected tab switches to the first tab, which is an
+/// activity screen.
 ///
-/// When writing tests for the login feature we will want to do that in the exhaustive style so that we
-/// can prove exactly how the feature would behave in production. But, suppose we wanted to write an
-/// integration test that proves after the user taps the "Login" button that ultimately the selected
-/// tab switches to the first tab.
+/// When writing tests for the login feature we will want to do that in the exhaustive style so that
+/// we can prove exactly how the feature would behave in production. But, suppose we wanted to write
+/// an integration test that proves after the user taps the "Login" button that ultimately the
+/// selected tab switches to the first tab.
 ///
-/// In order to test such a complex flow we must test the integration of multiple features, which means
-/// dealing with complex, nested state and effects. We can emulate this flow in a test by sending
-/// actions that mimic the user logging in, and then eventually assert that the selected tab switched
-/// to activity:
+/// In order to test such a complex flow we must test the integration of multiple features, which
+/// means dealing with complex, nested state and effects. We can emulate this flow in a test by
+/// sending actions that mimic the user logging in, and then eventually assert that the selected
+/// tab switched to activity:
 ///
 /// ```swift
 /// let store = TestStore(
@@ -319,16 +320,16 @@ import XCTestDynamicOverlay
 ///
 /// * We need to be intimately knowledgeable in how the login feature works so that we can assert
 /// on how its state changes and how its effects feed data back into the system.
-/// * If the login feature were to change its logic we may get test failures here even though the logic
-/// we are acutally trying to test doesn't really care about those changes.
-/// * This test is very long, and so if there are other similar but slightly different flows we want to
-/// test we will be tempted to copy-and-paste the whole thing, leading to lots of duplicated, fragile
-/// tests.
+/// * If the login feature were to change its logic we may get test failures here even though the
+/// logic we are acutally trying to test doesn't really care about those changes.
+/// * This test is very long, and so if there are other similar but slightly different flows we
+/// want to test we will be tempted to copy-and-paste the whole thing, leading to lots of
+/// duplicated, fragile tests.
 ///
 /// Non-exhaustive testing allows us to test the high-level flow that we are concerned with, that of
 /// login causing the selected tab to switch to activity, without having to worry about what is
-/// happening inside the login feature. To do this, we can turn off ``TestStore/exhaustivity`` in the
-/// test store, and then just assert on what we are interested in:
+/// happening inside the login feature. To do this, we can turn off ``TestStore/exhaustivity`` in
+/// the test store, and then just assert on what we are interested in:
 ///
 /// ```swift
 /// let store = TestStore(
@@ -344,14 +345,14 @@ import XCTestDynamicOverlay
 /// ```
 ///
 /// In particular, we did not assert on how the login's state changed or how the login's effects fed
-/// data back into the system. We just assert that when the "Submit" button is tapped that eventually
-/// we get the `didLogin` delegate action and that causes the selected tab to flip to activity. Now
-/// the login feature is free to make any change it wants to make without affecting this integration
-/// test.
+/// data back into the system. We just assert that when the "Submit" button is tapped that
+/// eventually we get the `didLogin` delegate action and that causes the selected tab to flip to
+/// activity. Now the login feature is free to make any change it wants to make without affecting
+/// this integration test.
 ///
-/// Using ``Exhaustivity/none`` for ``TestStore/exhaustivity`` causes all un-asserted changes to pass
-/// without any notification. If you would like to see what test failures are being supressed without
-/// actually causing a failure, you can use ``Exhaustivity/partial``:
+/// Using ``Exhaustivity/none`` for ``TestStore/exhaustivity`` causes all un-asserted changes to
+/// pass without any notification. If you would like to see what test failures are being supressed
+/// without actually causing a failure, you can use ``Exhaustivity/partial``:
 ///
 /// ```swift
 /// let store = TestStore(
@@ -366,8 +367,8 @@ import XCTestDynamicOverlay
 /// }
 /// ```
 ///
-/// When this is run you will get grey, informational boxes on each assertion where some change wasn't
-/// fully asserted on:
+/// When this is run you will get grey, informational boxes on each assertion where some change
+/// wasn't fully asserted on:
 ///
 /// ```
 /// ◽️ A state change does not match expectation: …
@@ -400,8 +401,8 @@ import XCTestDynamicOverlay
 /// ```
 ///
 /// The test still passes, and none of these notifications are test failures. They just let you know
-/// what things you are not explicitly asserting against, and can be useful to see when tracking down
-/// bugs that happen in production but that aren't currently detected in tests.
+/// what things you are not explicitly asserting against, and can be useful to see when tracking
+/// down bugs that happen in production but that aren't currently detected in tests.
 open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
 
   /// The current dependencies.
@@ -446,7 +447,8 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
   /// The current state.
   ///
   /// When read from a trailing closure assertion in ``send(_:_:file:line:)-6s1gq`` or
-  /// ``receive(_:timeout:_:file:line:)-8yd62``, it will equal the `inout` state passed to the closure.
+  /// ``receive(_:timeout:_:file:line:)-8yd62``, it will equal the `inout` state passed to the
+  /// closure.
   public var state: State {
     self.reducer.state
   }
@@ -1456,8 +1458,8 @@ extension TestStore {
 /// await store.send(.stopTimerButtonTapped).finish()
 /// ```
 ///
-/// See ``TestStore/finish(timeout:file:line:)-7pmv3`` for the ability to await all in-flight effects in
-/// the test store.
+/// See ``TestStore/finish(timeout:file:line:)-7pmv3`` for the ability to await all in-flight
+/// effects in the test store.
 ///
 /// See ``ViewStoreTask`` for the analog provided to ``ViewStore``.
 public struct TestStoreTask: Hashable, Sendable {
