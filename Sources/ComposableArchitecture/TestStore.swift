@@ -3,6 +3,8 @@ import CustomDump
 import Foundation
 import XCTestDynamicOverlay
 
+public var fail: () -> Void = {}
+
 /// A testable runtime for a reducer.
 ///
 /// This object aids in writing expressive and exhaustive tests for features built in the
@@ -401,16 +403,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
           If you are not yet using a scheduler, or can not use a scheduler, \(timeoutMessage).
           """
 
-        XCTFail(
-          """
-          Expected effects to finish, but there are still effects in-flight\
-          \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds" : "").
-
-          \(suggestion)
-          """,
-          file: file,
-          line: line
-        )
+        fail()
         return
       }
       await Task.yield()
@@ -425,42 +418,10 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     if !self.reducer.receivedActions.isEmpty {
       var actions = ""
       customDump(self.reducer.receivedActions.map(\.action), to: &actions)
-      XCTFail(
-        """
-        The store received \(self.reducer.receivedActions.count) unexpected \
-        action\(self.reducer.receivedActions.count == 1 ? "" : "s") after this one: …
-
-        Unhandled actions: \(actions)
-        """,
-        file: self.file, line: self.line
-      )
+      fail()
     }
     for effect in self.reducer.inFlightEffects {
-      XCTFail(
-        """
-        An effect returned for this action is still running. It must complete before the end of \
-        the test. …
-
-        To fix, inspect any effects the reducer returns for this action and ensure that all of \
-        them complete by the end of the test. There are a few reasons why an effect may not have \
-        completed:
-
-        • If using async/await in your effect, it may need a little bit of time to properly \
-        finish. To fix you can simply perform "await store.finish()" at the end of your test.
-
-        • If an effect uses a scheduler (via "receive(on:)", "delay", "debounce", etc.), make \
-        sure that you wait enough time for the scheduler to perform the effect. If you are using \
-        a test scheduler, advance the scheduler so that the effects may complete, or consider \
-        using an immediate scheduler to immediately perform the effect instead.
-
-        • If you are returning a long-living effect (timers, notifications, subjects, etc.), \
-        then make sure those effects are torn down by marking the effect ".cancellable" and \
-        returning a corresponding cancellation effect ("Effect.cancel") from another action, or, \
-        if your effect is driven by a Combine subject, send it a completion.
-        """,
-        file: effect.file,
-        line: effect.line
-      )
+      fail()
     }
   }
 }
@@ -539,15 +500,7 @@ extension TestStore where ScopedState: Equatable {
     if !self.reducer.receivedActions.isEmpty {
       var actions = ""
       customDump(self.reducer.receivedActions.map(\.action), to: &actions)
-      XCTFail(
-        """
-        Must handle \(self.reducer.receivedActions.count) received \
-        action\(self.reducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
-
-        Unhandled actions: \(actions)
-        """,
-        file: file, line: line
-      )
+      fail()
     }
     var expectedState = self.toScopedState(self.state)
     let previousState = self.reducer.state
@@ -567,7 +520,7 @@ extension TestStore where ScopedState: Equatable {
         line: line
       )
     } catch {
-      XCTFail("Threw error: \(error)", file: file, line: line)
+      fail()
     }
     if "\(self.file)" == "\(file)" {
       self.line = line
@@ -623,15 +576,7 @@ extension TestStore where ScopedState: Equatable {
     if !self.reducer.receivedActions.isEmpty {
       var actions = ""
       customDump(self.reducer.receivedActions.map(\.action), to: &actions)
-      XCTFail(
-        """
-        Must handle \(self.reducer.receivedActions.count) received \
-        action\(self.reducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
-
-        Unhandled actions: \(actions)
-        """,
-        file: file, line: line
-      )
+      fail()
     }
     var expectedState = self.toScopedState(self.state)
     let previousState = self.state
@@ -650,7 +595,7 @@ extension TestStore where ScopedState: Equatable {
         line: line
       )
     } catch {
-      XCTFail("Threw error: \(error)", file: file, line: line)
+      fail()
     }
     if "\(self.file)" == "\(file)" {
       self.line = line
@@ -687,25 +632,9 @@ extension TestStore where ScopedState: Equatable {
         modify != nil
         ? "A state change does not match expectation"
         : "State was not expected to change, but a change occurred"
-      XCTFail(
-        """
-        \(messageHeading): …
-
-        \(difference)
-        """,
-        file: file,
-        line: line
-      )
+      fail()
     } else if expected == current && modify != nil {
-      XCTFail(
-        """
-        Expected state to change, but no change occurred.
-
-        The trailing closure made no observable modifications to state. If no change to state is \
-        expected, omit the trailing closure.
-        """,
-        file: file, line: line
-      )
+      fail()
     }
   }
 }
@@ -730,12 +659,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     line: UInt = #line
   ) {
     guard !self.reducer.receivedActions.isEmpty else {
-      XCTFail(
-        """
-        Expected to receive an action, but received none.
-        """,
-        file: file, line: line
-      )
+      fail()
       return
     }
     let (receivedAction, state) = self.reducer.receivedActions.removeFirst()
@@ -752,14 +676,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
           """
       }
 
-      XCTFail(
-        """
-        Received unexpected action: …
-
-        \(difference)
-        """,
-        file: file, line: line
-      )
+      fail()
     }
     var expectedState = self.toScopedState(self.state)
     do {
@@ -771,7 +688,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
         line: line
       )
     } catch {
-      XCTFail("Threw error: \(error)", file: file, line: line)
+      fail()
     }
     self.reducer.state = state
     if "\(self.file)" == "\(file)" {
@@ -866,16 +783,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
             If you are not yet using a scheduler, or can not use a scheduler, \(timeoutMessage).
             """
         }
-        XCTFail(
-          """
-          Expected to receive an action, but received none\
-          \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds" : "").
-
-          \(suggestion)
-          """,
-          file: file,
-          line: line
-        )
+        fail()
         return
       }
     }
@@ -1026,16 +934,7 @@ public struct TestStoreTask: Hashable, Sendable {
         If you are not yet using a scheduler, or can not use a scheduler, \(timeoutMessage).
         """
 
-      XCTFail(
-        """
-        Expected task to finish, but it is still in-flight\
-        \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds" : "").
-
-        \(suggestion)
-        """,
-        file: file,
-        line: line
-      )
+      fail()
     }
   }
 
