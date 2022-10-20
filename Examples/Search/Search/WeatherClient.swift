@@ -38,7 +38,7 @@ struct Forecast: Decodable, Equatable, Sendable {
 // Typically this interface would live in its own module, separate from the live implementation.
 // This allows the search feature to compile faster since it only depends on the interface.
 
-struct WeatherClient: Sendable {
+struct WeatherClient {
   var forecast: @Sendable (GeocodingSearch.Result) async throws -> Forecast
   var search: @Sendable (String) async throws -> GeocodingSearch
 }
