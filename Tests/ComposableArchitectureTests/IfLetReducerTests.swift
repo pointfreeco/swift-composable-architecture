@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import XCTest
 
-@MainActor
+@MainActor 
 final class IfLetReducerTests: XCTestCase {
   func testNilChild() async {
     let store = TestStore(
@@ -13,8 +13,8 @@ final class IfLetReducerTests: XCTestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        An "ifLet" at "ComposableArchitectureTests/IfLetTests.swift:\(line)" received a child \
-        action when child state was "nil". …
+        An "ifLet" at "ComposableArchitectureTests/IfLetReducerTests.swift:\(line)" received a
+        child action when child state was "nil". …
 
           Action:
             ()

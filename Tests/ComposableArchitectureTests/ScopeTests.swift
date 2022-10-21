@@ -148,3 +148,4 @@ private struct Child2: ReducerProtocol {
     }
   }
 }
+
