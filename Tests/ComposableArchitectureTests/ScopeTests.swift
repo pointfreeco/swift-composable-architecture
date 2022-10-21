@@ -45,12 +45,11 @@ final class ScopeTests: XCTestCase {
       initialState: Child2.State.count(0),
       reducer: Scope(state: /Child2.State.name, action: /Child2.Action.name) {}
     )
-    let line = #line - 2
 
     XCTExpectFailure {
       $0.compactDescription == """
-        A "Scope" at "ComposableArchitectureTests/ScopeTests.swift:\(line)" received a child \
-        action when child state was set to a different case. …
+        A "Scope" at "\(#fileID):\(#line - 5)" received a child action when child state was set to \
+        a different case. …
 
           Action:
             Child2.Action.name

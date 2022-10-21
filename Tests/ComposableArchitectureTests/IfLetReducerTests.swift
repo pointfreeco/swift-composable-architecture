@@ -9,12 +9,11 @@ final class IfLetReducerTests: XCTestCase {
       reducer: EmptyReducer<Int?, Void>()
         .ifLet(\.self, action: /.self) {}
     )
-    let line = #line - 2
 
     XCTExpectFailure {
       $0.compactDescription == """
-        An "ifLet" at "ComposableArchitectureTests/IfLetReducerTests.swift:\(line)" received a
-        child action when child state was "nil". …
+        An "ifLet" at "\(#fileID):\(#line - 5)" received a child action when child state was \
+        "nil". …
 
           Action:
             ()

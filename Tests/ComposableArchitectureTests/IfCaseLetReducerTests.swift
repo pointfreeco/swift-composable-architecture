@@ -39,12 +39,11 @@ final class IfCaseLetReducerTests: XCTestCase {
       reducer: EmptyReducer<Result<Int, SomeError>, Result<Int, SomeError>>()
         .ifCaseLet(/Result.success, action: /Result.success) {}
     )
-    let line = #line - 2
 
     XCTExpectFailure {
       $0.compactDescription == """
-        An "ifCaseLet" at "ComposableArchitectureTests/IfCaseLetReducerTests.swift:\(line)" \
-        received a child action when child state was set to a different case. …
+        An "ifCaseLet" at "\(#fileID):\(#line - 5)" received a child action when child state was \
+        set to a different case. …
 
           Action:
             Result.success

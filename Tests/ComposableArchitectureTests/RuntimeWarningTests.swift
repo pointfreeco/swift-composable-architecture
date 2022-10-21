@@ -204,8 +204,7 @@
         ViewStore(store).binding(\.$value).wrappedValue = 42
       } issueMatcher: {
         $0.compactDescription == """
-          A binding action sent from a view store at \
-          "ComposableArchitectureTests/RuntimeWarningTests.swift:\(line + 1)" was not handled. …
+          A binding action sent from a view store at "\(#fileID):\(line + 1)" was not handled. …
 
             Action:
               RuntimeWarningTests.Action.binding(.set(_, 42))

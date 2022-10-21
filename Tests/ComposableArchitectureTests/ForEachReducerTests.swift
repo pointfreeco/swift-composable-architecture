@@ -41,12 +41,10 @@ final class ForEachReducerTests: XCTestCase {
       reducer: EmptyReducer()
         .forEach(\.rows, action: /Elements.Action.row) {}
     )
-    let line = #line - 2
 
     XCTExpectFailure {
       $0.compactDescription == """
-        A "forEach" at "ComposableArchitectureTests/ForEachReducerTests.swift:\(line)" received an \
-        action for a missing element.
+        A "forEach" at "\(#fileID):\(#line - 5)" received an action for a missing element.
 
           Action:
             Elements.Action.row(id:, action:)
