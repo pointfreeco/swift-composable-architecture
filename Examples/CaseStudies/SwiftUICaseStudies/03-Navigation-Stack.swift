@@ -41,7 +41,8 @@ struct NavigationDemo: ReducerProtocol {
 //              // .cancel(id: ScreenC.TimerID.self, navigationID: id)
 //              return .init(value: .path(.element(id: destination.id, .screenC(.stopButtonTapped))))
 //            }
-//          })
+//          }
+//        )
 
       case let .goBackToScreen(n):
         state.path.removeLast(n)

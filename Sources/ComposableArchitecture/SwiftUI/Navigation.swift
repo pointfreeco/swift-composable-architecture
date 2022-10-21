@@ -193,6 +193,12 @@ public struct NavigationState<Element: Hashable>:
 public typealias NavigationStateOf<R: ReducerProtocol> = NavigationState<R.State>
 where R.State: Hashable
 
+extension NavigationState: ExpressibleByArrayLiteral {
+  public init(arrayLiteral elements: Element...) {
+    self.init(wrappedValue: Path(elements))
+  }
+}
+
 extension NavigationState: ExpressibleByDictionaryLiteral {
   public init(dictionaryLiteral elements: (ID, Element)...) {
     self.destinations = .init(uniqueKeysWithValues: elements)
