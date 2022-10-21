@@ -16,18 +16,14 @@ struct RootView: View {
 
   var focusView: AnyView? {
     if #available(tvOS 14.0, *) {
-      #if swift(>=5.3)
-        return AnyView(
-          NavigationLink(
-            "Focus",
-            destination: FocusView(
-              store: self.store.scope(state: \.focus, action: Root.Action.focus)
-            )
+      return AnyView(
+        NavigationLink(
+          "Focus",
+          destination: FocusView(
+            store: self.store.scope(state: \.focus, action: Root.Action.focus)
           )
         )
-      #else
-        return nil
-      #endif
+      )
     } else {
       return nil
     }

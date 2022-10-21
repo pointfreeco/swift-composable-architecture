@@ -48,7 +48,7 @@ import XCTestDynamicOverlay
             continuation.finish()
           #endif
         }
-        continuation.onTermination = { _ in
+        continuation.onTermination = { @Sendable _ in
           task.cancel()
         }
       }

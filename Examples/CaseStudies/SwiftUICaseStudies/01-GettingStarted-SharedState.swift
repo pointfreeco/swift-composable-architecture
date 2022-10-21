@@ -14,6 +14,8 @@ private let readMe = """
   can be reset from the other tab.
   """
 
+// MARK: - Feature domain
+
 struct SharedState: ReducerProtocol {
   enum Tab { case counter, profile }
 
@@ -147,6 +149,8 @@ struct SharedState: ReducerProtocol {
     }
   }
 }
+
+// MARK: - Feature view
 
 struct SharedStateView: View {
   let store: StoreOf<SharedState>

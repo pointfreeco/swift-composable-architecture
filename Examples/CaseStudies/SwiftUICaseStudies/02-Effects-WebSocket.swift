@@ -1,4 +1,3 @@
-import Combine
 import ComposableArchitecture
 import SwiftUI
 import XCTestDynamicOverlay
@@ -10,6 +9,8 @@ private let readMe = """
   receive and ping a socket endpoint. To test, connect to the socket server, and then send a \
   message. The socket server should immediately reply with the exact message you send it.
   """
+
+// MARK: - Feature domain
 
 struct WebSocket: ReducerProtocol {
   struct State: Equatable {
@@ -126,6 +127,8 @@ struct WebSocket: ReducerProtocol {
     }
   }
 }
+
+// MARK: - Feature view
 
 struct WebSocketView: View {
   let store: StoreOf<WebSocket>

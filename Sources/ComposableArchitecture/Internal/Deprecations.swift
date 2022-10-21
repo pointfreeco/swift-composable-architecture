@@ -3,6 +3,24 @@ import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
+// MARK: - Deprecated after 0.42.0:
+
+/// This API has been deprecated in favor of ``ReducerProtocol``.
+/// Read <doc:MigratingToTheReducerProtocol> for more information.
+///
+/// A type alias to ``AnyReducer`` for source compatibility. This alias will be removed.
+@available(
+  *,
+  renamed: "AnyReducer",
+  message:
+    """
+    'Reducer' has been deprecated in favor of 'ReducerProtocol'.
+
+    See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+    """
+)
+public typealias Reducer = AnyReducer
+
 // MARK: - Deprecated after 0.41.0:
 
 extension ViewStore {
@@ -1131,16 +1149,14 @@ extension ForEachStore {
   {
     let data = store.state.value
     self.data = data
-    self.content = {
-      WithViewStore(store.scope(state: { $0.map { $0[keyPath: id] } })) { viewStore in
-        ForEach(Array(viewStore.state.enumerated()), id: \.element) { index, _ in
-          content(
-            store.scope(
-              state: { index < $0.endIndex ? $0[index] : data[index] },
-              action: { (index, $0) }
-            )
+    self.content = WithViewStore(store.scope(state: { $0.map { $0[keyPath: id] } })) { viewStore in
+      ForEach(Array(viewStore.state.enumerated()), id: \.element) { index, _ in
+        content(
+          store.scope(
+            state: { index < $0.endIndex ? $0[index] : data[index] },
+            action: { (index, $0) }
           )
-        }
+        )
       }
     }
   }

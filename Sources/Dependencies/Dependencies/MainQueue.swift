@@ -26,7 +26,7 @@
     ///
     ///   @Dependency(\.mainQueue) var mainQueue
     ///
-    ///   func reduce(into state: inout State, action: Action) -> Effect<Action> {
+    ///   func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
     ///     switch action {
     ///     case .task:
     ///       return .run { send in

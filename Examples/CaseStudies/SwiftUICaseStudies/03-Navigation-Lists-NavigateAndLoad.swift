@@ -8,6 +8,8 @@ private let readMe = """
   and fires off an effect that will load this state a second later.
   """
 
+// MARK: - Feature domain
+
 struct NavigateAndLoadList: ReducerProtocol {
   struct State: Equatable {
     var rows: IdentifiedArrayOf<Row> = [
@@ -68,6 +70,8 @@ struct NavigateAndLoadList: ReducerProtocol {
   }
 }
 
+// MARK: - Feature view
+
 struct NavigateAndLoadListView: View {
   let store: StoreOf<NavigateAndLoadList>
 
@@ -103,6 +107,8 @@ struct NavigateAndLoadListView: View {
     .navigationTitle("Navigate and load")
   }
 }
+
+// MARK: - SwiftUI previews
 
 struct NavigateAndLoadListView_Previews: PreviewProvider {
   static var previews: some View {

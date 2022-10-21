@@ -84,7 +84,7 @@ extension ReducerProtocol {
   /// value.
   ///
   /// For example, suppose you want to see when a particular endpoint of a dependency gets called
-  /// in your application. You can override that endpoint to insert a breakpoint or print state,
+  /// in your application. You can override that endpoint to insert a breakpoint or print statement,
   /// but still call out to the original endpoint:
   ///
   /// ```swift
@@ -96,6 +96,20 @@ extension ReducerProtocol {
   ///       }
   ///     }
   /// ```
+  ///
+  /// You can also transform _all_ dependency values at once by using the `\.self` key path:
+  ///
+  /// ```swift
+  /// Feature()
+  ///   .transformDependency(\.self) { dependencyValues in
+  ///     // Access to all dependencies in here
+  ///   }
+  /// ```
+  ///
+  /// > Warning: The trailing closure of ``transformDependency(_:transform:)`` is called for every
+  /// action sent to the reducer, and so you can expect it to be called many times in an
+  /// application's lifecycle. This means you should typically not create dependencies in the
+  /// closure as that will cause a new dependency to be created everytime an action is sent.
   ///
   /// - Parameters:
   ///   - keyPath: A key path that indicates the property of the `DependencyValues` structure to
@@ -155,6 +169,9 @@ public struct _DependencyKeyWritingReducer<Base: ReducerProtocol>: ReducerProtoc
     _ keyPath: WritableKeyPath<DependencyValues, V>,
     transform: @escaping (inout V) -> Void
   ) -> Self {
-    Self(base: self.base) { transform(&$0[keyPath: keyPath]) }
+    Self(base: self.base) { values in
+      transform(&values[keyPath: keyPath])
+      self.update(&values)
+    }
   }
 }

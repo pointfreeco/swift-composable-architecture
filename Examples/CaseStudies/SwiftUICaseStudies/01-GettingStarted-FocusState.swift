@@ -6,6 +6,8 @@ private let readMe = """
   If you tap the "Sign in" button while a field is empty, the focus will be changed to that field.
   """
 
+// MARK: - Feature domain
+
 struct FocusDemo: ReducerProtocol {
   struct State: Equatable {
     @BindableState var focusedField: Field?
@@ -40,6 +42,8 @@ struct FocusDemo: ReducerProtocol {
     }
   }
 }
+
+// MARK: - Feature view
 
 struct FocusDemoView: View {
   let store: StoreOf<FocusDemo>
@@ -79,6 +83,8 @@ extension View {
       .onChange(of: second.wrappedValue) { first.wrappedValue = $0 }
   }
 }
+
+// MARK: - SwiftUI previews
 
 struct FocusDemo_Previews: PreviewProvider {
   static var previews: some View {
