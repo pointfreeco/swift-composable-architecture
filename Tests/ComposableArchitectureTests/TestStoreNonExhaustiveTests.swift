@@ -48,6 +48,48 @@
       await store.skipReceivedActions(strict: true)
     }
 
+    func testFlushReceivedActions_NonExhaustive() async {
+      let store = TestStore(
+        initialState: 0,
+        reducer: Reduce<Int, Bool> { state, action in
+          if action {
+            state += 1
+            return .init(value: false)
+          } else {
+            state += 1
+            return .none
+          }
+        }
+      )
+      store.exhaustivity = .none
+
+      await store.send(true) { $0 = 1 }
+      XCTAssertEqual(store.state, 1)
+      await store.skipReceivedActions(strict: false)
+      XCTAssertEqual(store.state, 2)
+    }
+
+    func testFlushReceivedActions_PartialExhaustive() async {
+      let store = TestStore(
+        initialState: 0,
+        reducer: Reduce<Int, Bool> { state, action in
+          if action {
+            state += 1
+            return .init(value: false)
+          } else {
+            state += 1
+            return .none
+          }
+        }
+      )
+      store.exhaustivity = .partial
+
+      await store.send(true) { $0 = 1 }
+      XCTAssertEqual(store.state, 1)
+      await store.skipReceivedActions(strict: false)
+      XCTAssertEqual(store.state, 2)
+    }
+
     func testCancelInFlightEffects_NonStrict() async {
       let store = TestStore(
         initialState: 0,
@@ -76,6 +118,33 @@
       await store.skipInFlightEffects(strict: true)
     }
 
+    func testCancelInFlightEffects_NonExhaustive() async {
+      let store = TestStore(
+        initialState: 0,
+        reducer: Reduce<Int, Bool> { _, action in
+            .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
+        }
+      )
+      store.exhaustivity = .none
+
+      await store.send(true)
+      await store.skipInFlightEffects(strict: false)
+    }
+
+    func testCancelInFlightEffects_PartialExhaustive() async {
+      let store = TestStore(
+        initialState: 0,
+        reducer: Reduce<Int, Bool> { _, action in
+            .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
+        }
+      )
+      store.exhaustivity = .partial
+
+      await store.send(true)
+      await store.skipInFlightEffects(strict: false)
+    }
+
+    // Confirms that you don't have to receive all actions before the test completes.
     func testIgnoreReceiveActions_PartialExhaustive() {
       let store = TestStore(
         initialState: 0,
@@ -88,6 +157,7 @@
       store.send(true)
     }
 
+    // Confirms that you don't have to receive all actions before the test completes.
     func testIgnoreReceiveActions_NonExhaustive() {
       let store = TestStore(
         initialState: 0,
@@ -100,6 +170,7 @@
       store.send(true)
     }
 
+    // Confirms that all effects do not need to complete before the test completes.
     func testIgnoreInFlightEffects_PartialExhaustive() {
       let store = TestStore(
         initialState: 0,
@@ -112,6 +183,7 @@
       store.send(true)
     }
 
+    // Confirms that all effects do not need to complete before the test completes.
     func testIgnoreInFlightEffects_NonExhaustive() {
       let store = TestStore(
         initialState: 0,
@@ -417,7 +489,7 @@
         initialState: 0,
         reducer: Reduce<Int, Action> { state, action in
           switch action {
-          case .buttonTapped:
+          case .buttonTapped: 
             state += 1
             return .run { send in
               await send(.response(42))
