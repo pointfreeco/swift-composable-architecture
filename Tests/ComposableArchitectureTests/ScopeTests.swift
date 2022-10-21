@@ -88,7 +88,7 @@ private struct Feature: ReducerProtocol {
     case child1(Child1.Action)
     case child2(Child2.Action)
   }
-  var body: some ReducerProtocol<State, Action> {
+  var body: Reduce<State, Action> {
     Scope(state: \.child1, action: /Action.child1) {
       Child1()
     }
@@ -129,7 +129,7 @@ private struct Child2: ReducerProtocol {
     case count(Int)
     case name(String)
   }
-  var body: some ReducerProtocol<State, Action> {
+  var body: Reduce<State, Action> {
     Scope(state: /State.count, action: /Action.count) {
       Reduce { state, action in
         state = action

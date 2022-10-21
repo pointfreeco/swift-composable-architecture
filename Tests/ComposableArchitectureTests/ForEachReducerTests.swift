@@ -83,7 +83,7 @@ struct Elements: ReducerProtocol {
     case buttonTapped
     case row(id: Int, action: String)
   }
-  var body: some ReducerProtocol<State, Action> {
+  var body: Reduce<State, Action> {
     Reduce<State, Action> { state, action in
       .none
     }
