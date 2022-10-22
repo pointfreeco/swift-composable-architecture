@@ -142,16 +142,16 @@ extension ReducerProtocol {
     ///     state.
     /// - Returns: A reducer that combines the child reducer with the parent reducer.
     @inlinable
-    public func forEach<StateCollection: IdentifiedStatesCollection, ElementState, ElementAction>(
-      _ toElementsState: WritableKeyPath<State, StateCollection>,
-      action toElementAction: CasePath<Action, (StateCollection.ID, ElementAction)>,
+    public func forEach<States: IdentifiedStates, ElementState, ElementAction>(
+      _ toElementsState: WritableKeyPath<State, States>,
+      action toElementAction: CasePath<Action, (States.ID, ElementAction)>,
       @ReducerBuilder<ElementState, ElementAction> _ element: () -> some ReducerProtocol<
         ElementState, ElementAction
       >,
       file: StaticString = #file,
       fileID: StaticString = #fileID,
       line: UInt = #line
-    ) -> some ReducerProtocol<State, Action> where StateCollection.State == ElementState {
+    ) -> some ReducerProtocol<State, Action> where States.State == ElementState {
       _ForEachReducer(
         parent: self,
         toElementsState: toElementsState,
@@ -164,14 +164,14 @@ extension ReducerProtocol {
     }
   #else
     @inlinable
-    public func forEach<StateCollection: IdentifiedStatesCollection, Element: ReducerProtocol>(
-      _ toElementsState: WritableKeyPath<State, StateCollection>,
-      action toElementAction: CasePath<Action, (StateCollection.ID, Element.Action)>,
+    public func forEach<States: IdentifiedStates, Element: ReducerProtocol>(
+      _ toElementsState: WritableKeyPath<State, States>,
+      action toElementAction: CasePath<Action, (States.ID, Element.Action)>,
       @ReducerBuilderOf<Element> _ element: () -> Element,
       file: StaticString = #file,
       fileID: StaticString = #fileID,
       line: UInt = #line
-    ) -> _ForEachReducer<Self, StateCollection, Element> {
+    ) -> _ForEachReducer<Self, States, Element> {
       _ForEachReducer(
         parent: self,
         toElementsState: toElementsState,
@@ -186,16 +186,16 @@ extension ReducerProtocol {
 }
 
 public struct _ForEachReducer<
-  Parent: ReducerProtocol, StateCollection: IdentifiedStatesCollection, Element: ReducerProtocol
->: ReducerProtocol where StateCollection.State == Element.State {
+  Parent: ReducerProtocol, States: IdentifiedStates, Element: ReducerProtocol
+>: ReducerProtocol where States.State == Element.State {
   @usableFromInline
   let parent: Parent
 
   @usableFromInline
-  let toElementsState: WritableKeyPath<Parent.State, StateCollection>
+  let toElementsState: WritableKeyPath<Parent.State, States>
 
   @usableFromInline
-  let toElementAction: CasePath<Parent.Action, (StateCollection.ID, Element.Action)>
+  let toElementAction: CasePath<Parent.Action, (States.ID, Element.Action)>
 
   @usableFromInline
   let element: Element
@@ -212,8 +212,8 @@ public struct _ForEachReducer<
   @usableFromInline
   init(
     parent: Parent,
-    toElementsState: WritableKeyPath<Parent.State, StateCollection>,
-    toElementAction: CasePath<Parent.Action, (StateCollection.ID, Element.Action)>,
+    toElementsState: WritableKeyPath<Parent.State, States>,
+    toElementAction: CasePath<Parent.Action, (States.ID, Element.Action)>,
     element: Element,
     file: StaticString,
     fileID: StaticString,
