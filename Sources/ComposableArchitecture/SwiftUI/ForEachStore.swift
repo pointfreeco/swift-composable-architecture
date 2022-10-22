@@ -140,7 +140,7 @@ private func areOrderedSetsDuplicates<ID: Hashable>(lhs: OrderedSet<ID>, rhs: Or
   return lhs == rhs
 }
 
-public struct ForEachGenericStore<
+public struct GeneralizedForEachStore<
   IdentifiedStates: IdentifiedStatesCollection, EachAction, Content: View
 >: DynamicViewContent
 where IdentifiedStates.ID: Hashable {
@@ -159,9 +159,7 @@ where IdentifiedStates.ID: Hashable {
     self.viewStore = ViewStore(
       store,
       observe: { $0 },
-      removeDuplicates: {
-        IdentifiedStates.areIdentifiersEqual(lhs: $0.stateIDs, rhs: $1.stateIDs)
-      }
+      removeDuplicates: { $0.areDuplicateIDs(other: $1) }
     )
     self.content = { content($1) }
   }
@@ -175,16 +173,14 @@ where IdentifiedStates.ID: Hashable {
     self.viewStore = ViewStore(
       store,
       observe: { $0 },
-      removeDuplicates: {
-        IdentifiedStates.areIdentifiersEqual(lhs: $0.stateIDs, rhs: $1.stateIDs)
-      }
+      removeDuplicates: {  $0.areDuplicateIDs(other: $1) }
     )
     self.content = content
   }
 
   public var body: some View {
     ForEach(viewStore.stateIDs, id: \.self) { stateID in
-      let state = viewStore[stateID: stateID]!
+      let state = viewStore[stateID: stateID]! // TODO: Message if `nil` ?
       let eachStore = store.scope {
         $0[stateID: stateID] ?? state
       } action: {
