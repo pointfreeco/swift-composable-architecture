@@ -52,11 +52,6 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
   }
 
   func testUnhappyPath() async {
-    struct FavoriteError: Equatable, LocalizedError {
-      var errorDescription: String? {
-        "Favoriting failed."
-      }
-    }
     let scheduler = DispatchQueue.test
 
     let episodes: IdentifiedArrayOf<Episode.State> = [
