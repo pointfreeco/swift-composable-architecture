@@ -479,3 +479,30 @@ private struct Item: Identifiable {
     self.id = id
   }
 }
+
+// TODO: worth it?
+public struct PresentedView<State, Action, Presented: View, Dismissed: View>: View {
+  let store: Store<PresentationState<State>, PresentationAction<State, Action>>
+  let presented: (Store<State, Action>) -> Presented
+  let dismissed: Dismissed
+
+  public init(
+    _ store: Store<PresentationState<State>, PresentationAction<State, Action>>,
+    @ViewBuilder presented: @escaping (Store<State, Action>) -> Presented,
+    @ViewBuilder dismissed: () -> Dismissed
+  ) {
+    self.store = store
+    self.presented = presented
+    self.dismissed = dismissed()
+  }
+
+  public var body: some View {
+    IfLetStore(
+      self.store.scope(state: { $0.wrappedValue }, action: { .presented($0) })
+    ) { store in
+      self.presented(store)
+    } else: {
+      self.dismissed
+    }
+  }
+}

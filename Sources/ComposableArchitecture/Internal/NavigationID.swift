@@ -10,6 +10,7 @@ extension DependencyValues {
 }
 
 // TODO: Fix sendability of (`AnyHashable`)
+// TODO: generalize? ReducerID?
 public struct NavigationID: @unchecked Sendable {
   public var current: AnyHashable?
   public var next: @Sendable () -> AnyHashable

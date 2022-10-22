@@ -6,7 +6,7 @@ struct VoiceMemos: ReducerProtocol {
   struct State: Equatable {
     var alert: AlertState<Action>?
     var audioRecorderPermission = RecorderPermission.undetermined
-    var recordingMemo: RecordingMemo.State?
+    @PresentationStateOf<RecordingMemo> var recordingMemo
     var voiceMemos: IdentifiedArrayOf<VoiceMemo.State> = []
 
     enum RecorderPermission {
@@ -15,13 +15,12 @@ struct VoiceMemos: ReducerProtocol {
       case undetermined
     }
   }
-
   enum Action: Equatable {
     case alertDismissed
     case openSettingsButtonTapped
     case recordButtonTapped
+    case recordingMemo(PresentationActionOf<RecordingMemo>)
     case recordPermissionResponse(Bool)
-    case recordingMemo(RecordingMemo.Action)
     case voiceMemo(id: VoiceMemo.State.ID, action: VoiceMemo.Action)
   }
 
@@ -61,7 +60,7 @@ struct VoiceMemos: ReducerProtocol {
           return .none
         }
 
-      case let .recordingMemo(.delegate(.didFinish(.success(recordingMemo)))):
+      case let .recordingMemo(.presented(.delegate(.didFinish(.success(recordingMemo))))):
         state.recordingMemo = nil
         state.voiceMemos.insert(
           VoiceMemo.State(
@@ -73,7 +72,7 @@ struct VoiceMemos: ReducerProtocol {
         )
         return .none
 
-      case .recordingMemo(.delegate(.didFinish(.failure))):
+      case .recordingMemo(.presented(.delegate(.didFinish(.failure)))):
         state.alert = AlertState(title: TextState("Voice memo recording failed."))
         state.recordingMemo = nil
         return .none
@@ -111,7 +110,7 @@ struct VoiceMemos: ReducerProtocol {
         return .none
       }
     }
-    .ifLet(\.recordingMemo, action: /Action.recordingMemo) {
+    .presentationDestination(\.$recordingMemo, action: /Action.recordingMemo) {
       RecordingMemo()
     }
     .forEach(\.voiceMemos, action: /Action.voiceMemo(id:action:)) {
@@ -149,11 +148,11 @@ struct VoiceMemosView: View {
             }
           }
 
-          IfLetStore(
-            self.store.scope(state: \.recordingMemo, action: { .recordingMemo($0) })
+          PresentedView(
+            self.store.scope(state: \.$recordingMemo, action: { .recordingMemo($0) })
           ) { store in
             RecordingMemoView(store: store)
-          } else: {
+          } dismissed: {
             RecordButton(permission: viewStore.audioRecorderPermission) {
               viewStore.send(.recordButtonTapped, animation: .spring())
             } settingsAction: {
