@@ -151,8 +151,6 @@ await store.send(.decrementButtonTapped) {
 
 Test stores do expose a ``TestStore/state`` property, which can be useful for performing assertions
 on computed properties you might have defined on your state. For example, if `State` had a 
-closure of ``TestStore/send(_:_:file:line:)-3pf4p``, the ``TestStore/state`` property is equal
-to the state _before_ sending the action, not after. That prevents you from being able to use an
 computed property for checking if `count` was prime, we could test it like so:
 
 ```swift
