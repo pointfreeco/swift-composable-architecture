@@ -18,7 +18,7 @@ extension DependencyValues {
   /// ```
   ///
   /// To override the current date in tests, you can override the generator using
-  /// ``withValue(_:_:operation:)-705n``:
+  /// ``withValue(_:_:operation:)``:
   ///
   /// ```swift
   /// DependencyValues.withValue(\.date, .constant(Date(timeIntervalSince1970: 0))) {

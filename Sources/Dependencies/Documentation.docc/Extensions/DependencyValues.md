@@ -9,8 +9,8 @@
 
 ### Overriding values
 
-- ``withValue(_:_:operation:)-3yj9d``
-- ``withValues(_:operation:)-1oaja``
+- ``withValue(_:_:operation:)``
+- ``withValues(_:operation:)``
 
 ### Dependency values
 

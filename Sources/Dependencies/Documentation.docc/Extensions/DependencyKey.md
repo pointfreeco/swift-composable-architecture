@@ -6,8 +6,8 @@
 
 - ``Value``
 - ``liveValue``
-- ``testValue-535kh``
-- ``previewValue-36s5j``
+- ``testValue``
+- ``previewValue``
 
 ### Modularizing a dependency
 

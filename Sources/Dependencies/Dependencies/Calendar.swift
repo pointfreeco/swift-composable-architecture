@@ -6,7 +6,7 @@ extension DependencyValues {
   ///
   /// By default, the calendar returned from `Calendar.autoupdatingCurrent` is supplied. When used
   /// in a testing context, access will call to `XCTFail` when invoked, unless explicitly
-  /// overridden using ``withValue(_:_:operation:)-705n``:
+  /// overridden using ``withValue(_:_:operation:)``:
   ///
   /// ```swift
   /// DependencyValues.withValue(\.calendar, Calendar(identifier: .gregorian)) {

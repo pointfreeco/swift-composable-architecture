@@ -18,7 +18,7 @@ public enum DependencyContext: Sendable {
   ///
   /// This context is the default when run from an Xcode preview.
   ///
-  /// Dependencies accessed from a preview context will use ``TestDependencyKey/previewValue-8u2sy``
+  /// Dependencies accessed from a preview context will use ``TestDependencyKey/previewValue``
   /// to request a default value.
   case preview
 

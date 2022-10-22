@@ -1,7 +1,7 @@
-# ``Dependencies/DependencyValues/withValue(_:_:operation:)-705n``
+# ``Dependencies/DependencyValues/withValue(_:_:operation:)``
 
 ## Topics
 
 ### Overloads
 
-- ``DependencyValues/withValue(_:_:operation:)-3yj9d``
+- ``DependencyValues/withValue(_:_:operation:)``

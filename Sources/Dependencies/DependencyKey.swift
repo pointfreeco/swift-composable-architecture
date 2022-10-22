@@ -51,7 +51,7 @@ import XCTestDynamicOverlay
 ///
 /// `DependencyKey` inherits from ``TestDependencyKey``, which has two other overridable
 /// requirements: ``TestDependencyKey/testValue``, which should return a default value for the
-/// purpose of testing, and ``TestDependencyKey/previewValue-8u2sy``, which can return a default
+/// purpose of testing, and ``TestDependencyKey/previewValue``, which can return a default
 /// value suitable for Xcode previews. When left unimplemented, these endpoints will return the
 /// ``liveValue``, instead.
 ///
@@ -66,7 +66,7 @@ public protocol DependencyKey: TestDependencyKey {
   /// your dependencies for tests.
   ///
   /// To automatically supply a test dependency in a test context, consider implementing the
-  /// ``testValue-535kh`` requirement.
+  /// ``testValue`` requirement.
   static var liveValue: Value { get }
 
   // NB: The associated type and requirements of TestDependencyKey are repeated in this protocol
@@ -114,7 +114,7 @@ public protocol DependencyKey: TestDependencyKey {
 /// interface from its live implementation.
 ///
 /// ``TestDependencyKey`` has one main requirement, ``testValue``, which must return a default value
-/// for the purposes of testing, and one optional requirement, ``previewValue-8u2sy``, which can
+/// for the purposes of testing, and one optional requirement, ``previewValue``, which can
 /// return a default value suitable for Xcode previews, or the ``testValue``, if left unimplemented.
 ///
 /// See ``DependencyKey`` to define a static, default value for the live application.

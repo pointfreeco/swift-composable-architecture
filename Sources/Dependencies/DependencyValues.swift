@@ -12,7 +12,7 @@ import XCTestDynamicOverlay
 /// ```
 ///
 /// To change a dependency for a well-defined scope you can use the
-/// ``withValues(_:operation:)-1oaja`` method:
+/// ``withValues(_:operation:)`` method:
 ///
 /// ```swift
 /// @Dependency(\.date) var date
@@ -79,7 +79,7 @@ public struct DependencyValues: Sendable {
   /// }
   /// ```
   ///
-  /// See ``withValues(_:operation:)-9prz8`` to update multiple dependencies at once without nesting
+  /// See ``withValues(_:operation:)`` to update multiple dependencies at once without nesting
   /// calls to `withValue`.
   ///
   /// - Parameters:
@@ -115,7 +115,7 @@ public struct DependencyValues: Sendable {
   /// }
   /// ```
   ///
-  /// See ``withValues(_:operation:)-1oaja`` to update multiple dependencies at once without nesting
+  /// See ``withValues(_:operation:)`` to update multiple dependencies at once without nesting
   /// calls to `withValue`.
   ///
   /// - Parameters:
@@ -154,7 +154,7 @@ public struct DependencyValues: Sendable {
   /// }
   /// ```
   ///
-  /// See ``withValue(_:_:operation:)-3yj9d`` to update a single dependency with a constant value.
+  /// See ``withValue(_:_:operation:)`` to update a single dependency with a constant value.
   ///
   /// - Parameters:
   ///   - updateValuesForOperation: A closure for updating the current dependency values for the
@@ -190,7 +190,7 @@ public struct DependencyValues: Sendable {
   /// }
   /// ```
   ///
-  /// See ``withValue(_:_:operation:)-705n`` to update a single dependency with a constant value.
+  /// See ``withValue(_:_:operation:)`` to update a single dependency with a constant value.
   ///
   /// - Parameters:
   ///   - updateValuesForOperation: A closure for updating the current dependency values for the
@@ -232,7 +232,7 @@ public struct DependencyValues: Sendable {
   /// ```
   ///
   /// You use custom dependency values the same way you use system-provided values, setting a value
-  /// with ``withValue(_:_:operation:)-705n``, and reading values with the ``Dependency`` property
+  /// with ``withValue(_:_:operation:)``, and reading values with the ``Dependency`` property
   /// wrapper.
   public subscript<Key: TestDependencyKey>(
     key: Key.Type,

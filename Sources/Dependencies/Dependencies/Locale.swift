@@ -18,7 +18,7 @@ extension DependencyValues {
   /// }
   /// ```
   ///
-  /// To override the current locale in tests, use ``withValue(_:_:operation:)-705n``:
+  /// To override the current locale in tests, use ``withValue(_:_:operation:)``:
 
   /// ```swift
   /// DependencyValues.withValue(\.locale, Locale(identifier: "en_US")) {

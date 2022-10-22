@@ -4,7 +4,7 @@ extension DependencyValues {
   /// The current ``DependencyContext`` can be used to determine how dependencies are loaded by the
   /// current runtime.
   ///
-  /// It can also be overridden, for example via ``withValue(_:_:operation:)-705n``, to control how
+  /// It can also be overridden, for example via ``withValue(_:_:operation:)``, to control how
   /// dependencies will be loaded by the runtime for the duration of the override.
   ///
   /// ```swift
