@@ -9,11 +9,8 @@ public protocol IdentifiedStates {
 }
 
 public protocol IdentifiedStatesCollection: IdentifiedStates {
-  // Strangely, it was building even with `Collection` whereas `ForEach` used
-  // in `ForEachStore` expects a `RandomAccessCollection`.
+  // `RandomAccessCollection` is imposed by `ForEach` where `IDs`is used
   associatedtype IDs: RandomAccessCollection where IDs.Element == ID
-  // A `Collection` to work nicely with `DynamicViewContent` without adding more
-  // conditions.
   associatedtype States: Collection where States.Element == State
   
   // Should we use functions instead?
@@ -71,6 +68,36 @@ extension OrderedDictionary: IdentifiedStatesCollection {
     areCoWEqual(lhs: lhs, rhs: rhs)
   }
 }
+
+// Backport deprecated variants for the time being.
+extension Array: IdentifiedStatesCollection {
+  public var stateIDs: Indices { self.indices }
+  public var states: Self { self }
+
+  @inlinable
+  public subscript(stateID stateID: Index) -> Element? {
+    _read { yield self[stateID] }
+    _modify {
+      var element: Element? = self[stateID]
+      yield &element
+      guard let element = element else { fatalError() }
+      self[stateID] = element
+    }
+  }
+}
+
+extension Dictionary: IdentifiedStatesCollection {
+  // `Keys` is not `RandomAccessCollection`, so we bake an array.
+  public var stateIDs: [Key] { Array(self.keys) }
+  public var states: Values { self.values }
+  
+  @inlinable
+  public subscript(stateID stateID: Key) -> Value? {
+    _read { yield self[stateID] }
+    _modify { yield &self[stateID] }
+  }
+}
+
 
 private func areCoWEqual<IDs: Equatable>(lhs: IDs, rhs: IDs) -> Bool {
   var lhs = lhs
