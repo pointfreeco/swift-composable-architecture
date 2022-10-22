@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - protocol
+      - protocol-clocks
   pull_request:
     branches:
       - '*'
