@@ -139,3 +139,64 @@ private func areOrderedSetsDuplicates<ID: Hashable>(lhs: OrderedSet<ID>, rhs: Or
   }
   return lhs == rhs
 }
+
+public struct ForEachGenericStore<IdentifiedStates: IdentifiedStatesCollection, EachAction, Content: View>:
+  View
+where IdentifiedStates.ID: Hashable {
+  public typealias EachState = IdentifiedStates.State
+  public typealias ID = IdentifiedStates.ID
+  
+  let store: Store<IdentifiedStates, (ID, EachAction)>
+  @ObservedObject var viewStore: ViewStore<IdentifiedStates, (ID, EachAction)>
+  let content: (ID, Store<EachState, EachAction>) -> Content
+
+  public init(
+    _ store: Store<IdentifiedStates, (ID, EachAction)>,
+    @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> Content
+  ) {
+    self.store = store
+    self.viewStore = ViewStore(
+      store,
+      observe: { $0 },
+      removeDuplicates: {
+        IdentifiedStates.areIdentifiersEqual(lhs: $0.stateIDs, rhs: $1.stateIDs)
+      }
+    )
+    self.content = { content($1) }
+  }
+  
+  // Variant with (ID, EachStore) -> Content
+  public init(
+    _ store: Store<IdentifiedStates, (ID, EachAction)>,
+    @ViewBuilder content: @escaping (ID, Store<EachState, EachAction>) -> Content
+  ) {
+    self.store = store
+    self.viewStore = ViewStore(
+      store,
+      observe: { $0 },
+      removeDuplicates: {
+        IdentifiedStates.areIdentifiersEqual(lhs: $0.stateIDs, rhs: $1.stateIDs)
+      }
+    )
+    self.content = content
+  }
+  
+  public var body: some View {
+    ForEach(viewStore.state.stateIDs, id: \.self) { stateID in
+      let state = viewStore.state[stateID: stateID]!
+      let eachStore = store.scope {
+        $0[stateID: stateID] ?? state
+      } action: {
+        (stateID, $0)
+      }
+      self.content(stateID, eachStore)
+    }
+  }
+}
+
+extension ForEachGenericStore: DynamicViewContent {
+  public var data: IdentifiedStates.States {
+    viewStore.state.states
+  }
+}
+

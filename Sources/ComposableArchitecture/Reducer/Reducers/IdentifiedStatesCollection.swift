@@ -8,9 +8,6 @@ public protocol IdentifiedStates {
   subscript(stateID stateID: ID) -> State? { get set }
 }
 
-
-
-
 public protocol IdentifiedStatesCollection: IdentifiedStates {
   // Strangely, it was building even with `Collection` whereas `ForEach` used
   // in `ForEachStore` expects a `RandomAccessCollection`.
