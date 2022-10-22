@@ -10,7 +10,7 @@ final class PresentationTests: XCTestCase {
       reducer: Feature()
     )
 
-    await store.send(.button1Tapped) {
+    await store.send(.child1Tapped) {
       $0.child1 = Child.State()
     }
     await store.send(.child1(.presented(.onAppear)))
@@ -25,7 +25,7 @@ final class PresentationTests: XCTestCase {
       reducer: Feature()
     )
 
-    await store.send(.button1Tapped) {
+    await store.send(.child1Tapped) {
       $0.child1 = Child.State()
     }
     await store.send(.child1(.presented(.closeButtonTapped)))
@@ -88,10 +88,10 @@ final class PresentationTests: XCTestCase {
       reducer: Feature()
     )
 
-    await store.send(.button1Tapped) {
+    await store.send(.child1Tapped) {
       $0.child1 = Child.State()
     }
-    await store.send(.button2Tapped) {
+    await store.send(.child2Tapped) {
       $0.child2 = Child.State()
     }
     await store.send(.child1(.presented(.closeButtonTapped)))
@@ -157,7 +157,7 @@ final class PresentationTests: XCTestCase {
     store.dependencies.mainQueue = mainQueue.eraseToAnyScheduler()
     store.dependencies.uuid = .incrementing
 
-    await store.send(.button1Tapped) {
+    await store.send(.child1Tapped) {
       $0.child1 = Child.State()
     }
     await store.send(.child1(.presented(.performButtonTapped)))
@@ -175,8 +175,8 @@ private struct Feature: ReducerProtocol {
     @PresentationStateOf<Child> var child2
   }
   enum Action: Equatable {
-    case button1Tapped
-    case button2Tapped
+    case child1Tapped
+    case child2Tapped
     case child1(PresentationActionOf<Child>)
     case child2(PresentationActionOf<Child>)
     case reset1ButtonTapped
@@ -185,10 +185,10 @@ private struct Feature: ReducerProtocol {
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
-      case .button1Tapped:
+      case .child1Tapped:
         state.child1 = Child.State()
         return .none
-      case .button2Tapped:
+      case .child2Tapped:
         state.child2 = Child.State()
         return .none
       case let .child1(.present(id: _, childState)):
