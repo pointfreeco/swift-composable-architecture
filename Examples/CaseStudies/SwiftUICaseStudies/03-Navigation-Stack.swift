@@ -22,7 +22,7 @@ struct NavigationDemo: ReducerProtocol {
     Reduce { state, action in
       switch action {
       case .cancelTimersButtonTapped:
-        return .cancel(id: ScreenC.TimerID.self)
+//        return .cancel(id: ScreenC.TimerID.self)
         // TODO: support 3 use cases of cancellation
         //       You can either:
         //         * Cancel all timers across all screen C's in the state
@@ -31,18 +31,21 @@ struct NavigationDemo: ReducerProtocol {
         //           return .cancel(navigationID: id)
         //         * Cancel a particular effect inside a particular screen in the stack
         //           return .cancel(id: ScreenC.TimerID.self, navigationID: id)
-//        return .merge(
-//          state.$path.compactMap { destination in
-//            switch destination.element {
-//            case .screenA, .screenB:
-//              return nil
-//
-//            case .screenC:
-//              // .cancel(id: ScreenC.TimerID.self, navigationID: id)
+        return .merge(
+          state.$path.compactMap { destination -> EffectTask<Action>? in
+            switch destination.element {
+            case .screenA, .screenB:
+              return nil
+
+            case .screenC:
+              return DependencyValues.withValue(\.navigationID.current, destination.id) {
+                Effect.cancel(id: ScreenC.TimerID.self)
+              }
+//               .cancel(id: ScreenC.TimerID.self, navigationID: id)
 //              return .init(value: .path(.element(id: destination.id, .screenC(.stopButtonTapped))))
-//            }
-//          }
-//        )
+            }
+          }
+        )
 
       case let .goBackToScreen(n):
         state.path.removeLast(n)
@@ -227,7 +230,7 @@ struct FloatingMenuView: View {
         .transition(.opacity.animation(.default))
       }
     }
-    .debug()
+//    .debug()
   }
 }
 
