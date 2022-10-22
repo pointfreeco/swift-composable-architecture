@@ -89,12 +89,6 @@ struct VoiceMemo: ReducerProtocol {
   }
 }
 
-extension InstantProtocol {
-  func duration<I: InstantProtocol>(to other: I) -> Duration {
-    fatalError()
-  }
-}
-
 struct VoiceMemoView: View {
   let store: StoreOf<VoiceMemo>
 

@@ -26,7 +26,7 @@ final class VoiceMemosTests: XCTestCase {
       didFinish.continuation.yield(true)
       didFinish.continuation.finish()
     }
-    store.dependencies.date.now = Date(timeIntervalSinceReferenceDate: 0)
+    store.dependencies.date = .constant(Date(timeIntervalSinceReferenceDate: 0))
     store.dependencies.continuousClock = self.clock
     store.dependencies.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
     store.dependencies.uuid = .constant(UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")!)
@@ -112,7 +112,7 @@ final class VoiceMemosTests: XCTestCase {
     store.dependencies.audioRecorder.startRecording = { _ in
       try await didFinish.stream.first { _ in true }!
     }
-    store.dependencies.date.now = Date(timeIntervalSinceReferenceDate: 0)
+    store.dependencies.date = .constant(Date(timeIntervalSinceReferenceDate: 0))
     store.dependencies.continuousClock = self.clock
     store.dependencies.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
     store.dependencies.uuid = .constant(UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")!)
