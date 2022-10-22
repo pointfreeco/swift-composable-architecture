@@ -167,18 +167,44 @@ final class PresentationTests: XCTestCase {
       $0.child1 = nil
     }
   }
+
+  func testFoo() async {
+    let store = TestStore(
+      initialState: Feature.State(),
+      reducer: EmptyReducer<Feature.State, Feature.Action>()
+        .presentationDestination(\.$child1, action: /Feature.Action.child1) {}
+    )
+    let line = #line - 2
+
+    XCTExpectFailure {
+      $0.compactDescription == """
+        A ".present" action was sent with "nil" state at "\(#fileID):\(line)" but the destination \
+        state was not hydrated to something non-nil: …
+
+          Action:
+            Feature.Action.child1(.present(id:, _:))
+
+        This is generally considered an application logic error. To fix, match on the ".present" \
+        action in the parent reducer in order to hydrate the destination state to something non-nil.
+        """
+    }
+
+    await store.send(.child1(.present(id: UUID())))
+  }
 }
 
 private struct Feature: ReducerProtocol {
   struct State: Equatable {
     @PresentationStateOf<Child> var child1
     @PresentationStateOf<Child> var child2
+    @PresentationStateOf<Child> var unpresentable
   }
   enum Action: Equatable {
     case child1Tapped
     case child2Tapped
     case child1(PresentationActionOf<Child>)
     case child2(PresentationActionOf<Child>)
+    case unpresentable(PresentationActionOf<Child>)
     case reset1ButtonTapped
   }
   @Dependency(\.uuid) var uuid
@@ -188,19 +214,36 @@ private struct Feature: ReducerProtocol {
       case .child1Tapped:
         state.child1 = Child.State()
         return .none
+
       case .child2Tapped:
         state.child2 = Child.State()
         return .none
-      case let .child1(.present(id: _, childState)):
-        state.child1 = childState ?? Child.State()
+
+      case .child1(.present(id: _, .none)):
+        state.child1 = Child.State()
         return .none
+
+      case let .child1(.present(id: _, .some(childState))):
+        state.child1 = childState
+        return .none
+
       case .child1:
         return .none
-      case let .child2(.present(id: _, childState)):
-        state.child2 = childState ?? Child.State()
+
+      case .child2(.present(id: _, .none)):
+        state.child2 = Child.State()
         return .none
+
+      case let .child2(.present(id: _, .some(childState))):
+        state.child2 = childState
+        return .none
+
       case .child2:
         return .none
+
+      case .unpresentable:
+        return .none
+
       case .reset1ButtonTapped:
         state.$child1 = .presented(id: self.uuid(), Child.State())
         return .none
@@ -210,6 +253,9 @@ private struct Feature: ReducerProtocol {
       Child()
     }
     .presentationDestination(\.$child2, action: /Action.child2) {
+      Child()
+    }
+    .presentationDestination(\.$unpresentable, action: /Action.unpresentable) {
       Child()
     }
   }
