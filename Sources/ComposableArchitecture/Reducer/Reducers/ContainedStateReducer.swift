@@ -1,6 +1,15 @@
-struct ExtractionFailed: Error {}
-struct EmbeddingFailed: Error {}
-struct StateExtractionFailed: Error {}
+@usableFromInline
+struct ExtractionFailed: Error {
+  @usableFromInline init() {}
+}
+@usableFromInline
+struct EmbeddingFailed: Error {
+  @usableFromInline init() {}
+}
+@usableFromInline
+struct StateExtractionFailed: Error {
+  @usableFromInline init() {}
+}
 
 public protocol FailableStateDerivation {
   associatedtype Source
@@ -20,6 +29,7 @@ public protocol MutableFailableStateDerivation: FailableStateDerivation {
 }
 
 extension MutableFailableStateDerivation {
+  @inlinable
   public func modify<Result>(source: inout Source, _ body: (inout Destination?) throws -> Result)
     throws
     -> Result
@@ -38,11 +48,13 @@ public protocol MutableStateDerivation: MutableFailableStateDerivation & StateDe
 }
 
 extension MutableStateDerivation {
+  @inlinable
   public func embed(into source: inout Source, destination: Destination?) throws {
     guard let destination = destination else { throw EmbeddingFailed() }
     self.embed(into: &source, destination: destination)
   }
-
+  
+  @inlinable
   public func modify<Result>(source: inout Source, _ body: (inout Destination) -> Result) throws
     -> Result
   {
@@ -54,18 +66,22 @@ extension MutableStateDerivation {
 }
 
 extension KeyPath: StateDerivation {
+  @inlinable
   public func extract(from source: Root) -> Value? {
     source[keyPath: self]
   }
+  @inlinable
   public func get(from source: Root) -> Value {
     source[keyPath: self]
   }
 }
 
 extension WritableKeyPath: MutableStateDerivation {
+  @inlinable
   public func embed(into source: inout Root, destination: Value) {
     source[keyPath: self] = destination
   }
+  @inlinable
   public func modify<Result>(source: inout Root, _ body: (inout Value) throws -> Result) rethrows
     -> Result
   {
@@ -74,10 +90,12 @@ extension WritableKeyPath: MutableStateDerivation {
 }
 
 extension CasePath: MutableFailableStateDerivation {
+  @inlinable
   public func embed(into source: inout Root, destination: Value?) throws {
     guard let destination = destination else { throw EmbeddingFailed() }
     source = self.embed(destination)
   }
+  @inlinable
   public func modify<Result>(source: inout Root, _ body: (inout Value?) throws -> Result) throws
     -> Result
   {
@@ -125,15 +143,40 @@ public protocol StateContainer {
 }
 
 extension StateContainer {
+  @inlinable
   public func contains(tag: Tag) -> Bool {
     self.extract(tag: tag) != nil
   }
+  @inlinable
   public mutating func modify<Result>(tag: Tag, _ body: (inout State) -> Result) throws
     -> Result
   {
     guard var state = self.extract(tag: tag) else { throw StateExtractionFailed() }
     defer { self.embed(tag: tag, state: state) }
     return body(&state)
+  }
+}
+
+public struct IdentityContainer<Value>: StateContainer {
+  @usableFromInline
+  init(_ value: Value) {
+    self.value = value
+  }
+  
+  @usableFromInline
+  var value: Value
+
+  @inlinable
+  public func extract(tag: Value.Type) -> Value? {
+    self.value
+  }
+  @inlinable
+  public mutating func embed(tag: Value.Type, state: Value) {
+    self.value = state
+  }
+  @inlinable
+  public mutating func modify<Result>(tag: Value.Type, _ body: (inout Value) -> Result) throws -> Result {
+    body(&value)
   }
 }
 
@@ -144,6 +187,14 @@ extension CasePath {
       self.embed($0.1)
     } extract: {
       self.extract(from: $0).map { (tag, $0) }
+    }
+  }
+  @usableFromInline
+  var withSelfContainedValue: CasePath<Root, IdentityContainer<Value>> {
+    CasePath<Root, IdentityContainer<Value>> {
+      self.embed($0.value)
+    } extract: {
+      self.extract(from: $0).map(IdentityContainer.init)
     }
   }
 }

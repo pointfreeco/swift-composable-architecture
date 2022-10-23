@@ -57,14 +57,15 @@ extension ReducerProtocol {
       fileID: StaticString = #fileID,
       line: UInt = #line
     ) -> some ReducerProtocol<State, Action> {
-      _IfCaseLetReducer(
+      _ContainedStateReducer(
         parent: self,
-        child: `case`(),
-        toChildState: toCaseState,
-        toChildAction: toCaseAction,
+        toStateContainer: toCaseState.withSelfContainedValue,
+        toContainedAction: toCaseAction.with(tag: CaseState.self),
+        element: `case`(),
         file: file,
         fileID: fileID,
-        line: line
+        line: line,
+        onStateExtractionFailure: onFailureToExtractCase()
       )
     }
   #else
@@ -76,79 +77,33 @@ extension ReducerProtocol {
       file: StaticString = #file,
       fileID: StaticString = #fileID,
       line: UInt = #line
-    ) -> _IfCaseLetReducer<Self, Case> {
-      .init(
+    ) -> _ContainedStateReducer<
+      Self,
+      CasePath<Self.State, IdentityContainer<Case.State>>,
+      IdentityContainer<Case.State>,
+      Case
+    > {
+      _ContainedStateReducer(
         parent: self,
-        child: `case`(),
-        toChildState: toCaseState,
-        toChildAction: toCaseAction,
+        toStateContainer: toCaseState.withSelfContainedValue,
+        toContainedAction: toCaseAction.with(tag: Case.State.self),
+        element: `case`(),
         file: file,
         fileID: fileID,
-        line: line
+        line: line,
+        onStateExtractionFailure: onFailureToExtractCase()
       )
     }
   #endif
 }
 
-public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: ReducerProtocol {
+extension ReducerProtocol {
   @usableFromInline
-  let parent: Parent
-
-  @usableFromInline
-  let child: Child
-
-  @usableFromInline
-  let toChildState: CasePath<Parent.State, Child.State>
-
-  @usableFromInline
-  let toChildAction: CasePath<Parent.Action, Child.Action>
-
-  @usableFromInline
-  let file: StaticString
-
-  @usableFromInline
-  let fileID: StaticString
-
-  @usableFromInline
-  let line: UInt
-
-  @usableFromInline
-  init(
-    parent: Parent,
-    child: Child,
-    toChildState: CasePath<Parent.State, Child.State>,
-    toChildAction: CasePath<Parent.Action, Child.Action>,
-    file: StaticString,
-    fileID: StaticString,
-    line: UInt
-  ) {
-    self.parent = parent
-    self.child = child
-    self.toChildState = toChildState
-    self.toChildAction = toChildAction
-    self.file = file
-    self.fileID = fileID
-    self.line = line
-  }
-
-  @inlinable
-  public func reduce(
-    into state: inout Parent.State, action: Parent.Action
-  ) -> EffectTask<Parent.Action> {
-    self.reduceChild(into: &state, action: action)
-      .merge(with: self.parent.reduce(into: &state, action: action))
-  }
-
-  @inlinable
-  func reduceChild(
-    into state: inout Parent.State, action: Parent.Action
-  ) -> EffectTask<Parent.Action> {
-    guard let childAction = self.toChildAction.extract(from: action)
-    else { return .none }
-    guard var childState = self.toChildState.extract(from: state) else {
+  func onFailureToExtractCase() -> StateExtractionFailureHandler<State, Action> {
+    .init { state, action, file, fileID, line in
       runtimeWarn(
         """
-        An "ifCaseLet" at "\(self.fileID):\(self.line)" received a child action when child state \
+        An "ifCaseLet" at "\(fileID):\(line)" received a child action when child state \
         was set to a different case. …
 
           Action:
@@ -158,7 +113,7 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
 
         This is generally considered an application logic error, and can happen for a few reasons:
 
-        • A parent reducer set "\(typeName(Parent.State.self))" to a different case before this \
+        • A parent reducer set "\(typeName(State.self))" to a different case before this \
         reducer ran. This reducer must run before any other reducer sets child state to a \
         different case. This ensures that child reducers can handle their actions while their \
         state is still available.
@@ -171,13 +126,9 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
         for this reducer can only be sent from a view store when state is set to the appropriate \
         case. In SwiftUI applications, use "SwitchStore".
         """,
-        file: self.file,
-        line: self.line
+        file: file,
+        line: line
       )
-      return .none
     }
-    defer { state = self.toChildState.embed(childState) }
-    return self.child.reduce(into: &childState, action: childAction)
-      .map(self.toChildAction.embed)
   }
 }
