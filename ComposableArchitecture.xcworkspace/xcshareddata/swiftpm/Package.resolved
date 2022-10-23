@@ -41,9 +41,9 @@
         "package": "swift-clocks",
         "repositoryURL": "https://github.com/pointfreeco/swift-clocks",
         "state": {
-          "branch": "6cb3aa7",
-          "revision": "6cb3aa7c1b9e73a0d120d00e035f0e3638c095ad",
-          "version": null
+          "branch": null,
+          "revision": "7379ef30c447ea6060bfa5ae7fab77d0d6e47866",
+          "version": "0.1.1"
         }
       },
       {
