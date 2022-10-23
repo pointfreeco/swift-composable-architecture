@@ -1,7 +1,7 @@
 import OrderedCollections
 import SwiftUI
 
-// TODO: Other names? `NavigationPathState`? `NavigationStatePath`?
+// TODO: Other names? `NavigationPathState`? `NavigationStatePath`? `PathState`
 // TODO: Should `NavigationState` flatten to just work on `Identifiable` elements?
 // TODO: `Sendable where Element: Sendable`
 // TODO: Get a better handle on how explicit `ID`s are handled for various navigation scenarios.
