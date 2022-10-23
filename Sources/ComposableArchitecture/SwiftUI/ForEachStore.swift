@@ -1,7 +1,7 @@
 import OrderedCollections
 import SwiftUI
 
-/// A protocol that describes an collection of states with stable identifiers.
+/// A protocol that describes a collection of states with stable identifiers.
 ///
 /// The library ships with two direct adopters of this protocol: `IdentifiedArray` from our
 /// [Identified Collections][swift-identified-collections] library, and `OrderedDictionary` from
@@ -14,13 +14,22 @@ public protocol IdentifiedStatesCollection: StateContainer {
   associatedtype IDs: RandomAccessCollection where IDs.Element == ID
   associatedtype States: Collection where States.Element == State
 
+  /// A `RandomAccessCollection` of ``ID`` which is in a 1-to-1 relationship with the ``states``
+  /// collection of ``StateContainer/State``.
+  ///
+  /// - Warning: You are responsible for keeping these values in a 1-to-1 relationship with
+  /// ``states``, which means that a ``StateContainer/State`` value should exist for any ``ID`` from
+  /// ``stateIDs``.
   var stateIDs: IDs { get }
   
-  // These elements must have a 1to1 relation with IDs. This is unconstrained for now, until
-  // one assesses the requirements for lazy variants.
+  /// The ``State`` values contained in this collection.
+  ///
+  /// - Warning: You are responsible for keeping these ``stateIDs`` in a 1-to-1 relationship with
+  /// these values, which means that a ``StateContainer/State`` value should exist for any ``ID``
+  /// from ``stateIDs``.
   var states: States { get }
 
-  /// Returns `true` if this collection's identifiers are the same as `other` identifiers.
+  /// Returns `true` if this collection's ``stateIDs`` is the same as `other`'s ``stateIDs``.
   ///
   /// A default implementation is provided when ``IDs`` is `Equatable`.
   func areDuplicateIDs(other: Self) -> Bool
