@@ -1,3 +1,93 @@
+import OrderedCollections
+
+@rethrows
+public protocol StateContainer {
+  associatedtype State
+  associatedtype Tag
+  func extract(tag: Tag) -> State?
+}
+
+@rethrows
+public protocol MutableStateContainer: StateContainer {
+  mutating func embed(tag: Tag, state: State)
+
+  /// Checks if a container contains a ``State`` for a given ``Tag``
+  ///
+  /// This method allows adopters to optimize situations where the client only wants to check if the
+  /// container contains a ``State`` without needing the value itself. This can be useful if the
+  /// extraction of a value is an heavier operation than simply checking its existence.
+  ///
+  /// A default implementation is provided.
+  ///
+  /// - Parameters:
+  ///   - tag: The ``Tag`` of the ``State`` to check.
+  /// - Returns: `true` if a ``State`` exists at `tag`, `false` otherwise.
+  func contains(tag: Tag) -> Bool
+
+  /// Attempts to modify a ``State`` at ``Tag``.
+  ///
+  /// This method allows adopters to perform modifications in-place in compatible containers.
+  ///
+  /// A default implementation is provided.
+  ///
+  /// - Parameters:
+  ///   - tag: The ``Tag`` of the ``State`` to modify.
+  ///   - body: A closure that can mutate the ``State`` at `tag`. If the closure throws, the
+  ///   container will be left unmodified.
+  /// - Returns: The return value, if any, of the body closure.
+  mutating func modify<Result>(tag: Tag, _ body: (inout State) -> Result) throws -> Result
+}
+
+@usableFromInline
+struct StateExtractionFailed: Error {
+  @usableFromInline init() {}
+}
+
+extension MutableStateContainer {
+  @inlinable
+  public func contains(tag: Tag) -> Bool {
+    self.extract(tag: tag) != nil
+  }
+  @inlinable
+  public mutating func modify<Result>(tag: Tag, _ body: (inout State) -> Result) throws
+    -> Result
+  {
+    guard var state = self.extract(tag: tag) else { throw StateExtractionFailed() }
+    defer { self.embed(tag: tag, state: state) }
+    return body(&state)
+  }
+}
+
+extension IdentifiedArray: MutableStateContainer {
+  @inlinable
+  public func extract(tag: ID) -> Element? {
+    self[id: tag]
+  }
+  @inlinable
+  public mutating func embed(tag: ID, state: Element) {
+    self[id: tag] = state
+  }
+  @inlinable
+  public mutating func modify<Value>(tag: ID, _ body: (inout Element) -> Value) -> Value {
+    body(&self[id: tag]!)
+  }
+}
+
+extension OrderedDictionary: MutableStateContainer {
+  @inlinable
+  public func extract(tag: Key) -> Value? {
+    self[tag]
+  }
+  @inlinable
+  public mutating func embed(tag: Key, state: Value) {
+    self[tag] = state
+  }
+  @inlinable
+  public mutating func modify<T>(tag: Key, _ body: (inout Value) -> T) -> T {
+    body(&self[tag]!)
+  }
+}
+
 extension ReducerProtocol {
   #if swift(>=5.7)
     /// Embeds a child reducer in a parent domain that works on elements of a collection in parent
@@ -38,65 +128,118 @@ extension ReducerProtocol {
     /// runtime warning is shown in Xcode to let you know that there's a potential problem.
     ///
     /// - Parameters:
-    ///   - toElementsState: A writable key path from parent state to a `StateContainer` of child
-    ///   state.
+    ///   - toElementsState: A writable key path from parent state to an `IdentifiedArray` of child
+    ///     state.
     ///   - toElementAction: A case path from parent action to child identifier and child actions.
     ///   - element: A reducer that will be invoked with child actions against elements of child
     ///     state.
     /// - Returns: A reducer that combines the child reducer with the parent reducer.
     @inlinable
-    public func forEach<States: MutableStateContainer, ElementState, ElementAction>(
-      _ toElementsState: WritableKeyPath<State, States>,
-      action toElementAction: CasePath<Action, (States.Tag, ElementAction)>,
-      @ReducerBuilder<ElementState, ElementAction> _ element: () -> some ReducerProtocol<
-        ElementState, ElementAction
+    public func forEach<Elements: MutableStateContainer, ElementAction>(
+      _ toElementsState: WritableKeyPath<State, Elements>,
+      action toElementAction: CasePath<Action, (Elements.Tag, ElementAction)>,
+      @ReducerBuilder<Elements.State, ElementAction> _ element: () -> some ReducerProtocol<
+        Elements.State, ElementAction
       >,
       file: StaticString = #file,
       fileID: StaticString = #fileID,
       line: UInt = #line
-    ) -> some ReducerProtocol<State, Action> where States.State == ElementState {
-      _ContainedStateReducer(
+    ) -> some ReducerProtocol<State, Action> {
+      _ForEachReducer(
         parent: self,
-        toStateContainer: toElementsState,
-        toContentAction: toElementAction,
-        content: element(),
+        toElementsState: toElementsState,
+        toElementAction: toElementAction,
+        element: element(),
         file: file,
         fileID: fileID,
-        line: line,
-        onStateExtractionFailure: self.onForEachStateExtractionFailure()
+        line: line
       )
     }
   #else
     @inlinable
-    public func forEach<States: IdentifiedStates, Element: ReducerProtocol>(
-      _ toElementsState: WritableKeyPath<State, States>,
-      action toElementAction: CasePath<Action, (States.Tag, Element.Action)>,
+    public func forEach<Elements: MutableStateContainer, Element: ReducerProtocol>(
+      _ toElementsState: WritableKeyPath<State, Elements>,
+      action toElementAction: CasePath<Action, (Elements.Tag, Element.Action)>,
       @ReducerBuilderOf<Element> _ element: () -> Element,
       file: StaticString = #file,
       fileID: StaticString = #fileID,
       line: UInt = #line
-    ) -> _ContainedStateReducer<Self, States, Element> {
-      _ContainedStateReducer(
+    ) -> _ForEachReducer<Self, Elements, Element> {
+      _ForEachReducer(
         parent: self,
-        toStateContainer: toElementsState,
-        toContentAction: toElementAction,
-        content: element(),
+        toElementsState: toElementsState,
+        toElementAction: toElementAction,
+        element: element(),
         file: file,
         fileID: fileID,
-        line: line,
-        onStateExtractionFailure: self.onForEachStateExtractionFailure()
+        line: line
       )
     }
   #endif
 }
 
-extension ReducerProtocol {
+public struct _ForEachReducer<
+  Parent: ReducerProtocol,
+  Container: MutableStateContainer,
+  Element: ReducerProtocol
+>: ReducerProtocol where Container.State == Element.State {
   @usableFromInline
-  func onForEachStateExtractionFailure() -> StateExtractionFailureHandler<State, Action> {
-    .init { state, action, file, fileID, line in
+  let parent: Parent
+
+  @usableFromInline
+  let toElementsState: WritableKeyPath<Parent.State, Container>
+
+  @usableFromInline
+  let toElementAction: CasePath<Parent.Action, (Container.Tag, Element.Action)>
+
+  @usableFromInline
+  let element: Element
+
+  @usableFromInline
+  let file: StaticString
+
+  @usableFromInline
+  let fileID: StaticString
+
+  @usableFromInline
+  let line: UInt
+
+  @usableFromInline
+  init(
+    parent: Parent,
+    toElementsState: WritableKeyPath<Parent.State, Container>,
+    toElementAction: CasePath<Parent.Action, (Container.Tag, Element.Action)>,
+    element: Element,
+    file: StaticString,
+    fileID: StaticString,
+    line: UInt
+  ) {
+    self.parent = parent
+    self.toElementsState = toElementsState
+    self.toElementAction = toElementAction
+    self.element = element
+    self.file = file
+    self.fileID = fileID
+    self.line = line
+  }
+
+  @inlinable
+  public func reduce(
+    into state: inout Parent.State, action: Parent.Action
+  ) -> EffectTask<Parent.Action> {
+    self.reduceForEach(into: &state, action: action)
+      .merge(with: self.parent.reduce(into: &state, action: action))
+  }
+
+  @inlinable
+  func reduceForEach(
+    into state: inout Parent.State, action: Parent.Action
+  ) -> EffectTask<Parent.Action> {
+    guard let (id, elementAction) = self.toElementAction.extract(from: action) else { return .none }
+    guard state[keyPath: self.toElementsState].contains(tag: id) else {
       runtimeWarn(
         """
-        A "forEach" at "\(fileID):\(line)" received an action for a missing element.
+        A "forEach" at "\(self.fileID):\(self.line)" received an action for a missing element.
 
           Action:
             \(debugCaseOutput(action))
@@ -115,38 +258,13 @@ extension ReducerProtocol {
         fix this make sure that actions for this reducer can only be sent from a view store when \
         its state contains an element at this id. In SwiftUI applications, use "ForEachStore".
         """,
-        file: file,
-        line: line
+        file: self.file,
+        line: self.line
       )
+      return .none
     }
-  }
-}
-
-extension IdentifiedArray: MutableStateContainer {
-  public func extract(tag: ID) -> Element? {
-    self[id: tag]
-  }
-
-  public mutating func embed(tag: ID, state: Element) {
-    self[id: tag] = state
-  }
-
-  public mutating func modify<Value>(tag: ID, _ body: (inout Element) -> Value) -> Value {
-    body(&self[id: tag]!)
-  }
-}
-
-import OrderedCollections
-extension OrderedDictionary: MutableStateContainer {
-  public func extract(tag: Key) -> Value? {
-    self[tag]
-  }
-
-  public mutating func embed(tag: Key, state: Value) {
-    self[tag] = state
-  }
-
-  public mutating func modify<T>(tag: Key, _ body: (inout Value) -> T) -> T {
-    body(&self[tag]!)
+    return try! state[keyPath: self.toElementsState].modify(tag: id) {
+      self.element.reduce(into: &$0, action: elementAction)
+    }.map { self.toElementAction.embed((id, $0)) }
   }
 }

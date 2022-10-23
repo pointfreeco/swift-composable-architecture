@@ -54,15 +54,14 @@ extension ReducerProtocol {
       fileID: StaticString = #fileID,
       line: UInt = #line
     ) -> some ReducerProtocol<State, Action> {
-      _ContainedStateReducer(
+      _IfLetReducer(
         parent: self,
-        toStateContainer: toWrappedState,
-        toContentAction: toWrappedAction.with(tag: WrappedState.self),
-        content: wrapped(),
+        child: wrapped(),
+        toChildState: toWrappedState,
+        toChildAction: toWrappedAction,
         file: file,
         fileID: fileID,
-        line: line,
-        onStateExtractionFailure: self.onNilState()
+        line: line
       )
     }
   #else
@@ -74,30 +73,79 @@ extension ReducerProtocol {
       file: StaticString = #file,
       fileID: StaticString = #fileID,
       line: UInt = #line
-    ) -> _ContainedStateReducer<
-      Self, WritableKeyPath<Self.State, Wrapped.State?>, Wrapped.State?, Wrapped
-    > {
-      _ContainedStateReducer(
+    ) -> _IfLetReducer<Self, Wrapped> {
+      .init(
         parent: self,
-        toStateContainer: toWrappedState,
-        toContentAction: toWrappedAction.with(tag: Wrapped.State.self),
-        content: wrapped(),
+        child: wrapped(),
+        toChildState: toWrappedState,
+        toChildAction: toWrappedAction,
         file: file,
         fileID: fileID,
-        line: line,
-        onStateExtractionFailure: self.onNilState()
+        line: line
       )
     }
   #endif
 }
 
-extension ReducerProtocol {
+public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: ReducerProtocol {
   @usableFromInline
-  func onNilState() -> StateExtractionFailureHandler<State, Action> {
-    .init { state, action, file, fileID, line in
+  let parent: Parent
+
+  @usableFromInline
+  let child: Child
+
+  @usableFromInline
+  let toChildState: WritableKeyPath<Parent.State, Child.State?>
+
+  @usableFromInline
+  let toChildAction: CasePath<Parent.Action, Child.Action>
+
+  @usableFromInline
+  let file: StaticString
+
+  @usableFromInline
+  let fileID: StaticString
+
+  @usableFromInline
+  let line: UInt
+
+  @usableFromInline
+  init(
+    parent: Parent,
+    child: Child,
+    toChildState: WritableKeyPath<Parent.State, Child.State?>,
+    toChildAction: CasePath<Parent.Action, Child.Action>,
+    file: StaticString,
+    fileID: StaticString,
+    line: UInt
+  ) {
+    self.parent = parent
+    self.child = child
+    self.toChildState = toChildState
+    self.toChildAction = toChildAction
+    self.file = file
+    self.fileID = fileID
+    self.line = line
+  }
+
+  @inlinable
+  public func reduce(
+    into state: inout Parent.State, action: Parent.Action
+  ) -> EffectTask<Parent.Action> {
+    self.reduceChild(into: &state, action: action)
+      .merge(with: self.parent.reduce(into: &state, action: action))
+  }
+
+  @inlinable
+  func reduceChild(
+    into state: inout Parent.State, action: Parent.Action
+  ) -> EffectTask<Parent.Action> {
+    guard let childAction = self.toChildAction.extract(from: action)
+    else { return .none }
+    guard state[keyPath: self.toChildState] != nil else {
       runtimeWarn(
         """
-        An "ifLet" at "\(fileID):\(line)" received a child action when child state was \
+        An "ifLet" at "\(self.fileID):\(self.line)" received a child action when child state was \
         "nil". …
 
           Action:
@@ -117,25 +165,12 @@ extension ReducerProtocol {
         reducer can only be sent from a view store when state is non-"nil". In SwiftUI \
         applications, use "IfLetStore".
         """,
-        file: file,
-        line: line
+        file: self.file,
+        line: self.line
       )
+      return .none
     }
-  }
-}
-
-extension Optional: MutableStateContainer {
-  public func extract(tag: Wrapped.Type) -> Wrapped? {
-    self
-  }
-  public mutating func embed(tag: Wrapped.Type, state: Wrapped) {
-    self = state
-  }
-  public mutating func modify<Result>(tag: Wrapped.Type, _ body: (inout Wrapped) -> Result)
-    throws -> Result
-  {
-    guard var value = self else { throw StateExtractionFailed() }
-    defer { self = value }
-    return body(&value)
+    return self.child.reduce(into: &state[keyPath: self.toChildState]!, action: childAction)
+      .map(self.toChildAction.embed)
   }
 }
