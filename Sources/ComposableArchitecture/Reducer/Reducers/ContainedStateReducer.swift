@@ -53,7 +53,7 @@ extension MutableStateDerivation {
     guard let destination = destination else { throw EmbeddingFailed() }
     self.embed(into: &source, destination: destination)
   }
-  
+
   @inlinable
   public func modify<Result>(source: inout Source, _ body: (inout Destination) -> Result) throws
     -> Result
@@ -165,7 +165,7 @@ public struct IdentityContainer<Value>: MutableStateContainer {
   init(_ value: Value) {
     self.value = value
   }
-  
+
   @usableFromInline
   var value: Value
 
@@ -178,7 +178,9 @@ public struct IdentityContainer<Value>: MutableStateContainer {
     self.value = state
   }
   @inlinable
-  public mutating func modify<Result>(tag: Value.Type, _ body: (inout Value) -> Result) throws -> Result {
+  public mutating func modify<Result>(tag: Value.Type, _ body: (inout Value) -> Result) throws
+    -> Result
+  {
     body(&value)
   }
 }
