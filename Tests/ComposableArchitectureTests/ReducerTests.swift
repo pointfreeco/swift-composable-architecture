@@ -19,6 +19,7 @@ final class ReducerTests: XCTestCase {
     XCTAssertEqual(state, 1)
   }
 
+#if swift(>=5.7)
   func testCombine_EffectsAreMerged() async throws {
     if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
       enum Action: Equatable {
@@ -72,6 +73,7 @@ final class ReducerTests: XCTestCase {
       XCTAssertEqual(slowValue, 1729)
     }
   }
+  #endif
 
   func testCombine() async {
     enum Action: Equatable {

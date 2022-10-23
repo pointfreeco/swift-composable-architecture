@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-case-paths",
       "state" : {
-        "revision" : "7346701ea29da0a85d4403cf3d7a589a58ae3dee",
-        "version" : "0.9.2"
+        "revision" : "15bba50ebf3a2065388c8d12210debe4f6ada202",
+        "version" : "0.10.0"
       }
     },
     {
@@ -42,7 +42,7 @@
       "location" : "https://github.com/pointfreeco/swift-clocks",
       "state" : {
         "branch" : "main",
-        "revision" : "fb1823cfbbdb6e430315be0ce12b0a48f3bfb89f"
+        "revision" : "cc165ef8611665b6239d84eadd8c0b77f558b245"
       }
     },
     {
@@ -59,8 +59,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-custom-dump",
       "state" : {
-        "revision" : "c9b6b940d95c0a925c63f6858943415714d8a981",
-        "version" : "0.5.2"
+        "revision" : "819d9d370cd721c9d87671e29d947279292e4541",
+        "version" : "0.6.0"
       }
     },
     {
@@ -86,8 +86,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/xctest-dynamic-overlay",
       "state" : {
-        "revision" : "30314f1ece684dd60679d598a9b89107557b67d9",
-        "version" : "0.4.1"
+        "revision" : "16e6409ee82e1b81390bdffbf217b9c08ab32784",
+        "version" : "0.5.0"
       }
     }
   ],

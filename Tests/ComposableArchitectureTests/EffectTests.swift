@@ -50,37 +50,39 @@ final class EffectTests: XCTestCase {
       .store(in: &self.cancellables)
   }
 
-  func testConcatenate() async {
-    if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-      let clock = TestClock()
-      var values: [Int] = []
+  #if swift(>=5.7)
+    func testConcatenate() async {
+      if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
+        let clock = TestClock()
+        var values: [Int] = []
 
-      let effect = Effect<Int, Never>.concatenate(
-        (1...3).map { count in
-          .task {
-            try await clock.sleep(for: .seconds(count))
-            return count
+        let effect = Effect<Int, Never>.concatenate(
+          (1...3).map { count in
+            .task {
+              try await clock.sleep(for: .seconds(count))
+              return count
+            }
           }
-        }
-      )
+        )
 
-      effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+        effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
 
-      XCTAssertEqual(values, [])
+        XCTAssertEqual(values, [])
 
-      await clock.advance(by: .seconds(1))
-      XCTAssertEqual(values, [1])
+        await clock.advance(by: .seconds(1))
+        XCTAssertEqual(values, [1])
 
-      await clock.advance(by: .seconds(2))
-      XCTAssertEqual(values, [1, 2])
+        await clock.advance(by: .seconds(2))
+        XCTAssertEqual(values, [1, 2])
 
-      await clock.advance(by: .seconds(3))
-      XCTAssertEqual(values, [1, 2, 3])
+        await clock.advance(by: .seconds(3))
+        XCTAssertEqual(values, [1, 2, 3])
 
-      await clock.run()
-      XCTAssertEqual(values, [1, 2, 3])
+        await clock.run()
+        XCTAssertEqual(values, [1, 2, 3])
+      }
     }
-  }
+  #endif
 
   func testConcatenateOneEffect() {
     var values: [Int] = []
@@ -100,6 +102,7 @@ final class EffectTests: XCTestCase {
     XCTAssertEqual(values, [1])
   }
 
+#if swift(>=5.7)
   func testMerge() async {
     if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
       let clock = TestClock()
@@ -128,6 +131,7 @@ final class EffectTests: XCTestCase {
       XCTAssertEqual(values, [1, 2, 3])
     }
   }
+  #endif
 
   func testEffectSubscriberInitializer() {
     let effect = EffectTask<Int>.run { subscriber in
