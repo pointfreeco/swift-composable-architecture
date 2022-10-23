@@ -8,9 +8,6 @@ import SwiftUI
 /// [Identified Collections][swift-identified-collections] library, and `OrderedDictionary` from
 /// [Swift Collections][swift-collections].
 ///
-/// You can also use ``IdentifiedStates`` to transform any `RandomAccessCollection` into an
-/// ``IdentifiedStatesCollection``, provided you're able to 
-///
 /// [swift-identified-collections]: http://github.com/pointfreeco/swift-identified-collections
 /// [swift-collections]: http://github.com/apple/swift-collections
 public protocol IdentifiedStatesCollection: StateContainer {
@@ -19,8 +16,9 @@ public protocol IdentifiedStatesCollection: StateContainer {
   associatedtype States: Collection where States.Element == State
 
   var stateIDs: IDs { get }
-  // These elements must have a 1to1 relation with IDs.
-  // This is unconstrained for now, until one assesses the requirements for lazy variants.
+  
+  // These elements must have a 1to1 relation with IDs. This is unconstrained for now, until
+  // one assesses the requirements for lazy variants.
   var states: States { get }
 
   /// Returns `true` if this collection's identifiers are the same as `other` identifiers.
