@@ -4,7 +4,7 @@ import SwiftUI
 
 public protocol IdentifiedStatesCollection: StateContainer {
   typealias ID = Tag
-  associatedtype IDs: RandomAccessCollection = States.Indices where IDs.Element == ID
+  associatedtype IDs: RandomAccessCollection where IDs.Element == ID
   associatedtype States: Collection where States.Element == State
 
   var stateIDs: IDs { get }
@@ -57,13 +57,25 @@ where IDs: RandomAccessCollection, States: Collection {
   public typealias ID = IDs.Element
   public typealias State = States.Element
 
-  public var stateIDs: IDs
-  public var states: States
+  public let stateIDs: IDs
+  public let states: States
   @usableFromInline
-  var _extract: (ID) -> State?
+  let _extract: (ID) -> State?
   @usableFromInline
-  var areDuplicateIDs: (IDs, IDs) -> Bool
+  let areDuplicateIDs: (IDs, IDs) -> Bool
 
+  @inlinable
+  public func extract(tag: ID) -> States.Element? {
+    self._extract(tag)
+  }
+
+  @inlinable
+  public func areDuplicateIDs(other: IdentifiedStates<IDs, States>) -> Bool {
+    self.areDuplicateIDs(self.stateIDs, other.stateIDs)
+  }
+}
+
+extension IdentifiedStates {
   public init(
     stateIDs: () -> IDs,
     states: () -> States,
@@ -86,15 +98,26 @@ where IDs: RandomAccessCollection, States: Collection {
     self.states = states()
     self.areDuplicateIDs = (==)
   }
-
-  @inlinable
-  public func extract(tag: ID) -> States.Element? {
-    self._extract(tag)
+  
+  public init(
+    states: States,
+    ids: (States) -> IDs,
+    removeDuplicateIDs areDuplicateIDs: @escaping (IDs, IDs) -> Bool
+  ) where IDs == States.Indices {
+    self.states = states
+    self.stateIDs = ids(states)
+    self._extract = { states[$0] }
+    self.areDuplicateIDs = areDuplicateIDs
   }
-
-  @inlinable
-  public func areDuplicateIDs(other: IdentifiedStates<IDs, States>) -> Bool {
-    self.areDuplicateIDs(self.stateIDs, other.stateIDs)
+  
+  public init(
+    states: States,
+    ids: (States) -> IDs
+  ) where IDs == States.Indices, IDs: Equatable {
+    self.states = states
+    self.stateIDs = ids(states)
+    self._extract = { states[$0] }
+    self.areDuplicateIDs = (==)
   }
 }
 
