@@ -240,12 +240,12 @@ public struct _ContainedStateReducer<
   Parent: ReducerProtocol,
   Derivation: MutableFailableStateDerivation,
   Container: StateContainer,
-  Element: ReducerProtocol
+  Content: ReducerProtocol
 >: ReducerProtocol
 where
   Derivation.Source == Parent.State,
   Derivation.Destination == Container,
-  Container.State == Element.State
+  Container.State == Content.State
 {
   @usableFromInline
   let parent: Parent
@@ -254,10 +254,10 @@ where
   let toStateContainer: Derivation
 
   @usableFromInline
-  let toContainedAction: CasePath<Parent.Action, (Container.Tag, Element.Action)>
+  let toContentAction: CasePath<Parent.Action, (Container.Tag, Content.Action)>
 
   @usableFromInline
-  let element: Element
+  let content: Content
 
   @usableFromInline
   let file: StaticString
@@ -276,8 +276,8 @@ where
   init(
     parent: Parent,
     toStateContainer: Derivation,
-    toContainedAction: CasePath<Parent.Action, (Container.Tag, Element.Action)>,
-    element: Element,
+    toContentAction: CasePath<Parent.Action, (Container.Tag, Content.Action)>,
+    content: Content,
     file: StaticString,
     fileID: StaticString,
     line: UInt,
@@ -287,8 +287,8 @@ where
   ) {
     self.parent = parent
     self.toStateContainer = toStateContainer
-    self.toContainedAction = toContainedAction
-    self.element = element
+    self.toContentAction = toContentAction
+    self.content = content
     self.file = file
     self.fileID = fileID
     self.line = line
@@ -307,7 +307,7 @@ where
   func reduceContained(
     into state: inout Parent.State, action: Parent.Action
   ) -> EffectTask<Parent.Action> {
-    guard let (tag, elementAction) = self.toContainedAction.extract(from: action) else {
+    guard let (tag, contentAction) = self.toContentAction.extract(from: action) else {
       return .none
     }
 
@@ -323,9 +323,9 @@ where
     }
 
     return try! self.toStateContainer.modify(source: &state) { stateContainer in
-      try! stateContainer!.modify(tag: tag) { elementState in
-        self.element.reduce(into: &elementState, action: elementAction)
+      try! stateContainer!.modify(tag: tag) { contentState in
+        self.content.reduce(into: &contentState, action: contentAction)
       }
-    }.map { self.toContainedAction.embed((tag, $0)) }
+    }.map { self.toContentAction.embed((tag, $0)) }
   }
 }

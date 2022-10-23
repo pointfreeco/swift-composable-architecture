@@ -60,8 +60,8 @@ extension ReducerProtocol {
       _ContainedStateReducer(
         parent: self,
         toStateContainer: toCaseState.withSelfContainedValue,
-        toContainedAction: toCaseAction.with(tag: CaseState.self),
-        element: `case`(),
+        toContentAction: toCaseAction.with(tag: CaseState.self),
+        content: `case`(),
         file: file,
         fileID: fileID,
         line: line,
@@ -86,8 +86,8 @@ extension ReducerProtocol {
       _ContainedStateReducer(
         parent: self,
         toStateContainer: toCaseState.withSelfContainedValue,
-        toContainedAction: toCaseAction.with(tag: Case.State.self),
-        element: `case`(),
+        toContentAction: toCaseAction.with(tag: Case.State.self),
+        content: `case`(),
         file: file,
         fileID: fileID,
         line: line,

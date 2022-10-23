@@ -57,8 +57,8 @@ extension ReducerProtocol {
       _ContainedStateReducer(
         parent: self,
         toStateContainer: toWrappedState,
-        toContainedAction: toWrappedAction.with(tag: WrappedState.self),
-        element: wrapped(),
+        toContentAction: toWrappedAction.with(tag: WrappedState.self),
+        content: wrapped(),
         file: file,
         fileID: fileID,
         line: line,
@@ -80,8 +80,8 @@ extension ReducerProtocol {
       _ContainedStateReducer(
         parent: self,
         toStateContainer: toWrappedState,
-        toContainedAction: toWrappedAction.with(tag: Wrapped.State.self),
-        element: wrapped(),
+        toContentAction: toWrappedAction.with(tag: Wrapped.State.self),
+        content: wrapped(),
         file: file,
         fileID: fileID,
         line: line,
