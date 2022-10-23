@@ -1,14 +1,7 @@
 @usableFromInline
-struct ExtractionFailed: Error {
-  @usableFromInline init() {}
-}
-@usableFromInline
-struct EmbeddingFailed: Error {
-  @usableFromInline init() {}
-}
-@usableFromInline
-struct StateExtractionFailed: Error {
-  @usableFromInline init() {}
+enum StateDerivationError: Error {
+  case extractionFailed
+  case embeddingFailed
 }
 
 public protocol FailableStateDerivation {
@@ -50,7 +43,7 @@ public protocol MutableStateDerivation: MutableFailableStateDerivation & StateDe
 extension MutableStateDerivation {
   @inlinable
   public func embed(into source: inout Source, destination: Destination?) throws {
-    guard let destination = destination else { throw EmbeddingFailed() }
+    guard let destination = destination else { throw StateDerivationError.embeddingFailed }
     self.embed(into: &source, destination: destination)
   }
 
@@ -92,14 +85,16 @@ extension WritableKeyPath: MutableStateDerivation {
 extension CasePath: MutableFailableStateDerivation {
   @inlinable
   public func embed(into source: inout Root, destination: Value?) throws {
-    guard let destination = destination else { throw EmbeddingFailed() }
+    guard let destination = destination else { throw StateDerivationError.embeddingFailed }
     source = self.embed(destination)
   }
   @inlinable
   public func modify<Result>(source: inout Root, _ body: (inout Value?) throws -> Result) throws
     -> Result
   {
-    guard let extracted = self.extract(from: source) else { throw ExtractionFailed() }
+    guard let extracted = self.extract(from: source) else {
+      throw StateDerivationError.extractionFailed
+    }
     var destination: Value? = extracted
     let result = try body(&destination)
     try self.embed(into: &source, destination: destination)
@@ -112,6 +107,11 @@ public protocol StateContainer {
   associatedtype State
   associatedtype Tag
   func extract(tag: Tag) -> State?
+}
+
+@usableFromInline
+struct StateExtractionFailed: Error {
+  @usableFromInline init() {}
 }
 
 @rethrows
