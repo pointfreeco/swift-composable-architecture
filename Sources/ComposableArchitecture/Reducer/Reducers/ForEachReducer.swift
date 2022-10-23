@@ -1,9 +1,23 @@
 import OrderedCollections
 
+/// A protocol that describe container types from which one can extract some domain's `State` value.
+///
+/// This protocol is semi-abstract and you usually conform to the ``MutableStateContainer`` and/or
+/// the ``IdentifiedStatesCollection`` which inherit from this protocol.
 public protocol StateContainer {
+  /// The type of values that can be extracted from this container.
   associatedtype State
+  /// A type whose values allow identify a specific ``State`` in this container.
+  ///
+  /// ``StateContainer`` doesn't impose any requirement on ``Tag``. It can be the `Key` of a
+  /// `Dictionary`, the `ID` of an `IdentifiedArray`, or even `Void` or `Self.Type` when the
+  ///  container can only contain one unique value.
   associatedtype Tag
-  
+  /// Extracts a ``State`` for a given ``Tag`` from this container
+  ///
+  /// - Parameters:
+  ///   - tag: The ``Tag`` of the ``State`` to extract.
+  /// - Returns: A ``State`` value if the extraction succeeds, `nil` otherwise.
   func extract(tag: Tag) -> State?
   /// Checks if a container contains a ``State`` for a given ``Tag``
   ///
@@ -26,18 +40,37 @@ extension StateContainer {
   }
 }
 
+/// A mutable version of ``StateContainer``, where the extracted ``State`` can be embedded back into
+/// the container.
+///
+/// The library ships with two adopters of this protocol: `IdentifiedArray` from our
+/// [Identified Collections][swift-identified-collections] library, and `OrderedDictionary` from
+/// [Swift Collections][swift-collections].
+///
+/// > Tip: We recommend to use `IdentifiedArray` from our
+/// [Identified Collections][swift-identified-collections] library because it provides a safe
+/// and ergonomic API for accessing elements from a stable ID rather than positional indices.
+///
+/// [swift-identified-collections]: http://github.com/pointfreeco/swift-identified-collections
+/// [swift-collections]: http://github.com/apple/swift-collections
 public protocol MutableStateContainer: StateContainer {
+  /// Write a ``State`` value with a given ``Tag`` into the container.
+  /// - Parameters:
+  ///   - tag: A ``Tag`` of the ``State`` to embed.
+  ///   - state: The ``State`` value that will be embedded.
   mutating func embed(tag: Tag, state: State)
   /// Attempts to modify a ``State`` at ``Tag``.
   ///
   /// This method allows adopters to perform modifications in-place in compatible containers.
   ///
+  /// The function should throw if it fails to extract a ``State``. In this case, the container
+  /// should be left unmodified.
+  ///
   /// A default implementation is provided.
   ///
   /// - Parameters:
   ///   - tag: The ``Tag`` of the ``State`` to modify.
-  ///   - body: A closure that can mutate the ``State`` at `tag`. If the closure throws, the
-  ///   container will be left unmodified.
+  ///   - body: A closure that can mutate the ``State`` at `tag`.
   /// - Returns: The return value, if any, of the body closure.
   mutating func modify<Result>(tag: Tag, _ body: (inout State) -> Result) throws -> Result
 }
@@ -127,9 +160,15 @@ extension ReducerProtocol {
     /// state from the array before the child has a chance to react to the action. In such cases a
     /// runtime warning is shown in Xcode to let you know that there's a potential problem.
     ///
+    /// > Tip: We recommend to use `IdentifiedArray` from our
+    /// [Identified Collections][swift-identified-collections] library because it provides a safe
+    /// and ergonomic API for accessing elements from a stable ID rather than positional indices.
+    ///
+    /// [swift-identified-collections]: http://github.com/pointfreeco/swift-identified-collections
+    ///
     /// - Parameters:
-    ///   - toElementsState: A writable key path from parent state to an `IdentifiedArray` of child
-    ///     state.
+    ///   - toElementsState: A writable key path from parent state to a ``MutableStateContainer`` of
+    ///   child states.
     ///   - toElementAction: A case path from parent action to child identifier and child actions.
     ///   - element: A reducer that will be invoked with child actions against elements of child
     ///     state.
