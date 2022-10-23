@@ -9,6 +9,7 @@ on:
   push:
     branches:
       - main
+      - protocol-clocks
   workflow_dispatch:
 
 concurrency:
