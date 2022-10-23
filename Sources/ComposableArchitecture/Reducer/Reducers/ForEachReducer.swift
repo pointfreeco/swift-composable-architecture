@@ -28,103 +28,6 @@ extension ReducerProtocol {
     /// }
     /// ```
     ///
-    /// > Tip: We are using `IdentifiedArray` from our
-    /// [Identified Collections][swift-identified-collections] library because it provides a safe
-    /// and ergonomic API for accessing elements from a stable ID rather than positional indices.
-    ///
-    /// The `forEach` forces a specific order of operations for the child and parent features. It
-    /// runs the child first, and then the parent. If the order was reversed, then it would be
-    /// possible for the parent feature to remove the child state from the array, in which case the
-    /// child feature would not be able to react to that action. That can cause subtle bugs.
-    ///
-    /// It is still possible for a parent feature higher up in the application to remove the child
-    /// state from the array before the child has a chance to react to the action. In such cases a
-    /// runtime warning is shown in Xcode to let you know that there's a potential problem.
-    ///
-    /// [swift-identified-collections]: http://github.com/pointfreeco/swift-identified-collections
-    ///
-    /// - Parameters:
-    ///   - toElementsState: A writable key path from parent state to an `IdentifiedArray` of child
-    ///     state.
-    ///   - toElementAction: A case path from parent action to child identifier and child actions.
-    ///   - element: A reducer that will be invoked with child actions against elements of child
-    ///     state.
-    /// - Returns: A reducer that combines the child reducer with the parent reducer.
-    @inlinable
-    public func forEach<ID: Hashable, ElementState, ElementAction>(
-      _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
-      action toElementAction: CasePath<Action, (ID, ElementAction)>,
-      @ReducerBuilder<ElementState, ElementAction> _ element: () -> some ReducerProtocol<
-        ElementState, ElementAction
-      >,
-      file: StaticString = #file,
-      fileID: StaticString = #fileID,
-      line: UInt = #line
-    ) -> some ReducerProtocol<State, Action> {
-      _ForEachReducer(
-        parent: self,
-        toElementsState: toElementsState,
-        toElementAction: toElementAction,
-        element: element(),
-        file: file,
-        fileID: fileID,
-        line: line
-      )
-    }
-  #else
-    @inlinable
-    public func forEach<ID: Hashable, Element: ReducerProtocol>(
-      _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, Element.State>>,
-      action toElementAction: CasePath<Action, (ID, Element.Action)>,
-      @ReducerBuilderOf<Element> _ element: () -> Element,
-      file: StaticString = #file,
-      fileID: StaticString = #fileID,
-      line: UInt = #line
-    ) -> _ForEachReducer<Self, ID, Element> {
-      _ForEachReducer(
-        parent: self,
-        toElementsState: toElementsState,
-        toElementAction: toElementAction,
-        element: element(),
-        file: file,
-        fileID: fileID,
-        line: line
-      )
-    }
-  #endif
-}
-
-// Generic version
-extension ReducerProtocol {
-  #if swift(>=5.7)
-    /// Embeds a child reducer in a parent domain that works on elements of a collection in parent
-    /// state.
-    ///
-    /// For example, if a parent feature holds onto an array of child states, then it can perform
-    /// its core logic _and_ the child's logic by using the `forEach` operator:
-    ///
-    /// ```swift
-    /// struct Parent: ReducerProtocol {
-    ///   struct State {
-    ///     var rows: IdentifiedArrayOf<Row.State>
-    ///     // ...
-    ///   }
-    ///   enum Action {
-    ///     case row(id: Row.State.ID, action: Row.Action)
-    ///     // ...
-    ///   }
-    ///
-    ///   var body: some ReducerProtocol<State, Action> {
-    ///     Reduce { state, action in
-    ///       // Core logic for parent feature
-    ///     }
-    ///     .forEach(\.rows, action: /Action.row) {
-    ///       Row()
-    ///     }
-    ///   }
-    /// }
-    /// ```
-    ///
     /// The `forEach` forces a specific order of operations for the child and parent features. It
     /// runs the child first, and then the parent. If the order was reversed, then it would be
     /// possible for the parent feature to remove the child state from the array, in which case the
@@ -135,16 +38,16 @@ extension ReducerProtocol {
     /// runtime warning is shown in Xcode to let you know that there's a potential problem.
     ///
     /// - Parameters:
-    ///   - toElementsState: A writable key path from parent state to an
-    ///   `IdentifiedStatesCollection` of child state.
+    ///   - toElementsState: A writable key path from parent state to a `StateContainer` of child
+    ///   state.
     ///   - toElementAction: A case path from parent action to child identifier and child actions.
     ///   - element: A reducer that will be invoked with child actions against elements of child
     ///     state.
     /// - Returns: A reducer that combines the child reducer with the parent reducer.
     @inlinable
-    public func forEach<States: IdentifiedStates, ElementState, ElementAction>(
+    public func forEach<States: StateContainer, ElementState, ElementAction>(
       _ toElementsState: WritableKeyPath<State, States>,
-      action toElementAction: CasePath<Action, (States.ID, ElementAction)>,
+      action toElementAction: CasePath<Action, (States.Tag, ElementAction)>,
       @ReducerBuilder<ElementState, ElementAction> _ element: () -> some ReducerProtocol<
         ElementState, ElementAction
       >,
@@ -152,99 +55,48 @@ extension ReducerProtocol {
       fileID: StaticString = #fileID,
       line: UInt = #line
     ) -> some ReducerProtocol<State, Action> where States.State == ElementState {
-      _ForEachReducer(
+      _ContainedStateReducer(
         parent: self,
-        toElementsState: toElementsState,
-        toElementAction: toElementAction,
+        toStateContainer: toElementsState,
+        toContainedAction: toElementAction,
         element: element(),
         file: file,
         fileID: fileID,
-        line: line
+        line: line,
+        onStateExtractionFailure: self.onForEachStateExtractionFailure()
       )
     }
   #else
     @inlinable
     public func forEach<States: IdentifiedStates, Element: ReducerProtocol>(
       _ toElementsState: WritableKeyPath<State, States>,
-      action toElementAction: CasePath<Action, (States.ID, Element.Action)>,
+      action toElementAction: CasePath<Action, (States.Tag, Element.Action)>,
       @ReducerBuilderOf<Element> _ element: () -> Element,
       file: StaticString = #file,
       fileID: StaticString = #fileID,
       line: UInt = #line
-    ) -> _ForEachReducer<Self, States, Element> {
-      _ForEachReducer(
+    ) -> _ContainedStateReducer<Self, States, Element> {
+      _ContainedStateReducer(
         parent: self,
-        toElementsState: toElementsState,
-        toElementAction: toElementAction,
+        toStateContainer: toElementsState,
+        toContainedAction: toElementAction,
         element: element(),
         file: file,
         fileID: fileID,
-        line: line
+        line: line,
+        onStateExtractionFailure: self.onForEachStateExtractionFailure()
       )
     }
   #endif
 }
 
-public struct _ForEachReducer<
-  Parent: ReducerProtocol, States: IdentifiedStates, Element: ReducerProtocol
->: ReducerProtocol where States.State == Element.State {
+extension ReducerProtocol {
   @usableFromInline
-  let parent: Parent
-
-  @usableFromInline
-  let toElementsState: WritableKeyPath<Parent.State, States>
-
-  @usableFromInline
-  let toElementAction: CasePath<Parent.Action, (States.ID, Element.Action)>
-
-  @usableFromInline
-  let element: Element
-
-  @usableFromInline
-  let file: StaticString
-
-  @usableFromInline
-  let fileID: StaticString
-
-  @usableFromInline
-  let line: UInt
-
-  @usableFromInline
-  init(
-    parent: Parent,
-    toElementsState: WritableKeyPath<Parent.State, States>,
-    toElementAction: CasePath<Parent.Action, (States.ID, Element.Action)>,
-    element: Element,
-    file: StaticString,
-    fileID: StaticString,
-    line: UInt
-  ) {
-    self.parent = parent
-    self.toElementsState = toElementsState
-    self.toElementAction = toElementAction
-    self.element = element
-    self.file = file
-    self.fileID = fileID
-    self.line = line
-  }
-
-  @inlinable
-  public func reduce(
-    into state: inout Parent.State, action: Parent.Action
-  ) -> EffectTask<Parent.Action> {
-    self.reduceForEach(into: &state, action: action)
-      .merge(with: self.parent.reduce(into: &state, action: action))
-  }
-
-  @inlinable
-  func reduceForEach(
-    into state: inout Parent.State, action: Parent.Action
-  ) -> EffectTask<Parent.Action> {
-    guard let (id, elementAction) = self.toElementAction.extract(from: action) else { return .none }
-    if state[keyPath: self.toElementsState][stateID: id] == nil {
+  func onForEachStateExtractionFailure() -> StateExtractionFailureHandler<State, Action> {
+    .init { state, action, file, fileID, line in
       runtimeWarn(
         """
-        A "forEach" at "\(self.fileID):\(self.line)" received an action for a missing element.
+        A "forEach" at "\(fileID):\(line)" received an action for a missing element.
 
           Action:
             \(debugCaseOutput(action))
@@ -263,13 +115,38 @@ public struct _ForEachReducer<
         fix this make sure that actions for this reducer can only be sent from a view store when \
         its state contains an element at this id. In SwiftUI applications, use "ForEachStore".
         """,
-        file: self.file,
-        line: self.line
+        file: file,
+        line: line
       )
-      return .none
     }
-    return self.element
-      .reduce(into: &state[keyPath: self.toElementsState][stateID: id]!, action: elementAction)
-      .map { self.toElementAction.embed((id, $0)) }
+  }
+}
+
+extension IdentifiedArray: StateContainer {
+  public func extract(tag: ID) -> Element? {
+    self[id: tag]
+  }
+
+  public mutating func embed(tag: ID, state: Element) {
+    self[id: tag] = state
+  }
+
+  public mutating func modify<Value>(tag: ID, _ body: (inout Element) -> Value) -> Value {
+    body(&self[id: tag]!)
+  }
+}
+
+import OrderedCollections
+extension OrderedDictionary: StateContainer {
+  public func extract(tag: Key) -> Value? {
+    self[tag]
+  }
+
+  public mutating func embed(tag: Key, state: Value) {
+    self[tag] = state
+  }
+
+  public mutating func modify<T>(tag: Key, _ body: (inout Value) -> T) -> T {
+    body(&self[tag]!)
   }
 }
