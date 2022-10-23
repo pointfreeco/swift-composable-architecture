@@ -1,16 +1,10 @@
 import OrderedCollections
 
-@rethrows
 public protocol StateContainer {
   associatedtype State
   associatedtype Tag
+  
   func extract(tag: Tag) -> State?
-}
-
-@rethrows
-public protocol MutableStateContainer: StateContainer {
-  mutating func embed(tag: Tag, state: State)
-
   /// Checks if a container contains a ``State`` for a given ``Tag``
   ///
   /// This method allows adopters to optimize situations where the client only wants to check if the
@@ -23,7 +17,17 @@ public protocol MutableStateContainer: StateContainer {
   ///   - tag: The ``Tag`` of the ``State`` to check.
   /// - Returns: `true` if a ``State`` exists at `tag`, `false` otherwise.
   func contains(tag: Tag) -> Bool
+}
 
+extension StateContainer {
+  @inlinable
+  public func contains(tag: Tag) -> Bool {
+    self.extract(tag: tag) != nil
+  }
+}
+
+public protocol MutableStateContainer: StateContainer {
+  mutating func embed(tag: Tag, state: State)
   /// Attempts to modify a ``State`` at ``Tag``.
   ///
   /// This method allows adopters to perform modifications in-place in compatible containers.
@@ -44,10 +48,6 @@ struct StateExtractionFailed: Error {
 }
 
 extension MutableStateContainer {
-  @inlinable
-  public func contains(tag: Tag) -> Bool {
-    self.extract(tag: tag) != nil
-  }
   @inlinable
   public mutating func modify<Result>(tag: Tag, _ body: (inout State) -> Result) throws
     -> Result

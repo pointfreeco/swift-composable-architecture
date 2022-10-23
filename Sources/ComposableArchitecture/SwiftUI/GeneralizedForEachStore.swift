@@ -2,7 +2,7 @@ import Foundation
 import OrderedCollections
 import SwiftUI
 
-public protocol IdentifiedStatesCollectionProtocol: StateContainer {
+public protocol IdentifiedStatesCollection: StateContainer {
   typealias ID = Tag
   associatedtype IDs: RandomAccessCollection = States.Indices where IDs.Element == ID
   associatedtype States: Collection where States.Element == State
@@ -15,14 +15,14 @@ public protocol IdentifiedStatesCollectionProtocol: StateContainer {
   func areDuplicateIDs(other: Self) -> Bool
 }
 
-extension IdentifiedStatesCollectionProtocol where IDs: Equatable {
+extension IdentifiedStatesCollection where IDs: Equatable {
   @inlinable
   public func areDuplicateIDs(other: Self) -> Bool {
     self.stateIDs == other.stateIDs
   }
 }
 
-extension IdentifiedArray: IdentifiedStatesCollectionProtocol {
+extension IdentifiedArray: IdentifiedStatesCollection {
   public var stateIDs: OrderedSet<ID> { self.ids }
   public var states: Self { self }
 
@@ -32,7 +32,7 @@ extension IdentifiedArray: IdentifiedStatesCollectionProtocol {
   }
 }
 
-extension OrderedDictionary: IdentifiedStatesCollectionProtocol {
+extension OrderedDictionary: IdentifiedStatesCollection {
   public var stateIDs: OrderedSet<Key> { self.keys }
   public var states: OrderedDictionary<Key, Value>.Values { self.values }
 
@@ -52,26 +52,25 @@ func areCoWEqual<IDs: Equatable>(lhs: IDs, rhs: IDs) -> Bool {
   return lhs == rhs
 }
 
-public struct IdentifiedStateCollection<IDs, States>: IdentifiedStatesCollectionProtocol
+public struct IdentifiedStates<IDs, States>: IdentifiedStatesCollection
 where IDs: RandomAccessCollection, States: Collection {
-
   public typealias ID = IDs.Element
   public typealias State = States.Element
 
   public var stateIDs: IDs
   public var states: States
   @usableFromInline
-  var get: (ID) -> State?
+  var _extract: (ID) -> State?
   @usableFromInline
   var areDuplicateIDs: (IDs, IDs) -> Bool
 
   public init(
     stateIDs: () -> IDs,
     states: () -> States,
-    get: @escaping (ID) -> State?,
+    get: @escaping (ID) -> State,
     removeDuplicateIDs areDuplicateIDs: @escaping (IDs, IDs) -> Bool
   ) {
-    self.get = get
+    self._extract = get
     self.stateIDs = stateIDs()
     self.states = states()
     self.areDuplicateIDs = areDuplicateIDs
@@ -80,19 +79,21 @@ where IDs: RandomAccessCollection, States: Collection {
   public init(
     stateIDs: () -> IDs,
     states: () -> States,
-    get: @escaping (ID) -> State?
+    get: @escaping (ID) -> State
   ) where IDs: Equatable {
-    self.get = get
+    self._extract = get
     self.stateIDs = stateIDs()
     self.states = states()
     self.areDuplicateIDs = (==)
   }
 
+  @inlinable
   public func extract(tag: ID) -> States.Element? {
-    self.get(tag)
+    self._extract(tag)
   }
 
-  public func areDuplicateIDs(other: IdentifiedStateCollection<IDs, States>) -> Bool {
+  @inlinable
+  public func areDuplicateIDs(other: IdentifiedStates<IDs, States>) -> Bool {
     self.areDuplicateIDs(self.stateIDs, other.stateIDs)
   }
 }
@@ -174,14 +175,14 @@ where IDs: RandomAccessCollection, States: Collection {
 /// ```
 ///
 public struct GeneralizedForEachStore<
-  IdentifiedStates: IdentifiedStatesCollectionProtocol, EachAction, Content: View
+  StatesCollection: IdentifiedStatesCollection, EachAction, Content: View
 >: DynamicViewContent
-where IdentifiedStates.ID: Hashable {
-  public typealias EachState = IdentifiedStates.State
-  public typealias ID = IdentifiedStates.ID
+where StatesCollection.ID: Hashable {
+  public typealias EachState = StatesCollection.State
+  public typealias ID = StatesCollection.ID
 
-  let store: Store<IdentifiedStates, (ID, EachAction)>
-  @ObservedObject var viewStore: ViewStore<IdentifiedStates, (ID, EachAction)>
+  let store: Store<StatesCollection, (ID, EachAction)>
+  @ObservedObject var viewStore: ViewStore<StatesCollection, (ID, EachAction)>
   let content: (ID, Store<EachState, EachAction>) -> Content
 
   /// Initializes a structure that computes views on demand from a store on a collection of data and
@@ -191,7 +192,7 @@ where IdentifiedStates.ID: Hashable {
   ///   - store: A store on an identified array of data and an identified action.
   ///   - content: A function that can generate content given a store of an element.
   public init(
-    _ store: Store<IdentifiedStates, (ID, EachAction)>,
+    _ store: Store<StatesCollection, (ID, EachAction)>,
     @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> Content
   ) {
     self.store = store
@@ -211,7 +212,7 @@ where IdentifiedStates.ID: Hashable {
   ///   - content: A function that can generate content given a store of an element and its
   ///   corresponding identifier.
   public init(
-    _ store: Store<IdentifiedStates, (ID, EachAction)>,
+    _ store: Store<StatesCollection, (ID, EachAction)>,
     @ViewBuilder content: @escaping (ID, Store<EachState, EachAction>) -> Content
   ) {
     self.store = store
@@ -236,7 +237,7 @@ where IdentifiedStates.ID: Hashable {
     }
   }
 
-  public var data: IdentifiedStates.States {
+  public var data: StatesCollection.States {
     viewStore.states
   }
 }
