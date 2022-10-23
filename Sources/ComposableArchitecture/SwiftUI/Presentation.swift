@@ -481,26 +481,54 @@ private struct Item: Identifiable {
 }
 
 // TODO: worth it?
-public struct PresentedView<State, Action, Presented: View, Dismissed: View>: View {
+public struct PresentedView<
+  State,
+  Action,
+  DestinationState,
+  DestinationAction,
+  Destination: View,
+  Dismissed: View
+>: View {
   let store: Store<PresentationState<State>, PresentationAction<State, Action>>
-  let presented: (Store<State, Action>) -> Presented
+  let toDestinationState: (State) -> DestinationState?
+  let fromDestinationAction: (DestinationAction) -> Action
+  let destination: (Store<DestinationState, DestinationAction>) -> Destination
   let dismissed: Dismissed
 
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<State, Action>>,
-    @ViewBuilder presented: @escaping (Store<State, Action>) -> Presented,
+    state toDestinationState: @escaping (State) -> DestinationState?,
+    action fromDestinationAction: @escaping (DestinationAction) -> Action,
+    @ViewBuilder destination: @escaping (Store<DestinationState, DestinationAction>) -> Destination,
     @ViewBuilder dismissed: () -> Dismissed
   ) {
     self.store = store
-    self.presented = presented
+    self.toDestinationState = toDestinationState
+    self.fromDestinationAction = fromDestinationAction
+    self.destination = destination
+    self.dismissed = dismissed()
+  }
+
+  public init(
+    _ store: Store<PresentationState<State>, PresentationAction<State, Action>>,
+    @ViewBuilder destination: @escaping (Store<DestinationState, DestinationAction>) -> Destination,
+    @ViewBuilder dismissed: () -> Dismissed
+  ) where State == DestinationState, Action == DestinationAction {
+    self.store = store
+    self.toDestinationState = { $0 }
+    self.fromDestinationAction = { $0 }
+    self.destination = destination
     self.dismissed = dismissed()
   }
 
   public var body: some View {
     IfLetStore(
-      self.store.scope(state: { $0.wrappedValue }, action: { .presented($0) })
+      self.store.scope(
+        state: { $0.wrappedValue.flatMap(toDestinationState) },
+        action: { .presented(fromDestinationAction($0)) }
+      )
     ) { store in
-      self.presented(store)
+      self.destination(store)
     } else: {
       self.dismissed
     }
