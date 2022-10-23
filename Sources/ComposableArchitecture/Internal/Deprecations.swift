@@ -1136,44 +1136,58 @@ extension AnyReducer {
 
 extension ForEachStore {
   @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead.")
-  public init<EachContent>(
-    _ store: Store<Data, (Data.Index, EachAction)>,
+  public init<EachState, ID: Hashable>(
+    _ store: Store<[EachState], (Int, EachAction)>,
     id: KeyPath<EachState, ID>,
     @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
   )
   where
-    Data == [EachState],
-    Content == WithViewStore<
-      [ID], (Data.Index, EachAction), ForEach<[(offset: Int, element: ID)], ID, EachContent>
-    >
+    StatesCollection == IndexedIdentifiedArray<ID, EachState>
   {
-    let data = store.state.value
-    self.data = data
-    self.content = WithViewStore(store.scope(state: { $0.map { $0[keyPath: id] } })) { viewStore in
-      ForEach(Array(viewStore.state.enumerated()), id: \.element) { index, _ in
-        content(
-          store.scope(
-            state: { index < $0.endIndex ? $0[index] : data[index] },
-            action: { (index, $0) }
-          )
-        )
-      }
-    }
+    let store: Store<IndexedIdentifiedArray<ID, EachState>, (IndexedID<ID>, EachAction)> =
+      store.scope(
+        state: { IndexedIdentifiedArray(array: $0, id: id) },
+        action: { ($0.0.index, $0.1) }
+      )
+    self = .init(store, content: content)
   }
 
   @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead.")
-  public init<EachContent>(
-    _ store: Store<Data, (Data.Index, EachAction)>,
+  public init<EachState, ID: Hashable>(
+    _ store: Store<[EachState], (Int, EachAction)>,
     @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
   )
   where
-    Data == [EachState],
-    Content == WithViewStore<
-      [ID], (Data.Index, EachAction), ForEach<[(offset: Int, element: ID)], ID, EachContent>
-    >,
-    EachState: Identifiable,
-    EachState.ID == ID
+    StatesCollection == IndexedIdentifiedArray<ID, EachState>,
+    EachState: Identifiable, EachState.ID == ID
   {
-    self.init(store, id: \.id, content: content)
+    self = ForEachStore(store, id: \.id, content: content)
+  }
+}
+
+@available(*, deprecated)
+public struct IndexedID<ID: Hashable>: Hashable {
+  let index: Int
+  var id: ID?
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.id == rhs.id
+  }
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(id)
+  }
+}
+
+@available(*, deprecated)
+public struct IndexedIdentifiedArray<ID: Hashable, Element>: IdentifiedStatesCollection {
+  let array: [Element]
+  let id: KeyPath<Element, ID>
+
+  public var stateIDs: [IndexedID<ID>] {
+    array.enumerated().map { IndexedID(index: $0.offset, id: $0.element[keyPath: id]) }
+  }
+  public var states: [Element] { array }
+
+  public func extract(tag: IndexedID<ID>) -> Element? {
+    array[tag.index]
   }
 }
