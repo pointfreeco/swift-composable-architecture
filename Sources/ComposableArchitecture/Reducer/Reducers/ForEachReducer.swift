@@ -1,6 +1,7 @@
 import OrderedCollections
 
-/// A protocol that describe container types from which one can extract some domain's `State` value.
+/// A protocol that describes container types from which one can extract some domain's `State`
+/// value.
 ///
 /// This protocol is semi-abstract and you usually conform to the ``MutableStateContainer`` and/or
 /// the ``IdentifiedStatesCollection`` which inherit from this protocol.

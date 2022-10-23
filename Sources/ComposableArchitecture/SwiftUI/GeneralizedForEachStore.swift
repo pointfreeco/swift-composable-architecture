@@ -2,6 +2,17 @@ import Foundation
 import OrderedCollections
 import SwiftUI
 
+/// A protocol that describes an collection of states with stable identifiers.
+///
+/// The library ships with two direct adopters of this protocol: `IdentifiedArray` from our
+/// [Identified Collections][swift-identified-collections] library, and `OrderedDictionary` from
+/// [Swift Collections][swift-collections].
+///
+/// You can also use ``IdentifiedStates`` to transform any `RandomAccessCollection` into an
+/// ``IdentifiedStatesCollection``, provided you're able to 
+///
+/// [swift-identified-collections]: http://github.com/pointfreeco/swift-identified-collections
+/// [swift-collections]: http://github.com/apple/swift-collections
 public protocol IdentifiedStatesCollection: StateContainer {
   typealias ID = Tag
   associatedtype IDs: RandomAccessCollection where IDs.Element == ID
@@ -12,6 +23,9 @@ public protocol IdentifiedStatesCollection: StateContainer {
   // This is unconstrained for now, until one assesses the requirements for lazy variants.
   var states: States { get }
 
+  /// Returns `true` if this collection's identifiers are the same as `other` identifiers.
+  ///
+  /// A default implementation is provided when ``IDs`` is `Equatable`.
   func areDuplicateIDs(other: Self) -> Bool
 }
 
@@ -76,28 +90,28 @@ where IDs: RandomAccessCollection, States: Collection {
 }
 
 extension IdentifiedStates {
-  public init(
-    stateIDs: () -> IDs,
-    states: () -> States,
-    get: @escaping (ID) -> State,
-    removeDuplicateIDs areDuplicateIDs: @escaping (IDs, IDs) -> Bool
-  ) {
-    self._extract = get
-    self.stateIDs = stateIDs()
-    self.states = states()
-    self.areDuplicateIDs = areDuplicateIDs
-  }
-
-  public init(
-    stateIDs: () -> IDs,
-    states: () -> States,
-    get: @escaping (ID) -> State
-  ) where IDs: Equatable {
-    self._extract = get
-    self.stateIDs = stateIDs()
-    self.states = states()
-    self.areDuplicateIDs = (==)
-  }
+//  public init(
+//    stateIDs: () -> IDs,
+//    states: () -> States,
+//    get: @escaping (ID) -> State,
+//    removeDuplicateIDs areDuplicateIDs: @escaping (IDs, IDs) -> Bool
+//  ) {
+//    self._extract = get
+//    self.stateIDs = stateIDs()
+//    self.states = states()
+//    self.areDuplicateIDs = areDuplicateIDs
+//  }
+//
+//  public init(
+//    stateIDs: () -> IDs,
+//    states: () -> States,
+//    get: @escaping (ID) -> State
+//  ) where IDs: Equatable {
+//    self._extract = get
+//    self.stateIDs = stateIDs()
+//    self.states = states()
+//    self.areDuplicateIDs = (==)
+//  }
   
   public init(
     states: States,
