@@ -124,7 +124,7 @@ extension ReducerProtocol {
   }
 }
 
-extension Optional: StateContainer {
+extension Optional: MutableStateContainer {
   public func extract(tag: Wrapped.Type) -> Wrapped? {
     self
   }

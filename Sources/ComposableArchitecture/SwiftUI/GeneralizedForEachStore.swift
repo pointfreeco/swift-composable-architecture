@@ -1,6 +1,4 @@
-import OrderedCollections
 import SwiftUI
-
 /// A Composable Architecture-friendly wrapper around `ForEach` that simplifies working with
 /// collections of state.
 ///
@@ -77,11 +75,16 @@ import SwiftUI
 /// }
 /// ```
 ///
-public struct ForEachStore<
-  EachState, EachAction, Data: Collection, ID: Hashable, Content: View
->: DynamicViewContent {
-  public let data: Data
-  let content: Content
+public struct GeneralizedForEachStore<
+  IdentifiedStates: IdentifiedStatesCollectionProtocol, EachAction, Content: View
+>: DynamicViewContent
+where IdentifiedStates.ID: Hashable {
+  public typealias EachState = IdentifiedStates.State
+  public typealias ID = IdentifiedStates.ID
+
+  let store: Store<IdentifiedStates, (ID, EachAction)>
+  @ObservedObject var viewStore: ViewStore<IdentifiedStates, (ID, EachAction)>
+  let content: (ID, Store<EachState, EachAction>) -> Content
 
   /// Initializes a structure that computes views on demand from a store on a collection of data and
   /// an identified action.
@@ -89,53 +92,53 @@ public struct ForEachStore<
   /// - Parameters:
   ///   - store: A store on an identified array of data and an identified action.
   ///   - content: A function that can generate content given a store of an element.
-  public init<EachContent>(
-    _ store: Store<IdentifiedArray<ID, EachState>, (ID, EachAction)>,
-    @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
-  )
-  where
-    Data == IdentifiedArray<ID, EachState>,
-    Content == WithViewStore<
-      OrderedSet<ID>, (ID, EachAction), ForEach<OrderedSet<ID>, ID, EachContent>
-    >
-  {
-    self.data = store.state.value
-    self.content = WithViewStore(
+  public init(
+    _ store: Store<IdentifiedStates, (ID, EachAction)>,
+    @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> Content
+  ) {
+    self.store = store
+    self.viewStore = ViewStore(
       store,
-      observe: { $0.ids },
-      removeDuplicates: areOrderedSetsDuplicates
-    ) { viewStore in
-      ForEach(viewStore.state, id: \.self) { id -> EachContent in
-        // NB: We cache elements here to avoid a potential crash where SwiftUI may re-evaluate
-        //     views for elements no longer in the collection.
-        //
-        // Feedback filed: https://gist.github.com/stephencelis/cdf85ae8dab437adc998fb0204ed9a6b
-        var element = store.state.value[id: id]!
-        return content(
-          store.scope(
-            state: {
-              element = $0[id: id] ?? element
-              return element
-            },
-            action: { (id, $0) }
-          )
-        )
-      }
-    }
+      observe: { $0 },
+      removeDuplicates: { $0.areDuplicateIDs(other: $1) }
+    )
+    self.content = { content($1) }
+  }
+
+  /// Initializes a structure that computes views on demand from a store on a collection of data and
+  /// an identified action.
+  ///
+  /// - Parameters:
+  ///   - store: A store on an identified array of data and an identified action.
+  ///   - content: A function that can generate content given a store of an element and its
+  ///   corresponding identifier.
+  public init(
+    _ store: Store<IdentifiedStates, (ID, EachAction)>,
+    @ViewBuilder content: @escaping (ID, Store<EachState, EachAction>) -> Content
+  ) {
+    self.store = store
+    self.viewStore = ViewStore(
+      store,
+      observe: { $0 },
+      removeDuplicates: {  $0.areDuplicateIDs(other: $1) }
+    )
+    self.content = content
   }
 
   public var body: some View {
-    self.content
+    ForEach(viewStore.stateIDs, id: \.self) { stateID in
+      // TODO: Message if `nil`?
+      let state = viewStore.state.extract(tag: stateID)!
+      let eachStore = store.scope {
+        $0.extract(tag: stateID) ?? state
+      } action: {
+        (stateID, $0)
+      }
+      self.content(stateID, eachStore)
+    }
   }
-}
 
-private func areOrderedSetsDuplicates<ID: Hashable>(lhs: OrderedSet<ID>, rhs: OrderedSet<ID>)
-  -> Bool
-{
-  var lhs = lhs
-  var rhs = rhs
-  if memcmp(&lhs, &rhs, MemoryLayout<OrderedSet<ID>>.size) == 0 {
-    return true
+  public var data: IdentifiedStates.States {
+    viewStore.states
   }
-  return lhs == rhs
 }

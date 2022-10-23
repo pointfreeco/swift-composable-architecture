@@ -45,7 +45,7 @@ extension ReducerProtocol {
     ///     state.
     /// - Returns: A reducer that combines the child reducer with the parent reducer.
     @inlinable
-    public func forEach<States: StateContainer, ElementState, ElementAction>(
+    public func forEach<States: MutableStateContainer, ElementState, ElementAction>(
       _ toElementsState: WritableKeyPath<State, States>,
       action toElementAction: CasePath<Action, (States.Tag, ElementAction)>,
       @ReducerBuilder<ElementState, ElementAction> _ element: () -> some ReducerProtocol<
@@ -122,7 +122,7 @@ extension ReducerProtocol {
   }
 }
 
-extension IdentifiedArray: StateContainer {
+extension IdentifiedArray: MutableStateContainer {
   public func extract(tag: ID) -> Element? {
     self[id: tag]
   }
@@ -137,7 +137,7 @@ extension IdentifiedArray: StateContainer {
 }
 
 import OrderedCollections
-extension OrderedDictionary: StateContainer {
+extension OrderedDictionary: MutableStateContainer {
   public func extract(tag: Key) -> Value? {
     self[tag]
   }

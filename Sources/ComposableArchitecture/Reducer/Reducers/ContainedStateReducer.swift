@@ -111,8 +111,11 @@ extension CasePath: MutableFailableStateDerivation {
 public protocol StateContainer {
   associatedtype State
   associatedtype Tag
-
   func extract(tag: Tag) -> State?
+}
+
+@rethrows
+public protocol MutableStateContainer: StateContainer {
   mutating func embed(tag: Tag, state: State)
 
   /// Checks if a container contains a ``State`` for a given ``Tag``
@@ -142,7 +145,7 @@ public protocol StateContainer {
   mutating func modify<Result>(tag: Tag, _ body: (inout State) -> Result) throws -> Result
 }
 
-extension StateContainer {
+extension MutableStateContainer {
   @inlinable
   public func contains(tag: Tag) -> Bool {
     self.extract(tag: tag) != nil
@@ -157,7 +160,7 @@ extension StateContainer {
   }
 }
 
-public struct IdentityContainer<Value>: StateContainer {
+public struct IdentityContainer<Value>: MutableStateContainer {
   @usableFromInline
   init(_ value: Value) {
     self.value = value
@@ -239,7 +242,7 @@ struct StateExtractionFailureHandler<State, Action>: Sendable {
 public struct _ContainedStateReducer<
   Parent: ReducerProtocol,
   Derivation: MutableFailableStateDerivation,
-  Container: StateContainer,
+  Container: MutableStateContainer,
   Content: ReducerProtocol
 >: ReducerProtocol
 where

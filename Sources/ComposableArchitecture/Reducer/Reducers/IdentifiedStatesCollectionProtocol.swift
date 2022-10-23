@@ -1,14 +1,8 @@
 import Foundation
 import OrderedCollections
 
-public protocol IdentifiedStates {
-  associatedtype ID
-  associatedtype State
-  subscript(stateID stateID: ID) -> State? { get set }
-}
-
-public protocol IdentifiedStatesCollection: IdentifiedStates {
-  // `RandomAccessCollection` is imposed by `ForEach` where `IDs`is used
+public protocol IdentifiedStatesCollectionProtocol: StateContainer {
+  typealias ID = Tag
   associatedtype IDs: RandomAccessCollection = States.Indices where IDs.Element == ID
   associatedtype States: Collection where States.Element == State
 
@@ -20,22 +14,16 @@ public protocol IdentifiedStatesCollection: IdentifiedStates {
   func areDuplicateIDs(other: Self) -> Bool
 }
 
-extension IdentifiedStatesCollection where IDs: Equatable {
+extension IdentifiedStatesCollectionProtocol where IDs: Equatable {
   @inlinable
   public func areDuplicateIDs(other: Self) -> Bool {
     self.stateIDs == other.stateIDs
   }
 }
 
-extension IdentifiedArray: IdentifiedStatesCollection {
+extension IdentifiedArray: IdentifiedStatesCollectionProtocol {
   public var stateIDs: OrderedSet<ID> { self.ids }
   public var states: Self { self }
-
-  @inlinable
-  public subscript(stateID stateID: ID) -> Element? {
-    _read { yield self[id: stateID] }
-    _modify { yield &self[id: stateID] }
-  }
 
   @inlinable
   public func areDuplicateIDs(other: Self) -> Bool {
@@ -43,15 +31,9 @@ extension IdentifiedArray: IdentifiedStatesCollection {
   }
 }
 
-extension OrderedDictionary: IdentifiedStatesCollection {
+extension OrderedDictionary: IdentifiedStatesCollectionProtocol {
   public var stateIDs: OrderedSet<Key> { self.keys }
   public var states: OrderedDictionary<Key, Value>.Values { self.values }
-
-  @inlinable
-  public subscript(stateID stateID: Key) -> Value? {
-    _read { yield self[stateID] }
-    _modify { yield &self[stateID] }
-  }
 
   @inlinable
   public func areDuplicateIDs(other: Self) -> Bool {
@@ -59,7 +41,17 @@ extension OrderedDictionary: IdentifiedStatesCollection {
   }
 }
 
-public struct AnyIdentifiedStateCollection<IDs, States>: IdentifiedStatesCollection
+@usableFromInline
+func areCoWEqual<IDs: Equatable>(lhs: IDs, rhs: IDs) -> Bool {
+  var lhs = lhs
+  var rhs = rhs
+  if memcmp(&lhs, &rhs, MemoryLayout<IDs>.size) == 0 {
+    return true
+  }
+  return lhs == rhs
+}
+
+public struct IdentifiedStateCollection<IDs, States>: IdentifiedStatesCollectionProtocol
 where IDs: RandomAccessCollection, States: Collection {
 
   public typealias ID = IDs.Element
@@ -70,19 +62,15 @@ where IDs: RandomAccessCollection, States: Collection {
   @usableFromInline
   var get: (ID) -> State?
   @usableFromInline
-  var set: (ID, State?) -> Void
-  @usableFromInline
   var areDuplicateIDs: (IDs, IDs) -> Bool
 
   public init(
     stateIDs: () -> IDs,
     states: () -> States,
     get: @escaping (ID) -> State?,
-    set: @escaping (ID, State?) -> Void,
     removeDuplicateIDs areDuplicateIDs: @escaping (IDs, IDs) -> Bool
   ) {
     self.get = get
-    self.set = set
     self.stateIDs = stateIDs()
     self.states = states()
     self.areDuplicateIDs = areDuplicateIDs
@@ -91,33 +79,19 @@ where IDs: RandomAccessCollection, States: Collection {
   public init(
     stateIDs: () -> IDs,
     states: () -> States,
-    get: @escaping (ID) -> State?,
-    set: @escaping (ID, State?) -> Void
+    get: @escaping (ID) -> State?
   ) where IDs: Equatable {
     self.get = get
-    self.set = set
     self.stateIDs = stateIDs()
     self.states = states()
     self.areDuplicateIDs = (==)
   }
 
-  @inlinable
-  public subscript(stateID stateID: ID) -> State? {
-    get { self.get(stateID) }
-    nonmutating set { self.set(stateID, newValue) }
+  public func extract(tag: ID) -> States.Element? {
+    self.get(tag)
   }
 
-  public func areDuplicateIDs(other: AnyIdentifiedStateCollection<IDs, States>) -> Bool {
+  public func areDuplicateIDs(other: IdentifiedStateCollection<IDs, States>) -> Bool {
     self.areDuplicateIDs(self.stateIDs, other.stateIDs)
   }
-}
-
-@usableFromInline
-internal func areCoWEqual<IDs: Equatable>(lhs: IDs, rhs: IDs) -> Bool {
-  var lhs = lhs
-  var rhs = rhs
-  if memcmp(&lhs, &rhs, MemoryLayout<IDs>.size) == 0 {
-    return true
-  }
-  return lhs == rhs
 }
