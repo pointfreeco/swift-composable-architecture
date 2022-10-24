@@ -17,14 +17,14 @@ public protocol IdentifiedStatesCollection: StateContainer {
   /// A `RandomAccessCollection` of ``ID`` which is in a 1-to-1 relationship with the ``states``
   /// collection of ``StateContainer/State``.
   ///
-  /// - Warning: You are responsible for keeping these values in a 1-to-1 relationship with
+  /// - Warning: You are responsible for keeping these values in an injective relationship with
   /// ``states``, which means that a ``StateContainer/State`` value should exist for any ``ID`` from
   /// ``stateIDs``.
   var stateIDs: IDs { get }
   
   /// The ``State`` values contained in this collection.
   ///
-  /// - Warning: You are responsible for keeping these ``stateIDs`` in a 1-to-1 relationship with
+  /// - Warning: You are responsible for keeping ``stateIDs`` in an injective relationship with
   /// these values, which means that a ``StateContainer/State`` value should exist for any ``ID``
   /// from ``stateIDs``.
   var states: States { get }
