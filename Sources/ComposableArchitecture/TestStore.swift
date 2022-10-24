@@ -1342,7 +1342,6 @@ extension TestStore {
 
       \(actions)
       """,
-      // TODO: get test coverage on this logic
       overrideExhaustivity: self.exhaustivity == .none
         ? self.exhaustivity
         : .partial(prefix: self.exhaustivity.prefix),
@@ -1410,7 +1409,6 @@ extension TestStore {
 
       \(actions)
       """,
-      // TODO: get test coverage on this logic
       overrideExhaustivity: self.exhaustivity == .none
         ? self.exhaustivity
         : .partial(prefix: self.exhaustivity.prefix),
