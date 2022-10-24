@@ -50,7 +50,7 @@ final class EffectTests: XCTestCase {
       .store(in: &self.cancellables)
   }
 
-#if canImport(RoomPlan) || (!canImport(Darwin) && swift(>=5.7))
+  #if canImport(RoomPlan) || (!canImport(Darwin) && swift(>=5.7))
     func testConcatenate() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
         let clock = TestClock()
@@ -102,35 +102,35 @@ final class EffectTests: XCTestCase {
     XCTAssertEqual(values, [1])
   }
 
-#if canImport(RoomPlan) || (!canImport(Darwin) && swift(>=5.7))
-  func testMerge() async {
-    if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-      let clock = TestClock()
+  #if canImport(RoomPlan) || (!canImport(Darwin) && swift(>=5.7))
+    func testMerge() async {
+      if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
+        let clock = TestClock()
 
-      let effect = Effect<Int, Never>.merge(
-        (1...3).map { count in
-          .task {
-            try await clock.sleep(for: .seconds(count))
-            return count
+        let effect = Effect<Int, Never>.merge(
+          (1...3).map { count in
+            .task {
+              try await clock.sleep(for: .seconds(count))
+              return count
+            }
           }
-        }
-      )
+        )
 
-      var values: [Int] = []
-      effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+        var values: [Int] = []
+        effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
 
-      XCTAssertEqual(values, [])
+        XCTAssertEqual(values, [])
 
-      await clock.advance(by: .seconds(1))
-      XCTAssertEqual(values, [1])
+        await clock.advance(by: .seconds(1))
+        XCTAssertEqual(values, [1])
 
-      await clock.advance(by: .seconds(1))
-      XCTAssertEqual(values, [1, 2])
+        await clock.advance(by: .seconds(1))
+        XCTAssertEqual(values, [1, 2])
 
-      await clock.advance(by: .seconds(1))
-      XCTAssertEqual(values, [1, 2, 3])
+        await clock.advance(by: .seconds(1))
+        XCTAssertEqual(values, [1, 2, 3])
+      }
     }
-  }
   #endif
 
   func testEffectSubscriberInitializer() {
