@@ -26,7 +26,7 @@ struct LoadThenNavigate: ReducerProtocol {
     case setNavigationIsActiveDelayCompleted
   }
 
-  @Dependency(\.mainQueue) var mainQueue
+  @Dependency(\.continuousClock) var clock
   private enum CancelID {}
 
   var body: some ReducerProtocol<State, Action> {
@@ -38,7 +38,7 @@ struct LoadThenNavigate: ReducerProtocol {
       case .setNavigation(isActive: true):
         state.isActivityIndicatorVisible = true
         return .task {
-          try await self.mainQueue.sleep(for: 1)
+          try await self.clock.sleep(for: .seconds(1))
           return .setNavigationIsActiveDelayCompleted
         }
         .cancellable(id: CancelID.self)

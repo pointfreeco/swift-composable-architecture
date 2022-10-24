@@ -51,7 +51,6 @@ struct CityMap: ReducerProtocol {
 
   struct CityMapEnvironment {
     var downloadClient: DownloadClient
-    var mainQueue: AnySchedulerOf<DispatchQueue>
   }
 
   var body: some ReducerProtocol<State, Action> {

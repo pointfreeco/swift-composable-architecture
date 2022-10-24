@@ -61,7 +61,7 @@ private enum ScreenshotsKey: DependencyKey {
         .map { _ in }
     )
   }
-  static let testValue: @Sendable () async -> AsyncStream<Void> = XCTUnimplemented(
+  static let testValue: @Sendable () async -> AsyncStream<Void> = unimplemented(
     #"@Dependency(\.screenshots)"#, placeholder: .finished
   )
 }

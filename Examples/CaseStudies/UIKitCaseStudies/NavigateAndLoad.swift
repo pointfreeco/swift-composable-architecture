@@ -16,7 +16,7 @@ struct EagerNavigation: ReducerProtocol {
   }
 
   private enum CancelID {}
-  @Dependency(\.mainQueue) var mainQueue
+  @Dependency(\.continuousClock) var clock
 
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
@@ -24,7 +24,7 @@ struct EagerNavigation: ReducerProtocol {
       case .setNavigation(isActive: true):
         state.isNavigationActive = true
         return .task {
-          try await self.mainQueue.sleep(for: 1)
+          try await self.clock.sleep(for: .seconds(1))
           return .setNavigationIsActiveDelayCompleted
         }
         .cancellable(id: CancelID.self)

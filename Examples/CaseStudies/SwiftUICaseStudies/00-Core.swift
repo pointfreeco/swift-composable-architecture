@@ -60,7 +60,7 @@ struct Root: ReducerProtocol {
     case webSocket(WebSocket.Action)
   }
 
-  @Dependency(\.mainQueue) var mainQueue
+  @Dependency(\.continuousClock) var clock
 
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
@@ -87,7 +87,7 @@ struct Root: ReducerProtocol {
       BindingForm()
     }
     Scope(state: \.clock, action: /Action.clock) {
-      Reduce(clockReducer, environment: ClockEnvironment(mainQueue: self.mainQueue))
+      Reduce(clockReducer, environment: ClockEnvironment(clock: self.clock))
     }
     Scope(state: \.counter, action: /Action.counter) {
       Counter()

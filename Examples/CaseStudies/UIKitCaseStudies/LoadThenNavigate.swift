@@ -17,7 +17,7 @@ struct LazyNavigation: ReducerProtocol {
   }
 
   private enum CancelID {}
-  @Dependency(\.mainQueue) var mainQueue
+  @Dependency(\.continuousClock) var clock
 
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
@@ -28,7 +28,7 @@ struct LazyNavigation: ReducerProtocol {
       case .setNavigation(isActive: true):
         state.isActivityIndicatorHidden = false
         return .task {
-          try await self.mainQueue.sleep(for: 1)
+          try await self.clock.sleep(for: .seconds(1))
           return .setNavigationIsActiveDelayCompleted
         }
         .cancellable(id: CancelID.self)

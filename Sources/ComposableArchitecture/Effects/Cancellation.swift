@@ -167,16 +167,19 @@ extension EffectPublisher {
 ///
 /// ### Debouncing tasks
 ///
-/// When paired with a scheduler, this function can be used to debounce a unit of async work by
+/// When paired with a clock, this function can be used to debounce a unit of async work by
 /// specifying the `cancelInFlight`, which will automatically cancel any in-flight work with the
 /// same identifier:
 ///
 /// ```swift
+/// @Dependency(\.continuousClock) var clock
 /// enum CancelID {}
+///
+/// // ...
 ///
 /// return .task {
 ///   await withTaskCancellation(id: CancelID.self, cancelInFlight: true) {
-///     try await environment.scheduler.sleep(for: .seconds(0.3))
+///     try await self.clock.sleep(for: .seconds(0.3))
 ///     return await .debouncedResponse(
 ///       TaskResult { try await environment.request() }
 ///     )

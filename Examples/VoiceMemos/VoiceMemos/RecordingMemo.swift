@@ -30,7 +30,7 @@ struct RecordingMemo: ReducerProtocol {
   struct Failed: Equatable, Error {}
 
   @Dependency(\.audioRecorder) var audioRecorder
-  @Dependency(\.mainRunLoop) var mainRunLoop
+  @Dependency(\.continuousClock) var clock
 
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
@@ -66,7 +66,7 @@ struct RecordingMemo: ReducerProtocol {
             TaskResult { try await self.audioRecorder.startRecording(url) }
           )
         )
-        for await _ in self.mainRunLoop.timer(interval: .seconds(1)) {
+        for await _ in self.clock.timer(interval: .seconds(1)) {
           await send(.timerUpdated)
         }
         await startRecording

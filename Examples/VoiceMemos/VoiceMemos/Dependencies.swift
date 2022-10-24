@@ -16,7 +16,7 @@ extension DependencyValues {
         UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
       }
     }
-    static let testValue: @Sendable () async -> Void = XCTUnimplemented(
+    static let testValue: @Sendable () async -> Void = unimplemented(
       #"@Dependency(\.openSettings)"#
     )
   }
