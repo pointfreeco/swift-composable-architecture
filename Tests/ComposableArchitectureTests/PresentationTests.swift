@@ -67,7 +67,7 @@ final class PresentationTests: XCTestCase {
       reducer: Feature()
     )
 
-    await store.send(.child1(.present(id: UUID(), nil))) {
+    await store.send(.child1(.present())) {
       $0.child1 = Child.State()
     }
     await store.send(.child1(.dismiss)) {

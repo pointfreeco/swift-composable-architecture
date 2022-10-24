@@ -31,6 +31,8 @@ public struct NavigationState<Element: Hashable>:
   @usableFromInline
   var destinations: OrderedDictionary<ID, Element> = [:]
 
+  // TODO: should we use [ID: Element?] so that views can signal pushing but let reducer hydate
+
   @inlinable
   @inline(__always)
   public var ids: OrderedSet<ID> {
@@ -274,6 +276,8 @@ public enum NavigationAction<State: Hashable, Action> {
   case dismiss(id: NavigationState.ID)
   case element(id: NavigationState.ID, Action)
   case setPath(NavigationState<State>)
+
+  // case push, pop, pop(to)
 }
 
 public typealias NavigationActionOf<R: ReducerProtocol> = NavigationAction<R.State, R.Action>

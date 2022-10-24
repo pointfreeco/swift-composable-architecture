@@ -7,7 +7,7 @@ private let readMe = """
 
 struct NavigationDemo: ReducerProtocol {
   struct State: Equatable {
-    @NavigationStateOf<Destinations> var path
+    @NavigationStateOf<Destinations> var navigation: NavigationState<Destinations.State>.Path
   }
 
   enum Action: Equatable {
@@ -15,11 +15,13 @@ struct NavigationDemo: ReducerProtocol {
     case goBackToScreen(Int)
     case goToABCButtonTapped
     case navigation(NavigationActionOf<Destinations>)
+    // .path(.setPath(...))
+    //
     case shuffleButtonTapped
   }
 
   var body: some ReducerProtocol<State, Action> {
-    Reduce { state, action in
+    Reduce<State, Action> { state, action in
       switch action {
       case .cancelTimersButtonTapped:
 //        return .cancel(id: ScreenC.TimerID.self)
@@ -32,7 +34,7 @@ struct NavigationDemo: ReducerProtocol {
         //         * Cancel a particular effect inside a particular screen in the stack
         //           return .cancel(id: ScreenC.TimerID.self, navigationID: id)
         return .merge(
-          state.$path.compactMap { destination -> EffectTask<Action>? in
+          state.$navigation.compactMap { destination -> EffectTask<Action>? in
             switch destination.element {
             case .screenA, .screenB:
               return nil
@@ -48,36 +50,36 @@ struct NavigationDemo: ReducerProtocol {
         )
 
       case let .goBackToScreen(n):
-        state.path.removeLast(n)
+        state.navigation.removeLast(n)
         return .none
 
       case .goToABCButtonTapped:
-        state.path.append(.screenA(.init()))
-        state.path.append(.screenB(.init()))
-        state.path.append(.screenC(.init()))
+        state.navigation.append(.screenA(.init()))
+        state.navigation.append(.screenB(.init()))
+        state.navigation.append(.screenC(.init()))
         return .none
 
       case .navigation(.element(id: _, .screenB(.screenAButtonTapped))):
-        state.path.append(.screenA(.init()))
+        state.navigation.append(.screenA(.init()))
         return .none
 
       case .navigation(.element(id: _, .screenB(.screenBButtonTapped))):
-        state.path.append(.screenB(.init()))
+        state.navigation.append(.screenB(.init()))
         return .none
 
       case .navigation(.element(id: _, .screenB(.screenCButtonTapped))):
-        state.path.append(.screenC(.init()))
+        state.navigation.append(.screenC(.init()))
         return .none
 
       case .navigation:
         return .none
 
       case .shuffleButtonTapped:
-        state.path.shuffle()
+        state.navigation.shuffle()
         return .none
       }
     }
-    .navigationDestination(\.$path, action: /Action.navigation) {
+    .navigationDestination(\.$navigation, action: /Action.navigation) {
       Destinations()
     }
   }
@@ -114,7 +116,7 @@ struct NavigationDemoView: View {
 
   var body: some View {
     ZStack(alignment: .bottom) {
-      NavigationStackStore(self.store.scope(state: \.$path, action: NavigationDemo.Action.navigation)) {
+      NavigationStackStore(self.store.scope(state: \.$navigation, action: NavigationDemo.Action.navigation)) {
         Form {
           Section { Text(readMe) }
 
@@ -142,7 +144,7 @@ struct NavigationDemoView: View {
           }
         }
         .navigationDestination(
-          store: self.store.scope(state: \.$path, action: NavigationDemo.Action.navigation)
+          store: self.store.scope(state: \.$navigation, action: NavigationDemo.Action.navigation)
         ) { store in
           SwitchStore(store) {
             CaseLet(
@@ -184,7 +186,7 @@ struct FloatingMenuView: View {
     init(state: NavigationDemo.State) {
       self.total = 0
       self.currentStack = []
-      for element in state.path {
+      for element in state.navigation {
         switch element {
         case let .screenA(screenAState):
           self.total += screenAState.count

@@ -268,7 +268,7 @@ public struct _PresentationDestinationReducer<
     } else if case .present(_, .none) = presentedAction,
       case .dismissed = state[keyPath: self.toPresentedState]
     {
-      // TODO: Should we warn if a `.present(nil)` action was sent but state did not hydrate?
+      // TODO: remove this because async presentation should be allowed
       runtimeWarn(
         """
         A ".present" action was sent with "nil" state at "\(self.fileID):\(self.line)" but the \

@@ -122,15 +122,6 @@ final class NavigationTests: XCTestCase {
     }
   }
 
-  func testPushWithNil() async {
-    let store = TestStore(
-      initialState: Feature.State(),
-      reducer: Feature()
-    )
-
-    // TODO: how to write this test?
-  }
-
   func testMultiChildrenOnStack() async {
     let store = TestStore(
       initialState: Feature.State(),
@@ -164,7 +155,11 @@ final class NavigationTests: XCTestCase {
 
     await store.send(.path(.dismiss(id: 1))) {
       // TODO: APIs to make this nicer:
-      $0.$path.removeAll { $0.id == AnyHashable(1) }
+      // $0.$path.pop(to: 1)
+      // $0.$path.pop(id: 1)
+      // $0.$path.dismiss(id: 1)
+      $0.$path[id: 1] = nil
+//      $0.$path.removeAll { $0.id == AnyHashable(1) }
     }
     await store.send(.path(.dismiss(id: 0))) {
       $0.path = []

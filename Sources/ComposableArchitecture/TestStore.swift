@@ -252,7 +252,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     Action == ScopedAction,
     Environment == Void
   {
-    DependencyValues._current.clearCache()
+    //DependencyValues._current.clearCache()
 
     let reducer = TestReducer(Reduce(reducer), initialState: initialState)
     self._environment = .init(wrappedValue: ())
