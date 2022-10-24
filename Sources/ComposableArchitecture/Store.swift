@@ -133,7 +133,7 @@ public final class Store<State, Action> {
   #endif
   var state: CurrentValueSubject<State, Never>
   #if DEBUG
-    private let mainThreadChecksEnabled: Bool
+    let mainThreadChecksEnabled: Bool
   #endif
 
   /// Initializes a store from an initial state and a reducer.
@@ -639,10 +639,20 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
         action: { fromScopedAction(fromRescopedAction($0)) },
         parentStores: self.parentStores + [store]
       )
+      #if DEBUG
+      let childStore = Store<RescopedState, RescopedAction>(
+        initialState: toRescopedState(store.state.value),
+        reducer: reducer,
+        mainThreadChecksEnabled: store.mainThreadChecksEnabled
+      )
+      #else
       let childStore = Store<RescopedState, RescopedAction>(
         initialState: toRescopedState(store.state.value),
         reducer: reducer
       )
+      #endif
+      
+      
       childStore.parentCancellable = store.state
         .dropFirst()
         .sink { [weak childStore] newValue in

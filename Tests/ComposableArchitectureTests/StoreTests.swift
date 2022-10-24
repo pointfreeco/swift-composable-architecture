@@ -1,5 +1,5 @@
 import Combine
-@_spi(Internals) import ComposableArchitecture
+@_spi(Internals) @testable import ComposableArchitecture
 import XCTest
 
 @MainActor
@@ -509,5 +509,17 @@ final class StoreTests: XCTestCase {
     try await XCTUnwrap(sendTask).value
     XCTAssertEqual(store.effectCancellables.count, 0)
     XCTAssertEqual(scopedStore.effectCancellables.count, 0)
+  }
+
+  func testScopeStoreFromParentWithDisabledMainThreadChecks() async throws {
+    let store = Store(
+      initialState: (),
+      reducer: EmptyReducer<Void, Void>(),
+      mainThreadChecksEnabled: false
+    )
+    
+    let scopedStore = store.scope(state: { $0 })
+    
+    XCTAssertFalse(scopedStore.mainThreadChecksEnabled)
   }
 }
