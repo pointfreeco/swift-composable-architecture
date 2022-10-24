@@ -1,3 +1,5 @@
+import Combine
+
 extension AsyncStream {
   /// Initializes an `AsyncStream` from any `AsyncSequence`.
   ///
@@ -140,8 +142,37 @@ extension AsyncStream {
   }
 }
 
+extension AsyncStream {
+  /// Initializes an `AsyncStream` from any `Publisher` with `Failure == Never`.
+  ///
+  /// - Parameters:
+  ///   - publisher: A `Publisher`.
+  ///   - limit: The maximum number of elements to hold in the buffer. By default, this value is
+  ///   unlimited. Use a `Continuation.BufferingPolicy` to buffer a specified number of oldest or
+  ///   newest elements.
+  public init<P: Publisher>(
+    _ publisher: P,
+    bufferingPolicy limit: Continuation.BufferingPolicy = .unbounded
+  )
+  where P.Output == Element, P.Failure == Never {
+    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+      self = AsyncStream(publisher.values, bufferingPolicy: limit)
+    } else {
+      self = AsyncStream(bufferingPolicy: limit) { continuation in
+        let subscription = publisher.sink(
+          receiveCompletion: { _ in continuation.finish() },
+          receiveValue: { continuation.yield($0) }
+        )
+        continuation.onTermination = { @Sendable _ in
+          subscription.cancel()
+        }
+      }
+    }
+  }
+}
+
 extension AsyncThrowingStream where Failure == Error {
-  /// Initializes an `AsyncStream` from any `AsyncSequence`.
+  /// Initializes an `AsyncThrowingStream` from any `AsyncSequence`.
   ///
   /// - Parameters:
   ///   - sequence: An `AsyncSequence`.
@@ -234,6 +265,42 @@ extension AsyncThrowingStream where Failure == Error {
 
   public static var finished: Self {
     Self { $0.finish() }
+  }
+}
+
+extension AsyncThrowingStream {
+  /// Initializes an `AsyncThrowingStream` from any failable `Publisher`.
+  ///
+  /// - Parameters:
+  ///   - publisher: A `Publisher`.
+  ///   - limit: The maximum number of elements to hold in the buffer. By default, this value is
+  ///   unlimited. Use a `Continuation.BufferingPolicy` to buffer a specified number of oldest or
+  ///   newest elements.
+  public init<P: Publisher>(
+    _ publisher: P,
+    bufferingPolicy limit: Continuation.BufferingPolicy = .unbounded
+  )
+  where P.Output == Element, Failure == any Error {
+    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+      self = AsyncThrowingStream(publisher.values, bufferingPolicy: limit)
+    } else {
+      self = AsyncThrowingStream(bufferingPolicy: limit) { continuation in
+        let subscription = publisher.sink(
+          receiveCompletion: {
+            switch $0 {
+            case .finished:
+              continuation.finish()
+            case .failure(let error):
+              continuation.finish(throwing: error)
+            }
+          },
+          receiveValue: { continuation.yield($0) }
+        )
+        continuation.onTermination = { @Sendable _ in
+          subscription.cancel()
+        }
+      }
+    }
   }
 }
 
