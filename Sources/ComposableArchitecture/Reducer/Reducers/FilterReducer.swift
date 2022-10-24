@@ -2,10 +2,10 @@ extension ReducerProtocol {
 #if swift(>=5.7)
   @inlinable
   public func filter<WrappedState, WrappedAction>(
+    behaviour: FilterBehaviour = .filter,
     _ toWrappedState: WritableKeyPath<State, WrappedState>,
     action toWrappedAction: CasePath<Action, WrappedAction>,
     @ReducerBuilder<WrappedState, WrappedAction> then wrapped: () -> some ReducerProtocol<WrappedState, WrappedAction>,
-    behaviour: FilterBehaviour = .filter,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -23,20 +23,20 @@ extension ReducerProtocol {
   }
 #else
   @inlinable
-  public func filter<Case: ReducerProtocol>(
-    _ toCaseState: CasePath<State, Case.State>,
-    action toCaseAction: CasePath<Action, Case.Action>,
-    @ReducerBuilderOf<Case> then case: () -> Case,
+  public func filter<Wrapped: ReducerProtocol>(
     behaviour: FilterBehaviour = .filter,
+    _ toWrappedState: WritableKeyPath<State, Wrapped.State>,
+    action toWrappedAction: CasePath<Action, Wrapped.Action>,
+    @ReducerBuilderOf<Wrapped> then wrapped: () -> Wrapped,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _Filter<Self, Case> {
+  ) -> _Filter<Self, Wrapped> {
     .init(
       parent: self,
-      child: `case`(),
-      toChildState: toCaseState,
-      toChildAction: toCaseAction,
+      child: wrapped(),
+      toChildState: toWrappedState,
+      toChildAction: toWrappedAction,
       behaviour: behaviour,
       file: file,
       fileID: fileID,

@@ -72,7 +72,7 @@ final class FilterReducerTests: XCTestCase {
   }
   
   func testBlockAction() async {
-    let store = TestStore(initialState: MainReducer.State(), reducer: MainReducer().filter(\.self, action: /.self, then: { BlockReducer() }, behaviour: .block))
+    let store = TestStore(initialState: MainReducer.State(), reducer: MainReducer().filter(behaviour: .block, \.self, action: /.self, then: { BlockReducer() }))
     _ = await store.send(.notLimitedAction)
     await store.receive(.alert)
     
