@@ -138,6 +138,7 @@ public protocol TestDependencyKey {
   ///   // Dependencies accessed here default to their "preview" value
   /// }
   /// ```
+  #if DEBUG
   static var previewValue: Value { get }
 
   /// The test value for the dependency key.
@@ -154,6 +155,7 @@ public protocol TestDependencyKey {
   /// }
   /// ```
   static var testValue: Value { get }
+  #endif 
 }
 
 extension DependencyKey {
