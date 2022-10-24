@@ -296,9 +296,6 @@ public struct _PresentationDestinationReducer<
             }
           } catch is CancellationError {
             await send(self.toPresentedAction.embed(.dismiss))
-          } catch {
-            // TODO: fatal error? this should never happen
-            throw error
           }
         }
         .cancellable(id: id)

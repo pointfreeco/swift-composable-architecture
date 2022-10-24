@@ -61,6 +61,11 @@ public struct DependencyValues: Sendable {
   private var cachedValues = CachedValues()
   private var storage: [ObjectIdentifier: AnySendable] = [:]
 
+  // TODO: possible to not have to do this?
+  @_spi(Internals) public func clearCache() {
+    self.cachedValues.clearCache()
+  }
+
   /// Creates a dependency values instance.
   ///
   /// You don't typically create an instance of ``DependencyValues`` directly. Doing so would
@@ -310,7 +315,12 @@ private final class CachedValues: @unchecked Sendable {
   }
 
   private let lock = NSRecursiveLock()
-  private var cached = [CacheKey: AnySendable]()
+  var cached = [CacheKey: AnySendable]()
+
+  // TODO: possible to not have to do this?
+  func clearCache() {
+    self.cached.removeAll()
+  }
 
   func value<Key: TestDependencyKey>(
     for key: Key.Type,

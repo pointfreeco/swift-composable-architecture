@@ -19,6 +19,18 @@ final class PresentationTests: XCTestCase {
     }
   }
 
+  func testCancelEffectsOnDismissal_ChildHydratedOnLaunch() async {
+    let store = TestStore(
+      initialState: Feature.State(child1: .presented(id: 0, Child.State())),
+      reducer: Feature()
+    )
+
+    await store.send(.child1(.presented(.onAppear)))
+    await store.send(.child1(.dismiss)) {
+      $0.child1 = nil
+    }
+  }
+
   func testChildDismissing() async {
     let store = TestStore(
       initialState: Feature.State(),
@@ -28,6 +40,21 @@ final class PresentationTests: XCTestCase {
     await store.send(.child1Tapped) {
       $0.child1 = Child.State()
     }
+    await store.send(.child1(.presented(.closeButtonTapped)))
+    await store.receive(.child1(.dismiss)) {
+      $0.child1 = nil
+    }
+  }
+
+  func testChildDismissing_ChildHydratedOnLaunch() async {
+    // TODO: This test fails, but it should pass
+    XCTExpectFailure()
+
+    let store = TestStore(
+      initialState: Feature.State(child1: .presented(id: 0, Child.State())),
+      reducer: Feature()
+    )
+
     await store.send(.child1(.presented(.closeButtonTapped)))
     await store.receive(.child1(.dismiss)) {
       $0.child1 = nil
