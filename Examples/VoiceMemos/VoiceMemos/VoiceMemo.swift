@@ -36,7 +36,7 @@ struct VoiceMemo: ReducerProtocol {
   }
 
   @Dependency(\.audioPlayer) var audioPlayer
-  @Dependency(\.mainRunLoop) var mainRunLoop
+  @Dependency(\.continuousClock) var clock
   private enum PlayID {}
 
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
@@ -54,14 +54,14 @@ struct VoiceMemo: ReducerProtocol {
         state.mode = .playing(progress: 0)
 
         return .run { [url = state.url] send in
-          let start = self.mainRunLoop.now
-
           async let playAudio: Void = send(
             .audioPlayerClient(TaskResult { try await self.audioPlayer.play(url) })
           )
 
-          for try await tick in self.mainRunLoop.timer(interval: 0.5) {
-            await send(.timerUpdated(tick.date.timeIntervalSince(start.date)))
+          var start: TimeInterval = 0
+          for await _ in self.clock.timer(interval: .milliseconds(500)) {
+            start += 0.5
+            await send(.timerUpdated(start))
           }
 
           await playAudio
@@ -93,7 +93,7 @@ struct VoiceMemoView: View {
   let store: StoreOf<VoiceMemo>
 
   var body: some View {
-    WithViewStore(store) { viewStore in
+    WithViewStore(self.store) { viewStore in
       let currentTime =
         viewStore.mode.progress.map { $0 * viewStore.duration } ?? viewStore.duration
       HStack {

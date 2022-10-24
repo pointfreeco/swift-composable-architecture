@@ -1,3 +1,4 @@
+import Clocks
 import ComposableArchitecture
 import XCTest
 
@@ -11,50 +12,50 @@ final class AnimationTests: XCTestCase {
       reducer: Animations()
     )
 
-    let mainQueue = DispatchQueue.test
-    store.dependencies.mainQueue = mainQueue.eraseToAnyScheduler()
+    let clock = TestClock()
+    store.dependencies.continuousClock = clock
 
     await store.send(.rainbowButtonTapped)
     await store.receive(.setColor(.red)) {
       $0.circleColor = .red
     }
 
-    await mainQueue.advance(by: .seconds(1))
+    await clock.advance(by: .seconds(1))
     await store.receive(.setColor(.blue)) {
       $0.circleColor = .blue
     }
 
-    await mainQueue.advance(by: .seconds(1))
+    await clock.advance(by: .seconds(1))
     await store.receive(.setColor(.green)) {
       $0.circleColor = .green
     }
 
-    await mainQueue.advance(by: .seconds(1))
+    await clock.advance(by: .seconds(1))
     await store.receive(.setColor(.orange)) {
       $0.circleColor = .orange
     }
 
-    await mainQueue.advance(by: .seconds(1))
+    await clock.advance(by: .seconds(1))
     await store.receive(.setColor(.pink)) {
       $0.circleColor = .pink
     }
 
-    await mainQueue.advance(by: .seconds(1))
+    await clock.advance(by: .seconds(1))
     await store.receive(.setColor(.purple)) {
       $0.circleColor = .purple
     }
 
-    await mainQueue.advance(by: .seconds(1))
+    await clock.advance(by: .seconds(1))
     await store.receive(.setColor(.yellow)) {
       $0.circleColor = .yellow
     }
 
-    await mainQueue.advance(by: .seconds(1))
+    await clock.advance(by: .seconds(1))
     await store.receive(.setColor(.black)) {
       $0.circleColor = .black
     }
 
-    await mainQueue.run()
+    await clock.run()
   }
 
   func testReset() async {
@@ -63,15 +64,15 @@ final class AnimationTests: XCTestCase {
       reducer: Animations()
     )
 
-    let mainQueue = DispatchQueue.test
-    store.dependencies.mainQueue = mainQueue.eraseToAnyScheduler()
+    let clock = TestClock()
+    store.dependencies.continuousClock = clock
 
     await store.send(.rainbowButtonTapped)
     await store.receive(.setColor(.red)) {
       $0.circleColor = .red
     }
 
-    await mainQueue.advance(by: .seconds(1))
+    await clock.advance(by: .seconds(1))
     await store.receive(.setColor(.blue)) {
       $0.circleColor = .blue
     }
@@ -90,5 +91,7 @@ final class AnimationTests: XCTestCase {
     await store.send(.resetConfirmationButtonTapped) {
       $0 = Animations.State()
     }
+
+    await store.finish()
   }
 }

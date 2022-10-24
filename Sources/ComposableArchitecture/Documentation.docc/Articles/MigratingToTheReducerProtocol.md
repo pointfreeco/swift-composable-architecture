@@ -580,15 +580,15 @@ Instead of passing an environment of test dependencies to the store, or mutating
 ``TestStore/environment``, you will instead mutate the test store's ``TestStore/dependencies`` to
 override dependencies driving a feature.
 
-For example, to install a test scheduler as the main queue dependency:
+For example, to install a test clock as the continuous clock dependency you can do the following:
 
 ```swift
-let mainQueue = DispatchQueue.test
-store.dependencies.mainQueue = mainQueue
+let clock = TestClock()
+store.dependencies.continuousClock = clock
 
 await store.send(.timerButtonStarted)
 
-await mainQueue.advance(by: .seconds(1))
+await clock.advance(by: .seconds(1))
 await store.receive(.timerTick) {
   $0.secondsElapsed = 1
 }

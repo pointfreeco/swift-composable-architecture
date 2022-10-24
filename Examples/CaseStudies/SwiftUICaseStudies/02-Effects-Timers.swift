@@ -4,9 +4,9 @@ import ComposableArchitecture
 private let readMe = """
   This application demonstrates how to work with timers in the Composable Architecture.
 
-  It makes use of the `.timer` method on Combine Schedulers, which is a helper provided by the \
-  Combine Schedulers library included with this library. The helper provides an \
-  `AsyncSequence`-friendly API for dealing with timers in asynchronous code.
+  It makes use of the `.timer` method on clocks, which is a helper provided by the Swift Clocks \
+  library included with this library. The helper provides an `AsyncSequence`-friendly API for \
+  dealing with times in asynchronous code.
   """
 
 // MARK: - Feature domain
@@ -23,7 +23,7 @@ struct Timers: ReducerProtocol {
     case toggleTimerButtonTapped
   }
 
-  @Dependency(\.mainQueue) var mainQueue
+  @Dependency(\.continuousClock) var clock
   private enum TimerID {}
 
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
@@ -39,7 +39,7 @@ struct Timers: ReducerProtocol {
       state.isTimerActive.toggle()
       return .run { [isTimerActive = state.isTimerActive] send in
         guard isTimerActive else { return }
-        for await _ in self.mainQueue.timer(interval: 1) {
+        for await _ in self.clock.timer(interval: .seconds(1)) {
           await send(.timerTicked, animation: .interpolatingSpring(stiffness: 3000, damping: 40))
         }
       }
@@ -54,7 +54,7 @@ struct TimersView: View {
   let store: StoreOf<Timers>
 
   var body: some View {
-    WithViewStore(store) { viewStore in
+    WithViewStore(self.store) { viewStore in
       Form {
         AboutView(readMe: readMe)
 

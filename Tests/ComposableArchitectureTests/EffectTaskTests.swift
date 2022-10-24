@@ -46,8 +46,7 @@ final class EffectTaskTests: XCTestCase {
       var line: UInt!
       XCTExpectFailure(nil, enabled: nil, strict: nil) {
         $0.compactDescription == """
-          An "EffectTask.task" returned from \
-          "ComposableArchitectureTests/EffectTaskTests.swift:\(line+1)" threw an unhandled error. …
+          An "EffectTask.task" returned from "\(#fileID):\(line+1)" threw an unhandled error. …
 
               EffectTaskTests.Failure()
 

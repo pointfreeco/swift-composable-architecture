@@ -490,7 +490,7 @@ extension EffectPublisher {
   ///
   /// > Important: This Combine-based interface has been soft-deprecated in favor of Swift
   /// > concurrency. Prefer using async functions and `AsyncStream`s directly in your dependencies,
-  /// > and using `XCTUnimplemented` from the [XCTest Dynamic Overlay](gh-xctest-dynamic-overlay)
+  /// > and using `unimplemented` from the [XCTest Dynamic Overlay](gh-xctest-dynamic-overlay)
   /// > library to stub in a function that fails when invoked:
   /// >
   /// > ```swift
@@ -498,9 +498,9 @@ extension EffectPublisher {
   /// >   var fetch: (Int) async throws -> String
   /// > }
   /// >
-  /// > extension NumberFactClient {
-  /// >   static let unimplemented = Self(
-  /// >     fetch: XCTUnimplemented(
+  /// > extension NumberFactClient: TestDependencyKey {
+  /// >   static let testValue = Self(
+  /// >     fetch: unimplemented(
   /// >       "\(Self.self).fetch",
   /// >       placeholder: "Not an interesting number."
   /// >     )
@@ -586,20 +586,20 @@ extension EffectPublisher {
   ///
   /// [gh-xctest-dynamic-overlay]: http://github.com/pointfreeco/xctest-dynamic-overlay
   ///
-  /// - Parameter prefix: A string that identifies this scheduler and will prefix all failure
+  /// - Parameter prefix: A string that identifies this effect and will prefix all failure
   ///   messages.
   /// - Returns: An effect that causes a test to fail if it runs.
   @available(
-    iOS, deprecated: 9999.0, message: "Call 'XCTUnimplemented' from your dependencies, instead."
+    iOS, deprecated: 9999.0, message: "Call 'unimplemented' from your dependencies, instead."
   )
   @available(
-    macOS, deprecated: 9999.0, message: "Call 'XCTUnimplemented' from your dependencies, instead."
+    macOS, deprecated: 9999.0, message: "Call 'unimplemented' from your dependencies, instead."
   )
   @available(
-    tvOS, deprecated: 9999.0, message: "Call 'XCTUnimplemented' from your dependencies, instead."
+    tvOS, deprecated: 9999.0, message: "Call 'unimplemented' from your dependencies, instead."
   )
   @available(
-    watchOS, deprecated: 9999.0, message: "Call 'XCTUnimplemented' from your dependencies, instead."
+    watchOS, deprecated: 9999.0, message: "Call 'unimplemented' from your dependencies, instead."
   )
   public static func unimplemented(_ prefix: String) -> Self {
     .fireAndForget {

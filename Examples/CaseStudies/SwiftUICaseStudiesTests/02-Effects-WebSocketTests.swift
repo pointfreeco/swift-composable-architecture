@@ -14,7 +14,7 @@ final class WebSocketTests: XCTestCase {
     let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
     let messages = AsyncStream<TaskResult<WebSocketClient.Message>>.streamWithContinuation()
 
-    store.dependencies.mainQueue = .immediate
+    store.dependencies.continuousClock = ImmediateClock()
     store.dependencies.webSocket.open = { _, _, _ in actions.stream }
     store.dependencies.webSocket.receive = { _ in messages.stream }
     store.dependencies.webSocket.send = { _, _ in }
@@ -54,6 +54,7 @@ final class WebSocketTests: XCTestCase {
     await store.send(.connectButtonTapped) {
       $0.connectivityState = .disconnected
     }
+    await store.finish()
   }
 
   func testWebSocketSendFailure() async {
@@ -65,7 +66,7 @@ final class WebSocketTests: XCTestCase {
     let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
     let messages = AsyncStream<TaskResult<WebSocketClient.Message>>.streamWithContinuation()
 
-    store.dependencies.mainQueue = .immediate
+    store.dependencies.continuousClock = ImmediateClock()
     store.dependencies.webSocket.open = { _, _, _ in actions.stream }
     store.dependencies.webSocket.receive = { _ in messages.stream }
     store.dependencies.webSocket.send = { _, _ in
@@ -91,13 +92,16 @@ final class WebSocketTests: XCTestCase {
       $0.messageToSend = ""
     }
     await store.receive(.sendResponse(didSucceed: false)) {
-      $0.alert = AlertState(title: TextState("Could not send socket message. Try again."))
+      $0.alert = AlertState(
+        title: TextState(
+          "Could not send socket message. Connect to the server first, and try again."))
     }
 
     // Disconnect from the socket
     await store.send(.connectButtonTapped) {
       $0.connectivityState = .disconnected
     }
+    await store.finish()
   }
 
   func testWebSocketPings() async {
@@ -107,10 +111,10 @@ final class WebSocketTests: XCTestCase {
     )
 
     let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
-    let mainQueue = DispatchQueue.test
+    let clock = TestClock()
     var pingsCount = 0
 
-    store.dependencies.mainQueue = mainQueue.eraseToAnyScheduler()
+    store.dependencies.continuousClock = clock
     store.dependencies.webSocket.open = { _, _, _ in actions.stream }
     store.dependencies.webSocket.receive = { _ in try await Task.never() }
     store.dependencies.webSocket.sendPing = { @MainActor _ in pingsCount += 1 }
@@ -126,7 +130,7 @@ final class WebSocketTests: XCTestCase {
 
     // Wait for ping
     XCTAssertEqual(pingsCount, 0)
-    await mainQueue.advance(by: .seconds(10))
+    await clock.advance(by: .seconds(10))
     XCTAssertEqual(pingsCount, 1)
 
     // Disconnect from the socket
@@ -143,7 +147,7 @@ final class WebSocketTests: XCTestCase {
 
     let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
 
-    store.dependencies.mainQueue = .immediate
+    store.dependencies.continuousClock = ImmediateClock()
     store.dependencies.webSocket.open = { _, _, _ in actions.stream }
     store.dependencies.webSocket.receive = { _ in try await Task.never() }
     store.dependencies.webSocket.sendPing = { _ in try await Task.never() }

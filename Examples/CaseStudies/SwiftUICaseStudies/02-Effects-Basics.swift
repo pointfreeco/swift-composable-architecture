@@ -10,7 +10,7 @@ private let readMe = """
   uncertainty and complexity.
 
   Many things we do in our applications involve side effects, such as timers, database requests, \
-  file access, socket connections, and anytime a scheduler is involved (such as debouncing, \
+  file access, socket connections, and anytime a clock is involved (such as debouncing, \
   throttling and delaying), and they are typically difficult to test.
 
   This application has a simple side effect: tapping "Number fact" will trigger an API request to \
@@ -35,8 +35,8 @@ struct EffectsBasics: ReducerProtocol {
     case numberFactResponse(TaskResult<String>)
   }
 
+  @Dependency(\.continuousClock) var clock
   @Dependency(\.factClient) var factClient
-  @Dependency(\.mainQueue) var mainQueue
   private enum DelayID {}
 
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
@@ -48,7 +48,7 @@ struct EffectsBasics: ReducerProtocol {
       return state.count >= 0
         ? .none
         : .task {
-          try await self.mainQueue.sleep(for: 1)
+          try await self.clock.sleep(for: .seconds(1))
           return .decrementDelayResponse
         }
         .cancellable(id: DelayID.self)

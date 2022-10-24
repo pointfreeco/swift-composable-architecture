@@ -11,7 +11,7 @@ final class EffectsBasicsTests: XCTestCase {
       reducer: EffectsBasics()
     )
 
-    store.dependencies.mainQueue = .immediate
+    store.dependencies.continuousClock = ImmediateClock()
 
     await store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -28,7 +28,7 @@ final class EffectsBasicsTests: XCTestCase {
     )
 
     store.dependencies.factClient.fetch = { "\($0) is a good number Brent" }
-    store.dependencies.mainQueue = .immediate
+    store.dependencies.continuousClock = ImmediateClock()
 
     await store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -48,7 +48,7 @@ final class EffectsBasicsTests: XCTestCase {
       reducer: EffectsBasics()
     )
 
-    store.dependencies.mainQueue = .immediate
+    store.dependencies.continuousClock = ImmediateClock()
 
     await store.send(.decrementButtonTapped) {
       $0.count = -1
@@ -64,7 +64,7 @@ final class EffectsBasicsTests: XCTestCase {
       reducer: EffectsBasics()
     )
 
-    store.dependencies.mainQueue = DispatchQueue.test.eraseToAnyScheduler()
+    store.dependencies.continuousClock = TestClock()
 
     await store.send(.decrementButtonTapped) {
       $0.count = -1

@@ -89,17 +89,11 @@ extension EffectPublisher where Failure == Never {
   ///   - tolerance: The allowed timing variance when emitting events. Defaults to `nil`, which
   ///     allows any variance.
   ///   - options: Scheduler options passed to the timer. Defaults to `nil`.
+  @available(iOS, deprecated: 9999.0, message: "Use 'clock.timer' in an 'Effect.run', instead.")
+  @available(macOS, deprecated: 9999.0, message: "Use 'clock.timer' in an 'Effect.run', instead.")
+  @available(tvOS, deprecated: 9999.0, message: "Use 'clock.timer' in an 'Effect.run', instead.")
   @available(
-    iOS, deprecated: 9999.0, message: "Use 'scheduler.timer' in 'EffectTask.run', instead."
-  )
-  @available(
-    macOS, deprecated: 9999.0, message: "Use 'scheduler.timer' in 'EffectTask.run', instead."
-  )
-  @available(
-    tvOS, deprecated: 9999.0, message: "Use 'scheduler.timer' in 'EffectTask.run', instead."
-  )
-  @available(
-    watchOS, deprecated: 9999.0, message: "Use 'scheduler.timer' in 'EffectTask.run', instead."
+    watchOS, deprecated: 9999.0, message: "Use 'clock.timer' in an 'Effect.run', instead."
   )
   public static func timer<S: Scheduler>(
     id: AnyHashable,
@@ -129,17 +123,11 @@ extension EffectPublisher where Failure == Never {
   ///   - tolerance: The allowed timing variance when emitting events. Defaults to `nil`, which
   ///     allows any variance.
   ///   - options: Scheduler options passed to the timer. Defaults to `nil`.
+  @available(iOS, deprecated: 9999.0, message: "Use 'clock.timer' in an 'Effect.run', instead.")
+  @available(macOS, deprecated: 9999.0, message: "Use 'clock.timer' in an 'Effect.run', instead.")
+  @available(tvOS, deprecated: 9999.0, message: "Use 'clock.timer' in an 'Effect.run', instead.")
   @available(
-    iOS, deprecated: 9999.0, message: "Use 'scheduler.timer' in 'EffectTask.run', instead."
-  )
-  @available(
-    macOS, deprecated: 9999.0, message: "Use 'scheduler.timer' in 'EffectTask.run', instead."
-  )
-  @available(
-    tvOS, deprecated: 9999.0, message: "Use 'scheduler.timer' in 'EffectTask.run', instead."
-  )
-  @available(
-    watchOS, deprecated: 9999.0, message: "Use 'scheduler.timer' in 'EffectTask.run', instead."
+    watchOS, deprecated: 9999.0, message: "Use 'clock.timer' in an 'Effect.run', instead."
   )
   public static func timer<S: Scheduler>(
     id: Any.Type,
