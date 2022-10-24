@@ -11,6 +11,7 @@ import XCTestDynamicOverlay
 /// A type alias to ``AnyReducer`` for source compatibility. This alias will be removed.
 @available(
   *,
+  deprecated,
   renamed: "AnyReducer",
   message:
     """
