@@ -21,7 +21,7 @@ body:
   attributes:
     label: Checklist
     options:
-    - label: I have not been able to reproduce this bug in a vanilla SwiftUI project.
+    - label: I have determined whether this bug is also reproducible in a vanilla SwiftUI project.
       required: true
     - label: If possible, I've reproduced the issue using the `main` branch of this package.
       required: false
