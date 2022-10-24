@@ -1084,7 +1084,7 @@ class TestReducer<State, Action>: ReducerProtocol {
     }
 
     switch effects.operation {
-    case .none:
+    case .none, .passthrough:
       self.effectDidSubscribe.continuation.yield()
       return .none
 

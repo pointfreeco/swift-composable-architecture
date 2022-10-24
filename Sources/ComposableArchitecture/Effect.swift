@@ -36,6 +36,7 @@ public struct EffectPublisher<Action, Failure: Error> {
   @usableFromInline
   enum Operation {
     case none
+    case passthrough
     case publisher(AnyPublisher<Action, Failure>)
     case run(TaskPriority? = nil, @Sendable (Send<Action>) async -> Void)
   }
@@ -57,6 +58,11 @@ extension EffectPublisher {
   @inlinable
   public static var none: Self {
     Self(operation: .none)
+  }
+
+  @inlinable
+  public static var passthrough: Self {
+    Self(operation: .passthrough)
   }
 }
 
@@ -390,6 +396,10 @@ extension EffectPublisher {
           }
         }
       )
+    case (.passthrough, _):
+      return other
+    case (_, .passthrough):
+      return self
     }
   }
 
@@ -427,6 +437,10 @@ extension EffectPublisher {
       return self
     case (.none, _):
       return other
+    case (.passthrough, _):
+      return other
+    case (_, .passthrough):
+      return self
     case (.publisher, .publisher), (.run, .publisher), (.publisher, .run):
       return Self(
         operation: .publisher(
@@ -459,6 +473,8 @@ extension EffectPublisher {
   @inlinable
   public func map<T>(_ transform: @escaping (Action) -> T) -> EffectPublisher<T, Failure> {
     switch self.operation {
+    case .passthrough:
+      return .passthrough
     case .none:
       return .none
     case let .publisher(publisher):

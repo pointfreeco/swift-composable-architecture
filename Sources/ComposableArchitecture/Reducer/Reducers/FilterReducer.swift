@@ -47,14 +47,23 @@ extension ReducerProtocol {
 }
 
 public enum FilterBehaviour {
-  case filter // if filter reducer return .none it let parent reducer do it work
-  case block // if filter reducer return .none it stop the let parent reducer from doing it's work
+  case filter // if child reducer return .none it let parent reducer do it work
+  case block // if child reducer return .none it stop the let parent reducer from doing it's work
 }
 
 extension EffectPublisher.Operation {
   public var isNone: Bool {
     switch self {
     case .none:
+      return true
+    default:
+      return false
+    }
+  }
+  
+  public var isPassthrough: Bool {
+    switch self {
+    case .passthrough:
       return true
     default:
       return false
@@ -118,6 +127,9 @@ public struct _Filter<Parent: ReducerProtocol, Child: ReducerProtocol>: ReducerP
     case (true, true):
       return effect
     case (true, false):
+      if effect.operation.isPassthrough {
+        return effect.merge(with: self.parent.reduce(into: &state, action: action))
+      }
       return effect
     case (false, true):
       return effect.merge(with: self.parent.reduce(into: &state, action: action))

@@ -16,7 +16,7 @@ extension EffectPublisher {
   /// - Returns: A publisher.
   public func animation(_ animation: Animation? = .default) -> Self {
     switch self.operation {
-    case .none:
+    case .none, .passthrough:
       return .none
     case let .publisher(publisher):
       return Self(

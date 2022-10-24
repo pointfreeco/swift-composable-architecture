@@ -30,7 +30,7 @@ extension EffectPublisher {
   /// - Returns: A new effect that is capable of being canceled by an identifier.
   public func cancellable(id: AnyHashable, cancelInFlight: Bool = false) -> Self {
     switch self.operation {
-    case .none:
+    case .none, .passthrough:
       return .none
     case let .publisher(publisher):
       return Self(

@@ -11,6 +11,7 @@ final class FilterReducerTests: XCTestCase {
       case limitedAction
       case notLimitedAction
       case anotherAction
+      case another2Action
       case alert
     }
     
@@ -22,6 +23,8 @@ final class FilterReducerTests: XCTestCase {
         return Effect(value: .anotherAction)
       case .anotherAction:
         return .none
+      case .another2Action:
+        return Effect(value: .anotherAction)
       case .alert:
         return .none
       }
@@ -40,7 +43,22 @@ final class FilterReducerTests: XCTestCase {
       }
     }
   }
-  
+
+  struct BlockReducer: ReducerProtocol {
+    typealias State = MainReducer.State
+    typealias Action = MainReducer.Action
+    
+    func reduce(into state: inout FilterReducerTests.MainReducer.State, action: FilterReducerTests.MainReducer.Action) -> EffectTask<FilterReducerTests.MainReducer.Action> {
+      switch action {
+      case .notLimitedAction:
+        return Effect(value: .alert)
+      case .another2Action:
+        return .none
+      default: return .passthrough
+      }
+    }
+  }
+
   func testFilterAction() async {
     let store = TestStore(initialState: MainReducer.State(), reducer: MainReducer().filter(\.self, action: /.self, then: { FilterReducer() }))
     _ = await store.send(.limitedAction)
@@ -54,12 +72,16 @@ final class FilterReducerTests: XCTestCase {
   }
   
   func testBlockAction() async {
-    let store = TestStore(initialState: MainReducer.State(), reducer: MainReducer().filter(\.self, action: /.self, then: { FilterReducer() }, behaviour: .block))
-    _ = await store.send(.limitedAction)
+    let store = TestStore(initialState: MainReducer.State(), reducer: MainReducer().filter(\.self, action: /.self, then: { BlockReducer() }, behaviour: .block))
+    _ = await store.send(.notLimitedAction)
     await store.receive(.alert)
     
-    _ = await store.send(.notLimitedAction)
-    _ = await store.send(.alert)
+    _ = await store.send(.limitedAction)
+    await store.receive(.notLimitedAction)
+    await store.receive(.alert)
+
     _ = await store.send(.anotherAction)
+    _ = await store.send(.alert)
+    _ = await store.send(.another2Action)
   }
 }
