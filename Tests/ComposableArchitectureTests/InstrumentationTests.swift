@@ -100,16 +100,16 @@ final class InstrumentationTests: XCTestCase {
       }
     })
 
-    let store = Store<Void, Void>(initialState: (), reducer: EmptyReducer(), instrumentation: inst)
+    let store = Store(initialState: (), reducer: Reducer<(), Void, Void>.empty, environment: (), instrumentation: inst)
     let viewStore = ViewStore(store)
 
     viewStore.send(())
-    XCTAssertEqual(2, sendCalls_vs)
-    XCTAssertEqual(0, dedupCalls_vs)
-    XCTAssertEqual(0, changeCalls_vs)
-    XCTAssertEqual(2, sendCalls_s)
-    XCTAssertEqual(2, changeStateCalls_s)
-    XCTAssertEqual(2, processCalls_s)
+    XCTAssertEqual(2, sendCalls_vs, "We expect before and after calls")
+    XCTAssertEqual(0, dedupCalls_vs, "There should be no deduping on `void` ViewStore")
+    XCTAssertEqual(0, changeCalls_vs, "There should be no change calls on `void` ViewStore")
+    XCTAssertEqual(2, sendCalls_s, "We expect before and after calls")
+    XCTAssertEqual(2, changeStateCalls_s, "We expect before and after calls")
+    XCTAssertEqual(2, processCalls_s, "We expect before and after calls")
   }
 
   func testEffectProducingReducer_ViewStore() {
