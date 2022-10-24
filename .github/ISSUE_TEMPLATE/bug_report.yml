@@ -21,6 +21,8 @@ body:
   attributes:
     label: Checklist
     options:
+    - label: I have not been able to reproduce this bug in a vanilla SwiftUI project.
+      required: true
     - label: If possible, I've reproduced the issue using the `main` branch of this package.
       required: false
     - label: This issue hasn't been addressed in an [existing GitHub issue](https://github.com/pointfreeco/swift-composable-architecture/issues) or [discussion](https://github.com/pointfreeco/swift-composable-architecture/discussions).
