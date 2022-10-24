@@ -265,24 +265,6 @@ public struct _PresentationDestinationReducer<
       state[keyPath: self.toPresentedState].id != id
     {
       effects.append(.cancel(id: id))
-    } else if case .present(_, .none) = presentedAction,
-      case .dismissed = state[keyPath: self.toPresentedState]
-    {
-      // TODO: remove this because async presentation should be allowed
-      runtimeWarn(
-        """
-        A ".present" action was sent with "nil" state at "\(self.fileID):\(self.line)" but the \
-        destination state was not hydrated to something non-nil: …
-
-          Action:
-            \(debugCaseOutput(action))
-
-        This is generally considered an application logic error. To fix, match on the ".present" \
-        action in the parent reducer in order to hydrate the destination state to something non-nil.
-        """,
-        file: self.file,
-        line: self.line
-      )
     }
 
     if let id = state[keyPath: self.toPresentedState].id, id != currentPresentedState.id {

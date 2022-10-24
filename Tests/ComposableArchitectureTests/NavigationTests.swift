@@ -164,6 +164,13 @@ final class NavigationTests: XCTestCase {
     await store.send(.path(.dismiss(id: 0))) {
       $0.path = []
     }
+
+
+    //await store.send(.navigation(.push(...)))
+    //await store.skipReceivedAction(/Action.navigation .. /NavigationAction.setPath)
+    //await store.received(/Action.navigation .. /NavigationAction.setPath, exhaustivity: .partial)
+
+
   }
 
   func testDismissMulti() async {
