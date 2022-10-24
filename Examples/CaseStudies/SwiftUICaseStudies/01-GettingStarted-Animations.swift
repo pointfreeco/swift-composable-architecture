@@ -11,8 +11,8 @@ private let readMe = """
 
   To animate changes made to state through a binding, use the `.animation` method on `Binding`.
 
-  To animate asynchronous changes made to state via effects, use the `.animation` method provided \
-  by the CombineSchedulers library to receive asynchronous actions in an animated fashion.
+  To animate asynchronous changes made to state via effects, use `Effect.run` style of effects \
+  which allows you to send actions with animations.
 
   Try it out by tapping or dragging anywhere on the screen to move the dot, and by flipping the \
   toggle at the bottom of the screen.
@@ -38,7 +38,7 @@ struct Animations: ReducerProtocol {
     case tapped(CGPoint)
   }
 
-  @Dependency(\.mainQueue) var mainQueue
+  @Dependency(\.continuousClock) var clock
 
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     enum CancelID {}
@@ -56,7 +56,7 @@ struct Animations: ReducerProtocol {
       return .run { send in
         for color in [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .black] {
           await send(.setColor(color), animation: .linear)
-          try await self.mainQueue.sleep(for: 1)
+          try await self.clock.sleep(for: .seconds(1))
         }
       }
       .cancellable(id: CancelID.self)

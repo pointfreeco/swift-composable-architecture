@@ -8,7 +8,7 @@ any reducer.
 Dependencies in an application are the types and functions that need to interact with outside 
 systems that you do not control. Classic examples of this are API clients that make network requests
 to servers, but also seemingly innocuous things such as `UUID` and `Date` initializers, and even
-schedulers and clocks, can be thought of as dependencies.
+clocks, can be thought of as dependencies.
 
 By controlling the dependencies our features need to do their job we gain the ability to completely
 alter the execution context a feature runs in. This means in tests and Xcode previews you can 
@@ -144,11 +144,11 @@ control dependencies that interact with outside systems.
 ## Using library dependencies
 
 The library comes with many common dependencies that can be used in a controllable manner, such as
-date generators, schedulers, random number generators, UUID generators, and more.
+date generators, clocks, random number generators, UUID generators, and more.
 
-For example, suppose you have a feature that needs access to a date initializer, the main queue
-for time-based asynchrony, and a UUID initializer. All 3 dependencies can be added to your feature's
-reducer:
+For example, suppose you have a feature that needs access to a date initializer, the continuous
+clock for time-based asynchrony, and a UUID initializer. All 3 dependencies can be added to your 
+feature's reducer:
 
 ```swift
 struct Todos: ReducerProtocol {
@@ -159,7 +159,7 @@ struct Todos: ReducerProtocol {
     // ...
   }
   @Dependency(\.date) var date
-  @Dependency(\.mainQueue) var mainQueue
+  @Dependency(\.continuousClock) var clock
   @Dependency(\.uuid) var uuid
 
   // ...
@@ -178,7 +178,7 @@ func testTodos() async {
   )
 
   store.dependencies.date = .constant(Date(timeIntervalSinceReferenceDate: 1234567890))
-  store.dependencies.mainQueue = .immediate
+  store.dependencies.continuousClock = ImmediateClock()
   store.dependencies.uuid = .incrementing
 
   // ...
