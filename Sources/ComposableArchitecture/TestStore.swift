@@ -141,12 +141,13 @@ import XCTestDynamicOverlay
 ///       enum SearchID {}
 ///
 ///       state.query = query
-///       return .task { [query] in
-///         await .searchResponse(
-///           TaskResult {
-///             try await self.apiClient.search(query)
-///           }
-///         )
+///       return .run { send in
+///         try await self.clock.sleep(for: 0.5)
+///
+///         guard let results = try? await self.apiClient.search(query)
+///         else { return }
+///
+///         await send(.response(results))
 ///       }
 ///
 ///     case let .searchResponse(.success(results)):
@@ -185,8 +186,9 @@ import XCTestDynamicOverlay
 ///   $0.query = "c"
 /// }
 ///
-/// // Advance the clock by a period shorter than the debounce
-/// await clock.advance(by: 0.25)
+/// // Advance the clock by enough to get past the debounce
+/// await clock.advance(by: 0.5)
+///
 /// // Assert that the expected response is received
 /// await store.receive(.searchResponse(.success(["Composable Architecture"]))) {
 ///   $0.results = ["Composable Architecture"]
@@ -684,7 +686,7 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
 
         • If using async/await in your effect, it may need a little bit of time to properly \
         finish. To fix you can simply perform "await store.finish()" at the end of your test.
-        
+
         • If an effect uses a clock/scheduler (via "receive(on:)", "delay", "debounce", etc.), \
         make sure that you wait enough time for it to perform the effect. If you are using \
         a test clock/scheduler, advance it so that the effects may complete, or consider \
@@ -1032,6 +1034,7 @@ extension TestStore where ScopedState: Equatable {
 
 extension TestStore where ScopedState: Equatable, Action: Equatable {
   // TODO: support receive with case path?
+  // TODO: support skipReceivedActions(CasePath)
 
   /// Asserts an action was received from an effect and asserts when state changes.
   ///
@@ -1697,7 +1700,7 @@ public enum Exhaustivity: Equatable {
   /// on or receive actions skipped will be reported in a grey informational box next to the
   /// assertion. This is handy for when you want non-exhaustivity but you still want to know
   /// what all you are missing from your assertions.
-  case partial(prefix: String? = nil)
+  case partial(prefix: String? = "Partial assertions skipped. …\n\n")
 
   public static let partial = partial(prefix: "Partial assertions skipped. …\n\n")
   fileprivate var isPartial: Bool {

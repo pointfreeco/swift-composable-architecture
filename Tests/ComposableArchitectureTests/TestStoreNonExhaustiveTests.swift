@@ -218,6 +218,32 @@
       }
     }
 
+    func testNonExhaustiveSend_PartialExhaustive_CustomPrefix() {
+      let store = TestStore(
+        initialState: Counter.State(),
+        reducer: Counter()
+      )
+      store.exhaustivity = .partial(prefix: "✅\n\n")
+
+      store.send(.increment) {
+        $0.count = 1
+        // Ignoring state change: isEven = false
+      }
+    }
+
+    func testNonExhaustiveSend_PartialExhaustive_DefaultPrefix() {
+      let store = TestStore(
+        initialState: Counter.State(),
+        reducer: Counter()
+      )
+      store.exhaustivity = .partial()
+
+      store.send(.increment) {
+        $0.count = 1
+        // Ignoring state change: isEven = false
+      }
+    }
+
     // Confirms that you don't have to assert on all state changes in a non-exhaustive test store,
     // *but* if you make an incorrect mutation you will still get a failure.
     func testNonExhaustiveSend_PartialExhaustive_BadAssertion() {
