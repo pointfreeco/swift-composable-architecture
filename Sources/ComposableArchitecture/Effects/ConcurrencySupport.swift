@@ -155,17 +155,13 @@ extension AsyncStream {
     bufferingPolicy limit: Continuation.BufferingPolicy = .unbounded
   )
   where P.Output == Element, P.Failure == Never {
-    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-      self = AsyncStream(publisher.values, bufferingPolicy: limit)
-    } else {
-      self = AsyncStream(bufferingPolicy: limit) { continuation in
-        let subscription = publisher.sink(
-          receiveCompletion: { _ in continuation.finish() },
-          receiveValue: { continuation.yield($0) }
-        )
-        continuation.onTermination = { @Sendable _ in
-          subscription.cancel()
-        }
+    self = AsyncStream(bufferingPolicy: limit) { continuation in
+      let subscription = publisher.sink(
+        receiveCompletion: { _ in continuation.finish() },
+        receiveValue: { continuation.yield($0) }
+      )
+      continuation.onTermination = { @Sendable _ in
+        subscription.cancel()
       }
     }
   }
@@ -281,24 +277,20 @@ extension AsyncThrowingStream {
     bufferingPolicy limit: Continuation.BufferingPolicy = .unbounded
   )
   where P.Output == Element, Failure == any Error {
-    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-      self = AsyncThrowingStream(publisher.values, bufferingPolicy: limit)
-    } else {
-      self = AsyncThrowingStream(bufferingPolicy: limit) { continuation in
-        let subscription = publisher.sink(
-          receiveCompletion: {
-            switch $0 {
-            case .finished:
-              continuation.finish()
-            case .failure(let error):
-              continuation.finish(throwing: error)
-            }
-          },
-          receiveValue: { continuation.yield($0) }
-        )
-        continuation.onTermination = { @Sendable _ in
-          subscription.cancel()
-        }
+    self = AsyncThrowingStream(bufferingPolicy: limit) { continuation in
+      let subscription = publisher.sink(
+        receiveCompletion: {
+          switch $0 {
+          case .finished:
+            continuation.finish()
+          case .failure(let error):
+            continuation.finish(throwing: error)
+          }
+        },
+        receiveValue: { continuation.yield($0) }
+      )
+      continuation.onTermination = { @Sendable _ in
+        subscription.cancel()
       }
     }
   }
