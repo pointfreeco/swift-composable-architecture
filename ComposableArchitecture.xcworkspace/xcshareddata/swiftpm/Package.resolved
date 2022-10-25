@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-case-paths",
       "state" : {
-        "revision" : "15bba50ebf3a2065388c8d12210debe4f6ada202",
-        "version" : "0.10.0"
+        "revision" : "bb436421f57269fbcfe7360735985321585a86e5",
+        "version" : "0.10.1"
       }
     },
     {
@@ -41,8 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-clocks",
       "state" : {
-        "revision" : "7379ef30c447ea6060bfa5ae7fab77d0d6e47866",
-        "version" : "0.1.1"
+        "revision" : "692ec4f5429a667bdd968c7260dfa2b23adfeffc",
+        "version" : "0.1.4"
       }
     },
     {

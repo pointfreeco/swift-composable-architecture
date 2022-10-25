@@ -24,7 +24,9 @@ extension DependencyValues {
   private enum TimeZoneKey: DependencyKey {
     static let liveValue = TimeZone.autoupdatingCurrent
     static var testValue: TimeZone {
-      XCTFail(#"Unimplemented: @Dependency(\.timeZone)"#)
+      if !DependencyValues.isSetting {
+        XCTFail(#"Unimplemented: @Dependency(\.timeZone)"#)
+      }
       return .autoupdatingCurrent
     }
   }

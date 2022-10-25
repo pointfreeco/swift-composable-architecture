@@ -50,7 +50,7 @@ final class EffectTests: XCTestCase {
       .store(in: &self.cancellables)
   }
 
-  #if canImport(RoomPlan) || (!canImport(Darwin) && swift(>=5.7))
+  #if swift(>=5.7) && (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     func testConcatenate() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
         let clock = TestClock()
@@ -102,7 +102,7 @@ final class EffectTests: XCTestCase {
     XCTAssertEqual(values, [1])
   }
 
-  #if canImport(RoomPlan) || (!canImport(Darwin) && swift(>=5.7))
+  #if swift(>=5.7) && (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     func testMerge() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
         let clock = TestClock()

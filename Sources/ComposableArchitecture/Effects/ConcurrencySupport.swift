@@ -141,7 +141,7 @@ extension AsyncStream {
 }
 
 extension AsyncThrowingStream where Failure == Error {
-  /// Initializes an `AsyncStream` from any `AsyncSequence`.
+  /// Initializes an `AsyncThrowingStream` from any `AsyncSequence`.
   ///
   /// - Parameters:
   ///   - sequence: An `AsyncSequence`.
@@ -393,5 +393,30 @@ public struct UncheckedSendable<Value>: @unchecked Sendable {
   public subscript<Subject>(dynamicMember keyPath: WritableKeyPath<Value, Subject>) -> Subject {
     _read { yield self.value[keyPath: keyPath] }
     _modify { yield &self.value[keyPath: keyPath] }
+  }
+}
+
+extension UncheckedSendable: Equatable where Value: Equatable {}
+extension UncheckedSendable: Hashable where Value: Hashable {}
+
+extension UncheckedSendable: Decodable where Value: Decodable {
+  public init(from decoder: Decoder) throws {
+    do {
+      let container = try decoder.singleValueContainer()
+      self.init(wrappedValue: try container.decode(Value.self))
+    } catch {
+      self.init(wrappedValue: try Value(from: decoder))
+    }
+  }
+}
+
+extension UncheckedSendable: Encodable where Value: Encodable {
+  public func encode(to encoder: Encoder) throws {
+    do {
+      var container = encoder.singleValueContainer()
+      try container.encode(self.wrappedValue)
+    } catch {
+      try self.wrappedValue.encode(to: encoder)
+    }
   }
 }
