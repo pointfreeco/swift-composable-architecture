@@ -398,8 +398,6 @@ public struct UncheckedSendable<Value>: @unchecked Sendable {
   }
 }
 
-// Async publishers
-
 extension Publisher where Failure == Never {
   /// This property provides an `AsyncStream`, which allows you to use the Swift
   /// `async`-`await` syntax to receive the publisher's elements.
