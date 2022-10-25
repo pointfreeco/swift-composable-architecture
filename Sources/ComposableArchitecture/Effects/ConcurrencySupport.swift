@@ -142,31 +142,6 @@ extension AsyncStream {
   }
 }
 
-extension AsyncStream {
-  /// Initializes an `AsyncStream` from any `Publisher` with `Failure == Never`.
-  ///
-  /// - Parameters:
-  ///   - publisher: A `Publisher`.
-  ///   - limit: The maximum number of elements to hold in the buffer. By default, this value is
-  ///   unlimited. Use a `Continuation.BufferingPolicy` to buffer a specified number of oldest or
-  ///   newest elements.
-  public init<P: Publisher>(
-    _ publisher: P,
-    bufferingPolicy limit: Continuation.BufferingPolicy = .unbounded
-  )
-  where P.Output == Element, P.Failure == Never {
-    self = AsyncStream(bufferingPolicy: limit) { continuation in
-      let subscription = publisher.sink(
-        receiveCompletion: { _ in continuation.finish() },
-        receiveValue: { continuation.yield($0) }
-      )
-      continuation.onTermination = { @Sendable _ in
-        subscription.cancel()
-      }
-    }
-  }
-}
-
 extension AsyncThrowingStream where Failure == Error {
   /// Initializes an `AsyncThrowingStream` from any `AsyncSequence`.
   ///
@@ -261,38 +236,6 @@ extension AsyncThrowingStream where Failure == Error {
 
   public static var finished: Self {
     Self { $0.finish() }
-  }
-}
-
-extension AsyncThrowingStream {
-  /// Initializes an `AsyncThrowingStream` from any failable `Publisher`.
-  ///
-  /// - Parameters:
-  ///   - publisher: A `Publisher`.
-  ///   - limit: The maximum number of elements to hold in the buffer. By default, this value is
-  ///   unlimited. Use a `Continuation.BufferingPolicy` to buffer a specified number of oldest or
-  ///   newest elements.
-  public init<P: Publisher>(
-    _ publisher: P,
-    bufferingPolicy limit: Continuation.BufferingPolicy = .unbounded
-  )
-  where P.Output == Element, Failure == any Error {
-    self = AsyncThrowingStream(bufferingPolicy: limit) { continuation in
-      let subscription = publisher.sink(
-        receiveCompletion: {
-          switch $0 {
-          case .finished:
-            continuation.finish()
-          case .failure(let error):
-            continuation.finish(throwing: error)
-          }
-        },
-        receiveValue: { continuation.yield($0) }
-      )
-      continuation.onTermination = { @Sendable _ in
-        subscription.cancel()
-      }
-    }
   }
 }
 
@@ -452,5 +395,139 @@ public struct UncheckedSendable<Value>: @unchecked Sendable {
   public subscript<Subject>(dynamicMember keyPath: WritableKeyPath<Value, Subject>) -> Subject {
     _read { yield self.value[keyPath: keyPath] }
     _modify { yield &self.value[keyPath: keyPath] }
+  }
+}
+
+// Async publishers
+
+extension Publisher where Failure == Never {
+  /// This property provides an `AsyncStream`, which allows you to use the Swift
+  /// `async`-`await` syntax to receive the publisher's elements.
+  ///
+  /// You can use this property to promote a `Publisher` `Dependency` into an `AsyncStream` one:
+  ///
+  /// ```swift
+  /// @Dependency(\.events) var events // A `Publisher<Event, Never>`
+  /// @Dependency(\.events.stream) var events // An `AsyncStream<Event>`
+  /// ```
+  ///
+  /// Alternatively, you can form the `AsyncStream` at the last moment, when you start iterating
+  /// over its elements:
+  ///
+  /// ```swift
+  /// @Dependency(\.events) var events // A `Publisher<Event, Never>`
+  ///
+  /// func reduce(state: inout: State, action: Action) -> EffectTask<Action> {
+  ///   switch action {
+  ///     case .task:
+  ///       return .run { send in
+  ///         for await event in self.events.stream {
+  ///           await send(.received(event))
+  ///         }
+  ///       }
+  ///     case let .received(event):
+  ///       …
+  ///   }
+  /// }
+  /// ```
+  public var stream: AsyncStream<Output> {
+    AsyncStream(self)
+  }
+}
+
+extension Publisher where Failure == Error {
+  /// This property provides an `AsyncThrowingStream`, which allows you to use the Swift
+  /// `async`-`await` syntax to receive the publisher's elements.
+  ///
+  /// You can use this property to promote a failable `Publisher` `Dependency` into an
+  /// `AsyncThrowingStream`:
+  ///
+  /// ```swift
+  /// @Dependency(\.events) var events // A `Publisher<Event, Error>`
+  /// @Dependency(\.events.stream) var events // An `AsyncThrowingStream<Event, Error>`
+  /// ```
+  ///
+  /// Alternatively, you can form the `AsyncThrowingStream` at the last moment, when you start
+  /// iterating over its elements:
+  ///
+  /// ```swift
+  /// @Dependency(\.events) var events // A `Publisher<Event, Error>`
+  ///
+  /// func reduce(state: inout: State, action: Action) -> EffectTask<Action> {
+  ///   switch action {
+  ///     case .task:
+  ///       return .run { send in
+  ///         for try await event in self.events.stream {
+  ///           await send(.received(event))
+  ///         }
+  ///       } catch { error in
+  ///         .onEventsError(error)
+  ///       }
+  ///     case let .received(event):
+  ///       …
+  ///     case let .onEventsError(error):
+  ///       …
+  ///   }
+  /// }
+  /// ```
+  public var stream: AsyncThrowingStream<Output, Failure> {
+    AsyncThrowingStream(self)
+  }
+}
+
+extension AsyncStream {
+  /// Initializes an `AsyncStream` from any `Publisher` with `Failure == Never`.
+  ///
+  /// - Parameters:
+  ///   - publisher: A `Publisher`.
+  ///   - limit: The maximum number of elements to hold in the buffer. By default, this value is
+  ///   unlimited. Use a `Continuation.BufferingPolicy` to buffer a specified number of oldest or
+  ///   newest elements.
+  init<P: Publisher>(
+    _ publisher: P,
+    bufferingPolicy limit: Continuation.BufferingPolicy = .unbounded
+  )
+  where P.Output == Element, P.Failure == Never {
+    self = AsyncStream(bufferingPolicy: limit) { continuation in
+      let subscription = publisher.sink(
+        receiveCompletion: { _ in continuation.finish() },
+        receiveValue: { continuation.yield($0) }
+      )
+      continuation.onTermination = { @Sendable _ in
+        subscription.cancel()
+      }
+    }
+  }
+}
+
+extension AsyncThrowingStream {
+  /// Initializes an `AsyncThrowingStream` from any failable `Publisher`.
+  ///
+  /// - Parameters:
+  ///   - publisher: A `Publisher`.
+  ///   - limit: The maximum number of elements to hold in the buffer. By default, this value is
+  ///   unlimited. Use a `Continuation.BufferingPolicy` to buffer a specified number of oldest or
+  ///   newest elements.
+  init<P: Publisher>(
+    _ publisher: P,
+    bufferingPolicy limit: Continuation.BufferingPolicy = .unbounded
+  )
+  where P.Output == Element, Failure == any Error {
+    self = AsyncThrowingStream(bufferingPolicy: limit) { continuation in
+      let subscription = publisher.sink(
+        receiveCompletion: {
+          switch $0 {
+          case .finished:
+            continuation.finish()
+          case .failure(let error):
+            continuation.finish(throwing: error)
+          }
+        },
+        receiveValue: { continuation.yield($0) }
+      )
+      continuation.onTermination = { @Sendable _ in
+        subscription.cancel()
+      }
+    }
   }
 }
