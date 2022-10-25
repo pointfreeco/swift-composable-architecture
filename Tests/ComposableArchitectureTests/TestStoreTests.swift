@@ -257,10 +257,10 @@ final class TestStoreTests: XCTestCase {
       initialState: 0,
       reducer: Counter()
     )
-    store.dependencies.calendar =  Calendar(identifier: .gregorian)
-    store.dependencies.locale =  Locale(identifier: "en_US")
-    store.dependencies.timeZone =  TimeZone(secondsFromGMT: 0)!
-    store.dependencies.urlSession =  URLSession(configuration: .ephemeral)
+    store.dependencies.calendar = Calendar(identifier: .gregorian)
+    store.dependencies.locale = Locale(identifier: "en_US")
+    store.dependencies.timeZone = TimeZone(secondsFromGMT: 0)!
+    store.dependencies.urlSession = URLSession(configuration: .ephemeral)
 
     store.send(true) { $0 = 1 }
   }
