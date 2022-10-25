@@ -396,8 +396,27 @@ public struct UncheckedSendable<Value>: @unchecked Sendable {
   }
 }
 
-extension UncheckedSendable: Equatable where Value: Equatable {
-  public static func == (lhs: UncheckedSendable, rhs: UncheckedSendable) -> Bool {
-    lhs.value == rhs.value
+extension UncheckedSendable: Equatable where Value: Equatable {}
+extension UncheckedSendable: Hashable where Value: Hashable {}
+
+extension UncheckedSendable: Decodable where Value: Decodable {
+  public init(from decoder: Decoder) throws {
+    do {
+      let container = try decoder.singleValueContainer()
+      self.init(wrappedValue: try container.decode(Value.self))
+    } catch {
+      self.init(wrappedValue: try Value(from: decoder))
+    }
+  }
+}
+
+extension UncheckedSendable: Encodable where Value: Encodable {
+  public func encode(to encoder: Encoder) throws {
+    do {
+      var container = encoder.singleValueContainer()
+      try container.encode(self.wrappedValue)
+    } catch {
+      try self.wrappedValue.encode(to: encoder)
+    }
   }
 }
