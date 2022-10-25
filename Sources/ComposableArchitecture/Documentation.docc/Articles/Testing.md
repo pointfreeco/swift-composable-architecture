@@ -506,7 +506,7 @@ store.exhaustivity = .partial // ⬅️
 
 await store.send(.login(.submitButtonTapped))
 await store.receive(.login(.delegate(.didLogin))) {
-  $0.selectedTab = .profile
+  $0.selectedTab = .activity
 }
 ```
 
