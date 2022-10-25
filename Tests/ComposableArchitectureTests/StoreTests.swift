@@ -528,7 +528,7 @@ final class StoreTests: XCTestCase {
       }
     }
 
-    let store = Store(
+    let store = TestStore(
       initialState: 0,
       reducer: Counter()
         .dependency(\.calendar, Calendar(identifier: .gregorian))
@@ -537,6 +537,6 @@ final class StoreTests: XCTestCase {
         .dependency(\.urlSession, URLSession(configuration: .ephemeral))
     )
 
-    ViewStore(store).send(true)
+    store.send(true) { $0 = 1 }
   }
 }
