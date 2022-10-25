@@ -511,7 +511,7 @@ final class StoreTests: XCTestCase {
     XCTAssertEqual(scopedStore.effectCancellables.count, 0)
   }
 
-  func testDependencies() {
+  func testOverrideDependenciesDirectlyOnReducer() {
     struct Counter: ReducerProtocol {
       @Dependency(\.calendar) var calendar
       @Dependency(\.locale) var locale
@@ -528,7 +528,7 @@ final class StoreTests: XCTestCase {
       }
     }
 
-    let store = TestStore(
+    let store = Store(
       initialState: 0,
       reducer: Counter()
         .dependency(\.calendar, Calendar(identifier: .gregorian))
@@ -537,6 +537,6 @@ final class StoreTests: XCTestCase {
         .dependency(\.urlSession, URLSession(configuration: .ephemeral))
     )
 
-    store.send(true) { $0 = 1 }
+    ViewStore(store).send(true)
   }
 }
