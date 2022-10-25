@@ -596,7 +596,56 @@
       }
       XCTAssertEqual(store.state.age, 34)
     }
+
+    func testAddItem() async {
+      let store = TestStore(
+        initialState: Feature.State(),
+        reducer: Feature()
+      )
+
+      await store.send(.addButtonTapped) {
+        $0.isAdding = true
+        $0.items = [
+          Item(name: "", quantity: 1)
+        ]
+      }
+
+      await store.receive(.addResponse(success: true)) {
+        $0.isAdding = false
+      }
+    }
   }
+
+private struct Feature: ReducerProtocol {
+  struct State: Equatable {
+    var isAdding = false
+    var items: IdentifiedArrayOf<Item> = []
+  }
+  enum Action: Equatable {
+    case addButtonTapped
+    case addResponse(success: Bool)
+  }
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+    switch action {
+    case .addButtonTapped:
+      state.isAdding = true
+      state.items.append(Item())
+      return .run { await $0(.addResponse(success: true)) }
+
+    case .addResponse:
+      state.isAdding = false
+      return .none
+    }
+  }
+}
+
+private struct Item: Equatable, Identifiable {
+  var name = ""
+  var quantity = 1
+
+  var id: String { self.name }
+}
+
 
   struct Counter: ReducerProtocol {
     struct State: Equatable {

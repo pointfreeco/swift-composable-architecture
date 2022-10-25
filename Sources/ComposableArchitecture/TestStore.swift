@@ -420,6 +420,33 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
   /// The dependencies define the execution context that your feature runs in. They can be
   /// modified throughout the test store's lifecycle in order to influence how your feature
   /// produces effects.
+  ///
+  /// Typically you will override certain dependencies immediately after constructing the test
+  /// store. For example, if your feature need access to the current date and an API client to
+  /// do its job, you can override those dependencies like so:
+  ///
+  /// ```swift
+  /// let store = TestStore(…)
+  ///
+  /// store.dependencies.apiClient = .mock
+  /// store.dependencies.date = .constant(Date(timeIntervalSinceReferenceDate: 1234567890))
+  ///
+  /// // Store assertions here
+  /// ```
+  ///
+  /// You can also override dependencies in the middle of the test in order to simulate how the
+  /// dependency changes as the user performs action. For example, to test the flow of an API
+  /// request failing at first but then later succeeding, you can do the following:
+  ///
+  /// ```swift
+  /// store.dependencies.apiClient = .failing
+  ///
+  /// // Store assertions with failing API client
+  ///
+  /// store.dependencies.apiClient = .mock
+  ///
+  /// // Store assertions with succeeding API client
+  /// ```
   public var dependencies: DependencyValues {
     _read { yield self.reducer.dependencies }
     _modify { yield &self.reducer.dependencies }

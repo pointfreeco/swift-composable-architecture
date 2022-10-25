@@ -41,8 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-clocks",
       "state" : {
-        "branch" : "main",
-        "revision" : "fd12efe73828fce14f2c1ed895107cf3ff9cae0e"
+        "revision" : "692ec4f5429a667bdd968c7260dfa2b23adfeffc",
+        "version" : "0.1.4"
       }
     },
     {
