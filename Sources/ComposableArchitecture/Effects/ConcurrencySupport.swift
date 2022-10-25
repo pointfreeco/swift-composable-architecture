@@ -395,3 +395,9 @@ public struct UncheckedSendable<Value>: @unchecked Sendable {
     _modify { yield &self.value[keyPath: keyPath] }
   }
 }
+
+extension UncheckedSendable: Equatable where Value: Equatable {
+  public static func == (lhs: UncheckedSendable, rhs: UncheckedSendable) -> Bool {
+    lhs.value == rhs.value
+  }
+}
