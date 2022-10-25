@@ -546,6 +546,22 @@
       // Ignore in-flight effect
     }
 
+    func testCasePathReceive() async {
+      let store = TestStore(
+        initialState: NonExhaustiveReceive.State(),
+        reducer: NonExhaustiveReceive()
+      )
+      store.exhaustivity = .partial
+
+      await store.send(.onAppear)
+      await store.receive(/NonExhaustiveReceive.Action.response1) {
+        $0.int = 42
+      }
+      await store.receive(/NonExhaustiveReceive.Action.response2) {
+        $0.string = "Hello"
+      }
+    }
+
     // This example comes from Krzysztof Zabłocki's blog post:
     // https://www.merowing.info/exhaustive-testing-in-tca/
     func testKrzysztofExample1() {
