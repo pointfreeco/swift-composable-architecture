@@ -33,7 +33,9 @@ extension DependencyValues {
   private enum CalendarKey: DependencyKey {
     static let liveValue = Calendar.autoupdatingCurrent
     static var testValue: Calendar {
-      XCTFail(#"Unimplemented: @Dependency(\.calendar)"#)
+      if !DependencyValues.isSetting {
+        XCTFail(#"Unimplemented: @Dependency(\.calendar)"#)
+      }
       return .autoupdatingCurrent
     }
   }

@@ -141,7 +141,7 @@ extension AsyncStream {
 }
 
 extension AsyncThrowingStream where Failure == Error {
-  /// Initializes an `AsyncStream` from any `AsyncSequence`.
+  /// Initializes an `AsyncThrowingStream` from any `AsyncSequence`.
   ///
   /// - Parameters:
   ///   - sequence: An `AsyncSequence`.

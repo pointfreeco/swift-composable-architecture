@@ -510,4 +510,33 @@ final class StoreTests: XCTestCase {
     XCTAssertEqual(store.effectCancellables.count, 0)
     XCTAssertEqual(scopedStore.effectCancellables.count, 0)
   }
+
+  func testOverrideDependenciesDirectlyOnReducer() {
+    struct Counter: ReducerProtocol {
+      @Dependency(\.calendar) var calendar
+      @Dependency(\.locale) var locale
+      @Dependency(\.timeZone) var timeZone
+      @Dependency(\.urlSession) var urlSession
+
+      func reduce(into state: inout Int, action: Bool) -> EffectTask<Bool> {
+        _ = self.calendar
+        _ = self.locale
+        _ = self.timeZone
+        _ = self.urlSession
+        state += action ? 1 : -1
+        return .none
+      }
+    }
+
+    let store = Store(
+      initialState: 0,
+      reducer: Counter()
+        .dependency(\.calendar, Calendar(identifier: .gregorian))
+        .dependency(\.locale, Locale(identifier: "en_US"))
+        .dependency(\.timeZone, TimeZone(secondsFromGMT: 0)!)
+        .dependency(\.urlSession, URLSession(configuration: .ephemeral))
+    )
+
+    ViewStore(store).send(true)
+  }
 }

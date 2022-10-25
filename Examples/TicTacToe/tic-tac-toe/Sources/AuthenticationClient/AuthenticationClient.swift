@@ -72,7 +72,7 @@ public struct AuthenticationClient: Sendable {
 }
 
 extension AuthenticationClient: TestDependencyKey {
-  public static var testValue = Self(
+  public static let testValue = Self(
     login: unimplemented("\(Self.self).login"),
     twoFactor: unimplemented("\(Self.self).twoFactor")
   )
