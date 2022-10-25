@@ -1270,6 +1270,16 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
     await Task.megaYield()
   }
+
+  @MainActor
+  public func receive<Value>(
+    _ casePath: CasePath<Action, Value>,
+    timeout nanoseconds: UInt64? = nil,
+    _ updateExpectingResult: ((inout ScopedState) throws -> Void)? = nil,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) async {
+  }
 }
 
 extension TestStore {
