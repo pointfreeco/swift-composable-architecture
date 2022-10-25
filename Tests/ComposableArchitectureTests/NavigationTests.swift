@@ -122,6 +122,25 @@ final class NavigationTests: XCTestCase {
     }
   }
 
+  func testCancelAllChildEffects_ResetSetPath() async {
+    let store = TestStore(
+      initialState: Feature.State(),
+      reducer: Feature()
+    )
+
+    await store.send(.addButtonTapped) {
+      $0.$path[id: 0] = Child.State()
+    }
+    await store.send(.path(.element(id: 0, .onAppear)))
+    await store.send(.addButtonTapped) {
+      $0.$path[id: 1] = Child.State()
+    }
+    await store.send(.path(.element(id: 1, .onAppear)))
+    await store.send(.path(.setPath([]))) {
+      $0.path = []
+    }
+  }
+
   func testMultiChildrenOnStack() async {
     let store = TestStore(
       initialState: Feature.State(),
@@ -158,19 +177,12 @@ final class NavigationTests: XCTestCase {
       // $0.$path.pop(to: 1)
       // $0.$path.pop(id: 1)
       // $0.$path.dismiss(id: 1)
-      $0.$path[id: 1] = nil
-//      $0.$path.removeAll { $0.id == AnyHashable(1) }
+      // $0.$path.removeAll { $0.id == AnyHashable(1) }
+      $0.$path[id: 1] = nil // this isn't quite right because it doesn't dismiss everything above it
     }
     await store.send(.path(.dismiss(id: 0))) {
       $0.path = []
     }
-
-
-    //await store.send(.navigation(.push(...)))
-    //await store.skipReceivedAction(/Action.navigation .. /NavigationAction.setPath)
-    //await store.received(/Action.navigation .. /NavigationAction.setPath, exhaustivity: .partial)
-
-
   }
 
   func testDismissMulti() async {
