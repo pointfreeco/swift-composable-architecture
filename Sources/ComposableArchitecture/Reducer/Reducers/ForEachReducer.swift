@@ -5,7 +5,7 @@ import OrderedCollections
 ///
 /// This protocol is semi-abstract and you usually conform to the ``MutableStateContainer`` and/or
 /// the ``IdentifiedStatesCollection`` which inherit from this protocol.
-public protocol StateContainer {
+public protocol _StateContainer {
   /// The type of values that can be extracted from this container.
   associatedtype State
   /// A type whose values allow identify a specific ``State`` in this container.
@@ -34,7 +34,7 @@ public protocol StateContainer {
   func contains(tag: Tag) -> Bool
 }
 
-extension StateContainer {
+extension _StateContainer {
   @inlinable
   public func contains(tag: Tag) -> Bool {
     self.extract(tag: tag) != nil
@@ -54,7 +54,7 @@ extension StateContainer {
 ///
 /// [swift-identified-collections]: http://github.com/pointfreeco/swift-identified-collections
 /// [swift-collections]: http://github.com/apple/swift-collections
-public protocol MutableStateContainer: StateContainer {
+public protocol _MutableStateContainer: _StateContainer {
   /// Write a ``State`` value with a given ``Tag`` into the container.
   /// - Parameters:
   ///   - tag: A ``Tag`` of the ``State`` to embed.
@@ -81,7 +81,7 @@ struct StateExtractionFailed: Error {
   @usableFromInline init() {}
 }
 
-extension MutableStateContainer {
+extension _MutableStateContainer {
   @inlinable
   public mutating func modify<Result>(tag: Tag, _ body: (inout State) -> Result) throws
     -> Result
@@ -92,7 +92,7 @@ extension MutableStateContainer {
   }
 }
 
-extension IdentifiedArray: MutableStateContainer {
+extension IdentifiedArray: _MutableStateContainer {
   @inlinable
   public func extract(tag: ID) -> Element? {
     self[id: tag]
@@ -107,7 +107,7 @@ extension IdentifiedArray: MutableStateContainer {
   }
 }
 
-extension OrderedDictionary: MutableStateContainer {
+extension OrderedDictionary: _MutableStateContainer {
   @inlinable
   public func extract(tag: Key) -> Value? {
     self[tag]
@@ -175,7 +175,7 @@ extension ReducerProtocol {
     ///     state.
     /// - Returns: A reducer that combines the child reducer with the parent reducer.
     @inlinable
-    public func forEach<Elements: MutableStateContainer, ElementAction>(
+    public func forEach<Elements: _MutableStateContainer, ElementAction>(
       _ toElementsState: WritableKeyPath<State, Elements>,
       action toElementAction: CasePath<Action, (Elements.Tag, ElementAction)>,
       @ReducerBuilder<Elements.State, ElementAction> _ element: () -> some ReducerProtocol<
@@ -197,7 +197,7 @@ extension ReducerProtocol {
     }
   #else
     @inlinable
-    public func forEach<Elements: MutableStateContainer, Element: ReducerProtocol>(
+    public func forEach<Elements: _MutableStateContainer, Element: ReducerProtocol>(
       _ toElementsState: WritableKeyPath<State, Elements>,
       action toElementAction: CasePath<Action, (Elements.Tag, Element.Action)>,
       @ReducerBuilderOf<Element> _ element: () -> Element,
@@ -220,7 +220,7 @@ extension ReducerProtocol {
 
 public struct _ForEachReducer<
   Parent: ReducerProtocol,
-  Container: MutableStateContainer,
+  Container: _MutableStateContainer,
   Element: ReducerProtocol
 >: ReducerProtocol where Container.State == Element.State {
   @usableFromInline

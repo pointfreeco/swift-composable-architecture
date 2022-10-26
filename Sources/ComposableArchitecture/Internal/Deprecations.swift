@@ -1178,7 +1178,7 @@ public struct IndexedID<ID: Hashable>: Hashable {
 }
 
 @available(*, deprecated)
-public struct IndexedIdentifiedArray<ID: Hashable, Element>: IdentifiedStatesCollection {
+public struct IndexedIdentifiedArray<ID: Hashable, Element>: _IdentifiedCollection {
   let array: [Element]
   let id: KeyPath<Element, ID>
 

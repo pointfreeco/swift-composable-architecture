@@ -9,7 +9,7 @@ import SwiftUI
 ///
 /// [swift-identified-collections]: http://github.com/pointfreeco/swift-identified-collections
 /// [swift-collections]: http://github.com/apple/swift-collections
-public protocol IdentifiedStatesCollection: StateContainer {
+public protocol _IdentifiedCollection: _StateContainer {
   typealias ID = Tag
   associatedtype IDs: RandomAccessCollection where IDs.Element == ID
   associatedtype States: Collection where States.Element == State
@@ -35,14 +35,14 @@ public protocol IdentifiedStatesCollection: StateContainer {
   func areDuplicateIDs(other: Self) -> Bool
 }
 
-extension IdentifiedStatesCollection where IDs: Equatable {
+extension _IdentifiedCollection where IDs: Equatable {
   @inlinable
   public func areDuplicateIDs(other: Self) -> Bool {
     self.stateIDs == other.stateIDs
   }
 }
 
-extension IdentifiedArray: IdentifiedStatesCollection {
+extension IdentifiedArray: _IdentifiedCollection {
   public var stateIDs: OrderedSet<ID> { self.ids }
   public var states: Self { self }
 
@@ -52,7 +52,7 @@ extension IdentifiedArray: IdentifiedStatesCollection {
   }
 }
 
-extension OrderedDictionary: IdentifiedStatesCollection {
+extension OrderedDictionary: _IdentifiedCollection {
   public var stateIDs: OrderedSet<Key> { self.keys }
   public var states: OrderedDictionary<Key, Value>.Values { self.values }
 
@@ -149,7 +149,7 @@ func areCoWEqual<IDs: Equatable>(lhs: IDs, rhs: IDs) -> Bool {
 /// ```
 ///
 public struct ForEachStore<
-  StatesCollection: IdentifiedStatesCollection, EachAction, EachContent: View
+  StatesCollection: _IdentifiedCollection, EachAction, EachContent: View
 >: DynamicViewContent
 where StatesCollection.ID: Hashable {
   public typealias EachState = StatesCollection.State
