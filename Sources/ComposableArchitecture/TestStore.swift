@@ -530,7 +530,7 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
 
   @available(
     iOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       'Reducer' has been deprecated in favor of 'ReducerProtocol'.
@@ -540,7 +540,7 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
   )
   @available(
     macOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       'Reducer' has been deprecated in favor of 'ReducerProtocol'.
@@ -550,7 +550,7 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
   )
   @available(
     tvOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       'Reducer' has been deprecated in favor of 'ReducerProtocol'.
@@ -560,7 +560,7 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
   )
   @available(
     watchOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       'Reducer' has been deprecated in favor of 'ReducerProtocol'.
@@ -886,10 +886,10 @@ extension TestStore where ScopedState: Equatable {
   ///     expected.
   /// - Returns: A ``TestStoreTask`` that represents the lifecycle of the effect executed when
   ///   sending the action.
-  @available(iOS, deprecated: 9999.0, message: "Call the async-friendly 'send' instead.")
-  @available(macOS, deprecated: 9999.0, message: "Call the async-friendly 'send' instead.")
-  @available(tvOS, deprecated: 9999.0, message: "Call the async-friendly 'send' instead.")
-  @available(watchOS, deprecated: 9999.0, message: "Call the async-friendly 'send' instead.")
+  @available(iOS, deprecated: 9999, message: "Call the async-friendly 'send' instead.")
+  @available(macOS, deprecated: 9999, message: "Call the async-friendly 'send' instead.")
+  @available(tvOS, deprecated: 9999, message: "Call the async-friendly 'send' instead.")
+  @available(watchOS, deprecated: 9999, message: "Call the async-friendly 'send' instead.")
   @discardableResult
   public func send(
     _ action: ScopedAction,
@@ -1071,10 +1071,10 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   ///     store. The mutable state sent to this closure must be modified to match the state of the
   ///     store after processing the given action. Do not provide a closure if no change is
   ///     expected.
-  @available(iOS, deprecated: 9999.0, message: "Call the async-friendly 'receive' instead.")
-  @available(macOS, deprecated: 9999.0, message: "Call the async-friendly 'receive' instead.")
-  @available(tvOS, deprecated: 9999.0, message: "Call the async-friendly 'receive' instead.")
-  @available(watchOS, deprecated: 9999.0, message: "Call the async-friendly 'receive' instead.")
+  @available(iOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
+  @available(macOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
+  @available(tvOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
+  @available(watchOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
   public func receive(
     _ expectedAction: Action,
     _ updateExpectingResult: ((inout ScopedState) throws -> Void)? = nil,
@@ -1098,7 +1098,8 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
           """
           Expected to receive an action \(expectedAction), but didn't get one.
           """,
-          file: file, line: line
+          file: file,
+          line: line
         )
         return
       }
@@ -1145,6 +1146,81 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
         line: line
       )
     }
+    let expectedState = self.toScopedState(self.state)
+    do {
+      try self.expectedStateShouldMatch(
+        expected: expectedState,
+        actual: self.toScopedState(state),
+        modify: updateExpectingResult,
+        file: file,
+        line: line
+      )
+    } catch {
+      XCTFail("Threw error: \(error)", file: file, line: line)
+    }
+    self.reducer.state = state
+    if "\(self.file)" == "\(file)" {
+      self.line = line
+    }
+  }
+
+  // TODO: Should `updateExpectingResult` be named to support trailing closure syntax?
+  // TODO: Should there be a `Bool` predicated overload?
+  //     store.receive { action in
+  //       guard case .increment = action else { return false }
+  //       return true
+  //     } updateStateExpectingResult: {
+  //       $0.count = 1
+  //     }
+  public func receive<Value>(
+    _ expectedAction: (Action) -> Value?,
+    _ updateExpectingResult: ((inout ScopedState) throws -> Void)? = nil,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) {
+    guard !self.reducer.receivedActions.isEmpty else {
+      XCTFail(
+        """
+        Expected to receive an action, but received none.
+        """,
+        file: file,
+        line: line
+      )
+      return
+    }
+
+    if self.exhaustivity != .exhaustive {
+      guard self.reducer.receivedActions.contains(where: { expectedAction($0.action) != nil })
+      else {
+        XCTFail(
+          """
+          Expected to receive a matching action, but didn't get one.
+          """,
+          file: file,
+          line: line
+        )
+        return
+      }
+
+      while let receivedAction = self.reducer.receivedActions.first,
+        expectedAction(receivedAction.action) == nil
+      {
+        XCTFailHelper(  // TODO: Finesse copy
+          """
+          Skipped assertions: …
+          Skipped receiving \(receivedAction.action)
+          """,
+          file: file,
+          line: line
+        )
+        self.withExhaustivity(.none) {
+          self.receive(receivedAction.action)
+        }
+      }
+    }
+
+    let (_, state) = self.reducer.receivedActions.removeFirst()
+
     let expectedState = self.toScopedState(self.state)
     do {
       try self.expectedStateShouldMatch(
@@ -1211,13 +1287,40 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     file: StaticString = #file,
     line: UInt = #line
   ) async {
-    let nanoseconds = nanoseconds ?? self.timeout
-
     guard !self.reducer.inFlightEffects.isEmpty
     else {
-      { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
+      _ = { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
       return
     }
+    await self.receiveAction(timeout: nanoseconds, file: file, line: line)
+    _ = { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
+    await Task.megaYield()
+  }
+
+  @MainActor
+  public func receive<Value>(
+    _ expectedAction: (Action) -> Value?,
+    timeout nanoseconds: UInt64? = nil,
+    _ updateExpectingResult: ((inout ScopedState) throws -> Void)? = nil,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) async {
+    guard !self.reducer.inFlightEffects.isEmpty
+    else {
+      _ = { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
+      return
+    }
+    await self.receiveAction(timeout: nanoseconds, file: file, line: line)
+    _ = { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
+    await Task.megaYield()
+  }
+
+  private func receiveAction(
+    timeout nanoseconds: UInt64?,
+    file: StaticString,
+    line: UInt
+  ) async {
+    let nanoseconds = nanoseconds ?? self.timeout
 
     await Task.megaYield()
     let start = DispatchTime.now().uptimeNanoseconds
@@ -1266,19 +1369,6 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
 
     guard !Task.isCancelled
     else { return }
-
-    { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
-    await Task.megaYield()
-  }
-
-  @MainActor
-  public func receive<Value>(
-    _ casePath: CasePath<Action, Value>,
-    timeout nanoseconds: UInt64? = nil,
-    _ updateExpectingResult: ((inout ScopedState) throws -> Void)? = nil,
-    file: StaticString = #file,
-    line: UInt = #line
-  ) async {
   }
 }
 
