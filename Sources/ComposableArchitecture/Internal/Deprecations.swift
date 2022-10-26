@@ -1181,11 +1181,11 @@ public struct IndexedIdentifiedArray<ID: Hashable, Element>: _IterableTaggedCont
   public func extract(tag: IndexedID) -> Element? {
     array[tag.index]
   }
-
+  
   public var iterableContainer:
-    _IterableTaggedContainer<[IndexedID], IndexedIdentifiedArray<ID, Element>>
+    IterableTaggedContainer<[IndexedID], IndexedIdentifiedArray<ID, Element>>
   {
-    _IterableTaggedContainer(
+    IterableTaggedContainer(
       tags: array.enumerated().map { IndexedID(index: $0.offset, id: $0.element[keyPath: id]) },
       container: self
     )

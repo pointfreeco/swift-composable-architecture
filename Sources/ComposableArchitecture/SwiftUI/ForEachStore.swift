@@ -37,29 +37,27 @@ import SwiftUI
 //  func areIDsDuplicates(other: Self) -> Bool
 //}
 
-
 extension IdentifiedArray: _IterableTaggedContainerProtocol {
-  public var iterableContainer: _IterableTaggedContainer<OrderedSet<ID>, Self> {
-    _IterableTaggedContainer(tags: self.ids, container: self)
+  public var iterableContainer: IterableTaggedContainer<OrderedSet<ID>, Self> {
+    IterableTaggedContainer(tags: self.ids, container: self)
   }
 }
 
 extension OrderedDictionary: _IterableTaggedContainerProtocol {
-  public var iterableContainer: _IterableTaggedContainer<OrderedSet<Key>, Self> {
-    _IterableTaggedContainer(tags: self.keys, container: self)
+  public var iterableContainer: IterableTaggedContainer<OrderedSet<Key>, Self> {
+    IterableTaggedContainer(tags: self.keys, container: self)
   }
 }
 
 public protocol _IterableTaggedContainerProtocol: _TaggedContainer {
   associatedtype Tags: RandomAccessCollection where Tags.Element == Tag
-  var iterableContainer: _IterableTaggedContainer<Tags, Self> { get }
+  var iterableContainer: IterableTaggedContainer<Tags, Self> { get }
 }
 
-public struct _IterableTaggedContainer<
+public struct IterableTaggedContainer<
   Tags: Sequence,
   Container: _TaggedContainer
 >: Sequence where Tags.Element == Container.Tag {
-  typealias Tag = Tags.Element
   let tags: Tags
   let container: Container
   public func makeIterator() -> Iterator {
@@ -79,7 +77,7 @@ public struct _IterableTaggedContainer<
   }
 }
 
-extension _IterableTaggedContainer: Equatable where Tags: Equatable {
+extension IterableTaggedContainer: Equatable where Tags: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
     if let lhs = lhs.tags as? any CoWEquatable, let rhs = rhs.tags as? any CoWEquatable {
       return lhs.isCoWEqual(to: rhs)
@@ -103,26 +101,26 @@ extension OrderedSet: CoWEquatable {
   }
 }
 
-extension _IterableTaggedContainer: Collection where Tags: Collection {
+extension IterableTaggedContainer: Collection where Tags: Collection {
+  public func index(after i: Tags.Index) -> Tags.Index { tags.index(after: i) }
   public var startIndex: Tags.Index { self.tags.startIndex }
   public var endIndex: Tags.Index { self.tags.endIndex }
   public subscript(position: Tags.Index) -> Container.Value {
-    let tag = self.tags[position]
+    return self[self.tags[position]]
+  }
+  subscript(tag: Tags.Element) -> Container.Value {
     guard let value = self.container.extract(tag: tag) else {
-      fatalError(
-        "Failed to extract a value at \(position) for \(String(describing: tag))"
-      )
+      fatalError("Failed to extract a value for \(String(describing: tag))")
     }
     return value
   }
-  public func index(after i: Tags.Index) -> Tags.Index { tags.index(after: i) }
 }
 
-extension _IterableTaggedContainer: BidirectionalCollection where Tags: BidirectionalCollection {
+extension IterableTaggedContainer: BidirectionalCollection where Tags: BidirectionalCollection {
   public func index(before i: Tags.Index) -> Tags.Index { tags.index(before: i) }
 }
 
-extension _IterableTaggedContainer: RandomAccessCollection where Tags: RandomAccessCollection {}
+extension IterableTaggedContainer: RandomAccessCollection where Tags: RandomAccessCollection {}
 
 /// A Composable Architecture-friendly wrapper around `ForEach` that simplifies working with
 /// collections of state.
@@ -208,7 +206,8 @@ where States.Tags.Element: Hashable, States.Tags: Equatable {
   public typealias ID = States.Tags.Element
 
   let store: Store<States, (ID, EachAction)>
-  @ObservedObject var viewStore: ViewStore<_IterableTaggedContainer<States.Tags, States>, (ID, EachAction)>
+  @ObservedObject var viewStore:
+    ViewStore<IterableTaggedContainer<States.Tags, States>, (ID, EachAction)>
   let content: (ID, Store<EachState, EachAction>) -> EachContent
 
   /// Initializes a structure that computes views on demand from a store on a collection of data and
@@ -250,9 +249,7 @@ where States.Tags.Element: Hashable, States.Tags: Equatable {
 
   public var body: some View {
     ForEach(viewStore.state.tags, id: \.self) { stateID in
-      // TODO: Message if `nil`?
-      let x = self.viewStore[stateID]
-      let state = self.viewStore.state.container.extract(tag: stateID)!
+      let state = self.viewStore[stateID]
       let eachStore = store.scope {
         $0.extract(tag: stateID) ?? state
       } action: {

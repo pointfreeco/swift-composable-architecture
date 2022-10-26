@@ -1,23 +1,22 @@
 import OrderedCollections
 
-/// A protocol that describes container types from which one can extract some domain's `State`
-/// value.
+/// A protocol that describes container types from which one can extract values from.
 ///
-/// This protocol is semi-abstract and you usually conform to the ``MutableValueContainer`` and/or
-/// the ``IdentifiedStatesCollection`` which inherit from this protocol.
+/// This protocol is semi-abstract and you usually conform to the ``_ModifiableTaggedContainer``
+/// and/or the ``_IterableTaggedContainerProtocol`` which inherit from this protocol.
 public protocol _TaggedContainer {
   /// The type of values that can be extracted from this container.
   associatedtype Value
-  /// A type whose values allow identify a specific ``State`` in this container.
+  /// A type whose values allow identify a specific ``Value`` in this container.
   ///
-  /// ``StateContainer`` doesn't impose any requirement on ``Tag``. It can be the `Key` of a
+  /// ``_TaggedContainer`` doesn't impose any requirement on ``Tag``. It can be the `Key` of a
   /// `Dictionary`, the `ID` of an `IdentifiedArray`, or even `Void` or `Self.Type` when the
   ///  container can only contain one unique value.
   associatedtype Tag
   /// Extracts a ``Value`` for a given ``Tag`` from this container
   ///
   /// - Parameters:
-  ///   - tag: The ``Tag`` of the ``State`` to extract.
+  ///   - tag: The ``Tag`` of the ``Value`` to extract.
   /// - Returns: A ``Value`` value if the extraction succeeds, `nil` otherwise.
   func extract(tag: Tag) -> Value?
   /// Checks if a container contains a ``Value`` for a given ``Tag``
@@ -29,7 +28,7 @@ public protocol _TaggedContainer {
   /// A default implementation is provided.
   ///
   /// - Parameters:
-  ///   - tag: The ``Tag`` of the ``State`` to check.
+  ///   - tag: The ``Tag`` of the ``Value`` to check.
   /// - Returns: `true` if a ``Value`` exists at `tag`, `false` otherwise.
   func contains(tag: Tag) -> Bool
 }
@@ -54,7 +53,7 @@ extension _TaggedContainer {
 ///
 /// [swift-identified-collections]: http://github.com/pointfreeco/swift-identified-collections
 /// [swift-collections]: http://github.com/apple/swift-collections
-public protocol _MutableTaggedContainer: _TaggedContainer {
+public protocol _ModifiableTaggedContainer: _TaggedContainer {
   /// Write a ``Value`` value with a given ``Tag`` into the container.
   /// - Parameters:
   ///   - tag: A ``Tag`` of the ``Value`` to embed.
@@ -77,22 +76,22 @@ public protocol _MutableTaggedContainer: _TaggedContainer {
 }
 
 @usableFromInline
-struct StateExtractionFailed: Error {
+struct ValueExtractionFailed: Error {
   @usableFromInline init() {}
 }
 
-extension _MutableTaggedContainer {
+extension _ModifiableTaggedContainer {
   @inlinable
   public mutating func modify<Result>(tag: Tag, _ body: (inout Value) -> Result) throws
     -> Result
   {
-    guard var value = self.extract(tag: tag) else { throw StateExtractionFailed() }
+    guard var value = self.extract(tag: tag) else { throw ValueExtractionFailed() }
     defer { self.embed(tag: tag, value: value) }
     return body(&value)
   }
 }
 
-extension IdentifiedArray: _MutableTaggedContainer {
+extension IdentifiedArray: _ModifiableTaggedContainer {
   @inlinable
   public func extract(tag: ID) -> Element? {
     self[id: tag]
@@ -107,7 +106,7 @@ extension IdentifiedArray: _MutableTaggedContainer {
   }
 }
 
-extension OrderedDictionary: _MutableTaggedContainer {
+extension OrderedDictionary: _ModifiableTaggedContainer {
   @inlinable
   public func extract(tag: Key) -> Value? {
     self[tag]
@@ -168,14 +167,14 @@ extension ReducerProtocol {
     /// [swift-identified-collections]: http://github.com/pointfreeco/swift-identified-collections
     ///
     /// - Parameters:
-    ///   - toElementsState: A writable key path from parent state to a ``MutableStateContainer`` of
-    ///   child states.
+    ///   - toElementsState: A writable key path from parent state to a
+    ///     ``_ModifiableTaggedContainer`` of child states.
     ///   - toElementAction: A case path from parent action to child identifier and child actions.
     ///   - element: A reducer that will be invoked with child actions against elements of child
     ///     state.
     /// - Returns: A reducer that combines the child reducer with the parent reducer.
     @inlinable
-    public func forEach<Elements: _MutableTaggedContainer, ElementAction>(
+    public func forEach<Elements: _ModifiableTaggedContainer, ElementAction>(
       _ toElementsState: WritableKeyPath<State, Elements>,
       action toElementAction: CasePath<Action, (Elements.Tag, ElementAction)>,
       @ReducerBuilder<Elements.Value, ElementAction> _ element: () -> some ReducerProtocol<
@@ -197,7 +196,7 @@ extension ReducerProtocol {
     }
   #else
     @inlinable
-    public func forEach<Elements: _MutableTaggedContainer, Element: ReducerProtocol>(
+    public func forEach<Elements: _ModifiableTaggedContainer, Element: ReducerProtocol>(
       _ toElementsState: WritableKeyPath<State, Elements>,
       action toElementAction: CasePath<Action, (Elements.Tag, Element.Action)>,
       @ReducerBuilderOf<Element> _ element: () -> Element,
@@ -220,7 +219,7 @@ extension ReducerProtocol {
 
 public struct _ForEachReducer<
   Parent: ReducerProtocol,
-  Container: _MutableTaggedContainer,
+  Container: _ModifiableTaggedContainer,
   Element: ReducerProtocol
 >: ReducerProtocol where Container.Value == Element.State {
   @usableFromInline
