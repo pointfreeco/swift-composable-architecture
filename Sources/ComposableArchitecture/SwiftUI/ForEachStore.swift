@@ -10,7 +10,7 @@ import SwiftUI
 /// [swift-identified-collections]: http://github.com/pointfreeco/swift-identified-collections
 /// [swift-collections]: http://github.com/apple/swift-collections
 
-//public protocol _IdentifiedCollection: _TaggedContainer {
+//public protocol _IdentifiedCollection: _Container {
 //  typealias _ID = Tag
 //  typealias _Elements = Self
 //  associatedtype _IDs: RandomAccessCollection where _IDs.Element == Tag
@@ -29,12 +29,41 @@ import SwiftUI
 //  /// - Warning: You are responsible for keeping ``stateIDs`` in an injective relationship with
 //  /// these values, which means that a ``StateContainer/State`` value should exist for any ``ID``
 //  /// from ``stateIDs``.
-//  var _identifiedElements: _Elements { get }
+//  var _container: _Elements { get }
+//}
+
+public protocol _IterableContainer2: _Container {
+  associatedtype Tags: RandomAccessCollection where Tags.Element == Tag
+  var tags: Tags { get }
+}
 //
-//  /// Returns `true` if this collection's ``stateIDs`` is the same as `other`'s ``stateIDs``.
-//  ///
-//  /// A default implementation is provided when ``IDs`` is `Equatable`.
-//  func areIDsDuplicates(other: Self) -> Bool
+//public protocol _IterableIdentifiedCollection: _IterableContainer2 {
+//  var tag: (Value) -> Tag { get }
+//}
+//
+//extension Slice: _IterableContainer2 where Base: _IterableContainer2 {
+//
+//}
+//
+//extension Slice: _IterableIdentifiedCollection where Base: _IterableIdentifiedCollection, Base.Element == Base.Value, Tag == Base.Tag {
+//  public var tags: Tags {
+//
+//    let x = self.map(self.tag)
+//  }
+//}
+//
+//
+
+//struct IterableContainerWrapper<Tags, Value>: _IterableContainer2 where Tags: RandomAccessCollection{
+//  typealias Tag = Tags.Element
+//  var tags: Tags
+//
+//  func extract(tag: Tags.Element) -> Value? {
+//    nil
+//  }
+//  init<Base>(slice: Slice<Base>) where Base: _IterableContainer2 {
+//    self.tags
+//  }
 //}
 
 extension IdentifiedArray: _IterableContainerRepresentable {
@@ -84,12 +113,14 @@ public struct IterableContainer<
   }
 }
 
+extension IterableContainer: IterableContainerProtocol {}
+
 extension IterableContainer {
   public init(_ container: Container, tags: (Container) -> Tags) {
     self.tags = tags(container)
     self.container = container
   }
-  
+
   public init<Tag>(_ container: Container, tags: (Container.Element) -> Tag)
   where Container: Collection, Tags == [Tag] {
     self.tags = container.map(tags)
@@ -121,10 +152,16 @@ extension OrderedSet: CoWEquatable {
   }
 }
 
-extension IterableContainer: Collection where Tags: Collection {
+extension IterableContainer: Collection
+where Tags: Collection, Tags.SubSequence.Indices == Tags.Indices {
+  //  public typealias SubSequence = IterableContainerSlice<Tags, Container>
+
+  public var indices: Tags.Indices { tags.indices }
   public func index(after i: Tags.Index) -> Tags.Index { tags.index(after: i) }
+
   public var startIndex: Tags.Index { self.tags.startIndex }
   public var endIndex: Tags.Index { self.tags.endIndex }
+
   public subscript(position: Tags.Index) -> Container.Value {
     return self[self.tags[position]]
   }
@@ -134,13 +171,109 @@ extension IterableContainer: Collection where Tags: Collection {
     }
     return value
   }
+
+  public subscript(bounds: Range<Tags.Index>) -> IterableContainerSlice<Tags, Container> {
+    .init(tags: tags[bounds], container: container)
+  }
 }
 
-extension IterableContainer: BidirectionalCollection where Tags: BidirectionalCollection {
+extension IterableContainer {
+  //  public init<Tags>(slice: Slice<Tags>, container: Container) where Self.Tags == Slice<Tags> {
+  //    self.tags = slice
+  //    self.container = container
+  //  }
+}
+
+extension IterableContainer where Tags: Collection {
+
+}
+
+//extension Slice: _Container where Base: _Container {
+//  public func extract(tag: Base.Tag) -> Base.Value? {
+//    self.base.extract(tag: tag)
+//  }
+//
+//  public typealias Value = Base.Value
+//
+//  public typealias Tag = Base.Tag
+//
+//
+//}
+
+//extension Slice: _IterableContainerRepresentable where Base: _IterableContainerRepresentable {
+//  public var iterableContainer: IterableContainer<Tags, Slice<Base>> {
+//
+//  }
+//}
+
+extension IdentifiedArray: IterableContainerProtocol {
+  public typealias Container = Self
+}
+
+func test() {
+  var arry = IdentifiedArray<Int, Int>(id: \.self)
+  let x = arry.iterableContainer[...]
+}
+
+//extension Slice: _IterableContainerRepresentable, IterableContainerProtocol
+//where Base: IterableContainerProtocol, Base: _Container, Base.Tags: RandomAccessCollection, Base.Container.Tag == Base.Tag {
+//  public typealias Container = Slice<Base>
+//
+//  public var iterableContainer: IterableContainer<Slice<Base.Tags>, Slice<Base>> {
+//    fatalError()
+//  }
+//}
+
+//extension Slice: _IterableContainerRepresentable where Base: IterableContainer<Tag, Container> {
+//  public typealias Tags = Base
+//
+//
+//}
+
+public struct IterableContainerSlice<Tags: Collection, Container: _Container>: Collection
+where Tags.Element == Container.Tag, Tags.SubSequence.Indices == Tags.Indices {
+  public var indices: Tags.Indices { tags.indices }
+  public var startIndex: Tags.Index { tags.startIndex }
+  public var endIndex: Tags.Index { tags.endIndex }
+
+  public func index(after i: Tags.Index) -> Tags.Index {
+    tags.index(after: i)
+  }
+  let tags: Tags.SubSequence
+  let container: Container
+
+  public subscript(position: Swift.Slice<Tags>.Index) -> Container.Value {
+    get {
+      let tag = self.tags[position]
+      return self.container.extract(tag: tag)!
+    }
+  }
+  public subscript(bounds: Range<Index>) -> IterableContainerSlice<Tags, Container> {
+    .init(tags: tags[bounds], container: container)
+  }
+}
+
+extension IterableContainerSlice: BidirectionalCollection where Tags: BidirectionalCollection {
   public func index(before i: Tags.Index) -> Tags.Index { tags.index(before: i) }
 }
 
-extension IterableContainer: RandomAccessCollection where Tags: RandomAccessCollection {}
+extension IterableContainerSlice: RandomAccessCollection where Tags: RandomAccessCollection {}
+
+public protocol IterableContainerProtocol {
+  associatedtype Tags: Sequence where Tags.Element == Container.Tag
+  associatedtype Container: _Container
+}
+
+extension IterableContainer {
+}
+
+extension IterableContainer: BidirectionalCollection
+where Tags: BidirectionalCollection, Tags.SubSequence.Indices == Tags.Indices {
+  public func index(before i: Tags.Index) -> Tags.Index { tags.index(before: i) }
+}
+
+extension IterableContainer: RandomAccessCollection
+where Tags: RandomAccessCollection, Tags.SubSequence.Indices == Tags.Indices {}
 
 /// A Composable Architecture-friendly wrapper around `ForEach` that simplifies working with
 /// collections of state.
@@ -221,13 +354,15 @@ extension IterableContainer: RandomAccessCollection where Tags: RandomAccessColl
 public struct ForEachStore<
   States: _IterableContainerRepresentable, EachAction, EachContent: View
 >: DynamicViewContent
-where States.Tags.Element: Hashable, States.Tags: Equatable {
+where
+  States.Tags.Element: Hashable, States.Tags: Equatable,
+  States.Tags.SubSequence.Indices == States.Tags.Indices
+{
   public typealias EachState = States.Value
   public typealias ID = States.Tags.Element
 
   let store: Store<States, (ID, EachAction)>
-  @ObservedObject var viewStore:
-    ViewStore<IterableContainer<States.Tags, States>, (ID, EachAction)>
+  @ObservedObject var viewStore: ViewStore<IterableContainer<States.Tags, States>, (ID, EachAction)>
   let content: (ID, Store<EachState, EachAction>) -> EachContent
 
   /// Initializes a structure that computes views on demand from a store on a collection of data and
