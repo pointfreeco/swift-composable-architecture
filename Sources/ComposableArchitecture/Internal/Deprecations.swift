@@ -1163,7 +1163,7 @@ extension ForEachStore {
 }
 
 @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead.")
-public struct IndexedIdentifiedArray<ID: Hashable, Element>: _IterableTaggedContainerProtocol {
+public struct IndexedIdentifiedArray<ID: Hashable, Element>: _IterableContainerRepresentable {
   public struct IndexedID: Hashable {
     let index: Int
     var id: ID?
@@ -1183,9 +1183,9 @@ public struct IndexedIdentifiedArray<ID: Hashable, Element>: _IterableTaggedCont
   }
   
   public var iterableContainer:
-    IterableTaggedContainer<[IndexedID], IndexedIdentifiedArray<ID, Element>>
+    IterableContainer<[IndexedID], IndexedIdentifiedArray<ID, Element>>
   {
-    IterableTaggedContainer(
+    IterableContainer(
       tags: array.enumerated().map { IndexedID(index: $0.offset, id: $0.element[keyPath: id]) },
       container: self
     )

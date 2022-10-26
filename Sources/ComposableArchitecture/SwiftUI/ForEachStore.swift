@@ -37,27 +37,34 @@ import SwiftUI
 //  func areIDsDuplicates(other: Self) -> Bool
 //}
 
-extension IdentifiedArray: _IterableTaggedContainerProtocol {
-  public var iterableContainer: IterableTaggedContainer<OrderedSet<ID>, Self> {
-    IterableTaggedContainer(tags: self.ids, container: self)
+extension IdentifiedArray: _IterableContainerRepresentable {
+  public var iterableContainer: IterableContainer<OrderedSet<ID>, Self> {
+    IterableContainer(tags: self.ids, container: self)
   }
 }
 
-extension OrderedDictionary: _IterableTaggedContainerProtocol {
-  public var iterableContainer: IterableTaggedContainer<OrderedSet<Key>, Self> {
-    IterableTaggedContainer(tags: self.keys, container: self)
+extension OrderedDictionary: _IterableContainerRepresentable {
+  public var iterableContainer: IterableContainer<OrderedSet<Key>, Self> {
+    IterableContainer(tags: self.keys, container: self)
   }
 }
 
-public protocol _IterableTaggedContainerProtocol: _TaggedContainer {
+public protocol _IterableContainerRepresentable: _Container {
   associatedtype Tags: RandomAccessCollection where Tags.Element == Tag
-  var iterableContainer: IterableTaggedContainer<Tags, Self> { get }
+  var iterableContainer: IterableContainer<Tags, Self> { get }
 }
 
-public struct IterableTaggedContainer<
+public struct IterableContainer<
   Tags: Sequence,
-  Container: _TaggedContainer
+  Container: _Container
 >: Sequence where Tags.Element == Container.Tag {
+  init(
+    tags: Tags,
+    container: Container
+  ) {
+    self.tags = tags
+    self.container = container
+  }
   let tags: Tags
   let container: Container
   public func makeIterator() -> Iterator {
@@ -77,7 +84,20 @@ public struct IterableTaggedContainer<
   }
 }
 
-extension IterableTaggedContainer: Equatable where Tags: Equatable {
+extension IterableContainer {
+  public init(_ container: Container, tags: (Container) -> Tags) {
+    self.tags = tags(container)
+    self.container = container
+  }
+  
+  public init<Tag>(_ container: Container, tags: (Container.Element) -> Tag)
+  where Container: Collection, Tags == [Tag] {
+    self.tags = container.map(tags)
+    self.container = container
+  }
+}
+
+extension IterableContainer: Equatable where Tags: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
     if let lhs = lhs.tags as? any CoWEquatable, let rhs = rhs.tags as? any CoWEquatable {
       return lhs.isCoWEqual(to: rhs)
@@ -101,7 +121,7 @@ extension OrderedSet: CoWEquatable {
   }
 }
 
-extension IterableTaggedContainer: Collection where Tags: Collection {
+extension IterableContainer: Collection where Tags: Collection {
   public func index(after i: Tags.Index) -> Tags.Index { tags.index(after: i) }
   public var startIndex: Tags.Index { self.tags.startIndex }
   public var endIndex: Tags.Index { self.tags.endIndex }
@@ -116,11 +136,11 @@ extension IterableTaggedContainer: Collection where Tags: Collection {
   }
 }
 
-extension IterableTaggedContainer: BidirectionalCollection where Tags: BidirectionalCollection {
+extension IterableContainer: BidirectionalCollection where Tags: BidirectionalCollection {
   public func index(before i: Tags.Index) -> Tags.Index { tags.index(before: i) }
 }
 
-extension IterableTaggedContainer: RandomAccessCollection where Tags: RandomAccessCollection {}
+extension IterableContainer: RandomAccessCollection where Tags: RandomAccessCollection {}
 
 /// A Composable Architecture-friendly wrapper around `ForEach` that simplifies working with
 /// collections of state.
@@ -199,7 +219,7 @@ extension IterableTaggedContainer: RandomAccessCollection where Tags: RandomAcce
 /// ```
 ///
 public struct ForEachStore<
-  States: _IterableTaggedContainerProtocol, EachAction, EachContent: View
+  States: _IterableContainerRepresentable, EachAction, EachContent: View
 >: DynamicViewContent
 where States.Tags.Element: Hashable, States.Tags: Equatable {
   public typealias EachState = States.Value
@@ -207,7 +227,7 @@ where States.Tags.Element: Hashable, States.Tags: Equatable {
 
   let store: Store<States, (ID, EachAction)>
   @ObservedObject var viewStore:
-    ViewStore<IterableTaggedContainer<States.Tags, States>, (ID, EachAction)>
+    ViewStore<IterableContainer<States.Tags, States>, (ID, EachAction)>
   let content: (ID, Store<EachState, EachAction>) -> EachContent
 
   /// Initializes a structure that computes views on demand from a store on a collection of data and
