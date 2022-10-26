@@ -154,17 +154,14 @@ extension OrderedSet: CoWEquatable {
 
 extension IterableContainer: Collection
 where Tags: Collection, Tags.SubSequence.Indices == Tags.Indices {
-  //  public typealias SubSequence = IterableContainerSlice<Tags, Container>
-
-  public var indices: Tags.Indices { tags.indices }
-  public func index(after i: Tags.Index) -> Tags.Index { tags.index(after: i) }
-
   public var startIndex: Tags.Index { self.tags.startIndex }
   public var endIndex: Tags.Index { self.tags.endIndex }
+  public func index(after i: Tags.Index) -> Tags.Index { self.tags.index(after: i) }
 
   public subscript(position: Tags.Index) -> Container.Value {
     return self[self.tags[position]]
   }
+  
   subscript(tag: Tags.Element) -> Container.Value {
     guard let value = self.container.extract(tag: tag) else {
       fatalError("Failed to extract a value for \(String(describing: tag))")
@@ -173,7 +170,7 @@ where Tags: Collection, Tags.SubSequence.Indices == Tags.Indices {
   }
 
   public subscript(bounds: Range<Tags.Index>) -> IterableContainerSlice<Tags, Container> {
-    .init(tags: tags[bounds], container: container)
+    .init(tags: self.tags[bounds], container: self.container)
   }
 }
 
@@ -211,8 +208,8 @@ extension IdentifiedArray: IterableContainerProtocol {
 }
 
 func test() {
-  var arry = IdentifiedArray<Int, Int>(id: \.self)
-  let x = arry.iterableContainer[...]
+  var array = IdentifiedArray<Int, Int>(id: \.self)
+  let x = array.iterableContainer[...][...].container
 }
 
 //extension Slice: _IterableContainerRepresentable, IterableContainerProtocol
@@ -232,6 +229,7 @@ func test() {
 
 public struct IterableContainerSlice<Tags: Collection, Container: _Container>: Collection
 where Tags.Element == Container.Tag, Tags.SubSequence.Indices == Tags.Indices {
+  public typealias SubSequence = Self
   public var indices: Tags.Indices { tags.indices }
   public var startIndex: Tags.Index { tags.startIndex }
   public var endIndex: Tags.Index { tags.endIndex }
