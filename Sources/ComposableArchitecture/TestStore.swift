@@ -1081,89 +1081,40 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     file: StaticString = #file,
     line: UInt = #line
   ) {
-    guard !self.reducer.receivedActions.isEmpty else {
-      XCTFail(
-        """
-        Expected to receive an action, but received none.
-        """,
-        file: file,
-        line: line
-      )
-      return
-    }
+    self.receiveAction(
+      matching: { expectedAction == $0 },
+      failureMessage: "Expected to receive an action \(expectedAction), but didn't get one.",
+      onReceive: { receivedAction in
+        if expectedAction != receivedAction {
+          let difference = TaskResultDebugging.$emitRuntimeWarnings.withValue(false) {
+            diff(expectedAction, receivedAction, format: .proportional)
+              .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
+              ?? """
+              Expected:
+              \(String(describing: expectedAction).indent(by: 2))
 
-    if self.exhaustivity != .exhaustive {
-      guard self.reducer.receivedActions.contains(where: { $0.action == expectedAction }) else {
-        XCTFail(
-          """
-          Expected to receive an action \(expectedAction), but didn't get one.
-          """,
-          file: file,
-          line: line
-        )
-        return
-      }
+              Received:
+              \(String(describing: receivedAction).indent(by: 2))
+              """
+          }
 
-      while let receivedAction = self.reducer.receivedActions.first,
-        receivedAction.action != expectedAction
-      {
-        XCTFailHelper(  // TODO: Finesse copy
-          """
-          Skipped assertions: …
-          Skipped receiving \(receivedAction.action)
-          """,
-          file: file,
-          line: line
-        )
-        self.withExhaustivity(.none) {
-          self.receive(receivedAction.action)
+          XCTFailHelper(
+            """
+            Received unexpected action: …
+
+            \(difference)
+            """,
+            file: file,
+            line: line
+          )
         }
-      }
-    }
-
-    let (receivedAction, state) = self.reducer.receivedActions.removeFirst()
-
-    if expectedAction != receivedAction {
-      let difference = TaskResultDebugging.$emitRuntimeWarnings.withValue(false) {
-        diff(expectedAction, receivedAction, format: .proportional)
-          .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
-          ?? """
-          Expected:
-          \(String(describing: expectedAction).indent(by: 2))
-
-          Received:
-          \(String(describing: receivedAction).indent(by: 2))
-          """
-      }
-
-      XCTFailHelper(
-        """
-        Received unexpected action: …
-
-        \(difference)
-        """,
-        file: file,
-        line: line
-      )
-    }
-    let expectedState = self.toScopedState(self.state)
-    do {
-      try self.expectedStateShouldMatch(
-        expected: expectedState,
-        actual: self.toScopedState(state),
-        modify: updateExpectingResult,
-        file: file,
-        line: line
-      )
-    } catch {
-      XCTFail("Threw error: \(error)", file: file, line: line)
-    }
-    self.reducer.state = state
-    if "\(self.file)" == "\(file)" {
-      self.line = line
-    }
+      },
+      file: file,
+      line: line
+    )
   }
 
+  // TODO: Can this and the `receiveAction(matching:)` helper remove the `Equatable` requirement?
   // TODO: Should `updateExpectingResult` be named to support trailing closure syntax?
   // TODO: Should there be a `Bool` predicated overload?
   //     store.receive { action in
@@ -1178,6 +1129,23 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     file: StaticString = #file,
     line: UInt = #line
   ) {
+    self.receiveAction(
+      matching: { expectedAction($0) != nil },
+      failureMessage: "Expected to receive an action, but received none.",
+      onReceive: { _ in },
+      file: file,
+      line: line
+    )
+  }
+
+  private func receiveAction(
+    matching predicate: (Action) -> Bool,
+    failureMessage: @autoclosure () -> String,
+    onReceive: (Action) -> Void,
+    _ updateExpectingResult: ((inout ScopedState) throws -> Void)? = nil,
+    file: StaticString,
+    line: UInt
+  ) {
     guard !self.reducer.receivedActions.isEmpty else {
       XCTFail(
         """
@@ -1190,12 +1158,9 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     }
 
     if self.exhaustivity != .exhaustive {
-      guard self.reducer.receivedActions.contains(where: { expectedAction($0.action) != nil })
-      else {
+      guard self.reducer.receivedActions.contains(where: { predicate($0.action) }) else {
         XCTFail(
-          """
-          Expected to receive a matching action, but didn't get one.
-          """,
+          failureMessage(),
           file: file,
           line: line
         )
@@ -1203,7 +1168,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
       }
 
       while let receivedAction = self.reducer.receivedActions.first,
-        expectedAction(receivedAction.action) == nil
+        !predicate(receivedAction.action)
       {
         XCTFailHelper(  // TODO: Finesse copy
           """
@@ -1214,13 +1179,13 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
           line: line
         )
         self.withExhaustivity(.none) {
-          self.receive(receivedAction.action)
+          self.receive(receivedAction.action, file: file, line: line)
         }
       }
     }
 
-    let (_, state) = self.reducer.receivedActions.removeFirst()
-
+    let (receivedAction, state) = self.reducer.receivedActions.removeFirst()
+    onReceive(receivedAction)
     let expectedState = self.toScopedState(self.state)
     do {
       try self.expectedStateShouldMatch(
