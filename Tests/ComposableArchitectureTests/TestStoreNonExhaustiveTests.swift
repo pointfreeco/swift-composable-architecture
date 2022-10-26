@@ -562,6 +562,76 @@
       }
     }
 
+    func testCasePathReceive_Exhaustive() async {
+      let store = TestStore(
+        initialState: NonExhaustiveReceive.State(),
+        reducer: NonExhaustiveReceive()
+      )
+
+      await store.send(.onAppear)
+      // TODO: are you allowed to use receive(casePath) in exhaustive test stores?
+      await store.receive(/NonExhaustiveReceive.Action.response1) {
+        $0.count = 1
+        $0.int = 42
+      }
+      await store.receive(/NonExhaustiveReceive.Action.response2) {
+        $0.count = 2
+        $0.string = "Hello"
+      }
+    }
+
+    func testCasePathReceive_SkipReceivedAction() async {
+      let store = TestStore(
+        initialState: NonExhaustiveReceive.State(),
+        reducer: NonExhaustiveReceive()
+      )
+      store.exhaustivity = .partial
+
+      await store.send(.onAppear)
+      await store.receive(/NonExhaustiveReceive.Action.response2) {
+        $0.string = "Hello"
+      }
+    }
+
+    func testCasePathReceive_WrongAction() async {
+      let store = TestStore(
+        initialState: NonExhaustiveReceive.State(),
+        reducer: NonExhaustiveReceive()
+      )
+      store.exhaustivity = .partial
+
+      await store.send(.onAppear)
+
+      XCTExpectFailure {
+        $0.compactDescription == """
+          Expected to receive a matching action, but didn't get one.
+          """
+      }
+
+      await store.receive(/NonExhaustiveReceive.Action.onAppear)
+      await store.receive(/NonExhaustiveReceive.Action.response1)
+      await store.receive(/NonExhaustiveReceive.Action.response2)
+    }
+
+    func testCasePathReceive_ReceivedExtraAction() async {
+      let store = TestStore(
+        initialState: NonExhaustiveReceive.State(),
+        reducer: NonExhaustiveReceive()
+      )
+      store.exhaustivity = .partial
+
+      await store.send(.onAppear)
+      await store.receive(/NonExhaustiveReceive.Action.response2)
+
+      XCTExpectFailure {
+        $0.compactDescription == """
+          Expected to receive an action, but received none.
+          """
+      }
+
+      await store.receive(/NonExhaustiveReceive.Action.response2)
+    }
+
     // This example comes from Krzysztof Zabłocki's blog post:
     // https://www.merowing.info/exhaustive-testing-in-tca/
     func testKrzysztofExample1() {
