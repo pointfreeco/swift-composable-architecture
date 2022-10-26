@@ -3,45 +3,45 @@ import OrderedCollections
 /// A protocol that describes container types from which one can extract some domain's `State`
 /// value.
 ///
-/// This protocol is semi-abstract and you usually conform to the ``MutableStateContainer`` and/or
+/// This protocol is semi-abstract and you usually conform to the ``MutableValueContainer`` and/or
 /// the ``IdentifiedStatesCollection`` which inherit from this protocol.
-public protocol _StateContainer {
+public protocol _TaggedContainer {
   /// The type of values that can be extracted from this container.
-  associatedtype State
+  associatedtype Value
   /// A type whose values allow identify a specific ``State`` in this container.
   ///
   /// ``StateContainer`` doesn't impose any requirement on ``Tag``. It can be the `Key` of a
   /// `Dictionary`, the `ID` of an `IdentifiedArray`, or even `Void` or `Self.Type` when the
   ///  container can only contain one unique value.
   associatedtype Tag
-  /// Extracts a ``State`` for a given ``Tag`` from this container
+  /// Extracts a ``Value`` for a given ``Tag`` from this container
   ///
   /// - Parameters:
   ///   - tag: The ``Tag`` of the ``State`` to extract.
-  /// - Returns: A ``State`` value if the extraction succeeds, `nil` otherwise.
-  func extract(tag: Tag) -> State?
-  /// Checks if a container contains a ``State`` for a given ``Tag``
+  /// - Returns: A ``Value`` value if the extraction succeeds, `nil` otherwise.
+  func extract(tag: Tag) -> Value?
+  /// Checks if a container contains a ``Value`` for a given ``Tag``
   ///
   /// This method allows adopters to optimize situations where the client only wants to check if the
-  /// container contains a ``State`` without needing the value itself. This can be useful if the
+  /// container contains a ``Value`` without needing the value itself. This can be useful if the
   /// extraction of a value is an heavier operation than simply checking its existence.
   ///
   /// A default implementation is provided.
   ///
   /// - Parameters:
   ///   - tag: The ``Tag`` of the ``State`` to check.
-  /// - Returns: `true` if a ``State`` exists at `tag`, `false` otherwise.
+  /// - Returns: `true` if a ``Value`` exists at `tag`, `false` otherwise.
   func contains(tag: Tag) -> Bool
 }
 
-extension _StateContainer {
+extension _TaggedContainer {
   @inlinable
   public func contains(tag: Tag) -> Bool {
     self.extract(tag: tag) != nil
   }
 }
 
-/// A mutable version of ``StateContainer``, where the extracted ``State`` can be embedded back into
+/// A mutable version of ``ValueContainer``, where the extracted ``Value`` can be embedded back into
 /// the container.
 ///
 /// The library ships with two adopters of this protocol: `IdentifiedArray` from our
@@ -54,26 +54,26 @@ extension _StateContainer {
 ///
 /// [swift-identified-collections]: http://github.com/pointfreeco/swift-identified-collections
 /// [swift-collections]: http://github.com/apple/swift-collections
-public protocol _MutableStateContainer: _StateContainer {
-  /// Write a ``State`` value with a given ``Tag`` into the container.
+public protocol _MutableTaggedContainer: _TaggedContainer {
+  /// Write a ``Value`` value with a given ``Tag`` into the container.
   /// - Parameters:
-  ///   - tag: A ``Tag`` of the ``State`` to embed.
-  ///   - state: The ``State`` value that will be embedded.
-  mutating func embed(tag: Tag, state: State)
-  /// Attempts to modify a ``State`` at ``Tag``.
+  ///   - tag: A ``Tag`` of the ``Value`` to embed.
+  ///   - value: The ``Value`` value that will be embedded.
+  mutating func embed(tag: Tag, value: Value)
+  /// Attempts to modify a ``Value`` at ``Tag``.
   ///
   /// This method allows adopters to perform modifications in-place in compatible containers.
   ///
-  /// The function should throw if it fails to extract a ``State``. In this case, the container
+  /// The function should throw if it fails to extract a ``Value``. In this case, the container
   /// should be left unmodified.
   ///
   /// A default implementation is provided.
   ///
   /// - Parameters:
-  ///   - tag: The ``Tag`` of the ``State`` to modify.
-  ///   - body: A closure that can mutate the ``State`` at `tag`.
+  ///   - tag: The ``Tag`` of the ``Value`` to modify.
+  ///   - body: A closure that can mutate the ``Value`` at `tag`.
   /// - Returns: The return value, if any, of the body closure.
-  mutating func modify<Result>(tag: Tag, _ body: (inout State) -> Result) throws -> Result
+  mutating func modify<Result>(tag: Tag, _ body: (inout Value) -> Result) throws -> Result
 }
 
 @usableFromInline
@@ -81,43 +81,43 @@ struct StateExtractionFailed: Error {
   @usableFromInline init() {}
 }
 
-extension _MutableStateContainer {
+extension _MutableTaggedContainer {
   @inlinable
-  public mutating func modify<Result>(tag: Tag, _ body: (inout State) -> Result) throws
+  public mutating func modify<Result>(tag: Tag, _ body: (inout Value) -> Result) throws
     -> Result
   {
-    guard var state = self.extract(tag: tag) else { throw StateExtractionFailed() }
-    defer { self.embed(tag: tag, state: state) }
-    return body(&state)
+    guard var value = self.extract(tag: tag) else { throw StateExtractionFailed() }
+    defer { self.embed(tag: tag, value: value) }
+    return body(&value)
   }
 }
 
-extension IdentifiedArray: _MutableStateContainer {
+extension IdentifiedArray: _MutableTaggedContainer {
   @inlinable
   public func extract(tag: ID) -> Element? {
     self[id: tag]
   }
   @inlinable
-  public mutating func embed(tag: ID, state: Element) {
-    self[id: tag] = state
+  public mutating func embed(tag: ID, value: Element) {
+    self[id: tag] = value
   }
   @inlinable
-  public mutating func modify<Value>(tag: ID, _ body: (inout Element) -> Value) -> Value {
+  public mutating func modify<Result>(tag: ID, _ body: (inout Element) -> Result) -> Result {
     body(&self[id: tag]!)
   }
 }
 
-extension OrderedDictionary: _MutableStateContainer {
+extension OrderedDictionary: _MutableTaggedContainer {
   @inlinable
   public func extract(tag: Key) -> Value? {
     self[tag]
   }
   @inlinable
-  public mutating func embed(tag: Key, state: Value) {
-    self[tag] = state
+  public mutating func embed(tag: Key, value: Value) {
+    self[tag] = value
   }
   @inlinable
-  public mutating func modify<T>(tag: Key, _ body: (inout Value) -> T) -> T {
+  public mutating func modify<Result>(tag: Key, _ body: (inout Value) -> Result) -> Result {
     body(&self[tag]!)
   }
 }
@@ -175,11 +175,11 @@ extension ReducerProtocol {
     ///     state.
     /// - Returns: A reducer that combines the child reducer with the parent reducer.
     @inlinable
-    public func forEach<Elements: _MutableStateContainer, ElementAction>(
+    public func forEach<Elements: _MutableTaggedContainer, ElementAction>(
       _ toElementsState: WritableKeyPath<State, Elements>,
       action toElementAction: CasePath<Action, (Elements.Tag, ElementAction)>,
-      @ReducerBuilder<Elements.State, ElementAction> _ element: () -> some ReducerProtocol<
-        Elements.State, ElementAction
+      @ReducerBuilder<Elements.Value, ElementAction> _ element: () -> some ReducerProtocol<
+        Elements.Value, ElementAction
       >,
       file: StaticString = #file,
       fileID: StaticString = #fileID,
@@ -197,7 +197,7 @@ extension ReducerProtocol {
     }
   #else
     @inlinable
-    public func forEach<Elements: _MutableStateContainer, Element: ReducerProtocol>(
+    public func forEach<Elements: _MutableTaggedContainer, Element: ReducerProtocol>(
       _ toElementsState: WritableKeyPath<State, Elements>,
       action toElementAction: CasePath<Action, (Elements.Tag, Element.Action)>,
       @ReducerBuilderOf<Element> _ element: () -> Element,
@@ -220,9 +220,9 @@ extension ReducerProtocol {
 
 public struct _ForEachReducer<
   Parent: ReducerProtocol,
-  Container: _MutableStateContainer,
+  Container: _MutableTaggedContainer,
   Element: ReducerProtocol
->: ReducerProtocol where Container.State == Element.State {
+>: ReducerProtocol where Container.Value == Element.State {
   @usableFromInline
   let parent: Parent
 

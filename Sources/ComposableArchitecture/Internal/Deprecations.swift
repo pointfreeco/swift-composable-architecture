@@ -1140,11 +1140,8 @@ extension ForEachStore {
     _ store: Store<[EachState], (Int, EachAction)>,
     id: KeyPath<EachState, ID>,
     @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
-  )
-  where
-    StatesCollection == IndexedIdentifiedArray<ID, EachState>
-  {
-    let store: Store<IndexedIdentifiedArray<ID, EachState>, (IndexedID<ID>, EachAction)> =
+  ) where States == IndexedIdentifiedArray<ID, EachState> {
+    let store: Store<States, (States.IndexedID, EachAction)> =
       store.scope(
         state: { IndexedIdentifiedArray(array: $0, id: id) },
         action: { ($0.0.index, $0.1) }
@@ -1158,36 +1155,39 @@ extension ForEachStore {
     @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
   )
   where
-    StatesCollection == IndexedIdentifiedArray<ID, EachState>,
+    States == IndexedIdentifiedArray<ID, EachState>,
     EachState: Identifiable, EachState.ID == ID
   {
     self = ForEachStore(store, id: \.id, content: content)
   }
 }
 
-@available(*, deprecated)
-public struct IndexedID<ID: Hashable>: Hashable {
-  let index: Int
-  var id: ID?
-  public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.id == rhs.id
+@available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead.")
+public struct IndexedIdentifiedArray<ID: Hashable, Element>: _IterableTaggedContainerProtocol {
+  public struct IndexedID: Hashable {
+    let index: Int
+    var id: ID?
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+      lhs.id == rhs.id
+    }
+    public func hash(into hasher: inout Hasher) {
+      hasher.combine(id)
+    }
   }
-  public func hash(into hasher: inout Hasher) {
-    hasher.combine(id)
-  }
-}
 
-@available(*, deprecated)
-public struct IndexedIdentifiedArray<ID: Hashable, Element>: _IdentifiedCollection {
   let array: [Element]
   let id: KeyPath<Element, ID>
 
-  public var stateIDs: [IndexedID<ID>] {
-    array.enumerated().map { IndexedID(index: $0.offset, id: $0.element[keyPath: id]) }
-  }
-  public var states: [Element] { array }
-
-  public func extract(tag: IndexedID<ID>) -> Element? {
+  public func extract(tag: IndexedID) -> Element? {
     array[tag.index]
+  }
+
+  public var iterableContainer:
+    _IterableTaggedContainer<[IndexedID], IndexedIdentifiedArray<ID, Element>>
+  {
+    _IterableTaggedContainer(
+      tags: array.enumerated().map { IndexedID(index: $0.offset, id: $0.element[keyPath: id]) },
+      container: self
+    )
   }
 }

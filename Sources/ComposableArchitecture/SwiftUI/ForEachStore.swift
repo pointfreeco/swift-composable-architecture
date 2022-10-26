@@ -9,68 +9,120 @@ import SwiftUI
 ///
 /// [swift-identified-collections]: http://github.com/pointfreeco/swift-identified-collections
 /// [swift-collections]: http://github.com/apple/swift-collections
-public protocol _IdentifiedCollection: _StateContainer {
-  typealias ID = Tag
-  associatedtype IDs: RandomAccessCollection where IDs.Element == ID
-  associatedtype States: Collection where States.Element == State
 
-  /// A `RandomAccessCollection` of ``ID`` which is in a 1-to-1 relationship with the ``states``
-  /// collection of ``StateContainer/State``.
-  ///
-  /// - Warning: You are responsible for keeping these values in an injective relationship with
-  /// ``states``, which means that a ``StateContainer/State`` value should exist for any ``ID`` from
-  /// ``stateIDs``.
-  var stateIDs: IDs { get }
-  
-  /// The ``State`` values contained in this collection.
-  ///
-  /// - Warning: You are responsible for keeping ``stateIDs`` in an injective relationship with
-  /// these values, which means that a ``StateContainer/State`` value should exist for any ``ID``
-  /// from ``stateIDs``.
-  var states: States { get }
+//public protocol _IdentifiedCollection: _TaggedContainer {
+//  typealias _ID = Tag
+//  typealias _Elements = Self
+//  associatedtype _IDs: RandomAccessCollection where _IDs.Element == Tag
+//  //  associatedtype _Elements: _TaggedContainer = Self where _Elements.Value == Value
+//
+//  /// A `RandomAccessCollection` of ``ID`` which is in a 1-to-1 relationship with the ``states``
+//  /// collection of ``StateContainer/State``.
+//  ///
+//  /// - Warning: You are responsible for keeping these values in an injective relationship with
+//  /// ``states``, which means that a ``StateContainer/State`` value should exist for any ``ID`` from
+//  /// ``stateIDs``.
+//  var _ids: _IDs { get }
+//
+//  /// The ``State`` values contained in this collection.
+//  ///
+//  /// - Warning: You are responsible for keeping ``stateIDs`` in an injective relationship with
+//  /// these values, which means that a ``StateContainer/State`` value should exist for any ``ID``
+//  /// from ``stateIDs``.
+//  var _identifiedElements: _Elements { get }
+//
+//  /// Returns `true` if this collection's ``stateIDs`` is the same as `other`'s ``stateIDs``.
+//  ///
+//  /// A default implementation is provided when ``IDs`` is `Equatable`.
+//  func areIDsDuplicates(other: Self) -> Bool
+//}
 
-  /// Returns `true` if this collection's ``stateIDs`` is the same as `other`'s ``stateIDs``.
-  ///
-  /// A default implementation is provided when ``IDs`` is `Equatable`.
-  func areDuplicateIDs(other: Self) -> Bool
-}
 
-extension _IdentifiedCollection where IDs: Equatable {
-  @inlinable
-  public func areDuplicateIDs(other: Self) -> Bool {
-    self.stateIDs == other.stateIDs
+extension IdentifiedArray: _IterableTaggedContainerProtocol {
+  public var iterableContainer: _IterableTaggedContainer<OrderedSet<ID>, Self> {
+    _IterableTaggedContainer(tags: self.ids, container: self)
   }
 }
 
-extension IdentifiedArray: _IdentifiedCollection {
-  public var stateIDs: OrderedSet<ID> { self.ids }
-  public var states: Self { self }
-
-  @inlinable
-  public func areDuplicateIDs(other: Self) -> Bool {
-    areCoWEqual(lhs: self.ids, rhs: other.ids)
+extension OrderedDictionary: _IterableTaggedContainerProtocol {
+  public var iterableContainer: _IterableTaggedContainer<OrderedSet<Key>, Self> {
+    _IterableTaggedContainer(tags: self.keys, container: self)
   }
 }
 
-extension OrderedDictionary: _IdentifiedCollection {
-  public var stateIDs: OrderedSet<Key> { self.keys }
-  public var states: OrderedDictionary<Key, Value>.Values { self.values }
+public protocol _IterableTaggedContainerProtocol: _TaggedContainer {
+  associatedtype Tags: RandomAccessCollection where Tags.Element == Tag
+  var iterableContainer: _IterableTaggedContainer<Tags, Self> { get }
+}
 
-  @inlinable
-  public func areDuplicateIDs(other: Self) -> Bool {
-    areCoWEqual(lhs: self.keys, rhs: other.keys)
+public struct _IterableTaggedContainer<
+  Tags: Sequence,
+  Container: _TaggedContainer
+>: Sequence where Tags.Element == Container.Tag {
+  typealias Tag = Tags.Element
+  let tags: Tags
+  let container: Container
+  public func makeIterator() -> Iterator {
+    Iterator(tags: tags, container: container)
+  }
+
+  public struct Iterator: IteratorProtocol {
+    let tags: Tags
+    let container: Container
+    var iterator: Tags.Iterator? = nil
+    public mutating func next() -> Container.Value? {
+      if self.iterator == nil {
+        self.iterator = tags.makeIterator()
+      }
+      return self.iterator?.next().flatMap(container.extract(tag:))
+    }
   }
 }
 
-@usableFromInline
-func areCoWEqual<IDs: Equatable>(lhs: IDs, rhs: IDs) -> Bool {
-  var lhs = lhs
-  var rhs = rhs
-  if memcmp(&lhs, &rhs, MemoryLayout<IDs>.size) == 0 {
-    return true
+extension _IterableTaggedContainer: Equatable where Tags: Equatable {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    if let lhs = lhs.tags as? any CoWEquatable, let rhs = rhs.tags as? any CoWEquatable {
+      return lhs.isCoWEqual(to: rhs)
+    }
+    return lhs.tags == rhs.tags
   }
-  return lhs == rhs
 }
+
+private protocol CoWEquatable {
+  func isCoWEqual(to other: any CoWEquatable) -> Bool
+}
+
+extension OrderedSet: CoWEquatable {
+  fileprivate func isCoWEqual(to other: any CoWEquatable) -> Bool {
+    guard var rhs = other as? Self else { return false }
+    var lhs = self
+    if memcmp(&lhs, &rhs, MemoryLayout<Self>.size) == 0 {
+      return true
+    }
+    return lhs == rhs
+  }
+}
+
+extension _IterableTaggedContainer: Collection where Tags: Collection {
+  public var startIndex: Tags.Index { self.tags.startIndex }
+  public var endIndex: Tags.Index { self.tags.endIndex }
+  public subscript(position: Tags.Index) -> Container.Value {
+    let tag = self.tags[position]
+    guard let value = self.container.extract(tag: tag) else {
+      fatalError(
+        "Failed to extract a value at \(position) for \(String(describing: tag))"
+      )
+    }
+    return value
+  }
+  public func index(after i: Tags.Index) -> Tags.Index { tags.index(after: i) }
+}
+
+extension _IterableTaggedContainer: BidirectionalCollection where Tags: BidirectionalCollection {
+  public func index(before i: Tags.Index) -> Tags.Index { tags.index(before: i) }
+}
+
+extension _IterableTaggedContainer: RandomAccessCollection where Tags: RandomAccessCollection {}
 
 /// A Composable Architecture-friendly wrapper around `ForEach` that simplifies working with
 /// collections of state.
@@ -149,14 +201,14 @@ func areCoWEqual<IDs: Equatable>(lhs: IDs, rhs: IDs) -> Bool {
 /// ```
 ///
 public struct ForEachStore<
-  StatesCollection: _IdentifiedCollection, EachAction, EachContent: View
+  States: _IterableTaggedContainerProtocol, EachAction, EachContent: View
 >: DynamicViewContent
-where StatesCollection.ID: Hashable {
-  public typealias EachState = StatesCollection.State
-  public typealias ID = StatesCollection.ID
+where States.Tags.Element: Hashable, States.Tags: Equatable {
+  public typealias EachState = States.Value
+  public typealias ID = States.Tags.Element
 
-  let store: Store<StatesCollection, (ID, EachAction)>
-  @ObservedObject var viewStore: ViewStore<StatesCollection, (ID, EachAction)>
+  let store: Store<States, (ID, EachAction)>
+  @ObservedObject var viewStore: ViewStore<_IterableTaggedContainer<States.Tags, States>, (ID, EachAction)>
   let content: (ID, Store<EachState, EachAction>) -> EachContent
 
   /// Initializes a structure that computes views on demand from a store on a collection of data and
@@ -166,14 +218,13 @@ where StatesCollection.ID: Hashable {
   ///   - store: A store on an identified array of data and an identified action.
   ///   - content: A function that can generate content given a store of an element.
   public init(
-    _ store: Store<StatesCollection, (ID, EachAction)>,
+    _ store: Store<States, (ID, EachAction)>,
     @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
   ) {
     self.store = store
     self.viewStore = ViewStore(
       store,
-      observe: { $0 },
-      removeDuplicates: { $0.areDuplicateIDs(other: $1) }
+      observe: { $0.iterableContainer }
     )
     self.content = { content($1) }
   }
@@ -186,22 +237,22 @@ where StatesCollection.ID: Hashable {
   ///   - content: A function that can generate content given a store of an element and its
   ///   corresponding identifier.
   public init(
-    _ store: Store<StatesCollection, (ID, EachAction)>,
+    _ store: Store<States, (ID, EachAction)>,
     @ViewBuilder content: @escaping (ID, Store<EachState, EachAction>) -> EachContent
   ) {
     self.store = store
     self.viewStore = ViewStore(
       store,
-      observe: { $0 },
-      removeDuplicates: { $0.areDuplicateIDs(other: $1) }
+      observe: { $0.iterableContainer }
     )
     self.content = content
   }
 
   public var body: some View {
-    ForEach(viewStore.stateIDs, id: \.self) { stateID in
+    ForEach(viewStore.state.tags, id: \.self) { stateID in
       // TODO: Message if `nil`?
-      let state = viewStore.state.extract(tag: stateID)!
+      let x = self.viewStore[stateID]
+      let state = self.viewStore.state.container.extract(tag: stateID)!
       let eachStore = store.scope {
         $0.extract(tag: stateID) ?? state
       } action: {
@@ -211,7 +262,7 @@ where StatesCollection.ID: Hashable {
     }
   }
 
-  public var data: StatesCollection.States {
-    viewStore.states
+  public var data: States.Tags {
+    viewStore.state.tags
   }
 }
