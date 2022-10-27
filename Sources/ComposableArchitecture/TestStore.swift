@@ -1132,7 +1132,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   ) {
     self.receiveAction(
       matching: { expectedAction($0) != nil },
-      failureMessage: "Expected to receive an action, but received none.",
+      failureMessage: "Expected to receive a matching action, but didn't get one.",
       onReceive: { receivedAction in
         XCTFailHelper(
           """
@@ -1181,10 +1181,6 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
         )
         return
       }
-
-      print(
-        self.reducer.receivedActions.map(\.action).map(expectedAction)
-      )
 
       while let receivedAction = self.reducer.receivedActions.first,
         !predicate(receivedAction.action)
