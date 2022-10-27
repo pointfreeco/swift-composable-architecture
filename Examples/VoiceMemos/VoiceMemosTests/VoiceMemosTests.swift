@@ -112,8 +112,8 @@ final class VoiceMemosTests: XCTestCase {
     store.dependencies.audioRecorder.startRecording = { _ in
       try await didFinish.stream.first { _ in true }!
     }
-    store.dependencies.date = .constant(Date(timeIntervalSinceReferenceDate: 0))
     store.dependencies.continuousClock = self.clock
+    store.dependencies.date = .constant(Date(timeIntervalSinceReferenceDate: 0))
     store.dependencies.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
     store.dependencies.uuid = .constant(UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")!)
 
@@ -156,14 +156,14 @@ final class VoiceMemosTests: XCTestCase {
     store.dependencies.audioRecorder.startRecording = { _ in
       try await didFinish.stream.first { _ in true }!
     }
-    store.dependencies.mainRunLoop = .immediate
+    store.dependencies.continuousClock = self.clock
+    store.dependencies.date = .constant(Date(timeIntervalSinceReferenceDate: 0))
     store.dependencies.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
     store.dependencies.uuid = .constant(UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")!)
 
     await store.send(.recordButtonTapped)
     await store.send(.recordingMemo(.task))
     didFinish.continuation.finish(throwing: SomeError())
-    await store.receive(.recordingMemo(.audioRecorderDidFinish(.failure(SomeError()))))
     await store.receive(.recordingMemo(.delegate(.didFinish(.failure(SomeError()))))) {
       $0.alert = AlertState(title: TextState("Voice memo recording failed."))
       $0.recordingMemo = nil
