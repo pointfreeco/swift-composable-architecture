@@ -1109,6 +1109,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
           )
         }
       },
+      updateExpectingResult,
       file: file,
       line: line
     )
@@ -1133,6 +1134,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
       matching: { expectedAction($0) != nil },
       failureMessage: "Expected to receive an action, but received none.",
       onReceive: { _ in },
+      updateExpectingResult,
       file: file,
       line: line
     )
@@ -1142,7 +1144,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     matching predicate: (Action) -> Bool,
     failureMessage: @autoclosure () -> String,
     onReceive: (Action) -> Void,
-    _ updateExpectingResult: ((inout ScopedState) throws -> Void)? = nil,
+    _ updateExpectingResult: ((inout ScopedState) throws -> Void)?,
     file: StaticString,
     line: UInt
   ) {
