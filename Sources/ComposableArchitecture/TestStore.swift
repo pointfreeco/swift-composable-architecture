@@ -1718,7 +1718,7 @@ public struct TestStoreTask: Hashable, Sendable {
   ///
   /// This can be handy when a feature needs to start a long-living effect when the feature appears,
   /// but cancellation of that effect is handled by the parent when the feature disappears. Such
-  /// a feature is difficult to exhaustively test in isolation beceause there is no action in its
+  /// a feature is difficult to exhaustively test in isolation because there is no action in its
   /// domain that cancels the effect:
   ///
   /// ```swift
@@ -1956,21 +1956,23 @@ private func _XCTExpectFailure(
   strict: Bool = true,
   failingBlock: () -> Void
 ) {
-  guard
-    let XCTExpectedFailureOptions = NSClassFromString("XCTExpectedFailureOptions")
-      as Any as? NSObjectProtocol,
-    let options = strict
-      ? XCTExpectedFailureOptions
-        .perform(NSSelectorFromString("alloc"))?.takeUnretainedValue()
-        .perform(NSSelectorFromString("init"))?.takeUnretainedValue()
-      : XCTExpectedFailureOptions
-        .perform(NSSelectorFromString("nonStrictOptions"))?.takeUnretainedValue()
-  else { return }
+  #if DEBUG
+    guard
+      let XCTExpectedFailureOptions = NSClassFromString("XCTExpectedFailureOptions")
+        as Any as? NSObjectProtocol,
+      let options = strict
+        ? XCTExpectedFailureOptions
+          .perform(NSSelectorFromString("alloc"))?.takeUnretainedValue()
+          .perform(NSSelectorFromString("init"))?.takeUnretainedValue()
+        : XCTExpectedFailureOptions
+          .perform(NSSelectorFromString("nonStrictOptions"))?.takeUnretainedValue()
+    else { return }
 
-  let XCTExpectFailureWithOptionsInBlock = unsafeBitCast(
-    dlsym(dlopen(nil, RTLD_LAZY), "XCTExpectFailureWithOptionsInBlock"),
-    to: (@convention(c) (String?, AnyObject, () -> Void) -> Void).self
-  )
+    let XCTExpectFailureWithOptionsInBlock = unsafeBitCast(
+      dlsym(dlopen(nil, RTLD_LAZY), "XCTExpectFailureWithOptionsInBlock"),
+      to: (@convention(c) (String?, AnyObject, () -> Void) -> Void).self
+    )
 
-  XCTExpectFailureWithOptionsInBlock(failureReason, options, failingBlock)
+    XCTExpectFailureWithOptionsInBlock(failureReason, options, failingBlock)
+  #endif
 }
