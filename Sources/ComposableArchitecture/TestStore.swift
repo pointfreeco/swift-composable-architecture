@@ -1132,8 +1132,10 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   ) {
     self.receiveAction(
       matching: { expectedAction($0) != nil },
+      // TODO: Finesse
       failureMessage: "Expected to receive a matching action, but didn't get one.",
       onReceive: { receivedAction in
+        // TODO: Finesse
         XCTFailHelper(
           """
           Received action:
