@@ -122,7 +122,7 @@
       let store = TestStore(
         initialState: 0,
         reducer: Reduce<Int, Bool> { _, action in
-            .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
+          .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
         }
       )
       store.exhaustivity = .none
@@ -135,7 +135,7 @@
       let store = TestStore(
         initialState: 0,
         reducer: Reduce<Int, Bool> { _, action in
-            .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
+          .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
         }
       )
       store.exhaustivity = .partial
@@ -515,7 +515,7 @@
         initialState: 0,
         reducer: Reduce<Int, Action> { state, action in
           switch action {
-          case .buttonTapped: 
+          case .buttonTapped:
             state += 1
             return .run { send in
               await send(.response(42))
@@ -554,6 +554,7 @@
       store.exhaustivity = .partial
 
       await store.send(.onAppear)
+      // TODO: should we show expected failure of what action data wasn't asserted on?
       await store.receive(/NonExhaustiveReceive.Action.response1) {
         $0.int = 42
       }
