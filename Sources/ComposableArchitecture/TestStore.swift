@@ -1202,6 +1202,10 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
         return
       }
 
+      print(
+        self.reducer.receivedActions.map(\.action).map(expectedAction)
+      )
+
       while let receivedAction = self.reducer.receivedActions.first,
         expectedAction(receivedAction.action) == nil
       {
@@ -1219,7 +1223,20 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
       }
     }
 
-    let (_, state) = self.reducer.receivedActions.removeFirst()
+    let (action, state) = self.reducer.receivedActions.removeFirst()
+
+    XCTFailHelper(
+      """
+      Received action:
+
+      \(String(describing: action).indent(by: 2))
+      """,
+      overrideExhaustivity: self.exhaustivity == .exhaustive
+        ? .partial
+        : self.exhaustivity,
+      file: file,
+      line: line
+    )
 
     let expectedState = self.toScopedState(self.state)
     do {
@@ -1469,9 +1486,9 @@ extension TestStore {
 
       \(actions)
       """,
-      overrideExhaustivity: self.exhaustivity == .none
-        ? self.exhaustivity
-        : .partial(prefix: self.exhaustivity.prefix),
+      overrideExhaustivity: self.exhaustivity == .exhaustive
+      ? .partial
+      : self.exhaustivity,
       file: file,
       line: line
     )
@@ -1536,9 +1553,9 @@ extension TestStore {
 
       \(actions)
       """,
-      overrideExhaustivity: self.exhaustivity == .none
-        ? self.exhaustivity
-        : .partial(prefix: self.exhaustivity.prefix),
+      overrideExhaustivity: self.exhaustivity == .exhaustive
+      ? .partial
+      : self.exhaustivity,
       file: file,
       line: line
     )
@@ -1794,6 +1811,9 @@ class TestReducer<State, Action>: ReducerProtocol {
 }
 
 extension Task where Success == Never, Failure == Never {
+  // NB: We would love if this was not necessary, but due to a lack of async testing tools in Swift
+  //     we're not sure if there is an alternative. See this forum post for more information:
+  //     https://forums.swift.org/t/reliably-testing-code-that-adopts-swift-concurrency/57304
   @_spi(Internals) public static func megaYield(count: Int = 10) async {
     for _ in 1...count {
       await Task<Void, Never>.detached(priority: .background) { await Task.yield() }.value

@@ -546,7 +546,7 @@
       // Ignore in-flight effect
     }
 
-    func testCasePathReceive() async {
+    func testCasePathReceive_PartialExhaustive() async {
       let store = TestStore(
         initialState: NonExhaustiveReceive.State(),
         reducer: NonExhaustiveReceive()
@@ -554,7 +554,22 @@
       store.exhaustivity = .partial
 
       await store.send(.onAppear)
-      // TODO: should we show expected failure of what action data wasn't asserted on?
+      await store.receive(/NonExhaustiveReceive.Action.response1) {
+        $0.int = 42
+      }
+      await store.receive(/NonExhaustiveReceive.Action.response2) {
+        $0.string = "Hello"
+      }
+    }
+
+    func testCasePathReceive_NonExhaustive() async {
+      let store = TestStore(
+        initialState: NonExhaustiveReceive.State(),
+        reducer: NonExhaustiveReceive()
+      )
+      store.exhaustivity = .none
+
+      await store.send(.onAppear)
       await store.receive(/NonExhaustiveReceive.Action.response1) {
         $0.int = 42
       }
@@ -570,7 +585,6 @@
       )
 
       await store.send(.onAppear)
-      // TODO: are you allowed to use receive(casePath) in exhaustive test stores?
       await store.receive(/NonExhaustiveReceive.Action.response1) {
         $0.count = 1
         $0.int = 42
