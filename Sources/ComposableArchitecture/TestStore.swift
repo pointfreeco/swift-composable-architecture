@@ -260,10 +260,10 @@ import XCTestDynamicOverlay
 /// to ``Exhaustivity/none``. When that is done the ``TestStore``'s behavior changes:
 ///
 /// * The trailing closures of ``send(_:assert:file:line:)-1ax61`` and
-///   ``receive(_:timeout:assert:file:line:)-4he05`` no longer need to assert on all state changes.
+///   ``receive(_:timeout:assert:file:line:)-1rwdd`` no longer need to assert on all state changes.
 ///   They can assert on any subset of changes, and only if they make an incorrect mutation will a
 ///   test failure be reported.
-/// * The ``send(_:assert:file:line:)-1ax61`` and ``receive(_:timeout:assert:file:line:)-4he05``
+/// * The ``send(_:assert:file:line:)-1ax61`` and ``receive(_:timeout:assert:file:line:)-1rwdd``
 ///   methods are allowed to be called even when actions have been received from effects that have
 ///   not been asserted on yet. Any pending actions will be cleared.
 /// * Tests are allowed to finish with unasserted, received actions and inflight effects. No test
@@ -524,7 +524,7 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
   /// The current state.
   ///
   /// When read from a trailing closure assertion in ``send(_:assert:file:line:)-1ax61`` or
-  /// ``receive(_:timeout:assert:file:line:)-4he05``, it will equal the `inout` state passed to the
+  /// ``receive(_:timeout:assert:file:line:)-1rwdd``, it will equal the `inout` state passed to the
   /// closure.
   public var state: State {
     self.reducer.state
@@ -533,7 +533,7 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
   /// The timeout to await for in-flight effects.
   ///
   /// This is the default timeout used in all methods that take an optional timeout, such as
-  /// ``receive(_:timeout:assert:file:line:)-4he05`` and ``finish(timeout:file:line:)-7pmv3``.
+  /// ``receive(_:timeout:assert:file:line:)-1rwdd`` and ``finish(timeout:file:line:)-43l4y``.
   public var timeout: UInt64
 
   private var _environment: Box<Environment>
@@ -1676,8 +1676,8 @@ extension TestStore {
   }
 }
 
-/// The type returned from ``TestStore/send(_:_:file:line:)-6s1gq`` that represents the lifecycle
-/// of the effect started from sending an action.
+/// The type returned from ``TestStore/send(_:assert:file:line:)-1ax61`` that represents the
+/// lifecycle of the effect started from sending an action.
 ///
 /// You can use this value in tests to cancel the effect started from sending an action:
 ///
@@ -1701,7 +1701,7 @@ extension TestStore {
 /// await store.send(.stopTimerButtonTapped).finish()
 /// ```
 ///
-/// See ``TestStore/finish(timeout:file:line:)-7pmv3`` for the ability to await all in-flight
+/// See ``TestStore/finish(timeout:file:line:)-43l4y`` for the ability to await all in-flight
 /// effects in the test store.
 ///
 /// See ``ViewStoreTask`` for the analog provided to ``ViewStore``.

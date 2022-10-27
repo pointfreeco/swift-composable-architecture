@@ -124,7 +124,7 @@ final class ComposableArchitectureTests: XCTestCase {
       case response(Int)
     }
 
-    let reducer = Reducer<Int, Action, Void> { state, action, _ in
+    let reducer = AnyReducer<Int, Action, Void> { state, action, _ in
       enum CancelID {}
 
       switch action {
