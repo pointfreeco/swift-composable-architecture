@@ -319,7 +319,7 @@ import XCTestDynamicOverlay
 /// await store.receive(.login(.delegate(.didLogin))) {
 ///   // 4️⃣ Assert how all of app state changes due to that action.
 ///   $0.authenticatedTab = .loggedIn(
-///     Profile.State(...)
+///     Profile.State(/* ... */)
 ///   )
 ///   // 4️⃣ *Finally* assert that the selected tab switches to activity.
 ///   $0.selectedTab = .activity
@@ -426,7 +426,7 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
   /// do its job, you can override those dependencies like so:
   ///
   /// ```swift
-  /// let store = TestStore(…)
+  /// let store = TestStore(/* ... */)
   ///
   /// store.dependencies.apiClient = .mock
   /// store.dependencies.date = .constant(Date(timeIntervalSinceReferenceDate: 1234567890))
@@ -815,7 +815,7 @@ extension TestStore where ScopedState: Equatable {
   /// canceling the effect's task after you make all assertions:
   ///
   /// ```swift
-  /// let store = TestStore(...)
+  /// let store = TestStore(/* ... */)
   ///
   /// // emulate the view appearing
   /// let task = await store.send(.task)
@@ -907,7 +907,7 @@ extension TestStore where ScopedState: Equatable {
   /// canceling the effect's task after you make all assertions:
   ///
   /// ```swift
-  /// let store = TestStore(...)
+  /// let store = TestStore(/* ... */)
   ///
   /// // emulate the view appearing
   /// let task = await store.send(.task)
@@ -1492,12 +1492,12 @@ extension TestStore {
   /// but you don't want to explicitly deal with all of the received actions:
   ///
   /// ```swift
-  /// let store = TestStore(…)
+  /// let store = TestStore(/* ... */)
   ///
   /// await store.send(.buttonTapped) {
   ///   // Assert on how state changed
   /// }
-  /// await store.receive(.response(…)) {
+  /// await store.receive(.response(/* ... */)) {
   ///   // Assert on how state changed
   /// }
   ///
@@ -1575,12 +1575,12 @@ extension TestStore {
   /// but you don't want to explicitly deal with all effects:
   ///
   /// ```swift
-  /// let store = TestStore(…)
+  /// let store = TestStore(/* ... */)
   ///
   /// await store.send(.buttonTapped) {
   ///   // Assert on how state changed
   /// }
-  /// await store.receive(.response(…)) {
+  /// await store.receive(.response(/* ... */)) {
   ///   // Assert on how state changed
   /// }
   ///
@@ -1722,7 +1722,7 @@ public struct TestStoreTask: Hashable, Sendable {
   /// domain that cancels the effect:
   ///
   /// ```swift
-  /// let store = TestStore(...)
+  /// let store = TestStore(/* ... */)
   ///
   /// let onAppearTask = await store.send(.onAppear)
   /// // Assert what is happening in the feature
@@ -1927,22 +1927,26 @@ public enum Exhaustivity: Equatable {
   /// Full exhaustivity, which means you must explicitly assert on how all state changes and all
   /// received actions from effects.
   case exhaustive
-  /// No exhaustivity, which means you can assert on any subset of state changes and any subset
-  /// of received actions from effects.
+
+  /// No exhaustivity, which means you can assert on any subset of state changes and any subset of
+  /// received actions from effects.
   case none
-  /// Partial exhaustivity, which behaves exactly like ``none``, except any state not asserted
-  /// on or receive actions skipped will be reported in a grey informational box next to the
-  /// assertion. This is handy for when you want non-exhaustivity but you still want to know
-  /// what all you are missing from your assertions.
+
+  /// Partial exhaustivity, which behaves exactly like ``none``, except any state not asserted on or
+  /// receive actions skipped will be reported in a grey informational box next to the assertion.
+  /// This is handy for when you want non-exhaustivity but you still want to know what all you are
+  /// missing from your assertions.
   case partial(prefix: String? = "Partial assertions skipped. …\n\n")
 
   public static let partial = partial(prefix: "Partial assertions skipped. …\n\n")
+
   fileprivate var isPartial: Bool {
     guard case .partial = self else {
       return false
     }
     return true
   }
+
   fileprivate var prefix: String? {
     guard case let .partial(prefix: prefix) = self else {
       return nil
@@ -1951,6 +1955,7 @@ public enum Exhaustivity: Equatable {
   }
 }
 
+@_transparent
 private func _XCTExpectFailure(
   _ failureReason: String? = nil,
   strict: Bool = true,
