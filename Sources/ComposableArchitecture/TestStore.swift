@@ -195,8 +195,8 @@ import XCTestDynamicOverlay
 /// }
 /// ```
 ///
-/// This test is proving that when the search query changes some search responses are delivered
-/// and state updates accordingly.
+/// This test is proving that when the search query changes some search responses are delivered and
+/// state updates accordingly.
 ///
 /// If we did not assert that the `searchResponse` action was received, we would get the following
 /// test failure:
@@ -219,7 +219,7 @@ import XCTestDynamicOverlay
 /// 🛑 Must handle 1 received action before sending an action: …
 ///
 ///     Unhandled actions: [
-///       [0]: Search.Action.seachResponse
+///       [0]: Search.Action.searchResponse
 ///     ]
 /// ```
 ///
@@ -235,7 +235,7 @@ import XCTestDynamicOverlay
 ///   $0.results = []
 /// }
 ///
-/// // No need to perform `store.receive` since you do not expect a search
+/// // No need to perform `store.receive` since we do not expect a search
 /// // effect to execute.
 /// ```
 ///
@@ -331,7 +331,7 @@ import XCTestDynamicOverlay
 /// * We need to be intimately knowledgeable in how the login feature works so that we can assert
 /// on how its state changes and how its effects feed data back into the system.
 /// * If the login feature were to change its logic we may get test failures here even though the
-/// logic we are acutally trying to test doesn't really care about those changes.
+/// logic we are actually trying to test doesn't really care about those changes.
 /// * This test is very long, and so if there are other similar but slightly different flows we
 /// want to test we will be tempted to copy-and-paste the whole thing, leading to lots of
 /// duplicated, fragile tests.
@@ -361,7 +361,7 @@ import XCTestDynamicOverlay
 /// this integration test.
 ///
 /// Using ``Exhaustivity/none`` for ``TestStore/exhaustivity`` causes all un-asserted changes to
-/// pass without any notification. If you would like to see what test failures are being supressed
+/// pass without any notification. If you would like to see what test failures are being suppressed
 /// without actually causing a failure, you can use ``Exhaustivity/partial``:
 ///
 /// ```swift
@@ -476,6 +476,46 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
   ///   …
   /// }
   /// ```
+  @available(
+    iOS,
+    deprecated: 9999,
+    message:
+      """
+      'Reducer' and `Environment` have been deprecated in favor of 'ReducerProtocol' and 'DependencyValues'.
+
+      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+      """
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message:
+      """
+      'Reducer' and `Environment` have been deprecated in favor of 'ReducerProtocol' and 'DependencyValues'.
+
+      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+      """
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message:
+      """
+      'Reducer' and `Environment` have been deprecated in favor of 'ReducerProtocol' and 'DependencyValues'.
+
+      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+      """
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message:
+      """
+      'Reducer' and `Environment` have been deprecated in favor of 'ReducerProtocol' and 'DependencyValues'.
+
+      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+      """
+  )
   public var environment: Environment {
     _read { yield self._environment.wrappedValue }
     _modify { yield &self._environment.wrappedValue }
@@ -788,9 +828,9 @@ extension TestStore where ScopedState: Equatable {
   ///
   /// - Parameters:
   ///   - action: An action.
-  ///   - updateExpectingResult: A closure that asserts state changed by sending the action to the
-  ///     store. The mutable state sent to this closure must be modified to match the state of the
-  ///     store after processing the given action. Do not provide a closure if no change is
+  ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
+  ///     the store. The mutable state sent to this closure must be modified to match the state of
+  ///     the store after processing the given action. Do not provide a closure if no change is
   ///     expected.
   /// - Returns: A ``TestStoreTask`` that represents the lifecycle of the effect executed when
   ///   sending the action.
@@ -798,7 +838,7 @@ extension TestStore where ScopedState: Equatable {
   @discardableResult
   public func send(
     _ action: ScopedAction,
-    _ updateExpectingResult: ((inout ScopedState) throws -> Void)? = nil,
+    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) async -> TestStoreTask {
@@ -839,7 +879,7 @@ extension TestStore where ScopedState: Equatable {
       try self.expectedStateShouldMatch(
         expected: expectedState,
         actual: self.toScopedState(currentState),
-        modify: updateExpectingResult,
+        updateStateToExpectedResult: updateStateToExpectedResult,
         file: file,
         line: line
       )
@@ -880,9 +920,9 @@ extension TestStore where ScopedState: Equatable {
   ///
   /// - Parameters:
   ///   - action: An action.
-  ///   - updateExpectingResult: A closure that asserts state changed by sending the action to the
-  ///     store. The mutable state sent to this closure must be modified to match the state of the
-  ///     store after processing the given action. Do not provide a closure if no change is
+  ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
+  ///     the store. The mutable state sent to this closure must be modified to match the state of
+  ///     the store after processing the given action. Do not provide a closure if no change is
   ///     expected.
   /// - Returns: A ``TestStoreTask`` that represents the lifecycle of the effect executed when
   ///   sending the action.
@@ -893,7 +933,7 @@ extension TestStore where ScopedState: Equatable {
   @discardableResult
   public func send(
     _ action: ScopedAction,
-    _ updateExpectingResult: ((inout ScopedState) throws -> Void)? = nil,
+    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) -> TestStoreTask {
@@ -933,7 +973,7 @@ extension TestStore where ScopedState: Equatable {
       try self.expectedStateShouldMatch(
         expected: expectedState,
         actual: self.toScopedState(currentState),
-        modify: updateExpectingResult,
+        updateStateToExpectedResult: updateStateToExpectedResult,
         file: file,
         line: line
       )
@@ -950,7 +990,7 @@ extension TestStore where ScopedState: Equatable {
   private func expectedStateShouldMatch(
     expected: ScopedState,
     actual: ScopedState,
-    modify: ((inout ScopedState) throws -> Void)? = nil,
+    updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
     file: StaticString,
     line: UInt
   ) throws {
@@ -960,8 +1000,8 @@ extension TestStore where ScopedState: Equatable {
     switch self.exhaustivity {
     case .exhaustive:
       var expectedWhenGivenPreviousState = expected
-      if let modify = modify {
-        try modify(&expectedWhenGivenPreviousState)
+      if let updateStateToExpectedResult = updateStateToExpectedResult {
+        try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
       }
       expected = expectedWhenGivenPreviousState
 
@@ -973,8 +1013,8 @@ extension TestStore where ScopedState: Equatable {
 
     case .none, .partial:
       var expectedWhenGivenActualState = actual
-      if let modify = modify {
-        try modify(&expectedWhenGivenActualState)
+      if let updateStateToExpectedResult = updateStateToExpectedResult {
+        try updateStateToExpectedResult(&expectedWhenGivenActualState)
       }
       expected = expectedWhenGivenActualState
 
@@ -984,7 +1024,7 @@ extension TestStore where ScopedState: Equatable {
         }
       } else if self.exhaustivity.isPartial && expectedWhenGivenActualState == actual {
         var expectedWhenGivenPreviousState = current
-        if let modify = modify {
+        if let modify = updateStateToExpectedResult {
           _XCTExpectFailure(strict: false) {
             do {
               try modify(&expectedWhenGivenPreviousState)
@@ -1020,7 +1060,7 @@ extension TestStore where ScopedState: Equatable {
         \(String(describing: actual).indent(by: 2))
         """
       let messageHeading =
-        modify != nil
+        updateStateToExpectedResult != nil
         ? "A state change does not match expectation"
         : "State was not expected to change, but a change occurred"
       XCTFailHelper(
@@ -1035,7 +1075,7 @@ extension TestStore where ScopedState: Equatable {
     }
 
     func tryUnnecessaryModifyFailure() {
-      guard expected == current && modify != nil
+      guard expected == current && updateStateToExpectedResult != nil
       else { return }
 
       XCTFailHelper(
@@ -1060,16 +1100,15 @@ extension TestStore where ScopedState: Equatable {
 }
 
 extension TestStore where ScopedState: Equatable, Action: Equatable {
-  // TODO: support receive with case path?
-  // TODO: support skipReceivedActions(CasePath)
+  // TODO: support skipReceivedActions(CasePath)?
 
   /// Asserts an action was received from an effect and asserts when state changes.
   ///
   /// - Parameters:
   ///   - expectedAction: An action expected from an effect.
-  ///   - updateExpectingResult: A closure that asserts state changed by sending the action to the
-  ///     store. The mutable state sent to this closure must be modified to match the state of the
-  ///     store after processing the given action. Do not provide a closure if no change is
+  ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
+  ///     the store. The mutable state sent to this closure must be modified to match the state of
+  ///     the store after processing the given action. Do not provide a closure if no change is
   ///     expected.
   @available(iOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
   @available(macOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
@@ -1077,7 +1116,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   @available(watchOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
   public func receive(
     _ expectedAction: Action,
-    _ updateExpectingResult: ((inout ScopedState) throws -> Void)? = nil,
+    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) {
@@ -1109,24 +1148,17 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
           )
         }
       },
-      updateExpectingResult,
+      updateStateToExpectedResult,
       file: file,
       line: line
     )
   }
 
   // TODO: Can this and the `receiveAction(matching:)` helper remove the `Equatable` requirement?
-  // TODO: Should `updateExpectingResult` be named to support trailing closure syntax?
   // TODO: Should there be a `Bool` predicated overload?
-  //     store.receive { action in
-  //       guard case .increment = action else { return false }
-  //       return true
-  //     } updateStateExpectingResult: {
-  //       $0.count = 1
-  //     }
   public func receive<Value>(
     _ expectedAction: (Action) -> Value?,
-    _ updateExpectingResult: ((inout ScopedState) throws -> Void)? = nil,
+    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) {
@@ -1149,7 +1181,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
           line: line
         )
       },
-      updateExpectingResult,
+      updateStateToExpectedResult,
       file: file,
       line: line
     )
@@ -1159,7 +1191,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     matching predicate: (Action) -> Bool,
     failureMessage: @autoclosure () -> String,
     onReceive: (Action) -> Void,
-    _ updateExpectingResult: ((inout ScopedState) throws -> Void)?,
+    _ updateStateToExpectedResult: ((inout ScopedState) throws -> Void)?,
     file: StaticString,
     line: UInt
   ) {
@@ -1208,7 +1240,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
       try self.expectedStateShouldMatch(
         expected: expectedState,
         actual: self.toScopedState(state),
-        modify: updateExpectingResult,
+        updateStateToExpectedResult: updateStateToExpectedResult,
         file: file,
         line: line
       )
@@ -1229,8 +1261,8 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     /// - Parameters:
     ///   - expectedAction: An action expected from an effect.
     ///   - duration: The amount of time to wait for the expected action.
-    ///   - updateExpectingResult: A closure that asserts state changed by sending the action to
-    ///     the store. The mutable state sent to this closure must be modified to match the state
+    ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action
+    ///     to the store. The mutable state sent to this closure must be modified to match the state
     ///     of the store after processing the given action. Do not provide a closure if no change
     ///     is expected.
     @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
@@ -1238,14 +1270,14 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     public func receive(
       _ expectedAction: Action,
       timeout duration: Duration,
-      _ updateExpectingResult: ((inout ScopedState) throws -> Void)? = nil,
+      assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
       await self.receive(
         expectedAction,
         timeout: duration.nanoseconds,
-        updateExpectingResult,
+        assert: updateStateToExpectedResult,
         file: file,
         line: line
       )
@@ -1257,25 +1289,29 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   /// - Parameters:
   ///   - expectedAction: An action expected from an effect.
   ///   - nanoseconds: The amount of time to wait for the expected action.
-  ///   - updateExpectingResult: A closure that asserts state changed by sending the action to the
-  ///     store. The mutable state sent to this closure must be modified to match the state of the
-  ///     store after processing the given action. Do not provide a closure if no change is
+  ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
+  ///     the store. The mutable state sent to this closure must be modified to match the state of
+  ///     the store after processing the given action. Do not provide a closure if no change is
   ///     expected.
   @MainActor
   public func receive(
     _ expectedAction: Action,
     timeout nanoseconds: UInt64? = nil,
-    _ updateExpectingResult: ((inout ScopedState) throws -> Void)? = nil,
+    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) async {
     guard !self.reducer.inFlightEffects.isEmpty
     else {
-      _ = { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
+      _ = {
+        self.receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
+      }()
       return
     }
     await self.receiveAction(timeout: nanoseconds, file: file, line: line)
-    _ = { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
+    _ = {
+      self.receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
+    }()
     await Task.megaYield()
   }
 
@@ -1283,17 +1319,21 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   public func receive<Value>(
     _ expectedAction: (Action) -> Value?,
     timeout nanoseconds: UInt64? = nil,
-    _ updateExpectingResult: ((inout ScopedState) throws -> Void)? = nil,
+    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) async {
     guard !self.reducer.inFlightEffects.isEmpty
     else {
-      _ = { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
+      _ = {
+        self.receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
+      }()
       return
     }
     await self.receiveAction(timeout: nanoseconds, file: file, line: line)
-    _ = { self.receive(expectedAction, updateExpectingResult, file: file, line: line) }()
+    _ = {
+      self.receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
+    }()
     await Task.megaYield()
   }
 
