@@ -1,93 +1,69 @@
 extension ReducerProtocol {
-  #if swift(>=5.7)
-    /// Embeds a child reducer in a parent domain that works on a case of parent enum state.
-    ///
-    /// For example, if a parent feature's state is expressed as an enum of multiple children
-    /// states, then `ifCaseLet` can run a child reducer on a particular case of the enum:
-    ///
-    /// ```swift
-    /// struct Parent: ReducerProtocol {
-    ///   enum State {
-    ///     case loggedIn(Authenticated.State)
-    ///     case loggedOut(Unauthenticated.State)
-    ///   }
-    ///   enum Action {
-    ///     case loggedIn(Authenticated.Action)
-    ///     case loggedOut(Unauthenticated.Action)
-    ///     // ...
-    ///   }
-    ///
-    ///   var body: some ReducerProtocol<State, Action> {
-    ///     Reduce { state, action in
-    ///       // Core logic for parent feature
-    ///     }
-    ///     .ifCaseLet(/State.loggedIn, action: /Action.loggedIn) {
-    ///       Authenticated()
-    ///     }
-    ///     .ifCaseLet(/State.loggedOut, action: /Action.loggedOut) {
-    ///       Unauthenticated()
-    ///     }
-    ///   }
-    /// }
-    /// ```
-    ///
-    /// The `ifCaseLet` forces a specific order of operations for the child and parent features. It
-    /// runs the child first, and then the parent. If the order was reversed, then it would be
-    /// possible for the parent feature to change the case of the enum, in which case the child
-    /// feature would not be able to react to that action. That can cause subtle bugs.
-    ///
-    /// It is still possible for a parent feature higher up in the application to change the case of
-    /// the enum before the child has a chance to react to the action. In such cases a runtime
-    /// warning is shown in Xcode to let you know that there's a potential problem.
-    ///
-    /// - Parameters:
-    ///   - toCaseState: A case path from parent state to a case containing child state.
-    ///   - toCaseAction: A case path from parent action to a case containing child actions.
-    ///   - case: A reducer that will be invoked with child actions against child state when it is
-    ///     present
-    /// - Returns: A reducer that combines the child reducer with the parent reducer.
-    @inlinable
-    public func ifCaseLet<CaseState, CaseAction>(
-      _ toCaseState: CasePath<State, CaseState>,
-      action toCaseAction: CasePath<Action, CaseAction>,
-      @ReducerBuilder<CaseState, CaseAction> then case: () -> some ReducerProtocol<
-        CaseState, CaseAction
-      >,
-      file: StaticString = #file,
-      fileID: StaticString = #fileID,
-      line: UInt = #line
-    ) -> some ReducerProtocol<State, Action> {
-      _IfCaseLetReducer(
-        parent: self,
-        child: `case`(),
-        toChildState: toCaseState,
-        toChildAction: toCaseAction,
-        file: file,
-        fileID: fileID,
-        line: line
-      )
-    }
-  #else
-    @inlinable
-    public func ifCaseLet<Case: ReducerProtocol>(
-      _ toCaseState: CasePath<State, Case.State>,
-      action toCaseAction: CasePath<Action, Case.Action>,
-      @ReducerBuilderOf<Case> then case: () -> Case,
-      file: StaticString = #file,
-      fileID: StaticString = #fileID,
-      line: UInt = #line
-    ) -> _IfCaseLetReducer<Self, Case> {
-      .init(
-        parent: self,
-        child: `case`(),
-        toChildState: toCaseState,
-        toChildAction: toCaseAction,
-        file: file,
-        fileID: fileID,
-        line: line
-      )
-    }
-  #endif
+  /// Embeds a child reducer in a parent domain that works on a case of parent enum state.
+  ///
+  /// For example, if a parent feature's state is expressed as an enum of multiple children
+  /// states, then `ifCaseLet` can run a child reducer on a particular case of the enum:
+  ///
+  /// ```swift
+  /// struct Parent: ReducerProtocol {
+  ///   enum State {
+  ///     case loggedIn(Authenticated.State)
+  ///     case loggedOut(Unauthenticated.State)
+  ///   }
+  ///   enum Action {
+  ///     case loggedIn(Authenticated.Action)
+  ///     case loggedOut(Unauthenticated.Action)
+  ///     // ...
+  ///   }
+  ///
+  ///   var body: some ReducerProtocol<State, Action> {
+  ///     Reduce { state, action in
+  ///       // Core logic for parent feature
+  ///     }
+  ///     .ifCaseLet(/State.loggedIn, action: /Action.loggedIn) {
+  ///       Authenticated()
+  ///     }
+  ///     .ifCaseLet(/State.loggedOut, action: /Action.loggedOut) {
+  ///       Unauthenticated()
+  ///     }
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// The `ifCaseLet` forces a specific order of operations for the child and parent features. It
+  /// runs the child first, and then the parent. If the order was reversed, then it would be
+  /// possible for the parent feature to change the case of the enum, in which case the child
+  /// feature would not be able to react to that action. That can cause subtle bugs.
+  ///
+  /// It is still possible for a parent feature higher up in the application to change the case of
+  /// the enum before the child has a chance to react to the action. In such cases a runtime
+  /// warning is shown in Xcode to let you know that there's a potential problem.
+  ///
+  /// - Parameters:
+  ///   - toCaseState: A case path from parent state to a case containing child state.
+  ///   - toCaseAction: A case path from parent action to a case containing child actions.
+  ///   - case: A reducer that will be invoked with child actions against child state when it is
+  ///     present
+  /// - Returns: A reducer that combines the child reducer with the parent reducer.
+  @inlinable
+  public func ifCaseLet<Case: ReducerProtocol>(
+    _ toCaseState: CasePath<State, Case.State>,
+    action toCaseAction: CasePath<Action, Case.Action>,
+    @ReducerBuilderOf<Case> then case: () -> Case,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> _IfCaseLetReducer<Self, Case> {
+    .init(
+      parent: self,
+      child: `case`(),
+      toChildState: toCaseState,
+      toChildAction: toCaseAction,
+      file: file,
+      fileID: fileID,
+      line: line
+    )
+  }
 }
 
 public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: ReducerProtocol {
