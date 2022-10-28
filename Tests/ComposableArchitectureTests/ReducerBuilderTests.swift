@@ -54,9 +54,9 @@ private struct Root: ReducerProtocol {
 
     @ReducerBuilder<State, Action>
     var testFlowControl: some ReducerProtocol<State, Action> {
-//      if true {
-//        Self()
-//      }
+      if true {
+        Self()
+      }
 
       if Bool.random() {
         Self()
@@ -64,13 +64,13 @@ private struct Root: ReducerProtocol {
         EmptyReducer()
       }
 
-//      for _ in 1...10 {
-//        Self()
-//      }
-//
-//      if #available(*) {
-//        Self()
-//      }
+      for _ in 1...10 {
+        Self()
+      }
+
+      if #available(*) {
+        Self()
+      }
     }
   #else
     var body: Reduce<State, Action> {
