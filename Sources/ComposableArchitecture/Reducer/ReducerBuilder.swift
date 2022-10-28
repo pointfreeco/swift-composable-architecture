@@ -60,15 +60,15 @@ public enum ReducerBuilder<State, Action> {
     @inlinable
     public static func buildLimitedAvailability(
       _ wrapped: some ReducerProtocol<State, Action>
-    ) -> some ReducerProtocol<State, Action> {
-      _Optional(wrapped: wrapped)
+    ) -> Reduce<State, Action> {
+      Reduce(wrapped)
     }
 
     @inlinable
     public static func buildOptional(
       _ wrapped: (some ReducerProtocol<State, Action>)?
     ) -> some ReducerProtocol<State, Action> {
-      _Optional(wrapped: wrapped)
+      wrapped
     }
 
     @inlinable
@@ -368,15 +368,15 @@ public enum ReducerBuilder<State, Action> {
     @inlinable
     public static func buildLimitedAvailability<R: ReducerProtocol>(
       _ wrapped: R
-    ) -> _Optional<R>
+    ) -> Reduce<R.State, R.Action>
     where R.State == State, R.Action == Action {
-      _Optional(wrapped: wrapped)
+      Reduce(wrapped)
     }
 
     @inlinable
-    public static func buildOptional<R: ReducerProtocol>(_ wrapped: R?) -> _Optional<R>
+    public static func buildOptional<R: ReducerProtocol>(_ wrapped: R?) -> R?
     where R.State == State, R.Action == Action {
-      _Optional(wrapped: wrapped)
+      wrapped
     }
   #endif
 
@@ -398,28 +398,6 @@ public enum ReducerBuilder<State, Action> {
 
       case let .second(second):
         return second.reduce(into: &state, action: action)
-      }
-    }
-  }
-
-  public struct _Optional<Wrapped: ReducerProtocol>: ReducerProtocol {
-    @usableFromInline
-    let wrapped: Wrapped?
-
-    @usableFromInline
-    init(wrapped: Wrapped?) {
-      self.wrapped = wrapped
-    }
-
-    @inlinable
-    public func reduce(
-      into state: inout Wrapped.State, action: Wrapped.Action
-    ) -> EffectTask<Wrapped.Action> {
-      switch wrapped {
-      case let .some(wrapped):
-        return wrapped.reduce(into: &state, action: action)
-      case .none:
-        return .none
       }
     }
   }
