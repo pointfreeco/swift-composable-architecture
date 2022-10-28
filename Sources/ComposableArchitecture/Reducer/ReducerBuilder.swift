@@ -28,19 +28,19 @@ public enum ReducerBuilder<State, Action> {
     }
 
     @inlinable
-    public static func buildEither<R0: ReducerProtocol, R1: ReducerProtocol>(
-      first reducer: R0
-    ) -> _Conditional<R0, R1>
-    where R0.State == State, R0.Action == Action, R1.State == State, R1.Action == Action {
-      .first(reducer)
+    public static func buildEither<R1: ReducerProtocol>(
+      first reducer: some ReducerProtocol<State, Action>
+    ) -> some ReducerProtocol<State, Action>
+    where R1.State == State, R1.Action == Action {
+      _Conditional.first(reducer, R1.self)
     }
 
     @inlinable
-    public static func buildEither<R0: ReducerProtocol, R1: ReducerProtocol>(
-      second reducer: R1
-    ) -> _Conditional<R0, R1>
-    where R0.State == State, R0.Action == Action, R1.State == State, R1.Action == Action {
-      .second(reducer)
+    public static func buildEither<R0: ReducerProtocol>(
+      second reducer: some ReducerProtocol<State, Action>
+    ) -> some ReducerProtocol<State, Action>
+    where R0.State == State, R0.Action == Action {
+      _Conditional.second(reducer, R0.self)
     }
 
     @inlinable
@@ -385,18 +385,18 @@ public enum ReducerBuilder<State, Action> {
     First.State == Second.State,
     First.Action == Second.Action
   {
-    case first(First)
-    case second(Second)
+    case first(First, Second.Type = Second.self)
+    case second(Second, First.Type = First.self)
 
     @inlinable
     public func reduce(into state: inout First.State, action: First.Action) -> EffectTask<
       First.Action
     > {
       switch self {
-      case let .first(first):
+      case let .first(first, _):
         return first.reduce(into: &state, action: action)
 
-      case let .second(second):
+      case let .second(second, _):
         return second.reduce(into: &state, action: action)
       }
     }
