@@ -378,16 +378,34 @@ extension EffectPublisher {
     case (.publisher, .publisher), (.run, .publisher), (.publisher, .run):
       return Self(operation: .publisher(Publishers.Merge(self, other).eraseToAnyPublisher()))
     case let (.run(lhsPriority, lhsOperation), .run(rhsPriority, rhsOperation)):
+
+      let priority: TaskPriority?
+      if let lhsPriority = lhsPriority, let rhsPriority = rhsPriority {
+        priority = Swift.min(lhsPriority, rhsPriority)
+      } else {
+        priority = lhsPriority ?? rhsPriority
+      }
+
+      @Sendable
+      func prioritize(priority: TaskPriority?, operation: @escaping () async -> Void) async {
+        guard let priority = priority
+        else { return await operation() }
+        await Task(priority: priority) { await operation() }.cancellableValue
+      }
+
       return Self(
-        operation: .run { send in
-          await withTaskGroup(of: Void.self) { group in
-            group.addTask(priority: lhsPriority) {
-              await lhsOperation(send)
-            }
-            group.addTask(priority: rhsPriority) {
-              await rhsOperation(send)
-            }
+        operation: .run(priority) { send in
+          guard lhsPriority != rhsPriority
+          else {
+            async let lhs: Void = lhsOperation(send)
+            async let rhs: Void = rhsOperation(send)
+            _ = await (lhs, rhs)
+            return
           }
+
+          async let lhs: Void = prioritize(priority: lhsPriority) { await lhsOperation(send) }
+          async let rhs: Void = prioritize(priority: rhsPriority) { await rhsOperation(send) }
+          _ = await (lhs, rhs)
         }
       )
     }
@@ -434,14 +452,21 @@ extension EffectPublisher {
         )
       )
     case let (.run(lhsPriority, lhsOperation), .run(rhsPriority, rhsOperation)):
+      let priority: TaskPriority?
+      if let lhsPriority = lhsPriority, let rhsPriority = rhsPriority {
+        priority = Swift.min(lhsPriority, rhsPriority)
+      } else {
+        priority = lhsPriority ?? rhsPriority
+      }
+
       return Self(
-        operation: .run { send in
-          if let lhsPriority = lhsPriority {
+        operation: .run(priority) { send in
+          if let lhsPriority = lhsPriority, lhsPriority != priority {
             await Task(priority: lhsPriority) { await lhsOperation(send) }.cancellableValue
           } else {
             await lhsOperation(send)
           }
-          if let rhsPriority = rhsPriority {
+          if let rhsPriority = rhsPriority, rhsPriority != priority {
             await Task(priority: rhsPriority) { await rhsOperation(send) }.cancellableValue
           } else {
             await rhsOperation(send)
@@ -615,7 +640,7 @@ extension EffectPublisher {
     """
     'Effect' has been deprecated in favor of 'EffectTask' when `Failure == Never`, or
     `EffectPublisher<Output, Failure>` in general.
-    
+
     You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
     concurrency to model failable streams of values.
 
@@ -629,7 +654,7 @@ extension EffectPublisher {
     """
     'Effect' has been deprecated in favor of 'EffectTask' when `Failure == Never`, or
     `EffectPublisher<Output, Failure>` in general.
-    
+
     You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
     concurrency to model failable streams of values.
 
@@ -643,7 +668,7 @@ extension EffectPublisher {
     """
     'Effect' has been deprecated in favor of 'EffectTask' when `Failure == Never`, or
     `EffectPublisher<Output, Failure>` in general.
-    
+
     You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
     concurrency to model failable streams of values.
 
@@ -657,7 +682,7 @@ extension EffectPublisher {
     """
     'Effect' has been deprecated in favor of 'EffectTask' when `Failure == Never`, or
     `EffectPublisher<Output, Failure>` in general.
-    
+
     You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
     concurrency to model failable streams of values.
 
