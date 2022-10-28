@@ -42,8 +42,10 @@ import XCTestDynamicOverlay
 ///
 /// ```swift
 /// extension DependencyValues {
-///   get { self[MyValueKey.self] }
-///   set { self[MyValueKey.self] = newValue }
+///   var myValue: Int {
+///     get { self[MyValueKey.self] }
+///     set { self[MyValueKey.self] = newValue }
+///   }
 /// }
 /// ```
 ///
