@@ -402,9 +402,10 @@ where
 
   public var body: some View {
     ForEach(viewStore.state.tags, id: \.self) { stateID in
-      let state = self.viewStore[stateID]
-      let eachStore = store.scope {
-        $0.extract(tag: stateID) ?? state
+      var state = self.viewStore[stateID]
+      let eachStore: Store<EachState, EachAction> = store.scope {
+        state = $0.extract(tag: stateID) ?? state
+        return state
       } action: {
         (stateID, $0)
       }
