@@ -12,7 +12,7 @@ final class RefreshableTests: XCTestCase {
     )
 
     store.dependencies.factClient.fetch = { "\($0) is a good number." }
-    store.dependencies.mainQueue = .immediate
+    store.dependencies.continuousClock = ImmediateClock()
 
     await store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -31,7 +31,7 @@ final class RefreshableTests: XCTestCase {
 
     struct FactError: Equatable, Error {}
     store.dependencies.factClient.fetch = { _ in throw FactError() }
-    store.dependencies.mainQueue = .immediate
+    store.dependencies.continuousClock = ImmediateClock()
 
     await store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -50,7 +50,7 @@ final class RefreshableTests: XCTestCase {
       try await Task.sleep(nanoseconds: NSEC_PER_SEC)
       return "\($0) is a good number."
     }
-    store.dependencies.mainQueue = .immediate
+    store.dependencies.continuousClock = ImmediateClock()
 
     await store.send(.incrementButtonTapped) {
       $0.count = 1

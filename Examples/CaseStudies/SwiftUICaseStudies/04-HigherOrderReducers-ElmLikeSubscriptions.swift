@@ -47,7 +47,7 @@ enum ClockAction: Equatable {
 }
 
 struct ClockEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
+  var clock: any Clock<Duration>
 }
 
 let clockReducer = AnyReducer<ClockState, ClockAction, ClockEnvironment>.combine(
@@ -66,7 +66,7 @@ let clockReducer = AnyReducer<ClockState, ClockAction, ClockEnvironment>.combine
     struct TimerID: Hashable {}
     return [
       TimerID(): .run { send in
-        for await _ in environment.mainQueue.timer(interval: 1) {
+        for await _ in environment.clock.timer(interval: .seconds(1)) {
           await send(.timerTicked, animation: .interpolatingSpring(stiffness: 3000, damping: 40))
         }
       }
@@ -80,7 +80,7 @@ struct ClockView: View {
   let store: Store<ClockState, ClockAction>
 
   var body: some View {
-    WithViewStore(store) { viewStore in
+    WithViewStore(self.store) { viewStore in
       Form {
         AboutView(readMe: readMe)
 
@@ -147,7 +147,7 @@ struct Subscriptions_Previews: PreviewProvider {
           initialState: ClockState(),
           reducer: clockReducer,
           environment: ClockEnvironment(
-            mainQueue: .main
+            clock: ContinuousClock()
           )
         )
       )

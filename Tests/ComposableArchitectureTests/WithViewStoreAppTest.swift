@@ -45,7 +45,7 @@ struct TestApp: App {
   func checkToolbar() -> some View {
     Color.clear
       .toolbar {
-        WithViewStore(store) { viewStore in
+        WithViewStore(self.store) { viewStore in
           ToolbarItem {
             Button(action: { viewStore.send(()) }, label: { Text("Increment") })
           }
@@ -59,7 +59,7 @@ struct TestApp: App {
     if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
       Color.clear
         .accessibilityRotor("Rotor") {
-          WithViewStore(store) { viewStore in
+          WithViewStore(self.store) { viewStore in
             AccessibilityRotorEntry("Value: \(viewStore.state)", 0, in: namespace)
           }
         }

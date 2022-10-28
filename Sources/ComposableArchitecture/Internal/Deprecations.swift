@@ -11,6 +11,7 @@ import XCTestDynamicOverlay
 /// A type alias to ``AnyReducer`` for source compatibility. This alias will be removed.
 @available(
   *,
+  deprecated,
   renamed: "AnyReducer",
   message:
     """
@@ -700,11 +701,13 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
 
     func assert(step: Step) {
       switch step.type {
-      case let .send(action, update):
-        self.send(action, update, file: step.file, line: step.line)
+      case let .send(action, updateStateToExpectedResult):
+        self.send(action, assert: updateStateToExpectedResult, file: step.file, line: step.line)
 
-      case let .receive(expectedAction, update):
-        self.receive(expectedAction, update, file: step.file, line: step.line)
+      case let .receive(expectedAction, updateStateToExpectedResult):
+        self.receive(
+          expectedAction, assert: updateStateToExpectedResult, file: step.file, line: step.line
+        )
 
       case let .environment(work):
         if !self.reducer.receivedActions.isEmpty {

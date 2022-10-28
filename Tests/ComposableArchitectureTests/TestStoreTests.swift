@@ -206,4 +206,62 @@ final class TestStoreTests: XCTestCase {
     }
     XCTAssertEqual(store.state, 4)
   }
+
+  func testOverrideDependenciesDirectlyOnReducer() {
+    struct Counter: ReducerProtocol {
+      @Dependency(\.calendar) var calendar
+      @Dependency(\.locale) var locale
+      @Dependency(\.timeZone) var timeZone
+      @Dependency(\.urlSession) var urlSession
+
+      func reduce(into state: inout Int, action: Bool) -> EffectTask<Bool> {
+        _ = self.calendar
+        _ = self.locale
+        _ = self.timeZone
+        _ = self.urlSession
+        state += action ? 1 : -1
+        return .none
+      }
+    }
+
+    let store = TestStore(
+      initialState: 0,
+      reducer: Counter()
+        .dependency(\.calendar, Calendar(identifier: .gregorian))
+        .dependency(\.locale, Locale(identifier: "en_US"))
+        .dependency(\.timeZone, TimeZone(secondsFromGMT: 0)!)
+        .dependency(\.urlSession, URLSession(configuration: .ephemeral))
+    )
+
+    store.send(true) { $0 = 1 }
+  }
+
+  func testOverrideDependenciesOnTestStore() {
+    struct Counter: ReducerProtocol {
+      @Dependency(\.calendar) var calendar
+      @Dependency(\.locale) var locale
+      @Dependency(\.timeZone) var timeZone
+      @Dependency(\.urlSession) var urlSession
+
+      func reduce(into state: inout Int, action: Bool) -> EffectTask<Bool> {
+        _ = self.calendar
+        _ = self.locale
+        _ = self.timeZone
+        _ = self.urlSession
+        state += action ? 1 : -1
+        return .none
+      }
+    }
+
+    let store = TestStore(
+      initialState: 0,
+      reducer: Counter()
+    )
+    store.dependencies.calendar = Calendar(identifier: .gregorian)
+    store.dependencies.locale = Locale(identifier: "en_US")
+    store.dependencies.timeZone = TimeZone(secondsFromGMT: 0)!
+    store.dependencies.urlSession = URLSession(configuration: .ephemeral)
+
+    store.send(true) { $0 = 1 }
+  }
 }

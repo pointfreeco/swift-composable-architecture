@@ -45,7 +45,9 @@ extension DependencyValues {
   private enum LocaleKey: DependencyKey {
     static let liveValue = Locale.autoupdatingCurrent
     static var testValue: Locale {
-      XCTFail(#"Unimplemented: @Dependency(\.locale)"#)
+      if !DependencyValues.isSetting {
+        XCTFail(#"Unimplemented: @Dependency(\.locale)"#)
+      }
       return .autoupdatingCurrent
     }
   }

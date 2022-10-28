@@ -79,7 +79,9 @@ extension DependencyValues {
   private enum URLSessionKey: DependencyKey {
     static let liveValue = URLSession.shared
     static var testValue: URLSession {
-      XCTFail(#"Unimplemented: @Dependency(\.urlSession)"#)
+      if !DependencyValues.isSetting {
+        XCTFail(#"Unimplemented: @Dependency(\.urlSession)"#)
+      }
       let configuration = URLSessionConfiguration.ephemeral
       configuration.protocolClasses = [UnimplementedURLProtocol.self]
       return URLSession(configuration: configuration)

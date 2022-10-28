@@ -284,7 +284,7 @@ final class StoreTests: XCTestCase {
           state? += 1
           return .none
         } else {
-          return Just(true).receive(on: DispatchQueue.main).eraseToEffect()
+          return .task { true }
         }
       })
     )
@@ -511,46 +511,78 @@ final class StoreTests: XCTestCase {
     XCTAssertEqual(scopedStore.effectCancellables.count, 0)
   }
 
-  func testScopingRemovesDuplicatesWithProvidedClosure() {
-      struct State: Equatable {
-        var place: String
+  func testOverrideDependenciesDirectlyOnReducer() {
+    struct Counter: ReducerProtocol {
+      @Dependency(\.calendar) var calendar
+      @Dependency(\.locale) var locale
+      @Dependency(\.timeZone) var timeZone
+      @Dependency(\.urlSession) var urlSession
+
+      func reduce(into state: inout Int, action: Bool) -> EffectTask<Bool> {
+        _ = self.calendar
+        _ = self.locale
+        _ = self.timeZone
+        _ = self.urlSession
+        state += action ? 1 : -1
+        return .none
       }
-      enum Action: Equatable {
-        case noop
-        case updatePlace(String)
-      }
-      let parentStore = Store<State, Action>(
-        initialState: .init(place: "New York"),
-        reducer: Reduce { state, action in
-            switch action {
-            case .noop:
-              return .none
-            case let .updatePlace(place):
-              state.place = place
-              return .none
-            }
-          }
-      )
-      let childStore: Store<State, Action> = parentStore.scope(
-        state: { $0 },
-        action: { $0 },
-        removeDuplicates: ==
-      )
-      var scopeCount: Int = 0
-      let leafStore: Store<State, Action> = childStore.scope(
-        state: { parentState -> State in
-          scopeCount += 1
-          return parentState
-        },
-        action: { $0 },
-        removeDuplicates: ==
-      )
-      XCTAssertEqual(scopeCount, 1)
-      _ = parentStore.send(.noop)
-      XCTAssertEqual(scopeCount, 1)
-      _ = parentStore.send(.updatePlace("Washington"))
-      XCTAssertEqual(scopeCount, 2)
-      _ = childStore.send(.noop)
-      _ = leafStore.send(.noop)
+    }
+
+    let store = Store(
+      initialState: 0,
+      reducer: Counter()
+        .dependency(\.calendar, Calendar(identifier: .gregorian))
+        .dependency(\.locale, Locale(identifier: "en_US"))
+        .dependency(\.timeZone, TimeZone(secondsFromGMT: 0)!)
+        .dependency(\.urlSession, URLSession(configuration: .ephemeral))
+    )
+
+    ViewStore(store).send(true)
   }
+}
+
+// TBC additions
+extension StoreTests {
+    func testScopingRemovesDuplicatesWithProvidedClosure() {
+        struct State: Equatable {
+          var place: String
+        }
+        enum Action: Equatable {
+          case noop
+          case updatePlace(String)
+        }
+        let parentStore = Store<State, Action>(
+          initialState: .init(place: "New York"),
+          reducer: Reduce { state, action in
+              switch action {
+              case .noop:
+                return .none
+              case let .updatePlace(place):
+                state.place = place
+                return .none
+              }
+            }
+        )
+        let childStore: Store<State, Action> = parentStore.scope(
+          state: { $0 },
+          action: { $0 },
+          removeDuplicates: ==
+        )
+        var scopeCount: Int = 0
+        let leafStore: Store<State, Action> = childStore.scope(
+          state: { parentState -> State in
+            scopeCount += 1
+            return parentState
+          },
+          action: { $0 },
+          removeDuplicates: ==
+        )
+        XCTAssertEqual(scopeCount, 1)
+        _ = parentStore.send(.noop)
+        XCTAssertEqual(scopeCount, 1)
+        _ = parentStore.send(.updatePlace("Washington"))
+        XCTAssertEqual(scopeCount, 2)
+        _ = childStore.send(.noop)
+        _ = leafStore.send(.noop)
+      }
 }

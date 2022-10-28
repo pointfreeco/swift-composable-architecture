@@ -28,7 +28,6 @@ struct Refreshable: ReducerProtocol {
   }
 
   @Dependency(\.factClient) var factClient
-  @Dependency(\.mainQueue) var mainQueue
   private enum FactRequestID {}
 
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {

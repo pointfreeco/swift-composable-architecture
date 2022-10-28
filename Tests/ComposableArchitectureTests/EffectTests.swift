@@ -50,31 +50,39 @@ final class EffectTests: XCTestCase {
       .store(in: &self.cancellables)
   }
 
-  func testConcatenate() {
-    var values: [Int] = []
+  #if swift(>=5.7) && (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
+    func testConcatenate() async {
+      if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
+        let clock = TestClock()
+        var values: [Int] = []
 
-    let effect = EffectTask<Int>.concatenate(
-      EffectTask(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect(),
-      EffectTask(value: 2).delay(for: 2, scheduler: mainQueue).eraseToEffect(),
-      EffectTask(value: 3).delay(for: 3, scheduler: mainQueue).eraseToEffect()
-    )
+        let effect = Effect<Int, Never>.concatenate(
+          (1...3).map { count in
+            .task {
+              try await clock.sleep(for: .seconds(count))
+              return count
+            }
+          }
+        )
 
-    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+        effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
 
-    XCTAssertEqual(values, [])
+        XCTAssertEqual(values, [])
 
-    self.mainQueue.advance(by: 1)
-    XCTAssertEqual(values, [1])
+        await clock.advance(by: .seconds(1))
+        XCTAssertEqual(values, [1])
 
-    self.mainQueue.advance(by: 2)
-    XCTAssertEqual(values, [1, 2])
+        await clock.advance(by: .seconds(2))
+        XCTAssertEqual(values, [1, 2])
 
-    self.mainQueue.advance(by: 3)
-    XCTAssertEqual(values, [1, 2, 3])
+        await clock.advance(by: .seconds(3))
+        XCTAssertEqual(values, [1, 2, 3])
 
-    self.mainQueue.run()
-    XCTAssertEqual(values, [1, 2, 3])
-  }
+        await clock.run()
+        XCTAssertEqual(values, [1, 2, 3])
+      }
+    }
+  #endif
 
   func testConcatenateOneEffect() {
     var values: [Int] = []
@@ -94,27 +102,36 @@ final class EffectTests: XCTestCase {
     XCTAssertEqual(values, [1])
   }
 
-  func testMerge() {
-    let effect = EffectTask<Int>.merge(
-      EffectTask(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect(),
-      EffectTask(value: 2).delay(for: 2, scheduler: mainQueue).eraseToEffect(),
-      EffectTask(value: 3).delay(for: 3, scheduler: mainQueue).eraseToEffect()
-    )
+  #if swift(>=5.7) && (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
+    func testMerge() async {
+      if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
+        let clock = TestClock()
 
-    var values: [Int] = []
-    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+        let effect = Effect<Int, Never>.merge(
+          (1...3).map { count in
+            .task {
+              try await clock.sleep(for: .seconds(count))
+              return count
+            }
+          }
+        )
 
-    XCTAssertEqual(values, [])
+        var values: [Int] = []
+        effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
 
-    self.mainQueue.advance(by: 1)
-    XCTAssertEqual(values, [1])
+        XCTAssertEqual(values, [])
 
-    self.mainQueue.advance(by: 1)
-    XCTAssertEqual(values, [1, 2])
+        await clock.advance(by: .seconds(1))
+        XCTAssertEqual(values, [1])
 
-    self.mainQueue.advance(by: 1)
-    XCTAssertEqual(values, [1, 2, 3])
-  }
+        await clock.advance(by: .seconds(1))
+        XCTAssertEqual(values, [1, 2])
+
+        await clock.advance(by: .seconds(1))
+        XCTAssertEqual(values, [1, 2, 3])
+      }
+    }
+  #endif
 
   func testEffectSubscriberInitializer() {
     let effect = EffectTask<Int>.run { subscriber in

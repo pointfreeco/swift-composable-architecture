@@ -73,8 +73,8 @@ class CounterTests: XCTestCase {
 > Tip: Test cases that use ``TestStore`` should be annotated as `@MainActor` and test methods should 
 be marked as `async` since most assertion helpers on ``TestStore`` can suspend.
 
-Test stores have a ``TestStore/send(_:_:file:line:)-6s1gq`` method, but it behaves differently from
-stores and view stores. You provide an action to send into the system, but then you must also
+Test stores have a ``TestStore/send(_:assert:file:line:)-1ax61`` method, but it behaves differently
+from stores and view stores. You provide an action to send into the system, but then you must also
 provide a trailing closure to describe how the state of the feature changed after sending the
 action:
 
@@ -94,8 +94,8 @@ await store.send(.incrementButtonTapped) {
 }
 ```
 
-> The ``TestStore/send(_:_:file:line:)-6s1gq`` method is `async` for technical reasons that we do
-not have to worry about right now.
+> The ``TestStore/send(_:assert:file:line:)-1ax61`` method is `async` for technical reasons that we
+> do not have to worry about right now.
 
 If your mutation is incorrect, meaning you perform a mutation that is different from what happened
 in the ``Reducer``, then you will get a test failure with a nicely formatted message showing exactly
@@ -145,8 +145,8 @@ await store.send(.decrementButtonTapped) {
 > by one, but we haven't proven we know the precise value of `count` at each step of the way.
 >
 > In general, the less logic you have in the trailing closure of
-> ``TestStore/send(_:_:file:line:)-6s1gq``, the stronger your assertion will be. It is best to use
-> simple, hard coded data for the mutation.
+> ``TestStore/send(_:assert:file:line:)-1ax61``, the stronger your assertion will be. It is best to
+> use simple, hard-coded data for the mutation.
 
 Test stores do expose a ``TestStore/state`` property, which can be useful for performing assertions
 on computed properties you might have defined on your state. For example, if `State` had a 
@@ -159,7 +159,7 @@ store.send(.incrementButtonTapped) {
 XCTAssertTrue(store.state.isPrime)
 ```
 
-However, when inside the trailing closure of ``TestStore/send(_:_:file:line:)-6s1gq``, the 
+However, when inside the trailing closure of ``TestStore/send(_:assert:file:line:)-1ax61``, the 
 ``TestStore/state`` property is equal to the state _before_ sending the action, not after. That 
 prevents you from being able to use an escape hatch to get around needing to actually describe the 
 state mutation, like so:
@@ -250,9 +250,9 @@ supposed to be running, or perhaps the data it feeds into the system later is wr
 requires all effects to finish.
 
 To get this test passing we need to assert on the actions that are sent back into the system
-by the effect. We do this by using the ``TestStore/receive(_:timeout:_:file:line:)-8yd62`` method,
-which allows you to assert which action you expect to receive from an effect, as well as how the
-state changes after receiving that effect:
+by the effect. We do this by using the ``TestStore/receive(_:timeout:assert:file:line:)-1rwdd``
+method, which allows you to assert which action you expect to receive from an effect, as well as how
+the state changes after receiving that effect:
 
 ```swift
 await store.receive(.timerTick) {
@@ -268,10 +268,10 @@ going to be received, but after waiting around for a small amount of time no act
 ```
 
 This is because our timer is on a 1 second interval, and by default
-``TestStore/receive(_:timeout:_:file:line:)-8yd62`` only waits for a fraction of a second. This is
-because typically you should not be performing real time-based asynchrony in effects, and instead
-using a controlled entity, such as a scheduler or clock, that can be sped up in tests. We will
-demonstrate this in a moment, so for now let's increase the timeout:
+``TestStore/receive(_:timeout:assert:file:line:)-1rwdd`` only waits for a fraction of a second. This
+is because typically you should not be performing real time-based asynchrony in effects, and instead
+using a controlled entity, such as a clock, that can be sped up in tests. We will demonstrate this 
+in a moment, so for now let's increase the timeout:
 
 ```swift
 await store.receive(.timerTick, timeout: .seconds(2)) {
@@ -323,40 +323,39 @@ the future we need to test a feature that has a timer that emits hundreds or tho
 We cannot hold up our test suite for minutes or hours just to test that one feature.
 
 To fix this we need to add a dependency to the reducer that aids in performing time-based 
-asynchrony, but in a way that is controllable. One way to do this is to add a Combine scheduler as a
+asynchrony, but in a way that is controllable. One way to do this is to add a clock as a
 `@Dependency` to the reducer:
 
 ```swift
-import CombineSchedulers
+import Clocks
 
 struct Feature: ReducerProtocol {
   struct State { … }
   enum Action { … }
-  @Dependency(\.mainQueue) var mainQueue
+  @Dependency(\.continuousClock) var clock
 }
 ```
 
-> Tip: To make use of controllable schedulers you must use the
-[Combine Schedulers][gh-combine-schedulers] library, which is automatically included with the
-Composable Architecture.
+> Tip: To make use of controllable clocks you must use the [Clocks][gh-swift-clocks] library, which is 
+automatically included with the Composable Architecture.
 
-And then the timer effect in the reducer can make use of the scheduler to sleep rather than reaching
+And then the timer effect in the reducer can make use of the clock to sleep rather than reaching
 out to the uncontrollable `Task.sleep` method:
 
 ```swift
 return .run { send in
   for _ in 1...5 {
-    try await self.mainQueue.sleep(for: .seconds(1))
+    try await self.clock.sleep(for: .seconds(1))
     await send(.timerTick)
   }
 }
 ```
 
-> The `sleep(for:)` method on `Scheduler` is provided by the
-[Combine Schedulers][gh-combine-schedulers] library.
+> Tip: The `sleep(for:)` method on `Clock` is provided by the
+[Swift Clocks][gh-swift-clocks] library.
 
-By having a scheduler as a dependency in the feature we can supply a controlled value in tests, such 
-as an immediate scheduler that does not suspend at all when you ask it to sleep:
+By having a clock as a dependency in the feature we can supply a controlled version in tests, such 
+as an immediate clock that does not suspend at all when you ask it to sleep:
 
 ```swift
 let store = TestStore(
@@ -364,11 +363,11 @@ let store = TestStore(
   reducer: Feature()
 )
 
-store.dependencies.mainQueue = .immediate
+store.dependencies.continuousClock = ImmediateClock()
 ```
 
 With that small change we can drop the `timeout` arguments from the
-``TestStore/receive(_:timeout:_:file:line:)-8yd62`` invocations:
+``TestStore/receive(_:timeout:assert:file:line:)-1rwdd`` invocations:
 
 ```swift
 await store.receive(.timerTick) {
@@ -439,23 +438,28 @@ let store = TestStore(
 
 // 1️⃣ Emulate user tapping on submit button.
 await store.send(.login(.submitButtonTapped)) {
-  $0.isLoading = true
+  $0.login?.isLoading = true
+  // 2️⃣ Assert how state changes in the login feature
+  …
 }
 
-// 2️⃣ Login feature performs API request to login, and 
+// 3️⃣ Login feature performs API request to login, and
 //    sends response back into system.
 await store.receive(.login(.loginResponse(.success))) {
-  $0.isLoading = false
+  $0.login?.isLoading = false
+  // 4️⃣ Assert how state changes in the login feature
+  …
 }
 
-// 3️⃣ Login feature sends a delegate action to let parent
+// 5️⃣ Login feature sends a delegate action to let parent
 //    feature know it has successfully logged in.
 await store.receive(.login(.delegate(.didLogin))) {
-  // 4️⃣ Assert how all of app state changes due to that action.
   $0.authenticatedTab = .loggedIn(
     Profile.State(...)
   )
-  // 4️⃣ *Finally* assert that the selected tab switches to activity.
+  // 6️⃣ Assert how all of app state changes due to that action.
+  …
+  // 7️⃣ *Finally* assert that the selected tab switches to activity.
   $0.selectedTab = .activity
 }
 ```
@@ -507,7 +511,7 @@ store.exhaustivity = .partial // ⬅️
 
 await store.send(.login(.submitButtonTapped))
 await store.receive(.login(.delegate(.didLogin))) {
-  $0.selectedTab = .profile
+  $0.selectedTab = .activity
 }
 ```
 
@@ -553,7 +557,8 @@ bugs that happen in production but that aren't currently detected in tests.
 [gh-combine-schedulers]: http://github.com/pointfreeco/combine-schedulers
 [gh-xctest-dynamic-overlay]: http://github.com/pointfreeco/xctest-dynamic-overlay
 [tca-examples]: https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples
-[Non-exhaustive-testing]: #Non-exhaustive-testing
+[gh-swift-clocks]: http://github.com/pointfreeco/swift-clocks
 [merowing.info]: https://www.merowing.info
 [exhaustive-testing-in-tca]: https://www.merowing.info/exhaustive-testing-in-tca/
 [Composable-Architecture-at-Scale]: https://vimeo.com/751173570
+[Non-exhaustive-testing]: #Non-exhaustive-testing

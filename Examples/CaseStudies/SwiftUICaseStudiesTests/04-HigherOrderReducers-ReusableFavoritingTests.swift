@@ -6,7 +6,7 @@ import XCTest
 @MainActor
 final class ReusableComponentsFavoritingTests: XCTestCase {
   func testHappyPath() async {
-    let scheduler = DispatchQueue.test
+    let clock = TestClock()
 
     let episodes: IdentifiedArrayOf<Episode.State> = [
       Episode.State(
@@ -29,7 +29,7 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
       initialState: Episodes.State(episodes: episodes),
       reducer: Episodes(
         favorite: { _, isFavorite in
-          try await scheduler.sleep(for: .seconds(1))
+          try await clock.sleep(for: .seconds(1))
           return isFavorite
         }
       )
@@ -38,7 +38,7 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
     await store.send(.episode(id: episodes[0].id, action: .favorite(.buttonTapped))) {
       $0.episodes[id: episodes[0].id]?.isFavorite = true
     }
-    await scheduler.advance(by: .seconds(1))
+    await clock.advance(by: .seconds(1))
     await store.receive(.episode(id: episodes[0].id, action: .favorite(.response(.success(true)))))
 
     await store.send(.episode(id: episodes[1].id, action: .favorite(.buttonTapped))) {
@@ -47,17 +47,12 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
     await store.send(.episode(id: episodes[1].id, action: .favorite(.buttonTapped))) {
       $0.episodes[id: episodes[1].id]?.isFavorite = false
     }
-    await scheduler.advance(by: .seconds(1))
+    await clock.advance(by: .seconds(1))
     await store.receive(.episode(id: episodes[1].id, action: .favorite(.response(.success(false)))))
   }
 
   func testUnhappyPath() async {
-    struct FavoriteError: Equatable, LocalizedError {
-      var errorDescription: String? {
-        "Favoriting failed."
-      }
-    }
-    let scheduler = DispatchQueue.test
+    let clock = TestClock()
 
     let episodes: IdentifiedArrayOf<Episode.State> = [
       Episode.State(

@@ -23,11 +23,12 @@ let package = Package(
   dependencies: [
     .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"),
     .package(url: "https://github.com/google/swift-benchmark", from: "0.1.0"),
-    .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.7.4"),
-    .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "0.8.0"),
-    .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "0.3.0"),
-    .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "0.3.2"),
-    .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "0.3.2"),
+    .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.8.0"),
+    .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "0.10.0"),
+    .package(url: "https://github.com/pointfreeco/swift-clocks", from: "0.1.4"),
+    .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "0.6.0"),
+    .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "0.4.1"),
+    .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "0.5.0"),
   ],
   targets: [
     .target(
@@ -50,6 +51,7 @@ let package = Package(
     .target(
       name: "Dependencies",
       dependencies: [
+        .product(name: "Clocks", package: "swift-clocks"),
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
         .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
       ]

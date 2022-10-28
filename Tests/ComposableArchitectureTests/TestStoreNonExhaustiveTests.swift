@@ -122,7 +122,7 @@
       let store = TestStore(
         initialState: 0,
         reducer: Reduce<Int, Bool> { _, action in
-            .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
+          .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
         }
       )
       store.exhaustivity = .none
@@ -135,7 +135,7 @@
       let store = TestStore(
         initialState: 0,
         reducer: Reduce<Int, Bool> { _, action in
-            .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
+          .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
         }
       )
       store.exhaustivity = .partial
@@ -215,6 +215,32 @@
       store.send(.increment) {
         $0.count = 3
         $0.isEven = false
+      }
+    }
+
+    func testNonExhaustiveSend_PartialExhaustive_CustomPrefix() {
+      let store = TestStore(
+        initialState: Counter.State(),
+        reducer: Counter()
+      )
+      store.exhaustivity = .partial(prefix: "✅\n\n")
+
+      store.send(.increment) {
+        $0.count = 1
+        // Ignoring state change: isEven = false
+      }
+    }
+
+    func testNonExhaustiveSend_PartialExhaustive_DefaultPrefix() {
+      let store = TestStore(
+        initialState: Counter.State(),
+        reducer: Counter()
+      )
+      store.exhaustivity = .partial()
+
+      store.send(.increment) {
+        $0.count = 1
+        // Ignoring state change: isEven = false
       }
     }
 
@@ -489,7 +515,7 @@
         initialState: 0,
         reducer: Reduce<Int, Action> { state, action in
           switch action {
-          case .buttonTapped: 
+          case .buttonTapped:
             state += 1
             return .run { send in
               await send(.response(42))
@@ -518,6 +544,107 @@
       // Ignored received action: .response(42)
       // Ignored received action: .response(1729)
       // Ignore in-flight effect
+    }
+
+    func testCasePathReceive_PartialExhaustive() async {
+      let store = TestStore(
+        initialState: NonExhaustiveReceive.State(),
+        reducer: NonExhaustiveReceive()
+      )
+      store.exhaustivity = .partial
+
+      await store.send(.onAppear)
+      await store.receive(/NonExhaustiveReceive.Action.response1) {
+        $0.int = 42
+      }
+      await store.receive(/NonExhaustiveReceive.Action.response2) {
+        $0.string = "Hello"
+      }
+    }
+
+    func testCasePathReceive_NonExhaustive() async {
+      let store = TestStore(
+        initialState: NonExhaustiveReceive.State(),
+        reducer: NonExhaustiveReceive()
+      )
+      store.exhaustivity = .none
+
+      await store.send(.onAppear)
+      await store.receive(/NonExhaustiveReceive.Action.response1) {
+        $0.int = 42
+      }
+      await store.receive(/NonExhaustiveReceive.Action.response2) {
+        $0.string = "Hello"
+      }
+    }
+
+    func testCasePathReceive_Exhaustive() async {
+      let store = TestStore(
+        initialState: NonExhaustiveReceive.State(),
+        reducer: NonExhaustiveReceive()
+      )
+
+      await store.send(.onAppear)
+      await store.receive(/NonExhaustiveReceive.Action.response1) {
+        $0.count = 1
+        $0.int = 42
+      }
+      await store.receive(/NonExhaustiveReceive.Action.response2) {
+        $0.count = 2
+        $0.string = "Hello"
+      }
+    }
+
+    func testCasePathReceive_SkipReceivedAction() async {
+      let store = TestStore(
+        initialState: NonExhaustiveReceive.State(),
+        reducer: NonExhaustiveReceive()
+      )
+      store.exhaustivity = .partial
+
+      await store.send(.onAppear)
+      await store.receive(/NonExhaustiveReceive.Action.response2) {
+        $0.string = "Hello"
+      }
+    }
+
+    func testCasePathReceive_WrongAction() async {
+      let store = TestStore(
+        initialState: NonExhaustiveReceive.State(),
+        reducer: NonExhaustiveReceive()
+      )
+      store.exhaustivity = .partial
+
+      await store.send(.onAppear)
+
+      XCTExpectFailure {
+        $0.compactDescription == """
+          Expected to receive a matching action, but didn't get one.
+          """
+      }
+
+      await store.receive(/NonExhaustiveReceive.Action.onAppear)
+      await store.receive(/NonExhaustiveReceive.Action.response1)
+      await store.receive(/NonExhaustiveReceive.Action.response2)
+    }
+
+    func testCasePathReceive_ReceivedExtraAction() async {
+      let store = TestStore(
+        initialState: NonExhaustiveReceive.State(),
+        reducer: NonExhaustiveReceive()
+      )
+      store.exhaustivity = .partial
+
+      await store.send(.onAppear)
+      await store.receive(/NonExhaustiveReceive.Action.response2)
+
+      XCTExpectFailure {
+        $0.compactDescription == """
+          Expected to receive an action, but received none.
+          """
+      }
+
+      await store.receive(/NonExhaustiveReceive.Action.response2)
     }
 
     // This example comes from Krzysztof Zabłocki's blog post:

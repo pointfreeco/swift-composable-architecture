@@ -11,8 +11,8 @@ final class LifecycleTests: XCTestCase {
       reducer: LifecycleDemo()
     )
 
-    let mainQueue = DispatchQueue.test
-    store.dependencies.mainQueue = mainQueue.eraseToAnyScheduler()
+    let clock = TestClock()
+    store.dependencies.continuousClock = clock
 
     await store.send(.toggleTimerButtonTapped) {
       $0.count = 0
@@ -20,12 +20,12 @@ final class LifecycleTests: XCTestCase {
 
     await store.send(.timer(.onAppear))
 
-    await mainQueue.advance(by: .seconds(1))
+    await clock.advance(by: .seconds(1))
     await store.receive(.timer(.wrapped(.tick))) {
       $0.count = 1
     }
 
-    await mainQueue.advance(by: .seconds(1))
+    await clock.advance(by: .seconds(1))
     await store.receive(.timer(.wrapped(.tick))) {
       $0.count = 2
     }
