@@ -1159,6 +1159,9 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
 
   /// Asserts a matching action was received from an effect and asserts how the state changes.
   ///
+  /// See ``receive(_:timeout:assert:file:line:)-85x5z`` for more information of how to use this
+  /// method.
+  ///
   /// - Parameters:
   ///   - matchingAction: A closure that attempts to extract a value from an action. If it returns
   ///     `nil`, a test failure is reported.
@@ -1171,27 +1174,62 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   @available(macOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
   @available(tvOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
   @available(watchOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
-  public func receive<Value>(
-    _ matchingAction: (Action) -> Value?,
+  public func receive(
+    _ matching: (Action) -> Bool,
     assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) {
     self.receiveAction(
-      matching: { matchingAction($0) != nil },
-      // TODO: Finesse
+      matching: matching,
       failureMessage: "Expected to receive a matching action, but didn't get one.",
       onReceive: { receivedAction in
-        // TODO: Finesse
+        var action = ""
+        customDump(receivedAction, to: &action, indent: 2)
         XCTFailHelper(
           """
-          Received action:
+          Received action without asserting on payload:
 
-          \(String(describing: receivedAction).indent(by: 2))
+          \(action)
           """,
           overrideExhaustivity: self.exhaustivity == .exhaustive
             ? .partial
             : self.exhaustivity,
+          file: file,
+          line: line
+        )
+      },
+      updateStateToExpectedResult,
+      file: file,
+      line: line
+    )
+  }
+
+  @available(iOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
+  @available(macOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
+  @available(tvOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
+  @available(watchOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
+  public func receive<Value>(
+    _ casePath: CasePath<Action, Value>,
+    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) {
+    self.receiveAction(
+      matching: { casePath.extract(from: $0) != nil },
+      failureMessage: "Expected to receive a matching action, but didn't get one.",
+      onReceive: { receivedAction in
+        var action = ""
+        customDump(receivedAction, to: &action, indent: 2)
+        XCTFailHelper(
+          """
+          Received action without asserting on payload:
+
+          \(action)
+          """,
+          overrideExhaustivity: self.exhaustivity == .exhaustive
+          ? .partial
+          : self.exhaustivity,
           file: file,
           line: line
         )
@@ -1245,15 +1283,15 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
     @MainActor
     @_disfavoredOverload
-    public func receive<Value>(
-      _ matchingAction: (Action) -> Value?,
+    public func receive(
+      _ matching: (Action) -> Bool,
       timeout duration: Duration,
       assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
       await self.receive(
-        matchingAction,
+        matching,
         timeout: duration.nanoseconds,
         assert: updateStateToExpectedResult,
         file: file,
@@ -1306,8 +1344,8 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   ///     expected.
   @MainActor
   @_disfavoredOverload
-  public func receive<Value>(
-    _ matchingAction: (Action) -> Value?,
+  public func receive(
+    _ matching: (Action) -> Bool,
     timeout nanoseconds: UInt64? = nil,
     assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
@@ -1316,13 +1354,36 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     guard !self.reducer.inFlightEffects.isEmpty
     else {
       _ = {
-        self.receive(matchingAction, assert: updateStateToExpectedResult, file: file, line: line)
+        self.receive(matching, assert: updateStateToExpectedResult, file: file, line: line)
       }()
       return
     }
     await self.receiveAction(timeout: nanoseconds, file: file, line: line)
     _ = {
-      self.receive(matchingAction, assert: updateStateToExpectedResult, file: file, line: line)
+      self.receive(matching, assert: updateStateToExpectedResult, file: file, line: line)
+    }()
+    await Task.megaYield()
+  }
+
+  @MainActor
+  @_disfavoredOverload
+  public func receive<Value>(
+    _ casePath: CasePath<Action, Value>,
+    timeout nanoseconds: UInt64? = nil,
+    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) async {
+    guard !self.reducer.inFlightEffects.isEmpty
+    else {
+      _ = {
+        self.receive(casePath, assert: updateStateToExpectedResult, file: file, line: line)
+      }()
+      return
+    }
+    await self.receiveAction(timeout: nanoseconds, file: file, line: line)
+    _ = {
+      self.receive(casePath, assert: updateStateToExpectedResult, file: file, line: line)
     }()
     await Task.megaYield()
   }
@@ -1356,20 +1417,29 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
         return
       }
 
+      var actions: [Action] = []
       while let receivedAction = self.reducer.receivedActions.first,
         !predicate(receivedAction.action)
       {
-        XCTFailHelper(  // TODO: Finesse copy
+        actions.append(receivedAction.action)
+        self.withExhaustivity(.none) {
+          self.receive(receivedAction.action, file: file, line: line)
+        }
+      }
+
+      if !actions.isEmpty {
+        var action = ""
+        customDump(actions, to: &action)
+        XCTFailHelper(
           """
-          Skipped assertions: …
-          Skipped receiving \(receivedAction.action)
+          \(actions.count) received action\
+          \(actions.count == 1 ? " was" : "s were") skipped:
+
+          \(action)
           """,
           file: file,
           line: line
         )
-        self.withExhaustivity(.none) {
-          self.receive(receivedAction.action, file: file, line: line)
-        }
       }
     }
 
@@ -1943,7 +2013,7 @@ public enum Exhaustivity: Equatable {
   /// missing from your assertions.
   case partial(prefix: String? = "Partial assertions skipped. …\n\n")
 
-  public static let partial = partial(prefix: "Partial assertions skipped. …\n\n")
+  public static let partial = partial()
 
   fileprivate var isPartial: Bool {
     guard case .partial = self else {

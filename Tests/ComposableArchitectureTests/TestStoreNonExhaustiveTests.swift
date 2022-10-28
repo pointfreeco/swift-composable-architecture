@@ -237,7 +237,7 @@
         reducer: Counter()
       )
       store.exhaustivity = .partial()
-
+ 
       store.send(.increment) {
         $0.count = 1
         // Ignoring state change: isEven = false
