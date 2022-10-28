@@ -385,9 +385,12 @@ extension EffectPublisher {
         await Task(priority: priority) { await operation() }.cancellableValue
       }
 
+      Swift.print(self)
+      Swift.print(other)
+
       let priority: TaskPriority?
-      if let lhsPriority = lhsPriority, let rhsPriority = rhsPriority {
-        priority = Swift.min(lhsPriority, rhsPriority)
+      if let _lhsPriority = lhsPriority, let _rhsPriority = rhsPriority {
+        priority = Swift.min(_lhsPriority, _rhsPriority)
       } else {
         priority = lhsPriority ?? rhsPriority
       }

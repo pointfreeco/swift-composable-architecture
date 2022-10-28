@@ -371,4 +371,55 @@ final class EffectTests: XCTestCase {
       await task.finish()
     }
   }
+
+  func testPriority_Merge1() async {
+    let store = Store(
+      initialState: 0,
+      reducer: Reduce<Int, Void> { state, _ in
+        return .merge(
+          .fireAndForget(priority: .low) {
+            XCTAssertEqual(Task.currentPriority, .high)
+          },
+          .fireAndForget(priority: .high) {
+            XCTAssertEqual(Task.currentPriority, .high)
+          }
+        )
+      }
+    )
+    await ViewStore(store).send(()).finish()
+  }
+
+  func testPriority_Merge2() async {
+    let store = Store(
+      initialState: 0,
+      reducer: Reduce<Int, Void> { state, _ in
+        return .merge(
+          .fireAndForget(priority: .low) {
+            XCTAssertEqual(Task.basePriority, .low)
+          },
+          .fireAndForget(priority: .low) {
+            XCTAssertEqual(Task.basePriority, .low)
+          }
+        )
+      }
+    )
+    await ViewStore(store).send(()).finish()
+  }
+
+  func testPriority_Concatenate() async {
+    let store = Store(
+      initialState: 0,
+      reducer: Reduce<Int, Void> { state, _ in
+        return .concatenate(
+          .fireAndForget(priority: .low) {
+            XCTAssertEqual(Task.currentPriority, .high)
+          },
+          .fireAndForget(priority: .high) {
+            XCTAssertEqual(Task.currentPriority, .high)
+          }
+        )
+      }
+    )
+    await ViewStore(store).send(()).finish()
+  }
 }
