@@ -246,20 +246,23 @@ private struct ScopeIfLetExample: ReducerProtocol {
 
   enum Action {}
 
-  var body: some ReducerProtocol<State, Action> {
-    Scope(state: \.self, action: .self) {
-      EmptyReducer()
-        .ifLet(\.optionalSelf, action: .self) {
-          EmptyReducer()
-        }
+  #if swift(>=5.7)
+    var body: some ReducerProtocol<State, Action> {
+      Scope(state: \.self, action: .self) {
+        EmptyReducer()
+          .ifLet(\.optionalSelf, action: .self) {
+            EmptyReducer()
+          }
+      }
     }
-  }
-}
-
-func _Scope<ParentState, ParentAction, ChildState, ChildAction>(
-  state toChildState: WritableKeyPath<ParentState, ChildState>,
-  action toChildAction: CasePath<ParentAction, ChildAction>,
-  @ReducerBuilder<ChildState, ChildAction> child: () -> some ReducerProtocol<ChildState, ChildAction>
-) -> some ReducerProtocol<ParentState, ParentAction> {
-  Scope(state: toChildState, action: toChildAction, child)
+  #else
+    var body: Reduce<State, Action> {
+      Scope(state: \.self, action: .self) {
+        EmptyReducer()
+          .ifLet(\.optionalSelf, action: .self) {
+            EmptyReducer()
+          }
+      }
+    }
+  #endif
 }
