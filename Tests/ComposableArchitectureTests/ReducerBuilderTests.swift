@@ -1,7 +1,6 @@
 // NB: This file contains compile-time tests to ensure reducer builder generic inference is working.
 
 import ComposableArchitecture
-
 import XCTest
 
 private struct Test: ReducerProtocol {
