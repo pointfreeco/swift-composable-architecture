@@ -54,9 +54,9 @@ private struct Root: ReducerProtocol {
 
     @ReducerBuilder<State, Action>
     var testFlowControl: some ReducerProtocol<State, Action> {
-      if true {
-        Self()
-      }
+//      if true {
+//        Self()
+//      }
 
       if Bool.random() {
         Self()
@@ -64,13 +64,13 @@ private struct Root: ReducerProtocol {
         EmptyReducer()
       }
 
-      for _ in 1...10 {
-        Self()
-      }
-
-      if #available(*) {
-        Self()
-      }
+//      for _ in 1...10 {
+//        Self()
+//      }
+//
+//      if #available(*) {
+//        Self()
+//      }
     }
   #else
     var body: Reduce<State, Action> {
@@ -234,4 +234,32 @@ private struct ForEachExample: ReducerProtocol {
       EmptyReducer().forEach(\.values, action: /Action.value) { EmptyReducer() }
     }
   #endif
+}
+
+private struct ScopeIfLetExample: ReducerProtocol {
+  struct State {
+    var optionalSelf: Self? {
+      get { self }
+      set { newValue.map { self = $0 } }
+    }
+  }
+
+  enum Action {}
+
+  var body: some ReducerProtocol<State, Action> {
+    Scope(state: \.self, action: .self) {
+      EmptyReducer()
+        .ifLet(\.optionalSelf, action: .self) {
+          EmptyReducer()
+        }
+    }
+  }
+}
+
+func _Scope<ParentState, ParentAction, ChildState, ChildAction>(
+  state toChildState: WritableKeyPath<ParentState, ChildState>,
+  action toChildAction: CasePath<ParentAction, ChildAction>,
+  @ReducerBuilder<ChildState, ChildAction> child: () -> some ReducerProtocol<ChildState, ChildAction>
+) -> some ReducerProtocol<ParentState, ParentAction> {
+  Scope(state: toChildState, action: toChildAction, child)
 }

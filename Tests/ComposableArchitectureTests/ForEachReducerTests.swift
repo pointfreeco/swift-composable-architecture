@@ -83,17 +83,33 @@ struct Elements: ReducerProtocol {
     case buttonTapped
     case row(id: Int, action: String)
   }
-  var body: Reduce<State, Action> {
-    Reduce<State, Action> { state, action in
-      .none
-    }
-    .forEach(\.rows, action: /Action.row) {
-      Reduce { state, action in
-        state.value = action
-        return action.isEmpty
-          ? .run { await $0("Empty") }
-          : .none
+  #if swift(>=5.7)
+    var body: some ReducerProtocol<State, Action> {
+      Reduce<State, Action> { state, action in
+        .none
+      }
+      .forEach(\.rows, action: /Action.row) {
+        Reduce { state, action in
+          state.value = action
+          return action.isEmpty
+            ? .run { await $0("Empty") }
+            : .none
+        }
       }
     }
-  }
+  #else
+    var body: Reduce<State, Action> {
+      Reduce<State, Action> { state, action in
+        .none
+      }
+      .forEach(\.rows, action: /Action.row) {
+        Reduce { state, action in
+          state.value = action
+          return action.isEmpty
+            ? .run { await $0("Empty") }
+            : .none
+        }
+      }
+    }
+  #endif
 }
