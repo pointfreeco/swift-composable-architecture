@@ -378,19 +378,18 @@ extension EffectPublisher {
     case (.publisher, .publisher), (.run, .publisher), (.publisher, .run):
       return Self(operation: .publisher(Publishers.Merge(self, other).eraseToAnyPublisher()))
     case let (.run(lhsPriority, lhsOperation), .run(rhsPriority, rhsOperation)):
+      @Sendable
+      func prioritize(priority: TaskPriority?, operation: @escaping () async -> Void) async {
+        guard let priority = priority
+        else { return await operation() }
+        await Task(priority: priority) { await operation() }.cancellableValue
+      }
 
       let priority: TaskPriority?
       if let lhsPriority = lhsPriority, let rhsPriority = rhsPriority {
         priority = Swift.min(lhsPriority, rhsPriority)
       } else {
         priority = lhsPriority ?? rhsPriority
-      }
-
-      @Sendable
-      func prioritize(priority: TaskPriority?, operation: @escaping () async -> Void) async {
-        guard let priority = priority
-        else { return await operation() }
-        await Task(priority: priority) { await operation() }.cancellableValue
       }
 
       return Self(
