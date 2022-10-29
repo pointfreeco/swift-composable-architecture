@@ -1,6 +1,34 @@
 // NB: This file contains compile-time tests to ensure reducer builder generic inference is working.
 
 import ComposableArchitecture
+import XCTest
+
+private struct Test: ReducerProtocol {
+  struct State {}
+  enum Action { case tap }
+
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+    .none
+  }
+
+  @available(iOS, introduced: 9999.0)
+  struct Unavailable: ReducerProtocol {
+    func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+      .none
+    }
+  }
+}
+
+func testLimitedAvailability() {
+  _ = CombineReducers {
+    Test()
+    if #available(iOS 9999.0, *) {
+      Test.Unavailable()
+    } else if #available(iOS 8888.0, *) {
+      EmptyReducer()
+    }
+  }
+}
 
 private struct Root: ReducerProtocol {
   struct State {
@@ -15,6 +43,11 @@ private struct Root: ReducerProtocol {
     case optionalFeature(Feature.Action)
     case enumFeature(Features.Action)
     case features(id: Feature.State.ID, feature: Feature.Action)
+  }
+
+  @available(iOS, introduced: 9999.0)
+  struct Unavailable: ReducerProtocol {
+    let body = EmptyReducer<State, Action>()
   }
 
   #if swift(>=5.7)
@@ -68,8 +101,8 @@ private struct Root: ReducerProtocol {
         Self()
       }
 
-      if #available(*) {
-        Self()
+      if #available(iOS 9999.0, *) {
+        Unavailable()
       }
     }
   #else
@@ -126,8 +159,8 @@ private struct Root: ReducerProtocol {
         Self()
       }
 
-      if #available(*) {
-        Self()
+      if #available(iOS 9999.0, *) {
+        Unavailable()
       }
     }
   #endif
@@ -232,6 +265,37 @@ private struct ForEachExample: ReducerProtocol {
   #else
     var body: Reduce<State, Action> {
       EmptyReducer().forEach(\.values, action: /Action.value) { EmptyReducer() }
+    }
+  #endif
+}
+
+private struct ScopeIfLetExample: ReducerProtocol {
+  struct State {
+    var optionalSelf: Self? {
+      get { self }
+      set { newValue.map { self = $0 } }
+    }
+  }
+
+  enum Action {}
+
+  #if swift(>=5.7)
+    var body: some ReducerProtocol<State, Action> {
+      Scope(state: \.self, action: .self) {
+        EmptyReducer()
+          .ifLet(\.optionalSelf, action: .self) {
+            EmptyReducer()
+          }
+      }
+    }
+  #else
+    var body: Reduce<State, Action> {
+      Scope(state: \.self, action: .self) {
+        EmptyReducer()
+          .ifLet(\.optionalSelf, action: .self) {
+            EmptyReducer()
+          }
+      }
     }
   #endif
 }
