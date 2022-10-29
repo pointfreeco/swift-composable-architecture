@@ -137,6 +137,9 @@ await store.send(.decrementButtonTapped) {
 > await store.send(.incrementButtonTapped) {
 >   $0.count += 1
 > }
+> await store.send(.decrementButtonTapped) {
+>   $0.count -= 1
+> }
 > ```
 >
 > …and the test would have still passed.
@@ -183,8 +186,9 @@ Location, Core Motion, Speech Recognition, etc.), and more.
 
 As a simple example, suppose we have a feature with a button such that when you tap it, it starts
 a timer that counts up until you reach 5, and then stops. This can be accomplished using the
-``EffectPublisher/run(priority:operation:catch:file:fileID:line:)`` helper, which provides you with 
-an asynchronous context to operate in and can send multiple actions back into the system:
+``EffectPublisher/run(priority:operation:catch:file:fileID:line:)`` helper on ``EffectTask``, 
+which provides you with an asynchronous context to operate in and can send multiple actions back 
+into the system:
 
 ```swift
 struct Feature: ReducerProtocol {
@@ -245,7 +249,7 @@ failure:
 
 This is happening because ``TestStore`` requires you to exhaustively prove how the entire system
 of your feature evolves over time. If an effect is still running when the test finishes and the
-test store does _not_ fail then it could be hiding potential bugs. Perhaps the effect is not
+test store did _not_ fail then it could be hiding potential bugs. Perhaps the effect is not
 supposed to be running, or perhaps the data it feeds into the system later is wrong. The test store
 requires all effects to finish.
 
@@ -374,9 +378,6 @@ await store.receive(.timerTick) {
   $0.count = 1
 }
 await store.receive(.timerTick) {
-  $0.count = 1
-}
-await store.receive(.timerTick) {
   $0.count = 2
 }
 await store.receive(.timerTick) {
@@ -438,26 +439,26 @@ let store = TestStore(
 
 // 1️⃣ Emulate user tapping on submit button.
 await store.send(.login(.submitButtonTapped)) {
+  // 2️⃣ Assert how all state changes in the login feature
   $0.login?.isLoading = true
-  // 2️⃣ Assert how state changes in the login feature
   …
 }
 
 // 3️⃣ Login feature performs API request to login, and
 //    sends response back into system.
 await store.receive(.login(.loginResponse(.success))) {
+// 4️⃣ Assert how all state changes in the login feature
   $0.login?.isLoading = false
-  // 4️⃣ Assert how state changes in the login feature
   …
 }
 
 // 5️⃣ Login feature sends a delegate action to let parent
 //    feature know it has successfully logged in.
 await store.receive(.login(.delegate(.didLogin))) {
+// 6️⃣ Assert how all of app state changes due to that action.
   $0.authenticatedTab = .loggedIn(
     Profile.State(...)
   )
-  // 6️⃣ Assert how all of app state changes due to that action.
   …
   // 7️⃣ *Finally* assert that the selected tab switches to activity.
   $0.selectedTab = .activity

@@ -14,8 +14,9 @@ import XCTestDynamicOverlay
 ///
 /// ## Exhaustive testing
 ///
-/// There are multiple ways the test store forces you to exhaustively assert on how your feature
-/// behaves:
+/// By default, ``TestStore`` requires you to exhaustively prove how your feature evolves from
+/// sending use actions and receiving actions from effects. There are multiple ways the test store
+/// forces you to do this:
 ///
 ///   * After each action is sent you must describe precisely how the state changed from before
 ///     the action was sent to after it was sent.
@@ -23,18 +24,17 @@ import XCTestDynamicOverlay
 ///     If even the smallest piece of data differs the test will fail. This guarantees that you
 ///     are proving you know precisely how the state of the system changes.
 ///
-///   * Sending an action can sometimes cause an effect to be executed, and if that effect emits
-///     an action that is fed back into the system, you **must** explicitly assert that you expect
-///     to receive that action from the effect, _and_ you must assert how state changed as a
-///     result.
+///   * Sending an action can sometimes cause an effect to be executed, and if that effect sends
+///     an action back into the system, you **must** explicitly assert that you expect to receive
+///     that action from the effect, _and_ you must assert how state changed as a result.
 ///
-///     If you try to send another action before you have handled all effect emissions the
-///     assertion will fail. This guarantees that you do not accidentally forget about an effect
-///     emission, and that the sequence of steps you are describing will mimic how the application
+///     If you try to send another action before you have handled all effect actions, the
+///     test will fail. This guarantees that you do not accidentally forget about an effect
+///     action, and that the sequence of steps you are describing will mimic how the application
 ///     behaves in reality.
 ///
-///   * All effects must complete by the time the assertion has finished running the steps you
-///     specify, and all effect actions must be asserted on.
+///   * All effects must complete by the time the test case has finished running, and all effect
+///     actions must be asserted on.
 ///
 ///     If at the end of the assertion there is still an in-flight effect running or an unreceived
 ///     action, the assertion will fail. This helps exhaustively prove that you know what effects
@@ -77,14 +77,14 @@ import XCTestDynamicOverlay
 /// class CounterTests: XCTestCase {
 ///   func testCounter() async {
 ///     let store = TestStore(
-///       // Given a counter state of 0
+///       // Given: a counter state of 0
 ///       initialState: Counter.State(count: 0),
 ///       reducer: Counter()
 ///     )
 ///
-///     // When the increment button is tapped
+///     // When: the increment button is tapped
 ///     await store.send(.incrementButtonTapped) {
-///       // Then the count should be 1
+///       // Then: the count should be 1
 ///       $0.count = 1
 ///     }
 ///   }
@@ -132,14 +132,13 @@ import XCTestDynamicOverlay
 ///
 ///   @Dependency(\.apiClient) var apiClient
 ///   @Dependency(\.continuousClock) var clock
+///   private enum SearchID {}
 ///
 ///   func reduce(
 ///     into state: inout State, action: Action
 ///   ) -> EffectTask<Action> {
 ///     switch action {
 ///     case let .queryChanged(query):
-///       enum SearchID {}
-///
 ///       state.query = query
 ///       return .run { send in
 ///         try await self.clock.sleep(for: 0.5)
@@ -149,6 +148,7 @@ import XCTestDynamicOverlay
 ///
 ///         await send(.response(results))
 ///       }
+///       .cancellable(id: SearchID.self)
 ///
 ///     case let .searchResponse(.success(results)):
 ///       state.results = results
@@ -172,7 +172,7 @@ import XCTestDynamicOverlay
 /// )
 ///
 /// // Simulate a search response with one item
-/// store.dependencies.dependencies.apiClient.search = { _ in
+/// store.dependencies.apiClient.search = { _ in
 ///   ["Composable Architecture"]
 /// }
 ///
@@ -256,7 +256,7 @@ import XCTestDynamicOverlay
 ///
 /// Test stores are exhaustive by default, which means you must assert on every state change, and
 /// how ever effect feeds data back into the system, and you must make sure that all effects
-/// complete before the test is finished. To turn of exhaustivity you can set ``exhaustivity``
+/// complete before the test is finished. To turn off exhaustivity you can set ``exhaustivity``
 /// to ``Exhaustivity/none``. When that is done the ``TestStore``'s behavior changes:
 ///
 /// * The trailing closures of ``send(_:assert:file:line:)-1ax61`` and
@@ -305,26 +305,26 @@ import XCTestDynamicOverlay
 ///
 /// // 1️⃣ Emulate user tapping on submit button.
 /// await store.send(.login(.submitButtonTapped)) {
+///   // 2️⃣ Assert how all state changes in the login feature
 ///   $0.login?.isLoading = true
-///   // 2️⃣ Assert how state changes in the login feature
 ///   …
 /// }
 ///
 /// // 3️⃣ Login feature performs API request to login, and
 /// //    sends response back into system.
 /// await store.receive(.login(.loginResponse(.success))) {
+/// // 4️⃣ Assert how all state changes in the login feature
 ///   $0.login?.isLoading = false
-///   // 4️⃣ Assert how state changes in the login feature
 ///   …
 /// }
 ///
 /// // 5️⃣ Login feature sends a delegate action to let parent
 /// //    feature know it has successfully logged in.
 /// await store.receive(.login(.delegate(.didLogin))) {
+/// // 6️⃣ Assert how all of app state changes due to that action.
 ///   $0.authenticatedTab = .loggedIn(
 ///     Profile.State(...)
 ///   )
-///   // 6️⃣ Assert how all of app state changes due to that action.
 ///   …
 ///   // 7️⃣ *Finally* assert that the selected tab switches to activity.
 ///   $0.selectedTab = .activity
@@ -418,6 +418,10 @@ import XCTestDynamicOverlay
 /// The test still passes, and none of these notifications are test failures. They just let you know
 /// what things you are not explicitly asserting against, and can be useful to see when tracking
 /// down bugs that happen in production but that aren't currently detected in tests.
+///
+/// [merowing.info]: https://www.merowing.info
+/// [exhaustive-testing-in-tca]: https://www.merowing.info/exhaustive-testing-in-tca/
+/// [Composable-Architecture-at-Scale]: https://vimeo.com/751173570
 open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
 
   /// The current dependencies.
@@ -446,11 +450,13 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
   /// ```swift
   /// store.dependencies.apiClient = .failing
   ///
-  /// // Store assertions with failing API client
+  /// store.send(.buttonTapped) { /* ... */ }
+  /// store.receive(.searchResponse(.failure)) { /* ... */ }
   ///
   /// store.dependencies.apiClient = .mock
   ///
-  /// // Store assertions with succeeding API client
+  /// store.send(.buttonTapped) { /* ... */ }
+  /// store.receive(.searchResponse(.success)) { /* ... */ }
   /// ```
   public var dependencies: DependencyValues {
     _read { yield self.reducer.dependencies }
@@ -538,7 +544,7 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
   /// The timeout to await for in-flight effects.
   ///
   /// This is the default timeout used in all methods that take an optional timeout, such as
-  /// ``receive(_:timeout:assert:file:line:)-1rwdd`` and ``finish(timeout:file:line:)``.
+  /// ``receive(_:timeout:assert:file:line:)-332q2`` and ``finish(timeout:file:line:)-7pmv3``.
   public var timeout: UInt64
 
   private var _environment: Box<Environment>
@@ -549,6 +555,14 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
   private let store: Store<State, TestReducer<State, Action>.TestAction>
   private let toScopedState: (State) -> ScopedState
 
+  /// Creates a test store with an initial state and a reducer powering it's runtime.
+  ///
+  /// See <doc:Testing> and the documentation of ``TestStore`` for more information on how to best
+  /// use a test store.
+  ///
+  /// - Parameters:
+  ///   - initialState: The state the feature starts in.
+  ///   - reducer: The reducer that powers the runtime of the feature.
   public init<Reducer: ReducerProtocol>(
     initialState: State,
     reducer: Reducer,
@@ -779,6 +793,19 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
 extension TestStore where ScopedState: Equatable {
   /// Sends an action to the store and asserts when state changes.
   ///
+  /// To assert on how state changes you can provide a trailing closure, and that closure is handed
+  /// a mutable variable that represents the feature's state _before_ the action was sent. You need
+  /// to mutate that variable so that it is equal to the feature's state _after_ the action is sent:
+  ///
+  /// ```swift
+  /// await store.send(.incrementButtonTapped) {
+  ///   $0.count = 1
+  /// }
+  /// await store.send(.decrementButtonTapped) {
+  ///   $0.count = 0
+  /// }
+  /// ```
+  ///
   /// This method suspends in order to allow any effects to start. For example, if you
   /// track an analytics event in a ``EffectPublisher/fireAndForget(priority:_:)`` when an action is
   /// sent, you can assert on that behavior immediately after awaiting `store.send`:
@@ -822,12 +849,12 @@ extension TestStore where ScopedState: Equatable {
   /// ```swift
   /// let store = TestStore(/* ... */)
   ///
-  /// // emulate the view appearing
+  /// // Emulate the view appearing
   /// let task = await store.send(.task)
   ///
-  /// // assertions
+  /// // Assertions
   ///
-  /// // emulate the view disappearing
+  /// // Emulate the view disappearing
   /// await task.cancel()
   /// ```
   ///
@@ -1107,6 +1134,9 @@ extension TestStore where ScopedState: Equatable {
 extension TestStore where ScopedState: Equatable, Action: Equatable {
   /// Asserts an action was received from an effect and asserts when state changes.
   ///
+  /// See ``receive(_:timeout:assert:file:line:)-332q2`` for more information of how to use this
+  /// method.
+  ///
   /// - Parameters:
   ///   - expectedAction: An action expected from an effect.
   ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
@@ -1159,7 +1189,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
 
   /// Asserts a matching action was received from an effect and asserts how the state changes.
   ///
-  /// See ``receive(_:timeout:assert:file:line:)-85x5z`` for more information of how to use this
+  /// See ``receive(_:timeout:assert:file:line:)-6b3xi`` for more information of how to use this
   /// method.
   ///
   /// - Parameters:
@@ -1205,6 +1235,17 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     )
   }
 
+  /// Asserts an action was received matching a case path and asserts how the state changes.
+  ///
+  /// See ``receive(_:timeout:assert:file:line:)-5n755`` for more information of how to use this
+  /// method.
+  ///
+  /// - Parameters:
+  ///   - casePath: A case path identifying the case of an action to enum to receive
+  ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
+  ///     the store. The mutable state sent to this closure must be modified to match the state of
+  ///     the store after processing the given action. Do not provide a closure if no change is
+  ///     expected.
   @available(iOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
   @available(macOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
   @available(tvOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
@@ -1228,8 +1269,8 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
           \(action)
           """,
           overrideExhaustivity: self.exhaustivity == .exhaustive
-          ? .partial
-          : self.exhaustivity,
+            ? .partial
+            : self.exhaustivity,
           file: file,
           line: line
         )
@@ -1245,6 +1286,26 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   #if swift(>=5.7) && !os(macOS) && !targetEnvironment(macCatalyst)
     /// Asserts an action was received from an effect and asserts how the state changes.
     ///
+    /// When an effect is executed in your feature and sends an action back into the system, you
+    /// can use this method to assert that fact, and further assert how state changes after the
+    /// effect action is received:
+    ///
+    /// ```swift
+    /// await store.send(.buttontTapped)
+    /// await store.receive(.response(.success(42)) {
+    ///   $0.count = 42
+    /// }
+    /// ```
+    ///
+    /// Due to the variability of concurrency in Swift, sometimes a small amount of time needs
+    /// to pass before effects execute and send actions, and that is why this method suspends.
+    /// The default time waited is very small, and typically it is enough so you should be
+    /// controlling your dependencies so that they do not wait for real world time to pass (see
+    /// <doc:DependencyManagement> for more information on how to do that).
+    ///
+    /// To change the amount of time this method waits for an action, pass an explicit `timeout`
+    /// argument, or set the ``timeout`` on the ``TestStore``.
+    ///
     /// - Parameters:
     ///   - expectedAction: An action expected from an effect.
     ///   - duration: The amount of time to wait for the expected action.
@@ -1256,21 +1317,44 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     @MainActor
     public func receive(
       _ expectedAction: Action,
-      timeout duration: Duration,
+      timeout duration: Duration? = nil,
       assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
       await self.receive(
         expectedAction,
-        timeout: duration.nanoseconds,
+        timeout: duration?.nanoseconds,
         assert: updateStateToExpectedResult,
         file: file,
         line: line
       )
     }
 
-    /// Asserts a matching action was received from an effect and asserts how the state changes.
+    /// Asserts an action was received from an effect that matches a predicate, and asserts how
+    /// the state changes.
+    ///
+    /// This method is similar to ``receive(_:timeout:assert:file:line:)-5n755``, except it allows
+    /// you to assert that an action was received that matches a predicate without asserting
+    /// on all the data in the action:
+    ///
+    /// ```swift
+    /// await store.send(.buttonTapped)
+    /// await store.receive {
+    ///   guard case .response(.suceess) = $0 else { return false }
+    ///   return true
+    /// } assert: {
+    ///   store.count = 42
+    /// }
+    /// ```
+    ///
+    /// When the store's ``exhaustivity`` is set to anything other than ``Exhaustivity/none``, a
+    /// grey information box will show next to the `store.receive` line in Xcode letting you know
+    /// what data was in the effect that you chose not to assert on.
+    ///
+    /// If you only want to check that a particular action case was received, then you might
+    /// find the ``receive(_:timeout:assert:file:line:)-5n755`` overload of this method more
+    /// useful.
     ///
     /// - Parameters:
     ///   - matchingAction: A closure that attempts to extract a value from an action. If it returns
@@ -1285,14 +1369,14 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     @_disfavoredOverload
     public func receive(
       _ matching: (Action) -> Bool,
-      timeout duration: Duration,
+      timeout duration: Duration? = nil,
       assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
       await self.receive(
         matching,
-        timeout: duration.nanoseconds,
+        timeout: duration?.nanoseconds,
         assert: updateStateToExpectedResult,
         file: file,
         line: line
@@ -1301,6 +1385,9 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   #endif
 
   /// Asserts an action was received from an effect and asserts how the state changes.
+  ///
+  /// See ``receive(_:timeout:assert:file:line:)-332q2`` for more information on how to use this
+  /// method.
   ///
   /// - Parameters:
   ///   - expectedAction: An action expected from an effect.
@@ -1334,6 +1421,9 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
 
   /// Asserts a matching action was received from an effect and asserts how the state changes.
   ///
+  /// See ``receive(_:timeout:assert:file:line:)-6b3xi`` for more information on how to use this
+  /// method.
+  ///
   /// - Parameters:
   ///   - matchingAction: A closure that attempts to extract a value from an action. If it returns
   ///     `nil`, a test failure is reported.
@@ -1365,6 +1455,18 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     await Task.megaYield()
   }
 
+  /// Asserts an action was received matching a case path and asserts how the state changes.
+  ///
+  /// See ``receive(_:timeout:assert:file:line:)-5n755`` for more information of how to use this
+  /// method.
+  ///
+  /// - Parameters:
+  ///   - casePath: A case path identifying the case of an action to enum to receive
+  ///   - nanoseconds: The amount of time to wait for the expected action.
+  ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
+  ///     the store. The mutable state sent to this closure must be modified to match the state of
+  ///     the store after processing the given action. Do not provide a closure if no change is
+  ///     expected.
   @MainActor
   @_disfavoredOverload
   public func receive<Value>(
@@ -1387,6 +1489,63 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     }()
     await Task.megaYield()
   }
+
+  #if swift(>=5.7) && !os(macOS) && !targetEnvironment(macCatalyst)
+    /// Asserts an action was received matching a case path and asserts how the state changes.
+    ///
+    /// This method is similar to ``receive(_:timeout:assert:file:line:)-5n755``, except it allows
+    /// you to assert that an action was received that matches a particular case of the action
+    /// enum without asserting on all the data in the action.
+    ///
+    /// It can be useful to assert that a particular action was received without asserting
+    /// on the data inside the action. For example:
+    ///
+    /// ```swift
+    /// await store.receive(/Search.Action.searchResponse) {
+    ///   $0.results = [
+    ///     "CasePaths",
+    ///     "ComposableArchitecture",
+    ///     "IdentifiedCollections",
+    ///     "XCTestDynamicOverlay",
+    ///   ]
+    /// }
+    /// ```
+    ///
+    /// When the store's ``exhaustivity`` is set to anything other than ``Exhaustivity/none``, a
+    /// grey information box will show next to the `store.receive` line in Xcode letting you know
+    /// what data was in the effect that you chose not to assert on.
+    ///
+    /// - Parameters:
+    ///   - casePath: A case path identifying the case of an action to enum to receive
+    ///   - duration: The amount of time to wait for the expected action.
+    ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action
+    ///     to the store. The mutable state sent to this closure must be modified to match the state
+    ///     of the store after processing the given action. Do not provide a closure if no change is
+    ///     expected.
+    @MainActor
+    @_disfavoredOverload
+    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+    public func receive<Value>(
+      _ casePath: CasePath<Action, Value>,
+      timeout duration: Duration? = nil,
+      assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+      file: StaticString = #file,
+      line: UInt = #line
+    ) async {
+      guard !self.reducer.inFlightEffects.isEmpty
+      else {
+        _ = {
+          self.receive(casePath, assert: updateStateToExpectedResult, file: file, line: line)
+        }()
+        return
+      }
+      await self.receiveAction(timeout: duration?.nanoseconds, file: file, line: line)
+      _ = {
+        self.receive(casePath, assert: updateStateToExpectedResult, file: file, line: line)
+      }()
+      await Task.megaYield()
+    }
+  #endif
 
   private func receiveAction(
     matching predicate: (Action) -> Bool,

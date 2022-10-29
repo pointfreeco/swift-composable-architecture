@@ -15,12 +15,13 @@
 ### Testing a reducer
 
 - ``send(_:assert:file:line:)-1ax61``
-- ``receive(_:timeout:assert:file:line:)-1rwdd``
-- ``receive(_:timeout:assert:file:line:)-2ssdl``
-- ``finish(timeout:file:line:)``
+- ``receive(_:timeout:assert:file:line:)-332q2``
+- ``receive(_:timeout:assert:file:line:)-6b3xi``
+- ``receive(_:timeout:assert:file:line:)-5n755``
+- ``finish(timeout:file:line:)-7pmv3``
 - ``TestStoreTask``
 
-### Methods for skipping tests
+### Methods for skipping actions and effects
 
 - ``skipReceivedActions(strict:file:line:)-a4ri``
 - ``skipInFlightEffects(strict:file:line:)-5hbsk``
