@@ -1140,13 +1140,21 @@ extension ForEachStore {
     _ store: Store<[EachState], (Int, EachAction)>,
     id: KeyPath<EachState, ID>,
     @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
-  ) where States == IndexedIdentifiedArray<ID, EachState> {
-    let store: Store<States, (States.IndexedID, EachAction)> =
-      store.scope(
-        state: { IndexedIdentifiedArray(array: $0, id: id) },
-        action: { ($0.0.index, $0.1) }
-      )
-    self = .init(store, content: content)
+  )
+  where
+    States == IndexedIdentifiedArray<ID, EachState>, IDs == [States.IndexedID]
+  {
+    typealias EachStates = IndexedIdentifiedArray<ID, EachState>
+    let store:
+      Store<
+        IterableContainer<[EachStates.IndexedID], EachStates>,
+        (EachStates.IndexedID, EachAction)
+      > =
+        store.scope(
+          state: { IndexedIdentifiedArray(array: $0, id: id).iterableContainer },
+          action: { ($0.0.index, $0.1) }
+        )
+    self = ForEachStore(store, content: content)
   }
 
   @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead.")
@@ -1156,6 +1164,7 @@ extension ForEachStore {
   )
   where
     States == IndexedIdentifiedArray<ID, EachState>,
+    IDs == [States.IndexedID],
     EachState: Identifiable, EachState.ID == ID
   {
     self = ForEachStore(store, id: \.id, content: content)
@@ -1163,7 +1172,7 @@ extension ForEachStore {
 }
 
 @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead.")
-public struct IndexedIdentifiedArray<ID: Hashable, Element>: _IterableContainerRepresentable {
+public struct IndexedIdentifiedArray<ID: Hashable, Element>: _Container {
   public struct IndexedID: Hashable {
     let index: Int
     var id: ID?
@@ -1181,9 +1190,8 @@ public struct IndexedIdentifiedArray<ID: Hashable, Element>: _IterableContainerR
   public func extract(tag: IndexedID) -> Element? {
     array[tag.index]
   }
-  
-  public var iterableContainer:
-    IterableContainer<[IndexedID], IndexedIdentifiedArray<ID, Element>>
+
+  public var iterableContainer: IterableContainer<[IndexedID], IndexedIdentifiedArray<ID, Element>>
   {
     IterableContainer(
       tags: array.enumerated().map { IndexedID(index: $0.offset, id: $0.element[keyPath: id]) },
