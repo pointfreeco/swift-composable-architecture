@@ -142,7 +142,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       instrumentation.callback?(sendCallbackInfo, .pre, .viewStoreSend)
       defer { instrumentation.callback?(sendCallbackInfo, .post, .viewStoreSend) }
 
-      return store.send(fromViewAction($0))
+      return store.send(fromViewAction($0), file: file, line: line)
     }
     self._state = CurrentValueRelay(toViewState(store.state.value))
     self.instrumentation = store.instrumentation
