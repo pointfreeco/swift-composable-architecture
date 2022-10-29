@@ -100,7 +100,7 @@ final class InstrumentationTests: XCTestCase {
       }
     })
 
-    let store = Store(initialState: (), reducer: Reducer<(), Void, Void>.empty, environment: (), instrumentation: inst)
+    let store = Store(initialState: (), reducer: AnyReducer<(), Void, Void>.empty, environment: (), instrumentation: inst)
     let viewStore = ViewStore(store)
 
     viewStore.send(())
