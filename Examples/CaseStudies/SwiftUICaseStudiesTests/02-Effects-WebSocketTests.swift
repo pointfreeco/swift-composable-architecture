@@ -1,4 +1,3 @@
-import Combine
 import ComposableArchitecture
 import XCTest
 
@@ -7,23 +6,19 @@ import XCTest
 @MainActor
 final class WebSocketTests: XCTestCase {
   func testWebSocketHappyPath() async {
+    let store = TestStore(
+      initialState: WebSocket.State(),
+      reducer: WebSocket()
+    )
+
     let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
     let messages = AsyncStream<TaskResult<WebSocketClient.Message>>.streamWithContinuation()
 
-    var webSocket = WebSocketClient.unimplemented
-    webSocket.open = { _, _, _ in actions.stream }
-    webSocket.send = { _, _ in }
-    webSocket.receive = { _ in messages.stream }
-    webSocket.sendPing = { _ in try await Task.never() }
-
-    let store = TestStore(
-      initialState: WebSocketState(),
-      reducer: webSocketReducer,
-      environment: WebSocketEnvironment(
-        mainQueue: .immediate,
-        webSocket: webSocket
-      )
-    )
+    store.dependencies.continuousClock = ImmediateClock()
+    store.dependencies.webSocket.open = { _, _, _ in actions.stream }
+    store.dependencies.webSocket.receive = { _ in messages.stream }
+    store.dependencies.webSocket.send = { _, _ in }
+    store.dependencies.webSocket.sendPing = { _ in try await Task.never() }
 
     // Connect to the socket
     await store.send(.connectButtonTapped) {
@@ -59,29 +54,26 @@ final class WebSocketTests: XCTestCase {
     await store.send(.connectButtonTapped) {
       $0.connectivityState = .disconnected
     }
+    await store.finish()
   }
 
   func testWebSocketSendFailure() async {
+    let store = TestStore(
+      initialState: WebSocket.State(),
+      reducer: WebSocket()
+    )
+
     let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
     let messages = AsyncStream<TaskResult<WebSocketClient.Message>>.streamWithContinuation()
 
-    var webSocket = WebSocketClient.unimplemented
-    webSocket.open = { _, _, _ in actions.stream }
-    webSocket.receive = { _ in messages.stream }
-    webSocket.send = { _, _ in
+    store.dependencies.continuousClock = ImmediateClock()
+    store.dependencies.webSocket.open = { _, _, _ in actions.stream }
+    store.dependencies.webSocket.receive = { _ in messages.stream }
+    store.dependencies.webSocket.send = { _, _ in
       struct SendFailure: Error, Equatable {}
       throw SendFailure()
     }
-    webSocket.sendPing = { _ in try await Task.never() }
-
-    let store = TestStore(
-      initialState: WebSocketState(),
-      reducer: webSocketReducer,
-      environment: WebSocketEnvironment(
-        mainQueue: .immediate,
-        webSocket: webSocket
-      )
-    )
+    store.dependencies.webSocket.sendPing = { _ in try await Task.never() }
 
     // Connect to the socket
     await store.send(.connectButtonTapped) {
@@ -100,33 +92,32 @@ final class WebSocketTests: XCTestCase {
       $0.messageToSend = ""
     }
     await store.receive(.sendResponse(didSucceed: false)) {
-      $0.alert = AlertState(title: TextState("Could not send socket message. Try again."))
+      $0.alert = AlertState(
+        title: TextState(
+          "Could not send socket message. Connect to the server first, and try again."))
     }
 
     // Disconnect from the socket
     await store.send(.connectButtonTapped) {
       $0.connectivityState = .disconnected
     }
+    await store.finish()
   }
 
   func testWebSocketPings() async {
-    let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
-    let pingsCount = ActorIsolated(0)
-
-    var webSocket = WebSocketClient.unimplemented
-    webSocket.open = { _, _, _ in actions.stream }
-    webSocket.receive = { _ in try await Task.never() }
-    webSocket.sendPing = { _ in await pingsCount.withValue { $0 += 1 } }
-
-    let scheduler = DispatchQueue.test
     let store = TestStore(
-      initialState: WebSocketState(),
-      reducer: webSocketReducer,
-      environment: WebSocketEnvironment(
-        mainQueue: scheduler.eraseToAnyScheduler(),
-        webSocket: webSocket
-      )
+      initialState: WebSocket.State(),
+      reducer: WebSocket()
     )
+
+    let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
+    let clock = TestClock()
+    var pingsCount = 0
+
+    store.dependencies.continuousClock = clock
+    store.dependencies.webSocket.open = { _, _, _ in actions.stream }
+    store.dependencies.webSocket.receive = { _ in try await Task.never() }
+    store.dependencies.webSocket.sendPing = { @MainActor _ in pingsCount += 1 }
 
     // Connect to the socket
     await store.send(.connectButtonTapped) {
@@ -138,9 +129,9 @@ final class WebSocketTests: XCTestCase {
     }
 
     // Wait for ping
-    await pingsCount.withValue { XCTAssertEqual($0, 0) }
-    await scheduler.advance(by: .seconds(10))
-    await pingsCount.withValue { XCTAssertEqual($0, 1) }
+    XCTAssertEqual(pingsCount, 0)
+    await clock.advance(by: .seconds(10))
+    XCTAssertEqual(pingsCount, 1)
 
     // Disconnect from the socket
     await store.send(.connectButtonTapped) {
@@ -149,21 +140,17 @@ final class WebSocketTests: XCTestCase {
   }
 
   func testWebSocketConnectError() async {
+    let store = TestStore(
+      initialState: WebSocket.State(),
+      reducer: WebSocket()
+    )
+
     let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
 
-    var webSocket = WebSocketClient.unimplemented
-    webSocket.open = { _, _, _ in actions.stream }
-    webSocket.receive = { _ in try await Task.never() }
-    webSocket.sendPing = { _ in try await Task.never() }
-
-    let store = TestStore(
-      initialState: WebSocketState(),
-      reducer: webSocketReducer,
-      environment: WebSocketEnvironment(
-        mainQueue: .immediate,
-        webSocket: webSocket
-      )
-    )
+    store.dependencies.continuousClock = ImmediateClock()
+    store.dependencies.webSocket.open = { _, _, _ in actions.stream }
+    store.dependencies.webSocket.receive = { _ in try await Task.never() }
+    store.dependencies.webSocket.sendPing = { _ in try await Task.never() }
 
     // Attempt to connect to the socket
     await store.send(.connectButtonTapped) {

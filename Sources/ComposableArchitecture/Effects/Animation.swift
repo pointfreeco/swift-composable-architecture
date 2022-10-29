@@ -1,13 +1,13 @@
 import Combine
 import SwiftUI
 
-extension Effect {
+extension EffectPublisher {
   /// Wraps the emission of each element with SwiftUI's `withAnimation`.
   ///
   /// ```swift
   /// case .buttonTapped:
   ///   return .task {
-  ///     .activityResponse(await environment.apiClient.fetchActivity())
+  ///     .activityResponse(await self.apiClient.fetchActivity())
   ///   }
   ///   .animation()
   /// ```
@@ -53,7 +53,7 @@ private struct AnimatedPublisher<Upstream: Publisher>: Publisher {
     self.upstream.receive(subscriber: conduit)
   }
 
-  private class Subscriber<Downstream: Combine.Subscriber>: Combine.Subscriber {
+  private final class Subscriber<Downstream: Combine.Subscriber>: Combine.Subscriber {
     typealias Input = Downstream.Input
     typealias Failure = Downstream.Failure
 

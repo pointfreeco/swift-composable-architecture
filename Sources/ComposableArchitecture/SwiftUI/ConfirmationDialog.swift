@@ -15,7 +15,7 @@ import SwiftUI
 /// To use this API, you model all the dialog actions in your domain's action enum:
 ///
 /// ```swift
-/// enum AppAction: Equatable {
+/// enum Action: Equatable {
 ///   case cancelTapped
 ///   case deleteTapped
 ///   case favoriteTapped
@@ -29,7 +29,7 @@ import SwiftUI
 /// `nil` state:
 ///
 /// ```swift
-/// struct AppState: Equatable {
+/// struct State: Equatable {
 ///   var confirmationDialog: ConfirmationDialogState<AppAction>?
 ///
 ///   // Your other state
@@ -40,29 +40,29 @@ import SwiftUI
 /// you want to show to the user:
 ///
 /// ```swift
-/// let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, env in
-///   switch action
-///     case .cancelTapped:
-///       state.confirmationDialog = nil
-///       return .none
+/// func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+///   switch action {
+///   case .cancelTapped:
+///     state.confirmationDialog = nil
+///     return .none
 ///
-///     case .deleteTapped:
-///       state.confirmationDialog = nil
-///       // Do deletion logic...
+///   case .deleteTapped:
+///     state.confirmationDialog = nil
+///     // Do deletion logic...
 ///
-///     case .favoriteTapped:
-///       state.confirmationDialog = nil
-///       // Do favoriting logic
+///   case .favoriteTapped:
+///     state.confirmationDialog = nil
+///     // Do favoriting logic
 ///
-///     case .infoTapped:
-///       state.confirmationDialog = ConfirmationDialogState(
-///         title: "What would you like to do?",
-///         buttons: [
-///           .default(TextState("Favorite"), action: .send(.favoriteTapped)),
-///           .destructive(TextState("Delete"), action: .send(.deleteTapped)),
-///           .cancel(),
-///         ]
-///       )
+///   case .infoTapped:
+///     state.confirmationDialog = ConfirmationDialogState(
+///       title: "What would you like to do?",
+///       buttons: [
+///         .default(TextState("Favorite"), action: .send(.favoriteTapped)),
+///         .destructive(TextState("Delete"), action: .send(.deleteTapped)),
+///         .cancel(),
+///       ]
+///     )
 ///     return .none
 ///   }
 /// }
@@ -87,9 +87,8 @@ import SwiftUI
 ///
 /// ```swift
 /// let store = TestStore(
-///   initialState: AppState(),
-///   reducer: appReducer,
-///   environment: .mock
+///   initialState: Feature.State(),
+///   reducer: Feature()
 /// )
 ///
 /// store.send(.infoTapped) {
@@ -107,7 +106,6 @@ import SwiftUI
 ///   // Also verify that favoriting logic executed correctly
 /// }
 /// ```
-///
 @available(iOS 13, *)
 @available(macOS 12, *)
 @available(tvOS 13, *)

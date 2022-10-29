@@ -1,8 +1,9 @@
 import AuthenticationClient
+import Dependencies
 import Foundation
 
-extension AuthenticationClient {
-  public static let live = AuthenticationClient(
+extension AuthenticationClient: DependencyKey {
+  public static let liveValue = Self(
     login: { request in
       guard request.email.contains("@") && request.password == "password"
       else { throw AuthenticationError.invalidUserPassword }
@@ -24,5 +25,3 @@ extension AuthenticationClient {
     }
   )
 }
-
-private let queue = DispatchQueue(label: "AuthenticationClient")

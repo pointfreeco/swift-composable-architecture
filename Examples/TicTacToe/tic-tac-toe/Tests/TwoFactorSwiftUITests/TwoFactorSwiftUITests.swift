@@ -1,5 +1,4 @@
 import AuthenticationClient
-import Combine
 import ComposableArchitecture
 import TwoFactorCore
 import XCTest
@@ -9,23 +8,16 @@ import XCTest
 @MainActor
 final class TwoFactorSwiftUITests: XCTestCase {
   func testFlow_Success() async {
-    var authenticationClient = AuthenticationClient.unimplemented
-    authenticationClient.twoFactor = { _ in
-      AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
-    }
-
     let store = TestStore(
-      initialState: TwoFactorState(token: "deadbeefdeadbeef"),
-      reducer: twoFactorReducer,
-      environment: TwoFactorEnvironment(
-        authenticationClient: authenticationClient
-      )
+      initialState: TwoFactor.State(token: "deadbeefdeadbeef"),
+      reducer: TwoFactor()
     )
-    .scope(state: TwoFactorView.ViewState.init, action: TwoFactorAction.init)
+    .scope(state: TwoFactorView.ViewState.init, action: TwoFactor.Action.init)
 
-    store.environment.authenticationClient.twoFactor = { _ in
+    store.dependencies.authenticationClient.twoFactor = { _ in
       AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
     }
+
     await store.send(.codeChanged("1")) {
       $0.code = "1"
     }
@@ -56,17 +48,15 @@ final class TwoFactorSwiftUITests: XCTestCase {
   }
 
   func testFlow_Failure() async {
-    var authenticationClient = AuthenticationClient.unimplemented
-    authenticationClient.twoFactor = { _ in throw AuthenticationError.invalidTwoFactor }
-
     let store = TestStore(
-      initialState: TwoFactorState(token: "deadbeefdeadbeef"),
-      reducer: twoFactorReducer,
-      environment: TwoFactorEnvironment(
-        authenticationClient: authenticationClient
-      )
+      initialState: TwoFactor.State(token: "deadbeefdeadbeef"),
+      reducer: TwoFactor()
     )
-    .scope(state: TwoFactorView.ViewState.init, action: TwoFactorAction.init)
+    .scope(state: TwoFactorView.ViewState.init, action: TwoFactor.Action.init)
+
+    store.dependencies.authenticationClient.twoFactor = { _ in
+      throw AuthenticationError.invalidTwoFactor
+    }
 
     await store.send(.codeChanged("1234")) {
       $0.code = "1234"

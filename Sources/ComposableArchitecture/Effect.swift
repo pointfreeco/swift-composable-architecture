@@ -3,12 +3,12 @@ import Foundation
 import SwiftUI
 import XCTestDynamicOverlay
 
-/// The ``Effect`` type encapsulates a unit of work that can be run in the outside world, and can
-/// feed actions back to the ``Store``. It is the perfect place to do side effects, such as network
-/// requests, saving/loading from disk, creating timers, interacting with dependencies, and more.
+/// A type that encapsulates a unit of work that can be run in the outside world, and can feed
+/// actions back to the ``Store``.
 ///
-/// Effects are returned from reducers so that the ``Store`` can perform the effects after the
-/// reducer is done running.
+/// Effects are the perfect place to do side effects, such as network requests, saving/loading
+/// from disk, creating timers, interacting with dependencies, and more. They are returned from
+/// reducers so that the ``Store`` can perform the effects after the reducer is done running.
 ///
 /// There are 2 distinct ways to create an `Effect`: one using Swift's native concurrency tools, and
 /// the other using Apple's Combine framework:
@@ -16,23 +16,23 @@ import XCTestDynamicOverlay
 /// * If using Swift's native structured concurrency tools then there are 3 main ways to create an
 /// effect, depending on if you want to emit one single action back into the system, or any number
 /// of actions, or just execute some work without emitting any actions:
-///   * ``Effect/task(priority:operation:catch:file:fileID:line:)``
-///   * ``Effect/run(priority:operation:catch:file:fileID:line:)``
-///   * ``Effect/fireAndForget(priority:_:)``
-/// * If using Combine in your application, in particular the dependencies of your feature's
-/// environment, then you can create effects by making use of any of Combine's operators, and then
-/// erasing the publisher type to ``Effect`` with either `eraseToEffect` or `catchToEffect`. Note
-/// that the Combine interface to ``Effect`` is considered soft deprecated, and you should
+///   * ``EffectPublisher/task(priority:operation:catch:file:fileID:line:)``
+///   * ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)``
+///   * ``EffectPublisher/fireAndForget(priority:_:)``
+/// * If using Combine in your application, in particular for the dependencies of your feature
+/// then you can create effects by making use of any of Combine's operators, and then erasing the
+/// publisher type to ``EffectPublisher`` with either `eraseToEffect` or `catchToEffect`. Note that
+/// the Combine interface to ``EffectPublisher`` is considered soft deprecated, and you should
 /// eventually port to Swift's native concurrency tools.
 ///
 /// > Important: ``Store`` is not thread safe, and so all effects must receive values on the same
-/// thread. This is typically the main thread,  **and** if the store is being used to drive UI
-/// then it must receive values on the main thread.
+/// thread. This is typically the main thread,  **and** if the store is being used to drive UI then
+/// it must receive values on the main thread.
 /// >
-/// > This is only an issue if using the Combine interface of ``Effect`` as mentioned above. If you
-/// you are using Swift's concurrency tools and the `.task`, `.run` and `.fireAndForget`
-/// functions on ``Effect``, then threading is automatically handled for you.
-public struct Effect<Action, Failure: Error> {
+/// > This is only an issue if using the Combine interface of ``EffectPublisher`` as mentioned
+/// above. If  you are using Swift's concurrency tools and the `.task`, `.run` and `.fireAndForget`
+/// functions on ``EffectTask``, then threading is automatically handled for you.
+public struct EffectPublisher<Action, Failure: Error> {
   @usableFromInline
   enum Operation {
     case none
@@ -51,7 +51,7 @@ public struct Effect<Action, Failure: Error> {
 
 // MARK: - Creating Effects
 
-extension Effect {
+extension EffectPublisher {
   /// An effect that does nothing and completes immediately. Useful for situations where you must
   /// return an effect, but you don't need to do anything.
   @inlinable
@@ -60,40 +60,56 @@ extension Effect {
   }
 }
 
-extension Effect where Failure == Never {
+/// A convenience type alias for referring to an effect that can never fail, like the kind of
+/// ``EffectPublisher`` returned by a reducer after processing an action.
+///
+/// Instead of specifying `Never` as `Failure`:
+///
+/// ```swift
+/// func reduce(into state: inout State, action: Action) -> EffectPublisher<Action, Never> { … }
+/// ```
+///
+/// You can specify a single generic:
+///
+/// ```swift
+/// func reduce(into state: inout State, action: Action) -> EffectTask<Action>  { … }
+/// ```
+public typealias EffectTask<Action> = Effect<Action, Never>
+
+extension EffectPublisher where Failure == Never {
   /// Wraps an asynchronous unit of work in an effect.
   ///
   /// This function is useful for executing work in an asynchronous context and capturing the result
-  /// in an ``Effect`` so that the reducer, a non-asynchronous context, can process it.
+  /// in an ``EffectTask`` so that the reducer, a non-asynchronous context, can process it.
   ///
-  /// For example, if your environment contains a dependency that exposes an `async` function, you
-  /// can use ``task(priority:operation:catch:file:fileID:line:)`` to provide an asynchronous
-  /// context for invoking that endpoint:
+  /// For example, if your dependency exposes an `async` function, you can use
+  /// ``task(priority:operation:catch:file:fileID:line:)`` to provide an asynchronous context for
+  /// invoking that endpoint:
   ///
   /// ```swift
-  /// struct FeatureEnvironment {
-  ///   var numberFact: (Int) async throws -> String
-  /// }
+  /// struct Feature: ReducerProtocol {
+  ///   struct State { … }
+  ///   enum FeatureAction {
+  ///     case factButtonTapped
+  ///     case faceResponse(TaskResult<String>)
+  ///   }
+  ///   @Dependency(\.numberFact) var numberFact
   ///
-  /// enum FeatureAction {
-  ///   case factButtonTapped
-  ///   case faceResponse(TaskResult<String>)
-  /// }
+  ///   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  ///     switch action {
+  ///       case .factButtonTapped:
+  ///         return .task { [number = state.number] in
+  ///           await .factResponse(TaskResult { try await self.numberFact.fetch(number) })
+  ///         }
   ///
-  /// let featureReducer = Reducer<State, Action, Environment> { state, action, environment in
-  ///   switch action {
-  ///     case .factButtonTapped:
-  ///       return .task { [number = state.number] in
-  ///         await .factResponse(TaskResult { try await environment.numberFact(number) })
-  ///       }
+  ///       case .factResponse(.success(fact)):
+  ///         // do something with fact
   ///
-  ///     case .factResponse(.success(fact)):
-  ///       // do something with fact
+  ///       case .factResponse(.failure):
+  ///         // handle error
   ///
-  ///     case .factResponse(.failure):
-  ///       // handle error
-  ///
-  ///     ...
+  ///       ...
+  ///     }
   ///   }
   /// }
   /// ```
@@ -121,38 +137,36 @@ extension Effect where Failure == Never {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Self {
-    Self(
+    let dependencies = DependencyValues._current
+    return Self(
       operation: .run(priority) { send in
-        do {
-          try await send(operation())
-        } catch is CancellationError {
-          return
-        } catch {
-          guard let handler = handler else {
-            #if DEBUG
-              var errorDump = ""
-              customDump(error, to: &errorDump, indent: 4)
-              runtimeWarning(
-                """
-                An 'Effect.task' returned from "%@:%d" threw an unhandled error. …
-
-                %@
-
-                All non-cancellation errors must be explicitly handled via the 'catch' parameter \
-                on 'Effect.task', or via a 'do' block.
-                """,
-                [
-                  "\(fileID)",
-                  line,
-                  errorDump,
-                ],
-                file: file,
-                line: line
-              )
-            #endif
+        await DependencyValues.$_current.withValue(dependencies) {
+          do {
+            try await send(operation())
+          } catch is CancellationError {
             return
+          } catch {
+            guard let handler = handler else {
+              #if DEBUG
+                var errorDump = ""
+                customDump(error, to: &errorDump, indent: 4)
+                runtimeWarn(
+                  """
+                  An "EffectTask.task" returned from "\(fileID):\(line)" threw an unhandled error. …
+
+                  \(errorDump)
+
+                  All non-cancellation errors must be explicitly handled via the "catch" parameter \
+                  on "EffectTask.task", or via a "do" block.
+                  """,
+                  file: file,
+                  line: line
+                )
+              #endif
+              return
+            }
+            await send(handler(error))
           }
-          await send(handler(error))
         }
       }
     )
@@ -163,10 +177,10 @@ extension Effect where Failure == Never {
   /// This effect is similar to ``task(priority:operation:catch:file:fileID:line:)`` except it is
   /// capable of emitting 0 or more times, not just once.
   ///
-  /// For example, if you had an async stream in your environment:
+  /// For example, if you had an async stream in a dependency client:
   ///
   /// ```swift
-  /// struct FeatureEnvironment {
+  /// struct EventsClient {
   ///   var events: () -> AsyncStream<Event>
   /// }
   /// ```
@@ -177,7 +191,7 @@ extension Effect where Failure == Never {
   /// ```swift
   /// case .startButtonTapped:
   ///   return .run { send in
-  ///     for await event in environment.events() {
+  ///     for await event in self.events() {
   ///       send(.event(event))
   ///     }
   ///   }
@@ -205,38 +219,36 @@ extension Effect where Failure == Never {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Self {
-    Self(
+    let dependencies = DependencyValues._current
+    return Self(
       operation: .run(priority) { send in
-        do {
-          try await operation(send)
-        } catch is CancellationError {
-          return
-        } catch {
-          guard let handler = handler else {
-            #if DEBUG
-              var errorDump = ""
-              customDump(error, to: &errorDump, indent: 4)
-              runtimeWarning(
-                """
-                An 'Effect.run' returned from "%@:%d" threw an unhandled error. …
-
-                %@
-
-                All non-cancellation errors must be explicitly handled via the 'catch' parameter \
-                on 'Effect.run', or via a 'do' block.
-                """,
-                [
-                  "\(fileID)",
-                  line,
-                  errorDump,
-                ],
-                file: file,
-                line: line
-              )
-            #endif
+        await DependencyValues.$_current.withValue(dependencies) {
+          do {
+            try await operation(send)
+          } catch is CancellationError {
             return
+          } catch {
+            guard let handler = handler else {
+              #if DEBUG
+                var errorDump = ""
+                customDump(error, to: &errorDump, indent: 4)
+                runtimeWarn(
+                  """
+                  An "EffectTask.run" returned from "\(fileID):\(line)" threw an unhandled error. …
+
+                  \(errorDump)
+
+                  All non-cancellation errors must be explicitly handled via the "catch" parameter \
+                  on "EffectTask.run", or via a "do" block.
+                  """,
+                  file: file,
+                  line: line
+                )
+              #endif
+              return
+            }
+            await handler(error, send)
           }
-          await handler(error, send)
         }
       }
     )
@@ -252,7 +264,7 @@ extension Effect where Failure == Never {
   /// ```swift
   /// case .buttonTapped:
   ///   return .fireAndForget {
-  ///     try await environment.analytics.track("Button Tapped")
+  ///     try self.analytics.track("Button Tapped")
   ///   }
   /// ```
   ///
@@ -273,7 +285,7 @@ extension Effect where Failure == Never {
 }
 
 /// A type that can send actions back into the system when used from
-/// ``Effect/run(priority:operation:catch:file:fileID:line:)``.
+/// ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)``.
 ///
 /// This type implements [`callAsFunction`][callAsFunction] so that you invoke it as a function
 /// rather than calling methods on it:
@@ -282,7 +294,7 @@ extension Effect where Failure == Never {
 /// return .run { send in
 ///   send(.started)
 ///   defer { send(.finished) }
-///   for await event in environment.events {
+///   for await event in self.events {
 ///     send(.event(event))
 ///   }
 /// }
@@ -295,7 +307,7 @@ extension Effect where Failure == Never {
 /// defer { send(.finished, animation: .default) }
 /// ```
 ///
-/// See ``Effect/run(priority:operation:catch:file:fileID:line:)`` for more information on how to
+/// See ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)`` for more information on how to
 /// use this value to construct effects that can emit any number of times in an asynchronous
 /// context.
 ///
@@ -331,7 +343,7 @@ public struct Send<Action> {
 
 // MARK: - Composing Effects
 
-extension Effect {
+extension EffectPublisher {
   /// Merges a variadic list of effects together into a single effect, which runs the effects at the
   /// same time.
   ///
@@ -445,11 +457,17 @@ extension Effect {
   /// - Returns: A publisher that uses the provided closure to map elements from the upstream effect
   ///   to new elements that it then publishes.
   @inlinable
-  public func map<T>(_ transform: @escaping (Action) -> T) -> Effect<T, Failure> {
+  public func map<T>(_ transform: @escaping (Action) -> T) -> EffectPublisher<T, Failure> {
     switch self.operation {
     case .none:
       return .none
     case let .publisher(publisher):
+      let dependencies = DependencyValues._current
+      let transform = { action in
+        DependencyValues.$_current.withValue(dependencies) {
+          transform(action)
+        }
+      }
       return .init(operation: .publisher(publisher.map(transform).eraseToAnyPublisher()))
     case let .run(priority, operation):
       return .init(
@@ -467,12 +485,12 @@ extension Effect {
 
 // MARK: - Testing Effects
 
-extension Effect {
+extension EffectPublisher {
   /// An effect that causes a test to fail if it runs.
   ///
   /// > Important: This Combine-based interface has been soft-deprecated in favor of Swift
   /// > concurrency. Prefer using async functions and `AsyncStream`s directly in your dependencies,
-  /// > and using `XCTUnimplemented` from the [XCTest Dynamic Overlay](gh-xctest-dynamic-overlay)
+  /// > and using `unimplemented` from the [XCTest Dynamic Overlay](gh-xctest-dynamic-overlay)
   /// > library to stub in a function that fails when invoked:
   /// >
   /// > ```swift
@@ -480,9 +498,9 @@ extension Effect {
   /// >   var fetch: (Int) async throws -> String
   /// > }
   /// >
-  /// > extension NumberFactClient {
-  /// >   static let unimplemented = Self(
-  /// >     fetch: XCTUnimplemented(
+  /// > extension NumberFactClient: TestDependencyKey {
+  /// >   static let testValue = Self(
+  /// >     fetch: unimplemented(
   /// >       "\(Self.self).fetch",
   /// >       placeholder: "Not an interesting number."
   /// >     )
@@ -514,14 +532,14 @@ extension Effect {
   ///
   /// ```swift
   /// struct CounterEnvironment {
-  ///   let playAlertSound: () -> Effect<Never, Never>
+  ///   let playAlertSound: () -> EffectPublisher<Never, Never>
   /// }
   /// ```
   ///
   /// Now that we've defined the domain, we can describe the logic in a reducer:
   ///
   /// ```swift
-  /// let counterReducer = Reducer<
+  /// let counterReducer = AnyReducer<
   ///   CounterState, CounterAction, CounterEnvironment
   /// > { state, action, environment in
   ///   switch action {
@@ -568,20 +586,20 @@ extension Effect {
   ///
   /// [gh-xctest-dynamic-overlay]: http://github.com/pointfreeco/xctest-dynamic-overlay
   ///
-  /// - Parameter prefix: A string that identifies this scheduler and will prefix all failure
+  /// - Parameter prefix: A string that identifies this effect and will prefix all failure
   ///   messages.
   /// - Returns: An effect that causes a test to fail if it runs.
   @available(
-    iOS, deprecated: 9999.0, message: "Call 'XCTUnimplemented' from your dependencies, instead."
+    iOS, deprecated: 9999.0, message: "Call 'unimplemented' from your dependencies, instead."
   )
   @available(
-    macOS, deprecated: 9999.0, message: "Call 'XCTUnimplemented' from your dependencies, instead."
+    macOS, deprecated: 9999.0, message: "Call 'unimplemented' from your dependencies, instead."
   )
   @available(
-    tvOS, deprecated: 9999.0, message: "Call 'XCTUnimplemented' from your dependencies, instead."
+    tvOS, deprecated: 9999.0, message: "Call 'unimplemented' from your dependencies, instead."
   )
   @available(
-    watchOS, deprecated: 9999.0, message: "Call 'XCTUnimplemented' from your dependencies, instead."
+    watchOS, deprecated: 9999.0, message: "Call 'unimplemented' from your dependencies, instead."
   )
   public static func unimplemented(_ prefix: String) -> Self {
     .fireAndForget {
@@ -589,3 +607,61 @@ extension Effect {
     }
   }
 }
+
+@available(
+  iOS,
+  deprecated: 9999.0,
+  message:
+    """
+    'Effect' has been deprecated in favor of 'EffectTask' when `Failure == Never`, or
+    `EffectPublisher<Output, Failure>` in general.
+    
+    You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
+    concurrency to model failable streams of values.
+
+    See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
+    """
+)
+@available(
+  macOS,
+  deprecated: 9999.0,
+  message:
+    """
+    'Effect' has been deprecated in favor of 'EffectTask' when `Failure == Never`, or
+    `EffectPublisher<Output, Failure>` in general.
+    
+    You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
+    concurrency to model failable streams of values.
+
+    See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
+    """
+)
+@available(
+  tvOS,
+  deprecated: 9999.0,
+  message:
+    """
+    'Effect' has been deprecated in favor of 'EffectTask' when `Failure == Never`, or
+    `EffectPublisher<Output, Failure>` in general.
+    
+    You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
+    concurrency to model failable streams of values.
+
+    See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
+    """
+)
+@available(
+  watchOS,
+  deprecated: 9999.0,
+  message:
+    """
+    'Effect' has been deprecated in favor of 'EffectTask' when `Failure == Never`, or
+    `EffectPublisher<Output, Failure>` in general.
+    
+    You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
+    concurrency to model failable streams of values.
+
+    See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
+    """
+)
+public typealias Effect = EffectPublisher

@@ -9,39 +9,28 @@ private let readMe = """
   that depends on this data.
   """
 
-struct LoadThenNavigateState: Equatable {
-  var optionalCounter: CounterState?
-  var isActivityIndicatorVisible = false
+// MARK: - Feature domain
 
-  var isNavigationActive: Bool { self.optionalCounter != nil }
-}
+struct LoadThenNavigate: ReducerProtocol {
+  struct State: Equatable {
+    var optionalCounter: Counter.State?
+    var isActivityIndicatorVisible = false
 
-enum LoadThenNavigateAction: Equatable {
-  case onDisappear
-  case optionalCounter(CounterAction)
-  case setNavigation(isActive: Bool)
-  case setNavigationIsActiveDelayCompleted
-}
+    var isNavigationActive: Bool { self.optionalCounter != nil }
+  }
 
-struct LoadThenNavigateEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
+  enum Action: Equatable {
+    case onDisappear
+    case optionalCounter(Counter.Action)
+    case setNavigation(isActive: Bool)
+    case setNavigationIsActiveDelayCompleted
+  }
 
-let loadThenNavigateReducer =
-  counterReducer
-  .optional()
-  .pullback(
-    state: \.optionalCounter,
-    action: /LoadThenNavigateAction.optionalCounter,
-    environment: { _ in CounterEnvironment() }
-  )
-  .combined(
-    with: Reducer<
-      LoadThenNavigateState, LoadThenNavigateAction, LoadThenNavigateEnvironment
-    > { state, action, environment in
+  @Dependency(\.continuousClock) var clock
+  private enum CancelID {}
 
-      enum CancelID {}
-
+  var body: some ReducerProtocol<State, Action> {
+    Reduce { state, action in
       switch action {
       case .onDisappear:
         return .cancel(id: CancelID.self)
@@ -49,7 +38,7 @@ let loadThenNavigateReducer =
       case .setNavigation(isActive: true):
         state.isActivityIndicatorVisible = true
         return .task {
-          try await environment.mainQueue.sleep(for: 1)
+          try await self.clock.sleep(for: .seconds(1))
           return .setNavigationIsActiveDelayCompleted
         }
         .cancellable(id: CancelID.self)
@@ -60,17 +49,23 @@ let loadThenNavigateReducer =
 
       case .setNavigationIsActiveDelayCompleted:
         state.isActivityIndicatorVisible = false
-        state.optionalCounter = CounterState()
+        state.optionalCounter = Counter.State()
         return .none
 
       case .optionalCounter:
         return .none
       }
     }
-  )
+    .ifLet(\.optionalCounter, action: /Action.optionalCounter) {
+      Counter()
+    }
+  }
+}
+
+// MARK: - Feature view
 
 struct LoadThenNavigateView: View {
-  let store: Store<LoadThenNavigateState, LoadThenNavigateAction>
+  let store: StoreOf<LoadThenNavigate>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -82,14 +77,14 @@ struct LoadThenNavigateView: View {
           destination: IfLetStore(
             self.store.scope(
               state: \.optionalCounter,
-              action: LoadThenNavigateAction.optionalCounter
+              action: LoadThenNavigate.Action.optionalCounter
             )
           ) {
             CounterView(store: $0)
           },
           isActive: viewStore.binding(
             get: \.isNavigationActive,
-            send: LoadThenNavigateAction.setNavigation(isActive:)
+            send: LoadThenNavigate.Action.setNavigation(isActive:)
           )
         ) {
           HStack {
@@ -107,16 +102,15 @@ struct LoadThenNavigateView: View {
   }
 }
 
+// MARK: - SwiftUI previews
+
 struct LoadThenNavigateView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       LoadThenNavigateView(
         store: Store(
-          initialState: LoadThenNavigateState(),
-          reducer: loadThenNavigateReducer,
-          environment: LoadThenNavigateEnvironment(
-            mainQueue: .main
-          )
+          initialState: LoadThenNavigate.State(),
+          reducer: LoadThenNavigate()
         )
       )
     }

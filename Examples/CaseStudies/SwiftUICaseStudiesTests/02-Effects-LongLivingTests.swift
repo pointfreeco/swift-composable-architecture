@@ -1,4 +1,3 @@
-import Combine
 import ComposableArchitecture
 import XCTest
 
@@ -10,12 +9,11 @@ final class LongLivingEffectsTests: XCTestCase {
     let (screenshots, takeScreenshot) = AsyncStream<Void>.streamWithContinuation()
 
     let store = TestStore(
-      initialState: LongLivingEffectsState(),
-      reducer: longLivingEffectsReducer,
-      environment: LongLivingEffectsEnvironment(
-        screenshots: { screenshots }
-      )
+      initialState: LongLivingEffects.State(),
+      reducer: LongLivingEffects()
     )
+
+    store.dependencies.screenshots = { screenshots }
 
     let task = await store.send(.task)
 

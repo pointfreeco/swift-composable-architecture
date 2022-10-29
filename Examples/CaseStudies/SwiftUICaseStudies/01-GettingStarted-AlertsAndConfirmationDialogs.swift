@@ -19,72 +19,72 @@ private let readMe = """
   alerts and dialogs in your application
   """
 
-struct AlertAndConfirmationDialogState: Equatable {
-  var alert: AlertState<AlertAndConfirmationDialogAction>?
-  var confirmationDialog: ConfirmationDialogState<AlertAndConfirmationDialogAction>?
-  var count = 0
-}
+// MARK: - Feature domain
 
-enum AlertAndConfirmationDialogAction: Equatable {
-  case alertButtonTapped
-  case alertDismissed
-  case confirmationDialogButtonTapped
-  case confirmationDialogDismissed
-  case decrementButtonTapped
-  case incrementButtonTapped
-}
+struct AlertAndConfirmationDialog: ReducerProtocol {
+  struct State: Equatable {
+    var alert: AlertState<Action>?
+    var confirmationDialog: ConfirmationDialogState<Action>?
+    var count = 0
+  }
 
-struct AlertAndConfirmationDialogEnvironment {}
+  enum Action: Equatable {
+    case alertButtonTapped
+    case alertDismissed
+    case confirmationDialogButtonTapped
+    case confirmationDialogDismissed
+    case decrementButtonTapped
+    case incrementButtonTapped
+  }
 
-let alertAndConfirmationDialogReducer = Reducer<
-  AlertAndConfirmationDialogState, AlertAndConfirmationDialogAction,
-  AlertAndConfirmationDialogEnvironment
-> { state, action, _ in
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+    switch action {
+    case .alertButtonTapped:
+      state.alert = AlertState(
+        title: TextState("Alert!"),
+        message: TextState("This is an alert"),
+        primaryButton: .cancel(TextState("Cancel")),
+        secondaryButton: .default(TextState("Increment"), action: .send(.incrementButtonTapped))
+      )
+      return .none
 
-  switch action {
-  case .alertButtonTapped:
-    state.alert = AlertState(
-      title: TextState("Alert!"),
-      message: TextState("This is an alert"),
-      primaryButton: .cancel(TextState("Cancel")),
-      secondaryButton: .default(TextState("Increment"), action: .send(.incrementButtonTapped))
-    )
-    return .none
+    case .alertDismissed:
+      state.alert = nil
+      return .none
 
-  case .alertDismissed:
-    state.alert = nil
-    return .none
+    case .confirmationDialogButtonTapped:
+      state.confirmationDialog = ConfirmationDialogState(
+        title: TextState("Confirmation dialog"),
+        message: TextState("This is a confirmation dialog."),
+        buttons: [
+          .cancel(TextState("Cancel")),
+          .default(TextState("Increment"), action: .send(.incrementButtonTapped)),
+          .default(TextState("Decrement"), action: .send(.decrementButtonTapped)),
+        ]
+      )
+      return .none
 
-  case .confirmationDialogButtonTapped:
-    state.confirmationDialog = ConfirmationDialogState(
-      title: TextState("Confirmation dialog"),
-      message: TextState("This is a confirmation dialog."),
-      buttons: [
-        .cancel(TextState("Cancel")),
-        .default(TextState("Increment"), action: .send(.incrementButtonTapped)),
-        .default(TextState("Decrement"), action: .send(.decrementButtonTapped)),
-      ]
-    )
-    return .none
+    case .confirmationDialogDismissed:
+      state.confirmationDialog = nil
+      return .none
 
-  case .confirmationDialogDismissed:
-    state.confirmationDialog = nil
-    return .none
+    case .decrementButtonTapped:
+      state.alert = AlertState(title: TextState("Decremented!"))
+      state.count -= 1
+      return .none
 
-  case .decrementButtonTapped:
-    state.alert = AlertState(title: TextState("Decremented!"))
-    state.count -= 1
-    return .none
-
-  case .incrementButtonTapped:
-    state.alert = AlertState(title: TextState("Incremented!"))
-    state.count += 1
-    return .none
+    case .incrementButtonTapped:
+      state.alert = AlertState(title: TextState("Incremented!"))
+      state.count += 1
+      return .none
+    }
   }
 }
 
+// MARK: - Feature view
+
 struct AlertAndConfirmationDialogView: View {
-  let store: Store<AlertAndConfirmationDialogState, AlertAndConfirmationDialogAction>
+  let store: StoreOf<AlertAndConfirmationDialog>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -110,14 +110,15 @@ struct AlertAndConfirmationDialogView: View {
   }
 }
 
+// MARK: - SwiftUI previews
+
 struct AlertAndConfirmationDialog_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       AlertAndConfirmationDialogView(
         store: Store(
-          initialState: AlertAndConfirmationDialogState(),
-          reducer: alertAndConfirmationDialogReducer,
-          environment: AlertAndConfirmationDialogEnvironment()
+          initialState: AlertAndConfirmationDialog.State(),
+          reducer: AlertAndConfirmationDialog()
         )
       )
     }

@@ -1,7 +1,5 @@
-import Combine
 import ComposableArchitecture
 import SwiftUI
-import UIKit
 
 private let readMe = """
   This screen demonstrates navigation that depends on loading optional state.
@@ -10,41 +8,30 @@ private let readMe = """
   counter state and fires off an effect that will load this state a second later.
   """
 
-struct NavigateAndLoadState: Equatable {
-  var isNavigationActive = false
-  var optionalCounter: CounterState?
-}
+// MARK: - Feature domain
 
-enum NavigateAndLoadAction: Equatable {
-  case optionalCounter(CounterAction)
-  case setNavigation(isActive: Bool)
-  case setNavigationIsActiveDelayCompleted
-}
+struct NavigateAndLoad: ReducerProtocol {
+  struct State: Equatable {
+    var isNavigationActive = false
+    var optionalCounter: Counter.State?
+  }
 
-struct NavigateAndLoadEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
+  enum Action: Equatable {
+    case optionalCounter(Counter.Action)
+    case setNavigation(isActive: Bool)
+    case setNavigationIsActiveDelayCompleted
+  }
 
-let navigateAndLoadReducer =
-  counterReducer
-  .optional()
-  .pullback(
-    state: \.optionalCounter,
-    action: /NavigateAndLoadAction.optionalCounter,
-    environment: { _ in CounterEnvironment() }
-  )
-  .combined(
-    with: Reducer<
-      NavigateAndLoadState, NavigateAndLoadAction, NavigateAndLoadEnvironment
-    > { state, action, environment in
+  @Dependency(\.continuousClock) var clock
+  private enum CancelID {}
 
-      enum CancelID {}
-
+  var body: some ReducerProtocol<State, Action> {
+    Reduce { state, action in
       switch action {
       case .setNavigation(isActive: true):
         state.isNavigationActive = true
         return .task {
-          try await environment.mainQueue.sleep(for: 1)
+          try await self.clock.sleep(for: .seconds(1))
           return .setNavigationIsActiveDelayCompleted
         }
         .cancellable(id: CancelID.self)
@@ -55,17 +42,23 @@ let navigateAndLoadReducer =
         return .cancel(id: CancelID.self)
 
       case .setNavigationIsActiveDelayCompleted:
-        state.optionalCounter = CounterState()
+        state.optionalCounter = Counter.State()
         return .none
 
       case .optionalCounter:
         return .none
       }
     }
-  )
+    .ifLet(\.optionalCounter, action: /Action.optionalCounter) {
+      Counter()
+    }
+  }
+}
+
+// MARK: - Feature view
 
 struct NavigateAndLoadView: View {
-  let store: Store<NavigateAndLoadState, NavigateAndLoadAction>
+  let store: StoreOf<NavigateAndLoad>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -77,7 +70,7 @@ struct NavigateAndLoadView: View {
           destination: IfLetStore(
             self.store.scope(
               state: \.optionalCounter,
-              action: NavigateAndLoadAction.optionalCounter
+              action: NavigateAndLoad.Action.optionalCounter
             )
           ) {
             CounterView(store: $0)
@@ -86,7 +79,7 @@ struct NavigateAndLoadView: View {
           },
           isActive: viewStore.binding(
             get: \.isNavigationActive,
-            send: NavigateAndLoadAction.setNavigation(isActive:)
+            send: NavigateAndLoad.Action.setNavigation(isActive:)
           )
         ) {
           Text("Load optional counter")
@@ -97,16 +90,15 @@ struct NavigateAndLoadView: View {
   }
 }
 
+// MARK: - SwiftUI previews
+
 struct NavigateAndLoadView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       NavigateAndLoadView(
         store: Store(
-          initialState: NavigateAndLoadState(),
-          reducer: navigateAndLoadReducer,
-          environment: NavigateAndLoadEnvironment(
-            mainQueue: .main
-          )
+          initialState: NavigateAndLoad.State(),
+          reducer: NavigateAndLoad()
         )
       )
     }

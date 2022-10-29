@@ -1,14 +1,13 @@
 import Combine
+import ComposableArchitecture
 import XCTest
-
-@testable import ComposableArchitecture
 
 @MainActor
 final class EffectRunTests: XCTestCase {
   func testRun() async {
     struct State: Equatable {}
     enum Action: Equatable { case tapped, response }
-    let reducer = Reducer<State, Action, Void> { state, action, _ in
+    let reducer = Reduce<State, Action> { state, action in
       switch action {
       case .tapped:
         return .run { send in await send(.response) }
@@ -16,7 +15,7 @@ final class EffectRunTests: XCTestCase {
         return .none
       }
     }
-    let store = TestStore(initialState: State(), reducer: reducer, environment: ())
+    let store = TestStore(initialState: State(), reducer: reducer)
     await store.send(.tapped)
     await store.receive(.response)
   }
@@ -24,7 +23,7 @@ final class EffectRunTests: XCTestCase {
   func testRunCatch() async {
     struct State: Equatable {}
     enum Action: Equatable { case tapped, response }
-    let reducer = Reducer<State, Action, Void> { state, action, _ in
+    let reducer = Reduce<State, Action> { state, action in
       switch action {
       case .tapped:
         return .run { _ in
@@ -37,46 +36,49 @@ final class EffectRunTests: XCTestCase {
         return .none
       }
     }
-    let store = TestStore(initialState: State(), reducer: reducer, environment: ())
+    let store = TestStore(initialState: State(), reducer: reducer)
     await store.send(.tapped)
     await store.receive(.response)
   }
 
-  func testRunUnhandledFailure() async {
-    XCTExpectFailure(nil, enabled: nil, strict: nil) {
-      $0.compactDescription == """
-        An 'Effect.run' returned from "ComposableArchitectureTests/EffectRunTests.swift:62" threw \
-        an unhandled error. …
+  #if DEBUG
+    func testRunUnhandledFailure() async {
+      var line: UInt!
+      XCTExpectFailure(nil, enabled: nil, strict: nil) {
+        $0.compactDescription == """
+          An "EffectTask.run" returned from "\(#fileID):\(line+1)" threw an unhandled error. …
 
-            EffectRunTests.Failure()
+              EffectRunTests.Failure()
 
-        All non-cancellation errors must be explicitly handled via the 'catch' parameter on \
-        'Effect.run', or via a 'do' block.
-        """
-    }
-    struct State: Equatable {}
-    enum Action: Equatable { case tapped, response }
-    let reducer = Reducer<State, Action, Void> { state, action, _ in
-      switch action {
-      case .tapped:
-        return .run { send in
-          struct Failure: Error {}
-          throw Failure()
-        }
-      case .response:
-        return .none
+          All non-cancellation errors must be explicitly handled via the "catch" parameter on \
+          "EffectTask.run", or via a "do" block.
+          """
       }
+      struct State: Equatable {}
+      enum Action: Equatable { case tapped, response }
+      let reducer = Reduce<State, Action> { state, action in
+        switch action {
+        case .tapped:
+          line = #line
+          return .run { send in
+            struct Failure: Error {}
+            throw Failure()
+          }
+        case .response:
+          return .none
+        }
+      }
+      let store = TestStore(initialState: State(), reducer: reducer)
+      // NB: We wait a long time here because XCTest failures take a long time to generate
+      await store.send(.tapped).finish(timeout: 5 * NSEC_PER_SEC)
     }
-    let store = TestStore(initialState: State(), reducer: reducer, environment: ())
-    // NB: We wait a long time here because XCTest failures take a long time to generate
-    await store.send(.tapped).finish(timeout: 5 * NSEC_PER_SEC)
-  }
+  #endif
 
   func testRunCancellation() async {
     enum CancelID {}
     struct State: Equatable {}
     enum Action: Equatable { case tapped, response }
-    let reducer = Reducer<State, Action, Void> { state, action, _ in
+    let reducer = Reduce<State, Action> { state, action in
       switch action {
       case .tapped:
         return .run { send in
@@ -89,7 +91,7 @@ final class EffectRunTests: XCTestCase {
         return .none
       }
     }
-    let store = TestStore(initialState: State(), reducer: reducer, environment: ())
+    let store = TestStore(initialState: State(), reducer: reducer)
     await store.send(.tapped).finish()
   }
 
@@ -97,7 +99,7 @@ final class EffectRunTests: XCTestCase {
     enum CancelID {}
     struct State: Equatable {}
     enum Action: Equatable { case tapped, responseA, responseB }
-    let reducer = Reducer<State, Action, Void> { state, action, _ in
+    let reducer = Reduce<State, Action> { state, action in
       switch action {
       case .tapped:
         return .run { send in
@@ -112,7 +114,7 @@ final class EffectRunTests: XCTestCase {
         return .none
       }
     }
-    let store = TestStore(initialState: State(), reducer: reducer, environment: ())
+    let store = TestStore(initialState: State(), reducer: reducer)
     await store.send(.tapped).finish()
   }
 }

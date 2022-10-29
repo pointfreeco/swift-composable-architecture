@@ -48,14 +48,19 @@ day-to-day when building applications, such as:
 ### Essentials
 
 - <doc:GettingStarted>
-- <doc:GettingReadyForSwiftConcurrency>
-- <doc:Performance>
+- <doc:DependencyManagement>
 - <doc:Testing>
+- <doc:Performance>
 
-### State Management
+### Upgrade guides
 
-- ``Reducer``
-- ``Effect``
+- <doc:SwiftConcurrency>
+- <doc:MigratingToTheReducerProtocol>
+
+### State management
+
+- ``ReducerProtocol``
+- ``EffectPublisher``
 - ``Store``
 - ``ViewStore``
 
@@ -66,6 +71,7 @@ day-to-day when building applications, such as:
 
 ### Testing
 
+- <doc:Testing>
 - ``TestStore``
 - ``ActorIsolated``
 

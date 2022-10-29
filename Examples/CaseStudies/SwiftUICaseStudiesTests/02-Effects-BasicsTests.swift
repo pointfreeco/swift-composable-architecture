@@ -7,12 +7,11 @@ import XCTest
 final class EffectsBasicsTests: XCTestCase {
   func testCountDown() async {
     let store = TestStore(
-      initialState: EffectsBasicsState(),
-      reducer: effectsBasicsReducer,
-      environment: .unimplemented
+      initialState: EffectsBasics.State(),
+      reducer: EffectsBasics()
     )
 
-    store.environment.mainQueue = .immediate
+    store.dependencies.continuousClock = ImmediateClock()
 
     await store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -24,13 +23,12 @@ final class EffectsBasicsTests: XCTestCase {
 
   func testNumberFact() async {
     let store = TestStore(
-      initialState: EffectsBasicsState(),
-      reducer: effectsBasicsReducer,
-      environment: .unimplemented
+      initialState: EffectsBasics.State(),
+      reducer: EffectsBasics()
     )
 
-    store.environment.fact.fetch = { "\($0) is a good number Brent" }
-    store.environment.mainQueue = .immediate
+    store.dependencies.factClient.fetch = { "\($0) is a good number Brent" }
+    store.dependencies.continuousClock = ImmediateClock()
 
     await store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -46,12 +44,11 @@ final class EffectsBasicsTests: XCTestCase {
 
   func testDecrement() async {
     let store = TestStore(
-      initialState: EffectsBasicsState(),
-      reducer: effectsBasicsReducer,
-      environment: .unimplemented
+      initialState: EffectsBasics.State(),
+      reducer: EffectsBasics()
     )
 
-    store.environment.mainQueue = .immediate
+    store.dependencies.continuousClock = ImmediateClock()
 
     await store.send(.decrementButtonTapped) {
       $0.count = -1
@@ -63,12 +60,11 @@ final class EffectsBasicsTests: XCTestCase {
 
   func testDecrementCancellation() async {
     let store = TestStore(
-      initialState: EffectsBasicsState(),
-      reducer: effectsBasicsReducer,
-      environment: .unimplemented
+      initialState: EffectsBasics.State(),
+      reducer: EffectsBasics()
     )
 
-    store.environment.mainQueue = DispatchQueue.test.eraseToAnyScheduler()
+    store.dependencies.continuousClock = TestClock()
 
     await store.send(.decrementButtonTapped) {
       $0.count = -1
@@ -77,11 +73,4 @@ final class EffectsBasicsTests: XCTestCase {
       $0.count = 0
     }
   }
-}
-
-extension EffectsBasicsEnvironment {
-  static let unimplemented = Self(
-    fact: .unimplemented,
-    mainQueue: .unimplemented
-  )
 }

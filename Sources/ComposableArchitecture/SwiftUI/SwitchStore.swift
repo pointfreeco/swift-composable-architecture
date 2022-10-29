@@ -6,7 +6,7 @@ import SwiftUI
 /// user is logged-in or not:
 ///
 /// ```swift
-/// enum AppState {
+/// enum State {
 ///   case loggedIn(LoggedInState)
 ///   case loggedOut(LoggedOutState)
 /// }
@@ -17,14 +17,14 @@ import SwiftUI
 ///
 /// ```swift
 /// struct AppView: View {
-///   let store: Store<AppState, AppAction>
+///   let store: StoreOf<App>
 ///
 ///   var body: some View {
 ///     SwitchStore(self.store) {
-///       CaseLet(state: /AppState.loggedIn, action: AppAction.loggedIn) { loggedInStore in
+///       CaseLet(state: /App.State.loggedIn, action: App.Action.loggedIn) { loggedInStore in
 ///         LoggedInView(store: loggedInStore)
 ///       }
-///       CaseLet(state: /AppState.loggedOut, action: AppAction.loggedOut) { loggedOutStore in
+///       CaseLet(state: /App.State.loggedOut, action: App.Action.loggedOut) { loggedOutStore in
 ///         LoggedOutView(store: loggedOutStore)
 ///       }
 ///     }
@@ -50,23 +50,23 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// - See also: ``Reducer/pullback(state:action:environment:file:fileID:line:)``, a method that aids
-///   in transforming reducers that operate on each case of an enum into reducers that operate on
-///   the entire enum.
+/// See ``ReducerProtocol/ifCaseLet(_:action:then:file:fileID:line:)`` and
+/// ``Scope/init(state:action:_:file:fileID:line:)`` for embedding reducers that operate on each
+/// case of an enum in reducers that operate on the entire enum.
 public struct SwitchStore<State, Action, Content: View>: View {
   public let store: Store<State, Action>
-  public let content: () -> Content
+  public let content: Content
 
   init(
     store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> Content
+    @ViewBuilder content: () -> Content
   ) {
     self.store = store
-    self.content = content
+    self.content = content()
   }
 
   public var body: some View {
-    self.content()
+    self.content
       .environmentObject(StoreObservableObject(store: self.store))
   }
 }
@@ -135,26 +135,26 @@ extension CaseLet where EnumAction == CaseAction {
 /// a ``CaseLet`` for each case of the enum), then you must insert a ``Default`` view at the end of
 /// the ``SwitchStore``'s body.
 public struct Default<Content: View>: View {
-  private let content: () -> Content
+  private let content: Content
 
   /// Initializes a ``Default`` view that computes content depending on if a store of enum state
   /// does not match a particular case.
   ///
   /// - Parameter content: A function that returns a view that is visible only when the switch
   ///   store's state does not match a preceding ``CaseLet`` view.
-  public init(@ViewBuilder content: @escaping () -> Content) {
-    self.content = content
+  public init(@ViewBuilder content: () -> Content) {
+    self.content = content()
   }
 
   public var body: some View {
-    self.content()
+    self.content
   }
 }
 
 extension SwitchStore {
   public init<State1, Action1, Content1, DefaultContent>(
     _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> TupleView<
+    @ViewBuilder content: () -> TupleView<
       (
         CaseLet<State, Action, State1, Action1, Content1>,
         Default<DefaultContent>
@@ -171,8 +171,8 @@ extension SwitchStore {
       >
     >
   {
+    let content = content().value
     self.init(store: store) {
-      let content = content().value
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         if content.0.toCaseState(viewStore.state) != nil {
           content.0
@@ -188,7 +188,7 @@ extension SwitchStore {
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line,
-    @ViewBuilder content: @escaping () -> CaseLet<State, Action, State1, Action1, Content1>
+    @ViewBuilder content: () -> CaseLet<State, Action, State1, Action1, Content1>
   )
   where
     Content == WithViewStore<
@@ -208,7 +208,7 @@ extension SwitchStore {
 
   public init<State1, Action1, Content1, State2, Action2, Content2, DefaultContent>(
     _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> TupleView<
+    @ViewBuilder content: () -> TupleView<
       (
         CaseLet<State, Action, State1, Action1, Content1>,
         CaseLet<State, Action, State2, Action2, Content2>,
@@ -229,8 +229,8 @@ extension SwitchStore {
       >
     >
   {
+    let content = content().value
     self.init(store: store) {
-      let content = content().value
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         if content.0.toCaseState(viewStore.state) != nil {
           content.0
@@ -248,7 +248,7 @@ extension SwitchStore {
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line,
-    @ViewBuilder content: @escaping () -> TupleView<
+    @ViewBuilder content: () -> TupleView<
       (
         CaseLet<State, Action, State1, Action1, Content1>,
         CaseLet<State, Action, State2, Action2, Content2>
@@ -283,7 +283,7 @@ extension SwitchStore {
     DefaultContent
   >(
     _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> TupleView<
+    @ViewBuilder content: () -> TupleView<
       (
         CaseLet<State, Action, State1, Action1, Content1>,
         CaseLet<State, Action, State2, Action2, Content2>,
@@ -308,8 +308,8 @@ extension SwitchStore {
       >
     >
   {
+    let content = content().value
     self.init(store: store) {
-      let content = content().value
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         if content.0.toCaseState(viewStore.state) != nil {
           content.0
@@ -329,7 +329,7 @@ extension SwitchStore {
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line,
-    @ViewBuilder content: @escaping () -> TupleView<
+    @ViewBuilder content: () -> TupleView<
       (
         CaseLet<State, Action, State1, Action1, Content1>,
         CaseLet<State, Action, State2, Action2, Content2>,
@@ -370,7 +370,7 @@ extension SwitchStore {
     DefaultContent
   >(
     _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> TupleView<
+    @ViewBuilder content: () -> TupleView<
       (
         CaseLet<State, Action, State1, Action1, Content1>,
         CaseLet<State, Action, State2, Action2, Content2>,
@@ -399,8 +399,8 @@ extension SwitchStore {
       >
     >
   {
+    let content = content().value
     self.init(store: store) {
-      let content = content().value
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         if content.0.toCaseState(viewStore.state) != nil {
           content.0
@@ -427,7 +427,7 @@ extension SwitchStore {
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line,
-    @ViewBuilder content: @escaping () -> TupleView<
+    @ViewBuilder content: () -> TupleView<
       (
         CaseLet<State, Action, State1, Action1, Content1>,
         CaseLet<State, Action, State2, Action2, Content2>,
@@ -474,7 +474,7 @@ extension SwitchStore {
     DefaultContent
   >(
     _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> TupleView<
+    @ViewBuilder content: () -> TupleView<
       (
         CaseLet<State, Action, State1, Action1, Content1>,
         CaseLet<State, Action, State2, Action2, Content2>,
@@ -507,8 +507,8 @@ extension SwitchStore {
       >
     >
   {
+    let content = content().value
     self.init(store: store) {
-      let content = content().value
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         if content.0.toCaseState(viewStore.state) != nil {
           content.0
@@ -538,7 +538,7 @@ extension SwitchStore {
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line,
-    @ViewBuilder content: @escaping () -> TupleView<
+    @ViewBuilder content: () -> TupleView<
       (
         CaseLet<State, Action, State1, Action1, Content1>,
         CaseLet<State, Action, State2, Action2, Content2>,
@@ -591,7 +591,7 @@ extension SwitchStore {
     DefaultContent
   >(
     _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> TupleView<
+    @ViewBuilder content: () -> TupleView<
       (
         CaseLet<State, Action, State1, Action1, Content1>,
         CaseLet<State, Action, State2, Action2, Content2>,
@@ -628,8 +628,8 @@ extension SwitchStore {
       >
     >
   {
+    let content = content().value
     self.init(store: store) {
-      let content = content().value
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         if content.0.toCaseState(viewStore.state) != nil {
           content.0
@@ -662,7 +662,7 @@ extension SwitchStore {
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line,
-    @ViewBuilder content: @escaping () -> TupleView<
+    @ViewBuilder content: () -> TupleView<
       (
         CaseLet<State, Action, State1, Action1, Content1>,
         CaseLet<State, Action, State2, Action2, Content2>,
@@ -721,7 +721,7 @@ extension SwitchStore {
     DefaultContent
   >(
     _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> TupleView<
+    @ViewBuilder content: () -> TupleView<
       (
         CaseLet<State, Action, State1, Action1, Content1>,
         CaseLet<State, Action, State2, Action2, Content2>,
@@ -762,8 +762,8 @@ extension SwitchStore {
       >
     >
   {
+    let content = content().value
     self.init(store: store) {
-      let content = content().value
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         if content.0.toCaseState(viewStore.state) != nil {
           content.0
@@ -799,7 +799,7 @@ extension SwitchStore {
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line,
-    @ViewBuilder content: @escaping () -> TupleView<
+    @ViewBuilder content: () -> TupleView<
       (
         CaseLet<State, Action, State1, Action1, Content1>,
         CaseLet<State, Action, State2, Action2, Content2>,
@@ -864,7 +864,7 @@ extension SwitchStore {
     DefaultContent
   >(
     _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> TupleView<
+    @ViewBuilder content: () -> TupleView<
       (
         CaseLet<State, Action, State1, Action1, Content1>,
         CaseLet<State, Action, State2, Action2, Content2>,
@@ -909,8 +909,8 @@ extension SwitchStore {
       >
     >
   {
+    let content = content().value
     self.init(store: store) {
-      let content = content().value
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         if content.0.toCaseState(viewStore.state) != nil {
           content.0
@@ -949,7 +949,7 @@ extension SwitchStore {
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line,
-    @ViewBuilder content: @escaping () -> TupleView<
+    @ViewBuilder content: () -> TupleView<
       (
         CaseLet<State, Action, State1, Action1, Content1>,
         CaseLet<State, Action, State2, Action2, Content2>,
@@ -1020,7 +1020,7 @@ extension SwitchStore {
     DefaultContent
   >(
     _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping () -> TupleView<
+    @ViewBuilder content: () -> TupleView<
       (
         CaseLet<State, Action, State1, Action1, Content1>,
         CaseLet<State, Action, State2, Action2, Content2>,
@@ -1069,8 +1069,8 @@ extension SwitchStore {
       >
     >
   {
+    let content = content().value
     self.init(store: store) {
-      let content = content().value
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         if content.0.toCaseState(viewStore.state) != nil {
           content.0
@@ -1112,7 +1112,7 @@ extension SwitchStore {
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line,
-    @ViewBuilder content: @escaping () -> TupleView<
+    @ViewBuilder content: () -> TupleView<
       (
         CaseLet<State, Action, State1, Action1, Content1>,
         CaseLet<State, Action, State2, Action2, Content2>,
@@ -1208,21 +1208,16 @@ public struct _ExhaustivityCheckView<State, Action>: View {
       .padding()
       .background(Color.red.edgesIgnoringSafeArea(.all))
       .onAppear {
-        runtimeWarning(
+        runtimeWarn(
           """
-          SwitchStore@%@:%d does not handle the current case. …
+          A "SwitchStore" at "\(self.fileID):\(self.line)" does not handle the current case. …
 
             Unhandled case:
-              %@
+              \(debugCaseOutput(self.store.wrappedValue.state.value))
 
           Make sure that you exhaustively provide a "CaseLet" view for each case in your state, \
           or provide a "Default" view at the end of the "SwitchStore".
           """,
-          [
-            "\(self.fileID)",
-            self.line,
-            debugCaseOutput(self.store.wrappedValue.state.value),
-          ],
           file: self.file,
           line: self.line
         )
@@ -1233,7 +1228,7 @@ public struct _ExhaustivityCheckView<State, Action>: View {
   }
 }
 
-private class StoreObservableObject<State, Action>: ObservableObject {
+private final class StoreObservableObject<State, Action>: ObservableObject {
   let wrappedValue: Store<State, Action>
 
   init(store: Store<State, Action>) {

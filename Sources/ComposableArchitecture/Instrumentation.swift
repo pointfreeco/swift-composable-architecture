@@ -56,6 +56,9 @@ public class Instrumentation {
     case scopedStoreDeduplicate
     case scopedStoreChangeState
     case viewStoreSend
+    // TODO: ViewStore's now want an observe closure passed, so it's more obvious
+    // to scope down before subscribing. Let's add another measure for this?
+    // case viewStoreToLocalState
     case viewStoreChangeState
     case viewStoreDeduplicate
   }

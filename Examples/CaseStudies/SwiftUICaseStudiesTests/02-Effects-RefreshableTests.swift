@@ -7,13 +7,12 @@ import XCTest
 final class RefreshableTests: XCTestCase {
   func testHappyPath() async {
     let store = TestStore(
-      initialState: RefreshableState(),
-      reducer: refreshableReducer,
-      environment: .unimplemented
+      initialState: Refreshable.State(),
+      reducer: Refreshable()
     )
 
-    store.environment.fact.fetch = { "\($0) is a good number." }
-    store.environment.mainQueue = .immediate
+    store.dependencies.factClient.fetch = { "\($0) is a good number." }
+    store.dependencies.continuousClock = ImmediateClock()
 
     await store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -25,15 +24,14 @@ final class RefreshableTests: XCTestCase {
   }
 
   func testUnhappyPath() async {
-    struct FactError: Equatable, Error {}
     let store = TestStore(
-      initialState: RefreshableState(),
-      reducer: refreshableReducer,
-      environment: .unimplemented
+      initialState: Refreshable.State(),
+      reducer: Refreshable()
     )
 
-    store.environment.fact.fetch = { _ in throw FactError() }
-    store.environment.mainQueue = .immediate
+    struct FactError: Equatable, Error {}
+    store.dependencies.factClient.fetch = { _ in throw FactError() }
+    store.dependencies.continuousClock = ImmediateClock()
 
     await store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -44,17 +42,15 @@ final class RefreshableTests: XCTestCase {
 
   func testCancellation() async {
     let store = TestStore(
-      initialState: RefreshableState(),
-      reducer: refreshableReducer,
-      environment: .unimplemented
+      initialState: Refreshable.State(),
+      reducer: Refreshable()
     )
 
-    store.environment.mainQueue = .immediate
-
-    store.environment.fact.fetch = {
+    store.dependencies.factClient.fetch = {
       try await Task.sleep(nanoseconds: NSEC_PER_SEC)
       return "\($0) is a good number."
     }
+    store.dependencies.continuousClock = ImmediateClock()
 
     await store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -62,11 +58,4 @@ final class RefreshableTests: XCTestCase {
     await store.send(.refresh)
     await store.send(.cancelButtonTapped)
   }
-}
-
-extension RefreshableEnvironment {
-  static let unimplemented = Self(
-    fact: .unimplemented,
-    mainQueue: .unimplemented
-  )
 }

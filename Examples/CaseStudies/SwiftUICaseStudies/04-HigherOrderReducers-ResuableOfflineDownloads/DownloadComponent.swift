@@ -1,11 +1,114 @@
 import ComposableArchitecture
 @preconcurrency import SwiftUI  // NB: SwiftUI.Animation is not Sendable yet.
 
-struct DownloadComponentState<ID: Equatable>: Equatable {
-  var alert: AlertState<DownloadComponentAction.AlertAction>?
-  let id: ID
-  var mode: Mode
-  let url: URL
+struct DownloadComponent: ReducerProtocol {
+  struct State: Equatable {
+    var alert: AlertState<AlertAction>?
+    let id: AnyHashable
+    var mode: Mode
+    let url: URL
+  }
+
+  enum Action: Equatable {
+    case alert(AlertAction)
+    case buttonTapped
+    case downloadClient(TaskResult<DownloadClient.Event>)
+  }
+
+  enum AlertAction: Equatable {
+    case deleteButtonTapped
+    case dismissed
+    case nevermindButtonTapped
+    case stopButtonTapped
+  }
+
+  @Dependency(\.downloadClient) var downloadClient
+
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+    switch action {
+    case .alert(.deleteButtonTapped):
+      state.alert = nil
+      state.mode = .notDownloaded
+      return .none
+
+    case .alert(.nevermindButtonTapped),
+      .alert(.dismissed):
+      state.alert = nil
+      return .none
+
+    case .alert(.stopButtonTapped):
+      state.mode = .notDownloaded
+      state.alert = nil
+      return .cancel(id: state.id)
+
+    case .buttonTapped:
+      switch state.mode {
+      case .downloaded:
+        state.alert = deleteAlert
+        return .none
+
+      case .downloading:
+        state.alert = stopAlert
+        return .none
+
+      case .notDownloaded:
+        state.mode = .startingToDownload
+
+        return .run { [url = state.url] send in
+          for try await event in self.downloadClient.download(url) {
+            await send(.downloadClient(.success(event)), animation: .default)
+          }
+        } catch: { error, send in
+          await send(.downloadClient(.failure(error)), animation: .default)
+        }
+        .cancellable(id: state.id)
+
+      case .startingToDownload:
+        state.alert = stopAlert
+        return .none
+      }
+
+    case .downloadClient(.success(.response)):
+      state.mode = .downloaded
+      state.alert = nil
+      return .none
+
+    case let .downloadClient(.success(.updateProgress(progress))):
+      state.mode = .downloading(progress: progress)
+      return .none
+
+    case .downloadClient(.failure):
+      state.mode = .notDownloaded
+      state.alert = nil
+      return .none
+    }
+  }
+
+  private var deleteAlert: AlertState<AlertAction> {
+    AlertState(
+      title: TextState("Do you want to delete this map from your offline storage?"),
+      primaryButton: .destructive(
+        TextState("Delete"),
+        action: .send(.deleteButtonTapped, animation: .default)
+      ),
+      secondaryButton: self.nevermindButton
+    )
+  }
+
+  private var stopAlert: AlertState<AlertAction> {
+    AlertState(
+      title: TextState("Do you want to stop downloading this map?"),
+      primaryButton: .destructive(
+        TextState("Stop"),
+        action: .send(.stopButtonTapped, animation: .default)
+      ),
+      secondaryButton: self.nevermindButton
+    )
+  }
+
+  private var nevermindButton: AlertState<AlertAction>.Button {
+    .cancel(TextState("Nevermind"), action: .send(.nevermindButtonTapped))
+  }
 }
 
 enum Mode: Equatable {
@@ -29,119 +132,8 @@ enum Mode: Equatable {
   }
 }
 
-enum DownloadComponentAction: Equatable {
-  case alert(AlertAction)
-  case buttonTapped
-  case downloadClient(TaskResult<DownloadClient.Event>)
-
-  enum AlertAction: Equatable {
-    case deleteButtonTapped
-    case dismissed
-    case nevermindButtonTapped
-    case stopButtonTapped
-  }
-}
-
-struct DownloadComponentEnvironment {
-  var downloadClient: DownloadClient
-}
-
-extension Reducer {
-  func downloadable<ID: Hashable>(
-    state: WritableKeyPath<State, DownloadComponentState<ID>>,
-    action: CasePath<Action, DownloadComponentAction>,
-    environment: @escaping (Environment) -> DownloadComponentEnvironment
-  ) -> Self {
-    .combine(
-      Reducer<DownloadComponentState<ID>, DownloadComponentAction, DownloadComponentEnvironment> {
-        state, action, environment in
-        switch action {
-        case .alert(.deleteButtonTapped):
-          state.alert = nil
-          state.mode = .notDownloaded
-          return .none
-
-        case .alert(.nevermindButtonTapped),
-          .alert(.dismissed):
-          state.alert = nil
-          return .none
-
-        case .alert(.stopButtonTapped):
-          state.mode = .notDownloaded
-          state.alert = nil
-          return .cancel(id: state.id)
-
-        case .buttonTapped:
-          switch state.mode {
-          case .downloaded:
-            state.alert = deleteAlert
-            return .none
-
-          case .downloading:
-            state.alert = stopAlert
-            return .none
-
-          case .notDownloaded:
-            state.mode = .startingToDownload
-
-            return .run { [url = state.url] send in
-              for try await event in environment.downloadClient.download(url) {
-                await send(.downloadClient(.success(event)), animation: .default)
-              }
-            } catch: { error, send in
-              await send(.downloadClient(.failure(error)), animation: .default)
-            }
-            .cancellable(id: state.id)
-
-          case .startingToDownload:
-            state.alert = stopAlert
-            return .none
-          }
-
-        case .downloadClient(.success(.response)):
-          state.mode = .downloaded
-          state.alert = nil
-          return .none
-
-        case let .downloadClient(.success(.updateProgress(progress))):
-          state.mode = .downloading(progress: progress)
-          return .none
-
-        case .downloadClient(.failure):
-          state.mode = .notDownloaded
-          state.alert = nil
-          return .none
-        }
-      }
-      .pullback(state: state, action: action, environment: environment),
-      self
-    )
-  }
-}
-
-private let deleteAlert = AlertState(
-  title: TextState("Do you want to delete this map from your offline storage?"),
-  primaryButton: .destructive(
-    TextState("Delete"),
-    action: .send(.deleteButtonTapped, animation: .default)
-  ),
-  secondaryButton: nevermindButton
-)
-
-private let stopAlert = AlertState(
-  title: TextState("Do you want to stop downloading this map?"),
-  primaryButton: .destructive(
-    TextState("Stop"),
-    action: .send(.stopButtonTapped, animation: .default)
-  ),
-  secondaryButton: nevermindButton
-)
-
-let nevermindButton = AlertState<DownloadComponentAction.AlertAction>.Button
-  .cancel(TextState("Nevermind"), action: .send(.nevermindButtonTapped))
-
-struct DownloadComponent<ID: Equatable>: View {
-  let store: Store<DownloadComponentState<ID>, DownloadComponentAction>
+struct DownloadComponentView: View {
+  let store: StoreOf<DownloadComponent>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -170,7 +162,7 @@ struct DownloadComponent<ID: Equatable>: View {
       }
       .foregroundStyle(.primary)
       .alert(
-        self.store.scope(state: \.alert, action: DownloadComponentAction.alert),
+        self.store.scope(state: \.alert, action: DownloadComponent.Action.alert),
         dismiss: .dismissed
       )
     }

@@ -1,4 +1,4 @@
-import ComposableArchitecture
+import Dependencies
 import Foundation
 import XCTestDynamicOverlay
 
@@ -71,11 +71,16 @@ public struct AuthenticationClient: Sendable {
   }
 }
 
-#if DEBUG
-  extension AuthenticationClient {
-    public static let unimplemented = Self(
-      login: XCTUnimplemented("\(Self.self).login"),
-      twoFactor: XCTUnimplemented("\(Self.self).twoFactor")
-    )
+extension AuthenticationClient: TestDependencyKey {
+  public static let testValue = Self(
+    login: unimplemented("\(Self.self).login"),
+    twoFactor: unimplemented("\(Self.self).twoFactor")
+  )
+}
+
+extension DependencyValues {
+  public var authenticationClient: AuthenticationClient {
+    get { self[AuthenticationClient.self] }
+    set { self[AuthenticationClient.self] = newValue }
   }
-#endif
+}

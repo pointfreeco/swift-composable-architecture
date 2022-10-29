@@ -4,12 +4,12 @@ Learn how to write comprehensive and exhaustive tests for your features built in
 Architecture.
 
 The testability of features built in the Composable Architecture is the #1 priority of the library.
-We never want to introduce new capabilities to the library that make testing more difficult.
+It should be possible to test not only how state changes when actions are sent into the store,
+but also how effects are executed and feed data back into the system.
 
 * [Testing state changes][Testing-state-changes]
 * [Testing effects][Testing-effects]
-* [Designing dependencies][Designing-dependencies]
-* [Unimplemented dependencies][Unimplemented-dependencies]
+* [Non-exhaustive testing][Non-exhaustive-testing]
 
 ## Testing state changes
 
@@ -19,64 +19,62 @@ the system. To test this we can technically run a piece of mutable state through
 then assert on how it changed after, like this:
 
 ```swift
-struct State: Equatable { var count = 0 }
-enum Action { case incrementButtonTapped, decrementButtonTapped }
-struct Environment {}
+struct Feature: ReducerProtocol {
+  struct State: Equatable { var count = 0 }
+  enum Action { case incrementButtonTapped, decrementButtonTapped }
 
-let counter = Reducer<State, Action, Environment> { state, action, environment in
-  switch action {
-  case .incrementButtonTapped:
-    state.count += 1
-    return .none
-  case .decrementButtonTapped:
-    state.count -= 1
-    return .none
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+    switch action {
+    case .incrementButtonTapped:
+      state.count += 1
+      return .none
+    case .decrementButtonTapped:
+      state.count -= 1
+      return .none
+    }
   }
 }
 
-let environment = Environment()
-var currentState = State(count: 0)
+func testBasics() {
+  let feature = Feature()
+  var currentState = Feature.State(count: 0)
+  _ = feature.reduce(into: &currentState, action: .incrementButtonTapped)
+  XCTAssertEqual(
+    currentState,
+    State(count: 1)
+  )
 
-_ = reducer(&currentState, .incrementButtonTapped, environment)
-
-XCTAssertEqual(
-  currentState,
-  State(count: 1)
-)
-
-_ = reducer(&currentState, .decrementButtonTapped, environment)
-
-XCTAssertEqual(
-  currentState,
-  State(count: 0)
-)
+  _ = feature.reduce(into: &currentState, action: .decrementButtonTapped)
+  XCTAssertEqual(
+    currentState,
+    State(count: 0)
+  )
+}
 ```
 
 This will technically work, but it's a lot boilerplate for something that should be quite simple.
 
 The library comes with a tool specifically designed to make testing like this much simpler and more
 concise. It's called ``TestStore``, and it is constructed similarly to ``Store`` by providing the
-initial state of the feature, the ``Reducer`` that run's the feature's logic, and an environment of
-dependencies for the feature to use:
+initial state of the feature and the ``Reducer`` that run's the feature's logic:
 
 ```swift
 @MainActor
 class CounterTests: XCTestCase {
   func testBasics() async {
     let store = TestStore(
-      initialState: State(count: 0),
-      reducer: counter,
-      environment: Environment()
+      initialState: Feature.State(count: 0),
+      reducer: Feature()
     )
   }
 }
 ```
 
-> Test cases that use ``TestStore`` should be annotated as `@MainActor` and test methods should be
-> marked as `async` since most assertion helpers on ``TestStore`` can suspend.
+> Tip: Test cases that use ``TestStore`` should be annotated as `@MainActor` and test methods should 
+be marked as `async` since most assertion helpers on ``TestStore`` can suspend.
 
-Test stores have a ``TestStore/send(_:_:file:line:)-7vwv9`` method, but it behaves differently from
-stores and view stores. You provide an action to send into the system, but then you must also
+Test stores have a ``TestStore/send(_:assert:file:line:)-1ax61`` method, but it behaves differently
+from stores and view stores. You provide an action to send into the system, but then you must also
 provide a trailing closure to describe how the state of the feature changed after sending the
 action:
 
@@ -96,8 +94,8 @@ await store.send(.incrementButtonTapped) {
 }
 ```
 
-> The ``TestStore/send(_:_:file:line:)-7vwv9`` method is `async` for technical reasons that we do
-not have to worry about right now.
+> The ``TestStore/send(_:assert:file:line:)-1ax61`` method is `async` for technical reasons that we
+> do not have to worry about right now.
 
 If your mutation is incorrect, meaning you perform a mutation that is different from what happened
 in the ``Reducer``, then you will get a test failure with a nicely formatted message showing exactly
@@ -133,7 +131,7 @@ await store.send(.decrementButtonTapped) {
 }
 ```
 
-> Note: Technically we could have written the mutation block in the following manner:
+> Tip: Technically we could have written the mutation block in the following manner:
 >
 > ```swift
 > await store.send(.incrementButtonTapped) {
@@ -147,14 +145,24 @@ await store.send(.decrementButtonTapped) {
 > by one, but we haven't proven we know the precise value of `count` at each step of the way.
 >
 > In general, the less logic you have in the trailing closure of
-> ``TestStore/send(_:_:file:line:)-7vwv9``, the stronger your assertion will be. It is best to use
-> simple, hard coded data for the mutation.
+> ``TestStore/send(_:assert:file:line:)-1ax61``, the stronger your assertion will be. It is best to
+> use simple, hard-coded data for the mutation.
 
 Test stores do expose a ``TestStore/state`` property, which can be useful for performing assertions
-on computed properties you might have defined on your state. However, when inside the trailing
-closure of ``TestStore/send(_:_:file:line:)-7vwv9``, the ``TestStore/state`` property is equal
-to the state _before_ sending the action, not after. That prevents you from being able to use an
-escape hatch to get around needing to actually describe the state mutation, like so:
+on computed properties you might have defined on your state. For example, if `State` had a 
+computed property for checking if `count` was prime, we could test it like so:
+
+```swift
+store.send(.incrementButtonTapped) {
+  $0.count = 3
+}
+XCTAssertTrue(store.state.isPrime)
+```
+
+However, when inside the trailing closure of ``TestStore/send(_:assert:file:line:)-1ax61``, the 
+``TestStore/state`` property is equal to the state _before_ sending the action, not after. That 
+prevents you from being able to use an escape hatch to get around needing to actually describe the 
+state mutation, like so:
 
 ```swift
 store.send(.incrementButtonTapped) {
@@ -166,39 +174,39 @@ store.send(.incrementButtonTapped) {
 
 Testing state mutations as shown in the previous section is powerful, but is only half the story
 when it comes to testing features built in the Composable Architecture. The second responsibility of
-``Reducer``s, after mutating state from an action, is to return an ``Effect`` that encapsulates a
-unit of work that runs in the outside world and feeds data back into the system.
+``Reducer``s, after mutating state from an action, is to return an ``EffectTask`` that encapsulates 
+a unit of work that runs in the outside world and feeds data back into the system.
 
 Effects form a major part of a feature's logic. They can perform network requests to external
 services, load and save data to disk, start and stop timers, interact with Apple frameworks (Core
 Location, Core Motion, Speech Recognition, etc.), and more.
 
-As a simple example, suppose we have a feature with a button such that when you tap it it starts
+As a simple example, suppose we have a feature with a button such that when you tap it, it starts
 a timer that counts up until you reach 5, and then stops. This can be accomplished using the
-``Effect/run(priority:operation:catch:file:fileID:line:)`` helper, which provides you an
-asynchronous context to operate in and can send multiple actions back into the system:
+``EffectPublisher/run(priority:operation:catch:file:fileID:line:)`` helper, which provides you with 
+an asynchronous context to operate in and can send multiple actions back into the system:
 
 ```swift
-struct State: Equatable { var count = 0 }
-enum Action {  case startTimerButtonTapped, timerTick }
-struct Environment {}
-
-let reducer = Reducer<State, Action, Environment> { state, action, environment in
+struct Feature: ReducerProtocol {
+  struct State: Equatable { var count = 0 }
+  enum Action { case startTimerButtonTapped, timerTick }
   enum TimerID {}
 
-  switch action {
-  case .startTimerButtonTapped:
-    state.count = 0
-    return .run { send in
-      for _ in 1...5 {
-        try await Task.sleep(nanoseconds: NSEC_PER_SEC)
-        await send(.timerTick)
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+    switch action {
+    case .startTimerButtonTapped:
+      state.count = 0
+      return .run { send in
+        for _ in 1...5 {
+          try await Task.sleep(for: .seconds(1))
+          await send(.timerTick)
+        }
       }
-    }
 
-  case .timerTick:
-    state.count += 1
-    return .none
+    case .timerTick:
+      state.count += 1
+      return .none
+    }
   }
 }
 ```
@@ -211,9 +219,8 @@ when testing state mutations:
 class TimerTests: XCTestCase {
   func testBasics() async {
     let store = TestStore(
-      initialState: State(count: 0),
-      reducer: reducer,
-      environment: Environment()
+      initialState: Feature.State(count: 0),
+      reducer: Feature()
     )
   }
 }
@@ -243,9 +250,9 @@ supposed to be running, or perhaps the data it feeds into the system later is wr
 requires all effects to finish.
 
 To get this test passing we need to assert on the actions that are sent back into the system
-by the effect. We do this by using the ``TestStore/receive(_:timeout:_:file:line:)-88eyr`` method,
-which allows you to assert which action you expect to receive from an effect, as well as how the
-state changes after receiving that effect:
+by the effect. We do this by using the ``TestStore/receive(_:timeout:assert:file:line:)-1rwdd``
+method, which allows you to assert which action you expect to receive from an effect, as well as how
+the state changes after receiving that effect:
 
 ```swift
 await store.receive(.timerTick) {
@@ -261,13 +268,13 @@ going to be received, but after waiting around for a small amount of time no act
 ```
 
 This is because our timer is on a 1 second interval, and by default
-``TestStore/receive(_:timeout:_:file:line:)-88eyr`` only waits for a fraction of a second. This is
-because typically you should not be performing real time-based asynchrony in effects, and instead
-using a controlled entity, such as a scheduler or clock, that can be sped up in tests. We will
-demonstrate this in a moment, so for now let's increase the timeout:
+``TestStore/receive(_:timeout:assert:file:line:)-1rwdd`` only waits for a fraction of a second. This
+is because typically you should not be performing real time-based asynchrony in effects, and instead
+using a controlled entity, such as a clock, that can be sped up in tests. We will demonstrate this 
+in a moment, so for now let's increase the timeout:
 
 ```swift
-await store.receive(.timerTick, timeout: 2*NSEC_PER_SEC) {
+await store.receive(.timerTick, timeout: .seconds(2)) {
   $0.count = 1
 }
 ```
@@ -276,27 +283,27 @@ This assertion now passes, but the overall test is still failing because there a
 actions to receive. The timer should tick 5 times in total, so we need five `receive` assertions:
 
 ```swift
-await store.receive(.timerTick, timeout: 2*NSEC_PER_SEC) {
+await store.receive(.timerTick, timeout: .seconds(2)) {
   $0.count = 1
 }
-await store.receive(.timerTick, timeout: 2*NSEC_PER_SEC) {
+await store.receive(.timerTick, timeout: .seconds(2)) {
   $0.count = 2
 }
-await store.receive(.timerTick, timeout: 2*NSEC_PER_SEC) {
+await store.receive(.timerTick, timeout: .seconds(2)) {
   $0.count = 3
 }
-await store.receive(.timerTick, timeout: 2*NSEC_PER_SEC) {
+await store.receive(.timerTick, timeout: .seconds(2)) {
   $0.count = 4
 }
-await store.receive(.timerTick, timeout: 2*NSEC_PER_SEC) {
+await store.receive(.timerTick, timeout: .seconds(2)) {
   $0.count = 5
 }
 ```
 
 Now the full test suite passes, and we have exhaustively proven how effects are executed in this
-feature. If in the future we tweak the logic of the effect, like say have it emit some number of
-times different from 5, then we will immediately get a test failure letting us know that we have
-not properly asserted on how the features evolves over time.
+feature. If in the future we tweak the logic of the effect, like say have it emit 10 times instead 
+of 5, then we will immediately get a test failure letting us know that we have not properly 
+asserted on how the features evolve over time.
 
 However, there is something not ideal about how this feature is structured, and that is the fact
 that we are doing actual, uncontrolled time-based asynchrony in the effect:
@@ -304,7 +311,7 @@ that we are doing actual, uncontrolled time-based asynchrony in the effect:
 ```swift
 return .run { send in
   for _ in 1...5 {
-    try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+    try await Task.sleep(for: .seconds(1)) // ⬅️
     await send(.timerTick)
   }
 }
@@ -315,50 +322,52 @@ can receive all of the actions from the timer. This makes our test suite far too
 the future we need to test a feature that has a timer that emits hundreds or thousands of times?
 We cannot hold up our test suite for minutes or hours just to test that one feature.
 
-To fix this we need to hold onto a dependency in the feature's environment that aids in performing
-time-based asynchrony, but in a way that is controllable. One way to do this is to add a Combine
-scheduler to the environment:
+To fix this we need to add a dependency to the reducer that aids in performing time-based 
+asynchrony, but in a way that is controllable. One way to do this is to add a clock as a
+`@Dependency` to the reducer:
 
 ```swift
-import CombineSchedulers
+import Clocks
 
-struct Environment {
-  var mainQueue: any SchedulerOf<DispatchQueue>
+struct Feature: ReducerProtocol {
+  struct State { … }
+  enum Action { … }
+  @Dependency(\.continuousClock) var clock
 }
 ```
 
-> To make use of controllable schedulers you must use the
-[Combine Schedulers][gh-combine-schedulers] library, which is automatically included with the
-Composable Architecture.
+> Tip: To make use of controllable clocks you must use the [Clocks][gh-swift-clocks] library, which is 
+automatically included with the Composable Architecture.
 
-And then the timer effect in the reducer can make use of the scheduler to sleep rather than reaching
+And then the timer effect in the reducer can make use of the clock to sleep rather than reaching
 out to the uncontrollable `Task.sleep` method:
 
 ```swift
 return .run { send in
   for _ in 1...5 {
-    try await environment.mainQueue.sleep(for: .seconds(1))
+    try await self.clock.sleep(for: .seconds(1))
     await send(.timerTick)
   }
 }
 ```
 
-> The `sleep(for:)` method on `Scheduler` is provided by the
-[Combine Schedulers][gh-combine-schedulers] library.
+> Tip: The `sleep(for:)` method on `Clock` is provided by the
+[Swift Clocks][gh-swift-clocks] library.
 
-By having a scheduler in the environment we can supply a controlled value in tests, such as an
-immediate scheduler that does not suspend at all when you ask it to sleep:
+By having a clock as a dependency in the feature we can supply a controlled version in tests, such 
+as an immediate clock that does not suspend at all when you ask it to sleep:
 
 ```swift
 let store = TestStore(
-  initialState: State(count: 0),
-  reducer: reducer,
-  environment: Environment(mainQueue: .immediate)
+  initialState: Feature.State(count: 0),
+  reducer: Feature()
 )
+
+store.dependencies.continuousClock = ImmediateClock()
 ```
 
 With that small change we can drop the `timeout` arguments from the
-``TestStore/receive(_:timeout:_:file:line:)-88eyr`` invocations:
+``TestStore/receive(_:timeout:assert:file:line:)-1rwdd`` invocations:
 
 ```swift
 await store.receive(.timerTick) {
@@ -383,179 +392,173 @@ await store.receive(.timerTick) {
 
 …and the test still passes, but now does so immediately.
 
-## Designing dependencies
+The more time you take to control the dependencies your features use, the easier it will be to
+write tests for your features. To learn more about designing dependencies and how to best leverage 
+dependencies, read the <doc:DependencyManagement> article.
 
-The [previous section][Testing-effects] shows the basics of testing effects in features, but only
-for a simple time-based effect which was testable thanks to the tools that the
-[Combine Schedulers][gh-combine-schedulers] library provides.
+## Non-exhaustive testing
 
-However, in general, the testability of a feature's effects is correlated with how easy it is to
-control the dependencies your feature needs to do its job. If your feature needs to make network
-requests, access to a location manager, or generate random numbers, then all of those dependencies
-need to be designed in such a way that you can control them during tests so that you can make
-assertions on how your feature interacts with those clients.
+The previous sections describe in detail how to write tests in the Composable Architecture that
+exhaustively prove how the entire feature evolves over time. You must assert on how every piece
+of state changes, how every effect feeds data back into the system, and you must even make sure
+that all effects complete before the test store is deallocated. This can be powerful, but it can
+also be a nuisance, especially for highly composed features. This is why sometimes you may want
+to test in a non-exhaustive style.
 
-There are many ways to design controllable dependencies, and you can feel free to use any techniques
-you feel comfortable with, but we will quickly sketch one such pattern.
+> Tip: The concept of "non-exhaustive test store" was first introduced by
+[Krzysztof Zabłocki][merowing.info] in a [blog post][exhaustive-testing-in-tca] and 
+[conference talk][Composable-Architecture-at-Scale], and then later became integrated into the
+core library.
 
-Most dependencies can be modeled as an abstract interface to some endpoints that perform work
-and return some data. Protocols are a common way to model such interfaces, but simple structs with
-function properties can also work, and can reduce boilerplate.
+This style of testing is most useful for testing the integration of multiple features where you want
+to focus on just a certain slice of the behavior. Exhaustive testing can still be important to use
+for leaf node features, where you truly do want to assert on everything happening inside the 
+feature.
+ 
+For example, suppose you have a tab-based application where the 3rd tab is a login screen. The user 
+can fill in some data on the screen, then tap the "Submit" button, and then a series of events 
+happens to  log the user in. Once the user is logged in, the 3rd tab switches from a login screen 
+to a profile screen, _and_ the selected tab switches to the first tab, which is an activity screen.
 
-For example, suppose you had a dependency that could make API requests to a server for fetching
-a fact about a number. This can be modeled as a simple struct with a single function property:
+When writing tests for the login feature we will want to do that in the exhaustive style so that we
+can prove exactly how the feature would behave in production. But, suppose we wanted to write an
+integration test that proves after the user taps the "Login" button that ultimately the selected
+tab switches to the first tab.
 
-```swift
-struct NumberFactClient {
-  var fetch: (Int) async throws -> String
-}
-```
-
-This defines the interface to fetching a number fact, and we can create a "live" implementation of
-the interface that makes an actual network request by constructing an instance, like so:
-
-```swift
-extension NumberFactClient {
-  static let live = Self(
-    fetch: { number in
-      let (data, _) = try await URLSession.shared
-        .data(from: URL(string: "http://numbersapi.com/\(number)/trivia")!)
-      return String(decoding: data, as: UTF8.self)
-    }
-  )
-}
-```
-
-This live implementation is appropriate to use when running the app in the simulator or on an actual
-device.
-
-We can also create a "mock" implementation of the interface that doesn't make a network request at
-all and instead immediately returns a predictable string:
-
-```swift
-extension NumberFactClient {
-  static let mock = Self(
-    fetch: { number in "\(number) is a good number." }
-  )
-}
-```
-
-This mock implementation is appropriate to use in tests (and sometimes even previews) where you
-do not want to make live network requests since that leaves you open to the vagaries of the outside
-world that you cannot possibly predict.
-
-For example, if you had a simple feature that allows you to increment and decrement a counter,
-as well as fetch a fact for the current count, then you could test is roughly like so:
+In order to test such a complex flow we must test the integration of multiple features, which means
+dealing with complex, nested state and effects. We can emulate this flow in a test by sending 
+actions that mimic the user logging in, and then eventually assert that the selected tab switched 
+to activity:
 
 ```swift
 let store = TestStore(
-  initialState: State(),
-  reducer: reducer,
-  environment: Environment(numberFact: .mock)
+  initialState: App.State(),
+  reducer: App()
 )
 
-await store.send(.incrementButtonTapped) {
-  $0.count = 1
-}
-await store.send(.factButtonTapped)
-await store.receive(.factResponse("1 is a good number.")) {
-  $0.fact = "1 is a good number."
-}
-```
-
-Such a test can run immediately without making a network request to the outside world, and it will
-pass deterministically 100% of the time.
-
-Most, if not all, dependencies can be designed in this way, from API clients to location managers.
-The Composable Architecture repo has [many examples][tca-examples] that demonstrate how to design
-clients for very complex dependencies, such as network requests, download managers, web sockets,
-speech recognition, and more.
-
-## Unimplemented dependencies
-
-Once you have designed your dependency in such a way that makes it easy to control, there is a
-particular implementation of the dependency that can increase the strength of your tests. In the
-[previous section][Designing-dependencies] we saw that we always want at least a "live"
-implementation for using in the production version of the app, and a "mock" implementation for using
-in tests, but there is another implementation that can be useful.
-
-We call this the "unimplemented" implementation, which constructs an instance of the dependency
-client whose endpoints have all been stubbed to invoke `XCTFail` so that if the endpoint is ever
-used in a test it will trigger a test failure. This allows you to prove what parts of your
-dependency is actually used in a test.
-
-Not every test needs to use every endpoint of every dependency your feature has access to. By
-providing the bare essentials of dependency endpoints that your test actually needs we can catch
-in the future when a certain execution path of the feature starts using a new dependency that we
-did not expect. This could either be due to a bug in the logic, or it could mean there is more logic
-that we need to assert on in the test.
-
-For example, suppose we were designing a client that could interface with a speech recognition API.
-There would be an endpoint for requesting authorization to recognize speech on the device, an
-endpoint for starting a new speech recognition task, and an endpoint for finishing the task:
-
-```swift
-struct SpeechClient {
-  var finishTask: () async -> Void
-  var requestAuthorization: @Sendable () async -> SpeechAuthorizationStatus
-  var startTask: (Request) async -> AsyncThrowingStream<SpeechRecognitionResult, Error>
-}
-```
-
-We can construct an instance of this client that stubs each endpoint as a function that simply
-calls `XCTFail` under the hood:
-
-```swift
-import XCTestDynamicOverlay
-
-extension SpeechClient {
-  static let unimplemented = Self(
-    finishTask: XCTUnimplemented("\(Self.self).finishTask"),
-    requestAuthorization: XCTUnimplemented("\(Self.self).requestAuthorization"),
-    startTask: XCTUnimplemented("\(Self.self).recognitionTask")
-  )
-}
-```
-
-> Note: In general, `XCTest` APIs cannot be used in code that is run in the simulator or on devices.
-> To get around this we make use of our [XCTest Dynamic Overlay][gh-xctest-dynamic-overlay] library,
-> which dynamically loads `XCTFail` to be available in all execution environments, not only tests.
-
-Then in tests we start the store's environment with the unimplemented client, and override the bare
-essentials of endpoints we expect to be called.
-
-For example, if we were testing the flow in the feature where the user denies speech recognition
-access, then we would not expect the `startTask` or `finishTask` endpoints to ever be called. That
-would probably be a logical error, after all when the user denies permission those endpoints can't
-do anything useful.
-
-We can prove that this is the case by using the `.unimplemented` speech client in the test, and then
-overriding only the `requestAuthorization` endpoint with an actual implementation:
-
-```swift
-func testDeniedAuthorization() async {
-  let store = TestStore(
-    initialState: State(),
-    reducer: reducer,
-    environment: Environment(speech: .unimplemented)
-  )
-
-  store.environment.speech.requestAuthorization = { .denied }
-
+// 1️⃣ Emulate user tapping on submit button.
+await store.send(.login(.submitButtonTapped)) {
+  $0.login?.isLoading = true
+  // 2️⃣ Assert how state changes in the login feature
   …
 }
+
+// 3️⃣ Login feature performs API request to login, and
+//    sends response back into system.
+await store.receive(.login(.loginResponse(.success))) {
+  $0.login?.isLoading = false
+  // 4️⃣ Assert how state changes in the login feature
+  …
+}
+
+// 5️⃣ Login feature sends a delegate action to let parent
+//    feature know it has successfully logged in.
+await store.receive(.login(.delegate(.didLogin))) {
+  $0.authenticatedTab = .loggedIn(
+    Profile.State(...)
+  )
+  // 6️⃣ Assert how all of app state changes due to that action.
+  …
+  // 7️⃣ *Finally* assert that the selected tab switches to activity.
+  $0.selectedTab = .activity
+}
 ```
 
-You can make your tests much stronger by starting all dependencies in an "unimplemented" state, and
-then only implementing the bare essentials of endpoints that your feature needs for the particular
-flow you are testing. Then in the future, if your feature starts using new dependency endpoints you
-will be instantly notified in tests and can figure out if that is expected or if a bug has been
-introduced.
+Doing this with exhaustive testing is verbose, and there are a few problems with this:
+
+* We need to be intimately knowledgeable in how the login feature works so that we can assert
+on how its state changes and how its effects feed data back into the system. 
+* If the login feature were to change its logic we may get test failures here even though the logic 
+we are acutally trying to test doesn't really care about those changes.
+* This test is very long, and so if there are other similar but slightly different flows we want to
+test we will be tempted to copy-and-paste the whole thing, leading to lots of duplicated, fragile
+tests.
+
+Non-exhaustive testing allows us to test the high-level flow that we are concerned with, that of
+login causing the selected tab to switch to activity, without having to worry about what is 
+happening inside the login feature. To do this, we can turn off ``TestStore/exhaustivity`` in the
+test store, and then just assert on what we are interested in:
+
+```swift
+let store = TestStore(
+  initialState: App.State(),
+  reducer: App()
+)
+store.exhaustivity = .none // ⬅️
+
+await store.send(.login(.submitButtonTapped))
+await store.receive(.login(.delegate(.didLogin))) {
+  $0.selectedTab = .activity
+}
+```
+
+In particular, we did not assert on how the login's state changed or how the login's effects fed
+data back into the system. We just assert that when the "Submit" button is tapped that eventually
+we get the `didLogin` delegate action and that causes the selected tab to flip to activity. Now
+the login feature is free to make any change it wants to make without affecting this integration
+test.
+
+Using ``Exhaustivity/none`` for ``TestStore/exhaustivity`` causes all un-asserted changes to pass
+without any notification. If you would like to see what test failures are being supressed without
+actually causing a failure, you can use ``Exhaustivity/partial``:
+
+```swift
+let store = TestStore(
+  initialState: App.State(),
+  reducer: App()
+)
+store.exhaustivity = .partial // ⬅️
+
+await store.send(.login(.submitButtonTapped))
+await store.receive(.login(.delegate(.didLogin))) {
+  $0.selectedTab = .activity
+}
+```
+
+When this is run you will get grey, informational boxes on each assertion where some change wasn't
+fully asserted on:
+
+```
+◽️ A state change does not match expectation: …
+
+     App.State(
+       authenticatedTab: .loggedOut(
+         Login.State(
+   −       isLoading: false
+   +       isLoading: true,
+           …
+         )
+       )
+     )
+   
+   (Expected: −, Actual: +)
+
+◽️ Skipped receiving .login(.loginResponse(.success))
+
+◽️ A state change does not match expectation: …
+
+     App.State(
+   −   authenticatedTab: .loggedOut(…)
+   +   authenticatedTab: .loggedIn(
+   +     Profile.State(…)
+   +   ),
+       …
+     )
+   
+   (Expected: −, Actual: +)
+```
+
+The test still passes, and none of these notifications are test failures. They just let you know
+what things you are not explicitly asserting against, and can be useful to see when tracking down
+bugs that happen in production but that aren't currently detected in tests.
 
 [Testing-state-changes]: #Testing-state-changes
 [Testing-effects]: #Testing-effects
-[Designing-dependencies]: #Designing-dependencies
-[Unimplemented-dependencies]: #Unimplemented-dependencies
 [gh-combine-schedulers]: http://github.com/pointfreeco/combine-schedulers
 [gh-xctest-dynamic-overlay]: http://github.com/pointfreeco/xctest-dynamic-overlay
 [tca-examples]: https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples
+[gh-swift-clocks]: http://github.com/pointfreeco/swift-clocks
+[merowing.info]: https://www.merowing.info
+[exhaustive-testing-in-tca]: https://www.merowing.info/exhaustive-testing-in-tca/
+[Composable-Architecture-at-Scale]: https://vimeo.com/751173570
+[Non-exhaustive-testing]: #Non-exhaustive-testing

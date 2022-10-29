@@ -2,20 +2,20 @@ import ComposableArchitecture
 @preconcurrency import SwiftUI  // NB: SwiftUI.Animation is not Sendable yet.
 
 private let readMe = """
-  This screen demonstrates how the `Reducer` struct can be extended to enhance reducers with \
+  This screen demonstrates how the `AnyReducer` struct can be extended to enhance reducers with \
   extra functionality.
 
   In this example we introduce a declarative interface for describing long-running effects, \
   inspired by Elm's `subscriptions` API.
   """
 
-extension Reducer {
+extension AnyReducer {
   static func subscriptions(
-    _ subscriptions: @escaping (State, Environment) -> [AnyHashable: Effect<Action, Never>]
+    _ subscriptions: @escaping (State, Environment) -> [AnyHashable: EffectTask<Action>]
   ) -> Self {
-    var activeSubscriptions: [AnyHashable: Effect<Action, Never>] = [:]
+    var activeSubscriptions: [AnyHashable: EffectTask<Action>] = [:]
 
-    return Reducer { state, _, environment in
+    return AnyReducer { state, _, environment in
       let currentSubscriptions = subscriptions(state, environment)
       defer { activeSubscriptions = currentSubscriptions }
       return .merge(
@@ -34,6 +34,8 @@ extension Reducer {
   }
 }
 
+// MARK: - Feature domain
+
 struct ClockState: Equatable {
   var isTimerActive = false
   var secondsElapsed = 0
@@ -45,11 +47,11 @@ enum ClockAction: Equatable {
 }
 
 struct ClockEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
+  var clock: any Clock<Duration>
 }
 
-let clockReducer = Reducer<ClockState, ClockAction, ClockEnvironment>.combine(
-  Reducer { state, action, environment in
+let clockReducer = AnyReducer<ClockState, ClockAction, ClockEnvironment>.combine(
+  AnyReducer { state, action, environment in
     switch action {
     case .timerTicked:
       state.secondsElapsed += 1
@@ -64,7 +66,7 @@ let clockReducer = Reducer<ClockState, ClockAction, ClockEnvironment>.combine(
     struct TimerID: Hashable {}
     return [
       TimerID(): .run { send in
-        for await _ in environment.mainQueue.timer(interval: 1) {
+        for await _ in environment.clock.timer(interval: .seconds(1)) {
           await send(.timerTicked, animation: .interpolatingSpring(stiffness: 3000, damping: 40))
         }
       }
@@ -72,11 +74,13 @@ let clockReducer = Reducer<ClockState, ClockAction, ClockEnvironment>.combine(
   }
 )
 
+// MARK: - Feature view
+
 struct ClockView: View {
   let store: Store<ClockState, ClockAction>
 
   var body: some View {
-    WithViewStore(store) { viewStore in
+    WithViewStore(self.store) { viewStore in
       Form {
         AboutView(readMe: readMe)
 
@@ -133,6 +137,8 @@ struct ClockView: View {
   }
 }
 
+// MARK: - SwiftUI previews
+
 struct Subscriptions_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
@@ -141,7 +147,7 @@ struct Subscriptions_Previews: PreviewProvider {
           initialState: ClockState(),
           reducer: clockReducer,
           environment: ClockEnvironment(
-            mainQueue: .main
+            clock: ContinuousClock()
           )
         )
       )

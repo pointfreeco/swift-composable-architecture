@@ -11,21 +11,21 @@ final class TimerTests: XCTestCase {
 
     var count = 0
 
-    Effect.timer(id: 1, every: .seconds(1), on: mainQueue)
+    EffectPublisher.timer(id: 1, every: .seconds(1), on: mainQueue)
       .sink { _ in count += 1 }
       .store(in: &self.cancellables)
 
     await mainQueue.advance(by: 1)
-    XCTAssertNoDifference(count, 1)
+    XCTAssertEqual(count, 1)
 
     await mainQueue.advance(by: 1)
-    XCTAssertNoDifference(count, 2)
+    XCTAssertEqual(count, 2)
 
     await mainQueue.advance(by: 1)
-    XCTAssertNoDifference(count, 3)
+    XCTAssertEqual(count, 3)
 
     await mainQueue.advance(by: 3)
-    XCTAssertNoDifference(count, 6)
+    XCTAssertEqual(count, 6)
   }
 
   func testInterleavingTimer() async {
@@ -34,11 +34,11 @@ final class TimerTests: XCTestCase {
     var count2 = 0
     var count3 = 0
 
-    Effect.merge(
-      Effect.timer(id: 1, every: .seconds(2), on: mainQueue)
+    EffectPublisher.merge(
+      EffectPublisher.timer(id: 1, every: .seconds(2), on: mainQueue)
         .handleEvents(receiveOutput: { _ in count2 += 1 })
         .eraseToEffect(),
-      Effect.timer(id: 2, every: .seconds(3), on: mainQueue)
+      EffectPublisher.timer(id: 2, every: .seconds(3), on: mainQueue)
         .handleEvents(receiveOutput: { _ in count3 += 1 })
         .eraseToEffect()
     )
@@ -46,17 +46,17 @@ final class TimerTests: XCTestCase {
     .store(in: &self.cancellables)
 
     await mainQueue.advance(by: 1)
-    XCTAssertNoDifference(count2, 0)
-    XCTAssertNoDifference(count3, 0)
+    XCTAssertEqual(count2, 0)
+    XCTAssertEqual(count3, 0)
     await mainQueue.advance(by: 1)
-    XCTAssertNoDifference(count2, 1)
-    XCTAssertNoDifference(count3, 0)
+    XCTAssertEqual(count2, 1)
+    XCTAssertEqual(count3, 0)
     await mainQueue.advance(by: 1)
-    XCTAssertNoDifference(count2, 1)
-    XCTAssertNoDifference(count3, 1)
+    XCTAssertEqual(count2, 1)
+    XCTAssertEqual(count3, 1)
     await mainQueue.advance(by: 1)
-    XCTAssertNoDifference(count2, 2)
-    XCTAssertNoDifference(count3, 1)
+    XCTAssertEqual(count2, 2)
+    XCTAssertEqual(count3, 1)
   }
 
   func testTimerCancellation() async {
@@ -67,7 +67,7 @@ final class TimerTests: XCTestCase {
 
     struct CancelToken: Hashable {}
 
-    Effect.timer(id: CancelToken(), every: .seconds(2), on: mainQueue)
+    EffectPublisher.timer(id: CancelToken(), every: .seconds(2), on: mainQueue)
       .handleEvents(receiveOutput: { _ in firstCount += 1 })
       .eraseToEffect()
       .sink { _ in }
@@ -75,13 +75,13 @@ final class TimerTests: XCTestCase {
 
     await mainQueue.advance(by: 2)
 
-    XCTAssertNoDifference(firstCount, 1)
+    XCTAssertEqual(firstCount, 1)
 
     await mainQueue.advance(by: 2)
 
-    XCTAssertNoDifference(firstCount, 2)
+    XCTAssertEqual(firstCount, 2)
 
-    Effect.timer(id: CancelToken(), every: .seconds(2), on: mainQueue)
+    EffectPublisher.timer(id: CancelToken(), every: .seconds(2), on: mainQueue)
       .handleEvents(receiveOutput: { _ in secondCount += 1 })
       .eraseToEffect()
       .sink { _ in }
@@ -89,13 +89,13 @@ final class TimerTests: XCTestCase {
 
     await mainQueue.advance(by: 2)
 
-    XCTAssertNoDifference(firstCount, 2)
-    XCTAssertNoDifference(secondCount, 1)
+    XCTAssertEqual(firstCount, 2)
+    XCTAssertEqual(secondCount, 1)
 
     await mainQueue.advance(by: 2)
 
-    XCTAssertNoDifference(firstCount, 2)
-    XCTAssertNoDifference(secondCount, 2)
+    XCTAssertEqual(firstCount, 2)
+    XCTAssertEqual(secondCount, 2)
   }
 
   func testTimerCompletion() async {
@@ -103,21 +103,21 @@ final class TimerTests: XCTestCase {
 
     var count = 0
 
-    Effect.timer(id: 1, every: .seconds(1), on: mainQueue)
+    EffectPublisher.timer(id: 1, every: .seconds(1), on: mainQueue)
       .prefix(3)
       .sink { _ in count += 1 }
       .store(in: &self.cancellables)
 
     await mainQueue.advance(by: 1)
-    XCTAssertNoDifference(count, 1)
+    XCTAssertEqual(count, 1)
 
     await mainQueue.advance(by: 1)
-    XCTAssertNoDifference(count, 2)
+    XCTAssertEqual(count, 2)
 
     await mainQueue.advance(by: 1)
-    XCTAssertNoDifference(count, 3)
+    XCTAssertEqual(count, 3)
 
     await mainQueue.run()
-    XCTAssertNoDifference(count, 3)
+    XCTAssertEqual(count, 3)
   }
 }

@@ -5,7 +5,7 @@ import NewGameCore
 import UIKit
 
 public class NewGameViewController: UIViewController {
-  let store: Store<NewGameState, NewGameAction>
+  let store: StoreOf<NewGame>
   let viewStore: ViewStore<ViewState, ViewAction>
   private var cancellables: Set<AnyCancellable> = []
 
@@ -15,7 +15,7 @@ public class NewGameViewController: UIViewController {
     let oPlayerName: String?
     let xPlayerName: String?
 
-    public init(state: NewGameState) {
+    public init(state: NewGame.State) {
       self.isGameActive = state.game != nil
       self.isLetsPlayButtonEnabled = !state.oPlayerName.isEmpty && !state.xPlayerName.isEmpty
       self.oPlayerName = state.oPlayerName
@@ -31,9 +31,9 @@ public class NewGameViewController: UIViewController {
     case xPlayerNameChanged(String?)
   }
 
-  public init(store: Store<NewGameState, NewGameAction>) {
+  public init(store: StoreOf<NewGame>) {
     self.store = store
-    self.viewStore = ViewStore(store.scope(state: ViewState.init, action: NewGameAction.init))
+    self.viewStore = ViewStore(store.scope(state: ViewState.init, action: NewGame.Action.init))
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -123,7 +123,7 @@ public class NewGameViewController: UIViewController {
       .store(in: &self.cancellables)
 
     self.store
-      .scope(state: \.game, action: NewGameAction.game)
+      .scope(state: \.game, action: NewGame.Action.game)
       .ifLet(
         then: { [weak self] gameStore in
           self?.navigationController?.pushViewController(
@@ -164,7 +164,7 @@ public class NewGameViewController: UIViewController {
   }
 }
 
-extension NewGameAction {
+extension NewGame.Action {
   init(action: NewGameViewController.ViewAction) {
     switch action {
     case .gameDismissed:

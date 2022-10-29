@@ -1,4 +1,3 @@
-import Combine
 import ComposableArchitecture
 import XCTest
 
@@ -8,9 +7,8 @@ import XCTest
 final class BindingFormTests: XCTestCase {
   func testBasics() async {
     let store = TestStore(
-      initialState: BindingFormState(),
-      reducer: bindingFormReducer,
-      environment: BindingFormEnvironment()
+      initialState: BindingForm.State(),
+      reducer: BindingForm()
     )
 
     await store.send(.set(\.$sliderValue, 2)) {
@@ -27,7 +25,7 @@ final class BindingFormTests: XCTestCase {
       $0.toggleIsOn = true
     }
     await store.send(.resetButtonTapped) {
-      $0 = BindingFormState(sliderValue: 5, stepCount: 10, text: "", toggleIsOn: false)
+      $0 = BindingForm.State(sliderValue: 5, stepCount: 10, text: "", toggleIsOn: false)
     }
   }
 }

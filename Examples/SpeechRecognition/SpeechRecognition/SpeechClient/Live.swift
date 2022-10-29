@@ -1,11 +1,9 @@
-import Combine
 import ComposableArchitecture
 import Speech
 
-extension SpeechClient {
-  static var live: Self {
+extension SpeechClient: DependencyKey {
+  static var liveValue: Self {
     let speech = Speech()
-
     return Self(
       finishTask: {
         await speech.finishTask()

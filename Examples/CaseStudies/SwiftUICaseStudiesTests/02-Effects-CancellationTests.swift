@@ -1,4 +1,3 @@
-import Combine
 import ComposableArchitecture
 import XCTest
 
@@ -8,12 +7,11 @@ import XCTest
 final class EffectsCancellationTests: XCTestCase {
   func testTrivia_SuccessfulRequest() async {
     let store = TestStore(
-      initialState: EffectsCancellationState(),
-      reducer: effectsCancellationReducer,
-      environment: .unimplemented
+      initialState: EffectsCancellation.State(),
+      reducer: EffectsCancellation()
     )
 
-    store.environment.fact.fetch = { "\($0) is a good number Brent" }
+    store.dependencies.factClient.fetch = { "\($0) is a good number Brent" }
 
     await store.send(.stepperChanged(1)) {
       $0.count = 1
@@ -33,12 +31,11 @@ final class EffectsCancellationTests: XCTestCase {
   func testTrivia_FailedRequest() async {
     struct FactError: Equatable, Error {}
     let store = TestStore(
-      initialState: EffectsCancellationState(),
-      reducer: effectsCancellationReducer,
-      environment: .unimplemented
+      initialState: EffectsCancellation.State(),
+      reducer: EffectsCancellation()
     )
 
-    store.environment.fact.fetch = { _ in throw FactError() }
+    store.dependencies.factClient.fetch = { _ in throw FactError() }
 
     await store.send(.factButtonTapped) {
       $0.isFactRequestInFlight = true
@@ -56,12 +53,11 @@ final class EffectsCancellationTests: XCTestCase {
   // will never emit.
   func testTrivia_CancelButtonCancelsRequest() async {
     let store = TestStore(
-      initialState: EffectsCancellationState(),
-      reducer: effectsCancellationReducer,
-      environment: .unimplemented
+      initialState: EffectsCancellation.State(),
+      reducer: EffectsCancellation()
     )
 
-    store.environment.fact.fetch = {
+    store.dependencies.factClient.fetch = {
       try await Task.sleep(nanoseconds: NSEC_PER_SEC)
       return "\($0) is a good number Brent"
     }
@@ -76,12 +72,11 @@ final class EffectsCancellationTests: XCTestCase {
 
   func testTrivia_PlusMinusButtonsCancelsRequest() async {
     let store = TestStore(
-      initialState: EffectsCancellationState(),
-      reducer: effectsCancellationReducer,
-      environment: .unimplemented
+      initialState: EffectsCancellation.State(),
+      reducer: EffectsCancellation()
     )
 
-    store.environment.fact.fetch = {
+    store.dependencies.factClient.fetch = {
       try await Task.sleep(nanoseconds: NSEC_PER_SEC)
       return "\($0) is a good number Brent"
     }
@@ -94,10 +89,4 @@ final class EffectsCancellationTests: XCTestCase {
       $0.isFactRequestInFlight = false
     }
   }
-}
-
-extension EffectsCancellationEnvironment {
-  static let unimplemented = Self(
-    fact: .unimplemented
-  )
 }

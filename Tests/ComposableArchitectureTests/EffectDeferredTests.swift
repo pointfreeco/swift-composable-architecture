@@ -20,33 +20,33 @@ final class EffectDeferredTests: XCTestCase {
     runDeferredEffect(value: 1)
 
     // Nothing emits right away.
-    XCTAssertNoDifference(values, [])
+    XCTAssertEqual(values, [])
 
     // Waiting half the time also emits nothing
     mainQueue.advance(by: 0.5)
-    XCTAssertNoDifference(values, [])
+    XCTAssertEqual(values, [])
 
     // Run another deferred effect.
     runDeferredEffect(value: 2)
 
     // Waiting half the time emits first deferred effect received.
     mainQueue.advance(by: 0.5)
-    XCTAssertNoDifference(values, [1])
+    XCTAssertEqual(values, [1])
 
     // Run another deferred effect.
     runDeferredEffect(value: 3)
 
     // Waiting half the time emits second deferred effect received.
     mainQueue.advance(by: 0.5)
-    XCTAssertNoDifference(values, [1, 2])
+    XCTAssertEqual(values, [1, 2])
 
     // Waiting the rest of the time emits the final effect value.
     mainQueue.advance(by: 0.5)
-    XCTAssertNoDifference(values, [1, 2, 3])
+    XCTAssertEqual(values, [1, 2, 3])
 
     // Running out the scheduler
     mainQueue.run()
-    XCTAssertNoDifference(values, [1, 2, 3])
+    XCTAssertEqual(values, [1, 2, 3])
   }
 
   func testDeferredIsLazy() {
@@ -67,17 +67,17 @@ final class EffectDeferredTests: XCTestCase {
 
     runDeferredEffect(value: 1)
 
-    XCTAssertNoDifference(values, [])
-    XCTAssertNoDifference(effectRuns, 0)
+    XCTAssertEqual(values, [])
+    XCTAssertEqual(effectRuns, 0)
 
     mainQueue.advance(by: 0.5)
 
-    XCTAssertNoDifference(values, [])
-    XCTAssertNoDifference(effectRuns, 0)
+    XCTAssertEqual(values, [])
+    XCTAssertEqual(effectRuns, 0)
 
     mainQueue.advance(by: 0.5)
 
-    XCTAssertNoDifference(values, [1])
-    XCTAssertNoDifference(effectRuns, 1)
+    XCTAssertEqual(values, [1])
+    XCTAssertEqual(effectRuns, 1)
   }
 }

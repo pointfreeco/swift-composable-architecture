@@ -7,13 +7,8 @@ struct SearchApp: App {
     WindowGroup {
       SearchView(
         store: Store(
-          initialState: SearchState(),
-          reducer:
-            searchReducer
-            .debug(),
-          environment: SearchEnvironment(
-            weatherClient: WeatherClient.live
-          )
+          initialState: Search.State(),
+          reducer: Search()._printChanges()
         )
       )
     }

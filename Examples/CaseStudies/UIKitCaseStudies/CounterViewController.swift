@@ -3,34 +3,34 @@ import ComposableArchitecture
 import SwiftUI
 import UIKit
 
-struct CounterState: Equatable, Identifiable {
-  let id = UUID()
-  var count = 0
-}
+struct Counter: ReducerProtocol {
+  struct State: Equatable, Identifiable {
+    let id = UUID()
+    var count = 0
+  }
 
-enum CounterAction: Equatable {
-  case decrementButtonTapped
-  case incrementButtonTapped
-}
+  enum Action: Equatable {
+    case decrementButtonTapped
+    case incrementButtonTapped
+  }
 
-struct CounterEnvironment {}
-
-let counterReducer = Reducer<CounterState, CounterAction, CounterEnvironment> { state, action, _ in
-  switch action {
-  case .decrementButtonTapped:
-    state.count -= 1
-    return .none
-  case .incrementButtonTapped:
-    state.count += 1
-    return .none
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+    switch action {
+    case .decrementButtonTapped:
+      state.count -= 1
+      return .none
+    case .incrementButtonTapped:
+      state.count += 1
+      return .none
+    }
   }
 }
 
 final class CounterViewController: UIViewController {
-  let viewStore: ViewStore<CounterState, CounterAction>
+  let viewStore: ViewStoreOf<Counter>
   private var cancellables: Set<AnyCancellable> = []
 
-  init(store: Store<CounterState, CounterAction>) {
+  init(store: StoreOf<Counter>) {
     self.viewStore = ViewStore(store)
     super.init(nibName: nil, bundle: nil)
   }
@@ -87,9 +87,8 @@ struct CounterViewController_Previews: PreviewProvider {
   static var previews: some View {
     let vc = CounterViewController(
       store: Store(
-        initialState: CounterState(),
-        reducer: counterReducer,
-        environment: CounterEnvironment()
+        initialState: Counter.State(),
+        reducer: Counter()
       )
     )
     return UIViewRepresented(makeUIView: { _ in vc.view })

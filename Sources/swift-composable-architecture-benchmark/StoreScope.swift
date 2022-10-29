@@ -1,8 +1,10 @@
 import Benchmark
 import ComposableArchitecture
 
-let storeScopeSuite = BenchmarkSuite(name: "Store scoping") { suite in
-  let counterReducer = Reducer<Int, Bool, Void> { state, action, _ in
+private struct Counter: ReducerProtocol {
+  typealias State = Int
+  typealias Action = Bool
+  func reduce(into state: inout Int, action: Bool) -> EffectTask<Bool> {
     if action {
       state += 1
       return .none
@@ -11,7 +13,10 @@ let storeScopeSuite = BenchmarkSuite(name: "Store scoping") { suite in
       return .none
     }
   }
-  var store = Store(initialState: 0, reducer: counterReducer, environment: ())
+}
+
+let storeScopeSuite = BenchmarkSuite(name: "Store scoping") { suite in
+  var store = Store(initialState: 0, reducer: Counter())
   var viewStores: [ViewStore<Int, Bool>] = [ViewStore(store)]
   for _ in 1...4 {
     store = store.scope(state: { $0 })

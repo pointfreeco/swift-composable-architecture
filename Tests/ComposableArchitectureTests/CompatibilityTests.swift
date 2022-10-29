@@ -1,10 +1,11 @@
 import Combine
-import CombineSchedulers
 import ComposableArchitecture
 import XCTest
 
 @MainActor
 final class CompatibilityTests: XCTestCase {
+  var cancellables: Set<AnyCancellable> = []
+
   // Actions can be re-entrantly sent into the store if an action is sent that holds an object
   // which sends an action on deinit. In order to prevent a simultaneous access exception for this
   // case we need to use `withExtendedLifetime` on the buffered actions when clearing them out.
@@ -35,7 +36,7 @@ final class CompatibilityTests: XCTestCase {
 
     var handledActions: [String] = []
 
-    let reducer = Reducer<State, Action, Void> { state, action, env in
+    let reducer = AnyReducer<State, Action, Void> { state, action, env in
       handledActions.append(action.description)
 
       switch action {
@@ -46,7 +47,7 @@ final class CompatibilityTests: XCTestCase {
           .cancellable(id: cancelID)
 
       case .kickOffAction:
-        return Effect(value: .actionSender(OnDeinit { passThroughSubject.send(.stop) }))
+        return EffectTask(value: .actionSender(OnDeinit { passThroughSubject.send(.stop) }))
 
       case .actionSender:
         return .none
@@ -67,7 +68,7 @@ final class CompatibilityTests: XCTestCase {
     viewStore.send(.start)
     viewStore.send(.kickOffAction)
 
-    XCTAssertNoDifference(
+    XCTAssertEqual(
       handledActions,
       [
         "start",
@@ -97,17 +98,20 @@ final class CompatibilityTests: XCTestCase {
 
     let viewStore = ViewStore(store)
 
-    var cancellables: Set<AnyCancellable> = []
     viewStore.publisher
       .sink { value in
-        if value == 1 { viewStore.send(0) }
+        if value == 1 {
+          viewStore.send(0)
+        }
       }
-      .store(in: &cancellables)
+      .store(in: &self.cancellables)
 
     var stateChanges: [Int] = []
     viewStore.publisher
-      .sink { stateChanges.append($0) }
-      .store(in: &cancellables)
+      .sink {
+        stateChanges.append($0)
+      }
+      .store(in: &self.cancellables)
 
     XCTAssertEqual(stateChanges, [0])
     viewStore.send(1)

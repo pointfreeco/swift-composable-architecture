@@ -1,6 +1,60 @@
 import ComposableArchitecture
 import SwiftUI
 
+public struct Game: ReducerProtocol {
+  public struct State: Equatable {
+    public var board: Three<Three<Player?>> = .empty
+    public var currentPlayer: Player = .x
+    public var oPlayerName: String
+    public var xPlayerName: String
+
+    public init(oPlayerName: String, xPlayerName: String) {
+      self.oPlayerName = oPlayerName
+      self.xPlayerName = xPlayerName
+    }
+
+    public var currentPlayerName: String {
+      switch self.currentPlayer {
+      case .o: return self.oPlayerName
+      case .x: return self.xPlayerName
+      }
+    }
+  }
+
+  public enum Action: Equatable, Sendable {
+    case cellTapped(row: Int, column: Int)
+    case playAgainButtonTapped
+    case quitButtonTapped
+  }
+
+  public init() {}
+
+  public func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+    switch action {
+    case let .cellTapped(row, column):
+      guard
+        state.board[row][column] == nil,
+        !state.board.hasWinner
+      else { return .none }
+
+      state.board[row][column] = state.currentPlayer
+
+      if !state.board.hasWinner {
+        state.currentPlayer.toggle()
+      }
+
+      return .none
+
+    case .playAgainButtonTapped:
+      state = Game.State(oPlayerName: state.oPlayerName, xPlayerName: state.xPlayerName)
+      return .none
+
+    case .quitButtonTapped:
+      return .none
+    }
+  }
+}
+
 public enum Player: Equatable {
   case o
   case x
@@ -17,60 +71,6 @@ public enum Player: Equatable {
     case .o: return "⭕️"
     case .x: return "❌"
     }
-  }
-}
-
-public struct GameState: Equatable {
-  public var board: Three<Three<Player?>> = .empty
-  public var currentPlayer: Player = .x
-  public var oPlayerName: String
-  public var xPlayerName: String
-
-  public init(oPlayerName: String, xPlayerName: String) {
-    self.oPlayerName = oPlayerName
-    self.xPlayerName = xPlayerName
-  }
-
-  public var currentPlayerName: String {
-    switch self.currentPlayer {
-    case .o: return self.oPlayerName
-    case .x: return self.xPlayerName
-    }
-  }
-}
-
-public enum GameAction: Equatable, Sendable {
-  case cellTapped(row: Int, column: Int)
-  case playAgainButtonTapped
-  case quitButtonTapped
-}
-
-public struct GameEnvironment {
-  public init() {}
-}
-
-public let gameReducer = Reducer<GameState, GameAction, GameEnvironment> { state, action, _ in
-  switch action {
-  case let .cellTapped(row, column):
-    guard
-      state.board[row][column] == nil,
-      !state.board.hasWinner
-    else { return .none }
-
-    state.board[row][column] = state.currentPlayer
-
-    if !state.board.hasWinner {
-      state.currentPlayer.toggle()
-    }
-
-    return .none
-
-  case .playAgainButtonTapped:
-    state = GameState(oPlayerName: state.oPlayerName, xPlayerName: state.xPlayerName)
-    return .none
-
-  case .quitButtonTapped:
-    return .none
   }
 }
 

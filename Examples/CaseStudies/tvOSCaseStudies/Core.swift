@@ -1,21 +1,17 @@
 import ComposableArchitecture
 
-struct RootState {
-  var focus = FocusState()
-}
+struct Root: ReducerProtocol {
+  struct State {
+    var focus = Focus.State()
+  }
 
-enum RootAction {
-  case focus(FocusAction)
-}
+  enum Action {
+    case focus(Focus.Action)
+  }
 
-struct RootEnvironment {
-  var focus = FocusEnvironment()
+  var body: some ReducerProtocol<State, Action> {
+    Scope(state: \.focus, action: /Action.focus) {
+      Focus()
+    }
+  }
 }
-
-let rootReducer = Reducer<RootState, RootAction, RootEnvironment>.combine(
-  focusReducer.pullback(
-    state: \.focus,
-    action: /RootAction.focus,
-    environment: \.focus
-  )
-)

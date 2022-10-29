@@ -7,13 +7,8 @@ struct SpeechRecognitionApp: App {
     WindowGroup {
       SpeechRecognitionView(
         store: Store(
-          initialState: AppState(),
-          reducer:
-            appReducer
-            .debug(),
-          environment: AppEnvironment(
-            speechClient: .live
-          )
+          initialState: SpeechRecognition.State(),
+          reducer: SpeechRecognition()._printChanges()
         )
       )
     }

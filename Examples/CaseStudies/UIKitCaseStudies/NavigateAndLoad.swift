@@ -3,41 +3,28 @@ import ComposableArchitecture
 import SwiftUI
 import UIKit
 
-struct EagerNavigationState: Equatable {
-  var isNavigationActive = false
-  var optionalCounter: CounterState?
-}
+struct EagerNavigation: ReducerProtocol {
+  struct State: Equatable {
+    var isNavigationActive = false
+    var optionalCounter: Counter.State?
+  }
 
-enum EagerNavigationAction: Equatable {
-  case optionalCounter(CounterAction)
-  case setNavigation(isActive: Bool)
-  case setNavigationIsActiveDelayCompleted
-}
+  enum Action: Equatable {
+    case optionalCounter(Counter.Action)
+    case setNavigation(isActive: Bool)
+    case setNavigationIsActiveDelayCompleted
+  }
 
-struct EagerNavigationEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
+  private enum CancelID {}
+  @Dependency(\.continuousClock) var clock
 
-let eagerNavigationReducer =
-  counterReducer
-  .optional()
-  .pullback(
-    state: \.optionalCounter,
-    action: /EagerNavigationAction.optionalCounter,
-    environment: { _ in CounterEnvironment() }
-  )
-  .combined(
-    with: Reducer<
-      EagerNavigationState, EagerNavigationAction, EagerNavigationEnvironment
-    > { state, action, environment in
-
-      enum CancelID {}
-
+  var body: some ReducerProtocol<State, Action> {
+    Reduce { state, action in
       switch action {
       case .setNavigation(isActive: true):
         state.isNavigationActive = true
         return .task {
-          try await environment.mainQueue.sleep(for: 1)
+          try await self.clock.sleep(for: .seconds(1))
           return .setNavigationIsActiveDelayCompleted
         }
         .cancellable(id: CancelID.self)
@@ -48,21 +35,22 @@ let eagerNavigationReducer =
         return .cancel(id: CancelID.self)
 
       case .setNavigationIsActiveDelayCompleted:
-        state.optionalCounter = CounterState()
+        state.optionalCounter = Counter.State()
         return .none
 
       case .optionalCounter:
         return .none
       }
     }
-  )
+  }
+}
 
 class EagerNavigationViewController: UIViewController {
   var cancellables: [AnyCancellable] = []
-  let store: Store<EagerNavigationState, EagerNavigationAction>
-  let viewStore: ViewStore<EagerNavigationState, EagerNavigationAction>
+  let store: StoreOf<EagerNavigation>
+  let viewStore: ViewStoreOf<EagerNavigation>
 
-  init(store: Store<EagerNavigationState, EagerNavigationAction>) {
+  init(store: StoreOf<EagerNavigation>) {
     self.store = store
     self.viewStore = ViewStore(store)
     super.init(nibName: nil, bundle: nil)
@@ -96,7 +84,7 @@ class EagerNavigationViewController: UIViewController {
         self.navigationController?.pushViewController(
           IfLetStoreController(
             store: self.store
-              .scope(state: \.optionalCounter, action: EagerNavigationAction.optionalCounter)
+              .scope(state: \.optionalCounter, action: EagerNavigation.Action.optionalCounter)
           ) {
             CounterViewController(store: $0)
           } else: {
@@ -105,7 +93,7 @@ class EagerNavigationViewController: UIViewController {
           animated: true
         )
       } else {
-        self.navigationController?.popToViewController(self, animated: true)
+        _ = self.navigationController?.popToViewController(self, animated: true)
       }
     }
     .store(in: &self.cancellables)
@@ -129,11 +117,8 @@ struct EagerNavigationViewController_Previews: PreviewProvider {
     let vc = UINavigationController(
       rootViewController: EagerNavigationViewController(
         store: Store(
-          initialState: EagerNavigationState(),
-          reducer: eagerNavigationReducer,
-          environment: EagerNavigationEnvironment(
-            mainQueue: .main
-          )
+          initialState: EagerNavigation.State(),
+          reducer: EagerNavigation()
         )
       )
     )

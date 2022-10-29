@@ -1,6 +1,4 @@
-import Combine
 import ComposableArchitecture
-import SwiftUI
 import XCTest
 
 @testable import SwiftUICaseStudies
@@ -9,9 +7,8 @@ import XCTest
 final class AlertsAndConfirmationDialogsTests: XCTestCase {
   func testAlert() async {
     let store = TestStore(
-      initialState: AlertAndConfirmationDialogState(),
-      reducer: alertAndConfirmationDialogReducer,
-      environment: AlertAndConfirmationDialogEnvironment()
+      initialState: AlertAndConfirmationDialog.State(),
+      reducer: AlertAndConfirmationDialog()
     )
 
     await store.send(.alertButtonTapped) {
@@ -33,9 +30,8 @@ final class AlertsAndConfirmationDialogsTests: XCTestCase {
 
   func testConfirmationDialog() async {
     let store = TestStore(
-      initialState: AlertAndConfirmationDialogState(),
-      reducer: alertAndConfirmationDialogReducer,
-      environment: AlertAndConfirmationDialogEnvironment()
+      initialState: AlertAndConfirmationDialog.State(),
+      reducer: AlertAndConfirmationDialog()
     )
 
     await store.send(.confirmationDialogButtonTapped) {

@@ -1,34 +1,33 @@
 import ComposableArchitecture
-import Foundation
 import SwiftUI
 
-struct TodoState: Equatable, Identifiable {
-  var description = ""
-  let id: UUID
-  var isComplete = false
-}
+struct Todo: ReducerProtocol {
+  struct State: Equatable, Identifiable {
+    var description = ""
+    let id: UUID
+    var isComplete = false
+  }
 
-enum TodoAction: Equatable {
-  case checkBoxToggled
-  case textFieldChanged(String)
-}
+  enum Action: Equatable {
+    case checkBoxToggled
+    case textFieldChanged(String)
+  }
 
-struct TodoEnvironment {}
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+    switch action {
+    case .checkBoxToggled:
+      state.isComplete.toggle()
+      return .none
 
-let todoReducer = Reducer<TodoState, TodoAction, TodoEnvironment> { state, action, _ in
-  switch action {
-  case .checkBoxToggled:
-    state.isComplete.toggle()
-    return .none
-
-  case let .textFieldChanged(description):
-    state.description = description
-    return .none
+    case let .textFieldChanged(description):
+      state.description = description
+      return .none
+    }
   }
 }
 
 struct TodoView: View {
-  let store: Store<TodoState, TodoAction>
+  let store: StoreOf<Todo>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -40,7 +39,7 @@ struct TodoView: View {
 
         TextField(
           "Untitled Todo",
-          text: viewStore.binding(get: \.description, send: TodoAction.textFieldChanged)
+          text: viewStore.binding(get: \.description, send: Todo.Action.textFieldChanged)
         )
       }
       .foregroundColor(viewStore.isComplete ? .gray : nil)

@@ -4,44 +4,46 @@ extension AsyncStream {
   /// Useful as a type eraser for live `AsyncSequence`-based dependencies.
   ///
   /// For example, your feature may want to subscribe to screenshot notifications. You can model
-  /// this in your environment as a dependency returning an `AsyncStream`:
+  /// this as a dependency client that returns an `AsyncStream`:
   ///
   /// ```swift
-  /// struct ScreenshotsEnvironment {
+  /// struct ScreenshotsClient {
   ///   var screenshots: () -> AsyncStream<Void>
+  ///   func callAsFunction() -> AsyncStream<Void> { self.screenshots() }
   /// }
   /// ```
   ///
-  /// Your "live" environment can supply a stream by erasing the appropriate
+  /// The "live" implementation of the dependency can supply a stream by erasing the appropriate
   /// `NotificationCenter.Notifications` async sequence:
   ///
   /// ```swift
-  /// ScreenshotsEnvironment(
-  ///   screenshots: {
-  ///     AsyncStream(
-  ///       NotificationCenter.default
-  ///         .notifications(named: UIApplication.userDidTakeScreenshotNotification)
-  ///         .map { _ in }
-  ///     )
-  ///   }
-  /// )
+  /// extension ScreenshotsClient {
+  ///   static let live = Self(
+  ///     screenshots: {
+  ///       AsyncStream(
+  ///         NotificationCenter.default
+  ///           .notifications(named: UIApplication.userDidTakeScreenshotNotification)
+  ///           .map { _ in }
+  ///       )
+  ///     }
+  ///   )
+  /// }
   /// ```
   ///
   /// While your tests can use `AsyncStream.streamWithContinuation` to spin up a controllable stream
   /// for tests:
   ///
   /// ```swift
-  /// let (stream, continuation) = AsyncStream<Void>.streamWithContinuation()
+  /// let screenshots = AsyncStream<Void>.streamWithContinuation()
   ///
   /// let store = TestStore(
-  ///   initialState: ScreenshotsState(),
-  ///   reducer: screenshotsReducer,
-  ///   environment: ScreenshotsEnvironment(
-  ///     screenshots: { stream }
-  ///   )
+  ///   initialState: Feature.State(),
+  ///   reducer: Feature()
   /// )
   ///
-  /// continuation.yield()  // Simulate a screenshot being taken.
+  /// store.dependencies.screenshots.screenshots = { screenshots.stream }
+  ///
+  /// screenshots.continuation.yield()  // Simulate a screenshot being taken.
   ///
   /// await store.receive(.screenshotTaken) { ... }
   /// ```
@@ -97,15 +99,14 @@ extension AsyncStream {
   /// let notifications = AsyncStream<Void>.streamWithContinuation()
   ///
   /// let store = TestStore(
-  ///   initialState: LongLivingEffectsState(),
-  ///   reducer: longLivingEffectsReducer,
-  ///   environment: LongLivingEffectsEnvironment(
-  ///     notifications: { notifications.stream }
-  ///   )
+  ///   initialState: Feature.State(),
+  ///   reducer: Feature()
   /// )
   ///
+  /// store.dependencies.notifications = { notifications.stream }
+  ///
   /// await store.send(.task)
-  /// notifications.continuation.yield("Hello")
+  /// notifications.continuation.yield("Hello")  // Simulate notification being posted
   /// await store.receive(.notification("Hello")) {
   ///   $0.message = "Hello"
   /// }
@@ -140,7 +141,7 @@ extension AsyncStream {
 }
 
 extension AsyncThrowingStream where Failure == Error {
-  /// Initializes an `AsyncStream` from any `AsyncSequence`.
+  /// Initializes an `AsyncThrowingStream` from any `AsyncSequence`.
   ///
   /// - Parameters:
   ///   - sequence: An `AsyncSequence`.
@@ -195,15 +196,14 @@ extension AsyncThrowingStream where Failure == Error {
   /// let notifications = AsyncThrowingStream<Void>.streamWithContinuation()
   ///
   /// let store = TestStore(
-  ///   initialState: LongLivingEffectsState(),
-  ///   reducer: longLivingEffectsReducer,
-  ///   environment: LongLivingEffectsEnvironment(
-  ///     notifications: { notifications.stream }
-  ///   )
+  ///   initialState: Feature.State(),
+  ///   reducer: Feature()
   /// )
   ///
+  /// store.dependencies.notifications = { notifications.stream }
+  ///
   /// await store.send(.task)
-  /// notifications.continuation.yield("Hello")
+  /// notifications.continuation.yield("Hello")  // Simulate a notification being posted
   /// await store.receive(.notification("Hello")) {
   ///   $0.message = "Hello"
   /// }
@@ -262,10 +262,12 @@ extension Task where Success == Never, Failure == Never {
 /// track some analytics:
 ///
 /// ```swift
-/// let reducer = Reducer<State, Action, Environment> { state, action, environment in
+/// @Dependency(\.analytics) var analytics
+///
+/// func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
 ///   switch action {
 ///   case .buttonTapped:
-///     return .fireAndForget { try await environment.analytics.track("Button Tapped") }
+///     return .fireAndForget { try await self.analytics.track("Button Tapped") }
 ///   }
 /// }
 /// ```
@@ -275,18 +277,15 @@ extension Task where Success == Never, Failure == Never {
 /// a safe way we should use an actor, and ``ActorIsolated`` makes this easy:
 ///
 /// ```swift
+/// @MainActor
 /// func testAnalytics() async {
+///   let store = TestStore(…)
+///
 ///   let events = ActorIsolated<[String]>([])
-///   let analytics = AnalyticsClient(
+///   store.dependencies.analytics = AnalyticsClient(
 ///     track: { event in
 ///       await events.withValue { $0.append(event) }
 ///     }
-///   )
-///
-///   let store = TestStore(
-///     initialState: State(),
-///     reducer: reducer,
-///     environment: Environment(analytics: analytics)
 ///   )
 ///
 ///   await store.send(.buttonTapped)
@@ -296,8 +295,12 @@ extension Task where Success == Never, Failure == Never {
 /// ```
 @dynamicMemberLookup
 public final actor ActorIsolated<Value: Sendable> {
+  /// The actor-isolated value.
   public var value: Value
 
+  /// Initializes actor-isolated state around a value.
+  ///
+  /// - Parameter value: A value to isolate in an actor.
   public init(_ value: Value) {
     self.value = value
   }
@@ -307,6 +310,17 @@ public final actor ActorIsolated<Value: Sendable> {
   }
 
   /// Perform an operation with isolated access to the underlying value.
+  ///
+  /// Useful for inspecting an actor-isolated value for a test assertion:
+  ///
+  /// ```swift
+  /// let didOpenSettings = ActorIsolated(false)
+  /// store.dependencies.openSettings = { await didOpenSettings.setValue(true) }
+  ///
+  /// await store.send(.settingsButtonTapped)
+  ///
+  /// await didOpenSettings.withValue { XCTAssertTrue($0) }
+  /// ```
   ///
   /// - Parameters: operation: An operation to be performed on the actor with the underlying value.
   /// - Returns: The result of the operation.
@@ -319,6 +333,17 @@ public final actor ActorIsolated<Value: Sendable> {
   }
 
   /// Overwrite the isolated value with a new value.
+  ///
+  /// Useful for setting an actor-isolated value when a tested dependency runs.
+  ///
+  /// ```swift
+  /// let didOpenSettings = ActorIsolated(false)
+  /// store.dependencies.openSettings = { await didOpenSettings.setValue(true) }
+  ///
+  /// await store.send(.settingsButtonTapped)
+  ///
+  /// await didOpenSettings.withValue { XCTAssertTrue($0) }
+  /// ```
   ///
   /// - Parameter newValue: The value to replace the current isolated value with.
   public func setValue(_ newValue: Value) {
@@ -340,6 +365,7 @@ public final actor ActorIsolated<Value: Sendable> {
 @dynamicMemberLookup
 @propertyWrapper
 public struct UncheckedSendable<Value>: @unchecked Sendable {
+  /// The unchecked value.
   public var value: Value
 
   public init(_ value: Value) {
@@ -367,5 +393,30 @@ public struct UncheckedSendable<Value>: @unchecked Sendable {
   public subscript<Subject>(dynamicMember keyPath: WritableKeyPath<Value, Subject>) -> Subject {
     _read { yield self.value[keyPath: keyPath] }
     _modify { yield &self.value[keyPath: keyPath] }
+  }
+}
+
+extension UncheckedSendable: Equatable where Value: Equatable {}
+extension UncheckedSendable: Hashable where Value: Hashable {}
+
+extension UncheckedSendable: Decodable where Value: Decodable {
+  public init(from decoder: Decoder) throws {
+    do {
+      let container = try decoder.singleValueContainer()
+      self.init(wrappedValue: try container.decode(Value.self))
+    } catch {
+      self.init(wrappedValue: try Value(from: decoder))
+    }
+  }
+}
+
+extension UncheckedSendable: Encodable where Value: Encodable {
+  public func encode(to encoder: Encoder) throws {
+    do {
+      var container = encoder.singleValueContainer()
+      try container.encode(self.wrappedValue)
+    } catch {
+      try self.wrappedValue.encode(to: encoder)
+    }
   }
 }

@@ -1,4 +1,3 @@
-import Combine
 import ComposableArchitecture
 import Foundation
 import XCTestDynamicOverlay
@@ -12,8 +11,15 @@ struct DownloadClient {
   }
 }
 
-extension DownloadClient {
-  static let live = DownloadClient(
+extension DependencyValues {
+  var downloadClient: DownloadClient {
+    get { self[DownloadClient.self] }
+    set { self[DownloadClient.self] = newValue }
+  }
+}
+
+extension DownloadClient: DependencyKey {
+  static let liveValue = Self(
     download: { url in
       .init { continuation in
         Task {
@@ -40,7 +46,7 @@ extension DownloadClient {
     }
   )
 
-  static let unimplemented = Self(
-    download: XCTUnimplemented("\(Self.self).asyncDownload")
+  static let testValue = Self(
+    download: unimplemented("\(Self.self).download")
   )
 }

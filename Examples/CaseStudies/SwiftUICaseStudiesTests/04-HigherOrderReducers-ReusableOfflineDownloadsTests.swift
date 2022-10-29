@@ -1,4 +1,3 @@
-import Combine
 import ComposableArchitecture
 import XCTest
 
@@ -7,32 +6,18 @@ import XCTest
 @MainActor
 final class ReusableComponentsDownloadComponentTests: XCTestCase {
   let download = AsyncThrowingStream<DownloadClient.Event, Error>.streamWithContinuation()
-  let reducer = Reducer<
-    DownloadComponentState<Int>,
-    DownloadComponentAction,
-    DownloadComponentEnvironment
-  >
-  .empty
-  .downloadable(
-    state: \.self,
-    action: .self,
-    environment: { $0 }
-  )
-  let mainQueue = DispatchQueue.test
 
   func testDownloadFlow() async {
-    var downloadClient = DownloadClient.unimplemented
-    downloadClient.download = { _ in self.download.stream }
-
     let store = TestStore(
-      initialState: DownloadComponentState(
+      initialState: DownloadComponent.State(
         id: 1,
         mode: .notDownloaded,
         url: URL(string: "https://www.pointfree.co")!
       ),
-      reducer: reducer,
-      environment: DownloadComponentEnvironment(downloadClient: downloadClient)
+      reducer: DownloadComponent()
     )
+
+    store.dependencies.downloadClient.download = { _ in self.download.stream }
 
     await store.send(.buttonTapped) {
       $0.mode = .startingToDownload
@@ -51,18 +36,16 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
   }
 
   func testCancelDownloadFlow() async {
-    var downloadClient = DownloadClient.unimplemented
-    downloadClient.download = { _ in self.download.stream }
-
     let store = TestStore(
-      initialState: DownloadComponentState(
+      initialState: DownloadComponent.State(
         id: 1,
         mode: .notDownloaded,
         url: URL(string: "https://www.pointfree.co")!
       ),
-      reducer: reducer,
-      environment: DownloadComponentEnvironment(downloadClient: downloadClient)
+      reducer: DownloadComponent()
     )
+
+    store.dependencies.downloadClient.download = { _ in self.download.stream }
 
     await store.send(.buttonTapped) {
       $0.mode = .startingToDownload
@@ -91,18 +74,16 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
   }
 
   func testDownloadFinishesWhileTryingToCancel() async {
-    var downloadClient = DownloadClient.unimplemented
-    downloadClient.download = { _ in self.download.stream }
-
     let store = TestStore(
-      initialState: DownloadComponentState(
+      initialState: DownloadComponent.State(
         id: 1,
         mode: .notDownloaded,
         url: URL(string: "https://www.pointfree.co")!
       ),
-      reducer: reducer,
-      environment: DownloadComponentEnvironment(downloadClient: downloadClient)
+      reducer: DownloadComponent()
     )
+
+    store.dependencies.downloadClient.download = { _ in self.download.stream }
 
     let task = await store.send(.buttonTapped) {
       $0.mode = .startingToDownload
@@ -130,18 +111,16 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
   }
 
   func testDeleteDownloadFlow() async {
-    var downloadClient = DownloadClient.unimplemented
-    downloadClient.download = { _ in self.download.stream }
-
     let store = TestStore(
-      initialState: DownloadComponentState(
+      initialState: DownloadComponent.State(
         id: 1,
         mode: .downloaded,
         url: URL(string: "https://www.pointfree.co")!
       ),
-      reducer: reducer,
-      environment: DownloadComponentEnvironment(downloadClient: downloadClient)
+      reducer: DownloadComponent()
     )
+
+    store.dependencies.downloadClient.download = { _ in self.download.stream }
 
     await store.send(.buttonTapped) {
       $0.alert = AlertState(

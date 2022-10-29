@@ -1,7 +1,5 @@
-import Combine
 import ComposableArchitecture
 import XCTest
-import XCTestDynamicOverlay
 
 @testable import SwiftUICaseStudies
 
@@ -9,30 +7,28 @@ import XCTestDynamicOverlay
 final class RecursionTests: XCTestCase {
   func testAddRow() async {
     let store = TestStore(
-      initialState: NestedState(id: UUID()),
-      reducer: nestedReducer,
-      environment: .unimplemented
+      initialState: Nested.State(id: UUID()),
+      reducer: Nested()
     )
 
-    store.environment.uuid = UUID.incrementing
+    store.dependencies.uuid = .incrementing
 
     let id0 = UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
     let id1 = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
 
     await store.send(.addRowButtonTapped) {
-      $0.rows.append(NestedState(id: id0))
+      $0.rows.append(Nested.State(id: id0))
     }
 
     await store.send(.row(id: id0, action: .addRowButtonTapped)) {
-      $0.rows[id: id0]?.rows.append(NestedState(id: id1))
+      $0.rows[id: id0]?.rows.append(Nested.State(id: id1))
     }
   }
 
   func testChangeName() async {
     let store = TestStore(
-      initialState: NestedState(id: UUID()),
-      reducer: nestedReducer,
-      environment: .unimplemented
+      initialState: Nested.State(id: UUID()),
+      reducer: Nested()
     )
 
     await store.send(.nameTextFieldChanged("Blob")) {
@@ -46,26 +42,19 @@ final class RecursionTests: XCTestCase {
     let id2 = UUID(uuidString: "00000000-0000-0000-0000-000000000002")!
 
     let store = TestStore(
-      initialState: NestedState(
+      initialState: Nested.State(
         id: UUID(),
         rows: [
-          NestedState(id: id0),
-          NestedState(id: id1),
-          NestedState(id: id2),
+          Nested.State(id: id0),
+          Nested.State(id: id1),
+          Nested.State(id: id2),
         ]
       ),
-      reducer: nestedReducer,
-      environment: .unimplemented
+      reducer: Nested()
     )
 
     await store.send(.onDelete(IndexSet(integer: 1))) {
       $0.rows.remove(id: id1)
     }
   }
-}
-
-extension NestedEnvironment {
-  static let unimplemented = Self(
-    uuid: XCTUnimplemented("UUID is unimplemented", placeholder: UUID())
-  )
 }

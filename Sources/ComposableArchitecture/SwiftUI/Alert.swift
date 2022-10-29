@@ -15,7 +15,7 @@ import SwiftUI
 /// To use this API, you model all the alert actions in your domain's action enum:
 ///
 /// ```swift
-/// enum AppAction: Equatable {
+/// enum Action: Equatable {
 ///   case cancelTapped
 ///   case confirmTapped
 ///   case deleteTapped
@@ -28,8 +28,8 @@ import SwiftUI
 /// `nil`:
 ///
 /// ```swift
-/// struct AppState: Equatable {
-///   var alert: AlertState<AppAction>?
+/// struct State: Equatable {
+///   var alert: AlertState<Action>?
 ///
 ///   // Your other state
 /// }
@@ -39,23 +39,23 @@ import SwiftUI
 /// to show to the user:
 ///
 /// ```swift
-/// let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, env in
-///   switch action
-///     case .cancelTapped:
-///       state.alert = nil
-///       return .none
+/// func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+///   switch action {
+///   case .cancelTapped:
+///     state.alert = nil
+///     return .none
 ///
-///     case .confirmTapped:
-///       state.alert = nil
-///       // Do deletion logic...
+///   case .confirmTapped:
+///     state.alert = nil
+///     // Do deletion logic...
 ///
-///     case .deleteTapped:
-///       state.alert = AlertState(
-///         title: TextState("Delete"),
-///         message: TextState("Are you sure you want to delete this? It cannot be undone."),
-///         primaryButton: .default(TextState("Confirm"), action: .send(.confirmTapped)),
-///         secondaryButton: .cancel(TextState("Cancel"))
-///       )
+///   case .deleteTapped:
+///     state.alert = AlertState(
+///       title: TextState("Delete"),
+///       message: TextState("Are you sure you want to delete this? It cannot be undone."),
+///       primaryButton: .default(TextState("Confirm"), action: .send(.confirmTapped)),
+///       secondaryButton: .cancel(TextState("Cancel"))
+///     )
 ///     return .none
 ///   }
 /// }
@@ -80,9 +80,8 @@ import SwiftUI
 ///
 /// ```swift
 /// let store = TestStore(
-///   initialState: AppState(),
-///   reducer: appReducer,
-///   environment: .mock
+///   initialState: Feature.State(),
+///   reducer: Feature()
 /// )
 ///
 /// store.send(.deleteTapped) {
@@ -98,7 +97,6 @@ import SwiftUI
 ///   // Also verify that delete logic executed correctly
 /// }
 /// ```
-///
 public struct AlertState<Action> {
   public let id = UUID()
   public var buttons: [Button]

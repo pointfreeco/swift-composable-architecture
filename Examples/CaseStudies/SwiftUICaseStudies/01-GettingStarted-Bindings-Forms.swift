@@ -13,42 +13,44 @@ private let readMe = """
   It is instructive to compare this case study to the "Binding Basics" case study.
   """
 
-// The state for this screen holds a bunch of values that will drive
-struct BindingFormState: Equatable {
-  @BindableState var sliderValue = 5.0
-  @BindableState var stepCount = 10
-  @BindableState var text = ""
-  @BindableState var toggleIsOn = false
-}
+// MARK: - Feature domain
 
-enum BindingFormAction: BindableAction, Equatable {
-  case binding(BindingAction<BindingFormState>)
-  case resetButtonTapped
-}
+struct BindingForm: ReducerProtocol {
+  struct State: Equatable {
+    @BindableState var sliderValue = 5.0
+    @BindableState var stepCount = 10
+    @BindableState var text = ""
+    @BindableState var toggleIsOn = false
+  }
 
-struct BindingFormEnvironment {}
+  enum Action: BindableAction, Equatable {
+    case binding(BindingAction<State>)
+    case resetButtonTapped
+  }
 
-let bindingFormReducer = Reducer<
-  BindingFormState, BindingFormAction, BindingFormEnvironment
-> {
-  state, action, _ in
-  switch action {
-  case .binding(\.$stepCount):
-    state.sliderValue = .minimum(state.sliderValue, Double(state.stepCount))
-    return .none
+  var body: some ReducerProtocol<State, Action> {
+    BindingReducer()
+    Reduce { state, action in
+      switch action {
+      case .binding(\.$stepCount):
+        state.sliderValue = .minimum(state.sliderValue, Double(state.stepCount))
+        return .none
 
-  case .binding:
-    return .none
+      case .binding:
+        return .none
 
-  case .resetButtonTapped:
-    state = BindingFormState()
-    return .none
+      case .resetButtonTapped:
+        state = State()
+        return .none
+      }
+    }
   }
 }
-.binding()
+
+// MARK: - Feature view
 
 struct BindingFormView: View {
-  let store: Store<BindingFormState, BindingFormAction>
+  let store: StoreOf<BindingForm>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -108,14 +110,15 @@ private func alternate(_ string: String) -> String {
     .joined()
 }
 
+// MARK: - SwiftUI previews
+
 struct BindingFormView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       BindingFormView(
         store: Store(
-          initialState: BindingFormState(),
-          reducer: bindingFormReducer,
-          environment: BindingFormEnvironment()
+          initialState: BindingForm.State(),
+          reducer: BindingForm()
         )
       )
     }

@@ -122,7 +122,7 @@ private let forceTypeCPointer = unsafeBitCast(
     dlsym(RTLD_DEFAULT, forceTypeSymbol)!,
     to: FunctionTakingGenericValue.self)
 
-extension Reducer {
+extension AnyReducer {
     /// The keeper of reducers  so they can be injected.
     /// Stored by the one-time initialiser symbol associated
     /// with the xxxReducer variable being initialised and

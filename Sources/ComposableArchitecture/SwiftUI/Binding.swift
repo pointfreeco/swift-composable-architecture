@@ -1,161 +1,14 @@
 import CustomDump
 import SwiftUI
 
-/// A property wrapper type that can designate properties of app state that can be directly
-/// bindable in SwiftUI views.
+/// A property wrapper type that can designate properties of app state that can be directly bindable
+/// in SwiftUI views.
 ///
 /// Along with an action type that conforms to the ``BindableAction`` protocol, this type can be
 /// used to safely eliminate the boilerplate that is typically incurred when working with multiple
 /// mutable fields on state.
 ///
-/// For example, a settings screen may model its state with the following struct:
-///
-/// ```swift
-/// struct SettingsState {
-///   var digest = Digest.daily
-///   var displayName = ""
-///   var enableNotifications = false
-///   var isLoading = false
-///   var protectMyPosts = false
-///   var sendEmailNotifications = false
-///   var sendMobileNotifications = false
-/// }
-/// ```
-///
-/// The majority of these fields should be editable by the view, and in the Composable
-/// Architecture this means that each field requires a corresponding action that can be sent to
-/// the store. Typically this comes in the form of an enum with a case per field:
-///
-/// ```swift
-/// enum SettingsAction {
-///   case digestChanged(Digest)
-///   case displayNameChanged(String)
-///   case enableNotificationsChanged(Bool)
-///   case protectMyPostsChanged(Bool)
-///   case sendEmailNotificationsChanged(Bool)
-///   case sendMobileNotificationsChanged(Bool)
-/// }
-/// ```
-///
-/// And we're not even done yet. In the reducer we must now handle each action, which simply
-/// replaces the state at each field with a new value:
-///
-/// ```swift
-/// let settingsReducer = Reducer<
-///   SettingsState, SettingsAction, SettingsEnvironment
-/// > { state, action, environment in
-///   switch action {
-///   case let digestChanged(digest):
-///     state.digest = digest
-///     return .none
-///
-///   case let displayNameChanged(displayName):
-///     state.displayName = displayName
-///     return .none
-///
-///   case let enableNotificationsChanged(isOn):
-///     state.enableNotifications = isOn
-///     return .none
-///
-///   case let protectMyPostsChanged(isOn):
-///     state.protectMyPosts = isOn
-///     return .none
-///
-///   case let sendEmailNotificationsChanged(isOn):
-///     state.sendEmailNotifications = isOn
-///     return .none
-///
-///   case let sendMobileNotificationsChanged(isOn):
-///     state.sendMobileNotifications = isOn
-///     return .none
-///   }
-/// }
-/// ```
-///
-/// This is a _lot_ of boilerplate for something that should be simple. Luckily, we can
-/// dramatically eliminate this boilerplate using `BindableState` and ``BindableAction``.
-///
-/// First, we can annotate each bindable value of state with the `@BindableState` property
-/// wrapper:
-///
-/// ```swift
-/// struct SettingsState {
-///   @BindableState var digest = Digest.daily
-///   @BindableState var displayName = ""
-///   @BindableState var enableNotifications = false
-///   var isLoading = false
-///   @BindableState var protectMyPosts = false
-///   @BindableState var sendEmailNotifications = false
-///   @BindableState var sendMobileNotifications = false
-/// }
-/// ```
-///
-/// Each annotated field is directly to bindable to SwiftUI controls, like pickers, toggles, and
-/// text fields. Notably, the `isLoading` property is _not_ annotated as being bindable, which
-/// prevents the view from mutating this value directly.
-///
-/// Next, we can conform the action type to ``BindableAction`` by collapsing all of the
-/// individual, field-mutating actions into a single case that holds a ``BindingAction`` generic
-/// over the reducer's `SettingsState`:
-///
-/// ```swift
-/// enum SettingsAction: BindableAction {
-///   case binding(BindingAction<SettingsState>)
-/// }
-/// ```
-///
-/// And then, we can simplify the settings reducer by allowing the `binding` method to handle
-/// these field mutations for us:
-///
-/// ```swift
-/// let settingsReducer = Reducer<
-///   SettingsState, SettingsAction, SettingsEnvironment
-/// > {
-///   switch action {
-///   case .binding:
-///     return .none
-///   }
-/// }
-/// .binding()
-/// ```
-///
-/// Binding actions are constructed and sent to the store by calling
-/// ``ViewStore/binding(_:file:fileID:line:)`` with a key path to the bindable state:
-///
-/// ```swift
-/// TextField("Display name", text: viewStore.binding(\.$displayName))
-/// ```
-///
-/// Should you need to layer additional functionality over these bindings, your reducer can
-/// pattern match the action for a given key path:
-///
-/// ```swift
-/// case .binding(\.$displayName):
-///   // Validate display name
-///
-/// case .binding(\.$enableNotifications):
-///   // Return an authorization request effect
-/// ```
-///
-/// Binding actions can also be tested in much the same way regular actions are tested. Rather
-/// than send a specific action describing how a binding changed, such as
-/// `.displayNameChanged("Blob")`, you will send a ``Reducer/binding(action:)`` action that
-/// describes which key path is being set to what value, such as `.set(\.$displayName, "Blob")`:
-///
-/// ```swift
-/// let store = TestStore(
-///   initialState: SettingsState(),
-///   reducer: settingsReducer,
-///   environment: SettingsEnvironment(...)
-/// )
-///
-/// store.send(.set(\.$displayName, "Blob")) {
-///   $0.displayName = "Blob"
-/// }
-/// store.send(.set(\.$protectMyPosts, true)) {
-///   $0.protectMyPosts = true
-/// )
-/// ```
+/// Read <doc:Bindings> for more information.
 @dynamicMemberLookup
 @propertyWrapper
 public struct BindableState<Value> {
@@ -243,7 +96,7 @@ extension BindableState: CustomDebugStringConvertible where Value: CustomDebugSt
 /// Used in conjunction with ``BindableState`` to safely eliminate the boilerplate typically
 /// associated with mutating multiple fields in state.
 ///
-/// See the documentation for ``BindableState`` for more details.
+/// Read <doc:Bindings> for more information.
 public protocol BindableAction {
   /// The root state type that contains bindable fields.
   associatedtype State
@@ -268,13 +121,13 @@ extension BindableAction {
   }
 }
 
-extension ViewStore where Action: BindableAction, Action.State == State {
+extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
   /// Returns a binding to the resulting bindable state of a given key path.
   ///
   /// - Parameter keyPath: A key path to a specific bindable state.
   /// - Returns: A new binding.
   public func binding<Value: Equatable>(
-    _ keyPath: WritableKeyPath<State, BindableState<Value>>,
+    _ keyPath: WritableKeyPath<ViewState, BindableState<Value>>,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -284,14 +137,15 @@ extension ViewStore where Action: BindableAction, Action.State == State {
       send: { value in
         #if DEBUG
           let debugger = BindableActionViewStoreDebugger(
-            value: value, bindableActionType: Action.self, file: file, fileID: fileID, line: line
+            value: value, bindableActionType: ViewAction.self, file: file, fileID: fileID,
+            line: line
           )
-          let set: (inout State) -> Void = {
+          let set: (inout ViewState) -> Void = {
             $0[keyPath: keyPath].wrappedValue = value
             debugger.wasCalled = true
           }
         #else
-          let set: (inout State) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
+          let set: (inout ViewState) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
         #endif
         return .binding(.init(keyPath: keyPath, set: set, value: value))
       }
@@ -304,10 +158,11 @@ extension ViewStore where Action: BindableAction, Action.State == State {
 /// Used in conjunction with ``BindableState`` and ``BindableAction`` to safely eliminate the
 /// boilerplate typically associated with mutating multiple fields in state.
 ///
-/// See the documentation for ``BindableState`` for more details.
+/// Read <doc:Bindings> for more information.
 public struct BindingAction<Root>: Equatable {
   public let keyPath: PartialKeyPath<Root>
 
+  @usableFromInline
   let set: (inout Root) -> Void
   let value: Any
   let valueIsEqualTo: (Any) -> Bool
@@ -378,38 +233,37 @@ extension BindingAction {
   /// Useful in transforming binding actions on view state into binding actions on reducer state
   /// when the domain contains ``BindableState`` and ``BindableAction``.
   ///
-  /// For example, we can model an app that can bind an integer count to a stepper and make a
+  /// For example, we can model an feature that can bind an integer count to a stepper and make a
   /// network request to fetch a fact about that integer with the following domain:
   ///
   /// ```swift
-  /// struct AppState: Equatable {
-  ///   @BindableState var count = 0
-  ///   var fact: String?
-  ///   ...
+  /// struct MyFeature: ReducerProtocol {
+  ///   struct State: Equatable {
+  ///     @BindableState var count = 0
+  ///     var fact: String?
+  ///     ...
+  ///   }
+  ///
+  ///   enum Action: BindableAction {
+  ///     case binding(BindingAction<State>)
+  ///     case factButtonTapped
+  ///     case factResponse(String?)
+  ///     ...
+  ///   }
+  ///
+  ///   @Dependency(\.numberFact) var numberFact
+  ///
+  ///   var body: some ReducerProtocol<State, Action> {
+  ///     BindingReducer()
+  ///     // ...
+  ///   }
   /// }
   ///
-  /// enum AppAction: BindableAction {
-  ///   case binding(BindingAction<AppState>)
-  ///   case factButtonTapped
-  ///   case factResponse(String?)
-  ///   ...
-  /// }
-  ///
-  /// struct AppEnvironment {
-  ///   var numberFact: (Int) async throws -> String
-  ///   ...
-  /// }
-  ///
-  /// let appReducer = Reducer<AppState, AppAction, AppEnvironment> {
-  ///   ...
-  /// }
-  /// .binding()
-  ///
-  /// struct AppView: View {
-  ///   let store: Store
+  /// struct MyFeatureView: View {
+  ///   let store: StoreOf<MyFeature>
   ///
   ///   var view: some View {
-  ///     ...
+  ///     // ...
   ///   }
   /// }
   /// ```
@@ -421,29 +275,30 @@ extension BindingAction {
   /// bindable state and bindable action:
   ///
   /// ```swift
-  /// extension AppView {
+  /// extension MyFeatureView {
   ///   struct ViewState: Equatable {
   ///     @BindableState var count: Int
   ///     let fact: String?
-  ///     // no access to any other state on `AppState`, like child domains
+  ///     // no access to any other state on `MyFeature.State`, like child domains
   ///   }
   ///
   ///   enum ViewAction: BindableAction {
   ///     case binding(BindingAction<ViewState>)
   ///     case factButtonTapped
-  ///     // no access to any other action on `AppAction`, like `factResponse`
+  ///     // no access to any other action on `MyFeature.Action`, like `factResponse`
   ///   }
   /// }
   /// ```
   ///
   /// In order to transform a `BindingAction<ViewState>` sent from the view domain into a
-  /// `BindingAction<AppState>`, we need a writable key path from `AppState` to `ViewState`. We
-  /// can synthesize one by defining a computed property on `AppState` with a getter and a setter.
-  /// The setter should communicate any mutations to bindable state back to the parent state:
+  /// `BindingAction<MyFeature.State>`, we need a writable key path from `MyFeature.State` to
+  /// `ViewState`. We can synthesize one by defining a computed property on `MyFeature.State` with a
+  /// getter and a setter. The setter should communicate any mutations to bindable state back to the
+  /// parent state:
   ///
   /// ```swift
-  /// extension AppState {
-  ///   var view: AppView.ViewState {
+  /// extension MyFeature.State {
+  ///   var view: MyFeatureView.ViewState {
   ///     get { .init(count: self.count, fact: self.fact) }
   ///     set { self.count = newValue.count }
   ///   }
@@ -451,22 +306,22 @@ extension BindingAction {
   /// ```
   ///
   /// With this property defined it is now possible to transform a `BindingAction<ViewState>` into
-  /// a `BindingAction<AppState>`, which means we can transform a `ViewAction` into an
-  /// `AppAction`. This is where `pullback` comes into play: we can unwrap the view action's
-  /// binding action on view state and transform it with `pullback` to work with app state. We can
-  /// define a helper that performs this transformation, as well as route any other view actions
+  /// a `BindingAction<MyFeature.State>`, which means we can transform a `ViewAction` into an
+  /// `MyFeature.Action`. This is where `pullback` comes into play: we can unwrap the view action's
+  /// binding action on view state and transform it with `pullback` to work with feature state. We
+  /// can define a helper that performs this transformation, as well as route any other view actions
   /// to their reducer equivalents:
   ///
   /// ```swift
-  /// extension AppAction {
-  ///   static func view(_ viewAction: AppView.ViewAction) -> Self {
+  /// extension MyFeature.Action {
+  ///   static func view(_ viewAction: MyFeature.View.ViewAction) -> Self {
   ///     switch viewAction {
   ///     case let .binding(action):
-  ///       // transform view binding actions into app binding actions
+  ///       // transform view binding actions into feature binding actions
   ///       return .binding(action.pullback(\.view))
   ///
   ///     case let .factButtonTapped
-  ///       // route `ViewAction.factButtonTapped` to `AppAction.factButtonTapped`
+  ///       // route `ViewAction.factButtonTapped` to `MyFeature.Action.factButtonTapped`
   ///       return .factButtonTapped
   ///     }
   ///   }
@@ -478,7 +333,7 @@ extension BindingAction {
   ///
   /// ```swift
   /// WithViewStore(
-  ///   self.store, observe: \.view, send: AppAction.view
+  ///   self.store, observe: \.view, send: MyFeature.Action.view
   /// ) { viewStore in
   ///   Stepper("\(viewStore.count)", viewStore.binding(\.$count))
   ///   Button("Get number fact") { viewStore.send(.factButtonTapped) }
@@ -504,52 +359,13 @@ extension BindingAction {
 
 extension BindingAction: CustomDumpReflectable {
   public var customDumpMirror: Mirror {
-    .init(
+    Mirror(
       self,
       children: [
         "set": (self.keyPath, self.value)
       ],
       displayStyle: .enum
     )
-  }
-}
-
-extension Reducer where Action: BindableAction, State == Action.State {
-  /// Returns a reducer that applies ``BindingAction`` mutations to `State` before running this
-  /// reducer's logic.
-  ///
-  /// For example, a settings screen may gather its binding actions into a single
-  /// ``BindingAction`` case by conforming to ``BindableAction``:
-  ///
-  /// ```swift
-  /// enum SettingsAction: BindableAction {
-  ///   ...
-  ///   case binding(BindingAction<SettingsState>)
-  /// }
-  /// ```
-  ///
-  /// The reducer can then be enhanced to automatically handle these mutations for you by tacking
-  /// on the ``binding()`` method:
-  ///
-  /// ```swift
-  /// let settingsReducer = Reducer<SettingsState, SettingsAction, SettingsEnvironment> {
-  ///   ...
-  /// }
-  /// .binding()
-  /// ```
-  ///
-  /// - Returns: A reducer that applies ``BindingAction`` mutations to `State` before running this
-  ///   reducer's logic.
-  public func binding() -> Self {
-    Self { state, action, environment in
-      guard let bindingAction = (/Action.binding).extract(from: action)
-      else {
-        return self.run(&state, action, environment)
-      }
-
-      bindingAction.set(&state)
-      return self.run(&state, action, environment)
-    }
   }
 }
 
@@ -578,20 +394,16 @@ extension Reducer where Action: BindableAction, State == Action.State {
 
     deinit {
       guard self.wasCalled else {
-        runtimeWarning(
+        runtimeWarn(
           """
-          A binding action sent from a view store at "%@:%d" was not handled. …
+          A binding action sent from a view store at "\(self.fileID):\(self.line)" was not \
+          handled. …
 
             Action:
-              %@
+              \(typeName(self.bindableActionType)).binding(.set(_, \(self.value)))
 
-          To fix this, invoke the "binding()" method on your feature's reducer.
+          To fix this, invoke "BindingReducer()" from your feature reducer's "body".
           """,
-          [
-            "\(self.fileID)",
-            self.line,
-            "\(self.bindableActionType).binding(.set(_, \(self.value)))",
-          ],
           file: self.file,
           line: self.line
         )

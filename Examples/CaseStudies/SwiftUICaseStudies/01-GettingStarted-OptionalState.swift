@@ -12,44 +12,41 @@ private let readMe = """
   Tapping "Toggle counter state" will flip between the `nil` and non-`nil` counter states.
   """
 
-struct OptionalBasicsState: Equatable {
-  var optionalCounter: CounterState?
-}
+// MARK: - Feature domain
 
-enum OptionalBasicsAction: Equatable {
-  case optionalCounter(CounterAction)
-  case toggleCounterButtonTapped
-}
+struct OptionalBasics: ReducerProtocol {
+  struct State: Equatable {
+    var optionalCounter: Counter.State?
+  }
 
-struct OptionalBasicsEnvironment {}
+  enum Action: Equatable {
+    case optionalCounter(Counter.Action)
+    case toggleCounterButtonTapped
+  }
 
-let optionalBasicsReducer =
-  counterReducer
-  .optional()
-  .pullback(
-    state: \.optionalCounter,
-    action: /OptionalBasicsAction.optionalCounter,
-    environment: { _ in CounterEnvironment() }
-  )
-  .combined(
-    with: Reducer<
-      OptionalBasicsState, OptionalBasicsAction, OptionalBasicsEnvironment
-    > { state, action, environment in
+  var body: some ReducerProtocol<State, Action> {
+    Reduce { state, action in
       switch action {
       case .toggleCounterButtonTapped:
         state.optionalCounter =
           state.optionalCounter == nil
-          ? CounterState()
+          ? Counter.State()
           : nil
         return .none
       case .optionalCounter:
         return .none
       }
     }
-  )
+    .ifLet(\.optionalCounter, action: /Action.optionalCounter) {
+      Counter()
+    }
+  }
+}
+
+// MARK: - Feature view
 
 struct OptionalBasicsView: View {
-  let store: Store<OptionalBasicsState, OptionalBasicsAction>
+  let store: StoreOf<OptionalBasics>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -65,7 +62,7 @@ struct OptionalBasicsView: View {
         IfLetStore(
           self.store.scope(
             state: \.optionalCounter,
-            action: OptionalBasicsAction.optionalCounter
+            action: OptionalBasics.Action.optionalCounter
           ),
           then: { store in
             Text(template: "`CounterState` is non-`nil`")
@@ -83,15 +80,16 @@ struct OptionalBasicsView: View {
   }
 }
 
+// MARK: - SwiftUI previews
+
 struct OptionalBasicsView_Previews: PreviewProvider {
   static var previews: some View {
     Group {
       NavigationView {
         OptionalBasicsView(
           store: Store(
-            initialState: OptionalBasicsState(),
-            reducer: optionalBasicsReducer,
-            environment: OptionalBasicsEnvironment()
+            initialState: OptionalBasics.State(),
+            reducer: OptionalBasics()
           )
         )
       }
@@ -99,9 +97,8 @@ struct OptionalBasicsView_Previews: PreviewProvider {
       NavigationView {
         OptionalBasicsView(
           store: Store(
-            initialState: OptionalBasicsState(optionalCounter: CounterState(count: 42)),
-            reducer: optionalBasicsReducer,
-            environment: OptionalBasicsEnvironment()
+            initialState: OptionalBasics.State(optionalCounter: Counter.State(count: 42)),
+            reducer: OptionalBasics()
           )
         )
       }

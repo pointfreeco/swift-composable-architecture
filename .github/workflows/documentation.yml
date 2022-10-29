@@ -9,43 +9,24 @@ on:
   push:
     branches:
       - main
+      - protocol-clocks
   workflow_dispatch:
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: macos-12
     steps:
+      - name: Select Xcode 14.1
+        run: sudo xcode-select -s /Applications/Xcode_14.1.app
+
       - name: Checkout Package
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-
-      - name: Checkout swift-docc
-        uses: actions/checkout@v2
-        with:
-          repository: apple/swift-docc
-          ref: main
-          path: swift-docc
-      - name: Cache DocC
-        id: cache-docc
-        uses: actions/cache@v2
-        with:
-          key: swift-url-docc-build
-          path: swift-docc/.build
-      - name: Build swift-docc
-        if: ${{ !steps.cache-docc.outputs.cache-hit }}
-        run: |
-          cd swift-docc; swift build --product docc -c release; cd ..
-
-      - name: Checkout swift-docc-render
-        uses: actions/checkout@v2
-        with:
-          repository: apple/swift-docc-render
-          ref: main
-          path: swift-docc-render
-      - name: Build swift-docc-render
-        run: |
-          cd swift-docc-render; npm install && npm run build; cd ..
 
       - name: Checkout gh-pages Branch
         uses: actions/checkout@v2
@@ -57,46 +38,35 @@ jobs:
         run: >
           rm -rf docs-out/.git;
           rm -rf docs-out/main;
-          rm -rf docs-out/protocol;
+          git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | tail -n +6 | xargs -I {} rm -rf {};
 
-          for tag in $(echo "main"; echo "protocol"; git tag);
+          for tag in $(echo "main"; echo "protocol-clocks"; git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | head -6);
           do
-            echo "⏳ Generating documentation for "$tag" release.";
-
-            if [ -d "docs-out/$tag" ] 
+            if [ -d "docs-out/$tag/data/documentation/composablearchitecture" ] 
             then 
-                echo "✅ Documentation for "$tag" already exists.";
+              echo "✅ Documentation for "$tag" already exists.";
             else 
-                git checkout "$tag";
-                mkdir -p Sources/ComposableArchitecture/Documentation.docc;
-                export DOCC_HTML_DIR="$(pwd)/swift-docc-render/dist";
+              echo "⏳ Generating documentation for ComposableArchitecture @ "$tag" release.";
+              rm -rf "docs-out/$tag";
 
-                rm -rf .build/symbol-graphs;
-                mkdir -p .build/symbol-graphs;
-                swift build \
-                  --target ComposableArchitecture \
-                  -Xswiftc \
-                  -emit-symbol-graph \
-                  -Xswiftc \
-                  -emit-symbol-graph-dir \
-                  -Xswiftc \
-                  .build/symbol-graphs \
-                  && swift-docc/.build/release/docc convert Sources/ComposableArchitecture/Documentation.docc \
-                    --fallback-display-name ComposableArchitecture \
-                    --fallback-bundle-identifier co.pointfree.ComposableArchitecture \
-                    --fallback-bundle-version 0.0.0 \
-                    --additional-symbol-graph-dir \
-                    .build/symbol-graphs \
-                    --transform-for-static-hosting \
-                    --hosting-base-path /swift-composable-architecture/"$tag" \
-                    --output-path docs-out/"$tag" \
-                    && echo "✅ Documentation generated for "$tag" release." \
-                    || echo "⚠️ Documentation skipped for "$tag".";
+              git checkout .;
+              git checkout "$tag";
+
+              swift package \
+                --allow-writing-to-directory docs-out/"$tag" \
+                generate-documentation \
+                --target ComposableArchitecture \
+                --output-path docs-out/"$tag" \
+                --transform-for-static-hosting \
+                --hosting-base-path /swift-composable-architecture/"$tag" \
+                && echo "✅ Documentation generated for ComposableArchitecture @ "$tag" release." \
+                || echo "⚠️ Documentation skipped for ComposableArchitecture @ "$tag".";
             fi;
           done
 
       - name: Fix permissions
         run: 'sudo chown -R $USER docs-out'
+
       - name: Publish documentation to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@4.1.7
         with:

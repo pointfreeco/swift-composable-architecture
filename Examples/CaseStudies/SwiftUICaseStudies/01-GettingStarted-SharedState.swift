@@ -14,149 +14,153 @@ private let readMe = """
   can be reset from the other tab.
   """
 
-struct SharedState: Equatable {
-  var counter = CounterState()
-  var currentTab = Tab.counter
+// MARK: - Feature domain
 
+struct SharedState: ReducerProtocol {
   enum Tab { case counter, profile }
 
-  struct CounterState: Equatable {
-    var alert: AlertState<SharedStateAction.CounterAction>?
-    var count = 0
-    var maxCount = 0
-    var minCount = 0
-    var numberOfCounts = 0
-  }
+  struct State: Equatable {
+    var counter = Counter.State()
+    var currentTab = Tab.counter
 
-  // The ProfileState can be derived from the CounterState by getting and setting the parts it cares
-  // about. This allows the profile feature to operate on a subset of app state instead of the whole
-  // thing.
-  var profile: ProfileState {
-    get {
-      ProfileState(
-        currentTab: self.currentTab,
-        count: self.counter.count,
-        maxCount: self.counter.maxCount,
-        minCount: self.counter.minCount,
-        numberOfCounts: self.counter.numberOfCounts
-      )
-    }
-    set {
-      self.currentTab = newValue.currentTab
-      self.counter.count = newValue.count
-      self.counter.maxCount = newValue.maxCount
-      self.counter.minCount = newValue.minCount
-      self.counter.numberOfCounts = newValue.numberOfCounts
+    /// The Profile.State can be derived from the Counter.State by getting and setting the parts it
+    /// cares about. This allows the profile feature to operate on a subset of app state instead of
+    /// the whole thing.
+    var profile: Profile.State {
+      get {
+        Profile.State(
+          currentTab: self.currentTab,
+          count: self.counter.count,
+          maxCount: self.counter.maxCount,
+          minCount: self.counter.minCount,
+          numberOfCounts: self.counter.numberOfCounts
+        )
+      }
+      set {
+        self.currentTab = newValue.currentTab
+        self.counter.count = newValue.count
+        self.counter.maxCount = newValue.maxCount
+        self.counter.minCount = newValue.minCount
+        self.counter.numberOfCounts = newValue.numberOfCounts
+      }
     }
   }
 
-  struct ProfileState: Equatable {
-    private(set) var currentTab: Tab
-    private(set) var count = 0
-    private(set) var maxCount: Int
-    private(set) var minCount: Int
-    private(set) var numberOfCounts: Int
+  enum Action: Equatable {
+    case counter(Counter.Action)
+    case profile(Profile.Action)
+    case selectTab(Tab)
+  }
 
-    fileprivate mutating func resetCount() {
-      self.currentTab = .counter
-      self.count = 0
-      self.maxCount = 0
-      self.minCount = 0
-      self.numberOfCounts = 0
+  var body: some ReducerProtocol<State, Action> {
+    Scope(state: \.counter, action: /Action.counter) {
+      Counter()
+    }
+
+    Scope(state: \.profile, action: /Action.profile) {
+      Profile()
+    }
+
+    Reduce { state, action in
+      switch action {
+      case .counter, .profile:
+        return .none
+      case let .selectTab(tab):
+        state.currentTab = tab
+        return .none
+      }
+    }
+  }
+
+  struct Counter: ReducerProtocol {
+    struct State: Equatable {
+      var alert: AlertState<Action>?
+      var count = 0
+      var maxCount = 0
+      var minCount = 0
+      var numberOfCounts = 0
+    }
+
+    enum Action: Equatable {
+      case alertDismissed
+      case decrementButtonTapped
+      case incrementButtonTapped
+      case isPrimeButtonTapped
+    }
+
+    func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+      switch action {
+      case .alertDismissed:
+        state.alert = nil
+        return .none
+
+      case .decrementButtonTapped:
+        state.count -= 1
+        state.numberOfCounts += 1
+        state.minCount = min(state.minCount, state.count)
+        return .none
+
+      case .incrementButtonTapped:
+        state.count += 1
+        state.numberOfCounts += 1
+        state.maxCount = max(state.maxCount, state.count)
+        return .none
+
+      case .isPrimeButtonTapped:
+        state.alert = AlertState(
+          title: TextState(
+            isPrime(state.count)
+              ? "👍 The number \(state.count) is prime!"
+              : "👎 The number \(state.count) is not prime :("
+          )
+        )
+        return .none
+      }
+    }
+  }
+
+  struct Profile: ReducerProtocol {
+    struct State: Equatable {
+      private(set) var currentTab: Tab
+      private(set) var count = 0
+      private(set) var maxCount: Int
+      private(set) var minCount: Int
+      private(set) var numberOfCounts: Int
+
+      fileprivate mutating func resetCount() {
+        self.currentTab = .counter
+        self.count = 0
+        self.maxCount = 0
+        self.minCount = 0
+        self.numberOfCounts = 0
+      }
+    }
+
+    enum Action: Equatable {
+      case resetCounterButtonTapped
+    }
+
+    func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+      switch action {
+      case .resetCounterButtonTapped:
+        state.resetCount()
+        return .none
+      }
     }
   }
 }
 
-enum SharedStateAction: Equatable {
-  case counter(CounterAction)
-  case profile(ProfileAction)
-  case selectTab(SharedState.Tab)
-
-  enum CounterAction: Equatable {
-    case alertDismissed
-    case decrementButtonTapped
-    case incrementButtonTapped
-    case isPrimeButtonTapped
-  }
-
-  enum ProfileAction: Equatable {
-    case resetCounterButtonTapped
-  }
-}
-
-let sharedStateCounterReducer = Reducer<
-  SharedState.CounterState, SharedStateAction.CounterAction, Void
-> { state, action, _ in
-  switch action {
-  case .alertDismissed:
-    state.alert = nil
-    return .none
-
-  case .decrementButtonTapped:
-    state.count -= 1
-    state.numberOfCounts += 1
-    state.minCount = min(state.minCount, state.count)
-    return .none
-
-  case .incrementButtonTapped:
-    state.count += 1
-    state.numberOfCounts += 1
-    state.maxCount = max(state.maxCount, state.count)
-    return .none
-
-  case .isPrimeButtonTapped:
-    state.alert = AlertState(
-      title: TextState(
-        isPrime(state.count)
-          ? "👍 The number \(state.count) is prime!"
-          : "👎 The number \(state.count) is not prime :("
-      )
-    )
-    return .none
-  }
-}
-
-let sharedStateProfileReducer = Reducer<
-  SharedState.ProfileState, SharedStateAction.ProfileAction, Void
-> { state, action, _ in
-  switch action {
-  case .resetCounterButtonTapped:
-    state.resetCount()
-    return .none
-  }
-}
-
-let sharedStateReducer = Reducer<SharedState, SharedStateAction, Void>.combine(
-  sharedStateCounterReducer.pullback(
-    state: \SharedState.counter,
-    action: /SharedStateAction.counter,
-    environment: { _ in () }
-  ),
-  sharedStateProfileReducer.pullback(
-    state: \SharedState.profile,
-    action: /SharedStateAction.profile,
-    environment: { _ in () }
-  ),
-  Reducer { state, action, _ in
-    switch action {
-    case .counter, .profile:
-      return .none
-    case let .selectTab(tab):
-      state.currentTab = tab
-      return .none
-    }
-  }
-)
+// MARK: - Feature view
 
 struct SharedStateView: View {
-  let store: Store<SharedState, SharedStateAction>
+  let store: StoreOf<SharedState>
 
   var body: some View {
     WithViewStore(self.store, observe: \.currentTab) { viewStore in
       VStack {
         Picker(
           "Tab",
-          selection: viewStore.binding(send: SharedStateAction.selectTab)
+          selection: viewStore.binding(send: SharedState.Action.selectTab)
         ) {
           Text("Counter")
             .tag(SharedState.Tab.counter)
@@ -168,12 +172,12 @@ struct SharedStateView: View {
 
         if viewStore.state == .counter {
           SharedStateCounterView(
-            store: self.store.scope(state: \.counter, action: SharedStateAction.counter))
+            store: self.store.scope(state: \.counter, action: SharedState.Action.counter))
         }
 
         if viewStore.state == .profile {
           SharedStateProfileView(
-            store: self.store.scope(state: \.profile, action: SharedStateAction.profile))
+            store: self.store.scope(state: \.profile, action: SharedState.Action.profile))
         }
 
         Spacer()
@@ -184,7 +188,7 @@ struct SharedStateView: View {
 }
 
 struct SharedStateCounterView: View {
-  let store: Store<SharedState.CounterState, SharedStateAction.CounterAction>
+  let store: StoreOf<SharedState.Counter>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -220,7 +224,7 @@ struct SharedStateCounterView: View {
 }
 
 struct SharedStateProfileView: View {
-  let store: Store<SharedState.ProfileState, SharedStateAction.ProfileAction>
+  let store: StoreOf<SharedState.Profile>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -257,9 +261,8 @@ struct SharedState_Previews: PreviewProvider {
   static var previews: some View {
     SharedStateView(
       store: Store(
-        initialState: SharedState(),
-        reducer: sharedStateReducer,
-        environment: ()
+        initialState: SharedState.State(),
+        reducer: SharedState()
       )
     )
   }

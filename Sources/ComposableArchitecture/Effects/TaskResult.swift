@@ -26,20 +26,20 @@ import XCTestDynamicOverlay
 /// Then you can model your dependency as using simple `async` and `throws` functionality:
 ///
 /// ```swift
-/// struct FeatureEnvironment {
-///   var numberFact: (Int) async throws -> String
+/// struct NumberFactClient {
+///   var fetch: (Int) async throws -> String
 /// }
 /// ```
 ///
-/// And finally you can use ``Effect/task(priority:operation:catch:file:fileID:line:)`` to construct
-/// an effect in the reducer that invokes the `numberFact` endpoint and wraps its response in a
-/// ``TaskResult`` by using its catching initializer, ``TaskResult/init(catching:)``:
+/// And finally you can use ``EffectPublisher/task(priority:operation:catch:file:fileID:line:)`` to
+/// construct an effect in the reducer that invokes the `numberFact` endpoint and wraps its response
+/// in a ``TaskResult`` by using its catching initializer, ``TaskResult/init(catching:)``:
 ///
 /// ```swift
 /// case .factButtonTapped:
 ///   return .task {
 ///     await .factResponse(
-///       TaskResult { try await environment.numberFact(state.number) }
+///       TaskResult { try await self.numberFact.fetch(state.number) }
 ///     )
 ///   }
 ///
@@ -71,7 +71,7 @@ import XCTestDynamicOverlay
 /// ```swift
 /// // Set up a failing dependency
 /// struct RefreshFailure: Error {}
-/// store.environment.apiClient.fetchFeed = { throw RefreshFailure() }
+/// store.dependencies.apiClient.fetchFeed = { throw RefreshFailure() }
 ///
 /// // Simulate pull-to-refresh
 /// store.send(.refresh) { $0.isLoading = true }
@@ -89,7 +89,7 @@ import XCTestDynamicOverlay
 /// ```swift
 /// // Set up a failing dependency
 /// struct RefreshFailure: Error, Equatable {} // 👈
-/// store.environment.apiClient.fetchFeed = { throw RefreshFailure() }
+/// store.dependencies.apiClient.fetchFeed = { throw RefreshFailure() }
 ///
 /// // Simulate pull-to-refresh
 /// store.send(.refresh) { $0.isLoading = true }
@@ -213,21 +213,20 @@ extension TaskResult: Equatable where Success: Equatable {
     case let (.failure(lhs), .failure(rhs)):
       return _isEqual(lhs, rhs) ?? {
         #if DEBUG
-          if TaskResultDebugging.emitRuntimeWarnings, type(of: lhs) == type(of: rhs) {
-            runtimeWarning(
+          let lhsType = type(of: lhs)
+          if TaskResultDebugging.emitRuntimeWarnings, lhsType == type(of: rhs) {
+            let lhsTypeName = typeName(lhsType)
+            runtimeWarn(
               """
-              '%1$@' is not equatable. …
+              "\(lhsTypeName)" is not equatable. …
 
-              To test two values of this type, it must conform to the 'Equatable' protocol. For \
+              To test two values of this type, it must conform to the "Equatable" protocol. For \
               example:
 
-                  extension %1$@: Equatable {}
+                  extension \(lhsTypeName): Equatable {}
 
-              See the documentation of 'TaskResult' for more information.
-              """,
-              [
-                "\(type(of: lhs))",
-              ]
+              See the documentation of "TaskResult" for more information.
+              """
             )
           }
         #endif
@@ -252,19 +251,17 @@ extension TaskResult: Hashable where Success: Hashable {
       } else {
         #if DEBUG
           if TaskResultDebugging.emitRuntimeWarnings {
-            runtimeWarning(
+            let errorType = typeName(type(of: error))
+            runtimeWarn(
               """
-              '%1$@' is not hashable. …
+              "\(errorType)" is not hashable. …
 
-              To hash a value of this type, it must conform to the 'Hashable' protocol. For example:
+              To hash a value of this type, it must conform to the "Hashable" protocol. For example:
 
-                  extension %1$@: Hashable {}
+                  extension \(errorType): Hashable {}
 
-              See the documentation of 'TaskResult' for more information.
-              """,
-              [
-                "\(type(of: error))",
-              ]
+              See the documentation of "TaskResult" for more information.
+              """
             )
           }
         #endif
@@ -279,27 +276,4 @@ extension TaskResult {
   public func get() throws -> Success {
     try self.value
   }
-}
-
-private enum _Witness<A> {}
-
-private protocol _AnyEquatable {
-  static func _isEqual(_ lhs: Any, _ rhs: Any) -> Bool
-}
-
-extension _Witness: _AnyEquatable where A: Equatable {
-  static func _isEqual(_ lhs: Any, _ rhs: Any) -> Bool {
-    guard
-      let lhs = lhs as? A,
-      let rhs = rhs as? A
-    else { return false }
-    return lhs == rhs
-  }
-}
-
-private func _isEqual(_ a: Any, _ b: Any) -> Bool? {
-  func `do`<A>(_: A.Type) -> Bool? {
-    (_Witness<A>.self as? _AnyEquatable.Type)?._isEqual(a, b)
-  }
-  return _openExistential(type(of: a), do: `do`)
 }
