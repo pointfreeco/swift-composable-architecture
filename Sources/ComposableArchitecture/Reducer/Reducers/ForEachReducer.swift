@@ -3,7 +3,7 @@ import OrderedCollections
 /// A protocol that describes container types from which one can extract values from.
 ///
 /// This protocol is semi-abstract and you usually conform to the ``_ModifiableTaggedContainer``
-/// and/or the ``_IterableTaggedContainerProtocol`` which inherit from this protocol.
+/// which inherit from this protocol.
 public protocol _Container {
   /// The type of values that can be extracted from this container.
   associatedtype Value
