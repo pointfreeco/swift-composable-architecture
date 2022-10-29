@@ -47,14 +47,12 @@ extension _Container {
 }
 
 extension IterableContainer {
+  /// Creates an ``IterableContainer`` from a container
+  /// - Parameters:
+  ///   - container: A container that serves as a repository of `States`.
+  ///   - tags: A function from the container to the whole collection of ``Tags``
   public init(_ container: Container, tags: (Container) -> Tags) {
     self.tags = tags(container)
-    self.container = container
-  }
-
-  public init<Tag>(_ container: Container, tags: (Container.Element) -> Tag)
-  where Container: Collection, Tags == [Tag] {
-    self.tags = container.map(tags)
     self.container = container
   }
 }
