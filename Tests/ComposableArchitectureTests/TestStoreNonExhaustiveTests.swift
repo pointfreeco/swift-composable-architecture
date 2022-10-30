@@ -4,7 +4,7 @@
 
   @MainActor
   final class TestStoreNonExhaustiveTests: XCTestCase {
-    func testFlushReceivedActions_NonStrict() async {
+    func testSkipReceivedActions_NonStrict() async {
       let store = TestStore(
         initialState: 0,
         reducer: Reduce<Int, Bool> { state, action in
@@ -24,7 +24,7 @@
       XCTAssertEqual(store.state, 2)
     }
 
-    func testFlushReceivedActions_Strict() async {
+    func testSkipReceivedActions_Strict() async {
       let store = TestStore(
         initialState: 0,
         reducer: Reduce<Int, Bool> { state, action in
@@ -48,7 +48,7 @@
       await store.skipReceivedActions(strict: true)
     }
 
-    func testFlushReceivedActions_NonExhaustive() async {
+    func testSkipReceivedActions_NonExhaustive() async {
       let store = TestStore(
         initialState: 0,
         reducer: Reduce<Int, Bool> { state, action in
@@ -69,7 +69,7 @@
       XCTAssertEqual(store.state, 2)
     }
 
-    func testFlushReceivedActions_PartialExhaustive() async {
+    func testSkipReceivedActions_PartialExhaustive() async {
       let store = TestStore(
         initialState: 0,
         reducer: Reduce<Int, Bool> { state, action in
@@ -468,9 +468,9 @@
       // Ignored received action: .response2("Hello")
     }
 
-    // Confirms that when you send an action the test store flushes any unreceived actions
+    // Confirms that when you send an action the test store skips any unreceived actions
     // automatically.
-    func testSendWithUnreceivedActions_FlushesActions() async {
+    func testSendWithUnreceivedActions_SkipsActions() async {
       struct Feature: ReducerProtocol {
         enum Action: Equatable {
           case tap
