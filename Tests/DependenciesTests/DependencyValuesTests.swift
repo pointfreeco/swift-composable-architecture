@@ -149,6 +149,14 @@ final class DependencyValuesTests: XCTestCase {
       XCTAssertEqual(childDependencyEarlyBinding.fetch(), 1729)
       XCTAssertEqual(childDependencyLateBinding.fetch(), 1729)
     }
+
+    DependencyValues.withValue(\.someDependency.fetch, { 999 }) {
+      @Dependency(\.childDependencyEarlyBinding) var childDependencyEarlyBinding2;
+      @Dependency(\.childDependencyLateBinding) var childDependencyLateBinding2;
+
+      XCTAssertEqual(childDependencyEarlyBinding2.fetch(), 999)
+      XCTAssertEqual(childDependencyLateBinding2.fetch(), 999)
+    }
   }
 }
 
