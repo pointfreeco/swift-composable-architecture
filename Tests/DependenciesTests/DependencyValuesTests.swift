@@ -139,35 +139,33 @@ final class DependencyValuesTests: XCTestCase {
   }
 
   func testBinding() {
-    DependencyValues.withValue(\.context, .live) {
-      @Dependency(\.childDependencyEarlyBinding) var childDependencyEarlyBinding;
-      @Dependency(\.childDependencyLateBinding) var childDependencyLateBinding;
-      
-      XCTAssertEqual(childDependencyEarlyBinding.fetch(), 42)
-      XCTAssertEqual(childDependencyLateBinding.fetch(), 42)
-      
-      DependencyValues.withValue(\.someDependency.fetch, { 1729 }) {
-        XCTAssertEqual(childDependencyEarlyBinding.fetch(), 1729)
-        XCTAssertEqual(childDependencyLateBinding.fetch(), 1729)
-      }
+    @Dependency(\.childDependencyEarlyBinding) var childDependencyEarlyBinding;
+    @Dependency(\.childDependencyLateBinding) var childDependencyLateBinding;
+
+    XCTAssertEqual(childDependencyEarlyBinding.fetch(), 42)
+    XCTAssertEqual(childDependencyLateBinding.fetch(), 42)
+
+    DependencyValues.withValue(\.someDependency.fetch, { 1729 }) {
+      XCTAssertEqual(childDependencyEarlyBinding.fetch(), 1729)
+      XCTAssertEqual(childDependencyLateBinding.fetch(), 1729)
     }
   }
 }
 
-struct SomeDependency: DependencyKey {
+struct SomeDependency: TestDependencyKey {
   var fetch: () -> Int
-  static let liveValue = Self { 42 }
+  static let testValue = Self { 42 }
 }
-struct ChildDependencyEarlyBinding: DependencyKey {
+struct ChildDependencyEarlyBinding: TestDependencyKey {
   var fetch: () -> Int
-  static var liveValue: Self {
+  static var testValue: Self {
     @Dependency(\.someDependency) var someDependency
     return Self { someDependency.fetch() }
   }
 }
-struct ChildDependencyLateBinding: DependencyKey {
+struct ChildDependencyLateBinding: TestDependencyKey {
   var fetch: () -> Int
-  static var liveValue: Self {
+  static var testValue: Self {
     return Self {
       @Dependency(\.someDependency) var someDependency
       return someDependency.fetch()
