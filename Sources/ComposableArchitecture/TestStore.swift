@@ -424,7 +424,7 @@ import XCTestDynamicOverlay
 /// [Composable-Architecture-at-Scale]: https://vimeo.com/751173570
 open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
 
-  /// The current dependencies.
+  /// The current dependencies of the test store.
   ///
   /// The dependencies define the execution context that your feature runs in. They can be
   /// modified throughout the test store's lifecycle in order to influence how your feature
@@ -532,7 +532,7 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
     _modify { yield &self._environment.wrappedValue }
   }
 
-  /// The current state.
+  /// The current state of the test store.
   ///
   /// When read from a trailing closure assertion in ``send(_:assert:file:line:)-1ax61`` or
   /// ``receive(_:timeout:assert:file:line:)-1rwdd``, it will equal the `inout` state passed to the
@@ -541,7 +541,7 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
     self.reducer.state
   }
 
-  /// The timeout to await for in-flight effects.
+  /// The default timeout used in all methods that take an optional timeout.
   ///
   /// This is the default timeout used in all methods that take an optional timeout, such as
   /// ``receive(_:timeout:assert:file:line:)-332q2`` and ``finish(timeout:file:line:)-7pmv3``.

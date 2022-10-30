@@ -1,7 +1,7 @@
 #if DEBUG
   import ComposableArchitecture
   import XCTest
-
+ 
   @MainActor
   final class TestStoreNonExhaustiveTests: XCTestCase {
     func testSkipReceivedActions_NonStrict() async {
