@@ -150,12 +150,26 @@ final class DependencyValuesTests: XCTestCase {
       XCTAssertEqual(childDependencyLateBinding.fetch(), 1729)
     }
 
+    var childDependencyEarlyBindingEscaped: ChildDependencyEarlyBinding!
+    var childDependencyLateBindingEscaped: ChildDependencyLateBinding!
+
     DependencyValues.withValue(\.someDependency.fetch, { 999 }) {
       @Dependency(\.childDependencyEarlyBinding) var childDependencyEarlyBinding2;
       @Dependency(\.childDependencyLateBinding) var childDependencyLateBinding2;
 
+      childDependencyEarlyBindingEscaped = childDependencyEarlyBinding
+      childDependencyLateBindingEscaped = childDependencyLateBinding
+
       XCTAssertEqual(childDependencyEarlyBinding2.fetch(), 999)
       XCTAssertEqual(childDependencyLateBinding2.fetch(), 999)
+    }
+
+    XCTAssertEqual(childDependencyEarlyBindingEscaped.fetch(), 42)
+    XCTAssertEqual(childDependencyLateBindingEscaped.fetch(), 42)
+
+    DependencyValues.withValue(\.someDependency.fetch, { 1_000 }) {
+      XCTAssertEqual(childDependencyEarlyBindingEscaped.fetch(), 1_000)
+      XCTAssertEqual(childDependencyLateBindingEscaped.fetch(), 1_000)
     }
   }
 }
