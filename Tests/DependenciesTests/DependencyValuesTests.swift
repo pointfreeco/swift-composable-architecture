@@ -137,6 +137,56 @@ final class DependencyValuesTests: XCTestCase {
       }
     }
   }
+
+  func testBinding() {
+    DependencyValues.withValue(\.context, .live) {
+      @Dependency(\.childDependencyEarlyBinding) var childDependencyEarlyBinding;
+      @Dependency(\.childDependencyLateBinding) var childDependencyLateBinding;
+      
+      XCTAssertEqual(childDependencyEarlyBinding.fetch(), 42)
+      XCTAssertEqual(childDependencyLateBinding.fetch(), 42)
+      
+      DependencyValues.withValue(\.someDependency.fetch, { 1729 }) {
+        XCTAssertEqual(childDependencyEarlyBinding.fetch(), 1729)
+        XCTAssertEqual(childDependencyLateBinding.fetch(), 1729)
+      }
+    }
+  }
+}
+
+struct SomeDependency: DependencyKey {
+  var fetch: () -> Int
+  static let liveValue = Self { 42 }
+}
+struct ChildDependencyEarlyBinding: DependencyKey {
+  var fetch: () -> Int
+  static var liveValue: Self {
+    @Dependency(\.someDependency) var someDependency
+    return Self { someDependency.fetch() }
+  }
+}
+struct ChildDependencyLateBinding: DependencyKey {
+  var fetch: () -> Int
+  static var liveValue: Self {
+    return Self {
+      @Dependency(\.someDependency) var someDependency
+      return someDependency.fetch()
+    }
+  }
+}
+extension DependencyValues {
+  var someDependency: SomeDependency {
+    get { self[SomeDependency.self] }
+    set { self[SomeDependency.self] = newValue }
+  }
+  var childDependencyEarlyBinding: ChildDependencyEarlyBinding {
+    get { self[ChildDependencyEarlyBinding.self] }
+    set { self[ChildDependencyEarlyBinding.self] = newValue }
+  }
+  var childDependencyLateBinding: ChildDependencyLateBinding {
+    get { self[ChildDependencyLateBinding.self] }
+    set { self[ChildDependencyLateBinding.self] = newValue }
+  }
 }
 
 private let someDate = Date(timeIntervalSince1970: 1_234_567_890)
