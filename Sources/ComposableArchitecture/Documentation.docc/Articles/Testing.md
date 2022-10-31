@@ -499,16 +499,16 @@ we get the `didLogin` delegate action and that causes the selected tab to flip t
 the login feature is free to make any change it wants to make without affecting this integration
 test.
 
-Using ``Exhaustivity/none`` for ``TestStore/exhaustivity`` causes all un-asserted changes to pass
-without any notification. If you would like to see what test failures are being supressed without
-actually causing a failure, you can use ``Exhaustivity/partial``:
+Using ``Exhaustivity/off`` for ``TestStore/exhaustivity`` causes all un-asserted changes to pass
+without any notification. If you would like to see what test failures are being suppressed without
+actually causing a failure, you can use ``Exhaustivity/off(showSkippedAssertions:)``:
 
 ```swift
 let store = TestStore(
   initialState: App.State(),
   reducer: App()
 )
-store.exhaustivity = .partial // ⬅️
+store.exhaustivity = .off(showSkippedAssertions: true) // ⬅️
 
 await store.send(.login(.submitButtonTapped))
 await store.receive(.login(.delegate(.didLogin))) {

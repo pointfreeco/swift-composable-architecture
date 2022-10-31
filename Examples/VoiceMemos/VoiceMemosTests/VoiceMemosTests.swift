@@ -146,7 +146,7 @@ final class VoiceMemosTests: XCTestCase {
       initialState: VoiceMemos.State(),
       reducer: VoiceMemos()
     )
-    store.exhaustivity = .partial
+    store.exhaustivity = .off(showSkippedAssertions: true)
 
     struct SomeError: Error, Equatable {}
     let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()

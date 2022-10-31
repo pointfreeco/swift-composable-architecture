@@ -257,7 +257,7 @@ import XCTestDynamicOverlay
 /// Test stores are exhaustive by default, which means you must assert on every state change, and
 /// how ever effect feeds data back into the system, and you must make sure that all effects
 /// complete before the test is finished. To turn off exhaustivity you can set ``exhaustivity``
-/// to ``Exhaustivity/none``. When that is done the ``TestStore``'s behavior changes:
+/// to ``Exhaustivity/off``. When that is done the ``TestStore``'s behavior changes:
 ///
 /// * The trailing closures of ``send(_:assert:file:line:)-1ax61`` and
 ///   ``receive(_:timeout:assert:file:line:)-1rwdd`` no longer need to assert on all state changes.
@@ -266,13 +266,13 @@ import XCTestDynamicOverlay
 /// * The ``send(_:assert:file:line:)-1ax61`` and ``receive(_:timeout:assert:file:line:)-1rwdd``
 ///   methods are allowed to be called even when actions have been received from effects that have
 ///   not been asserted on yet. Any pending actions will be cleared.
-/// * Tests are allowed to finish with unasserted, received actions and inflight effects. No test
+/// * Tests are allowed to finish with unasserted, received actions and in-flight effects. No test
 ///   failures will be reported.
 ///
-/// There is also a third option between full and no exhaustivity called ``Exhaustivity/partial``.
-/// When it is set the test store behaves like when ``Exhaustivity/none`` is set, but with the added
-/// behavior that any unasserted change causes a grey, informational box to appear next to each
-/// assertion detailing the changes that were not asserted against. This allows you to see what
+/// Non-exhaustive stores can be configured to report skipped assertions by configuring
+/// ``Exhaustivity/off(showSkippedAssertions:)``. When set to `true` the test store will have the
+/// added behavior that any unasserted change causes a grey, informational box to appear next to
+/// each assertion detailing the changes that were not asserted against. This allows you to see what
 /// information you are choosing to ignore without causing a test failure. It can be useful in
 /// tracking down bugs that happen in production but that aren't currently detected in tests.
 ///
@@ -351,7 +351,7 @@ import XCTestDynamicOverlay
 ///   initialState: App.State(),
 ///   reducer: App()
 /// )
-/// store.exhaustivity = .none // ⬅️
+/// store.exhaustivity = .off // ⬅️
 ///
 /// await store.send(.login(.submitButtonTapped))
 /// await store.receive(.login(.delegate(.didLogin))) {
@@ -365,16 +365,16 @@ import XCTestDynamicOverlay
 /// activity. Now the login feature is free to make any change it wants to make without affecting
 /// this integration test.
 ///
-/// Using ``Exhaustivity/none`` for ``TestStore/exhaustivity`` causes all un-asserted changes to
+/// Using ``Exhaustivity/off`` for ``TestStore/exhaustivity`` causes all un-asserted changes to
 /// pass without any notification. If you would like to see what test failures are being suppressed
-/// without actually causing a failure, you can use ``Exhaustivity/partial``:
+/// without actually causing a failure, you can use ``Exhaustivity/off(showSkippedAssertions:)``:
 ///
 /// ```swift
 /// let store = TestStore(
 ///   initialState: App.State(),
 ///   reducer: App()
 /// )
-/// store.exhaustivity = .partial // ⬅️
+/// store.exhaustivity = .off(showSkippedAssertions: true) // ⬅️
 ///
 /// await store.send(.login(.submitButtonTapped))
 /// await store.receive(.login(.delegate(.didLogin))) {
@@ -464,7 +464,7 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
   }
 
   /// The current exhaustivity level of the test store.
-  public var exhaustivity: Exhaustivity = .exhaustive
+  public var exhaustivity: Exhaustivity = .on
 
   /// The current environment.
   ///
@@ -890,11 +890,11 @@ extension TestStore where ScopedState: Equatable {
     }
 
     switch self.exhaustivity {
-    case .exhaustive:
+    case .on:
       break
-    case .partial:
+    case .off(showSkippedAssertions: true):
       await self.skipReceivedActions(strict: false)
-    case .none:
+    case .off(showSkippedAssertions: false):
       self.reducer.receivedActions = []
     }
 
@@ -985,11 +985,11 @@ extension TestStore where ScopedState: Equatable {
     }
 
     switch self.exhaustivity {
-    case .exhaustive:
+    case .on:
       break
-    case .partial:
+    case .off(showSkippedAssertions: true):
       self.skipReceivedActions(strict: false)
-    case .none:
+    case .off(showSkippedAssertions: false):
       self.reducer.receivedActions = []
     }
 
@@ -1030,7 +1030,7 @@ extension TestStore where ScopedState: Equatable {
     var expected = expected
 
     switch self.exhaustivity {
-    case .exhaustive:
+    case .on:
       var expectedWhenGivenPreviousState = expected
       if let updateStateToExpectedResult = updateStateToExpectedResult {
         try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
@@ -1043,7 +1043,7 @@ extension TestStore where ScopedState: Equatable {
         tryUnnecessaryModifyFailure()
       }
 
-    case .none, .partial:
+    case .off:
       var expectedWhenGivenActualState = actual
       if let updateStateToExpectedResult = updateStateToExpectedResult {
         try updateStateToExpectedResult(&expectedWhenGivenActualState)
@@ -1051,10 +1051,12 @@ extension TestStore where ScopedState: Equatable {
       expected = expectedWhenGivenActualState
 
       if expectedWhenGivenActualState != actual {
-        self.withExhaustivity(.exhaustive) {
+        self.withExhaustivity(.on) {
           expectationFailure(expected: expectedWhenGivenActualState)
         }
-      } else if self.exhaustivity.isPartial && expectedWhenGivenActualState == actual {
+      } else if self.exhaustivity == .off(showSkippedAssertions: true)
+        && expectedWhenGivenActualState == actual
+      {
         var expectedWhenGivenPreviousState = current
         if let modify = updateStateToExpectedResult {
           _XCTExpectFailure(strict: false) {
@@ -1062,7 +1064,11 @@ extension TestStore where ScopedState: Equatable {
               try modify(&expectedWhenGivenPreviousState)
             } catch {
               XCTFail(
-                "\(self.exhaustivity.prefix ?? "") Threw error: \(error)",
+                """
+                Skipped assertions: …
+
+                Threw error: \(error)
+                """,
                 file: file,
                 line: line
               )
@@ -1222,8 +1228,8 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
 
           \(action)
           """,
-          overrideExhaustivity: self.exhaustivity == .exhaustive
-            ? .partial
+          overrideExhaustivity: self.exhaustivity == .on
+            ? .off(showSkippedAssertions: true)
             : self.exhaustivity,
           file: file,
           line: line
@@ -1268,8 +1274,8 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
 
           \(action)
           """,
-          overrideExhaustivity: self.exhaustivity == .exhaustive
-            ? .partial
+          overrideExhaustivity: self.exhaustivity == .on
+            ? .off(showSkippedAssertions: true)
             : self.exhaustivity,
           file: file,
           line: line
@@ -1348,7 +1354,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     /// }
     /// ```
     ///
-    /// When the store's ``exhaustivity`` is set to anything other than ``Exhaustivity/none``, a
+    /// When the store's ``exhaustivity`` is set to anything other than ``Exhaustivity/off``, a
     /// grey information box will show next to the `store.receive` line in Xcode letting you know
     /// what data was in the effect that you chose not to assert on.
     ///
@@ -1511,7 +1517,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     /// }
     /// ```
     ///
-    /// When the store's ``exhaustivity`` is set to anything other than ``Exhaustivity/none``, a
+    /// When the store's ``exhaustivity`` is set to anything other than ``Exhaustivity/off``, a
     /// grey information box will show next to the `store.receive` line in Xcode letting you know
     /// what data was in the effect that you chose not to assert on.
     ///
@@ -1566,7 +1572,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
       return
     }
 
-    if self.exhaustivity != .exhaustive {
+    if self.exhaustivity != .on {
       guard self.reducer.receivedActions.contains(where: { predicate($0.action) }) else {
         XCTFail(
           failureMessage(),
@@ -1581,7 +1587,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
         !predicate(receivedAction.action)
       {
         actions.append(receivedAction.action)
-        self.withExhaustivity(.none) {
+        self.withExhaustivity(.off) {
           self.receive(receivedAction.action, file: file, line: line)
         }
       }
@@ -1739,7 +1745,7 @@ extension TestStore {
   /// await store.skipReceivedActions()
   /// ```
   ///
-  /// - Parameter strict: When `true` and there are no inflight actions to cancel, a test failure
+  /// - Parameter strict: When `true` and there are no in-flight actions to cancel, a test failure
   ///   will be reported.
   @MainActor
   public func skipReceivedActions(
@@ -1755,7 +1761,7 @@ extension TestStore {
   ///
   /// The synchronous version of ``skipReceivedActions(strict:file:line:)-a4ri``.
   ///
-  /// - Parameter strict: When `true` and there are no inflight actions to cancel, a test failure
+  /// - Parameter strict: When `true` and there are no in-flight actions to cancel, a test failure
   ///   will be reported.
   @available(
     iOS, deprecated: 9999, message: "Call the async-friendly 'skipReceivedActions' instead."
@@ -1793,8 +1799,8 @@ extension TestStore {
 
       \(actions)
       """,
-      overrideExhaustivity: self.exhaustivity == .exhaustive
-        ? .partial
+      overrideExhaustivity: self.exhaustivity == .on
+        ? .off(showSkippedAssertions: true)
         : self.exhaustivity,
       file: file,
       line: line
@@ -1803,7 +1809,7 @@ extension TestStore {
     self.reducer.receivedActions = []
   }
 
-  /// Cancels any currently inflight effects.
+  /// Cancels any currently in-flight effects.
   ///
   /// Can be handy if you are writing an exhaustive test for a particular part of your feature,
   /// but you don't want to explicitly deal with all effects:
@@ -1822,7 +1828,7 @@ extension TestStore {
   /// await store.skipInFlightEffects()
   /// ```
   ///
-  /// - Parameter strict: When `true` and there are no inflight actions to cancel, a test failure
+  /// - Parameter strict: When `true` and there are no in-flight actions to cancel, a test failure
   ///   will be reported.
   public func skipInFlightEffects(
     strict: Bool = true,
@@ -1833,11 +1839,11 @@ extension TestStore {
     _ = { self.skipInFlightEffects(strict: strict, file: file, line: line) }()
   }
 
-  /// Cancels any currently inflight effects.
+  /// Cancels any currently in-flight effects.
   ///
   /// The synchronous version of ``skipInFlightEffects(strict:file:line:)-5hbsk``.
   ///
-  /// - Parameter strict: When `true` and there are no inflight actions to cancel, a test failure
+  /// - Parameter strict: When `true` and there are no in-flight actions to cancel, a test failure
   ///   will be reported.
   @available(
     iOS, deprecated: 9999, message: "Call the async-friendly 'skipInFlightEffects' instead."
@@ -1877,8 +1883,8 @@ extension TestStore {
 
       \(actions)
       """,
-      overrideExhaustivity: self.exhaustivity == .exhaustive
-        ? .partial
+      overrideExhaustivity: self.exhaustivity == .on
+        ? .off(showSkippedAssertions: true)
         : self.exhaustivity,
       file: file,
       line: line
@@ -1898,13 +1904,21 @@ extension TestStore {
   ) {
     let exhaustivity = exhaustivity ?? self.exhaustivity
     switch exhaustivity {
-    case .exhaustive:
+    case .on:
       XCTFail(message, file: file, line: line)
-    case let .partial(prefix: prefix):
+    case .off(showSkippedAssertions: true):
       _XCTExpectFailure {
-        XCTFail((prefix ?? "") + message, file: file, line: line)
+        XCTFail(
+          """
+          Skipped assertions: …
+
+          \(message)
+          """,
+          file: file,
+          line: line
+        )
       }
-    case .none:
+    case .off(showSkippedAssertions: false):
       break
     }
   }
@@ -2156,37 +2170,38 @@ extension Task where Success == Never, Failure == Never {
   }
 #endif
 
-/// The level of exhaustivity for the test store.
+/// The exhaustivity of assertions made by the test store.
 public enum Exhaustivity: Equatable {
-  /// Full exhaustivity, which means you must explicitly assert on how all state changes and all
-  /// received actions from effects.
-  case exhaustive
+  /// Exhaustive assertions.
+  ///
+  /// This setting requires you to exhaustively assert on all state changes and all actions received
+  /// from effects. Additionally, all in-flight effects _must_ be received before the test store is
+  /// deallocated.
+  ///
+  /// To manually skip actions or effects, use
+  /// ``TestStore/skipReceivedActions(strict:file:line:)-a4ri`` or
+  /// ``TestStore/skipInFlightEffects(strict:file:line:)-5hbsk``.
+  ///
+  /// To partially match an action received from an effect, use
+  /// ``TestStore/receive(_:timeout:assert:file:line:)-4e4m0``.
+  case on
 
-  /// No exhaustivity, which means you can assert on any subset of state changes and any subset of
-  /// received actions from effects.
-  case none
+  /// Non-exhaustive assertions.
+  ///
+  /// This settings allows you to assert on any subset of state changes and actions received from
+  /// effects.
+  ///
+  /// When configured to `showSkippedAssertions`, any state not asserted on or received actions
+  /// skipped will be reported in a grey informational box next to the assertion. This is handy for
+  /// when you want non-exhaustivity but you still want to know what all you are missing from your
+  /// assertions.
+  ///
+  /// - Parameter showSkippedAssertions: When `true`, skipped assertions will be reported as
+  ///   expected failures.
+  case off(showSkippedAssertions: Bool)
 
-  /// Partial exhaustivity, which behaves exactly like ``none``, except any state not asserted on or
-  /// receive actions skipped will be reported in a grey informational box next to the assertion.
-  /// This is handy for when you want non-exhaustivity but you still want to know what all you are
-  /// missing from your assertions.
-  case partial(prefix: String? = "Skipped assertions: …\n\n")
-
-  public static let partial = partial()
-
-  fileprivate var isPartial: Bool {
-    guard case .partial = self else {
-      return false
-    }
-    return true
-  }
-
-  fileprivate var prefix: String? {
-    guard case let .partial(prefix: prefix) = self else {
-      return nil
-    }
-    return prefix
-  }
+  /// Non-exhaustive assertions.
+  public static let off = Self.off(showSkippedAssertions: false)
 }
 
 @_transparent
