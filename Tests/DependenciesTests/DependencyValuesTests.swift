@@ -139,8 +139,10 @@ final class DependencyValuesTests: XCTestCase {
   }
 
   func testBinding() {
-    @Dependency(\.childDependencyEarlyBinding) var childDependencyEarlyBinding
-    @Dependency(\.childDependencyLateBinding) var childDependencyLateBinding
+    @Dependency(\.childDependencyEarlyBinding) var childDependencyEarlyBinding:
+      ChildDependencyEarlyBinding
+    @Dependency(\.childDependencyLateBinding) var childDependencyLateBinding:
+      ChildDependencyLateBinding
 
     XCTAssertEqual(childDependencyEarlyBinding.fetch(), 42)
     XCTAssertEqual(childDependencyLateBinding.fetch(), 42)
@@ -154,8 +156,10 @@ final class DependencyValuesTests: XCTestCase {
     var childDependencyLateBindingEscaped: ChildDependencyLateBinding!
 
     DependencyValues.withValue(\.someDependency.fetch, { 999 }) {
-      @Dependency(\.childDependencyEarlyBinding) var childDependencyEarlyBinding2
-      @Dependency(\.childDependencyLateBinding) var childDependencyLateBinding2
+      @Dependency(\.childDependencyEarlyBinding) var childDependencyEarlyBinding2:
+        ChildDependencyEarlyBinding
+      @Dependency(\.childDependencyLateBinding) var childDependencyLateBinding2:
+        ChildDependencyLateBinding
 
       childDependencyEarlyBindingEscaped = childDependencyEarlyBinding
       childDependencyLateBindingEscaped = childDependencyLateBinding
