@@ -15,10 +15,10 @@
 ### Testing a reducer
 
 - ``send(_:assert:file:line:)-1ax61``
-- ``receive(_:timeout:assert:file:line:)-332q2``
-- ``receive(_:timeout:assert:file:line:)-6b3xi``
-- ``receive(_:timeout:assert:file:line:)-5n755``
-- ``finish(timeout:file:line:)-7pmv3``
+- ``receive(_:timeout:assert:file:line:)-1rwdd``
+- ``receive(_:timeout:assert:file:line:)-4e4m0``
+- ``receive(_:timeout:assert:file:line:)-3myco``
+- ``finish(timeout:file:line:)``
 - ``TestStoreTask``
 
 ### Methods for skipping actions and effects
