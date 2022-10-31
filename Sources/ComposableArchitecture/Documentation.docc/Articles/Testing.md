@@ -485,7 +485,7 @@ let store = TestStore(
   initialState: App.State(),
   reducer: App()
 )
-store.exhaustivity = .none // ⬅️
+store.exhaustivity = .off // ⬅️
 
 await store.send(.login(.submitButtonTapped))
 await store.receive(.login(.delegate(.didLogin))) {
