@@ -112,8 +112,8 @@ final class VoiceMemosTests: XCTestCase {
     store.dependencies.audioRecorder.startRecording = { _ in
       try await didFinish.stream.first { _ in true }!
     }
-    store.dependencies.date = .constant(Date(timeIntervalSinceReferenceDate: 0))
     store.dependencies.continuousClock = self.clock
+    store.dependencies.date = .constant(Date(timeIntervalSinceReferenceDate: 0))
     store.dependencies.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
     store.dependencies.uuid = .constant(UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")!)
 
@@ -137,6 +137,37 @@ final class VoiceMemosTests: XCTestCase {
     }
 
     await recordingMemoTask.cancel()
+  }
+
+  // Demonstration of how to write a non-exhaustive test for recording a memo and it failing to
+  // record.
+  func testRecordMemoFailure_NonExhaustive() async {
+    let store = TestStore(
+      initialState: VoiceMemos.State(),
+      reducer: VoiceMemos()
+    )
+    store.exhaustivity = .off(showSkippedAssertions: true)
+
+    struct SomeError: Error, Equatable {}
+    let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
+
+    store.dependencies.audioRecorder.currentTime = { 2.5 }
+    store.dependencies.audioRecorder.requestRecordPermission = { true }
+    store.dependencies.audioRecorder.startRecording = { _ in
+      try await didFinish.stream.first { _ in true }!
+    }
+    store.dependencies.continuousClock = self.clock
+    store.dependencies.date = .constant(Date(timeIntervalSinceReferenceDate: 0))
+    store.dependencies.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
+    store.dependencies.uuid = .constant(UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")!)
+
+    await store.send(.recordButtonTapped)
+    await store.send(.recordingMemo(.task))
+    didFinish.continuation.finish(throwing: SomeError())
+    await store.receive(.recordingMemo(.delegate(.didFinish(.failure(SomeError()))))) {
+      $0.alert = AlertState(title: TextState("Voice memo recording failed."))
+      $0.recordingMemo = nil
+    }
   }
 
   func testPlayMemoHappyPath() async {

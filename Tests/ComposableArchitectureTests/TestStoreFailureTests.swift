@@ -43,11 +43,12 @@
       struct State: Equatable { var count = 0 }
       let store = TestStore(
         initialState: .init(),
-        reducer: Reduce<State, Void> { state, action in state.count += 1
+        reducer: Reduce<State, Void> { state, action in
+          state.count += 1
           return .none
         }
       )
-
+ 
       XCTExpectFailure {
         _ = store.send(()) { $0.count = 0 }
       } issueMatcher: {
@@ -259,6 +260,30 @@
         }
       } issueMatcher: { issue in
         issue.compactDescription == "Threw error: SomeError()"
+      }
+    }
+
+    func testExpectedStateEqualityMustModify() async {
+      let reducer = Reduce<Int, Bool> { state, action in
+        switch action {
+        case true:  return Effect(value: false)
+        case false: return .none
+        }
+      }
+      let store = TestStore(initialState: 0, reducer: reducer)
+
+      await store.send(true)
+      await store.receive(false)
+
+      XCTExpectFailure {
+        _ = store.send(true) {
+          $0 = 0
+        }
+      }
+      XCTExpectFailure {
+        store.receive(false) {
+          $0 = 0
+        }
       }
     }
   }
