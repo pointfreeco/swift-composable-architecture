@@ -684,11 +684,11 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
     @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
     @MainActor
     public func finish(
-      timeout duration: Duration? = nil,
+      timeout duration: Duration,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
-      await self.finish(timeout: duration?.nanoseconds, file: file, line: line)
+      await self.finish(timeout: duration.nanoseconds, file: file, line: line)
     }
   #endif
 
@@ -1317,14 +1317,14 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     @MainActor
     public func receive(
       _ expectedAction: Action,
-      timeout duration: Duration? = nil,
+      timeout duration: Duration,
       assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
       await self.receive(
         expectedAction,
-        timeout: duration?.nanoseconds,
+        timeout: duration.nanoseconds,
         assert: updateStateToExpectedResult,
         file: file,
         line: line
@@ -1369,14 +1369,14 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     @_disfavoredOverload
     public func receive(
       _ matching: (Action) -> Bool,
-      timeout duration: Duration? = nil,
+      timeout duration: Duration,
       assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
       await self.receive(
         matching,
-        timeout: duration?.nanoseconds,
+        timeout: duration.nanoseconds,
         assert: updateStateToExpectedResult,
         file: file,
         line: line
@@ -1527,7 +1527,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
     public func receive<Value>(
       _ casePath: CasePath<Action, Value>,
-      timeout duration: Duration? = nil,
+      timeout duration: Duration,
       assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
@@ -1539,7 +1539,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
         }()
         return
       }
-      await self.receiveAction(timeout: duration?.nanoseconds, file: file, line: line)
+      await self.receiveAction(timeout: duration.nanoseconds, file: file, line: line)
       _ = {
         self.receive(casePath, assert: updateStateToExpectedResult, file: file, line: line)
       }()
@@ -1976,11 +1976,11 @@ public struct TestStoreTask: Hashable, Sendable {
     /// - Parameter duration: The amount of time to wait before asserting.
     @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
     public func finish(
-      timeout duration: Duration? = nil,
+      timeout duration: Duration,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
-      await self.finish(timeout: duration?.nanoseconds, file: file, line: line)
+      await self.finish(timeout: duration.nanoseconds, file: file, line: line)
     }
   #endif
 
@@ -2170,7 +2170,7 @@ public enum Exhaustivity: Equatable {
   /// receive actions skipped will be reported in a grey informational box next to the assertion.
   /// This is handy for when you want non-exhaustivity but you still want to know what all you are
   /// missing from your assertions.
-  case partial(prefix: String? = "Partial assertions skipped. …\n\n")
+  case partial(prefix: String? = "Skipped assertions: …\n\n")
 
   public static let partial = partial()
 
