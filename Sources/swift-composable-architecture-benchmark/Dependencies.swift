@@ -25,7 +25,7 @@ let dependenciesSuite = BenchmarkSuite(name: "Dependencies") { suite in
 
 private struct BenchmarkReducer: ReducerProtocol {
   @Dependency(\.someValue) var someValue
-  func reduce(into state: inout Int, action: Void) -> Effect<Void, Never> {
+  func reduce(into state: inout Int, action: Void) -> EffectTask<Void> {
     state = self.someValue
     return .none
   }

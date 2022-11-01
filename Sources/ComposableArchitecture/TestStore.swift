@@ -1891,7 +1891,7 @@ extension TestStore {
     )
 
     for effect in self.reducer.inFlightEffects {
-      _ = Effect<Never, Never>.cancel(id: effect.id).sink { _ in }
+      _ = EffectPublisher<Never, Never>.cancel(id: effect.id).sink { _ in }
     }
     self.reducer.inFlightEffects = []
   }
