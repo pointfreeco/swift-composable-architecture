@@ -609,50 +609,9 @@ extension EffectPublisher {
 }
 
 @available(
-  iOS,
-  deprecated: 9999.0,
-  message:
-    """
-    'Effect' has been deprecated in favor of 'EffectTask' when `Failure == Never`, or
-    `EffectPublisher<Output, Failure>` in general.
-    
-    You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
-    concurrency to model failable streams of values.
-
-    See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
-    """
-)
-@available(
-  macOS,
-  deprecated: 9999.0,
-  message:
-    """
-    'Effect' has been deprecated in favor of 'EffectTask' when `Failure == Never`, or
-    `EffectPublisher<Output, Failure>` in general.
-    
-    You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
-    concurrency to model failable streams of values.
-
-    See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
-    """
-)
-@available(
-  tvOS,
-  deprecated: 9999.0,
-  message:
-    """
-    'Effect' has been deprecated in favor of 'EffectTask' when `Failure == Never`, or
-    `EffectPublisher<Output, Failure>` in general.
-    
-    You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
-    concurrency to model failable streams of values.
-
-    See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
-    """
-)
-@available(
-  watchOS,
-  deprecated: 9999.0,
+  *,
+  deprecated,
+  renamed: "EffectPublisher",
   message:
     """
     'Effect' has been deprecated in favor of 'EffectTask' when `Failure == Never`, or
