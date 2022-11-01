@@ -74,7 +74,7 @@ extension EffectPublisher {
 /// ```swift
 /// func reduce(into state: inout State, action: Action) -> EffectTask<Action>  { … }
 /// ```
-public typealias EffectTask<Action> = Effect<Action, Never>
+public typealias EffectTask<Action> = EffectPublisher<Action, Never>
 
 extension EffectPublisher where Failure == Never {
   /// Wraps an asynchronous unit of work in an effect.
