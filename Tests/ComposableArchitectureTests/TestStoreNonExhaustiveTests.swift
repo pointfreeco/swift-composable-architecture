@@ -1,10 +1,10 @@
 #if DEBUG
   import ComposableArchitecture
   import XCTest
-
+ 
   @MainActor
   final class TestStoreNonExhaustiveTests: XCTestCase {
-    func testFlushReceivedActions_NonStrict() async {
+    func testSkipReceivedActions_NonStrict() async {
       let store = TestStore(
         initialState: 0,
         reducer: Reduce<Int, Bool> { state, action in
@@ -24,7 +24,7 @@
       XCTAssertEqual(store.state, 2)
     }
 
-    func testFlushReceivedActions_Strict() async {
+    func testSkipReceivedActions_Strict() async {
       let store = TestStore(
         initialState: 0,
         reducer: Reduce<Int, Bool> { state, action in
@@ -48,7 +48,7 @@
       await store.skipReceivedActions(strict: true)
     }
 
-    func testFlushReceivedActions_NonExhaustive() async {
+    func testSkipReceivedActions_NonExhaustive() async {
       let store = TestStore(
         initialState: 0,
         reducer: Reduce<Int, Bool> { state, action in
@@ -61,7 +61,7 @@
           }
         }
       )
-      store.exhaustivity = .none
+      store.exhaustivity = .off
 
       await store.send(true) { $0 = 1 }
       XCTAssertEqual(store.state, 1)
@@ -69,7 +69,7 @@
       XCTAssertEqual(store.state, 2)
     }
 
-    func testFlushReceivedActions_PartialExhaustive() async {
+    func testSkipReceivedActions_PartialExhaustive() async {
       let store = TestStore(
         initialState: 0,
         reducer: Reduce<Int, Bool> { state, action in
@@ -82,7 +82,7 @@
           }
         }
       )
-      store.exhaustivity = .partial
+      store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(true) { $0 = 1 }
       XCTAssertEqual(store.state, 1)
@@ -125,7 +125,7 @@
           .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
         }
       )
-      store.exhaustivity = .none
+      store.exhaustivity = .off
 
       await store.send(true)
       await store.skipInFlightEffects(strict: false)
@@ -138,7 +138,7 @@
           .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
         }
       )
-      store.exhaustivity = .partial
+      store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(true)
       await store.skipInFlightEffects(strict: false)
@@ -152,7 +152,7 @@
           action ? .init(value: false) : .none
         }
       )
-      store.exhaustivity = .partial
+      store.exhaustivity = .off(showSkippedAssertions: true)
 
       store.send(true)
     }
@@ -165,7 +165,7 @@
           action ? .init(value: false) : .none
         }
       )
-      store.exhaustivity = .none
+      store.exhaustivity = .off
 
       store.send(true)
     }
@@ -178,7 +178,7 @@
           .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
         }
       )
-      store.exhaustivity = .partial
+      store.exhaustivity = .off(showSkippedAssertions: true)
 
       store.send(true)
     }
@@ -191,7 +191,7 @@
           .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
         }
       )
-      store.exhaustivity = .none
+      store.exhaustivity = .off
 
       store.send(true)
     }
@@ -202,7 +202,7 @@
         initialState: Counter.State(),
         reducer: Counter()
       )
-      store.exhaustivity = .partial
+      store.exhaustivity = .off(showSkippedAssertions: true)
 
       store.send(.increment) {
         $0.count = 1
@@ -218,25 +218,12 @@
       }
     }
 
-    func testNonExhaustiveSend_PartialExhaustive_CustomPrefix() {
+    func testNonExhaustiveSend_PartialExhaustive_Prefix() {
       let store = TestStore(
         initialState: Counter.State(),
         reducer: Counter()
       )
-      store.exhaustivity = .partial(prefix: "✅\n\n")
-
-      store.send(.increment) {
-        $0.count = 1
-        // Ignoring state change: isEven = false
-      }
-    }
-
-    func testNonExhaustiveSend_PartialExhaustive_DefaultPrefix() {
-      let store = TestStore(
-        initialState: Counter.State(),
-        reducer: Counter()
-      )
-      store.exhaustivity = .partial()
+      store.exhaustivity = .off(showSkippedAssertions: true)
  
       store.send(.increment) {
         $0.count = 1
@@ -251,7 +238,7 @@
         initialState: Counter.State(),
         reducer: Counter()
       )
-      store.exhaustivity = .partial
+      store.exhaustivity = .off(showSkippedAssertions: true)
 
       #if DEBUG
         XCTExpectFailure {
@@ -281,7 +268,7 @@
         initialState: Counter.State(),
         reducer: Counter()
       )
-      store.exhaustivity = .none
+      store.exhaustivity = .off
 
       store.send(.increment) {
         $0.count = 1
@@ -320,7 +307,7 @@
         initialState: Feature.State(),
         reducer: Feature()
       )
-      store.exhaustivity = .partial
+      store.exhaustivity = .off(showSkippedAssertions: true)
 
       store.send(.increment) {
         $0.count = 1
@@ -359,7 +346,7 @@
         initialState: Feature.State(),
         reducer: Feature()
       )
-      store.exhaustivity = .partial
+      store.exhaustivity = .off(showSkippedAssertions: true)
 
       store.send(.increment) {
         $0.count = 1
@@ -391,7 +378,7 @@
         initialState: Counter.State(),
         reducer: Counter()
       )
-      store.exhaustivity = .partial
+      store.exhaustivity = .off(showSkippedAssertions: true)
 
       store.send(.increment)
       XCTAssertEqual(store.state, Counter.State(count: 1, isEven: false))
@@ -412,7 +399,7 @@
         initialState: NonExhaustiveReceive.State(),
         reducer: NonExhaustiveReceive()
       )
-      store.exhaustivity = .partial
+      store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.onAppear)
       XCTAssertEqual(store.state, NonExhaustiveReceive.State(count: 0, int: 0, string: ""))
@@ -436,7 +423,7 @@
         initialState: NonExhaustiveReceive.State(),
         reducer: NonExhaustiveReceive()
       )
-      store.exhaustivity = .partial
+      store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.onAppear)
       XCTAssertEqual(store.state, NonExhaustiveReceive.State(count: 0, int: 0, string: ""))
@@ -457,7 +444,7 @@
         initialState: NonExhaustiveReceive.State(),
         reducer: NonExhaustiveReceive()
       )
-      store.exhaustivity = .partial
+      store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.onAppear)
       // Ignored received action: .response1(42)
@@ -468,9 +455,9 @@
       // Ignored received action: .response2("Hello")
     }
 
-    // Confirms that when you send an action the test store flushes any unreceived actions
+    // Confirms that when you send an action the test store skips any unreceived actions
     // automatically.
-    func testSendWithUnreceivedActions_FlushesActions() async {
+    func testSendWithUnreceivedActions_SkipsActions() async {
       struct Feature: ReducerProtocol {
         enum Action: Equatable {
           case tap
@@ -492,7 +479,7 @@
         initialState: 0,
         reducer: Feature()
       )
-      store.exhaustivity = .none
+      store.exhaustivity = .off
 
       await store.send(.tap)
       XCTAssertEqual(store.state, 1)
@@ -528,7 +515,7 @@
           }
         }
       )
-      store.exhaustivity = .partial(prefix: "✅\n\n")
+      store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.buttonTapped)
       // Ignored state mutation: state = 1
@@ -551,7 +538,7 @@
         initialState: NonExhaustiveReceive.State(),
         reducer: NonExhaustiveReceive()
       )
-      store.exhaustivity = .partial
+      store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.onAppear)
       await store.receive(/NonExhaustiveReceive.Action.response1) {
@@ -567,7 +554,7 @@
         initialState: NonExhaustiveReceive.State(),
         reducer: NonExhaustiveReceive()
       )
-      store.exhaustivity = .none
+      store.exhaustivity = .off
 
       await store.send(.onAppear)
       await store.receive(/NonExhaustiveReceive.Action.response1) {
@@ -600,7 +587,7 @@
         initialState: NonExhaustiveReceive.State(),
         reducer: NonExhaustiveReceive()
       )
-      store.exhaustivity = .partial
+      store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.onAppear)
       await store.receive(/NonExhaustiveReceive.Action.response2) {
@@ -613,7 +600,7 @@
         initialState: NonExhaustiveReceive.State(),
         reducer: NonExhaustiveReceive()
       )
-      store.exhaustivity = .partial
+      store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.onAppear)
 
@@ -633,7 +620,7 @@
         initialState: NonExhaustiveReceive.State(),
         reducer: NonExhaustiveReceive()
       )
-      store.exhaustivity = .partial
+      store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.onAppear)
       await store.receive(/NonExhaustiveReceive.Action.response2)
@@ -654,7 +641,7 @@
         initialState: KrzysztofExample.State(),
         reducer: KrzysztofExample()
       )
-      store.exhaustivity = .none
+      store.exhaustivity = .off
 
       store.send(.changeIdentity(name: "Marek", surname: "Ignored")) {
         $0.name = "Marek"
@@ -668,7 +655,7 @@
         initialState: KrzysztofExample.State(),
         reducer: KrzysztofExample()
       )
-      store.exhaustivity = .none
+      store.exhaustivity = .off
 
       store.send(.changeIdentity(name: "Adam", surname: "Stern"))
       store.send(.changeIdentity(name: "Piotr", surname: "Galiszewski"))
@@ -687,7 +674,7 @@
         initialState: KrzysztofExample.State(),
         reducer: KrzysztofExample()
       )
-      store.exhaustivity = .none
+      store.exhaustivity = .off
       store.dependencies.mainQueue = mainQueue.eraseToAnyScheduler()
 
       store.send(.advanceAgeAndMoodAfterDelay)

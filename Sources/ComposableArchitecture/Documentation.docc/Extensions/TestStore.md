@@ -16,11 +16,12 @@
 
 - ``send(_:assert:file:line:)-1ax61``
 - ``receive(_:timeout:assert:file:line:)-1rwdd``
-- ``receive(_:timeout:assert:file:line:)-2ssdl``
+- ``receive(_:timeout:assert:file:line:)-4e4m0``
+- ``receive(_:timeout:assert:file:line:)-3myco``
 - ``finish(timeout:file:line:)``
 - ``TestStoreTask``
 
-### Methods for skipping tests
+### Methods for skipping actions and effects
 
 - ``skipReceivedActions(strict:file:line:)-a4ri``
 - ``skipInFlightEffects(strict:file:line:)-5hbsk``

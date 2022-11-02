@@ -89,7 +89,9 @@ extension DependencyValues {
 If `FactClient` is not `Sendable`, for whatever reason, you will get a warning in the `get`
 and `set` lines:
 
->⚠️ Type 'FactClient' does not conform to the 'Sendable' protocol
+```
+⚠️ Type 'FactClient' does not conform to the 'Sendable' protocol
+```
 
 To fix this you need to make each dependency `Sendable`. This usually just means making sure 
 that the interface type only holds onto `Sendable` data, and in particular, any closure-based 

@@ -14,8 +14,9 @@ import XCTestDynamicOverlay
 ///
 /// ## Exhaustive testing
 ///
-/// There are multiple ways the test store forces you to exhaustively assert on how your feature
-/// behaves:
+/// By default, ``TestStore`` requires you to exhaustively prove how your feature evolves from
+/// sending use actions and receiving actions from effects. There are multiple ways the test store
+/// forces you to do this:
 ///
 ///   * After each action is sent you must describe precisely how the state changed from before
 ///     the action was sent to after it was sent.
@@ -23,18 +24,17 @@ import XCTestDynamicOverlay
 ///     If even the smallest piece of data differs the test will fail. This guarantees that you
 ///     are proving you know precisely how the state of the system changes.
 ///
-///   * Sending an action can sometimes cause an effect to be executed, and if that effect emits
-///     an action that is fed back into the system, you **must** explicitly assert that you expect
-///     to receive that action from the effect, _and_ you must assert how state changed as a
-///     result.
+///   * Sending an action can sometimes cause an effect to be executed, and if that effect sends
+///     an action back into the system, you **must** explicitly assert that you expect to receive
+///     that action from the effect, _and_ you must assert how state changed as a result.
 ///
-///     If you try to send another action before you have handled all effect emissions the
-///     assertion will fail. This guarantees that you do not accidentally forget about an effect
-///     emission, and that the sequence of steps you are describing will mimic how the application
+///     If you try to send another action before you have handled all effect actions, the
+///     test will fail. This guarantees that you do not accidentally forget about an effect
+///     action, and that the sequence of steps you are describing will mimic how the application
 ///     behaves in reality.
 ///
-///   * All effects must complete by the time the assertion has finished running the steps you
-///     specify, and all effect actions must be asserted on.
+///   * All effects must complete by the time the test case has finished running, and all effect
+///     actions must be asserted on.
 ///
 ///     If at the end of the assertion there is still an in-flight effect running or an unreceived
 ///     action, the assertion will fail. This helps exhaustively prove that you know what effects
@@ -77,14 +77,14 @@ import XCTestDynamicOverlay
 /// class CounterTests: XCTestCase {
 ///   func testCounter() async {
 ///     let store = TestStore(
-///       // Given a counter state of 0
+///       // Given: a counter state of 0
 ///       initialState: Counter.State(count: 0),
 ///       reducer: Counter()
 ///     )
 ///
-///     // When the increment button is tapped
+///     // When: the increment button is tapped
 ///     await store.send(.incrementButtonTapped) {
-///       // Then the count should be 1
+///       // Then: the count should be 1
 ///       $0.count = 1
 ///     }
 ///   }
@@ -132,14 +132,13 @@ import XCTestDynamicOverlay
 ///
 ///   @Dependency(\.apiClient) var apiClient
 ///   @Dependency(\.continuousClock) var clock
+///   private enum SearchID {}
 ///
 ///   func reduce(
 ///     into state: inout State, action: Action
 ///   ) -> EffectTask<Action> {
 ///     switch action {
 ///     case let .queryChanged(query):
-///       enum SearchID {}
-///
 ///       state.query = query
 ///       return .run { send in
 ///         try await self.clock.sleep(for: 0.5)
@@ -149,6 +148,7 @@ import XCTestDynamicOverlay
 ///
 ///         await send(.response(results))
 ///       }
+///       .cancellable(id: SearchID.self)
 ///
 ///     case let .searchResponse(.success(results)):
 ///       state.results = results
@@ -172,7 +172,7 @@ import XCTestDynamicOverlay
 /// )
 ///
 /// // Simulate a search response with one item
-/// store.dependencies.dependencies.apiClient.search = { _ in
+/// store.dependencies.apiClient.search = { _ in
 ///   ["Composable Architecture"]
 /// }
 ///
@@ -256,8 +256,8 @@ import XCTestDynamicOverlay
 ///
 /// Test stores are exhaustive by default, which means you must assert on every state change, and
 /// how ever effect feeds data back into the system, and you must make sure that all effects
-/// complete before the test is finished. To turn of exhaustivity you can set ``exhaustivity``
-/// to ``Exhaustivity/none``. When that is done the ``TestStore``'s behavior changes:
+/// complete before the test is finished. To turn off exhaustivity you can set ``exhaustivity``
+/// to ``Exhaustivity/off``. When that is done the ``TestStore``'s behavior changes:
 ///
 /// * The trailing closures of ``send(_:assert:file:line:)-1ax61`` and
 ///   ``receive(_:timeout:assert:file:line:)-1rwdd`` no longer need to assert on all state changes.
@@ -266,13 +266,13 @@ import XCTestDynamicOverlay
 /// * The ``send(_:assert:file:line:)-1ax61`` and ``receive(_:timeout:assert:file:line:)-1rwdd``
 ///   methods are allowed to be called even when actions have been received from effects that have
 ///   not been asserted on yet. Any pending actions will be cleared.
-/// * Tests are allowed to finish with unasserted, received actions and inflight effects. No test
+/// * Tests are allowed to finish with unasserted, received actions and in-flight effects. No test
 ///   failures will be reported.
 ///
-/// There is also a third option between full and no exhaustivity called ``Exhaustivity/partial``.
-/// When it is set the test store behaves like when ``Exhaustivity/none`` is set, but with the added
-/// behavior that any unasserted change causes a grey, informational box to appear next to each
-/// assertion detailing the changes that were not asserted against. This allows you to see what
+/// Non-exhaustive stores can be configured to report skipped assertions by configuring
+/// ``Exhaustivity/off(showSkippedAssertions:)``. When set to `true` the test store will have the
+/// added behavior that any unasserted change causes a grey, informational box to appear next to
+/// each assertion detailing the changes that were not asserted against. This allows you to see what
 /// information you are choosing to ignore without causing a test failure. It can be useful in
 /// tracking down bugs that happen in production but that aren't currently detected in tests.
 ///
@@ -305,26 +305,26 @@ import XCTestDynamicOverlay
 ///
 /// // 1️⃣ Emulate user tapping on submit button.
 /// await store.send(.login(.submitButtonTapped)) {
+///   // 2️⃣ Assert how all state changes in the login feature
 ///   $0.login?.isLoading = true
-///   // 2️⃣ Assert how state changes in the login feature
 ///   …
 /// }
 ///
 /// // 3️⃣ Login feature performs API request to login, and
 /// //    sends response back into system.
 /// await store.receive(.login(.loginResponse(.success))) {
+/// // 4️⃣ Assert how all state changes in the login feature
 ///   $0.login?.isLoading = false
-///   // 4️⃣ Assert how state changes in the login feature
 ///   …
 /// }
 ///
 /// // 5️⃣ Login feature sends a delegate action to let parent
 /// //    feature know it has successfully logged in.
 /// await store.receive(.login(.delegate(.didLogin))) {
+/// // 6️⃣ Assert how all of app state changes due to that action.
 ///   $0.authenticatedTab = .loggedIn(
 ///     Profile.State(...)
 ///   )
-///   // 6️⃣ Assert how all of app state changes due to that action.
 ///   …
 ///   // 7️⃣ *Finally* assert that the selected tab switches to activity.
 ///   $0.selectedTab = .activity
@@ -351,7 +351,7 @@ import XCTestDynamicOverlay
 ///   initialState: App.State(),
 ///   reducer: App()
 /// )
-/// store.exhaustivity = .none // ⬅️
+/// store.exhaustivity = .off // ⬅️
 ///
 /// await store.send(.login(.submitButtonTapped))
 /// await store.receive(.login(.delegate(.didLogin))) {
@@ -365,16 +365,16 @@ import XCTestDynamicOverlay
 /// activity. Now the login feature is free to make any change it wants to make without affecting
 /// this integration test.
 ///
-/// Using ``Exhaustivity/none`` for ``TestStore/exhaustivity`` causes all un-asserted changes to
+/// Using ``Exhaustivity/off`` for ``TestStore/exhaustivity`` causes all un-asserted changes to
 /// pass without any notification. If you would like to see what test failures are being suppressed
-/// without actually causing a failure, you can use ``Exhaustivity/partial``:
+/// without actually causing a failure, you can use ``Exhaustivity/off(showSkippedAssertions:)``:
 ///
 /// ```swift
 /// let store = TestStore(
 ///   initialState: App.State(),
 ///   reducer: App()
 /// )
-/// store.exhaustivity = .partial // ⬅️
+/// store.exhaustivity = .off(showSkippedAssertions: true) // ⬅️
 ///
 /// await store.send(.login(.submitButtonTapped))
 /// await store.receive(.login(.delegate(.didLogin))) {
@@ -418,9 +418,13 @@ import XCTestDynamicOverlay
 /// The test still passes, and none of these notifications are test failures. They just let you know
 /// what things you are not explicitly asserting against, and can be useful to see when tracking
 /// down bugs that happen in production but that aren't currently detected in tests.
+///
+/// [merowing.info]: https://www.merowing.info
+/// [exhaustive-testing-in-tca]: https://www.merowing.info/exhaustive-testing-in-tca/
+/// [Composable-Architecture-at-Scale]: https://vimeo.com/751173570
 open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
 
-  /// The current dependencies.
+  /// The current dependencies of the test store.
   ///
   /// The dependencies define the execution context that your feature runs in. They can be
   /// modified throughout the test store's lifecycle in order to influence how your feature
@@ -446,11 +450,13 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
   /// ```swift
   /// store.dependencies.apiClient = .failing
   ///
-  /// // Store assertions with failing API client
+  /// store.send(.buttonTapped) { /* ... */ }
+  /// store.receive(.searchResponse(.failure)) { /* ... */ }
   ///
   /// store.dependencies.apiClient = .mock
   ///
-  /// // Store assertions with succeeding API client
+  /// store.send(.buttonTapped) { /* ... */ }
+  /// store.receive(.searchResponse(.success)) { /* ... */ }
   /// ```
   public var dependencies: DependencyValues {
     _read { yield self.reducer.dependencies }
@@ -458,7 +464,7 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
   }
 
   /// The current exhaustivity level of the test store.
-  public var exhaustivity: Exhaustivity = .exhaustive
+  public var exhaustivity: Exhaustivity = .on
 
   /// The current environment.
   ///
@@ -526,7 +532,7 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
     _modify { yield &self._environment.wrappedValue }
   }
 
-  /// The current state.
+  /// The current state of the test store.
   ///
   /// When read from a trailing closure assertion in ``send(_:assert:file:line:)-1ax61`` or
   /// ``receive(_:timeout:assert:file:line:)-1rwdd``, it will equal the `inout` state passed to the
@@ -535,10 +541,10 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
     self.reducer.state
   }
 
-  /// The timeout to await for in-flight effects.
+  /// The default timeout used in all methods that take an optional timeout.
   ///
   /// This is the default timeout used in all methods that take an optional timeout, such as
-  /// ``receive(_:timeout:assert:file:line:)-1rwdd`` and ``finish(timeout:file:line:)``.
+  /// ``receive(_:timeout:assert:file:line:)-332q2`` and ``finish(timeout:file:line:)-7pmv3``.
   public var timeout: UInt64
 
   private var _environment: Box<Environment>
@@ -549,6 +555,14 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
   private let store: Store<State, TestReducer<State, Action>.TestAction>
   private let toScopedState: (State) -> ScopedState
 
+  /// Creates a test store with an initial state and a reducer powering it's runtime.
+  ///
+  /// See <doc:Testing> and the documentation of ``TestStore`` for more information on how to best
+  /// use a test store.
+  ///
+  /// - Parameters:
+  ///   - initialState: The state the feature starts in.
+  ///   - reducer: The reducer that powers the runtime of the feature.
   public init<Reducer: ReducerProtocol>(
     initialState: State,
     reducer: Reducer,
@@ -670,11 +684,11 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
     @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
     @MainActor
     public func finish(
-      timeout duration: Duration? = nil,
+      timeout duration: Duration,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
-      await self.finish(timeout: duration?.nanoseconds, file: file, line: line)
+      await self.finish(timeout: duration.nanoseconds, file: file, line: line)
     }
   #endif
 
@@ -779,6 +793,19 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
 extension TestStore where ScopedState: Equatable {
   /// Sends an action to the store and asserts when state changes.
   ///
+  /// To assert on how state changes you can provide a trailing closure, and that closure is handed
+  /// a mutable variable that represents the feature's state _before_ the action was sent. You need
+  /// to mutate that variable so that it is equal to the feature's state _after_ the action is sent:
+  ///
+  /// ```swift
+  /// await store.send(.incrementButtonTapped) {
+  ///   $0.count = 1
+  /// }
+  /// await store.send(.decrementButtonTapped) {
+  ///   $0.count = 0
+  /// }
+  /// ```
+  ///
   /// This method suspends in order to allow any effects to start. For example, if you
   /// track an analytics event in a ``EffectPublisher/fireAndForget(priority:_:)`` when an action is
   /// sent, you can assert on that behavior immediately after awaiting `store.send`:
@@ -822,12 +849,12 @@ extension TestStore where ScopedState: Equatable {
   /// ```swift
   /// let store = TestStore(/* ... */)
   ///
-  /// // emulate the view appearing
+  /// // Emulate the view appearing
   /// let task = await store.send(.task)
   ///
-  /// // assertions
+  /// // Assertions
   ///
-  /// // emulate the view disappearing
+  /// // Emulate the view disappearing
   /// await task.cancel()
   /// ```
   ///
@@ -863,11 +890,11 @@ extension TestStore where ScopedState: Equatable {
     }
 
     switch self.exhaustivity {
-    case .exhaustive:
+    case .on:
       break
-    case .partial:
+    case .off(showSkippedAssertions: true):
       await self.skipReceivedActions(strict: false)
-    case .none:
+    case .off(showSkippedAssertions: false):
       self.reducer.receivedActions = []
     }
 
@@ -958,11 +985,11 @@ extension TestStore where ScopedState: Equatable {
     }
 
     switch self.exhaustivity {
-    case .exhaustive:
+    case .on:
       break
-    case .partial:
+    case .off(showSkippedAssertions: true):
       self.skipReceivedActions(strict: false)
-    case .none:
+    case .off(showSkippedAssertions: false):
       self.reducer.receivedActions = []
     }
 
@@ -1003,7 +1030,7 @@ extension TestStore where ScopedState: Equatable {
     var expected = expected
 
     switch self.exhaustivity {
-    case .exhaustive:
+    case .on:
       var expectedWhenGivenPreviousState = expected
       if let updateStateToExpectedResult = updateStateToExpectedResult {
         try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
@@ -1016,7 +1043,7 @@ extension TestStore where ScopedState: Equatable {
         tryUnnecessaryModifyFailure()
       }
 
-    case .none, .partial:
+    case .off:
       var expectedWhenGivenActualState = actual
       if let updateStateToExpectedResult = updateStateToExpectedResult {
         try updateStateToExpectedResult(&expectedWhenGivenActualState)
@@ -1024,10 +1051,12 @@ extension TestStore where ScopedState: Equatable {
       expected = expectedWhenGivenActualState
 
       if expectedWhenGivenActualState != actual {
-        self.withExhaustivity(.exhaustive) {
+        self.withExhaustivity(.on) {
           expectationFailure(expected: expectedWhenGivenActualState)
         }
-      } else if self.exhaustivity.isPartial && expectedWhenGivenActualState == actual {
+      } else if self.exhaustivity == .off(showSkippedAssertions: true)
+        && expectedWhenGivenActualState == actual
+      {
         var expectedWhenGivenPreviousState = current
         if let modify = updateStateToExpectedResult {
           _XCTExpectFailure(strict: false) {
@@ -1035,7 +1064,11 @@ extension TestStore where ScopedState: Equatable {
               try modify(&expectedWhenGivenPreviousState)
             } catch {
               XCTFail(
-                "\(self.exhaustivity.prefix ?? "") Threw error: \(error)",
+                """
+                Skipped assertions: …
+
+                Threw error: \(error)
+                """,
                 file: file,
                 line: line
               )
@@ -1107,6 +1140,9 @@ extension TestStore where ScopedState: Equatable {
 extension TestStore where ScopedState: Equatable, Action: Equatable {
   /// Asserts an action was received from an effect and asserts when state changes.
   ///
+  /// See ``receive(_:timeout:assert:file:line:)-332q2`` for more information of how to use this
+  /// method.
+  ///
   /// - Parameters:
   ///   - expectedAction: An action expected from an effect.
   ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
@@ -1159,7 +1195,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
 
   /// Asserts a matching action was received from an effect and asserts how the state changes.
   ///
-  /// See ``receive(_:timeout:assert:file:line:)-85x5z`` for more information of how to use this
+  /// See ``receive(_:timeout:assert:file:line:)-6b3xi`` for more information of how to use this
   /// method.
   ///
   /// - Parameters:
@@ -1192,8 +1228,8 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
 
           \(action)
           """,
-          overrideExhaustivity: self.exhaustivity == .exhaustive
-            ? .partial
+          overrideExhaustivity: self.exhaustivity == .on
+            ? .off(showSkippedAssertions: true)
             : self.exhaustivity,
           file: file,
           line: line
@@ -1205,6 +1241,17 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     )
   }
 
+  /// Asserts an action was received matching a case path and asserts how the state changes.
+  ///
+  /// See ``receive(_:timeout:assert:file:line:)-5n755`` for more information of how to use this
+  /// method.
+  ///
+  /// - Parameters:
+  ///   - casePath: A case path identifying the case of an action to enum to receive
+  ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
+  ///     the store. The mutable state sent to this closure must be modified to match the state of
+  ///     the store after processing the given action. Do not provide a closure if no change is
+  ///     expected.
   @available(iOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
   @available(macOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
   @available(tvOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
@@ -1227,9 +1274,9 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
 
           \(action)
           """,
-          overrideExhaustivity: self.exhaustivity == .exhaustive
-          ? .partial
-          : self.exhaustivity,
+          overrideExhaustivity: self.exhaustivity == .on
+            ? .off(showSkippedAssertions: true)
+            : self.exhaustivity,
           file: file,
           line: line
         )
@@ -1244,6 +1291,26 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   // See: https://forums.swift.org/t/xcode-14-rc-cannot-specialize-protocol-type/60171/15
   #if swift(>=5.7) && !os(macOS) && !targetEnvironment(macCatalyst)
     /// Asserts an action was received from an effect and asserts how the state changes.
+    ///
+    /// When an effect is executed in your feature and sends an action back into the system, you
+    /// can use this method to assert that fact, and further assert how state changes after the
+    /// effect action is received:
+    ///
+    /// ```swift
+    /// await store.send(.buttontTapped)
+    /// await store.receive(.response(.success(42)) {
+    ///   $0.count = 42
+    /// }
+    /// ```
+    ///
+    /// Due to the variability of concurrency in Swift, sometimes a small amount of time needs
+    /// to pass before effects execute and send actions, and that is why this method suspends.
+    /// The default time waited is very small, and typically it is enough so you should be
+    /// controlling your dependencies so that they do not wait for real world time to pass (see
+    /// <doc:DependencyManagement> for more information on how to do that).
+    ///
+    /// To change the amount of time this method waits for an action, pass an explicit `timeout`
+    /// argument, or set the ``timeout`` on the ``TestStore``.
     ///
     /// - Parameters:
     ///   - expectedAction: An action expected from an effect.
@@ -1270,7 +1337,30 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
       )
     }
 
-    /// Asserts a matching action was received from an effect and asserts how the state changes.
+    /// Asserts an action was received from an effect that matches a predicate, and asserts how
+    /// the state changes.
+    ///
+    /// This method is similar to ``receive(_:timeout:assert:file:line:)-5n755``, except it allows
+    /// you to assert that an action was received that matches a predicate without asserting
+    /// on all the data in the action:
+    ///
+    /// ```swift
+    /// await store.send(.buttonTapped)
+    /// await store.receive {
+    ///   guard case .response(.suceess) = $0 else { return false }
+    ///   return true
+    /// } assert: {
+    ///   store.count = 42
+    /// }
+    /// ```
+    ///
+    /// When the store's ``exhaustivity`` is set to anything other than ``Exhaustivity/off``, a
+    /// grey information box will show next to the `store.receive` line in Xcode letting you know
+    /// what data was in the effect that you chose not to assert on.
+    ///
+    /// If you only want to check that a particular action case was received, then you might
+    /// find the ``receive(_:timeout:assert:file:line:)-5n755`` overload of this method more
+    /// useful.
     ///
     /// - Parameters:
     ///   - matchingAction: A closure that attempts to extract a value from an action. If it returns
@@ -1301,6 +1391,9 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   #endif
 
   /// Asserts an action was received from an effect and asserts how the state changes.
+  ///
+  /// See ``receive(_:timeout:assert:file:line:)-332q2`` for more information on how to use this
+  /// method.
   ///
   /// - Parameters:
   ///   - expectedAction: An action expected from an effect.
@@ -1334,6 +1427,9 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
 
   /// Asserts a matching action was received from an effect and asserts how the state changes.
   ///
+  /// See ``receive(_:timeout:assert:file:line:)-6b3xi`` for more information on how to use this
+  /// method.
+  ///
   /// - Parameters:
   ///   - matchingAction: A closure that attempts to extract a value from an action. If it returns
   ///     `nil`, a test failure is reported.
@@ -1365,6 +1461,18 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     await Task.megaYield()
   }
 
+  /// Asserts an action was received matching a case path and asserts how the state changes.
+  ///
+  /// See ``receive(_:timeout:assert:file:line:)-5n755`` for more information of how to use this
+  /// method.
+  ///
+  /// - Parameters:
+  ///   - casePath: A case path identifying the case of an action to enum to receive
+  ///   - nanoseconds: The amount of time to wait for the expected action.
+  ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
+  ///     the store. The mutable state sent to this closure must be modified to match the state of
+  ///     the store after processing the given action. Do not provide a closure if no change is
+  ///     expected.
   @MainActor
   @_disfavoredOverload
   public func receive<Value>(
@@ -1388,6 +1496,63 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     await Task.megaYield()
   }
 
+  #if swift(>=5.7) && !os(macOS) && !targetEnvironment(macCatalyst)
+    /// Asserts an action was received matching a case path and asserts how the state changes.
+    ///
+    /// This method is similar to ``receive(_:timeout:assert:file:line:)-5n755``, except it allows
+    /// you to assert that an action was received that matches a particular case of the action
+    /// enum without asserting on all the data in the action.
+    ///
+    /// It can be useful to assert that a particular action was received without asserting
+    /// on the data inside the action. For example:
+    ///
+    /// ```swift
+    /// await store.receive(/Search.Action.searchResponse) {
+    ///   $0.results = [
+    ///     "CasePaths",
+    ///     "ComposableArchitecture",
+    ///     "IdentifiedCollections",
+    ///     "XCTestDynamicOverlay",
+    ///   ]
+    /// }
+    /// ```
+    ///
+    /// When the store's ``exhaustivity`` is set to anything other than ``Exhaustivity/off``, a
+    /// grey information box will show next to the `store.receive` line in Xcode letting you know
+    /// what data was in the effect that you chose not to assert on.
+    ///
+    /// - Parameters:
+    ///   - casePath: A case path identifying the case of an action to enum to receive
+    ///   - duration: The amount of time to wait for the expected action.
+    ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action
+    ///     to the store. The mutable state sent to this closure must be modified to match the state
+    ///     of the store after processing the given action. Do not provide a closure if no change is
+    ///     expected.
+    @MainActor
+    @_disfavoredOverload
+    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+    public func receive<Value>(
+      _ casePath: CasePath<Action, Value>,
+      timeout duration: Duration,
+      assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+      file: StaticString = #file,
+      line: UInt = #line
+    ) async {
+      guard !self.reducer.inFlightEffects.isEmpty
+      else {
+        _ = {
+          self.receive(casePath, assert: updateStateToExpectedResult, file: file, line: line)
+        }()
+        return
+      }
+      await self.receiveAction(timeout: duration.nanoseconds, file: file, line: line)
+      _ = {
+        self.receive(casePath, assert: updateStateToExpectedResult, file: file, line: line)
+      }()
+      await Task.megaYield()
+    }
+  #endif
+
   private func receiveAction(
     matching predicate: (Action) -> Bool,
     failureMessage: @autoclosure () -> String,
@@ -1407,7 +1572,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
       return
     }
 
-    if self.exhaustivity != .exhaustive {
+    if self.exhaustivity != .on {
       guard self.reducer.receivedActions.contains(where: { predicate($0.action) }) else {
         XCTFail(
           failureMessage(),
@@ -1422,7 +1587,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
         !predicate(receivedAction.action)
       {
         actions.append(receivedAction.action)
-        self.withExhaustivity(.none) {
+        self.withExhaustivity(.off) {
           self.receive(receivedAction.action, file: file, line: line)
         }
       }
@@ -1580,7 +1745,7 @@ extension TestStore {
   /// await store.skipReceivedActions()
   /// ```
   ///
-  /// - Parameter strict: When `true` and there are no inflight actions to cancel, a test failure
+  /// - Parameter strict: When `true` and there are no in-flight actions to cancel, a test failure
   ///   will be reported.
   @MainActor
   public func skipReceivedActions(
@@ -1596,7 +1761,7 @@ extension TestStore {
   ///
   /// The synchronous version of ``skipReceivedActions(strict:file:line:)-a4ri``.
   ///
-  /// - Parameter strict: When `true` and there are no inflight actions to cancel, a test failure
+  /// - Parameter strict: When `true` and there are no in-flight actions to cancel, a test failure
   ///   will be reported.
   @available(
     iOS, deprecated: 9999, message: "Call the async-friendly 'skipReceivedActions' instead."
@@ -1634,8 +1799,8 @@ extension TestStore {
 
       \(actions)
       """,
-      overrideExhaustivity: self.exhaustivity == .exhaustive
-        ? .partial
+      overrideExhaustivity: self.exhaustivity == .on
+        ? .off(showSkippedAssertions: true)
         : self.exhaustivity,
       file: file,
       line: line
@@ -1644,7 +1809,7 @@ extension TestStore {
     self.reducer.receivedActions = []
   }
 
-  /// Cancels any currently inflight effects.
+  /// Cancels any currently in-flight effects.
   ///
   /// Can be handy if you are writing an exhaustive test for a particular part of your feature,
   /// but you don't want to explicitly deal with all effects:
@@ -1663,7 +1828,7 @@ extension TestStore {
   /// await store.skipInFlightEffects()
   /// ```
   ///
-  /// - Parameter strict: When `true` and there are no inflight actions to cancel, a test failure
+  /// - Parameter strict: When `true` and there are no in-flight actions to cancel, a test failure
   ///   will be reported.
   public func skipInFlightEffects(
     strict: Bool = true,
@@ -1674,11 +1839,11 @@ extension TestStore {
     _ = { self.skipInFlightEffects(strict: strict, file: file, line: line) }()
   }
 
-  /// Cancels any currently inflight effects.
+  /// Cancels any currently in-flight effects.
   ///
   /// The synchronous version of ``skipInFlightEffects(strict:file:line:)-5hbsk``.
   ///
-  /// - Parameter strict: When `true` and there are no inflight actions to cancel, a test failure
+  /// - Parameter strict: When `true` and there are no in-flight actions to cancel, a test failure
   ///   will be reported.
   @available(
     iOS, deprecated: 9999, message: "Call the async-friendly 'skipInFlightEffects' instead."
@@ -1718,8 +1883,8 @@ extension TestStore {
 
       \(actions)
       """,
-      overrideExhaustivity: self.exhaustivity == .exhaustive
-        ? .partial
+      overrideExhaustivity: self.exhaustivity == .on
+        ? .off(showSkippedAssertions: true)
         : self.exhaustivity,
       file: file,
       line: line
@@ -1739,13 +1904,21 @@ extension TestStore {
   ) {
     let exhaustivity = exhaustivity ?? self.exhaustivity
     switch exhaustivity {
-    case .exhaustive:
+    case .on:
       XCTFail(message, file: file, line: line)
-    case let .partial(prefix: prefix):
+    case .off(showSkippedAssertions: true):
       _XCTExpectFailure {
-        XCTFail((prefix ?? "") + message, file: file, line: line)
+        XCTFail(
+          """
+          Skipped assertions: …
+
+          \(message)
+          """,
+          file: file,
+          line: line
+        )
       }
-    case .none:
+    case .off(showSkippedAssertions: false):
       break
     }
   }
@@ -1776,7 +1949,7 @@ extension TestStore {
 /// await store.send(.stopTimerButtonTapped).finish()
 /// ```
 ///
-/// See ``TestStore/finish(timeout:file:line:)`` for the ability to await all in-flight
+/// See ``TestStore/finish(timeout:file:line:)-7pmv3`` for the ability to await all in-flight
 /// effects in the test store.
 ///
 /// See ``ViewStoreTask`` for the analog provided to ``ViewStore``.
@@ -1817,11 +1990,11 @@ public struct TestStoreTask: Hashable, Sendable {
     /// - Parameter duration: The amount of time to wait before asserting.
     @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
     public func finish(
-      timeout duration: Duration? = nil,
+      timeout duration: Duration,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
-      await self.finish(timeout: duration?.nanoseconds, file: file, line: line)
+      await self.finish(timeout: duration.nanoseconds, file: file, line: line)
     }
   #endif
 
@@ -1997,37 +2170,38 @@ extension Task where Success == Never, Failure == Never {
   }
 #endif
 
-/// The level of exhaustivity for the test store.
+/// The exhaustivity of assertions made by the test store.
 public enum Exhaustivity: Equatable {
-  /// Full exhaustivity, which means you must explicitly assert on how all state changes and all
-  /// received actions from effects.
-  case exhaustive
+  /// Exhaustive assertions.
+  ///
+  /// This setting requires you to exhaustively assert on all state changes and all actions received
+  /// from effects. Additionally, all in-flight effects _must_ be received before the test store is
+  /// deallocated.
+  ///
+  /// To manually skip actions or effects, use
+  /// ``TestStore/skipReceivedActions(strict:file:line:)-a4ri`` or
+  /// ``TestStore/skipInFlightEffects(strict:file:line:)-5hbsk``.
+  ///
+  /// To partially match an action received from an effect, use
+  /// ``TestStore/receive(_:timeout:assert:file:line:)-4e4m0``.
+  case on
 
-  /// No exhaustivity, which means you can assert on any subset of state changes and any subset of
-  /// received actions from effects.
-  case none
+  /// Non-exhaustive assertions.
+  ///
+  /// This settings allows you to assert on any subset of state changes and actions received from
+  /// effects.
+  ///
+  /// When configured to `showSkippedAssertions`, any state not asserted on or received actions
+  /// skipped will be reported in a grey informational box next to the assertion. This is handy for
+  /// when you want non-exhaustivity but you still want to know what all you are missing from your
+  /// assertions.
+  ///
+  /// - Parameter showSkippedAssertions: When `true`, skipped assertions will be reported as
+  ///   expected failures.
+  case off(showSkippedAssertions: Bool)
 
-  /// Partial exhaustivity, which behaves exactly like ``none``, except any state not asserted on or
-  /// receive actions skipped will be reported in a grey informational box next to the assertion.
-  /// This is handy for when you want non-exhaustivity but you still want to know what all you are
-  /// missing from your assertions.
-  case partial(prefix: String? = "Partial assertions skipped. …\n\n")
-
-  public static let partial = partial()
-
-  fileprivate var isPartial: Bool {
-    guard case .partial = self else {
-      return false
-    }
-    return true
-  }
-
-  fileprivate var prefix: String? {
-    guard case let .partial(prefix: prefix) = self else {
-      return nil
-    }
-    return prefix
-  }
+  /// Non-exhaustive assertions.
+  public static let off = Self.off(showSkippedAssertions: false)
 }
 
 @_transparent

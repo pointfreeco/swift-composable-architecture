@@ -20,7 +20,8 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 - ``TestStore/send(_:assert:file:line:)-30pjj``
 - ``TestStore/receive(_:assert:file:line:)-2nhm0``
-- ``TestStore/receive(_:assert:file:line:)-1tiu1``
+- ``TestStore/receive(_:assert:file:line:)-6fuav``
+- ``TestStore/receive(_:assert:file:line:)-u5tf``
 - ``TestStore/assert(_:file:line:)-707lb``
 - ``TestStore/assert(_:file:line:)-4gff7``
 - ``TestStore/LocalState``
