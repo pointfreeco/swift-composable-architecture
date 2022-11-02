@@ -266,7 +266,7 @@
     func testExpectedStateEqualityMustModify() async {
       let reducer = Reduce<Int, Bool> { state, action in
         switch action {
-        case true: return Effect(value: false)
+        case true: return EffectTask(value: false)
         case false: return .none
         }
       }
