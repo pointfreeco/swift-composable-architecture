@@ -266,7 +266,7 @@ final class TestStoreTests: XCTestCase {
   }
 
   func testDependenciesEarlyBinding() async {
-    struct SomeFeature: ReducerProtocol {
+    struct Feature: ReducerProtocol {
       struct State: Equatable {
         var count = 0
         var date: Date
@@ -275,24 +275,20 @@ final class TestStoreTests: XCTestCase {
           self.date = now
         }
       }
-      enum Action {
-        case tap
-      }
-
-      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+      func reduce(into state: inout State, action: Void) -> EffectTask<Void> {
         state.count += 1
         return .none
       }
     }
 
     let store = TestStore(
-      initialState: SomeFeature.State(),
-      reducer: SomeFeature()
+      initialState: Feature.State(),
+      reducer: Feature()
     ) {
       $0.date = .constant(Date(timeIntervalSince1970: 1234567890))
     }
 
-    await store.send(.tap) {
+    await store.send(()) {
       @Dependency(\.date.now) var now: Date
       $0.count = 1
       $0.date = now
