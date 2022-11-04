@@ -566,7 +566,7 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
   public init<Reducer: ReducerProtocol>(
     initialState: @autoclosure () -> State,
     reducer: Reducer,
-    updateDependencies: (inout DependencyValues) -> Void = { _ in },
+    prepareDependencies: (inout DependencyValues) -> Void = { _ in },
     file: StaticString = #file,
     line: UInt = #line
   )
@@ -579,7 +579,7 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
   {
     var dependencies = DependencyValues()
     dependencies.context = .test
-    updateDependencies(&dependencies)
+    prepareDependencies(&dependencies)
     let initialState = DependencyValues.$_current.withValue(dependencies) { initialState() }
 
     let reducer = TestReducer(Reduce(reducer), initialState: initialState)
