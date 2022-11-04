@@ -68,10 +68,12 @@ import XCTestDynamicOverlay
     }
 
     @available(watchOS, unavailable)
+    @discardableResult
     public func callAsFunction(_ url: URL) async -> Bool {
       await self.handler(url)
     }
 
+    @_disfavoredOverload
     public func callAsFunction(_ url: URL) async {
       _ = await self.handler(url)
     }
