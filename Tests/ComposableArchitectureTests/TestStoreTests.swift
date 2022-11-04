@@ -285,7 +285,7 @@ final class TestStoreTests: XCTestCase {
       initialState: Feature.State(),
       reducer: Feature()
     ) {
-      $0.date = .constant(Date(timeIntervalSince1970: 1234567890))
+      $0.date = .constant(Date(timeIntervalSince1970: 1_234_567_890))
     }
 
     await store.send(()) {
