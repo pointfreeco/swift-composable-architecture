@@ -137,6 +137,80 @@ final class DependencyValuesTests: XCTestCase {
       }
     }
   }
+
+  func testBinding() {
+    @Dependency(\.childDependencyEarlyBinding) var childDependencyEarlyBinding:
+      ChildDependencyEarlyBinding
+    @Dependency(\.childDependencyLateBinding) var childDependencyLateBinding:
+      ChildDependencyLateBinding
+
+    XCTAssertEqual(childDependencyEarlyBinding.fetch(), 42)
+    XCTAssertEqual(childDependencyLateBinding.fetch(), 42)
+
+    DependencyValues.withValue(\.someDependency.fetch, { 1729 }) {
+      XCTAssertEqual(childDependencyEarlyBinding.fetch(), 1729)
+      XCTAssertEqual(childDependencyLateBinding.fetch(), 1729)
+    }
+
+    var childDependencyEarlyBindingEscaped: ChildDependencyEarlyBinding!
+    var childDependencyLateBindingEscaped: ChildDependencyLateBinding!
+
+    DependencyValues.withValue(\.someDependency.fetch, { 999 }) {
+      @Dependency(\.childDependencyEarlyBinding) var childDependencyEarlyBinding2:
+        ChildDependencyEarlyBinding
+      @Dependency(\.childDependencyLateBinding) var childDependencyLateBinding2:
+        ChildDependencyLateBinding
+
+      childDependencyEarlyBindingEscaped = childDependencyEarlyBinding
+      childDependencyLateBindingEscaped = childDependencyLateBinding
+
+      XCTAssertEqual(childDependencyEarlyBinding2.fetch(), 999)
+      XCTAssertEqual(childDependencyLateBinding2.fetch(), 999)
+    }
+
+    XCTAssertEqual(childDependencyEarlyBindingEscaped.fetch(), 42)
+    XCTAssertEqual(childDependencyLateBindingEscaped.fetch(), 42)
+
+    DependencyValues.withValue(\.someDependency.fetch, { 1_000 }) {
+      XCTAssertEqual(childDependencyEarlyBindingEscaped.fetch(), 1_000)
+      XCTAssertEqual(childDependencyLateBindingEscaped.fetch(), 1_000)
+    }
+  }
+}
+
+struct SomeDependency: TestDependencyKey {
+  var fetch: () -> Int
+  static let testValue = Self { 42 }
+}
+struct ChildDependencyEarlyBinding: TestDependencyKey {
+  var fetch: () -> Int
+  static var testValue: Self {
+    @Dependency(\.someDependency) var someDependency
+    return Self { someDependency.fetch() }
+  }
+}
+struct ChildDependencyLateBinding: TestDependencyKey {
+  var fetch: () -> Int
+  static var testValue: Self {
+    return Self {
+      @Dependency(\.someDependency) var someDependency
+      return someDependency.fetch()
+    }
+  }
+}
+extension DependencyValues {
+  var someDependency: SomeDependency {
+    get { self[SomeDependency.self] }
+    set { self[SomeDependency.self] = newValue }
+  }
+  var childDependencyEarlyBinding: ChildDependencyEarlyBinding {
+    get { self[ChildDependencyEarlyBinding.self] }
+    set { self[ChildDependencyEarlyBinding.self] = newValue }
+  }
+  var childDependencyLateBinding: ChildDependencyLateBinding {
+    get { self[ChildDependencyLateBinding.self] }
+    set { self[ChildDependencyLateBinding.self] = newValue }
+  }
 }
 
 private let someDate = Date(timeIntervalSince1970: 1_234_567_890)

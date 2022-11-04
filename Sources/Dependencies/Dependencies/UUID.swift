@@ -40,10 +40,9 @@ extension DependencyValues {
   /// }
   /// ```
   ///
-  /// By default, a ``UUIDGenerator/live`` generator is supplied, which returns a random UUID when
-  /// called by invoking `UUID.init` under the hood.  When used from a `TestStore`, an
-  /// ``UUIDGenerator/unimplemented`` generator is supplied, which additionally calls `XCTFail` when
-  /// invoked.
+  /// By default, a "live" generator is supplied, which returns a random UUID when called by
+  /// invoking `UUID.init` under the hood.  When used from a `TestStore`, an "unimplemented"
+  /// generator that additionally reports test failures is supplied, unless explicitly overridden.
   ///
   /// To test a reducer that depends on UUID generation, you can override its generator using the
   /// `Reducer/dependency(_:_:)` modifier to override the underlying ``UUIDGenerator``:

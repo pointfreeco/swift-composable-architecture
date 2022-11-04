@@ -36,7 +36,7 @@ final class CompatibilityTests: XCTestCase {
 
     var handledActions: [String] = []
 
-    let reducer = Reducer<State, Action, Void> { state, action, env in
+    let reducer = AnyReducer<State, Action, Void> { state, action, env in
       handledActions.append(action.description)
 
       switch action {

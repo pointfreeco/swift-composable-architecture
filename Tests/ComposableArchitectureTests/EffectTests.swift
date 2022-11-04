@@ -56,7 +56,7 @@ final class EffectTests: XCTestCase {
         let clock = TestClock()
         var values: [Int] = []
 
-        let effect = Effect<Int, Never>.concatenate(
+        let effect = EffectPublisher<Int, Never>.concatenate(
           (1...3).map { count in
             .task {
               try await clock.sleep(for: .seconds(count))
@@ -107,7 +107,7 @@ final class EffectTests: XCTestCase {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
         let clock = TestClock()
 
-        let effect = Effect<Int, Never>.merge(
+        let effect = EffectPublisher<Int, Never>.merge(
           (1...3).map { count in
             .task {
               try await clock.sleep(for: .seconds(count))

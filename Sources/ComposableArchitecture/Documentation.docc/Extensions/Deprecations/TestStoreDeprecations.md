@@ -18,12 +18,17 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 ### Testing reducers
 
-- ``TestStore/send(_:_:file:line:)-4i91s``
-- ``TestStore/receive(_:timeout:_:file:line:)-8huvm``
-- ``TestStore/receive(_:_:file:line:)``
-- ``TestStore/finish(timeout:file:line:)-43l4y``
+- ``TestStore/send(_:assert:file:line:)-30pjj``
+- ``TestStore/receive(_:assert:file:line:)-2nhm0``
+- ``TestStore/receive(_:assert:file:line:)-6fuav``
+- ``TestStore/receive(_:assert:file:line:)-u5tf``
 - ``TestStore/assert(_:file:line:)-707lb``
 - ``TestStore/assert(_:file:line:)-4gff7``
 - ``TestStore/LocalState``
 - ``TestStore/LocalAction``
 - ``TestStore/Step``
+
+### Methods for skipping tests
+
+- ``TestStore/skipReceivedActions(strict:file:line:)-3nldt``
+- ``TestStore/skipInFlightEffects(strict:file:line:)-95n5f``

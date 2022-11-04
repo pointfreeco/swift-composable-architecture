@@ -264,4 +264,34 @@ final class TestStoreTests: XCTestCase {
 
     store.send(true) { $0 = 1 }
   }
+
+  func testDependenciesEarlyBinding() async {
+    struct Feature: ReducerProtocol {
+      struct State: Equatable {
+        var count = 0
+        var date: Date
+        init() {
+          @Dependency(\.date.now) var now: Date
+          self.date = now
+        }
+      }
+      func reduce(into state: inout State, action: Void) -> EffectTask<Void> {
+        state.count += 1
+        return .none
+      }
+    }
+
+    let store = TestStore(
+      initialState: Feature.State(),
+      reducer: Feature()
+    ) {
+      $0.date = .constant(Date(timeIntervalSince1970: 1234567890))
+    }
+
+    await store.send(()) {
+      @Dependency(\.date.now) var now: Date
+      $0.count = 1
+      $0.date = now
+    }
+  }
 }

@@ -4,8 +4,9 @@ import XCTestDynamicOverlay
 extension DependencyValues {
   /// A dependency that returns the current date.
   ///
-  /// By default, a ``DateGenerator/live`` generator is supplied. When used from a `TestStore`, an
-  /// ``DateGenerator/unimplemented`` generator is supplied, unless explicitly overridden.
+  /// By default, a "live" generator is supplied, which returns the current system date when called
+  /// by invoking `Date.init` under the hood. When used from a `TestStore`, an "unimplemented"
+  /// generator that additionally reports test failures is supplied, unless explicitly overridden.
   ///
   /// You can access the current date from a feature by introducing a ``Dependency`` property
   /// wrapper to the generator's ``DateGenerator/now`` property:

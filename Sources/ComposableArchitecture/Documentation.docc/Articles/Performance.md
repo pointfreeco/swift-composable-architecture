@@ -196,7 +196,7 @@ struct AppView: View {
 ```
 
 This gives you maximum flexibility in the future for adding new fields to `ViewState` without making
-your view convoluated.
+your view convoluted.
 
 This technique for reducing view re-computations is most effective towards the root of your app
 hierarchy and least effective towards the leaf nodes of your app. Root features tend to hold lots
@@ -512,7 +512,7 @@ struct FeatureView: View {
 
   init(store: Store<FeatureState, FeatureAction>) {
     self.store = store
-    self.viewStore = ViewStore(self.store))
+    self.viewStore = ViewStore(self.store)
   }
 
   var body: some View {
