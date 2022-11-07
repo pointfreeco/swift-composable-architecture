@@ -114,7 +114,7 @@
 
     @MainActor
     func testEffectEmitMainThread() async throws {
-      try XCTSkipIf(ProcessInfo.processInfo.environment["CI"] != nil)
+      try XCTSkipIf(ProcessInfo.processInfo.isCI)
       XCTExpectFailure {
         [
           """
