@@ -44,13 +44,13 @@
   /// ```
   ///
   /// The `reduce` method's first responsibility is to mutate the feature's current state given an
-  /// action. It's second responsibility is to return effects that will be executed asynchronously
+  /// action. Its second responsibility is to return effects that will be executed asynchronously
   /// and feed their data back into the system. Currently `Feature` does not need to run any effects,
   /// and so ``EffectPublisher/none`` is returned.
   ///
   /// If the feature does need to do effectful work, then more would need to be done. For example,
   /// suppose the feature has the ability to start and stop a timer, and with each tick of the timer
-  /// the `count` was incremented. That could be done like so:
+  /// the `count` will be incremented. That could be done like so:
   ///
   /// ```swift
   /// struct Feature: ReducerProtocol {
@@ -76,7 +76,7 @@
   ///       state.count += 1
   ///       return .none
   ///
-  ///     case startTimerButtonTapped:
+  ///     case .startTimerButtonTapped:
   ///       return .run { send in
   ///         while true {
   ///           try await Task.sleep(for: .seconds(1))
@@ -85,10 +85,10 @@
   ///       }
   ///       .cancellable(TimerID.self)
   ///
-  ///     case stopTimerButtonTapped:
+  ///     case .stopTimerButtonTapped:
   ///       return .cancel(TimerID.self)
   ///
-  ///     case timerTick:
+  ///     case .timerTick:
   ///       state.count += 1
   ///       return .none
   ///     }
@@ -115,7 +115,7 @@
   ///
   /// At most one of these requirements should be implemented. If a conformance implements both
   /// requirements, only ``reduce(into:action:)-8yinq`` will be called by the ``Store``. If your
-  /// reducer assembles a body from other reducers _and_ has additional business logic it needs to
+  /// reducer assembles a body from other reducers _and_ has additional business logic, it needs to
   /// layer onto the feature, introduce this logic into the body instead, either with ``Reduce``:
   ///
   /// ```swift
@@ -205,7 +205,7 @@
     /// > Important: if your reducer implements the ``reduce(into:action:)-8yinq`` method, it will
     /// > take precedence over this property, and only ``reduce(into:action:)-8yinq`` will be called
     /// > by the ``Store``. If your reducer assembles a body from other reducers and has additional
-    /// > business logic it needs to layer into the system, introduce this logic into the body
+    /// > business logic, it needs to layer into the system, introduce this logic into the body
     /// > instead, either with ``Reduce``, or with a separate, dedicated conformance.
     @ReducerBuilder<State, Action>
     var body: Body { get }
@@ -227,7 +227,7 @@
   ///
   /// At most one of these requirements should be implemented. If a conformance implements both
   /// requirements, only ``reduce(into:action:)-8yinq`` will be called by the ``Store``. If your
-  /// reducer assembles a body from other reducers _and_ has additional business logic it needs to
+  /// reducer assembles a body from other reducers _and_ has additional business logic, it needs to
   /// layer onto the feature, introduce this logic into the body instead, either with ``Reduce``:
   ///
   /// ```swift
@@ -315,7 +315,7 @@
     /// > Important: if your reducer implements the ``reduce(into:action:)-8yinq`` method, it will
     /// > take precedence over this property, and only ``reduce(into:action:)-8yinq`` will be called
     /// > by the ``Store``. If your reducer assembles a body from other reducers and has additional
-    /// > business logic it needs to layer into the system, introduce this logic into the body
+    /// > business logic, it needs to layer into the system, introduce this logic into the body
     /// > instead, either with ``Reduce``, or with a separate, dedicated conformance.
     @ReducerBuilder<State, Action>
     var body: Body { get }
