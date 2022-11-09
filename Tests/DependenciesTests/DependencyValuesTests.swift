@@ -176,7 +176,7 @@ final class DependencyValuesTests: XCTestCase {
       XCTAssertEqual(childDependencyLateBindingEscaped.fetch(), 1_000)
     }
   }
-  
+
   func testNestedDependencyIsOverridden() {
     DependencyValues.withValue(\.nestedValue.value, 10) {
       @Dependency(\.nestedValue) var nestedValue: NestedValue
