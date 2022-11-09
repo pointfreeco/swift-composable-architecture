@@ -251,23 +251,6 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
   ///     are equal, repeat view computations are removed,
   ///   - content: A function that can generate content from a view store.
-  public init<State, Action>(
-    _ store: Store<State, Action>,
-    observe toViewState: @escaping (State) -> ViewState,
-    send fromViewAction: @escaping (ViewAction) -> Action,
-    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
-    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  ) {
-    self.init(
-      store: store.scope(state: toViewState, action: fromViewAction),
-      removeDuplicates: isDuplicate,
-      content: content,
-      file: file,
-      line: line
-    )
-  }
 
   /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
   /// to compute views from state.
@@ -425,22 +408,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
   ///     are equal, repeat view computations are removed,
   ///   - content: A function that can generate content from a view store.
-  public init<State, Action>(
-    _ store: Store<State, Action>,
-    observe toViewState: @escaping (State) -> ViewState,
-    send fromViewAction: @escaping (ViewAction) -> Action,
-    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  ) {
-    self.init(
-      store: store.scope(state: toViewState, action: fromViewAction),
-      removeDuplicates: ==,
-      content: content,
-      file: file,
-      line: line
-    )
-  }
+  
 
   /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
   /// to compute views from state.
