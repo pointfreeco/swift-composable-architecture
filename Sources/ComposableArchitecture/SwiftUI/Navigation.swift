@@ -13,6 +13,7 @@ public struct NavigationState<Element: Hashable>:
 {
   public typealias ID = AnyHashable
 
+  // TODO: make hashable base on ID
   public struct Destination: Identifiable {
     public let id: ID
     public var element: Element
