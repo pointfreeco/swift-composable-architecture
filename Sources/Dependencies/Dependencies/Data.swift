@@ -5,8 +5,8 @@ extension DependencyValues {
   /// A dependency that reads data from a specified URL.
   ///
   /// By default, a "live" reader is supplied, which returns the real disk/remote data reading
-  /// mechanism called by invoking `Data(contentsOf:options:)` under the hood. When used from
-  /// a `TestStore`, an "unimplemented" reader that returns empty `Data` and additionally
+  /// mechanism called by invoking `Data.init(contentsOf:options:)` under the hood. When used
+  /// from a `TestStore`, an "unimplemented" reader that returns empty `Data` and additionally
   /// reports test failures is supplied, unless explicitly overridden.
   ///
   /// To override the current data reading logic in tests, you can override the reader using
