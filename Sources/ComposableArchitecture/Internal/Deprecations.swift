@@ -3,6 +3,19 @@ import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
+// MARK: - Deprecated after 0.45.0:
+
+@available(
+  *,
+  deprecated,
+  message: "Pass 'TextState' to the 'SwiftUI.Text' initializer, instead, e.g., 'Text(textState)'."
+)
+extension TextState: View {
+  public var body: some View {
+    Text(self)
+  }
+}
+
 // MARK: - Deprecated after 0.42.0:
 
 /// This API has been deprecated in favor of ``ReducerProtocol``.
