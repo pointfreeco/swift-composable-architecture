@@ -2,12 +2,12 @@ import Foundation
 import XCTestDynamicOverlay
 
 extension DependencyValues {
-  /// A dependency that reads data from a specified URL.
+  /// A dependency that reads data from a URL.
   ///
-  /// By default, a "live" reader is supplied, which returns the real disk/remote data reading
-  /// mechanism called by invoking `Data.init(contentsOf:options:)` under the hood. When used
-  /// from a `TestStore`, an "unimplemented" reader that returns empty `Data` and additionally
-  /// reports test failures is supplied, unless explicitly overridden.
+  /// By default, a "live" reader is supplied, which reads the real data from disk/remote
+  /// just like when invoking `Data.init(contentsOf:options:)`. When used from a `TestStore`,
+  /// an "unimplemented" reader that returns empty `Data` and additionally reports test failures
+  /// is supplied, unless explicitly overridden.
   ///
   /// To override the current data reading logic in tests, you can override the reader using
   /// ``withValue(_:_:operation:)-705n``:
@@ -47,7 +47,7 @@ extension DependencyValues {
   }
 }
 
-/// A dependency that reads data from a specified URL.
+/// A dependency that reads data from a URL.
 ///
 /// See ``DependencyValues/data`` for more information.
 public struct DataReader: Sendable {
