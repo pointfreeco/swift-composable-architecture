@@ -849,7 +849,7 @@ extension AlertState.Button {
     *, deprecated, message: "Cancel buttons must be given an explicit label as their first argument"
   )
   public static func cancel(action: AlertState.ButtonAction? = nil) -> Self {
-    .init(action: action, label: TextState("Cancel"), role: .cancel)
+    .cancel(TextState("Cancel"), action: action)
   }
 }
 
