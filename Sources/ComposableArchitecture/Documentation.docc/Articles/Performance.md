@@ -503,7 +503,7 @@ struct FeatureView: View {
 }
 ```
 
-...and you start running into compiler troubles, then you can explicitly specify the type of the
+…and you start running into compiler troubles, then you can explicitly specify the type of the
 view store in the closure:
 
 ```swift
@@ -521,7 +521,7 @@ struct FeatureView: View {
 
   init(store: StoreOf<Feature>) {
     self.store = store
-    self.viewStore = ViewStore(self.store)
+    self.viewStore = ViewStore(self.store, observe: { $0 })
   }
 
   var body: some View {
