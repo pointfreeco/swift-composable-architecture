@@ -6,7 +6,7 @@ extension DependencyValues {
   ///
   /// By default, a "live" reader is supplied, which reads the real data from disk/remote
   /// just like when invoking `Data.init(contentsOf:options:)`. When used from a `TestStore`,
-  /// an "unimplemented" reader that returns empty `Data` and additionally reports test failures
+  /// an "unimplemented" reader that returns empty data and additionally reports test failures
   /// is supplied, unless explicitly overridden.
   ///
   /// To override the current data reading logic in tests, you can override the reader using
