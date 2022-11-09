@@ -1,12 +1,12 @@
-#if swift(>=5.7)
-  // MARK: swift(>=5.7)
-
-  // MARK: DependencyKey
-
-  func _liveValue(_ key: Any.Type) -> Any? {
-    (key as? any DependencyKey.Type)?.liveValue
-  }
-#else
+//#if swift(>=5.7)
+//  // MARK: swift(>=5.7)
+//
+//  // MARK: DependencyKey
+//
+//  func _liveValue(_ key: Any.Type) -> Any? {
+//    (key as? any DependencyKey.Type)?.liveValue
+//  }
+//#else
   // MARK: -
   // MARK: swift(<5.7)
 
@@ -28,4 +28,4 @@
   extension Witness: AnyDependencyKey where T: DependencyKey {
     static var liveValue: Any { T.liveValue }
   }
-#endif
+//#endif
