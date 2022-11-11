@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.6
 
 import PackageDescription
 
@@ -27,7 +27,8 @@ let package = Package(
     .library(name: "TwoFactorUIKit", targets: ["TwoFactorUIKit"]),
   ],
   dependencies: [
-    .package(name: "swift-composable-architecture", path: "../../..")
+    .package(name: "swift-composable-architecture", path: "../../.."),
+    .package(url: "https://github.com/pointfreeco/swift-dependencies", branch: "main"),
   ],
   targets: [
     .target(
@@ -63,7 +64,7 @@ let package = Package(
     .target(
       name: "AuthenticationClient",
       dependencies: [
-        .product(name: "Dependencies", package: "swift-composable-architecture")
+        .product(name: "Dependencies", package: "swift-dependencies")
       ]
     ),
     .target(
