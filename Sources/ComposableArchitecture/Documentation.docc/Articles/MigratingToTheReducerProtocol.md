@@ -27,7 +27,7 @@ when you are ready:
 * [Stores](#Stores)
 * [Testing](#Testing)
 * [Embedding old reducer values in a new reducer conformance](#Embedding-old-reducer-values-in-a-new-reducer-conformance)
-* [Migration using Swift 5.6](#Migration-using-Swift-5-.-6)
+* [Migration using Swift 5.6](#Migration-using-Swift-56)
 
 ## Leaf node features
 
