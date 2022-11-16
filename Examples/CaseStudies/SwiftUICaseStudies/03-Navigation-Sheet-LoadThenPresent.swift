@@ -23,7 +23,6 @@ struct LoadThenPresent: ReducerProtocol {
   }
 
   @Dependency(\.continuousClock) var clock
-  private enum CancelID {}
 
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
