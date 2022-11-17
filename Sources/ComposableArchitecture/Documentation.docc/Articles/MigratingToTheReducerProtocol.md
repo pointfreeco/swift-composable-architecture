@@ -27,7 +27,7 @@ when you are ready:
 * [Stores](#Stores)
 * [Testing](#Testing)
 * [Embedding old reducer values in a new reducer conformance](#Embedding-old-reducer-values-in-a-new-reducer-conformance)
-* [Migration using Swift 5.6](#Migration-using-Swift-5-.-6)
+* [Migration using Swift 5.6](#Migration-using-Swift-56)
 
 ## Leaf node features
 
@@ -201,7 +201,7 @@ struct TabC: ReducerProtocol {
 }
 ```
 
-But, suppose that the app-level domain and reducer has not yet be converted and so has compiler 
+But, suppose that the app-level domain and reducer have not yet been converted and so have compiler 
 errors due to referencing types and values that no longer exist:
 
 ```swift

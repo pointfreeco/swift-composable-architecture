@@ -196,7 +196,7 @@ struct AppView: View {
 ```
 
 This gives you maximum flexibility in the future for adding new fields to `ViewState` without making
-your view convoluated.
+your view convoluted.
 
 This technique for reducing view re-computations is most effective towards the root of your app
 hierarchy and least effective towards the leaf nodes of your app. Root features tend to hold lots
@@ -486,14 +486,14 @@ incurring unnecessary costs for sending actions.
 In very large SwiftUI applications you may experience degraded compiler performance causing long
 compile times, and possibly even compiler failures due to "complex expressions." The
 ``WithViewStore``  helpers that come with the library can exacerbate that problem for very complex
-views. If you are running into issues using ``WithViewStore`` you can make a small change to your
-view to use an `@ObservedObject` directly.
+views. If you are running into issues using ``WithViewStore``, there are two options for fixing
+the problem.
 
 For example, if your view looks like this:
 
 ```swift
 struct FeatureView: View {
-  let store: Store<FeatureState, FeatureAction>
+  let store: StoreOf<Feature>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -503,16 +503,25 @@ struct FeatureView: View {
 }
 ```
 
-...and you start running into compiler troubles, then you can refactor to the following:
+…and you start running into compiler troubles, then you can explicitly specify the type of the
+view store in the closure:
+
+```swift
+WithViewStore(self.store, observe: { $0 }) { (viewStore: ViewStoreOf<Feature>) in
+  // A large, complex view inside here...
+}
+```
+
+Or you can refactor the view to use an `@ObservedObject`:
 
 ```swift
 struct FeatureView: View {
-  let store: Store<FeatureState, FeatureAction>
-  @ObservedObject var viewStore: ViewStore<FeatureState, FeatureAction>
+  let store: StoreOf<Feature>
+  @ObservedObject var viewStore: ViewStoreOf<Feature>
 
-  init(store: Store<FeatureState, FeatureAction>) {
+  init(store: StoreOf<Feature>) {
     self.store = store
-    self.viewStore = ViewStore(self.store))
+    self.viewStore = ViewStore(self.store, observe: { $0 })
   }
 
   var body: some View {
@@ -521,4 +530,4 @@ struct FeatureView: View {
 }
 ```
 
-That should greatly improve the compiler's ability to type-check your view.
+Both of these options should greatly improve the compiler's ability to type-check your view.

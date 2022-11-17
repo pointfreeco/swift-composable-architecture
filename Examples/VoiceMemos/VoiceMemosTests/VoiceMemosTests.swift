@@ -118,7 +118,6 @@ final class VoiceMemosTests: XCTestCase {
     store.dependencies.uuid = .constant(UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")!)
 
     await store.send(.recordButtonTapped)
-    await self.clock.advance(by: .milliseconds(500))
     await store.receive(.recordPermissionResponse(true)) {
       $0.audioRecorderPermission = .allowed
       $0.recordingMemo = RecordingMemo.State(

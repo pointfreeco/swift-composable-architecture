@@ -353,7 +353,7 @@ struct MyApp: App {
           numberFact: { number in
             let (data, _) = try await URLSession.shared
               .data(from: .init(string: "http://numbersapi.com/\(number)")!)
-            return String(decoding: data, using: UTF8.self)
+            return String(decoding: data, as: UTF8.self)
           }
         )
       )
@@ -474,12 +474,15 @@ That is the basics of building and testing a feature in the Composable Architect
 The documentation for releases and `main` are available here:
 
 * [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture)
-* [0.42.0](https://pointfreeco.github.io/swift-composable-architecture/0.42.0/documentation/composablearchitecture/)
+* [0.45.0](https://pointfreeco.github.io/swift-composable-architecture/0.45.0/documentation/composablearchitecture/)
 <details>
   <summary>
   Other versions
   </summary>
 
+  * [0.44.0](https://pointfreeco.github.io/swift-composable-architecture/0.44.0/documentation/composablearchitecture/)
+  * [0.43.0](https://pointfreeco.github.io/swift-composable-architecture/0.43.0/documentation/composablearchitecture/)
+  * [0.42.0](https://pointfreeco.github.io/swift-composable-architecture/0.42.0/documentation/composablearchitecture/)
   * [0.41.2](https://pointfreeco.github.io/swift-composable-architecture/0.41.0/documentation/composablearchitecture/)
   * [0.40.2](https://pointfreeco.github.io/swift-composable-architecture/0.40.0/documentation/composablearchitecture/)
   * [0.39.0](https://pointfreeco.github.io/swift-composable-architecture/0.39.0/documentation/composablearchitecture/)
@@ -539,7 +542,7 @@ If you'd like to contribute a translation, please [open a PR](https://github.com
 
     In other ways TCA is a little more lax than the other libraries. For example, Elm controls what kinds of effects can be created via the `Cmd` type, but TCA allows an escape hatch to any kind of effect since `Effect` conforms to the Combine `Publisher` protocol.
 
-    And then there are certain things that TCA prioritizes highly that are not points of focus for Redux, Elm, or most other libraries. For example, composition is very important aspect of TCA, which is the process of breaking down large features into smaller units that can be glued together. This is accomplished with the `pullback` and `combine` operators on reducers, and it aids in handling complex features as well as modularization for a better-isolated code base and improved compile times.
+    And then there are certain things that TCA prioritizes highly that are not points of focus for Redux, Elm, or most other libraries. For example, composition is very important aspect of TCA, which is the process of breaking down large features into smaller units that can be glued together. This is accomplished with reducer builders and operators like `Scope`, and it aids in handling complex features as well as modularization for a better-isolated code base and improved compile times.
   </details>
 
 ## Credits and thanks

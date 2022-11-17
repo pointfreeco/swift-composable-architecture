@@ -176,6 +176,15 @@ final class DependencyValuesTests: XCTestCase {
       XCTAssertEqual(childDependencyLateBindingEscaped.fetch(), 1_000)
     }
   }
+
+  func testNestedDependencyIsOverridden() {
+    DependencyValues.withValue(\.nestedValue.value, 10) {
+      @Dependency(\.nestedValue) var nestedValue: NestedValue
+      @Dependency(\.nestedValue.value) var value: Int
+      XCTAssertEqual(nestedValue.value, 10)
+      XCTAssertEqual(value, 10)
+    }
+  }
 }
 
 struct SomeDependency: TestDependencyKey {
@@ -198,6 +207,11 @@ struct ChildDependencyLateBinding: TestDependencyKey {
     }
   }
 }
+struct NestedValue: TestDependencyKey {
+  static var testValue: Self { .init() }
+  var value: Int = 0
+}
+
 extension DependencyValues {
   var someDependency: SomeDependency {
     get { self[SomeDependency.self] }
@@ -210,6 +224,10 @@ extension DependencyValues {
   var childDependencyLateBinding: ChildDependencyLateBinding {
     get { self[ChildDependencyLateBinding.self] }
     set { self[ChildDependencyLateBinding.self] = newValue }
+  }
+  var nestedValue: NestedValue {
+    get { self[NestedValue.self] }
+    set { self[NestedValue.self] = newValue }
   }
 }
 

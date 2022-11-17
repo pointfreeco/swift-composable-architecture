@@ -2,10 +2,9 @@ import ComposableArchitecture
 import SwiftUI
 
 private let readMe = """
-  This screen demonstrates how to take small features and compose them into bigger ones using the \
-  `pullback` and `combine` operators on reducers, and the `scope` operator on stores.
+  This screen demonstrates how to take small features and compose them into bigger ones using reducer builders and the `Scope` reducer, as well as the `scope` operator on stores.
 
-  It reuses the the domain of the counter screen and embeds it, twice, in a larger domain.
+  It reuses the domain of the counter screen and embeds it, twice, in a larger domain.
   """
 
 // MARK: - Feature domain
