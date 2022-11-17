@@ -412,3 +412,115 @@ extension BindingAction: CustomDumpReflectable {
     }
   }
 #endif
+
+// MARK: - ViewStateBinding
+public struct BindingViewAction<ViewState, State>: Equatable {
+  public let keyPath: PartialKeyPath<State>
+
+  @usableFromInline
+  let set: (inout ViewState) -> Void
+  let value: Any
+  let valueIsEqualTo: (Any) -> Bool
+
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.keyPath == rhs.keyPath && lhs.valueIsEqualTo(rhs.value)
+  }
+}
+
+extension BindingViewAction {
+    init<Value: Equatable>(
+      keyPath: WritableKeyPath<State, BindableState<Value>>,
+      set: @escaping (inout ViewState) -> Void,
+      value: Value
+    ) {
+      self.init(
+        keyPath: keyPath,
+        set: set,
+        value: value,
+        valueIsEqualTo: { $0 as? Value == value }
+      )
+    }
+
+    public func pullback(
+      _ viewStateKeyPath: WritableKeyPath<State, ViewState>
+    ) -> BindingAction<State> {
+      .init(
+        keyPath: keyPath,
+        set: { self.set(&$0[keyPath: viewStateKeyPath]) },
+        value: self.value,
+        valueIsEqualTo: self.valueIsEqualTo
+      )
+    }
+}
+
+public protocol BindableViewAction {
+  /// The root state type that contains bindable fields.
+  associatedtype State
+  associatedtype ViewState
+
+  /// Embeds a binding action in this action type.
+  ///
+  /// - Returns: A binding action.
+  static func binding(_ action: BindingViewAction<ViewState, State>) -> Self
+}
+
+
+
+extension ViewStore where ViewAction: BindableViewAction, ViewAction.ViewState == ViewState {
+    public func binding<Value: Equatable, State>(
+      _ keyPath: WritableKeyPath<ViewState, BindableViewState<State, Value>>,
+      file: StaticString = #file,
+      fileID: StaticString = #fileID,
+      line: UInt = #line
+    ) -> Binding<Value> where ViewAction.State == State {
+      self.binding(
+        get: { $0[keyPath: keyPath].wrappedValue },
+        send: { value in
+          #if DEBUG
+            let debugger = BindableActionViewStoreDebugger(
+              value: value, bindableActionType: ViewAction.self, file: file, fileID: fileID,
+              line: line
+            )
+            let set: (inout ViewState) -> Void = {
+              $0[keyPath: keyPath].wrappedValue = value
+              debugger.wasCalled = true
+            }
+          #else
+            let set: (inout ViewState) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
+          #endif
+            return .binding(.init(keyPath: self.state[keyPath: keyPath].stateKeyPath, set: set, value: value))
+        }
+      )
+    }
+}
+
+@dynamicMemberLookup
+@propertyWrapper
+public struct BindableViewState<State, Value> {
+    public var projectedValue: Self {
+      get { self }
+      set { self = newValue }
+    }
+    
+    public var stateKeyPath: WritableKeyPath<State, BindableState<Value>>
+    
+    public var wrappedValue: Value
+    
+    public init(wrappedValue: Value, _ stateKeyPath: WritableKeyPath<State, BindableState<Value>>) {
+        self.stateKeyPath = stateKeyPath
+        self.wrappedValue = wrappedValue
+    }
+    
+    /// Returns bindable state to the resulting value of a given key path.
+    ///
+    /// - Parameter keyPath: A key path to a specific resulting value.
+    /// - Returns: A new bindable state.
+    public subscript<Subject>(
+      dynamicMember keyPath: WritableKeyPath<Value, Subject>
+    ) -> BindableState<Subject> {
+      get { .init(wrappedValue: self.wrappedValue[keyPath: keyPath]) }
+      set { self.wrappedValue[keyPath: keyPath] = newValue.wrappedValue }
+    }
+}
+
+extension BindableViewState: Equatable where State: Equatable, Value: Equatable {}
