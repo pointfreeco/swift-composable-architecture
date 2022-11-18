@@ -454,8 +454,9 @@ extension BindingViewAction {
 }
 
 public protocol BindableViewAction {
-  /// The root state type that contains bindable fields.
+  /// The correspoding app state type that contains bindable fields.
   associatedtype State
+  /// The view state type that contains bindable fields.
   associatedtype ViewState
 
   /// Embeds a binding action in this action type.
@@ -494,6 +495,13 @@ extension ViewStore where ViewAction: BindableViewAction, ViewAction.ViewState =
     }
 }
 
+/// A property wrapper type that can designate properties of app view state that can be directly bindable
+/// in SwiftUI views.
+///
+/// Along with an action type that conforms to the ``BindableViewAction`` protocol, this type can
+/// help establish the association with the corresponding app state ``BindableState`` properties.
+///
+/// Read <doc:Bindings> for more information.
 @dynamicMemberLookup
 @propertyWrapper
 public struct BindableViewState<State, Value> {
