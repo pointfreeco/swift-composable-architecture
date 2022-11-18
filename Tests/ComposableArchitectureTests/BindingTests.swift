@@ -84,7 +84,8 @@ final class BindingTests: XCTestCase {
         }
         
         struct ViewState: Equatable {
-            @BindableViewState(\BindingTest.State.$nested.field) var nestedField = BindingTest.State.Nested().field
+            // The type of the nestedField can be inferred from the type of the associated State property
+            @BindableViewState(\BindingTest.State.$nested.field) var nestedField = ""
         }
         
         enum ViewAction: Equatable, BindableViewAction {
