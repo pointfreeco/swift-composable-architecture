@@ -212,7 +212,7 @@ extension BindingAction {
     keyPath == bindingAction.keyPath
   }
 
-  init<Value: Equatable>(
+  public init<Value: Equatable>(
     keyPath: WritableKeyPath<Root, BindableState<Value>>,
     set: @escaping (inout Root) -> Void,
     value: Value
