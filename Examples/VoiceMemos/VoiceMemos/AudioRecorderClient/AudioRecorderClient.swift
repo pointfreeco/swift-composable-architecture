@@ -1,4 +1,3 @@
-import ComposableArchitecture  // Required for `ActorIsolated`
 import Dependencies
 import Foundation
 import XCTestDynamicOverlay
