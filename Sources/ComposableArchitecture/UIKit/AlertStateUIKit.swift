@@ -51,7 +51,7 @@
         preferredStyle: .alert
       )
       for button in state.buttons {
-        self.addAction(button.toUIAlertAction(send: send))
+        self.addAction(.init(button, action: send))
       }
     }
 
@@ -68,8 +68,8 @@
         message: state.message.map { String(state: $0) },
         preferredStyle: .actionSheet
       )
-      state.buttons.forEach { button in
-        self.addAction(button.toUIAlertAction(send: send))
+      for button in state.buttons {
+        self.addAction(.init(button, action: send))
       }
     }
   }
@@ -79,13 +79,13 @@
   @available(macOS, unavailable)
   @available(tvOS 13, *)
   @available(watchOS, unavailable)
-  extension AlertState.ButtonRole {
-    var toUIKit: UIAlertAction.Style {
-      switch self {
+  extension UIAlertAction.Style {
+    init<Action>(_ role: AlertState<Action>.ButtonRole) {
+      switch role {
       case .cancel:
-        return .cancel
+        self = .cancel
       case .destructive:
-        return .destructive
+        self = .destructive
       }
     }
   }
@@ -95,13 +95,15 @@
   @available(macOS, unavailable)
   @available(tvOS 13, *)
   @available(watchOS, unavailable)
-  extension AlertState.Button {
-    func toUIAlertAction(send: @escaping (Action) -> Void) -> UIAlertAction {
-      let action = self.toSwiftUIAction(send: send)
-      return UIAlertAction(
-        title: String(state: self.label),
-        style: self.role?.toUIKit ?? .default,
-        handler: { _ in action() }
+  extension UIAlertAction {
+    convenience init<Action>(
+      _ button: AlertState<Action>.Button,
+      action: @escaping (Action) -> Void
+    ) {
+      self.init(
+        title: String(state: button.label),
+        style: button.role.map(UIAlertAction.Style.init) ?? .default,
+        handler: button.action.map { _ in { _ in button.withAction(action) } }
       )
     }
   }
