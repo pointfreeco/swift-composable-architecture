@@ -86,9 +86,9 @@
         "package": "swiftui-navigation",
         "repositoryURL": "https://github.com/pointfreeco/swiftui-navigation",
         "state": {
-          "branch": "fixes",
-          "revision": "06b20d7def5fb05299550fd6073e9afaf5e6f8b7",
-          "version": null
+          "branch": null,
+          "revision": "8db42e81f62e131df71a8427c000b0ffbff6c1c2",
+          "version": "0.4.1"
         }
       },
       {

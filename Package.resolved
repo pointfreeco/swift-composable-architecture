@@ -86,8 +86,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swiftui-navigation",
       "state" : {
-        "branch" : "alert",
-        "revision" : "7307bc66c84e67b71a41cd249c7216792594a65e"
+        "branch" : "fixes",
+        "revision" : "4ab0f87a77d4e1b537fece1f1272b3edc5ce9eed"
       }
     },
     {
