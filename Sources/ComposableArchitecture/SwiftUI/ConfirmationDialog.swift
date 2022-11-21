@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftUINavigation
 
 extension View {
   /// Displays a dialog when the store's state becomes non-`nil`, and dismisses it when it becomes

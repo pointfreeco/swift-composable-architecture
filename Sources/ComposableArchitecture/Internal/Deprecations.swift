@@ -857,14 +857,14 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
 
 // MARK: - Deprecated after 0.27.1:
 
-extension AlertState.Button {
-  @available(
-    *, deprecated, message: "Cancel buttons must be given an explicit label as their first argument"
-  )
-  public static func cancel(action: AlertState.ButtonAction? = nil) -> Self {
-    .cancel(TextState("Cancel"), action: action)
-  }
-}
+//extension AlertState.Button {
+//  @available(
+//    *, deprecated, message: "Cancel buttons must be given an explicit label as their first argument"
+//  )
+//  public static func cancel(action: AlertState.ButtonAction? = nil) -> Self {
+//    .cancel(TextState("Cancel"), action: action)
+//  }
+//}
 
 @available(iOS 13, *)
 @available(macOS 12, *)
@@ -1054,38 +1054,38 @@ extension ViewStore {
 
 // MARK: - Deprecated after 0.23.0:
 
-extension AlertState.Button {
-  @available(*, deprecated, renamed: "cancel(_:action:)")
-  public static func cancel(
-    _ label: TextState,
-    send action: Action?
-  ) -> Self {
-    .cancel(label, action: action.map(AlertState.ButtonAction.send))
-  }
-
-  @available(*, deprecated, renamed: "cancel(action:)")
-  public static func cancel(
-    send action: Action?
-  ) -> Self {
-    .cancel(action: action.map(AlertState.ButtonAction.send))
-  }
-
-  @available(*, deprecated, renamed: "default(_:action:)")
-  public static func `default`(
-    _ label: TextState,
-    send action: Action?
-  ) -> Self {
-    .default(label, action: action.map(AlertState.ButtonAction.send))
-  }
-
-  @available(*, deprecated, renamed: "destructive(_:action:)")
-  public static func destructive(
-    _ label: TextState,
-    send action: Action?
-  ) -> Self {
-    .destructive(label, action: action.map(AlertState.ButtonAction.send))
-  }
-}
+//extension AlertState.Button {
+//  @available(*, deprecated, renamed: "cancel(_:action:)")
+//  public static func cancel(
+//    _ label: TextState,
+//    send action: Action?
+//  ) -> Self {
+//    .cancel(label, action: action.map(AlertState.ButtonAction.send))
+//  }
+//
+//  @available(*, deprecated, renamed: "cancel(action:)")
+//  public static func cancel(
+//    send action: Action?
+//  ) -> Self {
+//    .cancel(action: action.map(AlertState.ButtonAction.send))
+//  }
+//
+//  @available(*, deprecated, renamed: "default(_:action:)")
+//  public static func `default`(
+//    _ label: TextState,
+//    send action: Action?
+//  ) -> Self {
+//    .default(label, action: action.map(AlertState.ButtonAction.send))
+//  }
+//
+//  @available(*, deprecated, renamed: "destructive(_:action:)")
+//  public static func destructive(
+//    _ label: TextState,
+//    send action: Action?
+//  ) -> Self {
+//    .destructive(label, action: action.map(AlertState.ButtonAction.send))
+//  }
+//}
 
 // MARK: - Deprecated after 0.20.0:
 
