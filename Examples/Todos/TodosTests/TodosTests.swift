@@ -196,6 +196,41 @@ final class TodosTests: XCTestCase {
     }
   }
 
+  func testDeleteWhileFiltered() async {
+    let state = Todos.State(
+      filter: .completed,
+      todos: [
+        Todo.State(
+          description: "",
+          id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+          isComplete: false
+        ),
+        Todo.State(
+          description: "",
+          id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+          isComplete: false
+        ),
+        Todo.State(
+          description: "",
+          id: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!,
+          isComplete: true
+        ),
+      ]
+    )
+
+    let store = TestStore(
+      initialState: state,
+      reducer: Todos()
+    )
+
+    await store.send(.delete([0])) {
+      $0.todos = [
+        $0.todos[0],
+        $0.todos[1],
+      ]
+    }
+  }
+
   func testEditModeMoving() async {
     let state = Todos.State(
       todos: [
