@@ -82,6 +82,15 @@
       }
     },
     {
+      "identity" : "swiftui-navigation",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pointfreeco/swiftui-navigation",
+      "state" : {
+        "branch" : "fixes",
+        "revision" : "4ab0f87a77d4e1b537fece1f1272b3edc5ce9eed"
+      }
+    },
+    {
       "identity" : "xctest-dynamic-overlay",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/xctest-dynamic-overlay",

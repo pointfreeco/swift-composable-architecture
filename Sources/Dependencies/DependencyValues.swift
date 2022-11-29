@@ -298,8 +298,6 @@ struct CurrentDependency {
 private let defaultContext: DependencyContext = {
   if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
     return .preview
-  } else if _XCTIsTesting {
-    return .test
   } else {
     return .live
   }

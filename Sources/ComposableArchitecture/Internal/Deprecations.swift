@@ -3,6 +3,19 @@ import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
+// MARK: - Deprecated after 0.45.0:
+
+@available(
+  *,
+  deprecated,
+  message: "Pass 'TextState' to the 'SwiftUI.Text' initializer, instead, e.g., 'Text(textState)'."
+)
+extension TextState: View {
+  public var body: some View {
+    Text(self)
+  }
+}
+
 // MARK: - Deprecated after 0.42.0:
 
 /// This API has been deprecated in favor of ``ReducerProtocol``.
@@ -844,15 +857,6 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
 
 // MARK: - Deprecated after 0.27.1:
 
-extension AlertState.Button {
-  @available(
-    *, deprecated, message: "Cancel buttons must be given an explicit label as their first argument"
-  )
-  public static func cancel(action: AlertState.ButtonAction? = nil) -> Self {
-    .init(action: action, label: TextState("Cancel"), role: .cancel)
-  }
-}
-
 @available(iOS 13, *)
 @available(macOS 12, *)
 @available(tvOS 13, *)
@@ -1036,41 +1040,6 @@ extension ViewStore {
       get: { $0[keyPath: keyPath] },
       send: { action(.set(keyPath, $0)) }
     )
-  }
-}
-
-// MARK: - Deprecated after 0.23.0:
-
-extension AlertState.Button {
-  @available(*, deprecated, renamed: "cancel(_:action:)")
-  public static func cancel(
-    _ label: TextState,
-    send action: Action?
-  ) -> Self {
-    .cancel(label, action: action.map(AlertState.ButtonAction.send))
-  }
-
-  @available(*, deprecated, renamed: "cancel(action:)")
-  public static func cancel(
-    send action: Action?
-  ) -> Self {
-    .cancel(action: action.map(AlertState.ButtonAction.send))
-  }
-
-  @available(*, deprecated, renamed: "default(_:action:)")
-  public static func `default`(
-    _ label: TextState,
-    send action: Action?
-  ) -> Self {
-    .default(label, action: action.map(AlertState.ButtonAction.send))
-  }
-
-  @available(*, deprecated, renamed: "destructive(_:action:)")
-  public static func destructive(
-    _ label: TextState,
-    send action: Action?
-  ) -> Self {
-    .destructive(label, action: action.map(AlertState.ButtonAction.send))
   }
 }
 
