@@ -555,7 +555,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   private let store: Store<State, TestReducer<State, Action>.TestAction>
   private let toScopedState: (State) -> ScopedState
 
-  /// Creates a test store with an initial state and a reducer powering it's runtime.
+  /// Creates a test store with an initial state and a reducer powering its runtime.
   ///
   /// See <doc:Testing> and the documentation of ``TestStore`` for more information on how to best
   /// use a test store.
