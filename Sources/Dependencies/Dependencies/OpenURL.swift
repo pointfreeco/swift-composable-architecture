@@ -17,14 +17,14 @@ import XCTestDynamicOverlay
       let stream = AsyncStream<Bool> { continuation in
         let task = Task { @MainActor in
           #if os(watchOS)
-          EnvironmentValues().openURL(url)
-          continuation.yield(true)
-          continuation.finish()
-          #else
-          EnvironmentValues().openURL(url) { canOpen in
-            continuation.yield(canOpen)
+            EnvironmentValues().openURL(url)
+            continuation.yield(true)
             continuation.finish()
-          }
+          #else
+            EnvironmentValues().openURL(url) { canOpen in
+              continuation.yield(canOpen)
+              continuation.finish()
+            }
           #endif
         }
         continuation.onTermination = { @Sendable _ in
