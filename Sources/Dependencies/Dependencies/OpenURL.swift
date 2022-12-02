@@ -1,51 +1,30 @@
 import XCTestDynamicOverlay
-
-#if canImport(AppKit)
-  import AppKit
-#endif
-#if canImport(UIKit)
-  import UIKit
-#endif
 #if canImport(SwiftUI)
   import SwiftUI
-#endif
 
-#if canImport(AppKit) || canImport(UIKit) || canImport(SwiftUI)
   extension DependencyValues {
     /// A dependency that opens a URL.
-    @available(iOS 13, macOS 10.15, tvOS 13, watchOS 7, *)
+    @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
     public var openURL: OpenURLEffect {
       get { self[OpenURLKey.self] }
       set { self[OpenURLKey.self] = newValue }
     }
   }
 
+  @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
   private enum OpenURLKey: DependencyKey {
     static let liveValue = OpenURLEffect { url in
       let stream = AsyncStream<Bool> { continuation in
         let task = Task { @MainActor in
-          #if canImport(AppKit) && !targetEnvironment(macCatalyst)
-            NSWorkspace.shared.open(url, configuration: .init()) { app, error in
-              continuation.yield(app != nil && error == nil)
-              continuation.finish()
-            }
-          #elseif canImport(UIKit) && !os(watchOS)
-            UIApplication.shared.open(url) { canOpen in
-              continuation.yield(canOpen)
-              continuation.finish()
-            }
-          #elseif canImport(SwiftUI)
-            if #available(watchOS 7, *) {
-              EnvironmentValues().openURL(url)
-              continuation.yield(true)
-              continuation.finish()
-            } else {
-              continuation.yield(false)
-              continuation.finish()
-            }
+          #if os(watchOS)
+          EnvironmentValues().openURL(url)
+          continuation.yield(true)
+          continuation.finish()
           #else
-            continuation.yield(false)
+          EnvironmentValues().openURL(url) { canOpen in
+            continuation.yield(canOpen)
             continuation.finish()
+          }
           #endif
         }
         continuation.onTermination = { @Sendable _ in
