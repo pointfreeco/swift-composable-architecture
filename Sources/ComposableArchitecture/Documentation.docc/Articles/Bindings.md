@@ -257,6 +257,34 @@ var body: some ReducerProtocol<State, Action> {
 }
 ```
 
+If a reducer is a child reducer that hosts the `BindingReducer`, the parent must embed it with
+the scope function or the program will never execute the actual binding actions:
+
+```swift
+struct Settings: ReducerProtocol {
+  struct State: Equatable { /* ... */ }
+  enum Action: BindableAction { /* ... */ }
+  var body: some ReducerProtocol<State, Action> {
+    BindingReducer()
+  }
+}
+
+struct Home: ReducerProtocol {
+  struct State: Equatable {
+    public var settings: Settings.State
+  }
+
+  enum Action: Equatable {
+    case settings(Settings.Action)
+  }
+  var body: some ReducerProtocol<State, Action> {
+    Scope(state: \.settings, action: /Action.settings) {
+      Settings()
+    }
+  }
+}
+```
+
 Binding actions can also be tested in much the same way regular actions are tested. Rather than send
 a specific action describing how a binding changed, such as `.displayNameChanged("Blob")`, you will
 send a ``BindingAction`` action that describes which key path is being set to what value, such as
