@@ -454,7 +454,7 @@ extension BindingViewAction {
 }
 
 public protocol BindableViewAction {
-  /// The correspoding app state type that contains bindable fields.
+  /// The corresponding app state type that contains bindable fields.
   associatedtype State
   /// The view state type that contains bindable fields.
   associatedtype ViewState
