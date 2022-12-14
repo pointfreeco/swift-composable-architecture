@@ -14,8 +14,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-argument-parser",
       "state" : {
-        "revision" : "fddd1c00396eed152c45a46bea9f47b98e59301d",
-        "version" : "1.2.0"
+        "revision" : "9f39744e025c7d377987f30b03770805dcb0bcd1",
+        "version" : "1.1.4"
       }
     },
     {
@@ -59,8 +59,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-custom-dump",
       "state" : {
-        "revision" : "ead7d30cc224c3642c150b546f4f1080d1c411a8",
-        "version" : "0.6.1"
+        "revision" : "819d9d370cd721c9d87671e29d947279292e4541",
+        "version" : "0.6.0"
       }
     },
     {
@@ -69,7 +69,7 @@
       "location" : "https://github.com/pointfreeco/swift-dependencies",
       "state" : {
         "branch" : "main",
-        "revision" : "c516b309e975a5522ce62420013091e82abf363d"
+        "revision" : "573d5a39b60cd901855f4351bfefc6313a2838d2"
       }
     },
     {
@@ -86,8 +86,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-identified-collections",
       "state" : {
-        "revision" : "a08887de589e3829d488e0b4b707b2ca804b1060",
-        "version" : "0.5.0"
+        "revision" : "bfb0d43e75a15b6dfac770bf33479e8393884a36",
+        "version" : "0.4.1"
       }
     },
     {
@@ -95,8 +95,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swiftui-navigation",
       "state" : {
-        "revision" : "8db42e81f62e131df71a8427c000b0ffbff6c1c2",
-        "version" : "0.4.1"
+        "revision" : "4b666bcc59ba1711a7543ecb37e1d181963b180c",
+        "version" : "0.4.2"
       }
     },
     {
@@ -104,8 +104,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/xctest-dynamic-overlay",
       "state" : {
-        "revision" : "5a5457a744239896e9b0b03a8e1a5069c3e7b91f",
-        "version" : "0.6.0"
+        "revision" : "16e6409ee82e1b81390bdffbf217b9c08ab32784",
+        "version" : "0.5.0"
       }
     }
   ],
