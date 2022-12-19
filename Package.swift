@@ -28,7 +28,7 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/swift-clocks", from: "0.1.4"),
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "0.6.0"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "0.4.1"),
-    .package(url: "https://github.com/pointfreeco/swiftui-navigation", from: "0.4.2"),
+    .package(url: "https://github.com/pointfreeco/swiftui-navigation", from: "0.4.5"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "0.5.0"),
   ],
   targets: [
