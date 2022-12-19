@@ -3,7 +3,7 @@ import ComposableArchitecture
 import Dispatch
 import TwoFactorCore
 
-public struct Login: ReducerProtocol {
+public struct Login: ReducerProtocol, Sendable {
   public struct State: Equatable {
     public var alert: AlertState<Action>?
     public var email = ""
