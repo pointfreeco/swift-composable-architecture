@@ -52,8 +52,6 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
   }
 
   func testUnhappyPath() async {
-    let clock = TestClock()
-
     let episodes: IdentifiedArrayOf<Episode.State> = [
       Episode.State(
         id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
