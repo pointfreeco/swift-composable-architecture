@@ -49,7 +49,7 @@ public struct Login: ReducerProtocol, Sendable {
         return .none
 
       case let .loginResponse(.failure(error)):
-        state.alert = AlertState(title: TextState(error.localizedDescription))
+        state.alert = AlertState { TextState(error.localizedDescription) }
         state.isLoginRequestInFlight = false
         return .none
 

@@ -58,13 +58,13 @@ struct SpeechRecognition: ReducerProtocol {
 
     case .speech(.failure(SpeechClient.Failure.couldntConfigureAudioSession)),
       .speech(.failure(SpeechClient.Failure.couldntStartAudioEngine)):
-      state.alert = AlertState(title: TextState("Problem with audio device. Please try again."))
+      state.alert = AlertState { TextState("Problem with audio device. Please try again.") }
       return .none
 
     case .speech(.failure):
-      state.alert = AlertState(
-        title: TextState("An error occurred while transcribing. Please try again.")
-      )
+      state.alert = AlertState {
+        TextState("An error occurred while transcribing. Please try again.")
+      }
       return .none
 
     case let .speech(.success(transcribedText)):
@@ -79,21 +79,21 @@ struct SpeechRecognition: ReducerProtocol {
         return .none
 
       case .denied:
-        state.alert = AlertState(
-          title: TextState(
+        state.alert = AlertState {
+          TextState(
             """
             You denied access to speech recognition. This app needs access to transcribe your \
             speech.
             """
           )
-        )
+        }
         return .none
 
       case .notDetermined:
         return .none
 
       case .restricted:
-        state.alert = AlertState(title: TextState("Your device does not allow speech recognition."))
+        state.alert = AlertState { TextState("Your device does not allow speech recognition.") }
         return .none
 
       @unknown default:

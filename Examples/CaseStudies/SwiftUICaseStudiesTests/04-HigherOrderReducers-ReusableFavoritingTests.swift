@@ -76,9 +76,9 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
       .episode(
         id: episodes[0].id, action: .favorite(.response(.failure(FavoriteError()))))
     ) {
-      $0.episodes[id: episodes[0].id]?.alert = AlertState(
-        title: TextState("Favoriting failed.")
-      )
+      $0.episodes[id: episodes[0].id]?.alert = AlertState {
+        TextState("Favoriting failed.")
+      }
     }
 
     await store.send(.episode(id: episodes[0].id, action: .favorite(.alertDismissed))) {
