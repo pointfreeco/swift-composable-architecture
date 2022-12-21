@@ -98,9 +98,9 @@ final class LoginSwiftUITests: XCTestCase {
       $0.isFormDisabled = true
     }
     await store.receive(.loginResponse(.failure(AuthenticationError.invalidUserPassword))) {
-      $0.alert = AlertState(
-        title: TextState(AuthenticationError.invalidUserPassword.localizedDescription)
-      )
+      $0.alert = AlertState {
+        TextState(AuthenticationError.invalidUserPassword.localizedDescription)
+      }
       $0.isActivityIndicatorVisible = false
       $0.isFormDisabled = false
     }

@@ -107,13 +107,13 @@ struct SharedState: ReducerProtocol {
         return .none
 
       case .isPrimeButtonTapped:
-        state.alert = AlertState(
-          title: TextState(
+        state.alert = AlertState {
+          TextState(
             isPrime(state.count)
               ? "👍 The number \(state.count) is prime!"
               : "👎 The number \(state.count) is not prime :("
           )
-        )
+        }
         return .none
       }
     }

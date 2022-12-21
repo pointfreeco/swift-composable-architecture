@@ -12,15 +12,21 @@ final class AlertsAndConfirmationDialogsTests: XCTestCase {
     )
 
     await store.send(.alertButtonTapped) {
-      $0.alert = AlertState(
-        title: TextState("Alert!"),
-        message: TextState("This is an alert"),
-        primaryButton: .cancel(TextState("Cancel")),
-        secondaryButton: .default(TextState("Increment"), action: .send(.incrementButtonTapped))
-      )
+      $0.alert = AlertState {
+        TextState("Alert!")
+      } actions: {
+        ButtonState(role: .cancel) {
+          TextState("Cancel")
+        }
+        ButtonState(action: .incrementButtonTapped) {
+          TextState("Increment")
+        }
+      } message: {
+        TextState("This is an alert")
+      }
     }
     await store.send(.incrementButtonTapped) {
-      $0.alert = AlertState(title: TextState("Incremented!"))
+      $0.alert = AlertState { TextState("Incremented!") }
       $0.count = 1
     }
     await store.send(.alertDismissed) {
@@ -35,18 +41,24 @@ final class AlertsAndConfirmationDialogsTests: XCTestCase {
     )
 
     await store.send(.confirmationDialogButtonTapped) {
-      $0.confirmationDialog = ConfirmationDialogState(
-        title: TextState("Confirmation dialog"),
-        message: TextState("This is a confirmation dialog."),
-        buttons: [
-          .cancel(TextState("Cancel")),
-          .default(TextState("Increment"), action: .send(.incrementButtonTapped)),
-          .default(TextState("Decrement"), action: .send(.decrementButtonTapped)),
-        ]
-      )
+      $0.confirmationDialog = ConfirmationDialogState {
+        TextState("Confirmation dialog")
+      } actions: {
+        ButtonState(role: .cancel) {
+          TextState("Cancel")
+        }
+        ButtonState(action: .incrementButtonTapped) {
+          TextState("Increment")
+        }
+        ButtonState(action: .decrementButtonTapped) {
+          TextState("Decrement")
+        }
+      } message: {
+        TextState("This is a confirmation dialog.")
+      }
     }
     await store.send(.incrementButtonTapped) {
-      $0.alert = AlertState(title: TextState("Incremented!"))
+      $0.alert = AlertState { TextState("Incremented!") }
       $0.count = 1
     }
     await store.send(.confirmationDialogDismissed) {

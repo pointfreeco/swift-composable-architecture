@@ -62,14 +62,19 @@ struct Animations: ReducerProtocol {
       .cancellable(id: CancelID.self)
 
     case .resetButtonTapped:
-      state.alert = AlertState(
-        title: TextState("Reset state?"),
-        primaryButton: .destructive(
-          TextState("Reset"),
+      state.alert = AlertState {
+        TextState("Reset state?")
+      } actions: {
+        ButtonState(
+          role: .destructive,
           action: .send(.resetConfirmationButtonTapped, animation: .default)
-        ),
-        secondaryButton: .cancel(TextState("Cancel"))
-      )
+        ) {
+          TextState("Reset")
+        }
+        ButtonState(role: .cancel) {
+          TextState("Cancel")
+        }
+      }
       return .none
 
     case .resetConfirmationButtonTapped:

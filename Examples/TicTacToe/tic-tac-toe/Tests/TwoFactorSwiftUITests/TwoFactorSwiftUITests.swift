@@ -67,9 +67,9 @@ final class TwoFactorSwiftUITests: XCTestCase {
       $0.isFormDisabled = true
     }
     await store.receive(.twoFactorResponse(.failure(AuthenticationError.invalidTwoFactor))) {
-      $0.alert = AlertState(
-        title: TextState(AuthenticationError.invalidTwoFactor.localizedDescription)
-      )
+      $0.alert = AlertState {
+        TextState(AuthenticationError.invalidTwoFactor.localizedDescription)
+      }
       $0.isActivityIndicatorVisible = false
       $0.isFormDisabled = false
     }

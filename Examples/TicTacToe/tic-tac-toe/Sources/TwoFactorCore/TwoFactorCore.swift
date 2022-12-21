@@ -52,7 +52,7 @@ public struct TwoFactor: ReducerProtocol, Sendable {
       .cancellable(id: TearDownToken.self)
 
     case let .twoFactorResponse(.failure(error)):
-      state.alert = AlertState(title: TextState(error.localizedDescription))
+      state.alert = AlertState { TextState(error.localizedDescription) }
       state.isTwoFactorRequestInFlight = false
       return .none
 
