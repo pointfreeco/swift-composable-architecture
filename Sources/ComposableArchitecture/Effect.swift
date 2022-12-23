@@ -137,39 +137,40 @@ extension EffectPublisher where Failure == Never {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Self {
-    let dependencies = DependencyValues._current
-    return Self(
-      operation: .run(priority) { send in
-        await DependencyValues.$_current.withValue(dependencies) {
-          do {
-            try await send(operation())
-          } catch is CancellationError {
-            return
-          } catch {
-            guard let handler = handler else {
-              #if DEBUG
-                var errorDump = ""
-                customDump(error, to: &errorDump, indent: 4)
-                runtimeWarn(
-                  """
-                  An "EffectTask.task" returned from "\(fileID):\(line)" threw an unhandled error. …
-
-                  \(errorDump)
-
-                  All non-cancellation errors must be explicitly handled via the "catch" parameter \
-                  on "EffectTask.task", or via a "do" block.
-                  """,
-                  file: file,
-                  line: line
-                )
-              #endif
+    DependencyValues.escape { escaped in
+      Self(
+        operation: .run(priority) { send in
+          await escaped.continue {
+            do {
+              try await send(operation())
+            } catch is CancellationError {
               return
+            } catch {
+              guard let handler = handler else {
+                #if DEBUG
+                  var errorDump = ""
+                  customDump(error, to: &errorDump, indent: 4)
+                  runtimeWarn(
+                    """
+                    An "EffectTask.task" returned from "\(fileID):\(line)" threw an unhandled error. …
+
+                    \(errorDump)
+
+                    All non-cancellation errors must be explicitly handled via the "catch" parameter \
+                    on "EffectTask.task", or via a "do" block.
+                    """,
+                    file: file,
+                    line: line
+                  )
+                #endif
+                return
+              }
+              await send(handler(error))
             }
-            await send(handler(error))
           }
         }
-      }
-    )
+      )
+    }
   }
 
   /// Wraps an asynchronous unit of work that can emit any number of times in an effect.
@@ -219,39 +220,40 @@ extension EffectPublisher where Failure == Never {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Self {
-    let dependencies = DependencyValues._current
-    return Self(
-      operation: .run(priority) { send in
-        await DependencyValues.$_current.withValue(dependencies) {
-          do {
-            try await operation(send)
-          } catch is CancellationError {
-            return
-          } catch {
-            guard let handler = handler else {
-              #if DEBUG
-                var errorDump = ""
-                customDump(error, to: &errorDump, indent: 4)
-                runtimeWarn(
-                  """
-                  An "EffectTask.run" returned from "\(fileID):\(line)" threw an unhandled error. …
-
-                  \(errorDump)
-
-                  All non-cancellation errors must be explicitly handled via the "catch" parameter \
-                  on "EffectTask.run", or via a "do" block.
-                  """,
-                  file: file,
-                  line: line
-                )
-              #endif
+    DependencyValues.escape { escaped in
+      Self(
+        operation: .run(priority) { send in
+          await escaped.continue {
+            do {
+              try await operation(send)
+            } catch is CancellationError {
               return
+            } catch {
+              guard let handler = handler else {
+                #if DEBUG
+                  var errorDump = ""
+                  customDump(error, to: &errorDump, indent: 4)
+                  runtimeWarn(
+                    """
+                    An "EffectTask.run" returned from "\(fileID):\(line)" threw an unhandled error. …
+
+                    \(errorDump)
+
+                    All non-cancellation errors must be explicitly handled via the "catch" parameter \
+                    on "EffectTask.run", or via a "do" block.
+                    """,
+                    file: file,
+                    line: line
+                  )
+                #endif
+                return
+              }
+              await handler(error, send)
             }
-            await handler(error, send)
           }
         }
-      }
-    )
+      )
+    }
   }
 
   /// Creates an effect that executes some work in the real world that doesn't need to feed data
@@ -462,13 +464,19 @@ extension EffectPublisher {
     case .none:
       return .none
     case let .publisher(publisher):
-      let dependencies = DependencyValues._current
-      let transform = { action in
-        DependencyValues.$_current.withValue(dependencies) {
-          transform(action)
-        }
-      }
-      return .init(operation: .publisher(publisher.map(transform).eraseToAnyPublisher()))
+      return .init(
+        operation: .publisher(
+          publisher
+            .map(DependencyValues.escape { escaped in
+              { action in
+                escaped.continue {
+                  transform(action)
+                }
+              }
+            })
+            .eraseToAnyPublisher()
+        )
+      )
     case let .run(priority, operation):
       return .init(
         operation: .run(priority) { send in
@@ -615,7 +623,7 @@ extension EffectPublisher {
     """
     'Effect' has been deprecated in favor of 'EffectTask' when `Failure == Never`, or
     `EffectPublisher<Output, Failure>` in general.
-    
+
     You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
     concurrency to model failable streams of values.
 
@@ -629,7 +637,7 @@ extension EffectPublisher {
     """
     'Effect' has been deprecated in favor of 'EffectTask' when `Failure == Never`, or
     `EffectPublisher<Output, Failure>` in general.
-    
+
     You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
     concurrency to model failable streams of values.
 
@@ -643,7 +651,7 @@ extension EffectPublisher {
     """
     'Effect' has been deprecated in favor of 'EffectTask' when `Failure == Never`, or
     `EffectPublisher<Output, Failure>` in general.
-    
+
     You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
     concurrency to model failable streams of values.
 
@@ -657,7 +665,7 @@ extension EffectPublisher {
     """
     'Effect' has been deprecated in favor of 'EffectTask' when `Failure == Never`, or
     `EffectPublisher<Output, Failure>` in general.
-    
+
     You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
     concurrency to model failable streams of values.
 
