@@ -194,6 +194,7 @@ extension EffectPublisher {
 ///   - operation: An async operation.
 /// - Throws: An error thrown by the operation.
 /// - Returns: A value produced by operation.
+@_unsafeInheritExecutor
 public func withTaskCancellation<T: Sendable>(
   id: AnyHashable,
   cancelInFlight: Bool = false,
@@ -236,6 +237,7 @@ public func withTaskCancellation<T: Sendable>(
 ///   - operation: An async operation.
 /// - Throws: An error thrown by the operation.
 /// - Returns: A value produced by operation.
+@_unsafeInheritExecutor
 public func withTaskCancellation<T: Sendable>(
   id: Any.Type,
   cancelInFlight: Bool = false,
