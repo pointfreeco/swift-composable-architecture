@@ -423,7 +423,7 @@ import XCTestDynamicOverlay
 /// [merowing.info]: https://www.merowing.info
 /// [exhaustive-testing-in-tca]: https://www.merowing.info/exhaustive-testing-in-tca/
 /// [Composable-Architecture-at-Scale]: https://vimeo.com/751173570
-open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
+public final class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
 
   /// The current dependencies of the test store.
   ///
@@ -556,7 +556,7 @@ open class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
   private let store: Store<State, TestReducer<State, Action>.TestAction>
   private let toScopedState: (State) -> ScopedState
 
-  /// Creates a test store with an initial state and a reducer powering it's runtime.
+  /// Creates a test store with an initial state and a reducer powering its runtime.
   ///
   /// See <doc:Testing> and the documentation of ``TestStore`` for more information on how to best
   /// use a test store.

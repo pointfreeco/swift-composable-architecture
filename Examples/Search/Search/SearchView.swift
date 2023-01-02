@@ -217,9 +217,11 @@ private let dateFormatter: DateFormatter = {
 
 struct SearchView_Previews: PreviewProvider {
   static var previews: some View {
-    let store = Store(
-      initialState: Search.State(),
-      reducer: Search()
+    SearchView(
+      store: Store(
+        initialState: Search.State(),
+        reducer: Search()
+      )
     )
   }
 }

@@ -275,9 +275,21 @@ final class TestStoreTests: XCTestCase {
           self.date = now
         }
       }
-      func reduce(into state: inout State, action: Void) -> EffectTask<Void> {
-        state.count += 1
-        return .none
+      enum Action: Equatable {
+        case tap
+        case response(Int)
+      }
+      @Dependency(\.date.now) var now: Date
+      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        switch action {
+        case .tap:
+          state.count += 1
+          return .task { .response(42) }
+        case let .response(number):
+          state.count = number
+          state.date = now
+          return .none
+        }
       }
     }
 
@@ -285,12 +297,17 @@ final class TestStoreTests: XCTestCase {
       initialState: Feature.State(),
       reducer: Feature()
     ) {
-      $0.date = .constant(Date(timeIntervalSince1970: 1234567890))
+      $0.date = .constant(Date(timeIntervalSince1970: 1_234_567_890))
     }
 
-    await store.send(()) {
+    await store.send(.tap) {
       @Dependency(\.date.now) var now: Date
       $0.count = 1
+      $0.date = now
+    }
+    await store.receive(.response(42)) {
+      @Dependency(\.date.now) var now: Date
+      $0.count = 42
       $0.date = now
     }
   }

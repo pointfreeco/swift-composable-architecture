@@ -50,9 +50,9 @@ struct VoiceMemos: ReducerProtocol {
           }
 
         case .denied:
-          state.alert = AlertState(
-            title: TextState("Permission is required to record voice memos.")
-          )
+          state.alert = AlertState {
+            TextState("Permission is required to record voice memos.")
+          }
           return .none
 
         case .allowed:
@@ -71,9 +71,8 @@ struct VoiceMemos: ReducerProtocol {
           at: 0
         )
         return .none
-
       case .recordingMemo(.presented(.delegate(.didFinish(.failure)))):
-        state.alert = AlertState(title: TextState("Voice memo recording failed."))
+        state.alert = AlertState { TextState("Voice memo recording failed.") }
         state.recordingMemo = nil
         return .none
 
@@ -86,14 +85,14 @@ struct VoiceMemos: ReducerProtocol {
           state.recordingMemo = newRecordingMemo
           return .none
         } else {
-          state.alert = AlertState(
-            title: TextState("Permission is required to record voice memos.")
-          )
+          state.alert = AlertState {
+            TextState("Permission is required to record voice memos.")
+          }
           return .none
         }
 
       case .voiceMemo(id: _, action: .audioPlayerClient(.failure)):
-        state.alert = AlertState(title: TextState("Voice memo playback failed."))
+        state.alert = AlertState { TextState("Voice memo playback failed.") }
         return .none
 
       case let .voiceMemo(id: id, action: .delete):

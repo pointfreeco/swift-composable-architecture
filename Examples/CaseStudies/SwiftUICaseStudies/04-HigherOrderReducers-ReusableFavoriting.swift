@@ -56,7 +56,7 @@ struct Favoriting<ID: Hashable & Sendable>: ReducerProtocol {
       .cancellable(id: CancelID(id: state.id), cancelInFlight: true)
 
     case let .response(.failure(error)):
-      state.alert = AlertState(title: TextState(error.localizedDescription))
+      state.alert = AlertState { TextState(error.localizedDescription) }
       return .none
 
     case let .response(.success(isFavorite)):

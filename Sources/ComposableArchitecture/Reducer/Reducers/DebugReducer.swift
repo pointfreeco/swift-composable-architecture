@@ -31,6 +31,8 @@ public struct _ReducerPrinter<State, Action> {
 extension _ReducerPrinter {
   public static var customDump: Self {
     Self { receivedAction, oldState, newState in
+      @Dependency(\.context) var context
+      guard context != .preview else { return }
       var target = ""
       target.write("received action:\n")
       CustomDump.customDump(receivedAction, to: &target, indent: 2)
@@ -42,6 +44,8 @@ extension _ReducerPrinter {
 
   public static var actionLabels: Self {
     Self { receivedAction, _, _ in
+      @Dependency(\.context) var context
+      guard context != .preview else { return }
       print("received action: \(debugCaseOutput(receivedAction))")
     }
   }

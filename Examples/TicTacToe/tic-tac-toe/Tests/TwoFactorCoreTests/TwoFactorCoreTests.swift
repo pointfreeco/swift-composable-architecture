@@ -58,9 +58,9 @@ final class TwoFactorCoreTests: XCTestCase {
       $0.isTwoFactorRequestInFlight = true
     }
     await store.receive(.twoFactorResponse(.failure(AuthenticationError.invalidTwoFactor))) {
-      $0.alert = AlertState(
-        title: TextState(AuthenticationError.invalidTwoFactor.localizedDescription)
-      )
+      $0.alert = AlertState {
+        TextState(AuthenticationError.invalidTwoFactor.localizedDescription)
+      }
       $0.isTwoFactorRequestInFlight = false
     }
     await store.send(.alertDismissed) {

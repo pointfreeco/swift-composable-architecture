@@ -124,8 +124,8 @@ struct Feature: ReducerProtocol {
             TaskResult { 
               String(
                 decoding: try await URLSession.shared
-                  .data(from: URL(string: "http://numbersapi.com/\(number)/trivia")!).0,
-                using: UTF8.self
+                  .data(from: URL(string: "http://numbersapi.com/\(count)/trivia")!).0,
+                as: UTF8.self
               )
             }
           )
@@ -346,10 +346,10 @@ struct MyApp: App {
       store: Store(
         initialState: Feature.State(),
         reducer: Feature(
-          numberFact: {
+          numberFact: { number in
             let (data, _) = try await URLSession.shared
               .data(from: .init(string: "http://numbersapi.com/\(number)")!)
-            return String(decoding: data, using: UTF8.self)
+            return String(decoding: data, as: UTF8.self)
           }
         )
       )
@@ -409,10 +409,10 @@ dependency to be used by default:
 ```swift
 private enum NumberFactClientKey: DependencyKey {
   static let liveValue = NumberFactClient(
-    fetch: {
+    fetch: { number in
       let (data, _) = try await URLSession.shared
         .data(from: .init(string: "http://numbersapi.com/\(number)")!)
-      return String(decoding: data, using: UTF8.self)
+      return String(decoding: data, as: UTF8.self)
     }
   )
 }
