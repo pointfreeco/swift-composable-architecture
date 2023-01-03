@@ -567,16 +567,6 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   }
 }
 
-private final class ObservedState<Value>: ObservableObject {
-  @Published var wrappedValue: Value
-  var cancellable: AnyCancellable?
-
-  init(initialValue: Value, send: @escaping (Value) -> Void) {
-    self.wrappedValue = initialValue
-    self.cancellable = self.$wrappedValue.dropFirst().sink(receiveValue: send)
-  }
-}
-
 /// A convenience type alias for referring to a view store of a given reducer's domain.
 ///
 /// Instead of specifying two generics:
@@ -755,5 +745,15 @@ public struct StorePublisher<State>: Publisher {
     dynamicMember keyPath: KeyPath<State, Value>
   ) -> StorePublisher<Value> {
     .init(upstream: self.upstream.map(keyPath).removeDuplicates(), viewStore: self.viewStore)
+  }
+}
+
+private final class ObservedState<Value>: ObservableObject {
+  @Published var wrappedValue: Value
+  var cancellable: AnyCancellable?
+
+  init(initialValue: Value, send: @escaping (Value) -> Void) {
+    self.wrappedValue = initialValue
+    self.cancellable = self.$wrappedValue.dropFirst().sink(receiveValue: send)
   }
 }
