@@ -1271,7 +1271,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     ///
     /// When an effect is executed in your feature and sends an action back into the system, you can
     /// use this method to assert that fact, and further assert how state changes after the effect
-  /// action is received:
+    /// action is received:
     ///
     /// ```swift
     /// await store.send(.buttonTapped)
