@@ -216,7 +216,7 @@
       XCTExpectFailure {
         store.receive(.action)
       } issueMatcher: { issue in
-        issue.compactDescription == "Expected to receive an action, but received none."
+        issue.compactDescription == #"Expected to receive an action "action", but didn't get one."#
       }
     }
 
