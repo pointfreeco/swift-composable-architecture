@@ -466,8 +466,11 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     get: @escaping (ViewState) -> Value,
     send valueToAction: @escaping (Value) -> ViewAction
   ) -> Binding<Value> {
-    ObservedObject(wrappedValue: self)
-      .projectedValue[get: .init(rawValue: get), send: .init(rawValue: valueToAction)]
+    @ObservedState var val = get(self.state)
+    return .init(
+        get: { [$val] in $val.wrappedValue },
+        set: { [weak self] in self?.send(valueToAction($0)) }
+    )
   }
 
   /// Derives a binding from the store that prevents direct writes to state and instead sends
@@ -558,14 +561,6 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   /// - Returns: A binding.
   public func binding(send action: ViewAction) -> Binding<ViewState> {
     self.binding(send: { _ in action })
-  }
-
-  private subscript<Value>(
-    get state: HashableWrapper<(ViewState) -> Value>,
-    send action: HashableWrapper<(Value) -> ViewAction>
-  ) -> Value {
-    get { state.rawValue(self.state) }
-    set { self.send(action.rawValue(newValue)) }
   }
 }
 
@@ -750,8 +745,31 @@ public struct StorePublisher<State>: Publisher {
   }
 }
 
-private struct HashableWrapper<Value>: Hashable {
-  let rawValue: Value
-  static func == (lhs: Self, rhs: Self) -> Bool { false }
-  func hash(into hasher: inout Hasher) {}
+final private class ValueWrapper<V>: ObservableObject {
+  var value: V {
+    willSet { objectWillChange.send() }
+  }
+
+  init(_ value: V) {
+    self.value = value
+  }
+}
+
+@propertyWrapper private struct ObservedState<Value>: DynamicProperty {
+  @ObservedObject private var box: ValueWrapper<Value>
+  
+  var wrappedValue: Value {
+    get { box.value }
+    nonmutating set { box.value = newValue }
+  }
+  
+  var projectedValue: Binding<Value> {
+    .init(
+      get: { wrappedValue },
+      set: { wrappedValue = $0 }
+    )
+  }
+  init(wrappedValue value: Value) {
+    self._box = ObservedObject(wrappedValue: .init(value))
+  }
 }
