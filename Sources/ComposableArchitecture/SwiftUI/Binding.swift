@@ -129,7 +129,7 @@ extension BindableAction {
 }
 
 @propertyWrapper
-public struct BindableViewState<Value> {
+public struct BindingViewState<Value> {
   let binding: Binding<Value>
 
   public var wrappedValue: Value {
@@ -142,31 +142,31 @@ public struct BindableViewState<Value> {
   }
 }
 
-extension BindableViewState: Equatable where Value: Equatable {
+extension BindingViewState: Equatable where Value: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.wrappedValue == rhs.wrappedValue
   }
 }
 
-extension BindableViewState: Hashable where Value: Hashable {
+extension BindingViewState: Hashable where Value: Hashable {
   public func hash(into hasher: inout Hasher) {
     hasher.combine(self.wrappedValue)
   }
 }
 
-extension BindableViewState: CustomReflectable {
+extension BindingViewState: CustomReflectable {
   public var customMirror: Mirror {
     Mirror(reflecting: self.wrappedValue)
   }
 }
 
-extension BindableViewState: CustomDumpRepresentable {
+extension BindingViewState: CustomDumpRepresentable {
   public var customDumpValue: Any {
     self.wrappedValue
   }
 }
 
-extension BindableViewState: CustomDebugStringConvertible
+extension BindingViewState: CustomDebugStringConvertible
 where Value: CustomDebugStringConvertible {
   public var debugDescription: String {
     self.wrappedValue.debugDescription
@@ -209,8 +209,8 @@ public struct BindingStore<State> {
 
   public subscript<Value: Equatable>(
     dynamicMember keyPath: WritableKeyPath<State, BindingState<Value>>
-  ) -> BindableViewState<Value> {
-    BindableViewState(
+  ) -> BindingViewState<Value> {
+    BindingViewState(
       binding: ViewStore(self.store, removeDuplicates: { _, _ in false }).binding(
         get: { $0[keyPath: keyPath].wrappedValue },
         send: { value in

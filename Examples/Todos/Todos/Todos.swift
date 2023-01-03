@@ -112,25 +112,19 @@ struct AppView: View {
 //  }
 
   struct ViewState: Equatable {
-    @BindableViewState var editMode: EditMode
-    @BindableViewState var filter: Filter
+    @BindingViewState var editMode: EditMode
+    @BindingViewState var filter: Filter
     let isClearCompletedButtonDisabled: Bool
 
-    init(state: BindingStore<Todos.State>) {
-      self._editMode = state.$editMode
-      self._filter = state.$filter
-      self.isClearCompletedButtonDisabled = !state.todos.contains(where: \.isComplete)
-    }
-
-    init(state: BindingStore<Todos.State>) {
-      self._editMode = state.$editMode
-      self._filter = state.$filter
+    init(@BindingStore state: Todos.State) {
+      self._editMode = $state.$editMode
+      self._filter = $state.$filter
       self.isClearCompletedButtonDisabled = !state.todos.contains(where: \.isComplete)
     }
   }
 
   var body: some View {
-    WithViewStore(self.store, observe: ViewState.init) { viewStore in
+    WithViewStore(self.store, observe: ViewState.init($state:)) { viewStore in
       NavigationView {
         VStack(alignment: .leading) {
           Picker("Filter", selection: viewStore.$filter.animation()) {
