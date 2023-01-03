@@ -3,6 +3,11 @@ import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
+// MARK: - Deprecated after 0.47.2:
+
+@available(*, deprecated, renamed: "BindingState")
+public typealias BindableState = BindingState
+
 // MARK: - Deprecated after 0.45.0:
 
 @available(
@@ -949,8 +954,8 @@ extension BindingAction {
     *, deprecated,
     message:
       """
-      For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', \
-      and accessed via key paths to that 'BindableState', like '\\.$value'
+      For improved safety, bindable properties must now be wrapped explicitly in 'BindingState', \
+      and accessed via key paths to that 'BindingState', like '\\.$value'
       """
   )
   public static func set<Value: Equatable>(
@@ -969,8 +974,8 @@ extension BindingAction {
     *, deprecated,
     message:
       """
-      For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', \
-      and accessed via key paths to that 'BindableState', like '\\.$value'
+      For improved safety, bindable properties must now be wrapped explicitly in 'BindingState', \
+      and accessed via key paths to that 'BindingState', like '\\.$value'
       """
   )
   public static func ~= <Value>(
@@ -1003,8 +1008,8 @@ extension ViewStore {
     *, deprecated,
     message:
       """
-      For improved safety, bindable properties must now be wrapped explicitly in 'BindableState'. \
-      Bindings are now derived via 'ViewStore.binding' with a key path to that 'BindableState' \
+      For improved safety, bindable properties must now be wrapped explicitly in 'BindingState'. \
+      Bindings are now derived via 'ViewStore.binding' with a key path to that 'BindingState' \
       (for example, 'viewStore.binding(\\.$value)'). For dynamic member lookup to be available, \
       the view store's 'Action' type must also conform to 'BindableAction'.
       """

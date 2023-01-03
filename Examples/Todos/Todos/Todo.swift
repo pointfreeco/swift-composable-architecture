@@ -3,9 +3,9 @@ import SwiftUI
 
 struct Todo: ReducerProtocol {
   struct State: Equatable, Identifiable {
-    @BindableState var description = ""
+    @BindingState var description = ""
     let id: UUID
-    @BindableState var isComplete = false
+    @BindingState var isComplete = false
   }
 
   enum Action: BindableAction, Equatable {

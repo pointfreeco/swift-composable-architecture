@@ -190,7 +190,7 @@
     @MainActor
     func testBindingUnhandledAction() {
       struct State: Equatable {
-        @BindableState var value = 0
+        @BindingState var value = 0
       }
       enum Action: BindableAction, Equatable {
         case binding(BindingAction<State>)

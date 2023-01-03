@@ -10,9 +10,9 @@ private let readMe = """
 
 struct FocusDemo: ReducerProtocol {
   struct State: Equatable {
-    @BindableState var focusedField: Field?
-    @BindableState var password: String = ""
-    @BindableState var username: String = ""
+    @BindingState var focusedField: Field?
+    @BindingState var password: String = ""
+    @BindingState var username: String = ""
 
     enum Field: String, Hashable {
       case username, password

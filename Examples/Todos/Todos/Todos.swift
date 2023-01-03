@@ -9,8 +9,8 @@ enum Filter: LocalizedStringKey, CaseIterable, Hashable {
 
 struct Todos: ReducerProtocol {
   struct State: Equatable {
-    @BindableState var editMode: EditMode = .inactive
-    @BindableState var filter: Filter = .all
+    @BindingState var editMode: EditMode = .inactive
+    @BindingState var filter: Filter = .all
     var todos: IdentifiedArrayOf<Todo.State> = []
 
     var filteredTodos: IdentifiedArrayOf<Todo.State> {
@@ -22,7 +22,7 @@ struct Todos: ReducerProtocol {
     }
   }
 
-  enum Action: BindableAction, Equatable {
+  enum Action: BindableAction, Equatable, Sendable {
     case addTodoButtonTapped
     case binding(BindingAction<State>)
     case clearCompletedButtonTapped
@@ -116,7 +116,13 @@ struct AppView: View {
     @BindableViewState var filter: Filter
     let isClearCompletedButtonDisabled: Bool
 
-    init(state: BindableStore<Todos.State>) {
+    init(state: BindingStore<Todos.State>) {
+      self._editMode = state.$editMode
+      self._filter = state.$filter
+      self.isClearCompletedButtonDisabled = !state.todos.contains(where: \.isComplete)
+    }
+
+    init(state: BindingStore<Todos.State>) {
       self._editMode = state.$editMode
       self._filter = state.$filter
       self.isClearCompletedButtonDisabled = !state.todos.contains(where: \.isComplete)
