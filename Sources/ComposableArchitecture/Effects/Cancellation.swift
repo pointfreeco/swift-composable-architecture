@@ -152,101 +152,149 @@ extension EffectPublisher {
   }
 }
 
-/// Execute an operation with a cancellation identifier.
-///
-/// If the operation is in-flight when `Task.cancel(id:)` is called with the same identifier, the
-/// operation will be cancelled.
-///
-/// ```
-/// enum CancelID.self {}
-///
-/// await withTaskCancellation(id: CancelID.self) {
-///   // ...
-/// }
-/// ```
-///
-/// ### Debouncing tasks
-///
-/// When paired with a clock, this function can be used to debounce a unit of async work by
-/// specifying the `cancelInFlight`, which will automatically cancel any in-flight work with the
-/// same identifier:
-///
-/// ```swift
-/// @Dependency(\.continuousClock) var clock
-/// enum CancelID {}
-///
-/// // ...
-///
-/// return .task {
-///   await withTaskCancellation(id: CancelID.self, cancelInFlight: true) {
-///     try await self.clock.sleep(for: .seconds(0.3))
-///     return await .debouncedResponse(
-///       TaskResult { try await environment.request() }
-///     )
-///   }
-/// }
-/// ```
-///
-/// - Parameters:
-///   - id: A unique identifier for the operation.
-///   - cancelInFlight: Determines if any in-flight operation with the same identifier should be
-///     canceled before starting this new one.
-///   - operation: An async operation.
-/// - Throws: An error thrown by the operation.
-/// - Returns: A value produced by operation.
-public func withTaskCancellation<T: Sendable>(
-  id: AnyHashable,
-  cancelInFlight: Bool = false,
-  operation: @Sendable @escaping () async throws -> T
-) async rethrows -> T {
-  let id = _CancelToken(id: id)
-  let (cancellable, task) = _cancellablesLock.sync { () -> (AnyCancellable, Task<T, Error>) in
-    if cancelInFlight {
-      _cancellationCancellables[id]?.forEach { $0.cancel() }
+#if swift(>=5.7)
+  /// Execute an operation with a cancellation identifier.
+  ///
+  /// If the operation is in-flight when `Task.cancel(id:)` is called with the same identifier, the
+  /// operation will be cancelled.
+  ///
+  /// ```
+  /// enum CancelID.self {}
+  ///
+  /// await withTaskCancellation(id: CancelID.self) {
+  ///   // ...
+  /// }
+  /// ```
+  ///
+  /// ### Debouncing tasks
+  ///
+  /// When paired with a clock, this function can be used to debounce a unit of async work by
+  /// specifying the `cancelInFlight`, which will automatically cancel any in-flight work with the
+  /// same identifier:
+  ///
+  /// ```swift
+  /// @Dependency(\.continuousClock) var clock
+  /// enum CancelID {}
+  ///
+  /// // ...
+  ///
+  /// return .task {
+  ///   await withTaskCancellation(id: CancelID.self, cancelInFlight: true) {
+  ///     try await self.clock.sleep(for: .seconds(0.3))
+  ///     return await .debouncedResponse(
+  ///       TaskResult { try await environment.request() }
+  ///     )
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - id: A unique identifier for the operation.
+  ///   - cancelInFlight: Determines if any in-flight operation with the same identifier should be
+  ///     canceled before starting this new one.
+  ///   - operation: An async operation.
+  /// - Throws: An error thrown by the operation.
+  /// - Returns: A value produced by operation.
+  @_unsafeInheritExecutor
+  public func withTaskCancellation<T: Sendable>(
+    id: AnyHashable,
+    cancelInFlight: Bool = false,
+    operation: @Sendable @escaping () async throws -> T
+  ) async rethrows -> T {
+    let id = _CancelToken(id: id)
+    let (cancellable, task) = _cancellablesLock.sync { () -> (AnyCancellable, Task<T, Error>) in
+      if cancelInFlight {
+        _cancellationCancellables[id]?.forEach { $0.cancel() }
+      }
+      let task = Task { try await operation() }
+      let cancellable = AnyCancellable { task.cancel() }
+      _cancellationCancellables[id, default: []].insert(cancellable)
+      return (cancellable, task)
     }
-    let task = Task { try await operation() }
-    let cancellable = AnyCancellable { task.cancel() }
-    _cancellationCancellables[id, default: []].insert(cancellable)
-    return (cancellable, task)
-  }
-  defer {
-    _cancellablesLock.sync {
-      _cancellationCancellables[id]?.remove(cancellable)
-      if _cancellationCancellables[id]?.isEmpty == .some(true) {
-        _cancellationCancellables[id] = nil
+    defer {
+      _cancellablesLock.sync {
+        _cancellationCancellables[id]?.remove(cancellable)
+        if _cancellationCancellables[id]?.isEmpty == .some(true) {
+          _cancellationCancellables[id] = nil
+        }
       }
     }
+    do {
+      return try await task.cancellableValue
+    } catch {
+      return try Result<T, Error>.failure(error)._rethrowGet()
+    }
   }
-  do {
-    return try await task.cancellableValue
-  } catch {
-    return try Result<T, Error>.failure(error)._rethrowGet()
+#else
+  public func withTaskCancellation<T: Sendable>(
+    id: AnyHashable,
+    cancelInFlight: Bool = false,
+    operation: @Sendable @escaping () async throws -> T
+  ) async rethrows -> T {
+    let id = _CancelToken(id: id)
+    let (cancellable, task) = _cancellablesLock.sync { () -> (AnyCancellable, Task<T, Error>) in
+      if cancelInFlight {
+        _cancellationCancellables[id]?.forEach { $0.cancel() }
+      }
+      let task = Task { try await operation() }
+      let cancellable = AnyCancellable { task.cancel() }
+      _cancellationCancellables[id, default: []].insert(cancellable)
+      return (cancellable, task)
+    }
+    defer {
+      _cancellablesLock.sync {
+        _cancellationCancellables[id]?.remove(cancellable)
+        if _cancellationCancellables[id]?.isEmpty == .some(true) {
+          _cancellationCancellables[id] = nil
+        }
+      }
+    }
+    do {
+      return try await task.cancellableValue
+    } catch {
+      return try Result<T, Error>.failure(error)._rethrowGet()
+    }
   }
-}
+#endif
 
-/// Execute an operation with a cancellation identifier.
-///
-/// A convenience for calling ``withTaskCancellation(id:cancelInFlight:operation:)-4dtr6`` with a
-/// static type as the operation's unique identifier.
-///
-/// - Parameters:
-///   - id: A unique type identifying the operation.
-///   - cancelInFlight: Determines if any in-flight operation with the same identifier should be
-///     canceled before starting this new one.
-///   - operation: An async operation.
-/// - Throws: An error thrown by the operation.
-/// - Returns: A value produced by operation.
-public func withTaskCancellation<T: Sendable>(
-  id: Any.Type,
-  cancelInFlight: Bool = false,
-  operation: @Sendable @escaping () async throws -> T
-) async rethrows -> T {
-  try await withTaskCancellation(
-    id: ObjectIdentifier(id),
-    cancelInFlight: cancelInFlight,
-    operation: operation
-  )
-}
+#if swift(>=5.7)
+  /// Execute an operation with a cancellation identifier.
+  ///
+  /// A convenience for calling ``withTaskCancellation(id:cancelInFlight:operation:)-4dtr6`` with a
+  /// static type as the operation's unique identifier.
+  ///
+  /// - Parameters:
+  ///   - id: A unique type identifying the operation.
+  ///   - cancelInFlight: Determines if any in-flight operation with the same identifier should be
+  ///     canceled before starting this new one.
+  ///   - operation: An async operation.
+  /// - Throws: An error thrown by the operation.
+  /// - Returns: A value produced by operation.
+  @_unsafeInheritExecutor
+  public func withTaskCancellation<T: Sendable>(
+    id: Any.Type,
+    cancelInFlight: Bool = false,
+    operation: @Sendable @escaping () async throws -> T
+  ) async rethrows -> T {
+    try await withTaskCancellation(
+      id: ObjectIdentifier(id),
+      cancelInFlight: cancelInFlight,
+      operation: operation
+    )
+  }
+#else
+  public func withTaskCancellation<T: Sendable>(
+    id: Any.Type,
+    cancelInFlight: Bool = false,
+    operation: @Sendable @escaping () async throws -> T
+  ) async rethrows -> T {
+    try await withTaskCancellation(
+      id: ObjectIdentifier(id),
+      cancelInFlight: cancelInFlight,
+      operation: operation
+    )
+  }
+#endif
 
 extension Task where Success == Never, Failure == Never {
   /// Cancel any currently in-flight operation with the given identifier.
