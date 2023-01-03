@@ -184,7 +184,8 @@ final class TestStoreTests: XCTestCase {
 
       let store = TestStore(initialState: 0, reducer: reducer)
 
-      let predicateShouldBeCalledExpectation = expectation(description: "predicate should be called")
+      let predicateShouldBeCalledExpectation = expectation(
+        description: "predicate should be called")
       await store.send(.noop)
       await store.receive { action in
         predicateShouldBeCalledExpectation.fulfill()
