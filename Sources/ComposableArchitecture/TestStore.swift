@@ -1198,7 +1198,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   /// method.
   ///
   /// - Parameters:
-  ///   - isAction: A closure that attempts to match an action. If it returns `false`, a test
+  ///   - isMatching: A closure that attempts to match an action. If it returns `false`, a test
   ///     failure is reported.
   ///   - nanoseconds: The amount of time to wait for the expected action.
   ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
@@ -1210,13 +1210,13 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   @available(tvOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
   @available(watchOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
   public func receive(
-    _ isAction: (Action) -> Bool,
+    _ isMatching: (Action) -> Bool,
     assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) {
     self.receiveAction(
-      matching: isAction,
+      matching: isMatching,
       failureMessage: "Expected to receive an action matching predicate, but didn't get one.",
       unexpectedActionDescription: { receivedAction in
         var action = ""
@@ -1339,7 +1339,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     /// the ``receive(_:timeout:assert:file:line:)-5n755`` overload of this method more useful.
     ///
     /// - Parameters:
-    ///   - isAction: A closure that attempts to match an action. If it returns `false`, a test
+    ///   - isMatching: A closure that attempts to match an action. If it returns `false`, a test
     ///     failure is reported.
     ///   - duration: The amount of time to wait for the expected action.
     ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action
@@ -1350,14 +1350,14 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     @MainActor
     @_disfavoredOverload
     public func receive(
-      _ isAction: (Action) -> Bool,
+      _ isMatching: (Action) -> Bool,
       timeout duration: Duration,
       assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
       await self.receive(
-        isAction,
+        isMatching,
         timeout: duration.nanoseconds,
         assert: updateStateToExpectedResult,
         file: file,
@@ -1443,7 +1443,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   /// ``receive(_:timeout:assert:file:line:)-4e4m0`` overload of this method more useful.
   ///
   /// - Parameters:
-  ///   - isAction: A closure that attempts to match an action. If it returns `false`, a test
+  ///   - isMatching: A closure that attempts to match an action. If it returns `false`, a test
   ///     failure is reported.
   ///   - nanoseconds: The amount of time to wait for the expected action.
   ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
@@ -1453,7 +1453,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   @MainActor
   @_disfavoredOverload
   public func receive(
-    _ isAction: (Action) -> Bool,
+    _ isMatching: (Action) -> Bool,
     timeout nanoseconds: UInt64? = nil,
     assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
@@ -1462,13 +1462,13 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     guard !self.reducer.inFlightEffects.isEmpty
     else {
       _ = {
-        self.receive(isAction, assert: updateStateToExpectedResult, file: file, line: line)
+        self.receive(isMatching, assert: updateStateToExpectedResult, file: file, line: line)
       }()
       return
     }
     await self.receiveAction(timeout: nanoseconds, file: file, line: line)
     _ = {
-      self.receive(isAction, assert: updateStateToExpectedResult, file: file, line: line)
+      self.receive(isMatching, assert: updateStateToExpectedResult, file: file, line: line)
     }()
     await Task.megaYield()
   }
