@@ -466,11 +466,14 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     get: @escaping (ViewState) -> Value,
     send valueToAction: @escaping (Value) -> ViewAction
   ) -> Binding<Value> {
-    @ObservedState var val = get(self.state)
-    return .init(
-      get: { [$val] in $val.wrappedValue },
-      set: { [weak self] in self?.send(valueToAction($0)) }
+    ObservedObject(
+      wrappedValue: ObservedState(
+        initialValue: get(self.state),
+        send: { self.send(valueToAction($0)) }
+      )
     )
+    .projectedValue
+    .wrappedValue
   }
 
   /// Derives a binding from the store that prevents direct writes to state and instead sends
@@ -745,31 +748,12 @@ public struct StorePublisher<State>: Publisher {
   }
 }
 
-final private class ValueWrapper<V>: ObservableObject {
-  var value: V {
-    willSet { objectWillChange.send() }
-  }
+private final class ObservedState<Value>: ObservableObject {
+  @Published var wrappedValue: Value
+  var cancellable: AnyCancellable?
 
-  init(_ value: V) {
-    self.value = value
-  }
-}
-
-@propertyWrapper private struct ObservedState<Value>: DynamicProperty {
-  @ObservedObject private var box: ValueWrapper<Value>
-
-  var wrappedValue: Value {
-    get { box.value }
-    nonmutating set { box.value = newValue }
-  }
-
-  var projectedValue: Binding<Value> {
-    .init(
-      get: { wrappedValue },
-      set: { wrappedValue = $0 }
-    )
-  }
-  init(wrappedValue value: Value) {
-    self._box = ObservedObject(wrappedValue: .init(value))
+  init(initialValue: Value, send: @escaping (Value) -> Void) {
+    self.wrappedValue = initialValue
+    self.cancellable = self.$wrappedValue.dropFirst().sink(receiveValue: send)
   }
 }
