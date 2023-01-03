@@ -88,7 +88,7 @@ struct LoadThenNavigateListView: View {
                 ProgressView()
               }
             }
-          }
+          } 
         }
       }
       .navigationDestination(

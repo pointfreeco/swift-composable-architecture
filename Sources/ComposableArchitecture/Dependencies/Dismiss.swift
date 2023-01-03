@@ -1,12 +1,8 @@
 extension DependencyValues {
+  /// An action that dismisses the current presentation.
   public var dismiss: DismissEffect {
     get { self[DismissKey.self] }
     set { self[DismissKey.self] = newValue }
-  }
-
-  private enum DismissKey: DependencyKey {
-    static let liveValue = DismissEffect()
-    static var testValue = DismissEffect()
   }
 }
 
@@ -43,4 +39,9 @@ extension DismissEffect {
   public init(_ dismiss: @escaping @Sendable () async -> Void) {
     self.dismiss = dismiss
   }
+}
+
+private enum DismissKey: DependencyKey {
+  static let liveValue = DismissEffect()
+  static var testValue = DismissEffect()
 }

@@ -188,7 +188,7 @@ public struct _PresentationDestinationReducer<
     self.file = file
     self.fileID = fileID
     self.line = line
-  }
+  } 
 
   @inlinable
   public func reduce(
