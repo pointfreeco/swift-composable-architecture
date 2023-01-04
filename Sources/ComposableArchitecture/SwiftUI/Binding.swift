@@ -121,21 +121,32 @@ public struct BindingViewStates<State> {
   }
 }
 
-// Placeholder until `BindableState` is freed.
 /// A protocol that your feature's `State` should conform to in order to extract
 /// ``BindingViewState`` values from ``BindableStateProtocol/binding``.
 ///
 /// There is no specific requirement to conform to this protocol.
 ///
 /// - Note: This protocol will be renamed `BindableState` in a future release, when the deprecated
-/// ``BindableState`` as a property wrapper will be obsoleted.
+/// ``BindableState`` as a property wrapper will be obsoleted. At the same time, conforming to this
+/// protocol will also be a requirement of ``BindingReducer``'s `State`, so you're invited to
+/// conform states hosting `@BindingState` properties to this protocol already.
 public protocol BindableStateProtocol {}
 
 extension BindableStateProtocol {
   /// A ``BindingViewStates`` value from which you can extract ``BindingViewState``'s using
-  /// dynamic lookup
+  /// dynamic lookup.
   ///
-  // TODO: Add an example
+  /// You use this type as a `BindingViewState`'s repository to assign `@BindingViewState`
+  /// properties in your `ViewState`s initializer:
+  ///
+  /// ```swift
+  /// struct ViewState: Equatable {
+  ///   @BindingViewState var text: String
+  ///   init(state: State) {
+  ///     self._text = state.bindings.$text
+  ///   }
+  /// }
+  /// ```
   public var bindings: BindingViewStates<Self> {
     .init(state: self)
   }
@@ -187,6 +198,8 @@ extension BindableAction {
 ///   }
 /// }
 /// ```
+///
+/// Read <doc:Bindings> for more information.
 @propertyWrapper
 public struct BindingViewState<Value> {
   let keyPath: AnyKeyPath
