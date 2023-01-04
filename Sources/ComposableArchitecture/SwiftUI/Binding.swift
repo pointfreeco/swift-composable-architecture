@@ -43,7 +43,8 @@ public struct BindingState<Value> {
     *,
     deprecated,
     message: """
-      Chaining onto properties of bindable state is deprecated. Push '@BindingState' use to the child state, instead.
+      Chaining onto properties of bindable state is deprecated. Push '@BindingState' use to the \
+      child state, instead.
       """
   )
   public subscript<Subject>(
@@ -130,30 +131,23 @@ extension BindableAction {
 
 @propertyWrapper
 public struct BindingViewState<Value> {
-  let binding: Binding<Value>
-
-  public var wrappedValue: Value {
-    get { self.binding.wrappedValue }
-    set { self.binding.wrappedValue = newValue }
+  let keyPath: AnyKeyPath
+  public var wrappedValue: Value
+  public var projectedValue: Self {
+    get { self }
   }
-
-  public var projectedValue: Binding<Value> {
-    self.binding
-  }
-}
-
-extension BindingViewState: Equatable where Value: Equatable {
-  public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.wrappedValue == rhs.wrappedValue
+  init<State>(
+    wrappedValue: Value,
+    keyPath: WritableKeyPath<State, BindingState<Value>>) {
+    self.wrappedValue = wrappedValue
+    self.keyPath = keyPath
   }
 }
+extension BindingViewState: Equatable where Value: Equatable {}
 
-extension BindingViewState: Hashable where Value: Hashable {
-  public func hash(into hasher: inout Hasher) {
-    hasher.combine(self.wrappedValue)
-  }
-}
+extension BindingViewState: Hashable where Value: Hashable {}
 
+// TODO: Improve this
 extension BindingViewState: CustomReflectable {
   public var customMirror: Mirror {
     Mirror(reflecting: self.wrappedValue)
@@ -173,153 +167,10 @@ where Value: CustomDebugStringConvertible {
   }
 }
 
-@dynamicMemberLookup
-@propertyWrapper
-public struct BindingStore<State> {
-  let store: Store<State, BindingAction<State>>
-  #if DEBUG
-    let bindableActionType: Any.Type
-  #endif
-
-  init<Action: BindableAction>(store: Store<State, Action>) where Action.State == State {
-    self.store = store.scope(state: { $0 }, action: Action.binding)
-    #if DEBUG
-      self.bindableActionType = type(of: Action.self)
-    #endif
-  }
-
-  public init(projectedValue: Self) {
-    self = projectedValue
-  }
-
-  public var wrappedValue: State {
-    self.store.state.value
-  }
-
-  public var projectedValue: Self {
-    get { self }
-    set { self = newValue }
-  }
-
-  public subscript<Value: Equatable>(
-    dynamicMember keyPath: WritableKeyPath<State, Value>
-  ) -> Value {
-    self.wrappedValue[keyPath: keyPath]
-  }
-
-  public subscript<Value: Equatable>(
-    dynamicMember keyPath: WritableKeyPath<State, BindingState<Value>>
-  ) -> BindingViewState<Value> {
-    BindingViewState(
-      binding: ViewStore(self.store, removeDuplicates: { _, _ in false }).binding(
-        get: { $0[keyPath: keyPath].wrappedValue },
-        send: { value in
-          #if DEBUG
-            let debugger = BindableActionViewStoreDebugger(
-              value: value,
-              bindableActionType: self.bindableActionType,
-              // TODO: Possible to provide better context here?
-              file: #file,
-              fileID: #fileID,
-              line: #line
-            )
-            let set: (inout State) -> Void = {
-              $0[keyPath: keyPath].wrappedValue = value
-              debugger.wasCalled = true
-            }
-          #else
-            let set: (inout State) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
-          #endif
-          return .init(keyPath: keyPath, set: set, value: value)
-        }
-      )
-    )
-  }
-}
-
-extension WithViewStore where Content: View {
-  public init<State, Action: BindableAction>(
-    _ store: Store<State, Action>,
-    observe toViewState: @escaping (BindingStore<State>) -> ViewState,
-    send fromViewAction: @escaping (ViewAction) -> Action,
-    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
-    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  ) where Action.State == State {
-    self.init(
-      store,
-      observe: { (_: State) in toViewState(BindingStore(store: store)) },
-      send: fromViewAction,
-      removeDuplicates: isDuplicate,
-      content: content,
-      file: file,
-      line: line
-    )
-  }
-
-  public init<State>(
-    _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (BindingStore<State>) -> ViewState,
-    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
-    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  ) where ViewAction: BindableAction, ViewAction.State == State {
-    self.init(
-      store,
-      observe: toViewState,
-      send: { $0 },
-      removeDuplicates: isDuplicate,
-      content: content,
-      file: file,
-      line: line
-    )
-  }
-}
-
-extension WithViewStore where ViewState: Equatable, Content: View {
-  public init<State, Action: BindableAction>(
-    _ store: Store<State, Action>,
-    observe toViewState: @escaping (BindingStore<State>) -> ViewState,
-    send fromViewAction: @escaping (ViewAction) -> Action,
-    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  ) where Action.State == State {
-    self.init(
-      store,
-      observe: toViewState,
-      send: fromViewAction,
-      removeDuplicates: ==,
-      content: content,
-      file: file,
-      line: line
-    )
-  }
-
-  public init<State>(
-    _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (BindingStore<State>) -> ViewState,
-    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  ) where ViewAction: BindableAction, ViewAction.State == State {
-    self.init(
-      store,
-      observe: toViewState,
-      removeDuplicates: ==,
-      content: content,
-      file: file,
-      line: line
-    )
-  }
-}
-
-extension ViewStore where Action: BindableAction, Action.State == State {
+extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
   @MainActor
   public subscript<Value: Equatable>(
-    dynamicMember keyPath: WritableKeyPath<State, BindingState<Value>>
+    dynamicMember keyPath: WritableKeyPath<ViewState, BindingState<Value>>
   ) -> Binding<Value> {
     self.binding(
       get: { $0[keyPath: keyPath].wrappedValue },
@@ -327,13 +178,13 @@ extension ViewStore where Action: BindableAction, Action.State == State {
         #if DEBUG
           let debugger = BindableActionViewStoreDebugger(
             value: value,
-            bindableActionType: Action.self,
+            bindableActionType: ViewAction.self,
             // TODO: Restore context
             file: #file,
             fileID: #fileID,
             line: #line
           )
-          let set: (inout State) -> Void = {
+        let set: (inout ViewState) -> Void = {
             $0[keyPath: keyPath].wrappedValue = value
             debugger.wasCalled = true
           }
