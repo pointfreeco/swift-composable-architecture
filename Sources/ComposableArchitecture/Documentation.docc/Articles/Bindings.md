@@ -179,11 +179,12 @@ struct Settings: ReducerProtocol {
 This is a _lot_ of boilerplate for something that should be simple. Luckily, we can dramatically
 eliminate this boilerplate using ``BindingState``, ``BindableAction``, and ``BindingReducer``.
 
-First, we can annotate each bindable value of state with the ``BindingState`` property wrapper:
+First, we conform `State` to ``BindableStateProtocol``, and we annotate each bindable value of state 
+with the ``BindingState`` property wrapper:
 
 ```swift
 struct Settings: ReducerProtocol {
-  struct State: Equatable {
+  struct State: Equatable, BindableStateProtocol {
     @BindingState var digest = Digest.daily
     @BindingState var displayName = ""
     @BindingState var enableNotifications = false
@@ -235,7 +236,7 @@ Binding actions are constructed and sent to the store by calling
 ``ViewStore/binding(_:file:fileID:line:)`` with a key path to the bindable state:
 
 ```swift
-TextField("Display name", text: viewStore.binding(\.$displayName))
+TextField("Display name", text: viewStore.$displayName)
 ```
 
 Should you need to layer additional functionality over these bindings, your reducer can pattern

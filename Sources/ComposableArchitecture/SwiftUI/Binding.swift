@@ -26,7 +26,7 @@ public struct BindingState<Value> {
   /// `@BindingState`. To get the `projectedValue`, prefix the property with `$`:
   ///
   /// ```swift
-  /// TextField("Display name", text: viewStore.binding(\.$displayName))
+  /// TextField("Display name", text: viewStore.$displayName)
   /// ```
   ///
   /// See ``BindingState`` for more details.
@@ -171,6 +171,22 @@ extension BindableAction {
   }
 }
 
+/// A ``BindingState`` variant that is suitable for `ViewState`s.
+///
+/// You can only build these values using dynamic member lookup of ``BindingState`` properties on
+/// the ``BindingViewStates`` value from ``BindableStateProtocol/bindings``.
+///
+/// Because you're defining the ``BindingViewState`` value directly, you must assign the value
+/// of the property wrapper private storage using the underscored property name:
+///
+/// ```swift
+/// struct ViewState: Equatable {
+///   @BindingViewState var text: String
+///   init(state: State) {
+///     self._text = state.bindings.$text
+///   }
+/// }
+/// ```
 @propertyWrapper
 public struct BindingViewState<Value> {
   let keyPath: AnyKeyPath
@@ -188,7 +204,6 @@ extension BindingViewState: Equatable where Value: Equatable {}
 
 extension BindingViewState: Hashable where Value: Hashable {}
 
-// TODO: Improve this
 extension BindingViewState: CustomReflectable {
   public var customMirror: Mirror {
     Mirror(reflecting: self.wrappedValue)
@@ -491,7 +506,7 @@ extension BindingAction {
   /// WithViewStore(
   ///   self.store, observe: \.view, send: MyFeature.Action.view
   /// ) { viewStore in
-  ///   Stepper("\(viewStore.count)", viewStore.binding(\.$count))
+  ///   Stepper("\(viewStore.count)", viewStore.$count)
   ///   Button("Get number fact") { viewStore.send(.factButtonTapped) }
   ///   if let fact = viewStore.fact {
   ///     Text(fact)

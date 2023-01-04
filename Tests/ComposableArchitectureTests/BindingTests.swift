@@ -6,7 +6,7 @@ final class BindingTests: XCTestCase {
   #if swift(>=5.7)
     func testNestedBindingState() {
       struct BindingTest: ReducerProtocol {
-        struct State: Equatable {
+        struct State: Equatable, BindableStateProtocol {
           @BindingState var nested = Nested()
 
           struct Nested: Equatable {
@@ -36,7 +36,7 @@ final class BindingTests: XCTestCase {
 
       let viewStore = ViewStore(store)
 
-      viewStore.binding(\.$nested.field).wrappedValue = "Hello"
+      viewStore.$nested.field.wrappedValue = "Hello"
 
       XCTAssertEqual(viewStore.state, .init(nested: .init(field: "Hello!")))
     }
