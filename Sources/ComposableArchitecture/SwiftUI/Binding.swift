@@ -42,7 +42,8 @@ public struct BindingState<Value> {
   @available(
     *,
     deprecated,
-    message: """
+    message:
+      """
       Chaining onto properties of bindable state is deprecated. Push '@BindingState' use to the \
       child state, instead.
       """
@@ -99,6 +100,38 @@ extension BindingState: CustomDebugStringConvertible where Value: CustomDebugStr
   }
 }
 
+@dynamicMemberLookup
+public struct BindingViewStates<State> {
+  private let state: State
+  init(state: State) {
+    self.state = state
+  }
+  public subscript<Value>(dynamicMember keyPath: WritableKeyPath<State, BindingState<Value>>)
+    -> BindingViewState<Value>
+  {
+    return .init(
+      wrappedValue: self.state[keyPath: keyPath].wrappedValue,
+      keyPath: keyPath
+    )
+  }
+}
+
+// Placeholder until `BindableState` is freed.
+/// A protocol that your feature's `State` should conform to in order to extract
+/// ``BindingViewState`` values from ``BindableStateProtocol/binding``.
+///
+/// There is no specific requirement to conform to this protocol.
+///
+/// - Note: This protocol will be renamed `BindableState` in a future release, when the deprecated
+/// ``BindableState`` as a property wrapper will be obsoleted.
+public protocol BindableStateProtocol {}
+extension BindableStateProtocol {
+  /// A nanespace to extract ``BindingViewState``'s
+  public var binding: BindingViewStates<Self> {
+    .init(state: self)
+  }
+}
+
 /// An action type that exposes a `binding` case that holds a ``BindingAction``.
 ///
 /// Used in conjunction with ``BindingState`` to safely eliminate the boilerplate typically
@@ -133,12 +166,11 @@ extension BindableAction {
 public struct BindingViewState<Value> {
   let keyPath: AnyKeyPath
   public var wrappedValue: Value
-  public var projectedValue: Self {
-    get { self }
-  }
-  init<State>(
+  public var projectedValue: Self { self }
+  internal init<State>(
     wrappedValue: Value,
-    keyPath: WritableKeyPath<State, BindingState<Value>>) {
+    keyPath: WritableKeyPath<State, BindingState<Value>>
+  ) {
     self.wrappedValue = wrappedValue
     self.keyPath = keyPath
   }
@@ -167,12 +199,15 @@ where Value: CustomDebugStringConvertible {
   }
 }
 
-extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
-  @MainActor
-  public subscript<Value: Equatable>(
-    dynamicMember keyPath: WritableKeyPath<ViewState, BindingState<Value>>
-  ) -> Binding<Value> {
-    self.binding(
+// `BindingViewState` dynamic member lookup.
+extension ViewStore where ViewAction: BindableAction {
+  public subscript<Value>(dynamicMember keyPath: KeyPath<ViewState, BindingViewState<Value>>)
+    -> Binding<Value> where Value: Equatable
+  {
+    let stateKeyPath =
+      self.state[keyPath: keyPath].keyPath
+      as! WritableKeyPath<ViewAction.State, BindingState<Value>>
+    return self.binding(
       get: { $0[keyPath: keyPath].wrappedValue },
       send: { value in
         #if DEBUG
@@ -184,18 +219,55 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
             fileID: #fileID,
             line: #line
           )
-        let set: (inout ViewState) -> Void = {
+          let set: (inout ViewAction.State) -> Void = {
+            $0[keyPath: stateKeyPath].wrappedValue = value
+            debugger.wasCalled = true
+          }
+        #else
+          let set: (inout State) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
+        #endif
+
+        return .binding(.init(keyPath: stateKeyPath, set: set, value: value))
+      }
+    )
+  }
+}
+
+extension ViewStore where
+  ViewAction: BindableAction,
+  ViewAction.State == ViewState,
+  ViewAction.State: BindableStateProtocol
+{
+  public subscript<Value>(dynamicMember keyPath: WritableKeyPath<ViewState, BindingState<Value>>)
+    -> Binding<Value> where Value: Equatable
+  {
+    return self.binding(
+      get: { $0[keyPath: keyPath].wrappedValue },
+      send: { value in
+        #if DEBUG
+          let debugger = BindableActionViewStoreDebugger(
+            value: value,
+            bindableActionType: ViewAction.self,
+            // TODO: Restore context
+            file: #file,
+            fileID: #fileID,
+            line: #line
+          )
+          let set: (inout ViewAction.State) -> Void = {
             $0[keyPath: keyPath].wrappedValue = value
             debugger.wasCalled = true
           }
         #else
           let set: (inout State) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
         #endif
+
         return .binding(.init(keyPath: keyPath, set: set, value: value))
       }
     )
   }
+}
 
+extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
   // TODO: Deprecate:
   /// Returns a binding to the resulting bindable state of a given key path.
   ///
