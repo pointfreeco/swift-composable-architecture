@@ -8,10 +8,9 @@ import XCTestDynamicOverlay
   iOS,
   deprecated: 9999.0,
   message: """
-    'Effect' has been deprecated in favor of 'EffectTask'.
+    'EffectPublisher' has been deprecated in favor of 'EffectTask'.
 
-     You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
-     concurrency to model failable streams of values.
+     You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to use Swift concurrency to model asynchrony in dependencies.
 
      See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
     """
@@ -20,10 +19,9 @@ import XCTestDynamicOverlay
   macOS,
   deprecated: 9999.0,
   message: """
-    'Effect' has been deprecated in favor of 'EffectTask'.
+    'EffectPublisher' has been deprecated in favor of 'EffectTask'.
 
-     You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
-     concurrency to model failable streams of values.
+     You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to use Swift concurrency to model asynchrony in dependencies.
 
      See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
     """
@@ -32,10 +30,9 @@ import XCTestDynamicOverlay
   tvOS,
   deprecated: 9999.0,
   message: """
-    'Effect' has been deprecated in favor of 'EffectTask'.
+    'EffectPublisher' has been deprecated in favor of 'EffectTask'.
 
-     You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
-     concurrency to model failable streams of values.
+     You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to use Swift concurrency to model asynchrony in dependencies.
 
      See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
     """
@@ -44,10 +41,9 @@ import XCTestDynamicOverlay
   watchOS,
   deprecated: 9999.0,
   message: """
-    'Effect' has been deprecated in favor of 'EffectTask'.
+    'EffectPublisher' has been deprecated in favor of 'EffectTask'.
 
-     You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to Swift
-     concurrency to model failable streams of values.
+     You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to use Swift concurrency to model asynchrony in dependencies.
 
      See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
     """
