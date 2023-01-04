@@ -16,7 +16,7 @@ private let readMe = """
 // MARK: - Feature domain
 
 struct BindingForm: ReducerProtocol {
-  struct State: Equatable {
+  struct State: Equatable, BindableStateProtocol {
     @BindingState var sliderValue = 5.0
     @BindingState var stepCount = 10
     @BindingState var text = ""
@@ -60,7 +60,7 @@ struct BindingFormView: View {
         }
 
         HStack {
-          TextField("Type here", text: viewStore.binding(\.$text))
+          TextField("Type here", text: viewStore.$text)
             .disableAutocorrection(true)
             .foregroundStyle(viewStore.toggleIsOn ? Color.secondary : .primary)
           Text(alternate(viewStore.text))
@@ -69,13 +69,12 @@ struct BindingFormView: View {
 
         Toggle(
           "Disable other controls",
-          isOn: viewStore.binding(\.$toggleIsOn)
-            .resignFirstResponder()
+          isOn: viewStore.$toggleIsOn.resignFirstResponder()
         )
 
         Stepper(
           "Max slider value: \(viewStore.stepCount)",
-          value: viewStore.binding(\.$stepCount),
+          value: viewStore.$stepCount,
           in: 0...100
         )
         .disabled(viewStore.toggleIsOn)
@@ -83,7 +82,7 @@ struct BindingFormView: View {
         HStack {
           Text("Slider value: \(Int(viewStore.sliderValue))")
 
-          Slider(value: viewStore.binding(\.$sliderValue), in: 0...Double(viewStore.stepCount))
+          Slider(value: viewStore.$sliderValue, in: 0...Double(viewStore.stepCount))
             .tint(.accentColor)
         }
         .disabled(viewStore.toggleIsOn)
