@@ -150,13 +150,6 @@ extension BindableStateProtocol {
   public var bindings: BindingViewStates<Self> {
     .init(state: self)
   }
-  
-  public subscript<Value>(keyPath: WritableKeyPath<Self, BindingState<Value>>) -> BindingViewState<Value> {
-    .init(
-      wrappedValue: self[keyPath: keyPath].wrappedValue,
-      keyPath: keyPath
-    )
-  }
 }
 
 /// An action type that exposes a `binding` case that holds a ``BindingAction``.
