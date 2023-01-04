@@ -33,9 +33,5 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 - ``WithViewStore/Action``
 - ``WithViewStore/State``
 
-### View state
-
-- ``ActionSheetState``
-
 <!--DocC: Can't currently document `View` extensions-->
 <!--### View Modifiers-->

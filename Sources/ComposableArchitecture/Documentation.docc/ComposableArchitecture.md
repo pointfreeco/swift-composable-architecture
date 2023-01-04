@@ -60,7 +60,7 @@ day-to-day when building applications, such as:
 ### State management
 
 - ``ReducerProtocol``
-- ``EffectPublisher``
+- ``EffectTask``
 - ``Store``
 - ``ViewStore``
 
