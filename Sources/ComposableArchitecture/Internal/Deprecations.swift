@@ -8,6 +8,74 @@ import XCTestDynamicOverlay
 @available(*, deprecated, renamed: "BindingState")
 public typealias BindableState = BindingState
 
+extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
+  /// Returns a binding to the resulting bindable state of a given key path.
+  ///
+  /// - Parameter keyPath: A key path to a specific bindable state.
+  /// - Returns: A new binding.
+  @available(
+    iOS,
+    deprecated: 9999.0,
+    message:
+      """
+      Extracting bindings as `viewStore.binding(\\.$foo)` is deprecated. \
+      Use dynamic lookup directly on the `viewStore` instead: `viewStore.$foo`.
+      """
+  )
+  @available(
+    tvOS,
+    deprecated: 9999.0,
+    message:
+      """
+      Extracting bindings as `viewStore.binding(\\.$foo)` is deprecated. \
+      Use dynamic lookup directly on the `viewStore` instead: `viewStore.$foo`.
+      """
+  )
+  @available(
+    macOS,
+    deprecated: 9999.0,
+    message:
+      """
+      Extracting bindings as `viewStore.binding(\\.$foo)` is deprecated. \
+      Use dynamic lookup directly on the `viewStore` instead: `viewStore.$foo`.
+      """
+  )
+  @available(
+    watchOS,
+    deprecated: 9999.0,
+    message:
+      """
+      Extracting bindings as `viewStore.binding(\\.$foo)` is deprecated. \
+      Use dynamic lookup directly on the `viewStore` instead: `viewStore.$foo`.
+      """
+  )
+  public func binding<Value: Equatable>(
+    _ keyPath: WritableKeyPath<ViewState, BindingState<Value>>,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> Binding<Value> {
+    self.binding(
+      get: { $0[keyPath: keyPath].wrappedValue },
+      send: { value in
+        #if DEBUG
+          let debugger = BindableActionViewStoreDebugger(
+            value: value, bindableActionType: ViewAction.self, file: file, fileID: fileID,
+            line: line
+          )
+          let set: (inout ViewState) -> Void = {
+            $0[keyPath: keyPath].wrappedValue = value
+            debugger.wasCalled = true
+          }
+        #else
+          let set: (inout ViewState) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
+        #endif
+        return .binding(.init(keyPath: keyPath, set: set, value: value))
+      }
+    )
+  }
+}
+
 // MARK: - Deprecated after 0.45.0:
 
 @available(

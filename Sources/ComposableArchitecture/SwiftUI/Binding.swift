@@ -248,7 +248,9 @@ extension ViewStore where ViewAction: BindableAction {
             debugger.wasCalled = true
           }
         #else
-          let set: (inout State) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
+          let set: (inout ViewAction.State) -> Void = {
+            $0[keyPath: stateKeyPath].wrappedValue = value
+          }
         #endif
 
         return .binding(.init(keyPath: stateKeyPath, set: set, value: value))
@@ -257,7 +259,9 @@ extension ViewStore where ViewAction: BindableAction {
   }
 }
 
-extension ViewStore where
+// `BindingState` from some `BindableStateProtocol` dynamic member lookup.
+extension ViewStore
+where
   ViewAction: BindableAction,
   ViewAction.State == ViewState,
   ViewAction.State: BindableStateProtocol
@@ -282,42 +286,11 @@ extension ViewStore where
             debugger.wasCalled = true
           }
         #else
-          let set: (inout State) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
-        #endif
-
-        return .binding(.init(keyPath: keyPath, set: set, value: value))
-      }
-    )
-  }
-}
-
-extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
-  // TODO: Deprecate:
-  /// Returns a binding to the resulting bindable state of a given key path.
-  ///
-  /// - Parameter keyPath: A key path to a specific bindable state.
-  /// - Returns: A new binding.
-  public func binding<Value: Equatable>(
-    _ keyPath: WritableKeyPath<ViewState, BindingState<Value>>,
-    file: StaticString = #file,
-    fileID: StaticString = #fileID,
-    line: UInt = #line
-  ) -> Binding<Value> {
-    self.binding(
-      get: { $0[keyPath: keyPath].wrappedValue },
-      send: { value in
-        #if DEBUG
-          let debugger = BindableActionViewStoreDebugger(
-            value: value, bindableActionType: ViewAction.self, file: file, fileID: fileID,
-            line: line
-          )
-          let set: (inout ViewState) -> Void = {
+          let set: (inout ViewAction.State) -> Void = {
             $0[keyPath: keyPath].wrappedValue = value
-            debugger.wasCalled = true
           }
-        #else
-          let set: (inout ViewState) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
         #endif
+
         return .binding(.init(keyPath: keyPath, set: set, value: value))
       }
     )
@@ -541,7 +514,7 @@ extension BindingAction: CustomDumpReflectable {
 }
 
 #if DEBUG
-  private final class BindableActionViewStoreDebugger<Value> {
+  final class BindableActionViewStoreDebugger<Value> {
     let value: Value
     let bindableActionType: Any.Type
     let file: StaticString

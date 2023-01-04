@@ -21,6 +21,8 @@ struct BindingForm: ReducerProtocol {
     @BindingState var stepCount = 10
     @BindingState var text = ""
     @BindingState var toggleIsOn = false
+    
+    @BindingState var point: CGPoint = .zero
   }
 
   enum Action: BindableAction, Equatable {
@@ -32,6 +34,8 @@ struct BindingForm: ReducerProtocol {
     BindingReducer()
     Reduce { state, action in
       switch action {
+      case .binding(\.$point.x):
+        return .none
       case .binding(\.$stepCount):
         state.sliderValue = .minimum(state.sliderValue, Double(state.stepCount))
         return .none

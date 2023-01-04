@@ -117,8 +117,8 @@ struct AppView: View {
     let isClearCompletedButtonDisabled: Bool
 
     init(state: Todos.State) {
-      self._editMode = state.binding.$editMode
-      self._filter = state.binding.$filter
+      self._editMode = state.bindings.$editMode
+      self._filter = state.bindings.$filter
       self.isClearCompletedButtonDisabled = !state.todos.contains(where: \.isComplete)
     }
   }
