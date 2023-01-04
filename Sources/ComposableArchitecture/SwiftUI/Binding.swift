@@ -100,6 +100,11 @@ extension BindingState: CustomDebugStringConvertible where Value: CustomDebugStr
   }
 }
 
+/// A type from which you can generate ``BindingViewState``'s pointing to its `State` using dynamic
+/// member lookup.
+///
+/// You don't create values of this type directly, but you can extract one using the
+/// ``BindableStateProtocol/bindings`` property that is available when your state
 @dynamicMemberLookup
 public struct BindingViewStates<State> {
   private let state: State
@@ -125,9 +130,13 @@ public struct BindingViewStates<State> {
 /// - Note: This protocol will be renamed `BindableState` in a future release, when the deprecated
 /// ``BindableState`` as a property wrapper will be obsoleted.
 public protocol BindableStateProtocol {}
+
 extension BindableStateProtocol {
-  /// A nanespace to extract ``BindingViewState``'s
-  public var binding: BindingViewStates<Self> {
+  /// A ``BindingViewStates`` value from which you can extract ``BindingViewState``'s using
+  /// dynamic lookup
+  ///
+  // TODO: Add an example
+  public var bindings: BindingViewStates<Self> {
     .init(state: self)
   }
 }
