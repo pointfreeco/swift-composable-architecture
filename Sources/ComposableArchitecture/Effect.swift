@@ -614,14 +614,15 @@ extension EffectPublisher {
     """
     'Effect' has been deprecated in favor of 'EffectTask' when 'Failure == Never', or 'EffectPublisher<Output, Failure>' in general.
     
-    You are encouraged to use 'EffectTask<Action>' to model the output of your reducers, and to Swift concurrency to model failable streams of values.
+    You are encouraged to use 'EffectTask<Action>' to model the output of your reducers, and to use Swift concurrency to model failable streams of values.
 
     To find and replace instances of 'Effect<Action, Never>' to 'EffectTask<Action, Never>' in your codebase, use the following regular expression:
 
-    Find:
-      Effect<([^,]+), Never>
-    Replace:
-      EffectTask<$1>
+      Find:
+        Effect<([^,]+), Never>
+
+      Replace:
+        EffectTask<$1>
 
     See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
     """
