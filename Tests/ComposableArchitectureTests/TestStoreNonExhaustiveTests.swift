@@ -606,7 +606,7 @@
 
       XCTExpectFailure {
         $0.compactDescription == """
-          Expected to receive a matching action, but didn't get one.
+          Expected to receive an action matching case path, but didn't get one.
           """
       }
 
@@ -627,7 +627,7 @@
 
       XCTExpectFailure {
         $0.compactDescription == """
-          Expected to receive an action, but received none.
+          Expected to receive an action matching case path, but didn't get one.
           """
       }
 
