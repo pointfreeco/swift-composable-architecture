@@ -2,7 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 struct Todo: ReducerProtocol {
-  struct State: Equatable, Identifiable {
+  struct State: Equatable, Identifiable, BindableStateProtocol {
     @BindingState var description = ""
     let id: UUID
     @BindingState var isComplete = false
