@@ -55,12 +55,18 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Binding<Value> {
-    self.binding(
+    let bindingViewState = self.state[keyPath: keyPath]
+    return self.binding(
       get: { $0[keyPath: keyPath].wrappedValue },
       send: { value in
         #if DEBUG
           let debugger = BindableActionViewStoreDebugger(
-            value: value, bindableActionType: ViewAction.self, file: file, fileID: fileID,
+            value: value, bindableActionType: ViewAction.self,
+            sourceFile: bindingViewState.file,
+            sourceFileID: bindingViewState.fileID,
+            sourceLine: bindingViewState.line,
+            file: file,
+            fileID: fileID,
             line: line
           )
           let set: (inout ViewState) -> Void = {

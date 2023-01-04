@@ -15,9 +15,21 @@ public struct BindingState<Value> {
   /// The underlying value wrapped by the bindable state.
   public var wrappedValue: Value
 
+  let file: StaticString
+  let fileID: StaticString
+  let line: UInt
+
   /// Creates bindable state from the value of another bindable state.
-  public init(wrappedValue: Value) {
+  public init(
+    wrappedValue: Value,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) {
     self.wrappedValue = wrappedValue
+    self.file = file
+    self.fileID = fileID
+    self.line = line
   }
 
   /// A projection that can be used to derive bindings from a view store.
@@ -56,9 +68,17 @@ public struct BindingState<Value> {
   }
 }
 
-extension BindingState: Equatable where Value: Equatable {}
+extension BindingState: Equatable where Value: Equatable {
+  public static func == (lhs: BindingState<Value>, rhs: BindingState<Value>) -> Bool {
+    lhs.wrappedValue == rhs.wrappedValue
+  }
+}
 
-extension BindingState: Hashable where Value: Hashable {}
+extension BindingState: Hashable where Value: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(self.wrappedValue)
+  }
+}
 
 extension BindingState: Decodable where Value: Decodable {
   public init(from decoder: Decoder) throws {
@@ -116,9 +136,13 @@ public struct BindingViewStates<State> {
   public subscript<Value>(dynamicMember keyPath: WritableKeyPath<State, BindingState<Value>>)
     -> BindingViewState<Value>
   {
+    let bindingState = self.state[keyPath: keyPath]
     return .init(
-      wrappedValue: self.state[keyPath: keyPath].wrappedValue,
-      keyPath: keyPath
+      wrappedValue: bindingState.wrappedValue,
+      keyPath: keyPath,
+      sourceFile: bindingState.file,
+      sourceFileID: bindingState.fileID,
+      sourceLine: bindingState.line
     )
   }
 }
@@ -207,17 +231,47 @@ public struct BindingViewState<Value> {
   let keyPath: AnyKeyPath
   public var wrappedValue: Value
   public var projectedValue: Self { self }
+
+  let file: StaticString
+  let fileID: StaticString
+  let line: UInt
+
+  let sourceFile: StaticString
+  let sourceFileID: StaticString
+  let sourceLine: UInt
+
   internal init<State>(
     wrappedValue: Value,
-    keyPath: WritableKeyPath<State, BindingState<Value>>
+    keyPath: WritableKeyPath<State, BindingState<Value>>,
+    sourceFile: StaticString,
+    sourceFileID: StaticString,
+    sourceLine: UInt,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
   ) {
     self.wrappedValue = wrappedValue
     self.keyPath = keyPath
+    self.sourceFile = sourceFile
+    self.sourceFileID = sourceFileID
+    self.sourceLine = sourceLine
+    self.file = file
+    self.fileID = fileID
+    self.line = line
   }
 }
-extension BindingViewState: Equatable where Value: Equatable {}
+extension BindingViewState: Equatable where Value: Equatable {
+  public static func == (lhs: BindingViewState<Value>, rhs: BindingViewState<Value>) -> Bool {
+    lhs.wrappedValue == rhs.wrappedValue && lhs.keyPath == rhs.keyPath
+  }
+}
 
-extension BindingViewState: Hashable where Value: Hashable {}
+extension BindingViewState: Hashable where Value: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(wrappedValue)
+    hasher.combine(keyPath)
+  }
+}
 
 extension BindingViewState: CustomReflectable {
   public var customMirror: Mirror {
@@ -243,8 +297,9 @@ extension ViewStore where ViewAction: BindableAction {
   public subscript<Value>(dynamicMember keyPath: KeyPath<ViewState, BindingViewState<Value>>)
     -> Binding<Value> where Value: Equatable
   {
+    let bindingViewState = self.state[keyPath: keyPath]
     let stateKeyPath =
-      self.state[keyPath: keyPath].keyPath
+      bindingViewState.keyPath
       as! WritableKeyPath<ViewAction.State, BindingState<Value>>
     return self.binding(
       get: { $0[keyPath: keyPath].wrappedValue },
@@ -253,7 +308,9 @@ extension ViewStore where ViewAction: BindableAction {
           let debugger = BindableActionViewStoreDebugger(
             value: value,
             bindableActionType: ViewAction.self,
-            // TODO: Restore context
+            sourceFile: bindingViewState.sourceFile,
+            sourceFileID: bindingViewState.sourceFile,
+            sourceLine: bindingViewState.sourceLine,
             file: #file,
             fileID: #fileID,
             line: #line
@@ -284,6 +341,7 @@ where
   public subscript<Value>(dynamicMember keyPath: WritableKeyPath<ViewState, BindingState<Value>>)
     -> Binding<Value> where Value: Equatable
   {
+    let bindingState = self.state[keyPath: keyPath]
     return self.binding(
       get: { $0[keyPath: keyPath].wrappedValue },
       send: { value in
@@ -291,7 +349,9 @@ where
           let debugger = BindableActionViewStoreDebugger(
             value: value,
             bindableActionType: ViewAction.self,
-            // TODO: Restore context
+            sourceFile: bindingState.file,
+            sourceFileID: bindingState.fileID,
+            sourceLine: bindingState.line,
             file: #file,
             fileID: #fileID,
             line: #line
@@ -502,7 +562,7 @@ extension BindingAction {
   /// }
   /// ```
   ///
-  /// - Parameter keyPath: A key path from a new type of root state to the original root state.
+  /// - Parameter keyPath: A key path from a new type of root state to the sourceal root state.
   /// - Returns: A binding action over a new type of root state.
   public func pullback<NewRoot>(
     _ keyPath: WritableKeyPath<NewRoot, Root>
@@ -535,17 +595,28 @@ extension BindingAction: CustomDumpReflectable {
     let file: StaticString
     let fileID: StaticString
     let line: UInt
+
+    let sourceFile: StaticString
+    let sourceFileID: StaticString
+    let sourceLine: UInt
+
     var wasCalled = false
 
     init(
       value: Value,
       bindableActionType: Any.Type,
+      sourceFile: StaticString,
+      sourceFileID: StaticString,
+      sourceLine: UInt,
       file: StaticString,
       fileID: StaticString,
       line: UInt
     ) {
       self.value = value
       self.bindableActionType = bindableActionType
+      self.sourceFile = sourceFile
+      self.sourceFileID = sourceFileID
+      self.sourceLine = sourceLine
       self.file = file
       self.fileID = fileID
       self.line = line
@@ -557,6 +628,9 @@ extension BindingAction: CustomDumpReflectable {
           """
           A binding action sent from a view store at "\(self.fileID):\(self.line)" was not \
           handled. …
+          
+            State:
+             @BindingState var _: \(typeName(Value.self)), at "\(self.sourceFileID):\(self.sourceLine)"
 
             Action:
               \(typeName(self.bindableActionType)).binding(.set(_, \(self.value)))
