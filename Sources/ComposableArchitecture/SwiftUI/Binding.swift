@@ -316,10 +316,10 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   }
 }
 
-extension ViewStore where Action: BindableAction, Action.State == State {
+extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
   @MainActor
   public subscript<Value: Equatable>(
-    dynamicMember keyPath: WritableKeyPath<State, BindingState<Value>>
+    dynamicMember keyPath: WritableKeyPath<ViewState, BindingState<Value>>
   ) -> Binding<Value> {
     self.binding(
       get: { $0[keyPath: keyPath].wrappedValue },
@@ -327,18 +327,18 @@ extension ViewStore where Action: BindableAction, Action.State == State {
         #if DEBUG
           let debugger = BindableActionViewStoreDebugger(
             value: value,
-            bindableActionType: Action.self,
+            bindableActionType: ViewAction.self,
             // TODO: Restore context
             file: #file,
             fileID: #fileID,
             line: #line
           )
-          let set: (inout State) -> Void = {
+          let set: (inout ViewState) -> Void = {
             $0[keyPath: keyPath].wrappedValue = value
             debugger.wasCalled = true
           }
         #else
-          let set: (inout State) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
+          let set: (inout ViewState) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
         #endif
         return .binding(.init(keyPath: keyPath, set: set, value: value))
       }
