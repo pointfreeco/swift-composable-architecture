@@ -488,41 +488,10 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   /// }
   /// ```
   @available(
-    iOS,
-    deprecated: 9999,
+    *, deprecated,
     message:
       """
-      'Reducer' and 'Environment' have been deprecated in favor of 'ReducerProtocol' and 'DependencyValues'.
-
-      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
-      """
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message:
-      """
-      'Reducer' and 'Environment' have been deprecated in favor of 'ReducerProtocol' and 'DependencyValues'.
-
-      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
-      """
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message:
-      """
-      'Reducer' and 'Environment' have been deprecated in favor of 'ReducerProtocol' and 'DependencyValues'.
-
-      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
-      """
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message:
-      """
-      'Reducer' and 'Environment' have been deprecated in favor of 'ReducerProtocol' and 'DependencyValues'.
+      'AnyReducer' and 'Environment' have been deprecated in favor of 'ReducerProtocol' and 'DependencyValues'.
 
       See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
@@ -598,41 +567,10 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   }
 
   @available(
-    iOS,
-    deprecated: 9999,
+    *, deprecated,
     message:
       """
-      'Reducer' has been deprecated in favor of 'ReducerProtocol'.
-
-      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
-      """
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message:
-      """
-      'Reducer' has been deprecated in favor of 'ReducerProtocol'.
-
-      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
-      """
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message:
-      """
-      'Reducer' has been deprecated in favor of 'ReducerProtocol'.
-
-      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
-      """
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message:
-      """
-      'Reducer' has been deprecated in favor of 'ReducerProtocol'.
+      'AnyReducer' has been deprecated in favor of 'ReducerProtocol'.
 
       See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
@@ -968,10 +906,7 @@ extension TestStore where ScopedState: Equatable {
   ///     expected.
   /// - Returns: A ``TestStoreTask`` that represents the lifecycle of the effect executed when
   ///   sending the action.
-  @available(iOS, deprecated: 9999, message: "Call the async-friendly 'send' instead.")
-  @available(macOS, deprecated: 9999, message: "Call the async-friendly 'send' instead.")
-  @available(tvOS, deprecated: 9999, message: "Call the async-friendly 'send' instead.")
-  @available(watchOS, deprecated: 9999, message: "Call the async-friendly 'send' instead.")
+  @available(*, deprecated, message: "Call the async-friendly 'send' instead.")
   @discardableResult
   public func send(
     _ action: ScopedAction,
@@ -1171,11 +1106,17 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   ///     the store. The mutable state sent to this closure must be modified to match the state of
   ///     the store after processing the given action. Do not provide a closure if no change is
   ///     expected.
-  @available(iOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
-  @available(macOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
-  @available(tvOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
-  @available(watchOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
+  @available(*, deprecated, message: "Call the async-friendly 'receive' instead.")
   public func receive(
+    _ expectedAction: Action,
+    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) {
+    self._receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
+  }
+
+  private func _receive(
     _ expectedAction: Action,
     assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
@@ -1203,6 +1144,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     )
   }
 
+
   /// Asserts a matching action was received from an effect and asserts how the state changes.
   ///
   /// See ``receive(_:timeout:assert:file:line:)-3myco`` for more information of how to use this
@@ -1216,11 +1158,17 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   ///     the store. The mutable state sent to this closure must be modified to match the state of
   ///     the store after processing the given action. Do not provide a closure if no change is
   ///     expected.
-  @available(iOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
-  @available(macOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
-  @available(tvOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
-  @available(watchOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
+  @available(*, deprecated, message: "Call the async-friendly 'receive' instead.")
   public func receive(
+    _ isMatching: (Action) -> Bool,
+    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) {
+    self._receive(isMatching, assert: updateStateToExpectedResult, file: file, line: line)
+  }
+
+  private func _receive(
     _ isMatching: (Action) -> Bool,
     assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
@@ -1251,11 +1199,17 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   ///     the store. The mutable state sent to this closure must be modified to match the state of
   ///     the store after processing the given action. Do not provide a closure if no change is
   ///     expected.
-  @available(iOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
-  @available(macOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
-  @available(tvOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
-  @available(watchOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
+  @available(*, deprecated, message: "Call the async-friendly 'receive' instead.")
   public func receive<Value>(
+    _ actionCase: CasePath<Action, Value>,
+    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) {
+    self._receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
+  }
+
+  private func _receive<Value>(
     _ actionCase: CasePath<Action, Value>,
     assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
@@ -1418,13 +1372,13 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     guard !self.reducer.inFlightEffects.isEmpty
     else {
       _ = {
-        self.receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
+        self._receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
       }()
       return
     }
     await self.receiveAction(timeout: nanoseconds, file: file, line: line)
     _ = {
-      self.receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
+      self._receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
     }()
     await Task.megaYield()
   }
@@ -1473,13 +1427,13 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     guard !self.reducer.inFlightEffects.isEmpty
     else {
       _ = {
-        self.receive(isMatching, assert: updateStateToExpectedResult, file: file, line: line)
+        self._receive(isMatching, assert: updateStateToExpectedResult, file: file, line: line)
       }()
       return
     }
     await self.receiveAction(timeout: nanoseconds, file: file, line: line)
     _ = {
-      self.receive(isMatching, assert: updateStateToExpectedResult, file: file, line: line)
+      self._receive(isMatching, assert: updateStateToExpectedResult, file: file, line: line)
     }()
     await Task.megaYield()
   }
@@ -1527,13 +1481,13 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     guard !self.reducer.inFlightEffects.isEmpty
     else {
       _ = {
-        self.receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
+        self._receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
       }()
       return
     }
     await self.receiveAction(timeout: nanoseconds, file: file, line: line)
     _ = {
-      self.receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
+      self._receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
     }()
     await Task.megaYield()
   }
@@ -1583,13 +1537,13 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
       guard !self.reducer.inFlightEffects.isEmpty
       else {
         _ = {
-          self.receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
+          self._receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
         }()
         return
       }
       await self.receiveAction(timeout: duration.nanoseconds, file: file, line: line)
       _ = {
-        self.receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
+        self._receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
       }()
       await Task.megaYield()
     }
@@ -1628,7 +1582,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
       {
         actions.append(receivedAction.action)
         self.withExhaustivity(.off) {
-          self.receive(receivedAction.action, file: file, line: line)
+          self._receive(receivedAction.action, file: file, line: line)
         }
       }
 
@@ -1804,7 +1758,7 @@ extension TestStore {
     line: UInt = #line
   ) async {
     await Task.megaYield()
-    _ = { self.skipReceivedActions(strict: strict, file: file, line: line) }()
+    _ = { self._skipReceivedActions(strict: strict, file: file, line: line) }()
   }
 
   /// Clears the queue of received actions from effects.
@@ -1813,19 +1767,16 @@ extension TestStore {
   ///
   /// - Parameter strict: When `true` and there are no in-flight actions to cancel, a test failure
   ///   will be reported.
-  @available(
-    iOS, deprecated: 9999, message: "Call the async-friendly 'skipReceivedActions' instead."
-  )
-  @available(
-    macOS, deprecated: 9999, message: "Call the async-friendly 'skipReceivedActions' instead."
-  )
-  @available(
-    tvOS, deprecated: 9999, message: "Call the async-friendly 'skipReceivedActions' instead."
-  )
-  @available(
-    watchOS, deprecated: 9999, message: "Call the async-friendly 'skipReceivedActions' instead."
-  )
+  @available(*, deprecated, message: "Call the async-friendly 'skipReceivedActions' instead.")
   public func skipReceivedActions(
+    strict: Bool = true,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) {
+    self._skipReceivedActions(strict: strict, file: file, line: line)
+  }
+
+  private func _skipReceivedActions(
     strict: Bool = true,
     file: StaticString = #file,
     line: UInt = #line
@@ -1886,7 +1837,7 @@ extension TestStore {
     line: UInt = #line
   ) async {
     await Task.megaYield()
-    _ = { self.skipInFlightEffects(strict: strict, file: file, line: line) }()
+    _ = { self._skipInFlightEffects(strict: strict, file: file, line: line) }()
   }
 
   /// Cancels any currently in-flight effects.
@@ -1895,19 +1846,16 @@ extension TestStore {
   ///
   /// - Parameter strict: When `true` and there are no in-flight actions to cancel, a test failure
   ///   will be reported.
-  @available(
-    iOS, deprecated: 9999, message: "Call the async-friendly 'skipInFlightEffects' instead."
-  )
-  @available(
-    macOS, deprecated: 9999, message: "Call the async-friendly 'skipInFlightEffects' instead."
-  )
-  @available(
-    tvOS, deprecated: 9999, message: "Call the async-friendly 'skipInFlightEffects' instead."
-  )
-  @available(
-    watchOS, deprecated: 9999, message: "Call the async-friendly 'skipInFlightEffects' instead."
-  )
+  @available(*, deprecated, message: "Call the async-friendly 'skipInFlightEffects' instead.")
   public func skipInFlightEffects(
+    strict: Bool = true,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) {
+    self._skipInFlightEffects(strict: strict, file: file, line: line)
+  }
+
+  private func _skipInFlightEffects(
     strict: Bool = true,
     file: StaticString = #file,
     line: UInt = #line
@@ -1941,7 +1889,7 @@ extension TestStore {
     )
 
     for effect in self.reducer.inFlightEffects {
-      _ = EffectPublisher<Never, Never>.cancel(id: effect.id).sink { _ in }
+      _ = EffectPublisherWrapper(Effect<Never, Never>.cancel(id: effect.id)).sink { _ in }
     }
     self.reducer.inFlightEffects = []
   }
@@ -2145,7 +2093,7 @@ class TestReducer<State, Action>: ReducerProtocol {
     case .publisher, .run:
       let effect = LongLivingEffect(action: action)
       return
-        effects
+        EffectPublisherWrapper(effects)
         .handleEvents(
           receiveSubscription: { [effectDidSubscribe, weak self] _ in
             self?.inFlightEffects.insert(effect)
@@ -2158,7 +2106,7 @@ class TestReducer<State, Action>: ReducerProtocol {
           receiveCancel: { [weak self] in self?.inFlightEffects.remove(effect) }
         )
         .map { .init(origin: .receive($0), file: action.file, line: action.line) }
-        .eraseToEffect()
+        .eraseToEffectPublisher()
     }
   }
 

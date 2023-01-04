@@ -76,7 +76,7 @@ public struct _PrintChangesReducer<Base: ReducerProtocol>: ReducerProtocol {
         let oldState = state
         let effects = self.base.reduce(into: &state, action: action)
         return effects.merge(
-          with: .fireAndForget { [newState = state] in
+          with: .run { [newState = state] _ in
             printer.printChange(receivedAction: action, oldState: oldState, newState: newState)
           }
         )

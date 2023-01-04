@@ -149,44 +149,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
   ///     equal, repeat view computations are removed.
   @available(
-    iOS,
-    deprecated: 9999.0,
-    message:
-      """
-      Use 'init(_:observe:removeDuplicates:)' to make state observation explicit.
-
-      When using ViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
-
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
-      """
-  )
-  @available(
-    macOS,
-    deprecated: 9999.0,
-    message:
-      """
-      Use 'init(_:observe:removeDuplicates:)' to make state observation explicit.
-
-      When using ViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
-
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
-      """
-  )
-  @available(
-    tvOS,
-    deprecated: 9999.0,
-    message:
-      """
-      Use 'init(_:observe:removeDuplicates:)' to make state observation explicit.
-
-      When using ViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
-
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
-      """
-  )
-  @available(
-    watchOS,
-    deprecated: 9999.0,
+    *, deprecated,
     message:
       """
       Use 'init(_:observe:removeDuplicates:)' to make state observation explicit.
@@ -624,44 +587,7 @@ extension ViewStore where ViewState: Equatable {
   /// - Parameters:
   ///   - store: A store.
   @available(
-    iOS,
-    deprecated: 9999.0,
-    message:
-      """
-      Use 'init(_:observe:)' to make state observation explicit.
-
-      When using ViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
-
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
-      """
-  )
-  @available(
-    macOS,
-    deprecated: 9999.0,
-    message:
-      """
-      Use 'init(_:observe:)' to make state observation explicit.
-
-      When using ViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
-
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
-      """
-  )
-  @available(
-    tvOS,
-    deprecated: 9999.0,
-    message:
-      """
-      Use 'init(_:observe:)' to make state observation explicit.
-
-      When using ViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
-
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
-      """
-  )
-  @available(
-    watchOS,
-    deprecated: 9999.0,
+    *, deprecated,
     message:
       """
       Use 'init(_:observe:)' to make state observation explicit.
@@ -678,7 +604,7 @@ extension ViewStore where ViewState: Equatable {
 
 extension ViewStore where ViewState == Void {
   public convenience init(_ store: Store<Void, ViewAction>) {
-    self.init(store, removeDuplicates: ==)
+    self.init(store, observe: {}, removeDuplicates: ==)
   }
 }
 

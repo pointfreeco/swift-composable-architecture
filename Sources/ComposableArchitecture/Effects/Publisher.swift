@@ -1,9 +1,6 @@
 import Combine
 
-@available(iOS, deprecated: 9999.0)
-@available(macOS, deprecated: 9999.0)
-@available(tvOS, deprecated: 9999.0)
-@available(watchOS, deprecated: 9999.0)
+@available(*, deprecated)
 extension EffectPublisher: Publisher {
   public typealias Output = Action
 
@@ -53,20 +50,7 @@ extension EffectPublisher {
   ///
   /// - Parameter publisher: A publisher.
   @available(
-    iOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
-  )
-  @available(
-    macOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
-  )
-  @available(
-    tvOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
-  )
-  @available(
-    watchOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
+    *, deprecated, message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
   )
   public init<P: Publisher>(_ publisher: P) where P.Output == Output, P.Failure == Failure {
     self.operation = .publisher(publisher.eraseToAnyPublisher())
@@ -75,10 +59,7 @@ extension EffectPublisher {
   /// Initializes an effect that immediately emits the value passed in.
   ///
   /// - Parameter value: The value that is immediately emitted by the effect.
-  @available(iOS, deprecated: 9999.0, message: "Wrap the value in 'EffectTask.task', instead.")
-  @available(macOS, deprecated: 9999.0, message: "Wrap the value in 'EffectTask.task', instead.")
-  @available(tvOS, deprecated: 9999.0, message: "Wrap the value in 'EffectTask.task', instead.")
-  @available(watchOS, deprecated: 9999.0, message: "Wrap the value in 'EffectTask.task', instead.")
+  @available(*, deprecated, message: "Wrap the value in 'EffectTask.task', instead.")
   public init(value: Action) {
     self.init(Just(value).setFailureType(to: Failure.self))
   }
@@ -87,19 +68,8 @@ extension EffectPublisher {
   ///
   /// - Parameter error: The error that is immediately emitted by the effect.
   @available(
-    iOS, deprecated: 9999.0,
-    message: "Throw and catch errors directly in 'EffectTask.task' and 'EffectTask.run', instead."
-  )
-  @available(
-    macOS, deprecated: 9999.0,
-    message: "Throw and catch errors directly in 'EffectTask.task' and 'EffectTask.run', instead."
-  )
-  @available(
-    tvOS, deprecated: 9999.0,
-    message: "Throw and catch errors directly in 'EffectTask.task' and 'EffectTask.run', instead."
-  )
-  @available(
-    watchOS, deprecated: 9999.0,
+    *,
+    deprecated,
     message: "Throw and catch errors directly in 'EffectTask.task' and 'EffectTask.run', instead."
   )
   public init(error: Failure) {
@@ -146,10 +116,7 @@ extension EffectPublisher {
   ///
   /// - Parameter attemptToFulfill: A closure that takes a `callback` as an argument which can be
   ///   used to feed it `Result<Output, Failure>` values.
-  @available(iOS, deprecated: 9999.0, message: "Use 'EffectTask.task', instead.")
-  @available(macOS, deprecated: 9999.0, message: "Use 'EffectTask.task', instead.")
-  @available(tvOS, deprecated: 9999.0, message: "Use 'EffectTask.task', instead.")
-  @available(watchOS, deprecated: 9999.0, message: "Use 'EffectTask.task', instead.")
+  @available(*, deprecated, message: "Use 'EffectTask.task', instead.")
   public static func future(
     _ attemptToFulfill: @escaping (@escaping (Result<Action, Failure>) -> Void) -> Void
   ) -> Self {
@@ -187,10 +154,7 @@ extension EffectPublisher {
   ///
   /// - Parameter attemptToFulfill: A closure encapsulating some work to execute in the real world.
   /// - Returns: An effect.
-  @available(iOS, deprecated: 9999.0, message: "Use 'EffectTask.task', instead.")
-  @available(macOS, deprecated: 9999.0, message: "Use 'EffectTask.task', instead.")
-  @available(tvOS, deprecated: 9999.0, message: "Use 'EffectTask.task', instead.")
-  @available(watchOS, deprecated: 9999.0, message: "Use 'EffectTask.task', instead.")
+  @available(*, deprecated, message: "Use 'EffectTask.task', instead.")
   public static func result(_ attemptToFulfill: @escaping () -> Result<Action, Failure>) -> Self {
     .future { $0(attemptToFulfill()) }
   }
@@ -229,18 +193,7 @@ extension EffectPublisher {
   /// - Parameter work: A closure that accepts a ``Subscriber`` value and returns a cancellable.
   ///   When the ``EffectPublisher`` is completed, the cancellable will be used to clean up any
   ///   resources created when the effect was started.
-  @available(
-    iOS, deprecated: 9999.0, message: "Use the async version of 'EffectTask.run', instead."
-  )
-  @available(
-    macOS, deprecated: 9999.0, message: "Use the async version of 'EffectTask.run', instead."
-  )
-  @available(
-    tvOS, deprecated: 9999.0, message: "Use the async version of 'EffectTask.run', instead."
-  )
-  @available(
-    watchOS, deprecated: 9999.0, message: "Use the async version of 'Effect.run', instead."
-  )
+  @available(*, deprecated, message: "Use the async version of 'EffectTask.run', instead.")
   public static func run(
     _ work: @escaping (EffectPublisher.Subscriber) -> Cancellable
   ) -> Self {
@@ -260,10 +213,7 @@ extension EffectPublisher {
   ///
   /// - Parameter work: A closure encapsulating some work to execute in the real world.
   /// - Returns: An effect.
-  @available(iOS, deprecated: 9999.0, message: "Use the async version, instead.")
-  @available(macOS, deprecated: 9999.0, message: "Use the async version, instead.")
-  @available(tvOS, deprecated: 9999.0, message: "Use the async version, instead.")
-  @available(watchOS, deprecated: 9999.0, message: "Use the async version, instead.")
+  @available(*, deprecated, message: "Use the async version, instead.")
   public static func fireAndForget(_ work: @escaping () throws -> Void) -> Self {
     // NB: Ideally we'd return a `Deferred` wrapping an `Empty(completeImmediately: true)`, but
     //     due to a bug in iOS 13.2 that publisher will never complete. The bug was fixed in
@@ -306,19 +256,7 @@ extension EffectPublisher where Failure == Error {
   /// - Parameter work: A closure encapsulating some work to execute in the real world.
   /// - Returns: An effect.
   @available(
-    iOS, deprecated: 9999.0,
-    message: "Throw and catch errors directly in 'EffectTask.task' and 'EffectTask.run', instead."
-  )
-  @available(
-    macOS, deprecated: 9999.0,
-    message: "Throw and catch errors directly in 'EffectTask.task' and 'EffectTask.run', instead."
-  )
-  @available(
-    tvOS, deprecated: 9999.0,
-    message: "Throw and catch errors directly in 'EffectTask.task' and 'EffectTask.run', instead."
-  )
-  @available(
-    watchOS, deprecated: 9999.0,
+    *, deprecated,
     message: "Throw and catch errors directly in 'EffectTask.task' and 'EffectTask.run', instead."
   )
   public static func catching(_ work: @escaping () throws -> Action) -> Self {
@@ -341,19 +279,7 @@ extension Publisher {
   ///
   /// - Returns: An effect that wraps `self`.
   @available(
-    iOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
-  )
-  @available(
-    macOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
-  )
-  @available(
-    tvOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
-  )
-  @available(
-    watchOS, deprecated: 9999.0,
+    *, deprecated,
     message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
   )
   public func eraseToEffect() -> EffectPublisher<Output, Failure> {
@@ -376,20 +302,7 @@ extension Publisher {
   ///   - transform: A mapping function that converts `Output` to another type.
   /// - Returns: An effect that wraps `self` after mapping `Output` values.
   @available(
-    iOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
-  )
-  @available(
-    macOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
-  )
-  @available(
-    tvOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
-  )
-  @available(
-    watchOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
+    *, deprecated, message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
   )
   public func eraseToEffect<T>(
     _ transform: @escaping (Output) -> T
@@ -421,20 +334,7 @@ extension Publisher {
   ///
   /// - Returns: An effect that wraps `self`.
   @available(
-    iOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
-  )
-  @available(
-    macOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
-  )
-  @available(
-    tvOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
-  )
-  @available(
-    watchOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
+    *, deprecated, message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
   )
   public func catchToEffect() -> EffectTask<Result<Output, Failure>> {
     self.catchToEffect { $0 }
@@ -456,20 +356,7 @@ extension Publisher {
   ///   - transform: A mapping function that converts `Result<Output,Failure>` to another type.
   /// - Returns: An effect that wraps `self`.
   @available(
-    iOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
-  )
-  @available(
-    macOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
-  )
-  @available(
-    tvOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
-  )
-  @available(
-    watchOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
+    *, deprecated, message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
   )
   public func catchToEffect<T>(
     _ transform: @escaping (Result<Output, Failure>) -> T
@@ -506,22 +393,7 @@ extension Publisher {
   ///   - failureType: A failure type.
   /// - Returns: An effect that never produces output or errors.
   @available(
-    iOS, deprecated: 9999.0,
-    message:
-      "Iterate over 'Publisher.values' in the static version of 'Effect.fireAndForget', instead."
-  )
-  @available(
-    macOS, deprecated: 9999.0,
-    message:
-      "Iterate over 'Publisher.values' in the static version of 'Effect.fireAndForget', instead."
-  )
-  @available(
-    tvOS, deprecated: 9999.0,
-    message:
-      "Iterate over 'Publisher.values' in the static version of 'Effect.fireAndForget', instead."
-  )
-  @available(
-    watchOS, deprecated: 9999.0,
+    *, deprecated,
     message:
       "Iterate over 'Publisher.values' in the static version of 'Effect.fireAndForget', instead."
   )
@@ -534,5 +406,51 @@ extension Publisher {
       .flatMap { _ in Empty<NewOutput, Failure>() }
       .catch { _ in Empty() }
       .eraseToEffect()
+  }
+}
+
+@usableFromInline
+internal struct EffectPublisherWrapper<Action, Failure: Error>: Publisher {
+  @usableFromInline  typealias Output = Action
+
+  let effect: EffectPublisher<Action, Failure>
+
+  @usableFromInline
+  init(_ effect: EffectPublisher<Action, Failure>) {
+    self.effect = effect
+  }
+
+  @usableFromInline
+  func receive<S: Combine.Subscriber>(
+    subscriber: S
+  ) where S.Input == Action, S.Failure == Failure {
+    self.publisher.subscribe(subscriber)
+  }
+
+  private var publisher: AnyPublisher<Action, Failure> {
+    switch self.effect.operation {
+    case .none:
+      return Empty().eraseToAnyPublisher()
+    case let .publisher(publisher):
+      return publisher
+    case let .run(priority, operation):
+      return .create { subscriber in
+        let task = Task(priority: priority) { @MainActor in
+          defer { subscriber.send(completion: .finished) }
+          let send = Send { subscriber.send($0) }
+          await operation(send)
+        }
+        return AnyCancellable {
+          task.cancel()
+        }
+      }
+    }
+  }
+}
+
+extension Publisher {
+  @usableFromInline
+  func eraseToEffectPublisher() -> EffectPublisher<Output, Failure> {
+    EffectPublisher(operation: .publisher(self.eraseToAnyPublisher()))
   }
 }

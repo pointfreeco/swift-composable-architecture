@@ -426,7 +426,15 @@ extension EffectPublisher {
     case (.none, _):
       return other
     case (.publisher, .publisher), (.run, .publisher), (.publisher, .run):
-      return Self(operation: .publisher(Publishers.Merge(self, other).eraseToAnyPublisher()))
+      return Self(
+        operation: .publisher(
+          Publishers.Merge(
+            EffectPublisherWrapper(self),
+            EffectPublisherWrapper(other)
+          )
+          .eraseToAnyPublisher()
+        )
+      )
     case let (.run(lhsPriority, lhsOperation), .run(rhsPriority, rhsOperation)):
       return Self(
         operation: .run { send in
@@ -480,7 +488,11 @@ extension EffectPublisher {
     case (.publisher, .publisher), (.run, .publisher), (.publisher, .run):
       return Self(
         operation: .publisher(
-          Publishers.Concatenate(prefix: self, suffix: other).eraseToAnyPublisher()
+          Publishers.Concatenate(
+            prefix: EffectPublisherWrapper(self),
+            suffix: EffectPublisherWrapper(other)
+          )
+          .eraseToAnyPublisher()
         )
       )
     case let (.run(lhsPriority, lhsOperation), .run(rhsPriority, rhsOperation)):
@@ -651,18 +663,7 @@ extension EffectPublisher {
   /// - Parameter prefix: A string that identifies this effect and will prefix all failure
   ///   messages.
   /// - Returns: An effect that causes a test to fail if it runs.
-  @available(
-    iOS, deprecated: 9999.0, message: "Call 'unimplemented' from your dependencies, instead."
-  )
-  @available(
-    macOS, deprecated: 9999.0, message: "Call 'unimplemented' from your dependencies, instead."
-  )
-  @available(
-    tvOS, deprecated: 9999.0, message: "Call 'unimplemented' from your dependencies, instead."
-  )
-  @available(
-    watchOS, deprecated: 9999.0, message: "Call 'unimplemented' from your dependencies, instead."
-  )
+  @available(*, deprecated, message: "Call 'unimplemented' from your dependencies, instead.")
   public static func unimplemented(_ prefix: String) -> Self {
     .fireAndForget {
       XCTFail("\(prefix.isEmpty ? "" : "\(prefix) - ")An unimplemented effect ran.")

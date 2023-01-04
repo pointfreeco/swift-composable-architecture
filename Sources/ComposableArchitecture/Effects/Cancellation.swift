@@ -111,11 +111,18 @@ extension EffectPublisher {
   /// - Returns: A new effect that will cancel any currently in-flight effect with the given
   ///   identifier.
   public static func cancel(id: AnyHashable) -> Self {
-    .fireAndForget {
-      _cancellablesLock.sync {
-        _cancellationCancellables[.init(id: id)]?.forEach { $0.cancel() }
+    let dependencies = DependencyValues._current
+    return Deferred { () -> Publishers.CompactMap<Result<Action?, Failure>.Publisher, Action> in
+      DependencyValues.$_current.withValue(dependencies) {
+        _cancellablesLock.sync {
+          _cancellationCancellables[.init(id: id)]?.forEach { $0.cancel() }
+        }
       }
+      return Just<Action?>(nil)
+        .setFailureType(to: Failure.self)
+        .compactMap { $0 }
     }
+    .eraseToEffectPublisher()
   }
 
   /// An effect that will cancel any currently in-flight effect with the given identifier.

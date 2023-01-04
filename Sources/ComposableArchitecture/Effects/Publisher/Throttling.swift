@@ -2,6 +2,7 @@ import Combine
 import Dispatch
 import Foundation
 
+@available(*, deprecated)
 extension EffectPublisher {
   /// Throttles an effect so that it only publishes one output per given interval.
   ///

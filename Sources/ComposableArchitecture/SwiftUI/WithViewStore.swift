@@ -136,7 +136,7 @@ public struct WithViewStore<ViewState, ViewAction, Content> {
         return previousState
       }
     #endif
-    self.viewStore = ViewStore(store, removeDuplicates: isDuplicate)
+    self.viewStore = ViewStore(store, observe: { $0 }, removeDuplicates: isDuplicate)
   }
 
   /// Prints debug information to the console whenever the view is computed.
@@ -375,44 +375,7 @@ extension WithViewStore: View where Content: View {
   ///     are equal, repeat view computations are removed,
   ///   - content: A function that can generate content from a view store.
   @available(
-    iOS,
-    deprecated: 9999.0,
-    message:
-      """
-      Use 'init(_:observe:removeDuplicates:content:)' to make state observation explicit.
-
-      When using WithViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
-
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
-      """
-  )
-  @available(
-    macOS,
-    deprecated: 9999.0,
-    message:
-      """
-      Use 'init(_:observe:removeDuplicates:content:)' to make state observation explicit.
-
-      When using WithViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
-
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
-      """
-  )
-  @available(
-    tvOS,
-    deprecated: 9999.0,
-    message:
-      """
-      Use 'init(_:observe:removeDuplicates:content:)' to make state observation explicit.
-
-      When using WithViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
-
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
-      """
-  )
-  @available(
-    watchOS,
-    deprecated: 9999.0,
+    *, deprecated,
     message:
       """
       Use 'init(_:observe:removeDuplicates:content:)' to make state observation explicit.
@@ -625,44 +588,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
   @available(
-    iOS,
-    deprecated: 9999.0,
-    message:
-      """
-      Use 'init(_:observe:content:)' to make state observation explicit.
-
-      When using WithViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
-
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
-      """
-  )
-  @available(
-    macOS,
-    deprecated: 9999.0,
-    message:
-      """
-      Use 'init(_:observe:content:)' to make state observation explicit.
-
-      When using WithViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
-
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
-      """
-  )
-  @available(
-    tvOS,
-    deprecated: 9999.0,
-    message:
-      """
-      Use 'init(_:observe:content:)' to make state observation explicit.
-
-      When using WithViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
-
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
-      """
-  )
-  @available(
-    watchOS,
-    deprecated: 9999.0,
+    *, deprecated,
     message:
       """
       Use 'init(_:observe:content:)' to make state observation explicit.
@@ -690,23 +616,7 @@ extension WithViewStore where ViewState == Void, Content: View {
   ///   - store: A store of equatable state.
   ///   - content: A function that can generate content from a view store.
   @available(
-    iOS,
-    deprecated: 9999.0,
-    message: "Use 'ViewStore(store).send(action)' instead of observing stateless stores."
-  )
-  @available(
-    macOS,
-    deprecated: 9999.0,
-    message: "Use 'ViewStore(store).send(action)' instead of observing stateless stores."
-  )
-  @available(
-    tvOS,
-    deprecated: 9999.0,
-    message: "Use 'ViewStore(store).send(action)' instead of observing stateless stores."
-  )
-  @available(
-    watchOS,
-    deprecated: 9999.0,
+    *, deprecated,
     message: "Use 'ViewStore(store).send(action)' instead of observing stateless stores."
   )
   public init(
