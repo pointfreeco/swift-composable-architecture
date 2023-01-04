@@ -100,6 +100,8 @@ extension BindingState: CustomDebugStringConvertible where Value: CustomDebugStr
   }
 }
 
+extension BindingState: Sendable where Value: Sendable {}
+
 /// A type from which you can generate ``BindingViewState``'s pointing to its `State` using dynamic
 /// member lookup.
 ///

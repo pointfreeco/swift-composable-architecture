@@ -103,14 +103,6 @@ struct Todos: ReducerProtocol {
 struct AppView: View {
   let store: StoreOf<Todos>
 
-  // TODO: Add `ViewStore.init(_,observe:send:removeDuplicates:)`
-//  @ObservedObject var viewStore: ViewStore<ViewState, Todos.Action>
-//
-//  init(store: StoreOf<Todos>) {
-//    self.store = store
-//    self.viewStore = ViewStore(self.store.scope(state: ViewState.init(state:)))
-//  }
-
   struct ViewState: Equatable {
     @BindingViewState var editMode: EditMode
     @BindingViewState var filter: Filter
