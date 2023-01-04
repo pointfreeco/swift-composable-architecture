@@ -8,7 +8,7 @@ enum Filter: LocalizedStringKey, CaseIterable, Hashable {
 }
 
 struct Todos: ReducerProtocol {
-  struct State: Equatable, BindableStateProtocol {
+  struct State: BindableStateProtocol, Equatable {
     @BindingState var editMode: EditMode = .inactive
     @BindingState var filter: Filter = .all
     var todos: IdentifiedArrayOf<Todo.State> = []
