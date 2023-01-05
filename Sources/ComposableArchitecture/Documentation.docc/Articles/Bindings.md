@@ -182,14 +182,14 @@ struct Settings: ReducerProtocol {
 ```
 
 This is a _lot_ of boilerplate for something that should be simple. Luckily, we can dramatically
-eliminate this boilerplate using some tools from this libary.
+eliminate this boilerplate using some tools from this library.
 
-First, we conform `State` to ``BindableStateProtocol``, and we annotate each field that we want
-to be able to derive a binding for with the ``BindingState`` property wrapper:
+First, we annotate each field that we want to be able to derive a binding for with the
+``BindingState`` property wrapper:
 
 ```swift
 struct Settings: ReducerProtocol {
-  struct State: Equatable, BindableStateProtocol {
+  struct State: Equatable {
     @BindingState var digest = Digest.daily
     @BindingState var displayName = ""
     @BindingState var enableNotifications = false
@@ -203,11 +203,11 @@ struct Settings: ReducerProtocol {
 }
 ```
 
-> Note: It is not necessary to annotate _every_ field with `@BindingState`, and in fact it is
-not recommended. Marking a field with the property wrapper makes it instantly mutable from the
-outside, which may hurt the encapsulation of your feature. It is best to limit the usage of the 
-property wrapper to only those fields that need to have bindings derived for handing to SwiftUI
-components.
+> Note: It is not necessary to annotate _every_ field with `@BindingState`, and in fact it is not
+> recommended. Marking a field with the property wrapper makes it instantly mutable from the
+> outside, which may hurt the encapsulation of your feature. It is best to limit the usage of the 
+> property wrapper to only those fields that need to have bindings derived for handing to SwiftUI
+> components.
 
 Each annotated field is directly bindable to SwiftUI controls, like pickers, toggles, and text
 fields. Notably, the `isLoading` property is _not_ annotated as being bindable, which prevents the
@@ -274,29 +274,44 @@ var body: some ReducerProtocol<State, Action> {
 
 ## View state
 
-As we explain in our <doc:Performance> article, it is a good idea to observe only the bare 
+As we explain in our <doc:Performance> article, it is a good idea to observe only the bare
 essentials of state that your view needs to do its job. This is especially true for features
 closer to the root of the application, which tend to hold state for many child features, all of
 which is not needed in the view.
 
-However, if you are doing this _and_ using `@BindingState`, then there is an extra step you must
-take. When defining the `ViewState` type in your view that holds onto all of the state your view
+However, if you are doing this _and_ using `@BindingState`, then there are a couple extra steps you
+must take. First, your `State` must conform to the `BindableViewState` protocol so that it can
+derive view state bindings.
+
+```swift
+struct Todos: ReducerProtocol {
+  struct State: BindableViewState, Equatable {
+    // ...
+  }
+  // ...
+}
+```
+
+Then, when defining the `ViewState` type in your view that holds onto all of the state your view
 cares about, you must mark each field that needs to derive a binding with `@BindingViewState`:
 
 ```swift
-struct ViewState: Equatable {
-  @BindingViewState var editMode: EditMode
-  @BindingViewState var filter: Filter
+struct TodosView: View {
+  struct ViewState: Equatable {
+    @BindingViewState var editMode: EditMode
+    @BindingViewState var filter: Filter
+    // ...
+  }
   // ...
 }
 ```
 
 > Note: Just as is the case with `@BindingState`, not all fields need to be annotated with 
-`@BindingViewState`. Just the ones that need to have bindings derived to hand to SwiftUI 
-components.
+> `@BindingViewState`. Just the ones that need to have bindings derived to hand to SwiftUI 
+> components.
 
 And finally, you must provide a custom initializer that creates the ``BindingViewState`` for each
-field by going through the state's ``BindableStateProtocol/bindings`` property:
+field by going through the state's ``BindableViewState/bindings`` property:
 
 ```swift
 struct ViewState: Equatable {

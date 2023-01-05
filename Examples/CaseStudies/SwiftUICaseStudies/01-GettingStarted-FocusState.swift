@@ -9,7 +9,7 @@ private let readMe = """
 // MARK: - Feature domain
 
 struct FocusDemo: ReducerProtocol {
-  struct State: BindableStateProtocol, Equatable {
+  struct State: BindableViewState, Equatable {
     @BindingState var focusedField: Field?
     @BindingState var password: String = ""
     @BindingState var username: String = ""

@@ -5,11 +5,11 @@ import SwiftUI
 /// bindable in SwiftUI views.
 ///
 /// This property is to be applied directly to fields in a reducer's `State` type, and it should
-/// be used in tandem with marking the `State` type with the ``BindableStateProtocol`` protocol:
+/// be used in tandem with marking the `State` type with the ``BindableViewState`` protocol:
 ///
 /// ```swift
 /// struct Feature: ReducerProtocol {
-///   struct State: BindableStateProtocol {
+///   struct State: BindableViewState {
 ///     @BindingState var enableNotifications = false
 ///     @BindingState var sendEmailNotifications = false
 ///     @BindingState var sendMobileNotifications = false
@@ -85,7 +85,7 @@ public struct BindingState<Value> {
 }
 
 extension BindingState: Equatable where Value: Equatable {
-  public static func == (lhs: BindingState<Value>, rhs: BindingState<Value>) -> Bool {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.wrappedValue == rhs.wrappedValue
   }
 }
@@ -142,7 +142,7 @@ extension BindingState: Sendable where Value: Sendable {}
 /// member lookup.
 ///
 /// You don't create values of this type directly, but you can extract one using the
-/// ``BindableStateProtocol/bindings`` property that is available when your state
+/// ``BindableViewState/bindings`` property that is available when your state
 @dynamicMemberLookup
 public struct BindingViewStates<State> {
   private let state: State
@@ -169,19 +169,14 @@ public struct BindingViewStates<State> {
 /// bindings from any fields marked with the ``BindingState`` property wrapper.
 ///
 /// There is no specific requirement to conform to this protocol.
-///
-/// - Note: This protocol will be renamed `BindableState` in a future release, when the deprecated
-/// ``BindableState`` property wrapper will be obsoleted. At the same time, conforming to this
-/// protocol will also be a requirement of ``BindingReducer``'s `State`, so you're encouraged to
-/// conform states hosting `@BindingState` properties to this protocol already.
-public protocol BindableStateProtocol {}
+public protocol BindableViewState {}
 
-extension BindableStateProtocol {
+extension BindableViewState {
   /// A ``BindingViewStates`` value from which you can derive ``BindingViewState`` using dynamic
   /// member lookup:
   ///
   /// ```swift
-  /// struct State: BindableStateProtocol {
+  /// struct State: BindableViewState {
   ///   @BindingState var text = ""
   ///   // More properties that do not need bindings.
   /// }
@@ -232,7 +227,7 @@ extension BindableAction {
 /// A ``BindingState`` variant that is suitable for `ViewState`s.
 ///
 /// You can only build these values using dynamic member lookup of ``BindingState`` properties on
-/// the ``BindingViewStates`` value from ``BindableStateProtocol/bindings``.
+/// the ``BindingViewStates`` value from ``BindableViewState/bindings``.
 ///
 /// Because you're defining the ``BindingViewState`` value directly, you must assign the value
 /// of the property wrapper private storage using the underscored property name:
@@ -344,12 +339,10 @@ extension ViewStore where ViewAction: BindableAction {
   }
 }
 
-// `BindingState` from some `BindableStateProtocol` dynamic member lookup.
 extension ViewStore
 where
   ViewAction: BindableAction,
-  ViewAction.State == ViewState,
-  ViewAction.State: BindableStateProtocol
+  ViewAction.State == ViewState
 {
   public subscript<Value>(dynamicMember keyPath: WritableKeyPath<ViewState, BindingState<Value>>)
     -> Binding<Value> where Value: Equatable

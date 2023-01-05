@@ -6,7 +6,7 @@ final class BindingTests: XCTestCase {
   #if swift(>=5.7)
     func testNestedBindingStateWithNestedMatching() {
       struct BindingTest: ReducerProtocol {
-        struct State: BindableStateProtocol, Equatable {
+        struct State: BindableViewState, Equatable {
           @BindingState var nested = Nested()
 
           struct Nested: Equatable {
@@ -48,7 +48,7 @@ final class BindingTests: XCTestCase {
 
     func testBindingState() {
       struct BindingTest: ReducerProtocol {
-        struct State: BindableStateProtocol, Equatable {
+        struct State: BindableViewState, Equatable {
           @BindingState var nested = Nested()
 
           struct Nested: Equatable {

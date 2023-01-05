@@ -7,7 +7,7 @@ import SwiftUI
 ///
 /// ```swift
 /// struct Feature: ReducerProtocol {
-///   struct State: BindableStateProtocol {
+///   struct State: BindableViewState {
 ///     @BindingState var isOn = false
 ///     // More properties...
 ///   }

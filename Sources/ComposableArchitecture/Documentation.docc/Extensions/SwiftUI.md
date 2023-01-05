@@ -20,7 +20,7 @@ The Composable Architecture can be used to power applications built in many fram
 - <doc:Bindings>
 - ``ViewStore/binding(get:send:)-65xes``
 - ``BindingState``
-- ``BindableStateProtocol``
+- ``BindableViewState``
 - ``BindingAction``
 - ``BindableAction``
 - ``BindingReducer``
