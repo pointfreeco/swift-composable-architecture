@@ -153,9 +153,9 @@ extension EffectPublisher {
   public static func future(
     _ attemptToFulfill: @escaping (@escaping (Result<Action, Failure>) -> Void) -> Void
   ) -> Self {
-    DependencyValues.escape { escaped in
+    withEscapedDependencies { escaped in
       Deferred {
-        escaped.continue {
+        escaped.yield {
           Future(attemptToFulfill)
         }
       }.eraseToEffect()
@@ -244,9 +244,9 @@ extension EffectPublisher {
   public static func run(
     _ work: @escaping (EffectPublisher.Subscriber) -> Cancellable
   ) -> Self {
-    DependencyValues.escape { escaped in
+    withEscapedDependencies { escaped in
       AnyPublisher.create { subscriber in
-        escaped.continue {
+        escaped.yield {
           work(subscriber)
         }
       }
@@ -269,9 +269,9 @@ extension EffectPublisher {
     //     due to a bug in iOS 13.2 that publisher will never complete. The bug was fixed in
     //     iOS 13.3, but to remain compatible with iOS 13.2 and higher we need to do a little
     //     trickery to make sure the deferred publisher completes.
-    DependencyValues.escape { escaped in
+    withEscapedDependencies { escaped in
       Deferred { () -> Publishers.CompactMap<Result<Action?, Failure>.Publisher, Action> in
-        escaped.continue {
+        escaped.yield {
           try? work()
         }
         return Just<Output?>(nil)
@@ -468,9 +468,9 @@ extension Publisher {
   ) -> EffectTask<T> {
     return
       self
-      .map(DependencyValues.escape { escaped in
+      .map(withEscapedDependencies { escaped in
         { action in
-          escaped.continue {
+          escaped.yield {
             transform(.success(action))
           }
         }
