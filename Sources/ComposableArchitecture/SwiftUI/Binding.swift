@@ -333,6 +333,7 @@ extension ViewStore where ViewAction: BindableAction {
           let debugger = BindableActionViewStoreDebugger(
             value: value,
             bindableActionType: ViewAction.self,
+            bindableStateType: ViewAction.State.self,
             sourceFile: bindingViewState.sourceFile,
             sourceFileID: bindingViewState.sourceFile,
             sourceLine: bindingViewState.sourceLine,
@@ -374,6 +375,7 @@ where
           let debugger = BindableActionViewStoreDebugger(
             value: value,
             bindableActionType: ViewAction.self,
+            bindableStateType: ViewAction.State.self,
             sourceFile: bindingState.file,
             sourceFileID: bindingState.fileID,
             sourceLine: bindingState.line,
@@ -625,6 +627,7 @@ extension BindingAction: CustomDumpReflectable {
   final class BindableActionViewStoreDebugger<Value> {
     let value: Value
     let bindableActionType: Any.Type
+    let bindableStateType: Any.Type
     let file: StaticString
     let fileID: StaticString
     let line: UInt
@@ -638,6 +641,7 @@ extension BindingAction: CustomDumpReflectable {
     init(
       value: Value,
       bindableActionType: Any.Type,
+      bindableStateType: Any.Type,
       sourceFile: StaticString,
       sourceFileID: StaticString,
       sourceLine: UInt,
@@ -647,6 +651,7 @@ extension BindingAction: CustomDumpReflectable {
     ) {
       self.value = value
       self.bindableActionType = bindableActionType
+      self.bindableStateType = bindableStateType
       self.sourceFile = sourceFile
       self.sourceFileID = sourceFileID
       self.sourceLine = sourceLine
@@ -655,20 +660,34 @@ extension BindingAction: CustomDumpReflectable {
       self.line = line
     }
 
+    var reducerName: String? {
+      let stateName = typeName(self.bindableStateType)
+      guard stateName.hasSuffix(".State") else { return nil }
+      return String(
+        stateName.prefix(upTo: stateName.index(stateName.endIndex, offsetBy: -".State".count))
+      )
+    }
+    
+    var contextualReducerDescription: String {
+      if let reducerName = reducerName {
+        // we infer that the reducer is in the same file as its State
+        let filename = ("\(self.sourceFileID)" as NSString).lastPathComponent
+        return #""\#(reducerName).body" in "\#(filename)""#
+      }
+      return #"your feature reducer's "body""#
+    }
+
     deinit {
       guard self.wasCalled else {
         runtimeWarn(
           """
-          A binding action sent from a view store at "\(self.fileID):\(self.line)" was not \
-          handled. …
-          
-            State:
-             @BindingState var _: \(typeName(Value.self)), at "\(self.sourceFileID):\(self.sourceLine)"
+          A binding action for a \(typeName(Value.self)) state at \
+          "\(self.sourceFileID):\(self.sourceLine)" was not handled. …
 
             Action:
               \(typeName(self.bindableActionType)).binding(.set(_, \(self.value)))
 
-          To fix this, invoke "BindingReducer()" from your feature reducer's "body".
+          To fix this, invoke "BindingReducer()" from \(contextualReducerDescription).
           """,
           file: self.file,
           line: self.line

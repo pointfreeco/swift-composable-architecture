@@ -61,7 +61,9 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
       send: { value in
         #if DEBUG
           let debugger = BindableActionViewStoreDebugger(
-            value: value, bindableActionType: ViewAction.self,
+            value: value,
+            bindableActionType: ViewAction.self,
+            bindableStateType: ViewAction.State.self,
             sourceFile: bindingViewState.file,
             sourceFileID: bindingViewState.fileID,
             sourceLine: bindingViewState.line,
