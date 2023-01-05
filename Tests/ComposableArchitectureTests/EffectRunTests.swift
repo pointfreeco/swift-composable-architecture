@@ -96,27 +96,25 @@ final class EffectRunTests: XCTestCase {
   }
 
   func testRunCancellationCatch() async {
-    await withSerialExecutor { @MainActor in
-      enum CancelID {}
-      struct State: Equatable {}
-      enum Action: Equatable { case tapped, responseA, responseB }
-      let reducer = Reduce<State, Action> { state, action in
-        switch action {
-        case .tapped:
-          return .run { send in
-            Task.cancel(id: CancelID.self)
-            try Task.checkCancellation()
-            await send(.responseA)
-          } catch: { @Sendable _, send in  // NB: Explicit '@Sendable' required in 5.5.2
-            await send(.responseB)
-          }
-          .cancellable(id: CancelID.self)
-        case .responseA, .responseB:
-          return .none
+    enum CancelID {}
+    struct State: Equatable {}
+    enum Action: Equatable { case tapped, responseA, responseB }
+    let reducer = Reduce<State, Action> { state, action in
+      switch action {
+      case .tapped:
+        return .run { send in
+          Task.cancel(id: CancelID.self)
+          try Task.checkCancellation()
+          await send(.responseA)
+        } catch: { @Sendable _, send in  // NB: Explicit '@Sendable' required in 5.5.2
+          await send(.responseB)
         }
+        .cancellable(id: CancelID.self)
+      case .responseA, .responseB:
+        return .none
       }
-      let store = TestStore(initialState: State(), reducer: reducer)
-      await store.send(.tapped).finish()
     }
+    let store = TestStore(initialState: State(), reducer: reducer)
+    await store.send(.tapped).finish()
   }
 }

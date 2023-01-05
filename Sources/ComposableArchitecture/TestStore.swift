@@ -693,7 +693,9 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
       file: StaticString = #file,
       line: UInt = #line
     ) async {
-      await self.finish(timeout: duration.nanoseconds, file: file, line: line)
+      await withMainSerialExecutor {
+        await self.finish(timeout: duration.nanoseconds, file: file, line: line)
+      }
     }
   #endif
 
@@ -709,17 +711,18 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     file: StaticString = #file,
     line: UInt = #line
   ) async {
-    let nanoseconds = nanoseconds ?? self.timeout
-    let start = DispatchTime.now().uptimeNanoseconds
-    await Task.megaYield()
-    while !self.reducer.inFlightEffects.isEmpty {
-      guard start.distance(to: DispatchTime.now().uptimeNanoseconds) < nanoseconds
-      else {
-        let timeoutMessage =
+    await withMainSerialExecutor {
+      let nanoseconds = nanoseconds ?? self.timeout
+      let start = DispatchTime.now().uptimeNanoseconds
+      await Task.megaYield()
+      while !self.reducer.inFlightEffects.isEmpty {
+        guard start.distance(to: DispatchTime.now().uptimeNanoseconds) < nanoseconds
+        else {
+          let timeoutMessage =
           nanoseconds != self.self.timeout
           ? #"try increasing the duration of this assertion's "timeout""#
           : #"configure this assertion with an explicit "timeout""#
-        let suggestion = """
+          let suggestion = """
           There are effects in-flight. If the effect that delivers this action uses a \
           clock/scheduler (via "receive(on:)", "delay", "debounce", etc.), make sure that you wait \
           enough time for it to perform the effect. If you are using a test \
@@ -730,7 +733,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
           \(timeoutMessage).
           """
 
-        XCTFailHelper(
+          XCTFailHelper(
           """
           Expected effects to finish, but there are still effects in-flight\
           \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds" : "").
@@ -739,10 +742,11 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
           """,
           file: file,
           line: line
-        )
-        return
+          )
+          return
+        }
+        await Task.yield()
       }
-      await Task.yield()
     }
   }
 
@@ -879,10 +883,11 @@ extension TestStore where ScopedState: Equatable {
     file: StaticString = #file,
     line: UInt = #line
   ) async -> TestStoreTask {
-    if !self.reducer.receivedActions.isEmpty {
-      var actions = ""
-      customDump(self.reducer.receivedActions.map(\.action), to: &actions)
-      XCTFailHelper(
+    await withMainSerialExecutor {
+      if !self.reducer.receivedActions.isEmpty {
+        var actions = ""
+        customDump(self.reducer.receivedActions.map(\.action), to: &actions)
+        XCTFailHelper(
         """
         Must handle \(self.reducer.receivedActions.count) received \
         action\(self.reducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
@@ -891,45 +896,46 @@ extension TestStore where ScopedState: Equatable {
         """,
         file: file,
         line: line
-      )
-    }
+        )
+      }
 
-    switch self.exhaustivity {
-    case .on:
-      break
-    case .off(showSkippedAssertions: true):
-      await self.skipReceivedActions(strict: false)
-    case .off(showSkippedAssertions: false):
-      self.reducer.receivedActions = []
-    }
+      switch self.exhaustivity {
+      case .on:
+        break
+      case .off(showSkippedAssertions: true):
+        await self.skipReceivedActions(strict: false)
+      case .off(showSkippedAssertions: false):
+        self.reducer.receivedActions = []
+      }
 
-    let expectedState = self.toScopedState(self.state)
-    let previousState = self.reducer.state
-    let task = self.store
-      .send(.init(origin: .send(self.fromScopedAction(action)), file: file, line: line))
-    await self.reducer.effectDidSubscribe.stream.first(where: { _ in true })
-    do {
-      let currentState = self.state
-      self.reducer.state = previousState
-      defer { self.reducer.state = currentState }
+      let expectedState = self.toScopedState(self.state)
+      let previousState = self.reducer.state
+      let task = self.store
+        .send(.init(origin: .send(self.fromScopedAction(action)), file: file, line: line))
+      await self.reducer.effectDidSubscribe.stream.first(where: { _ in true })
+      do {
+        let currentState = self.state
+        self.reducer.state = previousState
+        defer { self.reducer.state = currentState }
 
-      try self.expectedStateShouldMatch(
-        expected: expectedState,
-        actual: self.toScopedState(currentState),
-        updateStateToExpectedResult: updateStateToExpectedResult,
-        file: file,
-        line: line
-      )
-    } catch {
-      XCTFail("Threw error: \(error)", file: file, line: line)
+        try self.expectedStateShouldMatch(
+          expected: expectedState,
+          actual: self.toScopedState(currentState),
+          updateStateToExpectedResult: updateStateToExpectedResult,
+          file: file,
+          line: line
+        )
+      } catch {
+        XCTFail("Threw error: \(error)", file: file, line: line)
+      }
+      if "\(self.file)" == "\(file)" {
+        self.line = line
+      }
+      // NB: Give concurrency runtime more time to kick off effects so users don't need to manually
+      //     instrument their effects.
+      await Task.megaYield(count: 20)
+      return .init(rawValue: task, timeout: self.timeout)
     }
-    if "\(self.file)" == "\(file)" {
-      self.line = line
-    }
-    // NB: Give concurrency runtime more time to kick off effects so users don't need to manually
-    //     instrument their effects.
-    await Task.megaYield(count: 20)
-    return .init(rawValue: task, timeout: self.timeout)
   }
 
   /// Sends an action to the store and asserts when state changes.
@@ -1305,13 +1311,15 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
       file: StaticString = #file,
       line: UInt = #line
     ) async {
-      await self.receive(
-        expectedAction,
-        timeout: duration.nanoseconds,
-        assert: updateStateToExpectedResult,
-        file: file,
-        line: line
-      )
+      await withMainSerialExecutor {
+        await self.receive(
+          expectedAction,
+          timeout: duration.nanoseconds,
+          assert: updateStateToExpectedResult,
+          file: file,
+          line: line
+        )
+      }
     }
 
     /// Asserts an action was received from an effect that matches a predicate, and asserts how the
@@ -1350,19 +1358,21 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     @MainActor
     @_disfavoredOverload
     public func receive(
-      _ isMatching: (Action) -> Bool,
+      _ isMatching: @escaping (Action) -> Bool,
       timeout duration: Duration,
       assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
-      await self.receive(
-        isMatching,
-        timeout: duration.nanoseconds,
-        assert: updateStateToExpectedResult,
-        file: file,
-        line: line
-      )
+      await withMainSerialExecutor {
+        await self.receive(
+          isMatching,
+          timeout: duration.nanoseconds,
+          assert: updateStateToExpectedResult,
+          file: file,
+          line: line
+        )
+      }
     }
   #endif
 
@@ -1404,18 +1414,20 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     file: StaticString = #file,
     line: UInt = #line
   ) async {
-    guard !self.reducer.inFlightEffects.isEmpty
-    else {
+    await withMainSerialExecutor {
+      guard !self.reducer.inFlightEffects.isEmpty
+      else {
+        _ = {
+          self.receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
+        }()
+        return
+      }
+      await self.receiveAction(timeout: nanoseconds, file: file, line: line)
       _ = {
         self.receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
       }()
-      return
+      await Task.megaYield()
     }
-    await self.receiveAction(timeout: nanoseconds, file: file, line: line)
-    _ = {
-      self.receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
-    }()
-    await Task.megaYield()
   }
 
   /// Asserts an action was received from an effect that matches a predicate, and asserts how the
@@ -1453,24 +1465,26 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   @MainActor
   @_disfavoredOverload
   public func receive(
-    _ isMatching: (Action) -> Bool,
+    _ isMatching: @escaping (Action) -> Bool,
     timeout nanoseconds: UInt64? = nil,
     assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) async {
-    guard !self.reducer.inFlightEffects.isEmpty
-    else {
+    await withMainSerialExecutor {
+      guard !self.reducer.inFlightEffects.isEmpty
+      else {
+        _ = {
+          self.receive(isMatching, assert: updateStateToExpectedResult, file: file, line: line)
+        }()
+        return
+      }
+      await self.receiveAction(timeout: nanoseconds, file: file, line: line)
       _ = {
         self.receive(isMatching, assert: updateStateToExpectedResult, file: file, line: line)
       }()
-      return
+      await Task.megaYield()
     }
-    await self.receiveAction(timeout: nanoseconds, file: file, line: line)
-    _ = {
-      self.receive(isMatching, assert: updateStateToExpectedResult, file: file, line: line)
-    }()
-    await Task.megaYield()
   }
 
   /// Asserts an action was received matching a case path and asserts how the state changes.
@@ -1513,18 +1527,20 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     file: StaticString = #file,
     line: UInt = #line
   ) async {
-    guard !self.reducer.inFlightEffects.isEmpty
-    else {
+    await withMainSerialExecutor {
+      guard !self.reducer.inFlightEffects.isEmpty
+      else {
+        _ = {
+          self.receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
+        }()
+        return
+      }
+      await self.receiveAction(timeout: nanoseconds, file: file, line: line)
       _ = {
         self.receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
       }()
-      return
+      await Task.megaYield()
     }
-    await self.receiveAction(timeout: nanoseconds, file: file, line: line)
-    _ = {
-      self.receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
-    }()
-    await Task.megaYield()
   }
 
   #if swift(>=5.7) && !os(macOS) && !targetEnvironment(macCatalyst)
@@ -1569,18 +1585,20 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
       file: StaticString = #file,
       line: UInt = #line
     ) async {
-      guard !self.reducer.inFlightEffects.isEmpty
-      else {
+      await withMainSerialExecutor {
+        guard !self.reducer.inFlightEffects.isEmpty
+        else {
+          _ = {
+            self.receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
+          }()
+          return
+        }
+        await self.receiveAction(timeout: duration.nanoseconds, file: file, line: line)
         _ = {
           self.receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
         }()
-        return
+        await Task.megaYield()
       }
-      await self.receiveAction(timeout: duration.nanoseconds, file: file, line: line)
-      _ = {
-        self.receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
-      }()
-      await Task.megaYield()
     }
   #endif
 
@@ -1672,30 +1690,31 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     file: StaticString,
     line: UInt
   ) async {
-    let nanoseconds = nanoseconds ?? self.timeout
+    await withMainSerialExecutor {
+      let nanoseconds = nanoseconds ?? self.timeout
 
-    await Task.megaYield()
-    let start = DispatchTime.now().uptimeNanoseconds
-    while !Task.isCancelled {
-      await Task.detached(priority: .background) { await Task.yield() }.value
+      await Task.megaYield()
+      let start = DispatchTime.now().uptimeNanoseconds
+      while !Task.isCancelled {
+        await Task.detached(priority: .background) { await Task.yield() }.value
 
-      guard self.reducer.receivedActions.isEmpty
-      else { break }
+        guard self.reducer.receivedActions.isEmpty
+        else { break }
 
-      guard start.distance(to: DispatchTime.now().uptimeNanoseconds) < nanoseconds
-      else {
-        let suggestion: String
-        if self.reducer.inFlightEffects.isEmpty {
-          suggestion = """
+        guard start.distance(to: DispatchTime.now().uptimeNanoseconds) < nanoseconds
+        else {
+          let suggestion: String
+          if self.reducer.inFlightEffects.isEmpty {
+            suggestion = """
             There are no in-flight effects that could deliver this action. Could the effect you \
             expected to deliver this action have been cancelled?
             """
-        } else {
-          let timeoutMessage =
+          } else {
+            let timeoutMessage =
             nanoseconds != self.timeout
             ? #"try increasing the duration of this assertion's "timeout""#
             : #"configure this assertion with an explicit "timeout""#
-          suggestion = """
+            suggestion = """
             There are effects in-flight. If the effect that delivers this action uses a \
             clock/scheduler (via "receive(on:)", "delay", "debounce", etc.), make sure that you \
             wait enough time for it to perform the effect. If you are using a test \
@@ -1704,8 +1723,8 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
 
             If you are not yet using a scheduler, or can not use a scheduler, \(timeoutMessage).
             """
-        }
-        XCTFail(
+          }
+          XCTFail(
           """
           Expected to receive an action, but received none\
           \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds" : "").
@@ -1714,13 +1733,14 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
           """,
           file: file,
           line: line
-        )
-        return
+          )
+          return
+        }
       }
-    }
 
-    guard !Task.isCancelled
-    else { return }
+      guard !Task.isCancelled
+      else { return }
+    }
   }
 }
 
@@ -1792,8 +1812,10 @@ extension TestStore {
     file: StaticString = #file,
     line: UInt = #line
   ) async {
-    await Task.megaYield()
-    _ = { self.skipReceivedActions(strict: strict, file: file, line: line) }()
+    await withMainSerialExecutor {
+      await Task.megaYield()
+      _ = { self.skipReceivedActions(strict: strict, file: file, line: line) }()
+    }
   }
 
   /// Clears the queue of received actions from effects.
@@ -1874,8 +1896,10 @@ extension TestStore {
     file: StaticString = #file,
     line: UInt = #line
   ) async {
-    await Task.megaYield()
-    _ = { self.skipInFlightEffects(strict: strict, file: file, line: line) }()
+    await withMainSerialExecutor {
+      await Task.megaYield()
+      _ = { self.skipInFlightEffects(strict: strict, file: file, line: line) }()
+    }
   }
 
   /// Cancels any currently in-flight effects.
@@ -2017,8 +2041,10 @@ public struct TestStoreTask: Hashable, Sendable {
   /// await onAppearTask.cancel() // ✅ Cancel the task to simulate the feature disappearing.
   /// ```
   public func cancel() async {
-    self.rawValue?.cancel()
-    await self.rawValue?.cancellableValue
+    await withMainSerialExecutor {
+      self.rawValue?.cancel()
+      await self.rawValue?.cancellableValue
+    }
   }
 
   // NB: Only needed until Xcode ships a macOS SDK that uses the 5.7 standard library.
@@ -2033,7 +2059,9 @@ public struct TestStoreTask: Hashable, Sendable {
       file: StaticString = #file,
       line: UInt = #line
     ) async {
-      await self.finish(timeout: duration.nanoseconds, file: file, line: line)
+      await withMainSerialExecutor {
+        await self.finish(timeout: duration.nanoseconds, file: file, line: line)
+      }
     }
   #endif
 
@@ -2046,24 +2074,25 @@ public struct TestStoreTask: Hashable, Sendable {
     file: StaticString = #file,
     line: UInt = #line
   ) async {
-    let nanoseconds = nanoseconds ?? self.timeout
-    await Task.megaYield()
-    do {
-      try await withThrowingTaskGroup(of: Void.self) { group in
-        group.addTask { await self.rawValue?.cancellableValue }
-        group.addTask {
-          try await Task.sleep(nanoseconds: nanoseconds)
-          throw CancellationError()
+    await withMainSerialExecutor {
+      let nanoseconds = nanoseconds ?? self.timeout
+      await Task.megaYield()
+      do {
+        try await withThrowingTaskGroup(of: Void.self) { group in
+          group.addTask { await self.rawValue?.cancellableValue }
+          group.addTask {
+            try await Task.sleep(nanoseconds: nanoseconds)
+            throw CancellationError()
+          }
+          try await group.next()
+          group.cancelAll()
         }
-        try await group.next()
-        group.cancelAll()
-      }
-    } catch {
-      let timeoutMessage =
+      } catch {
+        let timeoutMessage =
         nanoseconds != self.timeout
         ? #"try increasing the duration of this assertion's "timeout""#
         : #"configure this assertion with an explicit "timeout""#
-      let suggestion = """
+        let suggestion = """
         If this task delivers its action using a clock/scheduler (via "sleep(for:)", \
         "timer(interval:)", etc.), make sure that you wait enough time for it to \
         perform its work. If you are using a test clock/scheduler, advance the scheduler so that \
@@ -2074,7 +2103,7 @@ public struct TestStoreTask: Hashable, Sendable {
         \(timeoutMessage).
         """
 
-      XCTFail(
+        XCTFail(
         """
         Expected task to finish, but it is still in-flight\
         \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds" : "").
@@ -2083,7 +2112,8 @@ public struct TestStoreTask: Hashable, Sendable {
         """,
         file: file,
         line: line
-      )
+        )
+      }
     }
   }
 
@@ -2280,7 +2310,7 @@ private func _XCTExpectFailure(
 
 import _CAsyncSupport
 
-public func withSerialExecutor<T>(
+func withMainSerialExecutor<T>(
   @_implicitSelfCapture operation: @escaping () async throws -> T
 ) async rethrows -> T {
   let hook = swift_task_enqueueGlobal_hook
