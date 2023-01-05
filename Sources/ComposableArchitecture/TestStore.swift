@@ -575,8 +575,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     Action == ScopedAction,
     Environment == Void
   {
-    var dependencies = DependencyValues()
-    dependencies.context = .test
+    var dependencies = DependencyValues._current
     prepareDependencies(&dependencies)
     let initialState = withDependencies {
       $0 = dependencies
