@@ -279,9 +279,9 @@ essentials of state that your view needs to do its job. This is especially true 
 closer to the root of the application, which tend to hold state for many child features, all of
 which is not needed in the view.
 
-However, if you are doing this _and_ using ``@BindingState``, then there is an extra step you must
+However, if you are doing this _and_ using `@BindingState`, then there is an extra step you must
 take. When defining the `ViewState` type in your view that holds onto all of the state your view
-cares about, you must mark each field that needs to derive a binding with ``@BindingViewState``:
+cares about, you must mark each field that needs to derive a binding with `@BindingViewState`:
 
 ```swift
 struct ViewState: Equatable {
@@ -291,8 +291,8 @@ struct ViewState: Equatable {
 }
 ```
 
-> Note: Just as is the case with ``@BindingState``, not all fields need to be annotated with 
-``@BindingViewState``. Just the ones that need to have bindings derived to hand to SwiftUI 
+> Note: Just as is the case with `@BindingState`, not all fields need to be annotated with 
+`@BindingViewState`. Just the ones that need to have bindings derived to hand to SwiftUI 
 components.
 
 And finally, you must provide a custom initializer that creates the ``BindingViewState`` for each
@@ -311,7 +311,7 @@ struct ViewState: Equatable {
 ```
 
 That code is only slightly different from the code that is written when not dealing with the 
-``@BindingState`` property wrapper.
+`@BindingState` property wrapper.
 
 And with those steps done you can now derive a binding from the view store very easily:
 
