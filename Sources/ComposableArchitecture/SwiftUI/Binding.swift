@@ -148,26 +148,29 @@ public struct BindingViewStates<State> {
 }
 
 /// A protocol that your feature's `State` should conform to in order to extract
-/// ``BindingViewState`` values from ``BindableStateProtocol/binding``.
+/// ``BindingViewState`` values from ``BindableStateProtocol/bindings``.
 ///
 /// There is no specific requirement to conform to this protocol.
 ///
 /// - Note: This protocol will be renamed `BindableState` in a future release, when the deprecated
 /// ``BindableState`` as a property wrapper will be obsoleted. At the same time, conforming to this
-/// protocol will also be a requirement of ``BindingReducer``'s `State`, so you're invited to
+/// protocol will also be a requirement of ``BindingReducer``'s `State`, so you're encouraged to
 /// conform states hosting `@BindingState` properties to this protocol already.
 public protocol BindableStateProtocol {}
 
 extension BindableStateProtocol {
-  /// A ``BindingViewStates`` value from which you can extract ``BindingViewState``'s using
-  /// dynamic lookup.
-  ///
-  /// You use this type as a `BindingViewState`'s repository to assign `@BindingViewState`
-  /// properties in your `ViewState`s initializer:
+  /// A ``BindingViewStates`` value from which you can derive ``BindingViewState`` using
+  /// dynamic member lookup:
   ///
   /// ```swift
+  /// struct State: BindableStateProtocol {
+  ///   @BindingState var text = ""
+  ///   // More properties that do not need bindings.
+  /// }
+  ///
   /// struct ViewState: Equatable {
   ///   @BindingViewState var text: String
+  ///
   ///   init(state: State) {
   ///     self._text = state.bindings.$text
   ///   }
@@ -260,6 +263,7 @@ public struct BindingViewState<Value> {
     self.line = line
   }
 }
+
 extension BindingViewState: Equatable where Value: Equatable {
   public static func == (lhs: BindingViewState<Value>, rhs: BindingViewState<Value>) -> Bool {
     lhs.wrappedValue == rhs.wrappedValue && lhs.keyPath == rhs.keyPath
@@ -272,6 +276,10 @@ extension BindingViewState: Hashable where Value: Hashable {
     hasher.combine(keyPath)
   }
 }
+
+// NB: Safe to use @unchecked Sendable because AnyKeyPath and Value are both Sendable, and they
+//     are the only stored properties on the struct.
+extension BindingViewState: @unchecked Sendable where Value: Sendable {}
 
 extension BindingViewState: CustomReflectable {
   public var customMirror: Mirror {
