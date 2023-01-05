@@ -59,7 +59,7 @@ final class TodosTests: XCTestCase {
     )
 
     await store.send(
-      .todo(id: state.todos[0].id, action: .set(\.$description, "Learn Composable Architecture"))
+      .todo(id: state.todos[0].id, action: .textFieldChanged("Learn Composable Architecture"))
     ) {
       $0.todos[id: state.todos[0].id]?.description = "Learn Composable Architecture"
     }
@@ -88,7 +88,7 @@ final class TodosTests: XCTestCase {
 
     store.dependencies.continuousClock = self.clock
 
-    await store.send(.todo(id: state.todos[0].id, action: .set(\.$isComplete, true))) {
+    await store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
       $0.todos[id: state.todos[0].id]?.isComplete = true
     }
     await self.clock.advance(by: .seconds(1))
@@ -123,11 +123,11 @@ final class TodosTests: XCTestCase {
 
     store.dependencies.continuousClock = self.clock
 
-    await store.send(.todo(id: state.todos[0].id, action: .set(\.$isComplete, true))) {
+    await store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
       $0.todos[id: state.todos[0].id]?.isComplete = true
     }
     await self.clock.advance(by: .milliseconds(500))
-    await store.send(.todo(id: state.todos[0].id, action: .set(\.$isComplete, false))) {
+    await store.send(.todo(id: state.todos[0].id, action: .checkBoxToggled)) {
       $0.todos[id: state.todos[0].id]?.isComplete = false
     }
     await self.clock.advance(by: .seconds(1))
@@ -259,7 +259,7 @@ final class TodosTests: XCTestCase {
 
     store.dependencies.continuousClock = self.clock
 
-    await store.send(.set(\.$editMode, .active)) {
+    await store.send(.editModeChanged(.active)) {
       $0.editMode = .active
     }
     await store.send(.move([0], 2)) {
@@ -307,10 +307,10 @@ final class TodosTests: XCTestCase {
     store.dependencies.continuousClock = self.clock
     store.dependencies.uuid = .incrementing
 
-    await store.send(.set(\.$editMode, .active)) {
+    await store.send(.editModeChanged(.active)) {
       $0.editMode = .active
     }
-    await store.send(.set(\.$filter, .completed)) {
+    await store.send(.filterPicked(.completed)) {
       $0.filter = .completed
     }
     await store.send(.move([0], 2)) {
@@ -346,11 +346,10 @@ final class TodosTests: XCTestCase {
       reducer: Todos()
     )
 
-    await store.send(.set(\.$filter, .completed)) {
+    await store.send(.filterPicked(.completed)) {
       $0.filter = .completed
     }
-    await store.send(.todo(id: state.todos[1].id, action: .set(\.$description, "Did this already")))
-    {
+    await store.send(.todo(id: state.todos[1].id, action: .textFieldChanged("Did this already"))) {
       $0.todos[id: state.todos[1].id]?.description = "Did this already"
     }
   }

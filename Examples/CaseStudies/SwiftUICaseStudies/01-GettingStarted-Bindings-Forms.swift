@@ -8,7 +8,7 @@ private let readMe = """
   Bindable state and actions allow you to safely eliminate the boilerplate caused by needing to \
   have a unique action for every UI control. Instead, all UI bindings can be consolidated into a \
   single `binding` action that holds onto a `BindingAction` value, and all bindable state can be \
-  safeguarded with the `BindingState` property wrapper.
+  safeguarded with the `BindableState` property wrapper.
 
   It is instructive to compare this case study to the "Binding Basics" case study.
   """
@@ -16,11 +16,11 @@ private let readMe = """
 // MARK: - Feature domain
 
 struct BindingForm: ReducerProtocol {
-  struct State: BindableStateProtocol, Equatable {
-    @BindingState var sliderValue = 5.0
-    @BindingState var stepCount = 10
-    @BindingState var text = ""
-    @BindingState var toggleIsOn = false
+  struct State: Equatable {
+    @BindableState var sliderValue = 5.0
+    @BindableState var stepCount = 10
+    @BindableState var text = ""
+    @BindableState var toggleIsOn = false
   }
 
   enum Action: BindableAction, Equatable {
@@ -60,7 +60,7 @@ struct BindingFormView: View {
         }
 
         HStack {
-          TextField("Type here", text: viewStore.$text)
+          TextField("Type here", text: viewStore.binding(\.$text))
             .disableAutocorrection(true)
             .foregroundStyle(viewStore.toggleIsOn ? Color.secondary : .primary)
           Text(alternate(viewStore.text))
@@ -69,18 +69,21 @@ struct BindingFormView: View {
 
         Toggle(
           "Disable other controls",
-          isOn: viewStore.$toggleIsOn.resignFirstResponder()
+          isOn: viewStore.binding(\.$toggleIsOn)
+            .resignFirstResponder()
         )
 
         Stepper(
-          "Max slider value: \(viewStore.stepCount)", value: viewStore.$stepCount, in: 0...100
+          "Max slider value: \(viewStore.stepCount)",
+          value: viewStore.binding(\.$stepCount),
+          in: 0...100
         )
         .disabled(viewStore.toggleIsOn)
 
         HStack {
           Text("Slider value: \(Int(viewStore.sliderValue))")
 
-          Slider(value: viewStore.$sliderValue, in: 0...Double(viewStore.stepCount))
+          Slider(value: viewStore.binding(\.$sliderValue), in: 0...Double(viewStore.stepCount))
             .tint(.accentColor)
         }
         .disabled(viewStore.toggleIsOn)
