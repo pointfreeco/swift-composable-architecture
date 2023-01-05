@@ -189,6 +189,7 @@
 
     @MainActor
     func testBindingUnhandledAction() {
+      let line = #line
       struct State: Equatable {
         @BindingState var value = 0
       }
@@ -200,18 +201,17 @@
         reducer: EmptyReducer<State, Action>()
       )
 
-      var line: UInt = 0
       XCTExpectFailure {
-        line = #line
         ViewStore(store).binding(\.$value).wrappedValue = 42
       } issueMatcher: {
         $0.compactDescription == """
-          A binding action sent from a view store at "\(#fileID):\(line + 1)" was not handled. …
+          A binding action for a Int state at "\(#fileID):\(line+2)" was not handled. …
 
             Action:
               RuntimeWarningTests.Action.binding(.set(_, 42))
 
-          To fix this, invoke "BindingReducer()" from your feature reducer's "body".
+          To fix this, invoke "BindingReducer()" from "RuntimeWarningTests.body" in \
+          "RuntimeWarningTests.swift".
           """
       }
     }

@@ -64,12 +64,9 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
             value: value,
             bindableActionType: ViewAction.self,
             bindableStateType: ViewAction.State.self,
-            sourceFile: bindingViewState.file,
-            sourceFileID: bindingViewState.fileID,
-            sourceLine: bindingViewState.line,
-            file: file,
-            fileID: fileID,
-            line: line
+            file: bindingViewState.file,
+            fileID: bindingViewState.fileID,
+            line: bindingViewState.line
           )
           let set: (inout ViewState) -> Void = {
             $0[keyPath: keyPath].wrappedValue = value
