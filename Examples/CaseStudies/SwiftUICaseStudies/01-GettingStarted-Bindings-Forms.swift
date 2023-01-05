@@ -29,7 +29,7 @@ struct BindingForm: ReducerProtocol {
   }
 
   var body: some ReducerProtocol<State, Action> {
-//    BindingReducer()
+    BindingReducer()
     Reduce { state, action in
       switch action {
       case .binding(\.$stepCount):
