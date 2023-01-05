@@ -542,7 +542,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   /// The default timeout used in all methods that take an optional timeout.
   ///
   /// This is the default timeout used in all methods that take an optional timeout, such as
-  /// ``receive(_:timeout:assert:file:line:)-1rwdd`` and ``finish(timeout:file:line:)``.
+  /// ``receive(_:timeout:assert:file:line:)-1rwdd`` and ``finish(timeout:file:line:)-53gi5``.
   public var timeout: UInt64
 
   private var _environment: Box<Environment>
@@ -1317,7 +1317,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     /// Asserts an action was received from an effect that matches a predicate, and asserts how the
     /// state changes.
     ///
-    /// This method is similar to ``receive(_:timeout:assert:file:line:)-5n755``, except it allows
+    /// This method is similar to ``receive(_:timeout:assert:file:line:)-4he05``, except it allows
     /// you to assert that an action was received that matches a predicate without asserting on all
     /// the data in the action:
     ///
@@ -1336,7 +1336,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     /// data was in the effect that you chose not to assert on.
     ///
     /// If you only want to check that a particular action case was received, then you might find
-    /// the ``receive(_:timeout:assert:file:line:)-5n755`` overload of this method more useful.
+    /// the ``receive(_:timeout:assert:file:line:)-4he05`` overload of this method more useful.
     ///
     /// - Parameters:
     ///   - isMatching: A closure that attempts to match an action. If it returns `false`, a test
@@ -1530,7 +1530,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   #if swift(>=5.7) && !os(macOS) && !targetEnvironment(macCatalyst)
     /// Asserts an action was received matching a case path and asserts how the state changes.
     ///
-    /// This method is similar to ``receive(_:timeout:assert:file:line:)-5n755``, except it allows
+    /// This method is similar to ``receive(_:timeout:assert:file:line:)-4he05``, except it allows
     /// you to assert that an action was received that matches a particular case of the action enum
     /// without asserting on all the data in the action.
     ///
@@ -1988,8 +1988,8 @@ extension TestStore {
 /// await store.send(.stopTimerButtonTapped).finish()
 /// ```
 ///
-/// See ``TestStore/finish(timeout:file:line:)`` for the ability to await all in-flight effects in
-/// the test store.
+/// See ``TestStore/finish(timeout:file:line:)-53gi5`` for the ability to await all in-flight
+/// effects in the test store.
 ///
 /// See ``ViewStoreTask`` for the analog provided to ``ViewStore``.
 public struct TestStoreTask: Hashable, Sendable {

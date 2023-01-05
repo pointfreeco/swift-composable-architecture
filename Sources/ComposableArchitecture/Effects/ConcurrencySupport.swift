@@ -325,11 +325,11 @@ public final actor ActorIsolated<Value: Sendable> {
   /// - Parameters: operation: An operation to be performed on the actor with the underlying value.
   /// - Returns: The result of the operation.
   public func withValue<T: Sendable>(
-    _ operation: @Sendable (inout Value) async throws -> T
-  ) async rethrows -> T {
+    _ operation: @Sendable (inout Value) throws -> T
+  ) rethrows -> T {
     var value = self.value
     defer { self.value = value }
-    return try await operation(&value)
+    return try operation(&value)
   }
 
   /// Overwrite the isolated value with a new value.
