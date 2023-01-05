@@ -18,8 +18,7 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
     deprecated: 9999.0,
     message:
       """
-      Extracting bindings as `viewStore.binding(\\.$foo)` is deprecated. \
-      Use dynamic lookup directly on the `viewStore` instead: `viewStore.$foo`.
+      Deriving bindings from binding state via `viewStore.binding(\\.$value)` is deprecated. Use dynamic member lookup directly on the `viewStore` instead: `viewStore.$value`.
       """
   )
   @available(
@@ -27,8 +26,7 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
     deprecated: 9999.0,
     message:
       """
-      Extracting bindings as `viewStore.binding(\\.$foo)` is deprecated. \
-      Use dynamic lookup directly on the `viewStore` instead: `viewStore.$foo`.
+      Deriving bindings from binding state via `viewStore.binding(\\.$value)` is deprecated. Use dynamic member lookup directly on the `viewStore` instead: `viewStore.$value`.
       """
   )
   @available(
@@ -36,8 +34,7 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
     deprecated: 9999.0,
     message:
       """
-      Extracting bindings as `viewStore.binding(\\.$foo)` is deprecated. \
-      Use dynamic lookup directly on the `viewStore` instead: `viewStore.$foo`.
+      Deriving bindings from binding state via `viewStore.binding(\\.$value)` is deprecated. Use dynamic member lookup directly on the `viewStore` instead: `viewStore.$value`.
       """
   )
   @available(
@@ -45,8 +42,7 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
     deprecated: 9999.0,
     message:
       """
-      Extracting bindings as `viewStore.binding(\\.$foo)` is deprecated. \
-      Use dynamic lookup directly on the `viewStore` instead: `viewStore.$foo`.
+      Deriving bindings from binding state via `viewStore.binding(\\.$value)` is deprecated. Use dynamic member lookup directly on the `viewStore` instead: `viewStore.$value`.
       """
   )
   public func binding<Value: Equatable>(

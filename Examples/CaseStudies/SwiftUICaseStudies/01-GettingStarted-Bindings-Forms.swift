@@ -73,9 +73,7 @@ struct BindingFormView: View {
         )
 
         Stepper(
-          "Max slider value: \(viewStore.stepCount)",
-          value: viewStore.$stepCount,
-          in: 0...100
+          "Max slider value: \(viewStore.stepCount)", value: viewStore.$stepCount, in: 0...100
         )
         .disabled(viewStore.toggleIsOn)
 

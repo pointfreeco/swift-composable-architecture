@@ -73,8 +73,7 @@ public struct BindingState<Value> {
     deprecated,
     message:
       """
-      Chaining onto properties of bindable state is deprecated. Push '@BindingState' use to the \
-      child state, instead.
+      Chaining onto properties of bindable state is deprecated. Push '@BindingState' use to the child state, instead.
       """
   )
   public subscript<Subject>(
@@ -147,12 +146,14 @@ extension BindingState: Sendable where Value: Sendable {}
 @dynamicMemberLookup
 public struct BindingViewStates<State> {
   private let state: State
-  init(state: State) {
+
+  fileprivate init(state: State) {
     self.state = state
   }
-  public subscript<Value>(dynamicMember keyPath: WritableKeyPath<State, BindingState<Value>>)
-    -> BindingViewState<Value>
-  {
+
+  public subscript<Value>(
+    dynamicMember keyPath: WritableKeyPath<State, BindingState<Value>>
+  ) -> BindingViewState<Value> {
     let bindingState = self.state[keyPath: keyPath]
     return .init(
       wrappedValue: bindingState.wrappedValue,
@@ -176,8 +177,8 @@ public struct BindingViewStates<State> {
 public protocol BindableStateProtocol {}
 
 extension BindableStateProtocol {
-  /// A ``BindingViewStates`` value from which you can derive ``BindingViewState`` using
-  /// dynamic member lookup:
+  /// A ``BindingViewStates`` value from which you can derive ``BindingViewState`` using dynamic
+  /// member lookup:
   ///
   /// ```swift
   /// struct State: BindableStateProtocol {
@@ -308,9 +309,9 @@ where Value: CustomDebugStringConvertible {
 
 // `BindingViewState` dynamic member lookup.
 extension ViewStore where ViewAction: BindableAction {
-  public subscript<Value>(dynamicMember keyPath: KeyPath<ViewState, BindingViewState<Value>>)
-    -> Binding<Value> where Value: Equatable
-  {
+  public subscript<Value: Equatable>(
+    dynamicMember keyPath: KeyPath<ViewState, BindingViewState<Value>>
+  ) -> Binding<Value> {
     let bindingViewState = self.state[keyPath: keyPath]
     let stateKeyPath =
       bindingViewState.keyPath
