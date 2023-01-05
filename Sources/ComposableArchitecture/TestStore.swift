@@ -2318,12 +2318,5 @@ func withMainSerialExecutor<T>(
   swift_task_enqueueGlobal_hook = { job, original in
     MainActor.shared.enqueue(unsafeBitCast(job, to: UnownedJob.self))
   }
-  let task = Task {
-    try await operation()
-  }
-  do {
-    return try await task.cancellableValue
-  } catch {
-    return try Result<T, Error>.failure(error)._rethrowGet()
-  }
+  return try await operation()
 }
