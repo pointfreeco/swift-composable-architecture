@@ -4,7 +4,7 @@
 
 ### Creating a test store
 
-- ``init(initialState:reducer:file:line:)``
+- ``init(initialState:reducer:prepareDependencies:file:line:)``
 
 ### Configuring a test store
 
@@ -18,7 +18,7 @@
 - ``receive(_:timeout:assert:file:line:)-1rwdd``
 - ``receive(_:timeout:assert:file:line:)-4e4m0``
 - ``receive(_:timeout:assert:file:line:)-3myco``
-- ``finish(timeout:file:line:)``
+- ``finish(timeout:file:line:)-53gi5``
 - ``TestStoreTask``
 
 ### Methods for skipping actions and effects

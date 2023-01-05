@@ -76,9 +76,9 @@ final class SharedStateTests: XCTestCase {
     )
 
     await store.send(.isPrimeButtonTapped) {
-      $0.alert = AlertState(
-        title: TextState("👍 The number \($0.count) is prime!")
-      )
+      $0.alert = AlertState {
+        TextState("👍 The number 3 is prime!")
+      }
     }
     await store.send(.alertDismissed) {
       $0.alert = nil
@@ -94,9 +94,9 @@ final class SharedStateTests: XCTestCase {
     )
 
     await store.send(.isPrimeButtonTapped) {
-      $0.alert = AlertState(
-        title: TextState("👎 The number \($0.count) is not prime :(")
-      )
+      $0.alert = AlertState {
+        TextState("👎 The number 6 is not prime :(")
+      }
     }
     await store.send(.alertDismissed) {
       $0.alert = nil

@@ -88,7 +88,7 @@ final class VoiceMemosTests: XCTestCase {
 
     await store.send(.recordButtonTapped)
     await store.receive(.recordPermissionResponse(false)) {
-      $0.alert = AlertState(title: TextState("Permission is required to record voice memos."))
+      $0.alert = AlertState { TextState("Permission is required to record voice memos.") }
       $0.audioRecorderPermission = .denied
     }
     await store.send(.alertDismissed) {
@@ -131,7 +131,7 @@ final class VoiceMemosTests: XCTestCase {
     didFinish.continuation.finish(throwing: SomeError())
     await store.receive(.recordingMemo(.audioRecorderDidFinish(.failure(SomeError()))))
     await store.receive(.recordingMemo(.delegate(.didFinish(.failure(SomeError()))))) {
-      $0.alert = AlertState(title: TextState("Voice memo recording failed."))
+      $0.alert = AlertState { TextState("Voice memo recording failed.") }
       $0.recordingMemo = nil
     }
 
@@ -164,7 +164,7 @@ final class VoiceMemosTests: XCTestCase {
     await store.send(.recordingMemo(.task))
     didFinish.continuation.finish(throwing: SomeError())
     await store.receive(.recordingMemo(.delegate(.didFinish(.failure(SomeError()))))) {
-      $0.alert = AlertState(title: TextState("Voice memo recording failed."))
+      $0.alert = AlertState { TextState("Voice memo recording failed.") }
       $0.recordingMemo = nil
     }
   }
@@ -236,7 +236,7 @@ final class VoiceMemosTests: XCTestCase {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
     }
     await store.receive(.voiceMemo(id: url, action: .audioPlayerClient(.failure(SomeError())))) {
-      $0.alert = AlertState(title: TextState("Voice memo playback failed."))
+      $0.alert = AlertState { TextState("Voice memo playback failed.") }
       $0.voiceMemos[id: url]?.mode = .notPlaying
     }
     await task.cancel()

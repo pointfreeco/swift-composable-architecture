@@ -243,7 +243,7 @@ struct Feature: ReducerProtocol {
       return EffectTask(value: .sharedComputation)
 
     case let .textFieldChanged(text):
-      state.description = = text
+      state.description = text
       return EffectTask(value: .sharedComputation)
 
     case .sharedComputation:
@@ -325,7 +325,7 @@ struct Feature: ReducerProtocol {
       return self.sharedComputation(state: &state)
 
     case let .textFieldChanged(text):
-      state.description = = text
+      state.description = text
       return self.sharedComputation(state: &state)
     }
   }
