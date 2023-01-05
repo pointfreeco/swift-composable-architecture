@@ -6,7 +6,7 @@ final class BindingTests: XCTestCase {
   #if swift(>=5.7)
     func testNestedBindingStateWithNestedMatching() {
       struct BindingTest: ReducerProtocol {
-        struct State: Equatable, BindableStateProtocol {
+        struct State: BindableStateProtocol, Equatable {
           @BindingState var nested = Nested()
 
           struct Nested: Equatable {
@@ -36,18 +36,19 @@ final class BindingTests: XCTestCase {
 
       let viewStore = ViewStore(store)
 
+      XCTAssertNoDifference(viewStore.state, .init(nested: .init(field: "")))
       viewStore.$nested.field.wrappedValue = "Hello"
       // Pattern matching with nested `KeyPath`s is not supported anymore, so the following should
       // now fail:
       XCTExpectFailure {
         XCTAssertEqual(viewStore.state, .init(nested: .init(field: "Hello!")))
       }
-      XCTAssertEqual(viewStore.state, .init(nested: .init(field: "Hello")))
+      XCTAssertNoDifference(viewStore.state, .init(nested: .init(field: "Hello")))
     }
 
-    func testbindingState() {
+    func testBindingState() {
       struct BindingTest: ReducerProtocol {
-        struct State: Equatable, BindableStateProtocol {
+        struct State: BindableStateProtocol, Equatable {
           @BindingState var nested = Nested()
 
           struct Nested: Equatable {
