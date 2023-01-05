@@ -157,9 +157,9 @@ public struct BindingViewStates<State> {
     return .init(
       wrappedValue: bindingState.wrappedValue,
       keyPath: keyPath,
-      sourceFile: bindingState.file,
-      sourceFileID: bindingState.fileID,
-      sourceLine: bindingState.line
+      file: bindingState.file,
+      fileID: bindingState.fileID,
+      line: bindingState.line
     )
   }
 }
@@ -251,30 +251,19 @@ public struct BindingViewState<Value> {
   let keyPath: AnyKeyPath
   public var wrappedValue: Value
   public var projectedValue: Self { self }
-
   let file: StaticString
   let fileID: StaticString
   let line: UInt
 
-  let sourceFile: StaticString
-  let sourceFileID: StaticString
-  let sourceLine: UInt
-
   internal init<State>(
     wrappedValue: Value,
     keyPath: WritableKeyPath<State, BindingState<Value>>,
-    sourceFile: StaticString,
-    sourceFileID: StaticString,
-    sourceLine: UInt,
-    file: StaticString = #file,
-    fileID: StaticString = #fileID,
-    line: UInt = #line
+    file: StaticString,
+    fileID: StaticString,
+    line: UInt
   ) {
     self.wrappedValue = wrappedValue
     self.keyPath = keyPath
-    self.sourceFile = sourceFile
-    self.sourceFileID = sourceFileID
-    self.sourceLine = sourceLine
     self.file = file
     self.fileID = fileID
     self.line = line
@@ -334,12 +323,9 @@ extension ViewStore where ViewAction: BindableAction {
             value: value,
             bindableActionType: ViewAction.self,
             bindableStateType: ViewAction.State.self,
-            sourceFile: bindingViewState.sourceFile,
-            sourceFileID: bindingViewState.sourceFile,
-            sourceLine: bindingViewState.sourceLine,
-            file: #file,
-            fileID: #fileID,
-            line: #line
+            file: bindingViewState.file,
+            fileID: bindingViewState.file,
+            line: bindingViewState.line
           )
           let set: (inout ViewAction.State) -> Void = {
             $0[keyPath: stateKeyPath].wrappedValue = value
@@ -376,12 +362,9 @@ where
             value: value,
             bindableActionType: ViewAction.self,
             bindableStateType: ViewAction.State.self,
-            sourceFile: bindingState.file,
-            sourceFileID: bindingState.fileID,
-            sourceLine: bindingState.line,
-            file: #file,
-            fileID: #fileID,
-            line: #line
+            file: bindingState.file,
+            fileID: bindingState.fileID,
+            line: bindingState.line
           )
           let set: (inout ViewAction.State) -> Void = {
             $0[keyPath: keyPath].wrappedValue = value
@@ -631,20 +614,12 @@ extension BindingAction: CustomDumpReflectable {
     let file: StaticString
     let fileID: StaticString
     let line: UInt
-
-    let sourceFile: StaticString
-    let sourceFileID: StaticString
-    let sourceLine: UInt
-
     var wasCalled = false
 
     init(
       value: Value,
       bindableActionType: Any.Type,
       bindableStateType: Any.Type,
-      sourceFile: StaticString,
-      sourceFileID: StaticString,
-      sourceLine: UInt,
       file: StaticString,
       fileID: StaticString,
       line: UInt
@@ -652,9 +627,6 @@ extension BindingAction: CustomDumpReflectable {
       self.value = value
       self.bindableActionType = bindableActionType
       self.bindableStateType = bindableStateType
-      self.sourceFile = sourceFile
-      self.sourceFileID = sourceFileID
-      self.sourceLine = sourceLine
       self.file = file
       self.fileID = fileID
       self.line = line
@@ -670,8 +642,13 @@ extension BindingAction: CustomDumpReflectable {
     
     var contextualReducerDescription: String {
       if let reducerName = reducerName {
-        // we infer that the reducer is in the same file as its State
-        let filename = ("\(self.sourceFileID)" as NSString).lastPathComponent
+        guard let filename = "\(self.fileID)"
+          .split(separator: "/")
+          .last
+          .map(String.init)
+        else {
+          return #""\#(reducerName).body""#
+        }
         return #""\#(reducerName).body" in "\#(filename)""#
       }
       return #"your feature reducer's "body""#
@@ -682,7 +659,7 @@ extension BindingAction: CustomDumpReflectable {
         runtimeWarn(
           """
           A binding action for a \(typeName(Value.self)) state at \
-          "\(self.sourceFileID):\(self.sourceLine)" was not handled. …
+          "\(self.fileID):\(self.line)" was not handled. …
 
             Action:
               \(typeName(self.bindableActionType)).binding(.set(_, \(self.value)))
@@ -696,4 +673,4 @@ extension BindingAction: CustomDumpReflectable {
       }
     }
   }
-#endif
+#endif 
