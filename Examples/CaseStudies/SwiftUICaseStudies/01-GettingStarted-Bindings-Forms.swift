@@ -16,7 +16,7 @@ private let readMe = """
 // MARK: - Feature domain
 
 struct BindingForm: ReducerProtocol {
-  struct State: BindableViewState, Equatable {
+  struct State: Equatable {
     @BindingState var sliderValue = 5.0
     @BindingState var stepCount = 10
     @BindingState var text = ""
