@@ -2274,3 +2274,23 @@ private func _XCTExpectFailure(
     XCTExpectFailureWithOptionsInBlock(failureReason, options, failingBlock)
   #endif
 }
+
+import _CAsyncSupport
+
+public func withSerialExecutor<T>(
+  @_implicitSelfCapture operation: @escaping () async throws -> T
+) async rethrows -> T {
+  let hook = swift_task_enqueueGlobal_hook
+  defer { swift_task_enqueueGlobal_hook = hook }
+  swift_task_enqueueGlobal_hook = { job, original in
+    MainActor.shared.enqueue(unsafeBitCast(job, to: UnownedJob.self))
+  }
+  let task = Task {
+    try await operation()
+  }
+  do {
+    return try await task.cancellableValue
+  } catch {
+    return try Result<T, Error>.failure(error)._rethrowGet()
+  }
+}

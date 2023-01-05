@@ -31,10 +31,11 @@ let package = Package(
     .target(
       name: "ComposableArchitecture",
       dependencies: [
-        .product(name: "Dependencies", package: "swift-dependencies"),
+        "_CAsyncSupport",
         .product(name: "CasePaths", package: "swift-case-paths"),
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
         .product(name: "CustomDump", package: "swift-custom-dump"),
+        .product(name: "Dependencies", package: "swift-dependencies"),
         .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
         .product(name: "_SwiftUINavigationState", package: "swiftui-navigation"),
         .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
@@ -53,6 +54,7 @@ let package = Package(
         .product(name: "Benchmark", package: "swift-benchmark"),
       ]
     ),
+    .systemLibrary(name: "_CAsyncSupport"),
   ]
 )
 
