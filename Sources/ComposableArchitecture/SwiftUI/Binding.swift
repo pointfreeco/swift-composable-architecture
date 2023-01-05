@@ -640,13 +640,14 @@ extension BindingAction: CustomDumpReflectable {
         stateName.prefix(upTo: stateName.index(stateName.endIndex, offsetBy: -".State".count))
       )
     }
-    
+
     var contextualReducerDescription: String {
       if let reducerName = reducerName {
-        guard let filename = "\(self.fileID)"
-          .split(separator: "/")
-          .last
-          .map(String.init)
+        guard
+          let filename = "\(self.fileID)"
+            .split(separator: "/")
+            .last
+            .map(String.init)
         else {
           return #""\#(reducerName).body""#
         }
@@ -674,4 +675,4 @@ extension BindingAction: CustomDumpReflectable {
       }
     }
   }
-#endif 
+#endif

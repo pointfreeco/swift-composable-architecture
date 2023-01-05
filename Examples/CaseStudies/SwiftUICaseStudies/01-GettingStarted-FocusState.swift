@@ -55,7 +55,7 @@ struct FocusDemoView: View {
         AboutView(readMe: readMe)
 
         VStack {
-          
+
           TextField("Username", text: viewStore.$username)
             .focused($focusedField, equals: .username)
 

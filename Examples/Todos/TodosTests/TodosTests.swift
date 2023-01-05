@@ -349,7 +349,8 @@ final class TodosTests: XCTestCase {
     await store.send(.set(\.$filter, .completed)) {
       $0.filter = .completed
     }
-    await store.send(.todo(id: state.todos[1].id, action: .set(\.$description, "Did this already"))) {
+    await store.send(.todo(id: state.todos[1].id, action: .set(\.$description, "Did this already")))
+    {
       $0.todos[id: state.todos[1].id]?.description = "Did this already"
     }
   }
