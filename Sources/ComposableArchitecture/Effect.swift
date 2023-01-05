@@ -7,7 +7,8 @@ import XCTestDynamicOverlay
 @available(
   iOS,
   deprecated: 9999.0,
-  message: """
+  message:
+    """
     'EffectPublisher' has been deprecated in favor of 'EffectTask'.
 
      You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to use Swift concurrency to model asynchrony in dependencies.
@@ -18,7 +19,8 @@ import XCTestDynamicOverlay
 @available(
   macOS,
   deprecated: 9999.0,
-  message: """
+  message:
+    """
     'EffectPublisher' has been deprecated in favor of 'EffectTask'.
 
      You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to use Swift concurrency to model asynchrony in dependencies.
@@ -29,7 +31,8 @@ import XCTestDynamicOverlay
 @available(
   tvOS,
   deprecated: 9999.0,
-  message: """
+  message:
+    """
     'EffectPublisher' has been deprecated in favor of 'EffectTask'.
 
      You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to use Swift concurrency to model asynchrony in dependencies.
@@ -40,7 +43,8 @@ import XCTestDynamicOverlay
 @available(
   watchOS,
   deprecated: 9999.0,
-  message: """
+  message:
+    """
     'EffectPublisher' has been deprecated in favor of 'EffectTask'.
 
      You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to use Swift concurrency to model asynchrony in dependencies.
