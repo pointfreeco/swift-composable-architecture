@@ -1358,7 +1358,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     @MainActor
     @_disfavoredOverload
     public func receive(
-      _ isMatching: @escaping (Action) -> Bool,
+      _ isMatching: (Action) -> Bool,
       timeout duration: Duration,
       assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
       file: StaticString = #file,
@@ -1465,7 +1465,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   @MainActor
   @_disfavoredOverload
   public func receive(
-    _ isMatching: @escaping (Action) -> Bool,
+    _ isMatching: (Action) -> Bool,
     timeout nanoseconds: UInt64? = nil,
     assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
@@ -2311,7 +2311,7 @@ private func _XCTExpectFailure(
 import _CAsyncSupport
 
 func withMainSerialExecutor<T>(
-  @_implicitSelfCapture operation: @escaping () async throws -> T
+  @_implicitSelfCapture operation: () async throws -> T
 ) async rethrows -> T {
   let hook = swift_task_enqueueGlobal_hook
   defer { swift_task_enqueueGlobal_hook = hook }
