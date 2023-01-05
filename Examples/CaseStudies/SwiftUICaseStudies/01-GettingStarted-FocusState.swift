@@ -9,10 +9,10 @@ private let readMe = """
 // MARK: - Feature domain
 
 struct FocusDemo: ReducerProtocol {
-  struct State: BindableStateProtocol, Equatable {
-    @BindingState var focusedField: Field?
-    @BindingState var password: String = ""
-    @BindingState var username: String = ""
+  struct State: Equatable {
+    @BindableState var focusedField: Field?
+    @BindableState var password: String = ""
+    @BindableState var username: String = ""
 
     enum Field: String, Hashable {
       case username, password
@@ -55,11 +55,9 @@ struct FocusDemoView: View {
         AboutView(readMe: readMe)
 
         VStack {
-
-          TextField("Username", text: viewStore.$username)
+          TextField("Username", text: viewStore.binding(\.$username))
             .focused($focusedField, equals: .username)
-
-          SecureField("Password", text: viewStore.$password)
+          SecureField("Password", text: viewStore.binding(\.$password))
             .focused($focusedField, equals: .password)
           Button("Sign In") {
             viewStore.send(.signInButtonTapped)
@@ -68,7 +66,7 @@ struct FocusDemoView: View {
         }
         .textFieldStyle(.roundedBorder)
       }
-      .synchronize(viewStore.$focusedField, self.$focusedField)
+      .synchronize(viewStore.binding(\.$focusedField), self.$focusedField)
     }
     .navigationTitle("Focus demo")
   }

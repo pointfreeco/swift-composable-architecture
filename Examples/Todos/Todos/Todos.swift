@@ -8,9 +8,9 @@ enum Filter: LocalizedStringKey, CaseIterable, Hashable {
 }
 
 struct Todos: ReducerProtocol {
-  struct State: BindableStateProtocol, Equatable {
-    @BindingState var editMode: EditMode = .inactive
-    @BindingState var filter: Filter = .all
+  struct State: Equatable {
+    var editMode: EditMode = .inactive
+    var filter: Filter = .all
     var todos: IdentifiedArrayOf<Todo.State> = []
 
     var filteredTodos: IdentifiedArrayOf<Todo.State> {
@@ -22,11 +22,12 @@ struct Todos: ReducerProtocol {
     }
   }
 
-  enum Action: BindableAction, Equatable, Sendable {
+  enum Action: Equatable {
     case addTodoButtonTapped
-    case binding(BindingAction<State>)
     case clearCompletedButtonTapped
     case delete(IndexSet)
+    case editModeChanged(EditMode)
+    case filterPicked(Filter)
     case move(IndexSet, Int)
     case sortCompletedTodos
     case todo(id: Todo.State.ID, action: Todo.Action)
@@ -37,14 +38,10 @@ struct Todos: ReducerProtocol {
   private enum TodoCompletionID {}
 
   var body: some ReducerProtocol<State, Action> {
-    BindingReducer()
     Reduce { state, action in
       switch action {
       case .addTodoButtonTapped:
         state.todos.insert(Todo.State(id: self.uuid()), at: 0)
-        return .none
-
-      case .binding:
         return .none
 
       case .clearCompletedButtonTapped:
@@ -56,6 +53,14 @@ struct Todos: ReducerProtocol {
         for index in indexSet {
           state.todos.remove(id: filteredTodos[index].id)
         }
+        return .none
+
+      case let .editModeChanged(editMode):
+        state.editMode = editMode
+        return .none
+
+      case let .filterPicked(filter):
+        state.filter = filter
         return .none
 
       case var .move(source, destination):
@@ -83,7 +88,7 @@ struct Todos: ReducerProtocol {
         state.todos.sort { $1.isComplete && !$0.isComplete }
         return .none
 
-      case .todo(id: _, action: .binding(\.$isComplete)):
+      case .todo(id: _, action: .checkBoxToggled):
         return .run { send in
           try await self.clock.sleep(for: .seconds(1))
           await send(.sortCompletedTodos, animation: .default)
@@ -102,56 +107,70 @@ struct Todos: ReducerProtocol {
 
 struct AppView: View {
   let store: StoreOf<Todos>
+  @ObservedObject var viewStore: ViewStore<ViewState, Todos.Action>
+
+  init(store: StoreOf<Todos>) {
+    self.store = store
+    self.viewStore = ViewStore(self.store.scope(state: ViewState.init(state:)))
+  }
 
   struct ViewState: Equatable {
-    @BindingViewState var editMode: EditMode
-    @BindingViewState var filter: Filter
+    let editMode: EditMode
+    let filter: Filter
     let isClearCompletedButtonDisabled: Bool
 
     init(state: Todos.State) {
-      self._editMode = state.bindings.$editMode
-      self._filter = state.bindings.$filter
+      self.editMode = state.editMode
+      self.filter = state.filter
       self.isClearCompletedButtonDisabled = !state.todos.contains(where: \.isComplete)
     }
   }
 
   var body: some View {
-    WithViewStore(self.store, observe: ViewState.init) { viewStore in
-      NavigationView {
-        VStack(alignment: .leading) {
-          Picker("Filter", selection: viewStore.$filter.animation()) {
-            ForEach(Filter.allCases, id: \.self) { filter in
-              Text(filter.rawValue).tag(filter)
-            }
-          }
-          .pickerStyle(.segmented)
-          .padding(.horizontal)
-
-          List {
-            ForEachStore(
-              self.store.scope(state: \.filteredTodos, action: Todos.Action.todo(id:action:))
-            ) {
-              TodoView(store: $0)
-            }
-            .onDelete { viewStore.send(.delete($0)) }
-            .onMove { viewStore.send(.move($0, $1)) }
+    NavigationView {
+      VStack(alignment: .leading) {
+        Picker(
+          "Filter",
+          selection: self.viewStore.binding(
+            get: \.filter,
+            send: Todos.Action.filterPicked
+          )
+          .animation()
+        ) {
+          ForEach(Filter.allCases, id: \.self) { filter in
+            Text(filter.rawValue).tag(filter)
           }
         }
-        .navigationTitle("Todos")
-        .navigationBarItems(
-          trailing: HStack(spacing: 20) {
-            EditButton()
-            Button("Clear Completed") {
-              viewStore.send(.clearCompletedButtonTapped, animation: .default)
-            }
-            .disabled(viewStore.isClearCompletedButtonDisabled)
-            Button("Add Todo") { viewStore.send(.addTodoButtonTapped, animation: .default) }
+        .pickerStyle(.segmented)
+        .padding(.horizontal)
+
+        List {
+          ForEachStore(
+            self.store.scope(state: \.filteredTodos, action: Todos.Action.todo(id:action:))
+          ) {
+            TodoView(store: $0)
           }
-        )
-        .environment(\.editMode, viewStore.$editMode)
+          .onDelete { self.viewStore.send(.delete($0)) }
+          .onMove { self.viewStore.send(.move($0, $1)) }
+        }
       }
-      .navigationViewStyle(.stack)
+      .navigationTitle("Todos")
+      .navigationBarItems(
+        trailing: HStack(spacing: 20) {
+          EditButton()
+          Button("Clear Completed") {
+            self.viewStore.send(.clearCompletedButtonTapped, animation: .default)
+          }
+          .disabled(self.viewStore.isClearCompletedButtonDisabled)
+          Button("Add Todo") { self.viewStore.send(.addTodoButtonTapped, animation: .default) }
+        }
+      )
+      .environment(
+        \.editMode,
+        self.viewStore.binding(get: \.editMode, send: Todos.Action.editModeChanged)
+      )
     }
+    .navigationViewStyle(.stack)
   }
 }
 
