@@ -3,9 +3,9 @@ extension Reduce {
     *, deprecated,
     message:
       """
-      'AnyReducer' has been deprecated in favor of 'ReducerProtocol'.
+      'AnyReducer' has been deprecated in favor of 'Reducer'.
 
-      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
       """
   )
   public init<Environment>(
@@ -22,20 +22,20 @@ extension Reduce {
   *, deprecated,
   message:
     """
-    'AnyReducer' has been deprecated in favor of 'ReducerProtocol'.
+    'AnyReducer' has been deprecated in favor of 'Reducer'.
 
-    See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+    See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
     """
 )
 extension AnyReducer {
-  public init<R: ReducerProtocol>(@ReducerBuilderOf<R> _ build: @escaping (Environment) -> R)
+  public init<R: Reducer>(@ReducerBuilderOf<R> _ build: @escaping (Environment) -> R)
   where R.State == State, R.Action == Action {
     self.init { state, action, environment in
       build(environment).reduce(into: &state, action: action)
     }
   }
 
-  public init<R: ReducerProtocol>(_ reducer: R) where R.State == State, R.Action == Action {
+  public init<R: Reducer>(_ reducer: R) where R.State == State, R.Action == Action {
     self.init { _ in reducer }
   }
 }
@@ -51,9 +51,9 @@ extension Store {
     *, deprecated,
     message:
       """
-      'AnyReducer' has been deprecated in favor of 'ReducerProtocol'.
+      'AnyReducer' has been deprecated in favor of 'Reducer'.
 
-      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
       """
   )
   public convenience init<Environment>(

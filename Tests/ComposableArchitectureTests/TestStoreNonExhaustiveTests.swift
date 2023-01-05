@@ -279,7 +279,7 @@
     // Confirms that you can send actions without having received all effect actions in
     // non-exhaustive test stores.
     func testSend_SkipReceivedActions() {
-      struct Feature: ReducerProtocol {
+      struct Feature: Reducer {
         struct State: Equatable {
           var count = 0
           var isLoggedIn = false
@@ -322,7 +322,7 @@
     // Confirms that if you receive an action in a non-exhaustive test store with a bad assertion
     // you will still get a failure.
     func testSend_SkipReceivedActions_BadAssertion() {
-      struct Feature: ReducerProtocol {
+      struct Feature: Reducer {
         struct State: Equatable {
           var count = 0
           var isLoggedIn = false
@@ -458,7 +458,7 @@
     // Confirms that when you send an action the test store skips any unreceived actions
     // automatically.
     func testSendWithUnreceivedActions_SkipsActions() async {
-      struct Feature: ReducerProtocol {
+      struct Feature: Reducer {
         enum Action: Equatable {
           case tap
           case response(Int)
@@ -687,7 +687,7 @@
     }
   }
 
-  struct Counter: ReducerProtocol {
+  struct Counter: Reducer {
     struct State: Equatable {
       var count = 0
       var isEven = true
@@ -710,7 +710,7 @@
     }
   }
 
-  struct NonExhaustiveReceive: ReducerProtocol {
+  struct NonExhaustiveReceive: Reducer {
     struct State: Equatable {
       var count = 0
       var int = 0
@@ -743,7 +743,7 @@
 
   // This example comes from Krzysztof Zabłocki's blog post:
   // https://www.merowing.info/exhaustive-testing-in-tca/
-  struct KrzysztofExample: ReducerProtocol {
+  struct KrzysztofExample: Reducer {
     struct State: Equatable {
       var name: String = "Krzysztof"
       var surname: String = "Zabłocki"

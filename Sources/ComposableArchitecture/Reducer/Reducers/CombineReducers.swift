@@ -6,7 +6,7 @@
 /// Useful for grouping reducers together and applying reducer modifiers to the result.
 ///
 /// ```swift
-/// var body: some ReducerProtocol<State, Action> {
+/// var body: some Reducer<State, Action> {
 ///   CombineReducers {
 ///     ReducerA()
 ///     ReducerB()
@@ -15,7 +15,7 @@
 ///   .ifLet(\.child, action: /Action.child)
 /// }
 /// ```
-public struct CombineReducers<Reducers: ReducerProtocol>: ReducerProtocol {
+public struct CombineReducers<Reducers: Reducer>: Reducer {
   @usableFromInline
   let reducers: Reducers
 
@@ -37,7 +37,7 @@ public struct CombineReducers<Reducers: ReducerProtocol>: ReducerProtocol {
   @inlinable
   public func reduce(
     into state: inout Reducers.State, action: Reducers.Action
-  ) -> EffectTask<Reducers.Action> {
+  ) -> Effect<Reducers.Action> {
     self.reducers.reduce(into: &state, action: action)
   }
 }

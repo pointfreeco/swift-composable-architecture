@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import SwiftUI
 
-public struct Game: ReducerProtocol {
+public struct Game: Reducer {
   public struct State: Equatable {
     public var board: Three<Three<Player?>> = .empty
     public var currentPlayer: Player = .x
@@ -29,7 +29,7 @@ public struct Game: ReducerProtocol {
 
   public init() {}
 
-  public func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  public func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case let .cellTapped(row, column):
       guard

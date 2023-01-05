@@ -8,7 +8,7 @@ final class ComposableArchitectureTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 
   func testScheduling() async {
-    struct Counter: ReducerProtocol {
+    struct Counter: Reducer {
       typealias State = Int
       enum Action: Equatable {
         case incrAndSquareLater

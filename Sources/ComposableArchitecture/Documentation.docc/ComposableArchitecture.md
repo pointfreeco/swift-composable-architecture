@@ -55,12 +55,12 @@ day-to-day when building applications, such as:
 ### Upgrade guides
 
 - <doc:SwiftConcurrency>
-- <doc:MigratingToTheReducerProtocol>
+- <doc:MigratingToTheReducer>
 
 ### State management
 
-- ``ReducerProtocol``
-- ``EffectTask``
+- ``Reducer``
+- ``Effect``
 - ``Store``
 - ``ViewStore``
 

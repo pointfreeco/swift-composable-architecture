@@ -1,6 +1,6 @@
 import ComposableArchitecture
 
-struct Root: ReducerProtocol {
+struct Root: Reducer {
   struct State: Equatable {
     var alertAndConfirmationDialog = AlertAndConfirmationDialog.State()
     var animation = Animations.State()
@@ -62,7 +62,7 @@ struct Root: ReducerProtocol {
 
   @Dependency(\.continuousClock) var clock
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
       case .onAppear:

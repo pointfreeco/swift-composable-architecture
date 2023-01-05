@@ -15,7 +15,7 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct BindingForm: ReducerProtocol {
+struct BindingForm: Reducer {
   struct State: Equatable {
     @BindableState var sliderValue = 5.0
     @BindableState var stepCount = 10
@@ -28,7 +28,7 @@ struct BindingForm: ReducerProtocol {
     case resetButtonTapped
   }
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some Reducer<State, Action> {
     BindingReducer()
     Reduce { state, action in
       switch action {

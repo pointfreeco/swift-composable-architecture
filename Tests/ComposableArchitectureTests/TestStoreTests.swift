@@ -244,7 +244,7 @@ final class TestStoreTests: XCTestCase {
   }
 
   func testOverrideDependenciesDirectlyOnReducer() {
-    struct Counter: ReducerProtocol {
+    struct Counter: Reducer {
       @Dependency(\.calendar) var calendar
       @Dependency(\.locale) var locale
       @Dependency(\.timeZone) var timeZone
@@ -273,7 +273,7 @@ final class TestStoreTests: XCTestCase {
   }
 
   func testOverrideDependenciesOnTestStore() {
-    struct Counter: ReducerProtocol {
+    struct Counter: Reducer {
       @Dependency(\.calendar) var calendar
       @Dependency(\.locale) var locale
       @Dependency(\.timeZone) var timeZone
@@ -356,7 +356,7 @@ final class TestStoreTests: XCTestCase {
   }
 
   func testDependenciesEarlyBinding() async {
-    struct Feature: ReducerProtocol {
+    struct Feature: Reducer {
       struct State: Equatable {
         var count = 0
         var date: Date

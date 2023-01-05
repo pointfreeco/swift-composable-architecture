@@ -19,11 +19,11 @@ the system. To test this we can technically run a piece of mutable state through
 then assert on how it changed after, like this:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   struct State: Equatable { var count = 0 }
   enum Action { case incrementButtonTapped, decrementButtonTapped }
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .incrementButtonTapped:
       state.count += 1
@@ -177,7 +177,7 @@ store.send(.incrementButtonTapped) {
 
 Testing state mutations as shown in the previous section is powerful, but is only half the story
 when it comes to testing features built in the Composable Architecture. The second responsibility of
-``Reducer``s, after mutating state from an action, is to return an ``EffectTask`` that encapsulates 
+``Reducer``s, after mutating state from an action, is to return an ``Effect`` that encapsulates 
 a unit of work that runs in the outside world and feeds data back into the system.
 
 Effects form a major part of a feature's logic. They can perform network requests to external
@@ -186,17 +186,17 @@ Location, Core Motion, Speech Recognition, etc.), and more.
 
 As a simple example, suppose we have a feature with a button such that when you tap it, it starts
 a timer that counts up until you reach 5, and then stops. This can be accomplished using the
-``EffectPublisher/run(priority:operation:catch:file:fileID:line:)`` helper on ``EffectTask``, 
+``EffectPublisher/run(priority:operation:catch:file:fileID:line:)`` helper on ``Effect``, 
 which provides you with an asynchronous context to operate in and can send multiple actions back 
 into the system:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   struct State: Equatable { var count = 0 }
   enum Action { case startTimerButtonTapped, timerTick }
   enum TimerID {}
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .startTimerButtonTapped:
       state.count = 0
@@ -333,7 +333,7 @@ asynchrony, but in a way that is controllable. One way to do this is to add a cl
 ```swift
 import Clocks
 
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   struct State { … }
   enum Action { … }
   @Dependency(\.continuousClock) var clock

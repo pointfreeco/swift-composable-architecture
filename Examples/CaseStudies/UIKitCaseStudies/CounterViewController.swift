@@ -3,7 +3,7 @@ import ComposableArchitecture
 import SwiftUI
 import UIKit
 
-struct Counter: ReducerProtocol {
+struct Counter: Reducer {
   struct State: Equatable, Identifiable {
     let id = UUID()
     var count = 0
@@ -14,7 +14,7 @@ struct Counter: ReducerProtocol {
     case incrementButtonTapped
   }
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .decrementButtonTapped:
       state.count -= 1

@@ -9,7 +9,7 @@ private let readMe = """
 
 // MARK: - Search feature domain
 
-struct Search: ReducerProtocol {
+struct Search: Reducer {
   struct State: Equatable {
     var results: [GeocodingSearch.Result] = []
     var resultForecastRequestInFlight: GeocodingSearch.Result?
@@ -42,7 +42,7 @@ struct Search: ReducerProtocol {
   private enum SearchLocationID {}
   private enum SearchWeatherID {}
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .forecastResponse(_, .failure):
       state.weather = nil

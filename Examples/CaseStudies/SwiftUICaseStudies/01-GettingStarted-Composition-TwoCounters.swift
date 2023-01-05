@@ -9,7 +9,7 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct TwoCounters: ReducerProtocol {
+struct TwoCounters: Reducer {
   struct State: Equatable {
     var counter1 = Counter.State()
     var counter2 = Counter.State()
@@ -20,7 +20,7 @@ struct TwoCounters: ReducerProtocol {
     case counter2(Counter.Action)
   }
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some Reducer<State, Action> {
     Scope(state: \.counter1, action: /Action.counter1) {
       Counter()
     }

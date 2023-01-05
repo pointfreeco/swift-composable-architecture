@@ -15,7 +15,7 @@ extension EffectPublisher where Failure == Never {
   /// we can see how effects emit. However, because `Timer.publish` takes a concrete `RunLoop` as
   /// its scheduler, we can't substitute in a `TestScheduler` during tests`.
   ///
-  /// That is why we provide `EffectTask.timer`. It allows you to create a timer that works with any
+  /// That is why we provide `Effect.timer`. It allows you to create a timer that works with any
   /// scheduler, not just a run loop, which means you can use a `DispatchQueue` or `RunLoop` when
   /// running your live app, but use a `TestScheduler` in tests.
   ///
@@ -23,16 +23,16 @@ extension EffectPublisher where Failure == Never {
   /// and then use the ``EffectPublisher/cancel(id:)-6hzsl`` effect to stop the timer:
   ///
   /// ```swift
-  /// struct Feature: ReducerProtocol {
+  /// struct Feature: Reducer {
   ///   struct State { var count = 0 }
   ///   enum Action { case startButtonTapped, stopButtonTapped, timerTicked }
   ///   @Dependency(\.mainQueue) var mainQueue
   ///   struct TimerID: Hashable {}
   ///
-  ///   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  ///   func reduce(into state: inout State, action: Action) -> Effect<Action> {
   ///     switch action {
   ///     case .startButtonTapped:
-  ///       return EffectTask.timer(id: TimerID(), every: 1, on: self.mainQueue)
+  ///       return Effect.timer(id: TimerID(), every: 1, on: self.mainQueue)
   ///         .map { _ in .timerTicked }
   ///
   ///     case .stopButtonTapped:

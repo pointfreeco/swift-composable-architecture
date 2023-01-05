@@ -1,7 +1,7 @@
 import ComposableArchitecture
 @preconcurrency import SwiftUI  // NB: SwiftUI.Animation is not Sendable yet.
 
-struct DownloadComponent: ReducerProtocol {
+struct DownloadComponent: Reducer {
   struct State: Equatable {
     var alert: AlertState<AlertAction>?
     let id: AnyHashable
@@ -24,7 +24,7 @@ struct DownloadComponent: ReducerProtocol {
 
   @Dependency(\.downloadClient) var downloadClient
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .alert(.deleteButtonTapped):
       state.alert = nil

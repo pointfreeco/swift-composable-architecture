@@ -126,9 +126,9 @@ public final class Store<State, Action> {
   private var isSending = false
   var parentCancellable: AnyCancellable?
   #if swift(>=5.7)
-    private let reducer: any ReducerProtocol<State, Action>
+    private let reducer: any Reducer<State, Action>
   #else
-    private let reducer: (inout State, Action) -> EffectTask<Action>
+    private let reducer: (inout State, Action) -> Effect<Action>
     fileprivate var scope: AnyStoreScope?
   #endif
   var state: CurrentValueSubject<State, Never>
@@ -533,7 +533,7 @@ public final class Store<State, Action> {
     #endif
   }
 
-  init<R: ReducerProtocol>(
+  init<R: Reducer>(
     initialState: R.State,
     reducer: R,
     mainThreadChecksEnabled: Bool
@@ -564,10 +564,10 @@ public final class Store<State, Action> {
 /// ```swift
 /// let store: StoreOf<Feature>
 /// ```
-public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
+public typealias StoreOf<R: Reducer> = Store<R.State, R.Action>
 
 #if swift(>=5.7)
-  extension ReducerProtocol {
+  extension Reducer {
     fileprivate func rescope<ChildState, ChildAction>(
       _ store: Store<State, Action>,
       state toChildState: @escaping (State) -> ChildState,
@@ -580,7 +580,7 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
 
   private final class ScopedReducer<
     RootState, RootAction, ScopedState, ScopedAction
-  >: ReducerProtocol {
+  >: Reducer {
     let rootStore: Store<RootState, RootAction>
     let toScopedState: (RootState) -> ScopedState
     private let parentStores: [Any]
@@ -612,7 +612,7 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     @inlinable
     func reduce(
       into state: inout ScopedState, action: ScopedAction
-    ) -> EffectTask<ScopedAction> {
+    ) -> Effect<ScopedAction> {
       self.isSending = true
       defer {
         state = self.toScopedState(self.rootStore.state.value)

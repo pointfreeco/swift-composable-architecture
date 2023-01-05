@@ -3,7 +3,7 @@ import Combine
 import ComposableArchitecture
 import Dispatch
 
-public struct TwoFactor: ReducerProtocol, Sendable {
+public struct TwoFactor: Reducer, Sendable {
   public struct State: Equatable {
     public var alert: AlertState<Action>?
     public var code = ""
@@ -29,7 +29,7 @@ public struct TwoFactor: ReducerProtocol, Sendable {
 
   public init() {}
 
-  public func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  public func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .alertDismissed:
       state.alert = nil

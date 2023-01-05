@@ -31,7 +31,7 @@ enum FavoritingAction: Equatable {
   case response(TaskResult<Bool>)
 }
 
-struct Favoriting<ID: Hashable & Sendable>: ReducerProtocol {
+struct Favoriting<ID: Hashable & Sendable>: Reducer {
   let favorite: @Sendable (ID, Bool) async throws -> Bool
 
   private struct CancelID: Hashable {
@@ -40,7 +40,7 @@ struct Favoriting<ID: Hashable & Sendable>: ReducerProtocol {
 
   func reduce(
     into state: inout FavoritingState<ID>, action: FavoritingAction
-  ) -> EffectTask<FavoritingAction> {
+  ) -> Effect<FavoritingAction> {
     switch action {
     case .alertDismissed:
       state.alert = nil
@@ -84,7 +84,7 @@ struct FavoriteButton<ID: Hashable & Sendable>: View {
 
 // MARK: - Feature domain
 
-struct Episode: ReducerProtocol {
+struct Episode: Reducer {
   struct State: Equatable, Identifiable {
     var alert: AlertState<FavoritingAction>?
     let id: UUID
@@ -101,7 +101,7 @@ struct Episode: ReducerProtocol {
   }
   let favorite: @Sendable (UUID, Bool) async throws -> Bool
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some Reducer<State, Action> {
     Scope(state: \.favorite, action: /Action.favorite) {
       Favoriting(favorite: self.favorite)
     }
@@ -131,7 +131,7 @@ struct EpisodeView: View {
   }
 }
 
-struct Episodes: ReducerProtocol {
+struct Episodes: Reducer {
   struct State: Equatable {
     var episodes: IdentifiedArrayOf<Episode.State> = []
   }
@@ -140,7 +140,7 @@ struct Episodes: ReducerProtocol {
   }
   let favorite: @Sendable (UUID, Bool) async throws -> Bool
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some Reducer<State, Action> {
     Reduce { state, action in
       .none
     }

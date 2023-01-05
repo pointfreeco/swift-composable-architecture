@@ -2,7 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 private let readMe = """
-  This screen demonstrates how `ReducerProtocol` bodies can recursively nest themselves.
+  This screen demonstrates how `Reducer` bodies can recursively nest themselves.
 
   Tap "Add row" to add a row to the current screen's list. Tap the left-hand side of a row to edit \
   its name, or tap the right-hand side of a row to navigate to its own associated list of rows.
@@ -10,7 +10,7 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct Nested: ReducerProtocol {
+struct Nested: Reducer {
   struct State: Equatable, Identifiable {
     let id: UUID
     var name: String = ""
@@ -26,7 +26,7 @@ struct Nested: ReducerProtocol {
 
   @Dependency(\.uuid) var uuid
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
       case .addRowButtonTapped:

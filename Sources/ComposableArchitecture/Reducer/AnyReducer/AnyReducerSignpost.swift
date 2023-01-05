@@ -5,7 +5,7 @@ import os.signpost
   *, deprecated,
   message:
     """
-    This API has been deprecated in favor of 'ReducerProtocol.signpost'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+    This API has been deprecated in favor of 'Reducer.signpost'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
     """
 )
 extension AnyReducer {

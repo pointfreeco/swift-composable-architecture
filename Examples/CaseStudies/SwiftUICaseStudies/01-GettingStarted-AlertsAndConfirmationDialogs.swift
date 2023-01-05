@@ -21,7 +21,7 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct AlertAndConfirmationDialog: ReducerProtocol {
+struct AlertAndConfirmationDialog: Reducer {
   struct State: Equatable {
     var alert: AlertState<Action>?
     var confirmationDialog: ConfirmationDialogState<Action>?
@@ -37,7 +37,7 @@ struct AlertAndConfirmationDialog: ReducerProtocol {
     case incrementButtonTapped
   }
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .alertButtonTapped:
       state.alert = AlertState {

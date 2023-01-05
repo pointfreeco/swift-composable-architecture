@@ -62,7 +62,7 @@ final class ScopeTests: XCTestCase {
           • A parent reducer set "Child2.State" to a different case before the scoped reducer ran. \
           Child reducers must run before any parent reducer sets child state to a different case. \
           This ensures that child reducers can handle their actions while their state is still \
-          available. Consider using "ReducerProtocol.ifCaseLet" to embed this child reducer in the \
+          available. Consider using "Reducer.ifCaseLet" to embed this child reducer in the \
           parent reducer that change its state to ensure the child reducer runs first.
 
           • An in-flight effect emitted this action when child state was unavailable. While it may \
@@ -80,7 +80,7 @@ final class ScopeTests: XCTestCase {
   #endif
 }
 
-private struct Feature: ReducerProtocol {
+private struct Feature: Reducer {
   struct State: Equatable {
     var child1 = Child1.State()
     var child2 = Child2.State.count(0)
@@ -90,7 +90,7 @@ private struct Feature: ReducerProtocol {
     case child2(Child2.Action)
   }
   #if swift(>=5.7)
-    var body: some ReducerProtocol<State, Action> {
+    var body: some Reducer<State, Action> {
       Scope(state: \.child1, action: /Action.child1) {
         Child1()
       }
@@ -110,7 +110,7 @@ private struct Feature: ReducerProtocol {
   #endif
 }
 
-private struct Child1: ReducerProtocol {
+private struct Child1: Reducer {
   struct State: Equatable {
     var count = 0
   }
@@ -132,7 +132,7 @@ private struct Child1: ReducerProtocol {
   }
 }
 
-private struct Child2: ReducerProtocol {
+private struct Child2: Reducer {
   enum State: Equatable {
     case count(Int)
     case name(String)
@@ -142,7 +142,7 @@ private struct Child2: ReducerProtocol {
     case name(String)
   }
   #if swift(>=5.7)
-    var body: some ReducerProtocol<State, Action> {
+    var body: some Reducer<State, Action> {
       Scope(state: /State.count, action: /Action.count) {
         Reduce { state, action in
           state = action

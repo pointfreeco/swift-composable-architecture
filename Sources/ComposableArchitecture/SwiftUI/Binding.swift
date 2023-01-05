@@ -8,6 +8,12 @@ import SwiftUI
 /// used to safely eliminate the boilerplate that is typically incurred when working with multiple
 /// mutable fields on state.
 ///
+/// > Note: It is not necessary to annotate _every_ field with `@BindingState`, and in fact it is
+/// > not recommended. Marking a field with the property wrapper makes it instantly mutable from the
+/// > outside, which may hurt the encapsulation of your feature. It is best to limit the usage of
+/// > the property wrapper to only those fields that need to have bindings derived for handing to
+/// > SwiftUI components.
+///
 /// Read <doc:Bindings> for more information.
 @dynamicMemberLookup
 @propertyWrapper
@@ -157,8 +163,16 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
 
 /// An action that describes simple mutations to some root state at a writable key path.
 ///
-/// Used in conjunction with ``BindableState`` and ``BindableAction`` to safely eliminate the
-/// boilerplate typically associated with mutating multiple fields in state.
+/// When using the ``BindableState`` property wrapper in your feature's ``Reducer/State``
+/// for easily deriving SwiftUI bindings from fields, you must also add a `binding` case to your
+/// ``Reducer/Action`` enum that holds a ``BindingAction``:
+///
+/// ```swift
+/// enum Action: BindableAction {
+///   case binding(BindingAction<State>)
+///   // More actions...
+/// }
+/// ```
 ///
 /// Read <doc:Bindings> for more information.
 public struct BindingAction<Root>: Equatable {
@@ -239,7 +253,7 @@ extension BindingAction {
   /// network request to fetch a fact about that integer with the following domain:
   ///
   /// ```swift
-  /// struct MyFeature: ReducerProtocol {
+  /// struct MyFeature: Reducer {
   ///   struct State: Equatable {
   ///     @BindableState var count = 0
   ///     var fact: String?
@@ -255,7 +269,7 @@ extension BindingAction {
   ///
   ///   @Dependency(\.numberFact) var numberFact
   ///
-  ///   var body: some ReducerProtocol<State, Action> {
+  ///   var body: some Reducer<State, Action> {
   ///     BindingReducer()
   ///     // ...
   ///   }

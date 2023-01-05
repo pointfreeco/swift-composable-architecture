@@ -1,4 +1,4 @@
-extension ReducerProtocol {
+extension Reducer {
   /// Enhances a reducer with debug logging of received actions and state mutations for the given
   /// printer.
   ///
@@ -51,7 +51,7 @@ extension _ReducerPrinter {
   }
 }
 
-public struct _PrintChangesReducer<Base: ReducerProtocol>: ReducerProtocol {
+public struct _PrintChangesReducer<Base: Reducer>: Reducer {
   @usableFromInline
   let base: Base
 
@@ -70,7 +70,7 @@ public struct _PrintChangesReducer<Base: ReducerProtocol>: ReducerProtocol {
   @inlinable
   public func reduce(
     into state: inout Base.State, action: Base.Action
-  ) -> EffectTask<Base.Action> {
+  ) -> Effect<Base.Action> {
     #if DEBUG
       if self.context != .test, let printer = self.printer {
         let oldState = state

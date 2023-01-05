@@ -19,7 +19,7 @@ For example, a reducer may have a domain that tracks if user has enabled haptic 
 can define a boolean property on state:
 
 ```swift
-struct Settings: ReducerProtocol {
+struct Settings: Reducer {
   struct State: Equatable {
     var isHapticFeedbackEnabled = true
     // ...
@@ -33,7 +33,7 @@ Then, in order to allow the outside world to mutate this state, for example from
 define a corresponding action that can be sent updates:
 
 ```swift
-struct Settings: ReducerProtocol {
+struct Settings: Reducer {
   struct State: Equatable { /* ... */ }
 
   enum Action { 
@@ -48,13 +48,13 @@ struct Settings: ReducerProtocol {
 When the reducer handles this action, it can update state accordingly:
 
 ```swift
-struct Settings: ReducerProtocol {
+struct Settings: Reducer {
   struct State: Equatable { /* ... */ }
   enum Action { /* ... */ }
   
   func reduce(
     into state: inout State, action: Action
-  ) -> EffectTask<Action> {
+  ) -> Effect<Action> {
     switch action {
     case let .isHapticFeedbackEnabledChanged(isEnabled):
       state.isHapticFeedbackEnabled = isEnabled
@@ -100,7 +100,7 @@ a collection of tools that can be applied to a reducer's domain and logic to mak
 For example, a settings screen may model its state with the following struct:
 
 ```swift
-struct Settings: ReducerProtocol {
+struct Settings: Reducer {
   struct State: Equatable {
     var digest = Digest.daily
     var displayName = ""
@@ -120,7 +120,7 @@ means that each field requires a corresponding action that can be sent to the st
 comes in the form of an enum with a case per field:
 
 ```swift
-struct Settings: ReducerProtocol {
+struct Settings: Reducer {
   struct State: Equatable { /* ... */ }
 
   enum Action {
@@ -140,13 +140,13 @@ And we're not even done yet. In the reducer we must now handle each action, whic
 the state at each field with a new value:
 
 ```swift
-struct Settings: ReducerProtocol {
+struct Settings: Reducer {
   struct State: Equatable { /* ... */ }
   enum Action { /* ... */ }
 
   func reduce(
     into state: inout State, action: Action
-  ) -> EffectTask<Action> {
+  ) -> Effect<Action> {
     switch action {
     case let digestChanged(digest):
       state.digest = digest
@@ -182,7 +182,7 @@ eliminate this boilerplate using ``BindableState``, ``BindableAction``, and ``Bi
 First, we can annotate each bindable value of state with the ``BindableState`` property wrapper:
 
 ```swift
-struct Settings: ReducerProtocol {
+struct Settings: Reducer {
   struct State: Equatable {
     @BindableState var digest = Digest.daily
     @BindableState var displayName = ""
@@ -206,7 +206,7 @@ field-mutating actions into a single case that holds a ``BindingAction`` generic
 state:
 
 ```swift
-struct Settings: ReducerProtocol {
+struct Settings: Reducer {
   struct State: Equatable { /* ... */ }
 
   enum Action: BindableAction {
@@ -221,11 +221,11 @@ And then, we can simplify the settings reducer by allowing the ``BindingReducer`
 field mutations for us:
 
 ```swift
-struct Settings: ReducerProtocol {
+struct Settings: Reducer {
   struct State: Equatable { /* ... */ }
   enum Action: BindableAction { /* ... */ }
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some Reducer<State, Action> {
     BindingReducer()
   }
 }
@@ -242,7 +242,7 @@ Should you need to layer additional functionality over these bindings, your redu
 match the action for a given key path:
 
 ```swift
-var body: some ReducerProtocol<State, Action> {
+var body: some Reducer<State, Action> {
   BindingReducer()
 
   Reduce { state, action in 

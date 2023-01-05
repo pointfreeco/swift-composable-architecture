@@ -11,7 +11,7 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct Timers: ReducerProtocol {
+struct Timers: Reducer {
   struct State: Equatable {
     var isTimerActive = false
     var secondsElapsed = 0
@@ -26,7 +26,7 @@ struct Timers: ReducerProtocol {
   @Dependency(\.continuousClock) var clock
   private enum TimerID {}
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .onDisappear:
       return .cancel(id: TimerID.self)

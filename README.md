@@ -107,12 +107,12 @@ tapped makes an API request to fetch a random fact about that number and then di
 an alert.
 
 To implement this feature we create a new type that will house the domain and behavior of the 
-feature by conforming to `ReducerProtocol`:
+feature by conforming to `Reducer`:
 
 ```swift
 import ComposableArchitecture
 
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
 }
 ```
 
@@ -121,7 +121,7 @@ current count, as well as an optional string that represents the title of the al
 (optional because `nil` represents not showing an alert):
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   struct State: Equatable {
     var count = 0
     var numberFactAlert: String?
@@ -135,7 +135,7 @@ non-obvious ones, such as the action of the user dismissing the alert, and the a
 when we receive a response from the fact API request:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   struct State: Equatable { … }
   enum Action: Equatable {
     case factAlertDismissed
@@ -153,11 +153,11 @@ describes what effects need to be executed. Some actions don't need to execute e
 can return `.none` to represent that:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   struct State: Equatable { … }
   enum Action: Equatable { … }
   
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
       case .factAlertDismissed:
         state.numberFactAlert = nil
@@ -382,7 +382,7 @@ dependency when running the application on a device, but use a mocked dependency
 do this by adding a property to the `Feature` reducer:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   let numberFact: (Int) async throws -> String
   …
 }
@@ -494,7 +494,7 @@ With that little bit of upfront work done you can instantly start making use of 
 any feature:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   struct State { … }
   enum Action { … }
   @Dependency(\.numberFact) var numberFact
@@ -704,4 +704,4 @@ This library is released under the MIT license. See [LICENSE](LICENSE) for detai
 [performance-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance
 [concurrency-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/swiftconcurrency
 [bindings-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/bindings
-[migrating-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingtothereducerprotocol
+[migrating-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingtotheReducer

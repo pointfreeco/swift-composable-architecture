@@ -1,4 +1,4 @@
-# ``ComposableArchitecture/EffectTask``
+# ``ComposableArchitecture/Effect``
 
 ## Topics
 

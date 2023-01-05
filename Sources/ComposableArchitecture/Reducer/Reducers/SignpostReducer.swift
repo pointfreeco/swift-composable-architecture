@@ -1,6 +1,6 @@
 import OSLog
 
-extension ReducerProtocol {
+extension Reducer {
   /// Instruments a reducer with
   /// [signposts](https://developer.apple.com/documentation/os/logging/recording_performance_data).
   ///
@@ -32,7 +32,7 @@ extension ReducerProtocol {
   }
 }
 
-public struct _SignpostReducer<Base: ReducerProtocol>: ReducerProtocol {
+public struct _SignpostReducer<Base: Reducer>: Reducer {
   @usableFromInline
   let base: Base
 
@@ -58,7 +58,7 @@ public struct _SignpostReducer<Base: ReducerProtocol>: ReducerProtocol {
   @inlinable
   public func reduce(
     into state: inout Base.State, action: Base.Action
-  ) -> EffectTask<Base.Action> {
+  ) -> Effect<Base.Action> {
     var actionOutput: String!
     if self.log.signpostsEnabled {
       actionOutput = debugCaseOutput(action)

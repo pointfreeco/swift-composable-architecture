@@ -3,7 +3,7 @@ import Combine
 @available(
   *,
   deprecated,
-  message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'EffectTask.run', instead."
+  message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'Effect.run', instead."
 )
 extension EffectPublisher {
   /// Turns an effect into one that can be debounced.

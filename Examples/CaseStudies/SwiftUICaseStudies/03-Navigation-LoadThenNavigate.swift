@@ -11,7 +11,7 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct LoadThenNavigate: ReducerProtocol {
+struct LoadThenNavigate: Reducer {
   struct State: Equatable {
     var optionalCounter: Counter.State?
     var isActivityIndicatorVisible = false
@@ -29,7 +29,7 @@ struct LoadThenNavigate: ReducerProtocol {
   @Dependency(\.continuousClock) var clock
   private enum CancelID {}
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
       case .onDisappear:

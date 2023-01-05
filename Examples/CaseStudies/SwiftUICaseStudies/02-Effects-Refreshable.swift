@@ -13,7 +13,7 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct Refreshable: ReducerProtocol {
+struct Refreshable: Reducer {
   struct State: Equatable {
     var count = 0
     var fact: String?
@@ -30,7 +30,7 @@ struct Refreshable: ReducerProtocol {
   @Dependency(\.factClient) var factClient
   private enum FactRequestID {}
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .cancelButtonTapped:
       return .cancel(id: FactRequestID.self)

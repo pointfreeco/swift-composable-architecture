@@ -1,4 +1,4 @@
-extension ReducerProtocol {
+extension Reducer {
   /// Embeds a child reducer in a parent domain that works on elements of a collection in parent
   /// state.
   ///
@@ -6,7 +6,7 @@ extension ReducerProtocol {
   /// its core logic _and_ the child's logic by using the `forEach` operator:
   ///
   /// ```swift
-  /// struct Parent: ReducerProtocol {
+  /// struct Parent: Reducer {
   ///   struct State {
   ///     var rows: IdentifiedArrayOf<Row.State>
   ///     // ...
@@ -16,7 +16,7 @@ extension ReducerProtocol {
   ///     // ...
   ///   }
   ///
-  ///   var body: some ReducerProtocol<State, Action> {
+  ///   var body: some Reducer<State, Action> {
   ///     Reduce { state, action in
   ///       // Core logic for parent feature
   ///     }
@@ -50,7 +50,7 @@ extension ReducerProtocol {
   ///     state.
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @inlinable
-  public func forEach<ID: Hashable, Element: ReducerProtocol>(
+  public func forEach<ID: Hashable, Element: Reducer>(
     _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, Element.State>>,
     action toElementAction: CasePath<Action, (ID, Element.Action)>,
     @ReducerBuilderOf<Element> _ element: () -> Element,
@@ -71,8 +71,8 @@ extension ReducerProtocol {
 }
 
 public struct _ForEachReducer<
-  Parent: ReducerProtocol, ID: Hashable, Element: ReducerProtocol
->: ReducerProtocol {
+  Parent: Reducer, ID: Hashable, Element: Reducer
+>: Reducer {
   @usableFromInline
   let parent: Parent
 
@@ -116,7 +116,7 @@ public struct _ForEachReducer<
   @inlinable
   public func reduce(
     into state: inout Parent.State, action: Parent.Action
-  ) -> EffectTask<Parent.Action> {
+  ) -> Effect<Parent.Action> {
     self.reduceForEach(into: &state, action: action)
       .merge(with: self.parent.reduce(into: &state, action: action))
   }
@@ -124,7 +124,7 @@ public struct _ForEachReducer<
   @inlinable
   func reduceForEach(
     into state: inout Parent.State, action: Parent.Action
-  ) -> EffectTask<Parent.Action> {
+  ) -> Effect<Parent.Action> {
     guard let (id, elementAction) = self.toElementAction.extract(from: action) else { return .none }
     if state[keyPath: self.toElementsState][id: id] == nil {
       runtimeWarn(

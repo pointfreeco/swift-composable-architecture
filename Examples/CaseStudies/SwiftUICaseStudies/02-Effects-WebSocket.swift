@@ -12,7 +12,7 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct WebSocket: ReducerProtocol {
+struct WebSocket: Reducer {
   struct State: Equatable {
     var alert: AlertState<Action>?
     var connectivityState = ConnectivityState.disconnected
@@ -40,7 +40,7 @@ struct WebSocket: ReducerProtocol {
   @Dependency(\.webSocket) var webSocket
   private enum WebSocketID {}
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .alertDismissed:
       state.alert = nil

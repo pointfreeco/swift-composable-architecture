@@ -2,12 +2,12 @@
   *, deprecated,
   message:
     """
-    This API has been deprecated in favor of 'BindingReducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+    This API has been deprecated in favor of 'BindingReducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
     """
 )
 extension AnyReducer where Action: BindableAction, State == Action.State {
   /// This API has been deprecated in favor of ``BindingReducer``. Read
-  /// <doc:MigratingToTheReducerProtocol> for more information.
+  /// <doc:MigratingToTheReducer> for more information.
   ///
   /// Returns a reducer that applies ``BindingAction`` mutations to `State` before running this
   /// reducer's logic.

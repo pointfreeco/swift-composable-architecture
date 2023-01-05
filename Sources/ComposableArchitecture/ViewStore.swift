@@ -233,7 +233,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   /// > Important: ``ViewStore`` is not thread safe and you should only send actions to it from the
   /// > main thread. If you want to send actions on background threads due to the fact that the
   /// > reducer is performing computationally expensive work, then a better way to handle this is to
-  /// > wrap that work in an ``EffectTask`` that is performed on a background thread so that the
+  /// > wrap that work in an ``Effect`` that is performed on a background thread so that the
   /// > result can be fed back into the store.
   ///
   /// - Parameter action: An action.
@@ -280,7 +280,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   /// gesture is performed on a list. The domain and logic for this feature can be modeled like so:
   ///
   /// ```swift
-  /// struct Feature: ReducerProtocol {
+  /// struct Feature: Reducer {
   ///   struct State: Equatable {
   ///     var isLoading = false
   ///     var response: String?
@@ -291,7 +291,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   }
   ///   @Dependency(\.fetch) var fetch
   ///
-  ///   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  ///   func reduce(into state: inout State, action: Action) -> Effect<Action> {
   ///     switch action {
   ///     case .pulledToRefresh:
   ///       state.isLoading = true
@@ -557,7 +557,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
 /// ```swift
 /// let viewStore: ViewStoreOf<Feature>
 /// ```
-public typealias ViewStoreOf<R: ReducerProtocol> = ViewStore<R.State, R.Action>
+public typealias ViewStoreOf<R: Reducer> = ViewStore<R.State, R.Action>
 
 extension ViewStore where ViewState: Equatable {
   public convenience init<State>(

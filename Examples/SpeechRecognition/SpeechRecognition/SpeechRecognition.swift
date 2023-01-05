@@ -8,7 +8,7 @@ private let readMe = """
   on the device and live-transcribe it to the UI.
   """
 
-struct SpeechRecognition: ReducerProtocol {
+struct SpeechRecognition: Reducer {
   struct State: Equatable {
     var alert: AlertState<Action>?
     var isRecording = false
@@ -24,7 +24,7 @@ struct SpeechRecognition: ReducerProtocol {
 
   @Dependency(\.speechClient) var speechClient
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .authorizationStateAlertDismissed:
       state.alert = nil

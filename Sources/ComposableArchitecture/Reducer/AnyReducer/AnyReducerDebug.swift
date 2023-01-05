@@ -5,12 +5,12 @@ import Dispatch
   *, deprecated,
   message:
     """
-    This API has been deprecated in favor of 'ReducerProtocol._printChanges'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+    This API has been deprecated in favor of 'Reducer._printChanges'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
     """
 )
 extension AnyReducer {
-  /// This API has been deprecated in favor of ``ReducerProtocol/debug()``. Read
-  /// <doc:MigratingToTheReducerProtocol> for more information.
+  /// This API has been deprecated in favor of ``Reducer/debug()``. Read
+  /// <doc:MigratingToTheReducer> for more information.
   ///
   /// Prints debug messages describing all received actions and state mutations.
   ///
@@ -39,8 +39,8 @@ extension AnyReducer {
     )
   }
 
-  /// The API that used this type has been soft-deprecated in favor of ``ReducerProtocol/debug()``.
-  /// Read <doc:MigratingToTheReducerProtocol> for more information.
+  /// The API that used this type has been soft-deprecated in favor of ``Reducer/debug()``.
+  /// Read <doc:MigratingToTheReducer> for more information.
   ///
   /// Prints debug messages describing all received actions.
   ///
@@ -69,8 +69,8 @@ extension AnyReducer {
     )
   }
 
-  /// This API has been deprecated in favor of `ReducerProtocol._printChanges()`. Read
-  /// <doc:MigratingToTheReducerProtocol> for more information.
+  /// This API has been deprecated in favor of `Reducer._printChanges()`. Read
+  /// <doc:MigratingToTheReducer> for more information.
   ///
   /// Prints debug messages describing all received actions and state mutations.
   ///
@@ -146,7 +146,7 @@ extension AnyReducer {
   *, deprecated,
   message:
     """
-    This API that used this type has been soft-deprecated in favor of 'ReducerProtocol._printChanges'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+    This API that used this type has been soft-deprecated in favor of 'Reducer._printChanges'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
     """
 )
 public enum ActionFormat: Sendable {
@@ -174,7 +174,7 @@ public enum ActionFormat: Sendable {
 }
 
 /// The API that used this type has been soft-deprecated in favor of
-/// ``ReducerProtocol/debug()`` Read <doc:MigratingToTheReducerProtocol> for more
+/// ``Reducer/debug()`` Read <doc:MigratingToTheReducer> for more
 /// information.
 ///
 /// An environment for debug-printing reducers.
@@ -182,7 +182,7 @@ public enum ActionFormat: Sendable {
   *, deprecated,
   message:
     """
-    This API that used this type has been soft-deprecated in favor of 'ReducerProtocol._printChanges'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+    This API that used this type has been soft-deprecated in favor of 'Reducer._printChanges'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
     """
 )
 public struct DebugEnvironment {

@@ -20,7 +20,7 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct BindingBasics: ReducerProtocol {
+struct BindingBasics: Reducer {
   struct State: Equatable {
     var sliderValue = 5.0
     var stepCount = 10
@@ -35,7 +35,7 @@ struct BindingBasics: ReducerProtocol {
     case toggleChanged(isOn: Bool)
   }
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case let .sliderValueChanged(value):
       state.sliderValue = value

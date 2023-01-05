@@ -14,7 +14,7 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct EffectsCancellation: ReducerProtocol {
+struct EffectsCancellation: Reducer {
   struct State: Equatable {
     var count = 0
     var currentFact: String?
@@ -31,7 +31,7 @@ struct EffectsCancellation: ReducerProtocol {
   @Dependency(\.factClient) var factClient
   private enum NumberFactRequestID {}
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .cancelButtonTapped:
       state.isFactRequestInFlight = false

@@ -1,4 +1,4 @@
-# ``ComposableArchitecture/ReducerProtocol``
+# ``ComposableArchitecture/Reducer``
 
 ## Topics
 

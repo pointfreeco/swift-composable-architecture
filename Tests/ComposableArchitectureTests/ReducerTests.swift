@@ -26,7 +26,7 @@ final class ReducerTests: XCTestCase {
           case increment
         }
 
-        struct Delayed: ReducerProtocol {
+        struct Delayed: Reducer {
           typealias State = Int
 
           @Dependency(\.continuousClock) var clock
@@ -81,7 +81,7 @@ final class ReducerTests: XCTestCase {
       case increment
     }
 
-    struct One: ReducerProtocol {
+    struct One: Reducer {
       typealias State = Int
       let effect: @Sendable () async -> Void
       func reduce(into state: inout State, action: Action) -> EffectTask<Action> {

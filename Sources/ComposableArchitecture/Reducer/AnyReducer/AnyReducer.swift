@@ -1,11 +1,11 @@
 import CasePaths
 import Combine
 
-/// This API has been deprecated in favor of ``ReducerProtocol``.
-/// Read <doc:MigratingToTheReducerProtocol> for more information.
+/// This API has been deprecated in favor of ``Reducer``.
+/// Read <doc:MigratingToTheReducer> for more information.
 ///
 /// A reducer describes how to evolve the current state of an application to the next state, given
-/// an action, and describes what ``EffectTask``s should be executed later by the store, if any.
+/// an action, and describes what ``Effect``s should be executed later by the store, if any.
 ///
 /// Reducers have 3 generics:
 ///
@@ -13,7 +13,7 @@ import Combine
 ///   * `Action`: A type that holds all possible actions that cause the state of the application to
 ///     change.
 ///   * `Environment`: A type that holds all dependencies needed in order to produce
-///     ``EffectTask``s, such as API clients, analytics clients, random number generators, etc.
+///     ``Effect``s, such as API clients, analytics clients, random number generators, etc.
 ///
 /// > Important: The thread on which effects output is important. An effect's output is immediately
 ///   sent back into the store, and ``Store`` is not thread safe. This means all effects must
@@ -23,20 +23,20 @@ import Combine
 /// >
 /// > This is only an issue if using the Combine interface of ``EffectPublisher`` as mentioned
 ///   above. If you are only using Swift's concurrency tools and the `.task`, `.run` and
-///   `.fireAndForget` functions on ``EffectTask``, then the threading is automatically handled for
+///   `.fireAndForget` functions on ``Effect``, then the threading is automatically handled for
 ///   you.
 @available(
   *, deprecated,
   message:
     """
-    This API has been deprecated in favor of 'ReducerProtocol'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+    This API has been deprecated in favor of 'Reducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
     """
 )
 public struct AnyReducer<State, Action, Environment> {
-  private let reducer: (inout State, Action, Environment) -> EffectTask<Action>
+  private let reducer: (inout State, Action, Environment) -> Effect<Action>
 
-  /// > This API has been deprecated in favor of ``ReducerProtocol``.
-  /// Read <doc:MigratingToTheReducerProtocol> for more information.
+  /// > This API has been deprecated in favor of ``Reducer``.
+  /// Read <doc:MigratingToTheReducer> for more information.
   ///
   /// Initializes a reducer from a simple reducer function signature.
   ///
@@ -71,22 +71,22 @@ public struct AnyReducer<State, Action, Environment> {
     *, deprecated,
     message:
       """
-      This API has been deprecated in favor of 'ReducerProtocol'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+      This API has been deprecated in favor of 'Reducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
       """
   )
-  public init(_ reducer: @escaping (inout State, Action, Environment) -> EffectTask<Action>) {
+  public init(_ reducer: @escaping (inout State, Action, Environment) -> Effect<Action>) {
     self.reducer = reducer
   }
 
   /// This API has been deprecated in favor of ``EmptyReducer``.
-  /// Read <doc:MigratingToTheReducerProtocol> for more information.
+  /// Read <doc:MigratingToTheReducer> for more information.
   ///
   /// A reducer that performs no state mutations and returns no effects.
   @available(
     *, deprecated,
     message:
       """
-      This API has been deprecated in favor of 'EmptyReducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+      This API has been deprecated in favor of 'EmptyReducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
       """
   )
   public static var empty: AnyReducer {
@@ -94,7 +94,7 @@ public struct AnyReducer<State, Action, Environment> {
   }
 
   /// This API has been deprecated in favor of combining reducers in a ``ReducerBuilder``. Read
-  /// <doc:MigratingToTheReducerProtocol> for more information.
+  /// <doc:MigratingToTheReducer> for more information.
   ///
   /// Combines many reducers into a single one by running each one on state in order, and merging
   /// all of the effects.
@@ -151,7 +151,7 @@ public struct AnyReducer<State, Action, Environment> {
     *, deprecated,
     message:
       """
-      This API has been deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+      This API has been deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
       """
   )
   public static func combine(_ reducers: Self...) -> Self {
@@ -159,7 +159,7 @@ public struct AnyReducer<State, Action, Environment> {
   }
 
   /// This API has been deprecated in favor of combining reducers in a ``ReducerBuilder``. Read
-  /// <doc:MigratingToTheReducerProtocol> for more information.
+  /// <doc:MigratingToTheReducer> for more information.
   ///
   /// Combines many reducers into a single one by running each one on state in order, and merging
   /// all of the effects.
@@ -174,7 +174,7 @@ public struct AnyReducer<State, Action, Environment> {
     *, deprecated,
     message:
       """
-      This API has been deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+      This API has been deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
       """
   )
   public static func combine(_ reducers: [Self]) -> Self {
@@ -184,7 +184,7 @@ public struct AnyReducer<State, Action, Environment> {
   }
 
   /// This API has been deprecated in favor of combining reducers in a ``ReducerBuilder``. Read
-  /// <doc:MigratingToTheReducerProtocol> for more information.
+  /// <doc:MigratingToTheReducer> for more information.
   ///
   /// Combines the receiving reducer with one other reducer, running the second after the first and
   /// merging all of the effects.
@@ -200,7 +200,7 @@ public struct AnyReducer<State, Action, Environment> {
     *, deprecated,
     message:
       """
-      This API has been deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+      This API has been deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
       """
   )
   public func combined(with other: Self) -> Self {
@@ -210,7 +210,7 @@ public struct AnyReducer<State, Action, Environment> {
   }
 
   /// This API has been deprecated in favor of ``Scope``. Read
-  /// <doc:MigratingToTheReducerProtocol> for more information.
+  /// <doc:MigratingToTheReducer> for more information.
   ///
   /// Transforms a reducer that works on child state, action, and environment into one that works on
   /// parent state, action and environment. It accomplishes this by providing 3 transformations to
@@ -255,7 +255,7 @@ public struct AnyReducer<State, Action, Environment> {
     *, deprecated,
     message:
       """
-      This API has been deprecated in favor of 'Scope'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+      This API has been deprecated in favor of 'Scope'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
       """
   )
   public func pullback<ParentState, ParentAction, ParentEnvironment>(
@@ -275,8 +275,8 @@ public struct AnyReducer<State, Action, Environment> {
   }
 
   /// This API has been deprecated in favor of
-  /// ``ReducerProtocol/ifCaseLet(_:action:then:file:fileID:line:)`` and
-  /// ``Scope/init(state:action:_:file:fileID:line:)``. Read <doc:MigratingToTheReducerProtocol>
+  /// ``Reducer/ifCaseLet(_:action:then:file:fileID:line:)`` and
+  /// ``Scope/init(state:action:_:file:fileID:line:)``. Read <doc:MigratingToTheReducer>
   /// for more information.
   ///
   /// Transforms a reducer that works on child state, action, and environment into one that works on
@@ -452,7 +452,7 @@ public struct AnyReducer<State, Action, Environment> {
     *, deprecated,
     message:
       """
-      This API has been deprecated in favor of 'ReducerProtocol.ifCaseLet' and 'Scope'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+      This API has been deprecated in favor of 'Reducer.ifCaseLet' and 'Scope'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
       """
   )
   public func pullback<ParentState, ParentAction, ParentEnvironment>(
@@ -511,8 +511,8 @@ public struct AnyReducer<State, Action, Environment> {
   }
 
   /// This API has been deprecated in favor of
-  /// ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)``. Read
-  /// <doc:MigratingToTheReducerProtocol> for more information.
+  /// ``Reducer/ifLet(_:action:then:file:fileID:line:)``. Read
+  /// <doc:MigratingToTheReducer> for more information.
   ///
   /// Transforms a reducer that works on non-optional state into one that works on optional state by
   /// only running the non-optional reducer when state is non-nil.
@@ -672,7 +672,7 @@ public struct AnyReducer<State, Action, Environment> {
     *, deprecated,
     message:
       """
-      This API has been deprecated in favor of 'ReducerProtocol.ifLet'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+      This API has been deprecated in favor of 'Reducer.ifLet'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
       """
   )
   public func optional(
@@ -717,8 +717,8 @@ public struct AnyReducer<State, Action, Environment> {
   }
 
   /// This API has been deprecated in favor of
-  /// ``ReducerProtocol/forEach(_:action:_:file:fileID:line:)``. Read
-  /// <doc:MigratingToTheReducerProtocol> for more information.
+  /// ``Reducer/forEach(_:action:_:file:fileID:line:)``. Read
+  /// <doc:MigratingToTheReducer> for more information.
   ///
   /// A version of ``pullback(state:action:environment:)`` that transforms a reducer that works on
   /// an element into one that works on an identified array of elements.
@@ -758,7 +758,7 @@ public struct AnyReducer<State, Action, Environment> {
     *, deprecated,
     message:
       """
-      This API has been deprecated in favor of 'ReducerProtocol.forEach'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+      This API has been deprecated in favor of 'Reducer.forEach'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
       """
   )
   public func forEach<ParentState, ParentAction, ParentEnvironment, ID>(
@@ -886,8 +886,8 @@ public struct AnyReducer<State, Action, Environment> {
     }
   }
 
-  /// This API has been deprecated in favor of ``ReducerProtocol/reduce(into:action:)-8yinq``.
-  /// Read <doc:MigratingToTheReducerProtocol> for more information.
+  /// This API has been deprecated in favor of ``Reducer/reduce(into:action:)-8yinq``.
+  /// Read <doc:MigratingToTheReducer> for more information.
   ///
   /// Runs the reducer.
   ///
@@ -900,31 +900,31 @@ public struct AnyReducer<State, Action, Environment> {
     *, deprecated,
     message:
       """
-      This API has been deprecated in favor of 'ReducerProtocol.reduce(into:action:)'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+      This API has been deprecated in favor of 'Reducer.reduce(into:action:)'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
       """
   )
   public func run(
     _ state: inout State,
     _ action: Action,
     _ environment: Environment
-  ) -> EffectTask<Action> {
+  ) -> Effect<Action> {
     self.reducer(&state, action, environment)
   }
 
-  /// This API has been deprecated in favor of ``ReducerProtocol/reduce(into:action:)-8yinq``.
-  /// Read <doc:MigratingToTheReducerProtocol> for more information.
+  /// This API has been deprecated in favor of ``Reducer/reduce(into:action:)-8yinq``.
+  /// Read <doc:MigratingToTheReducer> for more information.
   @available(
     *, deprecated,
     message:
       """
-      This API has been deprecated in favor of 'ReducerProtocol.reduce(into:action:)'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
+      This API has been deprecated in favor of 'Reducer.reduce(into:action:)'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
       """
   )
   public func callAsFunction(
     _ state: inout State,
     _ action: Action,
     _ environment: Environment
-  ) -> EffectTask<Action> {
+  ) -> Effect<Action> {
     self.reducer(&state, action, environment)
   }
 }

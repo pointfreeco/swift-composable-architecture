@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct VoiceMemo: ReducerProtocol {
+struct VoiceMemo: Reducer {
   struct State: Equatable, Identifiable {
     var date: Date
     var duration: TimeInterval
@@ -39,7 +39,7 @@ struct VoiceMemo: ReducerProtocol {
   @Dependency(\.continuousClock) var clock
   private enum PlayID {}
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .audioPlayerClient:
       state.mode = .notPlaying

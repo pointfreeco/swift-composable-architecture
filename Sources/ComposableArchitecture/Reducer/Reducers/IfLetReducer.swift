@@ -1,11 +1,11 @@
-extension ReducerProtocol {
+extension Reducer {
   /// Embeds a child reducer in a parent domain that works on an optional property of parent state.
   ///
   /// For example, if a parent feature holds onto a piece of optional child state, then it can
   /// perform its core logic _and_ the child's logic by using the `ifLet` operator:
   ///
   /// ```swift
-  /// struct Parent: ReducerProtocol {
+  /// struct Parent: Reducer {
   ///   struct State {
   ///     var child: Child.State?
   ///     // ...
@@ -15,7 +15,7 @@ extension ReducerProtocol {
   ///     // ...
   ///   }
   ///
-  ///   var body: some ReducerProtocol<State, Action> {
+  ///   var body: some Reducer<State, Action> {
   ///     Reduce { state, action in
   ///       // Core logic for parent feature
   ///     }
@@ -43,7 +43,7 @@ extension ReducerProtocol {
   ///     state.
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @inlinable
-  public func ifLet<Wrapped: ReducerProtocol>(
+  public func ifLet<Wrapped: Reducer>(
     _ toWrappedState: WritableKeyPath<State, Wrapped.State?>,
     action toWrappedAction: CasePath<Action, Wrapped.Action>,
     @ReducerBuilderOf<Wrapped> then wrapped: () -> Wrapped,
@@ -63,7 +63,7 @@ extension ReducerProtocol {
   }
 }
 
-public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: ReducerProtocol {
+public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   @usableFromInline
   let parent: Parent
 
@@ -107,7 +107,7 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
   @inlinable
   public func reduce(
     into state: inout Parent.State, action: Parent.Action
-  ) -> EffectTask<Parent.Action> {
+  ) -> Effect<Parent.Action> {
     self.reduceChild(into: &state, action: action)
       .merge(with: self.parent.reduce(into: &state, action: action))
   }
@@ -115,7 +115,7 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
   @inlinable
   func reduceChild(
     into state: inout Parent.State, action: Parent.Action
-  ) -> EffectTask<Parent.Action> {
+  ) -> Effect<Parent.Action> {
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     guard state[keyPath: self.toChildState] != nil else {

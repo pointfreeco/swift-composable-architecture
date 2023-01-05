@@ -7,7 +7,7 @@ enum Filter: LocalizedStringKey, CaseIterable, Hashable {
   case completed = "Completed"
 }
 
-struct Todos: ReducerProtocol {
+struct Todos: Reducer {
   struct State: Equatable {
     var editMode: EditMode = .inactive
     var filter: Filter = .all
@@ -37,7 +37,7 @@ struct Todos: ReducerProtocol {
   @Dependency(\.uuid) var uuid
   private enum TodoCompletionID {}
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
       case .addTodoButtonTapped:

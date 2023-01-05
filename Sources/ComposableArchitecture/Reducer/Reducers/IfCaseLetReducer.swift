@@ -1,11 +1,11 @@
-extension ReducerProtocol {
+extension Reducer {
   /// Embeds a child reducer in a parent domain that works on a case of parent enum state.
   ///
   /// For example, if a parent feature's state is expressed as an enum of multiple children
   /// states, then `ifCaseLet` can run a child reducer on a particular case of the enum:
   ///
   /// ```swift
-  /// struct Parent: ReducerProtocol {
+  /// struct Parent: Reducer {
   ///   enum State {
   ///     case loggedIn(Authenticated.State)
   ///     case loggedOut(Unauthenticated.State)
@@ -16,7 +16,7 @@ extension ReducerProtocol {
   ///     // ...
   ///   }
   ///
-  ///   var body: some ReducerProtocol<State, Action> {
+  ///   var body: some Reducer<State, Action> {
   ///     Reduce { state, action in
   ///       // Core logic for parent feature
   ///     }
@@ -46,7 +46,7 @@ extension ReducerProtocol {
   ///     present
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @inlinable
-  public func ifCaseLet<Case: ReducerProtocol>(
+  public func ifCaseLet<Case: Reducer>(
     _ toCaseState: CasePath<State, Case.State>,
     action toCaseAction: CasePath<Action, Case.Action>,
     @ReducerBuilderOf<Case> then case: () -> Case,
@@ -66,7 +66,7 @@ extension ReducerProtocol {
   }
 }
 
-public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: ReducerProtocol {
+public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   @usableFromInline
   let parent: Parent
 
@@ -110,7 +110,7 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
   @inlinable
   public func reduce(
     into state: inout Parent.State, action: Parent.Action
-  ) -> EffectTask<Parent.Action> {
+  ) -> Effect<Parent.Action> {
     self.reduceChild(into: &state, action: action)
       .merge(with: self.parent.reduce(into: &state, action: action))
   }
@@ -118,7 +118,7 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
   @inlinable
   func reduceChild(
     into state: inout Parent.State, action: Parent.Action
-  ) -> EffectTask<Parent.Action> {
+  ) -> Effect<Parent.Action> {
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     guard var childState = self.toChildState.extract(from: state) else {

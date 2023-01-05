@@ -71,7 +71,7 @@ final class ForEachReducerTests: XCTestCase {
   #endif
 }
 
-struct Elements: ReducerProtocol {
+struct Elements: Reducer {
   struct State: Equatable {
     struct Row: Equatable, Identifiable {
       var id: Int
@@ -84,7 +84,7 @@ struct Elements: ReducerProtocol {
     case row(id: Int, action: String)
   }
   #if swift(>=5.7)
-    var body: some ReducerProtocol<State, Action> {
+    var body: some Reducer<State, Action> {
       Reduce<State, Action> { state, action in
         .none
       }
