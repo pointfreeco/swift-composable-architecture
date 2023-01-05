@@ -329,7 +329,7 @@ extension Task where Success == Never, Failure == Never {
 @_spi(Internals) public let _cancellablesLock = NSRecursiveLock()
 
 @rethrows
-private protocol _ErrorMechanism {
+protocol _ErrorMechanism {
   associatedtype Output
   func get() throws -> Output
 }
