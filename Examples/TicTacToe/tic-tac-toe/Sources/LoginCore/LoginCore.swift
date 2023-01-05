@@ -6,19 +6,18 @@ import TwoFactorCore
 public struct Login: ReducerProtocol, Sendable {
   public struct State: Equatable {
     public var alert: AlertState<Action>?
-    public var email = ""
+    @BindingState public var email = ""
     public var isFormValid = false
     public var isLoginRequestInFlight = false
-    public var password = ""
+    @BindingState public var password = ""
     public var twoFactor: TwoFactor.State?
 
     public init() {}
   }
 
-  public enum Action: Equatable {
+  public enum Action: BindableAction, Equatable {
     case alertDismissed
-    case emailChanged(String)
-    case passwordChanged(String)
+    case binding(BindingAction<State>)
     case loginButtonTapped
     case loginResponse(TaskResult<AuthenticationResponse>)
     case twoFactor(TwoFactor.Action)
@@ -30,14 +29,14 @@ public struct Login: ReducerProtocol, Sendable {
   public init() {}
 
   public var body: some ReducerProtocol<State, Action> {
+    BindingReducer()
     Reduce { state, action in
       switch action {
       case .alertDismissed:
         state.alert = nil
         return .none
 
-      case let .emailChanged(email):
-        state.email = email
+      case .binding:
         state.isFormValid = !state.email.isEmpty && !state.password.isEmpty
         return .none
 
@@ -51,11 +50,6 @@ public struct Login: ReducerProtocol, Sendable {
       case let .loginResponse(.failure(error)):
         state.alert = AlertState { TextState(error.localizedDescription) }
         state.isLoginRequestInFlight = false
-        return .none
-
-      case let .passwordChanged(password):
-        state.password = password
-        state.isFormValid = !state.email.isEmpty && !state.password.isEmpty
         return .none
 
       case .loginButtonTapped:

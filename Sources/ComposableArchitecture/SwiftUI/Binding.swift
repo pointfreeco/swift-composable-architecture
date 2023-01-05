@@ -14,10 +14,25 @@ import SwiftUI
 public struct BindingState<Value> {
   /// The underlying value wrapped by the bindable state.
   public var wrappedValue: Value
+  #if DEBUG
+    let file: StaticString
+    let fileID: StaticString
+    let line: UInt
+  #endif
 
   /// Creates bindable state from the value of another bindable state.
-  public init(wrappedValue: Value) {
+  public init(
+    wrappedValue: Value,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) {
     self.wrappedValue = wrappedValue
+    #if DEBUG
+      self.file = file
+      self.fileID = fileID
+      self.line = line
+    #endif
   }
 
   /// A projection that can be used to derive bindings from a view store.
@@ -54,9 +69,17 @@ public struct BindingState<Value> {
   }
 }
 
-extension BindingState: Equatable where Value: Equatable {}
+extension BindingState: Equatable where Value: Equatable {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.wrappedValue == rhs.wrappedValue
+  }
+}
 
-extension BindingState: Hashable where Value: Hashable {}
+extension BindingState: Hashable where Value: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    self.wrappedValue.hash(into: &hasher)
+  }
+}
 
 extension BindingState: Decodable where Value: Decodable {
   public init(from decoder: Decoder) throws {
@@ -179,12 +202,23 @@ public struct BindingStore<State> {
   let store: Store<State, BindingAction<State>>
   #if DEBUG
     let bindableActionType: Any.Type
+    let file: StaticString
+    let fileID: StaticString
+    let line: UInt
   #endif
 
-  init<Action: BindableAction>(store: Store<State, Action>) where Action.State == State {
+  init<Action: BindableAction>(
+    store: Store<State, Action>,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) where Action.State == State {
     self.store = store.scope(state: { $0 }, action: Action.binding)
     #if DEBUG
       self.bindableActionType = type(of: Action.self)
+      self.file = file
+      self.fileID = fileID
+      self.line = line
     #endif
   }
 
@@ -218,10 +252,10 @@ public struct BindingStore<State> {
             let debugger = BindableActionViewStoreDebugger(
               value: value,
               bindableActionType: self.bindableActionType,
-              // TODO: Possible to provide better context here?
-              file: #file,
-              fileID: #fileID,
-              line: #line
+              context: .bindingStore,
+              file: self.file,
+              fileID: self.fileID,
+              line: self.line
             )
             let set: (inout State) -> Void = {
               $0[keyPath: keyPath].wrappedValue = value
@@ -325,13 +359,14 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
       get: { $0[keyPath: keyPath].wrappedValue },
       send: { value in
         #if DEBUG
+          let bindingState = self.state[keyPath: keyPath]
           let debugger = BindableActionViewStoreDebugger(
             value: value,
             bindableActionType: ViewAction.self,
-            // TODO: Restore context
-            file: #file,
-            fileID: #fileID,
-            line: #line
+            context: .bindingState,
+            file: bindingState.file,
+            fileID: bindingState.fileID,
+            line: bindingState.line
           )
           let set: (inout ViewState) -> Void = {
             $0[keyPath: keyPath].wrappedValue = value
@@ -345,7 +380,6 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
     )
   }
 
-  // TODO: Deprecate:
   /// Returns a binding to the resulting bindable state of a given key path.
   ///
   /// - Parameter keyPath: A key path to a specific bindable state.
@@ -361,7 +395,11 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
       send: { value in
         #if DEBUG
           let debugger = BindableActionViewStoreDebugger(
-            value: value, bindableActionType: ViewAction.self, file: file, fileID: fileID,
+            value: value,
+            bindableActionType: ViewAction.self,
+            context: .viewStore,
+            file: file,
+            fileID: fileID,
             line: line
           )
           let set: (inout ViewState) -> Void = {
@@ -595,8 +633,15 @@ extension BindingAction: CustomDumpReflectable {
 
 #if DEBUG
   private final class BindableActionViewStoreDebugger<Value> {
+    enum Context {
+      case bindingState
+      case bindingStore
+      case viewStore
+    }
+
     let value: Value
     let bindableActionType: Any.Type
+    let context: Context
     let file: StaticString
     let fileID: StaticString
     let line: UInt
@@ -605,12 +650,14 @@ extension BindingAction: CustomDumpReflectable {
     init(
       value: Value,
       bindableActionType: Any.Type,
+      context: Context,
       file: StaticString,
       fileID: StaticString,
       line: UInt
     ) {
       self.value = value
       self.bindableActionType = bindableActionType
+      self.context = context
       self.file = file
       self.fileID = fileID
       self.line = line
