@@ -31,10 +31,10 @@ import SwiftUI
 ///
 /// ```swift
 /// var body: some ReducerProtocolOf<Self> {
-///   BindingReducer()
 ///   Reduce { state, action in
 ///     // Your feature's logic...
 ///   }
+///   BindingReducer()
 /// }
 /// ```
 ///
