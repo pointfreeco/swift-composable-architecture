@@ -1,12 +1,29 @@
 import CustomDump
 import SwiftUI
 
-/// A property wrapper type that can designate properties of app state that can be directly bindable
-/// in SwiftUI views.
+/// A property wrapper type that can designate properties of a feature's state that can be directly
+/// bindable in SwiftUI views.
 ///
-/// Along with an action type that conforms to the ``BindableAction`` protocol, this type can be
-/// used to safely eliminate the boilerplate that is typically incurred when working with multiple
-/// mutable fields on state.
+/// This property is to be applied directly to fields in a reducer's `State` type, and it should
+/// be used in tandem with marking the `State` type with the ``BindableStateProtocol`` protocol:
+///
+/// ```swift
+/// struct Feature: ReducerProtocol {
+///   struct State: BindableStateProtocol {
+///     @BindingState var enableNotifications = false
+///     @BindingState var sendEmailNotifications = false
+///     @BindingState var sendMobileNotifications = false
+///     // More properties...
+///   }
+///   // ...
+/// }
+/// ```
+///
+/// > Note: It is not necessary to annotate _every_ field with `@BindingState`, and in fact it is
+/// not recommended. Marking a field with the property wrapper makes it instantly mutable from the
+/// outside, which may hurt the encapsulation of your feature. It is best to limit the usage of the
+/// property wrapper to only those fields that need to have bindings derived for handing to SwiftUI
+/// components.
 ///
 /// Read <doc:Bindings> for more information.
 @dynamicMemberLookup
@@ -147,13 +164,13 @@ public struct BindingViewStates<State> {
   }
 }
 
-/// A protocol that your feature's `State` should conform to in order to extract
-/// ``BindingViewState`` values from ``BindableStateProtocol/bindings``.
+/// A marker protocol that a feature's `State` should conform to in order to easily derive SwiftUI
+/// bindings from any fields marked with the ``BindingState`` property wrapper.
 ///
 /// There is no specific requirement to conform to this protocol.
 ///
 /// - Note: This protocol will be renamed `BindableState` in a future release, when the deprecated
-/// ``BindableState`` as a property wrapper will be obsoleted. At the same time, conforming to this
+/// ``BindableState`` property wrapper will be obsoleted. At the same time, conforming to this
 /// protocol will also be a requirement of ``BindingReducer``'s `State`, so you're encouraged to
 /// conform states hosting `@BindingState` properties to this protocol already.
 public protocol BindableStateProtocol {}
@@ -382,8 +399,16 @@ where
 
 /// An action that describes simple mutations to some root state at a writable key path.
 ///
-/// Used in conjunction with ``BindingState`` and ``BindableAction`` to safely eliminate the
-/// boilerplate typically associated with mutating multiple fields in state.
+/// When using the ``BindingState`` property wrapper in your feature's ``ReducerProtocol/State``
+/// for easily deriving SwiftUI bindings from fields, you must also add a `binding` case to your
+/// ``ReducerProtocol/Action`` enum that holds a ``BindingAction``:
+///
+/// ```swift
+/// enum Action: BindableAction {
+///   case binding(BindingAction<State>)
+///   // More actions...
+/// }
+/// ```
 ///
 /// Read <doc:Bindings> for more information.
 public struct BindingAction<Root>: Equatable {
