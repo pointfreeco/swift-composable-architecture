@@ -578,7 +578,11 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     var dependencies = DependencyValues()
     dependencies.context = .test
     prepareDependencies(&dependencies)
-    let initialState = DependencyValues.$_current.withValue(dependencies) { initialState() }
+    let initialState = withDependencies {
+      $0 = dependencies
+    } operation: {
+      initialState()
+    }
 
     let reducer = TestReducer(Reduce(reducer), initialState: initialState)
     self._environment = .init(wrappedValue: ())
@@ -1038,7 +1042,9 @@ extension TestStore where ScopedState: Equatable {
     case .on:
       var expectedWhenGivenPreviousState = expected
       if let updateStateToExpectedResult = updateStateToExpectedResult {
-        try DependencyValues.$_current.withValue(self.dependencies) {
+        try withDependencies {
+          $0 = self.dependencies
+        } operation: {
           try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
         }
       }
@@ -1053,7 +1059,9 @@ extension TestStore where ScopedState: Equatable {
     case .off:
       var expectedWhenGivenActualState = actual
       if let updateStateToExpectedResult = updateStateToExpectedResult {
-        try DependencyValues.$_current.withValue(self.dependencies) {
+        try withDependencies {
+          $0 = self.dependencies
+        } operation: {
           try updateStateToExpectedResult(&expectedWhenGivenActualState)
         }
       }
@@ -1070,7 +1078,9 @@ extension TestStore where ScopedState: Equatable {
         if let updateStateToExpectedResult = updateStateToExpectedResult {
           _XCTExpectFailure(strict: false) {
             do {
-              try DependencyValues.$_current.withValue(self.dependencies) {
+              try withDependencies {
+                $0 = self.dependencies
+              } operation: {
                 try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
               }
             } catch {

@@ -394,7 +394,13 @@ extension Publisher {
   public func eraseToEffect<T>(
     _ transform: @escaping (Output) -> T
   ) -> EffectPublisher<T, Failure> {
-    self.map(transform)
+    self.map(withEscapedDependencies { escaped in
+      { action in
+        escaped.yield {
+          transform(action)
+        }
+      }
+    })
       .eraseToEffect()
   }
 
