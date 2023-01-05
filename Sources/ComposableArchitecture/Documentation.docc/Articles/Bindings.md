@@ -8,7 +8,12 @@ Many APIs in SwiftUI use bindings to set up two-way communication between your a
 and a view. The Composable Architecture provides several tools for creating bindings that establish
 such communication with your application's store.
 
-### Ad hoc bindings
+* [Ad hoc bindings](#Ad-hoc-bindings)
+* [Bindable state, actions, and reducers](#Bindable-state-actions-and-reducers)
+* [View state](#View-state)
+* [Testing](#Testing)
+
+## Ad hoc bindings
 
 The simplest tool for creating bindings that communicate with your store is 
 ``ViewStore/binding(get:send:)-65xes``, which is handed two closures: one that describes how to
@@ -91,7 +96,7 @@ struct SettingsView: View {
 }
 ```
 
-### Bindable state, actions, and reducers
+## Bindable state, actions, and reducers
 
 Deriving ad hoc bindings requires many manual steps that can feel tedious, especially for screens
 with many controls driven by many bindings. Because of this, the Composable Architecture comes with
@@ -177,25 +182,32 @@ struct Settings: ReducerProtocol {
 ```
 
 This is a _lot_ of boilerplate for something that should be simple. Luckily, we can dramatically
-eliminate this boilerplate using ``BindableState``, ``BindableAction``, and ``BindingReducer``.
+eliminate this boilerplate using some tools from this libary.
 
-First, we can annotate each bindable value of state with the ``BindableState`` property wrapper:
+First, we conform `State` to ``BindableStateProtocol``, and we annotate each field that we want
+to be able to derive a binding for with the ``BindingState`` property wrapper:
 
 ```swift
 struct Settings: ReducerProtocol {
-  struct State: Equatable {
-    @BindableState var digest = Digest.daily
-    @BindableState var displayName = ""
-    @BindableState var enableNotifications = false
+  struct State: Equatable, BindableStateProtocol {
+    @BindingState var digest = Digest.daily
+    @BindingState var displayName = ""
+    @BindingState var enableNotifications = false
     var isLoading = false
-    @BindableState var protectMyPosts = false
-    @BindableState var sendEmailNotifications = false
-    @BindableState var sendMobileNotifications = false
+    @BindingState var protectMyPosts = false
+    @BindingState var sendEmailNotifications = false
+    @BindingState var sendMobileNotifications = false
   }
 
   // ...
 }
 ```
+
+> Note: It is not necessary to annotate _every_ field with `@BindingState`, and in fact it is
+not recommended. Marking a field with the property wrapper makes it instantly mutable from the
+outside, which may hurt the encapsulation of your feature. It is best to limit the usage of the 
+property wrapper to only those fields that need to have bindings derived for handing to SwiftUI
+components.
 
 Each annotated field is directly bindable to SwiftUI controls, like pickers, toggles, and text
 fields. Notably, the `isLoading` property is _not_ annotated as being bindable, which prevents the
@@ -227,19 +239,22 @@ struct Settings: ReducerProtocol {
 
   var body: some ReducerProtocol<State, Action> {
     BindingReducer()
+    Reduce { state, action in 
+      // Additional settings logic and behavior here...
+    }
   }
 }
 ```
 
-Binding actions are constructed and sent to the store by calling
-``ViewStore/binding(_:file:fileID:line:)`` with a key path to the bindable state:
+Then in the view one can derive a binding for a field in the state by simply using the `$` syntax
+with the name of the field:
 
 ```swift
-TextField("Display name", text: viewStore.binding(\.$displayName))
+TextField("Display name", text: viewStore.$displayName)
 ```
 
-Should you need to layer additional functionality over these bindings, your reducer can pattern
-match the action for a given key path:
+Should you need to layer additional functionality when these bindings are written to, your reducer 
+can pattern match the action for a given key path:
 
 ```swift
 var body: some ReducerProtocol<State, Action> {
@@ -256,6 +271,57 @@ var body: some ReducerProtocol<State, Action> {
   }
 }
 ```
+
+## View state
+
+As we explain in our <doc:Performance> article, it is a good idea to observe only the bare 
+essentials of state that your view needs to do its job. This is especially true for features
+closer to the root of the application, which tend to hold state for many child features, all of
+which is not needed in the view.
+
+However, if you are doing this _and_ using `@BindingState`, then there is an extra step you must
+take. When defining the `ViewState` type in your view that holds onto all of the state your view
+cares about, you must mark each field that needs to derive a binding with `@BindingViewState`:
+
+```swift
+struct ViewState: Equatable {
+  @BindingViewState var editMode: EditMode
+  @BindingViewState var filter: Filter
+  // ...
+}
+```
+
+> Note: Just as is the case with `@BindingState`, not all fields need to be annotated with 
+`@BindingViewState`. Just the ones that need to have bindings derived to hand to SwiftUI 
+components.
+
+And finally, you must provide a custom initializer that creates the ``BindingViewState`` for each
+field by going through the state's ``BindableStateProtocol/bindings`` property:
+
+```swift
+struct ViewState: Equatable {
+  @BindingViewState var editMode: EditMode
+  @BindingViewState var filter: Filter
+
+  init(state: Todos.State) {
+    self._editMode = state.bindings.$editMode
+    self._filter = state.bindings.$filter
+  }
+}
+```
+
+That code is only slightly different from the code that is written when not dealing with the 
+`@BindingState` property wrapper.
+
+And with those steps done you can now derive a binding from the view store very easily:
+
+```swift
+Picker("Filter", selection: viewStore.$filter.animation()) {
+  // ...
+}
+```
+
+## Testing
 
 Binding actions can also be tested in much the same way regular actions are tested. Rather than send
 a specific action describing how a binding changed, such as `.displayNameChanged("Blob")`, you will
