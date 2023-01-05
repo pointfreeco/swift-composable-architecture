@@ -69,7 +69,7 @@
       "location" : "https://github.com/pointfreeco/swift-dependencies",
       "state" : {
         "branch" : "main",
-        "revision" : "c79b4c82fe3ed625ff7d7175ca09f18c1d9e0211"
+        "revision" : "e1be2152bed9fb00cf367d6ee6ea3a847d1ae093"
       }
     },
     {
@@ -95,8 +95,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swiftui-navigation",
       "state" : {
-        "revision" : "4b666bcc59ba1711a7543ecb37e1d181963b180c",
-        "version" : "0.4.2"
+        "revision" : "46acf5ecc1cabdb28d7fe03289f6c8b13a023f52",
+        "version" : "0.4.5"
       }
     },
     {
@@ -104,8 +104,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/xctest-dynamic-overlay",
       "state" : {
-        "revision" : "16e6409ee82e1b81390bdffbf217b9c08ab32784",
-        "version" : "0.5.0"
+        "revision" : "a9daebf0bf65981fd159c885d504481a65a75f02",
+        "version" : "0.8.0"
       }
     }
   ],
