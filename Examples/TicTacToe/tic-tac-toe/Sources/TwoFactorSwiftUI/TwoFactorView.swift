@@ -13,18 +13,13 @@ public struct TwoFactorView: View {
     var isFormDisabled: Bool
     var isSubmitButtonDisabled: Bool
 
-    init(@BindingStore state: TwoFactor.State) {
-      self.alert = state.alert
-      self._code = $state.$code
-      self.isActivityIndicatorVisible = state.isTwoFactorRequestInFlight
-      self.isFormDisabled = state.isTwoFactorRequestInFlight
-      self.isSubmitButtonDisabled = !state.isFormValid
+    init(store: BindingViewStore<TwoFactor.State>) {
+      self.alert = store.alert
+      self._code = store.$code
+      self.isActivityIndicatorVisible = store.isTwoFactorRequestInFlight
+      self.isFormDisabled = store.isTwoFactorRequestInFlight
+      self.isSubmitButtonDisabled = !store.isFormValid
     }
-  }
-
-  enum ViewAction: Equatable {
-    case alertDismissed
-    case submitButtonTapped
   }
 
   public init(store: StoreOf<TwoFactor>) {
@@ -32,9 +27,7 @@ public struct TwoFactorView: View {
   }
 
   public var body: some View {
-    WithViewStore(
-      self.store, observe: ViewState.init($state:), send: TwoFactor.Action.init
-    ) { viewStore in
+    WithViewStore(self.store, observe: ViewState.init, send: TwoFactor.Action.view) { viewStore in
       Form {
         Text(#"To confirm the second factor enter "1234" into the form."#)
 
@@ -65,17 +58,6 @@ public struct TwoFactorView: View {
       .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
       .disabled(viewStore.isFormDisabled)
       .navigationTitle("Confirmation Code")
-    }
-  }
-}
-
-extension TwoFactor.Action {
-  init(action: TwoFactorView.ViewAction) {
-    switch action {
-    case .alertDismissed:
-      self = .alertDismissed
-    case .submitButtonTapped:
-      self = .submitButtonTapped
     }
   }
 }

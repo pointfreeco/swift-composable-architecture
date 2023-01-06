@@ -124,9 +124,9 @@ extension TwoFactor.Action {
     case .alertDismissed:
       self = .alertDismissed
     case let .codeChanged(code):
-      self = .set(\.$code, code ?? "")
+      self = .view(.set(\.$code, code ?? ""))
     case .loginButtonTapped:
-      self = .submitButtonTapped
+      self = .view(.submitButtonTapped)
     }
   }
 }

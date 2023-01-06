@@ -17,21 +17,15 @@ public struct LoginView: View {
     @BindingViewState var password: String
     var isTwoFactorActive: Bool
 
-    init(@BindingStore state: Login.State) {
+    init(state: BindingViewStore<Login.State>) {
       self.alert = state.alert
-      self._email = $state.$email
+      self._email = state.$email
       self.isActivityIndicatorVisible = state.isLoginRequestInFlight
       self.isFormDisabled = state.isLoginRequestInFlight
       self.isLoginButtonDisabled = !state.isFormValid
-      self._password = $state.$password
+      self._password = state.$password
       self.isTwoFactorActive = state.twoFactor != nil
     }
-  }
-
-  enum ViewAction {
-    case alertDismissed
-    case loginButtonTapped
-    case twoFactorDismissed
   }
 
   public init(store: StoreOf<Login>) {
@@ -39,7 +33,7 @@ public struct LoginView: View {
   }
 
   public var body: some View {
-    WithViewStore(self.store, observe: ViewState.init($state:), send: Login.Action.init) { viewStore in
+    WithViewStore(self.store, observe: ViewState.init, send: Login.Action.view) { viewStore in
       Form {
         Text(
           """
@@ -90,19 +84,6 @@ public struct LoginView: View {
       .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
     }
     .navigationTitle("Login")
-  }
-}
-
-extension Login.Action {
-  init(action: LoginView.ViewAction) {
-    switch action {
-    case .alertDismissed:
-      self = .alertDismissed
-    case .twoFactorDismissed:
-      self = .twoFactorDismissed
-    case .loginButtonTapped:
-      self = .loginButtonTapped
-    }
   }
 }
 

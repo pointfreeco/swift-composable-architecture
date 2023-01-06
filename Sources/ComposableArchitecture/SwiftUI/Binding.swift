@@ -198,7 +198,7 @@ where Value: CustomDebugStringConvertible {
 
 @dynamicMemberLookup
 @propertyWrapper
-public struct BindingStore<State> {
+public struct BindingViewStore<State> {
   let store: Store<State, BindingAction<State>>
   #if DEBUG
     let bindableActionType: Any.Type
@@ -272,18 +272,24 @@ public struct BindingStore<State> {
 }
 
 extension WithViewStore where Content: View {
-  public init<State, Action: BindableAction>(
+  public init<State, Action>(
     _ store: Store<State, Action>,
-    observe toViewState: @escaping (BindingStore<State>) -> ViewState,
+    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
     send fromViewAction: @escaping (ViewAction) -> Action,
     removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
     @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
     line: UInt = #line
-  ) where Action.State == State {
+  ) where ViewAction: BindableAction, ViewAction.State == State {
     self.init(
       store,
-      observe: { (_: State) in toViewState(BindingStore(store: store)) },
+      observe: { (_: State) in
+        toViewState(
+          BindingViewStore(
+            store: store.scope(state: { $0 }, action: fromViewAction)
+          )
+        )
+      },
       send: fromViewAction,
       removeDuplicates: isDuplicate,
       content: content,
@@ -294,7 +300,7 @@ extension WithViewStore where Content: View {
 
   public init<State>(
     _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (BindingStore<State>) -> ViewState,
+    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
     removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
     @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
@@ -313,14 +319,14 @@ extension WithViewStore where Content: View {
 }
 
 extension WithViewStore where ViewState: Equatable, Content: View {
-  public init<State, Action: BindableAction>(
+  public init<State, Action>(
     _ store: Store<State, Action>,
-    observe toViewState: @escaping (BindingStore<State>) -> ViewState,
+    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
     send fromViewAction: @escaping (ViewAction) -> Action,
     @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
     line: UInt = #line
-  ) where Action.State == State {
+  ) where ViewAction: BindableAction, ViewAction.State == State {
     self.init(
       store,
       observe: toViewState,
@@ -334,7 +340,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
 
   public init<State>(
     _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (BindingStore<State>) -> ViewState,
+    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
     @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
     line: UInt = #line

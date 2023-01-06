@@ -15,12 +15,16 @@ public struct Login: ReducerProtocol, Sendable {
     public init() {}
   }
 
-  public enum Action: BindableAction, Equatable {
+  public enum Action: Equatable {
     case alertDismissed
-    case binding(BindingAction<State>)
-    case loginButtonTapped
     case loginResponse(TaskResult<AuthenticationResponse>)
     case twoFactor(TwoFactor.Action)
+    case view(ViewAction)
+  }
+
+  public enum ViewAction: BindableAction, Equatable {
+    case binding(BindingAction<State>)
+    case loginButtonTapped
     case twoFactorDismissed
   }
 
@@ -29,14 +33,14 @@ public struct Login: ReducerProtocol, Sendable {
   public init() {}
 
   public var body: some ReducerProtocol<State, Action> {
-    BindingReducer()
+    BindingReducer(action: /Action.view)
     Reduce { state, action in
       switch action {
       case .alertDismissed:
         state.alert = nil
         return .none
 
-      case .binding:
+      case .view(.binding):
         state.isFormValid = !state.email.isEmpty && !state.password.isEmpty
         return .none
 
@@ -52,7 +56,7 @@ public struct Login: ReducerProtocol, Sendable {
         state.isLoginRequestInFlight = false
         return .none
 
-      case .loginButtonTapped:
+      case .view(.loginButtonTapped):
         state.isLoginRequestInFlight = true
         return .task { [email = state.email, password = state.password] in
           .loginResponse(
@@ -67,7 +71,7 @@ public struct Login: ReducerProtocol, Sendable {
       case .twoFactor:
         return .none
 
-      case .twoFactorDismissed:
+      case .view(.twoFactorDismissed):
         state.twoFactor = nil
         return .cancel(id: TwoFactor.TearDownToken.self)
       }

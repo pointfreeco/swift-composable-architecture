@@ -22,14 +22,18 @@ struct Todos: ReducerProtocol {
     }
   }
 
-  enum Action: BindableAction, Equatable, Sendable {
+  enum Action: Equatable, Sendable {
+    case sortCompletedTodos
+    case todo(id: Todo.State.ID, action: Todo.Action)
+    case view(ViewAction)
+  }
+
+  enum ViewAction: BindableAction, Equatable, Sendable {
     case addTodoButtonTapped
     case binding(BindingAction<State>)
     case clearCompletedButtonTapped
     case delete(IndexSet)
     case move(IndexSet, Int)
-    case sortCompletedTodos
-    case todo(id: Todo.State.ID, action: Todo.Action)
   }
 
   @Dependency(\.continuousClock) var clock
@@ -37,28 +41,28 @@ struct Todos: ReducerProtocol {
   private enum TodoCompletionID {}
 
   var body: some ReducerProtocol<State, Action> {
-    BindingReducer()
+    BindingReducer(action: /Action.view)
     Reduce { state, action in
       switch action {
-      case .addTodoButtonTapped:
+      case .view(.addTodoButtonTapped):
         state.todos.insert(Todo.State(id: self.uuid()), at: 0)
         return .none
 
-      case .binding:
+      case .view(.binding):
         return .none
 
-      case .clearCompletedButtonTapped:
+      case .view(.clearCompletedButtonTapped):
         state.todos.removeAll(where: \.isComplete)
         return .none
 
-      case let .delete(indexSet):
+      case let .view(.delete(indexSet)):
         let filteredTodos = state.filteredTodos
         for index in indexSet {
           state.todos.remove(id: filteredTodos[index].id)
         }
         return .none
 
-      case var .move(source, destination):
+      case var .view(.move(source, destination)):
         if state.filter == .completed {
           source = IndexSet(
             source
@@ -116,15 +120,15 @@ struct AppView: View {
     @BindingViewState var filter: Filter
     let isClearCompletedButtonDisabled: Bool
 
-    init(@BindingStore state: Todos.State) {
-      self._editMode = $state.$editMode
-      self._filter = $state.$filter
-      self.isClearCompletedButtonDisabled = !state.todos.contains(where: \.isComplete)
+    init(store: BindingViewStore<Todos.State>) {
+      self._editMode = store.$editMode
+      self._filter = store.$filter
+      self.isClearCompletedButtonDisabled = !store.todos.contains(where: \.isComplete)
     }
   }
 
   var body: some View {
-    WithViewStore(self.store, observe: ViewState.init($state:)) { viewStore in
+    WithViewStore(self.store, observe: ViewState.init, send: Todos.Action.view) { viewStore in
       NavigationView {
         VStack(alignment: .leading) {
           Picker("Filter", selection: viewStore.$filter.animation()) {
