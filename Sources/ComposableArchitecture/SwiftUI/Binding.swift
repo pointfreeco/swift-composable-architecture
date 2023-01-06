@@ -257,12 +257,12 @@ public struct BindingViewStore<State> {
               fileID: self.fileID,
               line: self.line
             )
-            let set: (inout State) -> Void = {
+            let set: @Sendable (inout State) -> Void = {
               $0[keyPath: keyPath].wrappedValue = value
               debugger.wasCalled = true
             }
           #else
-            let set: (inout State) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
+            let set: @Sendable (inout State) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
           #endif
           return .init(keyPath: keyPath, set: set, value: value)
         }
@@ -374,12 +374,12 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
             fileID: bindingState.fileID,
             line: bindingState.line
           )
-          let set: (inout ViewState) -> Void = {
+          let set: @Sendable (inout ViewState) -> Void = {
             $0[keyPath: keyPath].wrappedValue = value
             debugger.wasCalled = true
           }
         #else
-          let set: (inout ViewState) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
+          let set: @Sendable (inout ViewState) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
         #endif
         return .binding(.init(keyPath: keyPath, set: set, value: value))
       }
@@ -408,12 +408,12 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
             fileID: fileID,
             line: line
           )
-          let set: (inout ViewState) -> Void = {
+          let set: @Sendable (inout ViewState) -> Void = {
             $0[keyPath: keyPath].wrappedValue = value
             debugger.wasCalled = true
           }
         #else
-          let set: (inout ViewState) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
+          let set: @Sendable (inout ViewState) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
         #endif
         return .binding(.init(keyPath: keyPath, set: set, value: value))
       }
@@ -427,16 +427,24 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
 /// boilerplate typically associated with mutating multiple fields in state.
 ///
 /// Read <doc:Bindings> for more information.
-public struct BindingAction<Root>: Equatable {
+public struct BindingAction<Root>: Equatable, @unchecked Sendable {
   public let keyPath: PartialKeyPath<Root>
 
   @usableFromInline
-  let set: (inout Root) -> Void
-  let value: Any
-  let valueIsEqualTo: (Any) -> Bool
+  let set: @Sendable (inout Root) -> Void
+  let value: AnySendable
+  let valueIsEqualTo: @Sendable (Any) -> Bool
 
   public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.keyPath == rhs.keyPath && lhs.valueIsEqualTo(rhs.value)
+  }
+}
+
+struct AnySendable: @unchecked Sendable {
+  let base: Any
+  @inlinable
+  init<Base: Sendable>(_ base: Base) {
+    self.base = base
   }
 }
 
@@ -450,7 +458,7 @@ extension BindingAction {
   ///   - value: A value to assign at the given key path.
   /// - Returns: An action that describes simple mutations to some root state at a writable key
   ///   path.
-  public static func set<Value: Equatable>(
+  public static func set<Value: Equatable & Sendable>(
     _ keyPath: WritableKeyPath<Root, BindingState<Value>>,
     _ value: Value
   ) -> Self {
@@ -480,15 +488,15 @@ extension BindingAction {
     keyPath == bindingAction.keyPath
   }
 
-  init<Value: Equatable>(
+  init<Value: Equatable & Sendable>(
     keyPath: WritableKeyPath<Root, BindingState<Value>>,
-    set: @escaping (inout Root) -> Void,
+    set: @escaping @Sendable (inout Root) -> Void,
     value: Value
   ) {
     self.init(
       keyPath: keyPath,
       set: set,
-      value: value,
+      value: AnySendable(value),
       valueIsEqualTo: { $0 as? Value == value }
     )
   }
@@ -613,6 +621,7 @@ extension BindingAction {
   ///
   /// - Parameter keyPath: A key path from a new type of root state to the original root state.
   /// - Returns: A binding action over a new type of root state.
+  // TODO: Deprecate
   public func pullback<NewRoot>(
     _ keyPath: WritableKeyPath<NewRoot, Root>
   ) -> BindingAction<NewRoot> {
@@ -630,7 +639,7 @@ extension BindingAction: CustomDumpReflectable {
     Mirror(
       self,
       children: [
-        "set": (self.keyPath, self.value)
+        "set": (self.keyPath, self.value.base)
       ],
       displayStyle: .enum
     )

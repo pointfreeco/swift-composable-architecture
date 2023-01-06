@@ -958,14 +958,14 @@ extension BindingAction {
       and accessed via key paths to that 'BindingState', like '\\.$value'
       """
   )
-  public static func set<Value: Equatable>(
+  public static func set<Value: Equatable & Sendable>(
     _ keyPath: WritableKeyPath<Root, Value>,
     _ value: Value
   ) -> Self {
     .init(
       keyPath: keyPath,
       set: { $0[keyPath: keyPath] = value },
-      value: value,
+      value: AnySendable(value),
       valueIsEqualTo: { $0 as? Value == value }
     )
   }

@@ -8,7 +8,7 @@ struct Todo: ReducerProtocol {
     @BindingState var isComplete = false
   }
 
-  enum Action: BindableAction, Equatable {
+  enum Action: BindableAction, Equatable, Sendable {
     case binding(BindingAction<State>)
   }
 
