@@ -51,6 +51,8 @@ extension BindableState: Equatable where Value: Equatable {}
 
 extension BindableState: Hashable where Value: Hashable {}
 
+extension BindableState: Sendable where Value: Sendable {}
+
 extension BindableState: Decodable where Value: Decodable {
   public init(from decoder: Decoder) throws {
     do {
