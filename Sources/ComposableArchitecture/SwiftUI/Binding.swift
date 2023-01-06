@@ -161,7 +161,7 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
 /// boilerplate typically associated with mutating multiple fields in state.
 ///
 /// Read <doc:Bindings> for more information.
-public struct BindingAction<Root>: Equatable {
+public struct BindingAction<Root>: Equatable, @unchecked Sendable {
   public let keyPath: PartialKeyPath<Root>
 
   @usableFromInline
