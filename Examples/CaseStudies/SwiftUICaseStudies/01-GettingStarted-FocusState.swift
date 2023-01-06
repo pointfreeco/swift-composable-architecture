@@ -57,7 +57,6 @@ struct FocusDemoView: View {
         VStack {
           TextField("Username", text: viewStore.binding(\.$username))
             .focused($focusedField, equals: .username)
-
           SecureField("Password", text: viewStore.binding(\.$password))
             .focused($focusedField, equals: .password)
           Button("Sign In") {

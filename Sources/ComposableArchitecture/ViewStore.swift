@@ -466,14 +466,8 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     get: @escaping (ViewState) -> Value,
     send valueToAction: @escaping (Value) -> ViewAction
   ) -> Binding<Value> {
-    ObservedObject(
-      wrappedValue: ObservedState(
-        initialValue: get(self.state),
-        send: { self.send(valueToAction($0)) }
-      )
-    )
-    .projectedValue
-    .wrappedValue
+    ObservedObject(wrappedValue: self)
+      .projectedValue[get: .init(rawValue: get), send: .init(rawValue: valueToAction)]
   }
 
   /// Derives a binding from the store that prevents direct writes to state and instead sends
@@ -564,6 +558,14 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   /// - Returns: A binding.
   public func binding(send action: ViewAction) -> Binding<ViewState> {
     self.binding(send: { _ in action })
+  }
+
+  private subscript<Value>(
+    get state: HashableWrapper<(ViewState) -> Value>,
+    send action: HashableWrapper<(Value) -> ViewAction>
+  ) -> Value {
+    get { state.rawValue(self.state) }
+    set { self.send(action.rawValue(newValue)) }
   }
 }
 
@@ -748,12 +750,8 @@ public struct StorePublisher<State>: Publisher {
   }
 }
 
-private final class ObservedState<Value>: ObservableObject {
-  @Published var wrappedValue: Value
-  var cancellable: AnyCancellable?
-
-  init(initialValue: Value, send: @escaping (Value) -> Void) {
-    self.wrappedValue = initialValue
-    self.cancellable = self.$wrappedValue.dropFirst().sink(receiveValue: send)
-  }
+private struct HashableWrapper<Value>: Hashable {
+  let rawValue: Value
+  static func == (lhs: Self, rhs: Self) -> Bool { false }
+  func hash(into hasher: inout Hasher) {}
 }
