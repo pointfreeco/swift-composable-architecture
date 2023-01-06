@@ -22,18 +22,14 @@ struct Todos: ReducerProtocol {
     }
   }
 
-  enum Action: Equatable, Sendable {
-    case sortCompletedTodos
-    case todo(id: Todo.State.ID, action: Todo.Action)
-    case view(ViewAction)
-  }
-
-  enum ViewAction: BindableAction, Equatable, Sendable {
+  enum Action: BindableAction, Equatable, Sendable {
     case addTodoButtonTapped
     case binding(BindingAction<State>)
     case clearCompletedButtonTapped
     case delete(IndexSet)
     case move(IndexSet, Int)
+    case sortCompletedTodos
+    case todo(id: Todo.State.ID, action: Todo.Action)
   }
 
   @Dependency(\.continuousClock) var clock
@@ -41,28 +37,28 @@ struct Todos: ReducerProtocol {
   private enum TodoCompletionID {}
 
   var body: some ReducerProtocol<State, Action> {
-    BindingReducer(action: /Action.view)
+    BindingReducer()
     Reduce { state, action in
       switch action {
-      case .view(.addTodoButtonTapped):
+      case .addTodoButtonTapped:
         state.todos.insert(Todo.State(id: self.uuid()), at: 0)
         return .none
 
-      case .view(.binding):
+      case .binding:
         return .none
 
-      case .view(.clearCompletedButtonTapped):
+      case .clearCompletedButtonTapped:
         state.todos.removeAll(where: \.isComplete)
         return .none
 
-      case let .view(.delete(indexSet)):
+      case let .delete(indexSet):
         let filteredTodos = state.filteredTodos
         for index in indexSet {
           state.todos.remove(id: filteredTodos[index].id)
         }
         return .none
 
-      case var .view(.move(source, destination)):
+      case var .move(source, destination):
         if state.filter == .completed {
           source = IndexSet(
             source
@@ -107,14 +103,6 @@ struct Todos: ReducerProtocol {
 struct AppView: View {
   let store: StoreOf<Todos>
 
-  // TODO: Add `ViewStore.init(_,observe:send:removeDuplicates:)`
-//  @ObservedObject var viewStore: ViewStore<ViewState, Todos.Action>
-//
-//  init(store: StoreOf<Todos>) {
-//    self.store = store
-//    self.viewStore = ViewStore(self.store.scope(state: ViewState.init(state:)))
-//  }
-
   struct ViewState: Equatable {
     @BindingViewState var editMode: EditMode
     @BindingViewState var filter: Filter
@@ -128,7 +116,7 @@ struct AppView: View {
   }
 
   var body: some View {
-    WithViewStore(self.store, observe: ViewState.init, send: Todos.Action.view) { viewStore in
+    WithViewStore(self.store, observe: ViewState.init) { viewStore in
       NavigationView {
         VStack(alignment: .leading) {
           Picker("Filter", selection: viewStore.$filter.animation()) {

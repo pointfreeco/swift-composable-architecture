@@ -16,15 +16,11 @@ public struct TwoFactor: ReducerProtocol, Sendable {
     }
   }
 
-  public enum Action: Equatable {
+  public enum Action: BindableAction, Equatable {
     case alertDismissed
-    case twoFactorResponse(TaskResult<AuthenticationResponse>)
-    case view(ViewAction)
-  }
-
-  public enum ViewAction: BindableAction, Equatable {
     case binding(BindingAction<State>)
     case submitButtonTapped
+    case twoFactorResponse(TaskResult<AuthenticationResponse>)
   }
 
   public enum TearDownToken {}
@@ -34,18 +30,18 @@ public struct TwoFactor: ReducerProtocol, Sendable {
   public init() {}
 
   public var body: some ReducerProtocol<State, Action> {
-    BindingReducer(action: /Action.view)
+    BindingReducer()
     Reduce { state, action in
       switch action {
       case .alertDismissed:
         state.alert = nil
         return .none
 
-      case .view(.binding):
+      case .binding:
         state.isFormValid = state.code.count >= 4
         return .none
 
-      case .view(.submitButtonTapped):
+      case .submitButtonTapped:
         state.isTwoFactorRequestInFlight = true
         return .task { [code = state.code, token = state.token] in
           .twoFactorResponse(
