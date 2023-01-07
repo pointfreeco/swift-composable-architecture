@@ -18,7 +18,7 @@
 - ``receive(_:timeout:assert:file:line:)-1rwdd``
 - ``receive(_:timeout:assert:file:line:)-4e4m0``
 - ``receive(_:timeout:assert:file:line:)-3myco``
-- ``finish(timeout:file:line:)-53gi5``
+- ``finish(timeout:file:line:)``
 - ``TestStoreTask``
 
 ### Methods for skipping actions and effects

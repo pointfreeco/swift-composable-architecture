@@ -15,7 +15,7 @@ alter the execution context a feature runs in. This means in tests and Xcode pre
 provide a mock version of an API client that immediately returns some stubbed data rather than 
 making a live network request to a server.
 
-The dependency management system in the Composable Architecture is driven off of our 
+> Note: The dependency management system in the Composable Architecture is driven off of our 
 [Dependencies][swift-dependencies-gh] library. That repository has extensive 
 [documentation][swift-deps-docs] and articles, and we highly recommend you familiarize yourself
 with all of that content to best leverage dependencies.
