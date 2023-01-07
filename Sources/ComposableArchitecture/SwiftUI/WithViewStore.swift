@@ -117,7 +117,7 @@ public struct WithViewStore<ViewState, ViewAction, Content> {
     private var prefix: String?
     private var previousState: (ViewState) -> ViewState?
   #endif
-  @ObservedObject private var viewStore: ViewStore<ViewState, ViewAction>
+  @StateObject private var viewStore: ViewStore<ViewState, ViewAction>
 
   init(
     store: Store<ViewState, ViewAction>,
@@ -136,7 +136,7 @@ public struct WithViewStore<ViewState, ViewAction, Content> {
         return previousState
       }
     #endif
-    self.viewStore = ViewStore(store, removeDuplicates: isDuplicate)
+    self._viewStore = StateObject(wrappedValue: ViewStore(store, removeDuplicates: isDuplicate))
   }
 
   /// Prints debug information to the console whenever the view is computed.
