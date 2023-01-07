@@ -347,7 +347,7 @@ final class EffectTests: XCTestCase {
       .sink { output = $0 }
       .store(in: &self.cancellables)
     XCTAssertEqual(output, Date(timeIntervalSince1970: 1_234_567_890))
-
+ 
     if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
       let effect = withDependencies {
         $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
