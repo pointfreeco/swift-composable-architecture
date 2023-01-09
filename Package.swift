@@ -44,7 +44,7 @@ let package = Package(
       name: "ComposableArchitectureTests",
       dependencies: [
         "_CAsyncSupport",
-        "ComposableArchitecture"
+        "ComposableArchitecture",
       ]
     ),
     .executableTarget(
