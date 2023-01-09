@@ -41,6 +41,8 @@ struct EagerNavigation: ReducerProtocol {
       case .optionalCounter:
         return .none
       }
+    }.ifLet(\.optionalCounter, action: /Action.optionalCounter) {
+      Counter()
     }
   }
 }
