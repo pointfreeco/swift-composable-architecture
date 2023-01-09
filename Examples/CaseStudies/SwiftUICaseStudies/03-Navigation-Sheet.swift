@@ -3,6 +3,7 @@ import SwiftUI
 
 struct SheetDemo: ReducerProtocol {
   struct State: Equatable {
+    //@PresentationStateOf<AlertState<AlertAction>> var alert
     @PresentationStateOf<Destinations> var destination
   }
 
@@ -37,6 +38,8 @@ struct SheetDemo: ReducerProtocol {
         return .none
       }
     }
+    // TODO: Can we hide away the behavior of detecting alert action and `nil`-ing out destination.
+    // TODO: Can we also not send `dismiss` when writing `nil` to binding in view layer?
     .presentationDestination(\.$destination, action: /Action.destination) {
       Destinations()
     }
@@ -44,16 +47,27 @@ struct SheetDemo: ReducerProtocol {
 
   struct Destinations: ReducerProtocol {
     enum State: Equatable {
+      // state.destination = .alert(.delete)
+      case alert(AlertState<AlertAction>)
       case animations(Animations.State)
       case counter(Counter.State)
     }
 
     enum Action: Equatable {
+      case alert(AlertAction)
       case animations(Animations.Action)
       case counter(Counter.Action)
     }
 
+    enum AlertAction {
+      case confirm
+      case deny
+    }
+
     var body: some ReducerProtocol<State, Action> {
+//      Scope(state: /State.alert, action: /Action.alert) {
+//        /* library level reducer type */ AlertReducer()
+//      }
       Scope(state: /State.animations, action: /Action.animations) {
         Animations()
       }
