@@ -506,29 +506,31 @@ extension EffectPublisher {
       return .init(
         operation: .publisher(
           publisher
-            .map(withEscapedDependencies { escaped in
-              { action in
-                escaped.yield {
-                  transform(action)
+            .map(
+              withEscapedDependencies { escaped in
+                { action in
+                  escaped.yield {
+                    transform(action)
+                  }
                 }
               }
-            })
+            )
             .eraseToAnyPublisher()
         )
       )
     case let .run(priority, operation):
       return withEscapedDependencies { escaped in
-          .init(
-            operation: .run(priority) { send in
-              await escaped.yield {
-                await operation(
-                  Send { action in
-                    send(transform(action))
-                  }
-                )
-              }
+        .init(
+          operation: .run(priority) { send in
+            await escaped.yield {
+              await operation(
+                Send { action in
+                  send(transform(action))
+                }
+              )
             }
-          )
+          }
+        )
       }
     }
   }

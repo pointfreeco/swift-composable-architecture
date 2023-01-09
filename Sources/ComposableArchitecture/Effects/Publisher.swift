@@ -394,14 +394,16 @@ extension Publisher {
   public func eraseToEffect<T>(
     _ transform: @escaping (Output) -> T
   ) -> EffectPublisher<T, Failure> {
-    self.map(withEscapedDependencies { escaped in
-      { action in
-        escaped.yield {
-          transform(action)
+    self.map(
+      withEscapedDependencies { escaped in
+        { action in
+          escaped.yield {
+            transform(action)
+          }
         }
       }
-    })
-      .eraseToEffect()
+    )
+    .eraseToEffect()
   }
 
   /// Turns any publisher into an ``EffectTask`` that cannot fail by wrapping its output and failure
@@ -474,13 +476,15 @@ extension Publisher {
   ) -> EffectTask<T> {
     return
       self
-      .map(withEscapedDependencies { escaped in
-        { action in
-          escaped.yield {
-            transform(.success(action))
+      .map(
+        withEscapedDependencies { escaped in
+          { action in
+            escaped.yield {
+              transform(.success(action))
+            }
           }
         }
-      })
+      )
       .catch { Just(transform(.failure($0))) }
       .eraseToEffect()
   }
