@@ -73,7 +73,6 @@ day-to-day when building applications, such as:
 
 - <doc:Testing>
 - ``TestStore``
-- ``ActorIsolated``
 
 ## See Also
 

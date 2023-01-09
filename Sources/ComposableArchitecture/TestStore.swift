@@ -542,7 +542,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   /// The default timeout used in all methods that take an optional timeout.
   ///
   /// This is the default timeout used in all methods that take an optional timeout, such as
-  /// ``receive(_:timeout:assert:file:line:)-1rwdd`` and ``finish(timeout:file:line:)-53gi5``.
+  /// ``receive(_:timeout:assert:file:line:)-1rwdd`` and ``finish(timeout:file:line:)``.
   public var timeout: UInt64
 
   private var _environment: Box<Environment>
@@ -575,10 +575,13 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     Action == ScopedAction,
     Environment == Void
   {
-    var dependencies = DependencyValues()
-    dependencies.context = .test
+    var dependencies = DependencyValues._current
     prepareDependencies(&dependencies)
-    let initialState = DependencyValues.$_current.withValue(dependencies) { initialState() }
+    let initialState = withDependencies {
+      $0 = dependencies
+    } operation: {
+      initialState()
+    }
 
     let reducer = TestReducer(Reduce(reducer), initialState: initialState)
     self._environment = .init(wrappedValue: ())
@@ -1038,7 +1041,9 @@ extension TestStore where ScopedState: Equatable {
     case .on:
       var expectedWhenGivenPreviousState = expected
       if let updateStateToExpectedResult = updateStateToExpectedResult {
-        try DependencyValues.$_current.withValue(self.dependencies) {
+        try withDependencies {
+          $0 = self.dependencies
+        } operation: {
           try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
         }
       }
@@ -1053,7 +1058,9 @@ extension TestStore where ScopedState: Equatable {
     case .off:
       var expectedWhenGivenActualState = actual
       if let updateStateToExpectedResult = updateStateToExpectedResult {
-        try DependencyValues.$_current.withValue(self.dependencies) {
+        try withDependencies {
+          $0 = self.dependencies
+        } operation: {
           try updateStateToExpectedResult(&expectedWhenGivenActualState)
         }
       }
@@ -1070,7 +1077,9 @@ extension TestStore where ScopedState: Equatable {
         if let updateStateToExpectedResult = updateStateToExpectedResult {
           _XCTExpectFailure(strict: false) {
             do {
-              try DependencyValues.$_current.withValue(self.dependencies) {
+              try withDependencies {
+                $0 = self.dependencies
+              } operation: {
                 try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
               }
             } catch {
@@ -1988,7 +1997,7 @@ extension TestStore {
 /// await store.send(.stopTimerButtonTapped).finish()
 /// ```
 ///
-/// See ``TestStore/finish(timeout:file:line:)-53gi5`` for the ability to await all in-flight
+/// See ``TestStore/finish(timeout:file:line:)`` for the ability to await all in-flight
 /// effects in the test store.
 ///
 /// See ``ViewStoreTask`` for the analog provided to ``ViewStore``.

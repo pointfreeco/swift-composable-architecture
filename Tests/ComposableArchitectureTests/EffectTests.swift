@@ -1,5 +1,5 @@
 import Combine
-@_spi(Canary) import ComposableArchitecture
+@_spi(Canary) @_spi(Internals) import ComposableArchitecture
 import XCTest
 
 @MainActor
@@ -52,34 +52,36 @@ final class EffectTests: XCTestCase {
 
   #if swift(>=5.7) && (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     func testConcatenate() async {
-      if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        let clock = TestClock()
-        var values: [Int] = []
+      await _withMainSerialExecutor {
+        if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
+          let clock = TestClock()
+          var values: [Int] = []
 
-        let effect = EffectPublisher<Int, Never>.concatenate(
-          (1...3).map { count in
-            .task {
-              try await clock.sleep(for: .seconds(count))
-              return count
+          let effect = EffectPublisher<Int, Never>.concatenate(
+            (1...3).map { count in
+              .task {
+                try await clock.sleep(for: .seconds(count))
+                return count
+              }
             }
-          }
-        )
+          )
 
-        effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+          effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
 
-        XCTAssertEqual(values, [])
+          XCTAssertEqual(values, [])
 
-        await clock.advance(by: .seconds(1))
-        XCTAssertEqual(values, [1])
+          await clock.advance(by: .seconds(1))
+          XCTAssertEqual(values, [1])
 
-        await clock.advance(by: .seconds(2))
-        XCTAssertEqual(values, [1, 2])
+          await clock.advance(by: .seconds(2))
+          XCTAssertEqual(values, [1, 2])
 
-        await clock.advance(by: .seconds(3))
-        XCTAssertEqual(values, [1, 2, 3])
+          await clock.advance(by: .seconds(3))
+          XCTAssertEqual(values, [1, 2, 3])
 
-        await clock.run()
-        XCTAssertEqual(values, [1, 2, 3])
+          await clock.run()
+          XCTAssertEqual(values, [1, 2, 3])
+        }
       }
     }
   #endif
@@ -335,25 +337,23 @@ final class EffectTests: XCTestCase {
 
   func testMap() async {
     @Dependency(\.date) var date
-    let effect =
-      DependencyValues
-      .withValue(\.date, .init { Date(timeIntervalSince1970: 1_234_567_890) }) {
-        EffectTask<Void>(value: ())
-          .map { date() }
-      }
+    let effect = withDependencies {
+      $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
+    } operation: {
+      EffectTask<Void>(value: ()).map { date() }
+    }
     var output: Date?
     effect
       .sink { output = $0 }
       .store(in: &self.cancellables)
     XCTAssertEqual(output, Date(timeIntervalSince1970: 1_234_567_890))
-
+ 
     if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
-      let effect =
-        DependencyValues
-        .withValue(\.date, .init { Date(timeIntervalSince1970: 1_234_567_890) }) {
-          EffectTask<Void>.task {}
-            .map { date() }
-        }
+      let effect = withDependencies {
+        $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
+      } operation: {
+        EffectTask<Void>.task {}.map { date() }
+      }
       output = await effect.values.first(where: { _ in true })
       XCTAssertEqual(output, Date(timeIntervalSince1970: 1_234_567_890))
     }

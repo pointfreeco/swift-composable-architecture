@@ -39,16 +39,6 @@
                ReferencedContainer = "container:">
             </BuildableReference>
          </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "DependenciesTests"
-               BuildableName = "DependenciesTests"
-               BlueprintName = "DependenciesTests"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
