@@ -146,7 +146,7 @@ public struct _DependencyKeyWritingReducer<Base: ReducerProtocol>: ReducerProtoc
   public func reduce(
     into state: inout Base.State, action: Base.Action
   ) -> EffectTask<Base.Action> {
-    DependencyValues.withValues {
+    withDependencies {
       self.update(&$0)
     } operation: {
       self.base.reduce(into: &state, action: action)

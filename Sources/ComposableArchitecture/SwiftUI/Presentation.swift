@@ -271,7 +271,9 @@ public struct _PresentationDestinationReducer<
       effects.append(
         .run { send in
           do {
-            try await DependencyValues.withValue(\.navigationID.current, id) {
+            try await withDependencies {
+              $0.navigationID.current = id
+            } operation: {
               try await withTaskCancellation(id: DismissID.self) {
                 try await Task.never()
               }

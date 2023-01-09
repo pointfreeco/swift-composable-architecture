@@ -27,7 +27,8 @@ let package = Package(
     .library(name: "TwoFactorUIKit", targets: ["TwoFactorUIKit"]),
   ],
   dependencies: [
-    .package(name: "swift-composable-architecture", path: "../../..")
+    .package(name: "swift-composable-architecture", path: "../../.."),
+    .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "0.1.0"),
   ],
   targets: [
     .target(
@@ -63,7 +64,7 @@ let package = Package(
     .target(
       name: "AuthenticationClient",
       dependencies: [
-        .product(name: "Dependencies", package: "swift-composable-architecture")
+        .product(name: "Dependencies", package: "swift-dependencies")
       ]
     ),
     .target(

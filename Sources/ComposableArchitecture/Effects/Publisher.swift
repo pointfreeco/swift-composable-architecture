@@ -153,12 +153,13 @@ extension EffectPublisher {
   public static func future(
     _ attemptToFulfill: @escaping (@escaping (Result<Action, Failure>) -> Void) -> Void
   ) -> Self {
-    let dependencies = DependencyValues._current
-    return Deferred {
-      DependencyValues.$_current.withValue(dependencies) {
-        Future(attemptToFulfill)
-      }
-    }.eraseToEffect()
+    withEscapedDependencies { escaped in
+      Deferred {
+        escaped.yield {
+          Future(attemptToFulfill)
+        }
+      }.eraseToEffect()
+    }
   }
 
   /// Initializes an effect that lazily executes some work in the real world and synchronously sends
@@ -243,13 +244,14 @@ extension EffectPublisher {
   public static func run(
     _ work: @escaping (EffectPublisher.Subscriber) -> Cancellable
   ) -> Self {
-    let dependencies = DependencyValues._current
-    return AnyPublisher.create { subscriber in
-      DependencyValues.$_current.withValue(dependencies) {
-        work(subscriber)
+    withEscapedDependencies { escaped in
+      AnyPublisher.create { subscriber in
+        escaped.yield {
+          work(subscriber)
+        }
       }
+      .eraseToEffect()
     }
-    .eraseToEffect()
   }
 
   /// Creates an effect that executes some work in the real world that doesn't need to feed data
@@ -267,16 +269,17 @@ extension EffectPublisher {
     //     due to a bug in iOS 13.2 that publisher will never complete. The bug was fixed in
     //     iOS 13.3, but to remain compatible with iOS 13.2 and higher we need to do a little
     //     trickery to make sure the deferred publisher completes.
-    let dependencies = DependencyValues._current
-    return Deferred { () -> Publishers.CompactMap<Result<Action?, Failure>.Publisher, Action> in
-      DependencyValues.$_current.withValue(dependencies) {
-        try? work()
+    withEscapedDependencies { escaped in
+      Deferred { () -> Publishers.CompactMap<Result<Action?, Failure>.Publisher, Action> in
+        escaped.yield {
+          try? work()
+        }
+        return Just<Output?>(nil)
+          .setFailureType(to: Failure.self)
+          .compactMap { $0 }
       }
-      return Just<Output?>(nil)
-        .setFailureType(to: Failure.self)
-        .compactMap { $0 }
+      .eraseToEffect()
     }
-    .eraseToEffect()
   }
 }
 
@@ -391,8 +394,16 @@ extension Publisher {
   public func eraseToEffect<T>(
     _ transform: @escaping (Output) -> T
   ) -> EffectPublisher<T, Failure> {
-    self.map(transform)
-      .eraseToEffect()
+    self.map(
+      withEscapedDependencies { escaped in
+        { action in
+          escaped.yield {
+            transform(action)
+          }
+        }
+      }
+    )
+    .eraseToEffect()
   }
 
   /// Turns any publisher into an ``EffectTask`` that cannot fail by wrapping its output and failure
@@ -463,15 +474,17 @@ extension Publisher {
   public func catchToEffect<T>(
     _ transform: @escaping (Result<Output, Failure>) -> T
   ) -> EffectTask<T> {
-    let dependencies = DependencyValues._current
-    let transform = { action in
-      DependencyValues.$_current.withValue(dependencies) {
-        transform(action)
-      }
-    }
     return
       self
-      .map { transform(.success($0)) }
+      .map(
+        withEscapedDependencies { escaped in
+          { action in
+            escaped.yield {
+              transform(.success(action))
+            }
+          }
+        }
+      )
       .catch { Just(transform(.failure($0))) }
       .eraseToEffect()
   }
