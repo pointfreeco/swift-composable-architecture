@@ -16,9 +16,9 @@ provide a mock version of an API client that immediately returns some stubbed da
 making a live network request to a server.
 
 > Note: The dependency management system in the Composable Architecture is driven off of our 
-[Dependencies][swift-dependencies-gh] library. That repository has extensive 
-[documentation][swift-deps-docs] and articles, and we highly recommend you familiarize yourself
-with all of that content to best leverage dependencies.
+> [Dependencies][swift-dependencies-gh] library. That repository has extensive 
+> [documentation][swift-deps-docs] and articles, and we highly recommend you familiarize yourself
+> with all of that content to best leverage dependencies.
 
 ## Overriding dependencies
 
