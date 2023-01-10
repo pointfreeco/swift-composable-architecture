@@ -1,5 +1,6 @@
 import ComposableArchitecture
 import SwiftUI
+import SwiftUINavigation
 
 struct SheetDemo: ReducerProtocol {
   struct State: Equatable {
@@ -32,7 +33,7 @@ struct SheetDemo: ReducerProtocol {
           state.destination = .counter(Counter.State())
         case .some(.counter):
           state.destination = .animations(Animations.State())
-        case .none:
+        case .some(.alert), .none:
           break
         }
         return .none
@@ -78,50 +79,38 @@ struct SheetDemo: ReducerProtocol {
   }
 }
 
+extension AlertState where Action == SheetDemo.Destinations.AlertAction {
+  static let alert: Self = AlertState {
+    TextState("OK")
+  } actions: {
+    ButtonState(role: .destructive, action: .deny) { TextState("Deny") }
+    ButtonState(role: .cancel) { TextState("OK") }
+  }
+}
+
+func form(_ viewStore: ViewStore<Void, SheetDemo.Action>) -> some View {
+  Form {
+    Button("Alert") { viewStore.send(.destination(.present(.alert(.alert)))) }
+    Button("Animations") {
+      viewStore.send(.destination(.present(.animations(Animations.State()))))
+    }
+    Button("Counter") {
+      viewStore.send(.destination(.present(.counter(Counter.State()))))
+    }
+  }
+}
+
 struct SheetDemoView: View {
   let store: StoreOf<SheetDemo>
 
   var body: some View {
     WithViewStore(self.store.stateless) { viewStore in
-      Form {
-        Button("Animations") {
-          viewStore.send(.destination(.present(.animations(Animations.State()))))
-        }
-        Button("Counter") {
-          viewStore.send(.destination(.present(.counter(Counter.State()))))
-        }
-      }
-      //      .sheet(
-      //        store: self.store.scope(state: \.$sheet, action: SheetDemo.Action.sheet)
-      //      ) { store in
-      //        VStack {
-      //          HStack {
-      //            Button("Swap") {
-      //              viewStore.send(.swap, animation: .default)
-      //            }
-      //            Button("Close") {
-      //              viewStore.send(.sheet(.dismiss))
-      //            }
-      //          }
-      //          .padding()
-      //
-      //          SwitchStore(store) {
-      //            CaseLet(
-      //              state: /SheetDemo.Destinations.State.animations,
-      //              action: SheetDemo.Destinations.Action.animations,
-      //              then: AnimationsView.init(store:)
-      //            )
-      //            CaseLet(
-      //              state: /SheetDemo.Destinations.State.counter,
-      //              action: SheetDemo.Destinations.Action.counter,
-      //              then: CounterView.init(store:)
-      //            )
-      //          }
-      //          .transition(.slide.combined(with: .opacity))
-      //
-      //          Spacer()
-      //        }
-      //      }
+      form(viewStore)
+      .alert(
+        store: self.store.scope(state: \.$destination, action: SheetDemo.Action.destination),
+        state: /SheetDemo.Destinations.State.alert,
+        action: SheetDemo.Destinations.Action.alert
+      )
       .sheet(
         store: self.store.scope(state: \.$destination, action: SheetDemo.Action.destination),
         state: /SheetDemo.Destinations.State.animations,
@@ -164,6 +153,60 @@ struct SheetDemoView: View {
       }
     }
     .navigationTitle("Sheets")
+  }
+}
+
+extension View {
+  @MainActor
+  func alert<State, Action, ButtonAction>(
+    store: Store<PresentationState<State>, PresentationAction<State, Action>>,
+    state toDestinationState: @escaping (State) -> AlertState<ButtonAction>?,
+    action fromDestinationAction: @escaping (ButtonAction) -> Action
+  ) -> some View {
+    WithViewStore(store) {
+      $0
+    } removeDuplicates: {
+      $0.id == $1.id
+    } content: { viewStore in
+      let alertState = viewStore.wrappedValue.flatMap(toDestinationState)
+
+      let title: Text = (alertState?.title).map(Text.init) ?? Text("")
+      let isPresented: Binding<Bool> = Binding(
+        get: { alertState != nil },
+        set: { _ in
+          if alertState != nil {
+            viewStore.send(.dismiss)
+          }
+        }
+      )
+      let message: (AlertState<ButtonAction>) -> Text = {
+        $0.message.map(Text.init) ?? Text("")
+      }
+      return self.alert(
+        title,
+        isPresented: isPresented,
+        presenting: alertState,
+        actions: { alertState in
+          ForEach(alertState.buttons) { button in
+            Button(role: button.role.map(ButtonRole.init)) {
+              switch button.action?.type {
+              case let .send(action):
+                viewStore.send(.presented(fromDestinationAction(action)))
+              case let .animatedSend(action, animation):
+                _ = withAnimation(animation) {
+                  viewStore.send(.presented(fromDestinationAction(action)))
+                }
+              case .none:
+                viewStore.send(.dismiss)
+              }
+            } label: {
+              Text(button.label)
+            }
+          }
+        },
+        message: message
+      )
+    }
   }
 }
 

@@ -141,6 +141,9 @@ extension ReducerProtocol {
   }
 }
 
+@usableFromInline protocol _AlertState {}
+extension AlertState: _AlertState {}
+
 public struct _PresentationDestinationReducer<
   Presenter: ReducerProtocol, Presented: ReducerProtocol
 >: ReducerProtocol {
@@ -195,7 +198,7 @@ public struct _PresentationDestinationReducer<
     into state: inout Presenter.State,
     action: Presenter.Action
   ) -> EffectTask<Presenter.Action> {
-    // TODO: explore more performance impliciations
+    // TODO: explore more performance implications
     //       Doing effect = effect.merge may be faster on the creation side and slower on the run side,
     //       because it creates a lot of nested TaskGroups
     var effects: [EffectTask<Presenter.Action>] = []
@@ -212,7 +215,6 @@ public struct _PresentationDestinationReducer<
 
     case let .presented(presentedAction):
       if case .presented(let id, var presentedState) = currentPresentedState {
-        defer { state[keyPath: self.toPresentedState] = .presented(id: id, presentedState) }
         effects.append(
           self.presented
             .dependency(\.dismiss, DismissEffect { Task.cancel(id: DismissID.self) })
@@ -225,6 +227,14 @@ public struct _PresentationDestinationReducer<
             .map { self.toPresentedAction.embed(.presented($0)) }
             .cancellable(id: id)
         )
+        // TODO: Check if presentedState is enum and if current enum tag is alert state
+
+//        if presentedAction is _AlertAction || presentedAction.case is _AlertAction {
+
+//          state[keyPath: self.toPresentedState] = .dismissed
+//        } else {
+          state[keyPath: self.toPresentedState] = .presented(id: id, presentedState)
+//        }
       } else {
         runtimeWarn(
           """
