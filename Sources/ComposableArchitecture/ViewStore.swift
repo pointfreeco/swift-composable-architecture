@@ -466,8 +466,10 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     get: @escaping (ViewState) -> Value,
     send valueToAction: @escaping (Value) -> ViewAction
   ) -> Binding<Value> {
-    ObservedObject(wrappedValue: self)
+    let base = ObservedObject(wrappedValue: self)
       .projectedValue[get: .init(rawValue: get), send: .init(rawValue: valueToAction)]
+    
+    return Binding(get: { base.wrappedValue }, set: { base.transaction($1).wrappedValue = $0 })
   }
 
   /// Derives a binding from the store that prevents direct writes to state and instead sends
