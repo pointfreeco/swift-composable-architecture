@@ -79,11 +79,6 @@ final class ComposableArchitectureTests: XCTestCase {
   }
 
   func testLongLivingEffects() async {
-    typealias Environment = (
-      startEffect: EffectTask<Void>,
-      stopEffect: EffectTask<Never>
-    )
-
     enum Action { case end, incr, start }
 
     let effect = AsyncStream<Void>.streamWithContinuation()
@@ -124,7 +119,7 @@ final class ComposableArchitectureTests: XCTestCase {
       case response(Int)
     }
 
-    let reducer = AnyReducer<Int, Action, Void> { state, action, _ in
+    let reducer = Reduce<Int, Action> { state, action in
       enum CancelID {}
 
       switch action {
@@ -147,8 +142,7 @@ final class ComposableArchitectureTests: XCTestCase {
 
     let store = TestStore(
       initialState: 0,
-      reducer: reducer,
-      environment: ()
+      reducer: reducer
     )
 
     await store.send(.incr) { $0 = 1 }
