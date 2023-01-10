@@ -30,10 +30,10 @@ struct ForEachBindingTestCaseView: View {
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
-      VStack { // ⚠️ Must use VStack, not List.
+      VStack {  // ⚠️ Must use VStack, not List.
         ForEach(Array(viewStore.values.enumerated()), id: \.offset) { offset, value in
-          HStack { // ⚠️ Must wrap in an HStack.
-            TextField( // ⚠️ Must use a TextField.
+          HStack {  // ⚠️ Must wrap in an HStack.
+            TextField(  // ⚠️ Must use a TextField.
               "\(value)",
               text: viewStore.binding(
                 get: { $0.values[offset] },
