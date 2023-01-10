@@ -468,7 +468,8 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ) -> Binding<Value> {
     let base = ObservedObject(wrappedValue: self)
       .projectedValue[get: .init(rawValue: get), send: .init(rawValue: valueToAction)]
-    
+
+    return base
     return Binding(get: { base.wrappedValue }, set: { base.transaction($1).wrappedValue = $0 })
   }
 
