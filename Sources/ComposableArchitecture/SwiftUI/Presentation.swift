@@ -1,3 +1,4 @@
+@_spi(Reflection) import CasePaths
 import SwiftUI
 
 // TODO: `@dynamicMemberLookup`? `Sendable where State: Sendable`
@@ -141,9 +142,6 @@ extension ReducerProtocol {
   }
 }
 
-@usableFromInline protocol _AlertState {}
-extension AlertState: _AlertState {}
-
 public struct _PresentationDestinationReducer<
   Presenter: ReducerProtocol, Presented: ReducerProtocol
 >: ReducerProtocol {
@@ -191,7 +189,7 @@ public struct _PresentationDestinationReducer<
     self.file = file
     self.fileID = fileID
     self.line = line
-  } 
+  }
 
   @inlinable
   public func reduce(
@@ -229,12 +227,11 @@ public struct _PresentationDestinationReducer<
         )
         // TODO: Check if presentedState is enum and if current enum tag is alert state
 
-//        if presentedAction is _AlertAction || presentedAction.case is _AlertAction {
-
-//          state[keyPath: self.toPresentedState] = .dismissed
-//        } else {
+        if isAlertState(presentedState) {
+          state[keyPath: self.toPresentedState] = .dismissed
+        } else {
           state[keyPath: self.toPresentedState] = .presented(id: id, presentedState)
-//        }
+        }
       } else {
         runtimeWarn(
           """
@@ -523,5 +520,20 @@ public struct PresentedView<
     } else: {
       self.dismissed
     }
+  }
+}
+
+@usableFromInline protocol _AlertState {}
+
+extension AlertState: _AlertState {}
+
+@usableFromInline
+func isAlertState<T>(_ state: T) -> Bool {
+  if state is _AlertState {
+    return true
+  } else if let metadata = EnumMetadata(type(of: state)) {
+    return metadata.associatedValueType(forTag: metadata.tag(of: state)) is _AlertState.Type
+  } else {
+    return false
   }
 }

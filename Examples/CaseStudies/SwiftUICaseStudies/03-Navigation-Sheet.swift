@@ -4,7 +4,6 @@ import SwiftUINavigation
 
 struct SheetDemo: ReducerProtocol {
   struct State: Equatable {
-    //@PresentationStateOf<AlertState<AlertAction>> var alert
     @PresentationStateOf<Destinations> var destination
   }
 
@@ -66,9 +65,6 @@ struct SheetDemo: ReducerProtocol {
     }
 
     var body: some ReducerProtocol<State, Action> {
-//      Scope(state: /State.alert, action: /Action.alert) {
-//        /* library level reducer type */ AlertReducer()
-//      }
       Scope(state: /State.animations, action: /Action.animations) {
         Animations()
       }
@@ -174,7 +170,7 @@ extension View {
       let isPresented: Binding<Bool> = Binding(
         get: { alertState != nil },
         set: { _ in
-          if alertState != nil {
+          if viewStore.wrappedValue.flatMap(toDestinationState) != nil {
             viewStore.send(.dismiss)
           }
         }
