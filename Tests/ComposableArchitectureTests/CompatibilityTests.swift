@@ -62,7 +62,7 @@ final class CompatibilityTests: XCTestCase {
       reducer: reducer
     )
 
-    let viewStore = ViewStore(store)
+    let viewStore = ViewStore(store, observe: { $0 })
 
     viewStore.send(.start)
     viewStore.send(.kickOffAction)
@@ -94,7 +94,7 @@ final class CompatibilityTests: XCTestCase {
       }
     )
 
-    let viewStore = ViewStore(store)
+    let viewStore = ViewStore(store, observe: { $0 })
 
     viewStore.publisher
       .sink { value in
