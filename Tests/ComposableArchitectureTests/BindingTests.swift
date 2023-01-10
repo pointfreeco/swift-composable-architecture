@@ -34,7 +34,7 @@ final class BindingTests: XCTestCase {
 
       let store = Store(initialState: BindingTest.State(), reducer: BindingTest())
 
-      let viewStore = ViewStore(store)
+      let viewStore = ViewStore(store, observe: { $0 })
 
       viewStore.binding(\.$nested.field).wrappedValue = "Hello"
 
