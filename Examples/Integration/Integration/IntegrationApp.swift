@@ -37,6 +37,15 @@ struct IntegrationApp: App {
               )
             )
           }
+          
+          NavigationLink("Binding Animations Test Bench") {
+            BindingsAnimationsTestBench(
+              store: Store(
+                initialState: false,
+                reducer: BindingsAnimations()
+              )
+            )
+          }
         }
       }
     }
