@@ -5,10 +5,10 @@ import XCTest
 @MainActor
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 final class PresentationAlertTests: XCTestCase {
-  func testBasics() async {
+  func testDestinations() async {
     let store = TestStore(
-      initialState: Feature.State(),
-      reducer: Feature()
+      initialState: FeatureWithDestinations.State(),
+      reducer: FeatureWithDestinations()
     )
     await store.send(.buttonTapped) {
       $0.destination = .alert(.alert)
@@ -33,10 +33,39 @@ final class PresentationAlertTests: XCTestCase {
       $0.destination = nil
     }
   }
+
+  func testAlerts() async {
+    let store = TestStore(
+      initialState: FeatureWithAlert.State(),
+      reducer: FeatureWithAlert()
+    )
+    await store.send(.buttonTapped) {
+      $0.alert = .alert
+    }
+    await store.send(.alert(.presented(.confirm))) {
+      $0.alert = nil
+      $0.count = 1
+    }
+
+    await store.send(.buttonTapped) {
+      $0.alert = .alert
+    }
+    await store.send(.alert(.presented(.deny))) {
+      $0.alert = nil
+      $0.count = 0
+    }
+
+    await store.send(.buttonTapped) {
+      $0.alert = .alert
+    }
+    await store.send(.alert(.dismiss)) {
+      $0.alert = nil
+    }
+  }
 }
 
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
-private struct Feature: ReducerProtocol {
+private struct FeatureWithDestinations: ReducerProtocol {
   struct State: Equatable {
     var count = 0
     @PresentationStateOf<Destinations> var destination
@@ -44,10 +73,6 @@ private struct Feature: ReducerProtocol {
   enum Action: Equatable {
     case buttonTapped
     case destination(PresentationActionOf<Destinations>)
-  }
-  enum AlertAction {
-    case confirm
-    case deny
   }
 
   struct Destinations: ReducerProtocol {
@@ -88,7 +113,48 @@ private struct Feature: ReducerProtocol {
 }
 
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
-extension AlertState where Action == Feature.AlertAction {
+private struct FeatureWithAlert: ReducerProtocol {
+  struct State: Equatable {
+    var count = 0
+    @PresentationState<AlertState<AlertAction>> var alert
+  }
+  enum Action: Equatable {
+    case buttonTapped
+    case alert(PresentationAction<AlertState<AlertAction>, AlertAction>)
+  }
+
+  var body: some ReducerProtocolOf<Self> {
+    Reduce { state, action in
+      switch action {
+      case .buttonTapped:
+        state.alert = .alert
+        return .none
+
+      case .alert(.presented(.confirm)):
+        state.count += 1
+        return .none
+
+      case .alert(.presented(.deny)):
+        state.count -= 1
+        return .none
+
+      case .alert:
+        return .none
+      }
+    }
+    .presentationDestination(\.$alert, action: /Action.alert) {
+      EmptyReducer()
+    }
+  }
+}
+
+enum AlertAction {
+  case confirm
+  case deny
+}
+
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+extension AlertState where Action == AlertAction {
   fileprivate static let alert = AlertState {
     TextState("What do you want to do?")
   } actions: {
