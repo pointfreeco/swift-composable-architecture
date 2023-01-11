@@ -226,6 +226,155 @@ extension BindingAction {
   }
 }
 
+enum BindingOperation<Value: Equatable>: Equatable {
+    case insert(Value)
+    case remove(Value)
+    case removeAll
+    case set(Value?)
+    case append(Value)
+    case appendContents(Array<Value>)
+}
+
+// MARK: - Dictionary
+
+extension BindingAction {
+    public static func set<Key, Value: Equatable>(
+        _ keyPath: WritableKeyPath<Root, BindableState<Dictionary<Key, Value>>>,
+        at key: Key,
+        toValue value: Value?
+    ) -> Self {
+        return .init(
+            keyPath: keyPath,
+            set: { $0[keyPath: keyPath].wrappedValue[key] = value },
+            operation: .set(value)
+        )
+    }
+
+    public static func removeAll<Key, Value: Equatable>(
+        _ keyPath: WritableKeyPath<Root, BindableState<Dictionary<Key, Value>>>
+    ) -> Self {
+        return .init(
+            keyPath: keyPath,
+            set: { $0[keyPath: keyPath].wrappedValue.removeAll() },
+            operation: .removeAll
+        )
+    }
+
+    private init<Key, Value: Equatable>(
+      keyPath: WritableKeyPath<Root, BindableState<Dictionary<Key, Value>>>,
+      set: @escaping (inout Root) -> Void,
+      operation: BindingOperation<Value?>
+    ) {
+      self.init(
+        keyPath: keyPath,
+        set: set,
+        value: operation,
+        valueIsEqualTo: {
+            guard let newOperation = $0 as? BindingOperation<Value?> else {
+                return false
+            }
+            return newOperation == operation
+        }
+      )
+    }
+}
+
+extension BindingAction {
+    public static func append<Element: Equatable>(
+        _ keyPath: WritableKeyPath<Root, BindableState<Array<Element>>>,
+        _ element: Element
+    ) -> Self {
+        return .init(
+            keyPath: keyPath,
+            set: { $0[keyPath: keyPath].wrappedValue.append(element) },
+            operation: .append(element)
+        )
+    }
+
+    public static func append<Element: Equatable>(
+        _ keyPath: WritableKeyPath<Root, BindableState<Array<Element>>>,
+        contentsOf array: Array<Element>
+    ) -> Self {
+        return .init(
+            keyPath: keyPath,
+            set: { $0[keyPath: keyPath].wrappedValue.append(contentsOf: array) },
+            operation: .appendContents(array)
+        )
+    }
+
+    public static func removeAll<Element: Equatable>(
+        _ keyPath: WritableKeyPath<Root, BindableState<Array<Element>>>
+    ) -> Self {
+        return .init(
+            keyPath: keyPath,
+            set: { $0[keyPath: keyPath].wrappedValue.removeAll() },
+            operation: .removeAll
+        )
+    }
+
+    private init<Element: Equatable>(
+      keyPath: WritableKeyPath<Root, BindableState<Array<Element>>>,
+      set: @escaping (inout Root) -> Void,
+      operation: BindingOperation<Element>
+    ) {
+      self.init(
+        keyPath: keyPath,
+        set: set,
+        value: operation,
+        valueIsEqualTo: {
+            guard let newOperation = $0 as? BindingOperation<Element> else {
+                return false
+            }
+            return newOperation == operation
+        }
+      )
+    }
+}
+
+// MARK: - OptionSet Operators
+
+extension BindingAction {
+    public static func insert<Value: OptionSet>(
+      _ keyPath: WritableKeyPath<Root, BindableState<Value>>,
+      _ element: Value.Element
+    ) -> Self where Value.Element: Equatable {
+        return .init(
+            keyPath: keyPath,
+            set: { $0[keyPath: keyPath].wrappedValue.insert(element) },
+            operation: .insert(element)
+        )
+    }
+
+    public static func remove<Value: OptionSet>(
+      _ keyPath: WritableKeyPath<Root, BindableState<Value>>,
+      _ element: Value.Element
+    ) -> Self where Value.Element: Equatable {
+        return .init(
+            keyPath: keyPath,
+            set: { $0[keyPath: keyPath].wrappedValue.remove(element) },
+            operation: .remove(element)
+        )
+    }
+
+    private init<Value: OptionSet>(
+      keyPath: WritableKeyPath<Root, BindableState<Value>>,
+      set: @escaping (inout Root) -> Void,
+      operation: BindingOperation<Value.Element>
+    ) where Value.Element: Equatable {
+      self.init(
+        keyPath: keyPath,
+        set: set,
+        value: operation,
+        valueIsEqualTo: {
+            guard let newOperation = $0 as? BindingOperation<Value.Element> else {
+                return false
+            }
+            return newOperation == operation
+        }
+      )
+    }
+}
+
 extension BindingAction {
   /// Transforms a binding action over some root state to some other type of root state given a
   /// key path.
