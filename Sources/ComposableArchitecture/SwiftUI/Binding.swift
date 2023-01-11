@@ -240,8 +240,8 @@ enum BindingOperation<Value: Equatable>: Equatable {
 extension BindingAction {
     public static func set<Key, Value: Equatable>(
         _ keyPath: WritableKeyPath<Root, BindableState<Dictionary<Key, Value>>>,
-        at key: Key,
-        toValue value: Value?
+        _ value: Value?,
+        forKey key: Key
     ) -> Self {
         return .init(
             keyPath: keyPath,
