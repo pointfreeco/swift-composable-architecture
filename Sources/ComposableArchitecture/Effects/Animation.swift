@@ -15,28 +15,7 @@ extension EffectPublisher {
   /// - Parameter animation: An animation.
   /// - Returns: A publisher.
   public func animation(_ animation: Animation? = .default) -> Self {
-    switch self.operation {
-    case .none:
-      return .none
-    case let .publisher(publisher):
-      return Self(
-        operation: .publisher(
-          TransactionPublisher(upstream: publisher, transaction: Transaction(animation: animation)).eraseToAnyPublisher()
-        )
-      )
-    case let .run(priority, operation):
-      return Self(
-        operation: .run(priority) { send in
-          await operation(
-            Send { value in
-              withTransaction(Transaction(animation: animation)) {
-                send(value)
-              }
-            }
-          )
-        }
-      )
-    }
+    self.transaction(Transaction(animation: animation))
   }
     
   /// Wraps the emission of each element with SwiftUI's `withTransaction`.
