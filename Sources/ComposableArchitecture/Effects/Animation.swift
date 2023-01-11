@@ -21,7 +21,7 @@ extension EffectPublisher {
     case let .publisher(publisher):
       return Self(
         operation: .publisher(
-          AnimatedPublisher(upstream: publisher, animation: animation).eraseToAnyPublisher()
+          TransactionPublisher(upstream: publisher, transaction: Transaction(animation: animation)).eraseToAnyPublisher()
         )
       )
     case let .run(priority, operation):
@@ -29,7 +29,46 @@ extension EffectPublisher {
         operation: .run(priority) { send in
           await operation(
             Send { value in
-              withAnimation(animation) {
+              withTransaction(Transaction(animation: animation)) {
+                send(value)
+              }
+            }
+          )
+        }
+      )
+    }
+  }
+    
+  /// Wraps the emission of each element with SwiftUI's `withTransaction`.
+  ///
+  /// ```swift
+  /// case .buttonTapped:
+  ///   var transaction = Transaction(animation: .default)
+  ///   transaction.disablesAnimation = true
+  ///   return .task {
+  ///     .activityResponse(await self.apiClient.fetchActivity())
+  ///   }
+  ///   .transaction(transaction)
+  /// ```
+  ///
+  /// - Parameter transaction: A transaction.
+  /// - Returns: A publisher.
+  public func transaction(_ transaction: Transaction) -> Self {
+    switch self.operation {
+    case .none:
+      return .none
+    case let .publisher(publisher):
+      return Self(
+        operation: .publisher(
+          TransactionPublisher(upstream: publisher, transaction: transaction).eraseToAnyPublisher()
+        )
+      )
+    case let .run(priority, operation):
+      return Self(
+        operation: .run(priority) { send in
+          await operation(
+            Send { value in
+              withTransaction(transaction) {
                 send(value)
               }
             }
@@ -40,16 +79,16 @@ extension EffectPublisher {
   }
 }
 
-private struct AnimatedPublisher<Upstream: Publisher>: Publisher {
+private struct TransactionPublisher<Upstream: Publisher>: Publisher {
   typealias Output = Upstream.Output
   typealias Failure = Upstream.Failure
 
   var upstream: Upstream
-  var animation: Animation?
+  var transaction: Transaction
 
   func receive<S: Combine.Subscriber>(subscriber: S)
   where S.Input == Output, S.Failure == Failure {
-    let conduit = Subscriber(downstream: subscriber, animation: self.animation)
+    let conduit = Subscriber(downstream: subscriber, transaction: self.transaction)
     self.upstream.receive(subscriber: conduit)
   }
 
@@ -58,11 +97,11 @@ private struct AnimatedPublisher<Upstream: Publisher>: Publisher {
     typealias Failure = Downstream.Failure
 
     let downstream: Downstream
-    let animation: Animation?
+    let transaction: Transaction
 
-    init(downstream: Downstream, animation: Animation?) {
+    init(downstream: Downstream, transaction: Transaction) {
       self.downstream = downstream
-      self.animation = animation
+      self.transaction = transaction
     }
 
     func receive(subscription: Subscription) {
@@ -70,7 +109,7 @@ private struct AnimatedPublisher<Upstream: Publisher>: Publisher {
     }
 
     func receive(_ input: Input) -> Subscribers.Demand {
-      withAnimation(self.animation) {
+      withTransaction(self.transaction) {
         self.downstream.receive(input)
       }
     }
