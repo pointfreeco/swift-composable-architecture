@@ -111,6 +111,13 @@ public enum PresentationAction<State, Action> {
   public static var present: Self { .present() }
 }
 
+public func ~= <State, Action, ID: Hashable> (
+  lhs: ID, rhs: PresentationAction<State, Action>
+) -> Bool {
+  guard case .present(AnyHashable(lhs), _) = rhs else { return false }
+  return true
+}
+
 public typealias PresentationActionOf<R: ReducerProtocol> = PresentationAction<R.State, R.Action>
 
 // TODO:

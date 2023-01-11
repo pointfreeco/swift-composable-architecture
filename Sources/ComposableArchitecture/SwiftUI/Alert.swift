@@ -63,12 +63,18 @@ private struct OldAlertModifier<Action>: ViewModifier {
   }
 }
 
-
-
-
-@available(iOS 15.0, *)
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+@MainActor
 extension View {
-  @MainActor
+  public func alert<ButtonAction>(
+    store: Store<
+      PresentationState<AlertState<ButtonAction>>,
+      PresentationAction<AlertState<ButtonAction>, ButtonAction>
+    >
+  ) -> some View {
+    self.alert(store: store, state: { $0 }, action: { $0 })
+  }
+
   public func alert<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<State, Action>>,
     state toDestinationState: @escaping (State) -> AlertState<ButtonAction>?,
@@ -80,22 +86,16 @@ extension View {
       $0.id == $1.id
     } content: { viewStore in
       let alertState = viewStore.wrappedValue.flatMap(toDestinationState)
-
-      let title: Text = (alertState?.title).map(Text.init) ?? Text("")
-      let isPresented: Binding<Bool> = Binding(
-        get: { alertState != nil },
-        set: { _ in
-          if viewStore.wrappedValue.flatMap(toDestinationState) != nil {
-            viewStore.send(.dismiss)
-          }
-        }
-      )
-      let message: (AlertState<ButtonAction>) -> Text = {
-        $0.message.map(Text.init) ?? Text("")
-      }
       return self.alert(
-        title,
-        isPresented: isPresented,
+        (alertState?.title).map(Text.init) ?? Text(""),
+        isPresented: Binding(
+          get: { alertState != nil },
+          set: { _ in
+            if viewStore.wrappedValue.flatMap(toDestinationState) != nil {
+              viewStore.send(.dismiss)
+            }
+          }
+        ),
         presenting: alertState,
         actions: { alertState in
           ForEach(alertState.buttons) { button in
@@ -115,7 +115,9 @@ extension View {
             }
           }
         },
-        message: message
+        message: {
+          $0.message.map(Text.init) ?? Text("")
+        }
       )
     }
   }

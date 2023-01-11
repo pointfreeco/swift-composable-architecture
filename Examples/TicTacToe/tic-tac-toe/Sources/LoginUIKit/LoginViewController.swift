@@ -11,7 +11,7 @@ public class LoginViewController: UIViewController {
   private var cancellables: Set<AnyCancellable> = []
 
   struct ViewState: Equatable {
-    let alert: AlertState<Login.Action>?
+    let alert: AlertState<Never>?
     let email: String?
     let isActivityIndicatorHidden: Bool
     let isEmailTextFieldEnabled: Bool
@@ -20,7 +20,7 @@ public class LoginViewController: UIViewController {
     let password: String?
 
     init(state: Login.State) {
-      self.alert = state.alert
+      self.alert = state.destination.flatMap(/Login.Destinations.State.alert)
       self.email = state.email
       self.isActivityIndicatorHidden = !state.isLoginRequestInFlight
       self.isEmailTextFieldEnabled = !state.isLoginRequestInFlight
@@ -157,7 +157,10 @@ public class LoginViewController: UIViewController {
       .store(in: &self.cancellables)
 
     self.store
-      .scope(state: \.twoFactor, action: { .twoFactor(.presented($0)) })
+      .scope(
+        state: { $0.destination.flatMap(/Login.Destinations.State.twoFactor) },
+        action: { .destination(.presented(.twoFactor($0))) }
+      )
       .ifLet(
         then: { [weak self] twoFactorStore in
           self?.navigationController?.pushViewController(
@@ -198,15 +201,15 @@ extension Login.Action {
   init(action: LoginViewController.ViewAction) {
     switch action {
     case .alertDismissed:
-      self = .alertDismissed
+      self = .destination(.dismiss)
     case let .emailChanged(email):
       self = .emailChanged(email ?? "")
     case .loginButtonTapped:
-      self = .twoFactor(.present)
+      self = .destination(.present(id: ObjectIdentifier(TwoFactor.self)))
     case let .passwordChanged(password):
       self = .passwordChanged(password ?? "")
     case .twoFactorDismissed:
-      self = .twoFactor(.dismiss)
+      self = .destination(.dismiss)
     }
   }
 }

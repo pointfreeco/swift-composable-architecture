@@ -9,27 +9,22 @@ public struct LoginView: View {
   let store: StoreOf<Login>
 
   struct ViewState: Equatable {
-    var alert: AlertState<Login.Action>?
     var email: String
     var isActivityIndicatorVisible: Bool
     var isFormDisabled: Bool
     var isLoginButtonDisabled: Bool
     var password: String
-    var isTwoFactorActive: Bool
 
     init(state: Login.State) {
-      self.alert = state.alert
       self.email = state.email
       self.isActivityIndicatorVisible = state.isLoginRequestInFlight
       self.isFormDisabled = state.isLoginRequestInFlight
       self.isLoginButtonDisabled = !state.isFormValid
       self.password = state.password
-      self.isTwoFactorActive = state.twoFactor != nil
     }
   }
 
   enum ViewAction {
-    case alertDismissed
     case emailChanged(String)
     case loginButtonTapped
     case passwordChanged(String)
@@ -79,11 +74,17 @@ public struct LoginView: View {
         .disabled(viewStore.isLoginButtonDisabled)
       }
       .disabled(viewStore.isFormDisabled)
-      .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
+      .alert(
+        store: self.store.scope(state: \.$destination, action: Login.Action.destination),
+        state: /Login.Destinations.State.alert,
+        action: Login.Destinations.Action.alert
+      )
     }
     .navigationTitle("Login")
     .navigationDestination(
-      store: self.store.scope(state: \.$twoFactor, action: Login.Action.twoFactor),
+      store: self.store.scope(state: \.$destination, action: Login.Action.destination),
+      state: /Login.Destinations.State.twoFactor,
+      action: Login.Destinations.Action.twoFactor,
       destination: TwoFactorView.init(store:)
     )
   }
@@ -92,12 +93,10 @@ public struct LoginView: View {
 extension Login.Action {
   init(action: LoginView.ViewAction) {
     switch action {
-    case .alertDismissed:
-      self = .alertDismissed
     case let .emailChanged(email):
       self = .emailChanged(email)
     case .loginButtonTapped:
-      self = .twoFactor(.present)
+      self = .destination(.present(id: ObjectIdentifier(TwoFactor.self)))
     case let .passwordChanged(password):
       self = .passwordChanged(password)
     }
