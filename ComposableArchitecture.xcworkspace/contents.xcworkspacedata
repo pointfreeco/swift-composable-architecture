@@ -8,6 +8,9 @@
       location = "group:Examples/CaseStudies/CaseStudies.xcodeproj">
    </FileRef>
    <FileRef
+      location = "group:Examples/Integration/Integration.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:Examples/Search/Search.xcodeproj">
    </FileRef>
    <FileRef
