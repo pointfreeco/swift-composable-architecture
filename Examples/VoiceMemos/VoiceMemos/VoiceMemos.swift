@@ -71,7 +71,7 @@ struct VoiceMemos: ReducerProtocol {
         return .none
 
       case .didFinish(.failure):
-        state.destination = .alert(AlertState { TextState("Voice memo recording failed.") })
+        state.destination = .alert(.recordingFailed)
         return .none
       }
 
@@ -95,11 +95,7 @@ struct VoiceMemos: ReducerProtocol {
         }
 
       case .denied:
-        state.destination = .alert(
-          AlertState {
-            TextState("Permission is required to record voice memos.")
-          }
-        )
+        state.destination = .alert(.permissionRequired)
         return .none
 
       case .allowed:
@@ -113,16 +109,12 @@ struct VoiceMemos: ReducerProtocol {
         state.destination = .recordingMemo(newRecordingMemo)
         return .none
       } else {
-        state.destination = .alert(
-          AlertState {
-            TextState("Permission is required to record voice memos.")
-          }
-        )
+        state.destination = .alert(.permissionRequired)
         return .none
       }
 
     case .voiceMemo(id: _, action: .audioPlayerClient(.failure)):
-      state.destination = .alert(AlertState { TextState("Voice memo playback failed.") })
+      state.destination = .alert(.playbackFailed)
       return .none
 
     case let .voiceMemo(id: id, action: .delete):
@@ -150,6 +142,20 @@ struct VoiceMemos: ReducerProtocol {
   }
 }
 
+extension AlertState where Action == Never {
+  static let permissionRequired = AlertState {
+    TextState("Permission is required to record voice memos.")
+  }
+
+  static let recordingFailed = AlertState {
+    TextState("Voice memo recording failed.")
+  }
+
+  static let playbackFailed = AlertState {
+    TextState("Voice memo playback failed.")
+  }
+}
+
 struct VoiceMemosView: View {
   let store: StoreOf<VoiceMemos>
 
@@ -171,7 +177,7 @@ struct VoiceMemosView: View {
           }
 
           PresentedView(
-            self.store.scope(state: \.$destination, action: { .destination($0) }),
+            self.store.scope(state: \.$destination, action: VoiceMemos.Action.destination),
             state: /VoiceMemos.Destinations.State.recordingMemo,
             action: VoiceMemos.Destinations.Action.recordingMemo
           ) { store in
