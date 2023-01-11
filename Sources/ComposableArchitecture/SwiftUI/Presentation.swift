@@ -340,6 +340,7 @@ extension View {
   }
 
   @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
   public func popover<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<State, Action>>,
     attachmentAnchor: PopoverAttachmentAnchor = .rect(.bounds),
@@ -357,6 +358,7 @@ extension View {
   }
 
   @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
   public func popover<State, Action, DestinationState, DestinationAction, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<State, Action>>,
     state toDestinationState: @escaping (State) -> DestinationState?,
