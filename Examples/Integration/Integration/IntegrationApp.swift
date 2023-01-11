@@ -9,6 +9,14 @@ struct IntegrationApp: App {
     WindowGroup {
       NavigationStack {
         List {
+          NavigationLink("EscapedWithViewStoreTestCase") {
+            EscapedWithViewStoreTestCaseView(
+              store: Store(
+                initialState: 10,
+                reducer: EscapedWithViewStoreTestCase()
+              )
+            )
+          }
           NavigationLink("ForEachBindingTestCase") {
             ForEachBindingTestCaseView(
               store: Store(
