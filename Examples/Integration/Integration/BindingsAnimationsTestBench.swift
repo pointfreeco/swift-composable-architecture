@@ -113,21 +113,8 @@ struct ContentView: View {
 }
 
 struct AnimatedWithObservation {
-  struct StateBinding: View {
-    @State var flag = false
-
-    var body: some View {
-      ZStack {
-        ContentView(flag: $flag)
-          .animation(mediumAnimation, value: flag)
-        Toggle("", isOn: $flag)
-      }
-    }
-  }
-
   struct ObservedObjectBinding: View {
     @EnvironmentObject var vanillaModel: VanillaModel
-
     var body: some View {
       ZStack {
         ContentView(flag: $vanillaModel.flag)
@@ -139,7 +126,6 @@ struct AnimatedWithObservation {
 
   struct ViewStoreBinding: View {
     @EnvironmentObject var viewStore: ViewStoreOf<BindingsAnimations>
-
     var body: some View {
       ZStack {
         ContentView(flag: viewStore.binding(send: ()))
@@ -151,20 +137,8 @@ struct AnimatedWithObservation {
 }
 
 struct AnimatedFromBinding {
-  struct StateBinding: View {
-    @State var flag = false
-
-    var body: some View {
-      ZStack {
-        ContentView(flag: $flag)
-        Toggle("", isOn: $flag.animation(fastAnimation))
-      }
-    }
-  }
-
   struct ObservedObjectBinding: View {
     @EnvironmentObject var vanillaModel: VanillaModel
-
     var body: some View {
       ZStack {
         ContentView(flag: $vanillaModel.flag)
@@ -175,7 +149,6 @@ struct AnimatedFromBinding {
 
   struct ViewStoreBinding: View {
     @EnvironmentObject var viewStore: ViewStoreOf<BindingsAnimations>
-
     var body: some View {
       ZStack {
         ContentView(flag: viewStore.binding(send: ()))
@@ -186,21 +159,8 @@ struct AnimatedFromBinding {
 }
 
 struct AnimatedFromBindingWithObservation {
-  struct StateBinding: View {
-    @State var flag = false
-
-    var body: some View {
-      ZStack {
-        ContentView(flag: $flag)
-          .animation(mediumAnimation, value: flag)
-        Toggle("", isOn: $flag.animation(fastAnimation))
-      }
-    }
-  }
-
   struct ObservedObjectBinding: View {
     @EnvironmentObject var vanillaModel: VanillaModel
-
     var body: some View {
       ZStack {
         ContentView(flag: $vanillaModel.flag)
@@ -212,7 +172,6 @@ struct AnimatedFromBindingWithObservation {
 
   struct ViewStoreBinding: View {
     @EnvironmentObject var viewStore: ViewStoreOf<BindingsAnimations>
-
     var body: some View {
       ZStack {
         ContentView(flag: viewStore.binding(send: ()))
