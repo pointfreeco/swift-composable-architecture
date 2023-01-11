@@ -85,21 +85,12 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   changes.
   ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
   ///   equal, repeat view computations are removed.
-  public init<State>(
+  public convenience init<State>(
     _ store: Store<State, ViewAction>,
     observe toViewState: @escaping (State) -> ViewState,
     removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool
   ) {
-    self._send = { store.send($0) }
-    self._state = CurrentValueRelay(toViewState(store.state.value))
-    self.viewCancellable = store.state
-      .map(toViewState)
-      .removeDuplicates(by: isDuplicate)
-      .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
-        guard let objectWillChange = objectWillChange, let _state = _state else { return }
-        objectWillChange.send()
-        _state.value = $0
-      }
+    self.init(store, observe: toViewState, send: { $0 }, removeDuplicates: isDuplicate)
   }
 
   /// Initializes a view store from a store which observes changes to state.
@@ -123,6 +114,8 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     send fromViewAction: @escaping (ViewAction) -> Action,
     removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool
   ) {
+    instrument(&viewStoreInitCount, label: "ViewStore.init")
+
     self._send = { store.send(fromViewAction($0)) }
     self._state = CurrentValueRelay(toViewState(store.state.value))
     self.viewCancellable = store.state
@@ -130,6 +123,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       .removeDuplicates(by: isDuplicate)
       .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
         guard let objectWillChange = objectWillChange, let _state = _state else { return }
+        instrument(&viewStoreObjectWillChangeCount, label: "ViewStore.objectWillChange")
         objectWillChange.send()
         _state.value = $0
       }
@@ -196,19 +190,11 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
       """
   )
-  public init(
+  public convenience init(
     _ store: Store<ViewState, ViewAction>,
     removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool
   ) {
-    self._send = { store.send($0) }
-    self._state = CurrentValueRelay(store.state.value)
-    self.viewCancellable = store.state
-      .removeDuplicates(by: isDuplicate)
-      .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
-        guard let objectWillChange = objectWillChange, let _state = _state else { return }
-        objectWillChange.send()
-        _state.value = $0
-      }
+    self.init(store, observe: { $0 }, send: { $0 }, removeDuplicates: isDuplicate)
   }
 
   init(_ viewStore: ViewStore<ViewState, ViewAction>) {

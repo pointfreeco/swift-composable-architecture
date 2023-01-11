@@ -1,6 +1,9 @@
 import ComposableArchitecture
 import SwiftUI
 
+var todoViewInitCount = 0
+var todoViewBodyCount = 0
+
 struct Todo: ReducerProtocol {
   struct State: Equatable, Identifiable {
     var description = ""
@@ -29,7 +32,13 @@ struct Todo: ReducerProtocol {
 struct TodoView: View {
   let store: StoreOf<Todo>
 
+  init(store: StoreOf<Todo>) {
+    let _ = instrument(&todoViewInitCount, label: "TodoView.init")
+    self.store = store
+  }
+
   var body: some View {
+    let _ = instrument(&todoViewBodyCount, label: "TodoView.body")
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       HStack {
         Button(action: { viewStore.send(.checkBoxToggled) }) {

@@ -1,6 +1,9 @@
 import ComposableArchitecture
 @preconcurrency import SwiftUI
 
+var appViewInitCount = 0
+var appViewBodyCount = 0
+
 enum Filter: LocalizedStringKey, CaseIterable, Hashable {
   case all = "All"
   case active = "Active"
@@ -110,6 +113,7 @@ struct AppView: View {
   @ObservedObject var viewStore: ViewStore<ViewState, Todos.Action>
 
   init(store: StoreOf<Todos>) {
+    let _ = instrument(&appViewInitCount, label: "AppView.init")
     self.store = store
     self.viewStore = ViewStore(self.store.scope(state: ViewState.init(state:)))
   }
@@ -127,6 +131,7 @@ struct AppView: View {
   }
 
   var body: some View {
+    let _ = instrument(&appViewBodyCount, label: "AppView.body")
     NavigationView {
       VStack(alignment: .leading) {
         Picker(
