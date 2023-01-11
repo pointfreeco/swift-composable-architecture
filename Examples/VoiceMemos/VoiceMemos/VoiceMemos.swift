@@ -4,9 +4,8 @@ import SwiftUI
 
 struct VoiceMemos: ReducerProtocol {
   struct State: Equatable {
-    var alert: AlertState<Action>?
     var audioRecorderPermission = RecorderPermission.undetermined
-    @PresentationStateOf<RecordingMemo> var recordingMemo
+    @PresentationStateOf<Destinations> var destination
     var voiceMemos: IdentifiedArrayOf<VoiceMemo.State> = []
 
     enum RecorderPermission {
@@ -16,12 +15,27 @@ struct VoiceMemos: ReducerProtocol {
     }
   }
   enum Action: Equatable {
-    case alertDismissed
+    case destination(PresentationActionOf<Destinations>)
     case openSettingsButtonTapped
     case recordButtonTapped
-    case recordingMemo(PresentationActionOf<RecordingMemo>)
     case recordPermissionResponse(Bool)
     case voiceMemo(id: VoiceMemo.State.ID, action: VoiceMemo.Action)
+  }
+
+  struct Destinations: ReducerProtocol {
+    enum State: Equatable {
+      case alert(AlertState<Never>)
+      case recordingMemo(RecordingMemo.State)
+    }
+    enum Action: Equatable {
+      case alert(Never)
+      case recordingMemo(RecordingMemo.Action)
+    }
+    var body: some ReducerProtocolOf<Self> {
+      Scope(state: /State.recordingMemo, action: /Action.recordingMemo) {
+        RecordingMemo()
+      }
+    }
   }
 
   @Dependency(\.audioRecorder.requestRecordPermission) var requestRecordPermission
@@ -31,37 +45,21 @@ struct VoiceMemos: ReducerProtocol {
   @Dependency(\.uuid) var uuid
 
   var body: some ReducerProtocol<State, Action> {
-    Reduce { state, action in
-      switch action {
-      case .alertDismissed:
-        state.alert = nil
-        return .none
+    Reduce(self.core)
+      .presentationDestination(\.$destination, action: /Action.destination) {
+        Destinations()
+      }
+      .forEach(\.voiceMemos, action: /Action.voiceMemo(id:action:)) {
+        VoiceMemo()
+      }
+  }
 
-      case .openSettingsButtonTapped:
-        return .fireAndForget {
-          await self.openSettings()
-        }
-
-      case .recordButtonTapped:
-        switch state.audioRecorderPermission {
-        case .undetermined:
-          return .task {
-            await .recordPermissionResponse(self.requestRecordPermission())
-          }
-
-        case .denied:
-          state.alert = AlertState {
-            TextState("Permission is required to record voice memos.")
-          }
-          return .none
-
-        case .allowed:
-          state.recordingMemo = newRecordingMemo
-          return .none
-        }
-
-      case let .recordingMemo(.presented(.delegate(.didFinish(.success(recordingMemo))))):
-        state.recordingMemo = nil
+  private func core(state: inout State, action: Action) -> EffectTask<Action> {
+    switch action {
+    case let .destination(.presented(.recordingMemo(.delegate(delegate)))):
+      switch delegate {
+      case let .didFinish(.success(recordingMemo)):
+        state.destination = nil
         state.voiceMemos.insert(
           VoiceMemo.State(
             date: recordingMemo.date,
@@ -71,49 +69,74 @@ struct VoiceMemos: ReducerProtocol {
           at: 0
         )
         return .none
-      case .recordingMemo(.presented(.delegate(.didFinish(.failure)))):
-        state.alert = AlertState { TextState("Voice memo recording failed.") }
-        state.recordingMemo = nil
-        return .none
 
-      case .recordingMemo:
-        return .none
-
-      case let .recordPermissionResponse(permission):
-        state.audioRecorderPermission = permission ? .allowed : .denied
-        if permission {
-          state.recordingMemo = newRecordingMemo
-          return .none
-        } else {
-          state.alert = AlertState {
-            TextState("Permission is required to record voice memos.")
-          }
-          return .none
-        }
-
-      case .voiceMemo(id: _, action: .audioPlayerClient(.failure)):
-        state.alert = AlertState { TextState("Voice memo playback failed.") }
-        return .none
-
-      case let .voiceMemo(id: id, action: .delete):
-        state.voiceMemos.remove(id: id)
-        return .none
-
-      case let .voiceMemo(id: tappedId, action: .playButtonTapped):
-        for id in state.voiceMemos.ids where id != tappedId {
-          state.voiceMemos[id: id]?.mode = .notPlaying
-        }
-        return .none
-
-      case .voiceMemo:
+      case .didFinish(.failure):
+        state.destination = .alert(AlertState { TextState("Voice memo recording failed.") })
         return .none
       }
-    }
-    .presentationDestination(\.$recordingMemo, action: /Action.recordingMemo) {
-      RecordingMemo()
-    }
-    .forEach(\.voiceMemos, action: /Action.voiceMemo(id:action:)) {
-      VoiceMemo()
+
+    case .destination(.present(id: _, _)):
+      // TODO: let's chat more about this
+      return .none
+
+    case .destination:
+      return .none
+
+    case .openSettingsButtonTapped:
+      return .fireAndForget {
+        await self.openSettings()
+      }
+
+    case .recordButtonTapped:
+      switch state.audioRecorderPermission {
+      case .undetermined:
+        return .task {
+          await .recordPermissionResponse(self.requestRecordPermission())
+        }
+
+      case .denied:
+        state.destination = .alert(
+          AlertState {
+            TextState("Permission is required to record voice memos.")
+          }
+        )
+        return .none
+
+      case .allowed:
+        state.destination = .recordingMemo(newRecordingMemo)
+        return .none
+      }
+
+    case let .recordPermissionResponse(permission):
+      state.audioRecorderPermission = permission ? .allowed : .denied
+      if permission {
+        state.destination = .recordingMemo(newRecordingMemo)
+        return .none
+      } else {
+        state.destination = .alert(
+          AlertState {
+            TextState("Permission is required to record voice memos.")
+          }
+        )
+        return .none
+      }
+
+    case .voiceMemo(id: _, action: .audioPlayerClient(.failure)):
+      state.destination = .alert(AlertState { TextState("Voice memo playback failed.") })
+      return .none
+
+    case let .voiceMemo(id: id, action: .delete):
+      state.voiceMemos.remove(id: id)
+      return .none
+
+    case let .voiceMemo(id: tappedId, action: .playButtonTapped):
+      for id in state.voiceMemos.ids where id != tappedId {
+        state.voiceMemos[id: id]?.mode = .notPlaying
+      }
+      return .none
+
+    case .voiceMemo:
+      return .none
     }
   }
 
@@ -148,7 +171,9 @@ struct VoiceMemosView: View {
           }
 
           PresentedView(
-            self.store.scope(state: \.$recordingMemo, action: { .recordingMemo($0) })
+            self.store.scope(state: \.$destination, action: { .destination($0) }),
+            state: /VoiceMemos.Destinations.State.recordingMemo,
+            action: VoiceMemos.Destinations.Action.recordingMemo
           ) { store in
             RecordingMemoView(store: store)
           } dismissed: {
@@ -163,8 +188,9 @@ struct VoiceMemosView: View {
           .background(Color.init(white: 0.95))
         }
         .alert(
-          self.store.scope(state: \.alert),
-          dismiss: .alertDismissed
+          store: self.store.scope(state: \.$destination, action: VoiceMemos.Action.destination),
+          state: /VoiceMemos.Destinations.State.alert,
+          action: VoiceMemos.Destinations.Action.alert
         )
         .navigationTitle("Voice memos")
       }

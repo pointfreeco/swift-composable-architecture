@@ -59,8 +59,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-custom-dump",
       "state" : {
-        "revision" : "819d9d370cd721c9d87671e29d947279292e4541",
-        "version" : "0.6.0"
+        "revision" : "ead7d30cc224c3642c150b546f4f1080d1c411a8",
+        "version" : "0.6.1"
       }
     },
     {
@@ -68,8 +68,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-dependencies",
       "state" : {
-        "revision" : "e49dfe4d9e4c5c06f3334361360b801aef41631c",
-        "version" : "0.1.1"
+        "revision" : "e9e82b5302025092ab8358e794f89a0f0397dd9d",
+        "version" : "0.1.2"
       }
     },
     {
@@ -95,8 +95,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swiftui-navigation",
       "state" : {
-        "revision" : "46acf5ecc1cabdb28d7fe03289f6c8b13a023f52",
-        "version" : "0.4.5"
+        "revision" : "ddc01cdcddfd30ef7a966049b2e1d251e224ad93",
+        "version" : "0.5.0"
       }
     },
     {

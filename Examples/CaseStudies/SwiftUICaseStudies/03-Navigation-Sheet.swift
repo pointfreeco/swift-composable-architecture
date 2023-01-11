@@ -152,60 +152,6 @@ struct SheetDemoView: View {
   }
 }
 
-extension View {
-  @MainActor
-  func alert<State, Action, ButtonAction>(
-    store: Store<PresentationState<State>, PresentationAction<State, Action>>,
-    state toDestinationState: @escaping (State) -> AlertState<ButtonAction>?,
-    action fromDestinationAction: @escaping (ButtonAction) -> Action
-  ) -> some View {
-    WithViewStore(store) {
-      $0
-    } removeDuplicates: {
-      $0.id == $1.id
-    } content: { viewStore in
-      let alertState = viewStore.wrappedValue.flatMap(toDestinationState)
-
-      let title: Text = (alertState?.title).map(Text.init) ?? Text("")
-      let isPresented: Binding<Bool> = Binding(
-        get: { alertState != nil },
-        set: { _ in
-          if viewStore.wrappedValue.flatMap(toDestinationState) != nil {
-            viewStore.send(.dismiss)
-          }
-        }
-      )
-      let message: (AlertState<ButtonAction>) -> Text = {
-        $0.message.map(Text.init) ?? Text("")
-      }
-      return self.alert(
-        title,
-        isPresented: isPresented,
-        presenting: alertState,
-        actions: { alertState in
-          ForEach(alertState.buttons) { button in
-            Button(role: button.role.map(ButtonRole.init)) {
-              switch button.action?.type {
-              case let .send(action):
-                viewStore.send(.presented(fromDestinationAction(action)))
-              case let .animatedSend(action, animation):
-                _ = withAnimation(animation) {
-                  viewStore.send(.presented(fromDestinationAction(action)))
-                }
-              case .none:
-                viewStore.send(.dismiss)
-              }
-            } label: {
-              Text(button.label)
-            }
-          }
-        },
-        message: message
-      )
-    }
-  }
-}
-
 struct SheetDemo_Previews: PreviewProvider {
   static var previews: some View {
     SheetDemoView(

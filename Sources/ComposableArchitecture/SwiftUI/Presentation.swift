@@ -103,10 +103,10 @@ extension PresentationState: Hashable where State: Hashable {
 //}
 
 public enum PresentationAction<State, Action> {
+  case dismiss
   // NB: sending present(id, nil) from the view means let the reducer hydrate state
   case present(id: AnyHashable = DependencyValues._current.uuid(), State? = nil)
   case presented(Action)
-  case dismiss
 
   public static var present: Self { .present() }
 }
@@ -483,7 +483,7 @@ public struct PresentedView<
   let destination: (Store<DestinationState, DestinationAction>) -> Destination
   let dismissed: Dismissed
 
-  public init(
+  public init( 
     _ store: Store<PresentationState<State>, PresentationAction<State, Action>>,
     state toDestinationState: @escaping (State) -> DestinationState?,
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
