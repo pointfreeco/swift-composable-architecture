@@ -23,7 +23,7 @@ extension EffectPublisher {
   /// ```swift
   /// case .buttonTapped:
   ///   var transaction = Transaction(animation: .default)
-  ///   transaction.disablesAnimation = true
+  ///   transaction.disablesAnimations = true
   ///   return .task {
   ///     .activityResponse(await self.apiClient.fetchActivity())
   ///   }
