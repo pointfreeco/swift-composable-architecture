@@ -9,6 +9,14 @@ struct IntegrationApp: App {
     WindowGroup {
       NavigationStack {
         List {
+          NavigationLink("EscapedWithViewStoreTestCase") {
+            EscapedWithViewStoreTestCaseView(
+              store: Store(
+                initialState: 10,
+                reducer: EscapedWithViewStoreTestCase()
+              )
+            )
+          }
           NavigationLink("ForEachBindingTestCase") {
             ForEachBindingTestCaseView(
               store: Store(
@@ -26,6 +34,15 @@ struct IntegrationApp: App {
               store: Store(
                 initialState: NavigationStackBindingTestCase.State(),
                 reducer: NavigationStackBindingTestCase()
+              )
+            )
+          }
+          
+          NavigationLink("Binding Animations Test Bench") {
+            BindingsAnimationsTestBench(
+              store: Store(
+                initialState: false,
+                reducer: BindingsAnimations()
               )
             )
           }
