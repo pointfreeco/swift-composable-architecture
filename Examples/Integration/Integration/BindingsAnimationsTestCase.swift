@@ -194,7 +194,6 @@ final class AnimationDurationModel: ObservableObject {
     self.cancellable = nil
     self.measures.value = []
     self.effectiveAnimationDuration = nil
-    self.startInstant = nil
     defer { self.isResetting = false }
     self.cancellable =
       measures
@@ -206,20 +205,11 @@ final class AnimationDurationModel: ObservableObject {
         isResetting = true
         self.measures.value = []
         isResetting = false
-        self.startInstant = nil
       }
   }
 
-  var startInstant: ContinuousClock.Instant?
   @MainActor
-  func append(_ dimension: CGFloat, instant: ContinuousClock.Instant) {
-    if startInstant == nil {
-      startInstant = ContinuousClock().now
-    }
-    let progress = AnimationProgress(
-      timestamp: startInstant!.duration(to: instant).timeInterval,
-      progress: dimension
-    )
+  func append(_ progress: AnimationProgress) {
     measures.value.append(progress)
   }
 }
@@ -227,12 +217,6 @@ final class AnimationDurationModel: ObservableObject {
 struct AnimationProgress: Hashable {
   let timestamp: TimeInterval
   let progress: Double
-}
-
-extension Duration {
-  var timeInterval: TimeInterval {
-    Double(self.components.seconds) + Double(self.components.attoseconds) * 1e-18
-  }
 }
 
 enum EffectiveAnimationDuration: Hashable {
@@ -283,8 +267,7 @@ struct MeasureWidthAnimationDuration: ViewModifier {
   func body(content: Content) -> some View {
     content
       .background {
-        MeasureView(animatableData: width) { model.append($0, instant: $1) }
-          .opacity(0)
+        MeasureView(animatableData: width) { model.append($0) }
       }
       .overlay(alignment: .top) {
         Text(model.effectiveAnimationDurationText)
@@ -292,7 +275,6 @@ struct MeasureWidthAnimationDuration: ViewModifier {
           .accessibilityValue(model.effectiveAnimationDurationText)
           .alignmentGuide(.top, computeValue: { $0[.bottom] })
       }
-
       .task {
         // We don't want the initial layout to register as an
         // animation, so we activate the model only after a few ms.
@@ -312,10 +294,10 @@ struct MeasureWidthAnimationDuration: ViewModifier {
 
 struct MeasureView: View, Animatable {
   var animatableData: CGFloat
-  let onChange: (CGFloat, ContinuousClock.Instant) -> Void
+  let onChange: (AnimationProgress) -> Void
   var body: some View {
     Color.clear.onChange(of: animatableData) {
-      onChange($0, ContinuousClock().now)
+      onChange(.init(timestamp: ProcessInfo.processInfo.systemUptime, progress: $0))
     }
   }
 }
