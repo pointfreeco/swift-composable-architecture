@@ -13,8 +13,8 @@ final class VanillaModel: ObservableObject {
   @Published var flag = false
 }
 
-let mediumAnimation = Animation.linear(duration: 0.75)
-let fastAnimation = Animation.linear(duration: 0.25)
+let mediumAnimation = Animation.linear(duration: 0.70)
+let fastAnimation = Animation.linear(duration: 0.20)
 
 struct BindingsAnimationsTestCase: View {
   let viewStore: ViewStoreOf<BindingsAnimations>
