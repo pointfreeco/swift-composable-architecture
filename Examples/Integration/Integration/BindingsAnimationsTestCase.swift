@@ -354,39 +354,21 @@ struct AnimationDurationModifier: ViewModifier {
   }
 }
 
-// Representable that performs the measure.
-struct MeasureView: UIViewRepresentable {
-  let onChange: (CGFloat, ContinuousClock.Instant) -> Void
-
-  func makeUIView(context: Context) -> View {
-    View(onChange: onChange)
+struct MeasureView: Shape {
+  // We don't want to dirty this view with the closure
+  private struct Wrapper: Equatable {
+    let onChange: (CGFloat, ContinuousClock.Instant) -> Void
+    static func == (lhs: Wrapper, rhs: Wrapper) -> Bool {
+      true
+    }
   }
-  func updateUIView(_ uiView: View, context: Context) {
-    uiView.onChange = onChange
+  private let wrapper: Wrapper
+  init(onChange: @escaping (CGFloat, ContinuousClock.Instant) -> Void) {
+    self.wrapper = .init(onChange: onChange)
   }
-
-  final class View: UIView {
-    var onChange: (CGFloat, ContinuousClock.Instant) -> Void
-
-    init(
-      onChange: @escaping (CGFloat, ContinuousClock.Instant) -> Void
-    ) {
-      self.onChange = onChange
-      super.init(frame: .zero)
-    }
-
-    required init?(coder: NSCoder) {
-      fatalError("init(coder:) has not been implemented")
-    }
-
-    override var frame: CGRect {
-      didSet {
-        let now = ContinuousClock().now
-        DispatchQueue.main.async { [frame, onChange] in
-          onChange(frame.width, now)
-        }
-      }
-    }
+  func path(in rect: CGRect) -> Path {
+    wrapper.onChange(rect.width, ContinuousClock().now)
+    return Rectangle().path(in:rect)
   }
 }
 
