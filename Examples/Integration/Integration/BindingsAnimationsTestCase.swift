@@ -66,7 +66,7 @@ struct BindingsAnimationsTestCase: View {
       ToolbarItem {
         Button("Reset") {
           NotificationCenter.default
-            .post(AnimationDurationModifier.resetNotification)
+            .post(MeasureWidthAnimationDuration.resetNotification)
         }
         .accessibilityLabel("Reset")
       }
@@ -77,40 +77,9 @@ struct BindingsAnimationsTestCase: View {
   }
 }
 
-struct SideBySide<ObservedObjectView: View, ViewStoreView: View>: View {
-  let observedObjectView: ObservedObjectView
-  let viewStoreView: ViewStoreView
-  init(
-    @ViewBuilder observedObjectView: () -> ObservedObjectView,
-    @ViewBuilder viewStoreView: () -> ViewStoreView
-  ) {
-    self.observedObjectView = observedObjectView()
-    self.viewStoreView = viewStoreView()
-  }
-  var body: some View {
-    Grid {
-      GridRow {
-        observedObjectView
-          .frame(width: 100, height: 100)
-        viewStoreView
-          .frame(width: 100, height: 100)
-      }
-      .padding(.top)
-      .labelsHidden()
-      GridRow {
-        Text("@ObservedObject")
-          .fixedSize()
-        Text("ViewStore")
-      }
-      .font(.footnote.bold())
-      .monospaced()
-    }
-    .frame(maxWidth: .infinity)
-  }
-}
-
 struct ContentView: View {
   @Binding var flag: Bool
+  let title: String
 
   var body: some View {
     ZStack {
@@ -120,6 +89,7 @@ struct ContentView: View {
         .strokeBorder(.red.opacity(0.5), lineWidth: 2)
     }
     .frame(width: flag ? 100 : 75)
+    .modifier(MeasureWidthAnimationDuration(label: title, width: flag ? 100 : 75))
   }
 }
 
@@ -128,8 +98,7 @@ struct AnimatedWithObservation {
     @EnvironmentObject var vanillaModel: VanillaModel
     var body: some View {
       ZStack {
-        ContentView(flag: $vanillaModel.flag)
-          .timeWidthChangeAnimation(label: "AnimatedWithObservation_OO")
+        ContentView(flag: $vanillaModel.flag, title: "AnimatedWithObservation_OO")
           .animation(mediumAnimation, value: vanillaModel.flag)
         Toggle("", isOn: $vanillaModel.flag)
           .accessibilityLabel("AnimatedWithObservation_OO_Toggle")
@@ -141,8 +110,7 @@ struct AnimatedWithObservation {
     @EnvironmentObject var viewStore: ViewStoreOf<BindingsAnimations>
     var body: some View {
       ZStack {
-        ContentView(flag: viewStore.binding(send: ()))
-          .timeWidthChangeAnimation(label: "AnimatedWithObservation_VS")
+        ContentView(flag: viewStore.binding(send: ()), title: "AnimatedWithObservation_VS")
           .animation(mediumAnimation, value: viewStore.state)
         Toggle("", isOn: viewStore.binding(send: ()))
           .accessibilityLabel("AnimatedWithObservation_VS_Toggle")
@@ -156,8 +124,7 @@ struct AnimatedFromBinding {
     @EnvironmentObject var vanillaModel: VanillaModel
     var body: some View {
       ZStack {
-        ContentView(flag: $vanillaModel.flag)
-          .timeWidthChangeAnimation(label: "AnimatedFromBinding_OO")
+        ContentView(flag: $vanillaModel.flag, title: "AnimatedFromBinding_OO")
         Toggle("", isOn: $vanillaModel.flag.animation(fastAnimation))
           .accessibilityLabel("AnimatedFromBinding_OO_Toggle")
       }
@@ -168,8 +135,7 @@ struct AnimatedFromBinding {
     @EnvironmentObject var viewStore: ViewStoreOf<BindingsAnimations>
     var body: some View {
       ZStack {
-        ContentView(flag: viewStore.binding(send: ()))
-          .timeWidthChangeAnimation(label: "AnimatedFromBinding_VS")
+        ContentView(flag: viewStore.binding(send: ()), title: "AnimatedFromBinding_VS")
         Toggle("", isOn: viewStore.binding(send: ()).animation(fastAnimation))
           .accessibilityLabel("AnimatedFromBinding_VS_Toggle")
       }
@@ -182,8 +148,7 @@ struct AnimatedFromBindingWithObservation {
     @EnvironmentObject var vanillaModel: VanillaModel
     var body: some View {
       ZStack {
-        ContentView(flag: $vanillaModel.flag)
-          .timeWidthChangeAnimation(label: "AnimatedFromBindingWithObservation_OO")
+        ContentView(flag: $vanillaModel.flag, title: "AnimatedFromBindingWithObservation_OO")
           .animation(mediumAnimation, value: vanillaModel.flag)
         Toggle("", isOn: $vanillaModel.flag.animation(fastAnimation))
           .accessibilityLabel("AnimatedFromBindingWithObservation_OO_Toggle")
@@ -195,9 +160,10 @@ struct AnimatedFromBindingWithObservation {
     @EnvironmentObject var viewStore: ViewStoreOf<BindingsAnimations>
     var body: some View {
       ZStack {
-        ContentView(flag: viewStore.binding(send: ()))
-          .timeWidthChangeAnimation(label: "AnimatedFromBindingWithObservation_VS")
-          .animation(mediumAnimation, value: viewStore.state)
+        ContentView(
+          flag: viewStore.binding(send: ()), title: "AnimatedFromBindingWithObservation_VS"
+        )
+        .animation(mediumAnimation, value: viewStore.state)
         Toggle("", isOn: viewStore.binding(send: ()).animation(fastAnimation))
           .accessibilityLabel("AnimatedFromBindingWithObservation_VS_Toggle")
       }
@@ -212,7 +178,6 @@ final class AnimationDurationModel: ObservableObject {
   @Published var effectiveAnimationDuration: EffectiveAnimationDuration?
   var isResetting: Bool = true
   let measures = CurrentValueSubject<[AnimationProgress], Never>([])
-  let range: ClosedRange<CGFloat> = 100...200
 
   var effectiveAnimationDurationText: String {
     switch effectiveAnimationDuration {
@@ -253,18 +218,15 @@ final class AnimationDurationModel: ObservableObject {
     }
     let progress = AnimationProgress(
       timestamp: startInstant!.duration(to: instant).timeInterval,
-      progress: (dimension - range.lowerBound) / (range.upperBound - range.lowerBound)
+      progress: dimension
     )
     measures.value.append(progress)
   }
 }
 
-struct AnimationProgress: Hashable, Comparable {
+struct AnimationProgress: Hashable {
   let timestamp: TimeInterval
   let progress: Double
-  static func < (lhs: AnimationProgress, rhs: AnimationProgress) -> Bool {
-    lhs.timestamp < rhs.timestamp
-  }
 }
 
 extension Duration {
@@ -312,22 +274,16 @@ func effectiveAnimationDuration(progresses: [AnimationProgress]) -> EffectiveAni
   return .duration(trimmed.last!.upperBound - trimmed.first!.lowerBound)
 }
 
-// View Modifier
-extension View {
-  func timeWidthChangeAnimation(label: String) -> some View {
-    self.modifier(AnimationDurationModifier(label: label))
-  }
-}
-
-struct AnimationDurationModifier: ViewModifier {
-  static let resetNotification = Notification(name: .init("AnimationDurationModifierReset"))
+struct MeasureWidthAnimationDuration: ViewModifier {
+  static let resetNotification = Notification(name: .init("MeasureWidthAnimationDuration"))
 
   let label: String
+  let width: CGFloat
   @StateObject var model: AnimationDurationModel = .init()
   func body(content: Content) -> some View {
     content
       .background {
-        MeasureView { model.append($0, instant: $1) }
+        MeasureView(animatableData: width) { model.append($0, instant: $1) }
           .opacity(0)
       }
       .overlay(alignment: .top) {
@@ -354,21 +310,45 @@ struct AnimationDurationModifier: ViewModifier {
   }
 }
 
-struct MeasureView: Shape {
-  // We don't want to dirty this view with the closure
-  private struct Wrapper: Equatable {
-    let onChange: (CGFloat, ContinuousClock.Instant) -> Void
-    static func == (lhs: Wrapper, rhs: Wrapper) -> Bool {
-      true
+struct MeasureView: View, Animatable {
+  var animatableData: CGFloat
+  let onChange: (CGFloat, ContinuousClock.Instant) -> Void
+  var body: some View {
+    Color.clear.onChange(of: animatableData) {
+      onChange($0, ContinuousClock().now)
     }
   }
-  private let wrapper: Wrapper
-  init(onChange: @escaping (CGFloat, ContinuousClock.Instant) -> Void) {
-    self.wrapper = .init(onChange: onChange)
+}
+
+struct SideBySide<ObservedObjectView: View, ViewStoreView: View>: View {
+  let observedObjectView: ObservedObjectView
+  let viewStoreView: ViewStoreView
+  init(
+    @ViewBuilder observedObjectView: () -> ObservedObjectView,
+    @ViewBuilder viewStoreView: () -> ViewStoreView
+  ) {
+    self.observedObjectView = observedObjectView()
+    self.viewStoreView = viewStoreView()
   }
-  func path(in rect: CGRect) -> Path {
-    wrapper.onChange(rect.width, ContinuousClock().now)
-    return Rectangle().path(in:rect)
+  var body: some View {
+    Grid {
+      GridRow {
+        observedObjectView
+          .frame(width: 100, height: 100)
+        viewStoreView
+          .frame(width: 100, height: 100)
+      }
+      .padding(.top)
+      .labelsHidden()
+      GridRow {
+        Text("@ObservedObject")
+          .fixedSize()
+        Text("ViewStore")
+      }
+      .font(.footnote.bold())
+      .monospaced()
+    }
+    .frame(maxWidth: .infinity)
   }
 }
 
