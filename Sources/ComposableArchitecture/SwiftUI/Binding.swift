@@ -91,6 +91,8 @@ extension BindableState: CustomDebugStringConvertible where Value: CustomDebugSt
   }
 }
 
+extension BindableState: Sendable where Value: Sendable {}
+
 /// An action type that exposes a `binding` case that holds a ``BindingAction``.
 ///
 /// Used in conjunction with ``BindableState`` to safely eliminate the boilerplate typically
