@@ -1,5 +1,7 @@
 import SwiftUI
 
+// TODO: make sure it plays nicely with geometry readers, etc...
+
 public struct _ScopeStore<ParentState, ParentAction, ChildState, ChildAction, Content: View>: View {
   final class LazyScopedStore {
     let initialValue: () -> Store<ChildState, ChildAction>
