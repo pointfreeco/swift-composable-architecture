@@ -1,6 +1,6 @@
 import XCTest
 
-// Copy/Pasted from `Integration. For some reason, can't be imported.
+// Copy/Pasted from `Integration.
 enum AnimationCaseTag: String {
   case observedObject = "OO"
   case viewStore = "VS"
@@ -18,7 +18,6 @@ enum AnimationCase: String, CaseIterable, Hashable {
 }
 
 extension AnimationCase {
-  var accessibilityLabel: String { self.rawValue }
   func toggleAccessibilityLabel(tag: AnimationCaseTag) -> String {
     self.rawValue + "_Toggle_" + tag.rawValue
   }
@@ -26,6 +25,8 @@ extension AnimationCase {
     self.rawValue + "_Result_" + tag.rawValue
   }
 }
+// ---
+
 extension AnimationCase {
   var expectedDuration: String {
     switch self {
@@ -82,18 +83,18 @@ final class BindingsAnimationsTests: XCTestCase {
 
     for animationCase in AnimationCase.allCases {
       reset()
-      
+
       XCTAssertEqual("?", value(animationCase, .observedObject))
       XCTAssertEqual("?", value(animationCase, .viewStore))
-      
+
       tap(animationCase, .observedObject)
       tap(animationCase, .viewStore)
-      
+
       Thread.sleep(forTimeInterval: 1)
-      
+
       XCTAssertEqual(animationCase.expectedDuration, value(animationCase, .observedObject))
       XCTAssertEqual(animationCase.expectedDuration, value(animationCase, .viewStore))
-      
+
       next()
     }
   }

@@ -34,7 +34,6 @@ public enum AnimationCase: String, CaseIterable, Hashable {
 }
 
 extension AnimationCase {
-  var accessibilityLabel: String { self.rawValue }
   public func toggleAccessibilityLabel(tag: AnimationCaseTag) -> String {
     self.rawValue + "_Toggle_" + tag.rawValue
   }
