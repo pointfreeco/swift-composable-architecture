@@ -7,13 +7,23 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		CADF85D42974AF8500B7695B /* StandupsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF85D32974AF8500B7695B /* StandupsApp.swift */; };
-		CADF85D62974AF8500B7695B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF85D52974AF8500B7695B /* ContentView.swift */; };
+		CADF85D42974AF8500B7695B /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF85D32974AF8500B7695B /* App.swift */; };
 		CADF85D82974AF8600B7695B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CADF85D72974AF8600B7695B /* Assets.xcassets */; };
 		CADF85DB2974AF8600B7695B /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CADF85DA2974AF8600B7695B /* Preview Assets.xcassets */; };
 		CADF85E52974AF8600B7695B /* StandupsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF85E42974AF8600B7695B /* StandupsTests.swift */; };
 		CADF85EF2974AF8600B7695B /* StandupsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF85EE2974AF8600B7695B /* StandupsUITests.swift */; };
 		CADF85F12974AF8600B7695B /* StandupsUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF85F02974AF8600B7695B /* StandupsUITestsLaunchTests.swift */; };
+		CADF85FF2974B05400B7695B /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF85FE2974B05400B7695B /* Models.swift */; };
+		CADF86022974B07E00B7695B /* Tagged in Frameworks */ = {isa = PBXBuildFile; productRef = CADF86012974B07E00B7695B /* Tagged */; };
+		CADF86052974B0C400B7695B /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = CADF86042974B0C400B7695B /* ComposableArchitecture */; };
+		CADF86072974B31D00B7695B /* StandupsList.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF86062974B31D00B7695B /* StandupsList.swift */; };
+		CADF860C2974B3CD00B7695B /* DataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF86092974B3CD00B7695B /* DataManager.swift */; };
+		CADF860D2974B3CD00B7695B /* SpeechClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF860A2974B3CD00B7695B /* SpeechClient.swift */; };
+		CADF860E2974B3CD00B7695B /* OpenSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF860B2974B3CD00B7695B /* OpenSettings.swift */; };
+		CADF86102974BA8B00B7695B /* StandupDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF860F2974BA8B00B7695B /* StandupDetail.swift */; };
+		CADF86122974C3B400B7695B /* RecordMeeting.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF86112974C3B400B7695B /* RecordMeeting.swift */; };
+		CADF86142974D7EF00B7695B /* EditStandup.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF86132974D7EF00B7695B /* EditStandup.swift */; };
+		CADF86162974F7B700B7695B /* Meeting.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF86152974F7B700B7695B /* Meeting.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,8 +45,7 @@
 
 /* Begin PBXFileReference section */
 		CADF85D02974AF8500B7695B /* Standups.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Standups.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		CADF85D32974AF8500B7695B /* StandupsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupsApp.swift; sourceTree = "<group>"; };
-		CADF85D52974AF8500B7695B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		CADF85D32974AF8500B7695B /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		CADF85D72974AF8600B7695B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CADF85DA2974AF8600B7695B /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		CADF85E02974AF8600B7695B /* StandupsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StandupsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -44,6 +53,16 @@
 		CADF85EA2974AF8600B7695B /* StandupsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StandupsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CADF85EE2974AF8600B7695B /* StandupsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupsUITests.swift; sourceTree = "<group>"; };
 		CADF85F02974AF8600B7695B /* StandupsUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupsUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		CADF85FD2974AFCA00B7695B /* swift-composable-architecture */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "swift-composable-architecture"; path = ../..; sourceTree = "<group>"; };
+		CADF85FE2974B05400B7695B /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		CADF86062974B31D00B7695B /* StandupsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupsList.swift; sourceTree = "<group>"; };
+		CADF86092974B3CD00B7695B /* DataManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataManager.swift; sourceTree = "<group>"; };
+		CADF860A2974B3CD00B7695B /* SpeechClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpeechClient.swift; sourceTree = "<group>"; };
+		CADF860B2974B3CD00B7695B /* OpenSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OpenSettings.swift; sourceTree = "<group>"; };
+		CADF860F2974BA8B00B7695B /* StandupDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupDetail.swift; sourceTree = "<group>"; };
+		CADF86112974C3B400B7695B /* RecordMeeting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordMeeting.swift; sourceTree = "<group>"; };
+		CADF86132974D7EF00B7695B /* EditStandup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditStandup.swift; sourceTree = "<group>"; };
+		CADF86152974F7B700B7695B /* Meeting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Meeting.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +70,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CADF86052974B0C400B7695B /* ComposableArchitecture in Frameworks */,
+				CADF86022974B07E00B7695B /* Tagged in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -74,10 +95,12 @@
 		CADF85C72974AF8500B7695B = {
 			isa = PBXGroup;
 			children = (
+				CADF85FD2974AFCA00B7695B /* swift-composable-architecture */,
 				CADF85D22974AF8500B7695B /* Standups */,
 				CADF85E32974AF8600B7695B /* StandupsTests */,
 				CADF85ED2974AF8600B7695B /* StandupsUITests */,
 				CADF85D12974AF8500B7695B /* Products */,
+				CADF86032974B0C400B7695B /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -94,9 +117,15 @@
 		CADF85D22974AF8500B7695B /* Standups */ = {
 			isa = PBXGroup;
 			children = (
-				CADF85D32974AF8500B7695B /* StandupsApp.swift */,
-				CADF85D52974AF8500B7695B /* ContentView.swift */,
+				CADF85D32974AF8500B7695B /* App.swift */,
+				CADF86132974D7EF00B7695B /* EditStandup.swift */,
+				CADF86152974F7B700B7695B /* Meeting.swift */,
+				CADF85FE2974B05400B7695B /* Models.swift */,
+				CADF86112974C3B400B7695B /* RecordMeeting.swift */,
+				CADF860F2974BA8B00B7695B /* StandupDetail.swift */,
+				CADF86062974B31D00B7695B /* StandupsList.swift */,
 				CADF85D72974AF8600B7695B /* Assets.xcassets */,
+				CADF86082974B3CD00B7695B /* Dependencies */,
 				CADF85D92974AF8600B7695B /* Preview Content */,
 			);
 			path = Standups;
@@ -127,6 +156,23 @@
 			path = StandupsUITests;
 			sourceTree = "<group>";
 		};
+		CADF86032974B0C400B7695B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		CADF86082974B3CD00B7695B /* Dependencies */ = {
+			isa = PBXGroup;
+			children = (
+				CADF86092974B3CD00B7695B /* DataManager.swift */,
+				CADF860A2974B3CD00B7695B /* SpeechClient.swift */,
+				CADF860B2974B3CD00B7695B /* OpenSettings.swift */,
+			);
+			path = Dependencies;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -143,6 +189,10 @@
 			dependencies = (
 			);
 			name = Standups;
+			packageProductDependencies = (
+				CADF86012974B07E00B7695B /* Tagged */,
+				CADF86042974B0C400B7695B /* ComposableArchitecture */,
+			);
 			productName = Standups;
 			productReference = CADF85D02974AF8500B7695B /* Standups.app */;
 			productType = "com.apple.product-type.application";
@@ -215,6 +265,9 @@
 				Base,
 			);
 			mainGroup = CADF85C72974AF8500B7695B;
+			packageReferences = (
+				CADF86002974B07E00B7695B /* XCRemoteSwiftPackageReference "swift-tagged" */,
+			);
 			productRefGroup = CADF85D12974AF8500B7695B /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -257,8 +310,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CADF85D62974AF8500B7695B /* ContentView.swift in Sources */,
-				CADF85D42974AF8500B7695B /* StandupsApp.swift in Sources */,
+				CADF85FF2974B05400B7695B /* Models.swift in Sources */,
+				CADF860C2974B3CD00B7695B /* DataManager.swift in Sources */,
+				CADF85D42974AF8500B7695B /* App.swift in Sources */,
+				CADF860D2974B3CD00B7695B /* SpeechClient.swift in Sources */,
+				CADF860E2974B3CD00B7695B /* OpenSettings.swift in Sources */,
+				CADF86162974F7B700B7695B /* Meeting.swift in Sources */,
+				CADF86102974BA8B00B7695B /* StandupDetail.swift in Sources */,
+				CADF86122974C3B400B7695B /* RecordMeeting.swift in Sources */,
+				CADF86072974B31D00B7695B /* StandupsList.swift in Sources */,
+				CADF86142974D7EF00B7695B /* EditStandup.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -419,6 +480,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"Standups/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "To transcribe meeting notes.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -429,7 +491,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.Standups;
+				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.Standups.tca;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -447,6 +509,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"Standups/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "To transcribe meeting notes.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -457,7 +520,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.Standups;
+				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.Standups.tca;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -577,6 +640,29 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		CADF86002974B07E00B7695B /* XCRemoteSwiftPackageReference "swift-tagged" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-tagged";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		CADF86012974B07E00B7695B /* Tagged */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CADF86002974B07E00B7695B /* XCRemoteSwiftPackageReference "swift-tagged" */;
+			productName = Tagged;
+		};
+		CADF86042974B0C400B7695B /* ComposableArchitecture */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ComposableArchitecture;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = CADF85C82974AF8500B7695B /* Project object */;
 }

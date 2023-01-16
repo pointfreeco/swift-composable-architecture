@@ -3,6 +3,7 @@ import SwiftUI
 
 struct RootView: View {
   let store: StoreOf<Root>
+  @State var isNavigationStackCaseStudyPresented = false
 
   var body: some View {
     NavigationView {
@@ -161,15 +162,17 @@ struct RootView: View {
         }
 
         Section(header: Text("Navigation")) {
-          NavigationLink(
-            "Navigation stack",
-            destination: NavigationDemoView(
+          Button("Navigation Stack") {
+            self.isNavigationStackCaseStudyPresented = true
+          }
+          .sheet(isPresented: self.$isNavigationStackCaseStudyPresented) {
+            NavigationDemoView(
               store: self.store.scope(
                 state: \.navigation,
                 action: Root.Action.navigation
               )
             )
-          )
+          }
 
           NavigationLink(
             "Presentation sheet",

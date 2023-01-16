@@ -1,7 +1,7 @@
 import Combine
 import ComposableArchitecture
 import XCTest
-
+ 
 @MainActor
 final class NavigationTests: XCTestCase {
   func testCodability() throws {

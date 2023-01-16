@@ -1,8 +1,22 @@
-//
-//  File.swift
-//  
-//
-//  Created by Brandon Williams on 1/15/23.
-//
+public struct UnimplementedReducer<State, Action>: ReducerProtocol {
+  let file: StaticString
+  let fileID: StaticString
+  let line: UInt
 
-import Foundation
+  public init(file: StaticString = #file, fileID: StaticString = #fileID, line: UInt = #line) {
+    self.file = file
+    self.fileID = fileID
+    self.line = line
+  }
+
+  public func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+    runtimeWarn(
+      """
+      An unimplemented reducer received \(action) at \(fileID):\(line).
+      """,
+      file: file,
+      line: line
+    )
+    return .none
+  }
+}
