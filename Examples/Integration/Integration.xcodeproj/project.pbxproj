@@ -15,6 +15,9 @@
 		CAA1CAFC296DEE79000665B1 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CAA1CAFB296DEE79000665B1 /* Preview Assets.xcassets */; };
 		CAA1CB10296DEE79000665B1 /* ForEachBindingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA1CB0F296DEE79000665B1 /* ForEachBindingTests.swift */; };
 		CAA1CB1F296DEEAC000665B1 /* ForEachBindingTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA1CB1E296DEEAC000665B1 /* ForEachBindingTestCase.swift */; };
+		E9919D3E296E28C800C8716B /* EscapedWithViewStoreTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9919D3D296E28C800C8716B /* EscapedWithViewStoreTestCase.swift */; };
+		E9919D40296E3EF400C8716B /* EscapedWithViewStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9919D3F296E3EF400C8716B /* EscapedWithViewStoreTests.swift */; };
+		E9919D42296E47A400C8716B /* BindingsAnimationsTestBench.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9919D41296E47A400C8716B /* BindingsAnimationsTestBench.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,6 +41,9 @@
 		CAA1CB0B296DEE79000665B1 /* IntegrationUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IntegrationUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CAA1CB0F296DEE79000665B1 /* ForEachBindingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForEachBindingTests.swift; sourceTree = "<group>"; };
 		CAA1CB1E296DEEAC000665B1 /* ForEachBindingTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForEachBindingTestCase.swift; sourceTree = "<group>"; };
+		E9919D3D296E28C800C8716B /* EscapedWithViewStoreTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EscapedWithViewStoreTestCase.swift; sourceTree = "<group>"; };
+		E9919D3F296E3EF400C8716B /* EscapedWithViewStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EscapedWithViewStoreTests.swift; sourceTree = "<group>"; };
+		E9919D41296E47A400C8716B /* BindingsAnimationsTestBench.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BindingsAnimationsTestBench.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,9 +88,11 @@
 		CAA1CAF3296DEE78000665B1 /* Integration */ = {
 			isa = PBXGroup;
 			children = (
+				E9919D41296E47A400C8716B /* BindingsAnimationsTestBench.swift */,
+				E9919D3D296E28C800C8716B /* EscapedWithViewStoreTestCase.swift */,
 				CAA1CB1E296DEEAC000665B1 /* ForEachBindingTestCase.swift */,
-				CAA1CAF4296DEE78000665B1 /* IntegrationApp.swift */,
 				CA595272296DF46D00B5B695 /* NavigationStackBindingTestCase.swift */,
+				CAA1CAF4296DEE78000665B1 /* IntegrationApp.swift */,
 				CAA1CAF8296DEE79000665B1 /* Assets.xcassets */,
 				CAA1CAFA296DEE79000665B1 /* Preview Content */,
 			);
@@ -102,6 +110,7 @@
 		CAA1CB0E296DEE79000665B1 /* IntegrationUITests */ = {
 			isa = PBXGroup;
 			children = (
+				E9919D3F296E3EF400C8716B /* EscapedWithViewStoreTests.swift */,
 				CAA1CB0F296DEE79000665B1 /* ForEachBindingTests.swift */,
 				CA595274296DF55A00B5B695 /* NavigationStackBindingTests.swift */,
 			);
@@ -220,7 +229,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				CAA1CB1F296DEEAC000665B1 /* ForEachBindingTestCase.swift in Sources */,
+				E9919D42296E47A400C8716B /* BindingsAnimationsTestBench.swift in Sources */,
 				CA595273296DF46D00B5B695 /* NavigationStackBindingTestCase.swift in Sources */,
+				E9919D3E296E28C800C8716B /* EscapedWithViewStoreTestCase.swift in Sources */,
 				CAA1CAF5296DEE78000665B1 /* IntegrationApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -229,6 +240,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E9919D40296E3EF400C8716B /* EscapedWithViewStoreTests.swift in Sources */,
 				CA595275296DF55A00B5B695 /* NavigationStackBindingTests.swift in Sources */,
 				CAA1CB10296DEE79000665B1 /* ForEachBindingTests.swift in Sources */,
 			);

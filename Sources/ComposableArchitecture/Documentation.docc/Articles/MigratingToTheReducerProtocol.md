@@ -251,10 +251,10 @@ struct AppReducer: ReducerProtocol {
     Scope(state: \.tabA, action: /Action.tabA) {
       TabA()
     }
-    Scope(state: \.tabB, action: /Action.tabC) {
+    Scope(state: \.tabB, action: /Action.tabB) {
       TabB()
     }
-    Scope(state: \.tabB, action: /Action.tabC) {
+    Scope(state: \.tabC, action: /Action.tabC) {
       TabC()
     }
   }
