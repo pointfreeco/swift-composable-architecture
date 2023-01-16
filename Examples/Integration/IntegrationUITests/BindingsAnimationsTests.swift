@@ -1,5 +1,54 @@
 import XCTest
 
+// Copy/Pasted from `Integration. For some reason, can't be imported.
+enum AnimationCaseTag: String {
+  case observedObject = "OO"
+  case viewStore = "VS"
+}
+
+enum AnimationCase: String, CaseIterable, Hashable {
+  case none
+  case observeValue
+  case animatedBinding
+  case observeValue_BindingAnimation
+  case observeValue_Transaction
+  case observeValue_Transaction_BindingAnimation
+  case observeValue_Binding_Transaction
+  case observeValue_Transaction_Binding_Transaction
+}
+
+extension AnimationCase {
+  var accessibilityLabel: String { self.rawValue }
+  func toggleAccessibilityLabel(tag: AnimationCaseTag) -> String {
+    self.rawValue + "_Toggle_" + tag.rawValue
+  }
+  func effectiveAnimationDurationAccessibilityLabel(tag: AnimationCaseTag) -> String {
+    self.rawValue + "_Result_" + tag.rawValue
+  }
+}
+extension AnimationCase {
+  var expectedDuration: String {
+    switch self {
+    case .none:
+      return "None"
+    case .observeValue:
+      return "0.7"
+    case .animatedBinding:
+      return "0.2"
+    case .observeValue_BindingAnimation:
+      return "0.7"
+    case .observeValue_Transaction:
+      return "0.9"
+    case .observeValue_Transaction_BindingAnimation:
+      return "0.9"
+    case .observeValue_Binding_Transaction:
+      return "0.7"
+    case .observeValue_Transaction_Binding_Transaction:
+      return "0.9"
+    }
+  }
+}
+
 final class BindingsAnimationsTests: XCTestCase {
 
   override func setUpWithError() throws {
@@ -7,100 +56,45 @@ final class BindingsAnimationsTests: XCTestCase {
   }
 
   func testExample() throws {
-    // UI tests must launch the application that they test.
+
     let app = XCUIApplication()
     app.launch()
+    let collectionViewsQuery = app.collectionViews
+    collectionViewsQuery.buttons["BindingsAnimationsTestCase"].tap()
 
     func reset() {
       app.buttons["Reset"].tap()
     }
 
-    var o_oo: String {
-      collectionViewsQuery.staticTexts["AnimatedWithObservation_OO"].value as? String ?? ""
-    }
-    var o_vs: String {
-      collectionViewsQuery.staticTexts["AnimatedWithObservation_VS"].value as? String ?? ""
-    }
-    var b_oo: String {
-      collectionViewsQuery.staticTexts["AnimatedFromBinding_OO"].value as? String ?? ""
-    }
-    var b_vs: String {
-      collectionViewsQuery.staticTexts["AnimatedFromBinding_VS"].value as? String ?? ""
-    }
-    var ob_oo: String {
-      collectionViewsQuery.staticTexts["AnimatedFromBindingWithObservation_OO"].value as? String
-        ?? ""
-    }
-    var ob_vs: String {
-      collectionViewsQuery.staticTexts["AnimatedFromBindingWithObservation_VS"].value as? String
-        ?? ""
+    func next() {
+      app.buttons["Next"].tap()
     }
 
-    let collectionViewsQuery = app.collectionViews
-    collectionViewsQuery.buttons["BindingsAnimationsTestCase"].tap()
+    func value(_ animationCase: AnimationCase, _ tag: AnimationCaseTag) -> String? {
+      collectionViewsQuery.staticTexts[
+        animationCase.effectiveAnimationDurationAccessibilityLabel(tag: tag)
+      ].value as? String
+    }
 
-    reset()
+    func tap(_ animationCase: AnimationCase, _ tag: AnimationCaseTag) {
+      collectionViewsQuery.switches[animationCase.toggleAccessibilityLabel(tag: tag)].tap()
+    }
 
-    XCTAssertEqual(o_oo, "?")
-    XCTAssertEqual(o_vs, "?")
-    XCTAssertEqual(b_oo, "?")
-    XCTAssertEqual(b_vs, "?")
-    XCTAssertEqual(ob_oo, "?")
-    XCTAssertEqual(ob_vs, "?")
-
-    collectionViewsQuery.switches["AnimatedWithObservation_OO_Toggle"].tap()
-    collectionViewsQuery.switches["AnimatedWithObservation_VS_Toggle"].tap()
-
-    Thread.sleep(forTimeInterval: 1)
-
-    XCTAssertEqual(o_oo, "0.7")  // <--
-    XCTAssertEqual(o_vs, "0.7")  // <--
-
-    XCTAssertEqual(b_oo, "None")
-    XCTAssertEqual(b_vs, "None")
-    XCTAssertEqual(ob_oo, "0.7")
-    XCTAssertEqual(ob_vs, "0.7")
-
-    reset()
-
-    XCTAssertEqual(o_oo, "?")
-    XCTAssertEqual(o_vs, "?")
-    XCTAssertEqual(b_oo, "?")
-    XCTAssertEqual(b_vs, "?")
-    XCTAssertEqual(ob_oo, "?")
-    XCTAssertEqual(ob_vs, "?")
-
-    collectionViewsQuery.switches["AnimatedFromBinding_OO_Toggle"].tap()
-    collectionViewsQuery.switches["AnimatedFromBinding_VS_Toggle"].tap()
-
-    Thread.sleep(forTimeInterval: 1)
-
-    XCTAssertEqual(o_oo, "0.7")
-    XCTAssertEqual(o_vs, "0.7")
-    XCTAssertEqual(b_oo, "0.2")  // <--
-    XCTAssertEqual(b_vs, "0.2")  // <--
-    XCTAssertEqual(ob_oo, "0.7")
-    XCTAssertEqual(ob_vs, "0.7")
-
-    reset()
-
-    XCTAssertEqual(o_oo, "?")
-    XCTAssertEqual(o_vs, "?")
-    XCTAssertEqual(b_oo, "?")
-    XCTAssertEqual(b_vs, "?")
-    XCTAssertEqual(ob_oo, "?")
-    XCTAssertEqual(ob_vs, "?")
-
-    collectionViewsQuery.switches["AnimatedFromBindingWithObservation_OO_Toggle"].tap()
-    collectionViewsQuery.switches["AnimatedFromBindingWithObservation_VS_Toggle"].tap()
-
-    Thread.sleep(forTimeInterval: 1)
-
-    XCTAssertEqual(o_oo, "0.7")
-    XCTAssertEqual(o_vs, "0.7")
-    XCTAssertEqual(b_oo, "0.2")
-    XCTAssertEqual(b_vs, "0.2")
-    XCTAssertEqual(ob_oo, "0.7")  // <--
-    XCTAssertEqual(ob_vs, "0.7")  // <--
+    for animationCase in AnimationCase.allCases {
+      reset()
+      
+      XCTAssertEqual("?", value(animationCase, .observedObject))
+      XCTAssertEqual("?", value(animationCase, .viewStore))
+      
+      tap(animationCase, .observedObject)
+      tap(animationCase, .viewStore)
+      
+      Thread.sleep(forTimeInterval: 1)
+      
+      XCTAssertEqual(animationCase.expectedDuration, value(animationCase, .observedObject))
+      XCTAssertEqual(animationCase.expectedDuration, value(animationCase, .viewStore))
+      
+      next()
+    }
   }
 }

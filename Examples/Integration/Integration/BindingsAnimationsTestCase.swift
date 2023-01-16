@@ -13,160 +13,269 @@ final class VanillaModel: ObservableObject {
   @Published var flag = false
 }
 
+let slowAnimation = Animation.linear(duration: 0.90)
 let mediumAnimation = Animation.linear(duration: 0.70)
 let fastAnimation = Animation.linear(duration: 0.20)
+
+public enum AnimationCaseTag: String{
+  case observedObject = "OO"
+  case viewStore = "VS"
+}
+
+public enum AnimationCase: String, CaseIterable, Hashable {
+  case none
+  case observeValue
+  case animatedBinding
+  case observeValue_BindingAnimation
+  case observeValue_Transaction
+  case observeValue_Transaction_BindingAnimation
+  case observeValue_Binding_Transaction
+  case observeValue_Transaction_Binding_Transaction
+}
+
+extension AnimationCase {
+  var accessibilityLabel: String { self.rawValue }
+  public func toggleAccessibilityLabel(tag: AnimationCaseTag) -> String {
+    self.rawValue + "_Toggle_" + tag.rawValue
+  }
+  public func effectiveAnimationDurationAccessibilityLabel(tag: AnimationCaseTag) -> String {
+    self.rawValue + "_Result_" + tag.rawValue
+  }
+}
+
+extension AnimationCase {
+  @ViewBuilder
+  func view(binding: Binding<Bool>) -> some View {
+    switch self {
+    case .none:
+      CaseView(animationCase: self, flag: binding)
+
+    case .observeValue:
+      CaseView(animationCase: self, flag: binding)
+        .animation(mediumAnimation, value: binding.wrappedValue)
+
+    case .animatedBinding:
+      CaseView(animationCase: self, flag: binding.animation(fastAnimation))
+
+    case .observeValue_BindingAnimation:
+      CaseView(animationCase: self, flag: binding.animation(fastAnimation))
+        .animation(mediumAnimation, value: binding.wrappedValue)
+
+    case .observeValue_Transaction:
+      CaseView(animationCase: self, flag: binding)
+        .transaction { $0.animation = slowAnimation }
+        .animation(mediumAnimation, value: binding.wrappedValue)
+
+    case .observeValue_Transaction_BindingAnimation:
+      CaseView(animationCase: self, flag: binding.animation(fastAnimation))
+        .transaction { $0.animation = slowAnimation }
+        .animation(mediumAnimation, value: binding.wrappedValue)
+
+    case .observeValue_Binding_Transaction:
+      CaseView(animationCase: self, flag: binding.transaction(.init(animation: fastAnimation)))
+        .animation(mediumAnimation, value: binding.wrappedValue)
+
+    case .observeValue_Transaction_Binding_Transaction:
+      CaseView(animationCase: self, flag: binding.transaction(.init(animation: fastAnimation)))
+        .transaction { $0.animation = slowAnimation }
+        .animation(mediumAnimation, value: binding.wrappedValue)
+    }
+  }
+}
+
+
+extension AnimationCaseTag: EnvironmentKey  {
+  public static var defaultValue: AnimationCaseTag? { nil }
+}
+
+extension EnvironmentValues {
+  var animationCaseTag: AnimationCaseTag? {
+    get { self[AnimationCaseTag.self] }
+    set { self[AnimationCaseTag.self] = newValue }
+  }
+}
+
+struct VanillaView: View {
+  let animationCase: AnimationCase
+  @EnvironmentObject var model: VanillaModel
+  var body: some View {
+    animationCase.view(binding: $model.flag)
+      .environment(\.animationCaseTag, .observedObject)
+  }
+}
+
+struct ViewStoreView: View {
+  let animationCase: AnimationCase
+  @EnvironmentObject var viewStore: ViewStore<Bool, Void>
+  var body: some View {
+    animationCase.view(binding: viewStore.binding(send: ()))
+      .environment(\.animationCaseTag, .viewStore)
+  }
+}
+
+let resetNotification = Notification(name: .init("MeasureWidthAnimationDuration"))
+struct CaseView: View {
+  let animationCase: AnimationCase
+  @Binding var flag: Bool
+  @StateObject var model: AnimationDurationModel = .init()
+  @Environment(\.animationCaseTag) var animationCaseTag
+  let dimension: CGFloat = 100
+
+  var body: some View {
+    VStack {
+      Text(model.effectiveAnimationDurationText)
+        .accessibilityLabel(
+          animationCase.effectiveAnimationDurationAccessibilityLabel(tag: animationCaseTag!)
+        )
+        .accessibilityValue(model.effectiveAnimationDurationText)
+      MeasureView(animatableData: flag ? dimension : dimension * 0.75) { model.append($0) }
+        .overlay {
+          Toggle("", isOn: $flag)
+            .accessibilityLabel(animationCase.toggleAccessibilityLabel(tag: animationCaseTag!))
+            .labelsHidden()
+        }
+        .frame(width: dimension, height: dimension)
+    }
+    .task {
+      // We don't want the initial layout to register as an
+      // animation, so we activate the model only after a few ms.
+      try? await Task.sleep(for: .milliseconds(100))
+      self.model.prepareMeasure()
+    }
+    .onReceive(
+      NotificationCenter.Publisher(
+        center: .default,
+        name: resetNotification.name
+      )
+    ) { _ in
+      self.model.prepareMeasure()
+    }
+  }
+
+  struct MeasureView: View, Animatable {
+    var animatableData: CGFloat
+    let onChange: (AnimationProgress) -> Void
+    var body: some View {
+      ZStack {
+        Circle()
+          .fill(.red.opacity(0.25))
+        Circle()
+          .strokeBorder(.red.opacity(0.5), lineWidth: 2)
+      }
+      .drawingGroup()  // Prevents a small offset glitch when using transactions
+      .frame(width: animatableData)
+      .onChange(of: animatableData) {
+        onChange(.init(timestamp: ProcessInfo.processInfo.systemUptime, progress: $0))
+      }
+    }
+  }
+}
+
+struct SideBySide2: View {
+  let animationCase: AnimationCase
+  var body: some View {
+    Grid {
+      GridRow {
+        VanillaView(animationCase: animationCase)
+        ViewStoreView(animationCase: animationCase)
+      }
+      GridRow {
+        Text("@ObservedObject")
+          .fixedSize()
+        Text("ViewStore")
+      }
+      .font(.footnote.bold())
+      .monospaced()
+    }
+    .frame(maxWidth: .infinity)
+  }
+}
 
 struct BindingsAnimationsTestCase: View {
   let viewStore: ViewStoreOf<BindingsAnimations>
   let vanillaModel = VanillaModel()
-
+  @State var currentID = 0
   init(store: StoreOf<BindingsAnimations>) {
     self.viewStore = ViewStore(store, observe: { $0 })
   }
 
   var body: some View {
-    List {
-      Section {
-        SideBySide {
-          AnimatedWithObservation.ObservedObjectBinding()
-        } viewStoreView: {
-          AnimatedWithObservation.ViewStoreBinding()
+    ScrollViewReader { proxy in
+      List {
+        let cases = Array(zip(0..., AnimationCase.allCases))
+        ForEach(cases, id: \.0) { (id, animationCase) in
+          Section {
+            SideBySide2(animationCase: animationCase)
+              .id(id)
+          } header: {
+            Text(animationCase.title)
+          } footer: {
+            Text("Shoud animate with \(animationCase.expectedAnimationDescription)")
+          }
         }
-      } header: {
-        Text("Animated with observation.")
-      } footer: {
-        Text("Should animate with the \"medium\" animation.")
       }
-
-      Section {
-        SideBySide {
-          AnimatedFromBinding.ObservedObjectBinding()
-        } viewStoreView: {
-          AnimatedFromBinding.ViewStoreBinding()
+      .toolbar {
+        ToolbarItem {
+          Button("Reset") { NotificationCenter.default.post(resetNotification) }
+            .accessibilityLabel("Reset")
         }
-      } header: {
-        Text("Animated from binding.")
-      } footer: {
-        Text("Should animate with the \"fast\" animation.")
-      }
-
-      Section {
-        SideBySide {
-          AnimatedFromBindingWithObservation.ObservedObjectBinding()
-        } viewStoreView: {
-          AnimatedFromBindingWithObservation.ViewStoreBinding()
+        ToolbarItem {
+          Button("Next case") {
+            currentID += 1
+            currentID %= AnimationCase.allCases.count
+            withAnimation {
+              proxy.scrollTo(currentID)
+            }
+          }
+          .accessibilityLabel("Next")
         }
-      } header: {
-        Text("Animated from binding with observation.")
-      } footer: {
-        Text("Should animate with the \"medium\" animation.")
       }
-    }
-    .toolbar {
-      ToolbarItem {
-        Button("Reset") {
-          NotificationCenter.default
-            .post(MeasureWidthAnimationDuration.resetNotification)
-        }
-        .accessibilityLabel("Reset")
-      }
-    }
-    .headerProminence(.increased)
-    .environmentObject(viewStore)
-    .environmentObject(vanillaModel)
-  }
-}
-
-struct ContentView: View {
-  @Binding var flag: Bool
-  let title: String
-
-  var body: some View {
-    ZStack {
-      Circle()
-        .fill(.red.opacity(0.25))
-      Circle()
-        .strokeBorder(.red.opacity(0.5), lineWidth: 2)
-    }
-    .frame(width: flag ? 100 : 75)
-    .modifier(MeasureWidthAnimationDuration(label: title, width: flag ? 100 : 75))
-  }
-}
-
-struct AnimatedWithObservation {
-  struct ObservedObjectBinding: View {
-    @EnvironmentObject var vanillaModel: VanillaModel
-    var body: some View {
-      ZStack {
-        ContentView(flag: $vanillaModel.flag, title: "AnimatedWithObservation_OO")
-          .animation(mediumAnimation, value: vanillaModel.flag)
-        Toggle("", isOn: $vanillaModel.flag)
-          .accessibilityLabel("AnimatedWithObservation_OO_Toggle")
-      }
-    }
-  }
-
-  struct ViewStoreBinding: View {
-    @EnvironmentObject var viewStore: ViewStoreOf<BindingsAnimations>
-    var body: some View {
-      ZStack {
-        ContentView(flag: viewStore.binding(send: ()), title: "AnimatedWithObservation_VS")
-          .animation(mediumAnimation, value: viewStore.state)
-        Toggle("", isOn: viewStore.binding(send: ()))
-          .accessibilityLabel("AnimatedWithObservation_VS_Toggle")
-      }
+      .headerProminence(.increased)
+      .environmentObject(viewStore)
+      .environmentObject(vanillaModel)
     }
   }
 }
 
-struct AnimatedFromBinding {
-  struct ObservedObjectBinding: View {
-    @EnvironmentObject var vanillaModel: VanillaModel
-    var body: some View {
-      ZStack {
-        ContentView(flag: $vanillaModel.flag, title: "AnimatedFromBinding_OO")
-        Toggle("", isOn: $vanillaModel.flag.animation(fastAnimation))
-          .accessibilityLabel("AnimatedFromBinding_OO_Toggle")
-      }
+extension AnimationCase {
+  var title: String {
+    switch self {
+    case .none:
+      return "No animation"
+    case .observeValue:
+      return "Observe value"
+    case .animatedBinding:
+      return "Animated Binding"
+    case .observeValue_BindingAnimation:
+      return "Observed value + Animated Binding"
+    case .observeValue_Transaction:
+      return "Observed value + Transaction"
+    case .observeValue_Transaction_BindingAnimation:
+      return "Observed value + Transaction + Animated Binding"
+    case .observeValue_Binding_Transaction:
+      return "Observed value + Binding transaction"
+    case .observeValue_Transaction_Binding_Transaction:
+      return "Observed value + Transaction + Binding transaction"
     }
   }
-
-  struct ViewStoreBinding: View {
-    @EnvironmentObject var viewStore: ViewStoreOf<BindingsAnimations>
-    var body: some View {
-      ZStack {
-        ContentView(flag: viewStore.binding(send: ()), title: "AnimatedFromBinding_VS")
-        Toggle("", isOn: viewStore.binding(send: ()).animation(fastAnimation))
-          .accessibilityLabel("AnimatedFromBinding_VS_Toggle")
-      }
-    }
-  }
-}
-
-struct AnimatedFromBindingWithObservation {
-  struct ObservedObjectBinding: View {
-    @EnvironmentObject var vanillaModel: VanillaModel
-    var body: some View {
-      ZStack {
-        ContentView(flag: $vanillaModel.flag, title: "AnimatedFromBindingWithObservation_OO")
-          .animation(mediumAnimation, value: vanillaModel.flag)
-        Toggle("", isOn: $vanillaModel.flag.animation(fastAnimation))
-          .accessibilityLabel("AnimatedFromBindingWithObservation_OO_Toggle")
-      }
-    }
-  }
-
-  struct ViewStoreBinding: View {
-    @EnvironmentObject var viewStore: ViewStoreOf<BindingsAnimations>
-    var body: some View {
-      ZStack {
-        ContentView(
-          flag: viewStore.binding(send: ()), title: "AnimatedFromBindingWithObservation_VS"
-        )
-        .animation(mediumAnimation, value: viewStore.state)
-        Toggle("", isOn: viewStore.binding(send: ()).animation(fastAnimation))
-          .accessibilityLabel("AnimatedFromBindingWithObservation_VS_Toggle")
-      }
+  var expectedAnimationDescription: String {
+    switch self {
+    case .none:
+      return "no animation"
+    case .observeValue:
+      return "the \"medium\" animation (0.7s)"
+    case .animatedBinding:
+      return "the \"fast\" animation (0.2s)"
+    case .observeValue_BindingAnimation:
+      return "the \"medium\" animation (0.7s)"
+    case .observeValue_Transaction:
+      return "the \"slow\" animation (0.9s)"
+    case .observeValue_Transaction_BindingAnimation:
+      return "the \"slow\" animation (0.9s)"
+    case .observeValue_Binding_Transaction:
+      return "the \"medium\" animation (0.7s)"
+    case .observeValue_Transaction_Binding_Transaction:
+      return "the \"slow\" animation (0.9s)"
     }
   }
 }
@@ -256,82 +365,6 @@ func effectiveAnimationDuration(progresses: [AnimationProgress]) -> EffectiveAni
 
   guard !trimmed.isEmpty else { return .instant }
   return .duration(trimmed.last!.upperBound - trimmed.first!.lowerBound)
-}
-
-struct MeasureWidthAnimationDuration: ViewModifier {
-  static let resetNotification = Notification(name: .init("MeasureWidthAnimationDuration"))
-
-  let label: String
-  let width: CGFloat
-  @StateObject var model: AnimationDurationModel = .init()
-  func body(content: Content) -> some View {
-    content
-      .background {
-        MeasureView(animatableData: width) { model.append($0) }
-      }
-      .overlay(alignment: .top) {
-        Text(model.effectiveAnimationDurationText)
-          .accessibilityLabel(label)
-          .accessibilityValue(model.effectiveAnimationDurationText)
-          .alignmentGuide(.top, computeValue: { $0[.bottom] })
-      }
-      .task {
-        // We don't want the initial layout to register as an
-        // animation, so we activate the model only after a few ms.
-        try? await Task.sleep(for: .milliseconds(100))
-        self.model.prepareMeasure()
-      }
-      .onReceive(
-        NotificationCenter.Publisher(
-          center: .default,
-          name: Self.resetNotification.name
-        )
-      ) { _ in
-        self.model.prepareMeasure()
-      }
-  }
-}
-
-struct MeasureView: View, Animatable {
-  var animatableData: CGFloat
-  let onChange: (AnimationProgress) -> Void
-  var body: some View {
-    Color.clear.onChange(of: animatableData) {
-      onChange(.init(timestamp: ProcessInfo.processInfo.systemUptime, progress: $0))
-    }
-  }
-}
-
-struct SideBySide<ObservedObjectView: View, ViewStoreView: View>: View {
-  let observedObjectView: ObservedObjectView
-  let viewStoreView: ViewStoreView
-  init(
-    @ViewBuilder observedObjectView: () -> ObservedObjectView,
-    @ViewBuilder viewStoreView: () -> ViewStoreView
-  ) {
-    self.observedObjectView = observedObjectView()
-    self.viewStoreView = viewStoreView()
-  }
-  var body: some View {
-    Grid {
-      GridRow {
-        observedObjectView
-          .frame(width: 100, height: 100)
-        viewStoreView
-          .frame(width: 100, height: 100)
-      }
-      .padding(.top)
-      .labelsHidden()
-      GridRow {
-        Text("@ObservedObject")
-          .fixedSize()
-        Text("ViewStore")
-      }
-      .font(.footnote.bold())
-      .monospaced()
-    }
-    .frame(maxWidth: .infinity)
-  }
 }
 
 struct BindingsAnimationsTestCase_Previews: PreviewProvider {
