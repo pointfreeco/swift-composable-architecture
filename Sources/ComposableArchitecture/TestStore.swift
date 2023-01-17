@@ -490,7 +490,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     deprecated: 9999,
     message:
       """
-      'Reducer' and `Environment` have been deprecated in favor of 'ReducerProtocol' and 'DependencyValues'.
+      'Reducer' and 'Environment' have been deprecated in favor of 'ReducerProtocol' and 'DependencyValues'.
 
       See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
@@ -500,7 +500,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     deprecated: 9999,
     message:
       """
-      'Reducer' and `Environment` have been deprecated in favor of 'ReducerProtocol' and 'DependencyValues'.
+      'Reducer' and 'Environment' have been deprecated in favor of 'ReducerProtocol' and 'DependencyValues'.
 
       See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
@@ -510,7 +510,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     deprecated: 9999,
     message:
       """
-      'Reducer' and `Environment` have been deprecated in favor of 'ReducerProtocol' and 'DependencyValues'.
+      'Reducer' and 'Environment' have been deprecated in favor of 'ReducerProtocol' and 'DependencyValues'.
 
       See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
@@ -520,7 +520,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     deprecated: 9999,
     message:
       """
-      'Reducer' and `Environment` have been deprecated in favor of 'ReducerProtocol' and 'DependencyValues'.
+      'Reducer' and 'Environment' have been deprecated in favor of 'ReducerProtocol' and 'DependencyValues'.
 
       See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
