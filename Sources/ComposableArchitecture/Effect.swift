@@ -102,17 +102,17 @@ extension EffectPublisher {
 /// the Combine interface to ``EffectPublisher`` is considered soft deprecated, and you should
 /// eventually port to Swift's native concurrency tools.
 ///
-/// > Important: The publisher interface to ``EffectTask`` is considered deperecated, and you should
-/// try converting any uses of that interface to Swift's native concurrency tools.
+/// > Important: The publisher interface to ``EffectTask`` is considered deprecated, and you should
+/// > try converting any uses of that interface to Swift's native concurrency tools.
 /// >
 /// > Also, ``Store`` is not thread safe, and so all effects must receive values on the same
-/// thread. This is typically the main thread,  **and** if the store is being used to drive UI then
-/// it must receive values on the main thread.
+/// > thread. This is typically the main thread,  **and** if the store is being used to drive UI
+/// > then it must receive values on the main thread.
 /// >
 /// > This is only an issue if using the Combine interface of ``EffectPublisher`` as mentioned
-/// above. If  you are using Swift's concurrency tools and the `.task`, `.run` and `.fireAndForget`
-/// functions on ``EffectTask``, then threading is automatically handled for you.
-public typealias EffectTask<Action> = Effect<Action, Never>
+/// > above. If  you are using Swift's concurrency tools and the `.task`, `.run`, and
+/// > `.fireAndForget` functions on ``EffectTask``, then threading is automatically handled for you.
+public typealias EffectTask<Action> = EffectPublisher<Action, Never>
 
 extension EffectPublisher where Failure == Never {
   /// Wraps an asynchronous unit of work in an effect.
