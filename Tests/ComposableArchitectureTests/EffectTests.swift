@@ -107,30 +107,32 @@ final class EffectTests: XCTestCase {
   #if swift(>=5.7) && (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     func testMerge() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        let clock = TestClock()
+        await _withMainSerialExecutor {
+          let clock = TestClock()
 
-        let effect = EffectPublisher<Int, Never>.merge(
-          (1...3).map { count in
-            .task {
-              try await clock.sleep(for: .seconds(count))
-              return count
+          let effect = EffectPublisher<Int, Never>.merge(
+            (1...3).map { count in
+              .task {
+                try await clock.sleep(for: .seconds(count))
+                return count
+              }
             }
-          }
-        )
+          )
 
-        var values: [Int] = []
-        effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+          var values: [Int] = []
+          effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
 
-        XCTAssertEqual(values, [])
+          XCTAssertEqual(values, [])
 
-        await clock.advance(by: .seconds(1))
-        XCTAssertEqual(values, [1])
+          await clock.advance(by: .seconds(1))
+          XCTAssertEqual(values, [1])
 
-        await clock.advance(by: .seconds(1))
-        XCTAssertEqual(values, [1, 2])
+          await clock.advance(by: .seconds(1))
+          XCTAssertEqual(values, [1, 2])
 
-        await clock.advance(by: .seconds(1))
-        XCTAssertEqual(values, [1, 2, 3])
+          await clock.advance(by: .seconds(1))
+          XCTAssertEqual(values, [1, 2, 3])
+        }
       }
     }
   #endif
