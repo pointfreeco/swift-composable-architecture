@@ -6,7 +6,7 @@ import SwiftUI
 // TODO: `Sendable where Element: Sendable`
 // TODO: Get a better handle on how explicit `ID`s are handled for various navigation scenarios.
 @propertyWrapper
-public struct NavigationState<Element: Hashable>:
+public struct NavigationState<Element: Hashable>: 
   MutableCollection,
   RandomAccessCollection,
   RangeReplaceableCollection

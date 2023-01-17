@@ -234,6 +234,8 @@ public struct _PresentationDestinationReducer<
         )
         // TODO: Check if presentedState is enum and if current enum tag is alert state
 
+        // TODO: don't create long living effect if we are showing an alert?
+        // TODO: handle confirmation dialog too?
         if isAlertState(presentedState) {
           state[keyPath: self.toPresentedState] = .dismissed
         } else {
@@ -281,7 +283,14 @@ public struct _PresentationDestinationReducer<
       effects.append(.cancel(id: id))
     }
 
-    if let id = state[keyPath: self.toPresentedState].id, id != currentPresentedState.id {
+    let tmp = state[keyPath: self.toPresentedState] // TODO: better name, write tests
+    if
+      let id = tmp.id,
+      id != currentPresentedState.id,
+      // NB: Don't start lifecycle effect for alerts
+      //     TODO: handle confirmation dialogs too
+      tmp.wrappedValue.map(isAlertState) != true
+    {
       effects.append(
         .run { send in
           do {

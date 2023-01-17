@@ -10,7 +10,7 @@
 		CADF85D42974AF8500B7695B /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF85D32974AF8500B7695B /* App.swift */; };
 		CADF85D82974AF8600B7695B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CADF85D72974AF8600B7695B /* Assets.xcassets */; };
 		CADF85DB2974AF8600B7695B /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CADF85DA2974AF8600B7695B /* Preview Assets.xcassets */; };
-		CADF85E52974AF8600B7695B /* StandupsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF85E42974AF8600B7695B /* StandupsTests.swift */; };
+		CADF85E52974AF8600B7695B /* StandupsListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF85E42974AF8600B7695B /* StandupsListTests.swift */; };
 		CADF85EF2974AF8600B7695B /* StandupsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF85EE2974AF8600B7695B /* StandupsUITests.swift */; };
 		CADF85F12974AF8600B7695B /* StandupsUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF85F02974AF8600B7695B /* StandupsUITestsLaunchTests.swift */; };
 		CADF85FF2974B05400B7695B /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF85FE2974B05400B7695B /* Models.swift */; };
@@ -24,6 +24,8 @@
 		CADF86122974C3B400B7695B /* RecordMeeting.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF86112974C3B400B7695B /* RecordMeeting.swift */; };
 		CADF86142974D7EF00B7695B /* EditStandup.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF86132974D7EF00B7695B /* EditStandup.swift */; };
 		CADF86162974F7B700B7695B /* Meeting.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF86152974F7B700B7695B /* Meeting.swift */; };
+		CADF86182975C3AD00B7695B /* EditStandupsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF86172975C3AD00B7695B /* EditStandupsTests.swift */; };
+		CADF861A2975C83C00B7695B /* StandupDetailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF86192975C83C00B7695B /* StandupDetailTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,7 +51,7 @@
 		CADF85D72974AF8600B7695B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CADF85DA2974AF8600B7695B /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		CADF85E02974AF8600B7695B /* StandupsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StandupsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		CADF85E42974AF8600B7695B /* StandupsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupsTests.swift; sourceTree = "<group>"; };
+		CADF85E42974AF8600B7695B /* StandupsListTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupsListTests.swift; sourceTree = "<group>"; };
 		CADF85EA2974AF8600B7695B /* StandupsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StandupsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CADF85EE2974AF8600B7695B /* StandupsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupsUITests.swift; sourceTree = "<group>"; };
 		CADF85F02974AF8600B7695B /* StandupsUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupsUITestsLaunchTests.swift; sourceTree = "<group>"; };
@@ -63,6 +65,8 @@
 		CADF86112974C3B400B7695B /* RecordMeeting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordMeeting.swift; sourceTree = "<group>"; };
 		CADF86132974D7EF00B7695B /* EditStandup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditStandup.swift; sourceTree = "<group>"; };
 		CADF86152974F7B700B7695B /* Meeting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Meeting.swift; sourceTree = "<group>"; };
+		CADF86172975C3AD00B7695B /* EditStandupsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditStandupsTests.swift; sourceTree = "<group>"; };
+		CADF86192975C83C00B7695B /* StandupDetailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupDetailTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -142,7 +146,9 @@
 		CADF85E32974AF8600B7695B /* StandupsTests */ = {
 			isa = PBXGroup;
 			children = (
-				CADF85E42974AF8600B7695B /* StandupsTests.swift */,
+				CADF86172975C3AD00B7695B /* EditStandupsTests.swift */,
+				CADF86192975C83C00B7695B /* StandupDetailTests.swift */,
+				CADF85E42974AF8600B7695B /* StandupsListTests.swift */,
 			);
 			path = StandupsTests;
 			sourceTree = "<group>";
@@ -327,7 +333,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CADF85E52974AF8600B7695B /* StandupsTests.swift in Sources */,
+				CADF85E52974AF8600B7695B /* StandupsListTests.swift in Sources */,
+				CADF86182975C3AD00B7695B /* EditStandupsTests.swift in Sources */,
+				CADF861A2975C83C00B7695B /* StandupDetailTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

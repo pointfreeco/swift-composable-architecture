@@ -2,8 +2,8 @@ import Dependencies
 import Foundation
 
 struct DataManager: Sendable {
-  var load: @Sendable (URL) throws -> Data
-  var save: @Sendable (Data, URL) throws -> Void
+  var load: @Sendable (URL) throws -> Data  // TODO: OK for this to be non-async? easier with error handling
+  var save: @Sendable (Data, URL) async throws -> Void
 }
 
 extension DataManager: DependencyKey {

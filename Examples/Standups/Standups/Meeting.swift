@@ -6,7 +6,7 @@ struct MeetingReducer: ReducerProtocol {
     let meeting: Meeting
     let standup: Standup
   }
-  enum Action {}
+  enum Action: Equatable {}
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
   }
 }

@@ -5,19 +5,15 @@ import SwiftUI
 struct StandupsApp: App {
   var body: some Scene {
     WindowGroup {
-      StandupsListView(
-        store: Store(
-          initialState: StandupsList.State(
-            standups: [
-              .mock,
-              .designMock,
-              .engineeringMock,
-            ]
-          ),
-          reducer: StandupsList()
-            ._printChanges()
+      if !_XCTIsTesting {
+        StandupsListView(
+          store: Store(
+            initialState: StandupsList.State(),
+            reducer: StandupsList()
+              ._printChanges()
+          )
         )
-      )
+      }
     }
   }
 }

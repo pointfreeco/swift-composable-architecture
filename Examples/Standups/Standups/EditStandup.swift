@@ -9,12 +9,21 @@ struct EditStandup: ReducerProtocol {
     @BindableState var focus: Field? = .title
     @BindableState var standup: Standup
 
+    init(focus: Field? = nil, standup: Standup) {
+      self.focus = focus
+      self.standup = standup
+      if self.standup.attendees.isEmpty {
+        @Dependency(\.uuid) var uuid
+        self.standup.attendees.append(Attendee(id: Attendee.ID(uuid())))
+      }
+    }
+
     enum Field: Hashable {
       case attendee(Attendee.ID)
       case title
     }
   }
-  enum Action: BindableAction {
+  enum Action: BindableAction, Equatable {
     case addAttendeeButtonTapped
     case binding(BindingAction<State>)
     case deleteAttendees(atOffsets: IndexSet)

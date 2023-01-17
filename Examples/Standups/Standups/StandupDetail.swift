@@ -6,7 +6,7 @@ struct StandupDetail: ReducerProtocol {
     @PresentationStateOf<Destinations> var destination
     var standup: Standup
   }
-  enum Action {
+  enum Action: Equatable {
     case cancelEditButtonTapped
     case delegate(Delegate)
     case deleteButtonTapped
@@ -19,19 +19,24 @@ struct StandupDetail: ReducerProtocol {
   }
   enum AlertAction {
     case confirmDeletion
+    case continueWithoutRecording
+    case openSettings
   }
-  enum Delegate {
+  enum Delegate: Equatable {
     case deleteStandup
     case goToMeeting(Meeting)
     case startMeeting
   }
+
+  @Dependency(\.speechClient.authorizationStatus) var authorizationStatus
+  @Dependency(\.openSettings) var openSettings
 
   struct Destinations: ReducerProtocol {
     enum State: Equatable, Hashable {
       case alert(AlertState<AlertAction>)
       case edit(EditStandup.State)
     }
-    enum Action {
+    enum Action: Equatable {
       case alert(AlertAction)
       case edit(EditStandup.Action)
     }
@@ -64,6 +69,12 @@ struct StandupDetail: ReducerProtocol {
         switch alertAction {
         case .confirmDeletion:
           return EffectTask(value: .delegate(.deleteStandup)).animation()
+        case .continueWithoutRecording:
+          return EffectTask(value: .delegate(.startMeeting))
+        case .openSettings:
+          return .run { _ in
+            await self.openSettings()
+          }
         }
 
       case .destination:
@@ -86,7 +97,21 @@ struct StandupDetail: ReducerProtocol {
         return EffectTask(value: .delegate(.goToMeeting(meeting)))
 
       case .startMeetingButtonTapped:
-        return EffectTask(value: .delegate(.startMeeting))
+        switch self.authorizationStatus() {
+        case .notDetermined, .authorized:
+          return EffectTask(value: .delegate(.startMeeting))
+
+        case .denied:
+          state.destination = .alert(.speechRecognitionDenied)
+          return .none
+
+        case .restricted:
+          state.destination = .alert(.speechRecognitionRestricted)
+          return .none
+
+        @unknown default:
+          return .none
+        }
       }
     }
     .presentationDestination(\.$destination, action: /Action.destination) {
@@ -215,6 +240,41 @@ extension AlertState where Action == StandupDetail.AlertAction {
     }
   } message: {
     TextState("Are you sure you want to delete this meeting?")
+  }
+
+  static let speechRecognitionDenied = Self {
+    TextState("Speech recognition denied")
+  } actions: {
+    ButtonState(action: .continueWithoutRecording) {
+      TextState("Continue without recording")
+    }
+    ButtonState(action: .openSettings) {
+      TextState("Open settings")
+    }
+    ButtonState(role: .cancel) {
+      TextState("Cancel")
+    }
+  } message: {
+    TextState("""
+      You previously denied speech recognition and so your meeting meeting will not be \
+      recorded. You can enable speech recognition in settings, or you can continue without \
+      recording.
+      """)
+  }
+
+  static let speechRecognitionRestricted = Self {
+    TextState("Speech recognition restricted")
+  } actions: {
+    ButtonState(action: .continueWithoutRecording) {
+      TextState("Continue without recording")
+    }
+    ButtonState(role: .cancel) {
+      TextState("Cancel")
+    }
+  } message: {
+    TextState("""
+      Your device does not support speech recognition and so your meeting will not be recorded.
+      """)
   }
 }
 

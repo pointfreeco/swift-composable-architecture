@@ -114,7 +114,7 @@ final class NavigationTests: XCTestCase {
 
     await store.send(.addButtonTapped) {
       $0.$path[id: 0] = Child.State()
-    }
+    } 
     await store.send(.path(.element(id: 0, .onAppear)))
     await store.send(.path(.element(id: 0, .closeButtonTapped)))
     await store.receive(.path(.dismiss(id: 0))) {

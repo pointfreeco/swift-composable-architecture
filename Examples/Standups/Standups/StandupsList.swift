@@ -6,12 +6,29 @@ import SwiftUI
 //       level??
 
 struct StandupsList: ReducerProtocol {
-  struct State {
+  struct State: Equatable {
     @PresentationStateOf<Destinations> var destination
     @NavigationStateOf<Stack> var path  // TODO: path? stack? navigation?
     var standups: IdentifiedArrayOf<Standup> = []
+
+    // TODO: custom initializer that loads standups from disk??
+    init(
+      destination: Destinations.State? = nil,
+      path: NavigationStateOf<Stack>.Path = []
+    ) {
+      self.destination = destination
+      self.path = path
+
+      do {
+        @Dependency(\.dataManager.load) var load
+        self.standups = try JSONDecoder().decode(IdentifiedArray.self, from: load(.standups))
+      } catch is DecodingError {
+        self.destination = .alert(.dataFailedToLoad)
+      } catch {
+      }
+    }
   }
-  enum Action {
+  enum Action: Equatable {
     case addStandupButtonTapped
     case confirmAddStandupButtonTapped
     case destination(PresentationActionOf<Destinations>)
@@ -19,19 +36,24 @@ struct StandupsList: ReducerProtocol {
     case path(NavigationActionOf<Stack>)  // TODO: path? stack? navigation?
     case standupTapped(id: Standup.ID)
   }
+  enum AlertAction {
+    case confirmLoadMockData
+  }
 
+  @Dependency(\.continuousClock) var clock
+  @Dependency(\.dataManager) var dataManager
   @Dependency(\.date.now) var now
   @Dependency(\.uuid) var uuid
 
   struct Destinations: ReducerProtocol {
-    enum State {
+    enum State: Equatable {
       case add(EditStandup.State)
-      case alert
+      case alert(AlertState<AlertAction>)
     }
 
-    enum Action {
+    enum Action: Equatable {
       case add(EditStandup.Action)
-      case alert
+      case alert(AlertAction)
     }
 
     var body: some ReducerProtocol<State, Action> {
@@ -48,7 +70,7 @@ struct StandupsList: ReducerProtocol {
       case record(RecordMeeting.State)
     }
 
-    enum Action {
+    enum Action: Equatable {
       case detail(StandupDetail.Action)
       case meeting(MeetingReducer.Action)
       case record(RecordMeeting.Action)
@@ -68,16 +90,6 @@ struct StandupsList: ReducerProtocol {
   }
 
   var body: some ReducerProtocolOf<Self> {
-    // Playback any changes made to stand up in detail
-    Reduce<State, Action> { state, action in
-      for destination in state.$path {
-        guard case let .detail(detailState) = destination.element
-        else { continue }
-        state.standups[id: detailState.standup.id] = detailState.standup
-      }
-      return .none
-    }
-
     Reduce<State, Action> { state, action in
       switch action {
       case .addStandupButtonTapped:
@@ -96,6 +108,14 @@ struct StandupsList: ReducerProtocol {
         }
         state.standups.append(standup)
         state.destination = nil
+        return .none
+
+      case .destination(.presented(.alert(.confirmLoadMockData))):
+        state.standups = [
+          .mock,
+          .designMock,
+          .engineeringMock,
+        ]
         return .none
 
       case .destination:
@@ -185,6 +205,23 @@ struct StandupsList: ReducerProtocol {
     .presentationDestination(\.$destination, action: /Action.destination) {
       Destinations()
     }
+
+    // TODO: Should we polish up onChange and use it here?
+    Reduce<State, Action> { state, action in
+      // NB: Playback any changes made to stand up in detail
+      for destination in state.$path {
+        guard case let .detail(detailState) = destination.element
+        else { continue }
+        state.standups[id: detailState.standup.id] = detailState.standup
+      }
+      
+      return .run { [standups = state.standups] _ in
+        try await withTaskCancellation(id: "deadbeef", cancelInFlight: true) {
+          try await self.clock.sleep(for: .seconds(1))
+          try await self.dataManager.save(JSONEncoder().encode(standups), .standups)
+        }
+      } catch: { _, _ in }
+    }
   }
 }
 
@@ -192,10 +229,11 @@ struct StandupsListView: View {
   let store: StoreOf<StandupsList>
 
   var body: some View {
-    NavigationStackStore(
-      self.store.scope(state: \.$path, action: StandupsList.Action.path)
-    ) {
-      WithViewStore(self.store, observe: \.standups) { viewStore in
+    // TODO: :/
+    WithViewStore(self.store, observe: \.standups) { (viewStore: ViewStore<IdentifiedArrayOf<Standup>, StandupsList.Action>) in
+      NavigationStackStore(
+        self.store.scope(state: \.$path, action: StandupsList.Action.path)
+      ) {
         List {
           ForEach(viewStore.state) { standup in
             Button {
@@ -257,8 +295,35 @@ struct StandupsListView: View {
               }
           }
         }
+        .alert(
+          store: self.store.scope(state: \.$destination, action: StandupsList.Action.destination),
+          state: /StandupsList.Destinations.State.alert,
+          action: StandupsList.Destinations.Action.alert
+        )
       }
+//      destinations: {
+//
+//      }
     }
+  }
+}
+
+extension AlertState where Action == StandupsList.AlertAction {
+  static let dataFailedToLoad = Self {
+    TextState("Data failed to load")
+  } actions: {
+    ButtonState(action: .send(.confirmLoadMockData, animation: .default)) {
+      TextState("Yes")
+    }
+    ButtonState(role: .cancel) {
+      TextState("No")
+    }
+  } message: {
+    TextState(
+      """
+      Unfortunately your past data failed to load. Would you like to load some mock data to play \
+      around with?
+      """)
   }
 }
 
@@ -296,19 +361,35 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
   static var trailingIcon: Self { Self() }
 }
 
+extension URL {
+  fileprivate static let standups = Self.documentsDirectory.appending(component: "standups.json")
+}
+
 struct StandupsList_Previews: PreviewProvider {
   static var previews: some View {
     StandupsListView(
       store: Store(
-        initialState: StandupsList.State(
-          standups: [
-            .mock,
-            .designMock,
-            .engineeringMock,
-          ]
-        ),
+        initialState: StandupsList.State(),
         reducer: StandupsList()
+          .dependency(\.dataManager.load) { _ in
+            try JSONEncoder().encode([
+              Standup.mock,
+              .designMock,
+              .engineeringMock,
+            ])
+          }
       )
     )
+
+    StandupsListView(
+      store: Store(
+        initialState: StandupsList.State(),
+        reducer: StandupsList()
+          .dependency(\.dataManager, .mock(
+            initialData: Data("!@#$% bad data ^&*()".utf8)
+          ))
+      )
+    )
+    .previewDisplayName("Load data failure")
   }
 }

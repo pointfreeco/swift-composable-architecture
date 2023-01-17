@@ -6,6 +6,7 @@ struct RecordMeeting: ReducerProtocol {
   struct State: Hashable {
     // TODO: is it ever worth doing this? seems like not worth the trouble, and you might
     //       as well just do a full blown Destinations reducer
+    // TODO: @AlertStateStateOf<AlertAction>?
     @PresentationState<AlertState<AlertAction>> var alert // TODO: were we gonna do a PW for this?
     var secondsElapsed = 0
     var speakerIndex = 0
@@ -16,8 +17,9 @@ struct RecordMeeting: ReducerProtocol {
       self.standup.duration - .seconds(self.secondsElapsed)
     }
   }
-  enum Action {
-    case alert(PresentationAction<AlertState<AlertAction>, AlertAction>) // TODO: ???
+  enum Action: Equatable {
+    // TODO: AlertActionOf<AlertAction>, AlertPresentationActionOf
+    case alert(PresentationAction<AlertState<AlertAction>, AlertAction>)
     case delegate(Delegate)
     case endMeetingButtonTapped
     case nextButtonTapped
@@ -96,8 +98,7 @@ struct RecordMeeting: ReducerProtocol {
         let secondsPerAttendee = Int(state.standup.durationPerAttendee.components.seconds)
         if state.secondsElapsed.isMultiple(of: secondsPerAttendee) {
           if state.speakerIndex == state.standup.attendees.count - 1 {
-            // TODO: await self.finishMeeting()
-            return .none
+            return EffectTask(value: .delegate(.save))
           }
           state.speakerIndex += 1
         }
