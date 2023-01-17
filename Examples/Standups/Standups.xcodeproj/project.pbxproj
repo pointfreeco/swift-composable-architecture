@@ -26,6 +26,7 @@
 		CADF86162974F7B700B7695B /* Meeting.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF86152974F7B700B7695B /* Meeting.swift */; };
 		CADF86182975C3AD00B7695B /* EditStandupsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF86172975C3AD00B7695B /* EditStandupsTests.swift */; };
 		CADF861A2975C83C00B7695B /* StandupDetailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF86192975C83C00B7695B /* StandupDetailTests.swift */; };
+		CADF861C29771FA400B7695B /* RecordMeetingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF861B29771FA400B7695B /* RecordMeetingTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -67,6 +68,7 @@
 		CADF86152974F7B700B7695B /* Meeting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Meeting.swift; sourceTree = "<group>"; };
 		CADF86172975C3AD00B7695B /* EditStandupsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditStandupsTests.swift; sourceTree = "<group>"; };
 		CADF86192975C83C00B7695B /* StandupDetailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupDetailTests.swift; sourceTree = "<group>"; };
+		CADF861B29771FA400B7695B /* RecordMeetingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordMeetingTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -147,6 +149,7 @@
 			isa = PBXGroup;
 			children = (
 				CADF86172975C3AD00B7695B /* EditStandupsTests.swift */,
+				CADF861B29771FA400B7695B /* RecordMeetingTests.swift */,
 				CADF86192975C83C00B7695B /* StandupDetailTests.swift */,
 				CADF85E42974AF8600B7695B /* StandupsListTests.swift */,
 			);
@@ -335,6 +338,7 @@
 			files = (
 				CADF85E52974AF8600B7695B /* StandupsListTests.swift in Sources */,
 				CADF86182975C3AD00B7695B /* EditStandupsTests.swift in Sources */,
+				CADF861C29771FA400B7695B /* RecordMeetingTests.swift in Sources */,
 				CADF861A2975C83C00B7695B /* StandupDetailTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

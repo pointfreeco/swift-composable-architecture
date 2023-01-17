@@ -32,22 +32,27 @@ struct RecordMeeting: ReducerProtocol {
     case confirmSave
     case confirmDiscard
   }
-  enum Delegate {
-    case save
-    case discard
+  enum Delegate: Equatable {
+    case save(transcript: String)
   }
 
   @Dependency(\.continuousClock) var clock
+  @Dependency(\.dismiss) var dismiss
   @Dependency(\.speechClient) var speechClient
+
+  private struct TimerID {}
 
   var body: some ReducerProtocolOf<Self> {
     Reduce<State, Action> { state, action in
       switch action {
       case .alert(.presented(.confirmDiscard)):
-        return EffectTask(value: .delegate(.discard))
+        return .run { _ in
+          Task.cancel(id: TimerID.self)
+          await self.dismiss()
+        }
 
       case .alert(.presented(.confirmSave)):
-        return EffectTask(value: .delegate(.save))
+        return self.meetingFinished(transcript: state.transcript)
 
       case .alert:
         return .none
@@ -98,7 +103,7 @@ struct RecordMeeting: ReducerProtocol {
         let secondsPerAttendee = Int(state.standup.durationPerAttendee.components.seconds)
         if state.secondsElapsed.isMultiple(of: secondsPerAttendee) {
           if state.speakerIndex == state.standup.attendees.count - 1 {
-            return EffectTask(value: .delegate(.save))
+            return self.meetingFinished(transcript: state.transcript)
           }
           state.speakerIndex += 1
         }
@@ -117,8 +122,9 @@ struct RecordMeeting: ReducerProtocol {
         return .none
       }
     }
+    // TODO: .alert(\.$alert, action: /Action.alert)
     .presentationDestination(\.$alert, action: /Action.alert) {
-      EmptyReducer()
+      EmptyReducer()  // TODO: better way to do this?
     }
   }
 
@@ -127,7 +133,6 @@ struct RecordMeeting: ReducerProtocol {
       let speechTask = await self.speechClient.startTask(SFSpeechAudioBufferRecognitionRequest())
       for try await result in speechTask {
         await send(.speechResult(result))
-        //self.transcript = result.bestTranscription.formattedString
       }
     } catch {
       await send(.speechFailure)
@@ -135,8 +140,17 @@ struct RecordMeeting: ReducerProtocol {
   }
 
   func startTimer(send: Send<Action>) async {
-    for await _ in self.clock.timer(interval: .seconds(1)) {
-      await send(.timerTick)
+    await withTaskCancellation(id: TimerID.self) {
+      for await _ in self.clock.timer(interval: .seconds(1)) {
+        await send(.timerTick)
+      }
+    }
+  }
+
+  private func meetingFinished(transcript: String) -> EffectTask<Action> {
+    return .run { send in
+      await send(.delegate(.save(transcript: transcript)))
+      Task.cancel(id: TimerID.self)
     }
   }
 }

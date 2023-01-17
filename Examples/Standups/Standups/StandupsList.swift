@@ -11,7 +11,6 @@ struct StandupsList: ReducerProtocol {
     @NavigationStateOf<Stack> var path  // TODO: path? stack? navigation?
     var standups: IdentifiedArrayOf<Standup> = []
 
-    // TODO: custom initializer that loads standups from disk??
     init(
       destination: Destinations.State? = nil,
       path: NavigationStateOf<Stack>.Path = []
@@ -104,7 +103,10 @@ struct StandupsList: ReducerProtocol {
           attendee.name.allSatisfy(\.isWhitespace)
         }
         if standup.attendees.isEmpty {
-          standup.attendees.append(Attendee(id: Attendee.ID(self.uuid())))
+          standup.attendees.append(
+            editState.standup.attendees.first
+            ?? Attendee(id: Attendee.ID(self.uuid()))
+          )
         }
         state.standups.append(standup)
         state.destination = nil
@@ -155,31 +157,31 @@ struct StandupsList: ReducerProtocol {
           return .none
         }
 
-      case let .path(.element(id: id, .record(.delegate(delegateAction)))):
-        guard case let .some(.record(recordState)) = state.$path[id: id]
-        else { return .none }
-
+      case let .path(.element(id: _, .record(.delegate(delegateAction)))):
         switch delegateAction {
-        case .save:
+        case let .save(transcript: transcript):
           _ = state.path.popLast()
-          guard var stackDestination = state.$path.last
+          //_ = state.path.popLast(from: id) // TODO: more popping/pushing helpers on path
+          guard 
+            let stackDestination = state.$path.last,
+            case var .detail(detailState) = stackDestination.element
           else { return .none }
 
-          _ = try? (/StandupsList.Stack.State.detail).modify(&stackDestination.element) {
-            $0.standup.meetings.insert(
-              Meeting(
-                id: Meeting.ID(self.uuid()),
-                date: self.now,
-                transcript: recordState.transcript
-              ),
-              at: 0
-            )
-          }
-          state.$path[id: stackDestination.id] = stackDestination.element
-          return .none
+          detailState.standup.meetings.insert(
+            Meeting(
+              id: Meeting.ID(self.uuid()),
+              date: self.now,
+              transcript: transcript
+            ),
+            at: 0
+          )
+          state.$path[id: stackDestination.id] = .detail(detailState)
 
-        case .discard:
-          _ = state.path.popLast()
+          // TODO: possible to make Destinations identifiable? state.$path.update(.detail(detailState))
+//          _ = try? (/StandupsList.Stack.State.detail).modify(&state.$path[id: stackDestination.id]) {
+//            _ = $0
+//          }
+
           return .none
         }
 
@@ -209,14 +211,14 @@ struct StandupsList: ReducerProtocol {
     // TODO: Should we polish up onChange and use it here?
     Reduce<State, Action> { state, action in
       // NB: Playback any changes made to stand up in detail
-      for destination in state.$path {
-        guard case let .detail(detailState) = destination.element
+      for destination in state.path {
+        guard case let .detail(detailState) = destination
         else { continue }
         state.standups[id: detailState.standup.id] = detailState.standup
       }
       
       return .run { [standups = state.standups] _ in
-        try await withTaskCancellation(id: "deadbeef", cancelInFlight: true) {
+        try await withTaskCancellation(id: "deadbeef", cancelInFlight: true) { // TODO: better ID
           try await self.clock.sleep(for: .seconds(1))
           try await self.dataManager.save(JSONEncoder().encode(standups), .standups)
         }
@@ -229,7 +231,7 @@ struct StandupsListView: View {
   let store: StoreOf<StandupsList>
 
   var body: some View {
-    // TODO: :/
+    // TODO: :/ add ViewState
     WithViewStore(self.store, observe: \.standups) { (viewStore: ViewStore<IdentifiedArrayOf<Standup>, StandupsList.Action>) in
       NavigationStackStore(
         self.store.scope(state: \.$path, action: StandupsList.Action.path)

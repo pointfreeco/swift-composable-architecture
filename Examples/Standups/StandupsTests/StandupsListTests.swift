@@ -5,21 +5,27 @@ import XCTest
 
 @MainActor
 final class StandupsListTests: XCTestCase {
-  // TODO: why is this failing??
   func testAdd() async throws {
-    let store = TestStore(
-      initialState: StandupsList.State(),
-      reducer: StandupsList()
-    )
-
-    store.dependencies.continuousClock = ImmediateClock()
-    store.dependencies.dataManager.save = { _, _ in }
-    store.dependencies.uuid = .incrementing
+    let store = withDependencies {
+      $0.continuousClock = ImmediateClock()
+      $0.dataManager = .mock()
+      $0.uuid = .incrementing
+    } operation: {
+      TestStore(
+        initialState: StandupsList.State(),
+        reducer: StandupsList()
+      )
+    }
 
     await store.send(.addStandupButtonTapped) {
       $0.destination = .add(
         EditStandup.State(
-          standup: Standup(id: Standup.ID(uuidString: "00000000-0000-0000-0000-000000000000")!)
+          standup: Standup(
+            id: Standup.ID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+            attendees: [
+              Attendee(id: Attendee.ID(uuidString: "00000000-0000-0000-0000-000000000001")!)
+            ]
+          )
         )
       )
     }
@@ -46,6 +52,8 @@ final class StandupsListTests: XCTestCase {
 
 
   func testAdd_ValidatedAttendees() async throws {
+    @Dependency(\.uuid) var uuid
+
     let store = TestStore(
       initialState: StandupsList.State(
         destination: .add(
@@ -53,8 +61,8 @@ final class StandupsListTests: XCTestCase {
             standup: Standup(
               id: Standup.ID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!,
               attendees: [
-                Attendee(id: Attendee.ID(), name: ""),
-                Attendee(id: Attendee.ID(), name: "    "),
+                Attendee(id: Attendee.ID(uuid()), name: ""),
+                Attendee(id: Attendee.ID(uuid()), name: "    "),
               ],
               title: "Design"
             )
@@ -62,11 +70,11 @@ final class StandupsListTests: XCTestCase {
         )
       ),
       reducer: StandupsList()
-    )
-
-    store.dependencies.continuousClock = ImmediateClock()
-    store.dependencies.dataManager.save = { _, _ in }
-    store.dependencies.uuid = .incrementing
+    ) {
+      $0.continuousClock = ImmediateClock()
+      $0.dataManager = .mock()
+      $0.uuid = .incrementing
+    }
 
     await store.send(.confirmAddStandupButtonTapped) {
       $0.destination = nil
@@ -88,28 +96,23 @@ final class StandupsListTests: XCTestCase {
     let store = TestStore(
       initialState: StandupsList.State(),
       reducer: StandupsList()
-    )
-
-    store.dependencies.continuousClock = ImmediateClock()
-    store.dependencies.dataManager = .mock(
-      initialData: try JSONEncoder().encode([standup])
-    )
+    ) {
+      $0.continuousClock = ImmediateClock()
+      $0.dataManager = .mock(
+        initialData: try! JSONEncoder().encode([standup])
+      )
+    }
 
     await store.send(.standupTapped(id: standup.id)) {
-      $0.$path[id: 0] = .detail(StandupDetail.State(standup: standup))
+      $0.$path = [
+        0: .detail(StandupDetail.State(standup: standup))
+      ]
 
-      print($0.path)
-      print($0.path.count)
-      print("~!!")
-
-      // TODO: look into why this fails
+      // TODO: look into why this failure message is bad
 //      $0.path = [
 //        .detail(StandupDetail.State(standup: standup))
 //      ]
     }
-
-    print(store.state.path.count)
-    print("!!")
 
     await store.send(.path(.element(id: 0, .detail(.deleteButtonTapped)))) {
       try (/StandupsList.Stack.State.detail).modify(&$0.$path[id: 0]) {
@@ -135,12 +138,13 @@ final class StandupsListTests: XCTestCase {
     let store = TestStore(
       initialState: StandupsList.State(),
       reducer: StandupsList()
-    )
+    ) {
+      $0.continuousClock = ImmediateClock()
+      $0.dataManager = .mock(
+        initialData: try! JSONEncoder().encode([standup])
+      )
+    }
 
-    store.dependencies.continuousClock = ImmediateClock()
-    store.dependencies.dataManager = .mock(
-      initialData: try JSONEncoder().encode([standup])
-    )
     let savedData = LockIsolated(Data?.none)
     store.dependencies.dataManager.save = { data, _ in savedData.setValue(data) }
 
@@ -179,12 +183,12 @@ final class StandupsListTests: XCTestCase {
     let store = TestStore(
       initialState: StandupsList.State(),
       reducer: StandupsList()
-    )
-
-    store.dependencies.continuousClock = ImmediateClock()
-    store.dependencies.dataManager = .mock(
-      initialData: Data("!@#$ BAD DATA %^&*()".utf8)
-    )
+    ) {
+      $0.continuousClock = ImmediateClock()
+      $0.dataManager = .mock(
+        initialData: Data("!@#$ BAD DATA %^&*()".utf8)
+      )
+    }
 
     XCTAssertEqual(store.state.destination, .alert(.dataFailedToLoad))
 
@@ -202,14 +206,16 @@ final class StandupsListTests: XCTestCase {
     let store = TestStore(
       initialState: StandupsList.State(),
       reducer: StandupsList()
-    )
-
-    store.dependencies.continuousClock = ImmediateClock()
-    store.dependencies.dataManager.load = { _ in
-      struct FileNotFound: Error {}
-      throw FileNotFound()
+    ) {
+      $0.continuousClock = ImmediateClock()
+      $0.dataManager.load = { _ in
+        struct FileNotFound: Error {}
+        throw FileNotFound()
+      }
     }
 
     XCTAssertEqual(store.state.destination, nil)
   }
 }
+
+// TODO: integration test for recording

@@ -14,7 +14,11 @@ public enum PresentationState<State> {
       .map { .presented(id: DependencyValues._current.navigationID.next(), $0) }
       ?? .dismissed
   }
- 
+
+  public init(projectedValue: Self) {
+    self = projectedValue
+  }
+
   public var wrappedValue: State? {
     _read {
       switch self {

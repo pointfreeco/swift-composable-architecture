@@ -25,9 +25,7 @@ public struct DismissEffect: Sendable {
         of an application, as well as in a presentation destination, use \
         @Dependency(\\.isPresented) to determine if the reducer is being presented before calling \
         @Dependency(\\.dismiss).
-        """,
-        file: file,
-        line: line
+        """
       )
       return
     }

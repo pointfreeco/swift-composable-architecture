@@ -11,11 +11,12 @@ func runtimeWarn(
     let message = message()
     let category = category ?? "Runtime Warning"
     if _XCTIsTesting {
-      if let file = file, let line = line {
-        XCTFail(message, file: file, line: line)
-      } else {
+      // TODO: passing file/line seems to never be the right thing. investigate, and if so let's remove?
+//      if let file = file, let line = line {
+//        XCTFail(message, file: file, line: line)
+//      } else {
         XCTFail(message)
-      }
+//      }
     } else {
       #if canImport(os)
         os_log(
