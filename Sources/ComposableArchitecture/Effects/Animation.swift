@@ -17,7 +17,7 @@ extension EffectPublisher {
   public func animation(_ animation: Animation? = .default) -> Self {
     self.transaction(Transaction(animation: animation))
   }
-    
+
   /// Wraps the emission of each element with SwiftUI's `withTransaction`.
   ///
   /// ```swift
