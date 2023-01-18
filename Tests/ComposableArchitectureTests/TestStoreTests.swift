@@ -301,6 +301,30 @@ final class TestStoreTests: XCTestCase {
     store.send(true) { $0 = 1 }
   }
 
+  func testOverrideDependenciesOnTestStore_Midway() {
+    struct Counter: ReducerProtocol {
+      @Dependency(\.date.now) var now
+
+      func reduce(into state: inout Int, action: ()) -> EffectTask<Void> {
+        state = Int(self.now.timeIntervalSince1970)
+        return .none
+      }
+    }
+
+    let store = TestStore(
+      initialState: 0,
+      reducer: Counter()
+    ) {
+      $0.date.now = Date(timeIntervalSince1970: 1234567890)
+    }
+
+    store.send(()) { $0 = 1234567890 }
+
+    store.dependencies.date.now = Date(timeIntervalSince1970: 987654321)
+
+    store.send(()) { $0 = 987654321 }
+  }
+
   func testOverrideDependenciesOnTestStore_Init() {
     struct Counter: ReducerProtocol {
       @Dependency(\.calendar) var calendar
@@ -330,7 +354,6 @@ final class TestStoreTests: XCTestCase {
 
     store.send(true) { $0 = 1 }
   }
-
 
   func testDependenciesEarlyBinding() async {
     struct Feature: ReducerProtocol {
