@@ -365,9 +365,9 @@ as an immediate clock that does not suspend at all when you ask it to sleep:
 let store = TestStore(
   initialState: Feature.State(count: 0),
   reducer: Feature()
-)
-
-store.dependencies.continuousClock = ImmediateClock()
+) {
+  $0.continuousClock = ImmediateClock()
+}
 ```
 
 With that small change we can drop the `timeout` arguments from the

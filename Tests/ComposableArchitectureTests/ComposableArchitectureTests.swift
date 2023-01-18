@@ -40,13 +40,14 @@ final class ComposableArchitectureTests: XCTestCase {
       }
     }
 
+    let mainQueue = DispatchQueue.test
+
     let store = TestStore(
       initialState: 2,
       reducer: Counter()
-    )
-
-    let mainQueue = DispatchQueue.test
-    store.dependencies.mainQueue = mainQueue.eraseToAnyScheduler()
+    ) {
+      $0.mainQueue = mainQueue.eraseToAnyScheduler()
+    }
 
     await store.send(.incrAndSquareLater)
     await mainQueue.advance(by: 1)

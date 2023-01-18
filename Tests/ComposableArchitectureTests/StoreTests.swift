@@ -539,4 +539,24 @@ final class StoreTests: XCTestCase {
 
     ViewStore(store, observe: { $0 }).send(true)
   }
+
+  func testOverrideDependenciesDirectlyOnStore() {
+    struct MyReducer: ReducerProtocol {
+      @Dependency(\.uuid) var uuid
+
+      func reduce(into state: inout UUID, action: Void) -> EffectTask<Void> {
+        state = self.uuid()
+        return .none
+      }
+    }
+
+    @Dependency(\.uuid) var uuid
+
+    let store = Store(initialState: uuid(), reducer: MyReducer()) {
+      $0.uuid = .constant(UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!)
+    }
+    let viewStore = ViewStore(store, observe: { $0 })
+
+    XCTAssertEqual(viewStore.state, UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!)
+  }
 }
