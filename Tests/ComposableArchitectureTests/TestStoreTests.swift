@@ -301,7 +301,7 @@ final class TestStoreTests: XCTestCase {
     store.send(true) { $0 = 1 }
   }
 
-  func testOverrideDependenciesOnTestStore_Midway() {
+  func testOverrideDependenciesOnTestStore_MidwayChange() {
     struct Counter: ReducerProtocol {
       @Dependency(\.date.now) var now
 
