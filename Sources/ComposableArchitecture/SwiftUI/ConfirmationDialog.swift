@@ -51,7 +51,11 @@ private struct NewConfirmationDialogModifier<Action>: ViewModifier {
       presenting: viewStore.state,
       actions: {
         ForEach($0.buttons) {
-          Button($0, action: { viewStore.send($0) })
+          Button($0) { action in
+            if let action = action {
+              viewStore.send(action)
+            }
+          }
         }
       },
       message: { $0.message.map { Text($0) } }
@@ -70,7 +74,11 @@ private struct OldConfirmationDialogModifier<Action>: ViewModifier {
   func body(content: Content) -> some View {
     #if !os(macOS)
       return content.actionSheet(item: viewStore.binding(send: dismiss)) {
-        ActionSheet($0) { viewStore.send($0) }
+        ActionSheet($0) { action in
+          if let action = action {
+            viewStore.send(action)
+          }
+        }
       }
     #else
       return EmptyView()
