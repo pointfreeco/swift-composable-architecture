@@ -93,13 +93,14 @@ struct TwoFactorView_Previews: PreviewProvider {
         store: Store(
           initialState: TwoFactor.State(token: "deadbeef"),
           reducer: TwoFactor()
-            .dependency(\.authenticationClient.login) { _ in
-              AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
-            }
-            .dependency(\.authenticationClient.twoFactor) { _ in
-              AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
-            }
-        )
+        ) {
+          $0.authenticationClient.login = { _ in
+            AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
+          }
+          $0.authenticationClient.twoFactor = { _ in
+            AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
+          }
+        }
       )
     }
   }
