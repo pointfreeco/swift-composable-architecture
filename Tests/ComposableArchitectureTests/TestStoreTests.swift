@@ -301,6 +301,37 @@ final class TestStoreTests: XCTestCase {
     store.send(true) { $0 = 1 }
   }
 
+  func testOverrideDependenciesOnTestStore_Init() {
+    struct Counter: ReducerProtocol {
+      @Dependency(\.calendar) var calendar
+      @Dependency(\.locale) var locale
+      @Dependency(\.timeZone) var timeZone
+      @Dependency(\.urlSession) var urlSession
+
+      func reduce(into state: inout Int, action: Bool) -> EffectTask<Bool> {
+        _ = self.calendar
+        _ = self.locale
+        _ = self.timeZone
+        _ = self.urlSession
+        state += action ? 1 : -1
+        return .none
+      }
+    }
+
+    let store = TestStore(
+      initialState: 0,
+      reducer: Counter()
+    ) {
+      $0.calendar = Calendar(identifier: .gregorian)
+      $0.locale = Locale(identifier: "en_US")
+      $0.timeZone = TimeZone(secondsFromGMT: 0)!
+      $0.urlSession = URLSession(configuration: .ephemeral)
+    }
+
+    store.send(true) { $0 = 1 }
+  }
+
+
   func testDependenciesEarlyBinding() async {
     struct Feature: ReducerProtocol {
       struct State: Equatable {

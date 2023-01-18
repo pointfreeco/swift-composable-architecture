@@ -6,13 +6,14 @@ import XCTest
 @MainActor
 final class TimersTests: XCTestCase {
   func testStart() async {
+    let clock = TestClock()
+
     let store = TestStore(
       initialState: Timers.State(),
       reducer: Timers()
-    )
-
-    let clock = TestClock()
-    store.dependencies.continuousClock = clock
+    ) {
+      $0.continuousClock = clock
+    }
 
     await store.send(.toggleTimerButtonTapped) {
       $0.isTimerActive = true

@@ -46,16 +46,17 @@ final class ReducerTests: XCTestCase {
         var fastValue: Int? = nil
         var slowValue: Int? = nil
 
+        let clock = TestClock()
+
         let store = TestStore(
           initialState: 0,
           reducer: CombineReducers {
             Delayed(delay: .seconds(1), setValue: { @MainActor in fastValue = 42 })
             Delayed(delay: .seconds(2), setValue: { @MainActor in slowValue = 1729 })
           }
-        )
-
-        let clock = TestClock()
-        store.dependencies.continuousClock = clock
+        ) {
+          $0.continuousClock = clock
+        }
 
         await store.send(.increment) {
           $0 = 2

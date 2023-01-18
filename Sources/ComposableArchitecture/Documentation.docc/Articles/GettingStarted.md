@@ -465,9 +465,9 @@ override any dependency you need to for the purpose of the test:
 let store = TestStore(
   initialState: Feature.State(),
   reducer: Feature()
-)
-
-store.dependencies.numberFact.fetch = { "\($0) is a good number Brent" }
+) {
+  $0.numberFact.fetch = { "\($0) is a good number Brent" }
+}
 
 await store.send(.numberFactButtonTapped)
 await store.receive(.numberFactResponse(.success("0 is a good number Brent"))) {

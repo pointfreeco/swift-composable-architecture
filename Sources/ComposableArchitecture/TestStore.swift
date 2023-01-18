@@ -165,19 +165,21 @@ import XCTestDynamicOverlay
 /// values that are fully controlled and deterministic:
 ///
 /// ```swift
+/// // Create a test clock to control the timing of effects
+/// let clock = TestClock()
+///
 /// let store = TestStore(
 ///   initialState: Search.State(),
 ///   reducer: Search()
+/// ) {
+///   // Override the clock dependency with the test clock
+///   $0.continuousClock = clock
+///
+///   // Simulate a search response with one item
+///   $0.apiClient.search = { _ in
+///     ["Composable Architecture"]
+///   }
 /// )
-///
-/// // Simulate a search response with one item
-/// store.dependencies.apiClient.search = { _ in
-///   ["Composable Architecture"]
-/// }
-///
-/// // Create a test clock to control the timing of effects
-/// let clock = TestClock()
-/// store.dependencies.continuousClock = clock
 ///
 /// // Change the query
 /// await store.send(.searchFieldChanged("c") {
@@ -433,10 +435,10 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   /// its job, you can override those dependencies like so:
   ///
   /// ```swift
-  /// let store = TestStore(/* ... */)
-  ///
-  /// store.dependencies.apiClient = .mock
-  /// store.dependencies.date = .constant(Date(timeIntervalSinceReferenceDate: 1234567890))
+  /// let store = TestStore(/* ... */) {
+  ///   $0.apiClient = .mock
+  ///   $0.date = .constant(Date(timeIntervalSinceReferenceDate: 1234567890))
+  /// }
   ///
   /// // Store assertions here
   /// ```

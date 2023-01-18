@@ -86,8 +86,9 @@
           return .none
         }
       }
-      let store = TestStore(initialState: 0, reducer: DebuggedReducer()._printChanges())
-      store.dependencies.context = .preview
+      let store = TestStore(initialState: 0, reducer: DebuggedReducer()._printChanges()) {
+        $0.context = .preview
+      }
       await store.send(true) { $0 = 1 }
     }
   }

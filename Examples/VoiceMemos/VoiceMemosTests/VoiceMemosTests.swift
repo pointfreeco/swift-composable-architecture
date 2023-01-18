@@ -11,25 +11,26 @@ final class VoiceMemosTests: XCTestCase {
     // NB: Combine's concatenation behavior is different in 13.3
     guard #available(iOS 13.4, *) else { return }
 
+    let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
+
     let store = TestStore(
       initialState: VoiceMemos.State(),
       reducer: VoiceMemos()
-    )
-
-    let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
-    store.dependencies.audioRecorder.currentTime = { 2.5 }
-    store.dependencies.audioRecorder.requestRecordPermission = { true }
-    store.dependencies.audioRecorder.startRecording = { _ in
-      try await didFinish.stream.first { _ in true }!
+    ) {
+      $0.audioRecorder.currentTime = { 2.5 }
+      $0.audioRecorder.requestRecordPermission = { true }
+      $0.audioRecorder.startRecording = { _ in
+        try await didFinish.stream.first { _ in true }!
+      }
+      $0.audioRecorder.stopRecording = {
+        didFinish.continuation.yield(true)
+        didFinish.continuation.finish()
+      }
+      $0.date = .constant(Date(timeIntervalSinceReferenceDate: 0))
+      $0.continuousClock = self.clock
+      $0.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
+      $0.uuid = .constant(UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")!)
     }
-    store.dependencies.audioRecorder.stopRecording = {
-      didFinish.continuation.yield(true)
-      didFinish.continuation.finish()
-    }
-    store.dependencies.date = .constant(Date(timeIntervalSinceReferenceDate: 0))
-    store.dependencies.continuousClock = self.clock
-    store.dependencies.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
-    store.dependencies.uuid = .constant(UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")!)
 
     await store.send(.recordButtonTapped)
     await self.clock.advance()
@@ -76,15 +77,14 @@ final class VoiceMemosTests: XCTestCase {
   }
 
   func testPermissionDenied() async {
+    var didOpenSettings = false
     let store = TestStore(
       initialState: VoiceMemos.State(),
       reducer: VoiceMemos()
-    )
-
-    var didOpenSettings = false
-
-    store.dependencies.audioRecorder.requestRecordPermission = { false }
-    store.dependencies.openSettings = { @MainActor in didOpenSettings = true }
+    ) {
+      $0.audioRecorder.requestRecordPermission = { false }
+      $0.openSettings = { @MainActor in didOpenSettings = true }
+    }
 
     await store.send(.recordButtonTapped)
     await store.receive(.recordPermissionResponse(false)) {
@@ -99,23 +99,23 @@ final class VoiceMemosTests: XCTestCase {
   }
 
   func testRecordMemoFailure() async {
-    let store = TestStore(
-      initialState: VoiceMemos.State(),
-      reducer: VoiceMemos()
-    )
-
     struct SomeError: Error, Equatable {}
     let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
 
-    store.dependencies.audioRecorder.currentTime = { 2.5 }
-    store.dependencies.audioRecorder.requestRecordPermission = { true }
-    store.dependencies.audioRecorder.startRecording = { _ in
-      try await didFinish.stream.first { _ in true }!
+    let store = TestStore(
+      initialState: VoiceMemos.State(),
+      reducer: VoiceMemos()
+    ) {
+      $0.audioRecorder.currentTime = { 2.5 }
+      $0.audioRecorder.requestRecordPermission = { true }
+      $0.audioRecorder.startRecording = { _ in
+        try await didFinish.stream.first { _ in true }!
+      }
+      $0.continuousClock = self.clock
+      $0.date = .constant(Date(timeIntervalSinceReferenceDate: 0))
+      $0.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
+      $0.uuid = .constant(UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")!)
     }
-    store.dependencies.continuousClock = self.clock
-    store.dependencies.date = .constant(Date(timeIntervalSinceReferenceDate: 0))
-    store.dependencies.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
-    store.dependencies.uuid = .constant(UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")!)
 
     await store.send(.recordButtonTapped)
     await store.receive(.recordPermissionResponse(true)) {
@@ -141,24 +141,24 @@ final class VoiceMemosTests: XCTestCase {
   // Demonstration of how to write a non-exhaustive test for recording a memo and it failing to
   // record.
   func testRecordMemoFailure_NonExhaustive() async {
-    let store = TestStore(
-      initialState: VoiceMemos.State(),
-      reducer: VoiceMemos()
-    )
-    store.exhaustivity = .off(showSkippedAssertions: true)
-
     struct SomeError: Error, Equatable {}
     let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
 
-    store.dependencies.audioRecorder.currentTime = { 2.5 }
-    store.dependencies.audioRecorder.requestRecordPermission = { true }
-    store.dependencies.audioRecorder.startRecording = { _ in
-      try await didFinish.stream.first { _ in true }!
+    let store = TestStore(
+      initialState: VoiceMemos.State(),
+      reducer: VoiceMemos()
+    ) {
+      $0.audioRecorder.currentTime = { 2.5 }
+      $0.audioRecorder.requestRecordPermission = { true }
+      $0.audioRecorder.startRecording = { _ in
+        try await didFinish.stream.first { _ in true }!
+      }
+      $0.continuousClock = self.clock
+      $0.date = .constant(Date(timeIntervalSinceReferenceDate: 0))
+      $0.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
+      $0.uuid = .constant(UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")!)
     }
-    store.dependencies.continuousClock = self.clock
-    store.dependencies.date = .constant(Date(timeIntervalSinceReferenceDate: 0))
-    store.dependencies.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
-    store.dependencies.uuid = .constant(UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")!)
+    store.exhaustivity = .off(showSkippedAssertions: true)
 
     await store.send(.recordButtonTapped)
     await store.send(.recordingMemo(.task))
@@ -184,13 +184,13 @@ final class VoiceMemosTests: XCTestCase {
         ]
       ),
       reducer: VoiceMemos()
-    )
-
-    store.dependencies.audioPlayer.play = { _ in
-      try await self.clock.sleep(for: .milliseconds(1_250))
-      return true
+    ) {
+      $0.audioPlayer.play = { _ in
+        try await self.clock.sleep(for: .milliseconds(1_250))
+        return true
+      }
+      $0.continuousClock = self.clock
     }
-    store.dependencies.continuousClock = self.clock
 
     let task = await store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
@@ -211,6 +211,8 @@ final class VoiceMemosTests: XCTestCase {
   }
 
   func testPlayMemoFailure() async {
+    struct SomeError: Error, Equatable {}
+
     let url = URL(fileURLWithPath: "pointfreeco/functions.m4a")
     let store = TestStore(
       initialState: VoiceMemos.State(
@@ -225,12 +227,10 @@ final class VoiceMemosTests: XCTestCase {
         ]
       ),
       reducer: VoiceMemos()
-    )
-
-    struct SomeError: Error, Equatable {}
-
-    store.dependencies.audioPlayer.play = { _ in throw SomeError() }
-    store.dependencies.continuousClock = self.clock
+    ) {
+      $0.audioPlayer.play = { _ in throw SomeError() }
+      $0.continuousClock = self.clock
+    }
 
     let task = await store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
@@ -302,10 +302,10 @@ final class VoiceMemosTests: XCTestCase {
         ]
       ),
       reducer: VoiceMemos()
-    )
-
-    store.dependencies.audioPlayer.play = { _ in try await Task.never() }
-    store.dependencies.continuousClock = self.clock
+    ) {
+      $0.audioPlayer.play = { _ in try await Task.never() }
+      $0.continuousClock = self.clock
+    }
 
     await store.send(.voiceMemo(id: url, action: .playButtonTapped)) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
