@@ -315,14 +315,14 @@ final class TestStoreTests: XCTestCase {
       initialState: 0,
       reducer: Counter()
     ) {
-      $0.date.now = Date(timeIntervalSince1970: 1234567890)
+      $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
     }
 
-    store.send(()) { $0 = 1234567890 }
+    store.send(()) { $0 = 1_234_567_890 }
 
-    store.dependencies.date.now = Date(timeIntervalSince1970: 987654321)
+    store.dependencies.date.now = Date(timeIntervalSince1970: 987_654_321)
 
-    store.send(()) { $0 = 987654321 }
+    store.send(()) { $0 = 987_654_321 }
   }
 
   func testOverrideDependenciesOnTestStore_Init() {
