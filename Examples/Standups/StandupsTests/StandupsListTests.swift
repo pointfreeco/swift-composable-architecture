@@ -216,6 +216,85 @@ final class StandupsListTests: XCTestCase {
 
     XCTAssertEqual(store.state.destination, nil)
   }
+
+  func testRecording() async {
+    let speechResult = SpeechRecognitionResult(
+      bestTranscription: Transcription(formattedString: "I completed the project"),
+      isFinal: true
+    )
+    let standup = Standup(
+      id: Standup.ID(),
+      attendees: [
+        Attendee(id: Attendee.ID()),
+        Attendee(id: Attendee.ID()),
+        Attendee(id: Attendee.ID()),
+      ],
+      duration: .seconds(6)
+    )
+
+    let store = TestStore(
+      initialState: StandupsList.State(
+        path: [
+          .detail(StandupDetail.State(standup: standup)),
+          .record(RecordMeeting.State(standup: standup))
+        ]
+      ),
+      reducer: StandupsList()
+    ) {
+      $0.dataManager = .mock(initialData: try! JSONEncoder().encode([standup]))
+      $0.date.now = Date(timeIntervalSince1970: 1234567890)
+      $0.continuousClock = ImmediateClock()
+      $0.speechClient.authorizationStatus = { .authorized }
+      $0.speechClient.startTask = { _ in
+        AsyncThrowingStream { continuation in
+          continuation.yield(speechResult)
+          continuation.finish()
+        }
+      }
+      $0.uuid = .incrementing
+    }
+
+    await store.send(.path(.element(id: 1, .record(.task))))
+
+    await store.receive(.path(.element(id: 1, .record(.speechResult(speechResult))))) {
+      try (/StandupsList.Stack.State.record).modify(&$0.path[1]) {
+        $0.transcript = "I completed the project"
+      }
+    }
+
+    store.exhaustivity = .off(showSkippedAssertions: true)
+    await store.receive(.path(.element(id: 1, .record(.timerTick))))
+    await store.receive(.path(.element(id: 1, .record(.timerTick))))
+    await store.receive(.path(.element(id: 1, .record(.timerTick))))
+    await store.receive(.path(.element(id: 1, .record(.timerTick))))
+    await store.receive(.path(.element(id: 1, .record(.timerTick))))
+    await store.receive(.path(.element(id: 1, .record(.timerTick))))
+    store.exhaustivity = .on
+
+    await store.receive(.path(.element(id: 1, .record(.delegate(.save(transcript: "I completed the project")))))) {
+      // TODO: this shows confusing "expected failure" when in non-exhaustive mode... can we do better?
+      // XCTAssertEqual($0.path.count, 1)
+
+      $0.path.removeLast()
+      try (/StandupsList.Stack.State.detail).modify(&$0.path[0]) {
+        $0.standup.meetings = [
+          Meeting(
+            id: Meeting.ID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+            date: Date(timeIntervalSince1970: 1234567890),
+            transcript: "I completed the project"
+          )
+        ]
+      }
+      $0.standups[0].meetings = [
+        Meeting(
+          id: Meeting.ID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+          date: Date(timeIntervalSince1970: 1234567890),
+          transcript: "I completed the project"
+        )
+      ]
+    }
+    XCTAssertEqual(store.state.path.count, 1)
+  }
 }
 
 // TODO: integration test for recording
