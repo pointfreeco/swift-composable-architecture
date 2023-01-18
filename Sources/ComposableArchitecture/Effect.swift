@@ -378,7 +378,6 @@ public struct Send<Action> {
     callAsFunction(action, transaction: Transaction(animation: animation))
   }
     
-    
     /// Sends an action back into the system from an effect with transaction.
     ///
     /// - Parameters:
