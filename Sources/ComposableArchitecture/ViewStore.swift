@@ -293,7 +293,6 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     send(action, transaction: Transaction(animation: animation))
   }
     
-    
   /// Sends an action to the store with a given transaction.
   ///
   /// See ``ViewStore/send(_:)`` for more info.
