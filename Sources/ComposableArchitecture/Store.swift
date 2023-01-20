@@ -141,7 +141,7 @@ public final class Store<State, Action> {
   /// - Parameters:
   ///   - initialState: The state to start the application in.
   ///   - reducer: The reducer that powers the business logic of the application.
-  public convenience init<R: ReducerProtocol>(
+  public convenience init<R: Reducer>(
     initialState: @autoclosure () -> R.State,
     reducer: R,
     prepareDependencies: ((inout DependencyValues) -> Void)? = nil

@@ -5,13 +5,13 @@ import XCTestDynamicOverlay
 
 // MARK: - Deprecated after 1.0.0:
 
-@available(*, renamed: "Effect")
+@available(*, deprecated, renamed: "Effect")
 public typealias EffectTask = Effect
 
-@available(*, renamed: "Reducer")
+@available(*, deprecated, renamed: "Reducer")
 public typealias ReducerProtocol = Reducer
 
-@available(*, renamed: "ReducerOf")
+@available(*, deprecated, renamed: "ReducerOf")
 public typealias ReducerProtocolOf<R: Reducer> = Reducer<R.State, R.Action>
 
 // MARK: - Deprecated after 0.47.2:

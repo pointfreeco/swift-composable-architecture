@@ -59,7 +59,7 @@ extension EffectPublisher {
   /// Initializes an effect that immediately emits the value passed in.
   ///
   /// - Parameter value: The value that is immediately emitted by the effect.
-  @available(*, deprecated, message: "Wrap the value in 'Effect.task', instead.")
+  // TODO: introduce sync effects instead: @available(*, deprecated, message: "Wrap the value in 'Effect.task', instead.")
   public init(value: Action) {
     self.init(Just(value).setFailureType(to: Failure.self))
   }
