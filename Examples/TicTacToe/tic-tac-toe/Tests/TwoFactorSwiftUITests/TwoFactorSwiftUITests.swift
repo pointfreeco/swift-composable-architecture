@@ -10,13 +10,14 @@ final class TwoFactorSwiftUITests: XCTestCase {
   func testFlow_Success() async {
     let store = TestStore(
       initialState: TwoFactor.State(token: "deadbeefdeadbeef"),
-      reducer: TwoFactor()
+      reducer: TwoFactor(),
+      observe: TwoFactorView.ViewState.init,
+      send: TwoFactor.Action.init
     ) {
       $0.authenticationClient.twoFactor = { _ in
         AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
       }
     }
-    .scope(state: TwoFactorView.ViewState.init, action: TwoFactor.Action.init)
 
     await store.send(.codeChanged("1")) {
       $0.code = "1"
@@ -50,13 +51,14 @@ final class TwoFactorSwiftUITests: XCTestCase {
   func testFlow_Failure() async {
     let store = TestStore(
       initialState: TwoFactor.State(token: "deadbeefdeadbeef"),
-      reducer: TwoFactor()
+      reducer: TwoFactor(),
+      observe: TwoFactorView.ViewState.init,
+      send: TwoFactor.Action.init
     ) {
       $0.authenticationClient.twoFactor = { _ in
         throw AuthenticationError.invalidTwoFactor
       }
     }
-    .scope(state: TwoFactorView.ViewState.init, action: TwoFactor.Action.init)
 
     await store.send(.codeChanged("1234")) {
       $0.code = "1234"

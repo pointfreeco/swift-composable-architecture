@@ -10,13 +10,14 @@ final class LoginSwiftUITests: XCTestCase {
   func testFlow_Success() async {
     let store = TestStore(
       initialState: Login.State(),
-      reducer: Login()
+      reducer: Login(),
+      observe: LoginView.ViewState.init,
+      send: action: Login.Action.init
     ) {
       $0.authenticationClient.login = { _ in
         AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
       }
     }
-    .scope(state: LoginView.ViewState.init, action: Login.Action.init)
 
     await store.send(.emailChanged("blob@pointfree.co")) {
       $0.email = "blob@pointfree.co"
@@ -42,13 +43,14 @@ final class LoginSwiftUITests: XCTestCase {
   func testFlow_Success_TwoFactor() async {
     let store = TestStore(
       initialState: Login.State(),
-      reducer: Login()
+      reducer: Login(),
+      observe: LoginView.ViewState.init,
+      send: action: Login.Action.init
     ) {
       $0.authenticationClient.login = { _ in
         AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true)
       }
     }
-    .scope(state: LoginView.ViewState.init, action: Login.Action.init)
 
     await store.send(.emailChanged("2fa@pointfree.co")) {
       $0.email = "2fa@pointfree.co"
@@ -78,13 +80,14 @@ final class LoginSwiftUITests: XCTestCase {
   func testFlow_Failure() async {
     let store = TestStore(
       initialState: Login.State(),
-      reducer: Login()
+      reducer: Login(),
+      observe: LoginView.ViewState.init,
+      send: action: Login.Action.init
     ) {
       $0.authenticationClient.login = { _ in
         throw AuthenticationError.invalidUserPassword
       }
     }
-    .scope(state: LoginView.ViewState.init, action: Login.Action.init)
 
     await store.send(.emailChanged("blob")) {
       $0.email = "blob"
