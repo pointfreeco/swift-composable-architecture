@@ -323,6 +323,19 @@ extension EffectPublisher where Failure == Never {
   ) -> Self {
     Self.run(priority: priority) { _ in try? await work() }
   }
+
+  /// Initializes an effect that immediately emits the action passed in.
+  ///
+  /// > Note: We do not recommend using `Effect.send` to share logic. Instead, limit usage to
+  /// > child-parent communication, where a child may want to emit a "delegate" action for a parent
+  /// > to listen to.
+  /// >
+  /// > For more information, see <doc:Performance#Sharing-logic-with-actions>.
+  ///
+  /// - Parameter action: The action that is immediately emitted by the effect.
+  public static func send(_ action: Action, animation: Animation? = nil) -> Self {
+    animation != nil ? Self(value: action).animation(animation) : Self(value: action)
+  }
 }
 
 /// A type that can send actions back into the system when used from
