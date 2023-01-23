@@ -333,8 +333,23 @@ extension EffectPublisher where Failure == Never {
   /// > For more information, see <doc:Performance#Sharing-logic-with-actions>.
   ///
   /// - Parameter action: The action that is immediately emitted by the effect.
+  public static func send(_ action: Action) -> Self {
+    Self(value: action)
+  }
+
+  /// Initializes an effect that immediately emits the action passed in.
+  ///
+  /// > Note: We do not recommend using `Effect.send` to share logic. Instead, limit usage to
+  /// > child-parent communication, where a child may want to emit a "delegate" action for a parent
+  /// > to listen to.
+  /// >
+  /// > For more information, see <doc:Performance#Sharing-logic-with-actions>.
+  ///
+  /// - Parameters:
+  ///   - action: The action that is immediately emitted by the effect.
+  ///   - animation: An animation.
   public static func send(_ action: Action, animation: Animation? = nil) -> Self {
-    animation != nil ? Self(value: action).animation(animation) : Self(value: action)
+    Self(value: action).animation(animation)
   }
 }
 
