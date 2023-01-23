@@ -1633,8 +1633,7 @@ extension TestStore where ScopedState: Equatable {
         !predicate(receivedAction.action)
       {
         self.reducer.receivedActions.removeFirst()
-        let expectedAction = receivedAction.action
-        actions.append(expectedAction)
+        actions.append(receivedAction.action)
         self.reducer.state = receivedAction.state
       }
 
