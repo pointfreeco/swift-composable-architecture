@@ -563,16 +563,146 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   /// - Parameters:
   ///   - initialState: The state the feature starts in.
   ///   - reducer: The reducer that powers the runtime of the feature.
-  public init<Reducer: ReducerProtocol>(
+  ///   - prepareDependencies: A closure that can be used to override dependencies that will be
+  ///     accessed during the test. These dependencies will be used when producing the initial
+  ///     state.
+  public convenience init<R: ReducerProtocol>(
     initialState: @autoclosure () -> State,
-    reducer: Reducer,
+    reducer: R,
     prepareDependencies: (inout DependencyValues) -> Void = { _ in },
     file: StaticString = #file,
     line: UInt = #line
   )
   where
-    Reducer.State == State,
-    Reducer.Action == Action,
+    R.State == State,
+    R.Action == Action,
+    State == ScopedState,
+    State: Equatable,
+    Action == ScopedAction,
+    Environment == Void
+  {
+    self.init(
+      initialState: initialState(),
+      reducer: reducer,
+      observe: { $0 },
+      send: { $0 },
+      prepareDependencies: prepareDependencies,
+      file: file,
+      line: line
+    )
+  }
+
+  /// Creates a scoped test store with an initial state and a reducer powering its runtime.
+  ///
+  /// See <doc:Testing> and the documentation of ``TestStore`` for more information on how to best
+  /// use a test store.
+  ///
+  /// - Parameters:
+  ///   - initialState: The state the feature starts in.
+  ///   - reducer: The reducer that powers the runtime of the feature.
+  ///   - toScopedState: A function that transforms the reducer's state into scoped state. This
+  ///     state will be asserted against as it is mutated by the reducer. Useful for testing view
+  ///     store state transformations.
+  ///   - prepareDependencies: A closure that can be used to override dependencies that will be
+  ///     accessed during the test. These dependencies will be used when producing the initial
+  ///     state.
+  public convenience init<R: ReducerProtocol>(
+    initialState: @autoclosure () -> State,
+    reducer: R,
+    observe toScopedState: @escaping (State) -> ScopedState,
+    prepareDependencies: (inout DependencyValues) -> Void = { _ in },
+    file: StaticString = #file,
+    line: UInt = #line
+  )
+  where
+    R.State == State,
+    R.Action == Action,
+    ScopedState: Equatable,
+    Action == ScopedAction,
+    Environment == Void
+  {
+    self.init(
+      initialState: initialState(),
+      reducer: reducer,
+      observe: toScopedState,
+      send: { $0 },
+      prepareDependencies: prepareDependencies,
+      file: file,
+      line: line
+    )
+  }
+
+  /// Creates a scoped test store with an initial state and a reducer powering its runtime.
+  ///
+  /// See <doc:Testing> and the documentation of ``TestStore`` for more information on how to best
+  /// use a test store.
+  ///
+  /// - Parameters:
+  ///   - initialState: The state the feature starts in.
+  ///   - reducer: The reducer that powers the runtime of the feature.
+  ///   - toScopedState: A function that transforms the reducer's state into scoped state. This
+  ///     state will be asserted against as it is mutated by the reducer. Useful for testing view
+  ///     store state transformations.
+  ///   - fromScopedAction: A function that wraps a more scoped action in the reducer's action.
+  ///     Scoped actions can be "sent" to the store, while any reducer action may be received.
+  ///     Useful for testing view store action transformations.
+  ///   - prepareDependencies: A closure that can be used to override dependencies that will be
+  ///     accessed during the test. These dependencies will be used when producing the initial
+  ///     state.
+  public init<R: ReducerProtocol>(
+    initialState: @autoclosure () -> State,
+    reducer: R,
+    observe toScopedState: @escaping (State) -> ScopedState,
+    send fromScopedAction: @escaping (ScopedAction) -> Action,
+    prepareDependencies: (inout DependencyValues) -> Void = { _ in },
+    file: StaticString = #file,
+    line: UInt = #line
+  )
+  where
+    R.State == State,
+    R.Action == Action,
+    ScopedState: Equatable,
+    Environment == Void
+  {
+    var dependencies = DependencyValues._current
+    prepareDependencies(&dependencies)
+    let initialState = withDependencies {
+      $0 = dependencies
+    } operation: {
+      initialState()
+    }
+
+    let reducer = TestReducer(Reduce(reducer), initialState: initialState)
+    self._environment = .init(wrappedValue: ())
+    self.file = file
+    self.fromScopedAction = fromScopedAction
+    self.line = line
+    self.reducer = reducer
+    self.store = Store(initialState: initialState, reducer: reducer)
+    self.timeout = 100 * NSEC_PER_MSEC
+    self.toScopedState = toScopedState
+    self.dependencies = dependencies
+  }
+
+  /// Creates a test store with an initial state and a reducer powering its runtime.
+  ///
+  /// See <doc:Testing> and the documentation of ``TestStore`` for more information on how to best
+  /// use a test store.
+  ///
+  /// - Parameters:
+  ///   - initialState: The state the feature starts in.
+  ///   - reducer: The reducer that powers the runtime of the feature.
+  @available(*, deprecated, message: "State must be equatable to perform assertions.")
+  public init<R: ReducerProtocol>(
+    initialState: @autoclosure () -> State,
+    reducer: R,
+    prepareDependencies: (inout DependencyValues) -> Void = { _ in },
+    file: StaticString = #file,
+    line: UInt = #line
+  )
+  where
+    R.State == State,
+    R.Action == Action,
     State == ScopedState,
     Action == ScopedAction,
     Environment == Void
@@ -1747,6 +1877,13 @@ extension TestStore {
   ///   - fromScopedAction: A function that wraps a more scoped action in the reducer's action.
   ///     Scoped actions can be "sent" to the store, while any reducer action may be received.
   ///     Useful for testing view store action transformations.
+  @available(
+    *,
+    deprecated,
+    message: """
+      Use 'TestStore.init(initialState:reducer:observe:send:)' to scope a test store's state and actions.
+      """
+  )
   public func scope<S, A>(
     state toScopedState: @escaping (ScopedState) -> S,
     action fromScopedAction: @escaping (A) -> ScopedAction
@@ -1770,6 +1907,13 @@ extension TestStore {
   /// - Parameter toScopedState: A function that transforms the reducer's state into scoped state.
   ///   This state will be asserted against as it is mutated by the reducer. Useful for testing view
   ///   store state transformations.
+  @available(
+    *,
+    deprecated,
+    message: """
+      Use 'TestStore.init(initialState:reducer:observe:)' to scope a test store's state.
+      """
+  )
   public func scope<S>(
     state toScopedState: @escaping (ScopedState) -> S
   ) -> TestStore<State, Action, S, ScopedAction, Environment> {
