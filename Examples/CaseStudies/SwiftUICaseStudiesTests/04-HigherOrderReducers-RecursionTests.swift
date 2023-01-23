@@ -9,9 +9,9 @@ final class RecursionTests: XCTestCase {
     let store = TestStore(
       initialState: Nested.State(id: UUID()),
       reducer: Nested()
-    )
-
-    store.dependencies.uuid = .incrementing
+    ) {
+      $0.uuid = .incrementing
+    }
 
     let id0 = UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
     let id1 = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!

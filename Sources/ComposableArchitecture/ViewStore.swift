@@ -276,7 +276,19 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - animation: An animation.
   @discardableResult
   public func send(_ action: ViewAction, animation: Animation?) -> ViewStoreTask {
-    withAnimation(animation) {
+    send(action, transaction: Transaction(animation: animation))
+  }
+
+  /// Sends an action to the store with a given transaction.
+  ///
+  /// See ``ViewStore/send(_:)`` for more info.
+  ///
+  /// - Parameters:
+  ///   - action: An action.
+  ///   - transaction: A transaction.
+  @discardableResult
+  public func send(_ action: ViewAction, transaction: Transaction) -> ViewStoreTask {
+    withTransaction(transaction) {
       self.send(action)
     }
   }
@@ -351,7 +363,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   /// - Parameters:
   ///   - action: An action.
   ///   - predicate: A predicate on `ViewState` that determines for how long this method should
-  ///                suspend.
+  ///     suspend.
   @MainActor
   public func send(_ action: ViewAction, while predicate: @escaping (ViewState) -> Bool) async {
     let task = self.send(action)
@@ -370,7 +382,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - action: An action.
   ///   - animation: The animation to perform when the action is sent.
   ///   - predicate: A predicate on `ViewState` that determines for how long this method should
-  ///                suspend.
+  ///     suspend.
   @MainActor
   public func send(
     _ action: ViewAction,
@@ -391,7 +403,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   /// ``send(_:while:)``.
   ///
   /// - Parameter predicate: A predicate on `ViewState` that determines for how long this method
-  ///                        should suspend.
+  ///   should suspend.
   @MainActor
   public func yield(while predicate: @escaping (ViewState) -> Bool) async {
     if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
@@ -452,10 +464,8 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     get: @escaping (ViewState) -> Value,
     send valueToAction: @escaping (Value) -> ViewAction
   ) -> Binding<Value> {
-    let base = ObservedObject(wrappedValue: self)
+    ObservedObject(wrappedValue: self)
       .projectedValue[get: .init(rawValue: get), send: .init(rawValue: valueToAction)]
-
-    return Binding(get: { base.wrappedValue }, set: { base.transaction($1).wrappedValue = $0 })
   }
 
   /// Derives a binding from the store that prevents direct writes to state and instead sends

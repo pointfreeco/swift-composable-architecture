@@ -12,10 +12,10 @@ final class AppCoreTests: XCTestCase {
     let store = TestStore(
       initialState: TicTacToe.State(),
       reducer: TicTacToe()
-    )
-
-    store.dependencies.authenticationClient.login = { _ in
-      AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
+    ) {
+      $0.authenticationClient.login = { _ in
+        AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
+      }
     }
 
     await store.send(.login(.emailChanged("blob@pointfree.co"))) {
@@ -57,13 +57,13 @@ final class AppCoreTests: XCTestCase {
     let store = TestStore(
       initialState: TicTacToe.State(),
       reducer: TicTacToe()
-    )
-
-    store.dependencies.authenticationClient.login = { _ in
-      AuthenticationResponse(token: "deadbeef", twoFactorRequired: true)
-    }
-    store.dependencies.authenticationClient.twoFactor = { _ in
-      AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
+    ) {
+      $0.authenticationClient.login = { _ in
+        AuthenticationResponse(token: "deadbeef", twoFactorRequired: true)
+      }
+      $0.authenticationClient.twoFactor = { _ in
+        AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
+      }
     }
 
     await store.send(.login(.emailChanged("blob@pointfree.co"))) {

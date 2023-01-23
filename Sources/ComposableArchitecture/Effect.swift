@@ -11,7 +11,7 @@ import XCTestDynamicOverlay
     """
     'EffectPublisher' has been deprecated in favor of 'EffectTask'.
 
-     You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to use Swift concurrency to model asynchrony in dependencies.
+     You are encouraged to use `EffectTask<Action>` to model the output of your reducers, and to use Swift concurrency to model asynchrony in dependencies.
 
      See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
     """
@@ -23,7 +23,7 @@ import XCTestDynamicOverlay
     """
     'EffectPublisher' has been deprecated in favor of 'EffectTask'.
 
-     You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to use Swift concurrency to model asynchrony in dependencies.
+     You are encouraged to use `EffectTask<Action>` to model the output of your reducers, and to use Swift concurrency to model asynchrony in dependencies.
 
      See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
     """
@@ -35,7 +35,7 @@ import XCTestDynamicOverlay
     """
     'EffectPublisher' has been deprecated in favor of 'EffectTask'.
 
-     You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to use Swift concurrency to model asynchrony in dependencies.
+     You are encouraged to use `EffectTask<Action>` to model the output of your reducers, and to use Swift concurrency to model asynchrony in dependencies.
 
      See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
     """
@@ -47,7 +47,7 @@ import XCTestDynamicOverlay
     """
     'EffectPublisher' has been deprecated in favor of 'EffectTask'.
 
-     You are encouraged to use `EffectTask<Action>` to model the ouput of your reducers, and to use Swift concurrency to model asynchrony in dependencies.
+     You are encouraged to use `EffectTask<Action>` to model the output of your reducers, and to use Swift concurrency to model asynchrony in dependencies.
 
      See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
     """
@@ -102,17 +102,17 @@ extension EffectPublisher {
 /// the Combine interface to ``EffectPublisher`` is considered soft deprecated, and you should
 /// eventually port to Swift's native concurrency tools.
 ///
-/// > Important: The publisher interface to ``EffectTask`` is considered deperecated, and you should
-/// try converting any uses of that interface to Swift's native concurrency tools.
+/// > Important: The publisher interface to ``EffectTask`` is considered deprecated, and you should
+/// > try converting any uses of that interface to Swift's native concurrency tools.
 /// >
 /// > Also, ``Store`` is not thread safe, and so all effects must receive values on the same
-/// thread. This is typically the main thread,  **and** if the store is being used to drive UI then
-/// it must receive values on the main thread.
+/// > thread. This is typically the main thread,  **and** if the store is being used to drive UI
+/// > then it must receive values on the main thread.
 /// >
 /// > This is only an issue if using the Combine interface of ``EffectPublisher`` as mentioned
-/// above. If  you are using Swift's concurrency tools and the `.task`, `.run` and `.fireAndForget`
-/// functions on ``EffectTask``, then threading is automatically handled for you.
-public typealias EffectTask<Action> = Effect<Action, Never>
+/// > above. If  you are using Swift's concurrency tools and the `.task`, `.run`, and
+/// > `.fireAndForget` functions on ``EffectTask``, then threading is automatically handled for you.
+public typealias EffectTask<Action> = EffectPublisher<Action, Never>
 
 extension EffectPublisher where Failure == Never {
   /// Wraps an asynchronous unit of work in an effect.
@@ -375,8 +375,17 @@ public struct Send<Action> {
   ///   - action: An action.
   ///   - animation: An animation.
   public func callAsFunction(_ action: Action, animation: Animation?) {
+    callAsFunction(action, transaction: Transaction(animation: animation))
+  }
+
+  /// Sends an action back into the system from an effect with transaction.
+  ///
+  /// - Parameters:
+  ///   - action: An action.
+  ///   - transaction: A transaction.
+  public func callAsFunction(_ action: Action, transaction: Transaction) {
     guard !Task.isCancelled else { return }
-    withAnimation(animation) {
+    withTransaction(transaction) {
       self(action)
     }
   }

@@ -9,10 +9,10 @@ final class RefreshableTests: XCTestCase {
     let store = TestStore(
       initialState: Refreshable.State(),
       reducer: Refreshable()
-    )
-
-    store.dependencies.factClient.fetch = { "\($0) is a good number." }
-    store.dependencies.continuousClock = ImmediateClock()
+    ) {
+      $0.factClient.fetch = { "\($0) is a good number." }
+      $0.continuousClock = ImmediateClock()
+    }
 
     await store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -24,14 +24,15 @@ final class RefreshableTests: XCTestCase {
   }
 
   func testUnhappyPath() async {
+    struct FactError: Equatable, Error {}
+
     let store = TestStore(
       initialState: Refreshable.State(),
       reducer: Refreshable()
-    )
-
-    struct FactError: Equatable, Error {}
-    store.dependencies.factClient.fetch = { _ in throw FactError() }
-    store.dependencies.continuousClock = ImmediateClock()
+    ) {
+      $0.factClient.fetch = { _ in throw FactError() }
+      $0.continuousClock = ImmediateClock()
+    }
 
     await store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -44,13 +45,13 @@ final class RefreshableTests: XCTestCase {
     let store = TestStore(
       initialState: Refreshable.State(),
       reducer: Refreshable()
-    )
-
-    store.dependencies.factClient.fetch = {
-      try await Task.sleep(nanoseconds: NSEC_PER_SEC)
-      return "\($0) is a good number."
+    ) {
+      $0.factClient.fetch = {
+        try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+        return "\($0) is a good number."
+      }
+      $0.continuousClock = ImmediateClock()
     }
-    store.dependencies.continuousClock = ImmediateClock()
 
     await store.send(.incrementButtonTapped) {
       $0.count = 1

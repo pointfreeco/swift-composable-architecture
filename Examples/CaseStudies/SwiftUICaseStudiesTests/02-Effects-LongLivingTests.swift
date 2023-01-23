@@ -11,9 +11,9 @@ final class LongLivingEffectsTests: XCTestCase {
     let store = TestStore(
       initialState: LongLivingEffects.State(),
       reducer: LongLivingEffects()
-    )
-
-    store.dependencies.screenshots = { screenshots }
+    ) {
+      $0.screenshots = { screenshots }
+    }
 
     let task = await store.send(.task)
 

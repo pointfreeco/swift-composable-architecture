@@ -151,14 +151,23 @@ public final class Store<State, Action> {
   ///   - initialState: The state to start the application in.
   ///   - reducer: The reducer that powers the business logic of the application.
   public convenience init<R: ReducerProtocol>(
-    initialState: R.State,
-    reducer: R
+    initialState: @autoclosure () -> R.State,
+    reducer: R,
+    prepareDependencies: ((inout DependencyValues) -> Void)? = nil
   ) where R.State == State, R.Action == Action {
-    self.init(
-      initialState: initialState,
-      reducer: reducer,
-      mainThreadChecksEnabled: true
-    )
+    if let prepareDependencies = prepareDependencies {
+      self.init(
+        initialState: withDependencies(prepareDependencies) { initialState() },
+        reducer: reducer.transformDependency(\.self, transform: prepareDependencies),
+        mainThreadChecksEnabled: true
+      )
+    } else {
+      self.init(
+        initialState: initialState(),
+        reducer: reducer,
+        mainThreadChecksEnabled: true
+      )
+    }
   }
 
   /// Scopes the store to one that exposes child state and actions.

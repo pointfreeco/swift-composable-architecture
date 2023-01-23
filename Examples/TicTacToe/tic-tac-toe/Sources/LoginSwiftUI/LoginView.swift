@@ -125,13 +125,14 @@ struct LoginView_Previews: PreviewProvider {
         store: Store(
           initialState: Login.State(),
           reducer: Login()
-            .dependency(\.authenticationClient.login) { _ in
-              AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
-            }
-            .dependency(\.authenticationClient.twoFactor) { _ in
-              AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
-            }
-        )
+        ) {
+          $0.authenticationClient.login = { _ in
+            AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
+          }
+          $0.authenticationClient.twoFactor = { _ in
+            AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
+          }
+        }
       )
     }
   }
