@@ -584,7 +584,10 @@
 
     func testCasePathReceive_Exhaustive_NonEquatable() async {
       struct NonEquatable {}
-      enum Action { case tap, response(NonEquatable) }
+      enum Action {
+        case tap
+        case response(NonEquatable)
+      }
 
       let store = TestStore(
         initialState: 0,
@@ -604,7 +607,10 @@
 
     func testPredicateReceive_Exhaustive_NonEquatable() async {
       struct NonEquatable {}
-      enum Action { case tap, response(NonEquatable) }
+      enum Action {
+        case tap
+        case response(NonEquatable)
+      }
 
       let store = TestStore(
         initialState: 0,

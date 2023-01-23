@@ -12,7 +12,7 @@ final class LoginSwiftUITests: XCTestCase {
       initialState: Login.State(),
       reducer: Login(),
       observe: LoginView.ViewState.init,
-      send: action: Login.Action.init
+      send: Login.Action.init
     ) {
       $0.authenticationClient.login = { _ in
         AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
@@ -45,7 +45,7 @@ final class LoginSwiftUITests: XCTestCase {
       initialState: Login.State(),
       reducer: Login(),
       observe: LoginView.ViewState.init,
-      send: action: Login.Action.init
+      send: Login.Action.init
     ) {
       $0.authenticationClient.login = { _ in
         AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true)
@@ -82,7 +82,7 @@ final class LoginSwiftUITests: XCTestCase {
       initialState: Login.State(),
       reducer: Login(),
       observe: LoginView.ViewState.init,
-      send: action: Login.Action.init
+      send: Login.Action.init
     ) {
       $0.authenticationClient.login = { _ in
         throw AuthenticationError.invalidUserPassword
