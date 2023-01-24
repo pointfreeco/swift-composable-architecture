@@ -92,9 +92,9 @@ final class WebSocketTests: XCTestCase {
       $0.messageToSend = ""
     }
     await store.receive(.sendResponse(didSucceed: false)) {
-      $0.alert = AlertState(
-        title: TextState(
-          "Could not send socket message. Connect to the server first, and try again."))
+      $0.alert = AlertState {
+        TextState("Could not send socket message. Connect to the server first, and try again.")
+      }
     }
 
     // Disconnect from the socket

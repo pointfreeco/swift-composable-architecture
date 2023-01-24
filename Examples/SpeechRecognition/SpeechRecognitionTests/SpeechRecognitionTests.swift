@@ -19,13 +19,13 @@ final class SpeechRecognitionTests: XCTestCase {
       $0.isRecording = true
     }
     await store.receive(.speechRecognizerAuthorizationStatusResponse(.denied)) {
-      $0.alert = AlertState(
-        title: TextState(
+      $0.alert = AlertState {
+        TextState(
           """
           You denied access to speech recognition. This app needs access to transcribe your speech.
           """
         )
-      )
+      }
       $0.isRecording = false
     }
   }
@@ -42,7 +42,7 @@ final class SpeechRecognitionTests: XCTestCase {
       $0.isRecording = true
     }
     await store.receive(.speechRecognizerAuthorizationStatusResponse(.restricted)) {
-      $0.alert = AlertState(title: TextState("Your device does not allow speech recognition."))
+      $0.alert = AlertState { TextState("Your device does not allow speech recognition.") }
       $0.isRecording = false
     }
   }
@@ -108,7 +108,7 @@ final class SpeechRecognitionTests: XCTestCase {
 
     recognitionTask.continuation.finish(throwing: SpeechClient.Failure.couldntConfigureAudioSession)
     await store.receive(.speech(.failure(SpeechClient.Failure.couldntConfigureAudioSession))) {
-      $0.alert = AlertState(title: TextState("Problem with audio device. Please try again."))
+      $0.alert = AlertState { TextState("Problem with audio device. Please try again.") }
     }
   }
 
@@ -129,7 +129,7 @@ final class SpeechRecognitionTests: XCTestCase {
 
     recognitionTask.continuation.finish(throwing: SpeechClient.Failure.couldntStartAudioEngine)
     await store.receive(.speech(.failure(SpeechClient.Failure.couldntStartAudioEngine))) {
-      $0.alert = AlertState(title: TextState("Problem with audio device. Please try again."))
+      $0.alert = AlertState { TextState("Problem with audio device. Please try again.") }
     }
   }
 }

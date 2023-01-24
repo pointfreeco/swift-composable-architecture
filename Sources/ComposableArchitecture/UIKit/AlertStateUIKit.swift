@@ -80,7 +80,7 @@
   @available(tvOS 13, *)
   @available(watchOS, unavailable)
   extension UIAlertAction.Style {
-    init<Action>(_ role: AlertState<Action>.ButtonRole) {
+    init<Action>(_ role: ButtonState<Action>.Role) {
       switch role {
       case .cancel:
         self = .cancel
@@ -97,7 +97,7 @@
   @available(watchOS, unavailable)
   extension UIAlertAction {
     convenience init<Action>(
-      _ button: AlertState<Action>.Button,
+      _ button: ButtonState<Action>,
       action: @escaping (Action) -> Void
     ) {
       self.init(

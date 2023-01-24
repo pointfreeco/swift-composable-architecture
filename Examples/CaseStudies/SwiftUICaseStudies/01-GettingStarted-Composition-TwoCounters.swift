@@ -58,7 +58,7 @@ struct TwoCountersView: View {
       }
     }
     .buttonStyle(.borderless)
-    .navigationTitle("Two counter demo")
+    .navigationTitle("Two counters demo")
   }
 }
 

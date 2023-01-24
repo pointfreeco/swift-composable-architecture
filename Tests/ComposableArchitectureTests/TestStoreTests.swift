@@ -167,6 +167,42 @@ final class TestStoreTests: XCTestCase {
         }
       }
     }
+
+    func testReceiveActionMatchingPredicate() async {
+      enum Action: Equatable {
+        case noop, finished
+      }
+
+      let reducer = Reduce<Int, Action> { state, action in
+        switch action {
+        case .noop:
+          return EffectTask(value: .finished)
+        case .finished:
+          return .none
+        }
+      }
+
+      let store = TestStore(initialState: 0, reducer: reducer)
+
+      let predicateShouldBeCalledExpectation = expectation(
+        description: "predicate should be called")
+      await store.send(.noop)
+      await store.receive { action in
+        predicateShouldBeCalledExpectation.fulfill()
+        return action == .finished
+      }
+      wait(for: [predicateShouldBeCalledExpectation], timeout: 0)
+
+      XCTExpectFailure {
+        store.send(.noop)
+        store.receive(.noop)
+      }
+
+      XCTExpectFailure {
+        store.send(.noop)
+        store.receive { $0 == .noop }
+      }
+    }
   #endif
 
   func testStateAccess() async {

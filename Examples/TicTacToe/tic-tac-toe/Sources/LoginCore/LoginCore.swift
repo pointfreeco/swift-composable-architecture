@@ -3,7 +3,7 @@ import ComposableArchitecture
 import Dispatch
 import TwoFactorCore
 
-public struct Login: ReducerProtocol {
+public struct Login: ReducerProtocol, Sendable {
   public struct State: Equatable {
     public var alert: AlertState<Action>?
     public var email = ""
@@ -49,7 +49,7 @@ public struct Login: ReducerProtocol {
         return .none
 
       case let .loginResponse(.failure(error)):
-        state.alert = AlertState(title: TextState(error.localizedDescription))
+        state.alert = AlertState { TextState(error.localizedDescription) }
         state.isLoginRequestInFlight = false
         return .none
 

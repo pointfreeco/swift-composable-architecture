@@ -40,12 +40,18 @@ struct AlertAndConfirmationDialog: ReducerProtocol {
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .alertButtonTapped:
-      state.alert = AlertState(
-        title: TextState("Alert!"),
-        message: TextState("This is an alert"),
-        primaryButton: .cancel(TextState("Cancel")),
-        secondaryButton: .default(TextState("Increment"), action: .send(.incrementButtonTapped))
-      )
+      state.alert = AlertState {
+        TextState("Alert!")
+      } actions: {
+        ButtonState(role: .cancel) {
+          TextState("Cancel")
+        }
+        ButtonState(action: .incrementButtonTapped) {
+          TextState("Increment")
+        }
+      } message: {
+        TextState("This is an alert")
+      }
       return .none
 
     case .alertDismissed:
@@ -53,15 +59,21 @@ struct AlertAndConfirmationDialog: ReducerProtocol {
       return .none
 
     case .confirmationDialogButtonTapped:
-      state.confirmationDialog = ConfirmationDialogState(
-        title: TextState("Confirmation dialog"),
-        message: TextState("This is a confirmation dialog."),
-        buttons: [
-          .cancel(TextState("Cancel")),
-          .default(TextState("Increment"), action: .send(.incrementButtonTapped)),
-          .default(TextState("Decrement"), action: .send(.decrementButtonTapped)),
-        ]
-      )
+      state.confirmationDialog = ConfirmationDialogState {
+        TextState("Confirmation dialog")
+      } actions: {
+        ButtonState(role: .cancel) {
+          TextState("Cancel")
+        }
+        ButtonState(action: .incrementButtonTapped) {
+          TextState("Increment")
+        }
+        ButtonState(action: .decrementButtonTapped) {
+          TextState("Decrement")
+        }
+      } message: {
+        TextState("This is a confirmation dialog.")
+      }
       return .none
 
     case .confirmationDialogDismissed:
@@ -69,12 +81,12 @@ struct AlertAndConfirmationDialog: ReducerProtocol {
       return .none
 
     case .decrementButtonTapped:
-      state.alert = AlertState(title: TextState("Decremented!"))
+      state.alert = AlertState { TextState("Decremented!") }
       state.count -= 1
       return .none
 
     case .incrementButtonTapped:
-      state.alert = AlertState(title: TextState("Incremented!"))
+      state.alert = AlertState { TextState("Incremented!") }
       state.count += 1
       return .none
     }
