@@ -43,7 +43,7 @@ test-examples:
 	for scheme in "CaseStudies (SwiftUI)" "CaseStudies (UIKit)" Integration Search SpeechRecognition TicTacToe Todos VoiceMemos; do \
 		xcodebuild test \
 			-scheme "$$scheme" \
-			-destination platform="$(PLATFORM_IOS)"; \
+			-destination platform="$(PLATFORM_IOS)" || exit 1; \
 	done
 
 benchmark:

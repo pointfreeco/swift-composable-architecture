@@ -1885,7 +1885,8 @@ extension TestStore {
   @available(
     *,
     deprecated,
-    message: """
+    message:
+      """
       Use 'TestStore.init(initialState:reducer:observe:send:)' to scope a test store's state and actions.
       """
   )
@@ -1915,7 +1916,8 @@ extension TestStore {
   @available(
     *,
     deprecated,
-    message: """
+    message:
+      """
       Use 'TestStore.init(initialState:reducer:observe:)' to scope a test store's state.
       """
   )
