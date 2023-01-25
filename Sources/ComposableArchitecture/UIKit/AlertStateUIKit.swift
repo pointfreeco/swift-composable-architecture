@@ -43,7 +43,7 @@
     ///   - send: A function that wraps an alert action in the view store's action type.
     public convenience init<Action>(
       state: AlertState<Action>,
-      send: @escaping (Action) -> Void
+      send: @escaping (Action?) -> Void
     ) {
       self.init(
         title: String(state: state.title),
@@ -61,7 +61,7 @@
     ///   - state: The state of dialog that can be shown to the user.
     ///   - send: A function that wraps a dialog action in the view store's action type.
     public convenience init<Action>(
-      state: ConfirmationDialogState<Action>, send: @escaping (Action) -> Void
+      state: ConfirmationDialogState<Action>, send: @escaping (Action?) -> Void
     ) {
       self.init(
         title: String(state: state.title),
@@ -80,7 +80,7 @@
   @available(tvOS 13, *)
   @available(watchOS, unavailable)
   extension UIAlertAction.Style {
-    init<Action>(_ role: ButtonState<Action>.Role) {
+    init(_ role: ButtonStateRole) {
       switch role {
       case .cancel:
         self = .cancel
@@ -98,13 +98,14 @@
   extension UIAlertAction {
     convenience init<Action>(
       _ button: ButtonState<Action>,
-      action: @escaping (Action) -> Void
+      action handler: @escaping (Action?) -> Void
     ) {
       self.init(
         title: String(state: button.label),
-        style: button.role.map(UIAlertAction.Style.init) ?? .default,
-        handler: button.action.map { _ in { _ in button.withAction(action) } }
-      )
+        style: button.role.map(UIAlertAction.Style.init) ?? .default
+      ) { _ in
+        button.withAction(handler)
+      }
     }
   }
 #endif
