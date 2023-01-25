@@ -15,7 +15,8 @@
 ///   .ifLet(\.child, action: /Action.child)
 /// }
 /// ```
-public struct CombineReducers<Reducers: ReducerProtocol>: ReducerProtocol {
+public struct CombineReducers<State, Action, Reducers: ReducerProtocol>: ReducerProtocol
+where State == Reducers.State, Action == Reducers.Action {
   @usableFromInline
   let reducers: Reducers
 
@@ -23,9 +24,9 @@ public struct CombineReducers<Reducers: ReducerProtocol>: ReducerProtocol {
   ///
   /// - Parameter build: A reducer builder.
   @inlinable
-  public init<State, Action>(
+  public init(
     @ReducerBuilder<State, Action> _ build: () -> Reducers
-  ) where State == Reducers.State, Action == Reducers.Action {
+  ) {
     self.init(internal: build())
   }
 
