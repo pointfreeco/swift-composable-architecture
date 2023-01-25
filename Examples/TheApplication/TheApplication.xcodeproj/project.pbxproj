@@ -82,6 +82,7 @@
 				FF2519232980717900B37DAE /* TheApplicationTests */,
 				FF25192D2980717900B37DAE /* TheApplicationUITests */,
 				FF25190C2980717800B37DAE /* Products */,
+				FF25193D2980EA0F00B37DAE /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -133,6 +134,13 @@
 			path = TheApplicationUITests;
 			sourceTree = "<group>";
 		};
+		FF25193D2980EA0F00B37DAE /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -149,6 +157,8 @@
 			dependencies = (
 			);
 			name = TheApplication;
+			packageProductDependencies = (
+			);
 			productName = TheApplication;
 			productReference = FF25190B2980717800B37DAE /* TheApplication.app */;
 			productType = "com.apple.product-type.application";
