@@ -575,7 +575,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   ///   - prepareDependencies: A closure that can be used to override dependencies that will be
   ///     accessed during the test. These dependencies will be used when producing the initial
   ///     state.
-  public convenience init<R: ReducerProtocol>(
+  public convenience init<R: Reducer>(
     initialState: @autoclosure () -> State,
     reducer: R,
     observe toScopedState: @escaping (State) -> ScopedState,
@@ -618,7 +618,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   ///   - prepareDependencies: A closure that can be used to override dependencies that will be
   ///     accessed during the test. These dependencies will be used when producing the initial
   ///     state.
-  public init<R: ReducerProtocol>(
+  public init<R: Reducer>(
     initialState: @autoclosure () -> State,
     reducer: R,
     observe toScopedState: @escaping (State) -> ScopedState,
