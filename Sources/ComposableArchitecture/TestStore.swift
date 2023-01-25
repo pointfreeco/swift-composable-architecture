@@ -563,16 +563,146 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   /// - Parameters:
   ///   - initialState: The state the feature starts in.
   ///   - reducer: The reducer that powers the runtime of the feature.
-  public init<Reducer: ReducerProtocol>(
+  ///   - prepareDependencies: A closure that can be used to override dependencies that will be
+  ///     accessed during the test. These dependencies will be used when producing the initial
+  ///     state.
+  public convenience init<R: ReducerProtocol>(
     initialState: @autoclosure () -> State,
-    reducer: Reducer,
+    reducer: R,
     prepareDependencies: (inout DependencyValues) -> Void = { _ in },
     file: StaticString = #file,
     line: UInt = #line
   )
   where
-    Reducer.State == State,
-    Reducer.Action == Action,
+    R.State == State,
+    R.Action == Action,
+    State == ScopedState,
+    State: Equatable,
+    Action == ScopedAction,
+    Environment == Void
+  {
+    self.init(
+      initialState: initialState(),
+      reducer: reducer,
+      observe: { $0 },
+      send: { $0 },
+      prepareDependencies: prepareDependencies,
+      file: file,
+      line: line
+    )
+  }
+
+  /// Creates a scoped test store with an initial state and a reducer powering its runtime.
+  ///
+  /// See <doc:Testing> and the documentation of ``TestStore`` for more information on how to best
+  /// use a test store.
+  ///
+  /// - Parameters:
+  ///   - initialState: The state the feature starts in.
+  ///   - reducer: The reducer that powers the runtime of the feature.
+  ///   - toScopedState: A function that transforms the reducer's state into scoped state. This
+  ///     state will be asserted against as it is mutated by the reducer. Useful for testing view
+  ///     store state transformations.
+  ///   - prepareDependencies: A closure that can be used to override dependencies that will be
+  ///     accessed during the test. These dependencies will be used when producing the initial
+  ///     state.
+  public convenience init<R: ReducerProtocol>(
+    initialState: @autoclosure () -> State,
+    reducer: R,
+    observe toScopedState: @escaping (State) -> ScopedState,
+    prepareDependencies: (inout DependencyValues) -> Void = { _ in },
+    file: StaticString = #file,
+    line: UInt = #line
+  )
+  where
+    R.State == State,
+    R.Action == Action,
+    ScopedState: Equatable,
+    Action == ScopedAction,
+    Environment == Void
+  {
+    self.init(
+      initialState: initialState(),
+      reducer: reducer,
+      observe: toScopedState,
+      send: { $0 },
+      prepareDependencies: prepareDependencies,
+      file: file,
+      line: line
+    )
+  }
+
+  /// Creates a scoped test store with an initial state and a reducer powering its runtime.
+  ///
+  /// See <doc:Testing> and the documentation of ``TestStore`` for more information on how to best
+  /// use a test store.
+  ///
+  /// - Parameters:
+  ///   - initialState: The state the feature starts in.
+  ///   - reducer: The reducer that powers the runtime of the feature.
+  ///   - toScopedState: A function that transforms the reducer's state into scoped state. This
+  ///     state will be asserted against as it is mutated by the reducer. Useful for testing view
+  ///     store state transformations.
+  ///   - fromScopedAction: A function that wraps a more scoped action in the reducer's action.
+  ///     Scoped actions can be "sent" to the store, while any reducer action may be received.
+  ///     Useful for testing view store action transformations.
+  ///   - prepareDependencies: A closure that can be used to override dependencies that will be
+  ///     accessed during the test. These dependencies will be used when producing the initial
+  ///     state.
+  public init<R: ReducerProtocol>(
+    initialState: @autoclosure () -> State,
+    reducer: R,
+    observe toScopedState: @escaping (State) -> ScopedState,
+    send fromScopedAction: @escaping (ScopedAction) -> Action,
+    prepareDependencies: (inout DependencyValues) -> Void = { _ in },
+    file: StaticString = #file,
+    line: UInt = #line
+  )
+  where
+    R.State == State,
+    R.Action == Action,
+    ScopedState: Equatable,
+    Environment == Void
+  {
+    var dependencies = DependencyValues._current
+    prepareDependencies(&dependencies)
+    let initialState = withDependencies {
+      $0 = dependencies
+    } operation: {
+      initialState()
+    }
+
+    let reducer = TestReducer(Reduce(reducer), initialState: initialState)
+    self._environment = .init(wrappedValue: ())
+    self.file = file
+    self.fromScopedAction = fromScopedAction
+    self.line = line
+    self.reducer = reducer
+    self.store = Store(initialState: initialState, reducer: reducer)
+    self.timeout = 100 * NSEC_PER_MSEC
+    self.toScopedState = toScopedState
+    self.dependencies = dependencies
+  }
+
+  /// Creates a test store with an initial state and a reducer powering its runtime.
+  ///
+  /// See <doc:Testing> and the documentation of ``TestStore`` for more information on how to best
+  /// use a test store.
+  ///
+  /// - Parameters:
+  ///   - initialState: The state the feature starts in.
+  ///   - reducer: The reducer that powers the runtime of the feature.
+  @available(*, deprecated, message: "State must be equatable to perform assertions.")
+  public init<R: ReducerProtocol>(
+    initialState: @autoclosure () -> State,
+    reducer: R,
+    prepareDependencies: (inout DependencyValues) -> Void = { _ in },
+    file: StaticString = #file,
+    line: UInt = #line
+  )
+  where
+    R.State == State,
+    R.Action == Action,
     State == ScopedState,
     Action == ScopedAction,
     Environment == Void
@@ -1203,6 +1333,111 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     )
   }
 
+  // NB: Only needed until Xcode ships a macOS SDK that uses the 5.7 standard library.
+  // See: https://forums.swift.org/t/xcode-14-rc-cannot-specialize-protocol-type/60171/15
+  #if swift(>=5.7) && !os(macOS) && !targetEnvironment(macCatalyst)
+    /// Asserts an action was received from an effect and asserts how the state changes.
+    ///
+    /// When an effect is executed in your feature and sends an action back into the system, you can
+    /// use this method to assert that fact, and further assert how state changes after the effect
+    /// action is received:
+    ///
+    /// ```swift
+    /// await store.send(.buttonTapped)
+    /// await store.receive(.response(.success(42)) {
+    ///   $0.count = 42
+    /// }
+    /// ```
+    ///
+    /// Due to the variability of concurrency in Swift, sometimes a small amount of time needs to
+    /// pass before effects execute and send actions, and that is why this method suspends. The
+    /// default time waited is very small, and typically it is enough so you should be controlling
+    /// your dependencies so that they do not wait for real world time to pass (see
+    /// <doc:DependencyManagement> for more information on how to do that).
+    ///
+    /// To change the amount of time this method waits for an action, pass an explicit `timeout`
+    /// argument, or set the ``timeout`` on the ``TestStore``.
+    ///
+    /// - Parameters:
+    ///   - expectedAction: An action expected from an effect.
+    ///   - duration: The amount of time to wait for the expected action.
+    ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action
+    ///     to the store. The mutable state sent to this closure must be modified to match the state
+    ///     of the store after processing the given action. Do not provide a closure if no change
+    ///     is expected.
+    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+    @MainActor
+    public func receive(
+      _ expectedAction: Action,
+      timeout duration: Duration,
+      assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+      file: StaticString = #file,
+      line: UInt = #line
+    ) async {
+      await self.receive(
+        expectedAction,
+        timeout: duration.nanoseconds,
+        assert: updateStateToExpectedResult,
+        file: file,
+        line: line
+      )
+    }
+  #endif
+
+  /// Asserts an action was received from an effect and asserts how the state changes.
+  ///
+  /// When an effect is executed in your feature and sends an action back into the system, you can
+  /// use this method to assert that fact, and further assert how state changes after the effect
+  /// action is received:
+  ///
+  /// ```swift
+  /// await store.send(.buttonTapped)
+  /// await store.receive(.response(.success(42)) {
+  ///   $0.count = 42
+  /// }
+  /// ```
+  ///
+  /// Due to the variability of concurrency in Swift, sometimes a small amount of time needs to pass
+  /// before effects execute and send actions, and that is why this method suspends. The default
+  /// time waited is very small, and typically it is enough so you should be controlling your
+  /// dependencies so that they do not wait for real world time to pass (see
+  /// <doc:DependencyManagement> for more information on how to do that).
+  ///
+  /// To change the amount of time this method waits for an action, pass an explicit `timeout`
+  /// argument, or set the ``timeout`` on the ``TestStore``.
+  ///
+  /// - Parameters:
+  ///   - expectedAction: An action expected from an effect.
+  ///   - nanoseconds: The amount of time to wait for the expected action.
+  ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
+  ///     the store. The mutable state sent to this closure must be modified to match the state of
+  ///     the store after processing the given action. Do not provide a closure if no change is
+  ///     expected.
+  @MainActor
+  @_disfavoredOverload
+  public func receive(
+    _ expectedAction: Action,
+    timeout nanoseconds: UInt64? = nil,
+    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) async {
+    guard !self.reducer.inFlightEffects.isEmpty
+    else {
+      _ = {
+        self.receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
+      }()
+      return
+    }
+    await self.receiveAction(timeout: nanoseconds, file: file, line: line)
+    _ = {
+      self.receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
+    }()
+    await Task.megaYield()
+  }
+}
+
+extension TestStore where ScopedState: Equatable {
   /// Asserts a matching action was received from an effect and asserts how the state changes.
   ///
   /// See ``receive(_:timeout:assert:file:line:)-3myco`` for more information of how to use this
@@ -1278,53 +1513,6 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   // NB: Only needed until Xcode ships a macOS SDK that uses the 5.7 standard library.
   // See: https://forums.swift.org/t/xcode-14-rc-cannot-specialize-protocol-type/60171/15
   #if swift(>=5.7) && !os(macOS) && !targetEnvironment(macCatalyst)
-    /// Asserts an action was received from an effect and asserts how the state changes.
-    ///
-    /// When an effect is executed in your feature and sends an action back into the system, you can
-    /// use this method to assert that fact, and further assert how state changes after the effect
-    /// action is received:
-    ///
-    /// ```swift
-    /// await store.send(.buttonTapped)
-    /// await store.receive(.response(.success(42)) {
-    ///   $0.count = 42
-    /// }
-    /// ```
-    ///
-    /// Due to the variability of concurrency in Swift, sometimes a small amount of time needs to
-    /// pass before effects execute and send actions, and that is why this method suspends. The
-    /// default time waited is very small, and typically it is enough so you should be controlling
-    /// your dependencies so that they do not wait for real world time to pass (see
-    /// <doc:DependencyManagement> for more information on how to do that).
-    ///
-    /// To change the amount of time this method waits for an action, pass an explicit `timeout`
-    /// argument, or set the ``timeout`` on the ``TestStore``.
-    ///
-    /// - Parameters:
-    ///   - expectedAction: An action expected from an effect.
-    ///   - duration: The amount of time to wait for the expected action.
-    ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action
-    ///     to the store. The mutable state sent to this closure must be modified to match the state
-    ///     of the store after processing the given action. Do not provide a closure if no change
-    ///     is expected.
-    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
-    @MainActor
-    public func receive(
-      _ expectedAction: Action,
-      timeout duration: Duration,
-      assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
-      file: StaticString = #file,
-      line: UInt = #line
-    ) async {
-      await self.receive(
-        expectedAction,
-        timeout: duration.nanoseconds,
-        assert: updateStateToExpectedResult,
-        file: file,
-        line: line
-      )
-    }
-
     /// Asserts an action was received from an effect that matches a predicate, and asserts how the
     /// state changes.
     ///
@@ -1376,58 +1564,6 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
       )
     }
   #endif
-
-  /// Asserts an action was received from an effect and asserts how the state changes.
-  ///
-  /// When an effect is executed in your feature and sends an action back into the system, you can
-  /// use this method to assert that fact, and further assert how state changes after the effect
-  /// action is received:
-  ///
-  /// ```swift
-  /// await store.send(.buttonTapped)
-  /// await store.receive(.response(.success(42)) {
-  ///   $0.count = 42
-  /// }
-  /// ```
-  ///
-  /// Due to the variability of concurrency in Swift, sometimes a small amount of time needs to pass
-  /// before effects execute and send actions, and that is why this method suspends. The default
-  /// time waited is very small, and typically it is enough so you should be controlling your
-  /// dependencies so that they do not wait for real world time to pass (see
-  /// <doc:DependencyManagement> for more information on how to do that).
-  ///
-  /// To change the amount of time this method waits for an action, pass an explicit `timeout`
-  /// argument, or set the ``timeout`` on the ``TestStore``.
-  ///
-  /// - Parameters:
-  ///   - expectedAction: An action expected from an effect.
-  ///   - nanoseconds: The amount of time to wait for the expected action.
-  ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
-  ///     the store. The mutable state sent to this closure must be modified to match the state of
-  ///     the store after processing the given action. Do not provide a closure if no change is
-  ///     expected.
-  @MainActor
-  @_disfavoredOverload
-  public func receive(
-    _ expectedAction: Action,
-    timeout nanoseconds: UInt64? = nil,
-    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
-    file: StaticString = #file,
-    line: UInt = #line
-  ) async {
-    guard !self.reducer.inFlightEffects.isEmpty
-    else {
-      _ = {
-        self.receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
-      }()
-      return
-    }
-    await self.receiveAction(timeout: nanoseconds, file: file, line: line)
-    _ = {
-      self.receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
-    }()
-    await Task.megaYield()
-  }
 
   /// Asserts an action was received from an effect that matches a predicate, and asserts how the
   /// state changes.
@@ -1626,10 +1762,9 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
       while let receivedAction = self.reducer.receivedActions.first,
         !predicate(receivedAction.action)
       {
+        self.reducer.receivedActions.removeFirst()
         actions.append(receivedAction.action)
-        self.withExhaustivity(.off) {
-          self.receive(receivedAction.action, file: file, line: line)
-        }
+        self.reducer.state = receivedAction.state
       }
 
       if !actions.isEmpty {
@@ -1747,6 +1882,14 @@ extension TestStore {
   ///   - fromScopedAction: A function that wraps a more scoped action in the reducer's action.
   ///     Scoped actions can be "sent" to the store, while any reducer action may be received.
   ///     Useful for testing view store action transformations.
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      Use 'TestStore.init(initialState:reducer:observe:send:)' to scope a test store's state and actions.
+      """
+  )
   public func scope<S, A>(
     state toScopedState: @escaping (ScopedState) -> S,
     action fromScopedAction: @escaping (A) -> ScopedAction
@@ -1770,6 +1913,14 @@ extension TestStore {
   /// - Parameter toScopedState: A function that transforms the reducer's state into scoped state.
   ///   This state will be asserted against as it is mutated by the reducer. Useful for testing view
   ///   store state transformations.
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      Use 'TestStore.init(initialState:reducer:observe:)' to scope a test store's state.
+      """
+  )
   public func scope<S>(
     state toScopedState: @escaping (ScopedState) -> S
   ) -> TestStore<State, Action, S, ScopedAction, Environment> {

@@ -34,7 +34,7 @@ extension View {
 // NB: Workaround for iOS 14 runtime crashes during iOS 15 availability checks.
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 private struct NewAlertModifier<Action>: ViewModifier {
-  @ObservedObject var viewStore: ViewStore<AlertState<Action>?, Action>
+  @StateObject var viewStore: ViewStore<AlertState<Action>?, Action>
   let dismiss: Action
 
   func body(content: Content) -> some View {
