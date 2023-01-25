@@ -53,20 +53,20 @@ private struct Root: ReducerProtocol {
   #if swift(>=5.7)
     var body: some ReducerProtocol<State, Action> {
       CombineReducers {
-        Scope(state: \.feature, action: /Action.feature) {
+        Scope(state: \State.feature, action: /Action.feature) {
           Feature()
           Feature()
         }
-        Scope(state: \.feature, action: /Action.feature) {
+        Scope(state: \State.feature, action: /Action.feature) {
           Feature()
           Feature()
         }
       }
-      .ifLet(\.optionalFeature, action: /Action.optionalFeature) {
+      .ifLet(\State.optionalFeature, action: /Action.optionalFeature) {
         Feature()
         Feature()
       }
-      .ifLet(\.enumFeature, action: /Action.enumFeature) {
+      .ifLet(\State.enumFeature, action: /Action.enumFeature) {
         EmptyReducer()
           .ifCaseLet(/Features.State.featureA, action: /Features.Action.featureA) {
             Feature()
@@ -79,7 +79,7 @@ private struct Root: ReducerProtocol {
 
         Features()
       }
-      .forEach(\.features, action: /Action.features) {
+      .forEach(\State.features, action: /Action.features) {
         Feature()
         Feature()
       }
