@@ -14,6 +14,14 @@ public typealias ReducerProtocol = Reducer
 @available(*, deprecated, renamed: "ReducerOf")
 public typealias ReducerProtocolOf<R: Reducer> = Reducer<R.State, R.Action>
 
+// MARK: - Deprecated after 0.49.2
+
+// NB: As of Swift 5.7, property wrapper deprecations are not diagnosed, so we may want to keep this
+//     deprecation around for now:
+//     https://github.com/apple/swift/issues/63139
+@available(*, deprecated, renamed: "BindingState")
+public typealias BindableState = BindingState
+
 // MARK: - Deprecated after 0.47.2:
 
 extension ActorIsolated {
@@ -962,7 +970,7 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
   )
   @MainActor
   public subscript<Value: Equatable>(
-    dynamicMember keyPath: WritableKeyPath<ViewState, BindableState<Value>>
+    dynamicMember keyPath: WritableKeyPath<ViewState, BindingState<Value>>
   ) -> Binding<Value> {
     self.binding(
       get: { $0[keyPath: keyPath].wrappedValue },
@@ -978,8 +986,8 @@ extension BindingAction {
     *, deprecated,
     message:
       """
-      For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', \
-      and accessed via key paths to that 'BindableState', like '\\.$value'
+      For improved safety, bindable properties must now be wrapped explicitly in 'BindingState', \
+      and accessed via key paths to that 'BindingState', like '\\.$value'
       """
   )
   public static func set<Value: Equatable>(
@@ -998,8 +1006,8 @@ extension BindingAction {
     *, deprecated,
     message:
       """
-      For improved safety, bindable properties must now be wrapped explicitly in 'BindableState', \
-      and accessed via key paths to that 'BindableState', like '\\.$value'
+      For improved safety, bindable properties must now be wrapped explicitly in 'BindingState', \
+      and accessed via key paths to that 'BindingState', like '\\.$value'
       """
   )
   public static func ~= <Value>(
@@ -1033,8 +1041,8 @@ extension ViewStore {
     *, deprecated,
     message:
       """
-      For improved safety, bindable properties must now be wrapped explicitly in 'BindableState'. \
-      Bindings are now derived via 'ViewStore.binding' with a key path to that 'BindableState' \
+      For improved safety, bindable properties must now be wrapped explicitly in 'BindingState'. \
+      Bindings are now derived via 'ViewStore.binding' with a key path to that 'BindingState' \
       (for example, 'viewStore.binding(\\.$value)'). For dynamic member lookup to be available, \
       the view store's 'Action' type must also conform to 'BindableAction'.
       """

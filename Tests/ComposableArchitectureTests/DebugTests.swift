@@ -45,7 +45,7 @@
 
     func testBindingAction() {
       struct State {
-        @BindableState var width = 0
+        @BindingState var width = 0
       }
       let action = BindingAction.set(\State.$width, 50)
       var dump = ""
@@ -54,7 +54,7 @@
         dump,
         #"""
         BindingAction.set(
-          WritableKeyPath<State, BindableState<Int>>,
+          WritableKeyPath<State, BindingState<Int>>,
           50
         )
         """#

@@ -307,33 +307,35 @@ final class EffectTests: XCTestCase {
   }
 
   func testDependenciesTransferredToEffects_Run() async {
-    struct Feature: Reducer {
-      enum Action: Equatable {
-        case tap
-        case response(Int)
-      }
-      @Dependency(\.date) var date
-      func reduce(into state: inout Int, action: Action) -> EffectTask<Action> {
-        switch action {
-        case .tap:
-          return .run { send in
-            await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
+    await _withMainSerialExecutor {
+      struct Feature: Reducer {
+        enum Action: Equatable {
+          case tap
+          case response(Int)
+        }
+        @Dependency(\.date) var date
+        func reduce(into state: inout Int, action: Action) -> Effect<Action> {
+          switch action {
+          case .tap:
+            return .run { send in
+              await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
+            }
+          case let .response(value):
+            state = value
+            return .none
           }
-        case let .response(value):
-          state = value
-          return .none
         }
       }
-    }
-    let store = TestStore(
-      initialState: 0,
-      reducer: Feature()
-        .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1_234_567_890)))
-    )
+      let store = TestStore(
+        initialState: 0,
+        reducer: Feature()
+          .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1_234_567_890)))
+      )
 
-    await store.send(.tap).finish(timeout: NSEC_PER_SEC)
-    await store.receive(.response(1_234_567_890)) {
-      $0 = 1_234_567_890
+      await store.send(.tap).finish(timeout: NSEC_PER_SEC)
+      await store.receive(.response(1_234_567_890)) {
+        $0 = 1_234_567_890
+      }
     }
   }
 

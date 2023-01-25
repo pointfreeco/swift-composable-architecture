@@ -236,15 +236,15 @@ struct Feature: Reducer {
     switch action {
     case .buttonTapped:
       state.count += 1
-      return Effect(value: .sharedComputation)
+      return .send(.sharedComputation)
 
     case .toggleChanged:
       state.isEnabled.toggle()
-      return Effect(value: .sharedComputation)
+      return .send(.sharedComputation)
 
     case let .textFieldChanged(text):
       state.description = text
-      return Effect(value: .sharedComputation)
+      return .send(.sharedComputation)
 
     case .sharedComputation:
       // Some shared work to compute something.
