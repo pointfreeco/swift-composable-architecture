@@ -1,6 +1,4 @@
 #if canImport(UIKit) && !os(watchOS)
-  // TODO: Add deprecated overloads with handlers that take a non-optional actions
-
   import UIKit
 
   @available(iOS 13, *)
