@@ -23,9 +23,9 @@ public struct CombineReducers<Reducers: ReducerProtocol>: ReducerProtocol {
   ///
   /// - Parameter build: A reducer builder.
   @inlinable
-  public init(
-    @ReducerBuilderOf<Reducers> _ build: () -> Reducers
-  ) {
+  public init<State, Action>(
+    @ReducerBuilder<State, Action> _ build: () -> Reducers
+  ) where State == Reducers.State, Action == Reducers.Action {
     self.init(internal: build())
   }
 
