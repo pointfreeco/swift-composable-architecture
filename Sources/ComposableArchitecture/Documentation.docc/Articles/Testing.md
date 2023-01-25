@@ -10,6 +10,7 @@ but also how effects are executed and feed data back into the system.
 * [Testing state changes][Testing-state-changes]
 * [Testing effects][Testing-effects]
 * [Non-exhaustive testing][Non-exhaustive-testing]
+* [Testing gotchas](#Testing-gotchas)
 
 ## Testing state changes
 
@@ -365,9 +366,9 @@ as an immediate clock that does not suspend at all when you ask it to sleep:
 let store = TestStore(
   initialState: Feature.State(count: 0),
   reducer: Feature()
-)
-
-store.dependencies.continuousClock = ImmediateClock()
+) {
+  $0.continuousClock = ImmediateClock()
+}
 ```
 
 With that small change we can drop the `timeout` arguments from the
@@ -553,6 +554,51 @@ The test still passes, and none of these notifications are test failures. They j
 what things you are not explicitly asserting against, and can be useful to see when tracking down
 bugs that happen in production but that aren't currently detected in tests.
 
+## Testing gotchas
+
+This is not well known, but when an application target runs tests it actually boots up a simulator
+and runs your actual application entry point in the simulator. This means while tests are running,
+your application's code is separately also running. This can be a huge gotcha because it means you
+may be unknowingly making network requests, tracking analytics, writing data to user defaults or
+to the disk, and more.
+
+This usually flies under the radar and you just won't know it's happening, which can be problematic.
+But, once you start using this library and start controlling your dependencies, the problem can 
+surface in a very visible manner. Typically, when a dependency is used in a test context without 
+being overridden, a test failure occurs. This makes it possible for your test to pass successfully, 
+yet for some mysterious reason the test suite fails. This happens because the code in the _app 
+host_ is now running in a test context, and accessing dependencies will cause test failures.
+
+This only happens when running tests in a _application target_, that is, a target that is 
+specifically used to launch the application for a simulator or device. This does not happen when
+running tests for frameworks or SPM libraries, which is yet another good reason to modularize
+your code base.
+
+However, if you aren't in a position to modularize your code base right now, there is a quick
+fix. Our [XCTest Dynamic Overlay][xctest-dynamic-overlay-gh] library, which is transitively included
+with this library, comes with a property you can check to see if tests are currently running. If
+they are, you can omit the entire entry point of your application:
+
+```swift
+import SwiftUI
+import XCTestDynamicOverlay
+
+@main
+struct MyApp: App {
+  var body: some Scene {
+    WindowGroup {
+      if !_XCTIsTesting {
+        // Your real root view
+      }
+    }
+  }
+}
+```
+
+That will allow tests to run in the application target without your actual application code 
+interfering.
+
+[xctest-dynamic-overlay-gh]: http://github.com/pointfreeco/xctest-dynamic-overlay
 [Testing-state-changes]: #Testing-state-changes
 [Testing-effects]: #Testing-effects
 [gh-combine-schedulers]: http://github.com/pointfreeco/combine-schedulers

@@ -577,10 +577,24 @@ By default test stores will employ "test" dependencies wherever a dependency is 
 reducer via the `@Dependency` property wrapper.
 
 Instead of passing an environment of test dependencies to the store, or mutating the store's
-``TestStore/environment``, you will instead mutate the test store's ``TestStore/dependencies`` to
+``TestStore/environment``, you can either provide a trailing closure when initializing ``TestStore``
+or you can directly mutate the test store's ``TestStore/dependencies`` to
 override dependencies driving a feature.
 
 For example, to install a test clock as the continuous clock dependency you can do the following:
+
+```swift
+let clock = TestClock()
+
+let store = TestStore(
+  initialState: Feature.State(),
+  reducer: Feature()
+) {
+  $0.continuousClock = .clock 
+}
+```
+
+…or you can do:
 
 ```swift
 let clock = TestClock()

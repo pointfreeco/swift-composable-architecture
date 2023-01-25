@@ -9,10 +9,10 @@ final class TwoFactorCoreTests: XCTestCase {
     let store = TestStore(
       initialState: TwoFactor.State(token: "deadbeefdeadbeef"),
       reducer: TwoFactor()
-    )
-
-    store.dependencies.authenticationClient.twoFactor = { _ in
-      AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
+    ) {
+      $0.authenticationClient.twoFactor = { _ in
+        AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
+      }
     }
 
     await store.send(.codeChanged("1")) {
@@ -44,10 +44,10 @@ final class TwoFactorCoreTests: XCTestCase {
     let store = TestStore(
       initialState: TwoFactor.State(token: "deadbeefdeadbeef"),
       reducer: TwoFactor()
-    )
-
-    store.dependencies.authenticationClient.twoFactor = { _ in
-      throw AuthenticationError.invalidTwoFactor
+    ) {
+      $0.authenticationClient.twoFactor = { _ in
+        throw AuthenticationError.invalidTwoFactor
+      }
     }
 
     await store.send(.codeChanged("1234")) {

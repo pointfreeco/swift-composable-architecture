@@ -8,9 +8,10 @@ import XCTest
 final class NewGameSwiftUITests: XCTestCase {
   let store = TestStore(
     initialState: NewGame.State(),
-    reducer: NewGame()
+    reducer: NewGame(),
+    observe: NewGameView.ViewState.init,
+    send: NewGame.Action.init
   )
-  .scope(state: NewGameView.ViewState.init, action: NewGame.Action.init)
 
   func testNewGame() async {
     await self.store.send(.xPlayerNameChanged("Blob Sr.")) {
