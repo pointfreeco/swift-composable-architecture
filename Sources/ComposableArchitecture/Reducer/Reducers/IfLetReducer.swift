@@ -43,14 +43,15 @@ extension ReducerProtocol {
   ///     state.
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @inlinable
-  public func ifLet<Wrapped: ReducerProtocol>(
-    _ toWrappedState: WritableKeyPath<State, Wrapped.State?>,
-    action toWrappedAction: CasePath<Action, Wrapped.Action>,
-    @ReducerBuilderOf<Wrapped> then wrapped: () -> Wrapped,
+  public func ifLet<WrappedState, WrappedAction, Wrapped: ReducerProtocol>(
+    _ toWrappedState: WritableKeyPath<State, WrappedState?>,
+    action toWrappedAction: CasePath<Action, WrappedAction>,
+    @ReducerBuilder<WrappedState, WrappedAction> then wrapped: () -> Wrapped,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _IfLetReducer<Self, Wrapped> {
+  ) -> _IfLetReducer<Self, Wrapped>
+  where WrappedState == Wrapped.State, WrappedAction == Wrapped.Action {
     .init(
       parent: self,
       child: wrapped(),
