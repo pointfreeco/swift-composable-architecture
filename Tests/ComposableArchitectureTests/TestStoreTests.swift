@@ -301,6 +301,60 @@ final class TestStoreTests: XCTestCase {
     store.send(true) { $0 = 1 }
   }
 
+  func testOverrideDependenciesOnTestStore_MidwayChange() {
+    struct Counter: ReducerProtocol {
+      @Dependency(\.date.now) var now
+
+      func reduce(into state: inout Int, action: ()) -> EffectTask<Void> {
+        state = Int(self.now.timeIntervalSince1970)
+        return .none
+      }
+    }
+
+    let store = TestStore(
+      initialState: 0,
+      reducer: Counter()
+    ) {
+      $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
+    }
+
+    store.send(()) { $0 = 1_234_567_890 }
+
+    store.dependencies.date.now = Date(timeIntervalSince1970: 987_654_321)
+
+    store.send(()) { $0 = 987_654_321 }
+  }
+
+  func testOverrideDependenciesOnTestStore_Init() {
+    struct Counter: ReducerProtocol {
+      @Dependency(\.calendar) var calendar
+      @Dependency(\.locale) var locale
+      @Dependency(\.timeZone) var timeZone
+      @Dependency(\.urlSession) var urlSession
+
+      func reduce(into state: inout Int, action: Bool) -> EffectTask<Bool> {
+        _ = self.calendar
+        _ = self.locale
+        _ = self.timeZone
+        _ = self.urlSession
+        state += action ? 1 : -1
+        return .none
+      }
+    }
+
+    let store = TestStore(
+      initialState: 0,
+      reducer: Counter()
+    ) {
+      $0.calendar = Calendar(identifier: .gregorian)
+      $0.locale = Locale(identifier: "en_US")
+      $0.timeZone = TimeZone(secondsFromGMT: 0)!
+      $0.urlSession = URLSession(configuration: .ephemeral)
+    }
+
+    store.send(true) { $0 = 1 }
+  }
+
   func testDependenciesEarlyBinding() async {
     struct Feature: ReducerProtocol {
       struct State: Equatable {

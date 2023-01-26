@@ -9,9 +9,9 @@ final class EffectsCancellationTests: XCTestCase {
     let store = TestStore(
       initialState: EffectsCancellation.State(),
       reducer: EffectsCancellation()
-    )
-
-    store.dependencies.factClient.fetch = { "\($0) is a good number Brent" }
+    ) {
+      $0.factClient.fetch = { "\($0) is a good number Brent" }
+    }
 
     await store.send(.stepperChanged(1)) {
       $0.count = 1
@@ -33,9 +33,9 @@ final class EffectsCancellationTests: XCTestCase {
     let store = TestStore(
       initialState: EffectsCancellation.State(),
       reducer: EffectsCancellation()
-    )
-
-    store.dependencies.factClient.fetch = { _ in throw FactError() }
+    ) {
+      $0.factClient.fetch = { _ in throw FactError() }
+    }
 
     await store.send(.factButtonTapped) {
       $0.isFactRequestInFlight = true
@@ -55,11 +55,11 @@ final class EffectsCancellationTests: XCTestCase {
     let store = TestStore(
       initialState: EffectsCancellation.State(),
       reducer: EffectsCancellation()
-    )
-
-    store.dependencies.factClient.fetch = {
-      try await Task.sleep(nanoseconds: NSEC_PER_SEC)
-      return "\($0) is a good number Brent"
+    ) {
+      $0.factClient.fetch = {
+        try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+        return "\($0) is a good number Brent"
+      }
     }
 
     await store.send(.factButtonTapped) {
@@ -74,11 +74,11 @@ final class EffectsCancellationTests: XCTestCase {
     let store = TestStore(
       initialState: EffectsCancellation.State(),
       reducer: EffectsCancellation()
-    )
-
-    store.dependencies.factClient.fetch = {
-      try await Task.sleep(nanoseconds: NSEC_PER_SEC)
-      return "\($0) is a good number Brent"
+    ) {
+      $0.factClient.fetch = {
+        try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+        return "\($0) is a good number Brent"
+      }
     }
 
     await store.send(.factButtonTapped) {

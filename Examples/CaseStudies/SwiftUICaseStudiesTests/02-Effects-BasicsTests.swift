@@ -9,9 +9,9 @@ final class EffectsBasicsTests: XCTestCase {
     let store = TestStore(
       initialState: EffectsBasics.State(),
       reducer: EffectsBasics()
-    )
-
-    store.dependencies.continuousClock = ImmediateClock()
+    ) {
+      $0.continuousClock = ImmediateClock()
+    }
 
     await store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -25,10 +25,10 @@ final class EffectsBasicsTests: XCTestCase {
     let store = TestStore(
       initialState: EffectsBasics.State(),
       reducer: EffectsBasics()
-    )
-
-    store.dependencies.factClient.fetch = { "\($0) is a good number Brent" }
-    store.dependencies.continuousClock = ImmediateClock()
+    ) {
+      $0.factClient.fetch = { "\($0) is a good number Brent" }
+      $0.continuousClock = ImmediateClock()
+    }
 
     await store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -46,9 +46,9 @@ final class EffectsBasicsTests: XCTestCase {
     let store = TestStore(
       initialState: EffectsBasics.State(),
       reducer: EffectsBasics()
-    )
-
-    store.dependencies.continuousClock = ImmediateClock()
+    ) {
+      $0.continuousClock = ImmediateClock()
+    }
 
     await store.send(.decrementButtonTapped) {
       $0.count = -1
@@ -62,9 +62,9 @@ final class EffectsBasicsTests: XCTestCase {
     let store = TestStore(
       initialState: EffectsBasics.State(),
       reducer: EffectsBasics()
-    )
-
-    store.dependencies.continuousClock = TestClock()
+    ) {
+      $0.continuousClock = TestClock()
+    }
 
     await store.send(.decrementButtonTapped) {
       $0.count = -1

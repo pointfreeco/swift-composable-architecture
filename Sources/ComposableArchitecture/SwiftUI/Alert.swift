@@ -34,7 +34,7 @@ extension View {
 // NB: Workaround for iOS 14 runtime crashes during iOS 15 availability checks.
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 private struct NewAlertModifier<Action>: ViewModifier {
-  @ObservedObject var viewStore: ViewStore<AlertState<Action>?, Action>
+  @StateObject var viewStore: ViewStore<AlertState<Action>?, Action>
   let dismiss: Action
 
   func body(content: Content) -> some View {
@@ -44,7 +44,11 @@ private struct NewAlertModifier<Action>: ViewModifier {
       presenting: viewStore.state,
       actions: {
         ForEach($0.buttons) {
-          Button($0) { viewStore.send($0) }
+          Button($0) { action in
+            if let action = action {
+              viewStore.send(action)
+            }
+          }
         }
       },
       message: { $0.message.map { Text($0) } }
@@ -58,7 +62,11 @@ private struct OldAlertModifier<Action>: ViewModifier {
 
   func body(content: Content) -> some View {
     content.alert(item: viewStore.binding(send: dismiss)) { state in
-      Alert(state) { viewStore.send($0) }
+      Alert(state) { action in
+        if let action = action {
+          viewStore.send(action)
+        }
+      }
     }
   }
 }

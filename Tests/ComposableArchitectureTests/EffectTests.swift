@@ -107,30 +107,32 @@ final class EffectTests: XCTestCase {
   #if swift(>=5.7) && (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     func testMerge() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        let clock = TestClock()
+        await _withMainSerialExecutor {
+          let clock = TestClock()
 
-        let effect = EffectPublisher<Int, Never>.merge(
-          (1...3).map { count in
-            .task {
-              try await clock.sleep(for: .seconds(count))
-              return count
+          let effect = EffectPublisher<Int, Never>.merge(
+            (1...3).map { count in
+              .task {
+                try await clock.sleep(for: .seconds(count))
+                return count
+              }
             }
-          }
-        )
+          )
 
-        var values: [Int] = []
-        effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+          var values: [Int] = []
+          effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
 
-        XCTAssertEqual(values, [])
+          XCTAssertEqual(values, [])
 
-        await clock.advance(by: .seconds(1))
-        XCTAssertEqual(values, [1])
+          await clock.advance(by: .seconds(1))
+          XCTAssertEqual(values, [1])
 
-        await clock.advance(by: .seconds(1))
-        XCTAssertEqual(values, [1, 2])
+          await clock.advance(by: .seconds(1))
+          XCTAssertEqual(values, [1, 2])
 
-        await clock.advance(by: .seconds(1))
-        XCTAssertEqual(values, [1, 2, 3])
+          await clock.advance(by: .seconds(1))
+          XCTAssertEqual(values, [1, 2, 3])
+        }
       }
     }
   #endif
@@ -305,33 +307,35 @@ final class EffectTests: XCTestCase {
   }
 
   func testDependenciesTransferredToEffects_Run() async {
-    struct Feature: ReducerProtocol {
-      enum Action: Equatable {
-        case tap
-        case response(Int)
-      }
-      @Dependency(\.date) var date
-      func reduce(into state: inout Int, action: Action) -> EffectTask<Action> {
-        switch action {
-        case .tap:
-          return .run { send in
-            await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
+    await _withMainSerialExecutor {
+      struct Feature: ReducerProtocol {
+        enum Action: Equatable {
+          case tap
+          case response(Int)
+        }
+        @Dependency(\.date) var date
+        func reduce(into state: inout Int, action: Action) -> EffectTask<Action> {
+          switch action {
+          case .tap:
+            return .run { send in
+              await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
+            }
+          case let .response(value):
+            state = value
+            return .none
           }
-        case let .response(value):
-          state = value
-          return .none
         }
       }
-    }
-    let store = TestStore(
-      initialState: 0,
-      reducer: Feature()
-        .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1_234_567_890)))
-    )
+      let store = TestStore(
+        initialState: 0,
+        reducer: Feature()
+          .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1_234_567_890)))
+      )
 
-    await store.send(.tap).finish(timeout: NSEC_PER_SEC)
-    await store.receive(.response(1_234_567_890)) {
-      $0 = 1_234_567_890
+      await store.send(.tap).finish(timeout: NSEC_PER_SEC)
+      await store.receive(.response(1_234_567_890)) {
+        $0 = 1_234_567_890
+      }
     }
   }
 

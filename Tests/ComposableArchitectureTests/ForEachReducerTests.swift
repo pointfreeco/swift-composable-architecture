@@ -85,7 +85,7 @@ struct Elements: ReducerProtocol {
   }
   #if swift(>=5.7)
     var body: some ReducerProtocol<State, Action> {
-      Reduce<State, Action> { state, action in
+      Reduce { state, action in
         .none
       }
       .forEach(\.rows, action: /Action.row) {
@@ -99,7 +99,7 @@ struct Elements: ReducerProtocol {
     }
   #else
     var body: Reduce<State, Action> {
-      Reduce<State, Action> { state, action in
+      Reduce { state, action in
         .none
       }
       .forEach(\.rows, action: /Action.row) {

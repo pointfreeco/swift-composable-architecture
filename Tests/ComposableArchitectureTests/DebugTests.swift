@@ -45,7 +45,7 @@
 
     func testBindingAction() {
       struct State {
-        @BindableState var width = 0
+        @BindingState var width = 0
       }
       let action = BindingAction.set(\State.$width, 50)
       var dump = ""
@@ -54,7 +54,7 @@
         dump,
         #"""
         BindingAction.set(
-          WritableKeyPath<State, BindableState<Int>>,
+          WritableKeyPath<State, BindingState<Int>>,
           50
         )
         """#
@@ -86,8 +86,9 @@
           return .none
         }
       }
-      let store = TestStore(initialState: 0, reducer: DebuggedReducer()._printChanges())
-      store.dependencies.context = .preview
+      let store = TestStore(initialState: 0, reducer: DebuggedReducer()._printChanges()) {
+        $0.context = .preview
+      }
       await store.send(true) { $0 = 1 }
     }
   }
