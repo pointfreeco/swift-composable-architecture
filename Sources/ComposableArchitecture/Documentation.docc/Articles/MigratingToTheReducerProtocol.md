@@ -510,9 +510,10 @@ With that one declaration you can stop explicitly passing the date dependency th
 of your application. A date function will be automatically provided to your feature's reducer.
 
 > Important: [Dependencies][swift-dependencies] is powered by Swift task locals and is intended to
-> be used in structured concurrency. If your reducer's effects are powered by Combine or some other
-> form of asynchrony that uses escaping closures, you must do additional work to "escape" the
-> dependencies.
+> be used in structured contexts. If your reducer's effects make use of escaping closures, then
+> you must do additional work to propagate the dependencies to that context. For example, using
+> a dependency from within a Combine operator such as `.map`, `.flatMap` and even `.filter` will
+> use the default dependency value.
 >
 > See the [Dependencies documentation][swift-dependencies-docs] on
 > [Dependency lifetimes][swift-dependencies-docs-lifetimes] for more information, and how to
