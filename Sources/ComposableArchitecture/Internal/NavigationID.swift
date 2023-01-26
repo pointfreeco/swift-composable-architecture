@@ -41,7 +41,7 @@ public struct NavigationID: DependencyKey, Hashable, Identifiable, Sendable {
         if let value = value as? any Identifiable {
           self.id = id(value)
         }
-        // TODO: If identifiable fails but enum tag exists, further extract value and use its identity
+//         TODO: If identifiable fails but enum tag exists, further extract value and use its identity
       }
     }
   }

@@ -193,6 +193,7 @@ public struct _PresentationDestinationReducer<
         defer { state[keyPath: self.toPresentedState].wrappedValue = presentedState }
         effects = effects.merge(
           with: self.presented
+            .dependency(\.dismiss, DismissEffect { Task.cancel(id: DismissID.self) })
             .dependency(\.navigationID, id)
             .reduce(into: &presentedState, action: presentedAction)
             .map { self.toPresentedAction.embed(.presented($0)) }
@@ -246,8 +247,8 @@ public struct _PresentationDestinationReducer<
     }
 
     if
-      let (id, _) = presentationState.identifiedValue,
-      state[keyPath: self.toPresentedState].identifiedValue?.id != id
+      let id = presentationState.id,
+      state[keyPath: self.toPresentedState].id != id
     {
       effects = effects.merge(
         with: .cancel(id: id)
@@ -261,93 +262,26 @@ public struct _PresentationDestinationReducer<
       state[keyPath: self.toPresentedState].wrappedValue = nil
     }
 
-    return effects
+    if let id = state[keyPath: self.toPresentedState].id {
+      effects = effects.merge(
+        with: .run { send in
+          do {
+            try await withDependencies {
+              $0.navigationID = id
+            } operation: {
+              try await withTaskCancellation(id: DismissID.self) {
+                try await Task.never()
+              }
+            }
+          } catch is CancellationError {
+            await send(self.toPresentedAction.embed(.dismiss))
+          }
+        }
+        .cancellable(id: id)
+      )
+    }
 
-//    switch presentedAction {
-//    case let .presented(presentedAction):
-//      if var presentedState = currentPresentedState.wrappedValue {
-//        let id = PresentationState.ID(presentedState)
-//        effects.append(
-//          self.presented
-//            .dependency(\.dismiss, DismissEffect { Task.cancel(id: DismissID.self) })
-//            .dependency(\.navigationID, id)
-//            .reduce(into: &presentedState, action: presentedAction)
-//            .map { self.toPresentedAction.embed(.presented($0)) }
-//            .cancellable(id: id)
-//        )
-//
-//        state[keyPath: self.toPresentedState].wrappedValue =
-//          isDialogState(presentedState)
-//          ? nil
-//          : presentedState
-//      } else {
-//        runtimeWarn(
-//          """
-//          A "presentationDestination" at "\(self.fileID):\(self.line)" received a destination \
-//          action when destination state was absent. …
-//
-//            Action:
-//              \(debugCaseOutput(action))
-//
-//          This is generally considered an application logic error, and can happen for a few \
-//          reasons:
-//
-//          • A parent reducer set destination state to "nil" before this reducer ran. This reducer \
-//          must run before any other reducer sets destination state to "nil". This ensures that \
-//          destination reducers can handle their actions while their state is still present.
-//
-//          • This action was sent to the store while destination state was "nil". Make sure that \
-//          actions for this reducer can only be sent from a view store when state is present, or \
-//          from effects that start from this reducer. In SwiftUI applications, use a Composable \
-//          Architecture view modifier like "sheet(store:…)".
-//          """,
-//          file: self.file,
-//          line: self.line
-//        )
-//        return .none
-//      }
-//
-//    case .dismiss, .none:
-//      break
-//    }
-//
-//    effects.append(self.presenter.reduce(into: &state, action: action))
-//
-//    if case .dismiss = presentedAction, let id = currentPresentedState.id {
-//      state[keyPath: self.toPresentedState].wrappedValue = nil
-//      effects.append(.cancel(id: id))
-//    } else if let id = currentPresentedState.id,
-//      state[keyPath: self.toPresentedState].id != id
-//    {
-//      effects.append(.cancel(id: id))
-//    }
-//
-//    let tmp = state[keyPath: self.toPresentedState]  // TODO: better name, write tests
-//    if let id = tmp.id,
-//      id != currentPresentedState.id,
-//      // NB: Don't start lifecycle effect for alerts
-//      //     TODO: handle confirmation dialogs too
-//      tmp.wrappedValue.map(isDialogState) != true
-//    {
-//      effects.append(
-//        .run { send in
-//          do {
-//            try await withDependencies {
-//              $0.navigationID.current = id
-//            } operation: {
-//              try await withTaskCancellation(id: DismissID.self) {
-//                try await Task.never()
-//              }
-//            }
-//          } catch is CancellationError {
-//            await send(self.toPresentedAction.embed(.dismiss))
-//          }
-//        }
-//        .cancellable(id: id)
-//      )
-//    }
-//
-//    return .merge(effects)
+    return effects
   }
 }
 
@@ -372,7 +306,8 @@ extension View {
     WithViewStore(store, removeDuplicates: { $0.id == $1.id }) { viewStore in
       self.fullScreenCover(
         item: viewStore.binding(
-          get: { $0.id }, send: .dismiss
+          get: { $0.wrappedValue.flatMap(toDestinationState) != nil ? $0.id : nil },
+          send: .dismiss
         )
       ) { _ in
         IfLetStore(
@@ -441,7 +376,12 @@ extension View {
     @ViewBuilder content: @escaping (Store<DestinationState, DestinationAction>) -> Content
   ) -> some View {
     WithViewStore(store, removeDuplicates: { $0.id == $1.id }) { viewStore in
-      self.sheet(item: viewStore.binding(get: { $0.id }, send: .dismiss)) { _ in
+      self.sheet(
+        item: viewStore.binding(
+          get: { $0.wrappedValue.flatMap(toDestinationState) != nil ? $0.id : nil },
+          send: .dismiss
+        )
+      ) { _ in
         IfLetStore(
           store.scope(
             state: returningLastNonNilValue { $0.wrappedValue.flatMap(toDestinationState) },
