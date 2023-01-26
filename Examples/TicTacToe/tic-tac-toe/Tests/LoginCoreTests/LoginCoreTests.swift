@@ -10,13 +10,13 @@ final class LoginCoreTests: XCTestCase {
     let store = TestStore(
       initialState: Login.State(),
       reducer: Login()
-    )
-
-    store.dependencies.authenticationClient.login = { _ in
-      AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true)
-    }
-    store.dependencies.authenticationClient.twoFactor = { _ in
-      AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
+    ) {
+      $0.authenticationClient.login = { _ in
+        AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true)
+      }
+      $0.authenticationClient.twoFactor = { _ in
+        AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
+      }
     }
 
     await store.send(.emailChanged("2fa@pointfree.co")) {
@@ -59,14 +59,14 @@ final class LoginCoreTests: XCTestCase {
     let store = TestStore(
       initialState: Login.State(),
       reducer: Login()
-    )
-
-    store.dependencies.authenticationClient.login = { _ in
-      AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true)
-    }
-    store.dependencies.authenticationClient.twoFactor = { _ in
-      try await Task.sleep(nanoseconds: NSEC_PER_SEC)
-      return AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
+    ) {
+      $0.authenticationClient.login = { _ in
+        AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true)
+      }
+      $0.authenticationClient.twoFactor = { _ in
+        try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+        return AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
+      }
     }
 
     await store.send(.emailChanged("2fa@pointfree.co")) {

@@ -177,20 +177,20 @@ struct Settings: ReducerProtocol {
 ```
 
 This is a _lot_ of boilerplate for something that should be simple. Luckily, we can dramatically
-eliminate this boilerplate using ``BindableState``, ``BindableAction``, and ``BindingReducer``.
+eliminate this boilerplate using ``BindingState``, ``BindableAction``, and ``BindingReducer``.
 
-First, we can annotate each bindable value of state with the ``BindableState`` property wrapper:
+First, we can annotate each bindable value of state with the ``BindingState`` property wrapper:
 
 ```swift
 struct Settings: ReducerProtocol {
   struct State: Equatable {
-    @BindableState var digest = Digest.daily
-    @BindableState var displayName = ""
-    @BindableState var enableNotifications = false
+    @BindingState var digest = Digest.daily
+    @BindingState var displayName = ""
+    @BindingState var enableNotifications = false
     var isLoading = false
-    @BindableState var protectMyPosts = false
-    @BindableState var sendEmailNotifications = false
-    @BindableState var sendMobileNotifications = false
+    @BindingState var protectMyPosts = false
+    @BindingState var sendEmailNotifications = false
+    @BindingState var sendMobileNotifications = false
   }
 
   // ...

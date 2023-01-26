@@ -8,9 +8,7 @@ default: test-all
 
 test-all: test-examples
 	CONFIG=debug test-library 
-	CONFIG=release test-library 
-	CONFIG=debug test-library 
-	CONFIG=release test-library 
+	CONFIG=release test-library
 
 test-library:
 	for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_MAC_CATALYST)" "$(PLATFORM_TVOS)" "$(PLATFORM_WATCHOS)"; do \
@@ -42,10 +40,10 @@ test-docs:
 		&& exit 1)
 
 test-examples:
-	for scheme in "CaseStudies (SwiftUI)" "CaseStudies (UIKit)" Search SpeechRecognition TicTacToe Todos VoiceMemos; do \
+	for scheme in "CaseStudies (SwiftUI)" "CaseStudies (UIKit)" Integration Search SpeechRecognition TicTacToe Todos VoiceMemos; do \
 		xcodebuild test \
 			-scheme "$$scheme" \
-			-destination platform="$(PLATFORM_IOS)"; \
+			-destination platform="$(PLATFORM_IOS)" || exit 1; \
 	done
 
 benchmark:

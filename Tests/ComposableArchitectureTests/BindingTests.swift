@@ -4,10 +4,10 @@ import XCTest
 @MainActor
 final class BindingTests: XCTestCase {
   #if swift(>=5.7)
-    func testNestedBindableState() {
+    func testNestedBindingState() {
       struct BindingTest: ReducerProtocol {
         struct State: Equatable {
-          @BindableState var nested = Nested()
+          @BindingState var nested = Nested()
 
           struct Nested: Equatable {
             var field = ""
@@ -34,7 +34,7 @@ final class BindingTests: XCTestCase {
 
       let store = Store(initialState: BindingTest.State(), reducer: BindingTest())
 
-      let viewStore = ViewStore(store)
+      let viewStore = ViewStore(store, observe: { $0 })
 
       viewStore.binding(\.$nested.field).wrappedValue = "Hello"
 

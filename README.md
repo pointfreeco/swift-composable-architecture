@@ -530,9 +530,9 @@ override any dependency you need to for the purpose of the test:
 let store = TestStore(
   initialState: Feature.State(),
   reducer: Feature()
-)
-
-store.dependencies.numberFact.fetch = { "\($0) is a good number Brent" }
+) {
+  $0.numberFact.fetch = { "\($0) is a good number Brent" }
+}
 
 …
 ```
@@ -547,13 +547,14 @@ advanced usages.
 The documentation for releases and `main` are available here:
 
 * [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture)
-* [0.48.0](https://pointfreeco.github.io/swift-composable-architecture/0.48.0/documentation/composablearchitecture/)
+* [0.49.0](https://pointfreeco.github.io/swift-composable-architecture/0.49.0/documentation/composablearchitecture/)
 
 <details>
   <summary>
   Other versions
   </summary>
   
+  * [0.48.0](https://pointfreeco.github.io/swift-composable-architecture/0.48.0/documentation/composablearchitecture/)
   * [0.47.0](https://pointfreeco.github.io/swift-composable-architecture/0.47.0/documentation/composablearchitecture/)
   * [0.46.0](https://pointfreeco.github.io/swift-composable-architecture/0.46.0/documentation/composablearchitecture/)
   * [0.45.0](https://pointfreeco.github.io/swift-composable-architecture/0.45.0/documentation/composablearchitecture/)

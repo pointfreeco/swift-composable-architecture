@@ -203,7 +203,7 @@ final class StoreTests: XCTestCase {
 
     let store = Store(initialState: (), reducer: counterReducer)
 
-    _ = ViewStore(store).send(.tap)
+    _ = ViewStore(store, observe: {}, removeDuplicates: ==).send(.tap)
 
     XCTAssertEqual(values, [1, 2, 3, 4])
   }
@@ -221,8 +221,8 @@ final class StoreTests: XCTestCase {
     })
 
     let store = Store(initialState: 0, reducer: reducer)
-    _ = ViewStore(store).send(.incr)
-    XCTAssertEqual(ViewStore(store).state, 100_000)
+    _ = ViewStore(store, observe: { $0 }).send(.incr)
+    XCTAssertEqual(ViewStore(store, observe: { $0 }).state, 100_000)
   }
 
   func testIfLetAfterScope() {
@@ -247,7 +247,7 @@ final class StoreTests: XCTestCase {
       .ifLet(
         then: { store in
           stores.append(store)
-          outputs.append(ViewStore(store).state)
+          outputs.append(ViewStore(store, observe: { $0 }).state)
         },
         else: {
           outputs.append(nil)
@@ -367,7 +367,7 @@ final class StoreTests: XCTestCase {
     )
 
     var emissions: [Int] = []
-    let viewStore = ViewStore(store)
+    let viewStore = ViewStore(store, observe: { $0 })
     viewStore.publisher
       .sink { emissions.append($0) }
       .store(in: &self.cancellables)
@@ -537,6 +537,26 @@ final class StoreTests: XCTestCase {
         .dependency(\.urlSession, URLSession(configuration: .ephemeral))
     )
 
-    ViewStore(store).send(true)
+    ViewStore(store, observe: { $0 }).send(true)
+  }
+
+  func testOverrideDependenciesDirectlyOnStore() {
+    struct MyReducer: ReducerProtocol {
+      @Dependency(\.uuid) var uuid
+
+      func reduce(into state: inout UUID, action: Void) -> EffectTask<Void> {
+        state = self.uuid()
+        return .none
+      }
+    }
+
+    @Dependency(\.uuid) var uuid
+
+    let store = Store(initialState: uuid(), reducer: MyReducer()) {
+      $0.uuid = .constant(UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!)
+    }
+    let viewStore = ViewStore(store, observe: { $0 })
+
+    XCTAssertEqual(viewStore.state, UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!)
   }
 }

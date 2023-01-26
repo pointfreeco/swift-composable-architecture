@@ -11,9 +11,9 @@ final class SpeechRecognitionTests: XCTestCase {
     let store = TestStore(
       initialState: SpeechRecognition.State(),
       reducer: SpeechRecognition()
-    )
-
-    store.dependencies.speechClient.requestAuthorization = { .denied }
+    ) {
+      $0.speechClient.requestAuthorization = { .denied }
+    }
 
     await store.send(.recordButtonTapped) {
       $0.isRecording = true
@@ -34,9 +34,9 @@ final class SpeechRecognitionTests: XCTestCase {
     let store = TestStore(
       initialState: SpeechRecognition.State(),
       reducer: SpeechRecognition()
-    )
-
-    store.dependencies.speechClient.requestAuthorization = { .restricted }
+    ) {
+      $0.speechClient.requestAuthorization = { .restricted }
+    }
 
     await store.send(.recordButtonTapped) {
       $0.isRecording = true
@@ -51,11 +51,11 @@ final class SpeechRecognitionTests: XCTestCase {
     let store = TestStore(
       initialState: SpeechRecognition.State(),
       reducer: SpeechRecognition()
-    )
-
-    store.dependencies.speechClient.finishTask = { self.recognitionTask.continuation.finish() }
-    store.dependencies.speechClient.startTask = { _ in self.recognitionTask.stream }
-    store.dependencies.speechClient.requestAuthorization = { .authorized }
+    ) {
+      $0.speechClient.finishTask = { self.recognitionTask.continuation.finish() }
+      $0.speechClient.startTask = { _ in self.recognitionTask.stream }
+      $0.speechClient.requestAuthorization = { .authorized }
+    }
 
     let firstResult = SpeechRecognitionResult(
       bestTranscription: Transcription(
@@ -95,10 +95,10 @@ final class SpeechRecognitionTests: XCTestCase {
     let store = TestStore(
       initialState: SpeechRecognition.State(),
       reducer: SpeechRecognition()
-    )
-
-    store.dependencies.speechClient.startTask = { _ in self.recognitionTask.stream }
-    store.dependencies.speechClient.requestAuthorization = { .authorized }
+    ) {
+      $0.speechClient.startTask = { _ in self.recognitionTask.stream }
+      $0.speechClient.requestAuthorization = { .authorized }
+    }
 
     await store.send(.recordButtonTapped) {
       $0.isRecording = true
@@ -116,10 +116,10 @@ final class SpeechRecognitionTests: XCTestCase {
     let store = TestStore(
       initialState: SpeechRecognition.State(),
       reducer: SpeechRecognition()
-    )
-
-    store.dependencies.speechClient.startTask = { _ in self.recognitionTask.stream }
-    store.dependencies.speechClient.requestAuthorization = { .authorized }
+    ) {
+      $0.speechClient.startTask = { _ in self.recognitionTask.stream }
+      $0.speechClient.requestAuthorization = { .authorized }
+    }
 
     await store.send(.recordButtonTapped) {
       $0.isRecording = true

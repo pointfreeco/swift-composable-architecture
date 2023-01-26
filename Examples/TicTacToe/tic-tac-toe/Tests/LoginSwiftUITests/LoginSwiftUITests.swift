@@ -10,12 +10,13 @@ final class LoginSwiftUITests: XCTestCase {
   func testFlow_Success() async {
     let store = TestStore(
       initialState: Login.State(),
-      reducer: Login()
-    )
-    .scope(state: LoginView.ViewState.init, action: Login.Action.init)
-
-    store.dependencies.authenticationClient.login = { _ in
-      AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
+      reducer: Login(),
+      observe: LoginView.ViewState.init,
+      send: Login.Action.init
+    ) {
+      $0.authenticationClient.login = { _ in
+        AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
+      }
     }
 
     await store.send(.emailChanged("blob@pointfree.co")) {
@@ -42,12 +43,13 @@ final class LoginSwiftUITests: XCTestCase {
   func testFlow_Success_TwoFactor() async {
     let store = TestStore(
       initialState: Login.State(),
-      reducer: Login()
-    )
-    .scope(state: LoginView.ViewState.init, action: Login.Action.init)
-
-    store.dependencies.authenticationClient.login = { _ in
-      AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true)
+      reducer: Login(),
+      observe: LoginView.ViewState.init,
+      send: Login.Action.init
+    ) {
+      $0.authenticationClient.login = { _ in
+        AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true)
+      }
     }
 
     await store.send(.emailChanged("2fa@pointfree.co")) {
@@ -78,12 +80,13 @@ final class LoginSwiftUITests: XCTestCase {
   func testFlow_Failure() async {
     let store = TestStore(
       initialState: Login.State(),
-      reducer: Login()
-    )
-    .scope(state: LoginView.ViewState.init, action: Login.Action.init)
-
-    store.dependencies.authenticationClient.login = { _ in
-      throw AuthenticationError.invalidUserPassword
+      reducer: Login(),
+      observe: LoginView.ViewState.init,
+      send: Login.Action.init
+    ) {
+      $0.authenticationClient.login = { _ in
+        throw AuthenticationError.invalidUserPassword
+      }
     }
 
     await store.send(.emailChanged("blob")) {

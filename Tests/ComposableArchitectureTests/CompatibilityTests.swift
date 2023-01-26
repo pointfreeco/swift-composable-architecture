@@ -36,7 +36,7 @@ final class CompatibilityTests: XCTestCase {
 
     var handledActions: [String] = []
 
-    let reducer = AnyReducer<State, Action, Void> { state, action, env in
+    let reducer = Reduce<State, Action> { state, action in
       handledActions.append(action.description)
 
       switch action {
@@ -47,7 +47,7 @@ final class CompatibilityTests: XCTestCase {
           .cancellable(id: cancelID)
 
       case .kickOffAction:
-        return EffectTask(value: .actionSender(OnDeinit { passThroughSubject.send(.stop) }))
+        return .send(.actionSender(OnDeinit { passThroughSubject.send(.stop) }))
 
       case .actionSender:
         return .none
@@ -59,11 +59,10 @@ final class CompatibilityTests: XCTestCase {
 
     let store = Store(
       initialState: .init(),
-      reducer: reducer,
-      environment: ()
+      reducer: reducer
     )
 
-    let viewStore = ViewStore(store)
+    let viewStore = ViewStore(store, observe: { $0 })
 
     viewStore.send(.start)
     viewStore.send(.kickOffAction)
@@ -89,14 +88,13 @@ final class CompatibilityTests: XCTestCase {
   func testCaseStudy_ActionReentranceFromStateObservation() {
     let store = Store<Int, Int>(
       initialState: 0,
-      reducer: .init { state, action, _ in
+      reducer: Reduce { state, action in
         state = action
         return .none
-      },
-      environment: ()
+      }
     )
 
-    let viewStore = ViewStore(store)
+    let viewStore = ViewStore(store, observe: { $0 })
 
     viewStore.publisher
       .sink { value in

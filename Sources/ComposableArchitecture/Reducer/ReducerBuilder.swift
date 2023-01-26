@@ -7,101 +7,82 @@
 /// See ``CombineReducers`` for an entry point into a reducer builder context.
 @resultBuilder
 public enum ReducerBuilder<State, Action> {
-  #if swift(>=5.7)
-    @inlinable
-    public static func buildArray(
-      _ reducers: [some ReducerProtocol<State, Action>]
-    ) -> some ReducerProtocol<State, Action> {
-      _SequenceMany(reducers: reducers)
-    }
+  @inlinable
+  public static func buildArray<R: ReducerProtocol>(_ reducers: [R]) -> _SequenceMany<R>
+  where R.State == State, R.Action == Action {
+    _SequenceMany(reducers: reducers)
+  }
 
-    @inlinable
-    public static func buildBlock() -> some ReducerProtocol<State, Action> {
-      EmptyReducer()
-    }
+  @inlinable
+  public static func buildBlock() -> EmptyReducer<State, Action> {
+    EmptyReducer()
+  }
 
-    @inlinable
-    public static func buildBlock(
-      _ reducer: some ReducerProtocol<State, Action>
-    ) -> some ReducerProtocol<State, Action> {
-      reducer
-    }
+  @inlinable
+  public static func buildBlock<R: ReducerProtocol>(_ reducer: R) -> R
+  where R.State == State, R.Action == Action {
+    reducer
+  }
 
-    @inlinable
-    public static func buildEither<R0: ReducerProtocol, R1: ReducerProtocol>(
-      first reducer: R0
-    ) -> _Conditional<R0, R1>
-    where R0.State == State, R0.Action == Action, R1.State == State, R1.Action == Action {
-      .first(reducer)
-    }
+  @inlinable
+  public static func buildEither<R0: ReducerProtocol, R1: ReducerProtocol>(
+    first reducer: R0
+  ) -> _Conditional<R0, R1>
+  where R0.State == State, R0.Action == Action, R1.State == State, R1.Action == Action {
+    .first(reducer)
+  }
 
-    @inlinable
-    public static func buildEither<R0: ReducerProtocol, R1: ReducerProtocol>(
-      second reducer: R1
-    ) -> _Conditional<R0, R1>
-    where R0.State == State, R0.Action == Action, R1.State == State, R1.Action == Action {
-      .second(reducer)
-    }
+  @inlinable
+  public static func buildEither<R0: ReducerProtocol, R1: ReducerProtocol>(
+    second reducer: R1
+  ) -> _Conditional<R0, R1>
+  where R0.State == State, R0.Action == Action, R1.State == State, R1.Action == Action {
+    .second(reducer)
+  }
 
-    @inlinable
-    public static func buildExpression(
-      _ expression: some ReducerProtocol<State, Action>
-    ) -> some ReducerProtocol<State, Action> {
-      expression
-    }
+  @inlinable
+  public static func buildExpression<R: ReducerProtocol>(_ expression: R) -> R
+  where R.State == State, R.Action == Action {
+    expression
+  }
 
-    @inlinable
-    public static func buildFinalResult(
-      _ reducer: some ReducerProtocol<State, Action>
-    ) -> some ReducerProtocol<State, Action> {
-      reducer
-    }
+  @inlinable
+  public static func buildFinalResult<R: ReducerProtocol>(_ reducer: R) -> R
+  where R.State == State, R.Action == Action {
+    reducer
+  }
 
-    @inlinable
-    public static func buildLimitedAvailability(
-      _ wrapped: some ReducerProtocol<State, Action>
-    ) -> Reduce<State, Action> {
-      Reduce(wrapped)
-    }
+  @inlinable
+  public static func buildLimitedAvailability<R: ReducerProtocol>(
+    _ wrapped: R
+  ) -> Reduce<State, Action>
+  where R.State == State, R.Action == Action {
+    Reduce(wrapped)
+  }
 
-    @inlinable
-    public static func buildOptional(
-      _ wrapped: (some ReducerProtocol<State, Action>)?
-    ) -> some ReducerProtocol<State, Action> {
-      wrapped
-    }
+  @inlinable
+  public static func buildOptional<R: ReducerProtocol>(_ wrapped: R?) -> R?
+  where R.State == State, R.Action == Action {
+    wrapped
+  }
 
-    @inlinable
-    public static func buildPartialBlock(
-      first: some ReducerProtocol<State, Action>
-    ) -> some ReducerProtocol<State, Action> {
-      first
-    }
+  @inlinable
+  public static func buildPartialBlock<R: ReducerProtocol>(
+    first: R
+  ) -> R
+  where R.State == State, R.Action == Action {
+    first
+  }
 
-    @inlinable
-    public static func buildPartialBlock(
-      accumulated: some ReducerProtocol<State, Action>, next: some ReducerProtocol<State, Action>
-    ) -> some ReducerProtocol<State, Action> {
-      _Sequence(accumulated, next)
-    }
-  #else
-    @inlinable
-    public static func buildArray<R: ReducerProtocol>(_ reducers: [R]) -> _SequenceMany<R>
-    where R.State == State, R.Action == Action {
-      _SequenceMany(reducers: reducers)
-    }
+  @inlinable
+  public static func buildPartialBlock<R0: ReducerProtocol, R1: ReducerProtocol>(
+    accumulated: R0, next: R1
+  ) -> _Sequence<R0, R1>
+  where R0.State == State, R0.Action == Action, R1.State == State, R1.Action == Action {
+    _Sequence(accumulated, next)
+  }
 
-    @inlinable
-    public static func buildBlock() -> EmptyReducer<State, Action> {
-      EmptyReducer()
-    }
-
-    @inlinable
-    public static func buildBlock<R: ReducerProtocol>(_ reducer: R) -> R
-    where R.State == State, R.Action == Action {
-      reducer
-    }
-
+  #if swift(<5.7)
     @inlinable
     public static func buildBlock<
       R0: ReducerProtocol,
@@ -330,53 +311,11 @@ public enum ReducerBuilder<State, Action> {
       )
     }
 
-    @inlinable
-    public static func buildEither<R0: ReducerProtocol, R1: ReducerProtocol>(
-      first reducer: R0
-    ) -> _Conditional<R0, R1>
-    where R0.State == State, R0.Action == Action {
-      .first(reducer)
-    }
-
-    @inlinable
-    public static func buildEither<R0: ReducerProtocol, R1: ReducerProtocol>(
-      second reducer: R1
-    ) -> _Conditional<R0, R1>
-    where R1.State == State, R1.Action == Action {
-      .second(reducer)
-    }
-
-    @inlinable
-    public static func buildExpression<R: ReducerProtocol>(_ expression: R) -> R
-    where R.State == State, R.Action == Action {
-      expression
-    }
-
-    @inlinable
-    public static func buildFinalResult<R: ReducerProtocol>(_ reducer: R) -> R
-    where R.State == State, R.Action == Action {
-      reducer
-    }
-
     @_disfavoredOverload
     @inlinable
     public static func buildFinalResult<R: ReducerProtocol>(_ reducer: R) -> Reduce<State, Action>
     where R.State == State, R.Action == Action {
       Reduce(reducer)
-    }
-
-    @inlinable
-    public static func buildLimitedAvailability<R: ReducerProtocol>(
-      _ wrapped: R
-    ) -> Reduce<R.State, R.Action>
-    where R.State == State, R.Action == Action {
-      Reduce(wrapped)
-    }
-
-    @inlinable
-    public static func buildOptional<R: ReducerProtocol>(_ wrapped: R?) -> R?
-    where R.State == State, R.Action == Action {
-      wrapped
     }
   #endif
 
@@ -440,5 +379,3 @@ public enum ReducerBuilder<State, Action> {
     }
   }
 }
-
-public typealias ReducerBuilderOf<R: ReducerProtocol> = ReducerBuilder<R.State, R.Action>

@@ -55,9 +55,9 @@ extension EffectPublisher where Failure == Never {
   ///   let store = TestStore(
   ///     initialState: Feature.State(),
   ///     reducer: Feature()
-  ///   )
-  ///
-  ///   store.dependencies.mainQueue = mainQueue.eraseToAnyScheduler()
+  ///   ) {
+  ///     $0.mainQueue = mainQueue.eraseToAnyScheduler()
+  ///   }
   ///
   ///   await store.send(.startButtonTapped)
   ///

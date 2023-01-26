@@ -582,6 +582,52 @@
       }
     }
 
+    func testCasePathReceive_Exhaustive_NonEquatable() async {
+      struct NonEquatable {}
+      enum Action {
+        case tap
+        case response(NonEquatable)
+      }
+
+      let store = TestStore(
+        initialState: 0,
+        reducer: Reduce<Int, Action> { state, action in
+          switch action {
+          case .tap:
+            return EffectTask(value: .response(NonEquatable()))
+          case .response:
+            return .none
+          }
+        }
+      )
+
+      await store.send(.tap)
+      await store.receive(/Action.response)
+    }
+
+    func testPredicateReceive_Exhaustive_NonEquatable() async {
+      struct NonEquatable {}
+      enum Action {
+        case tap
+        case response(NonEquatable)
+      }
+
+      let store = TestStore(
+        initialState: 0,
+        reducer: Reduce<Int, Action> { state, action in
+          switch action {
+          case .tap:
+            return EffectTask(value: .response(NonEquatable()))
+          case .response:
+            return .none
+          }
+        }
+      )
+
+      await store.send(.tap)
+      await store.receive({ (/Action.response) ~= $0 })
+    }
+
     func testCasePathReceive_SkipReceivedAction() async {
       let store = TestStore(
         initialState: NonExhaustiveReceive.State(),
@@ -673,9 +719,10 @@
       let store = TestStore(
         initialState: KrzysztofExample.State(),
         reducer: KrzysztofExample()
-      )
+      ) {
+        $0.mainQueue = mainQueue.eraseToAnyScheduler()
+      }
       store.exhaustivity = .off
-      store.dependencies.mainQueue = mainQueue.eraseToAnyScheduler()
 
       store.send(.advanceAgeAndMoodAfterDelay)
       mainQueue.advance(by: 1)
