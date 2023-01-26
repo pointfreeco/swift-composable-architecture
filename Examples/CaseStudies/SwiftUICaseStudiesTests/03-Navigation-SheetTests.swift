@@ -23,14 +23,16 @@ class NavigationSheetTests: XCTestCase {
     }
     await store.send(.destination(.presented(.animations(.rainbowButtonTapped))))
     await store.receive(.destination(.presented(.animations(.setColor(.red))))) {
-      try (/Optional.some).appending(path: /SheetDemo.Destinations.State.animations)
-        .modify(&$0.destination) { $0.circleColor = .red }
+      try (/SheetDemo.Destinations.State.animations).modify(&$0.destination) {
+        $0.circleColor = .red
+      }
     }
 
     await clock.advance(by: .seconds(1))
     await store.receive(.destination(.presented(.animations(.setColor(.blue))))) {
-      try (/Optional.some).appending(path: /SheetDemo.Destinations.State.animations)
-        .modify(&$0.destination) { $0.circleColor = .blue }
+      try (/SheetDemo.Destinations.State.animations).modify(&$0.destination) {
+        $0.circleColor = .blue
+      }
     }
 
     await store.send(.destination(.dismiss)) {

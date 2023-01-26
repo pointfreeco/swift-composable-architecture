@@ -263,24 +263,25 @@ public struct _PresentationDestinationReducer<
       state[keyPath: self.toPresentedState].wrappedValue = nil
     }
 
-    if let id = state[keyPath: self.toPresentedState].id {
-      effects = effects.merge(
-        with: .run { send in
-          do {
-            try await withDependencies {
-              $0.navigationID = id
-            } operation: {
-              try await withTaskCancellation(id: DismissID.self) {
-                try await Task.never()
-              }
-            }
-          } catch is CancellationError {
-            await send(self.toPresentedAction.embed(.dismiss))
-          }
-        }
-        .cancellable(id: id)
-      )
-    }
+    // TODO: Why's this broken?
+//    if let id = state[keyPath: self.toPresentedState].id {
+//      effects = effects.merge(
+//        with: .run { send in
+//          do {
+//            try await withDependencies {
+//              $0.navigationID = id
+//            } operation: {
+//              try await withTaskCancellation(id: DismissID.self) {
+//                try await Task.never()
+//              }
+//            }
+//          } catch is CancellationError {
+//            await send(self.toPresentedAction.embed(.dismiss))
+//          }
+//        }
+//        .cancellable(id: id)
+//      )
+//    }
 
     return effects
   }
