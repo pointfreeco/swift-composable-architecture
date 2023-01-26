@@ -205,7 +205,7 @@ extension Login.Action {
     case let .emailChanged(email):
       self = .emailChanged(email ?? "")
     case .loginButtonTapped:
-      self = .destination(.present(id: ObjectIdentifier(TwoFactor.self)))
+      self = .loginButtonTapped
     case let .passwordChanged(password):
       self = .passwordChanged(password ?? "")
     case .twoFactorDismissed:

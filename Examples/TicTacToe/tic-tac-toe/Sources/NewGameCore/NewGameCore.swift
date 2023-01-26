@@ -12,6 +12,7 @@ public struct NewGame: ReducerProtocol {
 
   public enum Action: Equatable {
     case game(PresentationActionOf<Game>)
+    case letsPlayButtonTapped
     case logoutButtonTapped
     case oPlayerNameChanged(String)
     case xPlayerNameChanged(String)
@@ -22,14 +23,14 @@ public struct NewGame: ReducerProtocol {
   public var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
-      case .game(.present):
+      case .game:
+        return .none
+
+      case .letsPlayButtonTapped:
         state.game = Game.State(
           oPlayerName: state.oPlayerName,
           xPlayerName: state.xPlayerName
         )
-        return .none
-
-      case .game:
         return .none
 
       case .logoutButtonTapped:

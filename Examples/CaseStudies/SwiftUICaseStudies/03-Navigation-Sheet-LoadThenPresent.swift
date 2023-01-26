@@ -19,6 +19,7 @@ struct LoadThenPresent: ReducerProtocol {
 
   enum Action {
     case counter(PresentationActionOf<Counter>)
+    case loadCounterButtonTapped
     case presentationDelayCompleted
   }
 
@@ -27,15 +28,15 @@ struct LoadThenPresent: ReducerProtocol {
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
-      case .counter(.present):
+      case .counter:
+        return .none
+
+      case .loadCounterButtonTapped:
         state.isActivityIndicatorVisible = true
         return .task {
           try await self.clock.sleep(for: .seconds(1))
           return .presentationDelayCompleted
         }
-
-      case .counter:
-        return .none
 
       case .presentationDelayCompleted:
         state.counter = Counter.State()
@@ -61,7 +62,7 @@ struct LoadThenPresentView: View {
           AboutView(readMe: readMe)
         }
         Button {
-          viewStore.send(.counter(.present))
+          viewStore.send(.loadCounterButtonTapped)
         } label: {
           HStack {
             Text("Load optional counter")

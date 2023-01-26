@@ -1,18 +1,12 @@
 @_spi(Reflection) import CasePaths
 import SwiftUI
 
-// TODO: `@dynamicMemberLookup`? `Sendable where State: Sendable`
-// TODO: copy-on-write box better than indirect enum?
 @propertyWrapper
-public enum PresentationState<State> {
-  case dismissed
-  indirect case presented(id: AnyHashable, State)
+public struct PresentationState<State> {
+  private var boxedValue: [State]
 
   public init(wrappedValue: State? = nil) {
-    self =
-      wrappedValue
-      .map { .presented(id: DependencyValues._current.navigationID.next(), $0) }
-      ?? .dismissed
+    self.boxedValue = wrappedValue.map { [$0] } ?? []
   }
 
   public init(projectedValue: Self) {
@@ -20,42 +14,32 @@ public enum PresentationState<State> {
   }
 
   public var wrappedValue: State? {
-    _read {
-      switch self {
-      case .dismissed:
-        yield nil
-      case let .presented(_, state):
-        yield state
-      }
-    }
+    _read { yield self.boxedValue.first }
     _modify {
-      switch self {
-      case .dismissed:
-        var state: State? = nil
-        yield &state
-      case let .presented(id, state):
-        var state: State! = state
-        yield &state
-        self = .presented(id: id, state)
+      var state = self.boxedValue.first
+      yield &state
+      switch (state, self.boxedValue.isEmpty) {
+      case (nil, true):
+        return
+      case (nil, false):
+        self.boxedValue = []
+      case let (.some(state), true):
+        self.boxedValue.insert(state, at: 0)
+      case let (.some(state), false):
+        self.boxedValue[0] = state
       }
     }
     set {
-      // TODO: Do we need similar for the navigation APIs?
-      // TODO: Should we _always_ reuse the `id` when value is non-nil, even when enum tags differ?
-      guard
-        let newValue = newValue,
-        case let .presented(id, oldValue) = self,
-        enumTag(oldValue) == enumTag(newValue)
-      else {
-        self = .init(wrappedValue: newValue)
+      switch (newValue, self.boxedValue.isEmpty) {
+      case (nil, true):
         return
+      case (nil, false):
+        self.boxedValue = []
+      case let (.some(state), true):
+        self.boxedValue.insert(state, at: 0)
+      case let (.some(state), false):
+        self.boxedValue[0] = state
       }
-
-      self = .presented(id: id, newValue)
-
-      // TODO: Should we add state.$destination.present(...) for explicitly re-presenting new ID?
-      // TODO: Should we do the following instead (we used to)?
-      //self = .init(wrappedValue: newValue)
     }
   }
 
@@ -64,83 +48,93 @@ public enum PresentationState<State> {
     _modify { yield &self }
   }
 
-  public var id: AnyHashable? {
-    switch self {
-    case .dismissed:
-      return nil
-    case let .presented(id, _):
-      return id
+  @usableFromInline
+  var id: ID? {
+    self.wrappedValue.map(ID.init)
+  }
+
+  @usableFromInline
+  struct ID: Hashable, Identifiable {
+    let underlyingID: AnyHashable
+    let tag: UInt32?
+
+    @usableFromInline
+    init(_ state: State) {
+      func _id<I: Identifiable>(_ value: I) -> AnyHashable {
+        value.id
+      }
+
+      if let state = state as? any Identifiable {
+        self.underlyingID = _id(state)
+      } else {
+        self.underlyingID = ObjectIdentifier(State.self)
+      }
+      self.tag = enumTag(state)
     }
+
+    @usableFromInline
+    var id: Self { self }
   }
 }
 
 public typealias PresentationStateOf<R: ReducerProtocol> = PresentationState<R.State>
-
-// TODO: Should ID be encodable/decodable ever?
-extension PresentationState: Decodable where State: Decodable {
-  public init(from decoder: Decoder) throws {
-    self.init(wrappedValue: try State?(from: decoder))
-  }
-}
-extension PresentationState: Encodable where State: Encodable {
-  public func encode(to encoder: Encoder) throws {
-    try self.wrappedValue?.encode(to: encoder)
-  }
-}
 
 extension PresentationState: Equatable where State: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.wrappedValue == rhs.wrappedValue
   }
 }
+
 extension PresentationState: Hashable where State: Hashable {
   public func hash(into hasher: inout Hasher) {
     self.wrappedValue.hash(into: &hasher)
   }
 }
 
-// TODO: Should ID clutter custom dump logs?
-//extension PresentationState: CustomReflectable {
-//  public var customMirror: Mirror {
-//    Mirror(reflecting: self.wrappedValue as Any)
-//  }
-//}
+extension PresentationState: Decodable where State: Decodable {
+  public init(from decoder: Decoder) throws {
+    self.init(wrappedValue: try State?(from: decoder))
+  }
+}
 
-public enum PresentationAction<State, Action> {
+extension PresentationState: Encodable where State: Encodable {
+  public func encode(to encoder: Encoder) throws {
+    try self.wrappedValue?.encode(to: encoder)
+  }
+}
+
+extension PresentationState: CustomReflectable {
+  public var customMirror: Mirror {
+    Mirror(reflecting: self.wrappedValue as Any)
+  }
+}
+
+public enum PresentationAction<Action> {
   case dismiss
-  // NB: sending present(id, nil) from the view means let the reducer hydrate state
-  case present(id: AnyHashable = DependencyValues._current.uuid(), State? = nil)
   case presented(Action)
-
-  public static var present: Self { .present() }
 }
 
-public func ~= <State, Action, ID: Hashable> (
-  lhs: ID, rhs: PresentationAction<State, Action>
-) -> Bool {
-  guard case .present(AnyHashable(lhs), _) = rhs else { return false }
-  return true
-}
+public typealias PresentationActionOf<R: ReducerProtocol> = PresentationAction<R.Action>
 
-public typealias PresentationActionOf<R: ReducerProtocol> = PresentationAction<R.State, R.Action>
+extension PresentationAction: Equatable where Action: Equatable {}
+extension PresentationAction: Hashable where Action: Hashable {}
 
-// TODO:
-//extension PresentationAction: Decodable where State: Decodable, Action: Decodable {}
-//extension PresentationAction: Encodable where State: Encodable, Action: Encodable {}
-
-extension PresentationAction: Equatable where State: Equatable, Action: Equatable {}
-extension PresentationAction: Hashable where State: Hashable, Action: Hashable {}
+extension PresentationAction: Decodable where Action: Decodable {}
+extension PresentationAction: Encodable where Action: Encodable {}
 
 extension ReducerProtocol {
   @inlinable
-  public func presentationDestination<Destination: ReducerProtocol>(
-    _ toPresentedState: WritableKeyPath<State, PresentationStateOf<Destination>>,
-    action toPresentedAction: CasePath<Action, PresentationActionOf<Destination>>,
-    @ReducerBuilderOf<Destination> destination: () -> Destination,
+  public func presentationDestination<
+    DestinationState, DestinationAction, Destination: ReducerProtocol
+  >(
+    _ toPresentedState: WritableKeyPath<State, PresentationState<DestinationState>>,
+    action toPresentedAction: CasePath<Action, PresentationAction<DestinationAction>>,
+    @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _PresentationDestinationReducer<Self, Destination> {
+  ) -> _PresentationDestinationReducer<Self, Destination>
+  where DestinationState == Destination.State, DestinationAction == Destination.Action {
     _PresentationDestinationReducer(
       presenter: self,
       presented: destination(),
@@ -215,36 +209,23 @@ public struct _PresentationDestinationReducer<
     let currentPresentedState = state[keyPath: self.toPresentedState]
     let presentedAction = self.toPresentedAction.extract(from: action)
 
-    // TODO: should we extract id from `presentedAction` at the very beginning, and then wrap
-    //       everything below in a `withValue(\.navigationID, id)` ?
-
     switch presentedAction {
-    case let .present(id, .some(presentedState)):
-      state[keyPath: self.toPresentedState] = .presented(id: id, presentedState)
-
     case let .presented(presentedAction):
-      if case .presented(let id, var presentedState) = currentPresentedState {
+      if var presentedState = currentPresentedState.wrappedValue {
+        let id = PresentationState.ID(presentedState)
         effects.append(
           self.presented
             .dependency(\.dismiss, DismissEffect { Task.cancel(id: DismissID.self) })
             .dependency(\.navigationID.current, id)
-            //            .transformDependency(\.self) {
-            //              $0.navigationID.current = id
-            //              $0.dismiss = DismissEffect { Task.cancel(id: DismissID.self, navigationID: id) }
-            //            }
             .reduce(into: &presentedState, action: presentedAction)
             .map { self.toPresentedAction.embed(.presented($0)) }
             .cancellable(id: id)
         )
-        // TODO: Check if presentedState is enum and if current enum tag is alert state
 
-        // TODO: don't create long living effect if we are showing an alert?
-        // TODO: handle confirmation dialog too?
-        if isAlertState(presentedState) {
-          state[keyPath: self.toPresentedState] = .dismissed
-        } else {
-          state[keyPath: self.toPresentedState] = .presented(id: id, presentedState)
-        }
+        state[keyPath: self.toPresentedState].wrappedValue =
+          isDialogState(presentedState)
+          ? nil
+          : presentedState
       } else {
         runtimeWarn(
           """
@@ -272,28 +253,27 @@ public struct _PresentationDestinationReducer<
         return .none
       }
 
-    case .present(_, .none), .dismiss, .none:
+    case .dismiss, .none:
       break
     }
 
     effects.append(self.presenter.reduce(into: &state, action: action))
 
-    if case .dismiss = presentedAction, case let .presented(id, _) = currentPresentedState {
+    if case .dismiss = presentedAction, let id = currentPresentedState.id {
       state[keyPath: self.toPresentedState].wrappedValue = nil
       effects.append(.cancel(id: id))
-    } else if case let .presented(id, _) = currentPresentedState,
+    } else if let id = currentPresentedState.id,
       state[keyPath: self.toPresentedState].id != id
     {
       effects.append(.cancel(id: id))
     }
 
-    let tmp = state[keyPath: self.toPresentedState] // TODO: better name, write tests
-    if
-      let id = tmp.id,
+    let tmp = state[keyPath: self.toPresentedState]  // TODO: better name, write tests
+    if let id = tmp.id,
       id != currentPresentedState.id,
       // NB: Don't start lifecycle effect for alerts
       //     TODO: handle confirmation dialogs too
-      tmp.wrappedValue.map(isAlertState) != true
+      tmp.wrappedValue.map(isDialogState) != true
     {
       effects.append(
         .run { send in
@@ -321,7 +301,7 @@ extension View {
   @available(iOS 14, tvOS 14, watchOS 7, *)
   @available(macOS, unavailable)
   public func fullScreenCover<State, Action, Content: View>(
-    store: Store<PresentationState<State>, PresentationAction<State, Action>>,
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder content: @escaping (Store<State, Action>) -> Content
   ) -> some View {
     self.fullScreenCover(store: store, state: { $0 }, action: { $0 }, content: content)
@@ -330,7 +310,7 @@ extension View {
   @available(iOS 14, tvOS 14, watchOS 7, *)
   @available(macOS, unavailable)
   public func fullScreenCover<State, Action, DestinationState, DestinationAction, Content: View>(
-    store: Store<PresentationState<State>, PresentationAction<State, Action>>,
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (State) -> DestinationState?,
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
     @ViewBuilder content: @escaping (Store<DestinationState, DestinationAction>) -> Content
@@ -338,7 +318,7 @@ extension View {
     WithViewStore(store, removeDuplicates: { $0.id == $1.id }) { viewStore in
       self.fullScreenCover(
         item: viewStore.binding(
-          get: { Item(destinations: $0, destination: toDestinationState) }, send: .dismiss
+          get: { $0.id }, send: .dismiss
         )
       ) { _ in
         IfLetStore(
@@ -355,7 +335,7 @@ extension View {
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
   public func popover<State, Action, Content: View>(
-    store: Store<PresentationState<State>, PresentationAction<State, Action>>,
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
     attachmentAnchor: PopoverAttachmentAnchor = .rect(.bounds),
     arrowEdge: Edge = .top,
     @ViewBuilder content: @escaping (Store<State, Action>) -> Content
@@ -373,7 +353,7 @@ extension View {
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
   public func popover<State, Action, DestinationState, DestinationAction, Content: View>(
-    store: Store<PresentationState<State>, PresentationAction<State, Action>>,
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (State) -> DestinationState?,
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
     attachmentAnchor: PopoverAttachmentAnchor = .rect(.bounds),
@@ -381,11 +361,7 @@ extension View {
     @ViewBuilder content: @escaping (Store<DestinationState, DestinationAction>) -> Content
   ) -> some View {
     WithViewStore(store, removeDuplicates: { $0.id == $1.id }) { viewStore in
-      self.popover(
-        item: viewStore.binding(
-          get: { Item(destinations: $0, destination: toDestinationState) }, send: .dismiss
-        )
-      ) { _ in
+      self.popover(item: viewStore.binding(get: { $0.id }, send: .dismiss)) { _ in
         IfLetStore(
           store.scope(
             state: returningLastNonNilValue { $0.wrappedValue.flatMap(toDestinationState) },
@@ -398,24 +374,20 @@ extension View {
   }
 
   public func sheet<State, Action, Content: View>(
-    store: Store<PresentationState<State>, PresentationAction<State, Action>>,
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder content: @escaping (Store<State, Action>) -> Content
   ) -> some View {
     self.sheet(store: store, state: { $0 }, action: { $0 }, content: content)
   }
 
   public func sheet<State, Action, DestinationState, DestinationAction, Content: View>(
-    store: Store<PresentationState<State>, PresentationAction<State, Action>>,
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (State) -> DestinationState?,
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
     @ViewBuilder content: @escaping (Store<DestinationState, DestinationAction>) -> Content
   ) -> some View {
     WithViewStore(store, removeDuplicates: { $0.id == $1.id }) { viewStore in
-      self.sheet(
-        item: viewStore.binding(
-          get: { Item(destinations: $0, destination: toDestinationState) }, send: .dismiss
-        )
-      ) { _ in
+      self.sheet(item: viewStore.binding(get: { $0.id }, send: .dismiss)) { _ in
         IfLetStore(
           store.scope(
             state: returningLastNonNilValue { $0.wrappedValue.flatMap(toDestinationState) },
@@ -431,7 +403,7 @@ extension View {
   //       and NavigationState.
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func navigationDestination<State, Action, Destination: View>(
-    store: Store<PresentationState<State>, PresentationAction<State, Action>>,
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination
   ) -> some View {
     self.navigationDestination(
@@ -443,7 +415,7 @@ extension View {
   public func navigationDestination<
     State, Action, DestinationState, DestinationAction, Destination: View
   >(
-    store: Store<PresentationState<State>, PresentationAction<State, Action>>,
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (State) -> DestinationState?,
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
     @ViewBuilder destination: @escaping (Store<DestinationState, DestinationAction>) -> Destination
@@ -451,9 +423,7 @@ extension View {
     WithViewStore(
       store.scope(state: { $0.wrappedValue.flatMap(toDestinationState) != nil })
     ) { viewStore in
-      self.navigationDestination(
-        isPresented: viewStore.binding(send: { $0 ? .present : .dismiss })
-      ) {
+      self.navigationDestination(isPresented: viewStore.binding(send: .dismiss)) {
         IfLetStore(
           store.scope(
             state: returningLastNonNilValue { $0.wrappedValue.flatMap(toDestinationState) },
@@ -466,30 +436,6 @@ extension View {
   }
 }
 
-// TODO: needed?
-//private func areDestinationsEqual<State>(
-//  _ lhs: PresentationState<State>,
-//  _ rhs: PresentationState<State>
-//) -> Bool {
-//  lhs.id == rhs.id
-//}
-
-private struct Item: Identifiable {
-  let id: AnyHashable
-
-  init?<Destination, Destinations>(
-    destinations: PresentationState<Destinations>,
-    destination toDestination: (Destinations) -> Destination?
-  ) {
-    guard
-      case let .presented(id, destinations) = destinations,
-      toDestination(destinations) != nil
-    else { return nil }
-
-    self.id = id
-  }
-}
-
 // TODO: worth it?
 public struct PresentedView<
   State,
@@ -499,14 +445,14 @@ public struct PresentedView<
   Destination: View,
   Dismissed: View
 >: View {
-  let store: Store<PresentationState<State>, PresentationAction<State, Action>>
+  let store: Store<PresentationState<State>, PresentationAction<Action>>
   let toDestinationState: (State) -> DestinationState?
   let fromDestinationAction: (DestinationAction) -> Action
   let destination: (Store<DestinationState, DestinationAction>) -> Destination
   let dismissed: Dismissed
 
-  public init( 
-    _ store: Store<PresentationState<State>, PresentationAction<State, Action>>,
+  public init(
+    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (State) -> DestinationState?,
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
     @ViewBuilder destination: @escaping (Store<DestinationState, DestinationAction>) -> Destination,
@@ -520,7 +466,7 @@ public struct PresentedView<
   }
 
   public init(
-    _ store: Store<PresentationState<State>, PresentationAction<State, Action>>,
+    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder destination: @escaping (Store<DestinationState, DestinationAction>) -> Destination,
     @ViewBuilder dismissed: () -> Dismissed
   ) where State == DestinationState, Action == DestinationAction {
@@ -545,16 +491,19 @@ public struct PresentedView<
   }
 }
 
-@usableFromInline protocol _AlertState {}
+@usableFromInline protocol _DialogState {}
 
-extension AlertState: _AlertState {}
+extension AlertState: _DialogState {}
+
+@available(iOS 13, macOS 12, tvOS 13, watchOS 6, *)
+extension ConfirmationDialogState: _DialogState {}
 
 @usableFromInline
-func isAlertState<T>(_ state: T) -> Bool {
-  if state is _AlertState {
+func isDialogState<T>(_ state: T) -> Bool {
+  if state is _DialogState {
     return true
   } else if let metadata = EnumMetadata(type(of: state)) {
-    return metadata.associatedValueType(forTag: metadata.tag(of: state)) is _AlertState.Type
+    return metadata.associatedValueType(forTag: metadata.tag(of: state)) is _DialogState.Type
   } else {
     return false
   }

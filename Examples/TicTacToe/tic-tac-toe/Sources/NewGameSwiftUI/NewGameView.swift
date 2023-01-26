@@ -79,7 +79,7 @@ extension NewGame.Action {
   init(action: NewGameView.ViewAction) {
     switch action {
     case .letsPlayButtonTapped:
-      self = .game(.present)
+      self = .letsPlayButtonTapped
     case .logoutButtonTapped:
       self = .logoutButtonTapped
     case let .oPlayerNameChanged(name):

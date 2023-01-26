@@ -170,7 +170,7 @@ extension NewGame.Action {
     case .gameDismissed:
       self = .game(.dismiss)
     case .letsPlayButtonTapped:
-      self = .game(.present)
+      self = .letsPlayButtonTapped
     case .logoutButtonTapped:
       self = .logoutButtonTapped
     case let .oPlayerNameChanged(name):

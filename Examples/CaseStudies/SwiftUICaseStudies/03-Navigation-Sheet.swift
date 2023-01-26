@@ -8,6 +8,9 @@ struct SheetDemo: ReducerProtocol {
   }
 
   enum Action: Equatable {
+    case alertButtonTapped
+    case animationsButtonTapped
+    case counterButtonTapped
     case destination(PresentationActionOf<Destinations>)
     case swap
   }
@@ -15,6 +18,18 @@ struct SheetDemo: ReducerProtocol {
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
+      case .alertButtonTapped:
+        state.destination = .alert(.alert)
+        return .none
+
+      case .animationsButtonTapped:
+        state.destination = .animations(Animations.State())
+        return .none
+
+      case .counterButtonTapped:
+        state.destination = .counter(Counter.State())
+        return .none
+
       case .destination(.presented(.counter(.decrementButtonTapped))):
         if case let .counter(counterState) = state.destination,
           counterState.count < 0
@@ -47,7 +62,6 @@ struct SheetDemo: ReducerProtocol {
 
   struct Destinations: ReducerProtocol {
     enum State: Equatable {
-      // state.destination = .alert(.delete)
       case alert(AlertState<AlertAction>)
       case animations(Animations.State)
       case counter(Counter.State)
@@ -86,12 +100,14 @@ extension AlertState where Action == SheetDemo.Destinations.AlertAction {
 
 func form(_ viewStore: ViewStore<Void, SheetDemo.Action>) -> some View {
   Form {
-    Button("Alert") { viewStore.send(.destination(.present(.alert(.alert)))) }
+    Button("Alert") {
+      viewStore.send(.alertButtonTapped)
+    }
     Button("Animations") {
-      viewStore.send(.destination(.present(.animations(Animations.State()))))
+      viewStore.send(.animationsButtonTapped)
     }
     Button("Counter") {
-      viewStore.send(.destination(.present(.counter(Counter.State()))))
+      viewStore.send(.counterButtonTapped)
     }
   }
 }

@@ -77,14 +77,14 @@ extension View {
   public func alert<ButtonAction>(
     store: Store<
       PresentationState<AlertState<ButtonAction>>,
-      PresentationAction<AlertState<ButtonAction>, ButtonAction>
+      PresentationAction<ButtonAction>
     >
   ) -> some View {
     self.alert(store: store, state: { $0 }, action: { $0 })
   }
 
   public func alert<State, Action, ButtonAction>(
-    store: Store<PresentationState<State>, PresentationAction<State, Action>>,
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (State) -> AlertState<ButtonAction>?,
     action fromDestinationAction: @escaping (ButtonAction) -> Action
   ) -> some View {
@@ -109,15 +109,17 @@ extension View {
           ForEach(alertState.buttons) { button in
             Button(role: button.role.map(ButtonRole.init)) {
               switch button.action.type {
-              case let .send(action):
-                if let action = action {
+              case let .send(.some(action)):
+                viewStore.send(.presented(fromDestinationAction(action)))
+              case .send(nil):
+                viewStore.send(.dismiss)
+              case let .animatedSend(.some(action), animation):
+                _ = withAnimation(animation) {
                   viewStore.send(.presented(fromDestinationAction(action)))
                 }
-              case let .animatedSend(action, animation):
-                if let action = action {
-                  _ = withAnimation(animation) {
-                    viewStore.send(.presented(fromDestinationAction(action)))
-                  }
+              case let .animatedSend(nil, animation):
+                _ = withAnimation(animation) {
+                  viewStore.send(.dismiss)
                 }
               }
             } label: {

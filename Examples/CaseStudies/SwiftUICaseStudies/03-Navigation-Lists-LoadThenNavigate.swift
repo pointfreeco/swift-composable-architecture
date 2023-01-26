@@ -28,6 +28,7 @@ struct LoadThenNavigateList: ReducerProtocol {
   }
 
   enum Action: Equatable {
+    case rowTapped(id: UUID)
     case selection(PresentationActionOf<Counter>)
     case selectionDelayCompleted(UUID)
   }
@@ -37,7 +38,7 @@ struct LoadThenNavigateList: ReducerProtocol {
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
-      case let .selection(.present(id as UUID, _)):
+      case let .rowTapped(id):
         enum CancelID {}
 
         for row in state.rows {
@@ -79,7 +80,7 @@ struct LoadThenNavigateListView: View {
         }
         ForEach(viewStore.rows) { row in
           Button {
-            viewStore.send(.selection(.present(id: row.id)))
+            viewStore.send(.rowTapped(id: row.id))
           } label: {
             HStack {
               Text("Load optional counter that starts from \(row.count)")
