@@ -7,31 +7,34 @@ import XCTest
 @MainActor
 class NavigationSheetTests: XCTestCase {
   func testBasics() async {
+    let clock = TestClock()
     let store = TestStore(
       initialState: SheetDemo.State(),
       reducer: SheetDemo()
-    )
+    ) {
+      $0.continuousClock = clock
+    }
 
     let mainQueue = DispatchQueue.test
     store.dependencies.mainQueue = mainQueue.eraseToAnyScheduler()
 
-    await store.send(.sheet(.present(.animations(Animations.State())))) {
-      $0.sheet = .animations(Animations.State())
+    await store.send(.animationsButtonTapped) {
+      $0.destination = .animations(Animations.State())
     }
-    await store.send(.sheet(.presented(.animations(.rainbowButtonTapped))))
-    await store.receive(.sheet(.presented(.animations(.setColor(.red))))) {
+    await store.send(.destination(.presented(.animations(.rainbowButtonTapped))))
+    await store.receive(.destination(.presented(.animations(.setColor(.red))))) {
       try (/Optional.some).appending(path: /SheetDemo.Destinations.State.animations)
-        .modify(&$0.sheet) { $0.circleColor = .red }
+        .modify(&$0.destination) { $0.circleColor = .red }
     }
 
-    await mainQueue.advance(by: .seconds(1))
-    await store.receive(.sheet(.presented(.animations(.setColor(.blue))))) {
+    await clock.advance(by: .seconds(1))
+    await store.receive(.destination(.presented(.animations(.setColor(.blue))))) {
       try (/Optional.some).appending(path: /SheetDemo.Destinations.State.animations)
-        .modify(&$0.sheet) { $0.circleColor = .blue }
+        .modify(&$0.destination) { $0.circleColor = .blue }
     }
 
-    await store.send(.sheet(.dismiss)) {
-      $0.sheet = nil
+    await store.send(.destination(.dismiss)) {
+      $0.destination = nil
     }
   }
 }
