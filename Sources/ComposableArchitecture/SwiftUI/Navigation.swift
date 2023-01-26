@@ -1,6 +1,10 @@
 import OrderedCollections
 import SwiftUI
 
+//TODO: naming
+//@PresentationStackOf<Destinations> var stack
+//@PresentationStateOf<Destinations> var destination
+
 // TODO: Other names? `NavigationPathState`? `NavigationStatePath`? `PathState`
 // TODO: Should `NavigationState` flatten to just work on `Identifiable` elements?
 // TODO: `Sendable where Element: Sendable`

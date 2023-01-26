@@ -4,6 +4,10 @@ import SwiftUI
 
 struct VoiceMemos: ReducerProtocol {
   struct State: Equatable {
+
+//    @PresentationStateOf<Child> var child1
+//    @PresentationStateOf<Child> var child2
+
     var audioRecorderPermission = RecorderPermission.undetermined
     @PresentationStateOf<Destinations> var destination
     var voiceMemos: IdentifiedArrayOf<VoiceMemo.State> = []
