@@ -5,6 +5,8 @@ import SwiftUI
 public struct PresentationState<State> {
   private var boxedValue: [State]
 
+  @Dependency(\.navigationID) var navigationID
+
   public init(wrappedValue: State? = nil) {
     self.boxedValue = wrappedValue.map { [$0] } ?? []
   }
@@ -48,32 +50,12 @@ public struct PresentationState<State> {
     _modify { yield &self }
   }
 
-  @usableFromInline
-  var id: ID? {
-    self.wrappedValue.map(ID.init)
+  public var identifiedValue: (id: NavigationID, state: State)? {
+    self.wrappedValue.map { (self.navigationID.append($0), $0) }
   }
 
-  @usableFromInline
-  struct ID: Hashable, Identifiable {
-    let underlyingID: AnyHashable
-    let tag: UInt32?
-
-    @usableFromInline
-    init(_ state: State) {
-      func _id<I: Identifiable>(_ value: I) -> AnyHashable {
-        value.id
-      }
-
-      if let state = state as? any Identifiable {
-        self.underlyingID = _id(state)
-      } else {
-        self.underlyingID = ObjectIdentifier(State.self)
-      }
-      self.tag = enumTag(state)
-    }
-
-    @usableFromInline
-    var id: Self { self }
+  public var id: NavigationID? {
+    self.identifiedValue?.id
   }
 }
 
@@ -201,32 +183,22 @@ public struct _PresentationDestinationReducer<
     into state: inout Presenter.State,
     action: Presenter.Action
   ) -> EffectTask<Presenter.Action> {
-    // TODO: explore more performance implications
-    //       Doing effect = effect.merge may be faster on the creation side and slower on the run side,
-    //       because it creates a lot of nested TaskGroups
-    var effects: [EffectTask<Presenter.Action>] = []
+    let presentationState = state[keyPath: self.toPresentedState]
+    let presentationAction = self.toPresentedAction.extract(from: action)
+    var effects: EffectTask<Presenter.Action> = .none
 
-    let currentPresentedState = state[keyPath: self.toPresentedState]
-    let presentedAction = self.toPresentedAction.extract(from: action)
-
-    switch presentedAction {
-    case let .presented(presentedAction):
-      if var presentedState = currentPresentedState.wrappedValue {
-        let id = PresentationState.ID(presentedState)
-        effects.append(
-          self.presented
-            .dependency(\.dismiss, DismissEffect { Task.cancel(id: DismissID.self) })
-            .dependency(\.navigationID.current, id)
+    if case let .some(.presented(presentedAction)) = presentationAction {
+      switch presentationState.identifiedValue {
+      case .some((let id, var presentedState)):
+        defer { state[keyPath: self.toPresentedState].wrappedValue = presentedState }
+        effects = effects.merge(
+          with: self.presented
+            .dependency(\.navigationID, id)
             .reduce(into: &presentedState, action: presentedAction)
             .map { self.toPresentedAction.embed(.presented($0)) }
             .cancellable(id: id)
         )
-
-        state[keyPath: self.toPresentedState].wrappedValue =
-          isDialogState(presentedState)
-          ? nil
-          : presentedState
-      } else {
+      case .none:
         runtimeWarn(
           """
           A "presentationDestination" at "\(self.fileID):\(self.line)" received a destination \
@@ -250,50 +222,132 @@ public struct _PresentationDestinationReducer<
           file: self.file,
           line: self.line
         )
-        return .none
       }
-
-    case .dismiss, .none:
-      break
     }
 
-    effects.append(self.presenter.reduce(into: &state, action: action))
+    effects = effects.merge(
+      with: self.presenter.reduce(into: &state, action: action)
+    )
 
-    if case .dismiss = presentedAction, let id = currentPresentedState.id {
-      state[keyPath: self.toPresentedState].wrappedValue = nil
-      effects.append(.cancel(id: id))
-    } else if let id = currentPresentedState.id,
-      state[keyPath: self.toPresentedState].id != id
-    {
-      effects.append(.cancel(id: id))
+    if case .some(.dismiss) = presentationAction {
+      if state[keyPath: self.toPresentedState].wrappedValue == nil {
+        // TODO: Finesse
+        runtimeWarn(
+          """
+          A "presentationDestination" at "\(self.fileID):\(self.line)" received a dismissal \
+          action when destination state was already absent.
+          """,
+          file: self.file,
+          line: self.line
+        )
+      } else {
+        state[keyPath: self.toPresentedState].wrappedValue = nil
+      }
     }
 
-    let tmp = state[keyPath: self.toPresentedState]  // TODO: better name, write tests
-    if let id = tmp.id,
-      id != currentPresentedState.id,
-      // NB: Don't start lifecycle effect for alerts
-      //     TODO: handle confirmation dialogs too
-      tmp.wrappedValue.map(isDialogState) != true
+    if
+      let (id, _) = presentationState.identifiedValue,
+      state[keyPath: self.toPresentedState].identifiedValue?.id != id
     {
-      effects.append(
-        .run { send in
-          do {
-            try await withDependencies {
-              $0.navigationID.current = id
-            } operation: {
-              try await withTaskCancellation(id: DismissID.self) {
-                try await Task.never()
-              }
-            }
-          } catch is CancellationError {
-            await send(self.toPresentedAction.embed(.dismiss))
-          }
-        }
-        .cancellable(id: id)
+      effects = effects.merge(
+        with: .cancel(id: id)
       )
     }
 
-    return .merge(effects)
+    if
+      state[keyPath: self.toPresentedState].wrappedValue.map(isDialogState) == true,
+      case .some(.presented) = presentationAction
+    {
+      state[keyPath: self.toPresentedState].wrappedValue = nil
+    }
+
+    return effects
+
+//    switch presentedAction {
+//    case let .presented(presentedAction):
+//      if var presentedState = currentPresentedState.wrappedValue {
+//        let id = PresentationState.ID(presentedState)
+//        effects.append(
+//          self.presented
+//            .dependency(\.dismiss, DismissEffect { Task.cancel(id: DismissID.self) })
+//            .dependency(\.navigationID, id)
+//            .reduce(into: &presentedState, action: presentedAction)
+//            .map { self.toPresentedAction.embed(.presented($0)) }
+//            .cancellable(id: id)
+//        )
+//
+//        state[keyPath: self.toPresentedState].wrappedValue =
+//          isDialogState(presentedState)
+//          ? nil
+//          : presentedState
+//      } else {
+//        runtimeWarn(
+//          """
+//          A "presentationDestination" at "\(self.fileID):\(self.line)" received a destination \
+//          action when destination state was absent. …
+//
+//            Action:
+//              \(debugCaseOutput(action))
+//
+//          This is generally considered an application logic error, and can happen for a few \
+//          reasons:
+//
+//          • A parent reducer set destination state to "nil" before this reducer ran. This reducer \
+//          must run before any other reducer sets destination state to "nil". This ensures that \
+//          destination reducers can handle their actions while their state is still present.
+//
+//          • This action was sent to the store while destination state was "nil". Make sure that \
+//          actions for this reducer can only be sent from a view store when state is present, or \
+//          from effects that start from this reducer. In SwiftUI applications, use a Composable \
+//          Architecture view modifier like "sheet(store:…)".
+//          """,
+//          file: self.file,
+//          line: self.line
+//        )
+//        return .none
+//      }
+//
+//    case .dismiss, .none:
+//      break
+//    }
+//
+//    effects.append(self.presenter.reduce(into: &state, action: action))
+//
+//    if case .dismiss = presentedAction, let id = currentPresentedState.id {
+//      state[keyPath: self.toPresentedState].wrappedValue = nil
+//      effects.append(.cancel(id: id))
+//    } else if let id = currentPresentedState.id,
+//      state[keyPath: self.toPresentedState].id != id
+//    {
+//      effects.append(.cancel(id: id))
+//    }
+//
+//    let tmp = state[keyPath: self.toPresentedState]  // TODO: better name, write tests
+//    if let id = tmp.id,
+//      id != currentPresentedState.id,
+//      // NB: Don't start lifecycle effect for alerts
+//      //     TODO: handle confirmation dialogs too
+//      tmp.wrappedValue.map(isDialogState) != true
+//    {
+//      effects.append(
+//        .run { send in
+//          do {
+//            try await withDependencies {
+//              $0.navigationID.current = id
+//            } operation: {
+//              try await withTaskCancellation(id: DismissID.self) {
+//                try await Task.never()
+//              }
+//            }
+//          } catch is CancellationError {
+//            await send(self.toPresentedAction.embed(.dismiss))
+//          }
+//        }
+//        .cancellable(id: id)
+//      )
+//    }
+//
+//    return .merge(effects)
   }
 }
 

@@ -162,17 +162,17 @@ struct RootView: View {
         }
 
         Section(header: Text("Navigation")) {
-          Button("Navigation Stack") {
-            self.isNavigationStackCaseStudyPresented = true
-          }
-          .sheet(isPresented: self.$isNavigationStackCaseStudyPresented) {
-            NavigationDemoView(
-              store: self.store.scope(
-                state: \.navigation,
-                action: Root.Action.navigation
-              )
-            )
-          }
+//          Button("Navigation Stack") {
+//            self.isNavigationStackCaseStudyPresented = true
+//          }
+//          .sheet(isPresented: self.$isNavigationStackCaseStudyPresented) {
+//            NavigationDemoView(
+//              store: self.store.scope(
+//                state: \.navigation,
+//                action: Root.Action.navigation
+//              )
+//            )
+//          }
 
           NavigationLink(
             "Presentation sheet",

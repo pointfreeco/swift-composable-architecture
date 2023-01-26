@@ -53,8 +53,6 @@ struct SheetDemo: ReducerProtocol {
         return .none
       }
     }
-    // TODO: Can we hide away the behavior of detecting alert action and `nil`-ing out destination.
-    // TODO: Can we also not send `dismiss` when writing `nil` to binding in view layer?
     .presentationDestination(\.$destination, action: /Action.destination) {
       Destinations()
     }

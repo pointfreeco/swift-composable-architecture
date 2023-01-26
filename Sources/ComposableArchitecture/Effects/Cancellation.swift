@@ -33,7 +33,7 @@ extension EffectPublisher {
     case .none:
       return .none
     case let .publisher(publisher):
-      let navigationID = DependencyValues._current.navigationID.current
+      let navigationID = DependencyValues._current.navigationID
       return Self(
         operation: .publisher(
           Deferred {
@@ -82,15 +82,10 @@ extension EffectPublisher {
         )
       )
     case let .run(priority, operation):
-      let navigationID = DependencyValues._current.navigationID.current
       return Self(
         operation: .run(priority) { send in
-          await withDependencies {
-            $0.navigationID.current = navigationID
-          } operation: {
-            await withTaskCancellation(id: id, cancelInFlight: cancelInFlight) {
-              await operation(send)
-            }
+          await withTaskCancellation(id: id, cancelInFlight: cancelInFlight) {
+            await operation(send)
           }
         }
       )
@@ -123,7 +118,7 @@ extension EffectPublisher {
   /// - Returns: A new effect that will cancel any currently in-flight effect with the given
   ///   identifier.
   public static func cancel(id: AnyHashable) -> Self {
-    let navigationID = DependencyValues._current.navigationID.current
+    let navigationID = DependencyValues._current.navigationID
     return .fireAndForget {
       _cancellablesLock.sync {
         _cancellationCancellables[.init(id: id, navigationID: navigationID)]?
@@ -216,7 +211,7 @@ extension EffectPublisher {
     operation: @Sendable @escaping () async throws -> T
   ) async rethrows -> T {
     // TODO: do we need to pass navigationID here if we `??` coalesce it in _CancelToken
-    let id = _CancelToken(id: id, navigationID: DependencyValues._current.navigationID.current)
+    let id = _CancelToken(id: id, navigationID: DependencyValues._current.navigationID)
     let (cancellable, task) = _cancellablesLock.sync { () -> (AnyCancellable, Task<T, Error>) in
       if cancelInFlight {
         _cancellationCancellables[id]?.forEach { $0.cancel() }
@@ -318,7 +313,7 @@ extension Task where Success == Never, Failure == Never {
   /// - Parameter id: An identifier.
   public static func cancel<ID: Hashable & Sendable>(id: ID) {
     // TODO: do we need to pass navigationID here if we `??` coalesce it in _CancelToken
-    let id = _CancelToken(id: id, navigationID: DependencyValues._current.navigationID.current)
+    let id = _CancelToken(id: id, navigationID: DependencyValues._current.navigationID)
     _cancellablesLock.sync { _cancellationCancellables[id]?.forEach { $0.cancel() } }
   }
 
@@ -335,12 +330,12 @@ extension Task where Success == Never, Failure == Never {
 
 @_spi(Internals) public struct _CancelToken: Hashable {
   let id: AnyHashable
-  let navigationID: AnyHashable?
+  let navigationID: NavigationID
   let discriminator: ObjectIdentifier
 
-  public init(id: AnyHashable, navigationID: AnyHashable? = nil) {
+  public init(id: AnyHashable, navigationID: NavigationID? = nil) {
     self.id = id
-    self.navigationID = navigationID ?? DependencyValues._current.navigationID.current
+    self.navigationID = navigationID ?? DependencyValues._current.navigationID
     self.discriminator = ObjectIdentifier(type(of: id.base))
   }
 }
