@@ -287,13 +287,13 @@ public struct _PresentationDestinationReducer<
       effects.append(.cancel(id: id))
     }
 
-    let tmp = state[keyPath: self.toPresentedState] // TODO: better name, write tests
+    let updatedPresentedState = state[keyPath: self.toPresentedState] // TODO: write tests
     if
-      let id = tmp.id,
+      let id = updatedPresentedState.id,
       id != currentPresentedState.id,
       // NB: Don't start lifecycle effect for alerts
       //     TODO: handle confirmation dialogs too
-      tmp.wrappedValue.map(isAlertState) != true
+      updatedPresentedState.wrappedValue.map(isAlertState) != true
     {
       effects.append(
         .run { send in

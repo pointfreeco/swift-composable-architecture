@@ -19,6 +19,51 @@ final class PresentationTests: XCTestCase {
     }
   }
 
+  func testCancelEffectsOnDismissal_FromGrandparent() async {
+    // TODO: This test currently fails, but is there anything we can do to make it pass? Probably
+    // not without a reducer graph system.
+    XCTExpectFailure { _ in
+      true
+    }
+
+    struct Grandparent: ReducerProtocol {
+      struct State: Equatable {
+        var feature: Feature.State
+      }
+      enum Action: Equatable {
+        case feature(Feature.Action)
+        case tap
+      }
+      var body: some ReducerProtocolOf<Self> {
+        Scope(state: \.feature, action: /Action.feature) {
+          Feature()
+        }
+        Reduce<State, Action> { state, action in
+          switch action {
+          case .feature:
+            return .none
+          case .tap:
+            state.feature.child1 = nil
+            return .none
+          }
+        }
+      }
+    }
+
+    let store = TestStore(
+      initialState: Grandparent.State(feature: Feature.State()),
+      reducer: Grandparent()
+    )
+
+    await store.send(.feature(.child1Tapped)) {
+      $0.feature.child1 = Child.State()
+    }
+    await store.send(.feature(.child1(.presented(.onAppear))))
+    await store.send(.tap) {
+      $0.feature.child1 = nil
+    }
+  }
+
   func testCancelEffectsOnDismissal_ChildHydratedOnLaunch() async {
     let store = TestStore(
       initialState: Feature.State(child1: .presented(id: 0, Child.State())),
@@ -39,6 +84,7 @@ final class PresentationTests: XCTestCase {
 
     await store.send(.child1Tapped) {
       $0.child1 = Child.State()
+      //$0.child1 = Child.State()
     }
     await store.send(.child1(.presented(.closeButtonTapped)))
     await store.receive(.child1(.dismiss)) {
