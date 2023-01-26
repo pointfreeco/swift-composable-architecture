@@ -547,7 +547,7 @@ advanced usages.
 The documentation for releases and `main` are available here:
 
 * [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture)
-* [0.50.0](https://pointfreeco.github.io/swift-composable-architecture/0.49.0/documentation/composablearchitecture/)
+* [0.50.0](https://pointfreeco.github.io/swift-composable-architecture/0.50.0/documentation/composablearchitecture/)
 
 <details>
   <summary>
