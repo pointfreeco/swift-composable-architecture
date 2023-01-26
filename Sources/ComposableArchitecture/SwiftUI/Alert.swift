@@ -108,15 +108,17 @@ extension View {
         actions: { alertState in
           ForEach(alertState.buttons) { button in
             Button(role: button.role.map(ButtonRole.init)) {
-              switch button.action?.type {
+              switch button.action.type {
               case let .send(action):
-                viewStore.send(.presented(fromDestinationAction(action)))
-              case let .animatedSend(action, animation):
-                _ = withAnimation(animation) {
+                if let action = action {
                   viewStore.send(.presented(fromDestinationAction(action)))
                 }
-              case .none:
-                viewStore.send(.dismiss)
+              case let .animatedSend(action, animation):
+                if let action = action {
+                  _ = withAnimation(animation) {
+                    viewStore.send(.presented(fromDestinationAction(action)))
+                  }
+                }
               }
             } label: {
               Text(button.label)
