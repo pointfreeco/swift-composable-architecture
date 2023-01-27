@@ -326,7 +326,9 @@ public final class Store<State, Action> {
     self.scope(state: toChildState, action: { $0 })
   }
 
-  func filter(_ isSent: @escaping (State, Action) -> Bool) -> Store<State, Action> {
+  @_spi(Internals) public func filter(
+    _ isSent: @escaping (State, Action) -> Bool
+  ) -> Store<State, Action> {
     self.threadCheck(status: .scope)
 
     #if swift(>=5.7)
