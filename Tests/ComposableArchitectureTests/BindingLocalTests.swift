@@ -1,38 +1,40 @@
-import XCTest
+#if DEBUG
+  import XCTest
 
-@testable import ComposableArchitecture
+  @testable import ComposableArchitecture
 
-@MainActor
-final class BindingLocalTests: XCTestCase {
-  public func testBindingLocalIsActive() {
-    XCTAssertFalse(BindingLocal.isActive)
+  @MainActor
+  final class BindingLocalTests: XCTestCase {
+    public func testBindingLocalIsActive() {
+      XCTAssertFalse(BindingLocal.isActive)
 
-    struct MyReducer: ReducerProtocol {
-      struct State: Equatable {
-        var text = ""
-      }
+      struct MyReducer: ReducerProtocol {
+        struct State: Equatable {
+          var text = ""
+        }
 
-      enum Action: Equatable {
-        case textChanged(String)
-      }
+        enum Action: Equatable {
+          case textChanged(String)
+        }
 
-      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
-        switch action {
-        case let .textChanged(text):
-          state.text = text
-          return .none
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          switch action {
+          case let .textChanged(text):
+            state.text = text
+            return .none
+          }
         }
       }
-    }
 
-    let store = Store(initialState: MyReducer.State(), reducer: MyReducer())
-    let viewStore = ViewStore(store, observe: { $0 })
+      let store = Store(initialState: MyReducer.State(), reducer: MyReducer())
+      let viewStore = ViewStore(store, observe: { $0 })
 
-    let binding = viewStore.binding(get: \.text) { text in
-      XCTAssertTrue(BindingLocal.isActive)
-      return .textChanged(text)
+      let binding = viewStore.binding(get: \.text) { text in
+        XCTAssertTrue(BindingLocal.isActive)
+        return .textChanged(text)
+      }
+      binding.wrappedValue = "Hello!"
+      XCTAssertEqual(viewStore.text, "Hello!")
     }
-    binding.wrappedValue = "Hello!"
-    XCTAssertEqual(viewStore.text, "Hello!")
   }
-}
+#endif
