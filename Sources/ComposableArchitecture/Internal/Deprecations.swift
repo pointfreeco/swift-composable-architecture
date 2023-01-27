@@ -16,6 +16,13 @@ public typealias ReducerProtocolOf<R: Reducer> = Reducer<R.State, R.Action>
 
 // MARK: - Deprecated after 0.49.2
 
+@available(
+  *,
+  deprecated,
+  message: "Use 'ReducerBuilder<_, _>' with explicit 'State' and 'Action' generics, instead."
+)
+public typealias ReducerBuilderOf<R: ReducerProtocol> = ReducerBuilder<R.State, R.Action>
+
 // NB: As of Swift 5.7, property wrapper deprecations are not diagnosed, so we may want to keep this
 //     deprecation around for now:
 //     https://github.com/apple/swift/issues/63139

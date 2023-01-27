@@ -7,101 +7,82 @@
 /// See ``CombineReducers`` for an entry point into a reducer builder context.
 @resultBuilder
 public enum ReducerBuilder<State, Action> {
-  #if swift(>=5.7)
-    @inlinable
-    public static func buildArray(
-      _ reducers: [some Reducer<State, Action>]
-    ) -> some Reducer<State, Action> {
-      _SequenceMany(reducers: reducers)
-    }
+  @inlinable
+  public static func buildArray<R: Reducer>(_ reducers: [R]) -> _SequenceMany<R>
+  where R.State == State, R.Action == Action {
+    _SequenceMany(reducers: reducers)
+  }
 
-    @inlinable
-    public static func buildBlock() -> some Reducer<State, Action> {
-      EmptyReducer()
-    }
+  @inlinable
+  public static func buildBlock() -> EmptyReducer<State, Action> {
+    EmptyReducer()
+  }
 
-    @inlinable
-    public static func buildBlock(
-      _ reducer: some Reducer<State, Action>
-    ) -> some Reducer<State, Action> {
-      reducer
-    }
+  @inlinable
+  public static func buildBlock<R: Reducer>(_ reducer: R) -> R
+  where R.State == State, R.Action == Action {
+    reducer
+  }
 
-    @inlinable
-    public static func buildEither<R0: Reducer, R1: Reducer>(
-      first reducer: R0
-    ) -> _Conditional<R0, R1>
-    where R0.State == State, R0.Action == Action, R1.State == State, R1.Action == Action {
-      .first(reducer)
-    }
+  @inlinable
+  public static func buildEither<R0: Reducer, R1: Reducer>(
+    first reducer: R0
+  ) -> _Conditional<R0, R1>
+  where R0.State == State, R0.Action == Action, R1.State == State, R1.Action == Action {
+    .first(reducer)
+  }
 
-    @inlinable
-    public static func buildEither<R0: Reducer, R1: Reducer>(
-      second reducer: R1
-    ) -> _Conditional<R0, R1>
-    where R0.State == State, R0.Action == Action, R1.State == State, R1.Action == Action {
-      .second(reducer)
-    }
+  @inlinable
+  public static func buildEither<R0: Reducer, R1: Reducer>(
+    second reducer: R1
+  ) -> _Conditional<R0, R1>
+  where R0.State == State, R0.Action == Action, R1.State == State, R1.Action == Action {
+    .second(reducer)
+  }
 
-    @inlinable
-    public static func buildExpression(
-      _ expression: some Reducer<State, Action>
-    ) -> some Reducer<State, Action> {
-      expression
-    }
+  @inlinable
+  public static func buildExpression<R: Reducer>(_ expression: R) -> R
+  where R.State == State, R.Action == Action {
+    expression
+  }
 
-    @inlinable
-    public static func buildFinalResult(
-      _ reducer: some Reducer<State, Action>
-    ) -> some Reducer<State, Action> {
-      reducer
-    }
+  @inlinable
+  public static func buildFinalResult<R: Reducer>(_ reducer: R) -> R
+  where R.State == State, R.Action == Action {
+    reducer
+  }
 
-    @inlinable
-    public static func buildLimitedAvailability(
-      _ wrapped: some Reducer<State, Action>
-    ) -> Reduce<State, Action> {
-      Reduce(wrapped)
-    }
+  @inlinable
+  public static func buildLimitedAvailability<R: Reducer>(
+    _ wrapped: R
+  ) -> Reduce<State, Action>
+  where R.State == State, R.Action == Action {
+    Reduce(wrapped)
+  }
 
-    @inlinable
-    public static func buildOptional(
-      _ wrapped: (some Reducer<State, Action>)?
-    ) -> some Reducer<State, Action> {
-      wrapped
-    }
+  @inlinable
+  public static func buildOptional<R: Reducer>(_ wrapped: R?) -> R?
+  where R.State == State, R.Action == Action {
+    wrapped
+  }
 
-    @inlinable
-    public static func buildPartialBlock(
-      first: some Reducer<State, Action>
-    ) -> some Reducer<State, Action> {
-      first
-    }
+  @inlinable
+  public static func buildPartialBlock<R: Reducer>(
+    first: R
+  ) -> R
+  where R.State == State, R.Action == Action {
+    first
+  }
 
-    @inlinable
-    public static func buildPartialBlock(
-      accumulated: some Reducer<State, Action>, next: some Reducer<State, Action>
-    ) -> some Reducer<State, Action> {
-      _Sequence(accumulated, next)
-    }
-  #else
-    @inlinable
-    public static func buildArray<R: Reducer>(_ reducers: [R]) -> _SequenceMany<R>
-    where R.State == State, R.Action == Action {
-      _SequenceMany(reducers: reducers)
-    }
+  @inlinable
+  public static func buildPartialBlock<R0: Reducer, R1: Reducer>(
+    accumulated: R0, next: R1
+  ) -> _Sequence<R0, R1>
+  where R0.State == State, R0.Action == Action, R1.State == State, R1.Action == Action {
+    _Sequence(accumulated, next)
+  }
 
-    @inlinable
-    public static func buildBlock() -> EmptyReducer<State, Action> {
-      EmptyReducer()
-    }
-
-    @inlinable
-    public static func buildBlock<R: Reducer>(_ reducer: R) -> R
-    where R.State == State, R.Action == Action {
-      reducer
-    }
-
+  #if swift(<5.7)
     @inlinable
     public static func buildBlock<
       R0: Reducer,
@@ -330,34 +311,6 @@ public enum ReducerBuilder<State, Action> {
       )
     }
 
-    @inlinable
-    public static func buildEither<R0: Reducer, R1: Reducer>(
-      first reducer: R0
-    ) -> _Conditional<R0, R1>
-    where R0.State == State, R0.Action == Action {
-      .first(reducer)
-    }
-
-    @inlinable
-    public static func buildEither<R0: Reducer, R1: Reducer>(
-      second reducer: R1
-    ) -> _Conditional<R0, R1>
-    where R1.State == State, R1.Action == Action {
-      .second(reducer)
-    }
-
-    @inlinable
-    public static func buildExpression<R: Reducer>(_ expression: R) -> R
-    where R.State == State, R.Action == Action {
-      expression
-    }
-
-    @inlinable
-    public static func buildFinalResult<R: Reducer>(_ reducer: R) -> R
-    where R.State == State, R.Action == Action {
-      reducer
-    }
-
     @_disfavoredOverload
     @inlinable
     public static func buildFinalResult<R: Reducer>(_ reducer: R) -> Reduce<State, Action>
@@ -440,5 +393,3 @@ public enum ReducerBuilder<State, Action> {
     }
   }
 }
-
-public typealias ReducerBuilderOf<R: Reducer> = ReducerBuilder<R.State, R.Action>

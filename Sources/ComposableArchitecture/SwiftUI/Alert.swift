@@ -44,7 +44,11 @@ private struct NewAlertModifier<Action>: ViewModifier {
       presenting: viewStore.state,
       actions: {
         ForEach($0.buttons) {
-          Button($0) { viewStore.send($0) }
+          Button($0) { action in
+            if let action = action {
+              viewStore.send(action)
+            }
+          }
         }
       },
       message: { $0.message.map { Text($0) } }
@@ -58,7 +62,11 @@ private struct OldAlertModifier<Action>: ViewModifier {
 
   func body(content: Content) -> some View {
     content.alert(item: viewStore.binding(send: dismiss)) { state in
-      Alert(state) { viewStore.send($0) }
+      Alert(state) { action in
+        if let action = action {
+          viewStore.send(action)
+        }
+      }
     }
   }
 }

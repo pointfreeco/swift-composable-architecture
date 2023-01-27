@@ -28,8 +28,9 @@ extension Reduce {
     """
 )
 extension AnyReducer {
-  public init<R: Reducer>(@ReducerBuilderOf<R> _ build: @escaping (Environment) -> R)
-  where R.State == State, R.Action == Action {
+  public init<R: Reducer>(
+    @ReducerBuilder<State, Action> _ build: @escaping (Environment) -> R
+  ) where R.State == State, R.Action == Action {
     self.init { state, action, environment in
       build(environment).reduce(into: &state, action: action)
     }
