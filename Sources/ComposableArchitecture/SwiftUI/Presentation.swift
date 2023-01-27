@@ -5,6 +5,8 @@ import SwiftUI
 public struct PresentationState<State> {
   private var boxedValue: [State]
 
+  @Dependency(\.navigationID) var navigationID
+
   public init(wrappedValue: State? = nil) {
     self.boxedValue = wrappedValue.map { [$0] } ?? []
   }
@@ -176,7 +178,6 @@ public struct _PresentationDestinationReducer<
     self.line = line
   }
 
-  @inlinable
   public func reduce(
     into state: inout Presenter.State,
     action: Presenter.Action
@@ -303,7 +304,10 @@ extension View {
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
     @ViewBuilder content: @escaping (Store<DestinationState, DestinationAction>) -> Content
   ) -> some View {
-    WithViewStore(store, removeDuplicates: { $0.id == $1.id }) { viewStore in
+    WithViewStore(
+      store.filter { state, _ in state.wrappedValue != nil },
+      removeDuplicates: { $0.id == $1.id }
+    ) { viewStore in
       self.fullScreenCover(
         item: viewStore.binding(
           get: { $0.wrappedValue.flatMap(toDestinationState) != nil ? $0.id : nil },
@@ -349,7 +353,10 @@ extension View {
     arrowEdge: Edge = .top,
     @ViewBuilder content: @escaping (Store<DestinationState, DestinationAction>) -> Content
   ) -> some View {
-    WithViewStore(store, removeDuplicates: { $0.id == $1.id }) { viewStore in
+    WithViewStore(
+      store.filter { state, _ in state.wrappedValue != nil },
+      removeDuplicates: { $0.id == $1.id }
+    ) { viewStore in
       self.popover(item: viewStore.binding(get: { $0.id }, send: .dismiss)) { _ in
         IfLetStore(
           store.scope(
@@ -375,7 +382,10 @@ extension View {
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
     @ViewBuilder content: @escaping (Store<DestinationState, DestinationAction>) -> Content
   ) -> some View {
-    WithViewStore(store, removeDuplicates: { $0.id == $1.id }) { viewStore in
+    WithViewStore(
+      store.filter { state, _ in state.wrappedValue != nil },
+      removeDuplicates: { $0.id == $1.id }
+    ) { viewStore in
       self.sheet(
         item: viewStore.binding(
           get: { $0.wrappedValue.flatMap(toDestinationState) != nil ? $0.id : nil },
@@ -415,7 +425,9 @@ extension View {
     @ViewBuilder destination: @escaping (Store<DestinationState, DestinationAction>) -> Destination
   ) -> some View {
     WithViewStore(
-      store.scope(state: { $0.wrappedValue.flatMap(toDestinationState) != nil })
+      store
+        .filter { state, _ in state.wrappedValue != nil }
+        .scope(state: { $0.wrappedValue.flatMap(toDestinationState) != nil })
     ) { viewStore in
       self.navigationDestination(isPresented: viewStore.binding(send: .dismiss)) {
         IfLetStore(
