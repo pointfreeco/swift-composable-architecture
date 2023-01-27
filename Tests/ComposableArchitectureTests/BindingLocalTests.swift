@@ -1,5 +1,6 @@
-@testable import ComposableArchitecture
 import XCTest
+
+@testable import ComposableArchitecture
 
 @MainActor
 final class BindingLocalTests: XCTestCase {

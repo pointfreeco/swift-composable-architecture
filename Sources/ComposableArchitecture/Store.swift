@@ -310,7 +310,7 @@ public final class Store<State, Action> {
       return self.reducer.rescope(self, state: toChildState, action: { fromChildAction($1) })
     #else
       return (self.scope ?? StoreScope(root: self))
-      .rescope(self, state: toChildState, action: { fromChildAction($1) })
+        .rescope(self, state: toChildState, action: { fromChildAction($1) })
     #endif
   }
 
