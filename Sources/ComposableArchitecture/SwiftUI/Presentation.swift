@@ -5,8 +5,6 @@ import SwiftUI
 public struct PresentationState<State> {
   private var boxedValue: [State]
 
-  @Dependency(\.navigationID) var navigationID
-
   public init(wrappedValue: State? = nil) {
     self.boxedValue = wrappedValue.map { [$0] } ?? []
   }

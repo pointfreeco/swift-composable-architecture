@@ -1,7 +1,6 @@
 import Foundation
 
 extension DependencyValues {
-  @usableFromInline
   var navigationID: NavigationID {
     get { self[NavigationID.self] }
     set { self[NavigationID.self] = newValue }
