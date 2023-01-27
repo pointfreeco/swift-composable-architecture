@@ -22,9 +22,9 @@ final class PresentationTests: XCTestCase {
   func testCancelEffectsOnDismissal_FromGrandparent() async {
     // TODO: This test currently fails, but is there anything we can do to make it pass? Probably
     // not without a reducer graph system.
-    XCTExpectFailure { _ in
-      true
-    }
+//    XCTExpectFailure { _ in
+//      true
+//    }
 
     struct Grandparent: ReducerProtocol {
       struct State: Equatable {
@@ -43,7 +43,18 @@ final class PresentationTests: XCTestCase {
           case .feature:
             return .none
           case .tap:
+
+            // TODO: try this
+//            let cancellation = state.feature.$child1.dismiss()
+//            return .merge(cancelleration)
+
+            // logic
+            // TODO: this is also a possibility
+            return .send(.feature(.child1(.dismiss)))
+
+            // logic
             state.feature.child1 = nil
+            // logic
             return .none
           }
         }
@@ -59,7 +70,8 @@ final class PresentationTests: XCTestCase {
       $0.feature.child1 = Child.State()
     }
     await store.send(.feature(.child1(.presented(.onAppear))))
-    await store.send(.tap) {
+    await store.send(.tap)
+    await store.receive(.feature(.child1(.dismiss))) {
       $0.feature.child1 = nil
     }
   }
