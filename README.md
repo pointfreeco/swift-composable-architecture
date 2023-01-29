@@ -603,7 +603,7 @@ You can add ComposableArchitecture to an Xcode project by adding it as a package
 
 If you want to discuss the Composable Architecture or have a question about how to use it to solve 
 a particular problem, there are a number of places you can discuss with fellow 
-[Point-Free](http://www.pointfree.co) enthusiats:
+[Point-Free](http://www.pointfree.co) enthusiasts:
 
 * For long-form discussions, we recommend the [discussions][gh-discussions] tab of this repo.
 * For casual chat, we recommend the [Point-Free Community slack][slack-invite].
