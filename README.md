@@ -1,6 +1,7 @@
 # The Composable Architecture
 
 [![CI](https://github.com/pointfreeco/swift-composable-architecture/workflows/CI/badge.svg)](https://github.com/pointfreeco/swift-composable-architecture/actions?query=workflow%3ACI)
+[![slack](https://img.shields.io/badge/slack-chat-informational.svg?logo=slack)][slack-invite]
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fpointfreeco%2Fswift-composable-architecture%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/pointfreeco/swift-composable-architecture)
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fpointfreeco%2Fswift-composable-architecture%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/pointfreeco/swift-composable-architecture)
 
@@ -14,7 +15,7 @@ SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, tvOS, and watch
 * [Basic usage](#basic-usage)
 * [Documentation](#documentation)
 * [Installation](#installation)
-* [Help](#help)
+* [Community](#community)
 * [Translations](#translations)
 
 ## What is the Composable Architecture?
@@ -598,11 +599,16 @@ You can add ComposableArchitecture to an Xcode project by adding it as a package
         modules and consumes the static library in this fashion using the **tic-tac-toe** Swift 
         package.
 
-## Help
+## Community
+
+There is an active community of [Point-Free](http://www.pointfree.co) viewers and avid 
 
 If you want to discuss the Composable Architecture or have a question about how to use it to solve 
-a particular problem, you can start a topic in the [discussions][gh-discussions] tab of this repo, 
-or ask around on [its Swift forum][swift-forum].
+a particular problem, there are a number of places you can discuss with fellow 
+[Point-Free](http://www.pointfree.co) enthusiats:
+
+* For long-form discussions, we recommend the [discussions][gh-discussions] tab of this repo.
+* For casual chat, we recommend the [Point-Free Community slack][slack-invite].
 
 ## Translations
 
@@ -692,6 +698,7 @@ their own set of priorities and trade-offs that differ from the Composable Archi
 
 This library is released under the MIT license. See [LICENSE](LICENSE) for details.
 
+[slack-invite]: https://join.slack.com/t/pointfreecommunity/shared_invite/zt-1i57vvilg-wKl1WcPhDLPb1LawbHjQCw
 [pointfreeco]: https://www.pointfree.co
 [mbrandonw]: https://twitter.com/mbrandonw
 [stephencelis]: https://twitter.com/stephencelis
