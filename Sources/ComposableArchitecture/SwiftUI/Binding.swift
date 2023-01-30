@@ -170,7 +170,7 @@ public struct BindingAction<Root>: Equatable {
   //     payloads. We can box the existential to work around the bug.
   #if swift(<5.8)
     private let _value: [Any]
-    var value: Any { self._value }
+    var value: Any { self._value[0] }
   #else
     let value: Any
   #endif
