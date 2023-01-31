@@ -120,7 +120,7 @@ private struct FeatureWithAlert: ReducerProtocol {
   }
   enum Action: Equatable {
     case buttonTapped
-    case alert(PresentationAction<AlertState<AlertAction>, AlertAction>)
+    case alert(PresentationAction<AlertAction>)
   }
 
   var body: some ReducerProtocolOf<Self> {

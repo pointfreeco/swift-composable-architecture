@@ -3,6 +3,14 @@ import SwiftUI
 
 @propertyWrapper
 public struct PresentationState<State> {
+  public static var dismissed: Self {
+    Self(wrappedValue: nil)
+  }
+
+  public static func presented(_ state: State) -> Self {
+    Self(wrappedValue: state)
+  }
+
   private var boxedValue: [State]
 
   @Dependency(\.navigationID) var navigationID
@@ -231,16 +239,14 @@ public struct _PresentationDestinationReducer<
 
     if case .some(.dismiss) = presentationAction {
       if state[keyPath: self.toPresentedState].wrappedValue == nil {
-        // TODO: Finesse
-        // TODO: Need to not allow `nil` writes to bindings for this to not be noisy
-//        runtimeWarn(
-//          """
-//          A "presentationDestination" at "\(self.fileID):\(self.line)" received a dismissal \
-//          action when destination state was already absent.
-//          """,
-//          file: self.file,
-//          line: self.line
-//        )
+        runtimeWarn(
+          """
+          A "presentationDestination" at "\(self.fileID):\(self.line)" received a dismissal \
+          action when destination state was already absent.
+          """,
+          file: self.file,
+          line: self.line
+        )
       } else {
         state[keyPath: self.toPresentedState].wrappedValue = nil
       }
@@ -357,14 +363,39 @@ extension View {
       store.filter { state, _ in state.wrappedValue != nil },
       removeDuplicates: { $0.id == $1.id }
     ) { viewStore in
-      self.popover(item: viewStore.binding(get: { $0.id }, send: .dismiss)) { _ in
+      self.popover(
+//        item: viewStore.binding(
+//          get: { $0.wrappedValue.flatMap(toDestinationState) != nil ? $0.id : nil },
+//          send: { id in
+//            print("id", id)
+//            print("viewStore.id", viewStore.id)
+//            print("store.state.value.id", store.state.value.id)
+//            print("viewStore.id == store.state.value.id", viewStore.id == store.state.value.id)
+//            return .dismiss
+//          }
+//        )
+        item: Binding(
+          get: { viewStore.wrappedValue.flatMap(toDestinationState) != nil ? viewStore.id : nil },
+          set: { _ in }
+        )
+      ) { id in
         IfLetStore(
           store.scope(
             state: returningLastNonNilValue { $0.wrappedValue.flatMap(toDestinationState) },
             action: { .presented(fromDestinationAction($0)) }
-          ),
-          then: content
-        )
+          )
+        ) { sheetStore in
+          content(sheetStore)
+//            .onDisappear {
+//              // NB: Swapping presented items introduces a bug in which the item binding never
+//              //     writes `nil` and `onDismiss` is never called when the sheet is swiped away.
+//              //
+//              //     This `onDisappear` is a workaround to maintain dismissed state.
+//              if store.state.value.id == id {
+//                viewStore.binding(send: .dismiss).wrappedValue = .dismissed
+//              }
+//            }
+        }
       }
     }
   }
@@ -391,14 +422,26 @@ extension View {
           get: { $0.wrappedValue.flatMap(toDestinationState) != nil ? $0.id : nil },
           send: .dismiss
         )
-      ) { _ in
+      ) { id in
         IfLetStore(
           store.scope(
             state: returningLastNonNilValue { $0.wrappedValue.flatMap(toDestinationState) },
             action: { .presented(fromDestinationAction($0)) }
-          ),
-          then: content
-        )
+          )
+        ) { sheetStore in
+          content(sheetStore)
+            .onDisappear {
+              // NB: Swapping presented items introduces a bug in which the item binding never
+              //     writes `nil` and `onDismiss` is never called when the sheet is swiped away.
+              //
+              //     TODO: File and link to feedback here.
+              //
+              //     This `onDisappear` is a workaround to maintain dismissed state.
+              if store.state.value.id == id {
+                viewStore.binding(send: .dismiss).wrappedValue = .dismissed
+              }
+            }
+        }
       }
     }
   }

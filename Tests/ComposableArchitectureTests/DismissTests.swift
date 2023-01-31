@@ -84,12 +84,7 @@ final class DismissTests: XCTestCase {
 
   func testIsPresentedInDeepLinkedContext() async {
     let store = TestStore(
-      initialState: SimpleParentFeature.State(
-        child: .presented(
-          id: UUID(),
-          SimpleChildFeature.State()
-        )
-      ),
+      initialState: SimpleParentFeature.State(child: .presented(SimpleChildFeature.State())),
       reducer: SimpleParentFeature()
     )
 
