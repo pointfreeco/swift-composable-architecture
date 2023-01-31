@@ -136,7 +136,7 @@
           The store received 1 unexpected action after this one: …
 
           Unhandled actions: [
-            [0]: TestStoreFailureTests.Action.second
+            [0]: .second
           ]
           """
       }
@@ -200,7 +200,7 @@
           Must handle 1 received action before sending an action: …
 
           Unhandled actions: [
-            [0]: TestStoreFailureTests.Action.second
+            [0]: .second
           ]
           """
       }
@@ -216,7 +216,11 @@
       XCTExpectFailure {
         store.receive(.action)
       } issueMatcher: { issue in
-        issue.compactDescription == #"Expected to receive an action "action", but didn't get one."#
+        issue.compactDescription == """
+          Expected to receive the following action, but didn't: …
+
+            TestStoreFailureTests.Action.action
+          """
       }
     }
 
