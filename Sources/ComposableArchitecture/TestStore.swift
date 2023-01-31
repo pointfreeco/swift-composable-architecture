@@ -1311,9 +1311,15 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     file: StaticString = #file,
     line: UInt = #line
   ) {
+    var expectedActionDump = ""
+    customDump(expectedAction, to: &expectedActionDump, indent: 2)
     self.receiveAction(
       matching: { expectedAction == $0 },
-      failureMessage: #"Expected to receive an action "\#(expectedAction)", but didn't get one."#,
+      failureMessage: """
+        Expected to receive the following action, but didn't: …
+
+        \(expectedActionDump)
+        """,
       unexpectedActionDescription: { receivedAction in
         TaskResultDebugging.$emitRuntimeWarnings.withValue(false) {
           diff(expectedAction, receivedAction, format: .proportional)
@@ -1768,14 +1774,14 @@ extension TestStore where ScopedState: Equatable {
       }
 
       if !actions.isEmpty {
-        var action = ""
-        customDump(actions, to: &action)
+        var actionsDump = ""
+        customDump(actions, to: &actionsDump)
         XCTFailHelper(
           """
           \(actions.count) received action\
           \(actions.count == 1 ? " was" : "s were") skipped:
 
-          \(action)
+          \(actionsDump)
           """,
           file: file,
           line: line
