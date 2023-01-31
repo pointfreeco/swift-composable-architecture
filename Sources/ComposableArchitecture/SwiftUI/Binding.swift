@@ -166,8 +166,31 @@ public struct BindingAction<Root>: Equatable {
 
   @usableFromInline
   let set: (inout Root) -> Void
-  let value: Any
+  // NB: swift(<5.8) has an enum existential layout bug that can cause crashes when extracting
+  //     payloads. We can box the existential to work around the bug.
+  #if swift(<5.8)
+    private let _value: [Any]
+    var value: Any { self._value[0] }
+  #else
+    let value: Any
+  #endif
   let valueIsEqualTo: (Any) -> Bool
+
+  init(
+    keyPath: PartialKeyPath<Root>,
+    set: @escaping (inout Root) -> Void,
+    value: Any,
+    valueIsEqualTo: @escaping (Any) -> Bool
+  ) {
+    self.keyPath = keyPath
+    self.set = set
+    #if swift(<5.8)
+      self._value = [value]
+    #else
+      self.value = value
+    #endif
+    self.valueIsEqualTo = valueIsEqualTo
+  }
 
   public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.keyPath == rhs.keyPath && lhs.valueIsEqualTo(rhs.value)

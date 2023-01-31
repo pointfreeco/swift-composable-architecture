@@ -1,6 +1,7 @@
 # The Composable Architecture
 
 [![CI](https://github.com/pointfreeco/swift-composable-architecture/workflows/CI/badge.svg)](https://github.com/pointfreeco/swift-composable-architecture/actions?query=workflow%3ACI)
+[![Slack](https://img.shields.io/badge/slack-chat-informational.svg?label=Slack&logo=slack)](https://www.pointfree.co/slack-invite)
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fpointfreeco%2Fswift-composable-architecture%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/pointfreeco/swift-composable-architecture)
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fpointfreeco%2Fswift-composable-architecture%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/pointfreeco/swift-composable-architecture)
 
@@ -13,8 +14,8 @@ SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, tvOS, and watch
 * [Examples](#examples)
 * [Basic usage](#basic-usage)
 * [Documentation](#documentation)
+* [Community](#community)
 * [Installation](#installation)
-* [Help](#help)
 * [Translations](#translations)
 
 ## What is the Composable Architecture?
@@ -581,6 +582,15 @@ comfortable with the library:
 * [Bindings][bindings-article]
 * [Migrating to the reducer protocol][migrating-article]
 
+## Community
+
+If you want to discuss the Composable Architecture or have a question about how to use it to solve 
+a particular problem, there are a number of places you can discuss with fellow 
+[Point-Free](http://www.pointfree.co) enthusiasts:
+
+* For long-form discussions, we recommend the [discussions][gh-discussions] tab of this repo.
+* For casual chat, we recommend the [Point-Free Community slack](http://pointfree.co/slack-invite).
+
 ## Installation
 
 You can add ComposableArchitecture to an Xcode project by adding it as a package dependency.
@@ -597,12 +607,6 @@ You can add ComposableArchitecture to an Xcode project by adding it as a package
         [Tic-Tac-Toe](./Examples/TicTacToe) demo application, which splits lots of features into 
         modules and consumes the static library in this fashion using the **tic-tac-toe** Swift 
         package.
-
-## Help
-
-If you want to discuss the Composable Architecture or have a question about how to use it to solve 
-a particular problem, you can start a topic in the [discussions][gh-discussions] tab of this repo, 
-or ask around on [its Swift forum][swift-forum].
 
 ## Translations
 
