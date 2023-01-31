@@ -433,10 +433,9 @@ extension View {
             .onDisappear {
               // NB: Swapping presented items introduces a bug in which the item binding never
               //     writes `nil` and `onDismiss` is never called when the sheet is swiped away.
-              //
-              //     TODO: File and link to feedback here.
-              //
               //     This `onDisappear` is a workaround to maintain dismissed state.
+              //
+              // Feedback filed: https://gist.github.com/mbrandonw/f8b94957031160336cac6898a919cbb7#file-fb11975674-md
               if store.state.value.id == id {
                 viewStore.binding(send: .dismiss).wrappedValue = .dismissed
               }
