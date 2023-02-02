@@ -15,9 +15,18 @@ public struct Reduce<State, Action>: ReducerProtocol {
 
   /// Initializes a reducer with a `reduce` function.
   ///
-  /// - Parameter reduce: A function that is called when ``reduce(into:action:)`` is invoked.
+  /// - Parameters:
+  ///   - stateType: The type of state. Assists the compiler in type checking the reduce closure.
+  ///     Specify when autocompletion fails to suggest properties on state.
+  ///   - actionType: The type of action. Assists the compiler in type checking the reduce closure.
+  ///     Specify when autocompletion fails to suggest action cases.
+  ///   - reduce: A function that is called when ``reduce(into:action:)`` is invoked.
   @inlinable
-  public init(_ reduce: @escaping (inout State, Action) -> EffectTask<Action>) {
+  public init(
+    into stateType: State.Type = State.self,
+    action actionType: Action.Type = Action.self,
+    _ reduce: @escaping (inout State, Action
+  ) -> EffectTask<Action>) {
     self.init(internal: reduce)
   }
 
