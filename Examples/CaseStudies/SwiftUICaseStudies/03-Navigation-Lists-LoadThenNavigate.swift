@@ -18,7 +18,7 @@ struct LoadThenNavigateList: ReducerProtocol {
       Row(count: 42, id: UUID()),
       Row(count: 100, id: UUID()),
     ]
-    @PresentationStateOf<Counter> var selection
+    @PresentationState var selection: Counter.State?
 
     struct Row: Equatable, Identifiable {
       var count: Int
@@ -29,7 +29,7 @@ struct LoadThenNavigateList: ReducerProtocol {
 
   enum Action: Equatable {
     case rowTapped(id: UUID)
-    case selection(PresentationActionOf<Counter>)
+    case selection(PresentationAction<Counter.Action>)
     case selectionDelayCompleted(UUID)
   }
 

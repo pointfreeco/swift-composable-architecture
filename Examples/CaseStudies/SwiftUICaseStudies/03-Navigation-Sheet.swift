@@ -4,14 +4,14 @@ import SwiftUINavigation
 
 struct SheetDemo: ReducerProtocol {
   struct State: Equatable {
-    @PresentationStateOf<Destinations> var destination
+    @PresentationState var destination: Destinations.State?
   }
 
   enum Action: Equatable {
     case alertButtonTapped
     case animationsButtonTapped
     case counterButtonTapped
-    case destination(PresentationActionOf<Destinations>)
+    case destination(PresentationAction<Destinations.Action>)
     case swap
   }
 

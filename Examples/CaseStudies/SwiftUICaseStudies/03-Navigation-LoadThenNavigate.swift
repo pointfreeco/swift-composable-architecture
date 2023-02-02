@@ -13,12 +13,12 @@ private let readMe = """
 
 struct LoadThenNavigate: ReducerProtocol {
   struct State: Equatable {
-    @PresentationStateOf<Counter> var counter
+    @PresentationState var counter: Counter.State?
     var isActivityIndicatorVisible = false
   }
 
   enum Action: Equatable {
-    case counter(PresentationActionOf<Counter>)
+    case counter(PresentationAction<Counter.Action>)
     case loadCounterButtonTapped
     case presentationDelayCompleted
   }

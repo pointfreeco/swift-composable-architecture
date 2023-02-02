@@ -67,8 +67,6 @@ public struct PresentationState<State> {
   }
 }
 
-public typealias PresentationStateOf<R: ReducerProtocol> = PresentationState<R.State>
-
 extension PresentationState: Equatable where State: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.wrappedValue == rhs.wrappedValue
@@ -103,8 +101,6 @@ public enum PresentationAction<Action> {
   case dismiss
   case presented(Action)
 }
-
-public typealias PresentationActionOf<R: ReducerProtocol> = PresentationAction<R.Action>
 
 extension PresentationAction: Equatable where Action: Equatable {}
 extension PresentationAction: Hashable where Action: Hashable {}
@@ -147,13 +143,10 @@ public struct _PresentationDestinationReducer<
   let presented: Presented
 
   @usableFromInline
-  let toPresentedState: WritableKeyPath<Presenter.State, PresentationStateOf<Presented>>
+  let toPresentedState: WritableKeyPath<Presenter.State, PresentationState<Presented.State>>
 
   @usableFromInline
-  let toPresentedAction:
-    CasePath<
-      Presenter.Action, PresentationActionOf<Presented>
-    >
+  let toPresentedAction: CasePath<Presenter.Action, PresentationAction<Presented.Action>>
 
   @usableFromInline
   let file: StaticString
@@ -171,8 +164,8 @@ public struct _PresentationDestinationReducer<
   init(
     presenter: Presenter,
     presented: Presented,
-    toPresentedState: WritableKeyPath<Presenter.State, PresentationStateOf<Presented>>,
-    toPresentedAction: CasePath<Presenter.Action, PresentationActionOf<Presented>>,
+    toPresentedState: WritableKeyPath<Presenter.State, PresentationState<Presented.State>>,
+    toPresentedAction: CasePath<Presenter.Action, PresentationAction<Presented.Action>>,
     file: StaticString,
     fileID: StaticString,
     line: UInt
