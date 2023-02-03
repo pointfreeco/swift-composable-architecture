@@ -2436,7 +2436,7 @@ private func _XCTExpectFailure(
 
 extension TestStore {
   @MainActor
-  @available(*, unavailable, message: "Action must conform to Equatable to receive.")
+  @available(*, unavailable, message: "Action must conform to Equatable to receive actions.")
   public func receive(
     _ expectedAction: Action,
     assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
@@ -2447,7 +2447,7 @@ extension TestStore {
 
   @MainActor
   @discardableResult
-  @available(*, unavailable, message: "Action must conform to Equatable to receive.")
+  @available(*, unavailable, message: "State must conform to Equatable to send actions.")
   public func send(
     _ action: ScopedAction,
     assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
