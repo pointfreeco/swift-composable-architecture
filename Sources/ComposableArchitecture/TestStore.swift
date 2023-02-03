@@ -2436,7 +2436,11 @@ private func _XCTExpectFailure(
 
 extension TestStore {
   @MainActor
-  @available(*, unavailable, message: "Action must conform to Equatable to receive actions.")
+  @available(
+    *,
+     unavailable,
+     message: "State and Action must conform to Equatable to receive actions."
+  )
   public func receive(
     _ expectedAction: Action,
     assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
