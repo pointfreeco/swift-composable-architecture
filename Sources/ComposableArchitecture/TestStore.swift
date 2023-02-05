@@ -2438,8 +2438,8 @@ extension TestStore {
   @MainActor
   @available(
     *,
-     unavailable,
-     message: "State and Action must conform to Equatable to receive actions."
+    unavailable,
+    message: "State and Action must conform to Equatable to receive actions."
   )
   public func receive(
     _ expectedAction: Action,
