@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "group:Examples/MyTestProject/MyTestProject.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:Examples/Workout/Workout.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:">
+   </FileRef>
+   <FileRef
+      location = "group:Examples/CaseStudies/CaseStudies.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:Examples/Integration/Integration.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:Examples/Search/Search.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:Examples/SpeechRecognition/SpeechRecognition.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:Examples/TicTacToe/TicTacToe.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:Examples/TheApplication/TheApplication.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:Examples/Todos/Todos.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:Examples/VoiceMemos/VoiceMemos.xcodeproj">
+   </FileRef>
+</Workspace>

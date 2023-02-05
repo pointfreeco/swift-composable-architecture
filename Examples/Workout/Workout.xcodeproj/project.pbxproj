@@ -11,58 +11,18 @@
 		FF9353EF2982B7DF00C5860D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF9353EE2982B7DF00C5860D /* ContentView.swift */; };
 		FF9353F12982B7E000C5860D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FF9353F02982B7E000C5860D /* Assets.xcassets */; };
 		FF9353F42982B7E000C5860D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FF9353F32982B7E000C5860D /* Preview Assets.xcassets */; };
-		FF9353FB2982B80B00C5860D /* swift-composable-architecture in Resources */ = {isa = PBXBuildFile; fileRef = FF9353FA2982B80B00C5860D /* swift-composable-architecture */; };
 		FF9354442982C21C00C5860D /* AppFeature in Frameworks */ = {isa = PBXBuildFile; productRef = FF9354432982C21C00C5860D /* AppFeature */; };
-		FF93544C2982C50100C5860D /* WorkoutPreviewApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF93544B2982C50100C5860D /* WorkoutPreviewApp.swift */; };
-		FF93544E2982C50100C5860D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF93544D2982C50100C5860D /* ContentView.swift */; };
-		FF9354502982C50200C5860D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FF93544F2982C50200C5860D /* Assets.xcassets */; };
-		FF9354532982C50200C5860D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FF9354522982C50200C5860D /* Preview Assets.xcassets */; };
-		FF9354552982C50200C5860D /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF9354542982C50200C5860D /* Persistence.swift */; };
-		FF9354582982C50200C5860D /* WorkoutPreview.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = FF9354562982C50200C5860D /* WorkoutPreview.xcdatamodeld */; };
-		FF9354632982C50300C5860D /* WorkoutPreviewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF9354622982C50300C5860D /* WorkoutPreviewTests.swift */; };
-		FF93546D2982C50300C5860D /* WorkoutPreviewUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF93546C2982C50300C5860D /* WorkoutPreviewUITests.swift */; };
-		FF93546F2982C50300C5860D /* WorkoutPreviewUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF93546E2982C50300C5860D /* WorkoutPreviewUITestsLaunchTests.swift */; };
-		FF93547C2982C5ED00C5860D /* AppFeature in Frameworks */ = {isa = PBXBuildFile; productRef = FF93547B2982C5ED00C5860D /* AppFeature */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		FF93545F2982C50300C5860D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = FF9353E12982B7DF00C5860D /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = FF9354482982C50100C5860D;
-			remoteInfo = WorkoutPreview;
-		};
-		FF9354692982C50300C5860D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = FF9353E12982B7DF00C5860D /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = FF9354482982C50100C5860D;
-			remoteInfo = WorkoutPreview;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
-		FF9353E92982B7DF00C5860D /* Workout.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Workout.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FF835447298EBCD400FFD842 /* WorkoutPreviewTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = WorkoutPreviewTests.xctest; path = "/Users/akashsoni/Documents/GitHub/swift-composable-architecture/Examples/Workout/build/Debug-iphoneos/WorkoutPreviewTests.xctest"; sourceTree = "<absolute>"; };
+		FF835448298EBCD400FFD842 /* WorkoutPreviewUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = WorkoutPreviewUITests.xctest; path = "/Users/akashsoni/Documents/GitHub/swift-composable-architecture/Examples/Workout/build/Debug-iphoneos/WorkoutPreviewUITests.xctest"; sourceTree = "<absolute>"; };
+		FF9353E92982B7DF00C5860D /* Workout.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = Workout.app; path = "/Users/akashsoni/Documents/GitHub/swift-composable-architecture/Examples/Workout/build/Debug-iphoneos/Workout.app"; sourceTree = "<absolute>"; };
 		FF9353EC2982B7DF00C5860D /* WorkoutApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutApp.swift; sourceTree = "<group>"; };
 		FF9353EE2982B7DF00C5860D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		FF9353F02982B7E000C5860D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		FF9353F32982B7E000C5860D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		FF9353FA2982B80B00C5860D /* swift-composable-architecture */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "swift-composable-architecture"; path = ../..; sourceTree = "<group>"; };
 		FF9354422982C10800C5860D /* Modularization */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Modularization; path = Workout/Modularization; sourceTree = "<group>"; };
-		FF9354492982C50100C5860D /* WorkoutPreview.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WorkoutPreview.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		FF93544B2982C50100C5860D /* WorkoutPreviewApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutPreviewApp.swift; sourceTree = "<group>"; };
-		FF93544D2982C50100C5860D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		FF93544F2982C50200C5860D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		FF9354522982C50200C5860D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		FF9354542982C50200C5860D /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
-		FF9354572982C50200C5860D /* WorkoutPreview.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = WorkoutPreview.xcdatamodel; sourceTree = "<group>"; };
-		FF9354592982C50200C5860D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		FF93545E2982C50300C5860D /* WorkoutPreviewTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WorkoutPreviewTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		FF9354622982C50300C5860D /* WorkoutPreviewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutPreviewTests.swift; sourceTree = "<group>"; };
-		FF9354682982C50300C5860D /* WorkoutPreviewUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WorkoutPreviewUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		FF93546C2982C50300C5860D /* WorkoutPreviewUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutPreviewUITests.swift; sourceTree = "<group>"; };
-		FF93546E2982C50300C5860D /* WorkoutPreviewUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutPreviewUITestsLaunchTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,14 +31,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				FF9354442982C21C00C5860D /* AppFeature in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		FF9354462982C50100C5860D /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				FF93547C2982C5ED00C5860D /* AppFeature in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -103,25 +55,8 @@
 			isa = PBXGroup;
 			children = (
 				FF9354422982C10800C5860D /* Modularization */,
-				FF9353FA2982B80B00C5860D /* swift-composable-architecture */,
 				FF9353EB2982B7DF00C5860D /* Workout */,
-				FF93544A2982C50100C5860D /* WorkoutPreview */,
-				FF9354612982C50300C5860D /* WorkoutPreviewTests */,
-				FF93546B2982C50300C5860D /* WorkoutPreviewUITests */,
-				FF9353EA2982B7DF00C5860D /* Products */,
-				FF9353FC2982B81B00C5860D /* Frameworks */,
 			);
-			sourceTree = "<group>";
-		};
-		FF9353EA2982B7DF00C5860D /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				FF9353E92982B7DF00C5860D /* Workout.app */,
-				FF9354492982C50100C5860D /* WorkoutPreview.app */,
-				FF93545E2982C50300C5860D /* WorkoutPreviewTests.xctest */,
-				FF9354682982C50300C5860D /* WorkoutPreviewUITests.xctest */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 		FF9353EB2982B7DF00C5860D /* Workout */ = {
@@ -141,52 +76,6 @@
 				FF9353F32982B7E000C5860D /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
-			sourceTree = "<group>";
-		};
-		FF9353FC2982B81B00C5860D /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		FF93544A2982C50100C5860D /* WorkoutPreview */ = {
-			isa = PBXGroup;
-			children = (
-				FF93544B2982C50100C5860D /* WorkoutPreviewApp.swift */,
-				FF93544D2982C50100C5860D /* ContentView.swift */,
-				FF93544F2982C50200C5860D /* Assets.xcassets */,
-				FF9354542982C50200C5860D /* Persistence.swift */,
-				FF9354592982C50200C5860D /* Info.plist */,
-				FF9354562982C50200C5860D /* WorkoutPreview.xcdatamodeld */,
-				FF9354512982C50200C5860D /* Preview Content */,
-			);
-			path = WorkoutPreview;
-			sourceTree = "<group>";
-		};
-		FF9354512982C50200C5860D /* Preview Content */ = {
-			isa = PBXGroup;
-			children = (
-				FF9354522982C50200C5860D /* Preview Assets.xcassets */,
-			);
-			path = "Preview Content";
-			sourceTree = "<group>";
-		};
-		FF9354612982C50300C5860D /* WorkoutPreviewTests */ = {
-			isa = PBXGroup;
-			children = (
-				FF9354622982C50300C5860D /* WorkoutPreviewTests.swift */,
-			);
-			path = WorkoutPreviewTests;
-			sourceTree = "<group>";
-		};
-		FF93546B2982C50300C5860D /* WorkoutPreviewUITests */ = {
-			isa = PBXGroup;
-			children = (
-				FF93546C2982C50300C5860D /* WorkoutPreviewUITests.swift */,
-				FF93546E2982C50300C5860D /* WorkoutPreviewUITestsLaunchTests.swift */,
-			);
-			path = WorkoutPreviewUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -212,26 +101,6 @@
 			productReference = FF9353E92982B7DF00C5860D /* Workout.app */;
 			productType = "com.apple.product-type.application";
 		};
-		FF9354482982C50100C5860D /* WorkoutPreview */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = FF9354702982C50300C5860D /* Build configuration list for PBXNativeTarget "WorkoutPreview" */;
-			buildPhases = (
-				FF9354452982C50100C5860D /* Sources */,
-				FF9354462982C50100C5860D /* Frameworks */,
-				FF9354472982C50100C5860D /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = WorkoutPreview;
-			packageProductDependencies = (
-				FF93547B2982C5ED00C5860D /* AppFeature */,
-			);
-			productName = WorkoutPreview;
-			productReference = FF9354492982C50100C5860D /* WorkoutPreview.app */;
-			productType = "com.apple.product-type.application";
-		};
 		FF93545D2982C50300C5860D /* WorkoutPreviewTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = FF9354732982C50300C5860D /* Build configuration list for PBXNativeTarget "WorkoutPreviewTests" */;
@@ -243,11 +112,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				FF9354602982C50300C5860D /* PBXTargetDependency */,
 			);
 			name = WorkoutPreviewTests;
 			productName = WorkoutPreviewTests;
-			productReference = FF93545E2982C50300C5860D /* WorkoutPreviewTests.xctest */;
+			productReference = FF835447298EBCD400FFD842 /* WorkoutPreviewTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		FF9354672982C50300C5860D /* WorkoutPreviewUITests */ = {
@@ -261,11 +129,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				FF93546A2982C50300C5860D /* PBXTargetDependency */,
 			);
 			name = WorkoutPreviewUITests;
 			productName = WorkoutPreviewUITests;
-			productReference = FF9354682982C50300C5860D /* WorkoutPreviewUITests.xctest */;
+			productReference = FF835448298EBCD400FFD842 /* WorkoutPreviewUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -279,9 +146,6 @@
 				LastUpgradeCheck = 1420;
 				TargetAttributes = {
 					FF9353E82982B7DF00C5860D = {
-						CreatedOnToolsVersion = 14.2;
-					};
-					FF9354482982C50100C5860D = {
 						CreatedOnToolsVersion = 14.2;
 					};
 					FF93545D2982C50300C5860D = {
@@ -303,12 +167,11 @@
 				Base,
 			);
 			mainGroup = FF9353E02982B7DF00C5860D;
-			productRefGroup = FF9353EA2982B7DF00C5860D /* Products */;
+			productRefGroup = FF9353E02982B7DF00C5860D;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				FF9353E82982B7DF00C5860D /* Workout */,
-				FF9354482982C50100C5860D /* WorkoutPreview */,
 				FF93545D2982C50300C5860D /* WorkoutPreviewTests */,
 				FF9354672982C50300C5860D /* WorkoutPreviewUITests */,
 			);
@@ -322,16 +185,6 @@
 			files = (
 				FF9353F42982B7E000C5860D /* Preview Assets.xcassets in Resources */,
 				FF9353F12982B7E000C5860D /* Assets.xcassets in Resources */,
-				FF9353FB2982B80B00C5860D /* swift-composable-architecture in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		FF9354472982C50100C5860D /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				FF9354532982C50200C5860D /* Preview Assets.xcassets in Resources */,
-				FF9354502982C50200C5860D /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -361,22 +214,10 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		FF9354452982C50100C5860D /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				FF9354582982C50200C5860D /* WorkoutPreview.xcdatamodeld in Sources */,
-				FF9354552982C50200C5860D /* Persistence.swift in Sources */,
-				FF93544E2982C50100C5860D /* ContentView.swift in Sources */,
-				FF93544C2982C50100C5860D /* WorkoutPreviewApp.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		FF93545A2982C50300C5860D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FF9354632982C50300C5860D /* WorkoutPreviewTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -384,25 +225,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FF93546D2982C50300C5860D /* WorkoutPreviewUITests.swift in Sources */,
-				FF93546F2982C50300C5860D /* WorkoutPreviewUITestsLaunchTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		FF9354602982C50300C5860D /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = FF9354482982C50100C5860D /* WorkoutPreview */;
-			targetProxy = FF93545F2982C50300C5860D /* PBXContainerItemProxy */;
-		};
-		FF93546A2982C50300C5860D /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = FF9354482982C50100C5860D /* WorkoutPreview */;
-			targetProxy = FF9354692982C50300C5860D /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		FF9353F52982B7E000C5860D /* Debug */ = {
@@ -577,68 +403,9 @@
 			};
 			name = Release;
 		};
-		FF9354712982C50300C5860D /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"WorkoutPreview/Preview Content\"";
-				DEVELOPMENT_TEAM = 4M45SYN38G;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.ios.codefonsi.WorkoutPreview;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		FF9354722982C50300C5860D /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"WorkoutPreview/Preview Content\"";
-				DEVELOPMENT_TEAM = 4M45SYN38G;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.ios.codefonsi.WorkoutPreview;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
 		FF9354742982C50300C5860D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -658,7 +425,6 @@
 		FF9354752982C50300C5860D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -678,7 +444,6 @@
 		FF9354772982C50300C5860D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4M45SYN38G;
@@ -696,7 +461,6 @@
 		FF9354782982C50300C5860D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4M45SYN38G;
@@ -732,15 +496,6 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		FF9354702982C50300C5860D /* Build configuration list for PBXNativeTarget "WorkoutPreview" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				FF9354712982C50300C5860D /* Debug */,
-				FF9354722982C50300C5860D /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		FF9354732982C50300C5860D /* Build configuration list for PBXNativeTarget "WorkoutPreviewTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -766,24 +521,7 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = AppFeature;
 		};
-		FF93547B2982C5ED00C5860D /* AppFeature */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = AppFeature;
-		};
 /* End XCSwiftPackageProductDependency section */
-
-/* Begin XCVersionGroup section */
-		FF9354562982C50200C5860D /* WorkoutPreview.xcdatamodeld */ = {
-			isa = XCVersionGroup;
-			children = (
-				FF9354572982C50200C5860D /* WorkoutPreview.xcdatamodel */,
-			);
-			currentVersion = FF9354572982C50200C5860D /* WorkoutPreview.xcdatamodel */;
-			path = WorkoutPreview.xcdatamodeld;
-			sourceTree = "<group>";
-			versionGroupType = wrapper.xcdatamodel;
-		};
-/* End XCVersionGroup section */
 	};
 	rootObject = FF9353E12982B7DF00C5860D /* Project object */;
 }
