@@ -2380,3 +2380,31 @@ private func _XCTExpectFailure(
     XCTExpectFailureWithOptionsInBlock(failureReason, options, failingBlock)
   #endif
 }
+
+extension TestStore {
+  @MainActor
+  @available(
+    *,
+    unavailable,
+    message: "State and Action must conform to Equatable to receive actions."
+  )
+  public func receive(
+    _ expectedAction: Action,
+    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) async {
+  }
+
+  @MainActor
+  @discardableResult
+  @available(*, unavailable, message: "State must conform to Equatable to send actions.")
+  public func send(
+    _ action: ScopedAction,
+    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) async -> TestStoreTask {
+    TestStoreTask(rawValue: nil, timeout: 0)
+  }
+}
