@@ -422,7 +422,9 @@ public final class Store<State, Action> {
               Send {
                 if let task = self.send($0, originatingFrom: action) {
                   tasks.wrappedValue.append(task)
+                  return task
                 }
+                return nil
               }
             )
           }

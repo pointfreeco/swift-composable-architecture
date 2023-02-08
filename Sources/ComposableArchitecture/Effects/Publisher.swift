@@ -23,7 +23,11 @@ extension EffectPublisher: Publisher {
       return .create { subscriber in
         let task = Task(priority: priority) { @MainActor in
           defer { subscriber.send(completion: .finished) }
-          let send = Send { subscriber.send($0) }
+          let send = Send {
+              subscriber.send($0)
+              // FIXME: return something reasonable
+              return nil
+          }
           await operation(send)
         }
         return AnyCancellable {

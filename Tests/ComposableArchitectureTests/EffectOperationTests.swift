@@ -149,4 +149,13 @@
       }
     }
   }
+
+  extension Send {
+    fileprivate init(send: @escaping @MainActor (Action) -> Void) {
+      self.init {
+        send($0)
+        return nil
+      }
+    }
+  }
 #endif

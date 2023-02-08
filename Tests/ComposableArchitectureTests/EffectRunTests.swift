@@ -1,6 +1,7 @@
 import Combine
 import ComposableArchitecture
 import XCTest
+import CombineSchedulers
 
 @MainActor
 final class EffectRunTests: XCTestCase {
@@ -116,5 +117,82 @@ final class EffectRunTests: XCTestCase {
     }
     let store = TestStore(initialState: State(), reducer: reducer)
     await store.send(.tapped).finish()
+  }
+
+  func testRunFinish() async {
+    struct State: Equatable {}
+    enum Action: Equatable {
+      case begin
+      case waitAck
+      case wait
+      case end
+    }
+
+    let queue = DispatchQueue.test
+
+    let reducer = Reduce<State, Action> { state, action in
+      switch action {
+      case .begin:
+        return .run { send in
+          await send(.wait).finish()
+          await send(.end)
+        }
+      case .wait:
+        return .run { send in
+          await send(.waitAck)
+          try await queue.sleep(for: 1)
+        }
+      case .waitAck, .end:
+        return .none
+      }
+    }
+
+    let store = TestStore(initialState: .init(), reducer: reducer)
+
+    await store.send(.begin)
+    await store.receive(.wait)
+    await store.receive(.waitAck)
+    await queue.advance(by: 1)
+    await store.receive(.end)
+  }
+
+  // currently fails :(
+  func testRunFinishPublisher() async {
+    struct State: Equatable {}
+    enum Action: Equatable {
+      case begin
+      case waitAck
+      case wait
+      case end
+    }
+
+    let queue = DispatchQueue.test
+
+    let reducer = Reduce<State, Action> { state, action in
+      switch action {
+      case .begin:
+        return .run { send in
+          await send(.wait).finish()
+          await send(.end)
+        }
+        .eraseToAnyPublisher()
+        .eraseToEffect()
+      case .wait:
+        return .run { send in
+          await send(.waitAck)
+          try await queue.sleep(for: 1)
+        }
+      case .waitAck, .end:
+        return .none
+      }
+    }
+
+    let store = TestStore(initialState: .init(), reducer: reducer)
+
+    await store.send(.begin)
+    await store.receive(.wait)
+    await store.receive(.waitAck)
+    await queue.advance(by: 1)
+    await store.receive(.end)
   }
 }

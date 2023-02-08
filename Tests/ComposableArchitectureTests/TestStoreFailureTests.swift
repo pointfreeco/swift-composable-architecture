@@ -142,18 +142,8 @@
       }
     }
 
-    func testEffectInFlightAfterDeinit() {
+    func testEffectInFlightAfterDeinit() async {
       XCTExpectFailure {
-        do {
-          let store = TestStore(
-            initialState: 0,
-            reducer: Reduce<Int, Void> { state, action in
-              .task { try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
-            }
-          )
-          store.send(())
-        }
-      } issueMatcher: {
         $0.compactDescription == """
           An effect returned for this action is still running. It must complete before the end of \
           the test. …
@@ -176,6 +166,14 @@
           if your effect is driven by a Combine subject, send it a completion.
           """
       }
+
+      let store = TestStore(
+        initialState: 0,
+        reducer: Reduce<Int, Void> { state, action in
+            .task { try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
+        }
+      )
+      await store.send(())
     }
 
     func testSendActionBeforeReceivingFailure() {

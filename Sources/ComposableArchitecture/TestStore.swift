@@ -2299,7 +2299,7 @@ class TestReducer<State, Action>: ReducerProtocol {
       self.effectDidSubscribe.continuation.yield()
       return .none
 
-    case .publisher, .run:
+    case .publisher:
       let effect = LongLivingEffect(action: action)
       return
         effects
@@ -2316,6 +2316,20 @@ class TestReducer<State, Action>: ReducerProtocol {
         )
         .map { .init(origin: .receive($0), file: action.file, line: action.line) }
         .eraseToEffect()
+
+    case .run(let priority, let perform):
+      let effect = LongLivingEffect(action: action)
+      return EffectTask.run(priority: priority) { [effectDidSubscribe, weak self] send in
+        self?.inFlightEffects.insert(effect)
+        Task {
+          await Task.megaYield()
+          effectDidSubscribe.continuation.yield()
+        }
+        await perform(send)
+        // FIXME: is this thread-safe?
+        self?.inFlightEffects.remove(effect)
+      }
+      .map { .init(origin: .receive($0), file: action.file, line: action.line) }
     }
   }
 

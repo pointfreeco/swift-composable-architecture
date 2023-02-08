@@ -383,18 +383,24 @@ extension EffectPublisher where Failure == Never {
 /// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
 @MainActor
 public struct Send<Action> {
-  public let send: @MainActor (Action) -> Void
+  public let send: @MainActor (Action) -> SendTask
 
-  public init(send: @escaping @MainActor (Action) -> Void) {
+  public init(send: @escaping @MainActor (Action) -> Task<Void, Never>?) {
+    self.send = { .init(rawValue: send($0)) }
+  }
+
+  @_disfavoredOverload
+  public init(send: @escaping @MainActor (Action) -> SendTask) {
     self.send = send
   }
 
   /// Sends an action back into the system from an effect.
   ///
   /// - Parameter action: An action.
-  public func callAsFunction(_ action: Action) {
-    guard !Task.isCancelled else { return }
-    self.send(action)
+  @discardableResult
+  public func callAsFunction(_ action: Action) -> SendTask {
+    guard !Task.isCancelled else { return .init(rawValue: nil) }
+    return self.send(action)
   }
 
   /// Sends an action back into the system from an effect with animation.
@@ -402,7 +408,8 @@ public struct Send<Action> {
   /// - Parameters:
   ///   - action: An action.
   ///   - animation: An animation.
-  public func callAsFunction(_ action: Action, animation: Animation?) {
+  @discardableResult
+  public func callAsFunction(_ action: Action, animation: Animation?) -> SendTask {
     callAsFunction(action, transaction: Transaction(animation: animation))
   }
 
@@ -411,11 +418,52 @@ public struct Send<Action> {
   /// - Parameters:
   ///   - action: An action.
   ///   - transaction: A transaction.
-  public func callAsFunction(_ action: Action, transaction: Transaction) {
-    guard !Task.isCancelled else { return }
-    withTransaction(transaction) {
+  @discardableResult
+  public func callAsFunction(_ action: Action, transaction: Transaction) -> SendTask {
+    guard !Task.isCancelled else { return .init(rawValue: nil) }
+    return withTransaction(transaction) {
       self(action)
     }
+  }
+}
+
+/// The type returned from ``Send/callAsFunction(_:)`` that represents the lifecycle of the effect
+/// started from sending an action inside ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)``.
+///
+/// You can use this value to tie the Effect's lifecycle _and_ cancellation to another Effect.
+///
+/// ```swift
+/// return .run { send in
+///   await send(.anotherAction).finish()
+///   print("Done!")
+/// }
+/// ```
+///
+/// > Note: Unlike Swift's `Task` type, ``SendTask`` automatically sets up a cancellation
+/// > handler between the current async context and the task.
+///
+/// See ``TestStoreTask`` for the analog returned from ``TestStore``, and ``ViewStoreTask``
+/// for the analog returned from ``ViewStore``.
+public struct SendTask: Hashable, Sendable {
+  fileprivate let rawValue: Task<Void, Never>?
+
+  /// Cancels the underlying task and waits for it to finish.
+  public func cancel() async {
+    self.rawValue?.cancel()
+    await self.finish()
+  }
+
+  /// Waits for the task to finish.
+  public func finish() async {
+    await self.rawValue?.cancellableValue
+  }
+
+  /// A Boolean value that indicates whether the task should stop executing.
+  ///
+  /// After the value of this property becomes `true`, it remains `true` indefinitely. There is no
+  /// way to uncancel a task.
+  public var isCancelled: Bool {
+    self.rawValue?.isCancelled ?? true
   }
 }
 
