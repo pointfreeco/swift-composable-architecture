@@ -125,6 +125,7 @@ final class EffectRunTests: XCTestCase {
       case begin
       case waitAck
       case wait
+      case waitDone
       case end
     }
 
@@ -141,8 +142,9 @@ final class EffectRunTests: XCTestCase {
         return .run { send in
           await send(.waitAck)
           try await queue.sleep(for: 1)
+          await send(.waitDone)
         }
-      case .waitAck, .end:
+      case .waitAck, .waitDone, .end:
         return .none
       }
     }
@@ -153,16 +155,103 @@ final class EffectRunTests: XCTestCase {
     await store.receive(.wait)
     await store.receive(.waitAck)
     await queue.advance(by: 1)
+    await store.receive(.waitDone)
     await store.receive(.end)
   }
 
-  // currently fails :(
+  func testRunFinishCancellation() async {
+    struct State: Equatable {}
+    enum Action: Equatable {
+      case begin
+      case waitAck
+      case wait
+      case waitDone
+      case end
+    }
+
+    let queue = DispatchQueue.test
+
+    let reducer = Reduce<State, Action> { state, action in
+      switch action {
+      case .begin:
+        return .run { send in
+          let task = await send(.wait)
+          try await queue.sleep(for: 0.5)
+          await task.cancel()
+          await send(.end)
+        }
+      case .wait:
+        return .run { send in
+          await send(.waitAck)
+          try await queue.sleep(for: 1)
+          await send(.waitDone)
+        }
+      case .waitAck, .waitDone, .end:
+        return .none
+      }
+    }
+
+    let store = TestStore(initialState: .init(), reducer: reducer)
+
+    await store.send(.begin)
+    await store.receive(.wait)
+    await store.receive(.waitAck)
+    await queue.advance(by: 0.5)
+    await store.receive(.end)
+  }
+
+  func testRunFinishUnexpectedCancellation() async {
+    struct State: Equatable {}
+    enum Action: Equatable {
+      case begin
+      case waitAck
+      case wait
+      case waitDone
+      case end
+    }
+
+    let queue = DispatchQueue.test
+
+    let ended = ActorIsolated(false)
+
+    let reducer = Reduce<State, Action> { state, action in
+      switch action {
+      case .begin:
+        return .run { send in
+          await send(.wait).finish()
+          await send(.end)
+          await ended.setValue(true)
+        }
+      case .wait:
+        return .run { send in
+          await send(.waitAck)
+          try await queue.sleep(for: 1)
+          await send(.waitDone)
+        }
+      case .waitAck, .waitDone, .end:
+        return .none
+      }
+    }
+
+    let store = TestStore(initialState: .init(), reducer: reducer)
+
+    let task = await store.send(.begin)
+    await store.receive(.wait)
+    await store.receive(.waitAck)
+    await queue.advance(by: 0.5)
+    await task.cancel()
+
+    let hasEnded = await ended.value
+    XCTAssert(hasEnded, "Cancelling `.begin` should cause `.wait` to cancel and return.")
+  }
+
   func testRunFinishPublisher() async {
     struct State: Equatable {}
     enum Action: Equatable {
       case begin
       case waitAck
       case wait
+      case waitDone
       case end
     }
 
@@ -175,14 +264,16 @@ final class EffectRunTests: XCTestCase {
           await send(.wait).finish()
           await send(.end)
         }
+        // currently makes this test fail :(
         .eraseToAnyPublisher()
         .eraseToEffect()
       case .wait:
         return .run { send in
           await send(.waitAck)
           try await queue.sleep(for: 1)
+          await send(.waitDone)
         }
-      case .waitAck, .end:
+      case .waitAck, .waitDone, .end:
         return .none
       }
     }
@@ -193,6 +284,7 @@ final class EffectRunTests: XCTestCase {
     await store.receive(.wait)
     await store.receive(.waitAck)
     await queue.advance(by: 1)
+    await store.receive(.waitDone)
     await store.receive(.end)
   }
 }
