@@ -146,7 +146,7 @@ public struct Scope<ParentState, ParentAction, Child: ReducerProtocol>: ReducerP
   public init<ChildState, ChildAction>(
     state toChildState: WritableKeyPath<ParentState, ChildState>,
     action toChildAction: CasePath<ParentAction, ChildAction>,
-    @ReducerBuilder<ChildState, ChildAction> _ child: () -> Child
+    @ReducerBuilder<ChildState, ChildAction> child: () -> Child
   ) where ChildState == Child.State, ChildAction == Child.Action {
     self.init(
       toChildState: .keyPath(toChildState),
@@ -218,7 +218,7 @@ public struct Scope<ParentState, ParentAction, Child: ReducerProtocol>: ReducerP
   public init<ChildState, ChildAction>(
     state toChildState: CasePath<ParentState, ChildState>,
     action toChildAction: CasePath<ParentAction, ChildAction>,
-    @ReducerBuilder<ChildState, ChildAction> _ child: () -> Child,
+    @ReducerBuilder<ChildState, ChildAction> child: () -> Child,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
