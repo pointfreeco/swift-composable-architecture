@@ -2320,14 +2320,13 @@ class TestReducer<State, Action>: ReducerProtocol {
     case .run(let priority, let perform):
       let effect = LongLivingEffect(action: action)
       return EffectTask.run(priority: priority) { [effectDidSubscribe, weak self] send in
-        self?.inFlightEffects.insert(effect)
+        await MainActor.run { [self] in _ = self?.inFlightEffects.insert(effect) }
         Task {
           await Task.megaYield()
           effectDidSubscribe.continuation.yield()
         }
         await perform(send)
-        // FIXME: is this thread-safe?
-        self?.inFlightEffects.remove(effect)
+        await MainActor.run { [self] in _ = self?.inFlightEffects.remove(effect) }
       }
       .map { .init(origin: .receive($0), file: action.file, line: action.line) }
     }
