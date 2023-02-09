@@ -211,7 +211,7 @@ extension BindingAction {
     _ keyPath: WritableKeyPath<Root, BindingState<Value>>,
     _ value: Value
   ) -> Self {
-    return .init(
+    Self(
       keyPath: keyPath,
       set: { $0[keyPath: keyPath].wrappedValue = value },
       value: value
@@ -419,13 +419,15 @@ extension BindingAction: CustomDumpReflectable {
 
     deinit {
       guard self.wasCalled else {
+        var debugDescription = ""
+        debugPrint(self.value, terminator: "", to: &debugDescription)
         runtimeWarn(
           """
           A binding action sent from a view store at "\(self.fileID):\(self.line)" was not \
           handled. …
 
             Action:
-              \(typeName(self.bindableActionType)).binding(.set(_, \(self.value)))
+              \(typeName(self.bindableActionType)).binding(.set(_, \(debugDescription)))
 
           To fix this, invoke "BindingReducer()" from your feature reducer's "body".
           """,
