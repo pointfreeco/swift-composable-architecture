@@ -707,7 +707,7 @@ extension EffectPublisher {
 
     You are encouraged to use 'EffectTask<Action>' to model the output of your reducers, and to use Swift concurrency to model failable streams of values.
 
-    To find and replace instances of 'Effect<Action, Never>' to 'EffectTask<Action, Never>' in your codebase, use the following regular expression:
+    To find and replace instances of 'Effect<Action, Never>' to 'EffectTask<Action>' in your codebase, use the following regular expression:
 
       Find:
         Effect<([^,]+), Never>
