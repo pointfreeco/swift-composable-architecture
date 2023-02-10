@@ -24,7 +24,7 @@ jobs:
                 "type": "header",
                 "text": {
                   "type": "plain_text",
-                  "text": "${{ github.event.release.tag_name}} is published!"
+                  "text": "New release: swift-composable-architecture ${{ github.event.release.tag_name}}"
                 }
               },
               {
