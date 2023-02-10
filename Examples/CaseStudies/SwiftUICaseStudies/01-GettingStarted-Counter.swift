@@ -14,21 +14,28 @@ private let readMe = """
 struct Counter: ReducerProtocol {
   struct State: Equatable {
     var count = 0
+    @BindingState var text = "0"
   }
 
-  enum Action: Equatable {
+  enum Action: BindableAction, Equatable {
+    case binding(BindingAction<State>)
     case decrementButtonTapped
     case incrementButtonTapped
   }
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
-    switch action {
-    case .decrementButtonTapped:
-      state.count -= 1
-      return .none
-    case .incrementButtonTapped:
-      state.count += 1
-      return .none
+  var body: some ReducerProtocol<State, Action> {
+    BindingReducer()
+    Reduce { state, action in
+      switch action {
+      case .binding:
+        return .none
+      case .decrementButtonTapped:
+        state.count -= 1
+        return .none
+      case .incrementButtonTapped:
+        state.count += 1
+        return .none
+      }
     }
   }
 }
@@ -40,20 +47,24 @@ struct CounterView: View {
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
-      HStack {
-        Button {
-          viewStore.send(.decrementButtonTapped)
-        } label: {
-          Image(systemName: "minus")
-        }
-
-        Text("\(viewStore.count)")
-          .monospacedDigit()
-
-        Button {
-          viewStore.send(.incrementButtonTapped)
-        } label: {
-          Image(systemName: "plus")
+      Form {
+        TextField("", text: viewStore.binding(\.$text))
+        
+        HStack {
+          Button {
+            viewStore.send(.decrementButtonTapped)
+          } label: {
+            Image(systemName: "minus")
+          }
+          
+          Text("\(viewStore.count)")
+            .monospacedDigit()
+          
+          Button {
+            viewStore.send(.incrementButtonTapped)
+          } label: {
+            Image(systemName: "plus")
+          }
         }
       }
     }

@@ -89,6 +89,9 @@ struct LoadThenPresentView: View {
           send: LoadThenPresent.Action.setSheet(isPresented:)
         )
       ) {
+        Button("Close") {
+          viewStore.send(.setSheet(isPresented: false))
+        }
         IfLetStore(
           self.store.scope(
             state: \.optionalCounter,
