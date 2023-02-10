@@ -121,6 +121,8 @@ import Foundation
 /// Further, all actions sent to the store and all scopes (see ``scope(state:action:)``) of the
 /// store are also checked to make sure that work is performed on the main thread.
 public final class Store<State, Action> {
+  var isInvalidated: () -> Bool
+
   private var bufferedActions: [Action] = []
   @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
@@ -551,6 +553,7 @@ public final class Store<State, Action> {
     reducer: R,
     mainThreadChecksEnabled: Bool
   ) where R.State == State, R.Action == Action {
+    self.isInvalidated = { false }
     self.state = CurrentValueSubject(initialState)
     #if swift(>=5.7)
       self.reducer = reducer
@@ -665,6 +668,7 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
         initialState: toRescopedState(store.state.value),
         reducer: reducer
       )
+      childStore.isInvalidated = store.isInvalidated
       childStore.parentCancellable = store.state
         .dropFirst()
         .sink { [weak childStore] newValue in
@@ -729,6 +733,7 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
         },
         environment: ()
       )
+      rescopedStore.isInvalidated = scopedStore.isInvalidated
       rescopedStore.parentCancellable = scopedStore.state
         .dropFirst()
         .sink { [weak rescopedStore] newValue in

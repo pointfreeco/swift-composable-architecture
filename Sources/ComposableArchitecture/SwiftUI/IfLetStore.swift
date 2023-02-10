@@ -82,6 +82,9 @@ public struct IfLetStore<State, Action, Content: View>: View {
     _ store: Store<State?, Action>,
     @ViewBuilder then ifContent: @escaping (Store<State, Action>) -> IfContent
   ) where Content == IfContent? {
+    store.isInvalidated = { [weak store] in
+      store?.state.value == nil
+    }
     self.store = store
     self.content = { viewStore in
       if var state = viewStore.state {

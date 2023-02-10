@@ -63,6 +63,8 @@ import SwiftUI
 /// > class for more information as to why this decision was made.
 @dynamicMemberLookup
 public final class ViewStore<ViewState, ViewAction>: ObservableObject {
+  var isInvalidated: () -> Bool
+
   // N.B. `ViewStore` does not use a `@Published` property, so `objectWillChange`
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
   public private(set) lazy var objectWillChange = ObservableObjectPublisher()
@@ -90,6 +92,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     observe toViewState: @escaping (State) -> ViewState,
     removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool
   ) {
+    self.isInvalidated = store.isInvalidated
     self._send = { store.send($0) }
     self._state = CurrentValueRelay(toViewState(store.state.value))
     self.viewCancellable = store.state
@@ -123,6 +126,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     send fromViewAction: @escaping (ViewAction) -> Action,
     removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool
   ) {
+    self.isInvalidated = store.isInvalidated
     self._send = { store.send(fromViewAction($0)) }
     self._state = CurrentValueRelay(toViewState(store.state.value))
     self.viewCancellable = store.state
@@ -200,6 +204,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     _ store: Store<ViewState, ViewAction>,
     removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool
   ) {
+    self.isInvalidated = store.isInvalidated
     self._send = { store.send($0) }
     self._state = CurrentValueRelay(store.state.value)
     self.viewCancellable = store.state
@@ -212,6 +217,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   }
 
   init(_ viewStore: ViewStore<ViewState, ViewAction>) {
+    self.isInvalidated = viewStore.isInvalidated
     self._send = viewStore._send
     self._state = viewStore._state
     self.objectWillChange = viewStore.objectWillChange
