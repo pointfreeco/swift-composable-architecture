@@ -2350,6 +2350,12 @@ class TestReducer<State, Action>: ReducerProtocol {
   }
 }
 
+extension TestReducer.TestAction: CustomDebugStringConvertible {
+  var debugDescription: String {
+    "\(typeName(Self.self))(\(debugCaseOutput(origin.action)))"
+  }
+}
+
 extension Task where Success == Never, Failure == Never {
   // NB: We would love if this was not necessary, but due to a lack of async testing tools in Swift
   //     we're not sure if there is an alternative. See this forum post for more information:

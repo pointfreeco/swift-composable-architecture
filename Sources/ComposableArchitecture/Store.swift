@@ -417,9 +417,36 @@ public final class Store<State, Action> {
         }
       case let .run(priority, operation):
         tasks.wrappedValue.append(
-          Task(priority: priority) {
+          Task(priority: priority) { @MainActor in
+            #if DEBUG
+            var isCompleted = false
+            defer { isCompleted = true }
+            #endif
             await operation(
               Send {
+                #if DEBUG
+                if isCompleted {
+                  runtimeWarn(
+                    """
+                    An action was sent from a completed effect.
+
+                      Action:
+                        \(debugCaseOutput($0))
+
+                      Effect returned from:
+                        \(debugCaseOutput(action))
+
+                    Avoid sending effects using the `send` closure passed to \
+                    `EffectTask.run` after the effect has completed, because \
+                    this makes it difficult to track the lifetime of the \
+                    effect.
+
+                    To fix this, make sure that your `run` closure does not \
+                    return until you're done calling `send`.
+                    """
+                  )
+                }
+                #endif
                 if let task = self.send($0, originatingFrom: action) {
                   tasks.wrappedValue.append(task)
                 }
