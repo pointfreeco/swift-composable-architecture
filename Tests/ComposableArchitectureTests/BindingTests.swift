@@ -40,6 +40,45 @@ final class BindingTests: XCTestCase {
 
       XCTAssertEqual(viewStore.state, .init(nested: .init(field: "Hello!")))
     }
+    
+    func testOptionalBindingState() {
+      struct BindingTest: ReducerProtocol {
+        struct State: Equatable {
+          @BindingState var nested = Nested()
+
+          struct Nested: Equatable {
+              var field: String? = nil
+          }
+        }
+
+        enum Action: BindableAction, Equatable {
+          case binding(BindingAction<State>)
+        }
+
+        var body: some ReducerProtocol<State, Action> {
+          BindingReducer()
+          Reduce { state, action in
+            switch action {
+            case .binding(\.$nested.field):
+              let field = state.nested.field ?? "fail"
+              state.nested.field = field + "!"
+              return .none
+            default:
+              return .none
+            }
+          }
+        }
+      }
+
+      let store = Store(initialState: BindingTest.State(), reducer: BindingTest())
+
+      let viewStore = ViewStore(store, observe: { $0 })
+        
+        viewStore.optionalBinding(\.$nested.field, defaultValue: "default").wrappedValue += "!"
+
+        XCTAssertEqual(viewStore.state, .init(nested: .init(field: "default!!")))
+        XCTAssertNotEqual(viewStore.state, .init(nested: .init(field: "fail!")))
+    }
   #endif
 
   // NB: This crashes in Swift(<5.8) RELEASE when `BindingAction` holds directly onto an unboxed

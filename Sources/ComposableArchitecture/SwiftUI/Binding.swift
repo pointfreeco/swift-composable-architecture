@@ -153,6 +153,39 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
       }
     )
   }
+    
+    /// Returns a binding to the resulting bindable state of a given key path.
+    ///
+    /// - Parameters:
+    ///   -  keyPath: A key path to a specific bindable state.
+    ///   - defaultValue: A default value.
+    /// - Returns: A new binding.
+    public func optionalBinding<Value: Equatable>(
+      _ keyPath: WritableKeyPath<ViewState, BindingState<Value?>>,
+      defaultValue: Value,
+      file: StaticString = #file,
+      fileID: StaticString = #fileID,
+      line: UInt = #line
+    ) -> Binding<Value> {
+      self.binding(
+        get: { $0[keyPath: keyPath].wrappedValue ?? defaultValue },
+        send: { value in
+          #if DEBUG
+            let debugger = BindableActionViewStoreDebugger(
+              value: value, bindableActionType: ViewAction.self, file: file, fileID: fileID,
+              line: line
+            )
+            let set: (inout ViewState) -> Void = {
+              $0[keyPath: keyPath].wrappedValue = value
+              debugger.wasCalled = true
+            }
+          #else
+            let set: (inout ViewState) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
+          #endif
+          return .binding(.init(keyPath: keyPath, set: set, value: value))
+        }
+      )
+    }
 }
 
 /// An action that describes simple mutations to some root state at a writable key path.
