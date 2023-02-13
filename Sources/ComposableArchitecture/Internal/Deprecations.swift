@@ -5,13 +5,22 @@ import XCTestDynamicOverlay
 
 // MARK: - Deprecated after 1.0.0:
 
-@available(*, deprecated, renamed: "Effect")
+@available(iOS, deprecated: 9999.0, renamed: "Effect")
+@available(macOS, deprecated: 9999.0, renamed: "Effect")
+@available(tvOS, deprecated: 9999.0, renamed: "Effect")
+@available(watchOS, deprecated: 9999.0, renamed: "Effect")
 public typealias EffectTask = Effect
 
-@available(*, deprecated, renamed: "Reducer")
+@available(iOS, deprecated: 9999.0, renamed: "Reducer")
+@available(macOS, deprecated: 9999.0, renamed: "Reducer")
+@available(tvOS, deprecated: 9999.0, renamed: "Reducer")
+@available(watchOS, deprecated: 9999.0, renamed: "Reducer")
 public typealias ReducerProtocol = Reducer
 
-@available(*, deprecated, renamed: "ReducerOf")
+@available(iOS, deprecated: 9999.0, renamed: "ReducerOf")
+@available(macOS, deprecated: 9999.0, renamed: "ReducerOf")
+@available(tvOS, deprecated: 9999.0, renamed: "ReducerOf")
+@available(watchOS, deprecated: 9999.0, renamed: "ReducerOf")
 public typealias ReducerProtocolOf<R: Reducer> = Reducer<R.State, R.Action>
 
 // MARK: - Deprecated after 0.49.2
