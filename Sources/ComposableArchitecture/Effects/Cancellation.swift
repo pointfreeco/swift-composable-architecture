@@ -152,6 +152,30 @@ extension EffectPublisher {
   }
 }
 
+func foo() {
+  let _ = EffectTask<Int>.cancel(id: ["Foo", "Bar"])
+}
+
+
+
+
+
+
+
+extension Effect {
+  @available(
+    *,
+     deprecated,
+     renamed: "cancel(ids:)",
+     message: "Use 'cancel(ids:)' for cancelling many effects at once."
+  )
+  public static func cancel<T: Hashable & Collection>(id: T) -> Self {
+    runtimeWarn("You probably didn't mean to do this")
+    return .cancel(ids: [id])
+  }
+
+}
+
 #if swift(>=5.7)
   /// Execute an operation with a cancellation identifier.
   ///
