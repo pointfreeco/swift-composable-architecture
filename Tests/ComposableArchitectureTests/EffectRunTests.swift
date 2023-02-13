@@ -118,92 +118,91 @@ final class EffectRunTests: XCTestCase {
     await store.send(.tapped).finish()
   }
 
-  func testRunEscapeFailure() async {
-    struct State: Equatable {}
-    enum Action: Equatable {
-      case begin
-      case beginPublisher
-      case another
-      case end
+  func testRunEscapeFailure() async throws {
+    XCTExpectFailure {
+      $0.compactDescription == """
+        An action was sent from a completed effect:
+
+          Action:
+            EffectRunTests.Action.response
+
+          Effect returned from:
+            EffectRunTests.Action.tap
+
+        Avoid sending actions using the 'send' argument from 'EffectTask.run' after the effect has \
+        completed. This can happen if you escape the 'send' argument in an unstructured context.
+
+        To fix this, make sure that your 'run' closure does not return until you're done calling \
+        'send'.
+        """
     }
+
+    enum Action { case tap, response }
 
     let queue = DispatchQueue.test
 
-    let reducer = Reduce<State, Action> { state, action in
-      switch action {
-      case .begin:
-        return .run { send in
-          Task { @MainActor in
-            try await queue.sleep(for: 1)
-
-            XCTExpectFailure {
-              _ = send(.another)
-            } issueMatcher: {
-              $0.compactDescription == """
-                  An action was sent from a completed effect.
-
-                    Action:
-                      EffectRunTests.Action.another
-
-                  Avoid sending effects using the `send` closure passed to \
-                  `EffectTask.run` after the effect has completed, because \
-                  this makes it difficult to track the lifetime of the \
-                  effect.
-
-                  To fix this, make sure that your `run` closure does not \
-                  return until you're done calling `send`.
-                  """
+    let store = Store(
+      initialState: 0,
+      reducer: Reduce<Int, Action> { _, action in
+        switch action {
+        case .tap:
+          return .run { send in
+            Task {
+              try await queue.sleep(for: .seconds(1))
+              await send(.response)
             }
           }
-          await send(.end)
+        case .response:
+          return .none
         }
-      case .beginPublisher:
-        return .run { send in
-          Task { @MainActor in
-            try await queue.sleep(for: 1)
-
-            XCTExpectFailure {
-              _ = send(.another)
-            } issueMatcher: {
-              $0.compactDescription == """
-                  An action was sent from a completed effect.
-
-                    Action:
-                      EffectRunTests.Action.another
-
-                  Avoid sending effects using the `send` closure passed to \
-                  `EffectTask.run` after the effect has completed, because \
-                  this makes it difficult to track the lifetime of the \
-                  effect.
-
-                  To fix this, make sure that your `run` closure does not \
-                  return until you're done calling `send`.
-                  """
-            }
-          }
-          await send(.end)
-        }
-        .eraseToAnyPublisher()
-        .eraseToEffect()
-      case .another, .end:
-        return .none
       }
+    )
+
+    let viewStore = ViewStore(store, observe: { $0 })
+    await viewStore.send(.tap).finish()
+    await queue.advance(by: .seconds(1))
+  }
+
+  func testRunEscapeFailurePublisher() async throws {
+    XCTExpectFailure {
+      $0.compactDescription == """
+        An action was sent from a completed effect:
+
+          Action:
+            EffectRunTests.Action.response
+
+        Avoid sending actions using the 'send' argument from 'EffectTask.run' after the effect has \
+        completed. This can happen if you escape the 'send' argument in an unstructured context.
+
+        To fix this, make sure that your 'run' closure does not return until you're done calling \
+        'send'.
+        """
     }
 
-    let store = TestStore(initialState: .init(), reducer: reducer)
+    enum Action { case tap, response }
 
-    let begin = await store.send(.begin)
-    await store.receive(.end)
-    await begin.finish()
-    await queue.advance(by: 1)
-    // we may or may not receive .another but it doesn't matter because
-    // sending an action after the effect ends is UB.
-    await store.skipReceivedActions(strict: false)
+    let queue = DispatchQueue.test
 
-    let beginPub = await store.send(.beginPublisher)
-    await store.receive(.end)
-    await beginPub.finish()
-    await queue.advance(by: 1)
-    await store.skipReceivedActions(strict: false)
+    let store = Store(
+      initialState: 0,
+      reducer: Reduce<Int, Action> { _, action in
+        switch action {
+        case .tap:
+          return .run { send in
+            Task {
+              try await queue.sleep(for: .seconds(1))
+              await send(.response)
+            }
+          }
+          .eraseToEffect()
+        case .response:
+          return .none
+        }
+      }
+    )
+
+    let viewStore = ViewStore(store, observe: { $0 })
+    await viewStore.send(.tap).finish()
+    await queue.advance(by: .seconds(1))
   }
 }

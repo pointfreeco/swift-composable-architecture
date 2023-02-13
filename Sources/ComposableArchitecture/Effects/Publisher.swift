@@ -32,18 +32,17 @@ extension EffectPublisher: Publisher {
               if isCompleted {
                 runtimeWarn(
                   """
-                  An action was sent from a completed effect.
+                  An action was sent from a completed effect:
 
                     Action:
                       \(debugCaseOutput($0))
 
-                  Avoid sending effects using the `send` closure passed to \
-                  `EffectTask.run` after the effect has completed, because \
-                  this makes it difficult to track the lifetime of the \
-                  effect.
+                  Avoid sending actions using the 'send' argument from 'EffectTask.run' after \
+                  the effect has completed. This can happen if you escape the 'send' argument in \
+                  an unstructured context.
 
-                  To fix this, make sure that your `run` closure does not \
-                  return until you're done calling `send`.
+                  To fix this, make sure that your 'run' closure does not return until you're \
+                  done calling 'send'.
                   """
                 )
               }
