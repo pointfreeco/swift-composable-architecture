@@ -23,12 +23,9 @@ extension EffectPublisher: Publisher {
       return .create { subscriber in
         let task = Task(priority: priority) { @MainActor in
           defer { subscriber.send(completion: .finished) }
-          #if DEBUG
           var isCompleted = false
           defer { isCompleted = true }
-          #endif
           let send = Send<Action> {
-              #if DEBUG
               if isCompleted {
                 runtimeWarn(
                   """
@@ -46,7 +43,6 @@ extension EffectPublisher: Publisher {
                   """
                 )
               }
-              #endif
               subscriber.send($0)
           }
           await operation(send)

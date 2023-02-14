@@ -161,7 +161,6 @@ final class EffectRunTests: XCTestCase {
     let viewStore = ViewStore(store, observe: { $0 })
     await viewStore.send(.tap).finish()
     await queue.advance(by: .seconds(1))
-    try await Task.sleep(nanoseconds: NSEC_PER_SEC)
   }
 
   func testRunEscapeFailurePublisher() async throws {
@@ -205,6 +204,5 @@ final class EffectRunTests: XCTestCase {
     let viewStore = ViewStore(store, observe: { $0 })
     await viewStore.send(.tap).finish()
     await queue.advance(by: .seconds(1))
-    try await Task.sleep(nanoseconds: NSEC_PER_SEC)
   }
 }

@@ -418,13 +418,10 @@ public final class Store<State, Action> {
       case let .run(priority, operation):
         tasks.wrappedValue.append(
           Task(priority: priority) { @MainActor in
-            #if DEBUG
             var isCompleted = false
             defer { isCompleted = true }
-            #endif
             await operation(
               Send {
-                #if DEBUG
                 if isCompleted {
                   runtimeWarn(
                     """
@@ -445,7 +442,6 @@ public final class Store<State, Action> {
                     """
                   )
                 }
-                #endif
                 if let task = self.send($0, originatingFrom: action) {
                   tasks.wrappedValue.append(task)
                 }
