@@ -1236,7 +1236,7 @@ private final class StoreObservableObject<State, Action>: ObservableObject {
   }
 }
 
-private func enumTag<Case>(_ `case`: Case) -> UInt32? {
+func enumTag<Case>(_ `case`: Case) -> UInt32? {
   let metadataPtr = unsafeBitCast(type(of: `case`), to: UnsafeRawPointer.self)
   let kind = metadataPtr.load(as: Int.self)
   let isEnumOrOptional = kind == 0x201 || kind == 0x202
