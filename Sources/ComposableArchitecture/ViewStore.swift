@@ -609,6 +609,13 @@ extension ViewStore where ViewState: Equatable {
     self.init(store, observe: toViewState, removeDuplicates: ==)
   }
 
+  public convenience init<Action>(
+    _ store: Store<ViewState, Action>,
+    send fromViewAction: @escaping (ViewAction) -> Action
+  ) {
+    self.init(store, observe: { $0 }, send: fromViewAction, removeDuplicates: ==)
+  }
+
   public convenience init<State, Action>(
     _ store: Store<State, Action>,
     observe toViewState: @escaping (State) -> ViewState,
@@ -684,6 +691,13 @@ extension ViewStore where ViewState: Equatable {
 extension ViewStore where ViewState == Void {
   public convenience init(_ store: Store<Void, ViewAction>) {
     self.init(store, removeDuplicates: ==)
+  }
+
+  public convenience init<Action>(
+    _ store: Store<ViewState, Action>,
+    send fromViewAction: @escaping (ViewAction) -> Action
+  ) {
+    self.init(store.scope(state: { _ in }, action: fromViewAction))
   }
 }
 
