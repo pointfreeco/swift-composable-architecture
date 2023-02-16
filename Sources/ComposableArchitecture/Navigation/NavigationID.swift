@@ -5,13 +5,17 @@ extension DependencyValues {
   }
 }
 
-struct NavigationID: DependencyKey, Hashable, Identifiable, Sendable {
-  static let liveValue = NavigationID(path: .root)
-  static let testValue = NavigationID(path: .root)
+@_spi(Internals) public struct NavigationID: DependencyKey, Hashable, Identifiable, Sendable {
+  public static let liveValue = NavigationID(path: .root)
+  public static let testValue = NavigationID(path: .root)
 
   let path: Path
 
-  var id: Self {
+  public init(path: Path) {
+    self.path = path
+  }
+
+  public var id: Self {
     self
   }
 
@@ -19,11 +23,11 @@ struct NavigationID: DependencyKey, Hashable, Identifiable, Sendable {
     Self(path: .destination(presenter: self, presented: Path.ComponentID(value)))
   }
 
-  enum Path: Hashable, Sendable {
+  @_spi(Internals) public enum Path: Hashable, Sendable {
     case root
     indirect case destination(presenter: NavigationID, presented: ComponentID)
 
-    struct ComponentID: Hashable, Sendable {
+    @_spi(Internals) public struct ComponentID: Hashable, Sendable {
       private var objectIdentifier: ObjectIdentifier
       private var tag: UInt32?
       private var id: AnyHashableSendable?

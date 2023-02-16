@@ -3,7 +3,7 @@
 @propertyWrapper
 public struct PresentationState<State> {
   private var boxedValue: [State]
-  fileprivate var isIntegrated = false
+  fileprivate var isPresented = false
 
   // TODO: Is this needed?
   //public static var dismissed: Self {
@@ -85,7 +85,6 @@ extension PresentationState: Encodable where State: Encodable {
   }
 }
 
-// TODO: Is this needed?
 extension PresentationState: CustomReflectable {
   public var customMirror: Mirror {
     Mirror(reflecting: self.wrappedValue as Any)
@@ -140,22 +139,22 @@ extension ReducerProtocol {
     )
   }
 
-//  public func presents<DestinationState, DestinationAction>(
-//    _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
-//    action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
-//    file: StaticString = #file,
-//    fileID: StaticString = #fileID,
-//    line: UInt = #line
-//  ) -> _PresentationReducer<Self, EmptyReducer<DestinationState, DestinationAction>> {
-//    self.presents(
-//      toPresentationState,
-//      action: toPresentationAction,
-//      destination: { EmptyReducer() },
-//      file: file,
-//      fileID: fileID,
-//      line: line
-//    )
-//  }
+  public func presents<DestinationState, DestinationAction>(
+    _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
+    action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> _PresentationReducer<Self, EmptyReducer<DestinationState, DestinationAction>> {
+    self.presents(
+      toPresentationState,
+      action: toPresentationAction,
+      destination: { EmptyReducer() },
+      file: file,
+      fileID: fileID,
+      line: line
+    )
+  }
 }
 
 public struct _PresentationReducer<
@@ -195,7 +194,8 @@ public struct _PresentationReducer<
 
     case let (.some((id, destinationState)), .some(.presented(destinationAction))):
       destinationEffects = self.destination
-        .dependency(\.dismiss, .init { Task.cancel(id: DismissID(id: id)) })
+        .dependency(\.dismiss, DismissEffect { Task.cancel(id: DismissID()) })
+        .dependency(\.navigationID, id)
         .reduce(
           into: &state[keyPath: self.toPresentationState].wrappedValue!, action: destinationAction
         )
@@ -230,16 +230,19 @@ public struct _PresentationReducer<
     }
 
     let presentEffects: EffectTask<Base.Action>
-    if presentationChanged || !state[keyPath: self.toPresentationState].isIntegrated,
+    if presentationChanged || !state[keyPath: self.toPresentationState].isPresented,
       let (id, presentationState) = state[keyPath: self.toPresentationState].presentedValue,
       !isInert(presentationState)
     {
+      state[keyPath: self.toPresentationState].isPresented = true
       presentEffects = .run { send in
         do {
-          try await withTaskCancellation(
-            id: DismissID(id: id)
-          ) {
-            try await Task.never()
+          try await withDependencies {
+            $0.navigationID = id
+          } operation: {
+            try await withTaskCancellation(id: DismissID()) {
+              try await Task.never()
+            }
           }
         } catch is CancellationError {
           await send(self.toPresentationAction.embed(.dismiss))
@@ -259,4 +262,4 @@ public struct _PresentationReducer<
   }
 }
 
-private struct DismissID: Hashable { let id: AnyHashable }
+private struct DismissID: Hashable {}

@@ -836,8 +836,7 @@ import XCTest
       }
     }
 
-    @available(iOS 16.0, *)
-    func testNavigation_cancelID() async {
+    func testNavigation_cancelID_childCancellation() async {
       struct Child: ReducerProtocol {
         struct State: Equatable {}
         enum Action: Equatable {
@@ -848,19 +847,66 @@ import XCTest
           switch action {
           case .startButtonTapped:
             return .fireAndForget {
-              do {
-                try await Task.never()
-              } catch {
-
-                print("!!!!", error)
-
-
-              }
+              try await Task.never()
             }
-            .cancellable(id: id)
+            .cancellable(id: 42)
 
           case .stopButtonTapped:
-            return .cancel(id: id)
+            return .cancel(id: 42)
+          }
+        }
+      }
+
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          @PresentationState var child: Child.State?
+        }
+        enum Action: Equatable {
+          case child(PresentationAction<Child.Action>)
+          case presentChild
+        }
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .child:
+              return .none
+            case .presentChild:
+              state.child = Child.State()
+              return .none
+            }
+          }
+          .presents(\.$child, action: /Action.child) {
+            Child()
+          }
+        }
+      }
+
+      let store = TestStore(
+        initialState: Parent.State(),
+        reducer: Parent()
+      )
+      let presentationTask = await store.send(.presentChild) {
+        $0.child = Child.State()
+      }
+      await store.send(.child(.presented(.startButtonTapped)))
+      await store.send(.child(.presented(.stopButtonTapped)))
+      await presentationTask.cancel()
+    }
+
+
+    func testNavigation_cancelID_parentCancellation() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable {}
+        enum Action: Equatable {
+          case startButtonTapped
+        }
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          switch action {
+          case .startButtonTapped:
+            return .fireAndForget {
+              try await Task.never()
+            }
+            .cancellable(id: 42)
           }
         }
       }
@@ -880,48 +926,32 @@ import XCTest
             case .child:
               return .none
             case .localCancel:
-              return .cancel(id: id)
+              return .cancel(id: 42)
             case .presentChild:
               state.child = Child.State()
               return .none
             }
           }
-//          .presents(\.$child, action: /Action.child) {
-          .ifLet(\.child, action: (/Action.child).appending(path: /PresentationAction.presented)) {
+          .presents(\.$child, action: /Action.child) {
             Child()
           }
         }
       }
 
-//      await _withMainSerialExecutor {
-        let store = TestStore(
-          initialState: Parent.State(),
-          reducer: Parent()
-        )
-        let task = await store.send(.presentChild) {
-          $0.child = Child.State()
-        }
-        await store.send(.child(.presented(.startButtonTapped)))
-        await store.send(.localCancel)
-        await task.cancel()
-      try? await Task.sleep(for: .seconds(1))
-
-//      }
+      let store = TestStore(
+        initialState: Parent.State(),
+        reducer: Parent()
+      )
+      let presentationTask = await store.send(.presentChild) {
+        $0.child = Child.State()
+      }
+      await store.send(.child(.presented(.startButtonTapped)))
+      await store.send(.localCancel)
+      await presentationTask.cancel()
     }
 
-    @available(iOS 16.0, *)
-    func testCancel() async {
-      let store = TestStore(initialState: 1, reducer: Reduce<Int, Void> { state, action in
-          .run { _ in try await Task.never() }
-          .cancellable(id: 1)
-          .cancellable(id: 2)
-      })
-
-      await store.send(())
-      Task.cancel(id: 1)
-      try? await Task.sleep(for: .seconds(1))
-    }
+    // child effect (id: 42), parent sends cancel(id: 42) -> CANCEL
+    // childA effect (id: 42), childB effect(id: 42) -> parent sends cancel(id: 42) -> CANCEL BOTH
+    // childA effect (id: 42), childB effect(id: 42) -> childA sends cancel(id: 42) -> CANCEL A
   }
 #endif
-
-fileprivate       let id: AnyHashable = 42
