@@ -276,12 +276,12 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
 
       return self.child
         .reduce(into: &childState, action: childAction)
-        .map(self.toChildAction.embed)
+        .map { self.toChildAction.embed($0) }
 
     case let .keyPath(toChildState):
       return self.child
         .reduce(into: &state[keyPath: toChildState], action: childAction)
-        .map(self.toChildAction.embed)
+        .map { self.toChildAction.embed($0) }
     }
   }
 }

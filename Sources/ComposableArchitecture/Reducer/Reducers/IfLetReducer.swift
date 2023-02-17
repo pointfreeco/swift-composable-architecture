@@ -148,6 +148,6 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
       return .none
     }
     return self.child.reduce(into: &state[keyPath: self.toChildState]!, action: childAction)
-      .map(self.toChildAction.embed)
+      .map { self.toChildAction.embed($0) }
   }
 }
