@@ -146,7 +146,8 @@ extension ReducerProtocol {
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _PresentationReducer<Self, EmptyReducer<DestinationState, DestinationAction>> {
+  ) -> _PresentationReducer<Self, EmptyReducer<DestinationState, DestinationAction>>
+  where DestinationState: _InertPresentationState {
     self.presents(
       toPresentationState,
       action: toPresentationAction,

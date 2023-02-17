@@ -895,20 +895,51 @@ import XCTest
       await presentationTask.cancel()
     }
 
-
     func testNavigation_cancelID_parentCancellation() async {
-      struct Child: ReducerProtocol {
+      struct Grandchild: ReducerProtocol {
         struct State: Equatable {}
         enum Action: Equatable {
           case startButtonTapped
         }
+        enum CancelID { case effect }
         func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
           switch action {
           case .startButtonTapped:
             return .fireAndForget {
               try await Task.never()
             }
-            .cancellable(id: 42)
+            .cancellable(id: CancelID.effect)
+          }
+        }
+      }
+
+      struct Child: ReducerProtocol {
+        struct State: Equatable {
+          @PresentationState var grandchild: Grandchild.State?
+        }
+        enum Action: Equatable {
+          case grandchild(PresentationAction<Grandchild.Action>)
+          case presentGrandchild
+          case startButtonTapped
+        }
+        enum CancelID { case effect }
+        var body: some ReducerProtocolOf<Self> {
+          Reduce { state, action in
+            switch action {
+            case.grandchild:
+              return .none
+            case .presentGrandchild:
+              state.grandchild = Grandchild.State()
+              return .none
+            case .startButtonTapped:
+              return .fireAndForget {
+                try await Task.never()
+              }
+              .cancellable(id: CancelID.effect)
+            }
+          }
+          .presents(\.$grandchild, action: /Action.grandchild) {
+            Grandchild()
           }
         }
       }
@@ -919,7 +950,7 @@ import XCTest
         }
         enum Action: Equatable {
           case child(PresentationAction<Child.Action>)
-          case localCancel
+          case stopButtonTapped
           case presentChild
         }
         var body: some ReducerProtocol<State, Action> {
@@ -927,8 +958,11 @@ import XCTest
             switch action {
             case .child:
               return .none
-            case .localCancel:
-              return .cancel(id: 42)
+            case .stopButtonTapped:
+              return .merge(
+                .cancel(id: Child.CancelID.effect),
+                .cancel(id: Grandchild.CancelID.effect)
+              )
             case .presentChild:
               state.child = Child.State()
               return .none
@@ -944,17 +978,294 @@ import XCTest
         initialState: Parent.State(),
         reducer: Parent()
       )
-      let presentationTask = await store.send(.presentChild) {
+      let childPresentationTask = await store.send(.presentChild) {
         $0.child = Child.State()
       }
+      let grandchildPresentationTask = await store.send(.child(.presented(.presentGrandchild))) {
+        $0.child?.grandchild = Grandchild.State()
+      }
       await store.send(.child(.presented(.startButtonTapped)))
-      await store.send(.localCancel)
-      await presentationTask.cancel()
+      await store.send(.child(.presented(.grandchild(.presented(.startButtonTapped)))))
+      await store.send(.stopButtonTapped)
+      await grandchildPresentationTask.cancel()
+      await childPresentationTask.cancel()
     }
 
-    // TODO: Capture all the below:
-    // child effect (id: 42), parent sends cancel(id: 42) -> CANCEL
-    // childA effect (id: 42), childB effect(id: 42) -> parent sends cancel(id: 42) -> CANCEL BOTH
-    // childA effect (id: 42), childB effect(id: 42) -> childA sends cancel(id: 42) -> CANCEL A
+    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+    func testNavigation_cancelID_parentCancelTwoChildren() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable {
+          var count = 0
+        }
+        enum Action: Equatable {
+          case response(Int)
+          case startButtonTapped
+        }
+        enum CancelID { case effect }
+        @Dependency(\.continuousClock) var clock
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          switch action {
+          case let .response(value):
+            state.count = value
+            return .none
+          case .startButtonTapped:
+            return .run { send in
+              for await _ in self.clock.timer(interval: .seconds(1)) {
+                await send(.response(42))
+              }
+            }
+            .cancellable(id: CancelID.effect)
+          }
+        }
+      }
+
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          @PresentationState var child1: Child.State?
+          @PresentationState var child2: Child.State?
+        }
+        enum Action: Equatable {
+          case child1(PresentationAction<Child.Action>)
+          case child2(PresentationAction<Child.Action>)
+          case stopButtonTapped
+          case presentChildren
+        }
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .child1, .child2:
+              return .none
+            case .stopButtonTapped:
+              return .cancel(id: Child.CancelID.effect)
+            case .presentChildren:
+              state.child1 = Child.State()
+              state.child2 = Child.State()
+              return .none
+            }
+          }
+          .presents(\.$child1, action: /Action.child1) {
+            Child()
+          }
+          .presents(\.$child2, action: /Action.child2) {
+            Child()
+          }
+        }
+      }
+
+      await _withMainSerialExecutor {
+        let clock = TestClock()
+        let store = TestStore(
+          initialState: Parent.State(),
+          reducer: Parent()
+        ) {
+          $0.continuousClock = clock
+        }
+        await store.send(.presentChildren) {
+          $0.child1 = Child.State()
+          $0.child2 = Child.State()
+        }
+        await store.send(.child1(.presented(.startButtonTapped)))
+        await clock.advance(by: .seconds(1))
+        await store.receive(.child1(.presented(.response(42)))) {
+          $0.child1?.count = 42
+        }
+        await store.send(.child2(.presented(.startButtonTapped)))
+        await clock.advance(by: .seconds(1))
+        await store.receive(.child1(.presented(.response(42))))
+        await store.receive(.child2(.presented(.response(42)))) {
+          $0.child2?.count = 42
+        }
+        await store.send(.stopButtonTapped)
+        await clock.run()
+        await store.send(.child1(.dismiss)) {
+          $0.child1 = nil
+        }
+        await store.send(.child2(.dismiss)) {
+          $0.child2 = nil
+        }
+      }
+    }
+
+    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+    func testNavigation_cancelID_childCannotCancelSibling() async throws {
+      try XCTSkipIf(true, "TODO: This test fails right now but we should figure out a fix.")
+
+      struct Child: ReducerProtocol {
+        struct State: Equatable {
+          var count = 0
+        }
+        enum Action: Equatable {
+          case response(Int)
+          case startButtonTapped
+          case stopButtonTapped
+        }
+        enum CancelID { case effect }
+        @Dependency(\.continuousClock) var clock
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          switch action {
+          case let .response(value):
+            state.count = value
+            return .none
+          case .startButtonTapped:
+            return .run { send in
+              for await _ in self.clock.timer(interval: .seconds(1)) {
+                await send(.response(42))
+              }
+            }
+            .cancellable(id: CancelID.effect)
+          case .stopButtonTapped:
+            return .cancel(id: CancelID.effect)
+          }
+        }
+      }
+
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          @PresentationState var child1: Child.State?
+          @PresentationState var child2: Child.State?
+        }
+        enum Action: Equatable {
+          case child1(PresentationAction<Child.Action>)
+          case child2(PresentationAction<Child.Action>)
+          case presentChildren
+        }
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .child1, .child2:
+              return .none
+            case .presentChildren:
+              state.child1 = Child.State()
+              state.child2 = Child.State()
+              return .none
+            }
+          }
+          .presents(\.$child1, action: /Action.child1) {
+            Child()
+          }
+          .presents(\.$child2, action: /Action.child2) {
+            Child()
+          }
+        }
+      }
+
+      await _withMainSerialExecutor {
+        let clock = TestClock()
+        let store = TestStore(
+          initialState: Parent.State(),
+          reducer: Parent()
+        ) {
+          $0.continuousClock = clock
+        }
+        await store.send(.presentChildren) {
+          $0.child1 = Child.State()
+          $0.child2 = Child.State()
+        }
+        await store.send(.child1(.presented(.startButtonTapped)))
+        await clock.advance(by: .seconds(1))
+        await store.receive(.child1(.presented(.response(42)))) {
+          $0.child1?.count = 42
+        }
+        await store.send(.child2(.presented(.startButtonTapped)))
+        await clock.advance(by: .seconds(1))
+        await store.receive(.child1(.presented(.response(42))))
+        await store.receive(.child2(.presented(.response(42)))) {
+          $0.child2?.count = 42
+        }
+
+        await store.send(.child1(.presented(.stopButtonTapped)))
+        await clock.advance(by: .seconds(1))
+        await store.receive(.child2(.presented(.response(42))))
+
+        await store.send(.child2(.presented(.stopButtonTapped)))
+        await clock.advance(by: .seconds(1))
+
+        await clock.run()
+        await store.send(.child1(.dismiss)) {
+          $0.child1 = nil
+        }
+        await store.send(.child2(.dismiss)) {
+          $0.child2 = nil
+        }
+      }
+    }
+
+    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+    func testNavigation_cancelID_ChildCannotCancelParent() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable {}
+        enum Action: Equatable {
+          case stopButtonTapped
+        }
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          switch action {
+          case .stopButtonTapped:
+            return .cancel(id: Parent.CancelID.effect)
+          }
+        }
+      }
+
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          @PresentationState var child: Child.State?
+          var count = 0
+        }
+        enum Action: Equatable {
+          case child(PresentationAction<Child.Action>)
+          case presentChild
+          case response(Int)
+          case startButtonTapped
+          case stopButtonTapped
+        }
+        enum CancelID { case effect }
+        @Dependency(\.continuousClock) var clock
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .child:
+              return .none
+            case .presentChild:
+              state.child = Child.State()
+              return .none
+            case let .response(value):
+              state.count = value
+              return .none
+            case .startButtonTapped:
+              return .task {
+                try await self.clock.sleep(for: .seconds(1))
+                return .response(42)
+              }
+              .cancellable(id: CancelID.effect)
+            case .stopButtonTapped:
+              return .cancel(id: CancelID.effect)
+            }
+          }
+          .presents(\.$child, action: /Action.child) {
+            Child()
+          }
+        }
+      }
+
+      let clock = TestClock()
+      let store = TestStore(
+        initialState: Parent.State(),
+        reducer: Parent()
+      ) {
+        $0.continuousClock = clock
+      }
+      await store.send(.presentChild) {
+        $0.child = Child.State()
+      }
+      await store.send(.startButtonTapped)
+      await store.send(.child(.presented(.stopButtonTapped)))
+      await clock.advance(by: .seconds(1))
+      await store.receive(.response(42)) {
+        $0.count = 42
+      }
+      await store.send(.stopButtonTapped)
+      await store.send(.child(.dismiss)) {
+        $0.child = nil
+      }
+    }
   }
 #endif
