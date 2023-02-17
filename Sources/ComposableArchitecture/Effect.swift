@@ -384,14 +384,14 @@ extension EffectTask {
   /// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
   @MainActor
   public struct Send {
-    public let send: @MainActor (Action) -> SendTask
+    public let send: @MainActor (Action) -> EffectSendTask
 
     public init(send: @escaping @MainActor (Action) -> Task<Void, Never>?) {
       self.send = { .init(rawValue: send($0)) }
     }
 
     @_disfavoredOverload
-    public init(send: @escaping @MainActor (Action) -> SendTask) {
+    public init(send: @escaping @MainActor (Action) -> EffectSendTask) {
       self.send = send
     }
 
@@ -399,7 +399,7 @@ extension EffectTask {
     ///
     /// - Parameter action: An action.
     @discardableResult
-    public func callAsFunction(_ action: Action) -> SendTask {
+    public func callAsFunction(_ action: Action) -> EffectSendTask {
       guard !Task.isCancelled else { return .init(rawValue: nil) }
       return self.send(action)
     }
@@ -410,7 +410,7 @@ extension EffectTask {
     ///   - action: An action.
     ///   - animation: An animation.
     @discardableResult
-    public func callAsFunction(_ action: Action, animation: Animation?) -> SendTask {
+    public func callAsFunction(_ action: Action, animation: Animation?) -> EffectSendTask {
       callAsFunction(action, transaction: Transaction(animation: animation))
     }
 
@@ -420,7 +420,7 @@ extension EffectTask {
     ///   - action: An action.
     ///   - transaction: A transaction.
     @discardableResult
-    public func callAsFunction(_ action: Action, transaction: Transaction) -> SendTask {
+    public func callAsFunction(_ action: Action, transaction: Transaction) -> EffectSendTask {
       guard !Task.isCancelled else { return .init(rawValue: nil) }
       return withTransaction(transaction) {
         self(action)
@@ -441,12 +441,12 @@ extension EffectTask {
 /// }
 /// ```
 ///
-/// > Note: Unlike Swift's `Task` type, ``SendTask`` automatically sets up a cancellation
+/// > Note: Unlike Swift's `Task` type, ``EffectSendTask`` automatically sets up a cancellation
 /// > handler between the current async context and the task.
 ///
 /// See ``TestStoreTask`` for the analog returned from ``TestStore``, and ``ViewStoreTask``
 /// for the analog returned from ``ViewStore``.
-public struct SendTask: Hashable, Sendable {
+public struct EffectSendTask: Hashable, Sendable {
   fileprivate let rawValue: Task<Void, Never>?
 
   /// Cancels the underlying task and waits for it to finish.
