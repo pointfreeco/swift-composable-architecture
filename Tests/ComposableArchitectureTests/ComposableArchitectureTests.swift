@@ -114,20 +114,20 @@ final class ComposableArchitectureTests: XCTestCase {
   func testCancellation() async {
     await _withMainSerialExecutor {
       let mainQueue = DispatchQueue.test
-      
+
       enum Action: Equatable {
         case cancel
         case incr
         case response(Int)
       }
-      
+
       let reducer = Reduce<Int, Action> { state, action in
         enum CancelID {}
-        
+
         switch action {
         case .cancel:
           return .cancel(id: CancelID.self)
-          
+
         case .incr:
           state += 1
           return .task { [state] in
@@ -135,22 +135,22 @@ final class ComposableArchitectureTests: XCTestCase {
             return .response(state * state)
           }
           .cancellable(id: CancelID.self)
-          
+
         case let .response(value):
           state = value
           return .none
         }
       }
-      
+
       let store = TestStore(
         initialState: 0,
         reducer: reducer
       )
-      
+
       await store.send(.incr) { $0 = 1 }
       await mainQueue.advance(by: .seconds(1))
       await store.receive(.response(1))
-      
+
       await store.send(.incr) { $0 = 2 }
       await store.send(.cancel)
       await store.finish()
