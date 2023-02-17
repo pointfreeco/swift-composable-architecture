@@ -621,7 +621,7 @@ import XCTest
             }
           }
         }
-        
+
         struct Parent: ReducerProtocol {
           struct State: Equatable {
             @PresentationState var child: Child.State?
@@ -645,12 +645,12 @@ import XCTest
             }
           }
         }
-        
+
         let store = TestStore(
           initialState: Parent.State(child: Child.State()),
           reducer: Parent()
         )
-        
+
         await store.send(.child(.presented(.closeButtonTapped)))
         await store.receive(.child(.dismiss)) {
           $0.child = nil
@@ -926,7 +926,7 @@ import XCTest
         var body: some ReducerProtocolOf<Self> {
           Reduce { state, action in
             switch action {
-            case.grandchild:
+            case .grandchild:
               return .none
             case .presentGrandchild:
               state.grandchild = Grandchild.State()
@@ -1267,5 +1267,112 @@ import XCTest
         $0.child = nil
       }
     }
+
+    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+    func testNavigation_cancelID_parentDismissGrandchild() async {
+      struct Grandchild: ReducerProtocol {
+        struct State: Equatable {}
+        enum Action: Equatable {
+          case response(Int)
+          case startButtonTapped
+        }
+        enum CancelID { case effect }
+        @Dependency(\.continuousClock) var clock
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          switch action {
+          case .response:
+            return .none
+          case .startButtonTapped:
+            return .task {
+              try await clock.sleep(for: .seconds(0))
+              return .response(42)
+            }
+            .cancellable(id: CancelID.effect)
+          }
+        }
+      }
+
+      struct Child: ReducerProtocol {
+        struct State: Equatable {
+          @PresentationState var grandchild: Grandchild.State?
+        }
+        enum Action: Equatable {
+          case grandchild(PresentationAction<Grandchild.Action>)
+          case presentGrandchild
+        }
+        var body: some ReducerProtocolOf<Self> {
+          Reduce { state, action in
+            switch action {
+            case .grandchild:
+              return .none
+            case .presentGrandchild:
+              state.grandchild = Grandchild.State()
+              return .none
+            }
+          }
+          .presents(\.$grandchild, action: /Action.grandchild) {
+            Grandchild()
+          }
+        }
+      }
+
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          @PresentationState var child: Child.State?
+        }
+        enum Action: Equatable {
+          case child(PresentationAction<Child.Action>)
+          case dismissGrandchild
+          case presentChild
+        }
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .child:
+              return .none
+            case .dismissGrandchild:
+              return .send(.child(.presented(.grandchild(.dismiss))))
+            case .presentChild:
+              state.child = Child.State()
+              return .none
+            }
+          }
+          .presents(\.$child, action: /Action.child) {
+            Child()
+          }
+        }
+      }
+
+      await _withMainSerialExecutor {
+        let clock = TestClock()
+        let store = TestStore(
+          initialState: Parent.State(),
+          reducer: Parent()
+        ) {
+          $0.continuousClock = clock
+        }
+        await store.send(.presentChild) {
+          $0.child = Child.State()
+        }
+        await store.send(.child(.presented(.presentGrandchild))) {
+          $0.child?.grandchild = Grandchild.State()
+        }
+
+        await store.send(.child(.presented(.grandchild(.presented(.startButtonTapped)))))
+        await clock.advance()
+        await store.receive(.child(.presented(.grandchild(.presented(.response(42))))))
+
+        await store.send(.child(.presented(.grandchild(.presented(.startButtonTapped)))))
+        await store.send(.dismissGrandchild)
+        await store.receive(.child(.presented(.grandchild(.dismiss)))) {
+          $0.child?.grandchild = nil
+        }
+        await store.send(.child(.dismiss)) {
+          $0.child = nil
+        }
+      }
+    }
+
+    // TODO: test coverage on warnings
   }
 #endif
