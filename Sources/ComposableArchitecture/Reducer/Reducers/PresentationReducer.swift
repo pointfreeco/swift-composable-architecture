@@ -94,6 +94,7 @@ extension PresentationState: CustomReflectable {
 public protocol _InertPresentationState {}
 
 extension AlertState: _InertPresentationState {}
+@available(iOS 13, macOS 12, tvOS 13, watchOS 6, *)
 extension ConfirmationDialogState: _InertPresentationState {}
 
 private func isInert<State>(_ state: State) -> Bool {

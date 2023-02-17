@@ -955,3 +955,20 @@ import XCTest
     // childA effect (id: 42), childB effect(id: 42) -> childA sends cancel(id: 42) -> CANCEL A
   }
 #endif
+
+
+/*
+
+
+ [.root, .presented(1), .presented(2)], .cancellable(id: 42)
+
+
+ [.root, .presented(1)], .cancel(id: 42)
+
+
+ state.$child.cancelID(for: 42)
+ state.child.$grandchild.cancelID(for: 42)
+
+
+
+ */

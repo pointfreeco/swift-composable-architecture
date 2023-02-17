@@ -84,13 +84,17 @@ extension EffectPublisher {
         )
       )
     case let .run(priority, operation):
-      return Self(
-        operation: .run(priority) { send in
-          await withTaskCancellation(id: id, cancelInFlight: cancelInFlight) {
-            await operation(send)
+      return withEscapedDependencies { continuation in
+        Self(
+          operation: .run(priority) { send in
+            await continuation.yield {
+              await withTaskCancellation(id: id, cancelInFlight: cancelInFlight) {
+                await operation(send)
+              }
+            }
           }
-        }
-      )
+        )
+      }
     }
   }
 
