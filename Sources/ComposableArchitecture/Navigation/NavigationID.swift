@@ -48,6 +48,24 @@ extension DependencyValues {
   }
 }
 
+extension NavigationID: Sequence {
+  public func makeIterator() -> AnyIterator<NavigationID> {
+    var id: NavigationID! = self
+    return AnyIterator {
+      switch id?.path {
+      case let .destination(presenter, _):
+        defer { id = presenter }
+        return id
+      case .root:
+        defer { id = nil }
+        return id
+      case .none:
+        return nil
+      }
+    }
+  }
+}
+
 private struct AnyHashableSendable: Hashable, @unchecked Sendable {
   let base: AnyHashable
 

@@ -30,8 +30,6 @@ extension EffectPublisher {
   /// - Returns: A new effect that is capable of being canceled by an identifier.
   public func cancellable(id: AnyHashable, cancelInFlight: Bool = false) -> Self {
     @Dependency(\.navigationID) var navigationID
-    let token = _CancelToken(id: id, navigationID: navigationID)
-    let _ = dump((id: id, navigationID: navigationID), name: "cancellable(id:)")
     switch self.operation {
     case .none:
       return .none
@@ -48,9 +46,11 @@ extension EffectPublisher {
             _cancellablesLock.lock()
             defer { _cancellablesLock.unlock() }
 
-            let id = dump(token)
             if cancelInFlight {
-              _cancellationCancellables[id]?.forEach { $0.cancel() }
+              for navigationID in navigationID {
+                let id = _CancelToken(id: id, navigationID: navigationID)
+                _cancellationCancellables[id]?.forEach { $0.cancel() }
+              }
             }
 
             let cancellationSubject = PassthroughSubject<Void, Never>()
@@ -60,9 +60,12 @@ extension EffectPublisher {
               _cancellablesLock.sync {
                 cancellationSubject.send(())
                 cancellationSubject.send(completion: .finished)
-                _cancellationCancellables[id]?.remove(cancellationCancellable)
-                if _cancellationCancellables[id]?.isEmpty == .some(true) {
-                  _cancellationCancellables[id] = nil
+                for navigationID in navigationID {
+                  let id = _CancelToken(id: id, navigationID: navigationID)
+                  _cancellationCancellables[id]?.remove(cancellationCancellable)
+                  if _cancellationCancellables[id]?.isEmpty == .some(true) {
+                    _cancellationCancellables[id] = nil
+                  }
                 }
               }
             }
@@ -71,9 +74,12 @@ extension EffectPublisher {
               .handleEvents(
                 receiveSubscription: { _ in
                   _ = _cancellablesLock.sync {
-                    _cancellationCancellables[id, default: []].insert(
-                      cancellationCancellable
-                    )
+                    for navigationID in navigationID {
+                      let id = _CancelToken(id: id, navigationID: navigationID)
+                      _cancellationCancellables[id, default: []].insert(
+                        cancellationCancellable
+                      )
+                    }
                   }
                 },
                 receiveCompletion: { _ in cancellationCancellable.cancel() },
@@ -119,7 +125,6 @@ extension EffectPublisher {
   ///   identifier.
   public static func cancel(id: AnyHashable) -> Self {
     @Dependency(\.navigationID) var navigationID
-    let _ = dump((id: id, navigationID: navigationID), name: "cancel(id:)")
     let id = _CancelToken(id: id, navigationID: navigationID)
     return .fireAndForget {
       _cancellablesLock.sync {
@@ -214,21 +219,29 @@ extension EffectPublisher {
     operation: @Sendable @escaping () async throws -> T
   ) async rethrows -> T {
     @Dependency(\.navigationID) var navigationID
-    let id = _CancelToken(id: id, navigationID: navigationID)
     let (cancellable, task) = _cancellablesLock.sync { () -> (AnyCancellable, Task<T, Error>) in
-      if cancelInFlight {
-        _cancellationCancellables[id]?.forEach { $0.cancel() }
+      for navigationID in navigationID {
+        let id = _CancelToken(id: id, navigationID: navigationID)
+        if cancelInFlight {
+          _cancellationCancellables[id]?.forEach { $0.cancel() }
+        }
       }
       let task = Task { try await operation() }
       let cancellable = AnyCancellable { task.cancel() }
-      _cancellationCancellables[id, default: []].insert(cancellable)
+      for navigationID in navigationID {
+        let id = _CancelToken(id: id, navigationID: navigationID)
+        _cancellationCancellables[id, default: []].insert(cancellable)
+      }
       return (cancellable, task)
     }
     defer {
-      _cancellablesLock.sync {
-        _cancellationCancellables[id]?.remove(cancellable)
-        if _cancellationCancellables[id]?.isEmpty == .some(true) {
-          _cancellationCancellables[id] = nil
+      for navigationID in navigationID {
+        let id = _CancelToken(id: id, navigationID: navigationID)
+        _cancellablesLock.sync {
+          _cancellationCancellables[id]?.remove(cancellable)
+          if _cancellationCancellables[id]?.isEmpty == .some(true) {
+            _cancellationCancellables[id] = nil
+          }
         }
       }
     }
