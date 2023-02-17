@@ -1,0 +1,83 @@
+name: Release
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+jobs:
+  project-channel:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump Github context
+        env:
+          GITHUB_CONTEXT: ${{ toJSON(github) }}
+        run: echo "$GITHUB_CONTEXT"
+      - name: Slack Notification on SUCCESS
+        if: success()
+        uses: tokorom/action-slack-incoming-webhook@main
+        env:
+          INCOMING_WEBHOOK_URL: ${{ secrets.SLACK_PROJECT_CHANNEL_WEBHOOK_URL }}
+        with:
+          text: swift-composable-architecture ${{ github.event.release.tag_name }} has been released.
+          blocks: |
+            [
+              {
+                "type": "header",
+                "text": {
+                  "type": "plain_text",
+                  "text": "swift-composable-architecture ${{ github.event.release.tag_name}}"
+                }
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": ${{ toJSON(github.event.release.body) }}
+                }
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "${{ github.event.release.html_url }}"
+                }
+              }
+            ]
+
+  releases-channel:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump Github context
+        env:
+          GITHUB_CONTEXT: ${{ toJSON(github) }}
+        run: echo "$GITHUB_CONTEXT"
+      - name: Slack Notification on SUCCESS
+        if: success()
+        uses: tokorom/action-slack-incoming-webhook@main
+        env:
+          INCOMING_WEBHOOK_URL: ${{ secrets.SLACK_RELEASES_WEBHOOK_URL }}
+        with:
+          text: swift-composable-architecture ${{ github.event.release.tag_name }} has been released.
+          blocks: |
+            [
+              {
+                "type": "header",
+                "text": {
+                  "type": "plain_text",
+                  "text": "swift-composable-architecture ${{ github.event.release.tag_name}}"
+                }
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": ${{ toJSON(github.event.release.body) }}
+                }
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "${{ github.event.release.html_url }}"
+                }
+              }
+            ]

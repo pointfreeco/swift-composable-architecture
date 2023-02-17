@@ -57,7 +57,7 @@ public struct EffectPublisher<Action, Failure: Error> {
   enum Operation {
     case none
     case publisher(AnyPublisher<Action, Failure>)
-    case run(TaskPriority? = nil, @Sendable (Send<Action>) async -> Void)
+    case run(TaskPriority? = nil, @Sendable (Send) async -> Void)
   }
 
   @usableFromInline
@@ -253,8 +253,8 @@ extension EffectPublisher where Failure == Never {
   /// - Returns: An effect wrapping the given asynchronous work.
   public static func run(
     priority: TaskPriority? = nil,
-    operation: @escaping @Sendable (Send<Action>) async throws -> Void,
-    catch handler: (@Sendable (Error, Send<Action>) async -> Void)? = nil,
+    operation: @escaping @Sendable (Send) async throws -> Void,
+    catch handler: (@Sendable (Error, Send) async -> Void)? = nil,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -353,76 +353,78 @@ extension EffectPublisher where Failure == Never {
   }
 }
 
-/// A type that can send actions back into the system when used from
-/// ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)``.
-///
-/// This type implements [`callAsFunction`][callAsFunction] so that you invoke it as a function
-/// rather than calling methods on it:
-///
-/// ```swift
-/// return .run { send in
-///   send(.started)
-///   defer { send(.finished) }
-///   for await event in self.events {
-///     send(.event(event))
-///   }
-/// }
-/// ```
-///
-/// You can also send actions with animation:
-///
-/// ```swift
-/// send(.started, animation: .spring())
-/// defer { send(.finished, animation: .default) }
-/// ```
-///
-/// See ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)`` for more information on how to
-/// use this value to construct effects that can emit any number of times in an asynchronous
-/// context.
-///
-/// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
-@MainActor
-public struct Send<Action> {
-  public let send: @MainActor (Action) -> SendTask
-
-  public init(send: @escaping @MainActor (Action) -> Task<Void, Never>?) {
-    self.send = { .init(rawValue: send($0)) }
-  }
-
-  @_disfavoredOverload
-  public init(send: @escaping @MainActor (Action) -> SendTask) {
-    self.send = send
-  }
-
-  /// Sends an action back into the system from an effect.
+extension EffectTask {
+  /// A type that can send actions back into the system when used from
+  /// ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)``.
   ///
-  /// - Parameter action: An action.
-  @discardableResult
-  public func callAsFunction(_ action: Action) -> SendTask {
-    guard !Task.isCancelled else { return .init(rawValue: nil) }
-    return self.send(action)
-  }
-
-  /// Sends an action back into the system from an effect with animation.
+  /// This type implements [`callAsFunction`][callAsFunction] so that you invoke it as a function
+  /// rather than calling methods on it:
   ///
-  /// - Parameters:
-  ///   - action: An action.
-  ///   - animation: An animation.
-  @discardableResult
-  public func callAsFunction(_ action: Action, animation: Animation?) -> SendTask {
-    callAsFunction(action, transaction: Transaction(animation: animation))
-  }
-
-  /// Sends an action back into the system from an effect with transaction.
+  /// ```swift
+  /// return .run { send in
+  ///   send(.started)
+  ///   defer { send(.finished) }
+  ///   for await event in self.events {
+  ///     send(.event(event))
+  ///   }
+  /// }
+  /// ```
   ///
-  /// - Parameters:
-  ///   - action: An action.
-  ///   - transaction: A transaction.
-  @discardableResult
-  public func callAsFunction(_ action: Action, transaction: Transaction) -> SendTask {
-    guard !Task.isCancelled else { return .init(rawValue: nil) }
-    return withTransaction(transaction) {
-      self(action)
+  /// You can also send actions with animation:
+  ///
+  /// ```swift
+  /// send(.started, animation: .spring())
+  /// defer { send(.finished, animation: .default) }
+  /// ```
+  ///
+  /// See ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)`` for more information on how to
+  /// use this value to construct effects that can emit any number of times in an asynchronous
+  /// context.
+  ///
+  /// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
+  @MainActor
+  public struct Send {
+    public let send: @MainActor (Action) -> SendTask
+
+    public init(send: @escaping @MainActor (Action) -> Task<Void, Never>?) {
+      self.send = { .init(rawValue: send($0)) }
+    }
+
+    @_disfavoredOverload
+    public init(send: @escaping @MainActor (Action) -> SendTask) {
+      self.send = send
+    }
+
+    /// Sends an action back into the system from an effect.
+    ///
+    /// - Parameter action: An action.
+    @discardableResult
+    public func callAsFunction(_ action: Action) -> SendTask {
+      guard !Task.isCancelled else { return .init(rawValue: nil) }
+      return self.send(action)
+    }
+
+    /// Sends an action back into the system from an effect with animation.
+    ///
+    /// - Parameters:
+    ///   - action: An action.
+    ///   - animation: An animation.
+    @discardableResult
+    public func callAsFunction(_ action: Action, animation: Animation?) -> SendTask {
+      callAsFunction(action, transaction: Transaction(animation: animation))
+    }
+
+    /// Sends an action back into the system from an effect with transaction.
+    ///
+    /// - Parameters:
+    ///   - action: An action.
+    ///   - transaction: A transaction.
+    @discardableResult
+    public func callAsFunction(_ action: Action, transaction: Transaction) -> SendTask {
+      guard !Task.isCancelled else { return .init(rawValue: nil) }
+      return withTransaction(transaction) {
+        self(action)
+      }
     }
   }
 }
@@ -755,7 +757,7 @@ extension EffectPublisher {
 
     You are encouraged to use 'EffectTask<Action>' to model the output of your reducers, and to use Swift concurrency to model failable streams of values.
 
-    To find and replace instances of 'Effect<Action, Never>' to 'EffectTask<Action, Never>' in your codebase, use the following regular expression:
+    To find and replace instances of 'Effect<Action, Never>' to 'EffectTask<Action>' in your codebase, use the following regular expression:
 
       Find:
         Effect<([^,]+), Never>
