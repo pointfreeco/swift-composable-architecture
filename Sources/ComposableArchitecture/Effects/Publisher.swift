@@ -23,7 +23,32 @@ extension EffectPublisher: Publisher {
       return .create { subscriber in
         let task = Task(priority: priority) { @MainActor in
           defer { subscriber.send(completion: .finished) }
-          let send = Send { subscriber.send($0) }
+          #if DEBUG
+            var isCompleted = false
+            defer { isCompleted = true }
+          #endif
+          let send = Send {
+            #if DEBUG
+              if isCompleted {
+                runtimeWarn(
+                  """
+                  An action was sent from a completed effect:
+
+                    Action:
+                      \(debugCaseOutput($0))
+
+                  Avoid sending actions using the 'send' argument from 'EffectTask.run' after \
+                  the effect has completed. This can happen if you escape the 'send' argument in \
+                  an unstructured context.
+
+                  To fix this, make sure that your 'run' closure does not return until you're \
+                  done calling 'send'.
+                  """
+                )
+              }
+            #endif
+            subscriber.send($0)
+          }
           await operation(send)
         }
         return AnyCancellable {
