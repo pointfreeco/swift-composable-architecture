@@ -73,7 +73,7 @@ extension EffectPublisher {
             return publisher.prefix(untilOutputFrom: cancellationSubject)
               .handleEvents(
                 receiveSubscription: { _ in
-                  _ = _cancellablesLock.sync {
+                  _cancellablesLock.sync {
                     for navigationID in navigationID {
                       let id = _CancelToken(id: id, navigationID: navigationID)
                       _cancellationCancellables[id, default: []].insert(

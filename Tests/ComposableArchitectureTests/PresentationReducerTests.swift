@@ -595,64 +595,66 @@ import XCTest
     }
 
     func testPresentation_hydratedDestination_childDismissal() async {
-      struct Child: ReducerProtocol {
-        struct State: Equatable {
-          var count = 0
-        }
-        enum Action: Equatable {
-          case closeButtonTapped
-          case decrementButtonTapped
-          case incrementButtonTapped
-        }
-        @Dependency(\.dismiss) var dismiss
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
-          switch action {
-          case .closeButtonTapped:
-            return .fireAndForget {
-              await self.dismiss()
-            }
-          case .decrementButtonTapped:
-            state.count -= 1
-            return .none
-          case .incrementButtonTapped:
-            state.count += 1
-            return .none
+      await _withMainSerialExecutor {
+        struct Child: ReducerProtocol {
+          struct State: Equatable {
+            var count = 0
           }
-        }
-      }
-
-      struct Parent: ReducerProtocol {
-        struct State: Equatable {
-          @PresentationState var child: Child.State?
-        }
-        enum Action: Equatable {
-          case child(PresentationAction<Child.Action>)
-          case presentChild
-        }
-        var body: some ReducerProtocol<State, Action> {
-          Reduce { state, action in
+          enum Action: Equatable {
+            case closeButtonTapped
+            case decrementButtonTapped
+            case incrementButtonTapped
+          }
+          @Dependency(\.dismiss) var dismiss
+          func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
             switch action {
-            case .child:
+            case .closeButtonTapped:
+              return .fireAndForget {
+                await self.dismiss()
+              }
+            case .decrementButtonTapped:
+              state.count -= 1
               return .none
-            case .presentChild:
-              state.child = Child.State()
+            case .incrementButtonTapped:
+              state.count += 1
               return .none
             }
           }
-          .presents(\.$child, action: /Action.child) {
-            Child()
+        }
+        
+        struct Parent: ReducerProtocol {
+          struct State: Equatable {
+            @PresentationState var child: Child.State?
+          }
+          enum Action: Equatable {
+            case child(PresentationAction<Child.Action>)
+            case presentChild
+          }
+          var body: some ReducerProtocol<State, Action> {
+            Reduce { state, action in
+              switch action {
+              case .child:
+                return .none
+              case .presentChild:
+                state.child = Child.State()
+                return .none
+              }
+            }
+            .presents(\.$child, action: /Action.child) {
+              Child()
+            }
           }
         }
-      }
-
-      let store = TestStore(
-        initialState: Parent.State(child: Child.State()),
-        reducer: Parent()
-      )
-
-      await store.send(.child(.presented(.closeButtonTapped)))
-      await store.receive(.child(.dismiss)) {
-        $0.child = nil
+        
+        let store = TestStore(
+          initialState: Parent.State(child: Child.State()),
+          reducer: Parent()
+        )
+        
+        await store.send(.child(.presented(.closeButtonTapped)))
+        await store.receive(.child(.dismiss)) {
+          $0.child = nil
+        }
       }
     }
 
@@ -950,25 +952,9 @@ import XCTest
       await presentationTask.cancel()
     }
 
+    // TODO: Capture all the below:
     // child effect (id: 42), parent sends cancel(id: 42) -> CANCEL
     // childA effect (id: 42), childB effect(id: 42) -> parent sends cancel(id: 42) -> CANCEL BOTH
     // childA effect (id: 42), childB effect(id: 42) -> childA sends cancel(id: 42) -> CANCEL A
   }
 #endif
-
-
-/*
-
-
- [.root, .presented(1), .presented(2)], .cancellable(id: 42)
-
-
- [.root, .presented(1)], .cancel(id: 42)
-
-
- state.$child.cancelID(for: 42)
- state.child.$grandchild.cancelID(for: 42)
-
-
-
- */
