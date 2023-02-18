@@ -453,19 +453,27 @@ extension EffectTask {
       }
     }
 
-    public func map<NewAction, NewFailure>(
-      _ closure: @escaping @MainActor (NewAction, @escaping @MainActor (Action) -> Task<Void, Never>?) -> Task<Void, Never>?
-    ) -> EffectPublisher<NewAction, NewFailure>.Send {
+    public func map<Mapper: SendMapper>(
+      // we need a transform func that's invariant over the return type
+      // which we can't describe with a closure
+      _ mapper: Mapper
+    ) -> EffectPublisher<Action, Failure>.Send where Mapper.Action == Action {
       switch rawValue {
       case .attached(let send):
-        return .init(attached: { closure($0, send) })
+        return .init(attached: mapper.map(send: send))
       case .detached(let send):
-        return .init(detached: { action in
-          _ = closure(action) {
-            send($0)
-            return nil
-          }
-        })
+        return .init(detached: mapper.map(send: send))
+      }
+    }
+
+    public func mapAction<NewAction>(
+      _ transform: @escaping @MainActor (NewAction) -> Action
+    ) -> EffectPublisher<NewAction, Failure>.Send {
+      switch rawValue {
+      case .attached(let send):
+        return .init(attached: { send(transform($0)) })
+      case .detached(let send):
+        return .init(detached: { send(transform($0)) })
       }
     }
 
@@ -517,6 +525,11 @@ extension EffectTask {
       }
     }
   }
+}
+
+public protocol SendMapper {
+  associatedtype Action
+  @MainActor func map<T>(send: @escaping @MainActor (Action) -> T) -> (@MainActor (Action) -> T)
 }
 
 /// The type returned from ``Send/callAsFunction(_:)`` that represents the lifecycle of the effect
@@ -750,9 +763,7 @@ extension EffectPublisher {
           operation: .run(priority) { send in
             await escaped.yield {
               await operation(
-                send.map { action, send in
-                  send(transform(action))
-                }
+                send.mapAction(transform)
               )
             }
           }

@@ -46,14 +46,21 @@ extension EffectPublisher {
       return Self(
         operation: .run(priority) { send in
           await operation(
-            send.map { value, send in
-              withTransaction(transaction) {
-                send(value)
-              }
-            }
+            send.map(AnimationMapper(transaction: transaction))
           )
         }
       )
+    }
+  }
+}
+
+private struct AnimationMapper<Action>: SendMapper {
+  let transaction: Transaction
+  func map<T>(send: @escaping @MainActor (Action) -> T) -> (@MainActor (Action) -> T) {
+    { action in
+      withTransaction(transaction) {
+        send(action)
+      }
     }
   }
 }
