@@ -23,7 +23,7 @@
       }
 
       line = #line
-      let effect = EffectTask<Void>.task {
+      let effect = Effect<Void>.task {
         struct Unexpected: Error {}
         throw Unexpected()
       }
@@ -47,7 +47,7 @@
       }
 
       line = #line
-      let effect = EffectTask<Void>.run { _ in
+      let effect = Effect<Void>.run { _ in
         struct Unexpected: Error {}
         throw Unexpected()
       }

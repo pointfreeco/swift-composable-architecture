@@ -6,7 +6,7 @@
   @MainActor
   class EffectOperationTests: XCTestCase {
     func testMergeDiscardsNones() async {
-      var effect = EffectTask<Int>.none
+      var effect = Effect<Int>.none
         .merge(with: .none)
       switch effect.operation {
       case .none:
@@ -15,7 +15,7 @@
         XCTFail()
       }
 
-      effect = EffectTask<Int>.task { 42 }
+      effect = Effect<Int>.task { 42 }
         .merge(with: .none)
       switch effect.operation {
       case let .run(_, send):
@@ -24,7 +24,7 @@
         XCTFail()
       }
 
-      effect = EffectTask<Int>.none
+      effect = Effect<Int>.none
         .merge(with: .task { 42 })
       switch effect.operation {
       case let .run(_, send):
@@ -33,7 +33,7 @@
         XCTFail()
       }
 
-      effect = EffectTask<Int>.run { await $0(42) }
+      effect = Effect<Int>.run { await $0(42) }
         .merge(with: .none)
       switch effect.operation {
       case let .run(_, send):
@@ -42,7 +42,7 @@
         XCTFail()
       }
 
-      effect = EffectTask<Int>.none
+      effect = Effect<Int>.none
         .merge(with: .run { await $0(42) })
       switch effect.operation {
       case let .run(_, send):
@@ -53,7 +53,7 @@
     }
 
     func testConcatenateDiscardsNones() async {
-      var effect = EffectTask<Int>.none
+      var effect = Effect<Int>.none
         .concatenate(with: .none)
       switch effect.operation {
       case .none:
@@ -62,7 +62,7 @@
         XCTFail()
       }
 
-      effect = EffectTask<Int>.task { 42 }
+      effect = Effect<Int>.task { 42 }
         .concatenate(with: .none)
       switch effect.operation {
       case let .run(_, send):
@@ -71,7 +71,7 @@
         XCTFail()
       }
 
-      effect = EffectTask<Int>.none
+      effect = Effect<Int>.none
         .concatenate(with: .task { 42 })
       switch effect.operation {
       case let .run(_, send):
@@ -80,7 +80,7 @@
         XCTFail()
       }
 
-      effect = EffectTask<Int>.run { await $0(42) }
+      effect = Effect<Int>.run { await $0(42) }
         .concatenate(with: .none)
       switch effect.operation {
       case let .run(_, send):
@@ -89,7 +89,7 @@
         XCTFail()
       }
 
-      effect = EffectTask<Int>.none
+      effect = Effect<Int>.none
         .concatenate(with: .run { await $0(42) })
       switch effect.operation {
       case let .run(_, send):
@@ -102,7 +102,7 @@
     func testMergeFuses() async {
       var values = [Int]()
 
-      let effect = EffectTask<Int>.task {
+      let effect = Effect<Int>.task {
         try await Task.sleep(nanoseconds: NSEC_PER_SEC / 10)
         return 42
       }
@@ -125,7 +125,7 @@
     func testConcatenateFuses() async {
       var values = [Int]()
 
-      let effect = EffectTask<Int>.task { 42 }
+      let effect = Effect<Int>.task { 42 }
         .concatenate(with: .task { 1729 })
       switch effect.operation {
       case let .run(_, send):
@@ -138,7 +138,7 @@
     }
 
     func testMap() async {
-      let effect = EffectTask<Int>.task { 42 }
+      let effect = Effect<Int>.task { 42 }
         .map { "\($0)" }
 
       switch effect.operation {

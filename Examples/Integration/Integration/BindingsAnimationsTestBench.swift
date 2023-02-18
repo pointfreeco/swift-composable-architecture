@@ -2,7 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 struct BindingsAnimations: ReducerProtocol {
-  func reduce(into state: inout Bool, action: Void) -> EffectTask<Void> {
+  func reduce(into state: inout Bool, action: Void) -> Effect<Void> {
     state.toggle()
     return .none
   }

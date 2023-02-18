@@ -130,7 +130,7 @@ final class EffectRunTests: XCTestCase {
             Effect returned from:
               EffectRunTests.Action.tap
 
-          Avoid sending actions using the 'send' argument from 'EffectTask.run' after the effect has \
+          Avoid sending actions using the 'send' argument from 'Effect.run' after the effect has \
           completed. This can happen if you escape the 'send' argument in an unstructured context.
 
           To fix this, make sure that your 'run' closure does not return until you're done calling \
@@ -172,7 +172,7 @@ final class EffectRunTests: XCTestCase {
             Action:
               EffectRunTests.Action.response
 
-          Avoid sending actions using the 'send' argument from 'EffectTask.run' after the effect has \
+          Avoid sending actions using the 'send' argument from 'Effect.run' after the effect has \
           completed. This can happen if you escape the 'send' argument in an unstructured context.
 
           To fix this, make sure that your 'run' closure does not return until you're done calling \

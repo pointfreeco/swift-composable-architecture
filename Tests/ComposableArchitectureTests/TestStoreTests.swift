@@ -17,7 +17,7 @@ final class TestStoreTests: XCTestCase {
       switch action {
       case .a:
         return .merge(
-          EffectTask.concatenate(.init(value: .b1), .init(value: .c1))
+          Effect.concatenate(.init(value: .b1), .init(value: .c1))
             .delay(for: 1, scheduler: mainQueue)
             .eraseToEffect(),
           Empty(completeImmediately: false)
@@ -26,11 +26,11 @@ final class TestStoreTests: XCTestCase {
         )
       case .b1:
         return
-          EffectTask
+          Effect
           .concatenate(.init(value: .b2), .init(value: .b3))
       case .c1:
         return
-          EffectTask
+          Effect
           .concatenate(.init(value: .c2), .init(value: .c3))
       case .b2, .b3, .c2, .c3:
         return .none
@@ -100,7 +100,7 @@ final class TestStoreTests: XCTestCase {
         switch action {
         case .increment:
           state.isChanging = true
-          return EffectTask(value: .changed(from: state.count, to: state.count + 1))
+          return Effect(value: .changed(from: state.count, to: state.count + 1))
         case .changed(let from, let to):
           state.isChanging = false
           if state.count == from {
@@ -145,7 +145,7 @@ final class TestStoreTests: XCTestCase {
       let reducer = Reduce<State, Action> { state, action in
         switch action {
         case .noop:
-          return EffectTask(value: .finished)
+          return Effect(value: .finished)
         case .finished:
           return .none
         }
@@ -176,7 +176,7 @@ final class TestStoreTests: XCTestCase {
       let reducer = Reduce<Int, Action> { state, action in
         switch action {
         case .noop:
-          return EffectTask(value: .finished)
+          return Effect(value: .finished)
         case .finished:
           return .none
         }
@@ -250,7 +250,7 @@ final class TestStoreTests: XCTestCase {
       @Dependency(\.timeZone) var timeZone
       @Dependency(\.urlSession) var urlSession
 
-      func reduce(into state: inout Int, action: Bool) -> EffectTask<Bool> {
+      func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
         _ = self.calendar
         _ = self.locale
         _ = self.timeZone
@@ -279,7 +279,7 @@ final class TestStoreTests: XCTestCase {
       @Dependency(\.timeZone) var timeZone
       @Dependency(\.urlSession) var urlSession
 
-      func reduce(into state: inout Int, action: Bool) -> EffectTask<Bool> {
+      func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
         _ = self.calendar
         _ = self.locale
         _ = self.timeZone
@@ -305,7 +305,7 @@ final class TestStoreTests: XCTestCase {
     struct Counter: ReducerProtocol {
       @Dependency(\.date.now) var now
 
-      func reduce(into state: inout Int, action: ()) -> EffectTask<Void> {
+      func reduce(into state: inout Int, action: ()) -> Effect<Void> {
         state = Int(self.now.timeIntervalSince1970)
         return .none
       }
@@ -332,7 +332,7 @@ final class TestStoreTests: XCTestCase {
       @Dependency(\.timeZone) var timeZone
       @Dependency(\.urlSession) var urlSession
 
-      func reduce(into state: inout Int, action: Bool) -> EffectTask<Bool> {
+      func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
         _ = self.calendar
         _ = self.locale
         _ = self.timeZone
@@ -370,7 +370,7 @@ final class TestStoreTests: XCTestCase {
         case response(Int)
       }
       @Dependency(\.date.now) var now: Date
-      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+      func reduce(into state: inout State, action: Action) -> Effect<Action> {
         switch action {
         case .tap:
           state.count += 1

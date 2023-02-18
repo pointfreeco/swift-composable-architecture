@@ -10,7 +10,7 @@ struct ForEachBindingTestCase: ReducerProtocol {
     case removeLast
   }
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case let .change(offset: offset, value: value):
       state.values[offset] = value

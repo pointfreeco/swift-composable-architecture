@@ -423,7 +423,7 @@ public final class Store<State, Action> {
               defer { isCompleted = true }
             #endif
             await operation(
-              EffectTask<Action>.Send {
+              Effect<Action>.Send {
                 #if DEBUG
                   if isCompleted {
                     runtimeWarn(
@@ -436,7 +436,7 @@ public final class Store<State, Action> {
                         Effect returned from:
                           \(debugCaseOutput(action))
 
-                      Avoid sending actions using the 'send' argument from 'EffectTask.run' after \
+                      Avoid sending actions using the 'send' argument from 'Effect.run' after \
                       the effect has completed. This can happen if you escape the 'send' argument in \
                       an unstructured context.
 

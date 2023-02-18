@@ -118,7 +118,7 @@ private struct Child1: Reducer {
     case decrementButtonTapped
     case incrementButtonTapped
   }
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .decrementButtonTapped:
       state.count -= 1

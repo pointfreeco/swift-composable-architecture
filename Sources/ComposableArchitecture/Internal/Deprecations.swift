@@ -28,9 +28,9 @@ public typealias ReducerProtocolOf<R: Reducer> = Reducer<R.State, R.Action>
 @available(
   *,
   deprecated,
-  message: "Use 'EffectTask<Action>.Send' instead."
+  message: "Use 'Effect<Action>.Send' instead."
 )
-public typealias Send<Action> = EffectTask<Action>.Send
+public typealias Send<Action> = Effect<Action>.Send
 
 // MARK: - Deprecated after 0.49.2
 

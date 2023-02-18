@@ -7,13 +7,13 @@ private struct Test: Reducer {
   struct State {}
   enum Action { case tap }
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     .none
   }
 
   @available(iOS, introduced: 9999.0)
   struct Unavailable: Reducer {
-    func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+    func reduce(into state: inout State, action: Action) -> Effect<Action> {
       .none
     }
   }
@@ -173,7 +173,7 @@ private struct Root: Reducer {
       case action
     }
 
-    func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+    func reduce(into state: inout State, action: Action) -> Effect<Action> {
       .none
     }
   }

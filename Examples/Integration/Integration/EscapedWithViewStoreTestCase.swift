@@ -7,7 +7,7 @@ struct EscapedWithViewStoreTestCase: ReducerProtocol {
     case decr
   }
 
-  func reduce(into state: inout Int, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout Int, action: Action) -> Effect<Action> {
     switch action {
     case .incr:
       state += 1
