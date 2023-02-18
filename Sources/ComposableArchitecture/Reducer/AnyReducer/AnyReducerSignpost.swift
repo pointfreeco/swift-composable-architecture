@@ -132,10 +132,10 @@ extension EffectPublisher where Failure == Never {
           )
           await operation(
             send.mapAction {
-                os_signpost(
-                  .event, log: log, name: "Effect Output", "%sOutput from %s", prefix, actionOutput
-                )
-                return $0
+              os_signpost(
+                .event, log: log, name: "Effect Output", "%sOutput from %s", prefix, actionOutput
+              )
+              return $0
             }
           )
           if Task.isCancelled {
