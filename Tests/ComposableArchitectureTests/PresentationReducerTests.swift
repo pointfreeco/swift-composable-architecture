@@ -1373,6 +1373,130 @@ import XCTest
       }
     }
 
-    // TODO: test coverage on warnings
+    func testRuntimeWarn_NilChild_SendDismissAction() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable {}
+        enum Action: Equatable {}
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        }
+      }
+
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          @PresentationState var child: Child.State?
+        }
+        enum Action: Equatable {
+          case child(PresentationAction<Child.Action>)
+        }
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+              .none
+          }
+          .presents(\.$child, action: /Action.child) {
+            Child()
+          }
+        }
+      }
+
+      let store = TestStore(
+        initialState: Parent.State(),
+        reducer: Parent()
+      )
+
+      XCTExpectFailure {
+        $0.compactDescription == """
+          TODO
+          """
+      }
+
+      await store.send(.child(.dismiss))
+    }
+
+    func testRuntimeWarn_NilChild_SendChildAction() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable {}
+        enum Action: Equatable {
+          case tap
+        }
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          .none
+        }
+      }
+
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          @PresentationState var child: Child.State?
+        }
+        enum Action: Equatable {
+          case child(PresentationAction<Child.Action>)
+        }
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+              .none
+          }
+          .presents(\.$child, action: /Action.child) {
+            Child()
+          }
+        }
+      }
+
+      let store = TestStore(
+        initialState: Parent.State(),
+        reducer: Parent()
+      )
+
+      XCTExpectFailure {
+        $0.compactDescription == """
+          TODO
+          """
+      }
+
+      await store.send(.child(.presented(.tap)))
+    }
+
+    func testRuntimeWarn_RehydrateChild_SendDismissAction() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable {}
+        enum Action: Equatable {}
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        }
+      }
+
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          @PresentationState var child: Child.State?
+        }
+        enum Action: Equatable {
+          case child(PresentationAction<Child.Action>)
+        }
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .child(.dismiss):
+              state.child = Child.State()
+              return .none
+            default:
+              return .none
+            }
+          }
+          .presents(\.$child, action: /Action.child) {
+            Child()
+          }
+        }
+      }
+
+      let store = TestStore(
+        initialState: Parent.State(child: Child.State()),
+        reducer: Parent()
+      )
+
+      XCTExpectFailure {
+        $0.compactDescription == """
+          TODO
+          """
+      }
+
+      await store.send(.child(.dismiss))
+    }
   }
 #endif

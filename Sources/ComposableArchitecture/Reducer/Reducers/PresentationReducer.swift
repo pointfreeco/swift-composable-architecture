@@ -218,11 +218,11 @@ public struct _PresentationReducer<
       baseEffects = self.base.reduce(into: &state, action: action)
     }
 
-    let presentationChanged =
+    let presentationIdentityChanged =
       initialPresentationState.id != state[keyPath: self.toPresentationState].id
 
     let dismissEffects: EffectTask<Base.Action>
-    if presentationChanged,
+    if presentationIdentityChanged,
       let (id, presentationState) = initialPresentationState.presentedValue,
       !isInert(presentationState)
     {
@@ -232,7 +232,7 @@ public struct _PresentationReducer<
     }
 
     let presentEffects: EffectTask<Base.Action>
-    if presentationChanged || !state[keyPath: self.toPresentationState].isPresented,
+    if presentationIdentityChanged || !state[keyPath: self.toPresentationState].isPresented,
       let (id, presentationState) = state[keyPath: self.toPresentationState].presentedValue,
       !isInert(presentationState)
     {
