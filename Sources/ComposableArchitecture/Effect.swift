@@ -390,10 +390,12 @@ extension EffectTask {
     }
     private let rawValue: RawValue
 
+    @_disfavoredOverload
     public init(attached: @escaping @MainActor (Action) -> Task<Void, Never>?) {
       self.rawValue = .attached(attached)
     }
 
+    @_disfavoredOverload
     public init(detached: @escaping @MainActor (Action) -> Void) {
       self.rawValue = .detached(detached)
     }
@@ -456,7 +458,7 @@ extension EffectTask {
     ) -> EffectPublisher<NewAction, NewFailure>.Send {
       switch rawValue {
       case .attached(let send):
-        return .init { closure($0, send) }
+        return .init(attached: { closure($0, send) })
       case .detached(let send):
         return .init(detached: { action in
           _ = closure(action) {

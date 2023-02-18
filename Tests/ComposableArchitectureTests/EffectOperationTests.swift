@@ -149,10 +149,4 @@
       }
     }
   }
-
-  extension EffectPublisher.Send {
-    fileprivate init(send: @escaping @MainActor (Action) -> Void) {
-      self.init(detached: send)
-    }
-  }
 #endif
