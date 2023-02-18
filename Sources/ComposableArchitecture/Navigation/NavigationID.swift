@@ -1,17 +1,21 @@
+@_spi(Reflection) import CasePaths
+
 extension DependencyValues {
   var navigationID: NavigationID {
-    get { self[NavigationID.self] }
-    set { self[NavigationID.self] = newValue }
+    get { self[NavigationIDKey.self] }
+    set { self[NavigationIDKey.self] = newValue }
   }
 }
 
-@_spi(Internals) public struct NavigationID: DependencyKey, Hashable, Identifiable, Sendable {
+private enum NavigationIDKey: DependencyKey {
   public static let liveValue = NavigationID(path: .root)
   public static let testValue = NavigationID(path: .root)
+}
 
+public struct NavigationID: Hashable, Identifiable, Sendable {
   let path: Path
 
-  public init(path: Path) {
+  init(path: Path) {
     self.path = path
   }
 
@@ -41,8 +45,11 @@ extension DependencyValues {
         self.tag = enumTag(value)
         if let value = value as? any Identifiable {
           self.id = id(value)
+        } else if let metadata = EnumMetadata(type(of: value)),
+          metadata.associatedValueType(forTag: metadata.tag(of: value)) is any Identifiable.Type
+        {
+          // TODO: Extract enum payload and assign id
         }
-        // TODO: If identifiable fails but enum tag exists, further extract value and use its identity
       }
     }
   }

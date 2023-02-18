@@ -1191,7 +1191,111 @@ import XCTest
     }
 
     @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
-    func testNavigation_cancelID_ChildCannotCancelParent() async {
+    func testNavigation_cancelID_childCannotCancelIdentifiableSibling() async throws {
+      struct Child: ReducerProtocol {
+        struct State: Equatable, Identifiable {
+          let id: UUID
+          var count = 0
+        }
+        enum Action: Equatable {
+          case response(Int)
+          case startButtonTapped
+          case stopButtonTapped
+        }
+        enum CancelID { case effect }
+        @Dependency(\.continuousClock) var clock
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          switch action {
+          case let .response(value):
+            state.count = value
+            return .none
+          case .startButtonTapped:
+            return .run { send in
+              for await _ in self.clock.timer(interval: .seconds(1)) {
+                await send(.response(42))
+              }
+            }
+            .cancellable(id: CancelID.effect)
+          case .stopButtonTapped:
+            return .cancel(id: CancelID.effect)
+          }
+        }
+      }
+
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          @PresentationState var child1: Child.State?
+          @PresentationState var child2: Child.State?
+        }
+        enum Action: Equatable {
+          case child1(PresentationAction<Child.Action>)
+          case child2(PresentationAction<Child.Action>)
+          case presentChildren
+        }
+        @Dependency(\.uuid) var uuid
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .child1, .child2:
+              return .none
+            case .presentChildren:
+              state.child1 = Child.State(id: self.uuid())
+              state.child2 = Child.State(id: self.uuid())
+              return .none
+            }
+          }
+          .presents(\.$child1, action: /Action.child1) {
+            Child()
+          }
+          .presents(\.$child2, action: /Action.child2) {
+            Child()
+          }
+        }
+      }
+
+      await _withMainSerialExecutor {
+        let clock = TestClock()
+        let store = TestStore(
+          initialState: Parent.State(),
+          reducer: Parent()
+        ) {
+          $0.continuousClock = clock
+          $0.uuid = .incrementing
+        }
+        await store.send(.presentChildren) {
+          $0.child1 = Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
+          $0.child2 = Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!)
+        }
+        await store.send(.child1(.presented(.startButtonTapped)))
+        await clock.advance(by: .seconds(1))
+        await store.receive(.child1(.presented(.response(42)))) {
+          $0.child1?.count = 42
+        }
+        await store.send(.child2(.presented(.startButtonTapped)))
+        await clock.advance(by: .seconds(1))
+        await store.receive(.child1(.presented(.response(42))))
+        await store.receive(.child2(.presented(.response(42)))) {
+          $0.child2?.count = 42
+        }
+
+        await store.send(.child1(.presented(.stopButtonTapped)))
+        await clock.advance(by: .seconds(1))
+        await store.receive(.child2(.presented(.response(42))))
+
+        await store.send(.child2(.presented(.stopButtonTapped)))
+        await clock.advance(by: .seconds(1))
+
+        await clock.run()
+        await store.send(.child1(.dismiss)) {
+          $0.child1 = nil
+        }
+        await store.send(.child2(.dismiss)) {
+          $0.child2 = nil
+        }
+      }
+    }
+    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+    func testNavigation_cancelID_childCannotCancelParent() async {
       struct Child: ReducerProtocol {
         struct State: Equatable {}
         enum Action: Equatable {

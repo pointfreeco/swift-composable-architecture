@@ -5,15 +5,6 @@ public struct PresentationState<State> {
   private var boxedValue: [State]
   fileprivate var isPresented = false
 
-  // TODO: Is this needed?
-  //public static var dismissed: Self {
-  //  Self(wrappedValue: nil)
-  //}
-  //
-  //public static func presented(_ state: State) -> Self {
-  //  Self(wrappedValue: state)
-  //}
-
   @Dependency(\.navigationID) private var navigationID
 
   public init(wrappedValue: State?) {
@@ -43,7 +34,7 @@ public struct PresentationState<State> {
     _modify { yield &self }
   }
 
-  fileprivate var id: NavigationID? {
+  public var id: NavigationID? {
     self.presentedValue?.id
   }
 
@@ -184,15 +175,10 @@ public struct _PresentationReducer<
     case (.some, .some(.dismiss)):
       destinationEffects = .none
       baseEffects = self.base.reduce(into: &state, action: action)
-      if initialPresentationState.id != state[keyPath: self.toPresentationState].id {
-        runtimeWarn("TODO")
+      if initialPresentationState.id == state[keyPath: self.toPresentationState].id {
+        state[keyPath: self.toPresentationState].wrappedValue = nil
       }
-      state[keyPath: self.toPresentationState].wrappedValue = nil
-
-    // TODO: Is the following possible/preferable?
-    //if initialPresentationState.id == state[keyPath: self.toPresentationState].id {
-    //  state[keyPath: self.toPresentationState].wrappedValue = nil
-    //}
+      // TODO: Should we runtime warn if `base` changes the destination during dismissal, instead?
 
     case let (.some((id, destinationState)), .some(.presented(destinationAction))):
       destinationEffects = self.destination
@@ -213,7 +199,29 @@ public struct _PresentationReducer<
       baseEffects = self.base.reduce(into: &state, action: action)
 
     case (.none, .some):
-      runtimeWarn("TODO")
+      runtimeWarn(
+        """
+        A "presents" at "\(self.fileID):\(self.line)" received a presentation action when
+        destination state was absent. …
+
+          Action:
+            \(debugCaseOutput(action))
+
+        This is generally considered an application logic error, and can happen for a few \
+        reasons:
+
+        • A parent reducer set destination state to "nil" before this reducer ran. This reducer \
+        must run before any other reducer sets destination state to "nil". This ensures that \
+        destination reducers can handle their actions while their state is still present.
+
+        • This action was sent to the store while destination state was "nil". Make sure that \
+        actions for this reducer can only be sent from a view store when state is present, or \
+        from effects that start from this reducer. In SwiftUI applications, use a Composable \
+        Architecture view modifier like "sheet(store:…)".
+        """,
+        file: self.file,
+        line: self.line
+      )
       destinationEffects = .none
       baseEffects = self.base.reduce(into: &state, action: action)
     }
