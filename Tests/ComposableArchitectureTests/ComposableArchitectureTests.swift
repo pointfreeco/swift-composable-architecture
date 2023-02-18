@@ -16,17 +16,17 @@ final class ComposableArchitectureTests: XCTestCase {
         case squareNow
       }
       @Dependency(\.mainQueue) var mainQueue
-      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+      func reduce(into state: inout State, action: Action) -> Effect<Action> {
         switch action {
         case .incrAndSquareLater:
           return .merge(
-            EffectTask(value: .incrNow)
+            Effect(value: .incrNow)
               .delay(for: 2, scheduler: self.mainQueue)
               .eraseToEffect(),
-            EffectTask(value: .squareNow)
+            Effect(value: .squareNow)
               .delay(for: 1, scheduler: self.mainQueue)
               .eraseToEffect(),
-            EffectTask(value: .squareNow)
+            Effect(value: .squareNow)
               .delay(for: 2, scheduler: self.mainQueue)
               .eraseToEffect()
           )

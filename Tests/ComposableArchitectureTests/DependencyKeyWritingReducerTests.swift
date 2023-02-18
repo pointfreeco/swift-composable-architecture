@@ -99,7 +99,7 @@ final class DependencyKeyWritingReducerTests: XCTestCase {
       }
       @Dependency(\.myValue) var myValue
 
-      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+      func reduce(into state: inout State, action: Action) -> Effect<Action> {
         switch action {
         case .tap:
           state.count += 1
@@ -136,7 +136,7 @@ private struct Feature: Reducer {
   @Dependency(\.myValue) var myValue
   struct State: Equatable { var value = 0 }
   enum Action { case tap }
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .tap:
       state.value = self.myValue

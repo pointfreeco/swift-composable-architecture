@@ -13,7 +13,7 @@ struct NavigationStackBindingTestCase: ReducerProtocol {
     case navigationPathChanged([State.Destination])
   }
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .goToChild:
       state.path.append(.child)

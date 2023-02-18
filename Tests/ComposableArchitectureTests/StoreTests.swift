@@ -18,7 +18,7 @@ final class StoreTests: XCTestCase {
 
   func testCancellableIsRemovedWhenEffectCompletes() {
     let mainQueue = DispatchQueue.test
-    let effect = EffectTask<Void>(value: ())
+    let effect = Effect<Void>(value: ())
       .delay(for: 1, scheduler: mainQueue)
       .eraseToEffect()
 
@@ -185,13 +185,13 @@ final class StoreTests: XCTestCase {
       switch action {
       case .tap:
         return .merge(
-          EffectTask(value: .next1),
-          EffectTask(value: .next2),
+          Effect(value: .next1),
+          Effect(value: .next2),
           .fireAndForget { values.append(1) }
         )
       case .next1:
         return .merge(
-          EffectTask(value: .end),
+          Effect(value: .end),
           .fireAndForget { values.append(2) }
         )
       case .next2:
@@ -214,7 +214,7 @@ final class StoreTests: XCTestCase {
       switch action {
       case .incr:
         state += 1
-        return state >= 100_000 ? EffectTask(value: .noop) : EffectTask(value: .incr)
+        return state >= 100_000 ? Effect(value: .noop) : Effect(value: .incr)
       case .noop:
         return .none
       }
@@ -355,9 +355,9 @@ final class StoreTests: XCTestCase {
         switch action {
         case 0:
           return .merge(
-            EffectTask(value: 1),
-            EffectTask(value: 2),
-            EffectTask(value: 3)
+            Effect(value: 1),
+            Effect(value: 2),
+            Effect(value: 3)
           )
         default:
           state = action
@@ -518,7 +518,7 @@ final class StoreTests: XCTestCase {
       @Dependency(\.timeZone) var timeZone
       @Dependency(\.urlSession) var urlSession
 
-      func reduce(into state: inout Int, action: Bool) -> EffectTask<Bool> {
+      func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
         _ = self.calendar
         _ = self.locale
         _ = self.timeZone
@@ -544,7 +544,7 @@ final class StoreTests: XCTestCase {
     struct MyReducer: ReducerProtocol {
       @Dependency(\.uuid) var uuid
 
-      func reduce(into state: inout UUID, action: Void) -> EffectTask<Void> {
+      func reduce(into state: inout UUID, action: Void) -> Effect<Void> {
         state = self.uuid()
         return .none
       }

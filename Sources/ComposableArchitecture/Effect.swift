@@ -57,7 +57,7 @@ public struct EffectPublisher<Action, Failure: Error> {
   enum Operation {
     case none
     case publisher(AnyPublisher<Action, Failure>)
-    case run(TaskPriority? = nil, @Sendable (Send) async -> Void)
+    case run(TaskPriority? = nil, @Sendable (Effect<Action>.Send) async -> Void)
   }
 
   @usableFromInline
@@ -352,7 +352,7 @@ extension EffectPublisher where Failure == Never {
   }
 }
 
-extension EffectTask {
+extension Effect {
   /// A type that can send actions back into the system when used from
   /// ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)``.
   ///
@@ -574,7 +574,7 @@ extension EffectPublisher {
           operation: .run(priority) { send in
             await escaped.yield {
               await operation(
-                Send { action in
+                Effect<Action>.Send { action in
                   send(transform(action))
                 }
               )

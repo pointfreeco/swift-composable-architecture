@@ -24,7 +24,7 @@ extension EffectPublisher: Publisher {
             var isCompleted = false
             defer { isCompleted = true }
           #endif
-          let send = Send {
+          let send = Effect<Action>.Send {
             #if DEBUG
               if isCompleted {
                 runtimeWarn(
@@ -34,7 +34,7 @@ extension EffectPublisher: Publisher {
                     Action:
                       \(debugCaseOutput($0))
 
-                  Avoid sending actions using the 'send' argument from 'EffectTask.run' after \
+                  Avoid sending actions using the 'send' argument from 'Effect.run' after \
                   the effect has completed. This can happen if you escape the 'send' argument in \
                   an unstructured context.
 
@@ -462,7 +462,7 @@ internal struct EffectPublisherWrapper<Action, Failure: Error>: Publisher {
       return .create { subscriber in
         let task = Task(priority: priority) { @MainActor in
           defer { subscriber.send(completion: .finished) }
-          let send = Send { subscriber.send($0) }
+          let send = Effect<Action>.Send { subscriber.send($0) }
           await operation(send)
         }
         return AnyCancellable {

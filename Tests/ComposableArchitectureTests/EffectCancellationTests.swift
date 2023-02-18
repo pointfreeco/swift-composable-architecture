@@ -28,7 +28,7 @@ final class EffectCancellationTests: XCTestCase {
     subject.send(2)
     XCTAssertEqual(values, [1, 2])
 
-    EffectTask<Never>.cancel(id: CancelID())
+    Effect<Never>.cancel(id: CancelID())
       .sink { _ in }
       .store(in: &self.cancellables)
 
@@ -75,7 +75,7 @@ final class EffectCancellationTests: XCTestCase {
     XCTAssertEqual(value, nil)
 
     DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-      EffectTask<Never>.cancel(id: CancelID())
+      Effect<Never>.cancel(id: CancelID())
         .sink { _ in }
         .store(in: &self.cancellables)
     }
@@ -98,7 +98,7 @@ final class EffectCancellationTests: XCTestCase {
     XCTAssertEqual(value, nil)
 
     mainQueue.advance(by: 1)
-    EffectTask<Never>.cancel(id: CancelID())
+    Effect<Never>.cancel(id: CancelID())
       .sink { _ in }
       .store(in: &self.cancellables)
 
@@ -153,7 +153,7 @@ final class EffectCancellationTests: XCTestCase {
     subject.send(1)
     XCTAssertEqual(values, [1])
 
-    EffectTask<Never>.cancel(id: CancelID())
+    Effect<Never>.cancel(id: CancelID())
       .sink { _ in }
       .store(in: &self.cancellables)
 
@@ -178,7 +178,7 @@ final class EffectCancellationTests: XCTestCase {
     subject.send(completion: .finished)
     XCTAssertEqual(values, [1])
 
-    EffectTask<Never>.cancel(id: CancelID())
+    Effect<Never>.cancel(id: CancelID())
       .sink { _ in }
       .store(in: &self.cancellables)
 
@@ -329,11 +329,11 @@ final class EffectCancellationTests: XCTestCase {
         .cancellable(id: id)
     }
 
-    EffectTask<AnyHashable>.merge(effects)
+    Effect<AnyHashable>.merge(effects)
       .sink { output.append($0) }
       .store(in: &self.cancellables)
 
-    EffectTask<AnyHashable>
+    Effect<AnyHashable>
       .cancel(ids: [A(), C()])
       .sink { _ in }
       .store(in: &self.cancellables)

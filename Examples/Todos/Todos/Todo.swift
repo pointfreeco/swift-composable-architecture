@@ -13,7 +13,7 @@ struct Todo: Reducer {
     case textFieldChanged(String)
   }
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .checkBoxToggled:
       state.isComplete.toggle()
