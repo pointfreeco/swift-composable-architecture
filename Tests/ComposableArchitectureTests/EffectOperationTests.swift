@@ -150,7 +150,7 @@
     }
   }
 
-  extension Send {
+  extension EffectPublisher.Send {
     fileprivate init(send: @escaping @MainActor (Action) -> Void) {
       self.init {
         send($0)
