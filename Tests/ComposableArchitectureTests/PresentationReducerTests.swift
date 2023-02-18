@@ -1509,7 +1509,22 @@ import XCTest
 
       XCTExpectFailure {
         $0.compactDescription == """
-          TODO
+          A "presents" at "ComposableArchitectureTests/PresentationReducerTests.swift:1499" \
+          received a presentation action when destination state was absent. …
+
+            Action:
+              PresentationReducerTests.Parent.Action.child(.dismiss)
+
+          This is generally considered an application logic error, and can happen for a few reasons:
+
+          • A parent reducer set destination state to "nil" before this reducer ran. This reducer \
+          must run before any other reducer sets destination state to "nil". This ensures that \
+          destination reducers can handle their actions while their state is still present.
+
+          • This action was sent to the store while destination state was "nil". Make sure that \
+          actions for this reducer can only be sent from a view store when state is present, or \
+          from effects that start from this reducer. In SwiftUI applications, use a Composable \
+          Architecture view modifier like "sheet(store:…)".
           """
       }
 
@@ -1551,14 +1566,29 @@ import XCTest
 
       XCTExpectFailure {
         $0.compactDescription == """
-          TODO
+          A "presents" at "ComposableArchitectureTests/PresentationReducerTests.swift:1556" \
+          received a presentation action when destination state was absent. …
+
+            Action:
+              PresentationReducerTests.Parent.Action.child(.presented(.tap))
+
+          This is generally considered an application logic error, and can happen for a few reasons:
+
+          • A parent reducer set destination state to "nil" before this reducer ran. This reducer \
+          must run before any other reducer sets destination state to "nil". This ensures that \
+          destination reducers can handle their actions while their state is still present.
+
+          • This action was sent to the store while destination state was "nil". Make sure that \
+          actions for this reducer can only be sent from a view store when state is present, or \
+          from effects that start from this reducer. In SwiftUI applications, use a Composable \
+          Architecture view modifier like "sheet(store:…)".
           """
       }
 
       await store.send(.child(.presented(.tap)))
     }
 
-    func testRuntimeWarn_RehydrateChild_SendDismissAction() async {
+    func testRehydrateSameChild_SendDismissAction() async {
       struct Child: ReducerProtocol {
         struct State: Equatable {}
         enum Action: Equatable {}
@@ -1594,13 +1624,62 @@ import XCTest
         reducer: Parent()
       )
 
-      XCTExpectFailure {
-        $0.compactDescription == """
-          TODO
-          """
+      await store.send(.child(.dismiss)) {
+        $0.child = nil
+      }
+    }
+
+    func testRehydrateDifferentChild_SendDismissAction() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable, Identifiable {
+          let id: UUID
+        }
+        enum Action: Equatable {}
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        }
       }
 
-      await store.send(.child(.dismiss))
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          @PresentationState var child: Child.State?
+        }
+        enum Action: Equatable {
+          case child(PresentationAction<Child.Action>)
+        }
+        @Dependency(\.uuid) var uuid
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .child(.dismiss):
+              if state.child?.id == UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF") {
+                state.child = Child.State(id: self.uuid())
+              }
+              return .none
+            default:
+              return .none
+            }
+          }
+          .presents(\.$child, action: /Action.child) {
+            Child()
+          }
+        }
+      }
+
+      let store = TestStore(
+        initialState: Parent.State(
+          child: Child.State(id: UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")!)
+        ),
+        reducer: Parent()
+      ) {
+        $0.uuid = .incrementing
+      }
+
+      await store.send(.child(.dismiss)) {
+        $0.child = Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
+      }
+      await store.send(.child(.dismiss)) {
+        $0.child = nil
+      }
     }
   }
 #endif

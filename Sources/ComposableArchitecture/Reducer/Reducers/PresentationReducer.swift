@@ -201,7 +201,7 @@ public struct _PresentationReducer<
     case (.none, .some):
       runtimeWarn(
         """
-        A "presents" at "\(self.fileID):\(self.line)" received a presentation action when
+        A "presents" at "\(self.fileID):\(self.line)" received a presentation action when \
         destination state was absent. …
 
           Action:

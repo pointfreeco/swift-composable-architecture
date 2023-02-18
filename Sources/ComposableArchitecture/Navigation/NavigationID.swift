@@ -15,7 +15,7 @@ private enum NavigationIDKey: DependencyKey {
 public struct NavigationID: Hashable, Identifiable, Sendable {
   let path: Path
 
-  init(path: Path) {
+  @_spi(Internals) public init(path: Path) {
     self.path = path
   }
 
