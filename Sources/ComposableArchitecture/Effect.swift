@@ -57,7 +57,7 @@ public struct EffectPublisher<Action, Failure: Error> {
   enum Operation {
     case none
     case publisher(AnyPublisher<Action, Failure>)
-    case run(TaskPriority? = nil, @Sendable (Send) async -> Void)
+    case run(TaskPriority? = nil, @Sendable (EffectTask<Action>.Send) async -> Void)
   }
 
   @usableFromInline
@@ -574,7 +574,7 @@ extension EffectPublisher {
           operation: .run(priority) { send in
             await escaped.yield {
               await operation(
-                Send { action in
+                EffectTask<Action>.Send { action in
                   send(transform(action))
                 }
               )
