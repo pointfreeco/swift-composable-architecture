@@ -384,15 +384,43 @@ extension EffectTask {
   /// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
   @MainActor
   public struct Send {
-    public let send: @MainActor (Action) -> EffectSendTask
+    private enum RawValue {
+      case attached(@MainActor (Action) -> Task<Void, Never>?)
+      case detached(@MainActor (Action) -> Void)
+    }
+    private let rawValue: RawValue
 
-    public init(send: @escaping @MainActor (Action) -> Task<Void, Never>?) {
-      self.send = { .init(rawValue: send($0)) }
+    public init(attached: @escaping @MainActor (Action) -> Task<Void, Never>?) {
+      self.rawValue = .attached(attached)
     }
 
-    @_disfavoredOverload
-    public init(send: @escaping @MainActor (Action) -> EffectSendTask) {
-      self.send = send
+    public init(detached: @escaping @MainActor (Action) -> Void) {
+      self.rawValue = .detached(detached)
+    }
+
+    public func map<NewAction, NewFailure>(
+      _ closure: @escaping @MainActor (NewAction, @escaping @MainActor (Action) -> Task<Void, Never>?) -> Task<Void, Never>?
+    ) -> EffectPublisher<NewAction, NewFailure>.Send {
+      switch rawValue {
+      case .attached(let oldClosure):
+        return .init { closure($0, oldClosure) }
+      case .detached(let oldClosure):
+        return .init(detached: { action in
+          _ = closure(action) {
+            oldClosure($0)
+            return nil
+          }
+        })
+      }
+    }
+
+    private var cancelledSendTask: EffectSendTask {
+      switch rawValue {
+      case .detached:
+        return .init(rawValue: .invalid)
+      case .attached:
+        return .init(rawValue: .task(nil))
+      }
     }
 
     /// Sends an action back into the system from an effect.
@@ -400,8 +428,15 @@ extension EffectTask {
     /// - Parameter action: An action.
     @discardableResult
     public func callAsFunction(_ action: Action) -> EffectSendTask {
-      guard !Task.isCancelled else { return .init(rawValue: nil) }
-      return self.send(action)
+      guard !Task.isCancelled else { return cancelledSendTask }
+      switch rawValue {
+      case .detached(let closure):
+        closure(action)
+        return .init(rawValue: .invalid)
+      case .attached(let closure):
+        let task = closure(action)
+        return .init(rawValue: .task(task))
+      }
     }
 
     /// Sends an action back into the system from an effect with animation.
@@ -421,7 +456,7 @@ extension EffectTask {
     ///   - transaction: A transaction.
     @discardableResult
     public func callAsFunction(_ action: Action, transaction: Transaction) -> EffectSendTask {
-      guard !Task.isCancelled else { return .init(rawValue: nil) }
+      guard !Task.isCancelled else { return cancelledSendTask }
       return withTransaction(transaction) {
         self(action)
       }
@@ -451,14 +486,17 @@ extension EffectTask {
 /// See ``TestStoreTask`` for the analog returned from ``TestStore``, and ``ViewStoreTask``
 /// for the analog returned from ``ViewStore``.
 @MainActor public struct EffectSendTask: Hashable, Sendable {
-  fileprivate let rawValue: Task<Void, Never>?
+  fileprivate enum RawValue: Hashable, Sendable {
+    case task(Task<Void, Never>?)
+    case invalid
+  }
+
+  fileprivate let rawValue: RawValue
 
   /// Cancels the underlying task and waits for it to finish.
   public func cancel() async {
-    if let rawValue = self.rawValue {
-      rawValue.cancel()
-      await rawValue.cancellableValue
-    } else {
+    switch rawValue {
+    case .invalid:
       runtimeWarn(
         """
         A publisher-style Effect called 'EffectSendTask.cancel()'. This method \
@@ -466,14 +504,18 @@ extension EffectTask {
         'EffectTask.run'.
         """
       )
+    case .task(nil):
+      break
+    case .task(let task?):
+      task.cancel()
+      await task.cancellableValue
     }
   }
 
   /// Waits for the task to finish.
   public func finish() async {
-    if let rawValue = self.rawValue {
-      await rawValue.cancellableValue
-    } else {
+    switch rawValue {
+    case .invalid:
       runtimeWarn(
         """
         A publisher-style Effect called 'EffectSendTask.finish()'. This method \
@@ -481,6 +523,10 @@ extension EffectTask {
         'EffectTask.run'.
         """
       )
+    case .task(nil):
+      break
+    case .task(let task?):
+      await task.cancellableValue
     }
   }
 
@@ -489,9 +535,8 @@ extension EffectTask {
   /// After the value of this property becomes `true`, it remains `true` indefinitely. There is no
   /// way to uncancel a task.
   public var isCancelled: Bool {
-    if let rawValue = self.rawValue {
-      return rawValue.isCancelled
-    } else {
+    switch rawValue {
+    case .invalid:
       runtimeWarn(
         """
         A publisher-style Effect accessed 'EffectSendTask.isCancelled'. This property \
@@ -500,6 +545,10 @@ extension EffectTask {
         """
       )
       return true
+    case .task(nil):
+      return true
+    case .task(let task?):
+      return task.isCancelled
     }
   }
 }
@@ -646,7 +695,7 @@ extension EffectPublisher {
           operation: .run(priority) { send in
             await escaped.yield {
               await operation(
-                Send { action in
+                send.map { action, send in
                   send(transform(action))
                 }
               )

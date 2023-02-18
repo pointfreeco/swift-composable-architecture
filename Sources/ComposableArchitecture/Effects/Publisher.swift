@@ -27,7 +27,7 @@ extension EffectPublisher: Publisher {
             var isCompleted = false
             defer { isCompleted = true }
           #endif
-          let send = Send {
+          let send = Send(detached: {
             #if DEBUG
               if isCompleted {
                 runtimeWarn(
@@ -48,9 +48,7 @@ extension EffectPublisher: Publisher {
               }
             #endif
             subscriber.send($0)
-            // FIXME: return something reasonable
-            return nil
-          }
+          })
           await operation(send)
         }
         return AnyCancellable {

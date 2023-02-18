@@ -159,6 +159,33 @@ final class EffectRunTests: XCTestCase {
     await store.receive(.end)
   }
 
+  func testRunFinishNoTask() async {
+    struct State: Equatable {}
+    enum Action: Equatable {
+      case tap
+      case response
+      case end
+    }
+
+    let reducer = Reduce<State, Action> { state, action in
+      switch action {
+      case .tap:
+        return .run { send in
+          await send(.response).finish()
+          await send(.end)
+        }
+      case .response, .end:
+        return .none
+      }
+    }
+
+    let store = TestStore(initialState: .init(), reducer: reducer)
+
+    await store.send(.tap)
+    await store.receive(.response)
+    await store.receive(.end)
+  }
+
   func testRunFinishCancellation() async {
     struct State: Equatable {}
     enum Action: Equatable {
@@ -271,7 +298,6 @@ final class EffectRunTests: XCTestCase {
           return .run { send in
             await send(.wait).finish()
           }
-          // currently makes this test fail :(
           .eraseToEffect()
         case .wait:
           return .run { send in

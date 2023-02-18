@@ -152,10 +152,7 @@
 
   extension EffectPublisher.Send {
     fileprivate init(send: @escaping @MainActor (Action) -> Void) {
-      self.init {
-        send($0)
-        return nil
-      }
+      self.init(detached: send)
     }
   }
 #endif
