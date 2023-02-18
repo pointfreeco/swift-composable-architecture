@@ -398,16 +398,69 @@ extension EffectTask {
       self.rawValue = .detached(detached)
     }
 
+    @available(
+      iOS,
+      deprecated: 9999.0,
+      renamed: "init(detached:)"
+    )
+    @available(
+      macOS,
+      deprecated: 9999.0,
+      renamed: "init(detached:)"
+    )
+    @available(
+      tvOS,
+      deprecated: 9999.0,
+      renamed: "init(detached:)"
+    )
+    @available(
+      watchOS,
+      deprecated: 9999.0,
+      renamed: "init(detached:)"
+    )
+    public init(send: @escaping @MainActor (Action) -> Void) {
+      self.init(detached: send)
+    }
+
+    @available(
+      iOS,
+      deprecated: 9999.0,
+      message: "Call the 'Send' object as a function itself."
+    )
+    @available(
+      macOS,
+      deprecated: 9999.0,
+      message: "Call the 'Send' object as a function itself."
+    )
+    @available(
+      tvOS,
+      deprecated: 9999.0,
+      message: "Call the 'Send' object as a function itself."
+    )
+    @available(
+      watchOS,
+      deprecated: 9999.0,
+      message: "Call the 'Send' object as a function itself."
+    )
+    public var send: @MainActor (Action) -> Void {
+      switch rawValue {
+      case .attached(let send):
+        return { _ = send($0) }
+      case .detached(let send):
+        return send
+      }
+    }
+
     public func map<NewAction, NewFailure>(
       _ closure: @escaping @MainActor (NewAction, @escaping @MainActor (Action) -> Task<Void, Never>?) -> Task<Void, Never>?
     ) -> EffectPublisher<NewAction, NewFailure>.Send {
       switch rawValue {
-      case .attached(let oldClosure):
-        return .init { closure($0, oldClosure) }
-      case .detached(let oldClosure):
+      case .attached(let send):
+        return .init { closure($0, send) }
+      case .detached(let send):
         return .init(detached: { action in
           _ = closure(action) {
-            oldClosure($0)
+            send($0)
             return nil
           }
         })
