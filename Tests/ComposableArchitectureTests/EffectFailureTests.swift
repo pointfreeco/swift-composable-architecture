@@ -37,12 +37,12 @@
       var line: UInt!
       XCTExpectFailure {
         $0.compactDescription == """
-          An "EffectTask.run" returned from "\(#fileID):\(line+1)" threw an unhandled error. …
+          An "Effect.run" returned from "\(#fileID):\(line+1)" threw an unhandled error. …
 
               EffectFailureTests.Unexpected()
 
           All non-cancellation errors must be explicitly handled via the "catch" parameter on \
-          "EffectTask.run", or via a "do" block.
+          "Effect.run", or via a "do" block.
           """
       }
 
