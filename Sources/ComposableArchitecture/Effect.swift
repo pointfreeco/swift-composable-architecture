@@ -444,20 +444,44 @@ extension EffectTask {
 /// > Note: Unlike Swift's `Task` type, ``EffectSendTask`` automatically sets up a cancellation
 /// > handler between the current async context and the task.
 ///
+/// > Warning: Applying Combine operators to a `.run` effect will break the connection between
+/// > it and the store. In such a case, the methods and properties of ``EffectSendTask`` will
+/// > not behave as expected.
+///
 /// See ``TestStoreTask`` for the analog returned from ``TestStore``, and ``ViewStoreTask``
 /// for the analog returned from ``ViewStore``.
-public struct EffectSendTask: Hashable, Sendable {
+@MainActor public struct EffectSendTask: Hashable, Sendable {
   fileprivate let rawValue: Task<Void, Never>?
 
   /// Cancels the underlying task and waits for it to finish.
   public func cancel() async {
-    self.rawValue?.cancel()
-    await self.finish()
+    if let rawValue = self.rawValue {
+      rawValue.cancel()
+      await rawValue.cancellableValue
+    } else {
+      runtimeWarn(
+        """
+        A publisher-style Effect called 'EffectSendTask.cancel()'. This method \
+        no-ops if you apply any Combine operators to the Effect returned by \
+        'EffectTask.run'.
+        """
+      )
+    }
   }
 
   /// Waits for the task to finish.
   public func finish() async {
-    await self.rawValue?.cancellableValue
+    if let rawValue = self.rawValue {
+      await rawValue.cancellableValue
+    } else {
+      runtimeWarn(
+        """
+        A publisher-style Effect called 'EffectSendTask.finish()'. This method \
+        no-ops if you apply any Combine operators to the Effect returned by \
+        'EffectTask.run'.
+        """
+      )
+    }
   }
 
   /// A Boolean value that indicates whether the task should stop executing.
@@ -465,7 +489,18 @@ public struct EffectSendTask: Hashable, Sendable {
   /// After the value of this property becomes `true`, it remains `true` indefinitely. There is no
   /// way to uncancel a task.
   public var isCancelled: Bool {
-    self.rawValue?.isCancelled ?? true
+    if let rawValue = self.rawValue {
+      return rawValue.isCancelled
+    } else {
+      runtimeWarn(
+        """
+        A publisher-style Effect accessed 'EffectSendTask.isCancelled'. This property \
+        breaks if you apply any Combine operators to the Effect returned by \
+        'EffectTask.run'.
+        """
+      )
+      return true
+    }
   }
 }
 

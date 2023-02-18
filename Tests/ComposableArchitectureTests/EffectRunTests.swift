@@ -245,50 +245,54 @@ final class EffectRunTests: XCTestCase {
     XCTAssert(hasEnded, "Cancelling `.begin` should cause `.wait` to cancel and return.")
   }
 
-  func testRunFinishPublisher() async {
-    struct State: Equatable {}
-    enum Action: Equatable {
-      case begin
-      case waitAck
-      case wait
-      case waitDone
-      case end
-    }
-
-    let queue = DispatchQueue.test
-
-    let reducer = Reduce<State, Action> { state, action in
-      switch action {
-      case .begin:
-        return .run { send in
-          await send(.wait).finish()
-          await send(.end)
-        }
-        // currently makes this test fail :(
-        .eraseToAnyPublisher()
-        .eraseToEffect()
-      case .wait:
-        return .run { send in
-          await send(.waitAck)
-          try await queue.sleep(for: 1)
-          await send(.waitDone)
-        }
-      case .waitAck, .waitDone, .end:
-        return .none
-      }
-    }
-
-    let store = TestStore(initialState: .init(), reducer: reducer)
-
-    await store.send(.begin)
-    await store.receive(.wait)
-    await store.receive(.waitAck)
-    await queue.advance(by: 1)
-    await store.receive(.waitDone)
-    await store.receive(.end)
-  }
-
   #if DEBUG
+    func testRunFinishPublisherFailure() async {
+      struct State: Equatable {}
+      enum Action: Equatable {
+        case begin
+        case waitAck
+        case wait
+        case waitDone
+      }
+
+      let queue = DispatchQueue.test
+
+      XCTExpectFailure {
+        $0.compactDescription == """
+          A publisher-style Effect called 'EffectSendTask.finish()'. This method \
+          no-ops if you apply any Combine operators to the Effect returned by \
+          'EffectTask.run'.
+          """
+      }
+
+      let reducer = Reduce<State, Action> { state, action in
+        switch action {
+        case .begin:
+          return .run { send in
+            await send(.wait).finish()
+          }
+          // currently makes this test fail :(
+          .eraseToEffect()
+        case .wait:
+          return .run { send in
+            await send(.waitAck)
+            try await queue.sleep(for: 1)
+            await send(.waitDone)
+          }
+        case .waitAck, .waitDone:
+          return .none
+        }
+      }
+
+      let store = TestStore(initialState: .init(), reducer: reducer)
+
+      await store.send(.begin)
+      await store.receive(.wait)
+      await store.receive(.waitAck)
+      await queue.advance(by: 1)
+      await store.receive(.waitDone)
+    }
+
     func testRunEscapeFailure() async throws {
       XCTExpectFailure {
         $0.compactDescription == """
