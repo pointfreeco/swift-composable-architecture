@@ -37,7 +37,6 @@ struct VoiceMemos: ReducerProtocol {
     Reduce { state, action in
       switch action {
       case .alert:
-        state.alert = nil
         return .none
 
       case .openSettingsButtonTapped:
@@ -53,9 +52,7 @@ struct VoiceMemos: ReducerProtocol {
           }
 
         case .denied:
-          state.alert = AlertState {
-            TextState("Permission is required to record voice memos.")
-          }
+          state.alert = AlertState { TextState("Permission is required to record voice memos.") }
           return .none
 
         case .allowed:
@@ -89,9 +86,7 @@ struct VoiceMemos: ReducerProtocol {
           state.recordingMemo = newRecordingMemo
           return .none
         } else {
-          state.alert = AlertState {
-            TextState("Permission is required to record voice memos.")
-          }
+          state.alert = AlertState { TextState("Permission is required to record voice memos.") }
           return .none
         }
 
