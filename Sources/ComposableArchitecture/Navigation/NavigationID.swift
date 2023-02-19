@@ -42,7 +42,7 @@ public struct NavigationID: Hashable, Identifiable, Sendable {
         }
 
         self.objectIdentifier = ObjectIdentifier(Value.self)
-        self.tag = enumTag(value)
+        self.tag = EnumMetadata(Value.self)?.tag(of: value)
         if let value = value as? any Identifiable {
           self.id = id(value)
         } else if let metadata = EnumMetadata(type(of: value)),

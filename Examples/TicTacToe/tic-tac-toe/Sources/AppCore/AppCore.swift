@@ -6,6 +6,8 @@ import NewGameCore
 
 public struct TicTacToe: ReducerProtocol {
   // TODO: What is the `@PresentationState` equivalent for non-optional enum state?
+  // TODO: Should `ifLet` and `ifCaseLet` (and `forEach`) manage effect lifecycles?
+  // TODO: Should `presents` just be `ifLet`+`dismiss`(+`???`)
   public enum State: Equatable {
     case login(Login.State)
     case newGame(NewGame.State)

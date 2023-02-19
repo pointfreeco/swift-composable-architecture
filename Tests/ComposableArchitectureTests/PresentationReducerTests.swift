@@ -1088,6 +1088,7 @@ import XCTest
 
     @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
     func testNavigation_cancelID_childCannotCancelSibling() async throws {
+      // TODO: Add `toPresentationState` key path to cancel ID?
       try XCTSkipIf(true, "TODO: This test fails right now but we should figure out a fix.")
 
       struct Child: ReducerProtocol {
