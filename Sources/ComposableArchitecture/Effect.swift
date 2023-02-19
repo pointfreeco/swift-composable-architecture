@@ -415,6 +415,7 @@ extension EffectTask {
       }
     }
 
+    /// Transforms the ``Send`` value's closure using `mapper`.
     public func map<Mapper: SendMapper>(
       // we really want `<T>(send: (Action) -> T) -> ((NewAction) -> T)`
       // (i.e. a closure that's generic/invariant over the return type)
@@ -429,6 +430,7 @@ extension EffectTask {
       }
     }
 
+    /// Transforms the action returned by the ``Send`` using `transform`.
     public func mapAction<NewAction>(
       _ transform: @escaping @MainActor (NewAction) -> Action
     ) -> EffectPublisher<NewAction, Failure>.Send {
@@ -452,6 +454,8 @@ extension EffectTask {
     /// Sends an action back into the system from an effect.
     ///
     /// - Parameter action: An action.
+    ///
+    /// - Returns: An ``EffectSendTask`` corresponding to the fired action.
     @discardableResult
     public func callAsFunction(_ action: Action) -> EffectSendTask {
       guard !Task.isCancelled else { return cancelledSendTask }
@@ -465,6 +469,9 @@ extension EffectTask {
       }
     }
 
+    /// Sends an action back into the system from an effect.
+    ///
+    /// - Parameter action: An action.
     @_disfavoredOverload
     @available(*, deprecated, message: "Use the overload that returns an EffectSendTask, and discard the return value.")
     public func callAsFunction(_ action: Action) {
@@ -476,11 +483,18 @@ extension EffectTask {
     /// - Parameters:
     ///   - action: An action.
     ///   - animation: An animation.
+    ///
+    /// - Returns: An ``EffectSendTask`` corresponding to the fired action.
     @discardableResult
     public func callAsFunction(_ action: Action, animation: Animation?) -> EffectSendTask {
       callAsFunction(action, transaction: Transaction(animation: animation))
     }
 
+    /// Sends an action back into the system from an effect with animation.
+    ///
+    /// - Parameters:
+    ///   - action: An action.
+    ///   - animation: An animation.
     @_disfavoredOverload
     @available(*, deprecated, message: "Use the overload that returns an EffectSendTask, and discard the return value.")
     public func callAsFunction(_ action: Action, animation: Animation?) {
@@ -492,6 +506,8 @@ extension EffectTask {
     /// - Parameters:
     ///   - action: An action.
     ///   - transaction: A transaction.
+    ///
+    /// - Returns: An ``EffectSendTask`` corresponding to the fired action.
     @discardableResult
     public func callAsFunction(_ action: Action, transaction: Transaction) -> EffectSendTask {
       guard !Task.isCancelled else { return cancelledSendTask }
@@ -500,6 +516,11 @@ extension EffectTask {
       }
     }
 
+    /// Sends an action back into the system from an effect with transaction.
+    ///
+    /// - Parameters:
+    ///   - action: An action.
+    ///   - transaction: A transaction.
     @_disfavoredOverload
     @available(*, deprecated, message: "Use the overload that returns an EffectSendTask, and discard the return value.")
     public func callAsFunction(_ action: Action, transaction: Transaction) {
@@ -508,9 +529,16 @@ extension EffectTask {
   }
 }
 
+/// A type used to transform a ``Send`` value's closure.
 public protocol SendMapper {
   associatedtype Action
   associatedtype NewAction = Action
+
+  /// The transformation function.
+  ///
+  /// - Parameter send: The original ``Send`` closure.
+  ///
+  /// - Returns: The transformed ``Send`` closure.
   @MainActor func map<T>(send: @escaping @MainActor (Action) -> T) -> (@MainActor (NewAction) -> T)
 }
 
