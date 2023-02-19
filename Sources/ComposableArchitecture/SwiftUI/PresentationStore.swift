@@ -1,5 +1,127 @@
 import SwiftUI
 
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+@MainActor
+extension View {
+  public func alert<ButtonAction>(
+    store: Store<
+      PresentationState<AlertState<ButtonAction>>,
+      PresentationAction<ButtonAction>
+    >
+  ) -> some View {
+    self.alert(store: store, state: { $0 }, action: { $0 })
+  }
+
+  public func alert<State, Action, ButtonAction>(
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
+    state toDestinationState: @escaping (State) -> AlertState<ButtonAction>?,
+    action fromDestinationAction: @escaping (ButtonAction) -> Action
+  ) -> some View {
+    WithViewStore(store) {
+      $0
+    } removeDuplicates: {
+      $0.id == $1.id
+    } content: { viewStore in
+      let alertState = viewStore.wrappedValue.flatMap(toDestinationState)
+      return self.alert(
+        (alertState?.title).map(Text.init) ?? Text(""),
+        isPresented: Binding(
+          get: { alertState != nil },
+          set: { _ in
+            if viewStore.wrappedValue.flatMap(toDestinationState) != nil {
+              viewStore.send(.dismiss)
+            }
+          }
+        ),
+        presenting: alertState,
+        actions: { alertState in
+          ForEach(alertState.buttons) { button in
+            Button(role: button.role.map(ButtonRole.init)) {
+              switch button.action.type {
+              case let .send(action):
+                if let action = action {
+                  viewStore.send(.presented(fromDestinationAction(action)))
+                }
+              case let .animatedSend(action, animation):
+                if let action = action {
+                  _ = withAnimation(animation) {
+                    viewStore.send(.presented(fromDestinationAction(action)))
+                  }
+                }
+              }
+            } label: {
+              Text(button.label)
+            }
+          }
+        },
+        message: {
+          $0.message.map(Text.init) ?? Text("")
+        }
+      )
+    }
+  }
+
+  public func confirmationDialog<ButtonAction>(
+    store: Store<
+      PresentationState<ConfirmationDialogState<ButtonAction>>,
+      PresentationAction<ButtonAction>
+    >
+  ) -> some View {
+    self.confirmationDialog(store: store, state: { $0 }, action: { $0 })
+  }
+
+  public func confirmationDialog<State, Action, ButtonAction>(
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
+    state toDestinationState: @escaping (State) -> ConfirmationDialogState<ButtonAction>?,
+    action fromDestinationAction: @escaping (ButtonAction) -> Action
+  ) -> some View {
+    WithViewStore(store) {
+      $0
+    } removeDuplicates: {
+      $0.id == $1.id
+    } content: { viewStore in
+      let confirmationDialogState = viewStore.wrappedValue.flatMap(toDestinationState)
+      return self.confirmationDialog(
+        (confirmationDialogState?.title).map(Text.init) ?? Text(""),
+        isPresented: Binding(
+          get: { confirmationDialogState != nil },
+          set: { _ in
+            if viewStore.wrappedValue.flatMap(toDestinationState) != nil {
+              viewStore.send(.dismiss)
+            }
+          }
+        ),
+        titleVisibility: (confirmationDialogState?.titleVisibility).map(Visibility.init)
+          ?? .automatic,
+        presenting: confirmationDialogState,
+        actions: { confirmationDialogState in
+          ForEach(confirmationDialogState.buttons) { button in
+            Button(role: button.role.map(ButtonRole.init)) {
+              switch button.action.type {
+              case let .send(action):
+                if let action = action {
+                  viewStore.send(.presented(fromDestinationAction(action)))
+                }
+              case let .animatedSend(action, animation):
+                if let action = action {
+                  _ = withAnimation(animation) {
+                    viewStore.send(.presented(fromDestinationAction(action)))
+                  }
+                }
+              }
+            } label: {
+              Text(button.label)
+            }
+          }
+        },
+        message: {
+          $0.message.map(Text.init) ?? Text("")
+        }
+      )
+    }
+  }
+}
+
 extension View {
   @available(iOS 14, tvOS 14, watchOS 7, *)
   @available(macOS, unavailable)
