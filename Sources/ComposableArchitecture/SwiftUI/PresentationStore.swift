@@ -17,7 +17,7 @@ extension View {
     state toDestinationState: @escaping (State) -> AlertState<ButtonAction>?,
     action fromDestinationAction: @escaping (ButtonAction) -> Action
   ) -> some View {
-    WithViewStore(store) {
+    WithViewStore(store.filter { state, _ in state.wrappedValue != nil }) {
       $0
     } removeDuplicates: {
       $0.id == $1.id
@@ -25,13 +25,9 @@ extension View {
       let alertState = viewStore.wrappedValue.flatMap(toDestinationState)
       return self.alert(
         (alertState?.title).map(Text.init) ?? Text(""),
-        isPresented: Binding(
-          get: { alertState != nil },
-          set: { _ in
-            if viewStore.wrappedValue.flatMap(toDestinationState) != nil {
-              viewStore.send(.dismiss)
-            }
-          }
+        isPresented: viewStore.binding(
+          get: { $0.wrappedValue.flatMap(toDestinationState) != nil },
+          send: .dismiss
         ),
         presenting: alertState,
         actions: { alertState in
@@ -75,7 +71,7 @@ extension View {
     state toDestinationState: @escaping (State) -> ConfirmationDialogState<ButtonAction>?,
     action fromDestinationAction: @escaping (ButtonAction) -> Action
   ) -> some View {
-    WithViewStore(store) {
+    WithViewStore(store.filter { state, _ in state.wrappedValue != nil }) {
       $0
     } removeDuplicates: {
       $0.id == $1.id
@@ -83,13 +79,9 @@ extension View {
       let confirmationDialogState = viewStore.wrappedValue.flatMap(toDestinationState)
       return self.confirmationDialog(
         (confirmationDialogState?.title).map(Text.init) ?? Text(""),
-        isPresented: Binding(
-          get: { confirmationDialogState != nil },
-          set: { _ in
-            if viewStore.wrappedValue.flatMap(toDestinationState) != nil {
-              viewStore.send(.dismiss)
-            }
-          }
+        isPresented: viewStore.binding(
+          get: { $0.wrappedValue.flatMap(toDestinationState) != nil },
+          send: .dismiss
         ),
         titleVisibility: (confirmationDialogState?.titleVisibility).map(Visibility.init)
           ?? .automatic,
