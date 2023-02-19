@@ -5,7 +5,7 @@ import TwoFactorCore
 
 public struct Login: ReducerProtocol, Sendable {
   public struct State: Equatable {
-    @PresentationState public var alert: AlertState<Never>?
+    @PresentationState public var alert: AlertState<AlertAction>?
     public var email = ""
     public var isFormValid = false
     public var isLoginRequestInFlight = false
@@ -16,13 +16,15 @@ public struct Login: ReducerProtocol, Sendable {
   }
 
   public enum Action: Equatable {
-    case alert(PresentationAction<Never>)
+    case alert(PresentationAction<AlertAction>)
     case emailChanged(String)
     case passwordChanged(String)
     case loginButtonTapped
     case loginResponse(TaskResult<AuthenticationResponse>)
     case twoFactor(PresentationAction<TwoFactor.Action>)
   }
+
+  public enum AlertAction: Equatable {}
 
   @Dependency(\.authenticationClient) var authenticationClient
 

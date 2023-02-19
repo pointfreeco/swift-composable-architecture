@@ -4,7 +4,7 @@ import SwiftUI
 
 struct VoiceMemos: ReducerProtocol {
   struct State: Equatable {
-    @PresentationState var alert: AlertState<Never>?
+    @PresentationState var alert: AlertState<AlertAction>?
     var audioRecorderPermission = RecorderPermission.undetermined
     @PresentationState var recordingMemo: RecordingMemo.State?
     var voiceMemos: IdentifiedArrayOf<VoiceMemo.State> = []
@@ -17,13 +17,15 @@ struct VoiceMemos: ReducerProtocol {
   }
 
   enum Action: Equatable {
-    case alert(PresentationAction<Never>)
+    case alert(PresentationAction<AlertAction>)
     case openSettingsButtonTapped
     case recordButtonTapped
     case recordPermissionResponse(Bool)
     case recordingMemo(PresentationAction<RecordingMemo.Action>)
     case voiceMemo(id: VoiceMemo.State.ID, action: VoiceMemo.Action)
   }
+
+  enum AlertAction: Equatable {}
 
   @Dependency(\.audioRecorder.requestRecordPermission) var requestRecordPermission
   @Dependency(\.date) var date

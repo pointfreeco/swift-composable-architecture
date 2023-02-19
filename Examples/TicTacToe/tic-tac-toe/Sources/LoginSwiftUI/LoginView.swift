@@ -9,7 +9,7 @@ public struct LoginView: View {
   let store: StoreOf<Login>
 
   struct ViewState: Equatable {
-    var alert: AlertState<Never>?
+    var alert: AlertState<Login.AlertAction>?
     var email: String
     var isActivityIndicatorVisible: Bool
     var isFormDisabled: Bool
