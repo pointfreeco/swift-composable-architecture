@@ -416,10 +416,11 @@ extension EffectTask {
     }
 
     public func map<Mapper: SendMapper>(
-      // we need a transform func that's invariant over the return type
-      // which we can't describe with a closure
+      // we really want `<T>(send: (Action) -> T) -> ((NewAction) -> T)`
+      // (i.e. a closure that's generic/invariant over the return type)
+      // but closures can't express that so we use a protocol instead.
       _ mapper: Mapper
-    ) -> EffectPublisher<Action, Failure>.Send where Mapper.Action == Action {
+    ) -> EffectPublisher<Mapper.NewAction, Failure>.Send where Mapper.Action == Action {
       switch rawValue {
       case .attached(let send):
         return .init(attached: mapper.map(send: send))
@@ -509,7 +510,8 @@ extension EffectTask {
 
 public protocol SendMapper {
   associatedtype Action
-  @MainActor func map<T>(send: @escaping @MainActor (Action) -> T) -> (@MainActor (Action) -> T)
+  associatedtype NewAction = Action
+  @MainActor func map<T>(send: @escaping @MainActor (Action) -> T) -> (@MainActor (NewAction) -> T)
 }
 
 /// The type returned from ``Send/callAsFunction(_:)`` that represents the lifecycle of the effect
