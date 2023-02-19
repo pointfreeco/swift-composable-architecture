@@ -464,6 +464,12 @@ extension EffectTask {
       }
     }
 
+    @_disfavoredOverload
+    @available(*, deprecated, message: "Use the overload that returns an EffectSendTask, and discard the return value.")
+    public func callAsFunction(_ action: Action) {
+      _ = self(action)
+    }
+
     /// Sends an action back into the system from an effect with animation.
     ///
     /// - Parameters:
@@ -472,6 +478,12 @@ extension EffectTask {
     @discardableResult
     public func callAsFunction(_ action: Action, animation: Animation?) -> EffectSendTask {
       callAsFunction(action, transaction: Transaction(animation: animation))
+    }
+
+    @_disfavoredOverload
+    @available(*, deprecated, message: "Use the overload that returns an EffectSendTask, and discard the return value.")
+    public func callAsFunction(_ action: Action, animation: Animation?) {
+      _ = self(action, animation: animation)
     }
 
     /// Sends an action back into the system from an effect with transaction.
@@ -485,6 +497,12 @@ extension EffectTask {
       return withTransaction(transaction) {
         self(action)
       }
+    }
+
+    @_disfavoredOverload
+    @available(*, deprecated, message: "Use the overload that returns an EffectSendTask, and discard the return value.")
+    public func callAsFunction(_ action: Action, transaction: Transaction) {
+      _ = self(action, transaction: transaction)
     }
   }
 }
