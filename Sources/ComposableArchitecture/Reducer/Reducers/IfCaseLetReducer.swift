@@ -90,6 +90,9 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
   let line: UInt
 
   @usableFromInline
+  @Dependency(\.navigationID) var navigationID
+
+  @usableFromInline
   init(
     parent: Parent,
     child: Child,
@@ -112,8 +115,26 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
   public func reduce(
     into state: inout Parent.State, action: Parent.Action
   ) -> EffectTask<Parent.Action> {
-    self.reduceChild(into: &state, action: action)
-      .merge(with: self.parent.reduce(into: &state, action: action))
+    let childEffects = self.reduceChild(into: &state, action: action)
+
+    let childStateBefore = self.toChildState.extract(from: state)
+    let parentEffects = self.parent.reduce(into: &state, action: action)
+    let childStateAfter = self.toChildState.extract(from: state)
+
+    let childCancelEffects: EffectTask<Parent.Action>
+    if let childID = childStateBefore.map(AnyID.init), childID != childStateAfter.map(AnyID.init) {
+      let id = self.navigationID
+        .appending(id: childID)
+      childCancelEffects = .cancel(id: id)
+    } else {
+      childCancelEffects = .none
+    }
+
+    return .merge(
+      childEffects,
+      parentEffects,
+      childCancelEffects
+    )
   }
 
   @inlinable
@@ -154,7 +175,12 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
       return .none
     }
     defer { state = self.toChildState.embed(childState) }
-    return self.child.reduce(into: &childState, action: childAction)
+    let id = self.navigationID
+      .appending(component: childState)
+    return self.child
+      .dependency(\.navigationID, id)
+      .reduce(into: &childState, action: childAction)
       .map { self.toChildAction.embed($0) }
+      .cancellable(id: id)
   }
 }
