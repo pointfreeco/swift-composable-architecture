@@ -14,17 +14,26 @@ public struct AppView: View {
   public var body: some View {
     SwitchStore(self.store) {
       CaseLet(state: /TicTacToe.State.login, action: TicTacToe.Action.login) { store in
-        NavigationView {
+        NavigationStack {
           LoginView(store: store)
         }
-        .navigationViewStyle(.stack)
       }
       CaseLet(state: /TicTacToe.State.newGame, action: TicTacToe.Action.newGame) { store in
-        NavigationView {
+        NavigationStack {
           NewGameView(store: store)
         }
-        .navigationViewStyle(.stack)
       }
     }
+    // TODO: Why doesn't flipping it work (log in from 2FA)?
+    // NavigationStack {
+    //   SwitchStore(self.store) {
+    //     CaseLet(state: /TicTacToe.State.login, action: TicTacToe.Action.login) { store in
+    //       LoginView(store: store)
+    //     }
+    //     CaseLet(state: /TicTacToe.State.newGame, action: TicTacToe.Action.newGame) { store in
+    //       NewGameView(store: store)
+    //     }
+    //   }
+    // }
   }
 }

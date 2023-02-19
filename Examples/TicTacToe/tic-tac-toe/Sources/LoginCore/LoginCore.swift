@@ -5,24 +5,23 @@ import TwoFactorCore
 
 public struct Login: ReducerProtocol, Sendable {
   public struct State: Equatable {
-    public var alert: AlertState<Action>?
+    @PresentationState public var alert: AlertState<Never>?
     public var email = ""
     public var isFormValid = false
     public var isLoginRequestInFlight = false
     public var password = ""
-    public var twoFactor: TwoFactor.State?
+    @PresentationState public var twoFactor: TwoFactor.State?
 
     public init() {}
   }
 
   public enum Action: Equatable {
-    case alertDismissed
+    case alert(PresentationAction<Never>)
     case emailChanged(String)
     case passwordChanged(String)
     case loginButtonTapped
     case loginResponse(TaskResult<AuthenticationResponse>)
-    case twoFactor(TwoFactor.Action)
-    case twoFactorDismissed
+    case twoFactor(PresentationAction<TwoFactor.Action>)
   }
 
   @Dependency(\.authenticationClient) var authenticationClient
@@ -32,8 +31,7 @@ public struct Login: ReducerProtocol, Sendable {
   public var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
-      case .alertDismissed:
-        state.alert = nil
+      case .alert:
         return .none
 
       case let .emailChanged(email):
@@ -72,13 +70,9 @@ public struct Login: ReducerProtocol, Sendable {
 
       case .twoFactor:
         return .none
-
-      case .twoFactorDismissed:
-        state.twoFactor = nil
-        return .cancel(id: TwoFactor.TearDownToken.self)
       }
     }
-    .ifLet(\.twoFactor, action: /Action.twoFactor) {
+    .presents(\.$twoFactor, action: /Action.twoFactor) {
       TwoFactor()
     }
   }

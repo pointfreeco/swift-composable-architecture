@@ -32,7 +32,6 @@ final class GameCoreTests: XCTestCase {
     await self.store.send(.cellTapped(row: 2, column: 0)) {
       $0.board[2][0] = .x
     }
-    await self.store.send(.quitButtonTapped)
   }
 
   func testFlow_Tie() async {

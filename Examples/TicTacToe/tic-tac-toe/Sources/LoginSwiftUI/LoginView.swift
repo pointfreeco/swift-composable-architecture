@@ -9,13 +9,12 @@ public struct LoginView: View {
   let store: StoreOf<Login>
 
   struct ViewState: Equatable {
-    var alert: AlertState<Login.Action>?
+    var alert: AlertState<Never>?
     var email: String
     var isActivityIndicatorVisible: Bool
     var isFormDisabled: Bool
     var isLoginButtonDisabled: Bool
     var password: String
-    var isTwoFactorActive: Bool
 
     init(state: Login.State) {
       self.alert = state.alert
@@ -24,16 +23,13 @@ public struct LoginView: View {
       self.isFormDisabled = state.isLoginRequestInFlight
       self.isLoginButtonDisabled = !state.isFormValid
       self.password = state.password
-      self.isTwoFactorActive = state.twoFactor != nil
     }
   }
 
   enum ViewAction {
-    case alertDismissed
     case emailChanged(String)
     case loginButtonTapped
     case passwordChanged(String)
-    case twoFactorDismissed
   }
 
   public init(store: StoreOf<Login>) {
@@ -66,36 +62,32 @@ public struct LoginView: View {
           )
         }
 
-        NavigationLink(
-          destination: IfLetStore(
-            self.store.scope(state: \.twoFactor, action: Login.Action.twoFactor)
-          ) {
-            TwoFactorView(store: $0)
-          },
-          isActive: viewStore.binding(
-            get: \.isTwoFactorActive,
-            send: {
-              // NB: SwiftUI will print errors to the console about "AttributeGraph: cycle detected"
-              //     if you disable a text field while it is focused. This hack will force all
-              //     fields to unfocus before we send the action to the view store.
-              // CF: https://stackoverflow.com/a/69653555
-              _ = UIApplication.shared.sendAction(
-                #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
-              )
-              return $0 ? .loginButtonTapped : .twoFactorDismissed
-            }
+        Button {
+          // NB: SwiftUI will print errors to the console about "AttributeGraph: cycle detected" if
+          //     you disable a text field while it is focused. This hack will force all fields to
+          //     unfocus before we send the action to the view store.
+          // CF: https://stackoverflow.com/a/69653555
+          _ = UIApplication.shared.sendAction(
+            #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
           )
-        ) {
-          Text("Log in")
-          if viewStore.isActivityIndicatorVisible {
-            Spacer()
-            ProgressView()
+          viewStore.send(.loginButtonTapped)
+        } label: {
+          HStack {
+            Text("Log in")
+            if viewStore.isActivityIndicatorVisible {
+              Spacer()
+              ProgressView()
+            }
           }
         }
         .disabled(viewStore.isLoginButtonDisabled)
       }
       .disabled(viewStore.isFormDisabled)
-      .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
+      .alert(store: self.store.scope(state: \.$alert, action: Login.Action.alert))
+      .navigationDestination(
+        store: self.store.scope(state: \.$twoFactor, action: Login.Action.twoFactor),
+        destination: TwoFactorView.init
+      )
     }
     .navigationTitle("Login")
   }
@@ -104,10 +96,6 @@ public struct LoginView: View {
 extension Login.Action {
   init(action: LoginView.ViewAction) {
     switch action {
-    case .alertDismissed:
-      self = .alertDismissed
-    case .twoFactorDismissed:
-      self = .twoFactorDismissed
     case let .emailChanged(email):
       self = .emailChanged(email)
     case .loginButtonTapped:

@@ -5,6 +5,7 @@ import LoginCore
 import NewGameCore
 
 public struct TicTacToe: ReducerProtocol {
+  // TODO: What is the `@PresentationState` equivalent for non-optional enum state?
   public enum State: Equatable {
     case login(Login.State)
     case newGame(NewGame.State)
@@ -22,7 +23,7 @@ public struct TicTacToe: ReducerProtocol {
   public var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
-      case .login(.twoFactor(.twoFactorResponse(.success))):
+      case .login(.twoFactor(.presented(.twoFactorResponse(.success)))):
         state = .newGame(NewGame.State())
         return .none
 
