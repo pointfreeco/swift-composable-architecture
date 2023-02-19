@@ -395,55 +395,17 @@ extension EffectTask {
       self.rawValue = .attached(attached)
     }
 
-    @_disfavoredOverload
     public init(detached: @escaping @MainActor (Action) -> Void) {
       self.rawValue = .detached(detached)
     }
 
-    @available(
-      iOS,
-      deprecated: 9999.0,
-      renamed: "init(detached:)"
-    )
-    @available(
-      macOS,
-      deprecated: 9999.0,
-      renamed: "init(detached:)"
-    )
-    @available(
-      tvOS,
-      deprecated: 9999.0,
-      renamed: "init(detached:)"
-    )
-    @available(
-      watchOS,
-      deprecated: 9999.0,
-      renamed: "init(detached:)"
-    )
+    @available(*, deprecated, renamed: "init(detached:)")
+    @_disfavoredOverload
     public init(send: @escaping @MainActor (Action) -> Void) {
       self.init(detached: send)
     }
 
-    @available(
-      iOS,
-      deprecated: 9999.0,
-      message: "Call the 'Send' object as a function itself."
-    )
-    @available(
-      macOS,
-      deprecated: 9999.0,
-      message: "Call the 'Send' object as a function itself."
-    )
-    @available(
-      tvOS,
-      deprecated: 9999.0,
-      message: "Call the 'Send' object as a function itself."
-    )
-    @available(
-      watchOS,
-      deprecated: 9999.0,
-      message: "Call the 'Send' object as a function itself."
-    )
+    @available(*, deprecated, message: "Call the 'Send' object as a function itself.")
     public var send: @MainActor (Action) -> Void {
       switch rawValue {
       case .attached(let send):
