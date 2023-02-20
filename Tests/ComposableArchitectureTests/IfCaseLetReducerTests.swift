@@ -47,15 +47,15 @@ final class IfCaseLetReducerTests: XCTestCase {
           set to a different case. …
 
             Action:
-              Result.success
+              Result.success(1)
             State:
-              Result.failure
+              Result.failure(IfCaseLetReducerTests.SomeError())
 
           This is generally considered an application logic error, and can happen for a few reasons:
 
-          • A parent reducer set "Result" to a different case before this reducer ran. This reducer \
-          must run before any other reducer sets child state to a different case. This ensures that \
-          child reducers can handle their actions while their state is still available.
+          • A parent reducer set "Result" to a different case before this reducer ran. This \
+          reducer must run before any other reducer sets child state to a different case. This \
+          ensures that child reducers can handle their actions while their state is still available.
 
           • An in-flight effect emitted this action when child state was unavailable. While it may \
           be perfectly reasonable to ignore this action, consider canceling the associated effect \

@@ -144,15 +144,19 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     guard var childState = self.toChildState.extract(from: state) else {
+      var actionDump = ""
+      customDump(action, to: &actionDump, indent: 4)
+      var stateDump = ""
+      customDump(state, to: &stateDump, indent: 4)
       runtimeWarn(
         """
         An "ifCaseLet" at "\(self.fileID):\(self.line)" received a child action when child state \
         was set to a different case. …
 
           Action:
-            \(debugCaseOutput(action))
+        \(actionDump)
           State:
-            \(debugCaseOutput(state))
+        \(stateDump)
 
         This is generally considered an application logic error, and can happen for a few reasons:
 
