@@ -61,10 +61,10 @@ extension NavigationID: Sequence {
 }
 
 @usableFromInline
-struct AnyID: Hashable, Sendable {
+struct AnyID: Hashable, Identifiable, Sendable {
   private var objectIdentifier: ObjectIdentifier
   private var tag: UInt32?
-  private var id: AnyHashableSendable?
+  private var identifier: AnyHashableSendable?
 
   @usableFromInline
   init<Base>(_ base: Base) {
@@ -75,13 +75,16 @@ struct AnyID: Hashable, Sendable {
     self.objectIdentifier = ObjectIdentifier(Base.self)
     self.tag = EnumMetadata(Base.self)?.tag(of: base)
     if let base = base as? any Identifiable {
-      self.id = id(base)
+      self.identifier = id(base)
     } else if let metadata = EnumMetadata(type(of: base)),
       metadata.associatedValueType(forTag: metadata.tag(of: base)) is any Identifiable.Type
     {
       // TODO: Extract enum payload and assign id
     }
   }
+
+  @usableFromInline
+  var id: Self { self }
 }
 
 private struct AnyHashableSendable: Hashable, @unchecked Sendable {

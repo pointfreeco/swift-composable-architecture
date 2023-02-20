@@ -31,6 +31,10 @@ public struct PresentationState<State> {
     _read { yield self }
     _modify { yield &self }
   }
+
+  var id: AnyID? {
+    self.wrappedValue.map(AnyID.init)
+  }
 }
 
 extension PresentationState: Equatable where State: Equatable {
@@ -269,7 +273,9 @@ public struct _PresentationReducer<
   }
 
   private func id(for state: Destination.State) -> NavigationID {
-    self.navigationID.appending(path: self.toPresentationState).appending(component: state)
+    self.navigationID
+      .appending(path: self.toPresentationState)
+      .appending(component: state)
   }
 }
 
