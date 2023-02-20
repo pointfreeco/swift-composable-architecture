@@ -108,7 +108,7 @@ extension Login.Action {
 
 struct LoginView_Previews: PreviewProvider {
   static var previews: some View {
-    NavigationView {
+    NavigationStack {
       LoginView(
         store: Store(
           initialState: Login.State(),
