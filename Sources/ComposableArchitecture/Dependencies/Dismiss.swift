@@ -8,7 +8,7 @@ extension DependencyValues {
 
 public struct DismissEffect: Sendable {
   // TODO: Should this be `async throws`?
-  private var dismiss: (@Sendable () async -> Void)?
+  var dismiss: (@Sendable () async -> Void)?
 
   public func callAsFunction(
     file: StaticString = #file,

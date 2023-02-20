@@ -142,6 +142,7 @@ final class VoiceMemosTests: XCTestCase {
 
   // Demonstration of how to write a non-exhaustive test for recording a memo and it failing to
   // record.
+  // TODO: This test is flakey. Can we bring in `_withMainSerialExecutor`?
   func testRecordMemoFailure_NonExhaustive() async {
     struct SomeError: Error, Equatable {}
     let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
