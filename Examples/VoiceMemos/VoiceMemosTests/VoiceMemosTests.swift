@@ -42,25 +42,27 @@ final class VoiceMemosTests: XCTestCase {
         url: URL(fileURLWithPath: "/tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")
       )
     }
-    let recordingMemoTask = await store.send(.recordingMemo(.task))
+    let recordingMemoTask = await store.send(.recordingMemo(.presented(.task)))
     await self.clock.advance(by: .seconds(1))
-    await store.receive(.recordingMemo(.timerUpdated)) {
+    await store.receive(.recordingMemo(.presented(.timerUpdated))) {
       $0.recordingMemo?.duration = 1
     }
     await self.clock.advance(by: .seconds(1))
-    await store.receive(.recordingMemo(.timerUpdated)) {
+    await store.receive(.recordingMemo(.presented(.timerUpdated))) {
       $0.recordingMemo?.duration = 2
     }
     await self.clock.advance(by: .milliseconds(500))
-    await store.send(.recordingMemo(.stopButtonTapped)) {
+    await store.send(.recordingMemo(.presented(.stopButtonTapped))) {
       $0.recordingMemo?.mode = .encoding
     }
-    await store.receive(.recordingMemo(.finalRecordingTime(2.5))) {
+    await store.receive(.recordingMemo(.presented(.finalRecordingTime(2.5)))) {
       $0.recordingMemo?.duration = 2.5
     }
-    await store.receive(.recordingMemo(.audioRecorderDidFinish(.success(true))))
+    await store.receive(.recordingMemo(.presented(.audioRecorderDidFinish(.success(true)))))
     try await store.receive(
-      .recordingMemo(.delegate(.didFinish(.success(XCTUnwrap(store.state.recordingMemo)))))
+      .recordingMemo(
+        .presented(.delegate(.didFinish(.success(XCTUnwrap(store.state.recordingMemo)))))
+      )
     ) {
       $0.recordingMemo = nil
       $0.voiceMemos = [
@@ -91,7 +93,7 @@ final class VoiceMemosTests: XCTestCase {
       $0.alert = AlertState { TextState("Permission is required to record voice memos.") }
       $0.audioRecorderPermission = .denied
     }
-    await store.send(.alertDismissed) {
+    await store.send(.alert(.dismiss)) {
       $0.alert = nil
     }
     await store.send(.openSettingsButtonTapped).finish()
@@ -126,11 +128,11 @@ final class VoiceMemosTests: XCTestCase {
         url: URL(fileURLWithPath: "/tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")
       )
     }
-    let recordingMemoTask = await store.send(.recordingMemo(.task))
+    let recordingMemoTask = await store.send(.recordingMemo(.presented(.task)))
 
     didFinish.continuation.finish(throwing: SomeError())
-    await store.receive(.recordingMemo(.audioRecorderDidFinish(.failure(SomeError()))))
-    await store.receive(.recordingMemo(.delegate(.didFinish(.failure(SomeError()))))) {
+    await store.receive(.recordingMemo(.presented(.audioRecorderDidFinish(.failure(SomeError())))))
+    await store.receive(.recordingMemo(.presented(.delegate(.didFinish(.failure(SomeError())))))) {
       $0.alert = AlertState { TextState("Voice memo recording failed.") }
       $0.recordingMemo = nil
     }
@@ -161,9 +163,9 @@ final class VoiceMemosTests: XCTestCase {
     store.exhaustivity = .off(showSkippedAssertions: true)
 
     await store.send(.recordButtonTapped)
-    await store.send(.recordingMemo(.task))
+    await store.send(.recordingMemo(.presented(.task)))
     didFinish.continuation.finish(throwing: SomeError())
-    await store.receive(.recordingMemo(.delegate(.didFinish(.failure(SomeError()))))) {
+    await store.receive(.recordingMemo(.presented(.delegate(.didFinish(.failure(SomeError())))))) {
       $0.alert = AlertState { TextState("Voice memo recording failed.") }
       $0.recordingMemo = nil
     }

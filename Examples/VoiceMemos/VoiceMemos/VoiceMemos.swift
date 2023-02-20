@@ -4,9 +4,9 @@ import SwiftUI
 
 struct VoiceMemos: ReducerProtocol {
   struct State: Equatable {
-    var alert: AlertState<Action>?
+    @PresentationState var alert: AlertState<AlertAction>?
     var audioRecorderPermission = RecorderPermission.undetermined
-    var recordingMemo: RecordingMemo.State?
+    @PresentationState var recordingMemo: RecordingMemo.State?
     var voiceMemos: IdentifiedArrayOf<VoiceMemo.State> = []
 
     enum RecorderPermission {
@@ -17,13 +17,15 @@ struct VoiceMemos: ReducerProtocol {
   }
 
   enum Action: Equatable {
-    case alertDismissed
+    case alert(PresentationAction<AlertAction>)
     case openSettingsButtonTapped
     case recordButtonTapped
     case recordPermissionResponse(Bool)
-    case recordingMemo(RecordingMemo.Action)
+    case recordingMemo(PresentationAction<RecordingMemo.Action>)
     case voiceMemo(id: VoiceMemo.State.ID, action: VoiceMemo.Action)
   }
+
+  enum AlertAction: Equatable {}
 
   @Dependency(\.audioRecorder.requestRecordPermission) var requestRecordPermission
   @Dependency(\.date) var date
@@ -34,8 +36,7 @@ struct VoiceMemos: ReducerProtocol {
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
-      case .alertDismissed:
-        state.alert = nil
+      case .alert:
         return .none
 
       case .openSettingsButtonTapped:
@@ -51,9 +52,7 @@ struct VoiceMemos: ReducerProtocol {
           }
 
         case .denied:
-          state.alert = AlertState {
-            TextState("Permission is required to record voice memos.")
-          }
+          state.alert = AlertState { TextState("Permission is required to record voice memos.") }
           return .none
 
         case .allowed:
@@ -61,7 +60,7 @@ struct VoiceMemos: ReducerProtocol {
           return .none
         }
 
-      case let .recordingMemo(.delegate(.didFinish(.success(recordingMemo)))):
+      case let .recordingMemo(.presented(.delegate(.didFinish(.success(recordingMemo))))):
         state.recordingMemo = nil
         state.voiceMemos.insert(
           VoiceMemo.State(
@@ -73,7 +72,7 @@ struct VoiceMemos: ReducerProtocol {
         )
         return .none
 
-      case .recordingMemo(.delegate(.didFinish(.failure))):
+      case .recordingMemo(.presented(.delegate(.didFinish(.failure)))):
         state.alert = AlertState { TextState("Voice memo recording failed.") }
         state.recordingMemo = nil
         return .none
@@ -87,9 +86,7 @@ struct VoiceMemos: ReducerProtocol {
           state.recordingMemo = newRecordingMemo
           return .none
         } else {
-          state.alert = AlertState {
-            TextState("Permission is required to record voice memos.")
-          }
+          state.alert = AlertState { TextState("Permission is required to record voice memos.") }
           return .none
         }
 
@@ -111,7 +108,8 @@ struct VoiceMemos: ReducerProtocol {
         return .none
       }
     }
-    .ifLet(\.recordingMemo, action: /Action.recordingMemo) {
+    .presents(\.$alert, action: /Action.alert)
+    .presents(\.$recordingMemo, action: /Action.recordingMemo) {
       RecordingMemo()
     }
     .forEach(\.voiceMemos, action: /Action.voiceMemo(id:action:)) {
@@ -149,11 +147,11 @@ struct VoiceMemosView: View {
             }
           }
 
-          IfLetStore(
-            self.store.scope(state: \.recordingMemo, action: { .recordingMemo($0) })
+          PresentationStore(
+            self.store.scope(state: \.$recordingMemo, action: VoiceMemos.Action.recordingMemo)
           ) { store in
             RecordingMemoView(store: store)
-          } else: {
+          } dismissed: {
             RecordButton(permission: viewStore.audioRecorderPermission) {
               viewStore.send(.recordButtonTapped, animation: .spring())
             } settingsAction: {
@@ -164,10 +162,7 @@ struct VoiceMemosView: View {
           .frame(maxWidth: .infinity)
           .background(Color.init(white: 0.95))
         }
-        .alert(
-          self.store.scope(state: \.alert),
-          dismiss: .alertDismissed
-        )
+        .alert(store: self.store.scope(state: \.$alert, action: VoiceMemos.Action.alert))
         .navigationTitle("Voice memos")
       }
       .navigationViewStyle(.stack)

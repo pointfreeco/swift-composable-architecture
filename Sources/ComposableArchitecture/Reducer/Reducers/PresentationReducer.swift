@@ -125,7 +125,7 @@ extension ReducerProtocol {
     )
   }
 
-  public func presents<DestinationState, DestinationAction>(
+  public func presents<DestinationState: _InertPresentationState, DestinationAction>(
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
     action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
     file: StaticString = #file,

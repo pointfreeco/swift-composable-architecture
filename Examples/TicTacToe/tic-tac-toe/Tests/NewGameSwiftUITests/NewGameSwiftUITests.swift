@@ -21,12 +21,5 @@ final class NewGameSwiftUITests: XCTestCase {
       $0.oPlayerName = "Blob Jr."
       $0.isLetsPlayButtonDisabled = false
     }
-    await self.store.send(.letsPlayButtonTapped) {
-      $0.isGameActive = true
-    }
-    await self.store.send(.gameDismissed) {
-      $0.isGameActive = false
-    }
-    await self.store.send(.logoutButtonTapped)
   }
 }

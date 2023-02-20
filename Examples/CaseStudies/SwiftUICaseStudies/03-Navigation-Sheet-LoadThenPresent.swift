@@ -13,50 +13,39 @@ private let readMe = """
 
 struct LoadThenPresent: ReducerProtocol {
   struct State: Equatable {
-    var optionalCounter: Counter.State?
+    @PresentationState var counter: Counter.State?
     var isActivityIndicatorVisible = false
-
-    var isSheetPresented: Bool { self.optionalCounter != nil }
   }
 
   enum Action {
-    case onDisappear
-    case optionalCounter(Counter.Action)
-    case setSheet(isPresented: Bool)
-    case setSheetIsPresentedDelayCompleted
+    case counter(PresentationAction<Counter.Action>)
+    case counterButtonTapped
+    case counterPresentationDelayCompleted
   }
 
   @Dependency(\.continuousClock) var clock
-  private enum CancelID {}
 
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
-      case .onDisappear:
-        return .cancel(id: CancelID.self)
+      case .counter:
+        return .none
 
-      case .setSheet(isPresented: true):
+      case .counterButtonTapped:
         state.isActivityIndicatorVisible = true
         return .task {
           try await self.clock.sleep(for: .seconds(1))
-          return .setSheetIsPresentedDelayCompleted
+          return .counterPresentationDelayCompleted
         }
-        .cancellable(id: CancelID.self)
 
-      case .setSheet(isPresented: false):
-        state.optionalCounter = nil
-        return .none
-
-      case .setSheetIsPresentedDelayCompleted:
+      case .counterPresentationDelayCompleted:
         state.isActivityIndicatorVisible = false
-        state.optionalCounter = Counter.State()
+        state.counter = Counter.State()
         return .none
 
-      case .optionalCounter:
-        return .none
       }
     }
-    .ifLet(\.optionalCounter, action: /Action.optionalCounter) {
+    .presents(\.$counter, action: /Action.counter) {
       Counter()
     }
   }
@@ -73,7 +62,7 @@ struct LoadThenPresentView: View {
         Section {
           AboutView(readMe: readMe)
         }
-        Button(action: { viewStore.send(.setSheet(isPresented: true)) }) {
+        Button(action: { viewStore.send(.counterButtonTapped) }) {
           HStack {
             Text("Load optional counter")
             if viewStore.isActivityIndicatorVisible {
@@ -84,22 +73,10 @@ struct LoadThenPresentView: View {
         }
       }
       .sheet(
-        isPresented: viewStore.binding(
-          get: \.isSheetPresented,
-          send: LoadThenPresent.Action.setSheet(isPresented:)
-        )
-      ) {
-        IfLetStore(
-          self.store.scope(
-            state: \.optionalCounter,
-            action: LoadThenPresent.Action.optionalCounter
-          )
-        ) {
-          CounterView(store: $0)
-        }
-      }
+        store: store.scope(state: \.$counter, action: LoadThenPresent.Action.counter),
+        content: CounterView.init(store:)
+      )
       .navigationTitle("Load and present")
-      .onDisappear { viewStore.send(.onDisappear) }
     }
   }
 }

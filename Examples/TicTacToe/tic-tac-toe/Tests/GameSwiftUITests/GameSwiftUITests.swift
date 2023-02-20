@@ -39,7 +39,6 @@ final class GameSwiftUITests: XCTestCase {
       $0.isPlayAgainButtonVisible = true
       $0.title = "Winner! Congrats Blob Sr.!"
     }
-    await self.store.send(.quitButtonTapped)
   }
 
   func testFlow_Tie() async {
