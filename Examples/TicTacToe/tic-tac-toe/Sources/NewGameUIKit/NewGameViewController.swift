@@ -10,13 +10,11 @@ public class NewGameViewController: UIViewController {
   private var cancellables: Set<AnyCancellable> = []
 
   struct ViewState: Equatable {
-    let isGameActive: Bool
     let isLetsPlayButtonEnabled: Bool
     let oPlayerName: String?
     let xPlayerName: String?
 
     public init(state: NewGame.State) {
-      self.isGameActive = state.game != nil
       self.isLetsPlayButtonEnabled = !state.oPlayerName.isEmpty && !state.xPlayerName.isEmpty
       self.oPlayerName = state.oPlayerName
       self.xPlayerName = state.xPlayerName
@@ -24,7 +22,6 @@ public class NewGameViewController: UIViewController {
   }
 
   enum ViewAction {
-    case gameDismissed
     case letsPlayButtonTapped
     case logoutButtonTapped
     case oPlayerNameChanged(String?)
@@ -139,14 +136,6 @@ public class NewGameViewController: UIViewController {
       .store(in: &self.cancellables)
   }
 
-  public override func viewDidAppear(_ animated: Bool) {
-    super.viewDidAppear(animated)
-
-    if !self.isMovingToParent {
-      self.viewStore.send(.gameDismissed)
-    }
-  }
-
   @objc private func logoutButtonTapped() {
     self.viewStore.send(.logoutButtonTapped)
   }
@@ -167,8 +156,6 @@ public class NewGameViewController: UIViewController {
 extension NewGame.Action {
   init(action: NewGameViewController.ViewAction) {
     switch action {
-    case .gameDismissed:
-      self = .game(.dismiss)
     case .letsPlayButtonTapped:
       self = .letsPlayButtonTapped
     case .logoutButtonTapped:
