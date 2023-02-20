@@ -3,14 +3,26 @@ import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
+// MARK: - Deprecated after 0.51.0
+
+@available(
+  *,
+  deprecated,
+  message: "Use 'EffectSend<Action>' instead."
+)
+extension EffectTask {
+  public typealias Send = EffectSend<Action>
+}
+
 // MARK: - Deprecated after 0.50.4
 
 @available(
   *,
   deprecated,
-  message: "Use 'EffectTask<Action>.Send' instead."
+  message: "Use 'EffectSend<Action>' instead.",
+  renamed: "EffectSend"
 )
-public typealias Send<Action> = EffectTask<Action>.Send
+public typealias Send<Action> = EffectSend<Action>
 
 // MARK: - Deprecated after 0.49.2
 

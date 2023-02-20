@@ -423,7 +423,7 @@ public final class Store<State, Action> {
               defer { isCompleted = true }
             #endif
             await operation(
-              EffectTask<Action>.Send {
+              EffectSend {
                 #if DEBUG
                   if isCompleted {
                     runtimeWarn(
