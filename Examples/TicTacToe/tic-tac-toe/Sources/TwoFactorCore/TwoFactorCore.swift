@@ -23,8 +23,6 @@ public struct TwoFactor: ReducerProtocol, Sendable {
     case twoFactorResponse(TaskResult<AuthenticationResponse>)
   }
 
-  public enum TearDownToken {}
-
   @Dependency(\.authenticationClient) var authenticationClient
 
   public init() {}
@@ -49,7 +47,6 @@ public struct TwoFactor: ReducerProtocol, Sendable {
           }
         )
       }
-      .cancellable(id: TearDownToken.self)
 
     case let .twoFactorResponse(.failure(error)):
       state.alert = AlertState { TextState(error.localizedDescription) }
