@@ -57,7 +57,7 @@ public struct EffectPublisher<Action, Failure: Error> {
   enum Operation {
     case none
     case publisher(AnyPublisher<Action, Failure>)
-    case run(TaskPriority? = nil, @Sendable (EffectSend<Action>) async -> Void)
+    case run(TaskPriority? = nil, @Sendable (Send<Action>) async -> Void)
   }
 
   @usableFromInline
@@ -253,8 +253,8 @@ extension EffectPublisher where Failure == Never {
   /// - Returns: An effect wrapping the given asynchronous work.
   public static func run(
     priority: TaskPriority? = nil,
-    operation: @escaping @Sendable (EffectSend<Action>) async throws -> Void,
-    catch handler: (@Sendable (Error, EffectSend<Action>) async -> Void)? = nil,
+    operation: @escaping @Sendable (Send<Action>) async throws -> Void,
+    catch handler: (@Sendable (Error, Send<Action>) async -> Void)? = nil,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -382,7 +382,7 @@ extension EffectPublisher where Failure == Never {
 ///
 /// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
 @MainActor
-public struct EffectSend<Action> {
+public struct Send<Action> {
   public let send: @MainActor (Action) -> Void
 
   public init(send: @escaping @MainActor (Action) -> Void) {
@@ -561,7 +561,7 @@ extension EffectPublisher {
           operation: .run(priority) { send in
             await escaped.yield {
               await operation(
-                EffectSend<Action> { action in
+                Send<Action> { action in
                   send(transform(action))
                 }
               )
