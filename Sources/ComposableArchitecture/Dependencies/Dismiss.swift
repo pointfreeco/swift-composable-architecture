@@ -44,5 +44,3 @@ private enum DismissKey: DependencyKey {
   static let liveValue = DismissEffect()
   static var testValue = DismissEffect()
 }
-
-struct DismissID: Hashable {}

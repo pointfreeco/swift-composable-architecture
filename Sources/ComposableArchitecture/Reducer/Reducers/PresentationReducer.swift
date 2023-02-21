@@ -277,3 +277,5 @@ public struct _PresentationReducer<
       .appending(component: state)
   }
 }
+
+private struct DismissID: Hashable {}

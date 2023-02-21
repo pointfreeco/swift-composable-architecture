@@ -176,7 +176,7 @@ public struct _NavigationReducer<
       case let .element(elementID, destinationAction):
         let id = self.navigationID(for: elementID)
         destinationEffects = self.destination
-          .dependency(\.dismiss, DismissEffect { Task.cancel(id: DismissID()) })
+          .dependency(\.dismiss, DismissEffect { Task.cancel(id: DismissID(elementID: elementID)) })
           .dependency(\.navigationID, id)
           .reduce(
             into: &state[keyPath: self.toNavigationState].state._elements[elementID]!,
@@ -210,7 +210,7 @@ public struct _NavigationReducer<
             try await withDependencies {
               $0.navigationID = id
             } operation: {
-              try await withTaskCancellation(id: DismissID()) {
+              try await withTaskCancellation(id: DismissID(elementID: elementID)) {
                 try await Task.never()
               }
             }
@@ -250,7 +250,10 @@ public struct NavigationStackStore<State, Action, Content: View, Destination: Vi
     self.content = content()
     self.destination = { id in
       IfLetStore(
-        store.scope(state: \.state._elements[id], action: { .element(id: id, $0) }),
+        store.scope(
+          state: returningLastNonNilValue { $0.state._elements[id] },
+          action: { .element(id: id, $0) }
+        ),
         then: destination
       )
     }
@@ -272,4 +275,8 @@ public struct NavigationStackStore<State, Action, Content: View, Destination: Vi
       }
     }
   }
+}
+
+private struct DismissID: Hashable {
+  let elementID: ElementID
 }
