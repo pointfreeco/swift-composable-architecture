@@ -1,11 +1,12 @@
 import Foundation
 import OrderedCollections
 
-// TODO: Better name? `DestinationID`?
+// TODO: Better name? `DestinationID`? `StackElementID`?
 public struct ElementID: Hashable, Sendable {
   private let id = UUID()
 }
 
+// StackState, StackAction
 @propertyWrapper
 public struct NavigationState<
   State
@@ -122,13 +123,20 @@ public enum NavigationAction<Action> {
   case dismiss(id: ElementID)
   case element(id: ElementID, Action)
   // TODO: Possible to present arbitrary state in a lightweight way?
-  // case present(Any) // present<State>(State) ~=
+  case present(Any) // present<State>(State) ~=
   case pathChanged(ids: [ElementID])
 }
 
-extension NavigationAction: Equatable where Action: Equatable {}
+extension NavigationAction: Equatable where Action: Equatable {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    true
+  }
+}
 
-extension NavigationAction: Hashable where Action: Hashable {}
+extension NavigationAction: Hashable where Action: Hashable {
+  public func hash(into hasher: inout Hasher) {
+  }
+}
 
 extension ReducerProtocol {
   public func navigates<DestinationState, DestinationAction, Destination: ReducerProtocol>(
@@ -189,6 +197,18 @@ public struct _NavigationReducer<
           .map { toNavigationAction.embed(.element(id: elementID, $0)) }
           .cancellable(id: id)
         baseEffects = self.base.reduce(into: &state, action: action)
+
+      case let .present(presentedState):
+        // TODO: can we
+        guard let presentedState = presentedState as? Destination.State
+        else {
+          // TODO: runtime warn
+          return .none
+        }
+        let id = ElementID()
+        state[keyPath: self.toNavigationState].state._ids.insert(id, at: state[keyPath: self.toNavigationState].state.count)
+        state[keyPath: self.toNavigationState].state._elements[id] = presentedState
+        return .none
 
       case let .pathChanged(ids):
         state[keyPath: self.toNavigationState].state._ids.elements = ids
