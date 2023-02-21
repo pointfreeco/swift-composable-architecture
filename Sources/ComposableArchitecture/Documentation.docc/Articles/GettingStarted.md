@@ -120,7 +120,7 @@ struct Feature: Reducer {
 
       case .numberFactButtonTapped:
         return .task { [count = state.count] in 
-          await .numberFactResponse(
+          try await .numberFactResponse(
             TaskResult { 
               String(
                 decoding: try await URLSession.shared
@@ -331,7 +331,7 @@ Then we can use it in the `reduce` implementation:
 ```swift
 case .numberFactButtonTapped:
   return .task { [count = state.count] in 
-    await .numberFactResponse(TaskResult { try await self.numberFact(count) })
+    try await .numberFactResponse(TaskResult { try await self.numberFact(count) })
   }
 ```
 

@@ -137,7 +137,7 @@ extension EffectPublisher where Failure == Never {
   ///     switch action {
   ///       case .factButtonTapped:
   ///         return .task { [number = state.number] in
-  ///           await .factResponse(TaskResult { try await self.numberFact.fetch(number) })
+  ///           try await .factResponse(TaskResult { try await self.numberFact.fetch(number) })
   ///         }
   ///
   ///       case .factResponse(.success(fact)):

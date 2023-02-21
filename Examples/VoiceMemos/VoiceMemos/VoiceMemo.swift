@@ -64,7 +64,7 @@ struct VoiceMemo: Reducer {
             await send(.timerUpdated(start))
           }
 
-          await playAudio
+          try await playAudio
         }
         .cancellable(id: PlayID.self, cancelInFlight: true)
 

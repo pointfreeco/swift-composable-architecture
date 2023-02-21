@@ -188,7 +188,7 @@ extension EffectPublisher {
   /// return .task {
   ///   await withTaskCancellation(id: CancelID.self, cancelInFlight: true) {
   ///     try await self.clock.sleep(for: .seconds(0.3))
-  ///     return await .debouncedResponse(
+  ///     return try await .debouncedResponse(
   ///       TaskResult { try await environment.request() }
   ///     )
   ///   }

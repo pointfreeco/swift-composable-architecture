@@ -72,7 +72,7 @@ struct EffectsBasics: Reducer {
       // Return an effect that fetches a number fact from the API and returns the
       // value back to the reducer's `numberFactResponse` action.
       return .task { [count = state.count] in
-        await .numberFactResponse(TaskResult { try await self.factClient.fetch(count) })
+        try await .numberFactResponse(TaskResult { try await self.factClient.fetch(count) })
       }
 
     case let .numberFactResponse(.success(response)):

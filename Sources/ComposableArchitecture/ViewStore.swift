@@ -296,7 +296,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///     case .pulledToRefresh:
   ///       state.isLoading = true
   ///       return .task {
-  ///         await .receivedResponse(TaskResult { try await self.fetch() })
+  ///         try await .receivedResponse(TaskResult { try await self.fetch() })
   ///       }
   ///
   ///     case let .receivedResponse(result):

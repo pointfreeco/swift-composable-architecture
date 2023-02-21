@@ -69,7 +69,7 @@ struct RecordingMemo: Reducer {
         for await _ in self.clock.timer(interval: .seconds(1)) {
           await send(.timerUpdated)
         }
-        await startRecording
+        try await startRecording
       }
 
     case .timerUpdated:

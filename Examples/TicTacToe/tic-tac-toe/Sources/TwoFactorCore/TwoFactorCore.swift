@@ -44,7 +44,7 @@ public struct TwoFactor: Reducer, Sendable {
       state.isTwoFactorRequestInFlight = true
       return .task { [code = state.code, token = state.token] in
         .twoFactorResponse(
-          await TaskResult {
+          try await TaskResult {
             try await self.authenticationClient.twoFactor(.init(code: code, token: token))
           }
         )

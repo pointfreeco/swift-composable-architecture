@@ -62,7 +62,7 @@ public struct Login: Reducer, Sendable {
         state.isLoginRequestInFlight = true
         return .task { [email = state.email, password = state.password] in
           .loginResponse(
-            await TaskResult {
+            try await TaskResult {
               try await self.authenticationClient.login(
                 .init(email: email, password: password)
               )

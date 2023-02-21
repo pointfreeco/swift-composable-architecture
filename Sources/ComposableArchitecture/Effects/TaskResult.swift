@@ -38,7 +38,7 @@ import XCTestDynamicOverlay
 /// ```swift
 /// case .factButtonTapped:
 ///   return .task {
-///     await .factResponse(
+///     try await .factResponse(
 ///       TaskResult { try await self.numberFact.fetch(state.number) }
 ///     )
 ///   }
@@ -108,16 +108,19 @@ public enum TaskResult<Success: Sendable>: Sendable {
   case failure(Error)
 
   /// Creates a new task result by evaluating an async throwing closure, capturing the returned
-  /// value as a success, or any thrown error as a failure.
+  /// value as a success, or any thrown non-cancellation error as a failure.
   ///
   /// This initializer is most often used in an async effect being returned from a reducer. See the
   /// documentation for ``TaskResult`` for a concrete example.
   ///
   /// - Parameter body: An async, throwing closure.
+  /// - Throws: Re-throws any `CancellationError` thrown by `body`.
   @_transparent
-  public init(catching body: @Sendable () async throws -> Success) async {
+  public init(catching body: @Sendable () async throws -> Success) async throws {
     do {
       self = .success(try await body())
+    } catch let error as CancellationError {
+      throw error
     } catch {
       self = .failure(error)
     }

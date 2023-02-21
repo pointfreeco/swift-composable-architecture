@@ -54,7 +54,7 @@ struct Refreshable: Reducer {
     case .refresh:
       state.fact = nil
       return .task { [count = state.count] in
-        await .factResponse(TaskResult { try await self.factClient.fetch(count) })
+        try await .factResponse(TaskResult { try await self.factClient.fetch(count) })
       }
       .animation()
       .cancellable(id: FactRequestID.self)
