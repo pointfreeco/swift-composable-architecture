@@ -1492,7 +1492,7 @@ import XCTest
         }
         var body: some ReducerProtocol<State, Action> {
           Reduce { state, action in
-              .none
+            .none
           }
           .presents(\.$child, action: /Action.child) {
             Child()
@@ -1550,7 +1550,7 @@ import XCTest
         }
         var body: some ReducerProtocol<State, Action> {
           Reduce { state, action in
-              .none
+            .none
           }
           .presents(\.$child, action: /Action.child) {
             Child()

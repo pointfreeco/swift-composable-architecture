@@ -183,10 +183,10 @@ final class ViewStoreTests: XCTestCase {
           return .task { .response }
         }
       }
-      
+
       let store = Store(initialState: false, reducer: reducer)
       let viewStore = ViewStore(store, observe: { $0 })
-      
+
       XCTAssertEqual(viewStore.state, false)
       await viewStore.send(.tapped, while: { $0 })
       XCTAssertEqual(viewStore.state, false)
