@@ -26,17 +26,30 @@ struct ForEachBindingTestCase: ReducerProtocol {
 }
 
 struct ForEachBindingTestCaseView: View {
+  @State var assertion: String?
   let store: StoreOf<ForEachBindingTestCase>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       VStack {  // ⚠️ Must use VStack, not List.
+        if let assertion = self.assertion {
+          Text(assertion)
+        }
         ForEach(Array(viewStore.values.enumerated()), id: \.offset) { offset, value in
           HStack {  // ⚠️ Must wrap in an HStack.
             TextField(  // ⚠️ Must use a TextField.
               "\(value)",
               text: viewStore.binding(
-                get: { $0.values[offset] },
+                get: {
+                  if offset < $0.values.count {
+                    return $0.values[offset]
+                  } else {
+                    DispatchQueue.main.async {
+                      self.assertion = "🛑"
+                    }
+                    return ""
+                  }
+                },
                 send: { .change(offset: offset, value: $0) }
               )
             )

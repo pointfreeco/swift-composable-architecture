@@ -2,9 +2,8 @@ import XCTest
 
 @MainActor
 final class ForEachBindingTests: XCTestCase {
-
   override func setUpWithError() throws {
-    continueAfterFailure = false
+    self.continueAfterFailure = false
   }
 
   func testExample() async throws {
@@ -13,7 +12,18 @@ final class ForEachBindingTests: XCTestCase {
 
     app.collectionViews.buttons["ForEachBindingTestCase"].tap()
     app.buttons["Remove last"].tap()
+    app.buttons["Remove last"].tap()
+    app.buttons["Remove last"].tap()
 
+    XCTAssertFalse(app.textFields["A"].exists)
+    XCTAssertFalse(app.textFields["B"].exists)
     XCTAssertFalse(app.textFields["C"].exists)
+    XCTExpectFailure("""
+      This ideally would not fail, but currently does. See this PR for more details:
+
+      https://github.com/pointfreeco/swift-composable-architecture/pull/1845
+    """) {
+      XCTAssertFalse(app.staticTexts["🛑"].exists)
+    }
   }
 }
