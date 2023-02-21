@@ -123,7 +123,7 @@ public enum NavigationAction<Action> {
   case element(id: ElementID, Action)
   // TODO: Possible to present arbitrary state in a lightweight way?
   // case present(Any) // present<State>(State) ~=
-  case setPath(ids: [ElementID])
+  case pathChanged(ids: [ElementID])
 }
 
 extension NavigationAction: Equatable where Action: Equatable {}
@@ -190,7 +190,7 @@ public struct _NavigationReducer<
           .cancellable(id: id)
         baseEffects = self.base.reduce(into: &state, action: action)
 
-      case let .setPath(ids):
+      case let .pathChanged(ids):
         state[keyPath: self.toNavigationState].state._ids.elements = ids
         destinationEffects = .none
         baseEffects = self.base.reduce(into: &state, action: action)

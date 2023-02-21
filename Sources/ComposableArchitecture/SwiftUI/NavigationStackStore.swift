@@ -28,7 +28,7 @@ public struct NavigationStackStore<State, Action, Content: View, Destination: Vi
     WithViewStore(
       self.store.scope(
         state: \.state._ids.elements,
-        action: { .setPath(ids: $0) }
+        action: { .pathChanged(ids: $0) }
       )
     ) { viewStore in
       NavigationStack(path: viewStore.binding(get: { $0 }, send: { $0 })) {
