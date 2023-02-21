@@ -4,7 +4,7 @@ import SwiftUI
 
 // TODO: Better name? `DestinationID`?
 public struct ElementID: Hashable, Sendable {
-  private let _id = UUID()
+  private let id = UUID()
 }
 
 @propertyWrapper
@@ -63,14 +63,19 @@ public struct NavigationState<
     }
   }
 
-  @discardableResult
-  mutating func remove(id: ElementID) -> State {
-    self._ids.remove(id)
-    return self._elements.removeValue(forKey: id)!
-  }
-
   public struct Path {
     var state: NavigationState
+
+    public subscript(id: ElementID) -> State {
+      _read { yield self.state._elements[id]! }
+      _modify { yield &self.state._elements[id]! }
+    }
+
+    @discardableResult
+    public mutating func remove(id: ElementID) -> State {
+      self.state._ids.remove(id)
+      return self.state._elements.removeValue(forKey: id)!
+    }
   }
 }
 
@@ -171,7 +176,7 @@ public struct _NavigationReducer<
       case let .dismiss(id):
         destinationEffects = .none
         baseEffects = self.base.reduce(into: &state, action: action)
-        state[keyPath: self.toNavigationState].state.remove(id: id)
+        state[keyPath: self.toNavigationState].remove(id: id)
 
       case let .element(elementID, destinationAction):
         let id = self.navigationID(for: elementID)
