@@ -128,6 +128,8 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
       childCancelEffects = .none
     }
 
+    // TODO: should we check inert state and nil out?
+    
     return .merge(
       childEffects,
       parentEffects,

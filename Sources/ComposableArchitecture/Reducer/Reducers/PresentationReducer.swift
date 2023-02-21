@@ -76,6 +76,7 @@ extension PresentationState: CustomReflectable {
   }
 }
 
+// TODO: any other names? EphemeralState?
 public protocol _InertPresentationState {}
 
 extension AlertState: _InertPresentationState {}
@@ -105,7 +106,7 @@ extension PresentationAction: Decodable where Action: Decodable {}
 extension PresentationAction: Encodable where Action: Encodable {}
 
 extension ReducerProtocol {
-  public func presents<DestinationState, DestinationAction, Destination: ReducerProtocol>(
+  public func ifLet<DestinationState, DestinationAction, Destination: ReducerProtocol>(
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
     action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
     @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
@@ -125,14 +126,14 @@ extension ReducerProtocol {
     )
   }
 
-  public func presents<DestinationState: _InertPresentationState, DestinationAction>(
+  public func ifLet<DestinationState: _InertPresentationState, DestinationAction>(
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
     action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> _PresentationReducer<Self, EmptyReducer<DestinationState, DestinationAction>> {
-    self.presents(
+    self.ifLet(
       toPresentationState,
       action: toPresentationAction,
       destination: { EmptyReducer() },
@@ -199,7 +200,7 @@ public struct _PresentationReducer<
     case (.none, .some):
       runtimeWarn(
         """
-        A "presents" at "\(self.fileID):\(self.line)" received a presentation action when \
+        A "ifLet" at "\(self.fileID):\(self.line)" received a presentation action when \
         destination state was absent. …
 
           Action:

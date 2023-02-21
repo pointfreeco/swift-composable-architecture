@@ -139,7 +139,7 @@ extension NavigationAction: Hashable where Action: Hashable {
 }
 
 extension ReducerProtocol {
-  public func navigates<DestinationState, DestinationAction, Destination: ReducerProtocol>(
+  public func forEach<DestinationState, DestinationAction, Destination: ReducerProtocol>(
     _ toNavigationState: WritableKeyPath<State, NavigationState<DestinationState>.Path>,
     action toNavigationAction: CasePath<Action, NavigationAction<DestinationAction>>,
     @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
@@ -174,6 +174,8 @@ public struct _NavigationReducer<
   @Dependency(\.navigationID) var navigationID
 
   public func reduce(into state: inout Base.State, action: Base.Action) -> EffectTask<Base.Action> {
+    // TODO: is there anything to do with inert state in here?
+
     let idsBefore = state[keyPath: self.toNavigationState].state._ids
     let destinationEffects: EffectTask<Base.Action>
     let baseEffects: EffectTask<Base.Action>

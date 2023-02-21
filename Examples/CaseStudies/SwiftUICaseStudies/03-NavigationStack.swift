@@ -80,7 +80,7 @@ struct NavigationDemo: ReducerProtocol {
         return .none
       }
     }
-    .navigates(\.$navigation, action: /Action.navigation) {
+    .forEach(\.$navigation, action: /Action.navigation) {
       Destinations()
     }
   }

@@ -43,7 +43,7 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$child, action: /Action.child) {
+          .ifLet(\.$child, action: /Action.child) {
             Child()
           }
         }
@@ -116,7 +116,7 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$child, action: /Action.child) {
+          .ifLet(\.$child, action: /Action.child) {
             Child()
           }
         }
@@ -187,7 +187,7 @@ import XCTest
                 return .none
               }
             }
-            .presents(\.$child, action: /Action.child) {
+            .ifLet(\.$child, action: /Action.child) {
               Child()
             }
           }
@@ -274,7 +274,7 @@ import XCTest
                 return .none
               }
             }
-            .presents(\.$child, action: /Action.child) {
+            .ifLet(\.$child, action: /Action.child) {
               Child()
             }
           }
@@ -357,7 +357,7 @@ import XCTest
                 return .none
               }
             }
-            .presents(\.$child, action: /Action.child) {
+            .ifLet(\.$child, action: /Action.child) {
               Child()
             }
           }
@@ -436,7 +436,7 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$child, action: /Action.child) {
+          .ifLet(\.$child, action: /Action.child) {
             Child()
           }
         }
@@ -477,7 +477,7 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$alert, action: /Action.alert) {}
+          .ifLet(\.$alert, action: /Action.alert) {}
         }
       }
 
@@ -517,7 +517,7 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$alert, action: /Action.alert) {}
+          .ifLet(\.$alert, action: /Action.alert) {}
         }
       }
 
@@ -570,7 +570,7 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$alert, action: /Action.alert) {}
+          .ifLet(\.$alert, action: /Action.alert) {}
         }
       }
 
@@ -640,7 +640,7 @@ import XCTest
                 return .none
               }
             }
-            .presents(\.$child, action: /Action.child) {
+            .ifLet(\.$child, action: /Action.child) {
               Child()
             }
           }
@@ -728,7 +728,7 @@ import XCTest
                 return .none
               }
             }
-            .presents(\.$destination, action: /Action.destination) {
+            .ifLet(\.$destination, action: /Action.destination) {
               Destinations()
             }
           }
@@ -877,7 +877,7 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$child, action: /Action.child) {
+          .ifLet(\.$child, action: /Action.child) {
             Child()
           }
         }
@@ -938,7 +938,7 @@ import XCTest
               .cancellable(id: CancelID.effect)
             }
           }
-          .presents(\.$grandchild, action: /Action.grandchild) {
+          .ifLet(\.$grandchild, action: /Action.grandchild) {
             Grandchild()
           }
         }
@@ -968,7 +968,7 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$child, action: /Action.child) {
+          .ifLet(\.$child, action: /Action.child) {
             Child()
           }
         }
@@ -1043,10 +1043,10 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$child1, action: /Action.child1) {
+          .ifLet(\.$child1, action: /Action.child1) {
             Child()
           }
-          .presents(\.$child2, action: /Action.child2) {
+          .ifLet(\.$child2, action: /Action.child2) {
             Child()
           }
         }
@@ -1138,10 +1138,10 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$child1, action: /Action.child1) {
+          .ifLet(\.$child1, action: /Action.child1) {
             Child()
           }
-          .presents(\.$child2, action: /Action.child2) {
+          .ifLet(\.$child2, action: /Action.child2) {
             Child()
           }
         }
@@ -1242,10 +1242,10 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$child1, action: /Action.child1) {
+          .ifLet(\.$child1, action: /Action.child1) {
             Child()
           }
-          .presents(\.$child2, action: /Action.child2) {
+          .ifLet(\.$child2, action: /Action.child2) {
             Child()
           }
         }
@@ -1342,7 +1342,7 @@ import XCTest
               return .cancel(id: CancelID.effect)
             }
           }
-          .presents(\.$child, action: /Action.child) {
+          .ifLet(\.$child, action: /Action.child) {
             Child()
           }
         }
@@ -1412,7 +1412,7 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$grandchild, action: /Action.grandchild) {
+          .ifLet(\.$grandchild, action: /Action.grandchild) {
             Grandchild()
           }
         }
@@ -1439,7 +1439,7 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$child, action: /Action.child) {
+          .ifLet(\.$child, action: /Action.child) {
             Child()
           }
         }
@@ -1494,7 +1494,7 @@ import XCTest
           Reduce { state, action in
             .none
           }
-          .presents(\.$child, action: /Action.child) {
+          .ifLet(\.$child, action: /Action.child) {
             Child()
           }
         }
@@ -1507,7 +1507,7 @@ import XCTest
 
       XCTExpectFailure {
         $0.compactDescription == """
-          A "presents" at \
+          A "ifLet" at \
           "ComposableArchitectureTests/PresentationReducerTests.swift:\(#line - 14)" received a \
           presentation action when destination state was absent. …
 
@@ -1552,7 +1552,7 @@ import XCTest
           Reduce { state, action in
             .none
           }
-          .presents(\.$child, action: /Action.child) {
+          .ifLet(\.$child, action: /Action.child) {
             Child()
           }
         }
@@ -1565,7 +1565,7 @@ import XCTest
 
       XCTExpectFailure {
         $0.compactDescription == """
-          A "presents" at \
+          A "ifLet" at \
           "ComposableArchitectureTests/PresentationReducerTests.swift:\(#line - 14)" received a \
           presentation action when destination state was absent. …
 
@@ -1613,7 +1613,7 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$child, action: /Action.child) {
+          .ifLet(\.$child, action: /Action.child) {
             Child()
           }
         }
@@ -1659,7 +1659,7 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$child, action: /Action.child) {
+          .ifLet(\.$child, action: /Action.child) {
             Child()
           }
         }

@@ -45,7 +45,7 @@ struct LoadThenPresent: ReducerProtocol {
 
       }
     }
-    .presents(\.$counter, action: /Action.counter) {
+    .ifLet(\.$counter, action: /Action.counter) {
       Counter()
     }
   }
