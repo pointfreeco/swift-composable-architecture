@@ -12,12 +12,12 @@ final class ForEachBindingTests: XCTestCase {
 
     app.collectionViews.buttons["ForEachBindingTestCase"].tap()
     app.buttons["Remove last"].tap()
-    app.buttons["Remove last"].tap()
-    app.buttons["Remove last"].tap()
-
-    XCTAssertFalse(app.textFields["A"].exists)
-    XCTAssertFalse(app.textFields["B"].exists)
     XCTAssertFalse(app.textFields["C"].exists)
+    app.buttons["Remove last"].tap()
+    XCTAssertFalse(app.textFields["B"].exists)
+    app.buttons["Remove last"].tap()
+    XCTAssertFalse(app.textFields["A"].exists)
+
     XCTExpectFailure("""
       This ideally would not fail, but currently does. See this PR for more details:
 
