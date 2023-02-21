@@ -3,7 +3,7 @@ import XCTest
 @MainActor
 final class NavigationStackBindingTests: XCTestCase {
   override func setUpWithError() throws {
-    continueAfterFailure = false
+    self.continueAfterFailure = false
   }
 
   func testExample() async throws {
