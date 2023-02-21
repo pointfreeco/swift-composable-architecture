@@ -131,8 +131,7 @@ extension ReducerProtocol {
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _PresentationReducer<Self, EmptyReducer<DestinationState, DestinationAction>>
-  where DestinationState: _InertPresentationState {
+  ) -> _PresentationReducer<Self, EmptyReducer<DestinationState, DestinationAction>> {
     self.presents(
       toPresentationState,
       action: toPresentationAction,
@@ -278,5 +277,3 @@ public struct _PresentationReducer<
       .appending(component: state)
   }
 }
-
-private struct DismissID: Hashable {}

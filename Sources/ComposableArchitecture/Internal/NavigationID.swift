@@ -13,9 +13,10 @@ private enum NavigationIDKey: DependencyKey {
   static let testValue = NavigationID()
 }
 
+// TODO: Is this `Identifiable` conformance needed?
 @usableFromInline
-struct NavigationID: Hashable, Identifiable {
-  var path: [AnyHashable] = []
+struct NavigationID: Hashable, Identifiable, Sendable {
+  private var path: [AnyHashableSendable] = []
 
   @usableFromInline
   var id: Self { self }
@@ -23,21 +24,21 @@ struct NavigationID: Hashable, Identifiable {
   @usableFromInline
   func appending<Component>(component: Component) -> Self {
     var navigationID = self
-    navigationID.path.append(AnyID(component))
+    navigationID.path.append(AnyHashableSendable(AnyID(component)))
     return navigationID
   }
 
   @usableFromInline
   func appending(id: AnyID) -> Self {
     var navigationID = self
-    navigationID.path.append(id)
+    navigationID.path.append(AnyHashableSendable(id))
     return navigationID
   }
 
   @usableFromInline
   func appending(path: AnyKeyPath) -> Self {
     var navigationID = self
-    navigationID.path.append(path)
+    navigationID.path.append(AnyHashableSendable(path))
     return navigationID
   }
 }
@@ -60,6 +61,7 @@ extension NavigationID: Sequence {
   }
 }
 
+// TODO: Is this `Identifiable` conformance needed?
 @usableFromInline
 struct AnyID: Hashable, Identifiable, Sendable {
   private var objectIdentifier: ObjectIdentifier
