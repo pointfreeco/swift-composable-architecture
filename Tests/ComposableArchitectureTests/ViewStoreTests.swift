@@ -168,27 +168,29 @@ final class ViewStoreTests: XCTestCase {
   }
 
   func testSendWhile() async {
-    enum Action {
-      case response
-      case tapped
-    }
-    let reducer = Reduce<Bool, Action> { state, action in
-      switch action {
-      case .response:
-        state = false
-        return .none
-      case .tapped:
-        state = true
-        return .task { .response }
+    await _withMainSerialExecutor {
+      enum Action {
+        case response
+        case tapped
       }
+      let reducer = Reduce<Bool, Action> { state, action in
+        switch action {
+        case .response:
+          state = false
+          return .none
+        case .tapped:
+          state = true
+          return .task { .response }
+        }
+      }
+
+      let store = Store(initialState: false, reducer: reducer)
+      let viewStore = ViewStore(store, observe: { $0 })
+
+      XCTAssertEqual(viewStore.state, false)
+      await viewStore.send(.tapped, while: { $0 })
+      XCTAssertEqual(viewStore.state, false)
     }
-
-    let store = Store(initialState: false, reducer: reducer)
-    let viewStore = ViewStore(store, observe: { $0 })
-
-    XCTAssertEqual(viewStore.state, false)
-    await viewStore.send(.tapped, while: { $0 })
-    XCTAssertEqual(viewStore.state, false)
   }
 
   func testSuspend() {
