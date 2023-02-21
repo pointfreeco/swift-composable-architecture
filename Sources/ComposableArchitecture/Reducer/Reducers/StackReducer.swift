@@ -6,9 +6,8 @@ public struct ElementID: Hashable, Sendable {
   private let id = UUID()
 }
 
-// StackState, StackAction
 @propertyWrapper
-public struct NavigationState<
+public struct StackState<
   State
 >: BidirectionalCollection, MutableCollection, RandomAccessCollection, RangeReplaceableCollection {
   var _ids: OrderedSet<ElementID>
@@ -64,7 +63,7 @@ public struct NavigationState<
   }
 
   public struct Path {
-    var state: NavigationState
+    var state: StackState
 
     public subscript(id: ElementID) -> State {
       _read { yield self.state._elements[id]! }
@@ -76,23 +75,39 @@ public struct NavigationState<
       self.state._ids.remove(id)
       return self.state._elements.removeValue(forKey: id)!
     }
+
+    public mutating func pop(from id: ElementID) {
+      let index = self.state._ids.firstIndex(of: id)! + 1
+      for id in self.state._ids[index...] {
+        self.state._elements[id] = nil
+      }
+      self.state._ids.removeSubrange(index...)
+    }
+
+    public mutating func pop(to id: ElementID) {
+      let index = self.state._ids.firstIndex(of: id)!
+      for id in self.state._ids[index...] {
+        self.state._elements[id] = nil
+      }
+      self.state._ids.removeSubrange(index...)
+    }
   }
 }
 
-extension NavigationState: ExpressibleByArrayLiteral {
+extension StackState: ExpressibleByArrayLiteral {
   public init(arrayLiteral elements: State...) {
     self.init(elements)
   }
 }
 
-extension NavigationState: Equatable where State: Equatable {
+extension StackState: Equatable where State: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs._ids.lazy.map { lhs._elements[$0]! }
       == rhs.wrappedValue._ids.lazy.map { rhs._elements[$0]! }
   }
 }
 
-extension NavigationState: Hashable where State: Hashable {
+extension StackState: Hashable where State: Hashable {
   public func hash(into hasher: inout Hasher) {
     hasher.combine(self.count)
     for id in self._ids {
@@ -101,57 +116,65 @@ extension NavigationState: Hashable where State: Hashable {
   }
 }
 
-extension NavigationState: Decodable where State: Decodable {
+extension StackState: Decodable where State: Decodable {
   public init(from decoder: Decoder) throws {
     try self.init([State](from: decoder))
   }
 }
 
-extension NavigationState: Encodable where State: Encodable {
+extension StackState: Encodable where State: Encodable {
   public func encode(to encoder: Encoder) throws {
     try [State](self).encode(to: encoder)
   }
 }
 
-extension NavigationState: CustomReflectable {
+extension StackState: CustomReflectable {
   public var customMirror: Mirror {
     Mirror(reflecting: [State](self))
   }
 }
 
-public enum NavigationAction<Action> {
-  case dismiss(id: ElementID)
-  case element(id: ElementID, Action)
+public enum StackAction<Action> {
   // TODO: Possible to present arbitrary state in a lightweight way?
+  case element(id: ElementID, Action)
+  case pathChanged(PathChange)
+  case popFrom(id: ElementID)
+  case popTo(id: ElementID)
+  case popToRoot // TODO: `removeAll`?
   case present(Any) // present<State>(State) ~=
-  case pathChanged(ids: [ElementID])
 }
 
-extension NavigationAction: Equatable where Action: Equatable {
+public struct PathChange {
+  let ids: [ElementID]
+}
+
+extension StackAction: Equatable where Action: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
+    // TODO: Can't automate with `.present(Any)`. Fix.
     true
   }
 }
 
-extension NavigationAction: Hashable where Action: Hashable {
+extension StackAction: Hashable where Action: Hashable {
   public func hash(into hasher: inout Hasher) {
+    // TODO: Can't automate with `.present(Any)`. Fix.
   }
 }
 
 extension ReducerProtocol {
   public func forEach<DestinationState, DestinationAction, Destination: ReducerProtocol>(
-    _ toNavigationState: WritableKeyPath<State, NavigationState<DestinationState>.Path>,
-    action toNavigationAction: CasePath<Action, NavigationAction<DestinationAction>>,
+    _ toStackState: WritableKeyPath<State, StackState<DestinationState>.Path>,
+    action toStackAction: CasePath<Action, StackAction<DestinationAction>>,
     @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _NavigationReducer<Self, Destination>
+  ) -> _StackReducer<Self, Destination>
   where Destination.State == DestinationState, Destination.Action == DestinationAction {
-    _NavigationReducer(
+    _StackReducer(
       base: self,
-      toNavigationState: toNavigationState,
-      toNavigationAction: toNavigationAction,
+      toStackState: toStackState,
+      toStackAction: toStackAction,
       destination: destination(),
       file: file,
       fileID: fileID,
@@ -160,12 +183,12 @@ extension ReducerProtocol {
   }
 }
 
-public struct _NavigationReducer<
+public struct _StackReducer<
   Base: ReducerProtocol, Destination: ReducerProtocol
 >: ReducerProtocol {
   let base: Base
-  let toNavigationState: WritableKeyPath<Base.State, NavigationState<Destination.State>.Path>
-  let toNavigationAction: CasePath<Base.Action, NavigationAction<Destination.Action>>
+  let toStackState: WritableKeyPath<Base.State, StackState<Destination.State>.Path>
+  let toStackAction: CasePath<Base.Action, StackAction<Destination.Action>>
   let destination: Destination
   let file: StaticString
   let fileID: StaticString
@@ -176,53 +199,62 @@ public struct _NavigationReducer<
   public func reduce(into state: inout Base.State, action: Base.Action) -> EffectTask<Base.Action> {
     // TODO: is there anything to do with inert state in here?
 
-    let idsBefore = state[keyPath: self.toNavigationState].state._ids
+    let idsBefore = state[keyPath: self.toStackState].state._ids
     let destinationEffects: EffectTask<Base.Action>
     let baseEffects: EffectTask<Base.Action>
 
-    if let navigationAction = self.toNavigationAction.extract(from: action) {
-      switch navigationAction {
-      case let .dismiss(id):
-        destinationEffects = .none
-        baseEffects = self.base.reduce(into: &state, action: action)
-        state[keyPath: self.toNavigationState].remove(id: id)
+    switch self.toStackAction.extract(from: action) {
+    case let .element(elementID, destinationAction):
+      let id = self.navigationID(for: elementID)
+      destinationEffects = self.destination
+        .dependency(\.dismiss, DismissEffect { Task.cancel(id: DismissID(elementID: elementID)) })
+        .dependency(\.navigationID, id)
+        .reduce(
+          into: &state[keyPath: self.toStackState].state._elements[elementID]!,
+          action: destinationAction
+        )
+        .map { toStackAction.embed(.element(id: elementID, $0)) }
+        .cancellable(id: id)
+      baseEffects = self.base.reduce(into: &state, action: action)
 
-      case let .element(elementID, destinationAction):
-        let id = self.navigationID(for: elementID)
-        destinationEffects = self.destination
-          .dependency(\.dismiss, DismissEffect { Task.cancel(id: DismissID(elementID: elementID)) })
-          .dependency(\.navigationID, id)
-          .reduce(
-            into: &state[keyPath: self.toNavigationState].state._elements[elementID]!,
-            action: destinationAction
-          )
-          .map { toNavigationAction.embed(.element(id: elementID, $0)) }
-          .cancellable(id: id)
-        baseEffects = self.base.reduce(into: &state, action: action)
+    case let .pathChanged(pathChange):
+      state[keyPath: self.toStackState].state._ids.elements = pathChange.ids
+      destinationEffects = .none
+      baseEffects = self.base.reduce(into: &state, action: action)
 
-      case let .present(presentedState):
-        // TODO: can we
-        guard let presentedState = presentedState as? Destination.State
-        else {
-          // TODO: runtime warn
-          return .none
-        }
-        let id = ElementID()
-        state[keyPath: self.toNavigationState].state._ids.insert(id, at: state[keyPath: self.toNavigationState].state.count)
-        state[keyPath: self.toNavigationState].state._elements[id] = presentedState
+    case let .popFrom(id):
+      baseEffects = self.base.reduce(into: &state, action: action)
+      destinationEffects = .none
+      state[keyPath: self.toStackState].pop(from: id)
+
+    case let .popTo(id):
+      baseEffects = self.base.reduce(into: &state, action: action)
+      destinationEffects = .none
+      state[keyPath: self.toStackState].pop(to: id)
+
+    case .popToRoot:
+      baseEffects = self.base.reduce(into: &state, action: action)
+      destinationEffects = .none
+      state[keyPath: self.toStackState].state.removeAll()
+
+    case let .present(presentedState):
+      // TODO: ???
+      guard let presentedState = presentedState as? Destination.State
+      else {
+        // TODO: Runtime warn
         return .none
-
-      case let .pathChanged(ids):
-        state[keyPath: self.toNavigationState].state._ids.elements = ids
-        destinationEffects = .none
-        baseEffects = self.base.reduce(into: &state, action: action)
       }
-    } else {
+      let id = ElementID()
+      state[keyPath: self.toStackState].state._ids.append(id)
+      state[keyPath: self.toStackState].state._elements[id] = presentedState
+      return .none
+
+    case .none:
       destinationEffects = .none
       baseEffects = self.base.reduce(into: &state, action: action)
     }
 
-    let idsAfter = state[keyPath: self.toNavigationState].state._ids
+    let idsAfter = state[keyPath: self.toStackState].state._ids
 
     let cancelEffects = EffectTask<Base.Action>.merge(
       idsBefore.subtracting(idsAfter).map { .cancel(id: self.navigationID(for: $0)) }
@@ -241,7 +273,7 @@ public struct _NavigationReducer<
               }
             }
           } catch is CancellationError {
-            await send(self.toNavigationAction.embed(.dismiss(id: elementID)))
+            await send(self.toStackAction.embed(.popFrom(id: elementID)))
           }
         }
       }
@@ -257,7 +289,7 @@ public struct _NavigationReducer<
 
   private func navigationID(for elementID: ElementID) -> NavigationID {
     self.navigationID
-      .appending(path: self.toNavigationState)
+      .appending(path: self.toStackState)
       .appending(component: elementID)
   }
 }

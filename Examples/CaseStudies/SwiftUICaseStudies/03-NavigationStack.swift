@@ -7,14 +7,14 @@ private let readMe = """
 
 struct NavigationDemo: ReducerProtocol {
   struct State: Equatable {
-    @NavigationState<Destinations.State> var navigation = []
+    @StackState<Destinations.State> var navigation = []
   }
 
   enum Action: Equatable {
     case cancelTimersButtonTapped
     case goBackToScreen(Int)
     case goToABCButtonTapped
-    case navigation(NavigationAction<Destinations.Action>)
+    case navigation(StackAction<Destinations.Action>)
     // .path(.setPath(...))
     //
     case shuffleButtonTapped
@@ -210,7 +210,7 @@ struct FloatingMenuView: View {
             viewStore.send(.shuffleButtonTapped)
           }
           Button("Pop to root") {
-            viewStore.send(.navigation(.setPath(ids: [])), animation: .default)
+            viewStore.send(.navigation(.popToRoot), animation: .default)
           }
           Button("Cancel timers") {
             viewStore.send(.cancelTimersButtonTapped)
@@ -224,7 +224,7 @@ struct FloatingMenuView: View {
               .disabled(offset == 0)
             }
             Button("Root") {
-              viewStore.send(.navigation(.setPath(ids: [])), animation: .default)
+              viewStore.send(.navigation(.popToRoot), animation: .default)
             }
           } label: {
             Text("Current stack")

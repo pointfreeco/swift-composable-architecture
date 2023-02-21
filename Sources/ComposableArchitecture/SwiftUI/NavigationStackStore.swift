@@ -4,10 +4,10 @@ import SwiftUI
 public struct NavigationStackStore<State, Action, Content: View, Destination: View>: View {
   let content: Content
   let destination: (ElementID) -> IfLetStore<State, Action, Destination?>
-  let store: Store<NavigationState<State>.Path, NavigationAction<Action>>
+  let store: Store<StackState<State>.Path, StackAction<Action>>
 
   public init(
-    _ store: Store<NavigationState<State>.Path, NavigationAction<Action>>,
+    _ store: Store<StackState<State>.Path, StackAction<Action>>,
     @ViewBuilder content: () -> Content,
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination
   ) {
@@ -28,7 +28,7 @@ public struct NavigationStackStore<State, Action, Content: View, Destination: Vi
     WithViewStore(
       self.store.scope(
         state: \.state._ids.elements,
-        action: { .pathChanged(ids: $0) }
+        action: { .pathChanged(PathChange(ids: $0)) }
       )
     ) { viewStore in
       NavigationStack(path: viewStore.binding(get: { $0 }, send: { $0 })) {

@@ -76,19 +76,18 @@ extension PresentationState: CustomReflectable {
   }
 }
 
-// TODO: any other names? EphemeralState?
-public protocol _InertPresentationState {}
+public protocol _EphemeralState {}
 
-extension AlertState: _InertPresentationState {}
+extension AlertState: _EphemeralState {}
 @available(iOS 13, macOS 12, tvOS 13, watchOS 6, *)
-extension ConfirmationDialogState: _InertPresentationState {}
+extension ConfirmationDialogState: _EphemeralState {}
 
-private func isInert<State>(_ state: State) -> Bool {
-  if State.self is _InertPresentationState.Type {
+private func isEphemeral<State>(_ state: State) -> Bool {
+  if State.self is _EphemeralState.Type {
     return true
   } else if let metadata = EnumMetadata(type(of: state)) {
     return metadata.associatedValueType(forTag: metadata.tag(of: state))
-      is _InertPresentationState.Type
+      is _EphemeralState.Type
   } else {
     return false
   }
@@ -126,7 +125,7 @@ extension ReducerProtocol {
     )
   }
 
-  public func ifLet<DestinationState: _InertPresentationState, DestinationAction>(
+  public func ifLet<DestinationState: _EphemeralState, DestinationAction>(
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
     action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
     file: StaticString = #file,
@@ -189,7 +188,7 @@ public struct _PresentationReducer<
         .map { self.toPresentationAction.embed(.presented($0)) }
         .cancellable(id: id)
       baseEffects = self.base.reduce(into: &state, action: action)
-      if isInert(destinationState) {
+      if isEphemeral(destinationState) {
         state[keyPath: self.toPresentationState].wrappedValue = nil
       }
 
@@ -232,7 +231,7 @@ public struct _PresentationReducer<
     let dismissEffects: EffectTask<Base.Action>
     if presentationIdentityChanged,
       let presentationState = initialPresentationState.wrappedValue,
-      !isInert(presentationState)
+      !isEphemeral(presentationState)
     {
       dismissEffects = .cancel(id: self.id(for: presentationState))
     } else {
@@ -242,7 +241,7 @@ public struct _PresentationReducer<
     let presentEffects: EffectTask<Base.Action>
     if presentationIdentityChanged || !state[keyPath: self.toPresentationState].isPresented,
       let presentationState = state[keyPath: self.toPresentationState].wrappedValue,
-      !isInert(presentationState)
+      !isEphemeral(presentationState)
     {
       let id = self.id(for: presentationState)
       state[keyPath: self.toPresentationState].isPresented = true
