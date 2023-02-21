@@ -1,3 +1,4 @@
+import TestCases
 import XCTest
 
 @MainActor
@@ -10,7 +11,7 @@ final class ForEachBindingTests: XCTestCase {
     let app = XCUIApplication()
     app.launch()
 
-    app.collectionViews.buttons["ForEachBindingTestCase"].tap()
+    app.collectionViews.buttons[TestCase.forEachBinding.rawValue].tap()
     app.buttons["Remove last"].tap()
     XCTAssertFalse(app.textFields["C"].exists)
     app.buttons["Remove last"].tap()

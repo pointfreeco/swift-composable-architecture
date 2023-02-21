@@ -1,8 +1,9 @@
+import Integration
 import XCTest
+import TestCases
 
 @MainActor
 final class EscapedWithViewStoreTests: XCTestCase {
-
   override func setUpWithError() throws {
     self.continueAfterFailure = false
   }
@@ -11,7 +12,7 @@ final class EscapedWithViewStoreTests: XCTestCase {
     let app = XCUIApplication()
     app.launch()
 
-    app.collectionViews.buttons["EscapedWithViewStoreTestCase"].tap()
+    app.collectionViews.buttons[TestCase.escapedWithViewStore.rawValue].tap()
 
     XCTAssertEqual(app.staticTexts["Label"].value as? String, "10")
     XCTAssertEqual(app.staticTexts["EscapedLabel"].value as? String, "10")

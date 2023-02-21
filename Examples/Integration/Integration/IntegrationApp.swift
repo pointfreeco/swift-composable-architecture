@@ -1,5 +1,6 @@
 import ComposableArchitecture
 import SwiftUI
+import TestCases
 
 @main
 struct IntegrationApp: App {
@@ -9,42 +10,36 @@ struct IntegrationApp: App {
     WindowGroup {
       NavigationStack {
         List {
-          NavigationLink("EscapedWithViewStoreTestCase") {
-            EscapedWithViewStoreTestCaseView(
-              store: Store(
-                initialState: 10,
-                reducer: EscapedWithViewStoreTestCase()
-              )
-            )
-          }
-          NavigationLink("ForEachBindingTestCase") {
-            ForEachBindingTestCaseView(
-              store: Store(
-                initialState: ForEachBindingTestCase.State(),
-                reducer: ForEachBindingTestCase()
-              )
-            )
-          }
+          ForEach(TestCase.allCases) { test in
+            switch test {
+            case .escapedWithViewStore:
+              NavigationLink(test.rawValue) {
+                EscapedWithViewStoreTestCaseView()
+              }
 
-          Button("NavigationStackBindingTestCase") {
-            self.isNavigationStackBindingTestCasePresented = true
-          }
-          .sheet(isPresented: self.$isNavigationStackBindingTestCasePresented) {
-            NavigationStackBindingTestCaseView(
-              store: Store(
-                initialState: NavigationStackBindingTestCase.State(),
-                reducer: NavigationStackBindingTestCase()
-              )
-            )
+            case .forEachBinding:
+              NavigationLink(test.rawValue) {
+                ForEachBindingTestCaseView()
+              }
+
+            case .navigationStackBinding:
+              Button(test.rawValue) {
+                self.isNavigationStackBindingTestCasePresented = true
+              }
+              .foregroundColor(.black)
+              .sheet(isPresented: self.$isNavigationStackBindingTestCasePresented) {
+                NavigationStackBindingTestCaseView()
+              }
+
+            case .presentation:
+              NavigationLink(test.rawValue) {
+                PresentationTestCaseView()
+              }
+            }
           }
 
           NavigationLink("Binding Animations Test Bench") {
-            BindingsAnimationsTestBench(
-              store: Store(
-                initialState: false,
-                reducer: BindingsAnimations()
-              )
-            )
+            BindingsAnimationsTestBench()
           }
         }
       }

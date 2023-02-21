@@ -22,7 +22,7 @@ import XCTest
             state.count += 1
             return .none
           }
-        }
+        } 
       }
 
       struct Parent: ReducerProtocol {
