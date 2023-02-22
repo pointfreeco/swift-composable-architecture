@@ -11,7 +11,7 @@ public struct StackState<
   State
 >: BidirectionalCollection, MutableCollection, RandomAccessCollection, RangeReplaceableCollection {
   var _ids: OrderedSet<ElementID>
-  var _elements: [ElementID: State] // TODO: [ElementID: (state: State, isPresented: Bool)]
+  var _elements: [ElementID: State]  // TODO: [ElementID: (state: State, isPresented: Bool)]
 
   public var startIndex: Int { self._ids.startIndex }
 
@@ -186,12 +186,12 @@ public struct StackAction<Action> {
     case willRemove(id: ElementID)
   }
 
-  enum InternalAction {
+  enum InternalAction: Hashable {
     case delete(IndexSet)
     case pathChanged(ids: [ElementID])
     case popFrom(id: ElementID)
     case popTo(id: ElementID)
-    case popToRoot // TODO: `removeAll`?
+    case popToRoot  // TODO: `removeAll`?
   }
 
   enum AccessControlAction {
@@ -200,18 +200,90 @@ public struct StackAction<Action> {
   }
 }
 
-extension StackAction: Equatable where Action: Equatable {
+extension StackAction.PublicAction: Equatable where Action: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
-    // TODO: Can't automate with `.present(Any)`. Fix.
-    true
+    switch (lhs, rhs) {
+    case let (.didAdd(lhs), .didAdd(rhs)):
+      return lhs == rhs
+    case let (.element(lhsID, lhsAction), .element(rhsID, rhsAction)):
+      return lhsID == rhsID && lhsAction == rhsAction
+    case let (.present(lhs), .present(rhs)):
+      return _isEqual(lhs, rhs)
+        ?? {
+          #if DEBUG
+            let lhsType = type(of: lhs)
+            if TaskResultDebugging.emitRuntimeWarnings, lhsType == type(of: rhs) {
+              let lhsTypeName = typeName(lhsType)
+              runtimeWarn(
+                """
+                "\(lhsTypeName)" is not equatable. …
+
+                To test two values of this type, it must conform to the "Equatable" protocol. For \
+                example:
+
+                    extension \(lhsTypeName): Equatable {}
+
+                See the documentation of "NavigationAction" for more information.
+                """
+              )
+            }
+          #endif
+          return false
+        }()
+
+    case let (.willRemove(lhs), .willRemove(rhs)):
+      return lhs == rhs
+
+    case (.didAdd, _), (.element, _), (.present, _), (.willRemove, _):
+      return false
+    }
   }
 }
 
-extension StackAction: Hashable where Action: Hashable {
+extension StackAction.PublicAction: Hashable where Action: Hashable {
   public func hash(into hasher: inout Hasher) {
-    // TODO: Can't automate with `.present(Any)`. Fix.
+    switch self {
+    case let .didAdd(id: id):
+      hasher.combine(0)
+      hasher.combine(id)
+    case let .element(id: id, action):
+      hasher.combine(1)
+      hasher.combine(id)
+      hasher.combine(action)
+    case let .present(state):
+      guard let state = (state as Any) as? AnyHashable
+      else {
+        #if DEBUG
+          if TaskResultDebugging.emitRuntimeWarnings {
+            let stateType = typeName(type(of: state))
+            runtimeWarn(
+              """
+              "\(stateType)" is not hashable. …
+
+              To hash a value of this type, it must conform to the "Hashable" protocol. For example:
+
+                  extension \(stateType): Hashable {}
+
+              See the documentation of "NavigationAction" for more information.
+              """
+            )
+          }
+        #endif
+        return
+      }
+      hasher.combine(3)
+      hasher.combine(state)
+    case let .willRemove(id: id):
+      hasher.combine(2)
+      hasher.combine(id)
+    }
   }
 }
+
+extension StackAction.AccessControlAction: Equatable where Action: Equatable {}
+extension StackAction.AccessControlAction: Hashable where Action: Hashable {}
+extension StackAction: Equatable where Action: Equatable {}
+extension StackAction: Hashable where Action: Hashable {}
 
 extension ReducerProtocol {
   public func forEach<DestinationState, DestinationAction, Destination: ReducerProtocol>(
