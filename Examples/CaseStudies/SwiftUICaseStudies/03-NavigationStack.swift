@@ -60,20 +60,23 @@ struct NavigationDemo: ReducerProtocol {
         state.navigation.append(.screenC(.init()))
         return .none
 
-      case .navigation(.element(id: _, .screenB(.screenAButtonTapped))):
-        state.navigation.append(.screenA(.init()))
-        return .none
+      case let .navigation(action):
+        switch action.type {
+        case .element(id: _, action: .screenB(.screenAButtonTapped)):
+          state.navigation.append(.screenA(.init()))
+          return .none
 
-      case .navigation(.element(id: _, .screenB(.screenBButtonTapped))):
-        state.navigation.append(.screenB(.init()))
-        return .none
+        case .element(id: _, action: .screenB(.screenBButtonTapped)):
+          state.navigation.append(.screenB(.init()))
+          return .none
 
-      case .navigation(.element(id: _, .screenB(.screenCButtonTapped))):
-        state.navigation.append(.screenC(.init()))
-        return .none
+        case .element(id: _, action: .screenB(.screenCButtonTapped)):
+          state.navigation.append(.screenC(.init()))
+          return .none
 
-      case .navigation:
-        return .none
+        default:
+          return .none
+        }
 
       case .shuffleButtonTapped:
         state.navigation.shuffle()
