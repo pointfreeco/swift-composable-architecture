@@ -372,4 +372,20 @@ final class InstrumentationTests: XCTestCase {
 
     XCTAssertIdentical(viewStoreCreated, parentViewStore)
   }
+
+  func test_tracks_store_creation() {
+    var storeCreated: AnyObject?
+
+    let inst = ComposableArchitecture.Instrumentation(callback: nil, storeCreated: { store, _, _ in
+        storeCreated = store
+    })
+
+    let parentStore = Store<Int, Void>(
+        initialState: 0,
+        reducer: EmptyReducer(),
+        instrumentation: inst
+    )
+
+    XCTAssertIdentical(storeCreated, parentStore)
+  }
 }

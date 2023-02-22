@@ -77,15 +77,18 @@ public class Instrumentation {
   public typealias Callback = (_ info: CallbackInfo<Any, Any>, _ timing: CallbackTiming, _ kind: CallbackKind) -> Void
   private(set) var callback: Callback?
 
-  /// Used to track when/where an instance of a `ViewStore` was create
-  public typealias ViewStoreCreatedCallback = (_ instance: AnyObject, _ file: StaticString, _ line: UInt) -> Void
-  private(set) var viewStoreCreated: ViewStoreCreatedCallback?
+  /// Used to track when/where an instance was created
+  public typealias ObjectCreationCallback = (_ instance: AnyObject, _ file: StaticString, _ line: UInt) -> Void
+
+  private(set) var viewStoreCreated: ObjectCreationCallback?
+  private(set) var storeCreated: ObjectCreationCallback?
 
   public static let noop = Instrumentation()
 
-  public init(callback: Callback? = nil, viewStoreCreated: ViewStoreCreatedCallback? = nil) {
+    public init(callback: Callback? = nil, viewStoreCreated: ObjectCreationCallback? = nil, storeCreated: ObjectCreationCallback? = nil) {
     self.callback = callback
     self.viewStoreCreated = viewStoreCreated
+    self.storeCreated = storeCreated
   }
 
 
@@ -95,9 +98,11 @@ public class Instrumentation {
   ///   - callback: The callback invoked during the "life cycle" of the various stores within the app as an action is
   ///   acted upon.
   ///   - viewStoreCreated: Used to track when/where an instance of a ``ViewStore`` was created
-  public func update(callback: Callback? = nil, viewStoreCreated: ViewStoreCreatedCallback? = nil) {
+  ///   - storeCreated: Used to track when/where an instance of a ``ViewStore`` was created
+  public func update(callback: Callback? = nil, viewStoreCreated: ObjectCreationCallback? = nil, storeCreated: ObjectCreationCallback? = nil) {
     self.callback = callback
     self.viewStoreCreated = viewStoreCreated
+    self.storeCreated = storeCreated
   }
 }
 
