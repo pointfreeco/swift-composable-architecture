@@ -54,7 +54,7 @@ public struct _ForEachStore<State, Action, Content: View>: DynamicViewContent {
   }
 
   public var body: some View {
-    WithViewStore(self.store, observe: \.ids) { viewStore in
+    WithViewStore(self.store, observe: \.ids) { viewStore in // TODO: memcmp trick?
       ForEach(viewStore.state, id: \.self) { id in
         var element = self.store.state.value[id: id]
         self.content(

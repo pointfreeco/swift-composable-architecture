@@ -29,10 +29,16 @@ struct VoiceMemo: ReducerProtocol {
 
   enum Action: Equatable {
     case audioPlayerClient(TaskResult<Bool>)
+    case delegate(Delegate)
     case delete
     case playButtonTapped
     case timerUpdated(TimeInterval)
     case titleTextFieldChanged(String)
+
+    enum Delegate {
+      case playbackStarted
+      case playbackFailed
+    }
   }
 
   @Dependency(\.audioPlayer) var audioPlayer
@@ -41,9 +47,16 @@ struct VoiceMemo: ReducerProtocol {
 
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
+    case .audioPlayerClient(.failure):
+      state.mode = .notPlaying
+      return .send(.delegate(.playbackFailed))
+
     case .audioPlayerClient:
       state.mode = .notPlaying
       return .cancel(id: PlayID.self)
+
+    case .delegate:
+      return .none
 
     case .delete:
       return .cancel(id: PlayID.self)
@@ -54,6 +67,8 @@ struct VoiceMemo: ReducerProtocol {
         state.mode = .playing(progress: 0)
 
         return .run { [url = state.url] send in
+          await send(.delegate(.playbackStarted))
+          
           async let playAudio: Void = send(
             .audioPlayerClient(TaskResult { try await self.audioPlayer.play(url) })
           )

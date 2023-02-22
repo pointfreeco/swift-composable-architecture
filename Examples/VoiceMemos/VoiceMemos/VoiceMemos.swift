@@ -92,17 +92,11 @@ struct VoiceMemos: ReducerProtocol {
 
       case let .voiceMemos(action):
         switch action.type {
-        case .element(id: _, action: .audioPlayerClient(.failure)):
-          state.alert = AlertState { TextState("Voice memo playback failed.") }
+        case let .element(id: elementID, action: .delegate(action)):
+          self.handleDelegate(id: elementID, state: &state, action: action)
           return .none
 
-        case let .element(id: tappedId, action: .playButtonTapped):
-          for id in state.$voiceMemos.ids where id != tappedId {
-            state.$voiceMemos[id: id].mode = .notPlaying
-          }
-          return .none
-
-        default: // TODO: More fine-grained?
+        default:
           return .none
         }
       }
@@ -113,6 +107,22 @@ struct VoiceMemos: ReducerProtocol {
     }
     .forEach(\.$voiceMemos, action: /Action.voiceMemos) {
       VoiceMemo()
+    }
+  }
+
+  private func handleDelegate(
+    id elementID: ElementID,
+    state: inout State,
+    action: VoiceMemo.Action.Delegate
+  ) {
+    switch action {
+    case .playbackStarted:
+      for id in state.$voiceMemos.ids where id != elementID {
+        state.$voiceMemos[id: id].mode = .notPlaying
+      }
+
+    case .playbackFailed:
+      state.alert = AlertState { TextState("Voice memo playback failed.") }
     }
   }
 
