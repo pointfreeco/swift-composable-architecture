@@ -407,7 +407,7 @@ public struct _StackReducer<
       baseEffects = self.base.reduce(into: &state, action: action)
 
     case let .public(.present(presentedState)):
-      // TODO: ???
+      // TODO: possible to check if presentedState is embeddable inside
       guard let presentedState = presentedState as? Destination.State
       else {
         // TODO: Runtime warn
