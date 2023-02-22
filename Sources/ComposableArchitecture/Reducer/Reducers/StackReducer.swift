@@ -257,9 +257,69 @@ public struct _StackReducer<
 
     switch self.toStackAction.extract(from: action)?.action {
     case let .internal(.delete(indexSet)):
-      baseEffects = .none
+      baseEffects = .merge(
+        indexSet.map { state[keyPath: self.toStackState].state._ids[$0] }.map { id in
+          self.base.reduce(
+            into: &state,
+            action: self.toStackAction.embed(StackAction(.public(.willRemove(id: id))))
+          )
+        }
+      )
       destinationEffects = .none
       state[keyPath: self.toStackState].state.remove(atOffsets: indexSet)
+
+    case let .internal(.pathChanged(ids)):
+      baseEffects = .merge(
+        state[keyPath: self.toStackState].state._ids.subtracting(ids).map { id in
+          self.base.reduce(
+            into: &state,
+            action: self.toStackAction.embed(StackAction(.public(.willRemove(id: id))))
+          )
+        }
+      )
+      destinationEffects = .none
+      state[keyPath: self.toStackState].state._ids.elements = ids
+
+    case let .internal(.popFrom(id)):
+      let index = state[keyPath: self.toStackState].state._ids.firstIndex(of: id)!
+      baseEffects = .merge(
+        state[keyPath: self.toStackState].state._ids[index...].map { id in
+          self.base.reduce(
+            into: &state,
+            action: self.toStackAction.embed(StackAction(.public(.willRemove(id: id))))
+          )
+        }
+      )
+      destinationEffects = .none
+      state[keyPath: self.toStackState].pop(from: id)
+
+    case let .internal(.popTo(id)):
+      let index = state[keyPath: self.toStackState].state._ids.firstIndex(of: id)! + 1
+      baseEffects = .merge(
+        state[keyPath: self.toStackState].state._ids[index...].map { id in
+          self.base.reduce(
+            into: &state,
+            action: self.toStackAction.embed(StackAction(.public(.willRemove(id: id))))
+          )
+        }
+      )
+      destinationEffects = .none
+      state[keyPath: self.toStackState].pop(to: id)
+
+    case .internal(.popToRoot):
+      baseEffects = .merge(
+        state[keyPath: self.toStackState].state._ids.map { id in
+          self.base.reduce(
+            into: &state,
+            action: self.toStackAction.embed(StackAction(.public(.willRemove(id: id))))
+          )
+        }
+      )
+      destinationEffects = .none
+      state[keyPath: self.toStackState].state.removeAll()
+
+    case .public(.didAdd):
+      return .none
 
     case let .public(.element(elementID, destinationAction)):
       let id = self.navigationID(for: elementID)
@@ -274,26 +334,6 @@ public struct _StackReducer<
         .cancellable(id: id)
       baseEffects = self.base.reduce(into: &state, action: action)
 
-    case let .internal(.pathChanged(ids)):
-      state[keyPath: self.toStackState].state._ids.elements = ids
-      destinationEffects = .none
-      baseEffects = .none
-
-    case let .internal(.popFrom(id)):
-      baseEffects = .none
-      destinationEffects = .none
-      state[keyPath: self.toStackState].pop(from: id)
-
-    case let .internal(.popTo(id)):
-      baseEffects = .none
-      destinationEffects = .none
-      state[keyPath: self.toStackState].pop(to: id)
-
-    case .internal(.popToRoot):
-      baseEffects = .none
-      destinationEffects = .none
-      state[keyPath: self.toStackState].state.removeAll()
-
     case let .public(.present(presentedState)):
       // TODO: ???
       guard let presentedState = presentedState as? Destination.State
@@ -306,28 +346,18 @@ public struct _StackReducer<
       state[keyPath: self.toStackState].state._elements[id] = presentedState
       return .none
 
+    case .public(.willRemove):
+      return .none
+
     case .none:
       destinationEffects = .none
       baseEffects = self.base.reduce(into: &state, action: action)
-    case .some(.public(.didAdd(id: let id))):
-      return .none
-    case .some(.public(.willRemove(id: let id))):
-      return .none
     }
 
     let idsAfter = state[keyPath: self.toStackState].state._ids
 
     let cancelEffects = EffectTask<Base.Action>.merge(
-      idsBefore.subtracting(idsAfter).map {
-        .merge(
-          // TODO: Call this with state restored
-          self.base.reduce(
-            into: &state,
-            action: self.toStackAction.embed(StackAction(.public(.willRemove(id: $0))))
-          ),
-          .cancel(id: self.navigationID(for: $0))
-        )
-      }
+      idsBefore.subtracting(idsAfter).map { .cancel(id: self.navigationID(for: $0)) }
     )
     let presentEffects = EffectTask<Base.Action>.merge(
       idsAfter.subtracting(idsBefore).map { elementID in
