@@ -489,7 +489,8 @@ public struct _StackReducer<
             } catch is CancellationError {
               await send(self.toStackAction.embed(StackAction(.internal(.popFrom(id: elementID)))))
             }
-          },
+          }
+            .cancellable(id: id),
           self.base.reduce(
             into: &state,
             action: self.toStackAction.embed(StackAction(.public(.didAdd(id: elementID))))

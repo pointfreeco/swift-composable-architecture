@@ -48,7 +48,10 @@ struct VoiceMemo: ReducerProtocol {
     switch action {
     case .audioPlayerClient(.failure):
       state.mode = .notPlaying
-      return .send(.delegate(.playbackFailed))
+      return .merge(
+        .cancel(id: PlayID.self),
+        .send(.delegate(.playbackFailed))
+      )
 
     case .audioPlayerClient:
       state.mode = .notPlaying
