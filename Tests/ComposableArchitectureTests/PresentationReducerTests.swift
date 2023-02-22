@@ -4,6 +4,48 @@ import XCTest
 #if swift(>=5.7)
   @MainActor
   final class PresentationReducerTests: XCTestCase {
+    func testPresentation_NonExhaustiveInPresentationEffect() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable {}
+        enum Action: Equatable {}
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        }
+      }
+
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          @PresentationState var child: Child.State?
+        }
+        enum Action: Equatable {
+          case child(PresentationAction<Child.Action>)
+          case presentChild
+        }
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .child:
+              return .none
+            case .presentChild:
+              state.child = Child.State()
+              return .none
+            }
+          }
+          .ifLet(\.$child, action: /Action.child) {
+            Child()
+          }
+        }
+      }
+
+      let store = TestStore(
+        initialState: Parent.State(),
+        reducer: Parent()
+      )
+      
+      await store.send(.presentChild) {
+        $0.child = Child.State()
+      }
+    }
+
     func testPresentation_parentNilsOutChildWithLongLivingEffect() async {
       struct Child: ReducerProtocol {
         struct State: Equatable {

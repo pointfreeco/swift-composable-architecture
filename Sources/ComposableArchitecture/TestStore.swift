@@ -882,6 +882,8 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   }
 
   deinit {
+    Task.cancel(id: HackID())
+    Thread.sleep(forTimeInterval: 1)
     self.completed()
   }
 
@@ -2311,8 +2313,12 @@ class TestReducer<State, Action>: ReducerProtocol {
               effectDidSubscribe.continuation.yield()
             }
           },
-          receiveCompletion: { [weak self] _ in self?.inFlightEffects.remove(effect) },
-          receiveCancel: { [weak self] in self?.inFlightEffects.remove(effect) }
+          receiveCompletion: { [weak self] _ in
+            self?.inFlightEffects.remove(effect)
+          },
+          receiveCancel: { [weak self] in
+            self?.inFlightEffects.remove(effect)
+          }
         )
         .map { .init(origin: .receive($0), file: action.file, line: action.line) }
         .eraseToEffect()

@@ -259,6 +259,7 @@ public struct _PresentationReducer<
         }
       }
       .cancellable(id: id)
+      .cancellable(id: HackID())
     } else {
       presentEffects = .none
     }
@@ -279,3 +280,4 @@ public struct _PresentationReducer<
 }
 
 private struct DismissID: Hashable {}
+struct HackID: Hashable {}

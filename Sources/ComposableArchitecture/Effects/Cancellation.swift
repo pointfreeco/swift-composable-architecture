@@ -227,7 +227,9 @@ extension EffectPublisher {
         }
       }
       let task = Task { try await operation() }
-      let cancellable = AnyCancellable { task.cancel() }
+      let cancellable = AnyCancellable {
+        task.cancel()
+      }
       for navigationID in navigationID {
         let id = _CancelToken(id: id, navigationID: navigationID)
         _cancellationCancellables[id, default: []].insert(cancellable)
