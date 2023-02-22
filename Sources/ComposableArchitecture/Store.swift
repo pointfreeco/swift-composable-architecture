@@ -148,19 +148,27 @@ public final class Store<State, Action> {
     initialState: @autoclosure () -> R.State,
     reducer: R,
     instrumentation: Instrumentation = .noop,
-    prepareDependencies: ((inout DependencyValues) -> Void)? = nil
+    prepareDependencies: ((inout DependencyValues) -> Void)? = nil,
+    file: StaticString = #file,
+    line: UInt = #line
   ) where R.State == State, R.Action == Action {
     if let prepareDependencies = prepareDependencies {
       self.init(
         initialState: withDependencies(prepareDependencies) { initialState() },
         reducer: reducer.transformDependency(\.self, transform: prepareDependencies),
-        mainThreadChecksEnabled: true
+        mainThreadChecksEnabled: true,
+        instrumentation: instrumentation,
+        file: file,
+        line: line
       )
     } else {
       self.init(
         initialState: initialState(),
         reducer: reducer,
-        mainThreadChecksEnabled: true
+        mainThreadChecksEnabled: true,
+        instrumentation: instrumentation,
+        file: file,
+        line: line
       )
     }
   }
@@ -580,7 +588,9 @@ public final class Store<State, Action> {
     initialState: R.State,
     reducer: R,
     mainThreadChecksEnabled: Bool,
-    instrumentation: Instrumentation = .noop
+    instrumentation: Instrumentation = .noop,
+    file: StaticString = #file,
+    line: UInt = #line
   ) where R.State == State, R.Action == Action {
     self.state = CurrentValueSubject(initialState)
     #if swift(>=5.7)
@@ -593,6 +603,7 @@ public final class Store<State, Action> {
     #endif
     self.instrumentation = instrumentation
     self.threadCheck(status: .`init`)
+    self.instrumentation.storeCreated?(self as AnyObject, file, line)
   }
 }
 
@@ -716,7 +727,9 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
       let childStore = Store<RescopedState, RescopedAction>(
         initialState: toRescopedState(store.state.value),
         reducer: reducer,
-        instrumentation: instrumentation
+        instrumentation: instrumentation,
+        file: file,
+        line: line
       )
       childStore.parentCancellable = store.state
         .dropFirst()
