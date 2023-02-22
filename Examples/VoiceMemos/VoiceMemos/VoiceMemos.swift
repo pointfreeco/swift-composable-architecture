@@ -91,14 +91,8 @@ struct VoiceMemos: ReducerProtocol {
         }
 
       case let .voiceMemos(action):
-        switch action.type {
-        case let .element(id: elementID, action: .delegate(action)):
-          self.handleDelegate(id: elementID, state: &state, action: action)
-          return .none
-
-        default:
-          return .none
-        }
+        self.handleVoiceMemo(state: &state, action: action)
+        return .none
       }
     }
     .ifLet(\.$alert, action: /Action.alert)
@@ -110,19 +104,21 @@ struct VoiceMemos: ReducerProtocol {
     }
   }
 
-  private func handleDelegate(
-    id elementID: ElementID,
-    state: inout State,
-    action: VoiceMemo.Action.Delegate
-  ) {
-    switch action {
-    case .playbackStarted:
-      for id in state.$voiceMemos.ids where id != elementID {
-        state.$voiceMemos[id: id].mode = .notPlaying
+  private func handleVoiceMemo(state: inout State, action: StackAction<VoiceMemo.Action>) {
+    switch action.type {
+    case let .element(id: elementID, action: .delegate(action)):
+      switch action {
+      case .playbackStarted:
+        for id in state.$voiceMemos.ids where id != elementID {
+          state.$voiceMemos[id: id].mode = .notPlaying
+        }
+
+      case .playbackFailed:
+        state.alert = AlertState { TextState("Voice memo playback failed.") }
       }
 
-    case .playbackFailed:
-      state.alert = AlertState { TextState("Voice memo playback failed.") }
+    default:
+      break
     }
   }
 

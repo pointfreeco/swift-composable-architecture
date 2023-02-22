@@ -3,7 +3,7 @@ import SwiftUI
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 public struct NavigationStackStore<State, Action, Content: View, Destination: View>: View {
   let content: Content
-  let destination: (ElementID) -> IfLetStore<State, Action, Destination?>
+  let destination: (AnyHashable) -> IfLetStore<State, Action, Destination?>
   let store: Store<StackState<State>.Path, StackAction<Action>>
 
   public init(
@@ -33,7 +33,7 @@ public struct NavigationStackStore<State, Action, Content: View, Destination: Vi
     ) { viewStore in
       NavigationStack(path: viewStore.binding(get: { $0 }, send: { $0 })) {
         self.content
-          .navigationDestination(for: ElementID.self) { id in
+          .navigationDestination(for: AnyHashable.self) { id in // TODO: is this AnyHashable a problem?
             self.destination(id)
           }
       }

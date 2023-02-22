@@ -1,17 +1,56 @@
 import Foundation
 import OrderedCollections
 
-// TODO: Better name? `DestinationID`? `StackElementID`?
-public struct ElementID: Hashable, Sendable {
-  private let id = UUID()
+public struct StackElementID: DependencyKey, Sendable {
+  public let next: @Sendable () -> AnyHashable
+  public let peek: @Sendable () -> AnyHashable
+
+  public func callAsFunction() -> AnyHashable {
+    self.next()
+  }
+
+  public static var liveValue: Self {
+    let next = LockIsolated(UUID())
+    return Self(
+      next: {
+        defer { next.setValue(UUID()) }
+        return next.value
+      },
+      peek: { next.value }
+    )
+  }
+
+  public static var testValue: Self {
+    let next = LockIsolated(0)
+    return Self(
+      next: {
+        defer { next.withValue { $0 += 1 } }
+        return next.value
+      },
+      peek: { next.value }
+    )
+  }
 }
+extension DependencyValues {
+  public var stackElementID: StackElementID {
+    get { self[StackElementID.self] }
+    set { self[StackElementID.self] = newValue }
+  }
+}
+
+
+// TODO: Better name? `DestinationID`? `StackElementID`?
+//public struct ElementID: Hashable, Sendable {
+//  fileprivate let id = UUID()
+//  fileprivate var index: Int? = nil
+//}
 
 @propertyWrapper
 public struct StackState<
   State
 >: BidirectionalCollection, MutableCollection, RandomAccessCollection, RangeReplaceableCollection {
-  var _ids: OrderedSet<ElementID>
-  var _elements: [ElementID: State]  // TODO: [ElementID: (state: State, isPresented: Bool)]
+  var _ids: OrderedSet<AnyHashable>
+  var _elements: [AnyHashable: State]  // TODO: [ElementID: (state: State, isPresented: Bool)]
 
   public var startIndex: Int { self._ids.startIndex }
 
@@ -25,6 +64,8 @@ public struct StackState<
     _read { yield self._elements[self._ids[position]]! }
     _modify { yield &self._elements[self._ids[position]]! }
   }
+
+  // return .fireAndForget { router.popToRoot() }
 
   public init() {
     self._ids = []
@@ -56,7 +97,7 @@ public struct StackState<
     }
     self._ids.removeSubrange(subrange)
     for element in newElements.reversed() {
-      let id = ElementID()
+      let id = DependencyValues._current.stackElementID.next()
       self._ids.insert(id, at: subrange.startIndex)
       self._elements[id] = element
     }
@@ -65,27 +106,27 @@ public struct StackState<
   public struct Path {
     var state: StackState
 
-    public var ids: [ElementID] {
+    public var ids: [AnyHashable] {
       self.state._ids.elements
     }
 
-    public subscript(id id: ElementID) -> State {
+    public subscript(id id: AnyHashable) -> State {
       _read { yield self.state._elements[id]! }
       _modify { yield &self.state._elements[id]! }
     }
 
-    subscript(safeID id: ElementID) -> State? {
+    subscript(safeID id: AnyHashable) -> State? {
       _read { yield self.state._elements[id] }
       _modify { yield &self.state._elements[id] }
     }
 
     @discardableResult
-    public mutating func remove(id: ElementID) -> State {
+    public mutating func remove(id: AnyHashable) -> State {
       self.state._ids.remove(id)
       return self.state._elements.removeValue(forKey: id)!
     }
 
-    public mutating func pop(from id: ElementID) {
+    public mutating func pop(from id: AnyHashable) {
       let index = self.state._ids.firstIndex(of: id)! + 1
       for id in self.state._ids[index...] {
         self.state._elements[id] = nil
@@ -93,7 +134,7 @@ public struct StackState<
       self.state._ids.removeSubrange(index...)
     }
 
-    public mutating func pop(to id: ElementID) {
+    public mutating func pop(to id: AnyHashable) {
       let index = self.state._ids.firstIndex(of: id)!
       for id in self.state._ids[index...] {
         self.state._elements[id] = nil
@@ -154,22 +195,22 @@ public struct StackAction<Action> {
     self.init(.internal(.delete(indexSet)))
   }
 
-  public static func element(id: ElementID, action: Action) -> Self {
+  public static func element(id: AnyHashable, action: Action) -> Self {
     self.init(.public(.element(id: id, action: action)))
   }
 
-  public static func popFrom(id: ElementID) -> Self {
+  public static func popFrom(id: AnyHashable) -> Self {
     self.init(.internal(.popFrom(id: id)))
   }
 
-  public static func popTo(id: ElementID) -> Self {
+  public static func popTo(id: AnyHashable) -> Self {
     self.init(.internal(.popTo(id: id)))
   }
 
   public static var popToRoot: Self {
     self.init(.internal(.popToRoot))
   }
-
+  
   public var type: PublicAction {
     guard case let .public(type) = self.action else {
       // TODO: This can be happen, _e.g._, if you construct `.delete(indexSet)` and invoke `.type`.
@@ -179,18 +220,18 @@ public struct StackAction<Action> {
   }
 
   public enum PublicAction {
-    case didAdd(id: ElementID)
-    case element(id: ElementID, action: Action)
+    case didAdd(id: AnyHashable)
+    case element(id: AnyHashable, action: Action)
     // TODO: Possible to present arbitrary state in a lightweight way?
     case present(Any)
-    case willRemove(id: ElementID)
+    case willRemove(id: AnyHashable)
   }
 
   enum InternalAction: Hashable {
     case delete(IndexSet)
-    case pathChanged(ids: [ElementID])
-    case popFrom(id: ElementID)
-    case popTo(id: ElementID)
+    case pathChanged(ids: [AnyHashable])
+    case popFrom(id: AnyHashable)
+    case popTo(id: AnyHashable)
     case popToRoot  // TODO: `removeAll`?
   }
 
@@ -413,7 +454,7 @@ public struct _StackReducer<
         // TODO: Runtime warn
         return .none
       }
-      let id = ElementID()
+      let id = DependencyValues._current.stackElementID.next()
       state[keyPath: self.toStackState].state._ids.append(id)
       state[keyPath: self.toStackState].state._elements[id] = presentedState
       return .none
@@ -465,7 +506,7 @@ public struct _StackReducer<
     )
   }
 
-  private func navigationID(for elementID: ElementID) -> NavigationID {
+  private func navigationID(for elementID: AnyHashable) -> NavigationID {
     self.navigationID
       .appending(path: self.toStackState)
       .appending(component: elementID)
@@ -473,5 +514,5 @@ public struct _StackReducer<
 }
 
 private struct DismissID: Hashable {
-  let elementID: ElementID
+  let elementID: AnyHashable // TODO: rename
 }
