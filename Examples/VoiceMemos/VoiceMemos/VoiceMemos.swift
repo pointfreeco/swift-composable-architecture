@@ -7,7 +7,7 @@ struct VoiceMemos: ReducerProtocol {
     @PresentationState var alert: AlertState<AlertAction>?
     var audioRecorderPermission = RecorderPermission.undetermined
     @PresentationState var recordingMemo: RecordingMemo.State?
-    var voiceMemos: IdentifiedArrayOf<VoiceMemo.State> = []
+    @StackState<VoiceMemo.State> var voiceMemos = []
 
     enum RecorderPermission {
       case allowed
@@ -22,7 +22,7 @@ struct VoiceMemos: ReducerProtocol {
     case recordButtonTapped
     case recordPermissionResponse(Bool)
     case recordingMemo(PresentationAction<RecordingMemo.Action>)
-    case voiceMemo(id: VoiceMemo.State.ID, action: VoiceMemo.Action)
+    case voiceMemos(StackAction<VoiceMemo.Action>)
   }
 
   enum AlertAction: Equatable {}
@@ -90,30 +90,28 @@ struct VoiceMemos: ReducerProtocol {
           return .none
         }
 
-      case .voiceMemo(id: _, action: .audioPlayerClient(.failure)):
-        state.alert = AlertState { TextState("Voice memo playback failed.") }
-        return .none
+      case let .voiceMemos(action):
+        switch action.type {
+        case .element(id: _, action: .audioPlayerClient(.failure)):
+          state.alert = AlertState { TextState("Voice memo playback failed.") }
+          return .none
 
-      case let .voiceMemo(id: id, action: .delete):
-        state.voiceMemos.remove(id: id)
-        return .none
+        case let .element(id: tappedId, action: .playButtonTapped):
+          for id in state.$voiceMemos.ids where id != tappedId {
+            state.$voiceMemos[id: id].mode = .notPlaying
+          }
+          return .none
 
-      case let .voiceMemo(id: tappedId, action: .playButtonTapped):
-        for id in state.voiceMemos.ids where id != tappedId {
-          state.voiceMemos[id: id]?.mode = .notPlaying
+        default: // TODO: More fine-grained?
+          return .none
         }
-        return .none
-
-      case .voiceMemo:
-        return .none
       }
     }
     .ifLet(\.$alert, action: /Action.alert)
     .ifLet(\.$recordingMemo, action: /Action.recordingMemo) {
       RecordingMemo()
     }
-    // TODO: @StackState??
-    .forEach(\.voiceMemos, action: /Action.voiceMemo(id:action:)) {
+    .forEach(\.$voiceMemos, action: /Action.voiceMemos) {
       VoiceMemo()
     }
   }
@@ -136,16 +134,12 @@ struct VoiceMemosView: View {
       NavigationView {
         VStack {
           List {
-            ForEachStore(
-              self.store.scope(state: \.voiceMemos, action: { .voiceMemo(id: $0, action: $1) })
+            _ForEachStore(
+              self.store.scope(state: \.$voiceMemos, action: VoiceMemos.Action.voiceMemos)
             ) {
               VoiceMemoView(store: $0)
             }
-            .onDelete { indexSet in
-              for index in indexSet {
-                viewStore.send(.voiceMemo(id: viewStore.voiceMemos[index].id, action: .delete))
-              }
-            }
+            .onDelete { viewStore.send(.voiceMemos(.delete($0))) }
           }
 
           PresentationStore(

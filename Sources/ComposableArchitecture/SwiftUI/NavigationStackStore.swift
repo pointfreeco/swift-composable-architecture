@@ -16,7 +16,7 @@ public struct NavigationStackStore<State, Action, Content: View, Destination: Vi
       IfLetStore(
         store.scope(
           state: returningLastNonNilValue { $0.state._elements[id] },
-          action: { .element(id: id, $0) }
+          action: { .element(id: id, action: $0) }
         ),
         then: destination
       )
@@ -28,7 +28,7 @@ public struct NavigationStackStore<State, Action, Content: View, Destination: Vi
     WithViewStore(
       self.store.scope(
         state: \.state._ids.elements,
-        action: { .pathChanged(PathChange(ids: $0)) }
+        action: { StackAction(.internal(.pathChanged(ids: $0))) }
       )
     ) { viewStore in
       NavigationStack(path: viewStore.binding(get: { $0 }, send: { $0 })) {
@@ -38,5 +38,39 @@ public struct NavigationStackStore<State, Action, Content: View, Destination: Vi
           }
       }
     }
+  }
+}
+
+public struct _ForEachStore<State, Action, Content: View>: DynamicViewContent {
+  let store: Store<StackState<State>.Path, StackAction<Action>>
+  let content: (Store<State, Action>) -> Content
+
+  public init(
+    _ store: Store<StackState<State>.Path, StackAction<Action>>,
+    @ViewBuilder content: @escaping (Store<State, Action>) -> Content
+  ) {
+    self.store = store
+    self.content = content
+  }
+
+  public var body: some View {
+    WithViewStore(self.store, observe: \.ids) { viewStore in
+      ForEach(viewStore.state, id: \.self) { id in
+        var element = self.store.state.value[id: id]
+        self.content(
+          self.store.scope(
+            state: {
+              element = $0[safeID: id] ?? element
+              return element
+            },
+            action: { .element(id: id, action: $0) }
+          )
+        )
+      }
+    }
+  }
+
+  public var data: StackState<State> {
+    self.store.state.value.state
   }
 }

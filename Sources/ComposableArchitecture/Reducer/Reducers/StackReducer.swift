@@ -65,9 +65,18 @@ public struct StackState<
   public struct Path {
     var state: StackState
 
-    public subscript(id: ElementID) -> State {
+    public var ids: [ElementID] {
+      self.state._ids.elements
+    }
+
+    public subscript(id id: ElementID) -> State {
       _read { yield self.state._elements[id]! }
       _modify { yield &self.state._elements[id]! }
+    }
+
+    subscript(safeID id: ElementID) -> State? {
+      _read { yield self.state._elements[id] }
+      _modify { yield &self.state._elements[id] }
     }
 
     @discardableResult
@@ -134,18 +143,61 @@ extension StackState: CustomReflectable {
   }
 }
 
-public enum StackAction<Action> {
-  // TODO: Possible to present arbitrary state in a lightweight way?
-  case element(id: ElementID, Action)
-  case pathChanged(PathChange)
-  case popFrom(id: ElementID)
-  case popTo(id: ElementID)
-  case popToRoot // TODO: `removeAll`?
-  case present(Any) // present<State>(State) ~=
-}
+public struct StackAction<Action> {
+  let action: AccessControlAction
 
-public struct PathChange {
-  let ids: [ElementID]
+  init(_ action: AccessControlAction) {
+    self.action = action
+  }
+
+  public static func delete(_ indexSet: IndexSet) -> Self {
+    self.init(.internal(.delete(indexSet)))
+  }
+
+  public static func element(id: ElementID, action: Action) -> Self {
+    self.init(.public(.element(id: id, action: action)))
+  }
+
+  public static func popFrom(id: ElementID) -> Self {
+    self.init(.internal(.popFrom(id: id)))
+  }
+
+  public static func popTo(id: ElementID) -> Self {
+    self.init(.internal(.popTo(id: id)))
+  }
+
+  public static var popToRoot: Self {
+    self.init(.internal(.popToRoot))
+  }
+
+  public var type: PublicAction {
+    guard case let .public(type) = self.action else {
+      // TODO: This can be happen, _e.g._, if you construct `.delete(indexSet)` and invoke `.type`.
+      fatalError()
+    }
+    return type
+  }
+
+  public enum PublicAction {
+    case didAdd(id: ElementID)
+    case element(id: ElementID, action: Action)
+    // TODO: Possible to present arbitrary state in a lightweight way?
+    case present(Any)
+    case willRemove(id: ElementID)
+  }
+
+  enum InternalAction {
+    case delete(IndexSet)
+    case pathChanged(ids: [ElementID])
+    case popFrom(id: ElementID)
+    case popTo(id: ElementID)
+    case popToRoot // TODO: `removeAll`?
+  }
+
+  enum AccessControlAction {
+    case `public`(PublicAction)
+    case `internal`(InternalAction)
+  }
 }
 
 extension StackAction: Equatable where Action: Equatable {
@@ -203,8 +255,13 @@ public struct _StackReducer<
     let destinationEffects: EffectTask<Base.Action>
     let baseEffects: EffectTask<Base.Action>
 
-    switch self.toStackAction.extract(from: action) {
-    case let .element(elementID, destinationAction):
+    switch self.toStackAction.extract(from: action)?.action {
+    case let .internal(.delete(indexSet)):
+      baseEffects = .none
+      destinationEffects = .none
+      state[keyPath: self.toStackState].state.remove(atOffsets: indexSet)
+
+    case let .public(.element(elementID, destinationAction)):
       let id = self.navigationID(for: elementID)
       destinationEffects = self.destination
         .dependency(\.dismiss, DismissEffect { Task.cancel(id: DismissID(elementID: elementID)) })
@@ -213,31 +270,31 @@ public struct _StackReducer<
           into: &state[keyPath: self.toStackState].state._elements[elementID]!,
           action: destinationAction
         )
-        .map { toStackAction.embed(.element(id: elementID, $0)) }
+        .map { toStackAction.embed(.element(id: elementID, action: $0)) }
         .cancellable(id: id)
       baseEffects = self.base.reduce(into: &state, action: action)
 
-    case let .pathChanged(pathChange):
-      state[keyPath: self.toStackState].state._ids.elements = pathChange.ids
+    case let .internal(.pathChanged(ids)):
+      state[keyPath: self.toStackState].state._ids.elements = ids
       destinationEffects = .none
-      baseEffects = self.base.reduce(into: &state, action: action)
+      baseEffects = .none
 
-    case let .popFrom(id):
-      baseEffects = self.base.reduce(into: &state, action: action)
+    case let .internal(.popFrom(id)):
+      baseEffects = .none
       destinationEffects = .none
       state[keyPath: self.toStackState].pop(from: id)
 
-    case let .popTo(id):
-      baseEffects = self.base.reduce(into: &state, action: action)
+    case let .internal(.popTo(id)):
+      baseEffects = .none
       destinationEffects = .none
       state[keyPath: self.toStackState].pop(to: id)
 
-    case .popToRoot:
-      baseEffects = self.base.reduce(into: &state, action: action)
+    case .internal(.popToRoot):
+      baseEffects = .none
       destinationEffects = .none
       state[keyPath: self.toStackState].state.removeAll()
 
-    case let .present(presentedState):
+    case let .public(.present(presentedState)):
       // TODO: ???
       guard let presentedState = presentedState as? Destination.State
       else {
@@ -252,30 +309,49 @@ public struct _StackReducer<
     case .none:
       destinationEffects = .none
       baseEffects = self.base.reduce(into: &state, action: action)
+    case .some(.public(.didAdd(id: let id))):
+      return .none
+    case .some(.public(.willRemove(id: let id))):
+      return .none
     }
 
     let idsAfter = state[keyPath: self.toStackState].state._ids
 
     let cancelEffects = EffectTask<Base.Action>.merge(
-      idsBefore.subtracting(idsAfter).map { .cancel(id: self.navigationID(for: $0)) }
+      idsBefore.subtracting(idsAfter).map {
+        .merge(
+          // TODO: Call this with state restored
+          self.base.reduce(
+            into: &state,
+            action: self.toStackAction.embed(StackAction(.public(.willRemove(id: $0))))
+          ),
+          .cancel(id: self.navigationID(for: $0))
+        )
+      }
     )
     let presentEffects = EffectTask<Base.Action>.merge(
       idsAfter.subtracting(idsBefore).map { elementID in
         // TODO: `isPresented` logic from `PresentationState`
         let id = self.navigationID(for: elementID)
-        return .run { send in
-          do {
-            try await withDependencies {
-              $0.navigationID = id
-            } operation: {
-              try await withTaskCancellation(id: DismissID(elementID: elementID)) {
-                try await Task.never()
+        return .merge(
+          .run { send in
+            do {
+              try await withDependencies {
+                $0.navigationID = id
+              } operation: {
+                try await withTaskCancellation(id: DismissID(elementID: elementID)) {
+                  try await Task.never()
+                }
               }
+            } catch is CancellationError {
+              await send(self.toStackAction.embed(StackAction(.internal(.popFrom(id: elementID)))))
             }
-          } catch is CancellationError {
-            await send(self.toStackAction.embed(.popFrom(id: elementID)))
-          }
-        }
+          },
+          self.base.reduce(
+            into: &state,
+            action: self.toStackAction.embed(StackAction(.public(.didAdd(id: elementID))))
+          )
+        )
       }
     )
 
