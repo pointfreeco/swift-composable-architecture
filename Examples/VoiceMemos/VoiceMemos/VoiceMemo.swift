@@ -30,7 +30,6 @@ struct VoiceMemo: ReducerProtocol {
   enum Action: Equatable {
     case audioPlayerClient(TaskResult<Bool>)
     case delegate(Delegate)
-    case delete
     case playButtonTapped
     case timerUpdated(TimeInterval)
     case titleTextFieldChanged(String)
@@ -57,9 +56,6 @@ struct VoiceMemo: ReducerProtocol {
 
     case .delegate:
       return .none
-
-    case .delete:
-      return .cancel(id: PlayID.self)
 
     case .playButtonTapped:
       switch state.mode {

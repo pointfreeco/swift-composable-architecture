@@ -4,6 +4,72 @@ import XCTest
 #if swift(>=5.7)
   @MainActor
   final class PresentationReducerTests: XCTestCase {
+    func testPresentation_parentNilsOutChildWithLongLivingEffect() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable {
+          var count = 0
+        }
+        enum Action: Equatable {
+          case dismiss
+          case dismissMe
+          case task
+        }
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          switch action {
+          case .dismiss:
+            return .send(.dismissMe)
+          case .dismissMe:
+            return .none
+          case .task:
+            return .fireAndForget {
+              try await Task.never()
+            }
+          }
+        }
+      }
+
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          @PresentationState var child: Child.State?
+        }
+        enum Action: Equatable {
+          case child(PresentationAction<Child.Action>)
+          case presentChild
+        }
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .child(.presented(.dismissMe)):
+              state.child = nil
+              return .none
+            case .child:
+              return .none
+            case .presentChild:
+              state.child = Child.State()
+              return .none
+            }
+          }
+          .ifLet(\.$child, action: /Action.child) {
+            Child()
+          }
+        }
+      }
+
+      let store = TestStore(
+        initialState: Parent.State(),
+        reducer: Parent()
+      )
+
+      await store.send(.presentChild) {
+        $0.child = Child.State()
+      }
+      await store.send(.child(.presented(.task)))
+      await store.send(.child(.presented(.dismiss)))
+      await store.receive(.child(.presented(.dismissMe))) {
+        $0.child = nil
+      }
+    }
+
     func testPresentation_parentDismissal() async {
       struct Child: ReducerProtocol {
         struct State: Equatable {
