@@ -395,8 +395,7 @@ extension EffectTask {
     /// - Parameter action: An action.
     @discardableResult
     public func callAsFunction(_ action: Action) -> EffectSendTask {
-      // TODO: should this be EffectSendTask(task: .some(nil)) and can we get test coverage?
-      guard !Task.isCancelled else { return EffectSendTask(task: nil) }
+      guard !Task.isCancelled else { return EffectSendTask(task: .some(.none)) }
       return self.send(action)
     }
 
@@ -416,7 +415,7 @@ extension EffectTask {
     ///   - transaction: A transaction.
     public func callAsFunction(_ action: Action, transaction: Transaction) -> EffectSendTask {
       // TODO: should this be EffectSendTask(task: .some(nil)) and can we get test coverage?
-      guard !Task.isCancelled else { return EffectSendTask(task: nil) }
+      guard !Task.isCancelled else { return EffectSendTask(task: .some(.none)) }
       return withTransaction(transaction) {
         self(action)
       }

@@ -270,8 +270,8 @@ final class EffectRunTests: XCTestCase {
       case tap
       case responseBegin
       case response
-      case waitDone
       case responseEnd
+      case tapEnd
     }
 
     let queue = DispatchQueue.test
@@ -283,15 +283,15 @@ final class EffectRunTests: XCTestCase {
           let task = await send(.response)
           try await queue.sleep(for: 0.5)
           await task.cancel()
-          await send(.responseEnd)
+          await send(.tapEnd)
         }
       case .response:
         return .run { send in
           await send(.responseBegin)
           try await queue.sleep(for: 1)
-          await send(.waitDone)
+          await send(.responseEnd)
         }
-      case .responseBegin, .waitDone, .responseEnd:
+      case .responseBegin, .responseEnd, .tapEnd:
         return .none
       }
     }
@@ -302,7 +302,7 @@ final class EffectRunTests: XCTestCase {
     await store.receive(.response)
     await store.receive(.responseBegin)
     await queue.advance(by: 0.5)
-    await store.receive(.responseEnd)
+    await store.receive(.tapEnd)
   }
 
   func testRunFinishUnexpectedCancellation() async {
@@ -359,7 +359,7 @@ final class EffectRunTests: XCTestCase {
       case tap
       case responseBegin
       case response
-      case waitDone
+      case responseEnd
       case tapEnd
     }
 
@@ -378,9 +378,9 @@ final class EffectRunTests: XCTestCase {
         return .run { send in
           await send(.responseBegin)
           try await queue.sleep(for: 1)
-          await send(.waitDone)
+          await send(.responseEnd)
         }
-      case .responseBegin, .waitDone, .tapEnd:
+      case .responseBegin, .responseEnd, .tapEnd:
         return .none
       }
     }
@@ -392,6 +392,80 @@ final class EffectRunTests: XCTestCase {
     await store.receive(.responseBegin)
     await queue.advance(by: 1)
     await store.receive(.tapEnd)
+  }
+  
+  // TODO: test map, animation, other non-Combine effect operators
+
+  func testRun_FinishCancelledSend() async {
+    struct State: Equatable {}
+    enum Action: Equatable {
+      case tap
+      case response
+      case responseEnded
+    }
+
+    let queue = DispatchQueue.test
+
+    let reducer = Reduce<State, Action> { state, action in
+      switch action {
+      case .tap:
+        return .run { send in
+          let task = await send(.response)
+          try await queue.sleep(for: 0.5)
+          await task.cancel()
+        }
+      case .response:
+        return .run { send in
+          try? await queue.sleep(for: 1)
+          await send(.responseEnded).finish()
+        }
+      case .responseEnded:
+        return .none
+      }
+    }
+
+    let store = TestStore(initialState: .init(), reducer: reducer)
+
+    await store.send(.tap)
+    await store.receive(.response)
+    await queue.advance(by: 1)
+    await store.finish()
+  }
+
+  func testRun_FinishCancelledSendWithTransaction() async {
+    struct State: Equatable {}
+    enum Action: Equatable {
+      case tap
+      case response
+      case responseEnded
+    }
+
+    let queue = DispatchQueue.test
+
+    let reducer = Reduce<State, Action> { state, action in
+      switch action {
+      case .tap:
+        return .run { send in
+          let task = await send(.response)
+          try await queue.sleep(for: 0.5)
+          await task.cancel()
+        }
+      case .response:
+        return .run { send in
+          try? await queue.sleep(for: 1)
+          await send(.responseEnded, transaction: .init()).finish()
+        }
+      case .responseEnded:
+        return .none
+      }
+    }
+
+    let store = TestStore(initialState: .init(), reducer: reducer)
+
+    await store.send(.tap)
+    await store.receive(.response)
+    await queue.advance(by: 1)
+    await store.finish()
   }
 
   #if DEBUG
