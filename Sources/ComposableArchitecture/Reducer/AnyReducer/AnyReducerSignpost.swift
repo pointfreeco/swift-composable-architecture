@@ -135,7 +135,7 @@ extension EffectPublisher where Failure == Never {
               os_signpost(
                 .event, log: log, name: "Effect Output", "%sOutput from %s", prefix, actionOutput
               )
-              send(action)
+              return send(action)
             }
           )
           if Task.isCancelled {

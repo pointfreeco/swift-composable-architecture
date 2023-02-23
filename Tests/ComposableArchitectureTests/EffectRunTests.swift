@@ -1,4 +1,5 @@
 import Combine
+import CombineSchedulers
 import ComposableArchitecture
 import XCTest
 
@@ -118,7 +119,415 @@ final class EffectRunTests: XCTestCase {
     await store.send(.tapped).finish()
   }
 
+  func testRunFinish() async {
+    struct State: Equatable {}
+    enum Action: Equatable {
+      case tap
+      case responseBegin
+      case response
+      case responseEnd
+      case tapEnd
+    }
+
+    let queue = DispatchQueue.test
+
+    let reducer = Reduce<State, Action> { state, action in
+      switch action {
+      case .tap:
+        return .run { send in
+          await send(.response).finish()
+          await send(.tapEnd)
+        }
+      case .response:
+        return .run { send in
+          await send(.responseBegin)
+          try await queue.sleep(for: 1)
+          await send(.responseEnd)
+        }
+      case .responseBegin, .responseEnd, .tapEnd:
+        return .none
+      }
+    }
+
+    let store = TestStore(initialState: .init(), reducer: reducer)
+
+    await store.send(.tap)
+    await store.receive(.response)
+    await store.receive(.responseBegin)
+    await queue.advance(by: 1)
+    await store.receive(.responseEnd)
+    await store.receive(.tapEnd)
+  }
+
+  func testRunFinish_PublisherEffect() async {
+    struct State: Equatable {}
+    enum Action: Equatable {
+      case tap
+      case response
+      case responseEnd
+    }
+
+    let queue = DispatchQueue.test
+
+    let reducer = Reduce<State, Action> { state, action in
+      switch action {
+      case .tap:
+        return .run { send in
+          await send(.response).finish()
+        }
+      case .response:
+        return .run { send in
+          try await queue.sleep(for: 1)
+          await send(.responseEnd)
+        }
+        .eraseToEffect()
+      case .responseEnd:
+        return .none
+      }
+    }
+
+    let store = TestStore(initialState: .init(), reducer: reducer)
+
+    await store.send(.tap)
+    await store.receive(.response)
+    await queue.advance(by: 1)
+    await store.receive(.responseEnd)
+  }
+
+  func testRunFinish_EffectOfEffect() async {
+    struct State: Equatable {}
+    enum Action: Equatable {
+      case tap
+      case response1
+      case response2
+      case responseEnd
+      case tapEnd
+    }
+
+    let queue = DispatchQueue.test
+
+    let reducer = Reduce<State, Action> { state, action in
+      switch action {
+      case .tap:
+        return .run { send in
+          await send(.response1).finish()
+          await send(.tapEnd)
+        }
+      case .response1:
+        return .run { send in
+          await send(.response2)
+        }
+      case .response2:
+        return .run { send in
+          try await queue.sleep(for: 1)
+          await send(.responseEnd)
+        }
+      case .responseEnd, .tapEnd:
+        return .none
+      }
+    }
+
+    let store = TestStore(initialState: .init(), reducer: reducer)
+
+    await store.send(.tap)
+    await store.receive(.response1)
+    await store.receive(.response2)
+    await queue.advance(by: 1)
+    await store.receive(.responseEnd)
+    await store.receive(.tapEnd)
+  }
+
+  func testRunFinishNoTask() async {
+    struct State: Equatable {}
+    enum Action: Equatable {
+      case tap
+      case response
+      case tapEnd
+    }
+
+    let reducer = Reduce<State, Action> { state, action in
+      switch action {
+      case .tap:
+        return .run { send in
+          await send(.response).finish()
+          await send(.tapEnd)
+        }
+      case .response, .tapEnd:
+        return .none
+      }
+    }
+
+    let store = TestStore(initialState: .init(), reducer: reducer)
+
+    await store.send(.tap)
+    await store.receive(.response)
+    await store.receive(.tapEnd)
+  }
+
+  func testRunFinishCancellation() async {
+    struct State: Equatable {}
+    enum Action: Equatable {
+      case tap
+      case responseBegin
+      case response
+      case waitDone
+      case responseEnd
+    }
+
+    let queue = DispatchQueue.test
+
+    let reducer = Reduce<State, Action> { state, action in
+      switch action {
+      case .tap:
+        return .run { send in
+          let task = await send(.response)
+          try await queue.sleep(for: 0.5)
+          await task.cancel()
+          await send(.responseEnd)
+        }
+      case .response:
+        return .run { send in
+          await send(.responseBegin)
+          try await queue.sleep(for: 1)
+          await send(.waitDone)
+        }
+      case .responseBegin, .waitDone, .responseEnd:
+        return .none
+      }
+    }
+
+    let store = TestStore(initialState: .init(), reducer: reducer)
+
+    await store.send(.tap)
+    await store.receive(.response)
+    await store.receive(.responseBegin)
+    await queue.advance(by: 0.5)
+    await store.receive(.responseEnd)
+  }
+
+  func testRunFinishUnexpectedCancellation() async {
+    struct State: Equatable {}
+    enum Action: Equatable {
+      case tap
+      case responseBegin
+      case response
+      case responseEnded
+      case tapEnd
+    }
+
+    let queue = DispatchQueue.test
+
+    let isCancelled = ActorIsolated<Bool?>(nil)
+
+    let reducer = Reduce<State, Action> { state, action in
+      switch action {
+      case .tap:
+        return .run { send in
+          await send(.response).finish()
+          await send(.tapEnd)
+          await isCancelled.setValue(Task.isCancelled)
+        }
+      case .response:
+        return .run { send in
+          await send(.responseBegin)
+          try await queue.sleep(for: 1)
+          await send(.responseEnded)
+        }
+      case .responseBegin, .responseEnded, .tapEnd:
+        return .none
+      }
+    }
+
+    let store = TestStore(initialState: .init(), reducer: reducer)
+
+    let task = await store.send(.tap)
+    await store.receive(.response)
+    await store.receive(.responseBegin)
+    await queue.advance(by: 0.5)
+    await task.cancel()
+
+    let wasCancelled = await isCancelled.value
+    XCTAssertEqual(
+      wasCancelled, true,
+      "Cancelling `.tap` should cause `.response` to cancel and return."
+    )
+  }
+
+  func testRunCancel() async {
+    struct State: Equatable {}
+    enum Action: Equatable {
+      case tap
+      case responseBegin
+      case response
+      case waitDone
+      case tapEnd
+    }
+
+    let queue = DispatchQueue.test
+
+    let reducer = Reduce<State, Action> { state, action in
+      switch action {
+      case .tap:
+        return .run { send in
+          let task = await send(.response)
+          try await queue.sleep(for: 0.5)
+          await task.cancel()
+          await send(.tapEnd)
+        }
+      case .response:
+        return .run { send in
+          await send(.responseBegin)
+          try await queue.sleep(for: 1)
+          await send(.waitDone)
+        }
+      case .responseBegin, .waitDone, .tapEnd:
+        return .none
+      }
+    }
+
+    let store = TestStore(initialState: .init(), reducer: reducer)
+
+    await store.send(.tap)
+    await store.receive(.response)
+    await store.receive(.responseBegin)
+    await queue.advance(by: 1)
+    await store.receive(.tapEnd)
+  }
+
   #if DEBUG
+    func testRunFinishPublisherFailure() async {
+      struct State: Equatable {}
+      enum Action: Equatable {
+        case tap
+        case response
+      }
+
+      XCTExpectFailure {
+        $0.compactDescription == """
+          A publisher-style Effect called 'EffectSendTask.finish()'. This method \
+          no-ops if you apply any Combine operators to the Effect returned by \
+          'EffectTask.run'.
+          """
+        // TODO: test coverage on .cancel(), .isCAncelled, .checkCancellation()
+      }
+
+      let reducer = Reduce<State, Action> { state, action in
+        switch action {
+        case .tap:
+          return .run { send in
+            await send(.response).finish()
+          }
+          .eraseToEffect()
+        case .response:
+          return .none
+        }
+      }
+
+      let store = TestStore(initialState: .init(), reducer: reducer)
+
+      await store.send(.tap)
+      await store.receive(.response)
+    }
+
+    func testRunCancelPublisherFailure() async {
+      struct State: Equatable {}
+      enum Action: Equatable {
+        case tap
+        case response
+      }
+
+      XCTExpectFailure {
+        $0.compactDescription == """
+          A publisher-style Effect called 'EffectSendTask.cancel()'. This method \
+          no-ops if you apply any Combine operators to the Effect returned by \
+          'EffectTask.run'.
+          """
+      }
+
+      let reducer = Reduce<State, Action> { state, action in
+        switch action {
+        case .tap:
+          return .run { send in
+            await send(.response).cancel()
+          }
+          .eraseToEffect()
+        case .response:
+          return .none
+        }
+      }
+
+      let store = TestStore(initialState: .init(), reducer: reducer)
+
+      await store.send(.tap)
+      await store.receive(.response)
+    }
+
+    func testRunIsCancelledPublisherFailure() async {
+      struct State: Equatable {}
+      enum Action: Equatable {
+        case tap
+        case response
+      }
+
+      XCTExpectFailure {
+        $0.compactDescription == """
+          A publisher-style Effect accessed 'EffectSendTask.isCancelled'. This property \
+          breaks if you apply any Combine operators to the Effect returned by \
+          'EffectTask.run'.
+          """
+      }
+
+      let reducer = Reduce<State, Action> { state, action in
+        switch action {
+        case .tap:
+          return .run { send in
+            _ = await send(.response).isCancelled
+          }
+          .eraseToEffect()
+        case .response:
+          return .none
+        }
+      }
+
+      let store = TestStore(initialState: .init(), reducer: reducer)
+
+      await store.send(.tap)
+      await store.receive(.response)
+    }
+
+    func testRunIsCheckCancellationPublisherFailure() async {
+      struct State: Equatable {}
+      enum Action: Equatable {
+        case tap
+        case response
+      }
+
+      XCTExpectFailure {
+        $0.compactDescription == """
+          A publisher-style Effect accessed 'EffectSendTask.checkCancellation()'. This property \
+          breaks if you apply any Combine operators to the Effect returned by \
+          'EffectTask.run'.
+          """
+      }
+
+      let reducer = Reduce<State, Action> { state, action in
+        switch action {
+        case .tap:
+          return .run { send in
+            try await send(.response).checkCancellation()
+          }
+          .eraseToEffect()
+        case .response:
+          return .none
+        }
+      }
+
+      let store = TestStore(initialState: .init(), reducer: reducer)
+
+      await store.send(.tap)
+      await store.receive(.response)
+    }
+
     func testRunEscapeFailure() async throws {
       XCTExpectFailure {
         $0.compactDescription == """

@@ -2161,10 +2161,10 @@ extension TestStore {
 ///
 /// See ``ViewStoreTask`` for the analog provided to ``ViewStore``.
 public struct TestStoreTask: Hashable, Sendable {
-  fileprivate let rawValue: Task<Void, Never>?
+  fileprivate let rawValue: StoreTask
   fileprivate let timeout: UInt64
 
-  @_spi(Canary) public init(rawValue: Task<Void, Never>?, timeout: UInt64) {
+  @_spi(Canary) public init(rawValue: StoreTask, timeout: UInt64) {
     self.rawValue = rawValue
     self.timeout = timeout
   }
@@ -2185,8 +2185,8 @@ public struct TestStoreTask: Hashable, Sendable {
   /// await onAppearTask.cancel() // ✅ Cancel the task to simulate the feature disappearing.
   /// ```
   public func cancel() async {
-    self.rawValue?.cancel()
-    await self.rawValue?.cancellableValue
+    self.rawValue.task?.cancel()
+    await self.rawValue.task?.cancellableValue
   }
 
   // NB: Only needed until Xcode ships a macOS SDK that uses the 5.7 standard library.
@@ -2218,7 +2218,7 @@ public struct TestStoreTask: Hashable, Sendable {
     await Task.megaYield()
     do {
       try await withThrowingTaskGroup(of: Void.self) { group in
-        group.addTask { await self.rawValue?.cancellableValue }
+        group.addTask { await self.rawValue.task?.cancellableValue }
         group.addTask {
           try await Task.sleep(nanoseconds: nanoseconds)
           throw CancellationError()
@@ -2260,7 +2260,7 @@ public struct TestStoreTask: Hashable, Sendable {
   /// After the value of this property becomes `true`, it remains `true` indefinitely. There is
   /// no way to uncancel a task.
   public var isCancelled: Bool {
-    self.rawValue?.isCancelled ?? true
+    self.rawValue.task?.isCancelled ?? true
   }
 }
 
@@ -2299,7 +2299,7 @@ class TestReducer<State, Action>: ReducerProtocol {
       self.effectDidSubscribe.continuation.yield()
       return .none
 
-    case .publisher, .run:
+    case .publisher:
       let effect = LongLivingEffect(action: action)
       return
         effects
@@ -2316,6 +2316,17 @@ class TestReducer<State, Action>: ReducerProtocol {
         )
         .map { .init(origin: .receive($0), file: action.file, line: action.line) }
         .eraseToEffect()
+
+    case let .run(priority, operation):
+      let effect = LongLivingEffect(action: action)
+      self.inFlightEffects.insert(effect)
+      return EffectTask.run(priority: priority) { @MainActor [effectDidSubscribe, weak self] send in
+        defer { self?.inFlightEffects.remove(effect) }
+        await Task.megaYield()
+        effectDidSubscribe.continuation.yield()
+        await operation(send)
+      }
+      .map { .init(origin: .receive($0), file: action.file, line: action.line) }
     }
   }
 
@@ -2458,6 +2469,6 @@ extension TestStore {
     file: StaticString = #file,
     line: UInt = #line
   ) async -> TestStoreTask {
-    TestStoreTask(rawValue: nil, timeout: 0)
+    TestStoreTask(rawValue: .none, timeout: 0)
   }
 }

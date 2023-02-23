@@ -67,7 +67,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
   public private(set) lazy var objectWillChange = ObservableObjectPublisher()
 
-  private let _send: (ViewAction) -> Task<Void, Never>?
+  private let _send: (ViewAction) -> StoreTask
   fileprivate let _state: CurrentValueRelay<ViewState>
   private var viewCancellable: AnyCancellable?
 
@@ -384,7 +384,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     await withTaskCancellationHandler {
       await self.yield(while: predicate)
     } onCancel: {
-      task.rawValue?.cancel()
+      task.rawValue.task?.cancel()
     }
   }
 
@@ -407,7 +407,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     await withTaskCancellationHandler {
       await self.yield(while: predicate)
     } onCancel: {
-      task.rawValue?.cancel()
+      task.rawValue.task?.cancel()
     }
   }
 
@@ -702,17 +702,17 @@ extension ViewStore where ViewState == Void {
 ///
 /// See ``TestStoreTask`` for the analog returned from ``TestStore``.
 public struct ViewStoreTask: Hashable, Sendable {
-  fileprivate let rawValue: Task<Void, Never>?
+  fileprivate let rawValue: StoreTask
 
   /// Cancels the underlying task and waits for it to finish.
   public func cancel() async {
-    self.rawValue?.cancel()
+    self.rawValue.task?.cancel()
     await self.finish()
   }
 
   /// Waits for the task to finish.
   public func finish() async {
-    await self.rawValue?.cancellableValue
+    await self.rawValue.task?.cancellableValue
   }
 
   /// A Boolean value that indicates whether the task should stop executing.
@@ -720,7 +720,7 @@ public struct ViewStoreTask: Hashable, Sendable {
   /// After the value of this property becomes `true`, it remains `true` indefinitely. There is no
   /// way to uncancel a task.
   public var isCancelled: Bool {
-    self.rawValue?.isCancelled ?? true
+    self.rawValue.task?.isCancelled ?? true
   }
 }
 

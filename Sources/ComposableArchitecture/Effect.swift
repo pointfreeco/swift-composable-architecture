@@ -384,18 +384,20 @@ extension EffectTask {
   /// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
   @MainActor
   public struct Send {
-    public let send: @MainActor (Action) -> Void
+    public let send: @MainActor (Action) -> EffectSendTask
 
-    public init(send: @escaping @MainActor (Action) -> Void) {
+    public init(send: @escaping @MainActor (Action) -> EffectSendTask) {
       self.send = send
     }
 
     /// Sends an action back into the system from an effect.
     ///
     /// - Parameter action: An action.
-    public func callAsFunction(_ action: Action) {
-      guard !Task.isCancelled else { return }
-      self.send(action)
+    @discardableResult
+    public func callAsFunction(_ action: Action) -> EffectSendTask {
+      // TODO: should this be EffectSendTask(task: .some(nil)) and can we get test coverage?
+      guard !Task.isCancelled else { return EffectSendTask(task: nil) }
+      return self.send(action)
     }
 
     /// Sends an action back into the system from an effect with animation.
@@ -403,7 +405,7 @@ extension EffectTask {
     /// - Parameters:
     ///   - action: An action.
     ///   - animation: An animation.
-    public func callAsFunction(_ action: Action, animation: Animation?) {
+    public func callAsFunction(_ action: Action, animation: Animation?) -> EffectSendTask {
       callAsFunction(action, transaction: Transaction(animation: animation))
     }
 
@@ -412,9 +414,10 @@ extension EffectTask {
     /// - Parameters:
     ///   - action: An action.
     ///   - transaction: A transaction.
-    public func callAsFunction(_ action: Action, transaction: Transaction) {
-      guard !Task.isCancelled else { return }
-      withTransaction(transaction) {
+    public func callAsFunction(_ action: Action, transaction: Transaction) -> EffectSendTask {
+      // TODO: should this be EffectSendTask(task: .some(nil)) and can we get test coverage?
+      guard !Task.isCancelled else { return EffectSendTask(task: nil) }
+      return withTransaction(transaction) {
         self(action)
       }
     }
@@ -721,3 +724,64 @@ extension EffectPublisher {
     """
 )
 public typealias Effect = EffectPublisher
+
+public struct EffectSendTask {
+  let task: StoreTask?  // StoreTask = none | task, StoreTask?
+  init(task: StoreTask?) {
+    self.task = task
+  }
+
+  public func finish() async {
+    if self.task == nil {
+      runtimeWarn(
+        """
+        A publisher-style Effect called 'EffectSendTask.finish()'. This method \
+        no-ops if you apply any Combine operators to the Effect returned by \
+        'EffectTask.run'.
+        """
+      )
+    }
+    await self.task?.task?.value
+  }
+
+  public func cancel() async {
+    if self.task == nil {
+      runtimeWarn(
+        """
+        A publisher-style Effect called 'EffectSendTask.cancel()'. This method \
+        no-ops if you apply any Combine operators to the Effect returned by \
+        'EffectTask.run'.
+        """
+      )
+    }
+    self.task?.task?.cancel()
+    await self.task?.task?.value
+  }
+
+  public var isCancelled: Bool {
+    if self.task == nil {
+      runtimeWarn(
+        """
+        A publisher-style Effect accessed 'EffectSendTask.isCancelled'. This property \
+        breaks if you apply any Combine operators to the Effect returned by \
+        'EffectTask.run'.
+        """
+      )
+    }
+    return self.task?.task?.isCancelled ?? false
+  }
+
+  public func checkCancellation() throws {
+    if self.task == nil {
+      runtimeWarn(
+        """
+        A publisher-style Effect accessed 'EffectSendTask.checkCancellation()'. This property \
+        breaks if you apply any Combine operators to the Effect returned by \
+        'EffectTask.run'.
+        """
+      )
+    }
+    guard case let .some(.task(task)) = self.task, !task.isCancelled
+    else { throw CancellationError() }
+  }
+}

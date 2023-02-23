@@ -47,7 +47,9 @@ extension EffectPublisher: Publisher {
                 )
               }
             #endif
+            // TODO: can this return a EffectSendTask??
             subscriber.send($0)
+            return .init(task: nil)
           }
           await operation(send)
         }

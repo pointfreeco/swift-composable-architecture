@@ -506,7 +506,7 @@ final class StoreTests: XCTestCase {
     let sendTask = scopedStore.send(())
     await Task.yield()
     neverEndingTask.cancel()
-    try await XCTUnwrap(sendTask).value
+    try await XCTUnwrap(sendTask.task).value
     XCTAssertEqual(store.effectCancellables.count, 0)
     XCTAssertEqual(scopedStore.effectCancellables.count, 0)
   }

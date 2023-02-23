@@ -365,13 +365,13 @@ final class EffectTests: XCTestCase {
 
   func testCanary1() async {
     for _ in 1...100 {
-      let task = TestStoreTask(rawValue: Task {}, timeout: NSEC_PER_SEC)
+      let task = TestStoreTask(rawValue: .task(Task {}), timeout: NSEC_PER_SEC)
       await task.finish()
     }
   }
   func testCanary2() async {
     for _ in 1...100 {
-      let task = TestStoreTask(rawValue: nil, timeout: NSEC_PER_SEC)
+      let task = TestStoreTask(rawValue: .none, timeout: NSEC_PER_SEC)
       await task.finish()
     }
   }

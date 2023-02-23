@@ -342,11 +342,11 @@ public final class Store<State, Action> {
   @_spi(Internals) public func send(
     _ action: Action,
     originatingFrom originatingAction: Action? = nil
-  ) -> Task<Void, Never>? {
+  ) -> StoreTask {
     self.threadCheck(status: .send(action, originatingAction: originatingAction))
 
     self.bufferedActions.append(action)
-    guard !self.isSending else { return nil }
+    guard !self.isSending else { return .none }
 
     self.isSending = true
     var currentState = self.state.value
@@ -358,7 +358,7 @@ public final class Store<State, Action> {
       self.state.value = currentState
       self.isSending = false
       if !self.bufferedActions.isEmpty {
-        if let task = self.send(
+        if case let .task(task) = self.send(
           self.bufferedActions.removeLast(), originatingFrom: originatingAction
         ) {
           tasks.wrappedValue.append(task)
@@ -399,10 +399,11 @@ public final class Store<State, Action> {
               self?.effectCancellables[uuid] = nil
             },
             receiveValue: { [weak self] effectAction in
-              guard let self = self else { return }
-              if let task = self.send(effectAction, originatingFrom: action) {
-                tasks.wrappedValue.append(task)
-              }
+              guard
+                let self = self,
+                case let .task(task) = self.send(effectAction, originatingFrom: action)
+              else { return }
+              tasks.wrappedValue.append(task)
             }
           )
 
@@ -446,9 +447,12 @@ public final class Store<State, Action> {
                     )
                   }
                 #endif
-                if let task = self.send($0, originatingFrom: action) {
+                let storeTask = self.send($0, originatingFrom: action)
+                if case let .task(task) = storeTask {
                   tasks.wrappedValue.append(task)
+                  return .init(task: storeTask)
                 }
+                return .init(task: .some(.none))
               }
             )
           }
@@ -456,8 +460,8 @@ public final class Store<State, Action> {
       }
     }
 
-    guard !tasks.wrappedValue.isEmpty else { return nil }
-    return Task {
+    guard !tasks.wrappedValue.isEmpty else { return .none }
+    return StoreTask {
       await withTaskCancellationHandler {
         var index = tasks.wrappedValue.startIndex
         while index < tasks.wrappedValue.endIndex {
@@ -657,7 +661,10 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
         state = self.toScopedState(self.rootStore.state.value)
         self.isSending = false
       }
-      if let action = self.fromScopedAction(state, action), let task = self.rootStore.send(action) {
+      if
+        let action = self.fromScopedAction(state, action),
+        case let .task(task) = self.rootStore.send(action)
+      {
         return .fireAndForget { await task.cancellableValue }
       } else {
         return .none
@@ -771,3 +778,18 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     }
   }
 #endif
+
+@_spi(Internals) public enum StoreTask: Hashable, Sendable {
+  case none
+  case task(Task<Void, Never>)
+
+  fileprivate init(_ operation: @escaping @Sendable () async -> Void) {
+    self = .task(Task(operation: operation))
+  }
+
+  public var task: Task<Void, Never>? {
+    guard case let .task(task) = self
+    else { return nil }
+    return task
+  }
+}
