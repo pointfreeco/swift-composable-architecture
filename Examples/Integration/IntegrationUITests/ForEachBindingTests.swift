@@ -21,9 +21,9 @@ final class ForEachBindingTests: XCTestCase {
 
     XCTExpectFailure(
       """
-      This ideally would not fail, but currently does. See this PR for more details:
+        This ideally would not fail, but currently does. See this PR for more details:
 
-      https://github.com/pointfreeco/swift-composable-architecture/pull/1845
+        https://github.com/pointfreeco/swift-composable-architecture/pull/1845
       """
     ) {
       XCTAssertFalse(app.staticTexts["🛑"].exists)
