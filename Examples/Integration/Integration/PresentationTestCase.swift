@@ -1,4 +1,4 @@
-import ComposableArchitecture
+@preconcurrency import ComposableArchitecture
 import SwiftUI
 
 private struct PresentationTestCase: ReducerProtocol {
@@ -29,13 +29,17 @@ private struct PresentationTestCase: ReducerProtocol {
 }
 
 private struct ChildFeature: ReducerProtocol {
-  struct State: Equatable {
+  struct State: Equatable, Identifiable {
+    var id = UUID()
     var count = 0
   }
   enum Action {
     case childDismissButtonTapped
     case incrementButtonTapped
     case parentSendDismissActionButtonTapped
+    case resetIdentity
+    case response
+    case startButtonTapped
   }
   @Dependency(\.dismiss) var dismiss
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
@@ -47,6 +51,18 @@ private struct ChildFeature: ReducerProtocol {
       return .none
     case .parentSendDismissActionButtonTapped:
       return .none
+    case .resetIdentity:
+      state.id = UUID()
+      return .none
+    case .response:
+      state.count = 999
+      return .none
+    case .startButtonTapped:
+      state.count += 1
+      return .run { send in
+        try await Task.sleep(for: .seconds(3))
+        await send(.response)
+      }
     }
   }
 }
@@ -86,6 +102,12 @@ private struct ChildView: View {
         }
         Button("Parent dismiss") {
           viewStore.send(.parentSendDismissActionButtonTapped)
+        }
+        Button("Start effect") {
+          viewStore.send(.startButtonTapped)
+        }
+        Button("Reset identity") {
+          viewStore.send(.resetIdentity)
         }
       }
     }
