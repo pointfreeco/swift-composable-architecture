@@ -43,7 +43,7 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$child, action: /Action.child) {
+          .ifLet(\.$child, action: /Action.child) {
             Child()
           }
         }
@@ -116,7 +116,7 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$child, action: /Action.child) {
+          .ifLet(\.$child, action: /Action.child) {
             Child()
           }
         }
@@ -187,7 +187,7 @@ import XCTest
                 return .none
               }
             }
-            .presents(\.$child, action: /Action.child) {
+            .ifLet(\.$child, action: /Action.child) {
               Child()
             }
           }
@@ -274,7 +274,7 @@ import XCTest
                 return .none
               }
             }
-            .presents(\.$child, action: /Action.child) {
+            .ifLet(\.$child, action: /Action.child) {
               Child()
             }
           }
@@ -357,7 +357,7 @@ import XCTest
                 return .none
               }
             }
-            .presents(\.$child, action: /Action.child) {
+            .ifLet(\.$child, action: /Action.child) {
               Child()
             }
           }
@@ -436,7 +436,7 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$child, action: /Action.child) {
+          .ifLet(\.$child, action: /Action.child) {
             Child()
           }
         }
@@ -477,7 +477,7 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$alert, action: /Action.alert) {}
+          .ifLet(\.$alert, action: /Action.alert) {}
         }
       }
 
@@ -517,7 +517,7 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$alert, action: /Action.alert) {}
+          .ifLet(\.$alert, action: /Action.alert) {}
         }
       }
 
@@ -570,7 +570,7 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$alert, action: /Action.alert) {}
+          .ifLet(\.$alert, action: /Action.alert) {}
         }
       }
 
@@ -640,7 +640,7 @@ import XCTest
                 return .none
               }
             }
-            .presents(\.$child, action: /Action.child) {
+            .ifLet(\.$child, action: /Action.child) {
               Child()
             }
           }
@@ -728,7 +728,7 @@ import XCTest
                 return .none
               }
             }
-            .presents(\.$destination, action: /Action.destination) {
+            .ifLet(\.$destination, action: /Action.destination) {
               Destinations()
             }
           }
@@ -877,7 +877,7 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$child, action: /Action.child) {
+          .ifLet(\.$child, action: /Action.child) {
             Child()
           }
         }
@@ -938,7 +938,7 @@ import XCTest
               .cancellable(id: CancelID.effect)
             }
           }
-          .presents(\.$grandchild, action: /Action.grandchild) {
+          .ifLet(\.$grandchild, action: /Action.grandchild) {
             Grandchild()
           }
         }
@@ -968,7 +968,7 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$child, action: /Action.child) {
+          .ifLet(\.$child, action: /Action.child) {
             Child()
           }
         }
@@ -1043,10 +1043,10 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$child1, action: /Action.child1) {
+          .ifLet(\.$child1, action: /Action.child1) {
             Child()
           }
-          .presents(\.$child2, action: /Action.child2) {
+          .ifLet(\.$child2, action: /Action.child2) {
             Child()
           }
         }
@@ -1138,10 +1138,10 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$child1, action: /Action.child1) {
+          .ifLet(\.$child1, action: /Action.child1) {
             Child()
           }
-          .presents(\.$child2, action: /Action.child2) {
+          .ifLet(\.$child2, action: /Action.child2) {
             Child()
           }
         }
@@ -1242,10 +1242,10 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$child1, action: /Action.child1) {
+          .ifLet(\.$child1, action: /Action.child1) {
             Child()
           }
-          .presents(\.$child2, action: /Action.child2) {
+          .ifLet(\.$child2, action: /Action.child2) {
             Child()
           }
         }
@@ -1342,7 +1342,7 @@ import XCTest
               return .cancel(id: CancelID.effect)
             }
           }
-          .presents(\.$child, action: /Action.child) {
+          .ifLet(\.$child, action: /Action.child) {
             Child()
           }
         }
@@ -1412,7 +1412,7 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$grandchild, action: /Action.grandchild) {
+          .ifLet(\.$grandchild, action: /Action.grandchild) {
             Grandchild()
           }
         }
@@ -1439,7 +1439,7 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$child, action: /Action.child) {
+          .ifLet(\.$child, action: /Action.child) {
             Child()
           }
         }
@@ -1494,7 +1494,7 @@ import XCTest
           Reduce { state, action in
             .none
           }
-          .presents(\.$child, action: /Action.child) {
+          .ifLet(\.$child, action: /Action.child) {
             Child()
           }
         }
@@ -1507,7 +1507,7 @@ import XCTest
 
       XCTExpectFailure {
         $0.compactDescription == """
-          A "presents" at \
+          A "ifLet" at \
           "ComposableArchitectureTests/PresentationReducerTests.swift:\(#line - 14)" received a \
           presentation action when destination state was absent. …
 
@@ -1552,7 +1552,7 @@ import XCTest
           Reduce { state, action in
             .none
           }
-          .presents(\.$child, action: /Action.child) {
+          .ifLet(\.$child, action: /Action.child) {
             Child()
           }
         }
@@ -1565,7 +1565,7 @@ import XCTest
 
       XCTExpectFailure {
         $0.compactDescription == """
-          A "presents" at \
+          A "ifLet" at \
           "ComposableArchitectureTests/PresentationReducerTests.swift:\(#line - 14)" received a \
           presentation action when destination state was absent. …
 
@@ -1613,7 +1613,7 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$child, action: /Action.child) {
+          .ifLet(\.$child, action: /Action.child) {
             Child()
           }
         }
@@ -1659,7 +1659,7 @@ import XCTest
               return .none
             }
           }
-          .presents(\.$child, action: /Action.child) {
+          .ifLet(\.$child, action: /Action.child) {
             Child()
           }
         }
@@ -1678,6 +1678,122 @@ import XCTest
         $0.child = Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
       }
       await store.send(.child(.dismiss)) {
+        $0.child = nil
+      }
+    }
+
+    func testPresentation_NonExhaustiveInPresentationEffect() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable {}
+        enum Action: Equatable {}
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        }
+      }
+
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          @PresentationState var child: Child.State?
+        }
+        enum Action: Equatable {
+          case child(PresentationAction<Child.Action>)
+          case presentChild
+        }
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .child:
+              return .none
+            case .presentChild:
+              state.child = Child.State()
+              return .none
+            }
+          }
+          .ifLet(\.$child, action: /Action.child) {
+            Child()
+          }
+        }
+      }
+
+      let store = TestStore(
+        initialState: Parent.State(),
+        reducer: Parent()
+      )
+
+      // NB: Ideally the "dismiss" effect would be automatically torn down by the TestStore.
+      XCTExpectFailure {
+        $0.compactDescription.contains("""
+          An effect returned for this action is still running. It must complete before the end of \
+          the test. …
+          """)
+      }
+
+      await store.send(.presentChild) {
+        $0.child = Child.State()
+      }
+    }
+
+    func testPresentation_parentNilsOutChildWithLongLivingEffect() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable {
+          var count = 0
+        }
+        enum Action: Equatable {
+          case dismiss
+          case dismissMe
+          case task
+        }
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          switch action {
+          case .dismiss:
+            return .send(.dismissMe)
+          case .dismissMe:
+            return .none
+          case .task:
+            return .fireAndForget {
+              try await Task.never()
+            }
+          }
+        }
+      }
+
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          @PresentationState var child: Child.State?
+        }
+        enum Action: Equatable {
+          case child(PresentationAction<Child.Action>)
+          case presentChild
+        }
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .child(.presented(.dismissMe)):
+              state.child = nil
+              return .none
+            case .child:
+              return .none
+            case .presentChild:
+              state.child = Child.State()
+              return .none
+            }
+          }
+          .ifLet(\.$child, action: /Action.child) {
+            Child()
+          }
+        }
+      }
+
+      let store = TestStore(
+        initialState: Parent.State(),
+        reducer: Parent()
+      )
+
+      await store.send(.presentChild) {
+        $0.child = Child.State()
+      }
+      await store.send(.child(.presented(.task)))
+      await store.send(.child(.presented(.dismiss)))
+      await store.receive(.child(.presented(.dismissMe))) {
         $0.child = nil
       }
     }

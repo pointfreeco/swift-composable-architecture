@@ -22,7 +22,7 @@ private struct PresentationTestCase: ReducerProtocol {
         return .none
       }
     }
-    .presents(\.$child, action: /Action.child) {
+    .ifLet(\.$child, action: /Action.child) {
       ChildFeature()
     }
   }

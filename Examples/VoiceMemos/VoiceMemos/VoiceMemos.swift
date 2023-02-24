@@ -108,8 +108,8 @@ struct VoiceMemos: ReducerProtocol {
         return .none
       }
     }
-    .presents(\.$alert, action: /Action.alert)
-    .presents(\.$recordingMemo, action: /Action.recordingMemo) {
+    .ifLet(\.$alert, action: /Action.alert)
+    .ifLet(\.$recordingMemo, action: /Action.recordingMemo) {
       RecordingMemo()
     }
     .forEach(\.voiceMemos, action: /Action.voiceMemo(id:action:)) {
