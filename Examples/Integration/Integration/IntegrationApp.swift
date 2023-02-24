@@ -10,36 +10,40 @@ struct IntegrationApp: App {
     WindowGroup {
       NavigationStack {
         List {
-          ForEach(TestCase.allCases) { test in
-            switch test {
-            case .escapedWithViewStore:
-              NavigationLink(test.rawValue) {
-                EscapedWithViewStoreTestCaseView()
-              }
+          Section {
+            ForEach(TestCase.allCases) { test in
+              switch test {
+              case .escapedWithViewStore:
+                NavigationLink(test.rawValue) {
+                  EscapedWithViewStoreTestCaseView()
+                }
 
-            case .forEachBinding:
-              NavigationLink(test.rawValue) {
-                ForEachBindingTestCaseView()
-              }
+              case .forEachBinding:
+                NavigationLink(test.rawValue) {
+                  ForEachBindingTestCaseView()
+                }
 
-            case .navigationStackBinding:
-              Button(test.rawValue) {
-                self.isNavigationStackBindingTestCasePresented = true
-              }
-              .foregroundColor(.black)
-              .sheet(isPresented: self.$isNavigationStackBindingTestCasePresented) {
-                NavigationStackBindingTestCaseView()
-              }
+              case .navigationStackBinding:
+                Button(test.rawValue) {
+                  self.isNavigationStackBindingTestCasePresented = true
+                }
+                .foregroundColor(.black)
+                .sheet(isPresented: self.$isNavigationStackBindingTestCasePresented) {
+                  NavigationStackBindingTestCaseView()
+                }
 
-            case .presentation:
-              NavigationLink(test.rawValue) {
-                PresentationTestCaseView()
+              case .presentation:
+                NavigationLink(test.rawValue) {
+                  PresentationTestCaseView()
+                }
               }
             }
           }
 
-          NavigationLink("Binding Animations Test Bench") {
-            BindingsAnimationsTestBench()
+          Section {
+            NavigationLink("Binding Animations Test Bench") {
+              BindingsAnimationsTestBench()
+            }
           }
         }
       }

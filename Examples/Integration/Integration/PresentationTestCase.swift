@@ -3,27 +3,82 @@ import SwiftUI
 
 private struct PresentationTestCase: ReducerProtocol {
   struct State: Equatable {
-    @PresentationState var child: ChildFeature.State?
+    @PresentationState var destination: Destination.State?
   }
   enum Action: Equatable, Sendable {
-    case child(PresentationAction<ChildFeature.Action>)
-    case childButtonTapped
+    case destination(PresentationAction<Destination.Action>)
+    case fullScreenCoverButtonTapped
+    case navigationDestinationButtonTapped
+    case navigationLinkButtonTapped
+    case popoverButtonTapped
+    case sheetButtonTapped
+  }
+
+  struct Destination: ReducerProtocol {
+    enum State: Equatable {
+      case fullScreenCover(ChildFeature.State)
+      case navigationDestination(ChildFeature.State)
+      case navigationLink(ChildFeature.State)
+      case popover(ChildFeature.State)
+      case sheet(ChildFeature.State)
+    }
+    enum Action: Equatable {
+      case fullScreenCover(ChildFeature.Action)
+      case navigationDestination(ChildFeature.Action)
+      case navigationLink(ChildFeature.Action)
+      case popover(ChildFeature.Action)
+      case sheet(ChildFeature.Action)
+    }
+    var body: some ReducerProtocolOf<Self> {
+      Scope(state: /State.fullScreenCover, action: /Action.fullScreenCover) {
+        ChildFeature()
+      }
+      Scope(state: /State.navigationDestination, action: /Action.navigationDestination) {
+        ChildFeature()
+      }
+      Scope(state: /State.navigationLink, action: /Action.navigationLink) {
+        ChildFeature()
+      }
+      Scope(state: /State.sheet, action: /Action.sheet) {
+        ChildFeature()
+      }
+      Scope(state: /State.popover, action: /Action.popover) {
+        ChildFeature()
+      }
+    }
   }
 
   var body: some ReducerProtocolOf<Self> {
     Reduce<State, Action> { state, action in
       switch action {
-      case .child(.presented(.parentSendDismissActionButtonTapped)):
-        return .send(.child(.dismiss))
-      case .child:
+      case
+          .destination(.presented(.fullScreenCover(.parentSendDismissActionButtonTapped))),
+          .destination(.presented(.navigationDestination(.parentSendDismissActionButtonTapped))),
+          .destination(.presented(.navigationLink(.parentSendDismissActionButtonTapped))),
+          .destination(.presented(.sheet(.parentSendDismissActionButtonTapped))),
+          .destination(.presented(.popover(.parentSendDismissActionButtonTapped))):
+        return .send(.destination(.dismiss))
+      case .destination:
         return .none
-      case .childButtonTapped:
-        state.child = ChildFeature.State()
+      case .fullScreenCoverButtonTapped:
+        state.destination = .fullScreenCover(ChildFeature.State())
+        return .none
+      case .navigationDestinationButtonTapped:
+        state.destination = .navigationDestination(ChildFeature.State())
+        return .none
+      case .navigationLinkButtonTapped:
+        state.destination = .navigationLink(ChildFeature.State())
+        return .none
+      case .popoverButtonTapped:
+        state.destination = .popover(ChildFeature.State())
+        return .none
+      case .sheetButtonTapped:
+        state.destination = .sheet(ChildFeature.State())
         return .none
       }
     }
-    .ifLet(\.$child, action: /Action.child) {
-      ChildFeature()
+    .ifLet(\.$destination, action: /Action.destination) {
+      Destination()
     }
   }
 }
@@ -68,19 +123,78 @@ private struct ChildFeature: ReducerProtocol {
 }
 
 struct PresentationTestCaseView: View {
-  private let store = Store(
-    initialState: PresentationTestCase.State(),
-    reducer: PresentationTestCase()
-  )
+  private let store: StoreOf<PresentationTestCase>
+  @StateObject private var viewStore: ViewStore<Void, PresentationTestCase.Action>
+
+  init() {
+    let store = Store(
+      initialState: PresentationTestCase.State(),
+      reducer: PresentationTestCase()._printChanges()
+    )
+    self.store = store
+    self._viewStore = StateObject(
+      wrappedValue: ViewStore(
+        store.scope(state: { _ in () }),
+        removeDuplicates: { _, _ in true }
+      )
+    )
+  }
 
   var body: some View {
-    WithViewStore(self.store, observe: { _ in () }, removeDuplicates: ==) { viewStore in
-      Button("Open child") {
-        viewStore.send(.childButtonTapped)
+    Form {
+      Button("Open full screen cover") {
+        viewStore.send(.fullScreenCoverButtonTapped)
+      }
+
+      NavigationLinkStore(
+        store: self.store.scope(state: \.$destination, action: PresentationTestCase.Action.destination),
+        state: /PresentationTestCase.Destination.State.navigationLink,
+        action: PresentationTestCase.Destination.Action.navigationLink
+      ) {
+        viewStore.send(.navigationLinkButtonTapped)
+      } destination: { store in
+        ChildView(store: store)
+      } label: {
+        Text("Open navigation link")
+      }
+
+      Button("Open navigation destination") {
+        viewStore.send(.navigationDestinationButtonTapped)
+      }
+
+      Button("Open popover") {
+        viewStore.send(.popoverButtonTapped)
+      }
+
+      Button("Open sheet") {
+        viewStore.send(.sheetButtonTapped)
       }
     }
+    .fullScreenCover(
+      store: self.store.scope(state: \.$destination, action: PresentationTestCase.Action.destination),
+      state: /PresentationTestCase.Destination.State.fullScreenCover,
+      action: PresentationTestCase.Destination.Action.fullScreenCover
+    ) { store in
+      ChildView(store: store)
+    }
+    .navigationDestination(
+      store: self.store.scope(state: \.$destination, action: PresentationTestCase.Action.destination),
+      state: /PresentationTestCase.Destination.State.navigationDestination,
+      action: PresentationTestCase.Destination.Action.navigationDestination
+    ) { store in
+      ChildView(store: store)
+    }
+    .popover(
+      store: self.store.scope(state: \.$destination, action: PresentationTestCase.Action.destination),
+      state: /PresentationTestCase.Destination.State.popover,
+      action: PresentationTestCase.Destination.Action.popover
+    ) { store in
+      ChildView(store: store)
+    }
     .sheet(
-      store: self.store.scope(state: \.$child, action: PresentationTestCase.Action.child)
+      store: self.store.scope(state: \.$destination, action: PresentationTestCase.Action.destination),
+      state: /PresentationTestCase.Destination.State.sheet,
+      action: PresentationTestCase.Destination.Action.sheet
     ) { store in
       ChildView(store: store)
     }

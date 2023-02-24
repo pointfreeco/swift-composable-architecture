@@ -1797,5 +1797,106 @@ import XCTest
         $0.child = nil
       }
     }
+
+    func testPresentation_DestinationEnum_IdentityChange() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable, Identifiable {
+          var id = DependencyValues._current.uuid()
+          var count = 0
+        }
+        enum Action: Equatable {
+          case resetIdentity
+          case response
+          case tap
+        }
+        @Dependency(\.mainQueue) var mainQueue
+        @Dependency(\.uuid) var uuid
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          switch action {
+          case .resetIdentity:
+            state.count = 0
+            state.id = self.uuid()
+            return .none
+          case .response:
+            state.count = 999
+            return .none
+          case .tap:
+            state.count += 1
+            return .run { send in
+              try await self.mainQueue.sleep(for: .seconds(1))
+              await send(.response)
+            }
+          }
+        }
+      }
+
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          @PresentationState var destination: Destination.State?
+        }
+        enum Action: Equatable {
+          case destination(PresentationAction<Destination.Action>)
+          case presentChild1
+        }
+        struct Destination: ReducerProtocol {
+          enum State: Equatable {
+            case child1(Child.State)
+            case child2(Child.State)
+          }
+          enum Action: Equatable {
+            case child1(Child.Action)
+            case child2(Child.Action)
+          }
+          var body: some ReducerProtocolOf<Self> {
+            Scope(state: /State.child1, action: /Action.child1) { Child() }
+            Scope(state: /State.child2, action: /Action.child2) { Child() }
+          }
+        }
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .destination:
+              return .none
+            case .presentChild1:
+              state.destination = .child1(Child.State())
+              return .none
+            }
+          }
+          .ifLet(\.$destination, action: /Action.destination) {
+            Destination()
+          }
+        }
+      }
+
+      let mainQueue = DispatchQueue.test
+      let store = TestStore(
+        initialState: Parent.State(),
+        reducer: Parent()
+      ) {
+        $0.uuid = .incrementing
+        $0.mainQueue = mainQueue.eraseToAnyScheduler()
+      }
+
+      await store.send(.presentChild1) {
+        $0.destination = .child1(
+          Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
+        )
+      }
+      await store.send(.destination(.presented(.child1(.tap)))) {
+        try (/Parent.Destination.State.child1).modify(&$0.destination) {
+          $0.count = 1
+        }
+      }
+      await store.send(.destination(.presented(.child1(.resetIdentity)))) {
+        try (/Parent.Destination.State.child1).modify(&$0.destination) {
+          $0.id = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
+          $0.count = 0
+        }
+      }
+      await mainQueue.run()
+      await store.send(.destination(.dismiss)) {
+        $0.destination = nil
+      }
+    }
   }
 #endif

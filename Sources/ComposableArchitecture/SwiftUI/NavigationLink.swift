@@ -16,13 +16,17 @@ public struct NavigationLinkStore<
   @ObservedObject var viewStore: ViewStore<Bool, PresentationAction<Action>>
   let toDestinationState: (State) -> DestinationState?
   let fromDestinationAction: (DestinationAction) -> Action
+  let onTap: () -> Void
   let destination: (Store<DestinationState, DestinationAction>) -> Destination
   let label: Label
 
-  init(
+  // TODO: initialier for just presentation state and no destination transformations
+
+  public init(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (State) -> DestinationState?,
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
+    onTap: @escaping () -> Void,
     @ViewBuilder destination: @escaping (Store<DestinationState, DestinationAction>) -> Destination,
     @ViewBuilder label: () -> Label
   ) {
@@ -34,13 +38,24 @@ public struct NavigationLinkStore<
     )
     self.toDestinationState = toDestinationState
     self.fromDestinationAction = fromDestinationAction
+    self.onTap = onTap
     self.destination = destination
     self.label = label()
   }
 
   public var body: some View {
     NavigationLink(
-      isActive: self.viewStore.binding(send: .dismiss)
+      // TODO: construct better binding that handles animation
+      isActive: Binding(
+        get: { self.viewStore.state },
+        set: {
+          if $0 {
+            self.onTap()
+          } else {
+            self.viewStore.send(.dismiss)
+          }
+        }
+      )
     ) {
       IfLetStore(
         self.store.scope(
