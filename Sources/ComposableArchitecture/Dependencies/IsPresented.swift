@@ -3,8 +3,7 @@ extension DependencyValues {
   /// feature.
   ///
   /// This value is set to true on reducers that are run from within
-  /// ``ReducerProtocol/presentationDestination(_:action:destination:file:fileID:line:)-7abw3``
-  /// or ``ReducerProtocol/navigationDestination(_:action:destinations:file:fileID:line:)-1wldk``.
+  /// ``ReducerProtocol/ifLet(_:action:destination:file:fileID:line:)-2soon``.
   public var isPresented: Bool {
     self.dismiss.dismiss != nil
   }
