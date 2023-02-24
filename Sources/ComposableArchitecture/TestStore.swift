@@ -1169,10 +1169,10 @@ extension TestStore where ScopedState: Equatable {
   ) throws {
     let current = expected
     var expected = expected
-    let updateStateToExpectedResult = updateStateToExpectedResult.map { updateStateToExpectedResult in
+    let updateStateToExpectedResult = updateStateToExpectedResult.map { original in
       { (state: inout ScopedState) in
         try XCTModifyLocals.$isExhaustive.withValue(self.exhaustivity == .on) {
-          try updateStateToExpectedResult(&state)
+          try original(&state)
         }
       }
     }
@@ -1753,10 +1753,10 @@ extension TestStore where ScopedState: Equatable {
     file: StaticString,
     line: UInt
   ) {
-    let updateStateToExpectedResult = updateStateToExpectedResult.map { updateStateToExpectedResult in
+    let updateStateToExpectedResult = updateStateToExpectedResult.map { original in
       { (state: inout ScopedState) in
         try XCTModifyLocals.$isExhaustive.withValue(self.exhaustivity == .on) {
-          try updateStateToExpectedResult(&state)
+          try original(&state)
         }
       }
     }
