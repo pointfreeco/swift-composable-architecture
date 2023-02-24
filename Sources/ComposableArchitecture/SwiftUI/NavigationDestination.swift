@@ -1,8 +1,6 @@
 import SwiftUI
 
 extension View {
-  // TODO: Confusing to define `navigationDestination` for both `{Presentation,Navigation}State`?
-  
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func navigationDestination<State, Action, Destination: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
