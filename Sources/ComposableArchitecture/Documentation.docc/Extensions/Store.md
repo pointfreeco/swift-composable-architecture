@@ -4,7 +4,7 @@
 
 ### Creating a store
 
-- ``init(initialState:reducer:)``
+- ``init(initialState:reducer:prepareDependencies:)``
 - ``StoreOf``
 
 ### Scoping stores

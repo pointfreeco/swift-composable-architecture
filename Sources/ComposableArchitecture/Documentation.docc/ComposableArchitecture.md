@@ -51,6 +51,7 @@ day-to-day when building applications, such as:
 - <doc:DependencyManagement>
 - <doc:Testing>
 - <doc:Performance>
+- <doc:Navigation>
 
 ### Upgrade guides
 
