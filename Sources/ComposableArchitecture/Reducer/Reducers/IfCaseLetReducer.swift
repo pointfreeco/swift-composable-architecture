@@ -117,20 +117,17 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
   ) -> EffectTask<Parent.Action> {
     let childEffects = self.reduceChild(into: &state, action: action)
 
-    let childStateBefore = self.toChildState.extract(from: state)
+    let childIDBefore = self.toChildState.extract(from: state).map(AnyID.init)
     let parentEffects = self.parent.reduce(into: &state, action: action)
-    let childStateAfter = self.toChildState.extract(from: state)
+    let childIDAfter = self.toChildState.extract(from: state).map(AnyID.init)
 
     let childCancelEffects: EffectTask<Parent.Action>
-    if let childID = childStateBefore.map(AnyID.init), childID != childStateAfter.map(AnyID.init) {
-      let id = self.navigationID
-        .appending(id: childID)
+    if let childID = childIDBefore, childID != childIDAfter {
+      let id = self.navigationID.appending(id: childID)
       childCancelEffects = .cancel(id: id)
     } else {
       childCancelEffects = .none
     }
-
-    // TODO: should we check inert state and nil out?
 
     return .merge(
       childEffects,

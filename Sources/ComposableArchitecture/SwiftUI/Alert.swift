@@ -2,12 +2,27 @@ import SwiftUI
 
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 extension View {
+  /// Displays an alert when then store's state becomes non-`nil`, and dismisses it when it becomes
+  /// `nil`.
+  ///
+  /// - Parameters:
+  ///   - store: A store that is focused on ``PresentationState`` and ``PresentationAction`` for
+  ///     an alert.
   public func alert<ButtonAction>(
     store: Store<PresentationState<AlertState<ButtonAction>>, PresentationAction<ButtonAction>>
   ) -> some View {
     self.alert(store: store, state: { $0 }, action: { $0 })
   }
 
+  /// Displays an alert when then store's state becomes non-`nil`, and dismisses it when it becomes
+  /// `nil`.
+  ///
+  /// - Parameters:
+  ///   - store: A store that is focused on ``PresentationState`` and ``PresentationAction`` for
+  ///     an alert.
+  ///   - toDestinationState: A transformation to extract alert state from the presentation state.
+  ///   - fromDestinationAction: A transformation to embed alert actions into the presentation
+  ///     action.
   public func alert<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (State) -> AlertState<ButtonAction>?,

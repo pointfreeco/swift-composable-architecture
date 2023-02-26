@@ -47,7 +47,7 @@ private struct PresentationPopoverModifer<
   Action,
   DestinationState,
   DestinationAction,
-  CoverContent: View
+  PopoverContent: View
 >: ViewModifier {
   let store: Store<PresentationState<State>, PresentationAction<Action>>
   @ObservedObject var viewStore: ViewStore<PresentationState<State>, PresentationAction<Action>>
@@ -55,7 +55,7 @@ private struct PresentationPopoverModifer<
   let fromDestinationAction: (DestinationAction) -> Action
   let attachmentAnchor: PopoverAttachmentAnchor
   let arrowEdge: Edge
-  let coverContent: (Store<DestinationState, DestinationAction>) -> CoverContent
+  let popoverContent: (Store<DestinationState, DestinationAction>) -> PopoverContent
 
   init(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
@@ -63,7 +63,7 @@ private struct PresentationPopoverModifer<
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
     attachmentAnchor: PopoverAttachmentAnchor = .rect(.bounds),
     arrowEdge: Edge = .top,
-    content coverContent: @escaping (Store<DestinationState, DestinationAction>) -> CoverContent
+    content popoverContent: @escaping (Store<DestinationState, DestinationAction>) -> PopoverContent
   ) {
     self.store = store
     self.viewStore = ViewStore(
@@ -74,7 +74,7 @@ private struct PresentationPopoverModifer<
     self.fromDestinationAction = fromDestinationAction
     self.attachmentAnchor = attachmentAnchor
     self.arrowEdge = arrowEdge
-    self.coverContent = coverContent
+    self.popoverContent = popoverContent
   }
 
   func body(content: Content) -> some View {
@@ -91,7 +91,7 @@ private struct PresentationPopoverModifer<
           state: returningLastNonNilValue { $0.wrappedValue.flatMap(self.toDestinationState) },
           action: { .presented(self.fromDestinationAction($0)) }
         ),
-        then: self.coverContent
+        then: self.popoverContent
       )
     }
   }

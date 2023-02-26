@@ -1,11 +1,52 @@
 extension DependencyValues {
-  /// An action that dismisses the current presentation.
+  /// An effect that dismisses the current presentation.
+  ///
+  /// Execute this in the effect returned from a reducer in order to dismiss the feature:
+  ///
+  /// ```swift
+  /// struct ChildFeature: ReducerProtocol {
+  ///   struct State { /* ... */ }
+  ///   enum Action {
+  ///     case exitButtonTapped
+  ///     // ...
+  ///   }
+  ///   @Dependency(\.dismiss) var dismiss
+  ///   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  ///     switch action {
+  ///       case .exitButtonTapped:
+  ///         return .fireAndForget { await self.dismiss() }
+  ///       // ...
+  ///     }
+  ///   }
+  /// }
+  /// ```
   public var dismiss: DismissEffect {
     get { self[DismissKey.self] }
     set { self[DismissKey.self] = newValue }
   }
 }
 
+/// An effect that dismisses the current presentation.
+///
+/// Execute this in the effect returned from a reducer in order to dismiss the feature:
+///
+/// ```swift
+/// struct ChildFeature: ReducerProtocol {
+///   struct State { /* ... */ }
+///   enum Action {
+///     case exitButtonTapped
+///     // ...
+///   }
+///   @Dependency(\.dismiss) var dismiss
+///   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+///     switch action {
+///       case .exitButtonTapped:
+///         return .fireAndForget { await self.dismiss() }
+///       // ...
+///     }
+///   }
+/// }
+/// ```
 public struct DismissEffect: Sendable {
   // TODO: Should this be `async throws` instead of optional+runtimeWarn?
   var dismiss: (@Sendable () async -> Void)?

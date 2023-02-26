@@ -30,19 +30,19 @@ private struct PresentationSheetModifier<
   Action,
   DestinationState,
   DestinationAction,
-  CoverContent: View
+  SheetContent: View
 >: ViewModifier {
   let store: Store<PresentationState<State>, PresentationAction<Action>>
   @ObservedObject var viewStore: ViewStore<PresentationState<State>, PresentationAction<Action>>
   let toDestinationState: (State) -> DestinationState?
   let fromDestinationAction: (DestinationAction) -> Action
-  let coverContent: (Store<DestinationState, DestinationAction>) -> CoverContent
+  let sheetContent: (Store<DestinationState, DestinationAction>) -> SheetContent
 
   init(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (State) -> DestinationState?,
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
-    content coverContent: @escaping (Store<DestinationState, DestinationAction>) -> CoverContent
+    content sheetContent: @escaping (Store<DestinationState, DestinationAction>) -> SheetContent
   ) {
     self.store = store
     self.viewStore = ViewStore(
@@ -51,7 +51,7 @@ private struct PresentationSheetModifier<
     )
     self.toDestinationState = toDestinationState
     self.fromDestinationAction = fromDestinationAction
-    self.coverContent = coverContent
+    self.sheetContent = sheetContent
   }
 
   func body(content: Content) -> some View {
@@ -66,7 +66,7 @@ private struct PresentationSheetModifier<
           state: returningLastNonNilValue { $0.wrappedValue.flatMap(self.toDestinationState) },
           action: { .presented(self.fromDestinationAction($0)) }
         ),
-        then: self.coverContent
+        then: self.sheetContent
       )
     }
   }

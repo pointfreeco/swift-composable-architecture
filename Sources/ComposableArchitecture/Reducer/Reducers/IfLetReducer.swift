@@ -26,14 +26,20 @@ extension ReducerProtocol {
   /// }
   /// ```
   ///
-  /// The `ifLet` forces a specific order of operations for the child and parent features. It runs
+  /// The `ifLet` operator does a number of things to try to enforce correctness:
+  ///
+  /// * It forces a specific order of operations for the child and parent features. It runs
   /// the child first, and then the parent. If the order was reversed, then it would be possible for
   /// the parent feature to `nil` out the child state, in which case the child feature would not be
   /// able to react to that action. That can cause subtle bugs.
+  /// * It automatically cancels all child effects when it detects the child's state is `nil`'d out.
+  /// * Automatically `nil`s out child state when an action is sent for alerts and confirmation
+  /// dialogs.
   ///
-  /// It is still possible for a parent feature higher up in the application to `nil` out child
-  /// state before the child has a chance to react to the action. In such cases a runtime warning
-  /// is shown in Xcode to let you know that there's a potential problem.
+  /// The ``DismissEffect`` dependency does not work when a child feature is presented with this
+  /// version of the `ifLet` operator. You must use
+  /// ``ifLet(_:action:destination:file:fileID:line:)-2soon`` instead, which makes use of
+  /// ``PresentationState`` and ``PresentationAction``.
   ///
   /// - Parameters:
   ///   - toWrappedState: A writable key path from parent state to a property containing optional
@@ -114,12 +120,12 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
   ) -> EffectTask<Parent.Action> {
     let childEffects = self.reduceChild(into: &state, action: action)
 
-    let childStateBefore = state[keyPath: self.toChildState]
+    let childIDBefore = state[keyPath: self.toChildState].map(AnyID.init)
     let parentEffects = self.parent.reduce(into: &state, action: action)
-    let childStateAfter = state[keyPath: self.toChildState]
+    let childIDAfter = state[keyPath: self.toChildState].map(AnyID.init)
 
     let childCancelEffects: EffectTask<Parent.Action>
-    if let childID = childStateBefore.map(AnyID.init), childID != childStateAfter.map(AnyID.init) {
+    if let childID = childIDBefore, childID != childIDAfter {
       let id = self.navigationID
         .appending(path: self.toChildState)
         .appending(id: childID)
@@ -128,7 +134,7 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
       childCancelEffects = .none
     }
 
-    // TODO: should we check inert state and nil out?
+    // TODO: can this just call ifCaseLet under the hood?
 
     return .merge(
       childEffects,
@@ -176,6 +182,13 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
     let id = self.navigationID
       .appending(path: self.toChildState)
       .appending(component: state[keyPath: self.toChildState]!)
+
+    defer {
+      if Child.State.self is _EphemeralState.Type {
+        state[keyPath: toChildState] = nil
+      }
+    }
+
     return self.child
       .dependency(\.navigationID, id)
       .reduce(into: &state[keyPath: self.toChildState]!, action: childAction)

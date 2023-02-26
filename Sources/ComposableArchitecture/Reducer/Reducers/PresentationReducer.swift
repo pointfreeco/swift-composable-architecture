@@ -1,5 +1,7 @@
-@_spi(Reflection) import CasePaths
-
+/// A property wrapper for state that can be presented.
+///
+/// Use this property wrapper for modeling a feature's domain that needs to present a child
+/// feature using ``ReducerProtocol/ifLet(_:action:destination:file:fileID:line:)-2soon``.
 @propertyWrapper
 public struct PresentationState<State> {
   private var boxedValue: [State]
@@ -76,17 +78,10 @@ extension PresentationState: CustomReflectable {
   }
 }
 
-private func isEphemeral<State>(_ state: State) -> Bool {
-  if State.self is _EphemeralState.Type {
-    return true
-  } else if let metadata = EnumMetadata(type(of: state)) {
-    return metadata.associatedValueType(forTag: metadata.tag(of: state))
-      is _EphemeralState.Type
-  } else {
-    return false
-  }
-}
-
+/// A wrapper type for actions that can be presented.
+///
+/// Use this wrapper type for modeling a feature's domain that needs to present a child
+/// feature using ``ReducerProtocol/ifLet(_:action:destination:file:fileID:line:)-2soon``.
 public enum PresentationAction<Action> {
   case dismiss
   case presented(Action)
@@ -99,6 +94,52 @@ extension PresentationAction: Decodable where Action: Decodable {}
 extension PresentationAction: Encodable where Action: Encodable {}
 
 extension ReducerProtocol {
+  /// Embeds a child reducer in a parent domain that works on an optional property of parent state.
+  ///
+  /// For example, if a parent feature holds onto a piece of optional child state, then it can
+  /// perform its core logic _and_ the child's logic by using the `ifLet` operator:
+  ///
+  /// ```swift
+  /// struct Parent: ReducerProtocol {
+  ///   struct State {
+  ///     @PresentationState var child: Child.State?
+  ///     // ...
+  ///   }
+  ///   enum Action {
+  ///     case child(PresentationAction<Child.Action>)
+  ///     // ...
+  ///   }
+  ///
+  ///   var body: some ReducerProtocol<State, Action> {
+  ///     Reduce { state, action in
+  ///       // Core logic for parent feature
+  ///     }
+  ///     .ifLet(\.$child, action: /Action.child) {
+  ///       Child()
+  ///     }
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// The `ifLet` operator does a number of things to try to enforce correctness:
+  ///
+  /// * It forces a specific order of operations for the child and parent features. It runs
+  /// the child first, and then the parent. If the order was reversed, then it would be possible for
+  /// the parent feature to `nil` out the child state, in which case the child feature would not be
+  /// able to react to that action. That can cause subtle bugs.
+  /// * It automatically cancels all child effects when it detects the child's state is `nil`'d out.
+  /// * Automatically `nil`s out child state when an action is sent for alerts and confirmation
+  /// dialogs.
+  /// * It gives the child feature access to the ``DismissEffect`` dependency, which allows the
+  /// child feature to dismiss itself without communicating with the parent.
+  ///
+  /// - Parameters:
+  ///   - toWrappedState: A writable key path from parent state to a property containing optional
+  ///     child state.
+  ///   - toWrappedAction: A case path from parent action to a case containing child actions.
+  ///   - wrapped: A reducer that will be invoked with child actions against non-optional child
+  ///     state.
+  /// - Returns: A reducer that combines the child reducer with the parent reducer.
   public func ifLet<DestinationState, DestinationAction, Destination: ReducerProtocol>(
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
     action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
@@ -119,6 +160,8 @@ extension ReducerProtocol {
     )
   }
 
+  /// A special overload of ``ifLet(_:action:destination:file:fileID:line:)-2soon`` that works just
+  /// for alerts and confirmation dialogs and does not require a child reducer.
   public func ifLet<DestinationState: _EphemeralState, DestinationAction>(
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
     action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
