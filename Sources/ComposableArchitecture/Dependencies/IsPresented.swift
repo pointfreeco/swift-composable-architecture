@@ -3,7 +3,7 @@ extension DependencyValues {
   /// feature.
   ///
   /// This value is set to true on reducers that are run from within
-  /// ``ReducerProtocol/ifLet(_:action:destination:file:fileID:line:)-2soon``.
+  /// ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)-23pza``.
   public var isPresented: Bool {
     self.dismiss.dismiss != nil
   }

@@ -48,7 +48,6 @@ extension DependencyValues {
 /// }
 /// ```
 public struct DismissEffect: Sendable {
-  // TODO: Should this be `async throws` instead of optional+runtimeWarn?
   var dismiss: (@Sendable () async -> Void)?
 
   public func callAsFunction(

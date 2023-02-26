@@ -377,8 +377,8 @@ A `Parent` reducer conformances can be made by implementing the
 ``ReducerProtocol/body-swift.property-7foai`` property of the ``ReducerProtocol``, which allows you
 to express the parent's logic as a composition of multiple reducers. In particular, you can use
 the ``Reduce`` entry point to implement the core parent logic, and then chain on the 
-``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)`` operator to identify the optional child
-state that you want to run the `Feature` reducer on when non-`nil`:
+``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)-1a0il`` operator to identify the optional
+child state that you want to run the `Feature` reducer on when non-`nil`:
 
 ```swift
 struct Parent: ReducerProtocol {

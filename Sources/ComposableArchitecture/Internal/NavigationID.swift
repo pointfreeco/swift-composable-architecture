@@ -14,30 +14,28 @@ private enum NavigationIDKey: DependencyKey {
 }
 
 @usableFromInline
-struct NavigationID: Hashable, Identifiable {
-  var path: [AnyHashable] = []
+struct NavigationID: Hashable, Identifiable, Sendable {
+  var path: [AnyHashableSendable] = []
 
   @usableFromInline
   var id: Self { self }
 
   @usableFromInline
   func appending<Component>(component: Component) -> Self {
-    var navigationID = self
-    navigationID.path.append(AnyID(component))
-    return navigationID
+    self.appending(id: AnyID(component))
   }
 
   @usableFromInline
   func appending(id: AnyID) -> Self {
     var navigationID = self
-    navigationID.path.append(id)
+    navigationID.path.append(AnyHashableSendable(id))
     return navigationID
   }
 
   @usableFromInline
   func appending(path: AnyKeyPath) -> Self {
     var navigationID = self
-    navigationID.path.append(path)
+    navigationID.path.append(AnyHashableSendable(path))
     return navigationID
   }
 }

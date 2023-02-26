@@ -30,6 +30,7 @@ extension View {
 }
 
 @available(iOS 14, macCatalyst 14, tvOS 14, watchOS 7, *)
+@available(macOS, unavailable)
 private struct PresentationFullScreenCoverModifier<
   State,
   Action,
@@ -38,7 +39,7 @@ private struct PresentationFullScreenCoverModifier<
   CoverContent: View
 >: ViewModifier {
   let store: Store<PresentationState<State>, PresentationAction<Action>>
-  @StateObject var viewStore: ViewStore<PresentationState<State>, PresentationAction<Action>>
+  @ObservedObject var viewStore: ViewStore<PresentationState<State>, PresentationAction<Action>>
   let toDestinationState: (State) -> DestinationState?
   let fromDestinationAction: (DestinationAction) -> Action
   let coverContent: (Store<DestinationState, DestinationAction>) -> CoverContent
@@ -50,11 +51,9 @@ private struct PresentationFullScreenCoverModifier<
     content coverContent: @escaping (Store<DestinationState, DestinationAction>) -> CoverContent
   ) {
     self.store = store
-    self._viewStore = StateObject(
-      wrappedValue: ViewStore(
-        store.filter { state, _ in state.wrappedValue != nil },
-        removeDuplicates: { $0.id == $1.id }
-      )
+    self.viewStore = ViewStore(
+      store.filter { state, _ in state.wrappedValue != nil },
+      removeDuplicates: { $0.id == $1.id }
     )
     self.toDestinationState = toDestinationState
     self.fromDestinationAction = fromDestinationAction

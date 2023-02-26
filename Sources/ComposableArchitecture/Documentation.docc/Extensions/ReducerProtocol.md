@@ -14,17 +14,20 @@
 - ``body-swift.property-97ymy``
 - ``Body-swift.typealias``
 - ``ReducerBuilder``
+
+### Embedding child features
+
 - ``Scope``
-- ``ifLet(_:action:then:file:fileID:line:)``
+- ``ifLet(_:action:then:file:fileID:line:)-1a0il``
 - ``ifCaseLet(_:action:then:file:fileID:line:)``
-- ``forEach(_:action:element:file:fileID:line:)-myah``
+- ``forEach(_:action:element:file:fileID:line:)``
 
 ### Supporting reducers
 
-- ``BindingReducer``
+- ``Reduce``
 - ``CombineReducers``
 - ``EmptyReducer``
-- ``Reduce``
+- ``BindingReducer``
 
 ### Reducer modifiers
 

@@ -1,7 +1,7 @@
 /// A property wrapper for state that can be presented.
 ///
-/// Use this property wrapper for modeling a feature's domain that needs to present a child
-/// feature using ``ReducerProtocol/ifLet(_:action:destination:file:fileID:line:)-2soon``.
+/// Use this property wrapper for modeling a feature's domain that needs to present a child feature
+/// using ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)-23pza``.
 @propertyWrapper
 public struct PresentationState<State> {
   private var boxedValue: [State]
@@ -81,7 +81,7 @@ extension PresentationState: CustomReflectable {
 /// A wrapper type for actions that can be presented.
 ///
 /// Use this wrapper type for modeling a feature's domain that needs to present a child
-/// feature using ``ReducerProtocol/ifLet(_:action:destination:file:fileID:line:)-2soon``.
+/// feature using ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)-23pza``.
 public enum PresentationAction<Action> {
   case dismiss
   case presented(Action)
@@ -123,27 +123,31 @@ extension ReducerProtocol {
   ///
   /// The `ifLet` operator does a number of things to try to enforce correctness:
   ///
-  /// * It forces a specific order of operations for the child and parent features. It runs
-  /// the child first, and then the parent. If the order was reversed, then it would be possible for
-  /// the parent feature to `nil` out the child state, in which case the child feature would not be
-  /// able to react to that action. That can cause subtle bugs.
-  /// * It automatically cancels all child effects when it detects the child's state is `nil`'d out.
-  /// * Automatically `nil`s out child state when an action is sent for alerts and confirmation
-  /// dialogs.
-  /// * It gives the child feature access to the ``DismissEffect`` dependency, which allows the
-  /// child feature to dismiss itself without communicating with the parent.
+  ///   * It forces a specific order of operations for the child and parent features. It runs the
+  ///     child first, and then the parent. If the order was reversed, then it would be possible for
+  ///     the parent feature to `nil` out the child state, in which case the child feature would not
+  ///     be able to react to that action. That can cause subtle bugs.
+  ///
+  ///   * It automatically cancels all child effects when it detects the child's state is `nil`'d
+  ///     out.
+  ///
+  ///   * Automatically `nil`s out child state when an action is sent for alerts and confirmation
+  ///     dialogs.
+  ///
+  ///   * It gives the child feature access to the ``DismissEffect`` dependency, which allows the
+  ///     child feature to dismiss itself without communicating with the parent.
   ///
   /// - Parameters:
-  ///   - toWrappedState: A writable key path from parent state to a property containing optional
-  ///     child state.
-  ///   - toWrappedAction: A case path from parent action to a case containing child actions.
-  ///   - wrapped: A reducer that will be invoked with child actions against non-optional child
+  ///   - toPresentationState: A writable key path from parent state to a property containing child
+  ///     presentation state.
+  ///   - toPresentationAction: A case path from parent action to a case containing child actions.
+  ///   - destination: A reducer that will be invoked with child actions against presented child
   ///     state.
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   public func ifLet<DestinationState, DestinationAction, Destination: ReducerProtocol>(
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
     action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
-    @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
+    @ReducerBuilder<DestinationState, DestinationAction> then destination: () -> Destination,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -160,8 +164,8 @@ extension ReducerProtocol {
     )
   }
 
-  /// A special overload of ``ifLet(_:action:destination:file:fileID:line:)-2soon`` that works just
-  /// for alerts and confirmation dialogs and does not require a child reducer.
+  /// A special overload of ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)-23pza`` for
+  /// alerts and confirmation dialogs that does not require a child reducer.
   public func ifLet<DestinationState: _EphemeralState, DestinationAction>(
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
     action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
@@ -173,7 +177,7 @@ extension ReducerProtocol {
     self.ifLet(
       toPresentationState,
       action: toPresentationAction,
-      destination: { EmptyReducer() },
+      then: { EmptyReducer() },
       file: file,
       fileID: fileID,
       line: line

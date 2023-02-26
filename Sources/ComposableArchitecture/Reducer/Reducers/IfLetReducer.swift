@@ -28,18 +28,19 @@ extension ReducerProtocol {
   ///
   /// The `ifLet` operator does a number of things to try to enforce correctness:
   ///
-  /// * It forces a specific order of operations for the child and parent features. It runs
-  /// the child first, and then the parent. If the order was reversed, then it would be possible for
-  /// the parent feature to `nil` out the child state, in which case the child feature would not be
-  /// able to react to that action. That can cause subtle bugs.
-  /// * It automatically cancels all child effects when it detects the child's state is `nil`'d out.
-  /// * Automatically `nil`s out child state when an action is sent for alerts and confirmation
-  /// dialogs.
+  ///   * It forces a specific order of operations for the child and parent features. It runs the
+  ///     child first, and then the parent. If the order was reversed, then it would be possible for
+  ///     the parent feature to `nil` out the child state, in which case the child feature would not
+  ///     be able to react to that action. That can cause subtle bugs.
   ///
-  /// The ``DismissEffect`` dependency does not work when a child feature is presented with this
-  /// version of the `ifLet` operator. You must use
-  /// ``ifLet(_:action:destination:file:fileID:line:)-2soon`` instead, which makes use of
-  /// ``PresentationState`` and ``PresentationAction``.
+  ///   * It automatically cancels all child effects when it detects the child's state is `nil`'d
+  ///     out.
+  ///
+  ///   * Automatically `nil`s out child state when an action is sent for alerts and confirmation
+  ///     dialogs.
+  ///
+  /// See ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)-23pza`` for a more advanced
+  /// operator suited to navigation.
   ///
   /// - Parameters:
   ///   - toWrappedState: A writable key path from parent state to a property containing optional
