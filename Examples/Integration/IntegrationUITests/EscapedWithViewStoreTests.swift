@@ -1,6 +1,6 @@
 import Integration
-import XCTest
 import TestCases
+import XCTest
 
 @MainActor
 final class EscapedWithViewStoreTests: XCTestCase {

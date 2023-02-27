@@ -51,12 +51,11 @@ private struct PresentationTestCase: ReducerProtocol {
   var body: some ReducerProtocolOf<Self> {
     Reduce<State, Action> { state, action in
       switch action {
-      case
-          .destination(.presented(.fullScreenCover(.parentSendDismissActionButtonTapped))),
-          .destination(.presented(.navigationDestination(.parentSendDismissActionButtonTapped))),
-          .destination(.presented(.navigationLink(.parentSendDismissActionButtonTapped))),
-          .destination(.presented(.sheet(.parentSendDismissActionButtonTapped))),
-          .destination(.presented(.popover(.parentSendDismissActionButtonTapped))):
+      case .destination(.presented(.fullScreenCover(.parentSendDismissActionButtonTapped))),
+        .destination(.presented(.navigationDestination(.parentSendDismissActionButtonTapped))),
+        .destination(.presented(.navigationLink(.parentSendDismissActionButtonTapped))),
+        .destination(.presented(.sheet(.parentSendDismissActionButtonTapped))),
+        .destination(.presented(.popover(.parentSendDismissActionButtonTapped))):
         return .send(.destination(.dismiss))
       case .destination:
         return .none
@@ -147,7 +146,8 @@ struct PresentationTestCaseView: View {
       }
 
       NavigationLinkStore(
-        store: self.store.scope(state: \.$destination, action: PresentationTestCase.Action.destination),
+        store: self.store.scope(
+          state: \.$destination, action: PresentationTestCase.Action.destination),
         state: /PresentationTestCase.Destination.State.navigationLink,
         action: PresentationTestCase.Destination.Action.navigationLink
       ) {
@@ -171,28 +171,32 @@ struct PresentationTestCaseView: View {
       }
     }
     .fullScreenCover(
-      store: self.store.scope(state: \.$destination, action: PresentationTestCase.Action.destination),
+      store: self.store.scope(
+        state: \.$destination, action: PresentationTestCase.Action.destination),
       state: /PresentationTestCase.Destination.State.fullScreenCover,
       action: PresentationTestCase.Destination.Action.fullScreenCover
     ) { store in
       ChildView(store: store)
     }
     .navigationDestination(
-      store: self.store.scope(state: \.$destination, action: PresentationTestCase.Action.destination),
+      store: self.store.scope(
+        state: \.$destination, action: PresentationTestCase.Action.destination),
       state: /PresentationTestCase.Destination.State.navigationDestination,
       action: PresentationTestCase.Destination.Action.navigationDestination
     ) { store in
       ChildView(store: store)
     }
     .popover(
-      store: self.store.scope(state: \.$destination, action: PresentationTestCase.Action.destination),
+      store: self.store.scope(
+        state: \.$destination, action: PresentationTestCase.Action.destination),
       state: /PresentationTestCase.Destination.State.popover,
       action: PresentationTestCase.Destination.Action.popover
     ) { store in
       ChildView(store: store)
     }
     .sheet(
-      store: self.store.scope(state: \.$destination, action: PresentationTestCase.Action.destination),
+      store: self.store.scope(
+        state: \.$destination, action: PresentationTestCase.Action.destination),
       state: /PresentationTestCase.Destination.State.sheet,
       action: PresentationTestCase.Destination.Action.sheet
     ) { store in

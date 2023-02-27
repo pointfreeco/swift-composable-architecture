@@ -71,4 +71,3 @@ private struct PresentationSheetModifier<
     }
   }
 }
-

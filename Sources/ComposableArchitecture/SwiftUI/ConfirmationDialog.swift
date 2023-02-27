@@ -4,8 +4,8 @@ import SwiftUI
 extension View {
   public func confirmationDialog<ButtonAction>(
     store: Store<
-    PresentationState<ConfirmationDialogState<ButtonAction>>,
-    PresentationAction<ButtonAction>
+      PresentationState<ConfirmationDialogState<ButtonAction>>,
+      PresentationAction<ButtonAction>
     >
   ) -> some View {
     self.confirmationDialog(store: store, state: { $0 }, action: { $0 })
@@ -127,7 +127,7 @@ private struct PresentationConfirmationDialogModifier<State, Action, ButtonActio
         send: .dismiss
       ),
       titleVisibility: (confirmationDialogState?.titleVisibility).map(Visibility.init)
-      ?? .automatic,
+        ?? .automatic,
       presenting: confirmationDialogState,
       actions: { confirmationDialogState in
         ForEach(confirmationDialogState.buttons) { button in

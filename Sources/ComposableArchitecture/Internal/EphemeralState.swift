@@ -16,7 +16,7 @@ func isEphemeral<State>(_ state: State) -> Bool {
     return true
   } else if let metadata = EnumMetadata(type(of: state)) {
     return metadata.associatedValueType(forTag: metadata.tag(of: state))
-    is _EphemeralState.Type
+      is _EphemeralState.Type
   } else {
     return false
   }
