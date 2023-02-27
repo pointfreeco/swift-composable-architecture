@@ -116,10 +116,10 @@ import Foundation
 /// #### Thread safety checks
 ///
 /// The store performs some basic thread safety checks in order to help catch mistakes. Stores
-/// constructed via the initializer ``init(initialState:reducer:)`` are assumed to run
-/// only on the main thread, and so a check is executed immediately to make sure that is the case.
-/// Further, all actions sent to the store and all scopes (see ``scope(state:action:)``) of the
-/// store are also checked to make sure that work is performed on the main thread.
+/// constructed via the initializer ``init(initialState:reducer:prepareDependencies:)`` are assumed
+/// to run only on the main thread, and so a check is executed immediately to make sure that is the
+/// case. Further, all actions sent to the store and all scopes (see ``scope(state:action:)``) of
+/// the store are also checked to make sure that work is performed on the main thread.
 public final class Store<State, Action> {
   private var bufferedActions: [Action] = []
   @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] = [:]
@@ -141,6 +141,8 @@ public final class Store<State, Action> {
   /// - Parameters:
   ///   - initialState: The state to start the application in.
   ///   - reducer: The reducer that powers the business logic of the application.
+  ///   - prepareDependencies: A closure that can be used to override dependencies that will be accessed
+  ///     by the reducer.
   public convenience init<R: ReducerProtocol>(
     initialState: @autoclosure () -> R.State,
     reducer: R,

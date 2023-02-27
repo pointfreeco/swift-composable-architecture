@@ -7,7 +7,7 @@
 - ``reduce(into:action:)-8yinq``
 - ``State``
 - ``Action``
-- ``EffectPublisher``
+- ``EffectTask``
 
 ### Reducer composition
 
@@ -33,8 +33,8 @@
 
 - ``dependency(_:_:)``
 - ``transformDependency(_:transform:)``
+- ``_printChanges(_:)``
 - ``signpost(_:log:)``
-- ``debug()``
 
 ### Deprecations
 
