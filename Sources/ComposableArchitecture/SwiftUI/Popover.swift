@@ -30,7 +30,7 @@ extension View {
     @ViewBuilder content: @escaping (Store<DestinationState, DestinationAction>) -> Content
   ) -> some View {
     self.modifier(
-      PresentationPopoverModifer(
+      PresentationPopoverModifier(
         store: store,
         state: toDestinationState,
         action: fromDestinationAction,
@@ -42,7 +42,9 @@ extension View {
   }
 }
 
-private struct PresentationPopoverModifer<
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+private struct PresentationPopoverModifier<
   State,
   Action,
   DestinationState,
