@@ -66,19 +66,20 @@ struct AnyID: Hashable, Identifiable, Sendable {
 
   @usableFromInline
   init<Base>(_ base: Base) {
-    func id(_ identifiable: some Identifiable) -> AnyHashableSendable {
+    func id<T: Identifiable>(_ identifiable: T) -> AnyHashableSendable {
       AnyHashableSendable(identifiable.id)
     }
 
     self.objectIdentifier = ObjectIdentifier(Base.self)
     self.tag = EnumMetadata(Base.self)?.tag(of: base)
-    if let base = base as? any Identifiable {
-      self.identifier = id(base)
-    } else if let metadata = EnumMetadata(type(of: base)),
-      metadata.associatedValueType(forTag: metadata.tag(of: base)) is any Identifiable.Type
-    {
-      // TODO: Extract enum payload and assign id
+    if let id = _id(base) {
+      self.identifier = AnyHashableSendable(id)
     }
+    // TODO: Extract identifiable enum payload and assign id
+    // else if let metadata = EnumMetadata(type(of: base)),
+    //   metadata.associatedValueType(forTag: metadata.tag(of: base)) is any Identifiable.Type
+    // {
+    // }
   }
 
   @usableFromInline
