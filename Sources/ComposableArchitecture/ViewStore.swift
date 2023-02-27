@@ -67,7 +67,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
   public private(set) lazy var objectWillChange = ObservableObjectPublisher()
 
-  private let _send: (ViewAction) -> Task<Void, Never>?
+  private let _send: (ViewAction) -> StoreTask
   fileprivate let _state: CurrentValueRelay<ViewState>
   private var viewCancellable: AnyCancellable?
 
@@ -259,7 +259,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
 
   /// Sends an action to the store.
   ///
-  /// This method returns a ``ViewStoreTask``, which represents the lifecycle of the effect started
+  /// This method returns a ``StoreTask``, which represents the lifecycle of the effect started
   /// from sending an action. You can use this value to tie the effect's lifecycle _and_
   /// cancellation to an asynchronous context, such as SwiftUI's `task` view modifier:
   ///
@@ -274,11 +274,11 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   /// > result can be fed back into the store.
   ///
   /// - Parameter action: An action.
-  /// - Returns: A ``ViewStoreTask`` that represents the lifecycle of the effect executed when
+  /// - Returns: A ``StoreTask`` that represents the lifecycle of the effect executed when
   ///   sending the action.
   @discardableResult
-  public func send(_ action: ViewAction) -> ViewStoreTask {
-    .init(rawValue: self._send(action))
+  public func send(_ action: ViewAction) -> StoreTask {
+    self._send(action)
   }
 
   /// Sends an action to the store with a given animation.
@@ -289,7 +289,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - action: An action.
   ///   - animation: An animation.
   @discardableResult
-  public func send(_ action: ViewAction, animation: Animation?) -> ViewStoreTask {
+  public func send(_ action: ViewAction, animation: Animation?) -> StoreTask {
     send(action, transaction: Transaction(animation: animation))
   }
 
@@ -301,7 +301,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - action: An action.
   ///   - transaction: A transaction.
   @discardableResult
-  public func send(_ action: ViewAction, transaction: Transaction) -> ViewStoreTask {
+  public func send(_ action: ViewAction, transaction: Transaction) -> StoreTask {
     withTransaction(transaction) {
       self.send(action)
     }
@@ -687,42 +687,8 @@ extension ViewStore where ViewState == Void {
   }
 }
 
-/// The type returned from ``ViewStore/send(_:)`` that represents the lifecycle of the effect
-/// started from sending an action.
-///
-/// You can use this value to tie the effect's lifecycle _and_ cancellation to an asynchronous
-/// context, such as the `task` view modifier.
-///
-/// ```swift
-/// .task { await viewStore.send(.task).finish() }
-/// ```
-///
-/// > Note: Unlike Swift's `Task` type, ``ViewStoreTask`` automatically sets up a cancellation
-/// > handler between the current async context and the task.
-///
-/// See ``TestStoreTask`` for the analog returned from ``TestStore``.
-public struct ViewStoreTask: Hashable, Sendable {
-  fileprivate let rawValue: Task<Void, Never>?
-
-  /// Cancels the underlying task and waits for it to finish.
-  public func cancel() async {
-    self.rawValue?.cancel()
-    await self.finish()
-  }
-
-  /// Waits for the task to finish.
-  public func finish() async {
-    await self.rawValue?.cancellableValue
-  }
-
-  /// A Boolean value that indicates whether the task should stop executing.
-  ///
-  /// After the value of this property becomes `true`, it remains `true` indefinitely. There is no
-  /// way to uncancel a task.
-  public var isCancelled: Bool {
-    self.rawValue?.isCancelled ?? true
-  }
-}
+@available(*, deprecated, renamed: "StoreTask")
+public typealias ViewStoreTask = StoreTask
 
 /// A publisher of store state.
 @dynamicMemberLookup

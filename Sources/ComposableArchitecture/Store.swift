@@ -344,11 +344,11 @@ public final class Store<State, Action> {
   @_spi(Internals) public func send(
     _ action: Action,
     originatingFrom originatingAction: Action? = nil
-  ) -> Task<Void, Never>? {
+  ) -> StoreTask {
     self.threadCheck(status: .send(action, originatingAction: originatingAction))
 
     self.bufferedActions.append(action)
-    guard !self.isSending else { return nil }
+    guard !self.isSending else { return StoreTask() }
 
     self.isSending = true
     var currentState = self.state.value
@@ -362,7 +362,7 @@ public final class Store<State, Action> {
       if !self.bufferedActions.isEmpty {
         if let task = self.send(
           self.bufferedActions.removeLast(), originatingFrom: originatingAction
-        ) {
+        ).rawValue {
           tasks.wrappedValue.append(task)
         }
       }
@@ -402,7 +402,7 @@ public final class Store<State, Action> {
             },
             receiveValue: { [weak self] effectAction in
               guard let self = self else { return }
-              if let task = self.send(effectAction, originatingFrom: action) {
+              if let task = self.send(effectAction, originatingFrom: action).rawValue {
                 tasks.wrappedValue.append(task)
               }
             }
@@ -448,7 +448,7 @@ public final class Store<State, Action> {
                     )
                   }
                 #endif
-                if let task = self.send($0, originatingFrom: action) {
+                if let task = self.send($0, originatingFrom: action).rawValue {
                   tasks.wrappedValue.append(task)
                 }
               }
@@ -458,8 +458,8 @@ public final class Store<State, Action> {
       }
     }
 
-    guard !tasks.wrappedValue.isEmpty else { return nil }
-    return Task {
+    guard !tasks.wrappedValue.isEmpty else { return StoreTask() }
+    return StoreTask {
       await withTaskCancellationHandler {
         var index = tasks.wrappedValue.startIndex
         while index < tasks.wrappedValue.endIndex {
@@ -659,7 +659,10 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
         state = self.toScopedState(self.rootStore.state.value)
         self.isSending = false
       }
-      if let action = self.fromScopedAction(state, action), let task = self.rootStore.send(action) {
+      if
+        let action = self.fromScopedAction(state, action),
+        let task = self.rootStore.send(action).rawValue
+      {
         return .fireAndForget { await task.cancellableValue }
       } else {
         return .none
@@ -773,3 +776,76 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     }
   }
 #endif
+
+/// An "unsafe" view into a store for accessing state and sending an action.
+///
+/// See ``Store/withUnsafeStore(_:)`` for more information.
+public struct UnsafeStore<State, Action> {
+  public let state: State
+  public let _send: (Action) -> StoreTask
+
+  @_disfavoredOverload
+  public func send(_ action: Action) -> StoreTask {
+    self._send(action)
+  }
+  
+  public func send(_ action: Action) {
+    _ = self._send(action)
+  }
+}
+
+extension Store {
+  /// Provides "unsafe" access to the state and `send` method on the store.
+  ///
+  /// This method gives you instant access to the state and `send` method of the store without
+  /// explicitly observing the store. It is considered "unsafe" because you are only getting access
+  /// to the state at this particular moment, and you will not observe future changes to state.
+  public func withUnsafeStore<Result>(_ operation: (UnsafeStore<State, Action>) -> Result) -> Result {
+    operation(UnsafeStore(state: self.state.value, _send: { self.send($0) }))
+  }
+}
+
+/// The type returned from ``ViewStore/send(_:)`` that represents the lifecycle of the effect
+/// started from sending an action.
+///
+/// You can use this value to tie the effect's lifecycle _and_ cancellation to an asynchronous
+/// context, such as the `task` view modifier.
+///
+/// ```swift
+/// .task { await viewStore.send(.task).finish() }
+/// ```
+///
+/// > Note: Unlike Swift's `Task` type, ``StoreTask`` automatically sets up a cancellation
+/// > handler between the current async context and the task.
+///
+/// See ``TestStoreTask`` for the analog returned from ``TestStore``.
+public struct StoreTask: Hashable, Sendable {
+  @_spi(Internals) public let rawValue: Task<Void, Never>?
+
+  init(_ rawValue: Task<Void, Never>? = nil) {
+    self.rawValue = rawValue
+  }
+
+  init(priority: TaskPriority? = nil, operation: @escaping @Sendable () async -> Void) {
+    self.rawValue = Task(priority: priority, operation: operation)
+  }
+
+  /// Cancels the underlying task and waits for it to finish.
+  public func cancel() async {
+    self.rawValue?.cancel()
+    await self.finish()
+  }
+
+  /// Waits for the task to finish.
+  public func finish() async {
+    await self.rawValue?.cancellableValue
+  }
+
+  /// A Boolean value that indicates whether the task should stop executing.
+  ///
+  /// After the value of this property becomes `true`, it remains `true` indefinitely. There is no
+  /// way to uncancel a task.
+  public var isCancelled: Bool {
+    self.rawValue?.isCancelled ?? true
+  }
+}

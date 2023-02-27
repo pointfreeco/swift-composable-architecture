@@ -565,7 +565,7 @@ extension Store {
           reducer: .init { childState, childAction, _ in
             let task = self.send(fromChildAction(childAction))
             childState = extractChildState(self.state.value) ?? childState
-            if let task = task {
+            if let task = task.rawValue {
               return .fireAndForget { await task.cancellableValue }
             } else {
               return .none

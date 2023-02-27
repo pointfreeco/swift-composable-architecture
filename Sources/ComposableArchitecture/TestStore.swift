@@ -1067,7 +1067,7 @@ extension TestStore where ScopedState: Equatable {
     // NB: Give concurrency runtime more time to kick off effects so users don't need to manually
     //     instrument their effects.
     await Task.megaYield(count: 20)
-    return .init(rawValue: task, timeout: self.timeout)
+    return .init(rawValue: task.rawValue, timeout: self.timeout)
   }
 
   /// Sends an action to the store and asserts when state changes.
@@ -1159,7 +1159,7 @@ extension TestStore where ScopedState: Equatable {
       self.line = line
     }
 
-    return .init(rawValue: task, timeout: self.timeout)
+    return .init(rawValue: task.rawValue, timeout: self.timeout)
   }
 
   private func expectedStateShouldMatch(
@@ -2177,7 +2177,7 @@ extension TestStore {
 /// See ``TestStore/finish(timeout:file:line:)`` for the ability to await all in-flight
 /// effects in the test store.
 ///
-/// See ``ViewStoreTask`` for the analog provided to ``ViewStore``.
+/// See ``StoreTask`` for the analog provided to ``Store`` and ``ViewStore``.
 public struct TestStoreTask: Hashable, Sendable {
   fileprivate let rawValue: Task<Void, Never>?
   fileprivate let timeout: UInt64

@@ -688,22 +688,22 @@ extension WithViewStore where ViewState == Void, Content: View {
   @available(
     iOS,
     deprecated: 9999.0,
-    message: "Use 'ViewStore(store).send(action)' instead of observing stateless stores."
+    message: "Use 'store.withUnsafeStore' instead of observing stateless stores."
   )
   @available(
     macOS,
     deprecated: 9999.0,
-    message: "Use 'ViewStore(store).send(action)' instead of observing stateless stores."
+    message: "Use 'store.withUnsafeStore' instead of observing stateless stores."
   )
   @available(
     tvOS,
     deprecated: 9999.0,
-    message: "Use 'ViewStore(store).send(action)' instead of observing stateless stores."
+    message: "Use 'store.withUnsafeStore' instead of observing stateless stores."
   )
   @available(
     watchOS,
     deprecated: 9999.0,
-    message: "Use 'ViewStore(store).send(action)' instead of observing stateless stores."
+    message: "Use 'store.withUnsafeStore' instead of observing stateless stores."
   )
   public init(
     _ store: Store<ViewState, ViewAction>,

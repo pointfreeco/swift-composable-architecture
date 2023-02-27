@@ -1,6 +1,6 @@
 #if DEBUG
   import Combine
-  import ComposableArchitecture
+  @_spi(Internals) import ComposableArchitecture
   import XCTest
 
   final class RuntimeWarningTests: XCTestCase {
@@ -50,7 +50,7 @@
           }
         }
       )
-      ViewStore(store, observe: { $0 }).send(.tap)
+      _ = store.send(.tap)
       _ = XCTWaiter.wait(for: [.init()], timeout: 0.5)
     }
 
@@ -107,7 +107,7 @@
 
       let store = Store<Int, Void>(initialState: 0, reducer: EmptyReducer())
       Task {
-        ViewStore(store, observe: { $0 }).send(())
+        store.send(())
       }
       _ = XCTWaiter.wait(for: [.init()], timeout: 0.5)
     }

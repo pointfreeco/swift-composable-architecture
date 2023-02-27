@@ -19,7 +19,7 @@
 - ``send(_:)``
 - ``send(_:while:)``
 - ``yield(while:)``
-- ``ViewStoreTask``
+- ``StoreTask``
 
 ### SwiftUI integration
 

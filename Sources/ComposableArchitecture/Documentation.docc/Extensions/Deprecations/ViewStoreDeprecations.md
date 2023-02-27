@@ -16,6 +16,7 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 ### Interacting with Concurrency
 
 - ``ViewStore/suspend(while:)``
+- ``ViewStoreTask``
 
 ### SwiftUI integration
 

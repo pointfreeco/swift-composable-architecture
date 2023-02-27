@@ -1,5 +1,5 @@
 import Combine
-import ComposableArchitecture
+@_spi(Internals) import ComposableArchitecture
 import XCTest
 
 @MainActor
@@ -132,7 +132,7 @@ final class ViewStoreTests: XCTestCase {
       .sink { results.append($0) }
       .store(in: &self.cancellables)
 
-    ViewStore(store, observe: { $0 }).send(())
+    _ = store.send(())
     XCTAssertEqual(results, [0, 1])
   }
 

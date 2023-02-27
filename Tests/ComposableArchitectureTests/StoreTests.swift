@@ -203,7 +203,7 @@ final class StoreTests: XCTestCase {
 
     let store = Store(initialState: (), reducer: counterReducer)
 
-    _ = ViewStore(store, observe: {}, removeDuplicates: ==).send(.tap)
+    _ = store.send(.tap)
 
     XCTAssertEqual(values, [1, 2, 3, 4])
   }
@@ -221,7 +221,7 @@ final class StoreTests: XCTestCase {
     })
 
     let store = Store(initialState: 0, reducer: reducer)
-    _ = ViewStore(store, observe: { $0 }).send(.incr)
+    _ = store.send(.incr)
     XCTAssertEqual(ViewStore(store, observe: { $0 }).state, 100_000)
   }
 
@@ -426,13 +426,13 @@ final class StoreTests: XCTestCase {
         action: ParentAction.child
       )
       .ifLet { childStore in
-        ViewStore(childStore).send(2)
+        _ = childStore.send(2)
       }
       .store(in: &cancellables)
 
     XCTAssertEqual(handledActions, [])
 
-    _ = ViewStore(parentStore).send(.button)
+    _ = parentStore.send(.button)
     XCTAssertEqual(
       handledActions,
       [
@@ -506,7 +506,7 @@ final class StoreTests: XCTestCase {
     let sendTask = scopedStore.send(())
     await Task.yield()
     neverEndingTask.cancel()
-    try await XCTUnwrap(sendTask).value
+    try await XCTUnwrap(sendTask.rawValue).value
     XCTAssertEqual(store.effectCancellables.count, 0)
     XCTAssertEqual(scopedStore.effectCancellables.count, 0)
   }
@@ -537,7 +537,7 @@ final class StoreTests: XCTestCase {
         .dependency(\.urlSession, URLSession(configuration: .ephemeral))
     )
 
-    ViewStore(store, observe: { $0 }).send(true)
+    _ = store.send(true)
   }
 
   func testOverrideDependenciesDirectlyOnStore() {
@@ -558,5 +558,13 @@ final class StoreTests: XCTestCase {
     let viewStore = ViewStore(store, observe: { $0 })
 
     XCTAssertEqual(viewStore.state, UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!)
+  }
+
+  func testUnsafeStore() {
+    let store = Store(initialState: 0, reducer: EmptyReducer<Int, Void>())
+
+    XCTAssertEqual(store.withUnsafeStore { $0.state }, 0)
+    XCTAssertEqual(store.withUnsafeStore(\.state), 0)
+    store.withUnsafeStore { $0.send(()) }
   }
 }
