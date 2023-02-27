@@ -1,5 +1,31 @@
 import SwiftUI
 
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+extension View {
+  public func confirmationDialog<ButtonAction>(
+    store: Store<
+    PresentationState<ConfirmationDialogState<ButtonAction>>,
+    PresentationAction<ButtonAction>
+    >
+  ) -> some View {
+    self.confirmationDialog(store: store, state: { $0 }, action: { $0 })
+  }
+
+  public func confirmationDialog<State, Action, ButtonAction>(
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
+    state toDestinationState: @escaping (State) -> ConfirmationDialogState<ButtonAction>?,
+    action fromDestinationAction: @escaping (ButtonAction) -> Action
+  ) -> some View {
+    self.modifier(
+      PresentationConfirmationDialogModifier(
+        viewStore: ViewStore(store, removeDuplicates: { $0.id == $1.id }),
+        toDestinationState: toDestinationState,
+        fromDestinationAction: fromDestinationAction
+      )
+    )
+  }
+}
+
 extension View {
   /// Displays a dialog when the store's state becomes non-`nil`, and dismisses it when it becomes
   /// `nil`.
@@ -83,5 +109,49 @@ private struct OldConfirmationDialogModifier<Action>: ViewModifier {
     #else
       return EmptyView()
     #endif
+  }
+}
+
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+private struct PresentationConfirmationDialogModifier<State, Action, ButtonAction>: ViewModifier {
+  @StateObject var viewStore: ViewStore<PresentationState<State>, PresentationAction<Action>>
+  let toDestinationState: (State) -> ConfirmationDialogState<ButtonAction>?
+  let fromDestinationAction: (ButtonAction) -> Action
+
+  func body(content: Content) -> some View {
+    let confirmationDialogState = self.viewStore.wrappedValue.flatMap(self.toDestinationState)
+    content.confirmationDialog(
+      (confirmationDialogState?.title).map(Text.init) ?? Text(""),
+      isPresented: self.viewStore.binding(
+        get: { $0.wrappedValue.flatMap(self.toDestinationState) != nil },
+        send: .dismiss
+      ),
+      titleVisibility: (confirmationDialogState?.titleVisibility).map(Visibility.init)
+      ?? .automatic,
+      presenting: confirmationDialogState,
+      actions: { confirmationDialogState in
+        ForEach(confirmationDialogState.buttons) { button in
+          Button(role: button.role.map(ButtonRole.init)) {
+            switch button.action.type {
+            case let .send(action):
+              if let action = action {
+                viewStore.send(.presented(self.fromDestinationAction(action)))
+              }
+            case let .animatedSend(action, animation):
+              if let action = action {
+                _ = withAnimation(animation) {
+                  viewStore.send(.presented(self.fromDestinationAction(action)))
+                }
+              }
+            }
+          } label: {
+            Text(button.label)
+          }
+        }
+      },
+      message: {
+        $0.message.map(Text.init) ?? Text("")
+      }
+    )
   }
 }

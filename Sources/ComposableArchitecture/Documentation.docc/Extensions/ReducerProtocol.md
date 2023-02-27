@@ -14,8 +14,11 @@
 - ``body-swift.property-8lumc``
 - ``Body-swift.typealias``
 - ``ReducerBuilder``
+
+### Embedding child features
+
 - ``Scope``
-- ``ifLet(_:action:then:file:fileID:line:)``
+- ``ifLet(_:action:then:file:fileID:line:)-1yyuq``
 - ``ifCaseLet(_:action:then:file:fileID:line:)``
 - ``forEach(_:action:element:file:fileID:line:)``
 

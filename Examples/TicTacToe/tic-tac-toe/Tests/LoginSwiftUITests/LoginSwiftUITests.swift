@@ -59,7 +59,7 @@ final class LoginSwiftUITests: XCTestCase {
       $0.password = "password"
       $0.isLoginButtonDisabled = false
     }
-    await store.send(.loginButtonTapped) {
+    let twoFactorPresentationTask = await store.send(.loginButtonTapped) {
       $0.isActivityIndicatorVisible = true
       $0.isFormDisabled = true
     }
@@ -70,11 +70,8 @@ final class LoginSwiftUITests: XCTestCase {
     ) {
       $0.isActivityIndicatorVisible = false
       $0.isFormDisabled = false
-      $0.isTwoFactorActive = true
     }
-    await store.send(.twoFactorDismissed) {
-      $0.isTwoFactorActive = false
-    }
+    await twoFactorPresentationTask.cancel()
   }
 
   func testFlow_Failure() async {
@@ -106,9 +103,6 @@ final class LoginSwiftUITests: XCTestCase {
       }
       $0.isActivityIndicatorVisible = false
       $0.isFormDisabled = false
-    }
-    await store.send(.alertDismissed) {
-      $0.alert = nil
     }
   }
 }

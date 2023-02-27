@@ -22,7 +22,7 @@ public struct TicTacToe: Reducer {
   public var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
-      case .login(.twoFactor(.twoFactorResponse(.success))):
+      case .login(.twoFactor(.presented(.twoFactorResponse(.success)))):
         state = .newGame(NewGame.State())
         return .none
 

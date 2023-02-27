@@ -26,14 +26,21 @@ extension Reducer {
   /// }
   /// ```
   ///
-  /// The `ifLet` forces a specific order of operations for the child and parent features. It runs
-  /// the child first, and then the parent. If the order was reversed, then it would be possible for
-  /// the parent feature to `nil` out the child state, in which case the child feature would not be
-  /// able to react to that action. That can cause subtle bugs.
+  /// The `ifLet` operator does a number of things to try to enforce correctness:
   ///
-  /// It is still possible for a parent feature higher up in the application to `nil` out child
-  /// state before the child has a chance to react to the action. In such cases a runtime warning
-  /// is shown in Xcode to let you know that there's a potential problem.
+  ///   * It forces a specific order of operations for the child and parent features. It runs the
+  ///     child first, and then the parent. If the order was reversed, then it would be possible for
+  ///     the parent feature to `nil` out the child state, in which case the child feature would not
+  ///     be able to react to that action. That can cause subtle bugs.
+  ///
+  ///   * It automatically cancels all child effects when it detects the child's state is `nil`'d
+  ///     out.
+  ///
+  ///   * Automatically `nil`s out child state when an action is sent for alerts and confirmation
+  ///     dialogs.
+  ///
+  /// See ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)-23pza`` for a more advanced
+  /// operator suited to navigation.
   ///
   /// - Parameters:
   ///   - toWrappedState: A writable key path from parent state to a property containing optional
@@ -87,6 +94,9 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   let line: UInt
 
   @usableFromInline
+  @Dependency(\.navigationID) var navigationID
+
+  @usableFromInline
   init(
     parent: Parent,
     child: Child,
@@ -109,8 +119,30 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   public func reduce(
     into state: inout Parent.State, action: Parent.Action
   ) -> Effect<Parent.Action> {
-    self.reduceChild(into: &state, action: action)
-      .merge(with: self.parent.reduce(into: &state, action: action))
+    let childEffects = self.reduceChild(into: &state, action: action)
+
+    let childIDBefore = state[keyPath: self.toChildState].map(AnyID.init)
+    let parentEffects = self.parent.reduce(into: &state, action: action)
+    let childIDAfter = state[keyPath: self.toChildState].map(AnyID.init)
+
+    let childCancelEffects: EffectTask<Parent.Action>
+    if let childID = childIDBefore, childID != childIDAfter {
+      let id = self.navigationID
+        .appending(path: self.toChildState)
+        .appending(id: childID)
+      childCancelEffects = .cancel(id: id)
+    } else {
+      childCancelEffects = .none
+    }
+
+    // TODO: can this just call ifCaseLet under the hood?
+
+    return .merge(
+      childEffects,
+      parentEffects,
+      childCancelEffects
+    )
+>>>>>>> navigation-beta
   }
 
   @inlinable
@@ -120,19 +152,21 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     guard state[keyPath: self.toChildState] != nil else {
+      var actionDump = ""
+      customDump(action, to: &actionDump, indent: 4)
       runtimeWarn(
         """
         An "ifLet" at "\(self.fileID):\(self.line)" received a child action when child state was \
         "nil". …
 
           Action:
-            \(debugCaseOutput(action))
+        \(actionDump)
 
         This is generally considered an application logic error, and can happen for a few reasons:
 
-        • A parent reducer set child state to "nil" before this reducer ran. This reducer must \
-        run before any other reducer sets child state to "nil". This ensures that child reducers \
-        can handle their actions while their state is still available.
+        • A parent reducer set child state to "nil" before this reducer ran. This reducer must run \
+        before any other reducer sets child state to "nil". This ensures that child reducers can \
+        handle their actions while their state is still available.
 
         • An in-flight effect emitted this action when child state was "nil". While it may be \
         perfectly reasonable to ignore this action, consider canceling the associated effect \
@@ -147,7 +181,20 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
       )
       return .none
     }
-    return self.child.reduce(into: &state[keyPath: self.toChildState]!, action: childAction)
+    let id = self.navigationID
+      .appending(path: self.toChildState)
+      .appending(component: state[keyPath: self.toChildState]!)
+
+    defer {
+      if Child.State.self is _EphemeralState.Type {
+        state[keyPath: toChildState] = nil
+      }
+    }
+
+    return self.child
+      .dependency(\.navigationID, id)
+      .reduce(into: &state[keyPath: self.toChildState]!, action: childAction)
       .map { self.toChildAction.embed($0) }
+      .cancellable(id: id)
   }
 }

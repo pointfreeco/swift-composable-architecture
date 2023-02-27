@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct BindingsAnimations: ReducerProtocol {
+private struct BindingsAnimations: Reducer {
   func reduce(into state: inout Bool, action: Void) -> Effect<Void> {
     state.toggle()
     return .none
@@ -16,11 +16,17 @@ let mediumAnimation = Animation.linear(duration: 0.7)
 let fastAnimation = Animation.linear(duration: 0.2)
 
 struct BindingsAnimationsTestBench: View {
-  let viewStore: ViewStoreOf<BindingsAnimations>
+  private let viewStore: ViewStoreOf<BindingsAnimations>
   let vanillaModel = VanillaModel()
 
-  init(store: StoreOf<BindingsAnimations>) {
-    self.viewStore = ViewStore(store, observe: { $0 })
+  init() {
+    self.viewStore = ViewStore(
+      Store(
+        initialState: false,
+        reducer: BindingsAnimations()
+      ),
+      observe: { $0 }
+    )
   }
 
   var body: some View {
@@ -112,7 +118,7 @@ struct ContentView: View {
   }
 }
 
-struct AnimatedWithObservation {
+private struct AnimatedWithObservation {
   struct ObservedObjectBinding: View {
     @EnvironmentObject var vanillaModel: VanillaModel
     var body: some View {
@@ -136,7 +142,7 @@ struct AnimatedWithObservation {
   }
 }
 
-struct AnimatedFromBinding {
+private struct AnimatedFromBinding {
   struct ObservedObjectBinding: View {
     @EnvironmentObject var vanillaModel: VanillaModel
     var body: some View {
@@ -158,7 +164,7 @@ struct AnimatedFromBinding {
   }
 }
 
-struct AnimatedFromBindingWithObservation {
+private struct AnimatedFromBindingWithObservation {
   struct ObservedObjectBinding: View {
     @EnvironmentObject var vanillaModel: VanillaModel
     var body: some View {
@@ -182,13 +188,8 @@ struct AnimatedFromBindingWithObservation {
   }
 }
 
-struct BindingsAnimationsTestBench_Previews: PreviewProvider {
+private struct BindingsAnimationsTestBench_Previews: PreviewProvider {
   static var previews: some View {
-    BindingsAnimationsTestBench(
-      store: .init(
-        initialState: false,
-        reducer: BindingsAnimations()
-      )
-    )
+    BindingsAnimationsTestBench()
   }
 }

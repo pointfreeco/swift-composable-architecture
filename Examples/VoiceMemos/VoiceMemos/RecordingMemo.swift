@@ -35,13 +35,13 @@ struct RecordingMemo: Reducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .audioRecorderDidFinish(.success(true)):
-      return .task { [state] in .delegate(.didFinish(.success(state))) }
+      return .send(.delegate(.didFinish(.success(state))))
 
     case .audioRecorderDidFinish(.success(false)):
-      return .task { .delegate(.didFinish(.failure(Failed()))) }
+      return .send(.delegate(.didFinish(.failure(Failed()))))
 
     case let .audioRecorderDidFinish(.failure(error)):
-      return .task { .delegate(.didFinish(.failure(error))) }
+      return .send(.delegate(.didFinish(.failure(error))))
 
     case .delegate:
       return .none

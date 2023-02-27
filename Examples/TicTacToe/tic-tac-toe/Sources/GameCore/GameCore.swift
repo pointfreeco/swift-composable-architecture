@@ -27,6 +27,8 @@ public struct Game: Reducer {
     case quitButtonTapped
   }
 
+  @Dependency(\.dismiss) var dismiss
+
   public init() {}
 
   public func reduce(into state: inout State, action: Action) -> Effect<Action> {
@@ -50,7 +52,9 @@ public struct Game: Reducer {
       return .none
 
     case .quitButtonTapped:
-      return .none
+      return .fireAndForget {
+        await self.dismiss()
+      }
     }
   }
 }

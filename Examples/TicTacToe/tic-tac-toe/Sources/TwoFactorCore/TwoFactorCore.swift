@@ -5,7 +5,7 @@ import Dispatch
 
 public struct TwoFactor: Reducer, Sendable {
   public struct State: Equatable {
-    public var alert: AlertState<Action>?
+    @PresentationState public var alert: AlertState<Never>?
     public var code = ""
     public var isFormValid = false
     public var isTwoFactorRequestInFlight = false
@@ -17,48 +17,47 @@ public struct TwoFactor: Reducer, Sendable {
   }
 
   public enum Action: Equatable {
-    case alertDismissed
+    case alert(PresentationAction<Never>)
     case codeChanged(String)
     case submitButtonTapped
     case twoFactorResponse(TaskResult<AuthenticationResponse>)
   }
 
-  public enum TearDownToken {}
-
   @Dependency(\.authenticationClient) var authenticationClient
 
   public init() {}
 
-  public func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .alertDismissed:
-      state.alert = nil
-      return .none
+  public var body: some ReducerProtocolOf<Self> {
+    Reduce<State, Action> { state, action in
+      switch action {
+      case .alert:
+        return .none
 
-    case let .codeChanged(code):
-      state.code = code
-      state.isFormValid = code.count >= 4
-      return .none
+      case let .codeChanged(code):
+        state.code = code
+        state.isFormValid = code.count >= 4
+        return .none
 
-    case .submitButtonTapped:
-      state.isTwoFactorRequestInFlight = true
-      return .task { [code = state.code, token = state.token] in
-        .twoFactorResponse(
-          await TaskResult {
-            try await self.authenticationClient.twoFactor(.init(code: code, token: token))
-          }
-        )
+      case .submitButtonTapped:
+        state.isTwoFactorRequestInFlight = true
+        return .task { [code = state.code, token = state.token] in
+            .twoFactorResponse(
+              await TaskResult {
+                try await self.authenticationClient.twoFactor(.init(code: code, token: token))
+              }
+            )
+        }
+
+      case let .twoFactorResponse(.failure(error)):
+        state.alert = AlertState { TextState(error.localizedDescription) }
+        state.isTwoFactorRequestInFlight = false
+        return .none
+
+      case .twoFactorResponse(.success):
+        state.isTwoFactorRequestInFlight = false
+        return .none
       }
-      .cancellable(id: TearDownToken.self)
-
-    case let .twoFactorResponse(.failure(error)):
-      state.alert = AlertState { TextState(error.localizedDescription) }
-      state.isTwoFactorRequestInFlight = false
-      return .none
-
-    case .twoFactorResponse(.success):
-      state.isTwoFactorRequestInFlight = false
-      return .none
     }
+    .ifLet(\.$alert, action: /Action.alert)
   }
 }

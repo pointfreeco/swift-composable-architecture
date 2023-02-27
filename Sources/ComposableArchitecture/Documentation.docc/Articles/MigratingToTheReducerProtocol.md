@@ -377,7 +377,7 @@ A `Parent` reducer conformances can be made by implementing the
 ``Reducer/body-swift.property-8lumc`` property of the ``Reducer``, which allows you
 to express the parent's logic as a composition of multiple reducers. In particular, you can use
 the ``Reduce`` entry point to implement the core parent logic, and then chain on the 
-``Reducer/ifLet(_:action:then:file:fileID:line:)`` operator to identify the optional child
+``Reducer/ifLet(_:action:then:file:fileID:line:)-1yyuq`` operator to identify the optional child
 state that you want to run the `Feature` reducer on when non-`nil`:
 
 ```swift

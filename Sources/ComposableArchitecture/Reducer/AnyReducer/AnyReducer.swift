@@ -511,7 +511,7 @@ public struct AnyReducer<State, Action, Environment> {
   }
 
   /// This API has been deprecated in favor of
-  /// ``Reducer/ifLet(_:action:then:file:fileID:line:)``. Read
+  /// ``Reducer/ifLet(_:action:then:file:fileID:line:)-1yyuq``. Read
   /// <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// Transforms a reducer that works on non-optional state into one that works on optional state by

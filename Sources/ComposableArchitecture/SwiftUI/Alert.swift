@@ -1,5 +1,43 @@
 import SwiftUI
 
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+extension View {
+  /// Displays an alert when then store's state becomes non-`nil`, and dismisses it when it becomes
+  /// `nil`.
+  ///
+  /// - Parameters:
+  ///   - store: A store that is focused on ``PresentationState`` and ``PresentationAction`` for
+  ///     an alert.
+  public func alert<ButtonAction>(
+    store: Store<PresentationState<AlertState<ButtonAction>>, PresentationAction<ButtonAction>>
+  ) -> some View {
+    self.alert(store: store, state: { $0 }, action: { $0 })
+  }
+
+  /// Displays an alert when then store's state becomes non-`nil`, and dismisses it when it becomes
+  /// `nil`.
+  ///
+  /// - Parameters:
+  ///   - store: A store that is focused on ``PresentationState`` and ``PresentationAction`` for
+  ///     an alert.
+  ///   - toDestinationState: A transformation to extract alert state from the presentation state.
+  ///   - fromDestinationAction: A transformation to embed alert actions into the presentation
+  ///     action.
+  public func alert<State, Action, ButtonAction>(
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
+    state toDestinationState: @escaping (State) -> AlertState<ButtonAction>?,
+    action fromDestinationAction: @escaping (ButtonAction) -> Action
+  ) -> some View {
+    self.modifier(
+      PresentationAlertModifier(
+        viewStore: ViewStore(store, removeDuplicates: { $0.id == $1.id }),
+        toDestinationState: toDestinationState,
+        fromDestinationAction: fromDestinationAction
+      )
+    )
+  }
+}
+
 extension View {
   /// Displays an alert when then store's state becomes non-`nil`, and dismisses it when it becomes
   /// `nil`.
@@ -68,5 +106,47 @@ private struct OldAlertModifier<Action>: ViewModifier {
         }
       }
     }
+  }
+}
+
+@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+private struct PresentationAlertModifier<State, Action, ButtonAction>: ViewModifier {
+  @StateObject var viewStore: ViewStore<PresentationState<State>, PresentationAction<Action>>
+  let toDestinationState: (State) -> AlertState<ButtonAction>?
+  let fromDestinationAction: (ButtonAction) -> Action
+
+  func body(content: Content) -> some View {
+    let alertState = self.viewStore.wrappedValue.flatMap(self.toDestinationState)
+    content.alert(
+      (alertState?.title).map(Text.init) ?? Text(""),
+      isPresented: self.viewStore.binding(
+        get: { $0.wrappedValue.flatMap(self.toDestinationState) != nil },
+        send: .dismiss
+      ),
+      presenting: alertState,
+      actions: { alertState in
+        ForEach(alertState.buttons) { button in
+          Button(role: button.role.map(ButtonRole.init)) {
+            switch button.action.type {
+            case let .send(action):
+              if let action = action {
+                self.viewStore.send(.presented(self.fromDestinationAction(action)))
+              }
+            case let .animatedSend(action, animation):
+              if let action = action {
+                _ = withAnimation(animation) {
+                  self.viewStore.send(.presented(self.fromDestinationAction(action)))
+                }
+              }
+            }
+          } label: {
+            Text(button.label)
+          }
+        }
+      },
+      message: {
+        $0.message.map(Text.init) ?? Text("")
+      }
+    )
   }
 }
