@@ -805,8 +805,8 @@ extension Store {
   }
 }
 
-/// The type returned from ``ViewStore/send(_:)`` that represents the lifecycle of the effect
-/// started from sending an action.
+/// The type returned from ``ViewStore/send(_:)`` and ``UnsafeStore/send(_:)-5i6za`` that represents
+/// the lifecycle of the effect started from sending an action.
 ///
 /// You can use this value to tie the effect's lifecycle _and_ cancellation to an asynchronous
 /// context, such as the `task` view modifier.
