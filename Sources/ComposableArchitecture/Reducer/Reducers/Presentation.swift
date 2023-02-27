@@ -172,8 +172,7 @@ extension ReducerProtocol {
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _PresentationReducer<Self, EmptyReducer<DestinationState, DestinationAction>>
-  where DestinationState: _EphemeralState {
+  ) -> _PresentationReducer<Self, EmptyReducer<DestinationState, DestinationAction>> {
     self.ifLet(
       toPresentationState,
       action: toPresentationAction,
