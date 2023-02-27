@@ -142,7 +142,6 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
       parentEffects,
       childCancelEffects
     )
->>>>>>> navigation-beta
   }
 
   @inlinable
