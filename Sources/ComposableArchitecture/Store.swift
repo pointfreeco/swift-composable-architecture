@@ -777,7 +777,7 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
   }
 #endif
 
-/// An "unsafe" view into a store for accessing state and sending an action.
+/// An "unsafe" view into a store for accessing state and sending actions.
 ///
 /// See ``Store/withUnsafeStore(_:)`` for more information.
 public struct UnsafeStore<State, Action> {
