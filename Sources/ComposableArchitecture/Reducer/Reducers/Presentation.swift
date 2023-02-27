@@ -30,7 +30,8 @@ public struct PresentationState<State> {
   }
 
   public var projectedValue: Self {
-    _read { yield self }
+    get { self }
+    set { self = newValue }
     _modify { yield &self }
   }
 
