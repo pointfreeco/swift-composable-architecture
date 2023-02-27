@@ -14,4 +14,3 @@ instead.
 - ``AnyReducer``
 - ``Reducer``
 - ``DebugEnvironment``
-- ``Identified``
