@@ -7,7 +7,7 @@
 )
 extension AnyReducer where Action: BindableAction, State == Action.State {
   /// This API has been deprecated in favor of ``BindingReducer``. Read
-  /// <doc:MigratingToTheReducer> for more information.
+  /// <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// Returns a reducer that applies ``BindingAction`` mutations to `State` before running this
   /// reducer's logic.

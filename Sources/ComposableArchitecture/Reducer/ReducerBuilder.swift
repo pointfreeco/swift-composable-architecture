@@ -2,7 +2,7 @@
 /// other, and returning their merged effects.
 ///
 /// It is most common to encounter a reducer builder context when conforming a type to
-/// ``Reducer`` and implementing its ``Reducer/body-swift.property-97ymy`` property.
+/// ``Reducer`` and implementing its ``Reducer/body-swift.property-8lumc`` property.
 ///
 /// See ``CombineReducers`` for an entry point into a reducer builder context.
 @resultBuilder

@@ -94,7 +94,7 @@ struct Feature: Reducer {
 }
 ```
 
-And then we implement the ``Reducer/reduce(into:action:)-8yinq`` method which is responsible 
+And then we implement the ``Reducer/reduce(into:action:)-4zl56`` method which is responsible 
 for handling the actual logic and  behavior for the feature. It describes how to change the current 
 state to the next state, and describes what effects need to be executed. Some actions don't need to 
 execute effects, and they can return `.none` to represent that:

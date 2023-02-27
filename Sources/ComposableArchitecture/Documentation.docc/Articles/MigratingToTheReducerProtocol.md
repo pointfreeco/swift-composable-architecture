@@ -64,7 +64,7 @@ You can convert this to the protocol style by:
 `Action`.
 1. Move the fields on the environment to be fields on this new reducer type, and delete the 
 environment type.
-1. Move the reducer's closure implementation to the ``Reducer/reduce(into:action:)-8yinq`` 
+1. Move the reducer's closure implementation to the ``Reducer/reduce(into:action:)-4zl56`` 
 method.
 
 Performing these 4 steps on the feature produces the following:
@@ -142,7 +142,7 @@ enum ParentAction {
 }
 ```
 
-And then the `parentReducer` can be fixed by making use of the helper ``AnyReducer/init(_:)-42p1a``
+And then the `parentReducer` can be fixed by making use of the helper ``AnyReducer/init(_:)-29rlv``
 which aids in converting protocol-style reducers into old-style reducers. It is initialized with a
 closure that is passed an environment, which is the one thing protocol-style reducers don't have,
 and you  are to return a protocol-style reducer:
@@ -230,7 +230,7 @@ let appReducer = Reducer<
 
 To convert this to the protocol-style we again introduce a new type that conforms to the 
 ``Reducer``, we nest the domain types inside the conformance, we inline the environment
-fields, but this time we use the ``Reducer/body-swift.property-7foai`` requirement of the
+fields, but this time we use the ``Reducer/body-swift.property-8lumc`` requirement of the
 protocol to describe how to compose multiple reducers:
 
 ```swift
@@ -374,7 +374,7 @@ This can cause subtle bugs, and so we have documentation advising you to order t
 way, and if we detect a child action while state is `nil` we display a runtime warning.
 
 A `Parent` reducer conformances can be made by implementing the 
-``Reducer/body-swift.property-7foai`` property of the ``Reducer``, which allows you
+``Reducer/body-swift.property-8lumc`` property of the ``Reducer``, which allows you
 to express the parent's logic as a composition of multiple reducers. In particular, you can use
 the ``Reduce`` entry point to implement the core parent logic, and then chain on the 
 ``Reducer/ifLet(_:action:then:file:fileID:line:)`` operator to identify the optional child
@@ -417,7 +417,7 @@ Similar to `optional` reducers, another common pattern in applications is the us
 ``AnyReducer/forEach(state:action:environment:file:fileID:line:)-2ypoa`` to allow running a reducer
 on each element of a collection. Converting such child and parent reducers will look nearly
 identical to what we did above for optional reducers, but it will make use of the new
-``Reducer/forEach(_:action:_:file:fileID:line:)`` operator instead.
+``Reducer/forEach(_:action:element:file:fileID:line:)`` operator instead.
 
 In particular, the new `forEach` method operates on the parent reducer by specifying the collection
 sub-state you want to work on, and providing the element reducer you want to be able to run on

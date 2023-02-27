@@ -2,7 +2,7 @@ import SwiftUI
 
 /// A reducer that updates bindable state when it receives binding actions.
 ///
-/// This reducer should typically be composed into the ``Reducer/body-swift.property-97ymy``
+/// This reducer should typically be composed into the ``Reducer/body-swift.property-8lumc``
 /// of your feature's reducer:
 ///
 /// ```swift

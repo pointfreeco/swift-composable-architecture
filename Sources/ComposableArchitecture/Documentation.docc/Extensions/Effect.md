@@ -24,10 +24,6 @@
 - ``EffectPublisher/merge(_:)-45guh``
 - ``EffectPublisher/merge(_:)-3d54p``
 
-### Concurrency
-
-- ``UncheckedSendable``
-
 ### Testing
 
 - ``EffectPublisher/unimplemented(_:)``

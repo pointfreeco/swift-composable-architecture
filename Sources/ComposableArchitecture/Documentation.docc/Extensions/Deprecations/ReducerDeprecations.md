@@ -12,6 +12,5 @@ instead.
 ### Reducer structure
 
 - ``AnyReducer``
-- ``Reducer``
+- ``ReducerProtocol``
 - ``DebugEnvironment``
-- ``Identified``

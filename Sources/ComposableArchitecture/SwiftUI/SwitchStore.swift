@@ -51,7 +51,7 @@ import SwiftUI
 /// ```
 ///
 /// See ``Reducer/ifCaseLet(_:action:then:file:fileID:line:)`` and
-/// ``Scope/init(state:action:_:file:fileID:line:)`` for embedding reducers that operate on each
+/// ``Scope/init(state:action:child:file:fileID:line:)`` for embedding reducers that operate on each
 /// case of an enum in reducers that operate on the entire enum.
 public struct SwitchStore<State, Action, Content: View>: View {
   public let store: Store<State, Action>

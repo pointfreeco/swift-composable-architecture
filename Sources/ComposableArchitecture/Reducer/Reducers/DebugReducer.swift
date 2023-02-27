@@ -6,6 +6,9 @@ extension Reducer {
   ///
   /// - Parameter printer: A printer for printing debug messages.
   /// - Returns: A reducer that prints debug messages for all received actions.
+  #if swift(>=5.8)
+    @_documentation(visibility: public)
+  #endif
   @inlinable
   public func _printChanges(
     _ printer: _ReducerPrinter<State, Action>? = .customDump
