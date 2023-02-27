@@ -15,7 +15,7 @@ private enum NavigationIDKey: DependencyKey {
 
 @usableFromInline
 struct NavigationID: Hashable, Identifiable, Sendable {
-  var path: [AnyHashableSendable] = []
+  fileprivate var path: [AnyHashableSendable] = []
 
   @usableFromInline
   var id: Self { self }
