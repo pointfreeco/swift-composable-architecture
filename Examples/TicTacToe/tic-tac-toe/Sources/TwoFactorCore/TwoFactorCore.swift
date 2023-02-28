@@ -28,7 +28,7 @@ public struct TwoFactor: Reducer, Sendable {
   public init() {}
 
   public var body: some ReducerOf<Self> {
-    Reduce<State, Action> { state, action in
+    Reduce { state, action in
       switch action {
       case .alert:
         return .none
