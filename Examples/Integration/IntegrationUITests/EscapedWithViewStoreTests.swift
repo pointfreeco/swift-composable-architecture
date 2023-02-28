@@ -4,7 +4,7 @@ import XCTest
 final class EscapedWithViewStoreTests: XCTestCase {
 
   override func setUpWithError() throws {
-    continueAfterFailure = false
+    self.continueAfterFailure = false
   }
 
   func testExample() async throws {

@@ -29,7 +29,7 @@
 /// ```
 ///
 /// A parent reducer with a domain that holds onto the child domain can use
-/// ``init(state:action:_:)`` to embed the child reducer in its
+/// ``init(state:action:child:)`` to embed the child reducer in its
 /// ``ReducerProtocol/body-swift.property-7foai``:
 ///
 /// ```swift
@@ -58,7 +58,7 @@
 /// ## Enum state
 ///
 /// The ``Scope`` reducer also works when state is modeled as an enum, not just a struct. In that
-/// case you can use ``init(state:action:_:file:fileID:line:)`` to specify a case path that
+/// case you can use ``init(state:action:child:file:fileID:line:)`` to specify a case path that
 /// identifies the case of state you want to scope to.
 ///
 /// For example, if your state was modeled as an enum for unloaded/loading/loaded, you could
@@ -96,7 +96,8 @@
 /// For an alternative to using ``Scope`` with state case paths that enforces the order, check out
 /// the ``ifCaseLet(_:action:then:file:fileID:line:)`` operator.
 public struct Scope<ParentState, ParentAction, Child: ReducerProtocol>: ReducerProtocol {
-  public enum StatePath {
+  @usableFromInline
+  enum StatePath {
     case casePath(
       CasePath<ParentState, Child.State>,
       file: StaticString,
@@ -106,9 +107,14 @@ public struct Scope<ParentState, ParentAction, Child: ReducerProtocol>: ReducerP
     case keyPath(WritableKeyPath<ParentState, Child.State>)
   }
 
-  public let toChildState: StatePath
-  public let toChildAction: CasePath<ParentAction, Child.Action>
-  public let child: Child
+  @usableFromInline
+  let toChildState: StatePath
+
+  @usableFromInline
+  let toChildAction: CasePath<ParentAction, Child.Action>
+
+  @usableFromInline
+  let child: Child
 
   @usableFromInline
   init(
