@@ -222,7 +222,13 @@ public struct _PresentationReducer<
     case let (.some(destinationState), .some(.presented(destinationAction))):
       let id = self.id(for: destinationState)
       destinationEffects = self.destination
-        .dependency(\.dismiss, DismissEffect { Task.cancel(id: DismissID()) })
+        .dependency(\.dismiss, withEscapedDependencies { escaped in
+          DismissEffect {
+            escaped.yield {
+              Task.cancel(id: DismissID())
+            }
+          }
+        })
         .dependency(\.navigationID, id)
         .reduce(
           into: &state[keyPath: self.toPresentationState].wrappedValue!, action: destinationAction

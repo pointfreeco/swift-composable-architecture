@@ -142,6 +142,66 @@ import XCTest
       }
     }
 
+    func testPresentation_childDismissal_effect() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable {}
+        enum Action: Equatable {
+          case saveButtonTapped
+          case saveCompleted
+        }
+        @Dependency(\.dismiss) var dismiss
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          switch action {
+          case .saveButtonTapped:
+            return .task { .saveCompleted }
+          case .saveCompleted:
+            return .fireAndForget {
+              await self.dismiss()
+            }
+          }
+        }
+      }
+
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          var lastCount: Int?
+          @PresentationState var child: Child.State?
+        }
+        enum Action: Equatable {
+          case child(PresentationAction<Child.Action>)
+          case presentChild
+        }
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .child:
+              return .none
+            case .presentChild:
+              state.child = Child.State()
+              return .none
+            }
+          }
+          .ifLet(\.$child, action: /Action.child) {
+            Child()
+          }
+        }
+      }
+
+      let store = Store(
+        initialState: Parent.State(),
+        reducer: Parent()
+      )
+      let viewStore = ViewStore(store, observe: { $0 })
+
+      let task = viewStore.send(.presentChild)
+      XCTAssertNotNil(viewStore.child)
+
+      viewStore.send(.child(.presented(.saveButtonTapped)))
+      await task.finish()
+
+      XCTAssertNil(viewStore.child)
+    }
+
     func testPresentation_parentDismissal_effects() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
         await _withMainSerialExecutor {
