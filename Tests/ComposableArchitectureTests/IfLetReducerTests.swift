@@ -234,7 +234,6 @@ final class IfLetReducerTests: XCTestCase {
               }
             }
             .ifLet(\.alert, action: /Action.alert) {
-              EmptyReducer()
             }
           }
         }
