@@ -147,6 +147,7 @@ public final class Store<State, Action> {
   public convenience init<R: ReducerProtocol>(
     initialState: @autoclosure () -> R.State,
     reducer: R,
+    parentStore: AnyObject? = nil,
     instrumentation: Instrumentation = .noop,
     prepareDependencies: ((inout DependencyValues) -> Void)? = nil,
     file: StaticString = #file,
@@ -157,6 +158,7 @@ public final class Store<State, Action> {
         initialState: withDependencies(prepareDependencies) { initialState() },
         reducer: reducer.transformDependency(\.self, transform: prepareDependencies),
         mainThreadChecksEnabled: true,
+        parentStore: parentStore,
         instrumentation: instrumentation,
         file: file,
         line: line
@@ -166,6 +168,7 @@ public final class Store<State, Action> {
         initialState: initialState(),
         reducer: reducer,
         mainThreadChecksEnabled: true,
+        parentStore: parentStore,
         instrumentation: instrumentation,
         file: file,
         line: line
@@ -643,6 +646,7 @@ public final class Store<State, Action> {
     initialState: R.State,
     reducer: R,
     mainThreadChecksEnabled: Bool,
+    parentStore: AnyObject? = nil,
     instrumentation: Instrumentation = .noop,
     file: StaticString = #file,
     line: UInt = #line
@@ -658,7 +662,7 @@ public final class Store<State, Action> {
     #endif
     self.instrumentation = instrumentation
     self.threadCheck(status: .`init`)
-    self.instrumentation.storeCreated?(self as AnyObject, file, line)
+    self.instrumentation.storeCreated?(self as AnyObject, Store<State, Action>.self, parentStore, file, line)
   }
 }
 
@@ -782,6 +786,7 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
       let childStore = Store<RescopedState, RescopedAction>(
         initialState: toRescopedState(store.state.value),
         reducer: reducer,
+        parentStore: store,
         instrumentation: instrumentation,
         file: file,
         line: line
@@ -880,6 +885,7 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
           }
         },
         removeDuplicates: isDuplicate,
+        parentStore: rootStore,
         instrumentation: instrumentation,
         file: file,
         line: line
