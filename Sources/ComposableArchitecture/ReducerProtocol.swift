@@ -372,3 +372,10 @@ extension ReducerProtocol where Body: ReducerProtocol, Body.State == State, Body
   /// ```
   public typealias ReducerProtocolOf<R: ReducerProtocol> = ReducerProtocol<R.State, R.Action>
 #endif
+
+// NB: This allows autocompletion to prefer `Sendable` to `Send` when conforming reducer's state
+// and action to `Sendable`.
+extension ReducerProtocol {
+  /// A type whose values can safely be passed across concurrency domains by copying.
+  public typealias Sendable = Swift.Sendable
+}

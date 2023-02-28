@@ -46,7 +46,7 @@ extension EffectPublisher {
       return Self(
         operation: .run(priority) { send in
           await operation(
-            EffectSend { value in
+            Send { value in
               withTransaction(transaction) {
                 send(value)
               }

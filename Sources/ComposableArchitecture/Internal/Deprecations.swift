@@ -5,24 +5,15 @@ import XCTestDynamicOverlay
 
 // MARK: - Deprecated after 0.51.0
 
-@available(
-  *,
-  deprecated,
-  message: "Use 'EffectSend<Action>' instead."
-)
+// NB Soft deprecation to avoid deprecation messages when this type is inferred in `Effect`
+// without having to qualify it as `ComposableArchitecture.Send` there.
+@available(iOS, deprecated: 9999.0, message: "Use 'Send<Action>' instead.")
+@available(macOS, deprecated: 9999.0, message: "Use 'Send<Action>' instead.")
+@available(tvOS, deprecated: 9999.0, message: "Use 'Send<Action>' instead.")
+@available(watchOS, deprecated: 9999.0, message: "Use 'Send<Action>' instead.")
 extension EffectTask {
-  public typealias Send = EffectSend<Action>
+  public typealias Send = ComposableArchitecture.Send
 }
-
-// MARK: - Deprecated after 0.50.4
-
-@available(
-  *,
-  deprecated,
-  message: "Use 'EffectSend<Action>' instead.",
-  renamed: "EffectSend"
-)
-public typealias Send<Action> = EffectSend<Action>
 
 // MARK: - Deprecated after 0.49.2
 
