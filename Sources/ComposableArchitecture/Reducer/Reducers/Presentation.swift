@@ -145,6 +145,7 @@ extension ReducerProtocol {
   ///   - destination: A reducer that will be invoked with child actions against presented child
   ///     state.
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
+  @warn_unqualified_access
   public func ifLet<DestinationState, DestinationAction, Destination: ReducerProtocol>(
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
     action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
@@ -167,6 +168,7 @@ extension ReducerProtocol {
 
   /// A special overload of ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)-23pza`` for
   /// alerts and confirmation dialogs that does not require a child reducer.
+  @warn_unqualified_access
   public func ifLet<DestinationState: _EphemeralState, DestinationAction>(
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
     action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
