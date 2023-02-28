@@ -33,7 +33,7 @@ import XCTest
           case child(PresentationAction<Child.Action>)
           case presentChild
         }
-        var body: some ReducerProtocol<State, Action> {
+        var body: some Reducer<State, Action> {
           Reduce { state, action in
             switch action {
             case .child:
@@ -103,7 +103,7 @@ import XCTest
           case child(PresentationAction<Child.Action>)
           case presentChild
         }
-        var body: some ReducerProtocol<State, Action> {
+        var body: some Reducer<State, Action> {
           Reduce { state, action in
             switch action {
             case .child(.dismiss):
@@ -177,7 +177,7 @@ import XCTest
               case child(PresentationAction<Child.Action>)
               case presentChild
             }
-            var body: some ReducerProtocol<State, Action> {
+            var body: some Reducer<State, Action> {
               Reduce { state, action in
                 switch action {
                 case .child:
@@ -265,7 +265,7 @@ import XCTest
               case child(PresentationAction<Child.Action>)
               case presentChild
             }
-            var body: some ReducerProtocol<State, Action> {
+            var body: some Reducer<State, Action> {
               Reduce { state, action in
                 switch action {
                 case .child:
@@ -349,7 +349,7 @@ import XCTest
               case presentChild
             }
             @Dependency(\.uuid) var uuid
-            var body: some ReducerProtocol<State, Action> {
+            var body: some Reducer<State, Action> {
               Reduce { state, action in
                 switch action {
                 case .child:
@@ -429,7 +429,7 @@ import XCTest
           case child(PresentationAction<Child.Action>)
           case presentChild
         }
-        var body: some ReducerProtocol<State, Action> {
+        var body: some Reducer<State, Action> {
           Reduce { state, action in
             switch action {
             case .child:
@@ -468,7 +468,7 @@ import XCTest
 
             enum Alert: Equatable {}
           }
-          var body: some ReducerProtocol<State, Action> {
+          var body: some Reducer<State, Action> {
             Reduce { state, action in
               switch action {
               case .alert:
@@ -509,7 +509,7 @@ import XCTest
 
             enum Alert: Equatable {}
           }
-          var body: some ReducerProtocol<State, Action> {
+          var body: some Reducer<State, Action> {
             Reduce { state, action in
               switch action {
               case .alert:
@@ -556,7 +556,7 @@ import XCTest
               case deleteButtonTapped
             }
           }
-          var body: some ReducerProtocol<State, Action> {
+          var body: some Reducer<State, Action> {
             Reduce { state, action in
               switch action {
               case .alert(.presented(.deleteButtonTapped)):
@@ -636,7 +636,7 @@ import XCTest
             case child(PresentationAction<Child.Action>)
             case presentChild
           }
-          var body: some ReducerProtocol<State, Action> {
+          var body: some Reducer<State, Action> {
             Reduce { state, action in
               switch action {
               case .child:
@@ -709,7 +709,7 @@ import XCTest
               case presentChild(id: UUID? = nil)
             }
             @Dependency(\.uuid) var uuid
-            var body: some ReducerProtocol<State, Action> {
+            var body: some Reducer<State, Action> {
               Reduce { state, action in
                 switch action {
                 case .destination(.presented(.alert(.deleteButtonTapped))):
@@ -750,7 +750,7 @@ import XCTest
                   case deleteButtonTapped
                 }
               }
-              var body: some ReducerProtocol<State, Action> {
+              var body: some Reducer<State, Action> {
                 Scope(state: /State.alert, action: /Action.alert) {}
                 Scope(state: /State.child, action: /Action.child) {
                   Child()
@@ -873,7 +873,7 @@ import XCTest
           case child(PresentationAction<Child.Action>)
           case presentChild
         }
-        var body: some ReducerProtocol<State, Action> {
+        var body: some Reducer<State, Action> {
           Reduce { state, action in
             switch action {
             case .child:
@@ -929,7 +929,7 @@ import XCTest
           case startButtonTapped
         }
         enum CancelID { case effect }
-        var body: some ReducerProtocolOf<Self> {
+        var body: some ReducerOf<Self> {
           Reduce { state, action in
             switch action {
             case .grandchild:
@@ -959,7 +959,7 @@ import XCTest
           case stopButtonTapped
           case presentChild
         }
-        var body: some ReducerProtocol<State, Action> {
+        var body: some Reducer<State, Action> {
           Reduce { state, action in
             switch action {
             case .child:
@@ -1036,7 +1036,7 @@ import XCTest
             case stopButtonTapped
             case presentChildren
           }
-          var body: some ReducerProtocol<State, Action> {
+          var body: some Reducer<State, Action> {
             Reduce { state, action in
               switch action {
               case .child1, .child2:
@@ -1134,7 +1134,7 @@ import XCTest
             case child2(PresentationAction<Child.Action>)
             case presentChildren
           }
-          var body: some ReducerProtocol<State, Action> {
+          var body: some Reducer<State, Action> {
             Reduce { state, action in
               switch action {
               case .child1, .child2:
@@ -1239,7 +1239,7 @@ import XCTest
             case presentChildren
           }
           @Dependency(\.uuid) var uuid
-          var body: some ReducerProtocol<State, Action> {
+          var body: some Reducer<State, Action> {
             Reduce { state, action in
               switch action {
               case .child1, .child2:
@@ -1331,7 +1331,7 @@ import XCTest
           }
           enum CancelID { case effect }
           @Dependency(\.continuousClock) var clock
-          var body: some ReducerProtocol<State, Action> {
+          var body: some Reducer<State, Action> {
             Reduce { state, action in
               switch action {
               case .child:
@@ -1413,7 +1413,7 @@ import XCTest
             case grandchild(PresentationAction<Grandchild.Action>)
             case presentGrandchild
           }
-          var body: some ReducerProtocolOf<Self> {
+          var body: some ReducerOf<Self> {
             Reduce { state, action in
               switch action {
               case .grandchild:
@@ -1438,7 +1438,7 @@ import XCTest
             case dismissGrandchild
             case presentChild
           }
-          var body: some ReducerProtocol<State, Action> {
+          var body: some Reducer<State, Action> {
             Reduce { state, action in
               switch action {
               case .child:
@@ -1502,7 +1502,7 @@ import XCTest
         enum Action: Equatable {
           case child(PresentationAction<Child.Action>)
         }
-        var body: some ReducerProtocol<State, Action> {
+        var body: some Reducer<State, Action> {
           Reduce { state, action in
             .none
           }
@@ -1560,7 +1560,7 @@ import XCTest
         enum Action: Equatable {
           case child(PresentationAction<Child.Action>)
         }
-        var body: some ReducerProtocol<State, Action> {
+        var body: some Reducer<State, Action> {
           Reduce { state, action in
             .none
           }
@@ -1615,7 +1615,7 @@ import XCTest
         enum Action: Equatable {
           case child(PresentationAction<Child.Action>)
         }
-        var body: some ReducerProtocol<State, Action> {
+        var body: some Reducer<State, Action> {
           Reduce { state, action in
             switch action {
             case .child(.dismiss):
@@ -1659,7 +1659,7 @@ import XCTest
           case child(PresentationAction<Child.Action>)
         }
         @Dependency(\.uuid) var uuid
-        var body: some ReducerProtocol<State, Action> {
+        var body: some Reducer<State, Action> {
           Reduce { state, action in
             switch action {
             case .child(.dismiss):
@@ -1710,7 +1710,7 @@ import XCTest
           case child(PresentationAction<Child.Action>)
           case presentChild
         }
-        var body: some ReducerProtocol<State, Action> {
+        var body: some Reducer<State, Action> {
           Reduce { state, action in
             switch action {
             case .child:
@@ -1777,7 +1777,7 @@ import XCTest
           case child(PresentationAction<Child.Action>)
           case presentChild
         }
-        var body: some ReducerProtocol<State, Action> {
+        var body: some Reducer<State, Action> {
           Reduce { state, action in
             switch action {
             case .child(.presented(.dismissMe)):
@@ -1863,12 +1863,12 @@ import XCTest
             case child1(Child.Action)
             case child2(Child.Action)
           }
-          var body: some ReducerProtocolOf<Self> {
+          var body: some ReducerOf<Self> {
             Scope(state: /State.child1, action: /Action.child1) { Child() }
             Scope(state: /State.child2, action: /Action.child2) { Child() }
           }
         }
-        var body: some ReducerProtocol<State, Action> {
+        var body: some Reducer<State, Action> {
           Reduce { state, action in
             switch action {
             case .destination:

@@ -74,7 +74,7 @@ final class IfLetReducerTests: XCTestCase {
             case child(Child.Action)
             case childButtonTapped
           }
-          var body: some ReducerProtocol<State, Action> {
+          var body: some Reducer<State, Action> {
             Reduce { state, action in
               switch action {
               case .child:
@@ -151,7 +151,7 @@ final class IfLetReducerTests: XCTestCase {
           enum Action: Equatable {
             case grandChild(GrandChild.Action)
           }
-          var body: some ReducerProtocolOf<Self> {
+          var body: some ReducerOf<Self> {
             EmptyReducer()
               .ifLet(\.grandChild, action: /Action.grandChild) {
                 GrandChild()
@@ -167,7 +167,7 @@ final class IfLetReducerTests: XCTestCase {
             case exitButtonTapped
             case startButtonTapped
           }
-          var body: some ReducerProtocol<State, Action> {
+          var body: some Reducer<State, Action> {
             Reduce { state, action in
               switch action {
               case .child:
@@ -223,7 +223,7 @@ final class IfLetReducerTests: XCTestCase {
             case tap
           }
           enum AlertAction { case ok }
-          var body: some ReducerProtocol<State, Action> {
+          var body: some Reducer<State, Action> {
             Reduce { state, action in
               switch action {
               case .alert:

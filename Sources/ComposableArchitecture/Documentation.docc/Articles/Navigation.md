@@ -42,11 +42,11 @@ Next you can integrate the reducers of the parent and child features by using th
 as having an action in the parent domain for populating the child's state to drive navigation:
 
 ```swift
-struct InventoryFeature: ReducerProtocol {
+struct InventoryFeature: Reducer {
   struct State: Equatable { /* ... */ }
   enum Action: Equatable { /* ... */ }
   
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce<State, Action> { state, action in 
       switch action {
       case .addButtonTapped:

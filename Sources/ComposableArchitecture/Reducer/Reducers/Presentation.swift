@@ -111,7 +111,7 @@ extension Reducer {
   ///     // ...
   ///   }
   ///
-  ///   var body: some ReducerProtocol<State, Action> {
+  ///   var body: some Reducer<State, Action> {
   ///     Reduce { state, action in
   ///       // Core logic for parent feature
   ///     }
