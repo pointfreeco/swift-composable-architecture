@@ -50,6 +50,7 @@ extension ReducerProtocol {
   ///     state.
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @inlinable
+  @warn_unqualified_access
   public func ifLet<WrappedState, WrappedAction, Wrapped: ReducerProtocol>(
     _ toWrappedState: WritableKeyPath<State, WrappedState?>,
     action toWrappedAction: CasePath<Action, WrappedAction>,

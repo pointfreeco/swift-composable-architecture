@@ -50,6 +50,7 @@ extension ReducerProtocol {
   ///     state.
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @inlinable
+  @warn_unqualified_access
   public func forEach<ElementState, ElementAction, ID: Hashable, Element: ReducerProtocol>(
     _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
     action toElementAction: CasePath<Action, (ID, ElementAction)>,

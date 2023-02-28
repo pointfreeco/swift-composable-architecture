@@ -50,6 +50,7 @@ extension ReducerProtocol {
   ///     present
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @inlinable
+  @warn_unqualified_access
   public func ifCaseLet<CaseState, CaseAction, Case: ReducerProtocol>(
     _ toCaseState: CasePath<State, CaseState>,
     action toCaseAction: CasePath<Action, CaseAction>,
