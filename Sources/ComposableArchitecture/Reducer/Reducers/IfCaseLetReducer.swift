@@ -50,6 +50,7 @@ extension Reducer {
   ///     present
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @inlinable
+  @warn_unqualified_access
   public func ifCaseLet<CaseState, CaseAction, Case: Reducer>(
     _ toCaseState: CasePath<State, CaseState>,
     action toCaseAction: CasePath<Action, CaseAction>,

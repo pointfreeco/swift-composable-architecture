@@ -39,8 +39,8 @@ extension Reducer {
   ///   * Automatically `nil`s out child state when an action is sent for alerts and confirmation
   ///     dialogs.
   ///
-  /// See ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)-23pza`` for a more advanced
-  /// operator suited to navigation.
+  /// See ``Reducer/ifLet(_:action:then:file:fileID:line:)-qgdj`` for a more advanced operator
+  /// suited to navigation.
   ///
   /// - Parameters:
   ///   - toWrappedState: A writable key path from parent state to a property containing optional
@@ -50,6 +50,7 @@ extension Reducer {
   ///     state.
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @inlinable
+  @warn_unqualified_access
   public func ifLet<WrappedState, WrappedAction, Wrapped: Reducer>(
     _ toWrappedState: WritableKeyPath<State, WrappedState?>,
     action toWrappedAction: CasePath<Action, WrappedAction>,

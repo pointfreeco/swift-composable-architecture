@@ -7,6 +7,7 @@ extension Reducer {
   /// - Parameter printer: A printer for printing debug messages.
   /// - Returns: A reducer that prints debug messages for all received actions.
   @inlinable
+  @warn_unqualified_access
   public func _printChanges(
     _ printer: _ReducerPrinter<State, Action>? = .customDump
   ) -> _PrintChangesReducer<Self> {
