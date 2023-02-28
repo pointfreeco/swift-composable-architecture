@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import SwiftUI
 
-private struct NavigationStackBindingTestCase: ReducerProtocol {
+private struct NavigationStackBindingTestCase: Reducer {
   struct State: Equatable {
     var path: [Destination] = []
     enum Destination: Equatable {

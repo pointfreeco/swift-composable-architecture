@@ -541,7 +541,7 @@ final class StoreTests: XCTestCase {
   }
 
   func testOverrideDependenciesDirectlyOnStore() {
-    struct MyReducer: ReducerProtocol {
+    struct MyReducer: Reducer {
       @Dependency(\.uuid) var uuid
 
       func reduce(into state: inout UUID, action: Void) -> Effect<Void> {

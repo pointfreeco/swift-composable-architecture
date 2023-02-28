@@ -4,7 +4,7 @@ extension DependencyValues {
   /// Execute this in the effect returned from a reducer in order to dismiss the feature:
   ///
   /// ```swift
-  /// struct ChildFeature: ReducerProtocol {
+  /// struct ChildFeature: Reducer {
   ///   struct State { /* ... */ }
   ///   enum Action {
   ///     case exitButtonTapped
@@ -31,7 +31,7 @@ extension DependencyValues {
 /// Execute this in the effect returned from a reducer in order to dismiss the feature:
 ///
 /// ```swift
-/// struct ChildFeature: ReducerProtocol {
+/// struct ChildFeature: Reducer {
 ///   struct State { /* ... */ }
 ///   enum Action {
 ///     case exitButtonTapped

@@ -1,7 +1,7 @@
 /// A property wrapper for state that can be presented.
 ///
 /// Use this property wrapper for modeling a feature's domain that needs to present a child feature
-/// using ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)-23pza``.
+/// using ``Reducer/ifLet(_:action:then:file:fileID:line:)-qgdj``.
 @propertyWrapper
 public struct PresentationState<State> {
   private var boxedValue: [State]
@@ -82,7 +82,7 @@ extension PresentationState: CustomReflectable {
 /// A wrapper type for actions that can be presented.
 ///
 /// Use this wrapper type for modeling a feature's domain that needs to present a child
-/// feature using ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)-23pza``.
+/// feature using ``Reducer/ifLet(_:action:then:file:fileID:line:)-qgdj``.
 public enum PresentationAction<Action> {
   case dismiss
   case presented(Action)
@@ -94,14 +94,14 @@ extension PresentationAction: Hashable where Action: Hashable {}
 extension PresentationAction: Decodable where Action: Decodable {}
 extension PresentationAction: Encodable where Action: Encodable {}
 
-extension ReducerProtocol {
+extension Reducer {
   /// Embeds a child reducer in a parent domain that works on an optional property of parent state.
   ///
   /// For example, if a parent feature holds onto a piece of optional child state, then it can
   /// perform its core logic _and_ the child's logic by using the `ifLet` operator:
   ///
   /// ```swift
-  /// struct Parent: ReducerProtocol {
+  /// struct Parent: Reducer {
   ///   struct State {
   ///     @PresentationState var child: Child.State?
   ///     // ...
@@ -146,7 +146,7 @@ extension ReducerProtocol {
   ///     state.
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @warn_unqualified_access
-  public func ifLet<DestinationState, DestinationAction, Destination: ReducerProtocol>(
+  public func ifLet<DestinationState, DestinationAction, Destination: Reducer>(
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
     action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
     @ReducerBuilder<DestinationState, DestinationAction> then destination: () -> Destination,
@@ -166,8 +166,8 @@ extension ReducerProtocol {
     )
   }
 
-  /// A special overload of ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)-23pza`` for
-  /// alerts and confirmation dialogs that does not require a child reducer.
+  /// A special overload of ``Reducer/ifLet(_:action:then:file:fileID:line:)-qgdj`` for alerts and
+  /// confirmation dialogs that does not require a child reducer.
   @warn_unqualified_access
   public func ifLet<DestinationState: _EphemeralState, DestinationAction>(
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
@@ -187,9 +187,7 @@ extension ReducerProtocol {
   }
 }
 
-public struct _PresentationReducer<
-  Base: ReducerProtocol, Destination: ReducerProtocol
->: ReducerProtocol {
+public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer {
   let base: Base
   let toPresentationState: WritableKeyPath<Base.State, PresentationState<Destination.State>>
   let toPresentationAction: CasePath<Base.Action, PresentationAction<Destination.Action>>

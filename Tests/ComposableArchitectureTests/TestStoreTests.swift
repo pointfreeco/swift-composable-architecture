@@ -302,7 +302,7 @@ final class TestStoreTests: XCTestCase {
   }
 
   func testOverrideDependenciesOnTestStore_MidwayChange() {
-    struct Counter: ReducerProtocol {
+    struct Counter: Reducer {
       @Dependency(\.date.now) var now
 
       func reduce(into state: inout Int, action: ()) -> Effect<Void> {
@@ -326,7 +326,7 @@ final class TestStoreTests: XCTestCase {
   }
 
   func testOverrideDependenciesOnTestStore_Init() {
-    struct Counter: ReducerProtocol {
+    struct Counter: Reducer {
       @Dependency(\.calendar) var calendar
       @Dependency(\.locale) var locale
       @Dependency(\.timeZone) var timeZone

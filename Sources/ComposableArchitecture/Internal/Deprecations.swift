@@ -39,7 +39,7 @@ public typealias Send<Action> = Effect<Action>.Send
   deprecated,
   message: "Use 'ReducerBuilder<_, _>' with explicit 'State' and 'Action' generics, instead."
 )
-public typealias ReducerBuilderOf<R: ReducerProtocol> = ReducerBuilder<R.State, R.Action>
+public typealias ReducerBuilderOf<R: Reducer> = ReducerBuilder<R.State, R.Action>
 
 // NB: As of Swift 5.7, property wrapper deprecations are not diagnosed, so we may want to keep this
 //     deprecation around for now:

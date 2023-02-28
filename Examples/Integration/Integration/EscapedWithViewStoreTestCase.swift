@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import SwiftUI
 
-private struct EscapedWithViewStoreTestCase: ReducerProtocol {
+private struct EscapedWithViewStoreTestCase: Reducer {
   enum Action: Equatable, Sendable {
     case incr
     case decr

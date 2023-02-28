@@ -74,7 +74,7 @@ final class IfCaseLetReducerTests: XCTestCase {
   #if swift(>=5.7)
     func testEffectCancellation_Siblings() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        struct Child: ReducerProtocol {
+        struct Child: Reducer {
           struct State: Equatable {
             var count = 0
           }
@@ -97,7 +97,7 @@ final class IfCaseLetReducerTests: XCTestCase {
             }
           }
         }
-        struct Parent: ReducerProtocol {
+        struct Parent: Reducer {
           enum State: Equatable {
             case child1(Child.State)
             case child2(Child.State)
@@ -108,7 +108,7 @@ final class IfCaseLetReducerTests: XCTestCase {
             case child2(Child.Action)
             case child2ButtonTapped
           }
-          var body: some ReducerProtocol<State, Action> {
+          var body: some Reducer<State, Action> {
             Reduce { state, action in
               switch action {
               case .child1:

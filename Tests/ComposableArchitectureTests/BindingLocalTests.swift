@@ -8,7 +8,7 @@
     public func testBindingLocalIsActive() {
       XCTAssertFalse(BindingLocal.isActive)
 
-      struct MyReducer: ReducerProtocol {
+      struct MyReducer: Reducer {
         struct State: Equatable {
           var text = ""
         }

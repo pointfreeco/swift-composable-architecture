@@ -5,7 +5,7 @@ import XCTest
   @MainActor
   final class PresentationReducerTests: XCTestCase {
     func testPresentation_parentDismissal() async {
-      struct Child: ReducerProtocol {
+      struct Child: Reducer {
         struct State: Equatable {
           var count = 0
         }
@@ -25,7 +25,7 @@ import XCTest
         }
       }
 
-      struct Parent: ReducerProtocol {
+      struct Parent: Reducer {
         struct State: Equatable {
           @PresentationState var child: Child.State?
         }
@@ -68,7 +68,7 @@ import XCTest
     }
 
     func testPresentation_childDismissal() async {
-      struct Child: ReducerProtocol {
+      struct Child: Reducer {
         struct State: Equatable {
           var count = 0
         }
@@ -94,7 +94,7 @@ import XCTest
         }
       }
 
-      struct Parent: ReducerProtocol {
+      struct Parent: Reducer {
         struct State: Equatable {
           var lastCount: Int?
           @PresentationState var child: Child.State?
@@ -145,7 +145,7 @@ import XCTest
     func testPresentation_parentDismissal_effects() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
         await _withMainSerialExecutor {
-          struct Child: ReducerProtocol {
+          struct Child: Reducer {
             struct State: Equatable {
               var count = 0
             }
@@ -169,7 +169,7 @@ import XCTest
             }
           }
 
-          struct Parent: ReducerProtocol {
+          struct Parent: Reducer {
             struct State: Equatable {
               @PresentationState var child: Child.State?
             }
@@ -226,7 +226,7 @@ import XCTest
     func testPresentation_childDismissal_effects() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
         await _withMainSerialExecutor {
-          struct Child: ReducerProtocol {
+          struct Child: Reducer {
             struct State: Equatable {
               var count = 0
             }
@@ -257,7 +257,7 @@ import XCTest
             }
           }
 
-          struct Parent: ReducerProtocol {
+          struct Parent: Reducer {
             struct State: Equatable {
               @PresentationState var child: Child.State?
             }
@@ -315,7 +315,7 @@ import XCTest
     func testPresentation_identifiableDismissal_effects() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
         await _withMainSerialExecutor {
-          struct Child: ReducerProtocol {
+          struct Child: Reducer {
             struct State: Equatable, Identifiable {
               let id: UUID
               var count = 0
@@ -340,7 +340,7 @@ import XCTest
             }
           }
 
-          struct Parent: ReducerProtocol {
+          struct Parent: Reducer {
             struct State: Equatable {
               @PresentationState var child: Child.State?
             }
@@ -401,7 +401,7 @@ import XCTest
     }
 
     func testPresentation_requiresDismissal() async {
-      struct Child: ReducerProtocol {
+      struct Child: Reducer {
         struct State: Equatable {
           var count = 0
         }
@@ -421,7 +421,7 @@ import XCTest
         }
       }
 
-      struct Parent: ReducerProtocol {
+      struct Parent: Reducer {
         struct State: Equatable {
           @PresentationState var child: Child.State?
         }
@@ -458,7 +458,7 @@ import XCTest
 
     func testInertPresentation() async {
       if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
-        struct Parent: ReducerProtocol {
+        struct Parent: Reducer {
           struct State: Equatable {
             @PresentationState var alert: AlertState<Action.Alert>?
           }
@@ -499,7 +499,7 @@ import XCTest
 
     func testInertPresentation_dismissal() async {
       if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
-        struct Parent: ReducerProtocol {
+        struct Parent: Reducer {
           struct State: Equatable {
             @PresentationState var alert: AlertState<Action.Alert>?
           }
@@ -543,7 +543,7 @@ import XCTest
 
     func testInertPresentation_automaticDismissal() async {
       if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
-        struct Parent: ReducerProtocol {
+        struct Parent: Reducer {
           struct State: Equatable {
             @PresentationState var alert: AlertState<Action.Alert>?
             var isDeleted = false
@@ -602,7 +602,7 @@ import XCTest
 
     func testPresentation_hydratedDestination_childDismissal() async {
       await _withMainSerialExecutor {
-        struct Child: ReducerProtocol {
+        struct Child: Reducer {
           struct State: Equatable {
             var count = 0
           }
@@ -628,7 +628,7 @@ import XCTest
           }
         }
 
-        struct Parent: ReducerProtocol {
+        struct Parent: Reducer {
           struct State: Equatable {
             @PresentationState var child: Child.State?
           }
@@ -667,7 +667,7 @@ import XCTest
     func testEnumPresentation() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
         await _withMainSerialExecutor {
-          struct Child: ReducerProtocol {
+          struct Child: Reducer {
             struct State: Equatable, Identifiable {
               let id: UUID
               var count = 0
@@ -698,7 +698,7 @@ import XCTest
             }
           }
 
-          struct Parent: ReducerProtocol {
+          struct Parent: Reducer {
             struct State: Equatable {
               @PresentationState var destination: Destinations.State?
               var isDeleted = false
@@ -737,7 +737,7 @@ import XCTest
                 Destinations()
               }
             }
-            struct Destinations: ReducerProtocol {
+            struct Destinations: Reducer {
               enum State: Equatable {
                 case alert(AlertState<Action.Alert>)
                 case child(Child.State)
@@ -845,7 +845,7 @@ import XCTest
     }
 
     func testNavigation_cancelID_childCancellation() async {
-      struct Child: ReducerProtocol {
+      struct Child: Reducer {
         struct State: Equatable {}
         enum Action: Equatable {
           case startButtonTapped
@@ -865,7 +865,7 @@ import XCTest
         }
       }
 
-      struct Parent: ReducerProtocol {
+      struct Parent: Reducer {
         struct State: Equatable {
           @PresentationState var child: Child.State?
         }
@@ -902,7 +902,7 @@ import XCTest
     }
 
     func testNavigation_cancelID_parentCancellation() async {
-      struct Grandchild: ReducerProtocol {
+      struct Grandchild: Reducer {
         struct State: Equatable {}
         enum Action: Equatable {
           case startButtonTapped
@@ -919,7 +919,7 @@ import XCTest
         }
       }
 
-      struct Child: ReducerProtocol {
+      struct Child: Reducer {
         struct State: Equatable {
           @PresentationState var grandchild: Grandchild.State?
         }
@@ -950,7 +950,7 @@ import XCTest
         }
       }
 
-      struct Parent: ReducerProtocol {
+      struct Parent: Reducer {
         struct State: Equatable {
           @PresentationState var child: Child.State?
         }
@@ -999,7 +999,7 @@ import XCTest
 
     func testNavigation_cancelID_parentCancelTwoChildren() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        struct Child: ReducerProtocol {
+        struct Child: Reducer {
           struct State: Equatable {
             var count = 0
           }
@@ -1025,7 +1025,7 @@ import XCTest
           }
         }
 
-        struct Parent: ReducerProtocol {
+        struct Parent: Reducer {
           struct State: Equatable {
             @PresentationState var child1: Child.State?
             @PresentationState var child2: Child.State?
@@ -1095,7 +1095,7 @@ import XCTest
 
     func testNavigation_cancelID_childCannotCancelSibling() async throws {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        struct Child: ReducerProtocol {
+        struct Child: Reducer {
           struct State: Equatable {
             var count = 0
           }
@@ -1124,7 +1124,7 @@ import XCTest
           }
         }
 
-        struct Parent: ReducerProtocol {
+        struct Parent: Reducer {
           struct State: Equatable {
             @PresentationState var child1: Child.State?
             @PresentationState var child2: Child.State?
@@ -1198,7 +1198,7 @@ import XCTest
 
     func testNavigation_cancelID_childCannotCancelIdentifiableSibling() async throws {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        struct Child: ReducerProtocol {
+        struct Child: Reducer {
           struct State: Equatable, Identifiable {
             let id: UUID
             var count = 0
@@ -1228,7 +1228,7 @@ import XCTest
           }
         }
 
-        struct Parent: ReducerProtocol {
+        struct Parent: Reducer {
           struct State: Equatable {
             @PresentationState var child1: Child.State?
             @PresentationState var child2: Child.State?
@@ -1304,7 +1304,7 @@ import XCTest
 
     func testNavigation_cancelID_childCannotCancelParent() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        struct Child: ReducerProtocol {
+        struct Child: Reducer {
           struct State: Equatable {}
           enum Action: Equatable {
             case stopButtonTapped
@@ -1317,7 +1317,7 @@ import XCTest
           }
         }
 
-        struct Parent: ReducerProtocol {
+        struct Parent: Reducer {
           struct State: Equatable {
             @PresentationState var child: Child.State?
             var count = 0
@@ -1383,7 +1383,7 @@ import XCTest
 
     func testNavigation_cancelID_parentDismissGrandchild() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        struct Grandchild: ReducerProtocol {
+        struct Grandchild: Reducer {
           struct State: Equatable {}
           enum Action: Equatable {
             case response(Int)
@@ -1405,7 +1405,7 @@ import XCTest
           }
         }
 
-        struct Child: ReducerProtocol {
+        struct Child: Reducer {
           struct State: Equatable {
             @PresentationState var grandchild: Grandchild.State?
           }
@@ -1429,7 +1429,7 @@ import XCTest
           }
         }
 
-        struct Parent: ReducerProtocol {
+        struct Parent: Reducer {
           struct State: Equatable {
             @PresentationState var child: Child.State?
           }
@@ -1488,14 +1488,14 @@ import XCTest
     }
 
     func testRuntimeWarn_NilChild_SendDismissAction() async {
-      struct Child: ReducerProtocol {
+      struct Child: Reducer {
         struct State: Equatable {}
         enum Action: Equatable {}
         func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
         }
       }
 
-      struct Parent: ReducerProtocol {
+      struct Parent: Reducer {
         struct State: Equatable {
           @PresentationState var child: Child.State?
         }
@@ -1543,7 +1543,7 @@ import XCTest
     }
 
     func testRuntimeWarn_NilChild_SendChildAction() async {
-      struct Child: ReducerProtocol {
+      struct Child: Reducer {
         struct State: Equatable {}
         enum Action: Equatable {
           case tap
@@ -1553,7 +1553,7 @@ import XCTest
         }
       }
 
-      struct Parent: ReducerProtocol {
+      struct Parent: Reducer {
         struct State: Equatable {
           @PresentationState var child: Child.State?
         }
@@ -1601,14 +1601,14 @@ import XCTest
     }
 
     func testRehydrateSameChild_SendDismissAction() async {
-      struct Child: ReducerProtocol {
+      struct Child: Reducer {
         struct State: Equatable {}
         enum Action: Equatable {}
         func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
         }
       }
 
-      struct Parent: ReducerProtocol {
+      struct Parent: Reducer {
         struct State: Equatable {
           @PresentationState var child: Child.State?
         }
@@ -1642,7 +1642,7 @@ import XCTest
     }
 
     func testRehydrateDifferentChild_SendDismissAction() async {
-      struct Child: ReducerProtocol {
+      struct Child: Reducer {
         struct State: Equatable, Identifiable {
           let id: UUID
         }
@@ -1651,7 +1651,7 @@ import XCTest
         }
       }
 
-      struct Parent: ReducerProtocol {
+      struct Parent: Reducer {
         struct State: Equatable {
           @PresentationState var child: Child.State?
         }
@@ -1695,14 +1695,14 @@ import XCTest
     }
 
     func testPresentation_NonExhaustiveInPresentationEffect() async {
-      struct Child: ReducerProtocol {
+      struct Child: Reducer {
         struct State: Equatable {}
         enum Action: Equatable {}
         func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
         }
       }
 
-      struct Parent: ReducerProtocol {
+      struct Parent: Reducer {
         struct State: Equatable {
           @PresentationState var child: Child.State?
         }
@@ -1746,7 +1746,7 @@ import XCTest
     }
 
     func testPresentation_parentNilsOutChildWithLongLivingEffect() async {
-      struct Child: ReducerProtocol {
+      struct Child: Reducer {
         struct State: Equatable {
           var count = 0
         }
@@ -1769,7 +1769,7 @@ import XCTest
         }
       }
 
-      struct Parent: ReducerProtocol {
+      struct Parent: Reducer {
         struct State: Equatable {
           @PresentationState var child: Child.State?
         }
@@ -1815,7 +1815,7 @@ import XCTest
       // TODO: Remove this XCTExpectFailure once the destination identifiable problem is fixed.
       XCTExpectFailure()
 
-      struct Child: ReducerProtocol {
+      struct Child: Reducer {
         struct State: Equatable, Identifiable {
           var id = DependencyValues._current.uuid()
           var count = 0
@@ -1846,7 +1846,7 @@ import XCTest
         }
       }
 
-      struct Parent: ReducerProtocol {
+      struct Parent: Reducer {
         struct State: Equatable {
           @PresentationState var destination: Destination.State?
         }
@@ -1854,7 +1854,7 @@ import XCTest
           case destination(PresentationAction<Destination.Action>)
           case presentChild1
         }
-        struct Destination: ReducerProtocol {
+        struct Destination: Reducer {
           enum State: Equatable {
             case child1(Child.State)
             case child2(Child.State)

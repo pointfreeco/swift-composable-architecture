@@ -43,7 +43,7 @@ final class IfLetReducerTests: XCTestCase {
   #if swift(>=5.7)
     func testEffectCancellation() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        struct Child: ReducerProtocol {
+        struct Child: Reducer {
           struct State: Equatable {
             var count = 0
           }
@@ -66,7 +66,7 @@ final class IfLetReducerTests: XCTestCase {
             }
           }
         }
-        struct Parent: ReducerProtocol {
+        struct Parent: Reducer {
           struct State: Equatable {
             var child: Child.State?
           }
@@ -121,7 +121,7 @@ final class IfLetReducerTests: XCTestCase {
 
     func testGrandchildEffectCancellation() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        struct GrandChild: ReducerProtocol {
+        struct GrandChild: Reducer {
           struct State: Equatable {
             var count = 0
           }
@@ -144,7 +144,7 @@ final class IfLetReducerTests: XCTestCase {
             }
           }
         }
-        struct Child: ReducerProtocol {
+        struct Child: Reducer {
           struct State: Equatable {
             var grandChild: GrandChild.State?
           }
@@ -158,7 +158,7 @@ final class IfLetReducerTests: XCTestCase {
               }
           }
         }
-        struct Parent: ReducerProtocol {
+        struct Parent: Reducer {
           struct State: Equatable {
             var child: Child.State?
           }
@@ -214,7 +214,7 @@ final class IfLetReducerTests: XCTestCase {
 
     func testEphemeralState() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        struct Parent: ReducerProtocol {
+        struct Parent: Reducer {
           struct State: Equatable {
             var alert: AlertState<AlertAction>?
           }

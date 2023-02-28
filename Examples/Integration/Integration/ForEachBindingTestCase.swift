@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import SwiftUI
 
-private struct ForEachBindingTestCase: ReducerProtocol {
+private struct ForEachBindingTestCase: Reducer {
   struct State: Equatable {
     var values = ["A", "B", "C"]
   }

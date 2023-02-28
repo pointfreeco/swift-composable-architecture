@@ -663,7 +663,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   ///   - initialState: The state the feature starts in.
   ///   - reducer: The reducer that powers the runtime of the feature.
   @available(*, deprecated, message: "State must be equatable to perform assertions.")
-  public init<R: ReducerProtocol>(
+  public init<R: Reducer>(
     initialState: @autoclosure () -> State,
     reducer: R,
     prepareDependencies: (inout DependencyValues) -> Void = { _ in },

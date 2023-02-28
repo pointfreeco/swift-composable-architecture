@@ -5,7 +5,7 @@ import XCTest
 final class BindingTests: XCTestCase {
   #if swift(>=5.7)
     func testNestedBindingState() {
-      struct BindingTest: ReducerProtocol {
+      struct BindingTest: Reducer {
         struct State: Equatable {
           @BindingState var nested = Nested()
 

@@ -20,7 +20,7 @@ a form for adding a new item. We can integrate state and actions together by uti
 ``PresentationState`` and ``PresentationAction`` types:
 
 ```swift
-struct InventoryFeature: ReducerProtocol {
+struct InventoryFeature: Reducer {
   struct State: Equatable {
     @PresentationState var addItem: ItemFormFeature.State?
     var items: IdentifiedArrayOf<Item> = []
