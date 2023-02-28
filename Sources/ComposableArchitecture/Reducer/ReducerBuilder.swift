@@ -28,7 +28,7 @@ public enum ReducerBuilder<State, Action> {
   public static func buildEither<R0: Reducer, R1: Reducer>(
     first reducer: R0
   ) -> _Conditional<R0, R1>
-  where R0.State == State, R0.Action == Action, R1.State == State, R1.Action == Action {
+  where R0.State == State, R0.Action == Action {
     .first(reducer)
   }
 
@@ -36,7 +36,7 @@ public enum ReducerBuilder<State, Action> {
   public static func buildEither<R0: Reducer, R1: Reducer>(
     second reducer: R1
   ) -> _Conditional<R0, R1>
-  where R0.State == State, R0.Action == Action, R1.State == State, R1.Action == Action {
+  where R0.State == State, R0.Action == Action {
     .second(reducer)
   }
 
@@ -78,7 +78,7 @@ public enum ReducerBuilder<State, Action> {
   public static func buildPartialBlock<R0: Reducer, R1: Reducer>(
     accumulated: R0, next: R1
   ) -> _Sequence<R0, R1>
-  where R0.State == State, R0.Action == Action, R1.State == State, R1.Action == Action {
+  where R0.State == State, R0.Action == Action {
     _Sequence(accumulated, next)
   }
 

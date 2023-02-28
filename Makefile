@@ -1,3 +1,5 @@
+CONFIG=debug
+
 PLATFORM_IOS = iOS Simulator,name=iPhone 11 Pro Max
 PLATFORM_MACOS = macOS
 PLATFORM_MAC_CATALYST = macOS,variant=Mac Catalyst
@@ -14,7 +16,7 @@ test-library:
 	for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_MAC_CATALYST)" "$(PLATFORM_TVOS)" "$(PLATFORM_WATCHOS)"; do \
 		xcodebuild test \
 			-configuration $(CONFIG) \
-			-workspace ComposableArchitecture.xcworkspace \
+			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$$platform" || exit 1; \
 	done;
