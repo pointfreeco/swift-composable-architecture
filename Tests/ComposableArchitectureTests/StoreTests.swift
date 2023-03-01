@@ -565,32 +565,34 @@ final class StoreTests: XCTestCase {
       struct State: Equatable {
         var count = 0
       }
-      enum Action: Equatable { case tap, response1(Int), response2(Int), response3(Int) }
+      enum Action: Equatable {
+        case tap
+        case response1(Int)
+        case response2(Int)
+        case response3(Int)
+      }
       @Dependency(\.count) var count
       func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
         switch action {
         case .tap:
           return withDependencies { deps in
-            let currentCount = deps.count.value()
-            deps.count.value = { currentCount + 1 }
+            deps.count.value += 1
           } operation: {
-            .task { .response1(self.count.value())}
+            .task { .response1(self.count.value) }
           }
         case let .response1(count):
           state.count = count
           return withDependencies { deps in
-            let currentCount = deps.count.value()
-            deps.count.value = { currentCount + 1 }
+            deps.count.value += 1
           } operation: {
-            .task { .response2(self.count.value())}
+            .task { .response2(self.count.value) }
           }
         case let .response2(count):
           state.count = count
           return withDependencies { deps in
-            let currentCount = deps.count.value()
-            deps.count.value = { currentCount + 1 }
+            deps.count.value += 1
           } operation: {
-            .task { .response3(self.count.value())}
+            .task { .response3(self.count.value) }
           }
         case let .response3(count):
           state.count = count
@@ -608,7 +610,7 @@ final class StoreTests: XCTestCase {
       $0.count = 1
     }
     await testStore.receive(.response2(1))
-    await testStore.receive(.response3(1)) 
+    await testStore.receive(.response3(1))
 
     let store = Store(
       initialState: Feature.State(),
@@ -621,9 +623,9 @@ final class StoreTests: XCTestCase {
 }
 
 private struct Count: TestDependencyKey {
-  var value: () -> Int
-  static let liveValue = Count(value: { 0 })
-  static let testValue = Count(value: { 0 })
+  var value: Int
+  static let liveValue = Count(value: 0)
+  static let testValue = Count(value: 0)
 }
 extension DependencyValues {
   fileprivate var count: Count {
