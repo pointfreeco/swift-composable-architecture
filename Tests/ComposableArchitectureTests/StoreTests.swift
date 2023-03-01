@@ -573,31 +573,31 @@ final class StoreTests: XCTestCase {
       }
       @Dependency(\.count) var count
       func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
-switch action {
-case .tap:
-  return withDependencies {
-    $0.count.value += 1
-  } operation: {
-    .task { .response1(self.count.value) }
-  }
-case let .response1(count):
-  state.count = count
-  return withDependencies {
-    $0.count.value += 1
-  } operation: {
-    .task { .response2(self.count.value) }
-  }
-case let .response2(count):
-  state.count = count
-  return withDependencies {
-    $0.count.value += 1
-  } operation: {
-    .task { .response3(self.count.value) }
-  }
-case let .response3(count):
-  state.count = count
-  return .none
-}
+        switch action {
+        case .tap:
+          return withDependencies {
+            $0.count.value += 1
+          } operation: {
+            .task { .response1(self.count.value) }
+          }
+        case let .response1(count):
+          state.count = count
+          return withDependencies {
+            $0.count.value += 1
+          } operation: {
+            .task { .response2(self.count.value) }
+          }
+        case let .response2(count):
+          state.count = count
+          return withDependencies {
+            $0.count.value += 1
+          } operation: {
+            .task { .response3(self.count.value) }
+          }
+        case let .response3(count):
+          state.count = count
+          return .none
+        }
       }
     }
 
@@ -630,7 +630,7 @@ case let .response3(count):
         case response1(Int)
         case response2(Int)
         case response3(Int)
-      } 
+      }
       @Dependency(\.count) var count
       func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
         switch action {
