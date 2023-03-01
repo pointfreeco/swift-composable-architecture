@@ -519,6 +519,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       }
     }
   }
+
   /// Derives a binding from the store that prevents direct writes to state and instead sends
   /// actions to the store.
   ///
@@ -649,7 +650,11 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     send action: HashableWrapper<(Value) -> ViewAction>
   ) -> Value {
     get { state.rawValue(self.state) }
-    set { self.send(action.rawValue(newValue)) }
+    set {
+      BindingLocal.$isActive.withValue(true) {
+        self.send(action.rawValue(newValue))
+      }
+    }
   }
 }
 
@@ -836,4 +841,8 @@ private struct HashableWrapper<Value>: Hashable {
   let rawValue: Value
   static func == (lhs: Self, rhs: Self) -> Bool { false }
   func hash(into hasher: inout Hasher) {}
+}
+
+enum BindingLocal {
+  @TaskLocal static var isActive = false
 }

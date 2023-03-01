@@ -155,6 +155,6 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
     }
     defer { state = self.toChildState.embed(childState) }
     return self.child.reduce(into: &childState, action: childAction)
-      .map(self.toChildAction.embed)
+      .map { self.toChildAction.embed($0) }
   }
 }

@@ -103,19 +103,21 @@
     }
 
     func testCancelInFlightEffects_Strict() async {
-      let store = TestStore(
-        initialState: 0,
-        reducer: Reduce<Int, Bool> { _, action in
-          .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC / 4) }
-        }
-      )
+      await _withMainSerialExecutor {
+        let store = TestStore(
+          initialState: 0,
+          reducer: Reduce<Int, Bool> { _, action in
+            .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC / 4) }
+          }
+        )
 
-      let task = await store.send(true)
-      await task.finish(timeout: NSEC_PER_SEC / 2)
-      XCTExpectFailure {
-        $0.compactDescription == "There were no in-flight effects to skip."
+        let task = await store.send(true)
+        await task.finish(timeout: NSEC_PER_SEC / 2)
+        XCTExpectFailure {
+          $0.compactDescription == "There were no in-flight effects to skip."
+        }
+        await store.skipInFlightEffects(strict: true)
       }
-      await store.skipInFlightEffects(strict: true)
     }
 
     func testCancelInFlightEffects_NonExhaustive() async {
@@ -458,38 +460,40 @@
     // Confirms that when you send an action the test store skips any unreceived actions
     // automatically.
     func testSendWithUnreceivedActions_SkipsActions() async {
-      struct Feature: ReducerProtocol {
-        enum Action: Equatable {
-          case tap
-          case response(Int)
-        }
-        func reduce(into state: inout Int, action: Action) -> EffectTask<Action> {
-          switch action {
-          case .tap:
-            state += 1
-            return .task { [state] in .response(state + 42) }
-          case let .response(number):
-            state = number
-            return .none
+      await _withMainSerialExecutor {
+        struct Feature: ReducerProtocol {
+          enum Action: Equatable {
+            case tap
+            case response(Int)
+          }
+          func reduce(into state: inout Int, action: Action) -> EffectTask<Action> {
+            switch action {
+            case .tap:
+              state += 1
+              return .task { [state] in .response(state + 42) }
+            case let .response(number):
+              state = number
+              return .none
+            }
           }
         }
+
+        let store = TestStore(
+          initialState: 0,
+          reducer: Feature()
+        )
+        store.exhaustivity = .off
+
+        await store.send(.tap)
+        XCTAssertEqual(store.state, 1)
+
+        // Ignored received action: .response(43)
+        await store.send(.tap)
+        XCTAssertEqual(store.state, 44)
+
+        await store.skipReceivedActions()
+        XCTAssertEqual(store.state, 86)
       }
-
-      let store = TestStore(
-        initialState: 0,
-        reducer: Feature()
-      )
-      store.exhaustivity = .off
-
-      await store.send(.tap)
-      XCTAssertEqual(store.state, 1)
-
-      // Ignored received action: .response(43)
-      await store.send(.tap)
-      XCTAssertEqual(store.state, 44)
-
-      await store.skipReceivedActions()
-      XCTAssertEqual(store.state, 86)
     }
 
     func testPartialExhaustivityPrefix() async {

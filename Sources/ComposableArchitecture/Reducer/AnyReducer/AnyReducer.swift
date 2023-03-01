@@ -445,7 +445,7 @@ public struct AnyReducer<State, Action, Environment> {
         childAction,
         toChildEnvironment(parentEnvironment)
       )
-      .map(toChildAction.embed)
+      .map { toChildAction.embed($0) }
     }
   }
 
@@ -704,7 +704,7 @@ public struct AnyReducer<State, Action, Environment> {
         childAction,
         toChildEnvironment(parentEnvironment)
       )
-      .map(toChildAction.embed)
+      .map { toChildAction.embed($0) }
 
       return effects
     }

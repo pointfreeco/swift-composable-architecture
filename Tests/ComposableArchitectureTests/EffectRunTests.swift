@@ -117,4 +117,94 @@ final class EffectRunTests: XCTestCase {
     let store = TestStore(initialState: State(), reducer: reducer)
     await store.send(.tapped).finish()
   }
+
+  #if DEBUG
+    func testRunEscapeFailure() async throws {
+      XCTExpectFailure {
+        $0.compactDescription == """
+          An action was sent from a completed effect:
+
+            Action:
+              EffectRunTests.Action.response
+
+            Effect returned from:
+              EffectRunTests.Action.tap
+
+          Avoid sending actions using the 'send' argument from 'EffectTask.run' after the effect has \
+          completed. This can happen if you escape the 'send' argument in an unstructured context.
+
+          To fix this, make sure that your 'run' closure does not return until you're done calling \
+          'send'.
+          """
+      }
+
+      enum Action { case tap, response }
+
+      let queue = DispatchQueue.test
+
+      let store = Store(
+        initialState: 0,
+        reducer: Reduce<Int, Action> { _, action in
+          switch action {
+          case .tap:
+            return .run { send in
+              Task(priority: .userInitiated) {
+                try await queue.sleep(for: .seconds(1))
+                await send(.response)
+              }
+            }
+          case .response:
+            return .none
+          }
+        }
+      )
+
+      let viewStore = ViewStore(store, observe: { $0 })
+      await viewStore.send(.tap).finish()
+      await queue.advance(by: .seconds(1))
+    }
+
+    func testRunEscapeFailurePublisher() async throws {
+      XCTExpectFailure {
+        $0.compactDescription == """
+          An action was sent from a completed effect:
+
+            Action:
+              EffectRunTests.Action.response
+
+          Avoid sending actions using the 'send' argument from 'EffectTask.run' after the effect has \
+          completed. This can happen if you escape the 'send' argument in an unstructured context.
+
+          To fix this, make sure that your 'run' closure does not return until you're done calling \
+          'send'.
+          """
+      }
+
+      enum Action { case tap, response }
+
+      let queue = DispatchQueue.test
+
+      let store = Store(
+        initialState: 0,
+        reducer: Reduce<Int, Action> { _, action in
+          switch action {
+          case .tap:
+            return .run { send in
+              Task(priority: .userInitiated) {
+                try await queue.sleep(for: .seconds(1))
+                await send(.response)
+              }
+            }
+            .eraseToEffect()
+          case .response:
+            return .none
+          }
+        }
+      )
+
+      let viewStore = ViewStore(store, observe: { $0 })
+      await viewStore.send(.tap).finish()
+      await queue.advance(by: .seconds(1))
+    }
+  #endif
 }
