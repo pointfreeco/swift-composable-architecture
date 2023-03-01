@@ -131,7 +131,7 @@ public final class Store<State, Action> {
     private let reducer: (inout State, Action) -> EffectTask<Action>
     fileprivate var scope: AnyStoreScope?
   #endif
-  var state: CurrentValueSubject<State, Never>
+  @_spi(Internals) public var state: CurrentValueSubject<State, Never>
   #if DEBUG
     private let mainThreadChecksEnabled: Bool
   #endif

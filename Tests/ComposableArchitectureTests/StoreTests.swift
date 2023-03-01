@@ -573,31 +573,31 @@ final class StoreTests: XCTestCase {
       }
       @Dependency(\.count) var count
       func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
-        switch action {
-        case .tap:
-          return withDependencies { deps in
-            deps.count.value += 1
-          } operation: {
-            .task { .response1(self.count.value) }
-          }
-        case let .response1(count):
-          state.count = count
-          return withDependencies { deps in
-            deps.count.value += 1
-          } operation: {
-            .task { .response2(self.count.value) }
-          }
-        case let .response2(count):
-          state.count = count
-          return withDependencies { deps in
-            deps.count.value += 1
-          } operation: {
-            .task { .response3(self.count.value) }
-          }
-        case let .response3(count):
-          state.count = count
-          return .none
-        }
+switch action {
+case .tap:
+  return withDependencies {
+    $0.count.value += 1
+  } operation: {
+    .task { .response1(self.count.value) }
+  }
+case let .response1(count):
+  state.count = count
+  return withDependencies {
+    $0.count.value += 1
+  } operation: {
+    .task { .response2(self.count.value) }
+  }
+case let .response2(count):
+  state.count = count
+  return withDependencies {
+    $0.count.value += 1
+  } operation: {
+    .task { .response3(self.count.value) }
+  }
+case let .response3(count):
+  state.count = count
+  return .none
+}
       }
     }
 
@@ -616,9 +616,8 @@ final class StoreTests: XCTestCase {
       initialState: Feature.State(),
       reducer: Feature()
     )
-    let viewStore = ViewStore(store)
     await store.send(.tap)?.value
-    XCTAssertEqual(viewStore.count, testStore.state.count)
+    XCTAssertEqual(store.state.value.count, testStore.state.count)
   }
 
   func testStoreVsTestStore_Publisher() async {
@@ -636,24 +635,24 @@ final class StoreTests: XCTestCase {
       func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
         switch action {
         case .tap:
-          return withDependencies { deps in
-            deps.count.value += 1
+          return withDependencies {
+            $0.count.value += 1
           } operation: {
             EffectTask.task { .response1(self.count.value) }
           }
           .eraseToEffect()
         case let .response1(count):
           state.count = count
-          return withDependencies { deps in
-            deps.count.value += 1
+          return withDependencies {
+            $0.count.value += 1
           } operation: {
             EffectTask.task { .response2(self.count.value) }
           }
           .eraseToEffect()
         case let .response2(count):
           state.count = count
-          return withDependencies { deps in
-            deps.count.value += 1
+          return withDependencies {
+            $0.count.value += 1
           } operation: {
             EffectTask.task { .response3(self.count.value) }
           }
@@ -680,9 +679,8 @@ final class StoreTests: XCTestCase {
       initialState: Feature.State(),
       reducer: Feature()
     )
-    let viewStore = ViewStore(store)
     await store.send(.tap)?.value
-    XCTAssertEqual(viewStore.count, testStore.state.count)
+    XCTAssertEqual(store.state.value.count, testStore.state.count)
   }
 }
 
@@ -695,5 +693,35 @@ extension DependencyValues {
   fileprivate var count: Count {
     get { self[Count.self] }
     set { self[Count.self] = newValue }
+  }
+}
+
+
+public struct _Observe<Reducers: ReducerProtocol>: ReducerProtocol {
+  @usableFromInline
+  let reducers: (State, Action) -> Reducers
+
+  /// Initializes a reducer that builds a reducer from the current state and action.
+  ///
+  /// - Parameter build: A reducer builder that has access to the current state and action.
+  @inlinable
+  public init(
+    @ReducerBuilder<Reducers.State, Reducers.Action> _ build: @escaping (Reducers.State, Reducers.Action) -> Reducers
+  ) where Reducers.State == State, Reducers.Action == Action {
+    self.init(internal: build)
+  }
+
+  @usableFromInline
+  init(
+    internal reducers: @escaping (Reducers.State, Reducers.Action) -> Reducers
+  ) {
+    self.reducers = reducers
+  }
+
+  @inlinable
+  public func reduce(
+    into state: inout Reducers.State, action: Reducers.Action
+  ) -> EffectTask<Reducers.Action> {
+    self.reducers(state, action).reduce(into: &state, action: action)
   }
 }
