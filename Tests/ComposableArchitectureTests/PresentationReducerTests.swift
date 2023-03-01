@@ -67,6 +67,73 @@ import XCTest
       }
     }
 
+    func testPresentation_parentDismissal_NilOut() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable {
+          var count = 0
+        }
+        enum Action: Equatable {
+          case decrementButtonTapped
+          case incrementButtonTapped
+        }
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          switch action {
+          case .decrementButtonTapped:
+            state.count -= 1
+            return .none
+          case .incrementButtonTapped:
+            state.count += 1
+            return .none
+          }
+        }
+      }
+
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          @PresentationState var child: Child.State?
+        }
+        enum Action: Equatable {
+          case child(PresentationAction<Child.Action>)
+          case dismissChild
+          case presentChild
+        }
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .child:
+              return .none
+            case .dismissChild:
+              state.child = nil
+              return .none
+            case .presentChild:
+              state.child = Child.State()
+              return .none
+            }
+          }
+          .ifLet(\.$child, action: /Action.child) {
+            Child()
+          }
+        }
+      }
+
+      let store = TestStore(
+        initialState: Parent.State(),
+        reducer: Parent()
+      )
+
+      await store.send(.presentChild) {
+        $0.child = Child.State()
+      }
+      await store.send(.child(.presented(.incrementButtonTapped))) {
+        try (/.some).modify(&$0.child) {
+          $0.count = 1
+        }
+      }
+      await store.send(.dismissChild) {
+        $0.child = nil
+      }
+    }
+
     func testPresentation_childDismissal() async {
       struct Child: ReducerProtocol {
         struct State: Equatable {
