@@ -631,7 +631,7 @@ final class StoreTests: XCTestCase {
         case response1(Int)
         case response2(Int)
         case response3(Int)
-      }
+      } 
       @Dependency(\.count) var count
       func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
         switch action {

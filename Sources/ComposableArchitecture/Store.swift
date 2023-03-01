@@ -402,7 +402,9 @@ public final class Store<State, Action> {
               },
               receiveValue: { [weak self] effectAction in
                 guard let self = self else { return }
-                if let task = continuation.yield({ self.send(effectAction, originatingFrom: action) }) {
+                if let task = continuation.yield({
+                  self.send(effectAction, originatingFrom: action)
+                }) {
                   tasks.wrappedValue.append(task)
                 }
               }
