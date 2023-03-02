@@ -38,9 +38,11 @@ private struct PresentationTestCase: ReducerProtocol {
     }
     enum AlertAction {
       case ok
+      case showDialog
     }
     enum DialogAction {
       case ok
+      case showAlert
     }
     var body: some ReducerProtocolOf<Self> {
       Scope(state: /State.fullScreenCover, action: /Action.fullScreenCover) {
@@ -72,6 +74,12 @@ private struct PresentationTestCase: ReducerProtocol {
             ButtonState(action: .ok) {
               TextState("OK")
             }
+            ButtonState(action: .showDialog) {
+              TextState("Show dialog")
+            }
+            ButtonState(role: .cancel) {
+              TextState("Cancel")
+            }
           }
         )
         return .none
@@ -81,6 +89,21 @@ private struct PresentationTestCase: ReducerProtocol {
         .destination(.presented(.sheet(.parentSendDismissActionButtonTapped))),
         .destination(.presented(.popover(.parentSendDismissActionButtonTapped))):
         return .send(.destination(.dismiss))
+      case .destination(.presented(.alert(.showDialog))):
+        state.destination = .dialog(
+          ConfirmationDialogState(titleVisibility: .visible) {
+            TextState("Hello!")
+          } actions: {
+          }
+        )
+        return .none
+      case .destination(.presented(.dialog(.showAlert))):
+        state.destination = .alert(
+          AlertState {
+            TextState("Hello!")
+          }
+        )
+        return .none
       case .destination(.dismiss):
         state.message = "Dismiss action sent"
         return .none
@@ -93,6 +116,9 @@ private struct PresentationTestCase: ReducerProtocol {
           } actions: {
             ButtonState(action: .ok) {
               TextState("OK")
+            }
+            ButtonState(action: .showAlert) {
+              TextState("Show alert")
             }
           }
         )

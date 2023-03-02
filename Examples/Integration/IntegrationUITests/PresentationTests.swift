@@ -144,9 +144,26 @@ final class PresentationTests: XCTestCase {
 
   func testAlertActionDoesNotSendExtraDismiss() {
     self.app.buttons["Open alert"].tap()
-    self.app.alerts["Alert open"].buttons["OK"].tap()
+    self.app.buttons["OK"].tap()
     _ = self.app.staticTexts["Dismiss action sent"].waitForExistence(timeout: 1)
     XCTAssertEqual(false, self.app.staticTexts["Dismiss action sent"].exists)
+  }
+
+  func testAlertCancel() {
+    self.app.buttons["Open alert"].tap()
+    self.app.buttons["Cancel"].tap()
+    _ = self.app.staticTexts["Dismiss action sent"].waitForExistence(timeout: 1)
+    XCTAssertEqual(true, self.app.staticTexts["Dismiss action sent"].exists)
+  }
+
+  func testAlertThenDialog() {
+    // TODO: Remove this XCTExpectFailure once the destination identifiable problem is fixed.
+    XCTExpectFailure()
+
+    self.app.buttons["Open alert"].tap()
+    self.app.buttons["Show dialog"].tap()
+    _ = self.app.staticTexts["Hello!"].waitForExistence(timeout: 1)
+    XCTAssertEqual(true, self.app.staticTexts["Hello!"].exists)
   }
 
   func testDialogActionDoesNotSendExtraDismiss() {
@@ -154,5 +171,22 @@ final class PresentationTests: XCTestCase {
     self.app.buttons["OK"].tap()
     _ = self.app.staticTexts["Dismiss action sent"].waitForExistence(timeout: 1)
     XCTAssertEqual(false, self.app.staticTexts["Dismiss action sent"].exists)
+  }
+
+  func testDialogCancel() {
+    self.app.buttons["Open dialog"].tap()
+    self.app.buttons["Cancel"].tap()
+    _ = self.app.staticTexts["Dismiss action sent"].waitForExistence(timeout: 1)
+    XCTAssertEqual(true, self.app.staticTexts["Dismiss action sent"].exists)
+  }
+
+  func testShowDialogThenAlert() {
+    // TODO: Remove this XCTExpectFailure once the destination identifiable problem is fixed.
+    XCTExpectFailure()
+
+    self.app.buttons["Open dialog"].tap()
+    self.app.buttons["Show alert"].tap()
+    _ = self.app.staticTexts["Hello!"].waitForExistence(timeout: 1)
+    XCTAssertEqual(true, self.app.staticTexts["Hello!"].exists)
   }
 }
