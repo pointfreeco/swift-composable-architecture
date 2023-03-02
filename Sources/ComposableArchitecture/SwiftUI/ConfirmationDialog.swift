@@ -122,9 +122,13 @@ private struct PresentationConfirmationDialogModifier<State, Action, ButtonActio
     let confirmationDialogState = self.viewStore.wrappedValue.flatMap(self.toDestinationState)
     content.confirmationDialog(
       (confirmationDialogState?.title).map(Text.init) ?? Text(""),
-      isPresented: self.viewStore.binding(
-        get: { $0.wrappedValue.flatMap(self.toDestinationState) != nil },
-        send: .dismiss
+      isPresented: Binding( // TODO: do proper binding
+        get: { self.viewStore.wrappedValue.flatMap(self.toDestinationState) != nil },
+        set: { newState in
+          if !newState, self.viewStore.wrappedValue != nil {
+            self.viewStore.send(.dismiss)
+          }
+        }
       ),
       titleVisibility: (confirmationDialogState?.titleVisibility).map(Visibility.init)
         ?? .automatic,
