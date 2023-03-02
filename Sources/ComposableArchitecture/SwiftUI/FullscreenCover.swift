@@ -64,7 +64,7 @@ private struct PresentationFullScreenCoverModifier<
     content.fullScreenCover(
       item: self.viewStore.binding(
         get: { $0.wrappedValue.flatMap(self.toDestinationState) != nil ? $0.id : nil },
-        send: .dismiss
+        send: .dismiss // TODO: check for nil state?
       )
     ) { _ in
       IfLetStore(

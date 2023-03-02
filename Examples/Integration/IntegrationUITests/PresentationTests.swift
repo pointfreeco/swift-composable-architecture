@@ -141,4 +141,18 @@ final class PresentationTests: XCTestCase {
     try await Task.sleep(for: .seconds(3))
     XCTAssertEqual(false, self.app.staticTexts["Count: 999"].exists)
   }
+
+  func testAlertActionDoesNotSendExtraDismiss() {
+    self.app.buttons["Open alert"].tap()
+    self.app.alerts["Alert open"].buttons["OK"].tap()
+    _ = self.app.staticTexts["Dismiss action sent"].waitForExistence(timeout: 1)
+    XCTAssertEqual(false, self.app.staticTexts["Dismiss action sent"].exists)
+  }
+
+  func testDialogActionDoesNotSendExtraDismiss() {
+    self.app.buttons["Open dialog"].tap()
+    self.app.buttons["OK"].tap()
+    _ = self.app.staticTexts["Dismiss action sent"].waitForExistence(timeout: 1)
+    XCTAssertEqual(false, self.app.staticTexts["Dismiss action sent"].exists)
+  }
 }
