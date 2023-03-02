@@ -1981,5 +1981,100 @@ import XCTest
         $0.destination = nil
       }
     }
+
+    func testAlertThenDialog() async {
+      if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
+        struct Feature: ReducerProtocol {
+          struct State: Equatable {
+            @PresentationState var destination: Destination.State?
+          }
+          enum Action: Equatable {
+            case destination(PresentationAction<Destination.Action>)
+            case showAlert
+            case showDialog
+          }
+
+          struct Destination: ReducerProtocol {
+            enum State: Equatable {
+              case alert(AlertState<AlertDialogAction>)
+              case dialog(ConfirmationDialogState<AlertDialogAction>)
+            }
+            enum Action: Equatable {
+              case alert(AlertDialogAction)
+              case dialog(AlertDialogAction)
+            }
+            enum AlertDialogAction {
+              case showAlert
+              case showDialog
+            }
+            var body: some ReducerProtocolOf<Self> {
+              EmptyReducer()
+            }
+          }
+
+          var body: some ReducerProtocolOf<Self> {
+            Reduce<State, Action> { state, action in
+              switch action {
+              case .destination(.presented(.alert(.showDialog))):
+                state.destination = .dialog(ConfirmationDialogState { TextState("Hello!") } actions: {})
+                return .none
+              case .destination(.presented(.dialog(.showAlert))):
+                state.destination = .alert(AlertState { TextState("Hello!") })
+                return .none
+              case .destination:
+                return .none
+              case .showAlert:
+                state.destination = .alert(Self.alert)
+                return .none
+              case .showDialog:
+                state.destination = .dialog(Self.dialog)
+                return .none
+              }
+            }
+            .ifLet(\.$destination, action: /Action.destination) {
+              Destination()
+            }
+          }
+
+          static let alert = AlertState<Destination.AlertDialogAction> {
+            TextState("Choose")
+          } actions: {
+            ButtonState(action: .showAlert) { TextState("Show alert") }
+            ButtonState(action: .showDialog) { TextState("Show dialog") }
+          }
+          static let dialog = ConfirmationDialogState<Destination.AlertDialogAction> {
+            TextState("Choose")
+          } actions: {
+            ButtonState(action: .showAlert) { TextState("Show alert") }
+            ButtonState(action: .showDialog) { TextState("Show dialog") }
+          }
+        }
+
+        let store = TestStore(
+          initialState: Feature.State(),
+          reducer: Feature()
+        )
+
+        // TODO: remove this XCTExpectFailure when the destination identifiable stuff is fixed
+        XCTExpectFailure()
+
+        await store.send(.showAlert) {
+          $0.destination = .alert(Feature.alert)
+        }
+        await store.send(.destination(.presented(.alert(.showDialog)))) {
+          $0.destination = .dialog(Feature.dialog)
+        }
+        await store.send(.destination(.dismiss))
+
+        await store.send(.showDialog) {
+          $0.destination = .dialog(Feature.dialog)
+        }
+        // TODO: remove this XCTExpectFailure when the destination identifiable stuff is fixed
+        await store.send(.destination(.presented(.dialog(.showAlert)))) {
+          $0.destination = .alert(Feature.alert)
+        }
+        await store.send(.destination(.dismiss))
+      }
+    }
   }
 #endif
