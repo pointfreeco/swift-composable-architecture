@@ -956,16 +956,18 @@ import XCTest
         }
       }
 
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      )
-      let presentationTask = await store.send(.presentChild) {
-        $0.child = Child.State()
+      await _withMainSerialExecutor {
+        let store = TestStore(
+          initialState: Parent.State(),
+          reducer: Parent()
+        )
+        let presentationTask = await store.send(.presentChild) {
+          $0.child = Child.State()
+        }
+        await store.send(.child(.presented(.startButtonTapped)))
+        await store.send(.child(.presented(.stopButtonTapped)))
+        await presentationTask.cancel()
       }
-      await store.send(.child(.presented(.startButtonTapped)))
-      await store.send(.child(.presented(.stopButtonTapped)))
-      await presentationTask.cancel()
     }
 
     func testNavigation_cancelID_parentCancellation() async {
