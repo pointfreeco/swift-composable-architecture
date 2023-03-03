@@ -335,7 +335,7 @@ final class TestStoreTests: XCTestCase {
 
       func reduce(into state: inout Int, action: Bool) -> EffectTask<Bool> {
         _ = self.calendar
-        _ = self.client.fetch()
+        _ = self.fetch()
         _ = self.locale
         _ = self.timeZone
         _ = self.urlSession
