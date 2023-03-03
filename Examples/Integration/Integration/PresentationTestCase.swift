@@ -104,6 +104,11 @@ private struct PresentationTestCase: ReducerProtocol {
           }
         )
         return .none
+      case .destination(.presented):
+        if state.destination == nil {
+          state.message = "Action sent while state nil."
+        }
+        return .none
       case .destination(.dismiss):
         state.message = "Dismiss action sent"
         return .none
@@ -150,8 +155,10 @@ private struct ChildFeature: ReducerProtocol {
   struct State: Equatable, Identifiable {
     var id = UUID()
     var count = 0
+    @BindingState var text = ""
   }
-  enum Action {
+  enum Action: BindableAction, Equatable {
+    case binding(BindingAction<State>)
     case childDismissButtonTapped
     case incrementButtonTapped
     case parentSendDismissActionButtonTapped
@@ -160,26 +167,31 @@ private struct ChildFeature: ReducerProtocol {
     case startButtonTapped
   }
   @Dependency(\.dismiss) var dismiss
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
-    switch action {
-    case .childDismissButtonTapped:
-      return .fireAndForget { await self.dismiss() }
-    case .incrementButtonTapped:
-      state.count += 1
-      return .none
-    case .parentSendDismissActionButtonTapped:
-      return .none
-    case .resetIdentity:
-      state.id = UUID()
-      return .none
-    case .response:
-      state.count = 999
-      return .none
-    case .startButtonTapped:
-      state.count += 1
-      return .run { send in
-        try await Task.sleep(for: .seconds(3))
-        await send(.response)
+  var body: some ReducerProtocolOf<Self> {
+    BindingReducer()
+    Reduce<State, Action> { state, action in
+      switch action {
+      case .binding:
+        return .none
+      case .childDismissButtonTapped:
+        return .fireAndForget { await self.dismiss() }
+      case .incrementButtonTapped:
+        state.count += 1
+        return .none
+      case .parentSendDismissActionButtonTapped:
+        return .none
+      case .resetIdentity:
+        state.id = UUID()
+        return .none
+      case .response:
+        state.count = 999
+        return .none
+      case .startButtonTapped:
+        state.count += 1
+        return .run { send in
+          try await Task.sleep(for: .seconds(3))
+          await send(.response)
+        }
       }
     }
   }
@@ -297,6 +309,7 @@ private struct ChildView: View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       VStack {
         Text("Count: \(viewStore.count)")
+        TextField("Text field", text: viewStore.binding(\.$text))
         Button("Child dismiss") {
           viewStore.send(.childDismissButtonTapped)
         }

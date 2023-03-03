@@ -21,7 +21,8 @@ public struct NavigationLinkStore<
   let label: Label
 
   // TODO: initialier for just presentation state and no destination transformations
-
+  // TODO: initializer for Identifiable
+  
   public init(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (State) -> DestinationState?,
