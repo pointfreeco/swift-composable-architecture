@@ -328,7 +328,7 @@ final class TestStoreTests: XCTestCase {
   func testOverrideDependenciesOnTestStore_Init() {
     struct Counter: ReducerProtocol {
       @Dependency(\.calendar) var calendar
-      @Dependency(\.client) var client
+      @Dependency(\.client.fetch) var fetch
       @Dependency(\.locale) var locale
       @Dependency(\.timeZone) var timeZone
       @Dependency(\.urlSession) var urlSession
