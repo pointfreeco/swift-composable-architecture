@@ -50,9 +50,10 @@ private struct PresentationFullScreenCoverModifier<
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
     content coverContent: @escaping (Store<DestinationState, DestinationAction>) -> CoverContent
   ) {
-    self.store = store
+    let filteredStore = store.filter { state, _ in state.wrappedValue != nil }
+    self.store = filteredStore
     self.viewStore = ViewStore(
-      store.filter { state, _ in state.wrappedValue != nil },
+      filteredStore,
       removeDuplicates: { $0.id == $1.id }
     )
     self.toDestinationState = toDestinationState
@@ -64,7 +65,7 @@ private struct PresentationFullScreenCoverModifier<
     content.fullScreenCover(
       item: self.viewStore.binding(
         get: { $0.wrappedValue.flatMap(self.toDestinationState) != nil ? $0.id : nil },
-        send: .dismiss // TODO: check for nil state?
+        send: .dismiss
       )
     ) { _ in
       IfLetStore(

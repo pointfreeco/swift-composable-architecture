@@ -44,9 +44,10 @@ private struct PresentationSheetModifier<
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
     content sheetContent: @escaping (Store<DestinationState, DestinationAction>) -> SheetContent
   ) {
-    self.store = store
+    let filteredStore = store.filter { state, _ in state.wrappedValue != nil }
+    self.store = filteredStore
     self.viewStore = ViewStore(
-      store.filter { state, _ in state.wrappedValue != nil },
+      filteredStore,
       removeDuplicates: { $0.id == $1.id }
     )
     self.toDestinationState = toDestinationState
@@ -58,7 +59,7 @@ private struct PresentationSheetModifier<
     content.sheet(
       item: self.viewStore.binding(
         get: { $0.wrappedValue.flatMap(self.toDestinationState) != nil ? $0.id : nil },
-        send: .dismiss // TODO: check for nil state?
+        send: .dismiss
       )
     ) { _ in
       IfLetStore(

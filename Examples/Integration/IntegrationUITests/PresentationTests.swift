@@ -190,11 +190,22 @@ final class PresentationTests: XCTestCase {
     XCTAssertEqual(true, self.app.staticTexts["Hello!"].exists)
   }
 
-  func testExtraBindingActionsIgnoredOnDismiss() {
-    // TODO: Remove this XCTExpectFailure once the binding-in-sheet bug is fixed
-    XCTExpectFailure()
-
+  func testSheetExtraBindingActionsIgnoredOnDismiss() {
     self.app.buttons["Open sheet"].tap()
+    self.app.textFields["Text field"].tap()
+    self.app.buttons["Child dismiss"].tap()
+    XCTAssertEqual(self.app.staticTexts["Action sent while state nil."].exists, false)
+  }
+
+  func testPopoverExtraBindingActionsIgnoredOnDismiss() {
+    self.app.buttons["Open popover"].tap()
+    self.app.textFields["Text field"].tap()
+    self.app.buttons["Child dismiss"].tap()
+    XCTAssertEqual(self.app.staticTexts["Action sent while state nil."].exists, false)
+  }
+
+  func testCoverExtraBindingActionsIgnoredOnDismiss() {
+    self.app.buttons["Open full screen cover"].tap()
     self.app.textFields["Text field"].tap()
     self.app.buttons["Child dismiss"].tap()
     XCTAssertEqual(self.app.staticTexts["Action sent while state nil."].exists, false)

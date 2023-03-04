@@ -901,6 +901,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
         line: self.line
       )
     }
+
     for effect in self.reducer.inFlightEffects {
       XCTFailHelper(
         """
