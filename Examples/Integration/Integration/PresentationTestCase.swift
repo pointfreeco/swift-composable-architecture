@@ -12,7 +12,7 @@ private struct PresentationTestCase: ReducerProtocol {
     case dialogButtonTapped
     case fullScreenCoverButtonTapped
     case navigationDestinationButtonTapped
-    case navigationLinkButtonTapped
+    case navigationLinkDemoButtonTapped
     case popoverButtonTapped
     case sheetButtonTapped
   }
@@ -23,7 +23,7 @@ private struct PresentationTestCase: ReducerProtocol {
       case dialog(ConfirmationDialogState<DialogAction>)
       case fullScreenCover(ChildFeature.State)
       case navigationDestination(ChildFeature.State)
-      case navigationLink(ChildFeature.State)
+      case navigationLinkDemo(NavigationLinkDemoFeature.State)
       case popover(ChildFeature.State)
       case sheet(ChildFeature.State)
     }
@@ -32,7 +32,7 @@ private struct PresentationTestCase: ReducerProtocol {
       case dialog(DialogAction)
       case fullScreenCover(ChildFeature.Action)
       case navigationDestination(ChildFeature.Action)
-      case navigationLink(ChildFeature.Action)
+      case navigationLinkDemo(NavigationLinkDemoFeature.Action)
       case popover(ChildFeature.Action)
       case sheet(ChildFeature.Action)
     }
@@ -51,8 +51,8 @@ private struct PresentationTestCase: ReducerProtocol {
       Scope(state: /State.navigationDestination, action: /Action.navigationDestination) {
         ChildFeature()
       }
-      Scope(state: /State.navigationLink, action: /Action.navigationLink) {
-        ChildFeature()
+      Scope(state: /State.navigationLinkDemo, action: /Action.navigationLinkDemo) {
+        NavigationLinkDemoFeature()
       }
       Scope(state: /State.sheet, action: /Action.sheet) {
         ChildFeature()
@@ -64,6 +64,14 @@ private struct PresentationTestCase: ReducerProtocol {
   }
 
   var body: some ReducerProtocolOf<Self> {
+    Reduce<State, Action> { state, action in
+      switch action {
+      case .destination(.presented) where state.destination == nil:
+        state.message = "Action sent while state nil."
+        return .none
+      default: return .none
+      }
+    }
     Reduce<State, Action> { state, action in
       switch action {
       case .alertButtonTapped:
@@ -85,7 +93,6 @@ private struct PresentationTestCase: ReducerProtocol {
         return .none
       case .destination(.presented(.fullScreenCover(.parentSendDismissActionButtonTapped))),
         .destination(.presented(.navigationDestination(.parentSendDismissActionButtonTapped))),
-        .destination(.presented(.navigationLink(.parentSendDismissActionButtonTapped))),
         .destination(.presented(.sheet(.parentSendDismissActionButtonTapped))),
         .destination(.presented(.popover(.parentSendDismissActionButtonTapped))):
         return .send(.destination(.dismiss))
@@ -103,11 +110,6 @@ private struct PresentationTestCase: ReducerProtocol {
             TextState("Hello!")
           }
         )
-        return .none
-      case .destination(.presented):
-        if state.destination == nil {
-          state.message = "Action sent while state nil."
-        }
         return .none
       case .destination(.dismiss):
         state.message = "Dismiss action sent"
@@ -134,8 +136,8 @@ private struct PresentationTestCase: ReducerProtocol {
       case .navigationDestinationButtonTapped:
         state.destination = .navigationDestination(ChildFeature.State())
         return .none
-      case .navigationLinkButtonTapped:
-        state.destination = .navigationLink(ChildFeature.State())
+      case .navigationLinkDemoButtonTapped:
+        state.destination = .navigationLinkDemo(NavigationLinkDemoFeature.State())
         return .none
       case .popoverButtonTapped:
         state.destination = .popover(ChildFeature.State())
@@ -189,7 +191,7 @@ private struct ChildFeature: ReducerProtocol {
       case .startButtonTapped:
         state.count += 1
         return .run { send in
-          try await Task.sleep(for: .seconds(3))
+          try await Task.sleep(for: .seconds(2))
           await send(.response)
         }
       }
@@ -250,17 +252,20 @@ struct PresentationTestCaseView: View {
         ChildView(store: store)
       }
 
-      NavigationLinkStore(
+      HStack {
+        Button("Open navigation link demo") {
+          viewStore.send(.navigationLinkDemoButtonTapped)
+        }
+        Spacer()
+        Image(systemName: "arrow.up.forward.square")
+      }
+      .sheet(
         store: self.store.scope(
           state: \.$destination, action: PresentationTestCase.Action.destination),
-        state: /PresentationTestCase.Destination.State.navigationLink,
-        action: PresentationTestCase.Destination.Action.navigationLink
-      ) {
-        self.viewStore.send(.navigationLinkButtonTapped)
-      } destination: { store in
-        ChildView(store: store)
-      } label: {
-        Text("Open navigation link")
+        state: /PresentationTestCase.Destination.State.navigationLinkDemo,
+        action: PresentationTestCase.Destination.Action.navigationLinkDemo
+      ) { store in
+        NavigationLinkDemoView(store: store)
       }
 
       Button("Open navigation destination") {
@@ -324,6 +329,67 @@ private struct ChildView: View {
         }
         Button("Reset identity") {
           viewStore.send(.resetIdentity)
+        }
+      }
+    }
+  }
+}
+
+private struct NavigationLinkDemoFeature: ReducerProtocol {
+  struct State: Equatable {
+    var message = ""
+    @PresentationState var child: ChildFeature.State?
+  }
+  enum Action: Equatable {
+    case child(PresentationAction<ChildFeature.Action>)
+    case navigationLinkButtonTapped
+  }
+  var body: some ReducerProtocolOf<Self> {
+    Reduce<State, Action> { state, action in
+      switch action {
+      case .child(.presented) where state.child == nil:
+        state.message = "Action sent while state nil."
+        return .none
+      default:
+        return .none
+      }
+    }
+    Reduce<State, Action> { state, action in
+      switch action {
+      case .child(.presented(.parentSendDismissActionButtonTapped)):
+        state.child = nil
+        return .none
+      case .child:
+        return .none
+      case .navigationLinkButtonTapped:
+        state.child = ChildFeature.State()
+        return .none
+      }
+    }
+    .ifLet(\.$child, action: /Action.child) {
+      ChildFeature()
+    }
+  }
+}
+
+private struct NavigationLinkDemoView: View {
+  let store: StoreOf<NavigationLinkDemoFeature>
+
+  var body: some View {
+    NavigationView {
+      Form {
+        WithViewStore(self.store, observe: \.message) { viewStore in
+          Text(viewStore.state)
+          
+          NavigationLinkStore(
+            store: self.store.scope(state: \.$child, action: NavigationLinkDemoFeature.Action.child)
+          ) {
+            viewStore.send(.navigationLinkButtonTapped)
+          } destination: { store in
+            ChildView(store: store)
+          } label: {
+            Text("Open navigation link")
+          }
         }
       }
     }

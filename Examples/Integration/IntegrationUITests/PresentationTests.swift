@@ -210,4 +210,47 @@ final class PresentationTests: XCTestCase {
     self.app.buttons["Child dismiss"].tap()
     XCTAssertEqual(self.app.staticTexts["Action sent while state nil."].exists, false)
   }
+
+  func testNavigationLink_ChildActions() {
+    self.app.buttons["Open navigation link demo"].tap()
+    self.app.buttons["Open navigation link"].tap()
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
+    self.app.buttons["Increment"].tap()
+    XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
+  }
+
+  func testNavigationLink_ChildDismiss() {
+    self.app.buttons["Open navigation link demo"].tap()
+    self.app.buttons["Open navigation link"].tap()
+    self.app.buttons["Child dismiss"].tap()
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, false)
+  }
+
+  func testNavigationLink_ParentDismiss() {
+    self.app.buttons["Open navigation link demo"].tap()
+    self.app.buttons["Open navigation link"].tap()
+    self.app.buttons["Parent dismiss"].tap()
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, false)
+  }
+
+  func testNavigationLink_ChildEffectCancellation() async throws {
+    self.app.buttons["Open navigation link demo"].tap()
+    self.app.buttons["Open navigation link"].tap()
+    self.app.buttons["Start effect"].tap()
+    XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
+    self.app.buttons["Parent dismiss"].tap()
+    try await Task.sleep(for: .seconds(3))
+    XCTAssertEqual(
+      self.app.staticTexts["Action sent while state nil."].exists,
+      false
+    )
+  }
+
+  func testNavigationLink_ExtraBindingActionsIgnoredOnDismiss() {
+    self.app.buttons["Open navigation link demo"].tap()
+    self.app.buttons["Open navigation link"].tap()
+    self.app.textFields["Text field"].tap()
+    self.app.buttons["Parent dismiss"].tap()
+    XCTAssertEqual(self.app.staticTexts["Action sent while state nil."].exists, false)
+  }
 }
