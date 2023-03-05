@@ -823,7 +823,7 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     func rescope<ScopedState, ScopedAction, RescopedState, RescopedAction>(
       _ store: Store<ScopedState, ScopedAction>,
       state toRescopedState: @escaping (ScopedState) -> RescopedState,
-      action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?
+      action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?,
       removeDuplicates isDuplicate: ((RescopedState, RescopedState) -> Bool)? = nil,
       instrumentation: Instrumentation,
       file: StaticString = #file,
@@ -853,7 +853,7 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     func rescope<ScopedState, ScopedAction, RescopedState, RescopedAction>(
       _ scopedStore: Store<ScopedState, ScopedAction>,
       state toRescopedState: @escaping (ScopedState) -> RescopedState,
-      action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?
+      action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?,
       removeDuplicates isDuplicate: ((RescopedState, RescopedState) -> Bool)? = nil,
       instrumentation: Instrumentation,
       file: StaticString = #file,
