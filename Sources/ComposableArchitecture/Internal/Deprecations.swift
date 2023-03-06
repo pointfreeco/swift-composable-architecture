@@ -91,6 +91,7 @@ extension ViewStore {
 
 extension ReducerProtocol {
   @available(*, deprecated, renamed: "_printChanges")
+  @warn_unqualified_access
   public func debug() -> _PrintChangesReducer<Self> {
     self._printChanges()
   }
