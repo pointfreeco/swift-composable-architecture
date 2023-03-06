@@ -57,7 +57,7 @@ public struct EffectPublisher<Action, Failure: Error> {
   enum Operation {
     case none
     case publisher(AnyPublisher<Action, Failure>)
-    case run(TaskPriority? = nil, @Sendable (Send) async -> Void)
+    case run(TaskPriority? = nil, @Sendable (Send<Action>) async -> Void)
   }
 
   @usableFromInline
@@ -253,8 +253,8 @@ extension EffectPublisher where Failure == Never {
   /// - Returns: An effect wrapping the given asynchronous work.
   public static func run(
     priority: TaskPriority? = nil,
-    operation: @escaping @Sendable (Send) async throws -> Void,
-    catch handler: (@Sendable (Error, Send) async -> Void)? = nil,
+    operation: @escaping @Sendable (Send<Action>) async throws -> Void,
+    catch handler: (@Sendable (Error, Send<Action>) async -> Void)? = nil,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -353,70 +353,68 @@ extension EffectPublisher where Failure == Never {
   }
 }
 
-extension EffectTask {
-  /// A type that can send actions back into the system when used from
-  /// ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)``.
-  ///
-  /// This type implements [`callAsFunction`][callAsFunction] so that you invoke it as a function
-  /// rather than calling methods on it:
-  ///
-  /// ```swift
-  /// return .run { send in
-  ///   send(.started)
-  ///   defer { send(.finished) }
-  ///   for await event in self.events {
-  ///     send(.event(event))
-  ///   }
-  /// }
-  /// ```
-  ///
-  /// You can also send actions with animation:
-  ///
-  /// ```swift
-  /// send(.started, animation: .spring())
-  /// defer { send(.finished, animation: .default) }
-  /// ```
-  ///
-  /// See ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)`` for more information on how to
-  /// use this value to construct effects that can emit any number of times in an asynchronous
-  /// context.
-  ///
-  /// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
-  @MainActor
-  public struct Send {
-    public let send: @MainActor (Action) -> Void
+/// A type that can send actions back into the system when used from
+/// ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)``.
+///
+/// This type implements [`callAsFunction`][callAsFunction] so that you invoke it as a function
+/// rather than calling methods on it:
+///
+/// ```swift
+/// return .run { send in
+///   send(.started)
+///   defer { send(.finished) }
+///   for await event in self.events {
+///     send(.event(event))
+///   }
+/// }
+/// ```
+///
+/// You can also send actions with animation:
+///
+/// ```swift
+/// send(.started, animation: .spring())
+/// defer { send(.finished, animation: .default) }
+/// ```
+///
+/// See ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)`` for more information on how to
+/// use this value to construct effects that can emit any number of times in an asynchronous
+/// context.
+///
+/// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
+@MainActor
+public struct Send<Action> {
+  public let send: @MainActor (Action) -> Void
 
-    public init(send: @escaping @MainActor (Action) -> Void) {
-      self.send = send
-    }
+  public init(send: @escaping @MainActor (Action) -> Void) {
+    self.send = send
+  }
 
-    /// Sends an action back into the system from an effect.
-    ///
-    /// - Parameter action: An action.
-    public func callAsFunction(_ action: Action) {
-      guard !Task.isCancelled else { return }
-      self.send(action)
-    }
+  /// Sends an action back into the system from an effect.
+  ///
+  /// - Parameter action: An action.
+  public func callAsFunction(_ action: Action) {
+    guard !Task.isCancelled else { return }
+    self.send(action)
+  }
 
-    /// Sends an action back into the system from an effect with animation.
-    ///
-    /// - Parameters:
-    ///   - action: An action.
-    ///   - animation: An animation.
-    public func callAsFunction(_ action: Action, animation: Animation?) {
-      callAsFunction(action, transaction: Transaction(animation: animation))
-    }
+  /// Sends an action back into the system from an effect with animation.
+  ///
+  /// - Parameters:
+  ///   - action: An action.
+  ///   - animation: An animation.
+  public func callAsFunction(_ action: Action, animation: Animation?) {
+    callAsFunction(action, transaction: Transaction(animation: animation))
+  }
 
-    /// Sends an action back into the system from an effect with transaction.
-    ///
-    /// - Parameters:
-    ///   - action: An action.
-    ///   - transaction: A transaction.
-    public func callAsFunction(_ action: Action, transaction: Transaction) {
-      guard !Task.isCancelled else { return }
-      withTransaction(transaction) {
-        self(action)
-      }
+  /// Sends an action back into the system from an effect with transaction.
+  ///
+  /// - Parameters:
+  ///   - action: An action.
+  ///   - transaction: A transaction.
+  public func callAsFunction(_ action: Action, transaction: Transaction) {
+    guard !Task.isCancelled else { return }
+    withTransaction(transaction) {
+      self(action)
     }
   }
 }
@@ -563,7 +561,7 @@ extension EffectPublisher {
           operation: .run(priority) { send in
             await escaped.yield {
               await operation(
-                Send { action in
+                Send<Action> { action in
                   send(transform(action))
                 }
               )

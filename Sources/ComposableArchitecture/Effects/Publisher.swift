@@ -27,7 +27,7 @@ extension EffectPublisher: Publisher {
             var isCompleted = false
             defer { isCompleted = true }
           #endif
-          let send = Send {
+          let send = Send<Action> {
             #if DEBUG
               if isCompleted {
                 runtimeWarn(
