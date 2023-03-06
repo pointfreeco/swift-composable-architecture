@@ -3,18 +3,6 @@ import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
-// MARK: - Deprecated after 0.51.0
-
-// NB Soft deprecation to avoid deprecation messages when this type is inferred in `Effect`
-// without having to qualify it as `ComposableArchitecture.Send` there.
-@available(iOS, deprecated: 9999.0, message: "Use 'Send<Action>' instead.")
-@available(macOS, deprecated: 9999.0, message: "Use 'Send<Action>' instead.")
-@available(tvOS, deprecated: 9999.0, message: "Use 'Send<Action>' instead.")
-@available(watchOS, deprecated: 9999.0, message: "Use 'Send<Action>' instead.")
-extension EffectTask {
-  public typealias Send = ComposableArchitecture.Send
-}
-
 // MARK: - Deprecated after 0.49.2
 
 @available(

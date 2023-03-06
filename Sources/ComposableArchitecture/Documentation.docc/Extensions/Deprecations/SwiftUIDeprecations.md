@@ -8,6 +8,14 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 ## Topics
 
+### ActionSheetState
+
+- ``ActionSheetState``
+
+### BindableState
+
+- ``BindableState``
+
 ### ForEachStore
 
 - ``ForEachStore/init(_:content:)-34mtj``
