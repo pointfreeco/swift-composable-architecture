@@ -33,8 +33,11 @@
 
 - ``dependency(_:_:)``
 - ``transformDependency(_:transform:)``
-- ``_printChanges(_:)``
 - ``signpost(_:log:)``
+
+### Supporting types
+
+- ``ReducerProtocolOf``
 
 ### Deprecations
 
