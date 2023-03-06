@@ -317,12 +317,6 @@ public enum ReducerBuilder<State, Action> {
     where R.State == State, R.Action == Action {
       Reduce(reducer)
     }
-
-    @inlinable
-    public static func buildOptional<R: Reducer>(_ wrapped: R?) -> R?
-    where R.State == State, R.Action == Action {
-      wrapped
-    }
   #endif
 
   public enum _Conditional<First: Reducer, Second: Reducer>: Reducer
