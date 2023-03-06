@@ -40,10 +40,12 @@ import SwiftUI
 /// state:
 ///
 /// ```swift
-/// struct Todos: ReducerProtocol { {
+/// struct Todos: ReducerProtocol {
 ///   struct State: Equatable {
 ///     var todos: IdentifiedArrayOf<Todo.State> = []
 ///   }
+///   ...
+/// }
 /// ```
 ///
 /// Define a case to handle actions sent to the child domain:
