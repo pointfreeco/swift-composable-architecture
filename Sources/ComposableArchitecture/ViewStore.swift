@@ -111,7 +111,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
         objectWillChange.send()
         _state.value = $0
       }
-    store.instrumentation.viewStoreCreated?(self as AnyObject, file, line)
+    store.instrumentation.viewStoreCreated?(self as AnyObject, ViewStore<ViewState, ViewAction>.self, nil, file, line)
   }
 
   /// Initializes a view store from a store which observes changes to state.
@@ -155,7 +155,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
         objectWillChange.send()
         _state.value = $0
       }
-    store.instrumentation.viewStoreCreated?(self as AnyObject, file, line)
+    store.instrumentation.viewStoreCreated?(self as AnyObject, ViewStore<ViewState, ViewAction>.self, nil, file, line)
   }
 
   /// Initializes a view store from a store.
@@ -253,7 +253,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
         _state.value = $0
       }
 
-    store.instrumentation.viewStoreCreated?(self as AnyObject, file, line)
+    store.instrumentation.viewStoreCreated?(self as AnyObject, ViewStore<ViewState, ViewAction>.self, nil, file, line)
   }
 
   /// Initializes a view store from a store that has a state of type void. This special initializer prevents this view
@@ -277,7 +277,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     }
     self._state = CurrentValueRelay(())
 
-    store.instrumentation.viewStoreCreated?(self as AnyObject, file, line)
+    store.instrumentation.viewStoreCreated?(self as AnyObject, ViewStore<ViewState, ViewAction>.self, nil, file, line)
   }
 
   internal init(_ viewStore: ViewStore<ViewState, ViewAction>, file: StaticString = #file, line: UInt = #line) {
@@ -287,7 +287,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     self.objectWillChange = viewStore.objectWillChange
     self.viewCancellable = viewStore.viewCancellable
 
-    self.instrumentation.viewStoreCreated?(self as AnyObject, file, line)
+    self.instrumentation.viewStoreCreated?(self as AnyObject, ViewStore<ViewState, ViewAction>.self, nil, file, line)
   }
 
   /// A publisher that emits when state changes.
