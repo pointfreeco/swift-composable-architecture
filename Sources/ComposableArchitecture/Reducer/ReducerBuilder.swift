@@ -319,14 +319,6 @@ public enum ReducerBuilder<State, Action> {
     }
 
     @inlinable
-    public static func buildLimitedAvailability<R: Reducer>(
-      _ wrapped: R
-    ) -> Reduce<R.State, R.Action>
-    where R.State == State, R.Action == Action {
-      Reduce(wrapped)
-    }
-
-    @inlinable
     public static func buildOptional<R: Reducer>(_ wrapped: R?) -> R?
     where R.State == State, R.Action == Action {
       wrapped
