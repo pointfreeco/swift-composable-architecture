@@ -747,7 +747,7 @@ public typealias StoreOf<R: Reducer> = Store<R.State, R.Action>
       var isSending = false
       let rescopedStore = Store<RescopedState, RescopedAction>(
         initialState: toRescopedState(scopedStore.state.value),
-        reducer: .init { rescopedState, rescopedAction, _ in
+        reducer: Reduce({ rescopedState, rescopedAction in
           isSending = true
           defer { isSending = false }
           guard
@@ -761,8 +761,7 @@ public typealias StoreOf<R: Reducer> = Store<R.State, R.Action>
           } else {
             return .none
           }
-        },
-        environment: ()
+        })
       )
       rescopedStore.parentCancellable = scopedStore.state
         .dropFirst()

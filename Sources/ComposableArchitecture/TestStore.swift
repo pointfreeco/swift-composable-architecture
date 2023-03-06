@@ -1383,13 +1383,13 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     guard !self.reducer.inFlightEffects.isEmpty
     else {
       _ = {
-        self.receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
+        self._receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
       }()
       return
     }
     await self.receiveAction(timeout: nanoseconds, file: file, line: line)
     _ = {
-      self.receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
+      self._receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
     }()
     await Task.megaYield()
   }
