@@ -41,4 +41,17 @@ final class BindingTests: XCTestCase {
       XCTAssertEqual(viewStore.state, .init(nested: .init(field: "Hello!")))
     }
   #endif
+
+  // NB: This crashes in Swift(<5.8) RELEASE when `BindingAction` holds directly onto an unboxed
+  //     `value: Any` existential
+  func testLayoutBug() {
+    enum Foo {
+      case bar(Baz)
+    }
+    enum Baz {
+      case fizz(BindingAction<Void>)
+      case buzz(Bool)
+    }
+    _ = (/Foo.bar).extract(from: .bar(.buzz(true)))
+  }
 }

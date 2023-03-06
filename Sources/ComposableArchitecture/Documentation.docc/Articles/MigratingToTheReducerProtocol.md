@@ -492,10 +492,11 @@ But this means that you must explicitly thread all dependencies from the root of
 through to every child feature. This can be arduous and make it difficult to add, remove or change
 dependencies.
 
-The library comes with a tool for managing dependencies in a more ergonomic manner, and even comes
-with some common dependencies pre-integrated allowing you to access them with no additional work.
-For example, the `date` dependency ships with the library so that you can declare your feature's
-dependence on that functionality in the following way:
+The Composable Architecture now uses the [Dependencies][swift-dependencies] library to manage
+dependencies in a more ergonomic manner, and even comes with some common dependencies pre-integrated
+allowing you to access them with no additional work. For example, the `date` dependency ships with
+the library so that you can declare your feature's dependence on that functionality in the following
+way:
 
 ```swift
 struct Feature: ReducerProtocol {
@@ -507,6 +508,17 @@ struct Feature: ReducerProtocol {
 
 With that one declaration you can stop explicitly passing the date dependency through every layer
 of your application. A date function will be automatically provided to your feature's reducer.
+
+> Important: [Dependencies][swift-dependencies] is powered by Swift task locals and is intended to
+> be used in structured contexts. If your reducer's effects make use of escaping closures, then
+> you must do additional work to propagate the dependencies to that context. For example, using
+> a dependency from within a Combine operator such as `.map`, `.flatMap` and even `.filter` will
+> use the default dependency value.
+>
+> See the [Dependencies documentation][swift-dependencies-docs] on
+> [Dependency lifetimes][swift-dependencies-docs-lifetimes] for more information, and how to
+> integrate the `@Dependency` property wrapper into pre-structured concurrency using the
+> `withEscapedDependencies` function.
 
 For domain-specific dependencies you can perform a little bit of upfront work to register your
 dependency with the system, and then it will be automatically available to every layer in your 
@@ -537,6 +549,10 @@ struct Feature: ReducerProtocol {
 
 For more information on designing your dependencies and providing live and test dependencies, see
 our <doc:Testing> article.
+
+[swift-dependencies]: https://github.com/pointfreeco/swift-dependencies
+[swift-dependencies-docs]: https://pointfreeco.github.io/swift-dependencies/main/documentation/dependencies/
+[swift-dependencies-docs-lifetimes]: https://pointfreeco.github.io/swift-dependencies/main/documentation/dependencies/lifetimes
 
 ## Stores
 

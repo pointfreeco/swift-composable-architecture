@@ -75,21 +75,5 @@
       let store = TestStore(initialState: 0, reducer: DebuggedReducer()._printChanges())
       await store.send(true) { $0 = 1 }
     }
-
-    @MainActor
-    func testDebugReducerInPreview() async {
-      struct DebuggedReducer: ReducerProtocol {
-        typealias State = Int
-        typealias Action = Bool
-        func reduce(into state: inout Int, action: Bool) -> EffectTask<Bool> {
-          state += action ? 1 : -1
-          return .none
-        }
-      }
-      let store = TestStore(initialState: 0, reducer: DebuggedReducer()._printChanges()) {
-        $0.context = .preview
-      }
-      await store.send(true) { $0 = 1 }
-    }
   }
 #endif

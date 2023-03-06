@@ -53,7 +53,7 @@ extension ReducerProtocol {
   public func forEach<ElementState, ElementAction, ID: Hashable, Element: ReducerProtocol>(
     _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
     action toElementAction: CasePath<Action, (ID, ElementAction)>,
-    @ReducerBuilder<ElementState, ElementAction> _ element: () -> Element,
+    @ReducerBuilder<ElementState, ElementAction> element: () -> Element,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line

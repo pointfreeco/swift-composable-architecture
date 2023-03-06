@@ -109,7 +109,7 @@ import SwiftUI
 ///   ViewStore(self.store).send(.buttonTapped)
 /// }
 /// ```
-public struct WithViewStore<ViewState, ViewAction, Content> {
+public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   private let content: (ViewStore<ViewState, ViewAction>) -> Content
   private let file: StaticString
   private let line: UInt
@@ -181,11 +181,7 @@ public struct WithViewStore<ViewState, ViewAction, Content> {
     #endif
     return self.content(ViewStore(self.viewStore, file: file, line: line))
   }
-}
 
-// MARK: - View
-
-extension WithViewStore: View where Content: View {
   /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
   /// to compute views from state.
   ///

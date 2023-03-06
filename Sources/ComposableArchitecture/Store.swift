@@ -325,7 +325,7 @@ public final class Store<State, Action> {
       return self.reducer.rescope(
         self,
         state: toChildState,
-        action: fromChildAction,
+        action: { fromChildAction($1) },
         removeDuplicates: isDuplicate,
         instrumentation: instrumentation,
         file: file,
@@ -334,14 +334,14 @@ public final class Store<State, Action> {
     #else
       return (self.scope ?? StoreScope(root: self))
         .rescope(
-            self,
-            state: toChildState,
-            action: fromChildAction,
-            removeDuplicates: isDuplicate,
-            instrumentation: instrumentation,
-            file: file,
-            line: line
-        )
+          self, 
+          state: toChildState, 
+          action: { fromChildAction($1) },
+          removeDuplicates: isDuplicate,
+          instrumentation: instrumentation,
+          file: file,
+          line: line
+      )
     #endif
   }
 
@@ -357,6 +357,35 @@ public final class Store<State, Action> {
     line: UInt = #line
   ) -> Store<ChildState, Action> {
     self.scope(state: toChildState, action: { $0 }, file: file, line: line)
+  }
+
+  func filter(
+    _ isSent: @escaping (State, Action) -> Bool,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) -> Store<State, Action> {
+    self.threadCheck(status: .scope)
+
+    #if swift(>=5.7)
+      return self.reducer.rescope(
+        self,
+        state: { $0 },
+        action: { isSent($0, $1) ? $1 : nil },
+        instrumentation: instrumentation,
+        file: file,
+        line: line
+      )
+    #else
+      return (self.scope ?? StoreScope(root: self))
+        .rescope(
+            self,
+            state: { $0 },
+            action: { isSent($0, $1) ? $1 : nil },
+            instrumentation: instrumentation,
+            file: file,
+            line: line
+        )
+    #endif
   }
 
   @_spi(Internals) public func send(
@@ -455,9 +484,35 @@ public final class Store<State, Action> {
         }
       case let .run(priority, operation):
         tasks.wrappedValue.append(
-          Task(priority: priority) {
+          Task(priority: priority) { @MainActor in
+            #if DEBUG
+              var isCompleted = false
+              defer { isCompleted = true }
+            #endif
             await operation(
-              Send {
+              EffectTask<Action>.Send {
+                #if DEBUG
+                  if isCompleted {
+                    runtimeWarn(
+                      """
+                      An action was sent from a completed effect:
+
+                        Action:
+                          \(debugCaseOutput($0))
+
+                        Effect returned from:
+                          \(debugCaseOutput(action))
+
+                      Avoid sending actions using the 'send' argument from 'EffectTask.run' after \
+                      the effect has completed. This can happen if you escape the 'send' argument in \
+                      an unstructured context.
+
+                      To fix this, make sure that your 'run' closure does not return until you're \
+                      done calling 'send'.
+                      """
+                    )
+                  }
+                #endif
                 if let task = self.send($0, originatingFrom: action) {
                   tasks.wrappedValue.append(task)
                 }
@@ -627,7 +682,7 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     fileprivate func rescope<ChildState, ChildAction>(
       _ store: Store<State, Action>,
       state toChildState: @escaping (State) -> ChildState,
-      action fromChildAction: @escaping (ChildAction) -> Action,
+      action fromChildAction: @escaping (ChildState, ChildAction) -> Action?,
       removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)? = nil,
       instrumentation: Instrumentation,
       file: StaticString = #file,
@@ -652,7 +707,7 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     let rootStore: Store<RootState, RootAction>
     let toScopedState: (RootState) -> ScopedState
     private let parentStores: [Any]
-    let fromScopedAction: (ScopedAction) -> RootAction
+    let fromScopedAction: (ScopedState, ScopedAction) -> RootAction?
     private(set) var isSending = false
 
     @inlinable
@@ -661,14 +716,14 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
       self.rootStore = rootStore
       self.toScopedState = { $0 }
       self.parentStores = []
-      self.fromScopedAction = { $0 }
+      self.fromScopedAction = { $1 }
     }
 
     @inlinable
     init(
       rootStore: Store<RootState, RootAction>,
       state toScopedState: @escaping (RootState) -> ScopedState,
-      action fromScopedAction: @escaping (ScopedAction) -> RootAction,
+      action fromScopedAction: @escaping (ScopedState, ScopedAction) -> RootAction?,
       parentStores: [Any]
     ) {
       self.rootStore = rootStore
@@ -686,7 +741,7 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
         state = self.toScopedState(self.rootStore.state.value)
         self.isSending = false
       }
-      if let task = self.rootStore.send(self.fromScopedAction(action)) {
+      if let action = self.fromScopedAction(state, action), let task = self.rootStore.send(action) {
         return .fireAndForget { await task.cancellableValue }
       } else {
         return .none
@@ -698,7 +753,7 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     func rescope<ScopedState, ScopedAction, RescopedState, RescopedAction>(
       _ store: Store<ScopedState, ScopedAction>,
       state toRescopedState: @escaping (ScopedState) -> RescopedState,
-      action fromRescopedAction: @escaping (RescopedAction) -> ScopedAction,
+      action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?,
       removeDuplicates isDuplicate: ((RescopedState, RescopedState) -> Bool)?,
       instrumentation: Instrumentation,
       file: StaticString,
@@ -711,17 +766,17 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     func rescope<ScopedState, ScopedAction, RescopedState, RescopedAction>(
       _ store: Store<ScopedState, ScopedAction>,
       state toRescopedState: @escaping (ScopedState) -> RescopedState,
-      action fromRescopedAction: @escaping (RescopedAction) -> ScopedAction,
+      action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?,
       removeDuplicates isDuplicate: ((RescopedState, RescopedState) -> Bool)? = nil,
       instrumentation: Instrumentation,
       file: StaticString = #file,
       line: UInt = #line
     ) -> Store<RescopedState, RescopedAction> {
-      let fromScopedAction = self.fromScopedAction as! (ScopedAction) -> RootAction
+      let fromScopedAction = self.fromScopedAction as! (ScopedState, ScopedAction) -> RootAction?
       let reducer = ScopedReducer<RootState, RootAction, RescopedState, RescopedAction>(
         rootStore: self.rootStore,
         state: { _ in toRescopedState(store.state.value) },
-        action: { fromScopedAction(fromRescopedAction($0)) },
+        action: { fromRescopedAction($0, $1).flatMap { fromScopedAction(store.state.value, $0) } },
         parentStores: self.parentStores + [store]
       )
       let childStore = Store<RescopedState, RescopedAction>(
@@ -768,7 +823,7 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     func rescope<ScopedState, ScopedAction, RescopedState, RescopedAction>(
       _ store: Store<ScopedState, ScopedAction>,
       state toRescopedState: @escaping (ScopedState) -> RescopedState,
-      action fromRescopedAction: @escaping (RescopedAction) -> ScopedAction,
+      action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?,
       removeDuplicates isDuplicate: ((RescopedState, RescopedState) -> Bool)? = nil,
       instrumentation: Instrumentation,
       file: StaticString = #file,
@@ -781,12 +836,15 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     let fromScopedAction: Any
 
     init(root: Store<RootState, RootAction>) {
-      self.init(root: root, fromScopedAction: { $0 })
+      self.init(
+        root: root,
+        fromScopedAction: { (state: RootState, action: RootAction) -> RootAction? in action }
+      )
     }
 
-    private init<ScopedAction>(
+    private init<ScopedState, ScopedAction>(
       root: Store<RootState, RootAction>,
-      fromScopedAction: @escaping (ScopedAction) -> RootAction
+      fromScopedAction: @escaping (ScopedState, ScopedAction) -> RootAction?
     ) {
       self.root = root
       self.fromScopedAction = fromScopedAction
@@ -795,13 +853,13 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     func rescope<ScopedState, ScopedAction, RescopedState, RescopedAction>(
       _ scopedStore: Store<ScopedState, ScopedAction>,
       state toRescopedState: @escaping (ScopedState) -> RescopedState,
-      action fromRescopedAction: @escaping (RescopedAction) -> ScopedAction,
+      action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?,
       removeDuplicates isDuplicate: ((RescopedState, RescopedState) -> Bool)? = nil,
       instrumentation: Instrumentation,
       file: StaticString = #file,
       line: UInt = #line
     ) -> Store<RescopedState, RescopedAction> {
-      let fromScopedAction = self.fromScopedAction as! (ScopedAction) -> RootAction
+      let fromScopedAction = self.fromScopedAction as! (ScopedState, ScopedAction) -> RootAction?
 
       var isSending = false
       let rescopedStore = Store<RescopedState, RescopedAction>(
@@ -809,7 +867,11 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
         reducer: .init { rescopedState, rescopedAction, _ in
           isSending = true
           defer { isSending = false }
-          let task = self.root.send(fromScopedAction(fromRescopedAction(rescopedAction)))
+          guard
+            let scopedAction = fromRescopedAction(rescopedState, rescopedAction),
+            let rootAction = fromScopedAction(scopedStore.state.value, scopedAction)
+          else { return .none }
+          let task = self.root.send(rootAction)
           rescopedState = toRescopedState(scopedStore.state.value)
           if let task = task {
             return .fireAndForget { await task.cancellableValue }
@@ -853,7 +915,9 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
         }
       rescopedStore.scope = StoreScope<RootState, RootAction>(
         root: self.root,
-        fromScopedAction: { fromScopedAction(fromRescopedAction($0)) }
+        fromScopedAction: {
+          fromRescopedAction($0, $1).flatMap { fromScopedAction(scopedStore.state.value, $0) }
+        }
       )
       return rescopedStore
     }
