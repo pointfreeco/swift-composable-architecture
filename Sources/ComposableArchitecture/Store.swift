@@ -885,7 +885,7 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
           }
         },
         removeDuplicates: isDuplicate,
-        parentStore: rootStore,
+        parentStore: root,
         instrumentation: instrumentation,
         file: file,
         line: line
