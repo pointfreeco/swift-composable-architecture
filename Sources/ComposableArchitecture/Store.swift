@@ -545,14 +545,14 @@ public final class Store<State, Action> {
   }
 
   /// Returns a "stateless" store by erasing state to `Void`.
-  public var stateless: Store<Void, Action> {
-    self.scope(state: { _ in () })
+  public func stateless(file: StaticString = #file, line: UInt = #line) -> Store<Void, Action> {
+    self.scope(state: { _ in () }, file: file, line: line)
   }
 
   /// Returns an "actionless" store by erasing action to `Never`.
-  public var actionless: Store<State, Never> {
+  public func actionless(file: StaticString = #file, line: UInt = #line) -> Store<State, Never> {
     func absurd<A>(_ never: Never) -> A {}
-    return self.scope(state: { $0 }, action: absurd)
+    return self.scope(state: { $0 }, action: absurd, file: file, line: line)
   }
 
   private enum ThreadCheckStatus {
