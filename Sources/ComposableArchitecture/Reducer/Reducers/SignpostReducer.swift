@@ -122,7 +122,7 @@ extension EffectPublisher where Failure == Never {
             actionOutput
           )
           await operation(
-            Effect<Action>.Send { action in
+            Send { action in
               os_signpost(
                 .event, log: log, name: "Effect Output", "%sOutput from %s", prefix, actionOutput
               )

@@ -462,7 +462,7 @@ internal struct EffectPublisherWrapper<Action, Failure: Error>: Publisher {
       return .create { subscriber in
         let task = Task(priority: priority) { @MainActor in
           defer { subscriber.send(completion: .finished) }
-          let send = Effect<Action>.Send { subscriber.send($0) }
+          let send = Send { subscriber.send($0) }
           await operation(send)
         }
         return AnyCancellable {
