@@ -328,12 +328,14 @@ final class TestStoreTests: XCTestCase {
   func testOverrideDependenciesOnTestStore_Init() {
     struct Counter: Reducer {
       @Dependency(\.calendar) var calendar
+      @Dependency(\.client.fetch) var fetch
       @Dependency(\.locale) var locale
       @Dependency(\.timeZone) var timeZone
       @Dependency(\.urlSession) var urlSession
 
       func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
         _ = self.calendar
+        _ = self.fetch()
         _ = self.locale
         _ = self.timeZone
         _ = self.urlSession
@@ -347,6 +349,7 @@ final class TestStoreTests: XCTestCase {
       reducer: Counter()
     ) {
       $0.calendar = Calendar(identifier: .gregorian)
+      $0.client.fetch = { 1 }
       $0.locale = Locale(identifier: "en_US")
       $0.timeZone = TimeZone(secondsFromGMT: 0)!
       $0.urlSession = URLSession(configuration: .ephemeral)
@@ -400,5 +403,16 @@ final class TestStoreTests: XCTestCase {
       $0.count = 42
       $0.date = now
     }
+  }
+}
+
+private struct Client: DependencyKey {
+  var fetch: () -> Int
+  static let liveValue = Client(fetch: { 42 })
+}
+extension DependencyValues {
+  fileprivate var client: Client {
+    get { self[Client.self] }
+    set { self[Client.self] = newValue }
   }
 }

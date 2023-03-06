@@ -50,11 +50,9 @@ private struct PresentationFullScreenCoverModifier<
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
     content coverContent: @escaping (Store<DestinationState, DestinationAction>) -> CoverContent
   ) {
-    self.store = store
-    self.viewStore = ViewStore(
-      store.filter { state, _ in state.wrappedValue != nil },
-      removeDuplicates: { $0.id == $1.id }
-    )
+    let filteredStore = store.filter { state, _ in state.wrappedValue != nil }
+    self.store = filteredStore
+    self.viewStore = ViewStore(filteredStore, observe: { $0 }, removeDuplicates: { $0.id == $1.id })
     self.toDestinationState = toDestinationState
     self.fromDestinationAction = fromDestinationAction
     self.coverContent = coverContent

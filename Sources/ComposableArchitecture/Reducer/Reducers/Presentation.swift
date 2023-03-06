@@ -226,7 +226,7 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
         .dependency(\.navigationID, id)
         .reduce(
           into: &state[keyPath: self.toPresentationState].wrappedValue!, action: destinationAction
-        )
+        ) 
         .map { self.toPresentationAction.embed(.presented($0)) }
         .cancellable(id: id)
       baseEffects = self.base.reduce(into: &state, action: action)

@@ -58,7 +58,8 @@ import SwiftUI
         wrappedValue: ViewStore(
           store
             .filter { state, _ in state.wrappedValue != nil }
-            .scope(state: { $0.wrappedValue.flatMap(toDestinationState) != nil })
+            .scope(state: { $0.wrappedValue.flatMap(toDestinationState) != nil }),
+          observe: { $0 }
         )
       )
       self.toDestinationState = toDestinationState

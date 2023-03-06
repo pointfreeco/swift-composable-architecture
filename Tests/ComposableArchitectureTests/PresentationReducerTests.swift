@@ -67,6 +67,73 @@ import XCTest
       }
     }
 
+    func testPresentation_parentDismissal_NilOut() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable {
+          var count = 0
+        }
+        enum Action: Equatable {
+          case decrementButtonTapped
+          case incrementButtonTapped
+        }
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          switch action {
+          case .decrementButtonTapped:
+            state.count -= 1
+            return .none
+          case .incrementButtonTapped:
+            state.count += 1
+            return .none
+          }
+        }
+      }
+
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          @PresentationState var child: Child.State?
+        }
+        enum Action: Equatable {
+          case child(PresentationAction<Child.Action>)
+          case dismissChild
+          case presentChild
+        }
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .child:
+              return .none
+            case .dismissChild:
+              state.child = nil
+              return .none
+            case .presentChild:
+              state.child = Child.State()
+              return .none
+            }
+          }
+          .ifLet(\.$child, action: /Action.child) {
+            Child()
+          }
+        }
+      }
+
+      let store = TestStore(
+        initialState: Parent.State(),
+        reducer: Parent()
+      )
+
+      await store.send(.presentChild) {
+        $0.child = Child.State()
+      }
+      await store.send(.child(.presented(.incrementButtonTapped))) {
+        try (/.some).modify(&$0.child) {
+          $0.count = 1
+        }
+      }
+      await store.send(.dismissChild) {
+        $0.child = nil
+      }
+    }
+
     func testPresentation_childDismissal() async {
       struct Child: Reducer {
         struct State: Equatable {
@@ -889,16 +956,18 @@ import XCTest
         }
       }
 
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      )
-      let presentationTask = await store.send(.presentChild) {
-        $0.child = Child.State()
+      await _withMainSerialExecutor {
+        let store = TestStore(
+          initialState: Parent.State(),
+          reducer: Parent()
+        )
+        let presentationTask = await store.send(.presentChild) {
+          $0.child = Child.State()
+        }
+        await store.send(.child(.presented(.startButtonTapped)))
+        await store.send(.child(.presented(.stopButtonTapped)))
+        await presentationTask.cancel()
       }
-      await store.send(.child(.presented(.startButtonTapped)))
-      await store.send(.child(.presented(.stopButtonTapped)))
-      await presentationTask.cancel()
     }
 
     func testNavigation_cancelID_parentCancellation() async {
@@ -1912,6 +1981,145 @@ import XCTest
       await mainQueue.run()
       await store.send(.destination(.dismiss)) {
         $0.destination = nil
+      }
+    }
+
+    func testAlertThenDialog() async {
+      if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
+        struct Feature: ReducerProtocol {
+          struct State: Equatable {
+            @PresentationState var destination: Destination.State?
+          }
+          enum Action: Equatable {
+            case destination(PresentationAction<Destination.Action>)
+            case showAlert
+            case showDialog
+          }
+
+          struct Destination: ReducerProtocol {
+            enum State: Equatable {
+              case alert(AlertState<AlertDialogAction>)
+              case dialog(ConfirmationDialogState<AlertDialogAction>)
+            }
+            enum Action: Equatable {
+              case alert(AlertDialogAction)
+              case dialog(AlertDialogAction)
+            }
+            enum AlertDialogAction {
+              case showAlert
+              case showDialog
+            }
+            var body: some ReducerProtocolOf<Self> {
+              EmptyReducer()
+            }
+          }
+
+          var body: some ReducerProtocolOf<Self> {
+            Reduce<State, Action> { state, action in
+              switch action {
+              case .destination(.presented(.alert(.showDialog))):
+                state.destination = .dialog(ConfirmationDialogState { TextState("Hello!") } actions: {})
+                return .none
+              case .destination(.presented(.dialog(.showAlert))):
+                state.destination = .alert(AlertState { TextState("Hello!") })
+                return .none
+              case .destination:
+                return .none
+              case .showAlert:
+                state.destination = .alert(Self.alert)
+                return .none
+              case .showDialog:
+                state.destination = .dialog(Self.dialog)
+                return .none
+              }
+            }
+            .ifLet(\.$destination, action: /Action.destination) {
+              Destination()
+            }
+          }
+
+          static let alert = AlertState<Destination.AlertDialogAction> {
+            TextState("Choose")
+          } actions: {
+            ButtonState(action: .showAlert) { TextState("Show alert") }
+            ButtonState(action: .showDialog) { TextState("Show dialog") }
+          }
+          static let dialog = ConfirmationDialogState<Destination.AlertDialogAction> {
+            TextState("Choose")
+          } actions: {
+            ButtonState(action: .showAlert) { TextState("Show alert") }
+            ButtonState(action: .showDialog) { TextState("Show dialog") }
+          }
+        }
+
+        let store = TestStore(
+          initialState: Feature.State(),
+          reducer: Feature()
+        )
+
+        // TODO: remove this XCTExpectFailure when the destination identifiable stuff is fixed
+        XCTExpectFailure()
+
+        await store.send(.showAlert) {
+          $0.destination = .alert(Feature.alert)
+        }
+        await store.send(.destination(.presented(.alert(.showDialog)))) {
+          $0.destination = .dialog(Feature.dialog)
+        }
+        await store.send(.destination(.dismiss))
+
+        await store.send(.showDialog) {
+          $0.destination = .dialog(Feature.dialog)
+        }
+        // TODO: remove this XCTExpectFailure when the destination identifiable stuff is fixed
+        await store.send(.destination(.presented(.dialog(.showAlert)))) {
+          $0.destination = .alert(Feature.alert)
+        }
+        await store.send(.destination(.dismiss))
+      }
+    }
+
+    func testPresentation_leaveChildPresented() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable {}
+        enum Action: Equatable {}
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        }
+      }
+
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          @PresentationState var child: Child.State?
+        }
+        enum Action: Equatable {
+          case child(PresentationAction<Child.Action>)
+          case presentChild
+        }
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .child:
+              return .none
+            case .presentChild:
+              state.child = Child.State()
+              return .none
+            }
+          }
+          .ifLet(\.$child, action: /Action.child) {
+            Child()
+          }
+        }
+      }
+
+      let store = TestStore(
+        initialState: Parent.State(),
+        reducer: Parent()
+      )
+
+      // TODO: Remove this XCTExpectFailure once discarding of dismiss effects is fixed
+      XCTExpectFailure()
+      await store.send(.presentChild) {
+        $0.child = Child.State()
       }
     }
   }

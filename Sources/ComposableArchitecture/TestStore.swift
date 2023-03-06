@@ -635,8 +635,8 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     Environment == Void
   {
     var dependencies = DependencyValues._current
-    prepareDependencies(&dependencies)
     let initialState = withDependencies {
+      prepareDependencies(&dependencies)
       $0 = dependencies
     } operation: {
       initialState()
@@ -839,6 +839,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
         line: self.line
       )
     }
+
     for effect in self.reducer.inFlightEffects {
       XCTFailHelper(
         """

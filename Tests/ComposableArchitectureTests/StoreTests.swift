@@ -559,4 +559,139 @@ final class StoreTests: XCTestCase {
 
     XCTAssertEqual(viewStore.state, UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!)
   }
+
+  func testStoreVsTestStore() async {
+    struct Feature: ReducerProtocol {
+      struct State: Equatable {
+        var count = 0
+      }
+      enum Action: Equatable {
+        case tap
+        case response1(Int)
+        case response2(Int)
+        case response3(Int)
+      }
+      @Dependency(\.count) var count
+      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        switch action {
+        case .tap:
+          return withDependencies {
+            $0.count.value += 1
+          } operation: {
+            .task { .response1(self.count.value) }
+          }
+        case let .response1(count):
+          state.count = count
+          return withDependencies {
+            $0.count.value += 1
+          } operation: {
+            .task { .response2(self.count.value) }
+          }
+        case let .response2(count):
+          state.count = count
+          return withDependencies {
+            $0.count.value += 1
+          } operation: {
+            .task { .response3(self.count.value) }
+          }
+        case let .response3(count):
+          state.count = count
+          return .none
+        }
+      }
+    }
+
+    let testStore = TestStore(
+      initialState: Feature.State(),
+      reducer: Feature()
+    )
+    await testStore.send(.tap)
+    await testStore.receive(.response1(1)) {
+      $0.count = 1
+    }
+    await testStore.receive(.response2(1))
+    await testStore.receive(.response3(1))
+
+    let store = Store(
+      initialState: Feature.State(),
+      reducer: Feature()
+    )
+    await store.send(.tap)?.value
+    XCTAssertEqual(store.state.value.count, testStore.state.count)
+  }
+
+  func testStoreVsTestStore_Publisher() async {
+    struct Feature: ReducerProtocol {
+      struct State: Equatable {
+        var count = 0
+      }
+      enum Action: Equatable {
+        case tap
+        case response1(Int)
+        case response2(Int)
+        case response3(Int)
+      }
+      @Dependency(\.count) var count
+      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        switch action {
+        case .tap:
+          return withDependencies {
+            $0.count.value += 1
+          } operation: {
+            EffectTask.task { .response1(self.count.value) }
+          }
+          .eraseToEffect()
+        case let .response1(count):
+          state.count = count
+          return withDependencies {
+            $0.count.value += 1
+          } operation: {
+            EffectTask.task { .response2(self.count.value) }
+          }
+          .eraseToEffect()
+        case let .response2(count):
+          state.count = count
+          return withDependencies {
+            $0.count.value += 1
+          } operation: {
+            EffectTask.task { .response3(self.count.value) }
+          }
+          .eraseToEffect()
+        case let .response3(count):
+          state.count = count
+          return .none
+        }
+      }
+    }
+
+    let testStore = TestStore(
+      initialState: Feature.State(),
+      reducer: Feature()
+    )
+    await testStore.send(.tap)
+    await testStore.receive(.response1(1)) {
+      $0.count = 1
+    }
+    await testStore.receive(.response2(1))
+    await testStore.receive(.response3(1))
+
+    let store = Store(
+      initialState: Feature.State(),
+      reducer: Feature()
+    )
+    await store.send(.tap)?.value
+    XCTAssertEqual(store.state.value.count, testStore.state.count)
+  }
+}
+
+private struct Count: TestDependencyKey {
+  var value: Int
+  static let liveValue = Count(value: 0)
+  static let testValue = Count(value: 0)
+}
+extension DependencyValues {
+  fileprivate var count: Count {
+    get { self[Count.self] }
+    set { self[Count.self] = newValue }
+  }
 }

@@ -67,11 +67,9 @@ private struct PresentationPopoverModifier<
     arrowEdge: Edge = .top,
     content popoverContent: @escaping (Store<DestinationState, DestinationAction>) -> PopoverContent
   ) {
-    self.store = store
-    self.viewStore = ViewStore(
-      store.filter { state, _ in state.wrappedValue != nil },
-      removeDuplicates: { $0.id == $1.id }
-    )
+    let filteredStore = store.filter { state, _ in state.wrappedValue != nil }
+    self.store = filteredStore
+    self.viewStore = ViewStore(filteredStore, observe: { $0 }, removeDuplicates: { $0.id == $1.id })
     self.toDestinationState = toDestinationState
     self.fromDestinationAction = fromDestinationAction
     self.attachmentAnchor = attachmentAnchor
@@ -84,6 +82,7 @@ private struct PresentationPopoverModifier<
       item: self.viewStore.binding(
         get: { $0.wrappedValue.flatMap(self.toDestinationState) != nil ? $0.id : nil },
         send: .dismiss
+
       ),
       attachmentAnchor: self.attachmentAnchor,
       arrowEdge: self.arrowEdge
