@@ -359,7 +359,7 @@ final class InstrumentationTests: XCTestCase {
   func test_tracks_viewStore_creation() {
     var viewStoreCreated: AnyObject?
 
-    let inst = ComposableArchitecture.Instrumentation(callback: nil, viewStoreCreated: { viewStore, _, _ in
+    let inst = ComposableArchitecture.Instrumentation(callback: nil, viewStoreCreated: { viewStore, _, _, _, _ in
       viewStoreCreated = viewStore
     })
 
@@ -376,7 +376,7 @@ final class InstrumentationTests: XCTestCase {
   func test_tracks_store_creation() {
     var storeCreated: AnyObject?
 
-    let inst = ComposableArchitecture.Instrumentation(callback: nil, storeCreated: { store, _, _ in
+    let inst = ComposableArchitecture.Instrumentation(callback: nil, storeCreated: { store, _, _, _, _ in
         storeCreated = store
     })
 
