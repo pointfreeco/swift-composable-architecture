@@ -2054,25 +2054,25 @@ import XCTest
           reducer: Feature()
         )
 
-        // TODO: remove this XCTExpectFailure when the destination identifiable stuff is fixed
-        XCTExpectFailure()
-
         await store.send(.showAlert) {
           $0.destination = .alert(Feature.alert)
         }
         await store.send(.destination(.presented(.alert(.showDialog)))) {
-          $0.destination = .dialog(Feature.dialog)
+          $0.destination = .dialog(ConfirmationDialogState { TextState("Hello!") } actions: {})
         }
-        await store.send(.destination(.dismiss))
+        await store.send(.destination(.dismiss)) {
+          $0.destination = nil
+        }
 
         await store.send(.showDialog) {
           $0.destination = .dialog(Feature.dialog)
         }
-        // TODO: remove this XCTExpectFailure when the destination identifiable stuff is fixed
         await store.send(.destination(.presented(.dialog(.showAlert)))) {
-          $0.destination = .alert(Feature.alert)
+          $0.destination = .alert(AlertState { TextState("Hello!") })
         }
-        await store.send(.destination(.dismiss))
+        await store.send(.destination(.dismiss)) {
+          $0.destination = nil
+        }
       }
     }
 

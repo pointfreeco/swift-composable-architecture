@@ -228,11 +228,14 @@ public struct _PresentationReducer<
         .dependency(\.navigationID, id)
         .reduce(
           into: &state[keyPath: self.toPresentationState].wrappedValue!, action: destinationAction
-        ) 
+        )
         .map { self.toPresentationAction.embed(.presented($0)) }
         .cancellable(id: id)
       baseEffects = self.base.reduce(into: &state, action: action)
-      if isEphemeral(destinationState) {
+      if isEphemeral(destinationState),
+        self.id(for: destinationState)
+          == state[keyPath: self.toPresentationState].wrappedValue.map(self.id(for:))
+      {
         state[keyPath: self.toPresentationState].wrappedValue = nil
       }
 

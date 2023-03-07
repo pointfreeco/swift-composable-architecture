@@ -154,9 +154,6 @@ final class PresentationTests: XCTestCase {
   }
 
   func testAlertThenDialog() {
-    // TODO: Remove this XCTExpectFailure once the destination identifiable problem is fixed.
-    XCTExpectFailure()
-
     self.app.buttons["Open alert"].tap()
     self.app.buttons["Show dialog"].tap()
     _ = self.app.staticTexts["Hello!"].waitForExistence(timeout: 1)
@@ -178,9 +175,6 @@ final class PresentationTests: XCTestCase {
   }
 
   func testShowDialogThenAlert() {
-    // TODO: Remove this XCTExpectFailure once the destination identifiable problem is fixed.
-    XCTExpectFailure()
-
     self.app.buttons["Open dialog"].tap()
     self.app.buttons["Show alert"].tap()
     _ = self.app.staticTexts["Hello!"].waitForExistence(timeout: 1)
