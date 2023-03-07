@@ -46,7 +46,7 @@ import SwiftUI
 /// instead of using ``WithViewStore``:
 ///
 /// 1. When ``WithViewStore`` wraps complex views the Swift compiler can quickly become bogged down,
-/// leading to degraded compiler performance and diagnostics. If you are experience such instability
+/// leading to degraded compiler performance and diagnostics. If you are experiencing such instability
 /// you should consider manually setting up observation with an `@ObservedObject` property as
 /// described above.
 ///
@@ -141,7 +141,7 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
 
   /// Prints debug information to the console whenever the view is computed.
   ///
-  /// - Parameter prefix: A string with which to prefix all debug messages.
+  /// - Parameter prefix: A string that prefixes all debug messages.
   /// - Returns: A structure that prints debug messages for all computations.
   public func debug(_ prefix: String = "") -> Self {
     var view = self
