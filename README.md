@@ -524,6 +524,14 @@ struct MyApp: App {
 }
 ```
 
+Then we can use it in the `reduce` implementation with the additional of `fetch`:
+
+```swift
+case .numberFactButtonTapped:
+  return .task { [count = state.count] in 
+    await .numberFactResponse(TaskResult { try await self.numberFact.fetch(count) })
+  }
+
 And the test store can be constructed without specifying any dependencies, but you can still 
 override any dependency you need to for the purpose of the test:
 
