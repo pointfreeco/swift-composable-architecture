@@ -50,10 +50,10 @@ public class LoginViewController: UIViewController {
 
   public override func viewDidLoad() {
     super.viewDidLoad()
-
+    
     self.navigationItem.title = "Login"
     self.view.backgroundColor = .systemBackground
-
+    
     let disclaimerLabel = UILabel()
     disclaimerLabel.text = """
       To login use any email and "password" for the password. If your email contains the \
@@ -62,36 +62,36 @@ public class LoginViewController: UIViewController {
       """
     disclaimerLabel.textAlignment = .left
     disclaimerLabel.numberOfLines = 0
-
+    
     let divider = UIView()
     divider.backgroundColor = .gray
-
+    
     let titleLabel = UILabel()
     titleLabel.text = "Please log in to play TicTacToe!"
     titleLabel.font = UIFont.preferredFont(forTextStyle: .title2)
     titleLabel.numberOfLines = 0
-
+    
     let emailTextField = UITextField()
     emailTextField.placeholder = "email@address.com"
     emailTextField.borderStyle = .roundedRect
     emailTextField.autocapitalizationType = .none
     emailTextField.addTarget(
       self, action: #selector(emailTextFieldChanged(sender:)), for: .editingChanged)
-
+    
     let passwordTextField = UITextField()
     passwordTextField.placeholder = "**********"
     passwordTextField.borderStyle = .roundedRect
     passwordTextField.addTarget(
       self, action: #selector(passwordTextFieldChanged(sender:)), for: .editingChanged)
     passwordTextField.isSecureTextEntry = true
-
+    
     let loginButton = UIButton(type: .system)
     loginButton.setTitle("Login", for: .normal)
     loginButton.addTarget(self, action: #selector(loginButtonTapped(sender:)), for: .touchUpInside)
-
+    
     let activityIndicator = UIActivityIndicatorView(style: .large)
     activityIndicator.startAnimating()
-
+    
     let rootStackView = UIStackView(arrangedSubviews: [
       disclaimerLabel,
       divider,
@@ -106,45 +106,45 @@ public class LoginViewController: UIViewController {
     rootStackView.translatesAutoresizingMaskIntoConstraints = false
     rootStackView.axis = .vertical
     rootStackView.spacing = 24
-
+    
     self.view.addSubview(rootStackView)
-
+    
     NSLayoutConstraint.activate([
       rootStackView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
       rootStackView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
       rootStackView.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
       divider.heightAnchor.constraint(equalToConstant: 1),
     ])
-
+    
     self.viewStore.publisher.isLoginButtonEnabled
       .assign(to: \.isEnabled, on: loginButton)
       .store(in: &self.cancellables)
-
+    
     self.viewStore.publisher.email
       .assign(to: \.text, on: emailTextField)
       .store(in: &self.cancellables)
-
+    
     self.viewStore.publisher.isEmailTextFieldEnabled
       .assign(to: \.isEnabled, on: emailTextField)
       .store(in: &self.cancellables)
-
+    
     self.viewStore.publisher.password
       .assign(to: \.text, on: passwordTextField)
       .store(in: &self.cancellables)
-
+    
     self.viewStore.publisher.isPasswordTextFieldEnabled
       .assign(to: \.isEnabled, on: passwordTextField)
       .store(in: &self.cancellables)
-
+    
     self.viewStore.publisher.isActivityIndicatorHidden
       .assign(to: \.isHidden, on: activityIndicator)
       .store(in: &self.cancellables)
-
+    
     self.viewStore.publisher.alert
       .sink { [weak self] alert in
         guard let self = self else { return }
         guard let alert = alert else { return }
-
+        
         let alertController = UIAlertController(
           title: String(state: alert.title), message: nil, preferredStyle: .alert)
         alertController.addAction(
@@ -156,29 +156,35 @@ public class LoginViewController: UIViewController {
       }
       .store(in: &self.cancellables)
 
-    self.store
-      .scope(state: \.twoFactor, action: { .twoFactor(.presented($0)) })
-      .ifLet(
-        then: { [weak self] twoFactorStore in
-          self?.navigationController?.pushViewController(
-            TwoFactorViewController(store: twoFactorStore),
-            animated: true
-          )
-        },
-        else: { [weak self] in
-          guard let self = self else { return }
-          self.navigationController?.popToViewController(self, animated: true)
-        }
-      )
+    self
+      .navigate(store: self.store.scope(state: \.$twoFactor, action: Login.Action.twoFactor)) {
+        TwoFactorViewController(store: $0)
+      }
       .store(in: &self.cancellables)
-  }
 
-  public override func viewDidAppear(_ animated: Bool) {
-    super.viewDidAppear(animated)
-
-    if !self.isMovingToParent {
-      self.viewStore.send(.twoFactorDismissed)
-    }
+//    self.store
+//      .scope(state: \.twoFactor, action: { .twoFactor(.presented($0)) })
+//      .ifLet(
+//        then: { [weak self] twoFactorStore in
+//          self?.navigationController?.pushViewController(
+//            TwoFactorViewController(store: twoFactorStore),
+//            animated: true
+//          )
+//        },
+//        else: { [weak self] in
+//          guard let self = self else { return }
+//          self.navigationController?.popToViewController(self, animated: true)
+//        }
+//      )
+//      .store(in: &self.cancellables)
+//  }
+//
+//  public override func viewDidAppear(_ animated: Bool) {
+//    super.viewDidAppear(animated)
+//
+//    if !self.isMovingToParent {
+//      self.viewStore.send(.twoFactorDismissed)
+//    }
   }
 
   @objc private func loginButtonTapped(sender: UIButton) {
@@ -193,6 +199,79 @@ public class LoginViewController: UIViewController {
     self.viewStore.send(.passwordChanged(sender.text))
   }
 }
+
+@_spi(Internals) @testable import ComposableArchitecture
+
+extension UIViewController {
+  public func navigate<State, Action>(
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
+    destination: @escaping (Store<State, Action>) -> UIViewController
+  ) -> any Cancellable {
+    ViewStore(store, observe: { $0 }, removeDuplicates: { $0.id == $1.id })
+      .publisher
+      .sink { [weak self] state in
+        guard let self = self else { return }
+        if state.wrappedValue != nil {
+          self.navigationController?.pushViewController(
+            PresentationController(store: store, destination: destination),
+            animated: true
+          )
+        } else {
+          self.navigationController?.popToViewController(self, animated: true)
+        }
+      }
+  }
+}
+
+private final class PresentationController<State, Action>: UIViewController {
+  let store: Store<PresentationState<State>, PresentationAction<Action>>
+  let destination: (Store<State, Action>) -> UIViewController
+
+  private var cancellables: Set<AnyCancellable> = []
+  private var viewController = UIViewController() {
+    willSet {
+      self.viewController.willMove(toParent: nil)
+      self.viewController.view.removeFromSuperview()
+      self.viewController.removeFromParent()
+      self.addChild(newValue)
+      self.view.addSubview(newValue.view)
+      newValue.didMove(toParent: self)
+    }
+  }
+
+  init(
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
+    destination: @escaping (Store<State, Action>) -> UIViewController
+  ) {
+    self.store = store
+    self.destination = destination
+    super.init(nibName: nil, bundle: nil)
+  }
+
+  required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
+
+  override func viewDidLoad() {
+    super.viewDidLoad()
+
+    self.store
+      .scope(state: \.wrappedValue, action: PresentationAction.presented)
+      .ifLet { [weak self] store in
+        guard let self = self else { return }
+        self.viewController = self.destination(store)
+      }
+      .store(in: &self.cancellables)
+  }
+
+  override func viewDidDisappear(_ animated: Bool) {
+    super.viewDidDisappear(animated)
+    if self.isMovingFromParent {
+      self.store.send(.dismiss)
+    }
+  }
+}
+
 
 extension Login.Action {
   init(action: LoginViewController.ViewAction) {
