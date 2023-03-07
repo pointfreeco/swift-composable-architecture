@@ -112,7 +112,11 @@ private struct PresentationTestCase: ReducerProtocol {
       case .destination(.presented(.alert(.showSheet))):
         state.destination = .sheet(ChildFeature.State())
         return .none
-      case .destination(.presented(.dialog(.showAlert))),
+      case
+          .destination(.presented(.dialog(.showAlert))),
+          .destination(.presented(.fullScreenCover(.dismissAndAlert))),
+          .destination(.presented(.popover(.dismissAndAlert))),
+          .destination(.presented(.navigationDestination(.dismissAndAlert))),
         .destination(.presented(.sheet(.dismissAndAlert))):
         state.destination = .alert(
           AlertState {
@@ -172,6 +176,7 @@ private struct ChildFeature: ReducerProtocol {
   struct State: Equatable, Identifiable {
     var id = UUID()
     var count = 0
+    var isDismissed = false
     @BindingState var text = ""
   }
   enum Action: BindableAction, Equatable {
@@ -192,6 +197,7 @@ private struct ChildFeature: ReducerProtocol {
       case .binding:
         return .none
       case .childDismissButtonTapped:
+        state.isDismissed = true
         return .fireAndForget { await self.dismiss() }
       case .dismissAndAlert:
         return .none
@@ -199,6 +205,7 @@ private struct ChildFeature: ReducerProtocol {
         state.count += 1
         return .none
       case .parentSendDismissActionButtonTapped:
+        state.isDismissed = true
         return .none
       case .resetIdentity:
         state.id = UUID()
@@ -326,6 +333,7 @@ struct PresentationTestCaseView: View {
 }
 
 private struct ChildView: View {
+  @Environment(\.dismiss) var dismiss
   let store: StoreOf<ChildFeature>
 
   var body: some View {
@@ -351,6 +359,9 @@ private struct ChildView: View {
         Button("Reset identity") {
           viewStore.send(.resetIdentity)
         }
+      }
+      .onChange(of: viewStore.isDismissed) { _ in
+        self.dismiss()
       }
     }
   }

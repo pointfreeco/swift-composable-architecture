@@ -1049,21 +1049,23 @@ import XCTest
         }
       }
 
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      )
-      let childPresentationTask = await store.send(.presentChild) {
-        $0.child = Child.State()
+      await _withMainSerialExecutor {
+        let store = TestStore(
+          initialState: Parent.State(),
+          reducer: Parent()
+        )
+        let childPresentationTask = await store.send(.presentChild) {
+          $0.child = Child.State()
+        }
+        let grandchildPresentationTask = await store.send(.child(.presented(.presentGrandchild))) {
+          $0.child?.grandchild = Grandchild.State()
+        }
+        await store.send(.child(.presented(.startButtonTapped)))
+        await store.send(.child(.presented(.grandchild(.presented(.startButtonTapped)))))
+        await store.send(.stopButtonTapped)
+        await grandchildPresentationTask.cancel()
+        await childPresentationTask.cancel()
       }
-      let grandchildPresentationTask = await store.send(.child(.presented(.presentGrandchild))) {
-        $0.child?.grandchild = Grandchild.State()
-      }
-      await store.send(.child(.presented(.startButtonTapped)))
-      await store.send(.child(.presented(.grandchild(.presented(.startButtonTapped)))))
-      await store.send(.stopButtonTapped)
-      await grandchildPresentationTask.cancel()
-      await childPresentationTask.cancel()
     }
 
     func testNavigation_cancelID_parentCancelTwoChildren() async {

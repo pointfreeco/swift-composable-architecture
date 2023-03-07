@@ -251,4 +251,26 @@ final class PresentationTests: XCTestCase {
     self.app.buttons["Parent dismiss"].tap()
     XCTAssertEqual(self.app.staticTexts["Action sent while state nil."].exists, false)
   }
+
+
+  func testNavigationDestination_ChildDismiss() {
+    self.app.buttons["Open navigation destination"].tap()
+    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+
+    self.app.buttons["Increment"].tap()
+    XCTAssertEqual(true, self.app.staticTexts["Count: 1"].exists)
+    self.app.buttons["Increment"].tap()
+    XCTAssertEqual(true, self.app.staticTexts["Count: 2"].exists)
+
+    self.app.buttons["Child dismiss"].tap()
+    XCTAssertEqual(false, self.app.staticTexts["Count: 2"].exists)
+  }
+
+  func testNavigationDestination_ParentDismiss() {
+    self.app.buttons["Open navigation destination"].tap()
+    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+
+    self.app.buttons["Parent dismiss"].tap()
+    XCTAssertEqual(false, self.app.staticTexts["Count: 0"].exists)
+  }
 }
