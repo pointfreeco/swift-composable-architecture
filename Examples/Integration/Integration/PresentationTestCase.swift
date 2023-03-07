@@ -39,10 +39,12 @@ private struct PresentationTestCase: ReducerProtocol {
     enum AlertAction {
       case ok
       case showDialog
+      case showSheet
     }
     enum DialogAction {
       case ok
       case showAlert
+      case showSheet
     }
     var body: some ReducerProtocolOf<Self> {
       Scope(state: /State.fullScreenCover, action: /Action.fullScreenCover) {
@@ -85,6 +87,9 @@ private struct PresentationTestCase: ReducerProtocol {
             ButtonState(action: .showDialog) {
               TextState("Show dialog")
             }
+            ButtonState(action: .showSheet) {
+              TextState("Show sheet")
+            }
             ButtonState(role: .cancel) {
               TextState("Cancel")
             }
@@ -104,12 +109,19 @@ private struct PresentationTestCase: ReducerProtocol {
           }
         )
         return .none
-      case .destination(.presented(.dialog(.showAlert))):
+      case .destination(.presented(.alert(.showSheet))):
+        state.destination = .sheet(ChildFeature.State())
+        return .none
+      case .destination(.presented(.dialog(.showAlert))),
+        .destination(.presented(.sheet(.dismissAndAlert))):
         state.destination = .alert(
           AlertState {
             TextState("Hello!")
           }
         )
+        return .none
+      case .destination(.presented(.dialog(.showSheet))):
+        state.destination = .sheet(ChildFeature.State())
         return .none
       case .destination(.dismiss):
         state.message = "Dismiss action sent"
@@ -126,6 +138,9 @@ private struct PresentationTestCase: ReducerProtocol {
             }
             ButtonState(action: .showAlert) {
               TextState("Show alert")
+            }
+            ButtonState(action: .showSheet) {
+              TextState("Show sheet")
             }
           }
         )
@@ -162,6 +177,7 @@ private struct ChildFeature: ReducerProtocol {
   enum Action: BindableAction, Equatable {
     case binding(BindingAction<State>)
     case childDismissButtonTapped
+    case dismissAndAlert
     case incrementButtonTapped
     case parentSendDismissActionButtonTapped
     case resetIdentity
@@ -177,6 +193,8 @@ private struct ChildFeature: ReducerProtocol {
         return .none
       case .childDismissButtonTapped:
         return .fireAndForget { await self.dismiss() }
+      case .dismissAndAlert:
+        return .none
       case .incrementButtonTapped:
         state.count += 1
         return .none
@@ -323,6 +341,9 @@ private struct ChildView: View {
         }
         Button("Parent dismiss") {
           viewStore.send(.parentSendDismissActionButtonTapped)
+        }
+        Button("Dismiss and alert") {
+          viewStore.send(.dismissAndAlert)
         }
         Button("Start effect") {
           viewStore.send(.startButtonTapped)

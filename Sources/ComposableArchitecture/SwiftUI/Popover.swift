@@ -81,11 +81,19 @@ private struct PresentationPopoverModifier<
   }
 
   func body(content: Content) -> some View {
+    let id = self.viewStore.id
     content.popover(
-      item: self.viewStore.binding(
-        get: { $0.wrappedValue.flatMap(self.toDestinationState) != nil ? $0.id : nil },
-        send: .dismiss
-
+      item: Binding( // TODO: do proper binding
+        get: {
+          self.viewStore.wrappedValue.flatMap(self.toDestinationState) != nil
+          ? self.viewStore.id
+          : nil
+        },
+        set: { newState in
+          if newState == nil, self.viewStore.wrappedValue != nil, self.viewStore.id == id {
+            self.viewStore.send(.dismiss)
+          }
+        }
       ),
       attachmentAnchor: self.attachmentAnchor,
       arrowEdge: self.arrowEdge

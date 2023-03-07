@@ -160,6 +160,13 @@ final class PresentationTests: XCTestCase {
     XCTAssertEqual(true, self.app.staticTexts["Hello!"].exists)
   }
 
+  func testAlertThenSheet() {
+    self.app.buttons["Open alert"].tap()
+    self.app.buttons["Show sheet"].tap()
+    _ = self.app.staticTexts["Count: 0"].waitForExistence(timeout: 1)
+    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+  }
+
   func testDialogActionDoesNotSendExtraDismiss() {
     self.app.buttons["Open dialog"].tap()
     self.app.buttons["OK"].tap()
