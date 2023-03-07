@@ -97,7 +97,6 @@ private struct PresentationTestCase: ReducerProtocol {
         )
         return .none
       case .destination(.presented(.fullScreenCover(.parentSendDismissActionButtonTapped))),
-        .destination(.presented(.navigationDestination(.parentSendDismissActionButtonTapped))),
         .destination(.presented(.sheet(.parentSendDismissActionButtonTapped))),
         .destination(.presented(.popover(.parentSendDismissActionButtonTapped))):
         return .send(.destination(.dismiss))

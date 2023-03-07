@@ -273,4 +273,20 @@ final class PresentationTests: XCTestCase {
     self.app.buttons["Parent dismiss"].tap()
     XCTAssertEqual(false, self.app.staticTexts["Count: 0"].exists)
   }
+
+  func testNavigationDestination_EffectsCancelOnDismiss() async throws {
+    self.app.buttons["Open navigation destination"].tap()
+    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+
+    self.app.buttons["Start effect"].tap()
+    XCTAssertEqual(true, self.app.staticTexts["Count: 1"].exists)
+
+    self.app.buttons["Parent dismiss"].tap()
+    XCTAssertEqual(false, self.app.staticTexts["Count: 1"].exists)
+
+    self.app.buttons["Open navigation destination"].tap()
+    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+    try await Task.sleep(for: .seconds(3))
+    XCTAssertEqual(false, self.app.staticTexts["Count: 999"].exists)
+  }
 }
