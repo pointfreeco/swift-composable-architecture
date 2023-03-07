@@ -141,7 +141,7 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
 
   /// Prints debug information to the console whenever the view is computed.
   ///
-  /// - Parameter prefix: A string that prefixes all debug messages.
+  /// - Parameter prefix: A string with which to prefix all debug messages.
   /// - Returns: A structure that prints debug messages for all computations.
   public func debug(_ prefix: String = "") -> Self {
     var view = self
