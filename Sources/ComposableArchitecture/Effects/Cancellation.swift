@@ -346,25 +346,57 @@ extension Task where Success == Never, Failure == Never {
   }
 }
 
-@_spi(Internals) public struct _CancelToken: Hashable {
+@_spi(Internals) public struct _CancelToken: Hashable, CustomDebugStringConvertible {
   let id: AnyHashable
+  let discriminator: Discriminator
   let navigationID: NavigationID
-  let discriminator: ObjectIdentifier
+
+  struct Discriminator: Hashable {
+    let type: Any.Type
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+      lhs.type == rhs.type
+    }
+
+    func hash(into hasher: inout Hasher) {
+      hasher.combine(ObjectIdentifier(self.type))
+    }
+  }
 
   public init(id: AnyHashable) {
     self.id = id
+    self.discriminator = Discriminator(type: type(of: id.base))
     self.navigationID = NavigationID()
-    self.discriminator = ObjectIdentifier(type(of: id.base))
   }
 
   init(id: AnyHashable, navigationID: NavigationID) {
     self.id = id
+    self.discriminator = Discriminator(type: type(of: id.base))
     self.navigationID = navigationID
-    self.discriminator = ObjectIdentifier(type(of: id.base))
+  }
+
+  public var debugDescription: String {
+    var id = ""
+    debugPrint(self.id.base, terminator: "", to: &id)
+    var navigationID = ""
+    debugPrint(self.navigationID, terminator: "", to: &navigationID)
+    return """
+    _CancelToken(\
+    navigationID: \(navigationID), \
+    id: \(id), \
+    discriminator: \(String(reflecting: self.discriminator.type))\
+    )
+    """
   }
 }
 
-@_spi(Internals) public var _cancellationCancellables: [_CancelToken: Set<AnyCancellable>] = [:] 
+@_spi(Internals) public var _cancellationCancellables: [_CancelToken: Set<AnyCancellable>] = [:] {
+  didSet {
+    for token in _cancellationCancellables.keys {
+      print("!!!", token.debugDescription)
+    }
+  }
+}
 @_spi(Internals) public let _cancellablesLock = NSRecursiveLock()
 
 @rethrows

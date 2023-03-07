@@ -325,4 +325,4 @@ public struct _PresentationReducer<
   }
 }
 
-private struct DismissID: Hashable {}
+struct DismissID: Hashable {}
