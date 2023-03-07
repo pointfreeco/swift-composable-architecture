@@ -116,10 +116,10 @@ import Foundation
 /// #### Thread safety checks
 ///
 /// The store performs some basic thread safety checks in order to help catch mistakes. Stores
-/// constructed via the initializer ``init(initialState:reducer:)`` are assumed to run
-/// only on the main thread, and so a check is executed immediately to make sure that is the case.
-/// Further, all actions sent to the store and all scopes (see ``scope(state:action:)``) of the
-/// store are also checked to make sure that work is performed on the main thread.
+/// constructed via the initializer ``init(initialState:reducer:prepareDependencies:)`` are assumed
+/// to run only on the main thread, and so a check is executed immediately to make sure that is the
+/// case. Further, all actions sent to the store and all scopes (see ``scope(state:action:)``) of
+/// the store are also checked to make sure that work is performed on the main thread.
 public final class Store<State, Action> {
   private var bufferedActions: [Action] = []
   @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] = [:]
@@ -131,7 +131,7 @@ public final class Store<State, Action> {
     private let reducer: (inout State, Action) -> EffectTask<Action>
     fileprivate var scope: AnyStoreScope?
   #endif
-  var state: CurrentValueSubject<State, Never>
+  @_spi(Internals) public var state: CurrentValueSubject<State, Never>
   #if DEBUG
     private let mainThreadChecksEnabled: Bool
   #endif
@@ -141,6 +141,8 @@ public final class Store<State, Action> {
   /// - Parameters:
   ///   - initialState: The state to start the application in.
   ///   - reducer: The reducer that powers the business logic of the application.
+  ///   - prepareDependencies: A closure that can be used to override dependencies that will be accessed
+  ///     by the reducer.
   public convenience init<R: ReducerProtocol>(
     initialState: @autoclosure () -> R.State,
     reducer: R,
@@ -383,28 +385,31 @@ public final class Store<State, Action> {
         var didComplete = false
         let boxedTask = Box<Task<Void, Never>?>(wrappedValue: nil)
         let uuid = UUID()
-        let effectCancellable =
+        let effectCancellable = withEscapedDependencies { continuation in
           publisher
-          .handleEvents(
-            receiveCancel: { [weak self] in
-              self?.threadCheck(status: .effectCompletion(action))
-              self?.effectCancellables[uuid] = nil
-            }
-          )
-          .sink(
-            receiveCompletion: { [weak self] _ in
-              self?.threadCheck(status: .effectCompletion(action))
-              boxedTask.wrappedValue?.cancel()
-              didComplete = true
-              self?.effectCancellables[uuid] = nil
-            },
-            receiveValue: { [weak self] effectAction in
-              guard let self = self else { return }
-              if let task = self.send(effectAction, originatingFrom: action) {
-                tasks.wrappedValue.append(task)
+            .handleEvents(
+              receiveCancel: { [weak self] in
+                self?.threadCheck(status: .effectCompletion(action))
+                self?.effectCancellables[uuid] = nil
               }
-            }
-          )
+            )
+            .sink(
+              receiveCompletion: { [weak self] _ in
+                self?.threadCheck(status: .effectCompletion(action))
+                boxedTask.wrappedValue?.cancel()
+                didComplete = true
+                self?.effectCancellables[uuid] = nil
+              },
+              receiveValue: { [weak self] effectAction in
+                guard let self = self else { return }
+                if let task = continuation.yield({
+                  self.send(effectAction, originatingFrom: action)
+                }) {
+                  tasks.wrappedValue.append(task)
+                }
+              }
+            )
+        }
 
         if !didComplete {
           let task = Task<Void, Never> { @MainActor in
@@ -416,43 +421,47 @@ public final class Store<State, Action> {
           self.effectCancellables[uuid] = effectCancellable
         }
       case let .run(priority, operation):
-        tasks.wrappedValue.append(
-          Task(priority: priority) { @MainActor in
-            #if DEBUG
-              var isCompleted = false
-              defer { isCompleted = true }
-            #endif
-            await operation(
-              EffectTask<Action>.Send {
-                #if DEBUG
-                  if isCompleted {
-                    runtimeWarn(
-                      """
-                      An action was sent from a completed effect:
+        withEscapedDependencies { continuation in
+          tasks.wrappedValue.append(
+            Task(priority: priority) { @MainActor in
+              #if DEBUG
+                var isCompleted = false
+                defer { isCompleted = true }
+              #endif
+              await operation(
+                Send { effectAction in
+                  #if DEBUG
+                    if isCompleted {
+                      runtimeWarn(
+                        """
+                        An action was sent from a completed effect:
 
-                        Action:
-                          \(debugCaseOutput($0))
+                          Action:
+                            \(debugCaseOutput(effectAction))
 
-                        Effect returned from:
-                          \(debugCaseOutput(action))
+                          Effect returned from:
+                            \(debugCaseOutput(action))
 
-                      Avoid sending actions using the 'send' argument from 'EffectTask.run' after \
-                      the effect has completed. This can happen if you escape the 'send' argument in \
-                      an unstructured context.
+                        Avoid sending actions using the 'send' argument from 'EffectTask.run' after \
+                        the effect has completed. This can happen if you escape the 'send' argument in \
+                        an unstructured context.
 
-                      To fix this, make sure that your 'run' closure does not return until you're \
-                      done calling 'send'.
-                      """
-                    )
+                        To fix this, make sure that your 'run' closure does not return until you're \
+                        done calling 'send'.
+                        """
+                      )
+                    }
+                  #endif
+                  if let task = continuation.yield({
+                    self.send(effectAction, originatingFrom: action)
+                  }) {
+                    tasks.wrappedValue.append(task)
                   }
-                #endif
-                if let task = self.send($0, originatingFrom: action) {
-                  tasks.wrappedValue.append(task)
                 }
-              }
-            )
-          }
-        )
+              )
+            }
+          )
+        }
       }
     }
 
