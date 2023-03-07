@@ -52,9 +52,6 @@ final class PresentationTests: XCTestCase {
   }
 
   func testSheet_IdentityChange() async throws {
-    // TODO: Remove this XCTExpectFailure once the destination identifiable problem is fixed.
-    XCTExpectFailure()
-
     self.app.buttons["Open sheet"].tap()
     XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
 

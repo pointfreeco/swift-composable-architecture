@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-case-paths",
       "state" : {
-        "revision" : "f623901b4bcc97f59c36704f81583f169b228e51",
-        "version" : "0.13.0"
+        "branch" : "projection",
+        "revision" : "14388be3c0b6a46c62dfffb137d50bb2dde84bdd"
       }
     },
     {
