@@ -40,28 +40,30 @@ import SwiftUI
 /// state:
 ///
 /// ```swift
-/// struct Todos: ReducerProtocol { {
+/// struct Todos: ReducerProtocol {
 ///   struct State: Equatable {
-///     var todos: IdentifiedArrayOf<TodoState> = []
+///     var todos: IdentifiedArrayOf<Todo.State> = []
 ///   }
+///   ...
+/// }
 /// ```
 ///
 /// Define a case to handle actions sent to the child domain:
 ///
 /// ```swift
 /// enum Action {
-///   case todo(id: TodoState.ID, action: TodoAction)
+///   case todo(id: Todo.State.ID, action: Todo.Action)
 /// }
 /// ```
 ///
-/// Enhance its core reducer using ``ReducerProtocol/forEach(_:action:_:file:fileID:line:)``:
+/// Enhance its core reducer using ``ReducerProtocol/forEach(_:action:element:file:fileID:line:)``:
 ///
 /// ```swift
 /// var body: some ReducerProtocol<State, Action> {
 ///   Reduce { state, action in
 ///     ...
 ///   }
-///   .forEach(state: \.todos, action: /Action.todo(id:action:)) {
+///   .forEach(\.todos, action: /Action.todo(id:action:)) {
 ///     Todo()
 ///   }
 /// }

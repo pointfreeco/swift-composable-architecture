@@ -1,3 +1,4 @@
+@_spi(Internals) import CasePaths
 import Combine
 import CustomDump
 import Foundation
@@ -665,8 +666,8 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     Environment == Void
   {
     var dependencies = DependencyValues._current
-    prepareDependencies(&dependencies)
     let initialState = withDependencies {
+      prepareDependencies(&dependencies)
       $0 = dependencies
     } operation: {
       initialState()
@@ -1042,7 +1043,9 @@ extension TestStore where ScopedState: Equatable {
     let previousState = self.reducer.state
     let task = self.store
       .send(.init(origin: .send(self.fromScopedAction(action)), file: file, line: line))
-    await self.reducer.effectDidSubscribe.stream.first(where: { _ in true })
+    for await _ in self.reducer.effectDidSubscribe.stream {
+      break
+    }
     do {
       let currentState = self.state
       self.reducer.state = previousState
@@ -1168,6 +1171,13 @@ extension TestStore where ScopedState: Equatable {
   ) throws {
     let current = expected
     var expected = expected
+    let updateStateToExpectedResult = updateStateToExpectedResult.map { original in
+      { (state: inout ScopedState) in
+        try XCTModifyLocals.$isExhaustive.withValue(self.exhaustivity == .on) {
+          try original(&state)
+        }
+      }
+    }
 
     switch self.exhaustivity {
     case .on:
@@ -1446,7 +1456,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
 extension TestStore where ScopedState: Equatable {
   /// Asserts a matching action was received from an effect and asserts how the state changes.
   ///
-  /// See ``receive(_:timeout:assert:file:line:)-3myco`` for more information of how to use this
+  /// See ``receive(_:timeout:assert:file:line:)-2ju31`` for more information of how to use this
   /// method.
   ///
   /// - Parameters:
@@ -1483,7 +1493,7 @@ extension TestStore where ScopedState: Equatable {
 
   /// Asserts an action was received matching a case path and asserts how the state changes.
   ///
-  /// See ``receive(_:timeout:assert:file:line:)-4e4m0`` for more information of how to use this
+  /// See ``receive(_:timeout:assert:file:line:)-8xkqt`` for more information of how to use this
   /// method.
   ///
   /// - Parameters:
@@ -1593,7 +1603,7 @@ extension TestStore where ScopedState: Equatable {
   /// was in the effect that you chose not to assert on.
   ///
   /// If you only want to check that a particular action case was received, then you might find the
-  /// ``receive(_:timeout:assert:file:line:)-4e4m0`` overload of this method more useful.
+  /// ``receive(_:timeout:assert:file:line:)-8xkqt`` overload of this method more useful.
   ///
   /// - Parameters:
   ///   - isMatching: A closure that attempts to match an action. If it returns `false`, a test
@@ -1745,6 +1755,14 @@ extension TestStore where ScopedState: Equatable {
     file: StaticString,
     line: UInt
   ) {
+    let updateStateToExpectedResult = updateStateToExpectedResult.map { original in
+      { (state: inout ScopedState) in
+        try XCTModifyLocals.$isExhaustive.withValue(self.exhaustivity == .on) {
+          try original(&state)
+        }
+      }
+    }
+
     guard !self.reducer.receivedActions.isEmpty else {
       XCTFail(
         failureMessage(),
@@ -2399,7 +2417,9 @@ public enum Exhaustivity: Equatable {
   /// ``TestStore/skipInFlightEffects(strict:file:line:)-5hbsk``.
   ///
   /// To partially match an action received from an effect, use
-  /// ``TestStore/receive(_:timeout:assert:file:line:)-4e4m0``.
+  /// ``TestStore/receive(_:timeout:assert:file:line:)-8xkqt`` or
+  /// ``TestStore/receive(_:timeout:assert:file:line:)-2ju31``.
+
   case on
 
   /// Non-exhaustive assertions.

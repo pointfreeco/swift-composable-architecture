@@ -57,7 +57,7 @@ public struct EffectPublisher<Action, Failure: Error> {
   enum Operation {
     case none
     case publisher(AnyPublisher<Action, Failure>)
-    case run(TaskPriority? = nil, @Sendable (Send) async -> Void)
+    case run(TaskPriority? = nil, @Sendable (Send<Action>) async -> Void)
   }
 
   @usableFromInline
@@ -253,8 +253,8 @@ extension EffectPublisher where Failure == Never {
   /// - Returns: An effect wrapping the given asynchronous work.
   public static func run(
     priority: TaskPriority? = nil,
-    operation: @escaping @Sendable (Send) async throws -> Void,
-    catch handler: (@Sendable (Error, Send) async -> Void)? = nil,
+    operation: @escaping @Sendable (Send<Action>) async throws -> Void,
+    catch handler: (@Sendable (Error, Send<Action>) async -> Void)? = nil,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -353,179 +353,177 @@ extension EffectPublisher where Failure == Never {
   }
 }
 
-extension EffectTask {
-  /// A type that can send actions back into the system when used from
-  /// ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)``.
+/// A type that can send actions back into the system when used from
+/// ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)``.
+///
+/// This type implements [`callAsFunction`][callAsFunction] so that you invoke it as a function
+/// rather than calling methods on it:
+///
+/// ```swift
+/// return .run { send in
+///   send(.started)
+///   defer { send(.finished) }
+///   for await event in self.events {
+///     send(.event(event))
+///   }
+/// }
+/// ```
+///
+/// You can also send actions with animation:
+///
+/// ```swift
+/// send(.started, animation: .spring())
+/// defer { send(.finished, animation: .default) }
+/// ```
+///
+/// See ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)`` for more information on how to
+/// use this value to construct effects that can emit any number of times in an asynchronous
+/// context.
+///
+/// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
+@MainActor
+public struct Send<Action> {
+  private enum RawValue {
+    case attached(@MainActor (Action) -> Task<Void, Never>?)
+    case detached(@MainActor (Action) -> Void)
+  }
+  private let rawValue: RawValue
+
+  @_disfavoredOverload
+  public init(attached: @escaping @MainActor (Action) -> Task<Void, Never>?) {
+    self.rawValue = .attached(attached)
+  }
+
+  public init(detached: @escaping @MainActor (Action) -> Void) {
+    self.rawValue = .detached(detached)
+  }
+
+  @available(*, deprecated, renamed: "init(detached:)")
+  @_disfavoredOverload
+  public init(send: @escaping @MainActor (Action) -> Void) {
+    self.init(detached: send)
+  }
+
+  @available(*, deprecated, message: "Call the 'Send' object as a function itself.")
+  public var send: @MainActor (Action) -> Void {
+    switch rawValue {
+    case .attached(let send):
+      return { _ = send($0) }
+    case .detached(let send):
+      return send
+    }
+  }
+
+  /// Transforms the ``Send`` value's closure using `mapper`.
+  public func map<Mapper: SendMapper>(
+    // we really want `<T>(send: (Action) -> T) -> ((NewAction) -> T)`
+    // (i.e. a closure that's generic/invariant over the return type)
+    // but closures can't express that so we use a protocol instead.
+    _ mapper: Mapper
+  ) -> Send<Mapper.NewAction> where Mapper.Action == Action {
+    switch rawValue {
+    case .attached(let send):
+      return .init(attached: mapper.map(send: send))
+    case .detached(let send):
+      return .init(detached: mapper.map(send: send))
+    }
+  }
+
+  /// Transforms the action returned by the ``Send`` using `transform`.
+  public func mapAction<NewAction>(
+    _ transform: @escaping @MainActor (NewAction) -> Action
+  ) -> Send<NewAction> {
+    switch rawValue {
+    case .attached(let send):
+      return .init(attached: { send(transform($0)) })
+    case .detached(let send):
+      return .init(detached: { send(transform($0)) })
+    }
+  }
+
+  private var cancelledSendTask: EffectSendTask {
+    switch rawValue {
+    case .detached:
+      return .init(rawValue: .invalid)
+    case .attached:
+      return .init(rawValue: .task(nil))
+    }
+  }
+
+  /// Sends an action back into the system from an effect.
   ///
-  /// This type implements [`callAsFunction`][callAsFunction] so that you invoke it as a function
-  /// rather than calling methods on it:
+  /// - Parameter action: An action.
   ///
-  /// ```swift
-  /// return .run { send in
-  ///   send(.started)
-  ///   defer { send(.finished) }
-  ///   for await event in self.events {
-  ///     send(.event(event))
-  ///   }
-  /// }
-  /// ```
+  /// - Returns: An ``EffectSendTask`` corresponding to the fired action.
+  @discardableResult
+  public func callAsFunction(_ action: Action) -> EffectSendTask {
+    guard !Task.isCancelled else { return cancelledSendTask }
+    switch rawValue {
+    case .detached(let closure):
+      closure(action)
+      return .init(rawValue: .invalid)
+    case .attached(let closure):
+      let task = closure(action)
+      return .init(rawValue: .task(task))
+    }
+  }
+
+  /// Sends an action back into the system from an effect.
   ///
-  /// You can also send actions with animation:
+  /// - Parameter action: An action.
+  @_disfavoredOverload
+  @available(*, deprecated, message: "Use the overload that returns an EffectSendTask, and discard the return value.")
+  public func callAsFunction(_ action: Action) {
+    _ = self(action)
+  }
+
+  /// Sends an action back into the system from an effect with animation.
   ///
-  /// ```swift
-  /// send(.started, animation: .spring())
-  /// defer { send(.finished, animation: .default) }
-  /// ```
+  /// - Parameters:
+  ///   - action: An action.
+  ///   - animation: An animation.
   ///
-  /// See ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)`` for more information on how to
-  /// use this value to construct effects that can emit any number of times in an asynchronous
-  /// context.
+  /// - Returns: An ``EffectSendTask`` corresponding to the fired action.
+  @discardableResult
+  public func callAsFunction(_ action: Action, animation: Animation?) -> EffectSendTask {
+    callAsFunction(action, transaction: Transaction(animation: animation))
+  }
+
+  /// Sends an action back into the system from an effect with animation.
   ///
-  /// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
-  @MainActor
-  public struct Send {
-    private enum RawValue {
-      case attached(@MainActor (Action) -> Task<Void, Never>?)
-      case detached(@MainActor (Action) -> Void)
-    }
-    private let rawValue: RawValue
+  /// - Parameters:
+  ///   - action: An action.
+  ///   - animation: An animation.
+  @_disfavoredOverload
+  @available(*, deprecated, message: "Use the overload that returns an EffectSendTask, and discard the return value.")
+  public func callAsFunction(_ action: Action, animation: Animation?) {
+    _ = self(action, animation: animation)
+  }
 
-    @_disfavoredOverload
-    public init(attached: @escaping @MainActor (Action) -> Task<Void, Never>?) {
-      self.rawValue = .attached(attached)
+  /// Sends an action back into the system from an effect with transaction.
+  ///
+  /// - Parameters:
+  ///   - action: An action.
+  ///   - transaction: A transaction.
+  ///
+  /// - Returns: An ``EffectSendTask`` corresponding to the fired action.
+  @discardableResult
+  public func callAsFunction(_ action: Action, transaction: Transaction) -> EffectSendTask {
+    guard !Task.isCancelled else { return cancelledSendTask }
+    return withTransaction(transaction) {
+      self(action)
     }
+  }
 
-    public init(detached: @escaping @MainActor (Action) -> Void) {
-      self.rawValue = .detached(detached)
-    }
-
-    @available(*, deprecated, renamed: "init(detached:)")
-    @_disfavoredOverload
-    public init(send: @escaping @MainActor (Action) -> Void) {
-      self.init(detached: send)
-    }
-
-    @available(*, deprecated, message: "Call the 'Send' object as a function itself.")
-    public var send: @MainActor (Action) -> Void {
-      switch rawValue {
-      case .attached(let send):
-        return { _ = send($0) }
-      case .detached(let send):
-        return send
-      }
-    }
-
-    /// Transforms the ``Send`` value's closure using `mapper`.
-    public func map<Mapper: SendMapper>(
-      // we really want `<T>(send: (Action) -> T) -> ((NewAction) -> T)`
-      // (i.e. a closure that's generic/invariant over the return type)
-      // but closures can't express that so we use a protocol instead.
-      _ mapper: Mapper
-    ) -> EffectPublisher<Mapper.NewAction, Failure>.Send where Mapper.Action == Action {
-      switch rawValue {
-      case .attached(let send):
-        return .init(attached: mapper.map(send: send))
-      case .detached(let send):
-        return .init(detached: mapper.map(send: send))
-      }
-    }
-
-    /// Transforms the action returned by the ``Send`` using `transform`.
-    public func mapAction<NewAction>(
-      _ transform: @escaping @MainActor (NewAction) -> Action
-    ) -> EffectPublisher<NewAction, Failure>.Send {
-      switch rawValue {
-      case .attached(let send):
-        return .init(attached: { send(transform($0)) })
-      case .detached(let send):
-        return .init(detached: { send(transform($0)) })
-      }
-    }
-
-    private var cancelledSendTask: EffectSendTask {
-      switch rawValue {
-      case .detached:
-        return .init(rawValue: .invalid)
-      case .attached:
-        return .init(rawValue: .task(nil))
-      }
-    }
-
-    /// Sends an action back into the system from an effect.
-    ///
-    /// - Parameter action: An action.
-    ///
-    /// - Returns: An ``EffectSendTask`` corresponding to the fired action.
-    @discardableResult
-    public func callAsFunction(_ action: Action) -> EffectSendTask {
-      guard !Task.isCancelled else { return cancelledSendTask }
-      switch rawValue {
-      case .detached(let closure):
-        closure(action)
-        return .init(rawValue: .invalid)
-      case .attached(let closure):
-        let task = closure(action)
-        return .init(rawValue: .task(task))
-      }
-    }
-
-    /// Sends an action back into the system from an effect.
-    ///
-    /// - Parameter action: An action.
-    @_disfavoredOverload
-    @available(*, deprecated, message: "Use the overload that returns an EffectSendTask, and discard the return value.")
-    public func callAsFunction(_ action: Action) {
-      _ = self(action)
-    }
-
-    /// Sends an action back into the system from an effect with animation.
-    ///
-    /// - Parameters:
-    ///   - action: An action.
-    ///   - animation: An animation.
-    ///
-    /// - Returns: An ``EffectSendTask`` corresponding to the fired action.
-    @discardableResult
-    public func callAsFunction(_ action: Action, animation: Animation?) -> EffectSendTask {
-      callAsFunction(action, transaction: Transaction(animation: animation))
-    }
-
-    /// Sends an action back into the system from an effect with animation.
-    ///
-    /// - Parameters:
-    ///   - action: An action.
-    ///   - animation: An animation.
-    @_disfavoredOverload
-    @available(*, deprecated, message: "Use the overload that returns an EffectSendTask, and discard the return value.")
-    public func callAsFunction(_ action: Action, animation: Animation?) {
-      _ = self(action, animation: animation)
-    }
-
-    /// Sends an action back into the system from an effect with transaction.
-    ///
-    /// - Parameters:
-    ///   - action: An action.
-    ///   - transaction: A transaction.
-    ///
-    /// - Returns: An ``EffectSendTask`` corresponding to the fired action.
-    @discardableResult
-    public func callAsFunction(_ action: Action, transaction: Transaction) -> EffectSendTask {
-      guard !Task.isCancelled else { return cancelledSendTask }
-      return withTransaction(transaction) {
-        self(action)
-      }
-    }
-
-    /// Sends an action back into the system from an effect with transaction.
-    ///
-    /// - Parameters:
-    ///   - action: An action.
-    ///   - transaction: A transaction.
-    @_disfavoredOverload
-    @available(*, deprecated, message: "Use the overload that returns an EffectSendTask, and discard the return value.")
-    public func callAsFunction(_ action: Action, transaction: Transaction) {
-      _ = self(action, transaction: transaction)
-    }
+  /// Sends an action back into the system from an effect with transaction.
+  ///
+  /// - Parameters:
+  ///   - action: An action.
+  ///   - transaction: A transaction.
+  @_disfavoredOverload
+  @available(*, deprecated, message: "Use the overload that returns an EffectSendTask, and discard the return value.")
+  public func callAsFunction(_ action: Action, transaction: Transaction) {
+    _ = self(action, transaction: transaction)
   }
 }
 

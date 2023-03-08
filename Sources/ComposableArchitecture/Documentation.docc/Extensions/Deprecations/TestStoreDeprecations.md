@@ -11,6 +11,7 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 ### Creating a test store
 
 - ``TestStore/init(initialState:reducer:environment:file:line:)``
+- ``TestStore/init(initialState:reducer:prepareDependencies:file:line:)-72tkt``
 
 ### Configuring a test store
 
@@ -20,8 +21,8 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 - ``TestStore/send(_:assert:file:line:)-30pjj``
 - ``TestStore/receive(_:assert:file:line:)-2nhm0``
-- ``TestStore/receive(_:assert:file:line:)-6fuav``
-- ``TestStore/receive(_:assert:file:line:)-u5tf``
+- ``TestStore/receive(_:assert:file:line:)-1bfw4``
+- ``TestStore/receive(_:assert:file:line:)-5o4u3``
 - ``TestStore/assert(_:file:line:)-707lb``
 - ``TestStore/assert(_:file:line:)-4gff7``
 - ``TestStore/LocalState``
@@ -32,3 +33,8 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 - ``TestStore/skipReceivedActions(strict:file:line:)-3nldt``
 - ``TestStore/skipInFlightEffects(strict:file:line:)-95n5f``
+
+### Scoping test stores
+
+- ``TestStore/scope(state:action:)``
+- ``TestStore/scope(state:)``
