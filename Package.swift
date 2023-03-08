@@ -22,10 +22,10 @@ let package = Package(
     .package(url: "https://github.com/google/swift-benchmark", from: "0.1.0"),
     .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.8.0"),
     .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "0.14.0"),
-    .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "0.7.0"),
-    .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "0.1.2"),
+    .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "0.9.1"),
+    .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "0.2.0"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "0.7.0"),
-    .package(url: "https://github.com/pointfreeco/swiftui-navigation", from: "0.6.0"),
+    .package(url: "https://github.com/pointfreeco/swiftui-navigation", from: "0.7.0"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "0.5.0"),
   ],
   targets: [
