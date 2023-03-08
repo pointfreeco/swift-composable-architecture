@@ -370,10 +370,14 @@ private struct NavigationLinkDemoFeature: ReducerProtocol {
   struct State: Equatable {
     var message = ""
     @PresentationState var child: ChildFeature.State?
+    @PresentationState var identifiedChild: ChildFeature.State?
   }
   enum Action: Equatable {
     case child(PresentationAction<ChildFeature.Action>)
+    case identifiedChild(PresentationAction<ChildFeature.Action>)
+    case identifiedNavigationLinkButtonTapped
     case navigationLinkButtonTapped
+    case nonDeadbeefIdentifiedNavigationLinkButtonTapped
   }
   var body: some ReducerProtocolOf<Self> {
     Reduce<State, Action> { state, action in
@@ -390,14 +394,28 @@ private struct NavigationLinkDemoFeature: ReducerProtocol {
       case .child(.presented(.parentSendDismissActionButtonTapped)):
         state.child = nil
         return .none
-      case .child:
+      case .identifiedChild(.presented(.parentSendDismissActionButtonTapped)):
+        state.child = nil
+        return .none
+      case .child, .identifiedChild:
+        return .none
+      case .identifiedNavigationLinkButtonTapped:
+        state.identifiedChild = ChildFeature.State(
+          id: UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
+        )
         return .none
       case .navigationLinkButtonTapped:
         state.child = ChildFeature.State()
         return .none
+      case .nonDeadbeefIdentifiedNavigationLinkButtonTapped:
+        state.identifiedChild = ChildFeature.State()
+        return .none
       }
     }
     .ifLet(\.$child, action: /Action.child) {
+      ChildFeature()
+    }
+    .ifLet(\.$identifiedChild, action: /Action.identifiedChild) {
       ChildFeature()
     }
   }
@@ -411,15 +429,33 @@ private struct NavigationLinkDemoView: View {
       Form {
         WithViewStore(self.store, observe: \.message) { viewStore in
           Text(viewStore.state)
-          
+
           NavigationLinkStore(
-            store: self.store.scope(state: \.$child, action: NavigationLinkDemoFeature.Action.child)
+            self.store.scope(state: \.$child, action: NavigationLinkDemoFeature.Action.child)
           ) {
             viewStore.send(.navigationLinkButtonTapped)
           } destination: { store in
             ChildView(store: store)
           } label: {
             Text("Open navigation link")
+          }
+
+          NavigationLinkStore(
+            self.store.scope(
+              state: \.$identifiedChild,
+              action: NavigationLinkDemoFeature.Action.identifiedChild
+            ),
+            id: UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
+          ) {
+            viewStore.send(.identifiedNavigationLinkButtonTapped)
+          } destination: { store in
+            ChildView(store: store)
+          } label: {
+            Text("Open identified navigation link")
+          }
+
+          Button("Open non-deadbeef identified navigation link") {
+            viewStore.send(.nonDeadbeefIdentifiedNavigationLinkButtonTapped)
           }
         }
       }

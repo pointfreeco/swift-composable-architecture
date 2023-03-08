@@ -251,7 +251,20 @@ final class PresentationTests: XCTestCase {
     self.app.buttons["Parent dismiss"].tap()
     XCTAssertEqual(self.app.staticTexts["Action sent while state nil."].exists, false)
   }
+  
+  func testIdentifiedNavigationLink_ChildActions() {
+    self.app.buttons["Open navigation link demo"].tap()
+    self.app.buttons["Open identified navigation link"].tap()
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
+    self.app.buttons["Increment"].tap()
+    XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
+  }
 
+  func testIdentifiedNavigationLink_NonDeadbeefLink() {
+    self.app.buttons["Open navigation link demo"].tap()
+    self.app.buttons["Open non-deadbeef identified navigation link"].tap()
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, false)
+  }
 
   func testNavigationDestination_ChildDismiss() {
     self.app.buttons["Open navigation destination"].tap()
