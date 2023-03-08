@@ -13,11 +13,19 @@ final class StateReaderTests: XCTestCase {
 
       @Dependency(\.date.now) var now
 
-      var body: some ReducerProtocolOf<Self> {
-        ReducerReader { _, _ in
-          let _ = self.now
+      #if swift(>=5.7)
+        var body: some ReducerProtocol<State, Action> {
+          ReducerReader { _, _ in
+            let _ = self.now
+          }
         }
-      }
+      #else
+        var body: Reduce<State, Action> {
+          ReducerReader { _, _ in
+            let _ = self.now
+          }
+        }
+      #endif
     }
 
     let store = TestStore(initialState: Feature.State(), reducer: Feature()) {
