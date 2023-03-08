@@ -78,10 +78,9 @@ private struct PresentationFullScreenCoverModifier<
       )
     ) { _ in
       IfLetStore(
-        self.store.scope(
-          state: returningLastNonNilValue { $0.wrappedValue.flatMap(self.toDestinationState) },
-          action: { .presented(self.fromDestinationAction($0)) }
-        ),
+        self.store,
+        state: returningLastNonNilValue(self.toDestinationState),
+        action: self.fromDestinationAction,
         then: self.coverContent
       )
     }
