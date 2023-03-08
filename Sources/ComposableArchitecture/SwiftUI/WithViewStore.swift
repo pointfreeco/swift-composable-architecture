@@ -46,7 +46,7 @@ import SwiftUI
 /// instead of using ``WithViewStore``:
 ///
 /// 1. When ``WithViewStore`` wraps complex views the Swift compiler can quickly become bogged down,
-/// leading to degraded compiler performance and diagnostics. If you are experience such instability
+/// leading to degraded compiler performance and diagnostics. If you are experiencing such instability
 /// you should consider manually setting up observation with an `@ObservedObject` property as
 /// described above.
 ///

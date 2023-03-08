@@ -7,7 +7,7 @@
 - ``reduce(into:action:)-8yinq``
 - ``State``
 - ``Action``
-- ``EffectPublisher``
+- ``EffectTask``
 
 ### Reducer composition
 
@@ -17,21 +17,24 @@
 - ``Scope``
 - ``ifLet(_:action:then:file:fileID:line:)``
 - ``ifCaseLet(_:action:then:file:fileID:line:)``
-- ``forEach(_:action:_:file:fileID:line:)``
+- ``forEach(_:action:element:file:fileID:line:)``
 
 ### Supporting reducers
 
-- ``BindingReducer``
+- ``Reduce``
 - ``CombineReducers``
 - ``EmptyReducer``
-- ``Reduce``
+- ``BindingReducer``
 
 ### Reducer modifiers
 
 - ``dependency(_:_:)``
 - ``transformDependency(_:transform:)``
 - ``signpost(_:log:)``
-- ``debug()``
+
+### Supporting types
+
+- ``ReducerProtocolOf``
 
 ### Deprecations
 

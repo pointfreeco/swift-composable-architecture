@@ -19,5 +19,5 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 ### SwiftUI integration
 
-- ``ViewStore/subscript(dynamicMember:)-7xjrv``
+- ``ViewStore/subscript(dynamicMember:)-3q4xh``
 - ``ViewStore/binding(keyPath:send:)``
