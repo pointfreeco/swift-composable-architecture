@@ -20,9 +20,6 @@ public struct NavigationLinkStore<
   let destination: (Store<DestinationState, DestinationAction>) -> Destination
   let label: Label
 
-  // TODO: initialier for just presentation state and no destination transformations
-  // TODO: initializer for Identifiable
-
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     onTap: @escaping () -> Void,
@@ -67,7 +64,6 @@ public struct NavigationLinkStore<
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where State == DestinationState, Action == DestinationAction, State: Identifiable {
-    //self.id = id
     let filteredStore = store.filter { state, _ in state.wrappedValue != nil }
     self.store = filteredStore
     self.viewStore = ViewStore(filteredStore.scope(state: { $0.wrappedValue?.id == id }))
