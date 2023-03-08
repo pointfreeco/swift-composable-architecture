@@ -28,6 +28,10 @@
 
 - ``EffectPublisher/unimplemented(_:)``
 
+### Combine integration
+
+- ``EffectPublisher/publisher(_:)``
+
 ### SwiftUI integration
 
 - ``EffectPublisher/animation(_:)``

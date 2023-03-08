@@ -39,10 +39,12 @@ private struct PresentationTestCase: Reducer {
     enum AlertAction {
       case ok
       case showDialog
+      case showSheet
     }
     enum DialogAction {
       case ok
       case showAlert
+      case showSheet
     }
     var body: some ReducerOf<Self> {
       Scope(state: /State.fullScreenCover, action: /Action.fullScreenCover) {
@@ -85,6 +87,9 @@ private struct PresentationTestCase: Reducer {
             ButtonState(action: .showDialog) {
               TextState("Show dialog")
             }
+            ButtonState(action: .showSheet) {
+              TextState("Show sheet")
+            }
             ButtonState(role: .cancel) {
               TextState("Cancel")
             }
@@ -92,7 +97,6 @@ private struct PresentationTestCase: Reducer {
         )
         return .none
       case .destination(.presented(.fullScreenCover(.parentSendDismissActionButtonTapped))),
-        .destination(.presented(.navigationDestination(.parentSendDismissActionButtonTapped))),
         .destination(.presented(.sheet(.parentSendDismissActionButtonTapped))),
         .destination(.presented(.popover(.parentSendDismissActionButtonTapped))):
         return .send(.destination(.dismiss))
@@ -104,12 +108,23 @@ private struct PresentationTestCase: Reducer {
           }
         )
         return .none
-      case .destination(.presented(.dialog(.showAlert))):
+      case .destination(.presented(.alert(.showSheet))):
+        state.destination = .sheet(ChildFeature.State())
+        return .none
+      case
+          .destination(.presented(.dialog(.showAlert))),
+          .destination(.presented(.fullScreenCover(.dismissAndAlert))),
+          .destination(.presented(.popover(.dismissAndAlert))),
+          .destination(.presented(.navigationDestination(.dismissAndAlert))),
+        .destination(.presented(.sheet(.dismissAndAlert))):
         state.destination = .alert(
           AlertState {
             TextState("Hello!")
           }
         )
+        return .none
+      case .destination(.presented(.dialog(.showSheet))):
+        state.destination = .sheet(ChildFeature.State())
         return .none
       case .destination(.dismiss):
         state.message = "Dismiss action sent"
@@ -126,6 +141,9 @@ private struct PresentationTestCase: Reducer {
             }
             ButtonState(action: .showAlert) {
               TextState("Show alert")
+            }
+            ButtonState(action: .showSheet) {
+              TextState("Show sheet")
             }
           }
         )
@@ -157,11 +175,13 @@ private struct ChildFeature: Reducer {
   struct State: Equatable, Identifiable {
     var id = UUID()
     var count = 0
+    var isDismissed = false
     @BindingState var text = ""
   }
   enum Action: BindableAction, Equatable {
     case binding(BindingAction<State>)
     case childDismissButtonTapped
+    case dismissAndAlert
     case incrementButtonTapped
     case parentSendDismissActionButtonTapped
     case resetIdentity
@@ -176,11 +196,15 @@ private struct ChildFeature: Reducer {
       case .binding:
         return .none
       case .childDismissButtonTapped:
+        state.isDismissed = true
         return .fireAndForget { await self.dismiss() }
+      case .dismissAndAlert:
+        return .none
       case .incrementButtonTapped:
         state.count += 1
         return .none
       case .parentSendDismissActionButtonTapped:
+        state.isDismissed = true
         return .none
       case .resetIdentity:
         state.id = UUID()
@@ -308,6 +332,7 @@ struct PresentationTestCaseView: View {
 }
 
 private struct ChildView: View {
+  @Environment(\.dismiss) var dismiss
   let store: StoreOf<ChildFeature>
 
   var body: some View {
@@ -324,12 +349,18 @@ private struct ChildView: View {
         Button("Parent dismiss") {
           viewStore.send(.parentSendDismissActionButtonTapped)
         }
+        Button("Dismiss and alert") {
+          viewStore.send(.dismissAndAlert)
+        }
         Button("Start effect") {
           viewStore.send(.startButtonTapped)
         }
         Button("Reset identity") {
           viewStore.send(.resetIdentity)
         }
+      }
+      .onChange(of: viewStore.isDismissed) { _ in
+        self.dismiss()
       }
     }
   }

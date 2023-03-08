@@ -72,14 +72,9 @@ struct AnyID: Hashable, Identifiable, Sendable {
 
     self.objectIdentifier = ObjectIdentifier(Base.self)
     self.tag = EnumMetadata(Base.self)?.tag(of: base)
-    if let id = _id(base) {
+    if let id = _id(base) ?? EnumMetadata.project(base).flatMap(_id) {
       self.identifier = AnyHashableSendable(id)
     }
-    // TODO: Extract identifiable enum payload and assign id
-    // else if let metadata = EnumMetadata(type(of: base)),
-    //   metadata.associatedValueType(forTag: metadata.tag(of: base)) is any Identifiable.Type
-    // {
-    // }
   }
 
   @usableFromInline

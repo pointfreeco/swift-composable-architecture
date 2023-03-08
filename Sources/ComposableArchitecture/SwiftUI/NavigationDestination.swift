@@ -68,7 +68,10 @@ import SwiftUI
     }
 
     func body(content: Content) -> some View {
-      content.navigationDestination(isPresented: self.viewStore.binding(send: .dismiss)) {
+      content.navigationDestination(
+        // TODO: do binding with ID check
+        isPresented: self.viewStore.binding(send: .dismiss)
+      ) {
         IfLetStore(
           self.store.scope(
             state: returningLastNonNilValue { $0.wrappedValue.flatMap(self.toDestinationState) },

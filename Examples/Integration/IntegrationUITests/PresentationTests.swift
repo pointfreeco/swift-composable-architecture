@@ -52,9 +52,6 @@ final class PresentationTests: XCTestCase {
   }
 
   func testSheet_IdentityChange() async throws {
-    // TODO: Remove this XCTExpectFailure once the destination identifiable problem is fixed.
-    XCTExpectFailure()
-
     self.app.buttons["Open sheet"].tap()
     XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
 
@@ -157,13 +154,17 @@ final class PresentationTests: XCTestCase {
   }
 
   func testAlertThenDialog() {
-    // TODO: Remove this XCTExpectFailure once the destination identifiable problem is fixed.
-    XCTExpectFailure()
-
     self.app.buttons["Open alert"].tap()
     self.app.buttons["Show dialog"].tap()
     _ = self.app.staticTexts["Hello!"].waitForExistence(timeout: 1)
     XCTAssertEqual(true, self.app.staticTexts["Hello!"].exists)
+  }
+
+  func testAlertThenSheet() {
+    self.app.buttons["Open alert"].tap()
+    self.app.buttons["Show sheet"].tap()
+    _ = self.app.staticTexts["Count: 0"].waitForExistence(timeout: 1)
+    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
   }
 
   func testDialogActionDoesNotSendExtraDismiss() {
@@ -181,9 +182,6 @@ final class PresentationTests: XCTestCase {
   }
 
   func testShowDialogThenAlert() {
-    // TODO: Remove this XCTExpectFailure once the destination identifiable problem is fixed.
-    XCTExpectFailure()
-
     self.app.buttons["Open dialog"].tap()
     self.app.buttons["Show alert"].tap()
     _ = self.app.staticTexts["Hello!"].waitForExistence(timeout: 1)
@@ -252,5 +250,43 @@ final class PresentationTests: XCTestCase {
     self.app.textFields["Text field"].tap()
     self.app.buttons["Parent dismiss"].tap()
     XCTAssertEqual(self.app.staticTexts["Action sent while state nil."].exists, false)
+  }
+
+
+  func testNavigationDestination_ChildDismiss() {
+    self.app.buttons["Open navigation destination"].tap()
+    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+
+    self.app.buttons["Increment"].tap()
+    XCTAssertEqual(true, self.app.staticTexts["Count: 1"].exists)
+    self.app.buttons["Increment"].tap()
+    XCTAssertEqual(true, self.app.staticTexts["Count: 2"].exists)
+
+    self.app.buttons["Child dismiss"].tap()
+    XCTAssertEqual(false, self.app.staticTexts["Count: 2"].exists)
+  }
+
+  func testNavigationDestination_ParentDismiss() {
+    self.app.buttons["Open navigation destination"].tap()
+    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+
+    self.app.buttons["Parent dismiss"].tap()
+    XCTAssertEqual(false, self.app.staticTexts["Count: 0"].exists)
+  }
+
+  func testNavigationDestination_EffectsCancelOnDismiss() async throws {
+    self.app.buttons["Open navigation destination"].tap()
+    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+
+    self.app.buttons["Start effect"].tap()
+    XCTAssertEqual(true, self.app.staticTexts["Count: 1"].exists)
+
+    self.app.buttons["Parent dismiss"].tap()
+    XCTAssertEqual(false, self.app.staticTexts["Count: 1"].exists)
+
+    self.app.buttons["Open navigation destination"].tap()
+    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+    try await Task.sleep(for: .seconds(3))
+    XCTAssertEqual(false, self.app.staticTexts["Count: 999"].exists)
   }
 }
