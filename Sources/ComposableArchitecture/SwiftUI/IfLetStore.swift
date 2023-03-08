@@ -9,28 +9,11 @@ import SwiftUI
 ///
 /// ```swift
 /// IfLetStore(
-///   store.scope(state: \SearchState.results, action: SearchAction.results),
+///   store.scope(state: \.results, action: Search.Action.results)
 /// ) {
 ///   SearchResultsView(store: $0)
 /// } else: {
 ///   Text("Loading search results...")
-/// }
-/// ```
-///
-/// And for showing a sheet when a piece of state becomes non-`nil`:
-///
-/// ```swift
-/// .sheet(
-///   isPresented: viewStore.binding(
-///     get: \.isGameActive,
-///     send: { $0 ? .startButtonTapped : .detailDismissed }
-///   )
-/// ) {
-///   IfLetStore(
-///     self.store.scope(state: \.detail, action: AppAction.detail)
-///   ) {
-///     DetailView(store: $0)
-///   }
 /// }
 /// ```
 ///
