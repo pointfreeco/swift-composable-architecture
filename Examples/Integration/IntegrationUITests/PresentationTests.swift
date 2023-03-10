@@ -16,15 +16,15 @@ final class PresentationTests: XCTestCase {
 
   func testSheet_ChildDismiss() {
     self.app.buttons["Open sheet"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
 
     self.app.buttons["Increment"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 1"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
     self.app.buttons["Increment"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 2"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 2"].exists, true)
 
     self.app.buttons["Child dismiss"].tap()
-    XCTAssertEqual(false, self.app.staticTexts["Count: 2"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 2"].exists, false)
   }
 
   func testSheet_ParentDismiss() {

@@ -16,13 +16,13 @@ public struct NavigationLinkStore<
   @ObservedObject var viewStore: ViewStore<Bool, PresentationAction<Action>>
   let toDestinationState: (State) -> DestinationState?
   let fromDestinationAction: (DestinationAction) -> Action
-  let onTap: () -> Void
+  let action: () -> Void
   let destination: (Store<DestinationState, DestinationAction>) -> Destination
   let label: Label
 
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
-    onTap: @escaping () -> Void,
+    action: @escaping () -> Void,
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where State == DestinationState, Action == DestinationAction {
@@ -31,7 +31,7 @@ public struct NavigationLinkStore<
     self.viewStore = ViewStore(filteredStore.scope(state: { $0.wrappedValue != nil }))
     self.toDestinationState = { $0 }
     self.fromDestinationAction = { $0 }
-    self.onTap = onTap
+    self.action = action
     self.destination = destination
     self.label = label()
   }
@@ -40,7 +40,7 @@ public struct NavigationLinkStore<
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (State) -> DestinationState?,
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
-    onTap: @escaping () -> Void,
+    action: @escaping () -> Void,
     @ViewBuilder destination: @escaping (Store<DestinationState, DestinationAction>) -> Destination,
     @ViewBuilder label: () -> Label
   ) {
@@ -52,7 +52,7 @@ public struct NavigationLinkStore<
     )
     self.toDestinationState = toDestinationState
     self.fromDestinationAction = fromDestinationAction
-    self.onTap = onTap
+    self.action = action
     self.destination = destination
     self.label = label()
   }
@@ -60,7 +60,7 @@ public struct NavigationLinkStore<
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     id: State.ID,
-    onTap: @escaping () -> Void,
+    action: @escaping () -> Void,
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where State == DestinationState, Action == DestinationAction, State: Identifiable {
@@ -69,7 +69,7 @@ public struct NavigationLinkStore<
     self.viewStore = ViewStore(filteredStore.scope(state: { $0.wrappedValue?.id == id }))
     self.toDestinationState = { $0 }
     self.fromDestinationAction = { $0 }
-    self.onTap = onTap
+    self.action = action
     self.destination = destination
     self.label = label()
   }
@@ -79,7 +79,7 @@ public struct NavigationLinkStore<
     state toDestinationState: @escaping (State) -> DestinationState?,
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
     id: DestinationState.ID,
-    onTap: @escaping () -> Void,
+    action: @escaping () -> Void,
     @ViewBuilder destination: @escaping (Store<DestinationState, DestinationAction>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where DestinationState: Identifiable {
@@ -91,7 +91,7 @@ public struct NavigationLinkStore<
     )
     self.toDestinationState = toDestinationState
     self.fromDestinationAction = fromDestinationAction
-    self.onTap = onTap
+    self.action = action
     self.destination = destination
     self.label = label()
   }
@@ -103,7 +103,7 @@ public struct NavigationLinkStore<
         get: { self.viewStore.state },
         set: {
           if $0 {
-            self.onTap()
+            self.action()
           } else {
             self.viewStore.send(.dismiss)
           }
