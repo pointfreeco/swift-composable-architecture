@@ -749,7 +749,7 @@ final class StoreTests: XCTestCase {
       await childTask.cancel()
       await mainQueue.advance(by: 1)
       try await Task.sleep(nanoseconds: 100_000_000)
-      XCTodo(
+      XCTTODO(
         """
         This fails because cancelling a child task will cancel all parent effects too.
         """)
