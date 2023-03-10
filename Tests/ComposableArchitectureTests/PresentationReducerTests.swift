@@ -2115,8 +2115,9 @@ import XCTest
         reducer: Parent()
       )
 
-      // TODO: Remove this XCTExpectFailure once discarding of dismiss effects is fixed
-      XCTExpectFailure()
+      XCTTODO("""
+        This fails because dismissal effects are not automatically cancelled by the test store.
+        """)
       await store.send(.presentChild) {
         $0.child = Child.State()
       }

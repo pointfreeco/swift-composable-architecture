@@ -16,16 +16,13 @@ public struct NavigationLinkStore<
   @ObservedObject var viewStore: ViewStore<Bool, PresentationAction<Action>>
   let toDestinationState: (State) -> DestinationState?
   let fromDestinationAction: (DestinationAction) -> Action
-  let onTap: () -> Void
+  let action: () -> Void
   let destination: (Store<DestinationState, DestinationAction>) -> Destination
   let label: Label
 
-  // TODO: initialier for just presentation state and no destination transformations
-  // TODO: initializer for Identifiable
-
   public init(
-    store: Store<PresentationState<State>, PresentationAction<Action>>,
-    onTap: @escaping () -> Void,
+    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
+    action: @escaping () -> Void,
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where State == DestinationState, Action == DestinationAction {
@@ -34,16 +31,16 @@ public struct NavigationLinkStore<
     self.viewStore = ViewStore(filteredStore.scope(state: { $0.wrappedValue != nil }))
     self.toDestinationState = { $0 }
     self.fromDestinationAction = { $0 }
-    self.onTap = onTap
+    self.action = action
     self.destination = destination
     self.label = label()
   }
 
   public init(
-    store: Store<PresentationState<State>, PresentationAction<Action>>,
+    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (State) -> DestinationState?,
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
-    onTap: @escaping () -> Void,
+    action: @escaping () -> Void,
     @ViewBuilder destination: @escaping (Store<DestinationState, DestinationAction>) -> Destination,
     @ViewBuilder label: () -> Label
   ) {
@@ -55,7 +52,46 @@ public struct NavigationLinkStore<
     )
     self.toDestinationState = toDestinationState
     self.fromDestinationAction = fromDestinationAction
-    self.onTap = onTap
+    self.action = action
+    self.destination = destination
+    self.label = label()
+  }
+
+  public init(
+    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
+    id: State.ID,
+    action: @escaping () -> Void,
+    @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
+    @ViewBuilder label: () -> Label
+  ) where State == DestinationState, Action == DestinationAction, State: Identifiable {
+    let filteredStore = store.filter { state, _ in state.wrappedValue != nil }
+    self.store = filteredStore
+    self.viewStore = ViewStore(filteredStore.scope(state: { $0.wrappedValue?.id == id }))
+    self.toDestinationState = { $0 }
+    self.fromDestinationAction = { $0 }
+    self.action = action
+    self.destination = destination
+    self.label = label()
+  }
+
+  public init(
+    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
+    state toDestinationState: @escaping (State) -> DestinationState?,
+    action fromDestinationAction: @escaping (DestinationAction) -> Action,
+    id: DestinationState.ID,
+    action: @escaping () -> Void,
+    @ViewBuilder destination: @escaping (Store<DestinationState, DestinationAction>) -> Destination,
+    @ViewBuilder label: () -> Label
+  ) where DestinationState: Identifiable {
+    self.store = store
+    self.viewStore = ViewStore(
+      store
+        .filter { state, _ in state.wrappedValue != nil }
+        .scope(state: { $0.wrappedValue.flatMap(toDestinationState)?.id == id })
+    )
+    self.toDestinationState = toDestinationState
+    self.fromDestinationAction = fromDestinationAction
+    self.action = action
     self.destination = destination
     self.label = label()
   }
@@ -67,7 +103,7 @@ public struct NavigationLinkStore<
         get: { self.viewStore.state },
         set: {
           if $0 {
-            self.onTap()
+            self.action()
           } else {
             self.viewStore.send(.dismiss)
           }
@@ -75,10 +111,9 @@ public struct NavigationLinkStore<
       )
     ) {
       IfLetStore(
-        self.store.scope(
-          state: returningLastNonNilValue { $0.wrappedValue.flatMap(self.toDestinationState) },
-          action: { .presented(self.fromDestinationAction($0)) }
-        ),
+        self.store,
+        state: returningLastNonNilValue(self.toDestinationState),
+        action: self.fromDestinationAction,
         then: self.destination
       )
     } label: {

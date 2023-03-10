@@ -34,11 +34,11 @@ struct InventoryFeature: ReducerProtocol {
 }
 ``` 
 
-Note that the `addItem` state is held as an optional. A non-`nil` value represents that feature
+> Note: The `addItem` state is held as an optional. A non-`nil` value represents that feature
 is being presented, and `nil` presents the feature is dismissed.
 
 Next you can integrate the reducers of the parent and child features by using the 
-``ReducerProtocol/ifLet(_:action:destination:file:fileID:line:)-2soon`` reducer operator, as well
+``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)-23pza`` reducer operator, as well
 as having an action in the parent domain for populating the child's state to drive navigation:
 
 ```swift
@@ -62,7 +62,7 @@ struct InventoryFeature: ReducerProtocol {
 }
 ```
 
-Note that the key path used with `ifLet` focuses on the `@PresentationState` since it uses the `$`
+> Note: The key path used with `ifLet` focuses on the `@PresentationState` since it uses the `$`
 syntax. Also note that the action uses a [case 
 path](http://github.com/pointfreeco/swift-case-paths), which is analagous to key paths but tuned
 for enums, and uses the forward slash syntax.
@@ -107,7 +107,7 @@ presentation domain, including:
 * `popover(store:)`
 * `fullScreenCover(store:)`
 * `navigationDestination(store:)`
-* `NavigationLinkStore(_:)`
+* ``NavigationLinkStore``
 
 ## Correctness
 
