@@ -683,77 +683,79 @@ final class StoreTests: XCTestCase {
     XCTAssertEqual(store.state.value.count, testStore.state.count)
   }
 
-  func testChidlParentEffectCancellation() async throws {
-    struct Child: ReducerProtocol {
-      struct State: Equatable {}
-      enum Action: Equatable {
-        case task
-        case didFinish
-      }
-
-      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
-        switch action {
-        case .task:
-          return .run { send in await send(.didFinish) }
-        case .didFinish:
-          return .none
+  #if swift(>=5.7)
+    func testChidlParentEffectCancellation() async throws {
+      struct Child: ReducerProtocol {
+        struct State: Equatable {}
+        enum Action: Equatable {
+          case task
+          case didFinish
         }
-      }
-    }
-    struct Parent: ReducerProtocol {
-      struct State: Equatable {
-        var count = 0
-        var child: Child.State?
-      }
-      enum Action: Equatable {
-        case child(Child.Action)
-        case delay
-      }
-      @Dependency(\.mainQueue) var mainQueue
-      var body: Reduce<State, Action> {
-        Reduce { state, action in
+
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
           switch action {
-          case .child(.didFinish):
-            state.child = nil
-            return .task {
-              try await self.mainQueue.sleep(for: .seconds(1))
-              return .delay
-            }
-          case .child:
-            return .none
-          case .delay:
-            state.count += 1
+          case .task:
+            return .run { send in await send(.didFinish) }
+          case .didFinish:
             return .none
           }
         }
-        .ifLet(\.child, action: /Action.child) {
-          Child()
+      }
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          var count = 0
+          var child: Child.State?
+        }
+        enum Action: Equatable {
+          case child(Child.Action)
+          case delay
+        }
+        @Dependency(\.mainQueue) var mainQueue
+        var body: Reduce<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .child(.didFinish):
+              state.child = nil
+              return .task {
+                try await self.mainQueue.sleep(for: .seconds(1))
+                return .delay
+              }
+            case .child:
+              return .none
+            case .delay:
+              state.count += 1
+              return .none
+            }
+          }
+          .ifLet(\.child, action: /Action.child) {
+            Child()
+          }
         }
       }
+
+      let mainQueue = DispatchQueue.test
+      let store = Store(
+        initialState: Parent.State(child: Child.State()),
+        reducer: Parent()
+      ) {
+        $0.mainQueue = mainQueue.eraseToAnyScheduler()
+      }
+      let viewStore = ViewStore(store)
+
+      let childTask = viewStore.send(.child(.task))
+      try await Task.sleep(nanoseconds: 100_000_000)
+      XCTAssertEqual(viewStore.child, nil)
+
+      await childTask.cancel()
+      await mainQueue.advance(by: 1)
+      try await Task.sleep(nanoseconds: 100_000_000)
+      XCTodo(
+        """
+        This fails because cancelling a child task will cancel all parent effects too.
+        """)
+      XCTAssertEqual(viewStore.count, 1)
     }
-
-    let mainQueue = DispatchQueue.test
-    let store = Store(
-      initialState: Parent.State(child: Child.State()),
-      reducer: Parent()
-    ) {
-      $0.mainQueue = mainQueue.eraseToAnyScheduler()
-    }
-    let viewStore = ViewStore(store)
-
-    let childTask = viewStore.send(.child(.task))
-    try await Task.sleep(nanoseconds: 100_000_000)
-    XCTAssertEqual(viewStore.child, nil)
-
-    await childTask.cancel()
-    await mainQueue.advance(by: 1)
-    try await Task.sleep(nanoseconds: 100_000_000)
-    XCTExpectFailure("""
-      This fails because cancelling a child task will cancel all parent effects too. If we fix
-      this we can remove the XCTExpectFailure.
-      """)
-    XCTAssertEqual(viewStore.count, 1)
-  }
+  #endif
 }
 
 private struct Count: TestDependencyKey {
