@@ -47,9 +47,9 @@ extension EffectPublisher {
             defer { _cancellablesLock.unlock() }
 
             if cancelInFlight {
-              for navigationID in navigationID {
-                let id = _CancelToken(id: id, navigationID: navigationID)
-                _cancellationCancellables[id]?.forEach { $0.cancel() }
+              for navigationID in navigationID.prefixes {
+                let cancelID = _CancelID(id: id, navigationID: navigationID)
+                _cancellationCancellables[cancelID]?.forEach { $0.cancel() }
               }
             }
 
@@ -60,11 +60,11 @@ extension EffectPublisher {
               _cancellablesLock.sync {
                 cancellationSubject.send(())
                 cancellationSubject.send(completion: .finished)
-                for navigationID in navigationID {
-                  let id = _CancelToken(id: id, navigationID: navigationID)
-                  _cancellationCancellables[id]?.remove(cancellationCancellable)
-                  if _cancellationCancellables[id]?.isEmpty == .some(true) {
-                    _cancellationCancellables[id] = nil
+                for navigationID in navigationID.prefixes {
+                  let cancelID = _CancelID(id: id, navigationID: navigationID)
+                  _cancellationCancellables[cancelID]?.remove(cancellationCancellable)
+                  if _cancellationCancellables[cancelID]?.isEmpty == .some(true) {
+                    _cancellationCancellables[cancelID] = nil
                   }
                 }
               }
@@ -74,9 +74,9 @@ extension EffectPublisher {
               .handleEvents(
                 receiveSubscription: { _ in
                   _cancellablesLock.sync {
-                    for navigationID in navigationID {
-                      let id = _CancelToken(id: id, navigationID: navigationID)
-                      _cancellationCancellables[id, default: []].insert(
+                    for navigationID in navigationID.prefixes {
+                      let cancelID = _CancelID(id: id, navigationID: navigationID)
+                      _cancellationCancellables[cancelID, default: []].insert(
                         cancellationCancellable
                       )
                     }
@@ -125,10 +125,10 @@ extension EffectPublisher {
   ///   identifier.
   public static func cancel(id: AnyHashable) -> Self {
     @Dependency(\.navigationID) var navigationID
-    let id = _CancelToken(id: id, navigationID: navigationID)
+    let cancelID = _CancelID(id: id, navigationID: navigationID)
     return .fireAndForget {
       _cancellablesLock.sync {
-        _cancellationCancellables[id]?.forEach {
+        _cancellationCancellables[cancelID]?.forEach {
           $0.cancel()
         }
       }
@@ -220,27 +220,27 @@ extension EffectPublisher {
   ) async rethrows -> T {
     @Dependency(\.navigationID) var navigationID
     let (cancellable, task) = _cancellablesLock.sync { () -> (AnyCancellable, Task<T, Error>) in
-      for navigationID in navigationID {
-        let id = _CancelToken(id: id, navigationID: navigationID)
+      for navigationID in navigationID.prefixes {
+        let cancelID = _CancelID(id: id, navigationID: navigationID)
         if cancelInFlight {
-          _cancellationCancellables[id]?.forEach { $0.cancel() }
+          _cancellationCancellables[cancelID]?.forEach { $0.cancel() }
         }
       }
       let task = Task { try await operation() }
       let cancellable = AnyCancellable { task.cancel() }
-      for navigationID in navigationID {
-        let id = _CancelToken(id: id, navigationID: navigationID)
-        _cancellationCancellables[id, default: []].insert(cancellable)
+      for navigationID in navigationID.prefixes {
+        let cancelID = _CancelID(id: id, navigationID: navigationID)
+        _cancellationCancellables[cancelID, default: []].insert(cancellable)
       }
       return (cancellable, task)
     }
     defer {
-      for navigationID in navigationID {
-        let id = _CancelToken(id: id, navigationID: navigationID)
+      for navigationID in navigationID.prefixes {
+        let cancelID = _CancelID(id: id, navigationID: navigationID)
         _cancellablesLock.sync {
-          _cancellationCancellables[id]?.remove(cancellable)
-          if _cancellationCancellables[id]?.isEmpty == .some(true) {
-            _cancellationCancellables[id] = nil
+          _cancellationCancellables[cancelID]?.remove(cancellable)
+          if _cancellationCancellables[cancelID]?.isEmpty == .some(true) {
+            _cancellationCancellables[cancelID] = nil
           }
         }
       }
@@ -329,9 +329,9 @@ extension Task where Success == Never, Failure == Never {
   /// - Parameter id: An identifier.
   public static func cancel<ID: Hashable & Sendable>(id: ID) {
     @Dependency(\.navigationID) var navigationID
-    let id = _CancelToken(id: id, navigationID: navigationID)
+    let cancelID = _CancelID(id: id, navigationID: navigationID)
     return _cancellablesLock.sync {
-      _cancellationCancellables[id]?.forEach { $0.cancel() }
+      _cancellationCancellables[cancelID]?.forEach { $0.cancel() }
     }
   }
 
@@ -346,25 +346,12 @@ extension Task where Success == Never, Failure == Never {
   }
 }
 
-@_spi(Internals) public struct _CancelToken: Hashable {
+@_spi(Internals) public struct _CancelID: Hashable {
   let id: AnyHashable
   let navigationID: NavigationID
-  let discriminator: ObjectIdentifier
-
-  public init(id: AnyHashable) {
-    self.id = id
-    self.navigationID = NavigationID()
-    self.discriminator = ObjectIdentifier(type(of: id.base))
-  }
-
-  init(id: AnyHashable, navigationID: NavigationID) {
-    self.id = id
-    self.navigationID = navigationID
-    self.discriminator = ObjectIdentifier(type(of: id.base))
-  }
 }
 
-@_spi(Internals) public var _cancellationCancellables: [_CancelToken: Set<AnyCancellable>] = [:] 
+@_spi(Internals) public var _cancellationCancellables: [_CancelID: Set<AnyCancellable>] = [:]
 @_spi(Internals) public let _cancellablesLock = NSRecursiveLock()
 
 @rethrows

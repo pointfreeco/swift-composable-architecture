@@ -54,7 +54,7 @@
         dump,
         #"""
         BindingAction.set(
-          WritableKeyPath<State, BindingState<Int>>,
+          \State.$width,
           50
         )
         """#

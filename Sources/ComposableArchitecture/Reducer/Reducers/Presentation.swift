@@ -1,3 +1,5 @@
+@_spi(Reflection) import CasePaths
+
 /// A property wrapper for state that can be presented.
 ///
 /// Use this property wrapper for modeling a feature's domain that needs to present a child feature
@@ -36,7 +38,8 @@ public struct PresentationState<State> {
   }
 
   var id: AnyID? {
-    self.wrappedValue.map(AnyID.init)
+    // TODO: fix
+    self.wrappedValue.map { .init(base: $0, keyPath: nil) }
   }
 }
 
@@ -214,27 +217,30 @@ public struct _PresentationReducer<
     case let (.some(destinationState), .some(.dismiss)):
       destinationEffects = .none
       baseEffects = self.base.reduce(into: &state, action: action)
-      if self.id(for: destinationState)
-        == state[keyPath: self.toPresentationState].wrappedValue.map(self.id(for:))
+      if self.navigationID(for: destinationState)
+        == state[keyPath: self.toPresentationState].wrappedValue.map(self.navigationID(for:))
       {
         state[keyPath: self.toPresentationState].wrappedValue = nil
       }
     // TODO: Should we runtime warn if `base` changes the destination during dismissal, instead?
 
     case let (.some(destinationState), .some(.presented(destinationAction))):
-      let id = self.id(for: destinationState)
+      let _id = self.navigationID(for: destinationState)
       destinationEffects = self.destination
-        .dependency(\.dismiss, DismissEffect { Task.cancel(id: DismissID()) })
-        .dependency(\.navigationID, id)
+        .dependency(\.dismiss, DismissEffect {
+          await Task.megaYield() // TODO: remove
+          Task._cancel(id: DismissID(), navigationID: _id)
+        })
+        .dependency(\.navigationID, navigationID(for: destinationState))
         .reduce(
           into: &state[keyPath: self.toPresentationState].wrappedValue!, action: destinationAction
         )
         .map { self.toPresentationAction.embed(.presented($0)) }
-        .cancellable(id: id)
+        ._cancellable(navigationID: _id)
       baseEffects = self.base.reduce(into: &state, action: action)
       if isEphemeral(destinationState),
-        self.id(for: destinationState)
-          == state[keyPath: self.toPresentationState].wrappedValue.map(self.id(for:))
+        _id
+          == state[keyPath: self.toPresentationState].wrappedValue.map(self.navigationID(for:))
       {
         state[keyPath: self.toPresentationState].wrappedValue = nil
       }
@@ -272,15 +278,15 @@ public struct _PresentationReducer<
     }
 
     let presentationIdentityChanged =
-      initialPresentationState.wrappedValue.map(self.id(for:))
-      != state[keyPath: self.toPresentationState].wrappedValue.map(self.id(for:))
+    initialPresentationState.wrappedValue.map(self.navigationID(for:))
+    != state[keyPath: self.toPresentationState].wrappedValue.map(self.navigationID(for:))
 
     let dismissEffects: EffectTask<Base.Action>
     if presentationIdentityChanged,
       let presentationState = initialPresentationState.wrappedValue,
       !isEphemeral(presentationState)
     {
-      dismissEffects = .cancel(id: self.id(for: presentationState))
+      dismissEffects = ._cancel(navigationID: self.navigationID(for: presentationState))
     } else {
       dismissEffects = .none
     }
@@ -290,14 +296,15 @@ public struct _PresentationReducer<
       let presentationState = state[keyPath: self.toPresentationState].wrappedValue,
       !isEphemeral(presentationState)
     {
-      let id = self.id(for: presentationState)
+      //let id = self.id(for: presentationState)
+      let _id = self.navigationID(for: presentationState)
       state[keyPath: self.toPresentationState].isPresented = true
       presentEffects = .run { send in
         do {
           try await withDependencies {
-            $0.navigationID = id
+            $0.navigationID = _id
           } operation: {
-            try await withTaskCancellation(id: DismissID()) {
+            try await _withTaskCancellation(id: DismissID(), navigationID: _id) {
               try await Task.never()
             }
           }
@@ -305,7 +312,8 @@ public struct _PresentationReducer<
           await send(self.toPresentationAction.embed(.dismiss))
         }
       }
-      .cancellable(id: id)
+      ._cancellable(navigationID: _id)
+      ._cancellable(id: OnFirstAppearID(), navigationID: .init())
     } else {
       presentEffects = .none
     }
@@ -318,11 +326,65 @@ public struct _PresentationReducer<
     )
   }
 
-  private func id(for state: Destination.State) -> NavigationID {
-    self.navigationID
-      .appending(path: self.toPresentationState)
-      .appending(component: state)
+  private func navigationID(for state: Destination.State) -> NavigationID {
+    var currentID = self.navigationID
+    currentID.path.append(
+      AnyID(
+        base: state,
+        keyPath: self.toPresentationState
+      )
+    )
+    return currentID
   }
 }
 
 private struct DismissID: Hashable {}
+private struct OnFirstAppearID: Hashable {}
+
+public struct _Unit: Hashable {
+  @inlinable
+  public init() {}
+}
+
+@_unsafeInheritExecutor
+internal func _withTaskCancellation<T: Sendable>(
+  id: AnyHashable = _Unit(),
+  navigationID: NavigationID,
+  cancelInFlight: Bool = false,
+  operation: @Sendable @escaping () async throws -> T
+) async rethrows -> T {
+  try await withDependencies { $0.navigationID = navigationID } operation: {
+    try await withTaskCancellation(id: id, cancelInFlight: cancelInFlight, operation: operation)
+  }
+}
+extension Task where Success == Never, Failure == Never {
+  internal static func _cancel(
+    id: AnyHashable = _Unit(),
+    navigationID: NavigationID
+  ) {
+    withDependencies { $0.navigationID = navigationID } operation: {
+      Task.cancel(id: id)
+    }
+  }
+}
+extension EffectPublisher {
+  @usableFromInline
+  internal func _cancellable(
+    id: AnyHashable = _Unit(),
+    navigationID: NavigationID,
+    cancelInFlight: Bool = false
+  ) -> Self {
+    withDependencies { $0.navigationID = navigationID } operation: {
+      self.cancellable(id: id, cancelInFlight: cancelInFlight)
+    }
+  }
+  @usableFromInline
+  internal static func _cancel(
+    id: AnyHashable = _Unit(),
+    navigationID: NavigationID
+  ) -> Self {
+    withDependencies { $0.navigationID = navigationID } operation: {
+      .cancel(id: id)
+    }
+  }
+}

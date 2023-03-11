@@ -15,75 +15,67 @@ private enum NavigationIDKey: DependencyKey {
 
 @usableFromInline
 struct NavigationID: Hashable, Identifiable, Sendable {
-  fileprivate var path: [AnyHashableSendable] = []
+  var path: [AnyID] = []
+
+  var prefixes: [NavigationID] {
+    (0...self.path.count).map { index in
+      NavigationID(path: Array(self.path.dropFirst(index)))
+    }
+  }
+
+  @usableFromInline
+  func appending(_ element: AnyID) -> Self {
+    .init(path: self.path + [element])
+  }
+
+  @usableFromInline
+  var id: Self { self }
+}
+
+@usableFromInline
+struct AnyID: Hashable, Identifiable, @unchecked Sendable {
+  private let keyPath: AnyKeyPath?
+  private let identifier: AnyHashableSendable?
+  private let tag: UInt32?
+
+  @usableFromInline
+  init<Base>(
+    base: Base,
+    keyPath: AnyKeyPath?
+  ) {
+    self.keyPath = keyPath
+    self.tag = EnumMetadata(Base.self)?.tag(of: base)
+    if let id = _identifiableID(base) ?? EnumMetadata.project(base).flatMap(_identifiableID) {
+      self.identifier = AnyHashableSendable(id)
+    } else {
+      self.identifier = nil
+    }
+  }
 
   @usableFromInline
   var id: Self { self }
 
   @usableFromInline
-  func appending<Component>(component: Component) -> Self {
-    self.appending(id: AnyID(component))
+  static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.keyPath == rhs.keyPath
+      && lhs.identifier == rhs.identifier
+      && lhs.tag == rhs.tag
   }
 
   @usableFromInline
-  func appending(id: AnyID) -> Self {
-    var navigationID = self
-    navigationID.path.append(AnyHashableSendable(id))
-    return navigationID
-  }
-
-  @usableFromInline
-  func appending(path: AnyKeyPath) -> Self {
-    var navigationID = self
-    navigationID.path.append(AnyHashableSendable(path))
-    return navigationID
-  }
-}
-
-extension NavigationID: Sequence {
-  public func makeIterator() -> AnyIterator<NavigationID> {
-    var id: NavigationID? = self
-    return AnyIterator {
-      guard var navigationID = id else { return nil }
-      defer {
-        if navigationID.path.isEmpty {
-          id = nil
-        } else {
-          navigationID.path.removeLast()
-          id = navigationID
-        }
-      }
-      return navigationID
-    }
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(self.keyPath)
+    hasher.combine(self.identifier)
+    hasher.combine(self.tag)
   }
 }
 
 @usableFromInline
-struct AnyID: Hashable, Identifiable, Sendable {
-  private var objectIdentifier: ObjectIdentifier
-  private var tag: UInt32?
-  private var identifier: AnyHashableSendable?
-
+struct AnyHashableSendable: Hashable, @unchecked Sendable {
   @usableFromInline
-  init<Base>(_ base: Base) {
-    func id<T: Identifiable>(_ identifiable: T) -> AnyHashableSendable {
-      AnyHashableSendable(identifiable.id)
-    }
-
-    self.objectIdentifier = ObjectIdentifier(Base.self)
-    self.tag = EnumMetadata(Base.self)?.tag(of: base)
-    if let id = _id(base) ?? EnumMetadata.project(base).flatMap(_id) {
-      self.identifier = AnyHashableSendable(id)
-    }
-  }
-
-  @usableFromInline
-  var id: Self { self }
-}
-
-private struct AnyHashableSendable: Hashable, @unchecked Sendable {
   let base: AnyHashable
 
+  @usableFromInline
   init<Base: Hashable & Sendable>(_ base: Base) {
     self.base = base
   }
