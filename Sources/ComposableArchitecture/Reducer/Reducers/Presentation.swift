@@ -38,8 +38,7 @@ public struct PresentationState<State> {
   }
 
   var id: AnyID? {
-    // TODO: fix
-    self.wrappedValue.map { .init(base: $0, keyPath: nil) }
+    self.wrappedValue.map { AnyID(base: $0, keyPath: nil) }
   }
 }
 
