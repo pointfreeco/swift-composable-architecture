@@ -13,9 +13,16 @@ private enum NavigationIDKey: DependencyKey {
   static let testValue = NavigationID()
 }
 
-@usableFromInline
-struct NavigationID: Hashable, Identifiable, Sendable {
-  var path: [AnyID] = []
+public struct NavigationID: Hashable, Identifiable, Sendable {
+  var path: [AnyID]
+
+  init(path: [AnyID]) {
+    self.path = path
+  }
+
+  public init() {
+    self.path = []
+  }
 
   var prefixes: [NavigationID] {
     (0...self.path.count).map { index in
@@ -28,12 +35,10 @@ struct NavigationID: Hashable, Identifiable, Sendable {
     .init(path: self.path + [element])
   }
 
-  @usableFromInline
-  var id: Self { self }
+  public var id: Self { self }
 }
 
-@usableFromInline
-struct AnyID: Hashable, Identifiable, @unchecked Sendable {
+public struct AnyID: Hashable, Identifiable, @unchecked Sendable {
   private let keyPath: AnyKeyPath?
   private let identifier: AnyHashableSendable?
   private let tag: UInt32?
@@ -52,18 +57,15 @@ struct AnyID: Hashable, Identifiable, @unchecked Sendable {
     }
   }
 
-  @usableFromInline
-  var id: Self { self }
+  public var id: Self { self }
 
-  @usableFromInline
-  static func == (lhs: Self, rhs: Self) -> Bool {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.keyPath == rhs.keyPath
       && lhs.identifier == rhs.identifier
       && lhs.tag == rhs.tag
   }
 
-  @usableFromInline
-  func hash(into hasher: inout Hasher) {
+  public func hash(into hasher: inout Hasher) {
     hasher.combine(self.keyPath)
     hasher.combine(self.identifier)
     hasher.combine(self.tag)

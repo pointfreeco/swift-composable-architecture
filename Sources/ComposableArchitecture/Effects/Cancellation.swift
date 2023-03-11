@@ -252,36 +252,37 @@ extension EffectPublisher {
     }
   }
 #else
-  public func withTaskCancellation<T: Sendable>(
-    id: AnyHashable,
-    cancelInFlight: Bool = false,
-    operation: @Sendable @escaping () async throws -> T
-  ) async rethrows -> T {
-    @Dependency(\.navigationID) var navigationID
-    let id = _CancelToken(id: id, navigationID: navigationID)
-    let (cancellable, task) = _cancellablesLock.sync { () -> (AnyCancellable, Task<T, Error>) in
-      if cancelInFlight {
-        _cancellationCancellables[id]?.forEach { $0.cancel() }
-      }
-      let task = Task { try await operation() }
-      let cancellable = AnyCancellable { task.cancel() }
-      _cancellationCancellables[id, default: []].insert(cancellable)
-      return (cancellable, task)
-    }
-    defer {
-      _cancellablesLock.sync {
-        _cancellationCancellables[id]?.remove(cancellable)
-        if _cancellationCancellables[id]?.isEmpty == .some(true) {
-          _cancellationCancellables[id] = nil
-        }
-      }
-    }
-    do {
-      return try await task.cancellableValue
-    } catch {
-      return try Result<T, Error>.failure(error)._rethrowGet()
-    }
-  }
+// TODO: finish
+//  public func withTaskCancellation<T: Sendable>(
+//    id: AnyHashable,
+//    cancelInFlight: Bool = false,
+//    operation: @Sendable @escaping () async throws -> T
+//  ) async rethrows -> T {
+//    @Dependency(\.navigationID) var navigationID
+//    let id = _CancelToken(id: id, navigationID: navigationID)
+//    let (cancellable, task) = _cancellablesLock.sync { () -> (AnyCancellable, Task<T, Error>) in
+//      if cancelInFlight {
+//        _cancellationCancellables[id]?.forEach { $0.cancel() }
+//      }
+//      let task = Task { try await operation() }
+//      let cancellable = AnyCancellable { task.cancel() }
+//      _cancellationCancellables[id, default: []].insert(cancellable)
+//      return (cancellable, task)
+//    }
+//    defer {
+//      _cancellablesLock.sync {
+//        _cancellationCancellables[id]?.remove(cancellable)
+//        if _cancellationCancellables[id]?.isEmpty == .some(true) {
+//          _cancellationCancellables[id] = nil
+//        }
+//      }
+//    }
+//    do {
+//      return try await task.cancellableValue
+//    } catch {
+//      return try Result<T, Error>.failure(error)._rethrowGet()
+//    }
+//  }
 #endif
 
 #if swift(>=5.7)
@@ -349,6 +350,11 @@ extension Task where Success == Never, Failure == Never {
 @_spi(Internals) public struct _CancelID: Hashable {
   let id: AnyHashable
   let navigationID: NavigationID
+
+  public init(id: AnyHashable, navigationID: NavigationID) {
+    self.id = id
+    self.navigationID = navigationID
+  }
 }
 
 @_spi(Internals) public var _cancellationCancellables: [_CancelID: Set<AnyCancellable>] = [:]
