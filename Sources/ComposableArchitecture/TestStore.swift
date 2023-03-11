@@ -887,6 +887,8 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   }
 
   func completed() {
+    Task.cancel(id: OnFirstAppearID())
+
     if !self.reducer.receivedActions.isEmpty {
       var actions = ""
       customDump(self.reducer.receivedActions.map(\.action), to: &actions)

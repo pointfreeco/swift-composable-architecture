@@ -1802,15 +1802,6 @@ import XCTest
         reducer: Parent()
       )
 
-      // NB: Ideally the "dismiss" effect would be automatically torn down by the TestStore.
-      XCTExpectFailure {
-        $0.compactDescription.contains(
-          """
-          An effect returned for this action is still running. It must complete before the end of \
-          the test. …
-          """)
-      }
-
       await store.send(.presentChild) {
         $0.child = Child.State()
       }
@@ -2115,9 +2106,6 @@ import XCTest
         reducer: Parent()
       )
 
-      XCTTODO("""
-        This fails because dismissal effects are not automatically cancelled by the test store.
-        """)
       await store.send(.presentChild) {
         $0.child = Child.State()
       }

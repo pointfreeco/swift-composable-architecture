@@ -1,4 +1,5 @@
 @_spi(Reflection) import CasePaths
+import Combine
 
 /// A property wrapper for state that can be presented.
 ///
@@ -226,8 +227,7 @@ public struct _PresentationReducer<
     case let (.some(destinationState), .some(.presented(destinationAction))):
       let _id = self.navigationID(for: destinationState)
       destinationEffects = self.destination
-        .dependency(\.dismiss, DismissEffect {
-          await Task.megaYield() // TODO: remove
+        .dependency(\.dismiss, DismissEffect { @MainActor in
           Task._cancel(id: DismissID(), navigationID: _id)
         })
         .dependency(\.navigationID, navigationID(for: destinationState))
@@ -295,24 +295,15 @@ public struct _PresentationReducer<
       let presentationState = state[keyPath: self.toPresentationState].wrappedValue,
       !isEphemeral(presentationState)
     {
-      //let id = self.id(for: presentationState)
       let _id = self.navigationID(for: presentationState)
       state[keyPath: self.toPresentationState].isPresented = true
-      presentEffects = .run { send in
-        do {
-          try await withDependencies {
-            $0.navigationID = _id
-          } operation: {
-            try await _withTaskCancellation(id: DismissID(), navigationID: _id) {
-              try await Task.never()
-            }
-          }
-        } catch is CancellationError {
-          await send(self.toPresentationAction.embed(.dismiss))
-        }
-      }
-      ._cancellable(navigationID: _id)
-      ._cancellable(id: OnFirstAppearID(), navigationID: .init())
+      presentEffects = Empty(completeImmediately: false)
+        .eraseToEffect()
+        ._cancellable(id: DismissID(), navigationID: _id)
+        .append(Just(self.toPresentationAction.embed(.dismiss)))
+        .eraseToEffect()
+        ._cancellable(navigationID: _id)
+        ._cancellable(id: OnFirstAppearID(), navigationID: .init())
     } else {
       presentEffects = .none
     }
@@ -338,7 +329,7 @@ public struct _PresentationReducer<
 }
 
 private struct DismissID: Hashable {}
-private struct OnFirstAppearID: Hashable {}
+@_spi(Internals) public struct OnFirstAppearID: Hashable {}
 
 public struct _Unit: Hashable {
   @inlinable
