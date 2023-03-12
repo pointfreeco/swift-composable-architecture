@@ -225,20 +225,20 @@ public struct _PresentationReducer<
     // TODO: Should we runtime warn if `base` changes the destination during dismissal, instead?
 
     case let (.some(destinationState), .some(.presented(destinationAction))):
-      let _id = self.navigationID(for: destinationState)
+      let destinationNavigationID = self.navigationID(for: destinationState)
       destinationEffects = self.destination
         .dependency(\.dismiss, DismissEffect { @MainActor in
-          Task._cancel(id: DismissID(), navigationID: _id)
+          Task._cancel(id: DismissID(), navigationID: destinationNavigationID)
         })
         .dependency(\.navigationID, navigationID(for: destinationState))
         .reduce(
           into: &state[keyPath: self.toPresentationState].wrappedValue!, action: destinationAction
         )
         .map { self.toPresentationAction.embed(.presented($0)) }
-        ._cancellable(navigationID: _id)
+        ._cancellable(navigationID: destinationNavigationID)
       baseEffects = self.base.reduce(into: &state, action: action)
       if isEphemeral(destinationState),
-        _id
+        destinationNavigationID
           == state[keyPath: self.toPresentationState].wrappedValue.map(self.navigationID(for:))
       {
         state[keyPath: self.toPresentationState].wrappedValue = nil
@@ -295,14 +295,14 @@ public struct _PresentationReducer<
       let presentationState = state[keyPath: self.toPresentationState].wrappedValue,
       !isEphemeral(presentationState)
     {
-      let _id = self.navigationID(for: presentationState)
+      let presentationDestinationID = self.navigationID(for: presentationState)
       state[keyPath: self.toPresentationState].isPresented = true
       presentEffects = Empty(completeImmediately: false)
         .eraseToEffect()
-        ._cancellable(id: DismissID(), navigationID: _id)
+        ._cancellable(id: DismissID(), navigationID: presentationDestinationID)
         .append(Just(self.toPresentationAction.embed(.dismiss)))
         .eraseToEffect()
-        ._cancellable(navigationID: _id)
+        ._cancellable(navigationID: presentationDestinationID)
         ._cancellable(id: OnFirstAppearID(), navigationID: .init())
     } else {
       presentEffects = .none
