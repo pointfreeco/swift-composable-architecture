@@ -231,7 +231,7 @@ struct PresentationTestCaseView: View {
     let store = Store(
       initialState: PresentationTestCase.State(),
       reducer: PresentationTestCase()
-        //._printChanges()
+        ._printChanges()
     )
     self.store = store
     self._viewStore = StateObject(
@@ -364,7 +364,6 @@ private struct ChildView: View {
         self.dismiss()
       }
     }
-    .debug()
   }
 }
 
@@ -460,7 +459,6 @@ private struct NavigationLinkDemoView: View {
             viewStore.send(.nonDeadbeefIdentifiedNavigationLinkButtonTapped)
           }
         }
-        .debug()
       }
     }
   }
