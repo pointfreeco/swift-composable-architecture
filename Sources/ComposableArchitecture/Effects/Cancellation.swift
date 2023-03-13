@@ -352,9 +352,14 @@ extension Task where Success == Never, Failure == Never {
   let id: AnyHashable
   let navigationID: NavigationID
 
-  public init(id: AnyHashable, navigationID: NavigationID) {
+  init(id: AnyHashable, navigationID: NavigationID) {
     self.id = id
     self.navigationID = navigationID
+  }
+
+  public init(_id id: AnyHashable) {
+    self.id = id
+    self.navigationID = NavigationID()
   }
 }
 
