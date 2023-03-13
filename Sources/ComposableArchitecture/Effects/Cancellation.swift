@@ -219,7 +219,6 @@ extension EffectPublisher {
     @Dependency(\.navigationID) var navigationID
     let (cancellable, task) = _cancellablesLock.sync { () -> (AnyCancellable, Task<T, Error>) in
       if cancelInFlight {
-        // TODO: get test coverage on NavigationID and cancelInFlight
         let cancelID = _CancelID(id: id, navigationID: navigationID)
         _cancellationCancellables[cancelID]?.forEach { $0.cancel() }
       }

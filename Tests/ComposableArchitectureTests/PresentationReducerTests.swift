@@ -2110,5 +2110,92 @@ import XCTest
         $0.child = Child.State()
       }
     }
+
+    func testCancelInFlightEffects() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable {
+          var count = 0
+        }
+        enum Action: Equatable {
+          case response(Int)
+          case tap
+        }
+        @Dependency(\.mainQueue) var mainQueue
+        struct CancelID: Hashable {}
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          switch action {
+          case let .response(value):
+            state.count = value
+            return .none
+          case .tap:
+            return .run { send in
+              try await mainQueue.sleep(for: .seconds(1))
+              await send(.response(42))
+            }
+            .cancellable(id: CancelID(), cancelInFlight: true)
+          }
+        }
+      }
+
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          @PresentationState var child: Child.State?
+          var count = 0
+        }
+        enum Action: Equatable {
+          case child(PresentationAction<Child.Action>)
+          case presentChild
+          case response(Int)
+        }
+        @Dependency(\.mainQueue) var mainQueue
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .child:
+              return .none
+            case .presentChild:
+              state.child = Child.State()
+              return .run { send in
+                try await self.mainQueue.sleep(for: .seconds(2))
+                await send(.response(42))
+              }
+              .cancellable(id: Child.CancelID())
+            case let .response(value):
+              state.count = value
+              return .none
+            }
+          }
+          .ifLet(\.$child, action: /Action.child) {
+            Child()
+          }
+        }
+      }
+
+      let mainQueue = DispatchQueue.test
+      let store = TestStore(
+        initialState: Parent.State(),
+        reducer: Parent()
+      ) {
+        $0.mainQueue = mainQueue.eraseToAnyScheduler()
+      }
+
+      await store.send(.presentChild) {
+        $0.child = Child.State()
+      }
+      await store.send(.child(.presented(.tap)))
+      await mainQueue.advance(by: .milliseconds(500))
+      await store.send(.child(.presented(.tap)))
+      await mainQueue.advance(by: .milliseconds(1_000))
+      await store.receive(.child(.presented(.response(42)))) {
+        $0.child?.count = 42
+      }
+      await mainQueue.advance(by: .milliseconds(500))
+      await store.receive(.response(42)) {
+        $0.count = 42
+      }
+      await store.send(.child(.dismiss)) {
+        $0.child = nil
+      }
+    }
   }
 #endif
