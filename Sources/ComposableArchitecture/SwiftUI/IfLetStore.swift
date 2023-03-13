@@ -41,7 +41,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
         return ViewBuilder.buildEither(
           first: ifContent(
             store
-              .filter { state, _ in state == nil ? !BindingLocal.isActive : true }
+              .filterSend { state, _ in state == nil ? !BindingLocal.isActive : true }
               .scope {
                 state = $0 ?? state
                 return state
@@ -70,7 +70,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
       if var state = viewStore.state {
         return ifContent(
           store
-            .filter { state, _ in state == nil ? !BindingLocal.isActive : true }
+            .filterSend { state, _ in state == nil ? !BindingLocal.isActive : true }
             .scope {
               state = $0 ?? state
               return state

@@ -26,7 +26,7 @@ public struct NavigationLinkStore<
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where State == DestinationState, Action == DestinationAction {
-    let filteredStore = store.filter { state, _ in state.wrappedValue != nil }
+    let filteredStore = store.filterSend { state, _ in state.wrappedValue != nil }
     self.store = filteredStore
     self.viewStore = ViewStore(filteredStore.scope(state: { $0.wrappedValue != nil }))
     self.toDestinationState = { $0 }
@@ -47,7 +47,7 @@ public struct NavigationLinkStore<
     self.store = store
     self.viewStore = ViewStore(
       store
-        .filter { state, _ in state.wrappedValue != nil }
+        .filterSend { state, _ in state.wrappedValue != nil }
         .scope(state: { $0.wrappedValue.flatMap(toDestinationState) != nil })
     )
     self.toDestinationState = toDestinationState
@@ -64,7 +64,7 @@ public struct NavigationLinkStore<
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where State == DestinationState, Action == DestinationAction, State: Identifiable {
-    let filteredStore = store.filter { state, _ in state.wrappedValue != nil }
+    let filteredStore = store.filterSend { state, _ in state.wrappedValue != nil }
     self.store = filteredStore
     self.viewStore = ViewStore(filteredStore.scope(state: { $0.wrappedValue?.id == id }))
     self.toDestinationState = { $0 }
@@ -86,7 +86,7 @@ public struct NavigationLinkStore<
     self.store = store
     self.viewStore = ViewStore(
       store
-        .filter { state, _ in state.wrappedValue != nil }
+        .filterSend { state, _ in state.wrappedValue != nil }
         .scope(state: { $0.wrappedValue.flatMap(toDestinationState)?.id == id })
     )
     self.toDestinationState = toDestinationState

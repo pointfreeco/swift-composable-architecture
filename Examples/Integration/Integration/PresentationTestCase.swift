@@ -1,5 +1,6 @@
 @preconcurrency import ComposableArchitecture
 import SwiftUI
+import SwiftUINavigation
 
 private struct PresentationTestCase: ReducerProtocol {
   struct State: Equatable {
@@ -8,6 +9,7 @@ private struct PresentationTestCase: ReducerProtocol {
   }
   enum Action: Equatable, Sendable {
     case alertButtonTapped
+    case customAlertButtonTapped
     case destination(PresentationAction<Destination.Action>)
     case dialogButtonTapped
     case fullScreenCoverButtonTapped
@@ -20,6 +22,7 @@ private struct PresentationTestCase: ReducerProtocol {
   struct Destination: ReducerProtocol {
     enum State: Equatable {
       case alert(AlertState<AlertAction>)
+      case customAlert
       case dialog(ConfirmationDialogState<DialogAction>)
       case fullScreenCover(ChildFeature.State)
       case navigationDestination(ChildFeature.State)
@@ -29,6 +32,7 @@ private struct PresentationTestCase: ReducerProtocol {
     }
     enum Action: Equatable {
       case alert(AlertAction)
+      case customAlert(AlertAction)
       case dialog(DialogAction)
       case fullScreenCover(ChildFeature.Action)
       case navigationDestination(ChildFeature.Action)
@@ -95,6 +99,9 @@ private struct PresentationTestCase: ReducerProtocol {
             }
           }
         )
+        return .none
+      case .customAlertButtonTapped:
+        state.destination = .customAlert
         return .none
       case .destination(.presented(.fullScreenCover(.parentSendDismissActionButtonTapped))),
         .destination(.presented(.sheet(.parentSendDismissActionButtonTapped))),
@@ -225,7 +232,8 @@ private struct ChildFeature: ReducerProtocol {
 
 struct PresentationTestCaseView: View {
   private let store: StoreOf<PresentationTestCase>
-  @StateObject private var viewStore: ViewStore<String, PresentationTestCase.Action>
+  @StateObject private var viewStore: ViewStore<PresentationTestCase.State, PresentationTestCase.Action>
+  @State var alertMessage = ""
 
   init() {
     let store = Store(
@@ -235,14 +243,15 @@ struct PresentationTestCaseView: View {
     )
     self.store = store
     self._viewStore = StateObject(
-      wrappedValue: ViewStore(store, observe: { $0.message })
+      wrappedValue: ViewStore(store, observe: { $0 })
     )
   }
 
   var body: some View {
     Form {
       Section {
-        Text(self.viewStore.state)
+        Text(self.viewStore.message)
+        Text(self.alertMessage)
       }
 
       Button("Open alert") {
@@ -254,6 +263,21 @@ struct PresentationTestCaseView: View {
         state: /PresentationTestCase.Destination.State.alert,
         action: PresentationTestCase.Destination.Action.alert
       )
+
+      Button("Open custom alert") {
+        self.viewStore.send(.customAlertButtonTapped)
+      }
+      .alert(
+        "Custom alert!",
+        isPresented: viewStore
+          .binding(get: \.destination, send: PresentationTestCase.Action.destination(.dismiss))
+          .case(/PresentationTestCase.Destination.State.customAlert)
+          .isPresent()
+      ) {
+        TextField("Message", text: self.$alertMessage)
+        Button("Submit") {}
+        Button("Cancel", role: .cancel) {}
+      }
 
       Button("Open dialog") {
         self.viewStore.send(.dialogButtonTapped)
