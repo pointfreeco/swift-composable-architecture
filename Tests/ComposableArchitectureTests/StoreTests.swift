@@ -684,7 +684,7 @@ final class StoreTests: XCTestCase {
   }
 
   #if swift(>=5.7)
-    func testChidlParentEffectCancellation() async throws {
+    func testChildParentEffectCancellation() async throws {
       struct Child: ReducerProtocol {
         struct State: Equatable {}
         enum Action: Equatable {
