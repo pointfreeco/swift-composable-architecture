@@ -711,7 +711,7 @@ final class StoreTests: XCTestCase {
           case delay
         }
         @Dependency(\.mainQueue) var mainQueue
-        var body: Reduce<State, Action> {
+        var body: some ReducerProtocol<State, Action> {
           Reduce { state, action in
             switch action {
             case .child(.didFinish):
