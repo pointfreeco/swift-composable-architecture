@@ -64,4 +64,63 @@ extension Store {
         }
       }
   }
+
+  /// Calls closure when a store's optional state is `nil`, and does so
+  /// for as long as the cancellable lives.
+  ///
+  /// This method is useful for handling navigation in UIKit, but is to be used in cases when
+  /// the state is of an optional enum (i.e. Destination enum) with multiple cases. The ifLet/else
+  /// functionality is useful for when a view controller cannot push more than one view
+  /// controller onto the navigation stack. If a view controller has the ability to push more than
+  /// one view controller onto the stack, the ifLet/else use-case breaks down because the else
+  /// case may pop a view controller from the stack that was just pushed within another subscriber
+  /// closure.
+  ///
+  /// The follow demonstrates how to utilize this functionality:
+  ///
+  /// ```swift
+  /// class ParentViewController: UIViewController {
+  ///   let store: Store<ParentState, ParentAction>
+  ///   var cancellables: Set<AnyCancellable> = []
+  ///   ...
+  ///   func viewDidLoad() {
+  ///     ...
+  ///     self.store
+  ///       .scope(
+  ///         state: { (/Parent.Destination.State.childState).extract(from: $0.destination) },
+  ///         action: { .destination(.presented(.childAction($0))) }
+  ///        )
+  ///       .ifLet(
+  ///         then: { [weak self] childStore in
+  ///           self?.navigationController?.pushViewController(
+  ///             ChildViewController(store: childStore),
+  ///             animated: true
+  ///           )
+  ///         })
+  ///       .store(in: &self.cancellables)
+  ///
+  ///     self.store
+  ///       .scope(
+  ///         state: \.destination,
+  ///         action: { .destination($0) }
+  ///        )
+  ///       .ifNil(
+  ///         then: { [weak self] childStore in
+  ///           guard let self = self else { return }
+  ///           self.navigationController?.popToViewController(self, animated: true)
+  ///         })
+  ///       .store(in: &self.cancellables)
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - then: A function that is called when the store's optional state is `nil`
+  /// - Returns: A cancellable that maintains a subscription to updates whenever the store's state
+  ///   changes to `nil` , so that the caller can react to these changes.
+  public func ifNil<Wrapped>(
+    then: @escaping () -> Void = {}
+  ) -> Cancellable where State == Wrapped? {
+    return self.ifLet(then: { _ in }, else: then)
+  }
 }
