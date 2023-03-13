@@ -47,10 +47,8 @@ extension EffectPublisher {
             defer { _cancellablesLock.unlock() }
 
             if cancelInFlight {
-              for navigationID in navigationID.prefixes {
-                let cancelID = _CancelID(id: id, navigationID: navigationID)
-                _cancellationCancellables[cancelID]?.forEach { $0.cancel() }
-              }
+              let cancelID = _CancelID(id: id, navigationID: navigationID)
+              _cancellationCancellables[cancelID]?.forEach { $0.cancel() }
             }
 
             let cancellationSubject = PassthroughSubject<Void, Never>()
@@ -220,11 +218,10 @@ extension EffectPublisher {
   ) async rethrows -> T {
     @Dependency(\.navigationID) var navigationID
     let (cancellable, task) = _cancellablesLock.sync { () -> (AnyCancellable, Task<T, Error>) in
-      for navigationID in navigationID.prefixes {
+      if cancelInFlight {
+        // TODO: get test coverage on NavigationID and cancelInFlight
         let cancelID = _CancelID(id: id, navigationID: navigationID)
-        if cancelInFlight {
-          _cancellationCancellables[cancelID]?.forEach { $0.cancel() }
-        }
+        _cancellationCancellables[cancelID]?.forEach { $0.cancel() }
       }
       let task = Task { try await operation() }
       let cancellable = AnyCancellable { task.cancel() }
@@ -235,9 +232,9 @@ extension EffectPublisher {
       return (cancellable, task)
     }
     defer {
-      for navigationID in navigationID.prefixes {
-        let cancelID = _CancelID(id: id, navigationID: navigationID)
-        _cancellablesLock.sync {
+      _cancellablesLock.sync {
+        for navigationID in navigationID.prefixes {
+          let cancelID = _CancelID(id: id, navigationID: navigationID)
           _cancellationCancellables[cancelID]?.remove(cancellable)
           if _cancellationCancellables[cancelID]?.isEmpty == .some(true) {
             _cancellationCancellables[cancelID] = nil
@@ -378,3 +375,20 @@ extension _ErrorMechanism {
 }
 
 extension Result: _ErrorMechanism {}
+
+
+
+/*
+
+ [1, 2, 3], TimerID
+ [1]
+
+ Trie<AnyID, [AnyHashable: Set<AnyCancellable>]>
+ .insert(navigationID, [:])
+ .modify(navigationID, default: [:]) {
+   $0
+ }
+
+ trie[navigationID, default: [:]][id, default: []].insert(cancellable)
+ trie[navigationID] = nil
+ */

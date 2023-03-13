@@ -122,16 +122,16 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
   ) -> EffectTask<Parent.Action> {
     let childEffects = self.reduceChild(into: &state, action: action)
 
-    let childElementBefore = self.toChildState.extract(from: state).map {
-      AnyID(base: $0, keyPath: nil)
+    let childIDBefore = self.toChildState.extract(from: state).map {
+      NavigationID.Element(root: state, value: $0, casePath: self.toChildState)
     }
     let parentEffects = self.parent.reduce(into: &state, action: action)
-    let childElementAfter = self.toChildState.extract(from: state).map {
-      AnyID(base: $0, keyPath: nil)
+    let childIDAfter = self.toChildState.extract(from: state).map {
+      NavigationID.Element(root: state, value: $0, casePath: self.toChildState)
     }
 
     let childCancelEffects: EffectTask<Parent.Action>
-    if let childElement = childElementBefore, childElement != childElementAfter {
+    if let childElement = childIDBefore, childElement != childIDAfter {
       childCancelEffects = .cancel(id: childElement)
     } else {
       childCancelEffects = .none
@@ -186,12 +186,14 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
       return .none
     }
     defer { state = self.toChildState.embed(childState) }
-    let id = AnyID(base: childState, keyPath: nil)
-    let childNavigationID = self.navigationID.appending(id)
+    let childID = NavigationID.Element(root: state, value: childState, casePath: self.toChildState)
+    let newNavigationID = self.navigationID.appending(childID)
     return self.child
-      .dependency(\.navigationID, childNavigationID)
+      .dependency(\.navigationID, newNavigationID)
       .reduce(into: &childState, action: childAction)
       .map { self.toChildAction.embed($0) }
-      .cancellable(id: id)
+      .cancellable(id: childID)
+
+    // TODO: check if ID changed and do cancellation
   }
 }

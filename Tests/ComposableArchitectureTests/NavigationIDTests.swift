@@ -23,19 +23,6 @@ class NavigationIDTests: XCTestCase {
   }
 }
 
-/*
- Trie<AnyID, [AnyHashable: Set<AnyCancellable>]>
- .insert(navigationID, [:])
- .modify(navigationID, default: [:]) {
-   $0
- }
-
- trie[navigationID, default: [:]][id, default: []].insert(cancellable)
- trie.removeAll(navigationID)
-
-
- */
-
 
 class TrieNode<Key: Hashable, Value> {
   var key: Key

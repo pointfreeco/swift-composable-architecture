@@ -38,8 +38,8 @@ public struct PresentationState<State> {
     _modify { yield &self }
   }
 
-  var id: AnyID? {
-    self.wrappedValue.map { AnyID(base: $0, keyPath: nil) }
+  var id: StableID? {
+    self.wrappedValue.map(StableID.init(base:))
   }
 }
 
@@ -319,9 +319,9 @@ public struct _PresentationReducer<
   private func navigationID(for state: Destination.State) -> NavigationID {
     var currentID = self.navigationID
     currentID.path.append(
-      AnyID(
+      NavigationID.Element(
         base: state,
-        keyPath: self.toPresentationState
+        keyPath: self.toPresentationState.appending(path: \.wrappedValue)
       )
     )
     return currentID
