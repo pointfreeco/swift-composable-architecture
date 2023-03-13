@@ -29,163 +29,163 @@ final class PresentationTests: XCTestCase {
 
   func testSheet_ParentDismiss() {
     self.app.buttons["Open sheet"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
 
     self.app.buttons["Parent dismiss"].tap()
-    XCTAssertEqual(false, self.app.staticTexts["Count: 0"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, false)
   }
 
   func testSheet_EffectsCancelOnDismiss() async throws {
     self.app.buttons["Open sheet"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
 
     self.app.buttons["Start effect"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 1"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
 
     self.app.buttons["Parent dismiss"].tap()
-    XCTAssertEqual(false, self.app.staticTexts["Count: 1"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, false)
 
     self.app.buttons["Open sheet"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
     try await Task.sleep(for: .seconds(3))
-    XCTAssertEqual(false, self.app.staticTexts["Count: 999"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 999"].exists, false)
   }
 
   func testSheet_IdentityChange() async throws {
     self.app.buttons["Open sheet"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
 
     self.app.buttons["Start effect"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 1"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
 
     self.app.buttons["Reset identity"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 1"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
 
     try await Task.sleep(for: .seconds(3))
-    XCTAssertEqual(false, self.app.staticTexts["Count: 999"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 999"].exists, false)
   }
 
   func testPopover_ChildDismiss() {
     self.app.buttons["Open popover"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
 
     self.app.buttons["Increment"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 1"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
     self.app.buttons["Increment"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 2"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 2"].exists, true)
 
     self.app.buttons["Child dismiss"].tap()
-    XCTAssertEqual(false, self.app.staticTexts["Count: 2"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 2"].exists, false)
   }
 
   func testPopover_ParentDismiss() {
     self.app.buttons["Open popover"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
 
     self.app.buttons["Parent dismiss"].tap()
-    XCTAssertEqual(false, self.app.staticTexts["Count: 0"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, false)
   }
 
   func testPopover_EffectsCancelOnDismiss() async throws {
     self.app.buttons["Open popover"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
 
     self.app.buttons["Start effect"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 1"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
 
     self.app.buttons["Parent dismiss"].tap()
-    XCTAssertEqual(false, self.app.staticTexts["Count: 1"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, false)
 
     self.app.buttons["Open popover"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
     try await Task.sleep(for: .seconds(3))
-    XCTAssertEqual(false, self.app.staticTexts["Count: 999"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 999"].exists, false)
   }
 
   func testFullScreenCover_ChildDismiss() {
     self.app.buttons["Open full screen cover"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
 
     self.app.buttons["Increment"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 1"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
     self.app.buttons["Increment"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 2"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 2"].exists, true)
 
     self.app.buttons["Child dismiss"].tap()
-    XCTAssertEqual(false, self.app.staticTexts["Count: 2"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 2"].exists, false)
   }
 
   func testFullScreenCover_ParentDismiss() {
     self.app.buttons["Open full screen cover"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
 
     self.app.buttons["Parent dismiss"].tap()
-    XCTAssertEqual(false, self.app.staticTexts["Count: 0"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, false)
   }
 
   func testFullScreenCover_EffectsCancelOnDismiss() async throws {
     self.app.buttons["Open full screen cover"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
 
     self.app.buttons["Start effect"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 1"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
 
     self.app.buttons["Parent dismiss"].tap()
-    XCTAssertEqual(false, self.app.staticTexts["Count: 1"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, false)
 
     self.app.buttons["Open full screen cover"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
     try await Task.sleep(for: .seconds(3))
-    XCTAssertEqual(false, self.app.staticTexts["Count: 999"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 999"].exists, false)
   }
 
   func testAlertActionDoesNotSendExtraDismiss() {
     self.app.buttons["Open alert"].tap()
     self.app.buttons["OK"].tap()
     _ = self.app.staticTexts["Dismiss action sent"].waitForExistence(timeout: 1)
-    XCTAssertEqual(false, self.app.staticTexts["Dismiss action sent"].exists)
+    XCTAssertEqual(self.app.staticTexts["Dismiss action sent"].exists, false)
   }
 
   func testAlertCancel() {
     self.app.buttons["Open alert"].tap()
     self.app.buttons["Cancel"].tap()
     _ = self.app.staticTexts["Dismiss action sent"].waitForExistence(timeout: 1)
-    XCTAssertEqual(true, self.app.staticTexts["Dismiss action sent"].exists)
+    XCTAssertEqual(self.app.staticTexts["Dismiss action sent"].exists, true)
   }
 
   func testAlertThenDialog() {
     self.app.buttons["Open alert"].tap()
     self.app.buttons["Show dialog"].tap()
     _ = self.app.staticTexts["Hello!"].waitForExistence(timeout: 1)
-    XCTAssertEqual(true, self.app.staticTexts["Hello!"].exists)
+    XCTAssertEqual(self.app.staticTexts["Hello!"].exists, true)
   }
 
   func testAlertThenSheet() {
     self.app.buttons["Open alert"].tap()
     self.app.buttons["Show sheet"].tap()
     _ = self.app.staticTexts["Count: 0"].waitForExistence(timeout: 1)
-    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
   }
 
   func testDialogActionDoesNotSendExtraDismiss() {
     self.app.buttons["Open dialog"].tap()
     self.app.buttons["OK"].tap()
     _ = self.app.staticTexts["Dismiss action sent"].waitForExistence(timeout: 1)
-    XCTAssertEqual(false, self.app.staticTexts["Dismiss action sent"].exists)
+    XCTAssertEqual(self.app.staticTexts["Dismiss action sent"].exists, false)
   }
 
   func testDialogCancel() {
     self.app.buttons["Open dialog"].tap()
     self.app.buttons["Cancel"].tap()
     _ = self.app.staticTexts["Dismiss action sent"].waitForExistence(timeout: 1)
-    XCTAssertEqual(true, self.app.staticTexts["Dismiss action sent"].exists)
+    XCTAssertEqual(self.app.staticTexts["Dismiss action sent"].exists, true)
   }
 
   func testShowDialogThenAlert() {
     self.app.buttons["Open dialog"].tap()
     self.app.buttons["Show alert"].tap()
     _ = self.app.staticTexts["Hello!"].waitForExistence(timeout: 1)
-    XCTAssertEqual(true, self.app.staticTexts["Hello!"].exists)
+    XCTAssertEqual(self.app.staticTexts["Hello!"].exists, true)
   }
 
   func testSheetExtraBindingActionsIgnoredOnDismiss() {
@@ -268,39 +268,39 @@ final class PresentationTests: XCTestCase {
 
   func testNavigationDestination_ChildDismiss() {
     self.app.buttons["Open navigation destination"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
 
     self.app.buttons["Increment"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 1"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
     self.app.buttons["Increment"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 2"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 2"].exists, true)
 
     self.app.buttons["Child dismiss"].tap()
-    XCTAssertEqual(false, self.app.staticTexts["Count: 2"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 2"].exists, false)
   }
 
   func testNavigationDestination_ParentDismiss() {
     self.app.buttons["Open navigation destination"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
 
     self.app.buttons["Parent dismiss"].tap()
-    XCTAssertEqual(false, self.app.staticTexts["Count: 0"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, false)
   }
 
   func testNavigationDestination_EffectsCancelOnDismiss() async throws {
     self.app.buttons["Open navigation destination"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
 
     self.app.buttons["Start effect"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 1"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
 
     self.app.buttons["Parent dismiss"].tap()
-    XCTAssertEqual(false, self.app.staticTexts["Count: 1"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, false)
 
     self.app.buttons["Open navigation destination"].tap()
-    XCTAssertEqual(true, self.app.staticTexts["Count: 0"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
     try await Task.sleep(for: .seconds(3))
-    XCTAssertEqual(false, self.app.staticTexts["Count: 999"].exists)
+    XCTAssertEqual(self.app.staticTexts["Count: 999"].exists, false)
   }
 
   func testCustomAlert() async throws {
