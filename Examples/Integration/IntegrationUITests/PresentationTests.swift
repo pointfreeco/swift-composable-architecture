@@ -302,4 +302,13 @@ final class PresentationTests: XCTestCase {
     try await Task.sleep(for: .seconds(3))
     XCTAssertEqual(false, self.app.staticTexts["Count: 999"].exists)
   }
+
+  func testCustomAlert() async throws {
+    self.app.buttons["Open custom alert"].tap()
+    XCTAssertEqual(self.app.staticTexts["Custom alert!"].exists, true)
+    self.app.typeText("Hello!")
+    self.app.buttons["Submit"].tap()
+    XCTAssertEqual(self.app.staticTexts["Hello!"].exists, true)
+    XCTAssertEqual(self.app.staticTexts["Dismiss action sent"].exists, true)
+  }
 }
