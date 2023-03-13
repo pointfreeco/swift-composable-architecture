@@ -15,14 +15,10 @@ private enum NavigationIDKey: DependencyKey {
 
 @usableFromInline
 struct NavigationID: Hashable, Identifiable, Sendable {
-  var path: [Element]
+  fileprivate var path: [Element]
 
-  init(path: [Element]) {
+  init(path: [Element] = []) {
     self.path = path
-  }
-
-  public init() {
-    self.path = []
   }
 
   var prefixes: [NavigationID] {
@@ -46,7 +42,7 @@ extension NavigationID {
     private let tag: UInt32?
 
     enum Kind: Hashable, @unchecked Sendable {
-      case casePath(root: Any.Type, value: Any.Type) // TODO: do tag
+      case casePath(root: Any.Type, value: Any.Type)
       case keyPath(AnyKeyPath)
 
       public static func == (lhs: Self, rhs: Self) -> Bool {

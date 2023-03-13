@@ -317,14 +317,12 @@ public struct _PresentationReducer<
   }
 
   private func navigationID(for state: Destination.State) -> NavigationID {
-    var currentID = self.navigationID
-    currentID.path.append(
+    self.navigationID.appending(
       NavigationID.Element(
         base: state,
         keyPath: self.toPresentationState.appending(path: \.wrappedValue)
       )
     )
-    return currentID
   }
 }
 
