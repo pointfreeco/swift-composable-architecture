@@ -248,37 +248,42 @@ extension EffectPublisher {
     }
   }
 #else
-// TODO: finish
-//  public func withTaskCancellation<T: Sendable>(
-//    id: AnyHashable,
-//    cancelInFlight: Bool = false,
-//    operation: @Sendable @escaping () async throws -> T
-//  ) async rethrows -> T {
-//    @Dependency(\.navigationID) var navigationID
-//    let id = _CancelToken(id: id, navigationID: navigationID)
-//    let (cancellable, task) = _cancellablesLock.sync { () -> (AnyCancellable, Task<T, Error>) in
-//      if cancelInFlight {
-//        _cancellationCancellables[id]?.forEach { $0.cancel() }
-//      }
-//      let task = Task { try await operation() }
-//      let cancellable = AnyCancellable { task.cancel() }
-//      _cancellationCancellables[id, default: []].insert(cancellable)
-//      return (cancellable, task)
-//    }
-//    defer {
-//      _cancellablesLock.sync {
-//        _cancellationCancellables[id]?.remove(cancellable)
-//        if _cancellationCancellables[id]?.isEmpty == .some(true) {
-//          _cancellationCancellables[id] = nil
-//        }
-//      }
-//    }
-//    do {
-//      return try await task.cancellableValue
-//    } catch {
-//      return try Result<T, Error>.failure(error)._rethrowGet()
-//    }
-//  }
+  public func withTaskCancellation<T: Sendable>(
+    id: AnyHashable,
+    cancelInFlight: Bool = false,
+    operation: @Sendable @escaping () async throws -> T
+  ) async rethrows -> T {
+    @Dependency(\.navigationID) var navigationID
+    let (cancellable, task) = _cancellablesLock.sync { () -> (AnyCancellable, Task<T, Error>) in
+      if cancelInFlight {
+        let cancelID = _CancelID(id: id, navigationID: navigationID)
+        _cancellationCancellables[cancelID]?.forEach { $0.cancel() }
+      }
+      let task = Task { try await operation() }
+      let cancellable = AnyCancellable { task.cancel() }
+      for navigationID in navigationID.prefixes {
+        let cancelID = _CancelID(id: id, navigationID: navigationID)
+        _cancellationCancellables[cancelID, default: []].insert(cancellable)
+      }
+      return (cancellable, task)
+    }
+    defer {
+      _cancellablesLock.sync {
+        for navigationID in navigationID.prefixes {
+          let cancelID = _CancelID(id: id, navigationID: navigationID)
+          _cancellationCancellables[cancelID]?.remove(cancellable)
+          if _cancellationCancellables[cancelID]?.isEmpty == .some(true) {
+            _cancellationCancellables[cancelID] = nil
+          }
+        }
+      }
+    }
+    do {
+      return try await task.cancellableValue
+    } catch {
+      return try Result<T, Error>.failure(error)._rethrowGet()
+    }
+  }
 #endif
 
 #if swift(>=5.7)
