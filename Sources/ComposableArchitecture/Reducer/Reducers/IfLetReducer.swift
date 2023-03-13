@@ -95,7 +95,7 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
   let line: UInt
 
   @usableFromInline
-  @Dependency(\.navigationID) var navigationID
+  @Dependency(\.navigationIDPath) var navigationIDPath
 
   @usableFromInline
   init(
@@ -123,16 +123,16 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
     let childEffects = self.reduceChild(into: &state, action: action)
 
     let childIDBefore = state[keyPath: self.toChildState].map {
-      NavigationID.Element(base: $0, keyPath: self.toChildState)
+      NavigationID(base: $0, keyPath: self.toChildState)
     }
     let parentEffects = self.parent.reduce(into: &state, action: action)
     let childIDAfter = state[keyPath: self.toChildState].map {
-      NavigationID.Element(base: $0, keyPath: self.toChildState)
+      NavigationID(base: $0, keyPath: self.toChildState)
     }
 
     let childCancelEffects: EffectTask<Parent.Action>
     if let childID = childIDBefore, childID != childIDAfter {
-      childCancelEffects = ._cancel(id: childID, navigationID: self.navigationID)
+      childCancelEffects = ._cancel(id: childID, navigationID: self.navigationIDPath)
     } else {
       childCancelEffects = .none
     }
@@ -187,12 +187,12 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
         state[keyPath: toChildState] = nil
       }
     }
-    let id = NavigationID.Element(base: state[keyPath: self.toChildState]!, keyPath: self.toChildState)
-    let childNavigationID = self.navigationID.appending(id)
+    let id = NavigationID(base: state[keyPath: self.toChildState]!, keyPath: self.toChildState)
+    let childNavigationID = self.navigationIDPath.appending(id)
     return self.child
-      .dependency(\.navigationID, childNavigationID)
+      .dependency(\.navigationIDPath, childNavigationID)
       .reduce(into: &state[keyPath: self.toChildState]!, action: childAction)
       .map { self.toChildAction.embed($0) }
-      ._cancellable(id: id, navigationID: self.navigationID)
+      ._cancellable(id: id, navigationIDPath: self.navigationIDPath)
   }
 }

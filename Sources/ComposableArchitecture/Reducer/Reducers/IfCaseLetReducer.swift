@@ -95,7 +95,7 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
   let line: UInt
 
   @usableFromInline
-  @Dependency(\.navigationID) var navigationID
+  @Dependency(\.navigationIDPath) var navigationIDPath
 
   @usableFromInline
   init(
@@ -123,11 +123,11 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
     let childEffects = self.reduceChild(into: &state, action: action)
 
     let childIDBefore = self.toChildState.extract(from: state).map {
-      NavigationID.Element(root: state, value: $0, casePath: self.toChildState)
+      NavigationID(root: state, value: $0, casePath: self.toChildState)
     }
     let parentEffects = self.parent.reduce(into: &state, action: action)
     let childIDAfter = self.toChildState.extract(from: state).map {
-      NavigationID.Element(root: state, value: $0, casePath: self.toChildState)
+      NavigationID(root: state, value: $0, casePath: self.toChildState)
     }
 
     let childCancelEffects: EffectTask<Parent.Action>
@@ -186,10 +186,10 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
       return .none
     }
     defer { state = self.toChildState.embed(childState) }
-    let childID = NavigationID.Element(root: state, value: childState, casePath: self.toChildState)
-    let newNavigationID = self.navigationID.appending(childID)
+    let childID = NavigationID(root: state, value: childState, casePath: self.toChildState)
+    let newNavigationID = self.navigationIDPath.appending(childID)
     return self.child
-      .dependency(\.navigationID, newNavigationID)
+      .dependency(\.navigationIDPath, newNavigationID)
       .reduce(into: &childState, action: childAction)
       .map { self.toChildAction.embed($0) }
       .cancellable(id: childID)

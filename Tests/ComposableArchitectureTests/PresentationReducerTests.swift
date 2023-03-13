@@ -1765,48 +1765,6 @@ import XCTest
       }
     }
 
-    func testPresentation_NonExhaustiveInPresentationEffect() async {
-      struct Child: ReducerProtocol {
-        struct State: Equatable {}
-        enum Action: Equatable {}
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
-        }
-      }
-
-      struct Parent: ReducerProtocol {
-        struct State: Equatable {
-          @PresentationState var child: Child.State?
-        }
-        enum Action: Equatable {
-          case child(PresentationAction<Child.Action>)
-          case presentChild
-        }
-        var body: some ReducerProtocol<State, Action> {
-          Reduce { state, action in
-            switch action {
-            case .child:
-              return .none
-            case .presentChild:
-              state.child = Child.State()
-              return .none
-            }
-          }
-          .ifLet(\.$child, action: /Action.child) {
-            Child()
-          }
-        }
-      }
-
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      )
-
-      await store.send(.presentChild) {
-        $0.child = Child.State()
-      }
-    }
-
     func testPresentation_parentNilsOutChildWithLongLivingEffect() async {
       struct Child: ReducerProtocol {
         struct State: Equatable {
@@ -2108,6 +2066,76 @@ import XCTest
 
       await store.send(.presentChild) {
         $0.child = Child.State()
+      }
+    }
+
+    func testPresentation_leaveChildPresented_WithLongLivingEffect() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable {}
+        enum Action: Equatable { case tap }
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          .run { _ in try await Task.never() }
+        }
+      }
+
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          @PresentationState var child: Child.State?
+        }
+        enum Action: Equatable {
+          case child(PresentationAction<Child.Action>)
+          case presentChild
+        }
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .child:
+              return .none
+            case .presentChild:
+              state.child = Child.State()
+              return .none
+            }
+          }
+          .ifLet(\.$child, action: /Action.child) {
+            Child()
+          }
+        }
+      }
+
+      let store = TestStore(
+        initialState: Parent.State(),
+        reducer: Parent()
+      )
+
+      await store.send(.presentChild) {
+        $0.child = Child.State()
+      }
+      let line = #line
+      await store.send(.child(.presented(.tap)))
+
+      XCTExpectFailure {
+        $0.sourceCodeContext.location?.lineNumber == line + 1
+        && $0.compactDescription == """
+          An effect returned for this action is still running. It must complete before the end \
+          of the test. …
+
+          To fix, inspect any effects the reducer returns for this action and ensure that all of \
+          them complete by the end of the test. There are a few reasons why an effect may not \
+          have completed:
+
+          • If using async/await in your effect, it may need a little bit of time to properly \
+          finish. To fix you can simply perform "await store.finish()" at the end of your test.
+
+          • If an effect uses a clock/scheduler (via "receive(on:)", "delay", "debounce", etc.), \
+          make sure that you wait enough time for it to perform the effect. If you are using a \
+          test clock/scheduler, advance it so that the effects may complete, or consider using an \
+          immediate clock/scheduler to immediately perform the effect instead.
+
+          • If you are returning a long-living effect (timers, notifications, subjects, etc.), \
+          then make sure those effects are torn down by marking the effect ".cancellable" and \
+          returning a corresponding cancellation effect ("Effect.cancel") from another action, or, \
+          if your effect is driven by a Combine subject, send it a completion.
+          """
       }
     }
 

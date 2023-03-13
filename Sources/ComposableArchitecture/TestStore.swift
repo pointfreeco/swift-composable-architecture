@@ -932,6 +932,13 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
       )
     }
   }
+
+  private func withExhaustivity(_ exhaustivity: Exhaustivity, operation: () -> Void) {
+    let previous = self.exhaustivity
+    self.exhaustivity = exhaustivity
+    operation()
+    self.exhaustivity = previous
+  }
 }
 
 extension TestStore where ScopedState: Equatable {
@@ -1292,13 +1299,6 @@ extension TestStore where ScopedState: Equatable {
         line: line
       )
     }
-  }
-
-  private func withExhaustivity(_ exhaustivity: Exhaustivity, operation: () -> Void) {
-    let previous = self.exhaustivity
-    self.exhaustivity = exhaustivity
-    operation()
-    self.exhaustivity = previous
   }
 }
 

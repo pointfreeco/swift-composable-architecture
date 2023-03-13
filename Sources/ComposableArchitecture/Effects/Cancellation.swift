@@ -29,7 +29,7 @@ extension EffectPublisher {
   ///     canceled before starting this new one.
   /// - Returns: A new effect that is capable of being canceled by an identifier.
   public func cancellable(id: AnyHashable, cancelInFlight: Bool = false) -> Self {
-    @Dependency(\.navigationID) var navigationID
+    @Dependency(\.navigationIDPath) var navigationIDPath
     switch self.operation {
     case .none:
       return .none
@@ -47,7 +47,7 @@ extension EffectPublisher {
             defer { _cancellablesLock.unlock() }
 
             if cancelInFlight {
-              let cancelID = _CancelID(id: id, navigationID: navigationID)
+              let cancelID = _CancelID(id: id, navigationIDPath: navigationIDPath)
               _cancellationCancellables[cancelID]?.forEach { $0.cancel() }
             }
 
@@ -58,8 +58,8 @@ extension EffectPublisher {
               _cancellablesLock.sync {
                 cancellationSubject.send(())
                 cancellationSubject.send(completion: .finished)
-                for navigationID in navigationID.prefixes {
-                  let cancelID = _CancelID(id: id, navigationID: navigationID)
+                for navigationIDPath in navigationIDPath.prefixes {
+                  let cancelID = _CancelID(id: id, navigationIDPath: navigationIDPath)
                   _cancellationCancellables[cancelID]?.remove(cancellationCancellable)
                   if _cancellationCancellables[cancelID]?.isEmpty == .some(true) {
                     _cancellationCancellables[cancelID] = nil
@@ -72,8 +72,8 @@ extension EffectPublisher {
               .handleEvents(
                 receiveSubscription: { _ in
                   _cancellablesLock.sync {
-                    for navigationID in navigationID.prefixes {
-                      let cancelID = _CancelID(id: id, navigationID: navigationID)
+                    for navigationIDPath in navigationIDPath.prefixes {
+                      let cancelID = _CancelID(id: id, navigationIDPath: navigationIDPath)
                       _cancellationCancellables[cancelID, default: []].insert(
                         cancellationCancellable
                       )
@@ -122,8 +122,8 @@ extension EffectPublisher {
   /// - Returns: A new effect that will cancel any currently in-flight effect with the given
   ///   identifier.
   public static func cancel(id: AnyHashable) -> Self {
-    @Dependency(\.navigationID) var navigationID
-    let cancelID = _CancelID(id: id, navigationID: navigationID)
+    @Dependency(\.navigationIDPath) var navigationIDPath
+    let cancelID = _CancelID(id: id, navigationIDPath: navigationIDPath)
     return .fireAndForget {
       _cancellablesLock.sync {
         _cancellationCancellables[cancelID]?.forEach {
@@ -216,24 +216,24 @@ extension EffectPublisher {
     cancelInFlight: Bool = false,
     operation: @Sendable @escaping () async throws -> T
   ) async rethrows -> T {
-    @Dependency(\.navigationID) var navigationID
+    @Dependency(\.navigationIDPath) var navigationIDPath
     let (cancellable, task) = _cancellablesLock.sync { () -> (AnyCancellable, Task<T, Error>) in
       if cancelInFlight {
-        let cancelID = _CancelID(id: id, navigationID: navigationID)
+        let cancelID = _CancelID(id: id, navigationIDPath: navigationIDPath)
         _cancellationCancellables[cancelID]?.forEach { $0.cancel() }
       }
       let task = Task { try await operation() }
       let cancellable = AnyCancellable { task.cancel() }
-      for navigationID in navigationID.prefixes {
-        let cancelID = _CancelID(id: id, navigationID: navigationID)
+      for navigationIDPath in navigationIDPath.prefixes {
+        let cancelID = _CancelID(id: id, navigationIDPath: navigationIDPath)
         _cancellationCancellables[cancelID, default: []].insert(cancellable)
       }
       return (cancellable, task)
     }
     defer {
       _cancellablesLock.sync {
-        for navigationID in navigationID.prefixes {
-          let cancelID = _CancelID(id: id, navigationID: navigationID)
+        for navigationIDPath in navigationIDPath.prefixes {
+          let cancelID = _CancelID(id: id, navigationIDPath: navigationIDPath)
           _cancellationCancellables[cancelID]?.remove(cancellable)
           if _cancellationCancellables[cancelID]?.isEmpty == .some(true) {
             _cancellationCancellables[cancelID] = nil
@@ -253,24 +253,24 @@ extension EffectPublisher {
     cancelInFlight: Bool = false,
     operation: @Sendable @escaping () async throws -> T
   ) async rethrows -> T {
-    @Dependency(\.navigationID) var navigationID
+    @Dependency(\.navigationIDPath) var navigationIDPath
     let (cancellable, task) = _cancellablesLock.sync { () -> (AnyCancellable, Task<T, Error>) in
       if cancelInFlight {
-        let cancelID = _CancelID(id: id, navigationID: navigationID)
+        let cancelID = _CancelID(id: id, navigationIDPath: navigationIDPath)
         _cancellationCancellables[cancelID]?.forEach { $0.cancel() }
       }
       let task = Task { try await operation() }
       let cancellable = AnyCancellable { task.cancel() }
-      for navigationID in navigationID.prefixes {
-        let cancelID = _CancelID(id: id, navigationID: navigationID)
+      for navigationIDPath in navigationIDPath.prefixes {
+        let cancelID = _CancelID(id: id, navigationIDPath: navigationIDPath)
         _cancellationCancellables[cancelID, default: []].insert(cancellable)
       }
       return (cancellable, task)
     }
     defer {
       _cancellablesLock.sync {
-        for navigationID in navigationID.prefixes {
-          let cancelID = _CancelID(id: id, navigationID: navigationID)
+        for navigationIDPath in navigationIDPath.prefixes {
+          let cancelID = _CancelID(id: id, navigationIDPath: navigationIDPath)
           _cancellationCancellables[cancelID]?.remove(cancellable)
           if _cancellationCancellables[cancelID]?.isEmpty == .some(true) {
             _cancellationCancellables[cancelID] = nil
@@ -330,8 +330,8 @@ extension Task where Success == Never, Failure == Never {
   ///
   /// - Parameter id: An identifier.
   public static func cancel<ID: Hashable & Sendable>(id: ID) {
-    @Dependency(\.navigationID) var navigationID
-    let cancelID = _CancelID(id: id, navigationID: navigationID)
+    @Dependency(\.navigationIDPath) var navigationIDPath
+    let cancelID = _CancelID(id: id, navigationIDPath: navigationIDPath)
     return _cancellablesLock.sync {
       _cancellationCancellables[cancelID]?.forEach { $0.cancel() }
     }
@@ -350,16 +350,16 @@ extension Task where Success == Never, Failure == Never {
 
 @_spi(Internals) public struct _CancelID: Hashable {
   let id: AnyHashable
-  let navigationID: NavigationID
+  let navigationIDPath: NavigationIDPath
 
-  init(id: AnyHashable, navigationID: NavigationID) {
+  init(id: AnyHashable, navigationIDPath: NavigationIDPath) {
     self.id = id
-    self.navigationID = navigationID
+    self.navigationIDPath = navigationIDPath
   }
 
   public init(_id id: AnyHashable) {
     self.id = id
-    self.navigationID = NavigationID()
+    self.navigationIDPath = NavigationIDPath()
   }
 }
 

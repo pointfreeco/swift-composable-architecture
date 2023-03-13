@@ -201,7 +201,7 @@ public struct _PresentationReducer<
   let fileID: StaticString
   let line: UInt
 
-  @Dependency(\.navigationID) var navigationID
+  @Dependency(\.navigationIDPath) var navigationIDPath
 
   public func reduce(
     into state: inout Base.State, action: Base.Action
@@ -217,29 +217,29 @@ public struct _PresentationReducer<
     case let (.some(destinationState), .some(.dismiss)):
       destinationEffects = .none
       baseEffects = self.base.reduce(into: &state, action: action)
-      if self.navigationID(for: destinationState)
-        == state[keyPath: self.toPresentationState].wrappedValue.map(self.navigationID(for:))
+      if self.navigationIDPath(for: destinationState)
+        == state[keyPath: self.toPresentationState].wrappedValue.map(self.navigationIDPath(for:))
       {
         state[keyPath: self.toPresentationState].wrappedValue = nil
       }
     // TODO: Should we runtime warn if `base` changes the destination during dismissal, instead?
 
     case let (.some(destinationState), .some(.presented(destinationAction))):
-      let destinationNavigationID = self.navigationID(for: destinationState)
+      let destinationNavigationIDPath = self.navigationIDPath(for: destinationState)
       destinationEffects = self.destination
         .dependency(\.dismiss, DismissEffect { @MainActor in
-          Task._cancel(id: DismissID(), navigationID: destinationNavigationID)
+          Task._cancel(id: DismissID(), navigationID: destinationNavigationIDPath)
         })
-        .dependency(\.navigationID, navigationID(for: destinationState))
+        .dependency(\.navigationIDPath, destinationNavigationIDPath)
         .reduce(
           into: &state[keyPath: self.toPresentationState].wrappedValue!, action: destinationAction
         )
         .map { self.toPresentationAction.embed(.presented($0)) }
-        ._cancellable(navigationID: destinationNavigationID)
+        ._cancellable(id: _PresentedID(), navigationIDPath: destinationNavigationIDPath)
       baseEffects = self.base.reduce(into: &state, action: action)
       if isEphemeral(destinationState),
-        destinationNavigationID
-          == state[keyPath: self.toPresentationState].wrappedValue.map(self.navigationID(for:))
+        destinationNavigationIDPath
+          == state[keyPath: self.toPresentationState].wrappedValue.map(self.navigationIDPath(for:))
       {
         state[keyPath: self.toPresentationState].wrappedValue = nil
       }
@@ -277,15 +277,15 @@ public struct _PresentationReducer<
     }
 
     let presentationIdentityChanged =
-    initialPresentationState.wrappedValue.map(self.navigationID(for:))
-    != state[keyPath: self.toPresentationState].wrappedValue.map(self.navigationID(for:))
+    initialPresentationState.wrappedValue.map(self.navigationIDPath(for:))
+    != state[keyPath: self.toPresentationState].wrappedValue.map(self.navigationIDPath(for:))
 
     let dismissEffects: EffectTask<Base.Action>
     if presentationIdentityChanged,
       let presentationState = initialPresentationState.wrappedValue,
       !isEphemeral(presentationState)
     {
-      dismissEffects = ._cancel(navigationID: self.navigationID(for: presentationState))
+      dismissEffects = ._cancel(navigationID: self.navigationIDPath(for: presentationState))
     } else {
       dismissEffects = .none
     }
@@ -295,15 +295,15 @@ public struct _PresentationReducer<
       let presentationState = state[keyPath: self.toPresentationState].wrappedValue,
       !isEphemeral(presentationState)
     {
-      let presentationDestinationID = self.navigationID(for: presentationState)
+      let presentationDestinationID = self.navigationIDPath(for: presentationState)
       state[keyPath: self.toPresentationState].isPresented = true
       presentEffects = Empty(completeImmediately: false)
         .eraseToEffect()
-        ._cancellable(id: DismissID(), navigationID: presentationDestinationID)
+        ._cancellable(id: DismissID(), navigationIDPath: presentationDestinationID)
         .append(Just(self.toPresentationAction.embed(.dismiss)))
         .eraseToEffect()
-        ._cancellable(navigationID: presentationDestinationID)
-        ._cancellable(id: OnFirstAppearID(), navigationID: .init())
+        ._cancellable(id: _PresentedID(), navigationIDPath: presentationDestinationID)
+        ._cancellable(id: OnFirstAppearID(), navigationIDPath: .init())
     } else {
       presentEffects = .none
     }
@@ -316,9 +316,9 @@ public struct _PresentationReducer<
     )
   }
 
-  private func navigationID(for state: Destination.State) -> NavigationID {
-    self.navigationID.appending(
-      NavigationID.Element(
+  private func navigationIDPath(for state: Destination.State) -> NavigationIDPath {
+    self.navigationIDPath.appending(
+      NavigationID(
         base: state,
         keyPath: self.toPresentationState.appending(path: \.wrappedValue)
       )
@@ -327,30 +327,19 @@ public struct _PresentationReducer<
 }
 
 private struct DismissID: Hashable {}
-@_spi(Internals) public struct OnFirstAppearID: Hashable {}
+struct OnFirstAppearID: Hashable {}
 
-public struct _Unit: Hashable {
+public struct _PresentedID: Hashable {
   @inlinable
   public init() {}
 }
 
-@_unsafeInheritExecutor
-internal func _withTaskCancellation<T: Sendable>(
-  id: AnyHashable = _Unit(),
-  navigationID: NavigationID,
-  cancelInFlight: Bool = false,
-  operation: @Sendable @escaping () async throws -> T
-) async rethrows -> T {
-  try await withDependencies { $0.navigationID = navigationID } operation: {
-    try await withTaskCancellation(id: id, cancelInFlight: cancelInFlight, operation: operation)
-  }
-}
 extension Task where Success == Never, Failure == Never {
   internal static func _cancel(
-    id: AnyHashable = _Unit(),
-    navigationID: NavigationID
+    id: AnyHashable,
+    navigationID: NavigationIDPath
   ) {
-    withDependencies { $0.navigationID = navigationID } operation: {
+    withDependencies { $0.navigationIDPath = navigationID } operation: {
       Task.cancel(id: id)
     }
   }
@@ -358,21 +347,51 @@ extension Task where Success == Never, Failure == Never {
 extension EffectPublisher {
   @usableFromInline
   internal func _cancellable(
-    id: AnyHashable = _Unit(),
-    navigationID: NavigationID,
+    id: AnyHashable,
+    navigationIDPath: NavigationIDPath,
     cancelInFlight: Bool = false
   ) -> Self {
-    withDependencies { $0.navigationID = navigationID } operation: {
+    withDependencies { $0.navigationIDPath = navigationIDPath } operation: {
       self.cancellable(id: id, cancelInFlight: cancelInFlight)
     }
   }
   @usableFromInline
   internal static func _cancel(
-    id: AnyHashable = _Unit(),
-    navigationID: NavigationID
+    id: AnyHashable = _PresentedID(),
+    navigationID: NavigationIDPath
   ) -> Self {
-    withDependencies { $0.navigationID = navigationID } operation: {
+    withDependencies { $0.navigationIDPath = navigationID } operation: {
       .cancel(id: id)
     }
+  }
+}
+
+struct StableID: Hashable, Identifiable, Sendable {
+  private let identifier: AnyHashableSendable?
+  private let tag: UInt32?
+  private let type: Any.Type
+
+  init<Base>(base: Base) {
+    self.tag = EnumMetadata(Base.self)?.tag(of: base)
+    if let id = _identifiableID(base) ?? EnumMetadata.project(base).flatMap(_identifiableID) {
+      self.identifier = AnyHashableSendable(id)
+    } else {
+      self.identifier = nil
+    }
+    self.type = Base.self
+  }
+
+  var id: Self { self }
+
+  static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.identifier == rhs.identifier
+    && lhs.tag == rhs.tag
+    && lhs.type == rhs.type
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(self.identifier)
+    hasher.combine(self.tag)
+    hasher.combine(ObjectIdentifier(self.type))
   }
 }
