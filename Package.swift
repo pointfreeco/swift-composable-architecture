@@ -26,7 +26,7 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "0.2.0"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "0.7.0"),
     .package(url: "https://github.com/pointfreeco/swiftui-navigation", from: "0.7.0"),
-    .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "0.8.3"),
+    .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "0.8.4"),
   ],
   targets: [
     .target(
