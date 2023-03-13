@@ -328,7 +328,7 @@ public final class Store<State, Action> {
     self.scope(state: toChildState, action: { $0 })
   }
 
-  func filter(
+  func filterSend(
     _ isSent: @escaping (State, Action) -> Bool
   ) -> Store<State, Action> {
     self.threadCheck(status: .scope)
