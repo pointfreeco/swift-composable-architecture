@@ -72,9 +72,10 @@ private struct PresentationSheetModifier<
       )
     ) { _ in
       IfLetStore(
-        self.store,
-        state: returningLastNonNilValue(self.toDestinationState),
-        action: self.fromDestinationAction,
+        self.store.scope(
+          state: returningLastNonNilValue { $0.wrappedValue.flatMap(self.toDestinationState) },
+          action: { .presented(self.fromDestinationAction($0)) }
+        ),
         then: self.sheetContent
       )
     }
