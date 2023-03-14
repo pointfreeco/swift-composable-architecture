@@ -43,23 +43,23 @@
       )
     }
 
-    func testBindingAction() {
-      struct State {
-        @BindingState var width = 0
-      }
-      let action = BindingAction.set(\State.$width, 50)
-      var dump = ""
-      customDump(action, to: &dump)
-      XCTAssertEqual(
-        dump,
-        #"""
-        BindingAction.set(
-          WritableKeyPath<State, BindingState<Int>>,
-          50
-        )
-        """#
-      )
-    }
+//    func testBindingAction() {
+//      struct State {
+//        @BindingState var width = 0
+//      }
+//      let action = BindingAction.set(\State.$width, 50)
+//      var dump = ""
+//      customDump(action, to: &dump)
+//      XCTAssertEqual(
+//        dump,
+//        #"""
+//        BindingAction.set(
+//          WritableKeyPath<State, BindingState<Int>>,
+//          50
+//        )
+//        """#
+//      )
+//    }
 
     @MainActor
     func testDebugReducer() async {

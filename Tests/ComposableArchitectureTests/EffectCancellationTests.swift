@@ -116,7 +116,7 @@ final class EffectCancellationTests: XCTestCase {
       .sink(receiveValue: { _ in })
       .store(in: &self.cancellables)
 
-    XCTAssertNil(_cancellationCancellables[_CancelID(_id: id)])
+    XCTAssertTrue(!_cancellationCancellables.exists(at: _CancelID(_id: id)))
   }
 
   func testCancellablesCleanUp_OnCancel() {
@@ -134,7 +134,7 @@ final class EffectCancellationTests: XCTestCase {
       .sink(receiveValue: { _ in })
       .store(in: &self.cancellables)
 
-    XCTAssertNil(_cancellationCancellables[_CancelID(_id: id)])
+    XCTAssertTrue(!_cancellationCancellables.exists(at: _CancelID(_id: id)))
   }
 
   func testDoubleCancellation() {
@@ -226,8 +226,8 @@ final class EffectCancellationTests: XCTestCase {
     self.wait(for: [expectation], timeout: 999)
 
     for id in ids {
-      XCTAssertNil(
-        _cancellationCancellables[_CancelID(_id: id)],
+      XCTAssertTrue(
+        !_cancellationCancellables.exists(at: _CancelID(_id: id)),
         "cancellationCancellables should not contain id \(id)"
       )
     }
@@ -250,7 +250,7 @@ final class EffectCancellationTests: XCTestCase {
 
     cancellables.removeAll()
 
-    XCTAssertNil(_cancellationCancellables[_CancelID(_id: id)])
+    XCTAssertTrue(!_cancellationCancellables.exists(at: _CancelID(_id: id)))
   }
 
   func testSharedId() {
