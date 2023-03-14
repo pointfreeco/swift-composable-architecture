@@ -1,5 +1,7 @@
 import SwiftUI
 
+// TODO: Can we re-use `PresentationModifier`?
+
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 extension View {
   /// Displays an alert when then store's state becomes non-`nil`, and dismisses it when it becomes
