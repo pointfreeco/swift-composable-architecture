@@ -90,7 +90,7 @@ private struct NewConfirmationDialogModifier<Action>: ViewModifier {
 }
 
 @available(iOS 13, *)
-@available(macOS 12, *)
+@available(macOS, unavailable)
 @available(tvOS 13, *)
 @available(watchOS 6, *)
 private struct OldConfirmationDialogModifier<Action>: ViewModifier {
@@ -98,17 +98,13 @@ private struct OldConfirmationDialogModifier<Action>: ViewModifier {
   let dismiss: Action
 
   func body(content: Content) -> some View {
-    #if !os(macOS)
-      return content.actionSheet(item: viewStore.binding(send: dismiss)) {
-        ActionSheet($0) { action in
-          if let action = action {
-            viewStore.send(action)
-          }
+    content.actionSheet(item: viewStore.binding(send: dismiss)) {
+      ActionSheet($0) { action in
+        if let action = action {
+          viewStore.send(action)
         }
       }
-    #else
-      return EmptyView()
-    #endif
+    }
   }
 }
 
@@ -155,7 +151,7 @@ private struct PresentationConfirmationDialogModifier<State, Action, ButtonActio
         }
       },
       message: {
-        $0.message.map(Text.init) ?? Text("")
+        $0.message.map(Text.init)
       }
     )
   }
