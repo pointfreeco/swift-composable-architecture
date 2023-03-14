@@ -39,7 +39,7 @@ public struct NavigationLinkStore<
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (State) -> DestinationState?,
-    onTap fromDestinationAction: @escaping (DestinationAction) -> Action,
+    action fromDestinationAction: @escaping (DestinationAction) -> Action,
     onTap: @escaping () -> Void,
     @ViewBuilder destination: @escaping (Store<DestinationState, DestinationAction>) -> Destination,
     @ViewBuilder label: () -> Label
