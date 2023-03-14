@@ -95,7 +95,7 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   let line: UInt
 
   @usableFromInline
-  @Dependency(\.navigationID) var navigationID
+  @Dependency(\.navigationIDPath) var navigationIDPath
 
   @usableFromInline
   init(
@@ -122,16 +122,17 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   ) -> Effect<Parent.Action> {
     let childEffects = self.reduceChild(into: &state, action: action)
 
-    let childIDBefore = state[keyPath: self.toChildState].map(AnyID.init)
+    let childIDBefore = state[keyPath: self.toChildState].map {
+      NavigationID(base: $0, keyPath: self.toChildState)
+    }
     let parentEffects = self.parent.reduce(into: &state, action: action)
-    let childIDAfter = state[keyPath: self.toChildState].map(AnyID.init)
+    let childIDAfter = state[keyPath: self.toChildState].map {
+      NavigationID(base: $0, keyPath: self.toChildState)
+    }
 
     let childCancelEffects: EffectTask<Parent.Action>
     if let childID = childIDBefore, childID != childIDAfter {
-      let id = self.navigationID
-        .appending(path: self.toChildState)
-        .appending(id: childID)
-      childCancelEffects = .cancel(id: id)
+      childCancelEffects = ._cancel(id: childID, navigationID: self.navigationIDPath)
     } else {
       childCancelEffects = .none
     }
@@ -181,20 +182,17 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
       )
       return .none
     }
-    let id = self.navigationID
-      .appending(path: self.toChildState)
-      .appending(component: state[keyPath: self.toChildState]!)
-
     defer {
       if Child.State.self is _EphemeralState.Type {
         state[keyPath: toChildState] = nil
       }
     }
-
+    let id = NavigationID(base: state[keyPath: self.toChildState]!, keyPath: self.toChildState)
+    let childNavigationID = self.navigationIDPath.appending(id)
     return self.child
-      .dependency(\.navigationID, id)
+      .dependency(\.navigationIDPath, childNavigationID)
       .reduce(into: &state[keyPath: self.toChildState]!, action: childAction)
       .map { self.toChildAction.embed($0) }
-      .cancellable(id: id)
+      ._cancellable(id: id, navigationIDPath: self.navigationIDPath)
   }
 }

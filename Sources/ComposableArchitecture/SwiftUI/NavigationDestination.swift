@@ -39,32 +39,33 @@ import SwiftUI
     Action,
     DestinationState,
     DestinationAction,
-    CoverContent: View
+    DestinationContent: View
   >: ViewModifier {
     let store: Store<PresentationState<State>, PresentationAction<Action>>
     @StateObject var viewStore: ViewStore<Bool, PresentationAction<Action>>
     let toDestinationState: (State) -> DestinationState?
     let fromDestinationAction: (DestinationAction) -> Action
-    let coverContent: (Store<DestinationState, DestinationAction>) -> CoverContent
+    let destinationContent: (Store<DestinationState, DestinationAction>) -> DestinationContent
 
     init(
       store: Store<PresentationState<State>, PresentationAction<Action>>,
       state toDestinationState: @escaping (State) -> DestinationState?,
       action fromDestinationAction: @escaping (DestinationAction) -> Action,
-      content coverContent: @escaping (Store<DestinationState, DestinationAction>) -> CoverContent
+      content destinationContent:
+        @escaping (Store<DestinationState, DestinationAction>) -> DestinationContent
     ) {
       self.store = store
       self._viewStore = StateObject(
         wrappedValue: ViewStore(
           store
-            .filter { state, _ in state.wrappedValue != nil }
+            .filterSend { state, _ in state.wrappedValue != nil }
             .scope(state: { $0.wrappedValue.flatMap(toDestinationState) != nil }),
           observe: { $0 }
         )
       )
       self.toDestinationState = toDestinationState
       self.fromDestinationAction = fromDestinationAction
-      self.coverContent = coverContent
+      self.destinationContent = destinationContent
     }
 
     func body(content: Content) -> some View {
@@ -77,7 +78,7 @@ import SwiftUI
             state: returningLastNonNilValue { $0.wrappedValue.flatMap(self.toDestinationState) },
             action: { .presented(self.fromDestinationAction($0)) }
           ),
-          then: self.coverContent
+          then: self.destinationContent
         )
       }
     }

@@ -95,7 +95,7 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   let line: UInt
 
   @usableFromInline
-  @Dependency(\.navigationID) var navigationID
+  @Dependency(\.navigationIDPath) var navigationIDPath
 
   @usableFromInline
   init(
@@ -122,14 +122,17 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   ) -> Effect<Parent.Action> {
     let childEffects = self.reduceChild(into: &state, action: action)
 
-    let childIDBefore = self.toChildState.extract(from: state).map(AnyID.init)
+    let childIDBefore = self.toChildState.extract(from: state).map {
+      NavigationID(root: state, value: $0, casePath: self.toChildState)
+    }
     let parentEffects = self.parent.reduce(into: &state, action: action)
-    let childIDAfter = self.toChildState.extract(from: state).map(AnyID.init)
+    let childIDAfter = self.toChildState.extract(from: state).map {
+      NavigationID(root: state, value: $0, casePath: self.toChildState)
+    }
 
     let childCancelEffects: EffectTask<Parent.Action>
-    if let childID = childIDBefore, childID != childIDAfter {
-      let id = self.navigationID.appending(id: childID)
-      childCancelEffects = .cancel(id: id)
+    if let childElement = childIDBefore, childElement != childIDAfter {
+      childCancelEffects = .cancel(id: childElement)
     } else {
       childCancelEffects = .none
     }
@@ -183,12 +186,14 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
       return .none
     }
     defer { state = self.toChildState.embed(childState) }
-    let id = self.navigationID
-      .appending(component: childState)
+    let childID = NavigationID(root: state, value: childState, casePath: self.toChildState)
+    let newNavigationID = self.navigationIDPath.appending(childID)
     return self.child
-      .dependency(\.navigationID, id)
+      .dependency(\.navigationIDPath, newNavigationID)
       .reduce(into: &childState, action: childAction)
       .map { self.toChildAction.embed($0) }
-      .cancellable(id: id)
+      .cancellable(id: childID)
+
+    // TODO: check if ID changed and do cancellation
   }
 }

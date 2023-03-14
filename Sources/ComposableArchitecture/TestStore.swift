@@ -825,6 +825,8 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   }
 
   func completed() {
+    Task.cancel(id: OnFirstAppearID())
+
     if !self.reducer.receivedActions.isEmpty {
       var actions = ""
       customDump(self.reducer.receivedActions.map(\.action), to: &actions)
@@ -867,6 +869,13 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
         line: effect.action.line
       )
     }
+  }
+
+  private func withExhaustivity(_ exhaustivity: Exhaustivity, operation: () -> Void) {
+    let previous = self.exhaustivity
+    self.exhaustivity = exhaustivity
+    operation()
+    self.exhaustivity = previous
   }
 }
 
@@ -1225,13 +1234,6 @@ extension TestStore where ScopedState: Equatable {
         line: line
       )
     }
-  }
-
-  private func withExhaustivity(_ exhaustivity: Exhaustivity, operation: () -> Void) {
-    let previous = self.exhaustivity
-    self.exhaustivity = exhaustivity
-    operation()
-    self.exhaustivity = previous
   }
 }
 

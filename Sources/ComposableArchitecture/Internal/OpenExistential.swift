@@ -14,7 +14,7 @@
 
   // MARK: Identifiable
 
-  func _id(_ value: Any) -> AnyHashable? {
+  func _identifiableID(_ value: Any) -> AnyHashable? {
     func open(_ value: some Identifiable) -> AnyHashable {
       value.id
     }
@@ -52,7 +52,7 @@
 
   // MARK: Identifiable
 
-  func _id(_ value: Any) -> AnyHashable? {
+  func _identifiableID(_ value: Any) -> AnyHashable? {
     func open<T>(_: T.Type) -> AnyHashable? {
       (Witness<T>.self as? AnyIdentifiable.Type)?.id(value)
     }
