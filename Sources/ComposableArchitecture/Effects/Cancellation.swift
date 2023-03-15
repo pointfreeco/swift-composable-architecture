@@ -205,7 +205,9 @@ extension EffectPublisher {
       return (cancellable, task)
     }
     defer {
-      _cancellationCancellables.remove(cancellable, at: id)
+      _cancellablesLock.sync {
+        _cancellationCancellables.remove(cancellable, at: id)
+      }
     }
     do {
       return try await task.cancellableValue
@@ -229,7 +231,9 @@ extension EffectPublisher {
       return (cancellable, task)
     }
     defer {
-      _cancellationCancellables.remove(cancellable, at: id)
+      _cancellablesLock.sync {
+        _cancellationCancellables.remove(cancellable, at: id)
+      }
     }
     do {
       return try await task.cancellableValue
