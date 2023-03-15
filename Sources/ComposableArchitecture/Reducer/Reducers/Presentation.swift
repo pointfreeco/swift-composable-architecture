@@ -331,7 +331,12 @@ struct OnFirstAppearID: Hashable {}
 
 public struct _PresentedID: Hashable {
   @inlinable
-  public init() {}
+  public init() {
+    self.init(internal: ())
+  }
+
+  @usableFromInline
+  init(internal: Void) {}
 }
 
 extension Task where Success == Never, Failure == Never {
