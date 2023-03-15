@@ -45,36 +45,30 @@ extension EffectPublisher {
             _cancellablesLock.lock()
             defer { _cancellablesLock.unlock() }
 
-            let id = _CancelToken(id: id)
             if cancelInFlight {
-              _cancellationCancellables[id]?.forEach { $0.cancel() }
+              _cancellationCancellables.cancel(id: id)
             }
 
             let cancellationSubject = PassthroughSubject<Void, Never>()
 
-            var cancellationCancellable: AnyCancellable!
-            cancellationCancellable = AnyCancellable {
+            var cancellable: AnyCancellable!
+            cancellable = AnyCancellable {
               _cancellablesLock.sync {
                 cancellationSubject.send(())
                 cancellationSubject.send(completion: .finished)
-                _cancellationCancellables[id]?.remove(cancellationCancellable)
-                if _cancellationCancellables[id]?.isEmpty == .some(true) {
-                  _cancellationCancellables[id] = nil
-                }
+                _cancellationCancellables.remove(cancellable, at: id)
               }
             }
 
             return publisher.prefix(untilOutputFrom: cancellationSubject)
               .handleEvents(
                 receiveSubscription: { _ in
-                  _ = _cancellablesLock.sync {
-                    _cancellationCancellables[id, default: []].insert(
-                      cancellationCancellable
-                    )
+                  _cancellablesLock.sync {
+                    _cancellationCancellables.insert(cancellable, at: id)
                   }
                 },
-                receiveCompletion: { _ in cancellationCancellable.cancel() },
-                receiveCancel: cancellationCancellable.cancel
+                receiveCompletion: { _ in cancellable.cancel() },
+                receiveCancel: cancellable.cancel
               )
           }
           .eraseToAnyPublisher()
@@ -113,7 +107,7 @@ extension EffectPublisher {
   public static func cancel(id: AnyHashable) -> Self {
     .fireAndForget {
       _cancellablesLock.sync {
-        _cancellationCancellables[.init(id: id)]?.forEach { $0.cancel() }
+        _cancellationCancellables.cancel(id: id)
       }
     }
   }
@@ -201,22 +195,18 @@ extension EffectPublisher {
     cancelInFlight: Bool = false,
     operation: @Sendable @escaping () async throws -> T
   ) async rethrows -> T {
-    let id = _CancelToken(id: id)
     let (cancellable, task) = _cancellablesLock.sync { () -> (AnyCancellable, Task<T, Error>) in
       if cancelInFlight {
-        _cancellationCancellables[id]?.forEach { $0.cancel() }
+        _cancellationCancellables.cancel(id: id)
       }
       let task = Task { try await operation() }
       let cancellable = AnyCancellable { task.cancel() }
-      _cancellationCancellables[id, default: []].insert(cancellable)
+      _cancellationCancellables.insert(cancellable, at: id)
       return (cancellable, task)
     }
     defer {
       _cancellablesLock.sync {
-        _cancellationCancellables[id]?.remove(cancellable)
-        if _cancellationCancellables[id]?.isEmpty == .some(true) {
-          _cancellationCancellables[id] = nil
-        }
+        _cancellationCancellables.remove(cancellable, at: id)
       }
     }
     do {
@@ -231,22 +221,18 @@ extension EffectPublisher {
     cancelInFlight: Bool = false,
     operation: @Sendable @escaping () async throws -> T
   ) async rethrows -> T {
-    let id = _CancelToken(id: id)
     let (cancellable, task) = _cancellablesLock.sync { () -> (AnyCancellable, Task<T, Error>) in
       if cancelInFlight {
-        _cancellationCancellables[id]?.forEach { $0.cancel() }
+        _cancellationCancellables.cancel(id: id)
       }
       let task = Task { try await operation() }
       let cancellable = AnyCancellable { task.cancel() }
-      _cancellationCancellables[id, default: []].insert(cancellable)
+      _cancellationCancellables.insert(cancellable, at: id)
       return (cancellable, task)
     }
     defer {
       _cancellablesLock.sync {
-        _cancellationCancellables[id]?.remove(cancellable)
-        if _cancellationCancellables[id]?.isEmpty == .some(true) {
-          _cancellationCancellables[id] = nil
-        }
+        _cancellationCancellables.remove(cancellable, at: id)
       }
     }
     do {
@@ -301,7 +287,9 @@ extension Task where Success == Never, Failure == Never {
   ///
   /// - Parameter id: An identifier.
   public static func cancel<ID: Hashable & Sendable>(id: ID) {
-    _cancellablesLock.sync { _cancellationCancellables[.init(id: id)]?.forEach { $0.cancel() } }
+    _cancellablesLock.sync {
+      _cancellationCancellables.cancel(id: id)
+    }
   }
 
   /// Cancel any currently in-flight operation with the given identifier.
@@ -315,7 +303,7 @@ extension Task where Success == Never, Failure == Never {
   }
 }
 
-@_spi(Internals) public struct _CancelToken: Hashable {
+@_spi(Internals) public struct _CancelID: Hashable {
   let id: AnyHashable
   let discriminator: ObjectIdentifier
 
@@ -325,8 +313,8 @@ extension Task where Success == Never, Failure == Never {
   }
 }
 
-@_spi(Internals) public var _cancellationCancellables: [_CancelToken: Set<AnyCancellable>] = [:]
-@_spi(Internals) public let _cancellablesLock = NSRecursiveLock()
+@_spi(Internals) public var _cancellationCancellables = CancellablesCollection()
+private let _cancellablesLock = NSRecursiveLock()
 
 @rethrows
 private protocol _ErrorMechanism {
@@ -346,3 +334,41 @@ extension _ErrorMechanism {
 }
 
 extension Result: _ErrorMechanism {}
+
+@_spi(Internals)
+public class CancellablesCollection {
+  var storage: [_CancelID: Set<AnyCancellable>] = [:]
+
+  func insert(
+    _ cancellable: AnyCancellable,
+    at id: AnyHashable
+  ) {
+    let cancelID = _CancelID(id: id)
+    self.storage[cancelID, default: []].insert(cancellable)
+  }
+
+  func remove(
+    _ cancellable: AnyCancellable,
+    at id: AnyHashable
+  ) {
+    let cancelID = _CancelID(id: id)
+    self.storage[cancelID]?.remove(cancellable)
+    if self.storage[cancelID]?.isEmpty == true {
+      self.storage[cancelID] = nil
+    }
+  }
+
+  func cancel(id: AnyHashable) {
+    let cancelID = _CancelID(id: id)
+    self.storage[cancelID]?.forEach { $0.cancel() }
+    self.storage[cancelID] = nil
+  }
+
+  public func exists(at id: AnyHashable) -> Bool {
+    return self.storage[_CancelID(id: id)] != nil
+  }
+
+  public var count: Int {
+    return self.storage.count
+  }
+}

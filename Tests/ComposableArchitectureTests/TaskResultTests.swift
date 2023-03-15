@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import XCTest
 
-final class TaskResultTests: XCTestCase {
+final class TaskResultTests: BaseTCATestCase {
   #if DEBUG
     func testEqualityNonEquatableError() {
       struct Failure: Error {
