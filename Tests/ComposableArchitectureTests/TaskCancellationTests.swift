@@ -5,7 +5,7 @@
 
   final class TaskCancellationTests: BaseTCATestCase {
     func testCancellation() async throws {
-      _cancellables.removeAll()
+      _cancellationCancellables.removeAll()
       enum ID {}
       let (stream, continuation) = AsyncStream<Void>.streamWithContinuation()
       let task = Task {
@@ -18,7 +18,7 @@
       await stream.first(where: { true })
       Task.cancel(id: ID.self)
       await Task.megaYield(count: 20)
-      XCTAssertEqual(_cancellables.count, 0)
+      XCTAssertEqual(_cancellationCancellables.count, 0)
       do {
         try await task.cancellableValue
         XCTFail()
@@ -34,11 +34,11 @@
       }
 
       try await Task.sleep(nanoseconds: NSEC_PER_SEC / 3)
-      XCTAssertEqual(_cancellables.count, 1)
+      XCTAssertEqual(_cancellationCancellables.count, 1)
 
       task.cancel()
       try await Task.sleep(nanoseconds: NSEC_PER_SEC / 3)
-      XCTAssertEqual(_cancellables.count, 0)
+      XCTAssertEqual(_cancellationCancellables.count, 0)
     }
   }
 #endif

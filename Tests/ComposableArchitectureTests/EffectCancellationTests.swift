@@ -51,6 +51,7 @@ final class EffectCancellationTests: BaseTCATestCase {
     subject.send(2)
     XCTAssertEqual(values, [1, 2])
 
+    defer { Task.cancel(id: CancelID()) }
     EffectPublisher(subject)
       .cancellable(id: CancelID(), cancelInFlight: true)
       .sink { values.append($0) }
@@ -60,9 +61,6 @@ final class EffectCancellationTests: BaseTCATestCase {
     XCTAssertEqual(values, [1, 2, 3])
     subject.send(4)
     XCTAssertEqual(values, [1, 2, 3, 4])
-
-    _ = EffectPublisher.cancel(id: CancelID())
-      .sink { }
   }
 
   func testCancellationAfterDelay() {
@@ -119,7 +117,7 @@ final class EffectCancellationTests: BaseTCATestCase {
       .sink(receiveValue: { _ in })
       .store(in: &self.cancellables)
 
-    XCTAssertEqual(_cancellables.exists(at: id), false)
+    XCTAssertEqual(_cancellationCancellables.exists(at: id), false)
   }
 
   func testCancellablesCleanUp_OnCancel() {
@@ -137,7 +135,7 @@ final class EffectCancellationTests: BaseTCATestCase {
       .sink(receiveValue: { _ in })
       .store(in: &self.cancellables)
 
-    XCTAssertEqual(_cancellables.exists(at: id), false)
+    XCTAssertEqual(_cancellationCancellables.exists(at: id), false)
   }
 
   func testDoubleCancellation() {
@@ -230,7 +228,7 @@ final class EffectCancellationTests: BaseTCATestCase {
 
     for id in ids {
       XCTAssertEqual(
-        _cancellables.exists(at: id),
+        _cancellationCancellables.exists(at: id),
         false,
         "cancellationCancellables should not contain id \(id)"
       )
@@ -254,7 +252,7 @@ final class EffectCancellationTests: BaseTCATestCase {
 
     cancellables.removeAll()
 
-    XCTAssertEqual(_cancellables.exists(at: id), false)
+    XCTAssertEqual(_cancellationCancellables.exists(at: id), false)
   }
 
   func testSharedId() {

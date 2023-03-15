@@ -43,7 +43,7 @@ extension EffectPublisher {
                 >
               > in
             if cancelInFlight {
-              _cancellables.cancel(id: id)
+              _cancellationCancellables.cancel(id: id)
             }
 
             let cancellationSubject = PassthroughSubject<Void, Never>()
@@ -52,13 +52,13 @@ extension EffectPublisher {
             cancellable = AnyCancellable {
               cancellationSubject.send(())
               cancellationSubject.send(completion: .finished)
-              _cancellables.remove(cancellable, at: id)
+              _cancellationCancellables.remove(cancellable, at: id)
             }
 
             return publisher.prefix(untilOutputFrom: cancellationSubject)
               .handleEvents(
                 receiveSubscription: { _ in
-                  _cancellables.insert(cancellable, at: id)
+                  _cancellationCancellables.insert(cancellable, at: id)
                 },
                 receiveCompletion: { _ in cancellable.cancel() },
                 receiveCancel: cancellable.cancel
@@ -99,7 +99,7 @@ extension EffectPublisher {
   ///   identifier.
   public static func cancel(id: AnyHashable) -> Self {
     .fireAndForget {
-      _cancellables.cancel(id: id)
+      _cancellationCancellables.cancel(id: id)
     }
   }
 
@@ -187,13 +187,13 @@ extension EffectPublisher {
     operation: @Sendable @escaping () async throws -> T
   ) async rethrows -> T {
     if cancelInFlight {
-      _cancellables.cancel(id: id)
+      _cancellationCancellables.cancel(id: id)
     }
     let task = Task { try await operation() }
     let cancellable = AnyCancellable { task.cancel() }
-    _cancellables.insert(cancellable, at: id)
+    _cancellationCancellables.insert(cancellable, at: id)
     defer {
-      _cancellables.remove(cancellable, at: id)
+      _cancellationCancellables.remove(cancellable, at: id)
     }
     do {
       return try await task.cancellableValue
@@ -208,11 +208,11 @@ extension EffectPublisher {
     operation: @Sendable @escaping () async throws -> T
   ) async rethrows -> T {
     if cancelInFlight {
-      _cancellables.cancel(id: id)
+      _cancellationCancellables.cancel(id: id)
     }
     let task = Task { try await operation() }
     let cancellable = AnyCancellable { task.cancel() }
-    _cancellables.insert(cancellable, at: id)
+    _cancellationCancellables.insert(cancellable, at: id)
     _cancellationCancellables[id, default: []].insert(cancellable)
     defer {
       _cancellablesLock.sync {
@@ -274,7 +274,7 @@ extension Task where Success == Never, Failure == Never {
   ///
   /// - Parameter id: An identifier.
   public static func cancel<ID: Hashable & Sendable>(id: ID) {
-    _cancellables.cancel(id: id)
+    _cancellationCancellables.cancel(id: id)
   }
 
   /// Cancel any currently in-flight operation with the given identifier.
@@ -298,7 +298,7 @@ extension Task where Success == Never, Failure == Never {
   }
 }
 
-@_spi(Internals) public var _cancellables = CancellablesCollection()
+@_spi(Internals) public var _cancellationCancellables = CancellablesCollection()
 
 @rethrows
 private protocol _ErrorMechanism {
