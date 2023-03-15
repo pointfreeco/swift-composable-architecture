@@ -4,34 +4,18 @@ import Combine
 import Foundation
 
 let storeSuite = BenchmarkSuite(name: "Store") {
-  let store = Store(
-    initialState: Feature.State(
-      child: Feature.State(
-        child: Feature.State(
-          child: Feature.State(
-            child: Feature.State(
-              child: Feature.State(
-                child: Feature.State(
-                  child: Feature.State(
-                    child: Feature.State(
-                      child: Feature.State(
-                        child: nil
-                      )
-                    )
-                  )
-                )
-              )
-            )
-          )
-        )
-      )
-    ),
-    reducer: Feature()
-  )
+  var store: StoreOf<Feature>!
 
-  $0.benchmark("Deeply nested send") {
-    _ = store.send(.child(.child(.child(.child(.child(.child(.child(.child(.child(.tap))))))))))
-    precondition(store.state.value.child?.child?.child?.child?.child?.child?.child?.child?.child?.count == 1)
+  for level in 1...10 {
+    $0.benchmark("Nested send: \(level)") {
+      _ = store.send(tap(level: level))
+    } setUp: {
+      store = Store(
+        initialState: state(level: level),
+        reducer: Feature()
+      )
+    } tearDown: {
+    }
   }
 }
 
@@ -72,4 +56,17 @@ private struct Box<Value> {
   init(wrappedValue: Value?) {
     self.value = wrappedValue.map { [$0] } ?? []
   }
+}
+
+private func state(level: Int) -> Feature.State {
+  Feature.State(
+    child: level == 0
+    ? nil
+    : state(level: level - 1)
+  )
+}
+private func tap(level: Int) -> Feature.Action {
+  level == 0
+  ? .tap
+  : Feature.Action.child(tap(level: level - 1))
 }
