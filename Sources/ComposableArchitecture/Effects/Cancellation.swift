@@ -195,14 +195,14 @@ extension EffectPublisher {
     cancelInFlight: Bool = false,
     operation: @Sendable @escaping () async throws -> T
   ) async rethrows -> T {
-    let (task, cancellable) = _cancellablesLock.sync {
+    let (cancellable, task) = _cancellablesLock.sync { () -> (AnyCancellable, Task<T, Error>) in
       if cancelInFlight {
         _cancellationCancellables.cancel(id: id)
       }
       let task = Task { try await operation() }
       let cancellable = AnyCancellable { task.cancel() }
       _cancellationCancellables.insert(cancellable, at: id)
-      return (task, cancellable)
+      return (cancellable, task)
     }
     defer {
       _cancellationCancellables.remove(cancellable, at: id)
@@ -219,14 +219,14 @@ extension EffectPublisher {
     cancelInFlight: Bool = false,
     operation: @Sendable @escaping () async throws -> T
   ) async rethrows -> T {
-    let (task, cancellable) = cancellablesLock.sync {
+    let (cancellable, task) = _cancellablesLock.sync { () -> (AnyCancellable, Task<T, Error>) in
       if cancelInFlight {
         _cancellationCancellables.cancel(id: id)
       }
       let task = Task { try await operation() }
       let cancellable = AnyCancellable { task.cancel() }
       _cancellationCancellables.insert(cancellable, at: id)
-      return (task, cancellable)
+      return (cancellable, task)
     }
     defer {
       _cancellationCancellables.remove(cancellable, at: id)
