@@ -11,7 +11,15 @@ let storeSuite = BenchmarkSuite(name: "Store") {
           child: Feature.State(
             child: Feature.State(
               child: Feature.State(
-                child: nil
+                child: Feature.State(
+                  child: Feature.State(
+                    child: Feature.State(
+                      child: Feature.State(
+                        child: nil
+                      )
+                    )
+                  )
+                )
               )
             )
           )
@@ -22,8 +30,8 @@ let storeSuite = BenchmarkSuite(name: "Store") {
   )
 
   $0.benchmark("Deeply nested send") {
-    _ = store.send(.child(.child(.child(.child(.child(.tap))))))
-    precondition(store.state.value.child?.child?.child?.child?.child?.count == 1)
+    _ = store.send(.child(.child(.child(.child(.child(.child(.child(.child(.child(.tap))))))))))
+    precondition(store.state.value.child?.child?.child?.child?.child?.child?.child?.child?.child?.count == 1)
   }
 }
 
@@ -45,7 +53,7 @@ private struct Feature: ReducerProtocol {
         state.count = 1
         return Empty(completeImmediately: true)
           .eraseToEffect()
-          .cancellable(id: 1)
+          .cancellable(id: UUID())
       }
     }
     .ifLet(\.child, action: /Action.child) {
