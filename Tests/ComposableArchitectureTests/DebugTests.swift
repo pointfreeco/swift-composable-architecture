@@ -62,6 +62,16 @@
             )
             """#
           )
+        } else {
+          XCTAssertEqual(
+            dump,
+            #"""
+            BindingAction.set(
+              WritableKeyPath<State, BindingState<Int>>,
+              50
+            )
+            """#
+          )
         }
       #else
         XCTAssertEqual(
