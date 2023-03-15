@@ -1,6 +1,5 @@
-import XCTest
-
 @_spi(Internals) import ComposableArchitecture
+import XCTest
 
 class BaseTCATestCase: XCTestCase {
   override func tearDown() {

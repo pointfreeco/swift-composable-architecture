@@ -96,6 +96,6 @@ private func none(level: Int) -> Feature.Action {
 }
 private func count(of state: Feature.State?, level: Int) -> Int? {
   level == 0
-  ? state?.count
-  : count(of: state?.child, level: level - 1)
+    ? state?.count
+    : count(of: state?.child, level: level - 1)
 }
