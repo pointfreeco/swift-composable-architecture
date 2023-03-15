@@ -3,7 +3,7 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
-final class EffectDebounceTests: XCTestCase {
+final class EffectDebounceTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
 
   func testDebounce() async {

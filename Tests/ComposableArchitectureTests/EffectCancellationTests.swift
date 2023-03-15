@@ -2,7 +2,7 @@ import Combine
 @_spi(Internals) import ComposableArchitecture
 import XCTest
 
-final class EffectCancellationTests: XCTestCase {
+final class EffectCancellationTests: BaseTCATestCase {
   struct CancelID: Hashable {}
   var cancellables: Set<AnyCancellable> = []
 
@@ -60,6 +60,9 @@ final class EffectCancellationTests: XCTestCase {
     XCTAssertEqual(values, [1, 2, 3])
     subject.send(4)
     XCTAssertEqual(values, [1, 2, 3, 4])
+
+    _ = EffectPublisher.cancel(id: CancelID())
+      .sink { }
   }
 
   func testCancellationAfterDelay() {
@@ -116,7 +119,7 @@ final class EffectCancellationTests: XCTestCase {
       .sink(receiveValue: { _ in })
       .store(in: &self.cancellables)
 
-    XCTAssertNil(_cancellationCancellables[_CancelToken(id: id)])
+    XCTAssertEqual(_cancellables.exists(at: id), false)
   }
 
   func testCancellablesCleanUp_OnCancel() {
@@ -134,7 +137,7 @@ final class EffectCancellationTests: XCTestCase {
       .sink(receiveValue: { _ in })
       .store(in: &self.cancellables)
 
-    XCTAssertNil(_cancellationCancellables[_CancelToken(id: id)])
+    XCTAssertEqual(_cancellables.exists(at: id), false)
   }
 
   func testDoubleCancellation() {
@@ -226,8 +229,9 @@ final class EffectCancellationTests: XCTestCase {
     self.wait(for: [expectation], timeout: 999)
 
     for id in ids {
-      XCTAssertNil(
-        _cancellationCancellables[_CancelToken(id: id)],
+      XCTAssertEqual(
+        _cancellables.exists(at: id),
+        false,
         "cancellationCancellables should not contain id \(id)"
       )
     }
@@ -250,7 +254,7 @@ final class EffectCancellationTests: XCTestCase {
 
     cancellables.removeAll()
 
-    XCTAssertNil(_cancellationCancellables[_CancelToken(id: id)])
+    XCTAssertEqual(_cancellables.exists(at: id), false)
   }
 
   func testSharedId() {

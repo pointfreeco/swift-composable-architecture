@@ -2,7 +2,7 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
-final class BindingTests: XCTestCase {
+final class BindingTests: BaseTCATestCase {
   #if swift(>=5.7)
     func testNestedBindingState() {
       struct BindingTest: ReducerProtocol {

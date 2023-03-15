@@ -5,7 +5,7 @@
 
   @testable import ComposableArchitecture
 
-  final class DebugTests: XCTestCase {
+  final class DebugTests: BaseTCATestCase {
     func testDebugCaseOutput() {
       enum Action {
         case action1(Bool, label: String)
@@ -50,15 +50,30 @@
       let action = BindingAction.set(\State.$width, 50)
       var dump = ""
       customDump(action, to: &dump)
-      XCTAssertEqual(
-        dump,
-        #"""
-        BindingAction.set(
-          WritableKeyPath<State, BindingState<Int>>,
-          50
+
+      #if swift(>=5.8)
+        if #available(macOS 13.3, iOS 16.4, watchOS 9.4, tvOS 16.4, *) {
+          XCTAssertEqual(
+            dump,
+            #"""
+            BindingAction.set(
+              \State.$width,
+              50
+            )
+            """#
+          )
+        }
+      #else
+        XCTAssertEqual(
+          dump,
+          #"""
+          BindingAction.set(
+            WritableKeyPath<State, BindingState<Int>>,
+            50
+          )
+          """#
         )
-        """#
-      )
+      #endif
     }
 
     @MainActor
