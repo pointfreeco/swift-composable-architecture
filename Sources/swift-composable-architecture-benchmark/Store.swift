@@ -5,9 +5,9 @@ import Foundation
 
 let storeSuite = BenchmarkSuite(name: "Store") {
   var store: StoreOf<Feature>!
-  let count = 5
+  let levels = 5
 
-  for level in 1...count {
+  for level in 1...levels {
     $0.benchmark("Nested send tap: \(level)") {
       _ = store.send(tap(level: level))
     } setUp: {
@@ -16,10 +16,11 @@ let storeSuite = BenchmarkSuite(name: "Store") {
         reducer: Feature()
       )
     } tearDown: {
+      precondition(count(of: store.state.value, level: level) == 1)
       precondition(_cancellationCancellables.count == 0)
     }
   }
-  for level in 1...count {
+  for level in 1...levels {
     $0.benchmark("Nested send none: \(level)") {
       _ = store.send(none(level: level))
     } setUp: {
@@ -28,6 +29,7 @@ let storeSuite = BenchmarkSuite(name: "Store") {
         reducer: Feature()
       )
     } tearDown: {
+      precondition(count(of: store.state.value, level: level) == 0)
       precondition(_cancellationCancellables.count == 0)
     }
   }
@@ -91,4 +93,9 @@ private func none(level: Int) -> Feature.Action {
   level == 0
     ? .none
     : Feature.Action.child(none(level: level - 1))
+}
+private func count(of state: Feature.State?, level: Int) -> Int? {
+  level == 0
+  ? state?.count
+  : count(of: state?.child, level: level - 1)
 }
