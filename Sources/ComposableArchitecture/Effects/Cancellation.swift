@@ -368,10 +368,6 @@ public class CancellablesCollection {
     return self.storage[_CancelID(id: id)] != nil
   }
 
-  public func removeAll() {
-    self.storage = [:]
-  }
-
   public var count: Int {
     return self.storage.count
   }

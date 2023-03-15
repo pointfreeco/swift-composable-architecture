@@ -5,7 +5,6 @@
 
   final class TaskCancellationTests: BaseTCATestCase {
     func testCancellation() async throws {
-      _cancellationCancellables.removeAll()
       enum ID {}
       let (stream, continuation) = AsyncStream<Void>.streamWithContinuation()
       let task = Task {
