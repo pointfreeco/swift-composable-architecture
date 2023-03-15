@@ -343,4 +343,13 @@ final class EffectCancellationTests: BaseTCATestCase {
     mainQueue.advance(by: 1)
     XCTAssertEqual(output, [B()])
   }
+
+  func testCancelIDHash() {
+    struct CancelID1: Hashable {}
+    struct CancelID2: Hashable {}
+    let id1 = _CancelID(id: CancelID1())
+    let id2 = _CancelID(id: CancelID2())
+    XCTAssertNotEqual(id1, id2)
+    XCTAssertNotEqual(id1.hashValue, id2.hashValue)
+  }
 }
