@@ -7,8 +7,19 @@ let storeSuite = BenchmarkSuite(name: "Store") {
   var store: StoreOf<Feature>!
 
   for level in 1...10 {
-    $0.benchmark("Nested send: \(level)") {
+    $0.benchmark("Nested send tap: \(level)") {
       _ = store.send(tap(level: level))
+    } setUp: {
+      store = Store(
+        initialState: state(level: level),
+        reducer: Feature()
+      )
+    } tearDown: {
+    }
+  }
+  for level in 1...10 {
+    $0.benchmark("Nested send none: \(level)") {
+      _ = store.send(none(level: level))
     } setUp: {
       store = Store(
         initialState: state(level: level),
@@ -27,6 +38,7 @@ private struct Feature: ReducerProtocol {
   enum Action {
     indirect case child(Action)
     case tap
+    case none
   }
   var body: some ReducerProtocolOf<Self> {
     Reduce<State, Action> { state, action in
@@ -38,6 +50,8 @@ private struct Feature: ReducerProtocol {
         return Empty(completeImmediately: true)
           .eraseToEffect()
           .cancellable(id: UUID())
+      case .none:
+        return .none
       }
     }
     .ifLet(\.child, action: /Action.child) {
@@ -61,12 +75,17 @@ private struct Box<Value> {
 private func state(level: Int) -> Feature.State {
   Feature.State(
     child: level == 0
-    ? nil
-    : state(level: level - 1)
+      ? nil
+      : state(level: level - 1)
   )
 }
 private func tap(level: Int) -> Feature.Action {
   level == 0
-  ? .tap
-  : Feature.Action.child(tap(level: level - 1))
+    ? .tap
+    : Feature.Action.child(tap(level: level - 1))
+}
+private func none(level: Int) -> Feature.Action {
+  level == 0
+    ? .none
+    : Feature.Action.child(tap(level: level - 1))
 }
