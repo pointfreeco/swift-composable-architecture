@@ -3,7 +3,7 @@ import Combine
 import XCTest
 
 @MainActor
-final class StoreTests: XCTestCase {
+final class StoreTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
 
   func testCancellableIsRemovedOnImmediatelyCompletingEffect() {

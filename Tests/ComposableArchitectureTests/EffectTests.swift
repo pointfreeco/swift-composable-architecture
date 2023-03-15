@@ -3,7 +3,7 @@ import Combine
 import XCTest
 
 @MainActor
-final class EffectTests: XCTestCase {
+final class EffectTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
   let mainQueue = DispatchQueue.test
 

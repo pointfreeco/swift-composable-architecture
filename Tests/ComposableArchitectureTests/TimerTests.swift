@@ -3,7 +3,7 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
-final class TimerTests: XCTestCase {
+final class TimerTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
 
   func testTimer() async {
@@ -11,6 +11,7 @@ final class TimerTests: XCTestCase {
 
     var count = 0
 
+    defer { Task.cancel(id: 1) }
     EffectPublisher.timer(id: 1, every: .seconds(1), on: mainQueue)
       .sink { _ in count += 1 }
       .store(in: &self.cancellables)
@@ -34,6 +35,10 @@ final class TimerTests: XCTestCase {
     var count2 = 0
     var count3 = 0
 
+    defer {
+      Task.cancel(id: 1)
+      Task.cancel(id: 2)
+    }
     EffectPublisher.merge(
       EffectPublisher.timer(id: 1, every: .seconds(2), on: mainQueue)
         .handleEvents(receiveOutput: { _ in count2 += 1 })
@@ -67,6 +72,7 @@ final class TimerTests: XCTestCase {
 
     struct CancelToken: Hashable {}
 
+    defer { Task.cancel(id: CancelToken()) }
     EffectPublisher.timer(id: CancelToken(), every: .seconds(2), on: mainQueue)
       .handleEvents(receiveOutput: { _ in firstCount += 1 })
       .eraseToEffect()
@@ -103,6 +109,7 @@ final class TimerTests: XCTestCase {
 
     var count = 0
 
+    defer { Task.cancel(id: 1) }
     EffectPublisher.timer(id: 1, every: .seconds(1), on: mainQueue)
       .prefix(3)
       .sink { _ in count += 1 }

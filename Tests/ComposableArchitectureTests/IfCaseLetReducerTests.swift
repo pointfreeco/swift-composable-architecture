@@ -2,7 +2,7 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
-final class IfCaseLetReducerTests: XCTestCase {
+final class IfCaseLetReducerTests: BaseTCATestCase {
   func testChildAction() async {
     struct SomeError: Error, Equatable {}
 

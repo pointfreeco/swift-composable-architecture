@@ -2,7 +2,7 @@ import Combine
 @_spi(Internals) import ComposableArchitecture
 import XCTest
 
-final class EffectCancellationTests: XCTestCase {
+final class EffectCancellationTests: BaseTCATestCase {
   struct CancelID: Hashable {}
   var cancellables: Set<AnyCancellable> = []
 
@@ -51,6 +51,7 @@ final class EffectCancellationTests: XCTestCase {
     subject.send(2)
     XCTAssertEqual(values, [1, 2])
 
+    defer { Task.cancel(id: CancelID()) }
     EffectPublisher(subject)
       .cancellable(id: CancelID(), cancelInFlight: true)
       .sink { values.append($0) }
@@ -116,7 +117,7 @@ final class EffectCancellationTests: XCTestCase {
       .sink(receiveValue: { _ in })
       .store(in: &self.cancellables)
 
-    XCTAssertNil(_cancellationCancellables[_CancelID(_id: id)])
+    XCTAssertEqual(_cancellationCancellables.exists(at: id), false)
   }
 
   func testCancellablesCleanUp_OnCancel() {
@@ -134,7 +135,7 @@ final class EffectCancellationTests: XCTestCase {
       .sink(receiveValue: { _ in })
       .store(in: &self.cancellables)
 
-    XCTAssertNil(_cancellationCancellables[_CancelID(_id: id)])
+    XCTAssertEqual(_cancellationCancellables.exists(at: id), false)
   }
 
   func testDoubleCancellation() {
@@ -226,8 +227,9 @@ final class EffectCancellationTests: XCTestCase {
     self.wait(for: [expectation], timeout: 999)
 
     for id in ids {
-      XCTAssertNil(
-        _cancellationCancellables[_CancelID(_id: id)],
+      XCTAssertEqual(
+        _cancellationCancellables.exists(at: id),
+        false,
         "cancellationCancellables should not contain id \(id)"
       )
     }
@@ -250,7 +252,7 @@ final class EffectCancellationTests: XCTestCase {
 
     cancellables.removeAll()
 
-    XCTAssertNil(_cancellationCancellables[_CancelID(_id: id)])
+    XCTAssertEqual(_cancellationCancellables.exists(at: id), false)
   }
 
   func testSharedId() {
@@ -340,5 +342,16 @@ final class EffectCancellationTests: XCTestCase {
 
     mainQueue.advance(by: 1)
     XCTAssertEqual(output, [B()])
+  }
+
+  func testCancelIDHash() {
+    struct CancelID1: Hashable {}
+    struct CancelID2: Hashable {}
+    let id1 = _CancelID(id: CancelID1())
+    let id2 = _CancelID(id: CancelID2())
+    XCTAssertNotEqual(id1, id2)
+    // NB: We hash the type of the cancel ID to give more variance in the hash since all empty
+    //     structs in Swift have the same hash value.
+    XCTAssertNotEqual(id1.hashValue, id2.hashValue)
   }
 }

@@ -2,7 +2,7 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
-final class ForEachReducerTests: XCTestCase {
+final class ForEachReducerTests: BaseTCATestCase {
   func testElementAction() async {
     let store = TestStore(
       initialState: Elements.State(
