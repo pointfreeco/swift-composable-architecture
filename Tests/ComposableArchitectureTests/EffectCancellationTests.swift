@@ -108,18 +108,6 @@ final class EffectCancellationTests: BaseTCATestCase {
     XCTAssertEqual(value, nil)
   }
 
-  func testCancellablesCleanUp_OnComplete() {
-    let id = UUID()
-
-    Just(1)
-      .eraseToEffect()
-      .cancellable(id: id)
-      .sink(receiveValue: { _ in })
-      .store(in: &self.cancellables)
-
-    XCTAssertEqual(_cancellationCancellables.exists(at: id), false)
-  }
-
   func testCancellablesCleanUp_OnCancel() {
     let id = UUID()
 
@@ -135,7 +123,7 @@ final class EffectCancellationTests: BaseTCATestCase {
       .sink(receiveValue: { _ in })
       .store(in: &self.cancellables)
 
-    XCTAssertEqual(_cancellationCancellables.exists(at: id), false)
+    XCTAssertEqual(_cancellationCancellables.exists(at: id, path: NavigationIDPath()), false)
   }
 
   func testDoubleCancellation() {
@@ -228,7 +216,7 @@ final class EffectCancellationTests: BaseTCATestCase {
 
     for id in ids {
       XCTAssertEqual(
-        _cancellationCancellables.exists(at: id),
+        _cancellationCancellables.exists(at: id, path: NavigationIDPath()),
         false,
         "cancellationCancellables should not contain id \(id)"
       )
@@ -252,7 +240,7 @@ final class EffectCancellationTests: BaseTCATestCase {
 
     cancellables.removeAll()
 
-    XCTAssertEqual(_cancellationCancellables.exists(at: id), false)
+    XCTAssertEqual(_cancellationCancellables.exists(at: id, path: NavigationIDPath()), false)
   }
 
   func testSharedId() {
@@ -347,11 +335,31 @@ final class EffectCancellationTests: BaseTCATestCase {
   func testCancelIDHash() {
     struct CancelID1: Hashable {}
     struct CancelID2: Hashable {}
-    let id1 = _CancelID(id: CancelID1())
-    let id2 = _CancelID(id: CancelID2())
+    let id1 = _CancelID(id: CancelID1(), navigationIDPath: NavigationIDPath())
+    let id2 = _CancelID(id: CancelID2(), navigationIDPath: NavigationIDPath())
     XCTAssertNotEqual(id1, id2)
     // NB: We hash the type of the cancel ID to give more variance in the hash since all empty
     //     structs in Swift have the same hash value.
     XCTAssertNotEqual(id1.hashValue, id2.hashValue)
   }
 }
+
+#if DEBUG
+@testable import ComposableArchitecture
+
+final class Internal_EffectCancellationTests: BaseTCATestCase {
+  var cancellables: Set<AnyCancellable> = []
+
+  func testCancellablesCleanUp_OnComplete() {
+    let id = UUID()
+
+    Just(1)
+      .eraseToEffect()
+      .cancellable(id: id)
+      .sink(receiveValue: { _ in })
+      .store(in: &self.cancellables)
+
+    XCTAssertEqual(_cancellationCancellables.exists(at: id, path: NavigationIDPath()), false)
+  }
+}
+#endif

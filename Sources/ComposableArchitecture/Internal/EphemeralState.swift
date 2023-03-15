@@ -11,6 +11,7 @@ extension AlertState: _EphemeralState {}
 @available(iOS 13, macOS 12, tvOS 13, watchOS 6, *)
 extension ConfirmationDialogState: _EphemeralState {}
 
+@usableFromInline 
 func isEphemeral<State>(_ state: State) -> Bool {
   if State.self is _EphemeralState.Type {
     return true

@@ -17,7 +17,7 @@ let storeSuite = BenchmarkSuite(name: "Store") {
       )
     } tearDown: {
       precondition(count(of: store.state.value, level: level) == 1)
-      precondition(_cancellationCancellables.count == 0)
+      _cancellationCancellables.removeAll()
     }
   }
   for level in 1...levels {
@@ -30,18 +30,18 @@ let storeSuite = BenchmarkSuite(name: "Store") {
       )
     } tearDown: {
       precondition(count(of: store.state.value, level: level) == 0)
-      precondition(_cancellationCancellables.count == 0)
+      _cancellationCancellables.removeAll()
     }
   }
 }
 
 private struct Feature: ReducerProtocol {
   struct State {
-    @Box var child: State?
+    @PresentationState var child: State?
     var count = 0
   }
   enum Action {
-    indirect case child(Action)
+    indirect case child(PresentationAction<Action>)
     case tap
     case none
   }
@@ -59,21 +59,9 @@ private struct Feature: ReducerProtocol {
         return .none
       }
     }
-    .ifLet(\.child, action: /Action.child) {
+    .ifLet(\.$child, action: /Action.child) {
       Feature()
     }
-  }
-}
-
-@propertyWrapper
-private struct Box<Value> {
-  private var value: [Value]
-  var wrappedValue: Value? {
-    get { self.value.first }
-    set { self.value = newValue.map { [$0] } ?? [] }
-  }
-  init(wrappedValue: Value?) {
-    self.value = wrappedValue.map { [$0] } ?? []
   }
 }
 
@@ -87,12 +75,12 @@ private func state(level: Int) -> Feature.State {
 private func tap(level: Int) -> Feature.Action {
   level == 0
     ? .tap
-    : Feature.Action.child(tap(level: level - 1))
+    : Feature.Action.child(.presented(tap(level: level - 1)))
 }
 private func none(level: Int) -> Feature.Action {
   level == 0
     ? .none
-    : Feature.Action.child(none(level: level - 1))
+    : Feature.Action.child(.presented(none(level: level - 1)))
 }
 private func count(of state: Feature.State?, level: Int) -> Int? {
   level == 0
