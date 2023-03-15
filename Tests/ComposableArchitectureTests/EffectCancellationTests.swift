@@ -350,6 +350,8 @@ final class EffectCancellationTests: BaseTCATestCase {
     let id1 = _CancelID(id: CancelID1())
     let id2 = _CancelID(id: CancelID2())
     XCTAssertNotEqual(id1, id2)
+    // NB: We hash the type of the cancel ID to give more variance in the hash since all empty
+    //     structs in Swift have the same hash value.
     XCTAssertNotEqual(id1.hashValue, id2.hashValue)
   }
 }
