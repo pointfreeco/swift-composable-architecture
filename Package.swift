@@ -39,6 +39,7 @@ let package = Package(
         .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
         .product(name: "OrderedCollections", package: "swift-collections"),
         .product(name: "_SwiftUINavigationState", package: "swiftui-navigation"),
+        // TODO: should we depend on this or copy some stuff over?
         .product(name: "SwiftUINavigation", package: "swiftui-navigation"),
         .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
       ]

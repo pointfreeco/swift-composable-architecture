@@ -231,18 +231,20 @@ extension EffectPublisher {
     cancelInFlight: Bool = false,
     operation: @Sendable @escaping () async throws -> T
   ) async rethrows -> T {
+    @Dependency(\.navigationIDPath) var navigationIDPath
+
     let (cancellable, task) = _cancellablesLock.sync { () -> (AnyCancellable, Task<T, Error>) in
       if cancelInFlight {
-        _cancellationCancellables.cancel(id: id)
+        _cancellationCancellables.cancel(id: id, path: navigationIDPath)
       }
       let task = Task { try await operation() }
       let cancellable = AnyCancellable { task.cancel() }
-      _cancellationCancellables.insert(cancellable, at: id)
+      _cancellationCancellables.insert(cancellable, at: id, path: navigationIDPath)
       return (cancellable, task)
     }
     defer {
       _cancellablesLock.sync {
-        _cancellationCancellables.remove(cancellable, at: id)
+        _cancellationCancellables.remove(cancellable, at: id, path: navigationIDPath)
       }
     }
     do {
