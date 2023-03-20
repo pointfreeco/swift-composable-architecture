@@ -30,10 +30,14 @@ extension ReducerProtocol {
   /// }
   /// ```
   ///
-  /// The `ifCaseLet` forces a specific order of operations for the child and parent features. It
-  /// runs the child first, and then the parent. If the order was reversed, then it would be
-  /// possible for the parent feature to change the case of the enum, in which case the child
-  /// feature would not be able to react to that action. That can cause subtle bugs.
+  /// The `ifCaseLet` operator does a number of things to try to enforce correctness:
+  ///
+  ///   * It forces a specific order of operations for the child and parent features. It runs the
+  ///     child first, and then the parent. If the order was reversed, then it would be possible for
+  ///     for the parent feature to change the case of the child enum, in which case the child
+  ///     feature would not be able to react to that action. That can cause subtle bugs.
+  ///
+  ///   * It automatically cancels all child effects when it detects the child enum case changes.
   ///
   /// It is still possible for a parent feature higher up in the application to change the case of
   /// the enum before the child has a chance to react to the action. In such cases a runtime
@@ -46,6 +50,7 @@ extension ReducerProtocol {
   ///     present
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @inlinable
+  @warn_unqualified_access
   public func ifCaseLet<CaseState, CaseAction, Case: ReducerProtocol>(
     _ toCaseState: CasePath<State, CaseState>,
     action toCaseAction: CasePath<Action, CaseAction>,
@@ -90,7 +95,7 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
   let line: UInt
 
   @usableFromInline
-  @Dependency(\.navigationID) var navigationID
+  @Dependency(\.navigationIDPath) var navigationIDPath
 
   @usableFromInline
   init(
@@ -117,15 +122,17 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
   ) -> EffectTask<Parent.Action> {
     let childEffects = self.reduceChild(into: &state, action: action)
 
-    let childStateBefore = self.toChildState.extract(from: state)
+    let childIDBefore = self.toChildState.extract(from: state).map {
+      NavigationID(root: state, value: $0, casePath: self.toChildState)
+    }
     let parentEffects = self.parent.reduce(into: &state, action: action)
-    let childStateAfter = self.toChildState.extract(from: state)
+    let childIDAfter = self.toChildState.extract(from: state).map {
+      NavigationID(root: state, value: $0, casePath: self.toChildState)
+    }
 
     let childCancelEffects: EffectTask<Parent.Action>
-    if let childID = childStateBefore.map(AnyID.init), childID != childStateAfter.map(AnyID.init) {
-      let id = self.navigationID
-        .appending(id: childID)
-      childCancelEffects = .cancel(id: id)
+    if let childElement = childIDBefore, childElement != childIDAfter {
+      childCancelEffects = .cancel(id: childElement)
     } else {
       childCancelEffects = .none
     }
@@ -179,12 +186,14 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
       return .none
     }
     defer { state = self.toChildState.embed(childState) }
-    let id = self.navigationID
-      .appending(component: childState)
+    let childID = NavigationID(root: state, value: childState, casePath: self.toChildState)
+    let newNavigationID = self.navigationIDPath.appending(childID)
     return self.child
-      .dependency(\.navigationID, id)
+      .dependency(\.navigationIDPath, newNavigationID)
       .reduce(into: &childState, action: childAction)
       .map { self.toChildAction.embed($0) }
-      .cancellable(id: id)
+      .cancellable(id: childID)
+
+    // TODO: check if ID changed and do cancellation
   }
 }

@@ -1,3 +1,4 @@
+import TestCases
 import XCTest
 
 @MainActor
@@ -9,7 +10,7 @@ final class NavigationStackBindingTests: XCTestCase {
   func testExample() async throws {
     let app = XCUIApplication()
     app.launch()
-    app.collectionViews.buttons["NavigationStackBindingTestCase"].tap()
+    app.collectionViews.buttons[TestCase.navigationStackBinding.rawValue].tap()
     app.buttons["Go to child"].tap()
     app.buttons["Back"].tap()
     XCTAssertTrue(app.buttons["Go to child"].exists)

@@ -63,7 +63,7 @@ final class TwoFactorCoreTests: XCTestCase {
       }
       $0.isTwoFactorRequestInFlight = false
     }
-    await store.send(.alertDismissed) {
+    await store.send(.alert(.dismiss)) {
       $0.alert = nil
     }
     await store.finish()

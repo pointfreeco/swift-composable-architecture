@@ -7,31 +7,37 @@
 - ``reduce(into:action:)-8yinq``
 - ``State``
 - ``Action``
-- ``EffectPublisher``
+- ``EffectTask``
 
 ### Reducer composition
 
 - ``body-swift.property-97ymy``
 - ``Body-swift.typealias``
 - ``ReducerBuilder``
+
+### Embedding child features
+
 - ``Scope``
-- ``ifLet(_:action:then:file:fileID:line:)``
+- ``ifLet(_:action:then:file:fileID:line:)-1a0il``
 - ``ifCaseLet(_:action:then:file:fileID:line:)``
-- ``forEach(_:action:_:file:fileID:line:)``
+- ``forEach(_:action:element:file:fileID:line:)``
 
 ### Supporting reducers
 
-- ``BindingReducer``
+- ``Reduce``
 - ``CombineReducers``
 - ``EmptyReducer``
-- ``Reduce``
+- ``BindingReducer``
 
 ### Reducer modifiers
 
 - ``dependency(_:_:)``
 - ``transformDependency(_:transform:)``
 - ``signpost(_:log:)``
-- ``debug()``
+
+### Supporting types
+
+- ``ReducerProtocolOf``
 
 ### Deprecations
 

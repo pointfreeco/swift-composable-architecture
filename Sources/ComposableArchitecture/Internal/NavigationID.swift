@@ -2,96 +2,133 @@
 
 extension DependencyValues {
   @usableFromInline
-  var navigationID: NavigationID {
-    get { self[NavigationIDKey.self] }
-    set { self[NavigationIDKey.self] = newValue }
+  var navigationIDPath: NavigationIDPath {
+    get { self[NavigationIDPathKey.self] }
+    set { self[NavigationIDPathKey.self] = newValue }
   }
 }
 
-private enum NavigationIDKey: DependencyKey {
-  static let liveValue = NavigationID()
-  static let testValue = NavigationID()
+private enum NavigationIDPathKey: DependencyKey {
+  static let liveValue = NavigationIDPath()
+  static let testValue = NavigationIDPath()
 }
 
 // TODO: Is this `Identifiable` conformance needed?
 @usableFromInline
-struct NavigationID: Hashable, Identifiable, Sendable {
-  private var path: [AnyHashableSendable] = []
+struct NavigationIDPath: Hashable, Identifiable, Sendable {
+  fileprivate var path: [NavigationID]
 
-  @usableFromInline
-  var id: Self { self }
+  @usableFromInline 
+  init(path: [NavigationID] = []) {
+    self.path = path
+  }
 
-  @usableFromInline
-  func appending<Component>(component: Component) -> Self {
-    var navigationID = self
-    navigationID.path.append(AnyHashableSendable(AnyID(component)))
-    return navigationID
+  var prefixes: [NavigationIDPath] {
+    (0...self.path.count).map { index in
+      NavigationIDPath(path: Array(self.path.dropFirst(index)))
+    }
   }
 
   @usableFromInline
-  func appending(id: AnyID) -> Self {
-    var navigationID = self
-    navigationID.path.append(AnyHashableSendable(id))
-    return navigationID
+  func appending(_ element: NavigationID) -> Self {
+    .init(path: self.path + [element])
   }
 
-  @usableFromInline
-  func appending(path: AnyKeyPath) -> Self {
-    var navigationID = self
-    navigationID.path.append(AnyHashableSendable(path))
-    return navigationID
-  }
+  public var id: Self { self }
 }
 
-extension NavigationID: Sequence {
-  public func makeIterator() -> AnyIterator<NavigationID> {
-    var id: NavigationID? = self
-    return AnyIterator {
-      guard var navigationID = id else { return nil }
-      defer {
-        if navigationID.path.isEmpty {
-          id = nil
-        } else {
-          navigationID.path.removeLast()
-          id = navigationID
-        }
+@usableFromInline
+struct NavigationID: Hashable, @unchecked Sendable {
+  private let kind: Kind
+  private let identifier: AnyHashableSendable?
+  private let tag: UInt32?
+
+  enum Kind: Hashable, @unchecked Sendable {
+    case casePath(root: Any.Type, value: Any.Type)
+    case keyPath(AnyKeyPath)
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+      switch (lhs, rhs) {
+      case let (.casePath(lhsRoot, lhsValue), .casePath(rhsRoot, rhsValue)):
+        return lhsRoot == rhsRoot && lhsValue == rhsValue
+      case let (.keyPath(lhs), .keyPath(rhs)):
+        return lhs == rhs
+      case (.casePath, _), (.keyPath, _):
+        return false
       }
-      return navigationID
-    }
-  }
-}
-
-// TODO: Is this `Identifiable` conformance needed?
-@usableFromInline
-struct AnyID: Hashable, Identifiable, Sendable {
-  private var objectIdentifier: ObjectIdentifier
-  private var tag: UInt32?
-  private var identifier: AnyHashableSendable?
-
-  @usableFromInline
-  init<Base>(_ base: Base) {
-    func id(_ identifiable: some Identifiable) -> AnyHashableSendable {
-      AnyHashableSendable(identifiable.id)
     }
 
-    self.objectIdentifier = ObjectIdentifier(Base.self)
-    self.tag = EnumMetadata(Base.self)?.tag(of: base)
-    if let base = base as? any Identifiable {
-      self.identifier = id(base)
-    } else if let metadata = EnumMetadata(type(of: base)),
-      metadata.associatedValueType(forTag: metadata.tag(of: base)) is any Identifiable.Type
-    {
-      // TODO: Extract enum payload and assign id
+    func hash(into hasher: inout Hasher) {
+      switch self {
+      case let .casePath(root: root, value: value):
+        hasher.combine(0)
+        hasher.combine(ObjectIdentifier(root))
+        hasher.combine(ObjectIdentifier(value))
+      case let .keyPath(keyPath):
+        hasher.combine(1)
+        hasher.combine(keyPath)
+      }
     }
   }
 
   @usableFromInline
-  var id: Self { self }
+  init<Value, Root>(
+    base: Value,
+    keyPath: KeyPath<Root, Value?>
+  ) {
+    self.kind = .keyPath(keyPath)
+    self.tag = EnumMetadata(Value.self)?.tag(of: base)
+    if let id = _identifiableID(base) ?? EnumMetadata.project(base).flatMap(_identifiableID) {
+      self.identifier = AnyHashableSendable(id)
+    } else {
+      self.identifier = nil
+    }
+  }
+
+  @usableFromInline
+  init<Value, Root>(
+    id: AnyHashable,
+    keyPath: KeyPath<Root, StackState<Value>.Path>
+  ) {
+    self.kind = .keyPath(keyPath)
+    self.tag = nil
+    self.identifier = AnyHashableSendable(id)
+  }
+
+  @usableFromInline
+  init<Value, Root>(
+    root: Root,
+    value: Value,
+    casePath: CasePath<Root, Value>
+  ) {
+    self.kind = .casePath(root: Root.self, value: Value.self)
+    self.tag = EnumMetadata(Root.self)?.tag(of: root)
+    if let id = _identifiableID(root) ?? _identifiableID(value) {
+      self.identifier = AnyHashableSendable(id)
+    } else {
+      self.identifier = nil
+    }
+  }
+
+  @usableFromInline
+  static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.kind == rhs.kind
+      && lhs.identifier == rhs.identifier
+      && lhs.tag == rhs.tag
+  }
+
+  @usableFromInline
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(self.kind)
+    hasher.combine(self.identifier)
+    hasher.combine(self.tag)
+  }
+
+  // TODO: better custom debug convertible stuff
 }
 
-private struct AnyHashableSendable: Hashable, @unchecked Sendable {
+struct AnyHashableSendable: Hashable, @unchecked Sendable {
   let base: AnyHashable
-
   init<Base: Hashable & Sendable>(_ base: Base) {
     self.base = base
   }

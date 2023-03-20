@@ -2,7 +2,7 @@ import Combine
 import ComposableArchitecture
 import XCTest
 
-final class EffectDeferredTests: XCTestCase {
+final class EffectDeferredTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
 
   func testDeferred() {

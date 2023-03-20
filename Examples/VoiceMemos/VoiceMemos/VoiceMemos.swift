@@ -148,11 +148,11 @@ struct VoiceMemosView: View {
             .onDelete { viewStore.send(.voiceMemos(.delete($0))) }
           }
 
-          PresentationStore(
+          IfLetStore(
             self.store.scope(state: \.$recordingMemo, action: VoiceMemos.Action.recordingMemo)
           ) { store in
             RecordingMemoView(store: store)
-          } dismissed: {
+          } else: {
             RecordButton(permission: viewStore.audioRecorderPermission) {
               viewStore.send(.recordButtonTapped, animation: .spring())
             } settingsAction: {

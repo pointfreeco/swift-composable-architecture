@@ -2,7 +2,7 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
-final class IfCaseLetReducerTests: XCTestCase {
+final class IfCaseLetReducerTests: BaseTCATestCase {
   func testChildAction() async {
     struct SomeError: Error, Equatable {}
 
@@ -71,83 +71,86 @@ final class IfCaseLetReducerTests: XCTestCase {
     }
   #endif
 
-  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
-  func testEffectCancellation_Siblings() async {
-    struct Child: ReducerProtocol {
-      struct State: Equatable {
-        var count = 0
-      }
-      enum Action: Equatable {
-        case timerButtonTapped
-        case timerTick
-      }
-      @Dependency(\.continuousClock) var clock
-      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
-        switch action {
-        case .timerButtonTapped:
-          return .run { send in
-            for await _ in self.clock.timer(interval: .seconds(1)) {
-              await send(.timerTick)
+  #if swift(>=5.7)
+    func testEffectCancellation_Siblings() async {
+      if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
+        struct Child: ReducerProtocol {
+          struct State: Equatable {
+            var count = 0
+          }
+          enum Action: Equatable {
+            case timerButtonTapped
+            case timerTick
+          }
+          @Dependency(\.continuousClock) var clock
+          func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+            switch action {
+            case .timerButtonTapped:
+              return .run { send in
+                for await _ in self.clock.timer(interval: .seconds(1)) {
+                  await send(.timerTick)
+                }
+              }
+            case .timerTick:
+              state.count += 1
+              return .none
             }
           }
-        case .timerTick:
-          state.count += 1
-          return .none
         }
-      }
-    }
-    struct Parent: ReducerProtocol {
-      enum State: Equatable {
-        case child1(Child.State)
-        case child2(Child.State)
-      }
-      enum Action: Equatable {
-        case child1(Child.Action)
-        case child1ButtonTapped
-        case child2(Child.Action)
-        case child2ButtonTapped
-      }
-      var body: some ReducerProtocol<State, Action> {
-        Reduce { state, action in
-          switch action {
-          case .child1:
-            return .none
-          case .child1ButtonTapped:
-            state = .child1(Child.State())
-            return .none
-          case .child2:
-            return .none
-          case .child2ButtonTapped:
-            state = .child2(Child.State())
-            return .none
+        struct Parent: ReducerProtocol {
+          enum State: Equatable {
+            case child1(Child.State)
+            case child2(Child.State)
+          }
+          enum Action: Equatable {
+            case child1(Child.Action)
+            case child1ButtonTapped
+            case child2(Child.Action)
+            case child2ButtonTapped
+          }
+          var body: some ReducerProtocol<State, Action> {
+            Reduce { state, action in
+              switch action {
+              case .child1:
+                return .none
+              case .child1ButtonTapped:
+                state = .child1(Child.State())
+                return .none
+              case .child2:
+                return .none
+              case .child2ButtonTapped:
+                state = .child2(Child.State())
+                return .none
+              }
+            }
+            .ifCaseLet(/State.child1, action: /Action.child1) {
+              Child()
+            }
+            .ifCaseLet(/State.child2, action: /Action.child2) {
+              Child()
+            }
           }
         }
-        .ifCaseLet(/State.child1, action: /Action.child1) {
-          Child()
-        }
-        .ifCaseLet(/State.child2, action: /Action.child2) {
-          Child()
+        await _withMainSerialExecutor {
+          let clock = TestClock()
+          let store = TestStore(
+            initialState: Parent.State.child1(Child.State()),
+            reducer: Parent()
+          ) {
+            $0.continuousClock = clock
+          }
+          await store.send(.child1(.timerButtonTapped))
+          await clock.advance(by: .seconds(1))
+          await store.receive(.child1(.timerTick)) {
+            try (/Parent.State.child1).modify(&$0) {
+              $0.count = 1
+            }
+          }
+          await store.send(.child2ButtonTapped) {
+            $0 = .child2(Child.State())
+          }
         }
       }
     }
-    await _withMainSerialExecutor {
-      let clock = TestClock()
-      let store = TestStore(
-        initialState: Parent.State.child1(Child.State()),
-        reducer: Parent()
-      ) {
-        $0.continuousClock = clock
-      }
-      await store.send(.child1(.timerButtonTapped))
-      await clock.advance(by: .seconds(1))
-      await store.receive(.child1(.timerTick)) {
-        try (/Parent.State.child1).modify(&$0) {
-          $0.count = 1
-        }
-      }
-      await store.send(.child2ButtonTapped) {
-        $0 = .child2(Child.State())
-      }
-    }
-  }
+  #endif
 }

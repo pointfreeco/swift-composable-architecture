@@ -74,7 +74,8 @@ public struct Login: ReducerProtocol, Sendable {
         return .none
       }
     }
-    .presents(\.$twoFactor, action: /Action.twoFactor) {
+    .ifLet(\.$alert, action: /Action.alert)
+    .ifLet(\.$twoFactor, action: /Action.twoFactor) {
       TwoFactor()
     }
   }

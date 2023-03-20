@@ -359,7 +359,7 @@ public struct _StackReducer<
   let fileID: StaticString
   let line: UInt
 
-  @Dependency(\.navigationID) var navigationID
+  @Dependency(\.navigationIDPath) var navigationIDPath
 
   public func reduce(into state: inout Base.State, action: Base.Action) -> EffectTask<Base.Action> {
     // TODO: is there anything to do with inert state in here?
@@ -435,10 +435,12 @@ public struct _StackReducer<
       return .none
 
     case let .public(.element(elementID, destinationAction)):
-      let id = self.navigationID(for: elementID)
+      let id = self.navigationIDPath(for: elementID)
       destinationEffects = self.destination
-        .dependency(\.dismiss, DismissEffect { Task.cancel(id: DismissID(elementID: elementID)) })
-        .dependency(\.navigationID, id)
+        .dependency(\.dismiss, DismissEffect {
+          Task.cancel(id: NavigationDismissID(elementID: elementID))
+        })
+        .dependency(\.navigationIDPath, id)
         .reduce(
           into: &state[keyPath: self.toStackState].state._elements[elementID]!,
           action: destinationAction
@@ -470,19 +472,19 @@ public struct _StackReducer<
     let idsAfter = state[keyPath: self.toStackState].state._ids
 
     let cancelEffects = EffectTask<Base.Action>.merge(
-      idsBefore.subtracting(idsAfter).map { .cancel(id: self.navigationID(for: $0)) }
+      idsBefore.subtracting(idsAfter).map { .cancel(id: self.navigationIDPath(for: $0)) }
     )
     let presentEffects = EffectTask<Base.Action>.merge(
       idsAfter.subtracting(idsBefore).map { elementID in
         // TODO: `isPresented` logic from `PresentationState`
-        let id = self.navigationID(for: elementID)
+        let id = self.navigationIDPath(for: elementID)
         return .merge(
           .run { send in
             do {
               try await withDependencies {
-                $0.navigationID = id
+                $0.navigationIDPath = id
               } operation: {
-                try await withTaskCancellation(id: DismissID(elementID: elementID)) {
+                try await withTaskCancellation(id: NavigationDismissID(elementID: elementID)) {
                   try await Task.never()
                 }
               }
@@ -507,13 +509,19 @@ public struct _StackReducer<
     )
   }
 
-  private func navigationID(for elementID: AnyHashable) -> NavigationID {
-    self.navigationID
-      .appending(path: self.toStackState)
-      .appending(component: elementID)
+  private func navigationIDPath(for elementID: AnyHashable) -> NavigationIDPath {
+    self.navigationIDPath.appending(
+      NavigationID(
+        id: elementID,
+        keyPath: self.toStackState
+      )
+    )
+//    self.navigationIDPath
+//      .appending(path: self.toStackState)
+//      .appending(component: elementID)
   }
 }
 
-private struct DismissID: Hashable {
+private struct NavigationDismissID: Hashable {
   let elementID: AnyHashable // TODO: rename
 }

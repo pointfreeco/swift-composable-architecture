@@ -26,14 +26,21 @@ extension ReducerProtocol {
   /// }
   /// ```
   ///
-  /// The `ifLet` forces a specific order of operations for the child and parent features. It runs
-  /// the child first, and then the parent. If the order was reversed, then it would be possible for
-  /// the parent feature to `nil` out the child state, in which case the child feature would not be
-  /// able to react to that action. That can cause subtle bugs.
+  /// The `ifLet` operator does a number of things to try to enforce correctness:
   ///
-  /// It is still possible for a parent feature higher up in the application to `nil` out child
-  /// state before the child has a chance to react to the action. In such cases a runtime warning
-  /// is shown in Xcode to let you know that there's a potential problem.
+  ///   * It forces a specific order of operations for the child and parent features. It runs the
+  ///     child first, and then the parent. If the order was reversed, then it would be possible for
+  ///     the parent feature to `nil` out the child state, in which case the child feature would not
+  ///     be able to react to that action. That can cause subtle bugs.
+  ///
+  ///   * It automatically cancels all child effects when it detects the child's state is `nil`'d
+  ///     out.
+  ///
+  ///   * Automatically `nil`s out child state when an action is sent for alerts and confirmation
+  ///     dialogs.
+  ///
+  /// See ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)-23pza`` for a more advanced
+  /// operator suited to navigation.
   ///
   /// - Parameters:
   ///   - toWrappedState: A writable key path from parent state to a property containing optional
@@ -43,6 +50,7 @@ extension ReducerProtocol {
   ///     state.
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @inlinable
+  @warn_unqualified_access
   public func ifLet<WrappedState, WrappedAction, Wrapped: ReducerProtocol>(
     _ toWrappedState: WritableKeyPath<State, WrappedState?>,
     action toWrappedAction: CasePath<Action, WrappedAction>,
@@ -87,7 +95,7 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
   let line: UInt
 
   @usableFromInline
-  @Dependency(\.navigationID) var navigationID
+  @Dependency(\.navigationIDPath) var navigationIDPath
 
   @usableFromInline
   init(
@@ -114,22 +122,23 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
   ) -> EffectTask<Parent.Action> {
     let childEffects = self.reduceChild(into: &state, action: action)
 
-    let childStateBefore = state[keyPath: self.toChildState]
+    let childIDBefore = state[keyPath: self.toChildState].map {
+      NavigationID(base: $0, keyPath: self.toChildState)
+    }
     let parentEffects = self.parent.reduce(into: &state, action: action)
-    let childStateAfter = state[keyPath: self.toChildState]
+    let childIDAfter = state[keyPath: self.toChildState].map {
+      NavigationID(base: $0, keyPath: self.toChildState)
+    }
 
     let childCancelEffects: EffectTask<Parent.Action>
-    if let childID = childStateBefore.map(AnyID.init), childID != childStateAfter.map(AnyID.init) {
-      let id = self.navigationID
-        .appending(path: self.toChildState)
-        .appending(id: childID)
-      childCancelEffects = .cancel(id: id)
+    if let childID = childIDBefore, childID != childIDAfter {
+      childCancelEffects = ._cancel(id: childID, navigationID: self.navigationIDPath)
     } else {
       childCancelEffects = .none
     }
 
     // TODO: should we check inert state and nil out?
-    
+    // TODO: can this just call ifCaseLet under the hood?
     return .merge(
       childEffects,
       parentEffects,
@@ -173,13 +182,17 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
       )
       return .none
     }
-    let id = self.navigationID
-      .appending(path: self.toChildState)
-      .appending(component: state[keyPath: self.toChildState]!)
+    defer {
+      if Child.State.self is _EphemeralState.Type {
+        state[keyPath: toChildState] = nil
+      }
+    }
+    let id = NavigationID(base: state[keyPath: self.toChildState]!, keyPath: self.toChildState)
+    let childNavigationID = self.navigationIDPath.appending(id)
     return self.child
-      .dependency(\.navigationID, id)
+      .dependency(\.navigationIDPath, childNavigationID)
       .reduce(into: &state[keyPath: self.toChildState]!, action: childAction)
       .map { self.toChildAction.embed($0) }
-      .cancellable(id: id)
+      ._cancellable(id: id, navigationIDPath: self.navigationIDPath)
   }
 }

@@ -11,6 +11,16 @@
       self == other as? Self
     }
   }
+
+  // MARK: Identifiable
+
+  func _identifiableID(_ value: Any) -> AnyHashable? {
+    func open(_ value: some Identifiable) -> AnyHashable {
+      value.id
+    }
+    guard let value = value as? any Identifiable else { return nil }
+    return open(value)
+  }
 #else
   // MARK: -
   // MARK: swift(<5.7)
@@ -37,6 +47,26 @@
         let rhs = rhs as? T
       else { return false }
       return lhs == rhs
+    }
+  }
+
+  // MARK: Identifiable
+
+  func _identifiableID(_ value: Any) -> AnyHashable? {
+    func open<T>(_: T.Type) -> AnyHashable? {
+      (Witness<T>.self as? AnyIdentifiable.Type)?.id(value)
+    }
+    return _openExistential(type(of: value), do: open)
+  }
+
+  private protocol AnyIdentifiable {
+    static func id(_ value: Any) -> AnyHashable?
+  }
+
+  extension Witness: AnyIdentifiable where T: Identifiable {
+    fileprivate static func id(_ value: Any) -> AnyHashable? {
+      guard let value = value as? T else { return nil }
+      return value.id
     }
   }
 #endif

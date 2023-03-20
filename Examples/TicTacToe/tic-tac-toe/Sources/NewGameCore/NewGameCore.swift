@@ -45,7 +45,7 @@ public struct NewGame: ReducerProtocol {
         return .none
       }
     }
-    .presents(\.$game, action: /NewGame.Action.game) {
+    .ifLet(\.$game, action: /NewGame.Action.game) {
       Game()
     }
   }
