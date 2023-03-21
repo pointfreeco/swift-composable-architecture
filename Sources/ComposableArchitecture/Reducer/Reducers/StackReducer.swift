@@ -4,77 +4,113 @@
 import Foundation
 import OrderedCollections
 
-public struct SomethingID {
-  var id: AnyHashable // UInt
+public struct StackElementID: Hashable {
   var generation: UInt
+  var rawValue: AnyHashable
 }
 
-public struct Generation:
-  Comparable, ExpressibleByIntegerLiteral, Hashable, RawRepresentable, Sendable
-{
-  public let rawValue: UInt
+struct StackElementIDGenerator: DependencyKey, Sendable {
+  let next: @Sendable () -> StackElementID
+  let peek: @Sendable () -> StackElementID
 
-  public init(_ value: UInt) {
-    self.rawValue = value
-  }
-
-  public init(rawValue: UInt) {
-    self.init(rawValue)
-  }
-
-  public init(integerLiteral value: UInt) {
-    self.init(value)
-  }
-
-  public static func < (lhs: Self, rhs: Self) -> Bool {
-    lhs.rawValue < rhs.rawValue
-  }
-}
-
-public struct StackElementID: DependencyKey, Sendable {
-  public let next: @Sendable () -> Generation
-  public let peek: @Sendable () -> Generation
-
-  public func callAsFunction() -> Generation {
+  func callAsFunction() -> StackElementID {
     self.next()
   }
 
-  private static var incrementing: Self {
-    let next = LockIsolated(Generation(0))
+  static var liveValue: Self {
+    let next = LockIsolated(StackElementID(generation: 0, rawValue: UUID()))
     return Self(
       next: {
-        defer { next.withValue { $0 = Generation($0.rawValue + 1) } }
+        defer {
+          next.withValue { $0 = StackElementID(generation: $0.generation + 1, rawValue: UUID()) }
+        }
         return next.value
       },
       peek: { next.value }
     )
   }
 
-  public static var liveValue: Self { Self.incrementing }
-
-  public static var testValue: Self { Self.incrementing }
+  static var testValue: Self {
+    let next = LockIsolated(StackElementID(generation: 0, rawValue: 0))
+    return Self(
+      next: {
+        defer {
+          next.withValue {
+            $0 = StackElementID(generation: $0.generation + 1, rawValue: $0.generation + 1)
+          }
+        }
+        return next.value
+      },
+      peek: { next.value }
+    )
+  }
 }
+
 extension DependencyValues {
-  public var stackElementID: StackElementID {
-    get { self[StackElementID.self] }
-    set { self[StackElementID.self] = newValue }
+  var stackElementID: StackElementIDGenerator {
+    get { self[StackElementIDGenerator.self] }
+    set { self[StackElementIDGenerator.self] = newValue }
   }
 }
 
-// TODO: Sketch out why we can't use IdentifiedArray
-// TODO: Sketch out why we can't use OrderedDictionary or wrap it
-
-@propertyWrapper
 public struct StackState<
-  State
+  Element
 >: BidirectionalCollection, MutableCollection, RandomAccessCollection, RangeReplaceableCollection {
-  struct WrappedState {
-    var state: State
+  struct WrappedElement {
     var didMount = false
+    var wrappedValue: Element
   }
 
-  var _ids: OrderedSet<Generation>
-  var _elements: [Generation: WrappedState]
+  fileprivate var _ids: OrderedSet<StackElementID>
+  private var _elements: [StackElementID: WrappedElement]
+
+  public internal(set) var ids: [StackElementID] {
+    get { self._ids.elements }
+    set {
+      assert(newValue.allSatisfy { self._ids.contains($0) })
+      self._ids.elements = newValue
+    }
+  }
+
+  public subscript(id id: StackElementID) -> Element {
+    _read { yield self._elements[id]!.wrappedValue }
+    _modify { yield &self._elements[id]!.wrappedValue }
+  }
+
+  subscript(_id id: StackElementID) -> Element? {
+    _read { yield self._elements[id]?.wrappedValue }
+    _modify {
+      var element = self._elements[id]?.wrappedValue
+      defer {
+        if let element = element {
+          self._elements[id]?.wrappedValue = element
+        }
+      }
+      yield &element
+    }
+  }
+
+  @discardableResult
+  public mutating func remove(id: StackElementID) -> Element {
+    self._ids.remove(id)
+    return self._elements.removeValue(forKey: id)!.wrappedValue
+  }
+
+  public mutating func pop(from id: StackElementID) {
+    let index = self._ids.firstIndex(of: id)! + 1
+    for id in self._ids[index...] {
+      self._elements[id] = nil
+    }
+    self._ids.removeSubrange(index...)
+  }
+
+  public mutating func pop(to id: StackElementID) {
+    let index = self._ids.firstIndex(of: id)!
+    for id in self._ids[index...] {
+      self._elements[id] = nil
+    }
+    self._ids.removeSubrange(index...)
+  }
 
   public var startIndex: Int { self._ids.startIndex }
 
@@ -84,38 +120,18 @@ public struct StackState<
 
   public func index(before i: Int) -> Int { self._ids.index(before: i) }
 
-  public subscript(position: Int) -> State {
-    _read { yield self._elements[self._ids[position]]!.state }
-    _modify { yield &self._elements[self._ids[position]]!.state }
+  public subscript(position: Int) -> Element {
+    _read { yield self._elements[self._ids[position]]!.wrappedValue }
+    _modify { yield &self._elements[self._ids[position]]!.wrappedValue }
   }
-
-  // return .fireAndForget { router.popToRoot() }
 
   public init() {
     self._ids = []
     self._elements = [:]
   }
 
-  public init(wrappedValue: Self = []) {
-    self = wrappedValue
-  }
-
-  public var wrappedValue: Self {
-    _read { yield self }
-    _modify { yield &self }
-  }
-
-  public var projectedValue: Path {
-    _read { yield Path(state: self) }
-    _modify {
-      var path = Path(state: self)
-      yield &path
-      self = path.state
-    }
-  }
-
   public mutating func replaceSubrange<C: Collection>(_ subrange: Range<Int>, with newElements: C)
-  where State == C.Element {
+  where Element == C.Element {
     for id in self._ids[subrange] {
       self._elements[id] = nil
     }
@@ -123,96 +139,47 @@ public struct StackState<
     for element in newElements.reversed() {
       let id = DependencyValues._current.stackElementID.next()
       self._ids.insert(id, at: subrange.startIndex)
-      self._elements[id] = WrappedState(state: element)
-    }
-  }
-
-  public struct Path {
-    var state: StackState
-
-    public var ids: [Generation] {
-      self.state._ids.elements
-    }
-
-    public subscript(id id: Generation) -> State {
-      _read { yield self.state._elements[id]!.state }
-      _modify { yield &self.state._elements[id]!.state }
-    }
-
-    subscript(safeID id: Generation) -> State? {
-      _read { yield self.state._elements[id]?.state }
-      _modify {
-        var state = self.state._elements[id]?.state
-        defer {
-          if let state = state {
-            self.state._elements[id]?.state = state
-          }
-        }
-        yield &state
-      }
-    }
-
-    @discardableResult
-    public mutating func remove(id: Generation) -> State {
-      self.state._ids.remove(id)
-      return self.state._elements.removeValue(forKey: id)!.state
-    }
-
-    public mutating func pop(from id: Generation) {
-      let index = self.state._ids.firstIndex(of: id)! + 1
-      for id in self.state._ids[index...] {
-        self.state._elements[id] = nil
-      }
-      self.state._ids.removeSubrange(index...)
-    }
-
-    public mutating func pop(to id: Generation) {
-      let index = self.state._ids.firstIndex(of: id)!
-      for id in self.state._ids[index...] {
-        self.state._elements[id] = nil
-      }
-      self.state._ids.removeSubrange(index...)
+      self._elements[id] = WrappedElement(wrappedValue: element)
     }
   }
 }
 
 extension StackState: ExpressibleByArrayLiteral {
-  public init(arrayLiteral elements: State...) {
+  public init(arrayLiteral elements: Element...) {
     self.init(elements)
   }
 }
 
-extension StackState: Equatable where State: Equatable {
+extension StackState: Equatable where Element: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs._ids.lazy.map { lhs._elements[$0]!.state }
-      == rhs.wrappedValue._ids.lazy.map { rhs._elements[$0]!.state }
+    lhs.elementsEqual(rhs)
   }
 }
 
-extension StackState: Hashable where State: Hashable {
+extension StackState: Hashable where Element: Hashable {
   public func hash(into hasher: inout Hasher) {
     hasher.combine(self.count)
-    for id in self._ids {
-      hasher.combine(self._elements[id]!.state)
+    for id in self.ids {
+      hasher.combine(self[id: id])
     }
   }
 }
 
-extension StackState: Decodable where State: Decodable {
+extension StackState: Decodable where Element: Decodable {
   public init(from decoder: Decoder) throws {
-    try self.init([State](from: decoder))
+    try self.init([Element](from: decoder))
   }
 }
 
-extension StackState: Encodable where State: Encodable {
+extension StackState: Encodable where Element: Encodable {
   public func encode(to encoder: Encoder) throws {
-    try [State](self).encode(to: encoder)
+    try [Element](self).encode(to: encoder)
   }
 }
 
 extension StackState: CustomReflectable {
   public var customMirror: Mirror {
-    Mirror(reflecting: [State](self))
+    Mirror(reflecting: [Element](self))
   }
 }
 
@@ -227,15 +194,15 @@ public struct StackAction<Action> {
     self.init(.internal(.delete(indexSet)))
   }
 
-  public static func element(id: Generation, action: Action) -> Self {
+  public static func element(id: StackElementID, action: Action) -> Self {
     self.init(.public(.element(id: id, action: action)))
   }
 
-  public static func popFrom(id: Generation) -> Self {
+  public static func popFrom(id: StackElementID) -> Self {
     self.init(.internal(.popFrom(id: id)))
   }
 
-  public static func popTo(id: Generation) -> Self {
+  public static func popTo(id: StackElementID) -> Self {
     self.init(.internal(.popTo(id: id)))
   }
 
@@ -252,18 +219,18 @@ public struct StackAction<Action> {
   }
 
   public enum PublicAction {
-    case didAdd(id: Generation)
-    case element(id: Generation, action: Action)
+    case didAdd(id: StackElementID)
+    case element(id: StackElementID, action: Action)
     // TODO: Possible to present arbitrary state in a lightweight way?
     case present(Any)
-    case willRemove(id: Generation)
+    case willRemove(id: StackElementID)
   }
 
   enum InternalAction: Hashable {
     case delete(IndexSet)
-    case pathChanged(ids: [Generation])
-    case popFrom(id: Generation)
-    case popTo(id: Generation)
+    case pathChanged(ids: [StackElementID])
+    case popFrom(id: StackElementID)
+    case popTo(id: StackElementID)
     case popToRoot  // TODO: `removeAll`?
   }
 
@@ -360,7 +327,7 @@ extension StackAction: Hashable where Action: Hashable {}
 
 extension ReducerProtocol {
   public func forEach<DestinationState, DestinationAction, Destination: ReducerProtocol>(
-    _ toStackState: WritableKeyPath<State, StackState<DestinationState>.Path>,
+    _ toStackState: WritableKeyPath<State, StackState<DestinationState>>,
     action toStackAction: CasePath<Action, StackAction<DestinationAction>>,
     @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
     file: StaticString = #file,
@@ -384,7 +351,7 @@ public struct _StackReducer<
   Base: ReducerProtocol, Destination: ReducerProtocol
 >: ReducerProtocol {
   let base: Base
-  let toStackState: WritableKeyPath<Base.State, StackState<Destination.State>.Path>
+  let toStackState: WritableKeyPath<Base.State, StackState<Destination.State>>
   let toStackAction: CasePath<Base.Action, StackAction<Destination.Action>>
   let destination: Destination
   let file: StaticString
@@ -396,7 +363,7 @@ public struct _StackReducer<
   public func reduce(into state: inout Base.State, action: Base.Action) -> EffectTask<Base.Action> {
     // TODO: is there anything to do with inert state in here?
 
-    let idsBefore = state[keyPath: self.toStackState].state._ids
+    let idsBefore = state[keyPath: self.toStackState]._ids
     let destinationEffects: EffectTask<Base.Action>
     let baseEffects: EffectTask<Base.Action>
 
@@ -411,11 +378,11 @@ public struct _StackReducer<
         }
       )
       destinationEffects = .none
-      state[keyPath: self.toStackState].state.remove(atOffsets: indexSet)
+      state[keyPath: self.toStackState].remove(atOffsets: indexSet)
 
     case let .internal(.pathChanged(ids)):
       baseEffects = .merge(
-        state[keyPath: self.toStackState].state._ids.subtracting(ids).map { id in
+        state[keyPath: self.toStackState]._ids.subtracting(ids).map { id in
           self.base.reduce(
             into: &state,
             action: self.toStackAction.embed(StackAction(.public(.willRemove(id: id))))
@@ -424,12 +391,12 @@ public struct _StackReducer<
       )
       destinationEffects = .none
       // TODO: Need to clean up dictionary and remove elements that no longer exist
-      state[keyPath: self.toStackState].state._ids.elements = ids
+      state[keyPath: self.toStackState]._ids.elements = ids
 
     case let .internal(.popFrom(id)):
-      let index = state[keyPath: self.toStackState].state._ids.firstIndex(of: id)!
+      let index = state[keyPath: self.toStackState]._ids.firstIndex(of: id)!
       baseEffects = .merge(
-        state[keyPath: self.toStackState].state._ids[index...].map { id in
+        state[keyPath: self.toStackState]._ids[index...].map { id in
           self.base.reduce(
             into: &state,
             action: self.toStackAction.embed(StackAction(.public(.willRemove(id: id))))
@@ -440,9 +407,9 @@ public struct _StackReducer<
       state[keyPath: self.toStackState].pop(from: id)
 
     case let .internal(.popTo(id)):
-      let index = state[keyPath: self.toStackState].state._ids.firstIndex(of: id)! + 1
+      let index = state[keyPath: self.toStackState]._ids.firstIndex(of: id)! + 1
       baseEffects = .merge(
-        state[keyPath: self.toStackState].state._ids[index...].map { id in
+        state[keyPath: self.toStackState]._ids[index...].map { id in
           self.base.reduce(
             into: &state,
             action: self.toStackAction.embed(StackAction(.public(.willRemove(id: id))))
@@ -454,7 +421,7 @@ public struct _StackReducer<
 
     case .internal(.popToRoot):
       baseEffects = .merge(
-        state[keyPath: self.toStackState].state._ids.map { id in
+        state[keyPath: self.toStackState]._ids.map { id in
           self.base.reduce(
             into: &state,
             action: self.toStackAction.embed(StackAction(.public(.willRemove(id: id))))
@@ -462,7 +429,7 @@ public struct _StackReducer<
         }
       )
       destinationEffects = .none
-      state[keyPath: self.toStackState].state.removeAll()
+      state[keyPath: self.toStackState].removeAll()
 
     case .public(.didAdd):
       return .none
@@ -481,7 +448,7 @@ public struct _StackReducer<
         )
         .dependency(\.navigationIDPath, elementNavigationIDPath)
         .reduce(
-          into: &state[keyPath: self.toStackState].state._elements[elementID]!.state,
+          into: &state[keyPath: self.toStackState][id: elementID],
           action: destinationAction
         )
         .map { toStackAction.embed(.element(id: elementID, action: $0)) }
@@ -496,9 +463,7 @@ public struct _StackReducer<
         // TODO: Runtime warn
         return .none
       }
-      let id = DependencyValues._current.stackElementID.next()
-      state[keyPath: self.toStackState].state._ids.append(id)
-      state[keyPath: self.toStackState].state._elements[id]!.state = presentedState
+      state[keyPath: self.toStackState].append(presentedState)
       return .none
 
     case .public(.willRemove):
@@ -509,7 +474,7 @@ public struct _StackReducer<
       baseEffects = self.base.reduce(into: &state, action: action)
     }
 
-    let idsAfter = state[keyPath: self.toStackState].state._ids
+    let idsAfter = state[keyPath: self.toStackState]._ids
 
     let cancelEffects = EffectTask<Base.Action>.merge(
       idsBefore.subtracting(idsAfter).map { .cancel(id: self.navigationIDPath(for: $0)) }

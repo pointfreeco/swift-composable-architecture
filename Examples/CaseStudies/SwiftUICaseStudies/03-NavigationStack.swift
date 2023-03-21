@@ -7,49 +7,19 @@ private let readMe = """
 
 struct NavigationDemo: ReducerProtocol {
   struct State: Equatable {
-    @StackState<Destinations.State> var navigation = []
+    var navigation: StackState<Destinations.State> = []
   }
 
   enum Action: Equatable {
-    case cancelTimersButtonTapped
     case goBackToScreen(Int)
     case goToABCButtonTapped
     case navigation(StackAction<Destinations.Action>)
-    // .path(.setPath(...))
-    //
     case shuffleButtonTapped
   }
 
   var body: some ReducerProtocol<State, Action> {
     Reduce<State, Action> { state, action in
       switch action {
-      case .cancelTimersButtonTapped:
-        return .none
-////        return .cancel(id: ScreenC.TimerID.self)
-//        // TODO: support 3 use cases of cancellation
-//        //       You can either:
-//        //         * Cancel all timers across all screen C's in the stack
-//        //           return .cancel(id: ScreenC.TimerID.self)
-//        //         * Cancel all effects inside a particular screen in the stack
-//        //           return .cancel(navigationID: id)
-//        //         * Cancel a particular effect inside a particular screen in the stack
-//        //           return .cancel(id: ScreenC.TimerID.self, navigationID: id)
-//        return .merge(
-//          state.$navigation.compactMap { destination -> EffectTask<Action>? in
-//            switch destination.element {
-//            case .screenA, .screenB:
-//              return nil
-//
-//            case .screenC:
-//              return DependencyValues.withValue(\.navigationID.current, destination.id) {
-//                Effect.cancel(id: ScreenC.TimerID.self)
-//              }
-////               .cancel(id: ScreenC.TimerID.self, navigationID: id)
-////              return .init(value: .path(.element(id: destination.id, .screenC(.stopButtonTapped))))
-//            }
-//          }
-//        )
-
       case let .goBackToScreen(n):
         state.navigation.removeLast(n)
         return .none
@@ -83,7 +53,7 @@ struct NavigationDemo: ReducerProtocol {
         return .none
       }
     }
-    .forEach(\.$navigation, action: /Action.navigation) {
+    .forEach(\.navigation, action: /Action.navigation) {
       Destinations()
     }
   }
@@ -121,7 +91,7 @@ struct NavigationDemoView: View {
   var body: some View {
     ZStack(alignment: .bottom) {
       NavigationStackStore(
-        self.store.scope(state: \.$navigation, action: NavigationDemo.Action.navigation)
+        self.store.scope(state: \.navigation, action: NavigationDemo.Action.navigation)
       ) {
         Form {
           Section { Text(readMe) }
@@ -214,9 +184,6 @@ struct FloatingMenuView: View {
           }
           Button("Pop to root") {
             viewStore.send(.navigation(.popToRoot), animation: .default)
-          }
-          Button("Cancel timers") {
-            viewStore.send(.cancelTimersButtonTapped)
           }
 
           Menu {
