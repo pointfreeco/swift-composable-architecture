@@ -48,6 +48,7 @@ extension DependencyValues {
 /// }
 /// ```
 public struct DismissEffect: Sendable {
+  // TODO: Make `@MainActor`
   var dismiss: (@Sendable () async -> Void)?
 
   public func callAsFunction(

@@ -130,6 +130,7 @@ public struct _ForEachReducer<
     let parentEffects = self.parent.reduce(into: &state, action: action)
     let idsAfter = state[keyPath: self.toElementsState].ids
 
+    // TODO: Use `memcmp` as a happy path to avoid `subtracting` work
     let elementCancelEffects: EffectTask<Parent.Action> = .merge(
       idsBefore.subtracting(idsAfter).map {
         ._cancel(

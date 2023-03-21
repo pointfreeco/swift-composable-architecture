@@ -3,8 +3,14 @@ import Foundation
 import OrderedCollections
 
 public struct StackElementID: Hashable {
-  var generation: UInt
+  var generation: Int
   var rawValue: AnyHashable
+}
+
+extension StackElementID: ExpressibleByIntegerLiteral {
+  public init(integerLiteral value: Int) {
+    self.init(generation: value, rawValue: value)
+  }
 }
 
 struct StackElementIDGenerator: DependencyKey, Sendable {
@@ -89,7 +95,7 @@ public struct StackState<
   }
 
   public mutating func pop(from id: StackElementID) {
-    let index = self._ids.firstIndex(of: id)! + 1
+    let index = self._ids.firstIndex(of: id)!
     for id in self._ids[index...] {
       self._elements[id] = nil
       self._mounted.remove(id)
@@ -98,13 +104,15 @@ public struct StackState<
   }
 
   public mutating func pop(to id: StackElementID) {
-    let index = self._ids.firstIndex(of: id)!
+    let index = self._ids.firstIndex(of: id)! + 1
     for id in self._ids[index...] {
       self._elements[id] = nil
       self._mounted.remove(id)
     }
     self._ids.removeSubrange(index...)
   }
+
+  // TODO: func exists(id:), more APIs from identified array?
 
   public var startIndex: Int { self._ids.startIndex }
 
@@ -433,7 +441,7 @@ public struct _StackReducer<
       destinationEffects = self.destination
         .dependency(
           \.dismiss,
-          DismissEffect {
+          DismissEffect { @MainActor in
             Task._cancel(
               id: NavigationDismissID(elementID: elementID),
               navigationID: elementNavigationIDPath
@@ -471,6 +479,7 @@ public struct _StackReducer<
     let idsAfter = state[keyPath: self.toStackState]._ids
 
     let cancelEffects = EffectTask<Base.Action>.merge(
+      // Use `mounted` instead of `idsBefore`?
       idsBefore.subtracting(idsAfter).map { ._cancel(navigationID: self.navigationIDPath(for: $0)) }
     )
     let presentEffects = EffectTask<Base.Action>.merge(
@@ -478,21 +487,21 @@ public struct _StackReducer<
         let navigationDestinationID = self.navigationIDPath(for: elementID)
         state[keyPath: self.toStackState]._mounted.insert(elementID)
         return .merge(
-            Empty(completeImmediately: false)
-              .eraseToEffect(),
-            self.base.reduce(
-              into: &state,
-              action: self.toStackAction.embed(StackAction(.public(.didAdd(id: elementID))))
-            )
+          Empty(completeImmediately: false)
+            .eraseToEffect(),
+          self.base.reduce(
+            into: &state,
+            action: self.toStackAction.embed(StackAction(.public(.didAdd(id: elementID))))
           )
-          ._cancellable(
-            id: NavigationDismissID(elementID: elementID),
-            navigationIDPath: navigationDestinationID
-          )
-          .append(Just(self.toStackAction.embed(StackAction(.internal(.popFrom(id: elementID))))))
-          .eraseToEffect()
-          ._cancellable(navigationIDPath: navigationDestinationID)
-          ._cancellable(id: OnFirstAppearID(), navigationIDPath: .init())
+        )
+        ._cancellable(
+          id: NavigationDismissID(elementID: elementID),
+          navigationIDPath: navigationDestinationID
+        )
+        .append(Just(self.toStackAction.embed(StackAction(.internal(.popFrom(id: elementID))))))
+        .eraseToEffect()
+        ._cancellable(navigationIDPath: navigationDestinationID)
+        ._cancellable(id: OnFirstAppearID(), navigationIDPath: .init())
       }
     )
 

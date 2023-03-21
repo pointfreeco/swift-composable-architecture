@@ -8,7 +8,7 @@ import Combine
 @propertyWrapper
 public struct PresentationState<State> {
   private var boxedValue: [State]
-  @usableFromInline  var isPresented = false
+  @usableFromInline var isPresented = false
 
   public init(wrappedValue: State?) {
     self.boxedValue = wrappedValue.map { [$0] } ?? []
