@@ -8,7 +8,7 @@ import Combine
 @propertyWrapper
 public struct PresentationState<State> {
   private var boxedValue: [State]
-  fileprivate var isPresented = false
+  @usableFromInline  var isPresented = false
 
   public init(wrappedValue: State?) {
     self.boxedValue = wrappedValue.map { [$0] } ?? []
@@ -149,6 +149,7 @@ extension Reducer {
   ///     state.
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @warn_unqualified_access
+  @inlinable
   public func ifLet<DestinationState, DestinationAction, Destination: Reducer>(
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
     action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
@@ -172,6 +173,7 @@ extension Reducer {
   /// A special overload of ``Reducer/ifLet(_:action:then:file:fileID:line:)-qgdj`` for alerts and
   /// confirmation dialogs that does not require a child reducer.
   @warn_unqualified_access
+  @inlinable
   public func ifLet<DestinationState: _EphemeralState, DestinationAction>(
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
     action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
@@ -191,16 +193,40 @@ extension Reducer {
 }
 
 public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer {
-  let base: Base
-  let toPresentationState: WritableKeyPath<Base.State, PresentationState<Destination.State>>
-  let toPresentationAction: CasePath<Base.Action, PresentationAction<Destination.Action>>
-  let destination: Destination
-  let file: StaticString
-  let fileID: StaticString
-  let line: UInt
+  @usableFromInline let base: Base
+  @usableFromInline let toPresentationState: WritableKeyPath<
+    Base.State, PresentationState<Destination.State>
+  >
+  @usableFromInline let toPresentationAction: CasePath<
+    Base.Action, PresentationAction<Destination.Action>
+  >
+  @usableFromInline let destination: Destination
+  @usableFromInline let file: StaticString
+  @usableFromInline let fileID: StaticString
+  @usableFromInline let line: UInt
 
-  @Dependency(\.navigationIDPath) var navigationIDPath
+  @usableFromInline @Dependency(\.navigationIDPath) var navigationIDPath
 
+  @usableFromInline
+  init(
+    base: Base,
+    toPresentationState: WritableKeyPath<Base.State, PresentationState<Destination.State>>,
+    toPresentationAction: CasePath<Base.Action, PresentationAction<Destination.Action>>,
+    destination: Destination,
+    file: StaticString,
+    fileID: StaticString,
+    line: UInt
+  ) {
+    self.base = base
+    self.toPresentationState = toPresentationState
+    self.toPresentationAction = toPresentationAction
+    self.destination = destination
+    self.file = file
+    self.fileID = fileID
+    self.line = line
+  }
+
+  @inlinable
   public func reduce(
     into state: inout Base.State, action: Base.Action
   ) -> EffectTask<Base.Action> {
@@ -314,7 +340,8 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
     )
   }
 
-  private func navigationIDPath(for state: Destination.State) -> NavigationIDPath {
+  @usableFromInline
+  func navigationIDPath(for state: Destination.State) -> NavigationIDPath {
     self.navigationIDPath.appending(
       NavigationID(
         base: state,
@@ -324,15 +351,27 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
   }
 }
 
-private struct DismissID: Hashable {}
-struct OnFirstAppearID: Hashable {}
+@usableFromInline
+struct DismissID: Hashable {
+  @usableFromInline init() {}
+}
+@usableFromInline
+struct OnFirstAppearID: Hashable {
+  @usableFromInline init() {}
+}
 
 public struct _PresentedID: Hashable {
   @inlinable
-  public init() {}
+  public init() {
+    self.init(internal: ())
+  }
+
+  @usableFromInline
+  init(internal: Void) {}
 }
 
 extension Task where Success == Never, Failure == Never {
+  @usableFromInline
   internal static func _cancel(
     id: AnyHashable,
     navigationID: NavigationIDPath

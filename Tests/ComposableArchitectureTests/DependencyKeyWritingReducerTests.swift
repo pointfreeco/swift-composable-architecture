@@ -2,7 +2,7 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
-final class DependencyKeyWritingReducerTests: XCTestCase {
+final class DependencyKeyWritingReducerTests: BaseTCATestCase {
   func testWritingFusion() async {
     let reducer: _DependencyKeyWritingReducer<Feature> = Feature()
       .dependency(\.myValue, 42)

@@ -5,7 +5,7 @@ import XCTest
 import os.signpost
 
 @MainActor
-final class ReducerTests: XCTestCase {
+final class ReducerTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
 
   func testCallableAsFunction() {

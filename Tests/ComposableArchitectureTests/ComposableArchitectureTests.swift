@@ -4,7 +4,7 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
-final class ComposableArchitectureTests: XCTestCase {
+final class ComposableArchitectureTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
 
   func testScheduling() async {

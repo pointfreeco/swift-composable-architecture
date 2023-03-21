@@ -3,7 +3,7 @@
   import XCTest
 
   @MainActor
-  final class TestStoreFailureTests: XCTestCase {
+  final class TestStoreFailureTests: BaseTCATestCase {
     func testNoStateChangeFailure() {
       enum Action { case first, second }
       let store = TestStore(

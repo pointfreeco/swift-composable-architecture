@@ -3,7 +3,7 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
-final class EffectTaskTests: XCTestCase {
+final class EffectTaskTests: BaseTCATestCase {
   func testTask() async {
     struct State: Equatable {}
     enum Action: Equatable { case tapped, response }
