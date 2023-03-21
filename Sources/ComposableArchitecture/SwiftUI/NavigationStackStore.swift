@@ -15,7 +15,7 @@ public struct NavigationStackStore<State, Action, Content: View, Destination: Vi
     self.destination = { id in
       IfLetStore(
         store.scope(
-          state: returningLastNonNilValue { $0.state._elements[id] },
+          state: returningLastNonNilValue { $0.state._elements[id]?.state },
           action: { .element(id: id, action: $0) }
         ),
         then: destination
