@@ -28,10 +28,21 @@ public struct NavigationStackStore<State, Action, Content: View, Destination: Vi
     WithViewStore(
       self.store.scope(
         state: { $0.ids },
-        action: { StackAction(.internal(.pathChanged(ids: $0))) }
+        action: StackAction.popFrom(id:)
       )
     ) { viewStore in
-      NavigationStack(path: viewStore.binding(get: { $0 }, send: { $0 })) {
+      // TODO: Does this binding need to be safer to avoid unsafely subscripting into the stack?
+      NavigationStack(
+//        path: viewStore.binding(get: { $0 }, send: { viewStore.state[$0.count] })
+        path: Binding(
+          get: { viewStore.state },
+          set: { newIDs in
+            if viewStore.state.count > newIDs.count {
+              viewStore.send(viewStore.state[newIDs.count])
+            }
+          }
+        )
+      ) {
         self.content
           .navigationDestination(for: StackElementID.self) { id in
             self.destination(id)

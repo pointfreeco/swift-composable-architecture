@@ -14,6 +14,7 @@ struct NavigationDemo: ReducerProtocol {
     case goBackToScreen(Int)
     case goToABCButtonTapped
     case navigation(StackAction<Destinations.Action>)
+    case popToRoot
     case shuffleButtonTapped
   }
 
@@ -31,7 +32,7 @@ struct NavigationDemo: ReducerProtocol {
         return .none
 
       case let .navigation(action):
-        switch action.type {
+        switch action {
         case .element(id: _, action: .screenB(.screenAButtonTapped)):
           state.navigation.append(.screenA(.init()))
           return .none
@@ -47,6 +48,10 @@ struct NavigationDemo: ReducerProtocol {
         default:
           return .none
         }
+
+      case .popToRoot:
+        state.navigation.removeAll()
+        return .none
 
       case .shuffleButtonTapped:
         state.navigation.shuffle()
@@ -183,7 +188,7 @@ struct FloatingMenuView: View {
             viewStore.send(.shuffleButtonTapped)
           }
           Button("Pop to root") {
-            viewStore.send(.navigation(.popToRoot), animation: .default)
+            viewStore.send(.popToRoot, animation: .default)
           }
 
           Menu {
@@ -194,7 +199,7 @@ struct FloatingMenuView: View {
               .disabled(offset == 0)
             }
             Button("Root") {
-              viewStore.send(.navigation(.popToRoot), animation: .default)
+              viewStore.send(.popToRoot, animation: .default)
             }
           } label: {
             Text("Current stack")
