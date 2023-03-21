@@ -257,7 +257,7 @@ public struct _PresentationReducer<
           into: &state[keyPath: self.toPresentationState].wrappedValue!, action: destinationAction
         )
         .map { self.toPresentationAction.embed(.presented($0)) }
-        ._cancellable(id: _PresentedID(), navigationIDPath: destinationNavigationIDPath)
+        ._cancellable(navigationIDPath: destinationNavigationIDPath)
       baseEffects = self.base.reduce(into: &state, action: action)
       if isEphemeral(destinationState),
         destinationNavigationIDPath
@@ -324,7 +324,7 @@ public struct _PresentationReducer<
         ._cancellable(id: PresentationDismissID(), navigationIDPath: presentationDestinationID)
         .append(Just(self.toPresentationAction.embed(.dismiss)))
         .eraseToEffect()
-        ._cancellable(id: _PresentedID(), navigationIDPath: presentationDestinationID)
+        ._cancellable(navigationIDPath: presentationDestinationID)
         ._cancellable(id: OnFirstAppearID(), navigationIDPath: .init())
     } else {
       presentEffects = .none
@@ -382,7 +382,7 @@ extension Task where Success == Never, Failure == Never {
 extension EffectPublisher {
   @usableFromInline
   internal func _cancellable(
-    id: AnyHashable,
+    id: AnyHashable = _PresentedID(),
     navigationIDPath: NavigationIDPath,
     cancelInFlight: Bool = false
   ) -> Self {

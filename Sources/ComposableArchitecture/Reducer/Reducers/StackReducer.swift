@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 import OrderedCollections
 
@@ -53,13 +54,9 @@ extension DependencyValues {
 public struct StackState<
   Element
 >: BidirectionalCollection, MutableCollection, RandomAccessCollection, RangeReplaceableCollection {
-  struct WrappedElement {
-    var didMount = false
-    var wrappedValue: Element
-  }
-
   fileprivate private(set) var _ids: OrderedSet<StackElementID>
-  private var _elements: [StackElementID: WrappedElement]
+  private var _elements: [StackElementID: Element]
+  fileprivate var _mounted: Set<StackElementID> = []
 
   public internal(set) var ids: [StackElementID] {
     get { self._ids.elements }
@@ -69,38 +66,33 @@ public struct StackState<
       self._ids.elements = newValue
       for id in oldValue {
         self._elements[id] = nil
+        self._mounted.remove(id)
       }
     }
   }
 
   public subscript(id id: StackElementID) -> Element {
-    _read { yield self._elements[id]!.wrappedValue }
-    _modify { yield &self._elements[id]!.wrappedValue }
+    _read { yield self._elements[id]! }
+    _modify { yield &self._elements[id]! }
   }
 
   subscript(_id id: StackElementID) -> Element? {
-    _read { yield self._elements[id]?.wrappedValue }
-    _modify {
-      var element = self._elements[id]?.wrappedValue
-      defer {
-        if let element = element {
-          self._elements[id]?.wrappedValue = element
-        }
-      }
-      yield &element
-    }
+    _read { yield self._elements[id] }
+    _modify { yield &self._elements[id] }
   }
 
   @discardableResult
   public mutating func remove(id: StackElementID) -> Element {
     self._ids.remove(id)
-    return self._elements.removeValue(forKey: id)!.wrappedValue
+    self._mounted.remove(id)
+    return self._elements.removeValue(forKey: id)!
   }
 
   public mutating func pop(from id: StackElementID) {
     let index = self._ids.firstIndex(of: id)! + 1
     for id in self._ids[index...] {
       self._elements[id] = nil
+      self._mounted.remove(id)
     }
     self._ids.removeSubrange(index...)
   }
@@ -109,6 +101,7 @@ public struct StackState<
     let index = self._ids.firstIndex(of: id)!
     for id in self._ids[index...] {
       self._elements[id] = nil
+      self._mounted.remove(id)
     }
     self._ids.removeSubrange(index...)
   }
@@ -122,8 +115,8 @@ public struct StackState<
   public func index(before i: Int) -> Int { self._ids.index(before: i) }
 
   public subscript(position: Int) -> Element {
-    _read { yield self._elements[self._ids[position]]!.wrappedValue }
-    _modify { yield &self._elements[self._ids[position]]!.wrappedValue }
+    _read { yield self._elements[self._ids[position]]! }
+    _modify { yield &self._elements[self._ids[position]]! }
   }
 
   public init() {
@@ -135,12 +128,13 @@ public struct StackState<
   where Element == C.Element {
     for id in self._ids[subrange] {
       self._elements[id] = nil
+      self._mounted.remove(id)
     }
     self._ids.removeSubrange(subrange)
     for element in newElements.reversed() {
       let id = DependencyValues._current.stackElementID.next()
       self._ids.insert(id, at: subrange.startIndex)
-      self._elements[id] = WrappedElement(wrappedValue: element)
+      self._elements[id] = element
     }
   }
 }
@@ -452,7 +446,7 @@ public struct _StackReducer<
           action: destinationAction
         )
         .map { toStackAction.embed(.element(id: elementID, action: $0)) }
-        ._cancellable(id: _PresentedID(), navigationIDPath: elementNavigationIDPath)
+        ._cancellable(navigationIDPath: elementNavigationIDPath)
 
       baseEffects = self.base.reduce(into: &state, action: action)
 
@@ -477,33 +471,28 @@ public struct _StackReducer<
     let idsAfter = state[keyPath: self.toStackState]._ids
 
     let cancelEffects = EffectTask<Base.Action>.merge(
-      idsBefore.subtracting(idsAfter).map { .cancel(id: self.navigationIDPath(for: $0)) }
+      idsBefore.subtracting(idsAfter).map { ._cancel(navigationID: self.navigationIDPath(for: $0)) }
     )
-    // TODO: Update to use publisher style from presentation
     let presentEffects = EffectTask<Base.Action>.merge(
-      idsAfter.subtracting(idsBefore).map { elementID in
-        // TODO: `isPresented` logic from `PresentationState`
-        let id = self.navigationIDPath(for: elementID)
+      idsAfter.subtracting(state[keyPath: self.toStackState]._mounted).map { elementID in
+        let navigationDestinationID = self.navigationIDPath(for: elementID)
+        state[keyPath: self.toStackState]._mounted.insert(elementID)
         return .merge(
-          .run { send in
-            do {
-              try await withDependencies {
-                $0.navigationIDPath = id
-              } operation: {
-                try await withTaskCancellation(id: NavigationDismissID(elementID: elementID)) {
-                  try await Task.never()
-                }
-              }
-            } catch is CancellationError {
-              await send(self.toStackAction.embed(StackAction(.internal(.popFrom(id: elementID)))))
-            }
-          }
-          .cancellable(id: id),
-          self.base.reduce(
-            into: &state,
-            action: self.toStackAction.embed(StackAction(.public(.didAdd(id: elementID))))
+            Empty(completeImmediately: false)
+              .eraseToEffect(),
+            self.base.reduce(
+              into: &state,
+              action: self.toStackAction.embed(StackAction(.public(.didAdd(id: elementID))))
+            )
           )
-        )
+          ._cancellable(
+            id: NavigationDismissID(elementID: elementID),
+            navigationIDPath: navigationDestinationID
+          )
+          .append(Just(self.toStackAction.embed(StackAction(.internal(.popFrom(id: elementID))))))
+          .eraseToEffect()
+          ._cancellable(navigationIDPath: navigationDestinationID)
+          ._cancellable(id: OnFirstAppearID(), navigationIDPath: .init())
       }
     )
 
