@@ -7,7 +7,7 @@ struct VoiceMemos: ReducerProtocol {
     @PresentationState var alert: AlertState<AlertAction>?
     var audioRecorderPermission = RecorderPermission.undetermined
     @PresentationState var recordingMemo: RecordingMemo.State?
-    @StackState<VoiceMemo.State> var voiceMemos = []
+    var voiceMemos: StackState<VoiceMemo.State> = []
 
     enum RecorderPermission {
       case allowed
@@ -99,7 +99,7 @@ struct VoiceMemos: ReducerProtocol {
     .ifLet(\.$recordingMemo, action: /Action.recordingMemo) {
       RecordingMemo()
     }
-    .forEach(\.$voiceMemos, action: /Action.voiceMemos) {
+    .forEach(\.voiceMemos, action: /Action.voiceMemos) {
       VoiceMemo()
     }
   }
@@ -109,8 +109,8 @@ struct VoiceMemos: ReducerProtocol {
     case let .element(id: elementID, action: .delegate(action)):
       switch action {
       case .playbackStarted:
-        for id in state.$voiceMemos.ids where id != elementID {
-          state.$voiceMemos[id: id].mode = .notPlaying
+        for id in state.voiceMemos.ids where id != elementID {
+          state.voiceMemos[id: id].mode = .notPlaying
         }
 
       case .playbackFailed:
@@ -141,7 +141,7 @@ struct VoiceMemosView: View {
         VStack {
           List {
             _ForEachStore(
-              self.store.scope(state: \.$voiceMemos, action: VoiceMemos.Action.voiceMemos)
+              self.store.scope(state: \.voiceMemos, action: VoiceMemos.Action.voiceMemos)
             ) {
               VoiceMemoView(store: $0)
             }
