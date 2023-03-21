@@ -1,6 +1,3 @@
-// TODO: Add effect cancellation to plain `.forEach(\.nonStackState)`
-// TODO: Process of migrating a feature from `forEach(identifiedArray)` to `forEach(stack)`.
-
 import Foundation
 import OrderedCollections
 
@@ -61,14 +58,18 @@ public struct StackState<
     var wrappedValue: Element
   }
 
-  fileprivate var _ids: OrderedSet<StackElementID>
+  fileprivate private(set) var _ids: OrderedSet<StackElementID>
   private var _elements: [StackElementID: WrappedElement]
 
   public internal(set) var ids: [StackElementID] {
     get { self._ids.elements }
     set {
       assert(newValue.allSatisfy { self._ids.contains($0) })
+      let oldValue = self._ids.subtracting(newValue)
       self._ids.elements = newValue
+      for id in oldValue {
+        self._elements[id] = nil
+      }
     }
   }
 
@@ -361,7 +362,7 @@ public struct _StackReducer<
   @Dependency(\.navigationIDPath) var navigationIDPath
 
   public func reduce(into state: inout Base.State, action: Base.Action) -> EffectTask<Base.Action> {
-    // TODO: is there anything to do with inert state in here?
+    // TODO: is there anything to do with ephemeral state in here?
 
     let idsBefore = state[keyPath: self.toStackState]._ids
     let destinationEffects: EffectTask<Base.Action>
@@ -390,8 +391,7 @@ public struct _StackReducer<
         }
       )
       destinationEffects = .none
-      // TODO: Need to clean up dictionary and remove elements that no longer exist
-      state[keyPath: self.toStackState]._ids.elements = ids
+      state[keyPath: self.toStackState].ids = ids
 
     case let .internal(.popFrom(id)):
       let index = state[keyPath: self.toStackState]._ids.firstIndex(of: id)!
