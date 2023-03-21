@@ -362,6 +362,15 @@ public final class Store<State, Action> {
     self.scope(state: toChildState, action: { $0 }, file: file, line: line)
   }
 
+public func scope<ChildState: Equatable, ChildAction>(
+  state toChildState: @escaping (State) -> ChildState,
+  action fromChildAction: @escaping (ChildAction) -> Action,
+  file: StaticString = #file,
+  line: UInt = #line
+) -> Store<ChildState, ChildAction> {
+  scope(state: toChildState, action: fromChildAction, removeDuplicates: ==, file: file, line: line)
+}
+
   func filter(
     _ isSent: @escaping (State, Action) -> Bool,
     file: StaticString = #file,
