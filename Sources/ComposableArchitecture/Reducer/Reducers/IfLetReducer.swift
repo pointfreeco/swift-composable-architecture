@@ -187,12 +187,11 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
         state[keyPath: toChildState] = nil
       }
     }
-    let id = NavigationID(base: state[keyPath: self.toChildState]!, keyPath: self.toChildState)
-    let childNavigationID = self.navigationIDPath.appending(id)
+    let navigationID = NavigationID(base: state[keyPath: self.toChildState]!, keyPath: self.toChildState)
     return self.child
-      .dependency(\.navigationIDPath, childNavigationID)
+      .dependency(\.navigationIDPath, self.navigationIDPath.appending(navigationID))
       .reduce(into: &state[keyPath: self.toChildState]!, action: childAction)
       .map { self.toChildAction.embed($0) }
-      ._cancellable(id: id, navigationIDPath: self.navigationIDPath)
+      ._cancellable(id: navigationID, navigationIDPath: self.navigationIDPath)
   }
 }

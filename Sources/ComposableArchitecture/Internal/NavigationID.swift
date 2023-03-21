@@ -96,6 +96,16 @@ struct NavigationID: Hashable, @unchecked Sendable {
   }
 
   @usableFromInline
+  init<Value, Root, ID: Hashable>(
+    id: ID,
+    keyPath: KeyPath<Root, IdentifiedArray<ID, Value>>
+  ) {
+    self.kind = .keyPath(keyPath)
+    self.tag = nil
+    self.identifier = AnyHashableSendable(id)
+  }
+
+  @usableFromInline
   init<Value, Root>(
     root: Root,
     value: Value,
