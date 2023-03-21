@@ -1,35 +1,53 @@
+// TODO: Add effect cancellation to plain `.forEach(\.nonStackState)`
+// TODO: Process of migrating a feature from `forEach(identifiedarray)` to `forEach(stack)`.
+
 import Foundation
 import OrderedCollections
 
-public struct StackElementID: DependencyKey, Sendable {
-  public let next: @Sendable () -> AnyHashable
-  public let peek: @Sendable () -> AnyHashable
+public struct Generation:
+  Comparable, ExpressibleByIntegerLiteral, Hashable, RawRepresentable, Sendable
+{
+  public let rawValue: UInt
 
-  public func callAsFunction() -> AnyHashable {
+  public init(_ value: UInt) {
+    self.rawValue = value
+  }
+
+  public init(rawValue: UInt) {
+    self.init(rawValue)
+  }
+
+  public init(integerLiteral value: UInt) {
+    self.init(value)
+  }
+
+  public static func < (lhs: Self, rhs: Self) -> Bool {
+    lhs.rawValue < rhs.rawValue
+  }
+}
+
+public struct StackElementID: DependencyKey, Sendable {
+  public let next: @Sendable () -> Generation
+  public let peek: @Sendable () -> Generation
+
+  public func callAsFunction() -> Generation {
     self.next()
   }
 
-  public static var liveValue: Self {
-    let next = LockIsolated(UUID())
+  private static var incrementing: Self {
+    let next = LockIsolated(Generation(0))
     return Self(
       next: {
-        defer { next.setValue(UUID()) }
+        defer { next.withValue { $0 = Generation($0.rawValue + 1) } }
         return next.value
       },
       peek: { next.value }
     )
   }
 
-  public static var testValue: Self {
-    let next = LockIsolated(0)
-    return Self(
-      next: {
-        defer { next.withValue { $0 += 1 } }
-        return next.value
-      },
-      peek: { next.value }
-    )
-  }
+  public static var liveValue: Self { Self.incrementing }
+
+  public static var testValue: Self { Self.incrementing }
 }
 extension DependencyValues {
   public var stackElementID: StackElementID {
@@ -38,19 +56,21 @@ extension DependencyValues {
   }
 }
 
-
 // TODO: Better name? `DestinationID`? `StackElementID`?
 //public struct ElementID: Hashable, Sendable {
 //  fileprivate let id = UUID()
 //  fileprivate var index: Int? = nil
 //}
 
+// 1. Sketch out why we can't use IdentifiedArray
+// 2. Sketch out why we can't use OrderedDictionary or wrap it
+
 @propertyWrapper
 public struct StackState<
   State
 >: BidirectionalCollection, MutableCollection, RandomAccessCollection, RangeReplaceableCollection {
-  var _ids: OrderedSet<AnyHashable>
-  var _elements: [AnyHashable: State]  // TODO: [ElementID: (state: State, isPresented: Bool)]
+  var _ids: OrderedSet<Generation>
+  var _elements: [Generation: State]  // TODO: [ElementID: (state: State, isPresented: Bool)]
 
   public var startIndex: Int { self._ids.startIndex }
 
@@ -106,27 +126,27 @@ public struct StackState<
   public struct Path {
     var state: StackState
 
-    public var ids: [AnyHashable] {
+    public var ids: [Generation] {
       self.state._ids.elements
     }
 
-    public subscript(id id: AnyHashable) -> State {
+    public subscript(id id: Generation) -> State {
       _read { yield self.state._elements[id]! }
       _modify { yield &self.state._elements[id]! }
     }
 
-    subscript(safeID id: AnyHashable) -> State? {
+    subscript(safeID id: Generation) -> State? {
       _read { yield self.state._elements[id] }
       _modify { yield &self.state._elements[id] }
     }
 
     @discardableResult
-    public mutating func remove(id: AnyHashable) -> State {
+    public mutating func remove(id: Generation) -> State {
       self.state._ids.remove(id)
       return self.state._elements.removeValue(forKey: id)!
     }
 
-    public mutating func pop(from id: AnyHashable) {
+    public mutating func pop(from id: Generation) {
       let index = self.state._ids.firstIndex(of: id)! + 1
       for id in self.state._ids[index...] {
         self.state._elements[id] = nil
@@ -134,7 +154,7 @@ public struct StackState<
       self.state._ids.removeSubrange(index...)
     }
 
-    public mutating func pop(to id: AnyHashable) {
+    public mutating func pop(to id: Generation) {
       let index = self.state._ids.firstIndex(of: id)!
       for id in self.state._ids[index...] {
         self.state._elements[id] = nil
@@ -195,22 +215,22 @@ public struct StackAction<Action> {
     self.init(.internal(.delete(indexSet)))
   }
 
-  public static func element(id: AnyHashable, action: Action) -> Self {
+  public static func element(id: Generation, action: Action) -> Self {
     self.init(.public(.element(id: id, action: action)))
   }
 
-  public static func popFrom(id: AnyHashable) -> Self {
+  public static func popFrom(id: Generation) -> Self {
     self.init(.internal(.popFrom(id: id)))
   }
 
-  public static func popTo(id: AnyHashable) -> Self {
+  public static func popTo(id: Generation) -> Self {
     self.init(.internal(.popTo(id: id)))
   }
 
   public static var popToRoot: Self {
     self.init(.internal(.popToRoot))
   }
-  
+
   public var type: PublicAction {
     guard case let .public(type) = self.action else {
       // TODO: This can be happen, _e.g._, if you construct `.delete(indexSet)` and invoke `.type`.
@@ -220,18 +240,18 @@ public struct StackAction<Action> {
   }
 
   public enum PublicAction {
-    case didAdd(id: AnyHashable)
-    case element(id: AnyHashable, action: Action)
+    case didAdd(id: Generation)
+    case element(id: Generation, action: Action)
     // TODO: Possible to present arbitrary state in a lightweight way?
     case present(Any)
-    case willRemove(id: AnyHashable)
+    case willRemove(id: Generation)
   }
 
   enum InternalAction: Hashable {
     case delete(IndexSet)
-    case pathChanged(ids: [AnyHashable])
-    case popFrom(id: AnyHashable)
-    case popTo(id: AnyHashable)
+    case pathChanged(ids: [Generation])
+    case popFrom(id: Generation)
+    case popTo(id: Generation)
     case popToRoot  // TODO: `removeAll`?
   }
 
@@ -371,7 +391,7 @@ public struct _StackReducer<
     switch self.toStackAction.extract(from: action)?.action {
     case let .internal(.delete(indexSet)):
       baseEffects = .merge(
-        indexSet.map { state[keyPath: self.toStackState].state._ids[$0] }.map { id in
+        indexSet.map { state[keyPath: self.toStackState].ids[$0] }.map { id in
           self.base.reduce(
             into: &state,
             action: self.toStackAction.embed(StackAction(.public(.willRemove(id: id))))
@@ -391,6 +411,7 @@ public struct _StackReducer<
         }
       )
       destinationEffects = .none
+      // TODO: Need to clean up dictionary and remove elements that no longer exist
       state[keyPath: self.toStackState].state._ids.elements = ids
 
     case let .internal(.popFrom(id)):
@@ -435,18 +456,25 @@ public struct _StackReducer<
       return .none
 
     case let .public(.element(elementID, destinationAction)):
-      let id = self.navigationIDPath(for: elementID)
+      let elementNavigationIDPath = self.navigationIDPath(for: elementID)
       destinationEffects = self.destination
-        .dependency(\.dismiss, DismissEffect {
-          Task.cancel(id: NavigationDismissID(elementID: elementID))
-        })
-        .dependency(\.navigationIDPath, id)
+        .dependency(
+          \.dismiss,
+          DismissEffect {
+            Task._cancel(
+              id: NavigationDismissID(elementID: elementID),
+              navigationID: elementNavigationIDPath
+            )
+          }
+        )
+        .dependency(\.navigationIDPath, elementNavigationIDPath)
         .reduce(
           into: &state[keyPath: self.toStackState].state._elements[elementID]!,
           action: destinationAction
         )
         .map { toStackAction.embed(.element(id: elementID, action: $0)) }
-        .cancellable(id: id)
+        ._cancellable(id: _PresentedID(), navigationIDPath: elementNavigationIDPath)
+
       baseEffects = self.base.reduce(into: &state, action: action)
 
     case let .public(.present(presentedState)):
@@ -474,6 +502,7 @@ public struct _StackReducer<
     let cancelEffects = EffectTask<Base.Action>.merge(
       idsBefore.subtracting(idsAfter).map { .cancel(id: self.navigationIDPath(for: $0)) }
     )
+    // TODO: Update to use publisher style from presentation
     let presentEffects = EffectTask<Base.Action>.merge(
       idsAfter.subtracting(idsBefore).map { elementID in
         // TODO: `isPresented` logic from `PresentationState`
@@ -492,7 +521,7 @@ public struct _StackReducer<
               await send(self.toStackAction.embed(StackAction(.internal(.popFrom(id: elementID)))))
             }
           }
-            .cancellable(id: id),
+          .cancellable(id: id),
           self.base.reduce(
             into: &state,
             action: self.toStackAction.embed(StackAction(.public(.didAdd(id: elementID))))
@@ -516,12 +545,9 @@ public struct _StackReducer<
         keyPath: self.toStackState
       )
     )
-//    self.navigationIDPath
-//      .appending(path: self.toStackState)
-//      .appending(component: elementID)
   }
 }
 
 private struct NavigationDismissID: Hashable {
-  let elementID: AnyHashable // TODO: rename
+  let elementID: AnyHashable  // TODO: rename
 }
