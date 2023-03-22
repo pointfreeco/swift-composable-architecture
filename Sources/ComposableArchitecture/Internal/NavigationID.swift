@@ -13,9 +13,8 @@ private enum NavigationIDPathKey: DependencyKey {
   static let testValue = NavigationIDPath()
 }
 
-// TODO: Is this `Identifiable` conformance needed?
 @usableFromInline
-struct NavigationIDPath: Hashable, Identifiable, Sendable {
+struct NavigationIDPath: Hashable, Sendable {
   fileprivate var path: [NavigationID]
 
   @usableFromInline 

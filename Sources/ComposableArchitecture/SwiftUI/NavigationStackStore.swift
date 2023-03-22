@@ -65,7 +65,11 @@ public struct _ForEachStore<State, Action, Content: View>: DynamicViewContent {
   }
 
   public var body: some View {
-    WithViewStore(self.store, observe: { $0.ids }) { viewStore in // TODO: memcmp trick?
+    WithViewStore(
+      self.store,
+      observe: { $0.ids },
+      removeDuplicates: memcmpIsEqual
+    ) { viewStore in
       ForEach(viewStore.state, id: \.self) { id in
         var element = self.store.state.value[id: id]
         self.content(

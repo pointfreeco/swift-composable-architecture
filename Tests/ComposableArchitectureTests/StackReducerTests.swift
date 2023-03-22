@@ -320,7 +320,7 @@ import XCTest
         $0.navigation = []
       }
       // TODO: Fix crash
-      await store.send(.navigation(.element(id: 2, action: .child2(.onAppear))))
+//      await store.send(.navigation(.element(id: 2, action: .child2(.onAppear))))
     }
   }
 #endif

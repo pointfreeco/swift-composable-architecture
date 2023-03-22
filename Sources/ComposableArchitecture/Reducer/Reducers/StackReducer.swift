@@ -55,7 +55,7 @@ struct StackElementIDGenerator: DependencyKey, Sendable {
       peek: { next.value }
     )
   }
-  
+
   func incrementingCopy() -> Self {
     let peek = self.peek()
     let next = LockIsolated(StackElementID(generation: peek.generation, rawValue: peek.generation))
@@ -294,28 +294,35 @@ public struct _StackReducer<
     }
 
     let idsAfter = state[keyPath: self.toStackState]._ids
+    let idsMounted = state[keyPath: self.toStackState]._mounted
 
-    let cancelEffects = EffectTask<Base.Action>.merge(
-      // TODO: `memcmp` (fall back to `mounted`? overkill?)
-      idsBefore.subtracting(idsAfter).map { ._cancel(navigationID: self.navigationIDPath(for: $0)) }
-    )
-    let presentEffects = EffectTask<Base.Action>.merge(
-      // TODO: fast path by checking `idsAfter.count == _mounted.count`?
-      idsAfter.subtracting(state[keyPath: self.toStackState]._mounted).map { elementID in
-        let navigationDestinationID = self.navigationIDPath(for: elementID)
-        state[keyPath: self.toStackState]._mounted.insert(elementID)
-        return Empty(completeImmediately: false)
-          .eraseToEffect()
-          ._cancellable(
-            id: NavigationDismissID(elementID: elementID),
-            navigationIDPath: navigationDestinationID
-          )
-          .append(Just(self.toStackAction.embed(.popFrom(id: elementID))))
-          .eraseToEffect()
-          ._cancellable(navigationIDPath: navigationDestinationID)
-          ._cancellable(id: OnFirstAppearID(), navigationIDPath: .init())
-      }
-    )
+    let cancelEffects: EffectTask<Base.Action> =
+      memcmpIsEqual(idsBefore, idsAfter)
+      ? .none
+      : .merge(
+        idsBefore.subtracting(idsAfter).map {
+          ._cancel(navigationID: self.navigationIDPath(for: $0))
+        }
+      )
+    let presentEffects: EffectTask<Base.Action> =
+      idsAfter.count == idsMounted.count
+      ? .none
+      : .merge(
+        idsAfter.subtracting(idsMounted).map { elementID in
+          let navigationDestinationID = self.navigationIDPath(for: elementID)
+          state[keyPath: self.toStackState]._mounted.insert(elementID)
+          return Empty(completeImmediately: false)
+            .eraseToEffect()
+            ._cancellable(
+              id: NavigationDismissID(elementID: elementID),
+              navigationIDPath: navigationDestinationID
+            )
+            .append(Just(self.toStackAction.embed(.popFrom(id: elementID))))
+            .eraseToEffect()
+            ._cancellable(navigationIDPath: navigationDestinationID)
+            ._cancellable(id: OnFirstAppearID(), navigationIDPath: .init())
+        }
+      )
 
     return .merge(
       destinationEffects,
