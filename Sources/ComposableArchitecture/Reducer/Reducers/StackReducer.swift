@@ -15,6 +15,7 @@ extension StackElementID: CustomDumpStringConvertible {
 
 extension StackElementID: ExpressibleByIntegerLiteral {
   public init(integerLiteral value: Int) {
+    // TODO: @Dep(\.stackElementID).peek() is UUID
     self.init(generation: value, rawValue: value)
   }
 }
@@ -99,6 +100,7 @@ public struct StackState<
     }
   }
 
+  // TODO: optional element return
   public subscript(id id: StackElementID) -> Element {
     _read { yield self._elements[id]! }
     _modify { yield &self._elements[id]! }
