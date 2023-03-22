@@ -105,7 +105,7 @@ public struct ForEachStore<
     self.content = WithViewStore(
       store,
       observe: { $0.ids },
-      removeDuplicates: memcmpIsEqual
+      removeDuplicates: areOrderedSetsDuplicates
     ) { viewStore in
       ForEach(viewStore.state, id: \.self) { id -> EachContent in
         // NB: We cache elements here to avoid a potential crash where SwiftUI may re-evaluate

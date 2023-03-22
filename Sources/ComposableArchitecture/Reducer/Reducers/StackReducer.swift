@@ -100,43 +100,42 @@ public struct StackState<
     }
   }
 
-  // TODO: optional element return
-  public subscript(id id: StackElementID) -> Element {
-    _read { yield self._elements[id]! }
-    _modify { yield &self._elements[id]! }
-  }
-
-  subscript(_id id: StackElementID) -> Element? {
+  public subscript(id id: StackElementID) -> Element? {
     _read { yield self._elements[id] }
     _modify { yield &self._elements[id] }
   }
 
   @discardableResult
-  public mutating func remove(id: StackElementID) -> Element {
+  public mutating func remove(id: StackElementID) -> Element? {
     self._ids.remove(id)
     self._mounted.remove(id)
-    return self._elements.removeValue(forKey: id)!
+    return self._elements.removeValue(forKey: id)
   }
 
-  public mutating func pop(from id: StackElementID) {
-    let index = self._ids.firstIndex(of: id)!
+  @discardableResult
+  public mutating func pop(from id: StackElementID) -> Bool {
+    guard let index = self._ids.firstIndex(of: id)
+    else { return false }
     for id in self._ids[index...] {
       self._elements[id] = nil
       self._mounted.remove(id)
     }
     self._ids.removeSubrange(index...)
+    return true
   }
 
-  public mutating func pop(to id: StackElementID) {
-    let index = self._ids.firstIndex(of: id)! + 1
+  @discardableResult
+  public mutating func pop(to id: StackElementID) -> Bool {
+    guard var index = self._ids.firstIndex(of: id)
+    else { return false }
+    index += 1
     for id in self._ids[index...] {
       self._elements[id] = nil
       self._mounted.remove(id)
     }
     self._ids.removeSubrange(index...)
+    return true
   }
-
-  // TODO: `func contains(id:) -> Bool`; more APIs from identified array?
 
   public var startIndex: Int { self._ids.startIndex }
 
@@ -260,31 +259,38 @@ public struct _StackReducer<
     let destinationEffects: EffectTask<Base.Action>
     let baseEffects: EffectTask<Base.Action>
 
-    switch self.toStackAction.extract(from: action) {
+    switch (self.toStackAction.extract(from: action)) {
     case let .popFrom(id):
       destinationEffects = .none
       baseEffects = self.base.reduce(into: &state, action: action)
-      state[keyPath: self.toStackState].pop(from: id)
+      if !state[keyPath: self.toStackState].pop(from: id) {
+        runtimeWarn("TODO")
+      }
 
     case let .element(elementID, destinationAction):
-      let elementNavigationIDPath = self.navigationIDPath(for: elementID)
-      destinationEffects = self.destination
-        .dependency(
-          \.dismiss,
-          DismissEffect { @MainActor in
-            Task._cancel(
-              id: NavigationDismissID(elementID: elementID),
-              navigationID: elementNavigationIDPath
-            )
-          }
-        )
-        .dependency(\.navigationIDPath, elementNavigationIDPath)
-        .reduce(
-          into: &state[keyPath: self.toStackState][id: elementID],
-          action: destinationAction
-        )
-        .map { toStackAction.embed(.element(id: elementID, action: $0)) }
-        ._cancellable(navigationIDPath: elementNavigationIDPath)
+      if state[keyPath: self.toStackState][id: elementID] != nil {
+        let elementNavigationIDPath = self.navigationIDPath(for: elementID)
+        destinationEffects = self.destination
+          .dependency(
+            \.dismiss,
+             DismissEffect { @MainActor in
+               Task._cancel(
+                id: NavigationDismissID(elementID: elementID),
+                navigationID: elementNavigationIDPath
+               )
+             }
+          )
+          .dependency(\.navigationIDPath, elementNavigationIDPath)
+          .reduce(
+            into: &state[keyPath: self.toStackState][id: elementID]!,
+            action: destinationAction
+          )
+          .map { toStackAction.embed(.element(id: elementID, action: $0)) }
+          ._cancellable(navigationIDPath: elementNavigationIDPath)
+      } else {
+        runtimeWarn("TODO")
+        destinationEffects = .none
+      }
 
       baseEffects = self.base.reduce(into: &state, action: action)
 
@@ -297,7 +303,7 @@ public struct _StackReducer<
     let idsMounted = state[keyPath: self.toStackState]._mounted
 
     let cancelEffects: EffectTask<Base.Action> =
-      memcmpIsEqual(idsBefore, idsAfter)
+      areOrderedSetsDuplicates(idsBefore, idsAfter)
       ? .none
       : .merge(
         idsBefore.subtracting(idsAfter).map {

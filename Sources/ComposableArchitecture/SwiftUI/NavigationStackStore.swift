@@ -15,7 +15,7 @@ public struct NavigationStackStore<State, Action, Content: View, Destination: Vi
     self.destination = { id in
       IfLetStore(
         store.scope(
-          state: returningLastNonNilValue { $0[_id: id] },
+          state: returningLastNonNilValue { $0[id: id] },
           action: { .element(id: id, action: $0) }
         ),
         then: destination
@@ -26,19 +26,17 @@ public struct NavigationStackStore<State, Action, Content: View, Destination: Vi
 
   public var body: some View {
     WithViewStore(
-      self.store.scope(
-        state: { $0.ids },
-        action: StackAction.popFrom(id:)
-      )
+      self.store.scope(state: { $0._ids }),
+      removeDuplicates: areOrderedSetsDuplicates
     ) { viewStore in
       // TODO: Does this binding need to be safer to avoid unsafely subscripting into the stack?
       NavigationStack(
-//        path: viewStore.binding(get: { $0 }, send: { viewStore.state[$0.count] })
+        // TODO: Better binding
         path: Binding(
-          get: { viewStore.state },
+          get: { viewStore.state.elements },
           set: { newIDs in
             if viewStore.state.count > newIDs.count {
-              viewStore.send(viewStore.state[newIDs.count])
+              viewStore.send(.popFrom(id: viewStore.state[newIDs.count]))
             }
           }
         )
@@ -67,15 +65,15 @@ public struct _ForEachStore<State, Action, Content: View>: DynamicViewContent {
   public var body: some View {
     WithViewStore(
       self.store,
-      observe: { $0.ids },
-      removeDuplicates: memcmpIsEqual
+      observe: { $0._ids },
+      removeDuplicates: areOrderedSetsDuplicates
     ) { viewStore in
       ForEach(viewStore.state, id: \.self) { id in
-        var element = self.store.state.value[id: id]
+        var element = self.store.state.value[id: id]!
         self.content(
           self.store.scope(
             state: {
-              element = $0[_id: id] ?? element
+              element = $0[id: id] ?? element
               return element
             },
             action: { .element(id: id, action: $0) }
