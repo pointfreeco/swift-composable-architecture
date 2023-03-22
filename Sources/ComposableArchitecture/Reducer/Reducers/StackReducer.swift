@@ -323,7 +323,7 @@ public struct _StackReducer<
     )
   }
 
-  private func navigationIDPath(for elementID: AnyHashable) -> NavigationIDPath {
+  private func navigationIDPath(for elementID: StackElementID) -> NavigationIDPath {
     self.navigationIDPath.appending(
       NavigationID(
         id: elementID,

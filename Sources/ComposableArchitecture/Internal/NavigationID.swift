@@ -87,7 +87,7 @@ struct NavigationID: Hashable, @unchecked Sendable {
 
   @usableFromInline
   init<Value, Root>(
-    id: AnyHashable,
+    id: StackElementID,
     keyPath: KeyPath<Root, StackState<Value>>
   ) {
     self.kind = .keyPath(keyPath)
