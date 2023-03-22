@@ -61,9 +61,6 @@ public struct _PrintChangesReducer<Base: ReducerProtocol>: ReducerProtocol {
     self.printer = printer
   }
 
-  @usableFromInline
-  @Dependency(\.context) var context
-
   @inlinable
   public func reduce(
     into state: inout Base.State, action: Base.Action
