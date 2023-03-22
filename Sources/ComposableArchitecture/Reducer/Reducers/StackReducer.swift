@@ -54,6 +54,22 @@ struct StackElementIDGenerator: DependencyKey, Sendable {
       peek: { next.value }
     )
   }
+  
+  func incrementingCopy() -> Self {
+    let peek = self.peek()
+    let next = LockIsolated(StackElementID(generation: peek.generation, rawValue: peek.generation))
+    return Self(
+      next: {
+        defer {
+          next.withValue {
+            $0 = StackElementID(generation: $0.generation + 1, rawValue: $0.generation + 1)
+          }
+        }
+        return next.value
+      },
+      peek: { next.value }
+    )
+  }
 }
 
 extension DependencyValues {
@@ -188,7 +204,6 @@ extension StackState: Encodable where Element: Encodable {
 
 extension StackState: CustomReflectable {
   public var customMirror: Mirror {
-    // TODO: OrderedDictionary<ID, Element> representation?
     Mirror(self, unlabeledChildren: Array(zip(self.ids, self)), displayStyle: .dictionary)
   }
 }
