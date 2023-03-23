@@ -490,6 +490,7 @@ import XCTest
           }
         }
       }
+      // TODO: naming options: Stack, Path, 
       struct Navigation: ReducerProtocol {
         enum State: Equatable {
           case child1(Child.State)
@@ -528,12 +529,16 @@ import XCTest
         }
       }
 
-      var navigation = StackState<Navigation.State>()
-      navigation.append(.child1(Child.State()))
-      navigation.append(.child2(Child.State()))
       let mainQueue = DispatchQueue.test
       let store = TestStore(
-        initialState: Parent.State(navigation: navigation),
+        initialState: Parent.State(
+          navigation: StackState(
+            resettingIdentityOf: [
+              .child1(Child.State()),
+              .child2(Child.State()),
+            ]
+          )
+        ),
         reducer: Parent()
       ) {
         $0.mainQueue = mainQueue.eraseToAnyScheduler()

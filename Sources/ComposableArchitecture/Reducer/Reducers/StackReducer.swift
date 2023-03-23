@@ -98,6 +98,12 @@ public struct StackState<Element>: RandomAccessCollection {
 
   @Dependency(\.stackElementID) private var stackElementID
 
+  // TODO: naming of argument
+  public init<S: Sequence>(resettingIdentityOf elements: S) where S.Element == Element {
+    self.init()
+    self.append(contentsOf: elements)
+  }
+
   var _ids: OrderedSet<StackElementID> {
     self._dictionary.keys
   }
@@ -160,6 +166,13 @@ public struct StackState<Element>: RandomAccessCollection {
     self._dictionary[self.stackElementID.next()] = element
   }
 
+  public mutating func append<S: Sequence>(contentsOf elements: S) where S.Element == Element {
+    self._dictionary.reserveCapacity(self._dictionary.count + elements.underestimatedCount)
+    for element in elements {
+      self.append(element)
+    }
+  }
+
   public mutating func insert(_ newElement: Element, at i: Index) {
     self._dictionary.updateValue(newElement, forKey: self.stackElementID.next(), insertingAt: i)
   }
@@ -199,10 +212,7 @@ extension StackState: Decodable where Element: Decodable {
   public init(from decoder: Decoder) throws {
     let elements = try [Element](from: decoder)
     self.init()
-    self._dictionary.reserveCapacity(elements.count)
-    for element in elements {
-      self.append(element)
-    }
+    self.append(contentsOf: elements)
   }
 }
 
