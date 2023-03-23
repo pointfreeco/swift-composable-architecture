@@ -7,9 +7,15 @@ public struct StackElementID: Hashable {
   var rawValue: AnyHashable
 }
 
+extension StackElementID: CustomDebugStringConvertible {
+  public var debugDescription: String {
+    "#\(self.generation)"
+  }
+}
+
 extension StackElementID: CustomDumpStringConvertible {
   public var customDumpDescription: String {
-    "#\(self.generation)"
+    self.debugDescription
   }
 }
 
@@ -168,6 +174,10 @@ public struct StackState<
       self._elements[id] = element
     }
   }
+
+//  public mutating func swapAt(_ i: Int, _ j: Int) {
+//    self._ids.swapAt(i, j)
+//  }
 }
 
 extension StackState: ExpressibleByArrayLiteral {

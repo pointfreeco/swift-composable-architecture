@@ -4,6 +4,16 @@ import XCTest
 #if swift(>=5.7)
   @MainActor
   final class StackReducerTests: XCTestCase {
+    func testStackState() async {
+      var stack: StackState<Int> = [2, 3, 1]
+      XCTAssertEqual(stack, [2, 3, 1])
+      XCTAssertEqual(stack.ids, [0, 1, 2])
+
+      stack.sort()
+      XCTAssertEqual(stack, [1, 2, 3])
+      XCTAssertEqual(stack.ids, [2, 0, 1])
+    }
+
     func testPresent() async {
       struct Child: ReducerProtocol {
         struct State: Equatable {
