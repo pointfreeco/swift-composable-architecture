@@ -21,6 +21,7 @@ extension StackElementID: CustomDumpStringConvertible {
 
 extension StackElementID: ExpressibleByIntegerLiteral {
   public init(integerLiteral value: Int) {
+    // TODO: runtime warn if not in test context
     #if DEBUG
       @Dependency(\.stackElementID) var stackElementID
       if stackElementID.peek().rawValue.base is UUID {
@@ -109,11 +110,13 @@ public struct StackState<Element>: RandomAccessCollection {
     self._dictionary = [:]
   }
 
+  // TODO: should `[id: …] = ???` with a new ID cause an insert?
   public subscript(id id: StackElementID) -> Element? {
     _read { yield self._dictionary[id] }
     _modify { yield &self._dictionary[id] }
   }
 
+  // TODO: should we remove since we have `[id: …] = nil` ?
   @discardableResult
   public mutating func remove(id: StackElementID) -> Element? {
     self._mounted.remove(id)
