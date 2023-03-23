@@ -21,7 +21,12 @@ extension StackElementID: CustomDumpStringConvertible {
 
 extension StackElementID: ExpressibleByIntegerLiteral {
   public init(integerLiteral value: Int) {
-    // TODO: @Dep(\.stackElementID).peek() is UUID
+    #if DEBUG
+      @Dependency(\.stackElementID) var stackElementID
+      if stackElementID.peek().rawValue.base is UUID {
+        runtimeWarn("TODO")
+      }
+    #endif
     self.init(generation: value, rawValue: value)
   }
 }
@@ -86,103 +91,87 @@ extension DependencyValues {
   }
 }
 
-public struct StackState<
-  Element
->: BidirectionalCollection, MutableCollection, RandomAccessCollection, RangeReplaceableCollection {
-  private(set) var _ids: OrderedSet<StackElementID>
-  private var _elements: [StackElementID: Element]
+public struct StackState<Element>: RandomAccessCollection {
+  private var _dictionary: OrderedDictionary<StackElementID, Element>
   fileprivate var _mounted: Set<StackElementID> = []
 
-  public internal(set) var ids: [StackElementID] {
-    get { self._ids.elements }
-    set {
-      assert(newValue.allSatisfy { self._ids.contains($0) })
-      let oldValue = self._ids.subtracting(newValue)
-      self._ids.elements = newValue
-      for id in oldValue {
-        self._elements[id] = nil
-        self._mounted.remove(id)
-      }
-    }
+  @Dependency(\.stackElementID) private var stackElementID
+
+  var _ids: OrderedSet<StackElementID> {
+    self._dictionary.keys
+  }
+
+  public var ids: [StackElementID] {
+    self._dictionary.keys.elements
+  }
+
+  public init() {
+    self._dictionary = [:]
   }
 
   public subscript(id id: StackElementID) -> Element? {
-    _read { yield self._elements[id] }
-    _modify { yield &self._elements[id] }
+    _read { yield self._dictionary[id] }
+    _modify { yield &self._dictionary[id] }
   }
 
   @discardableResult
   public mutating func remove(id: StackElementID) -> Element? {
-    self._ids.remove(id)
     self._mounted.remove(id)
-    return self._elements.removeValue(forKey: id)
+    return self._dictionary.removeValue(forKey: id)
   }
 
   @discardableResult
   public mutating func pop(from id: StackElementID) -> Bool {
-    guard let index = self._ids.firstIndex(of: id)
+    guard let index = self._dictionary.keys.firstIndex(of: id)
     else { return false }
-    for id in self._ids[index...] {
-      self._elements[id] = nil
+    for id in self._dictionary.keys[index...] {
       self._mounted.remove(id)
     }
-    self._ids.removeSubrange(index...)
+    self._dictionary.removeSubrange(index...)
     return true
   }
 
   @discardableResult
   public mutating func pop(to id: StackElementID) -> Bool {
-    guard var index = self._ids.firstIndex(of: id)
+    guard var index = self._dictionary.keys.firstIndex(of: id)
     else { return false }
     index += 1
-    for id in self._ids[index...] {
-      self._elements[id] = nil
+    for id in self._dictionary.keys[index...] {
       self._mounted.remove(id)
     }
-    self._ids.removeSubrange(index...)
+    self._dictionary.removeSubrange(index...)
     return true
   }
 
-  public var startIndex: Int { self._ids.startIndex }
+  public var startIndex: Int { self._dictionary.keys.startIndex }
 
-  public var endIndex: Int { self._ids.endIndex }
+  public var endIndex: Int { self._dictionary.keys.endIndex }
 
-  public func index(after i: Int) -> Int { self._ids.index(after: i) }
+  public func index(after i: Int) -> Int { self._dictionary.keys.index(after: i) }
 
-  public func index(before i: Int) -> Int { self._ids.index(before: i) }
+  public func index(before i: Int) -> Int { self._dictionary.keys.index(before: i) }
 
-  public subscript(position: Int) -> Element {
-    _read { yield self._elements[self._ids[position]]! }
-    _modify { yield &self._elements[self._ids[position]]! }
+  public subscript(position: Int) -> Element { self._dictionary.values[position] }
+
+  public mutating func append(_ element: Element) {
+    self._dictionary[self.stackElementID.next()] = element
   }
 
-  public init() {
-    self._ids = []
-    self._elements = [:]
+  public mutating func insert(_ newElement: Element, at i: Index) {
+    self._dictionary.updateValue(newElement, forKey: self.stackElementID.next(), insertingAt: i)
   }
 
-  public mutating func replaceSubrange<C: Collection>(_ subrange: Range<Int>, with newElements: C)
-  where Element == C.Element {
-    for id in self._ids[subrange] {
-      self._elements[id] = nil
-      self._mounted.remove(id)
-    }
-    self._ids.removeSubrange(subrange)
-    for element in newElements.reversed() {
-      let id = DependencyValues._current.stackElementID.next()
-      self._ids.insert(id, at: subrange.startIndex)
-      self._elements[id] = element
-    }
+  @discardableResult
+  public mutating func removeLast() -> Element {
+    self._dictionary.removeLast().value
   }
 
-//  public mutating func swapAt(_ i: Int, _ j: Int) {
-//    self._ids.swapAt(i, j)
-//  }
-}
+  public mutating func removeLast(_ n: Int) {
+    self._dictionary.removeLast(n)
+  }
 
-extension StackState: ExpressibleByArrayLiteral {
-  public init(arrayLiteral elements: Element...) {
-    self.init(elements)
+  public mutating func removeAll() {
+    self._dictionary.removeAll()
   }
 }
 
@@ -201,9 +190,16 @@ extension StackState: Hashable where Element: Hashable {
   }
 }
 
+extension StackState: Sendable where Element: Sendable {}
+
 extension StackState: Decodable where Element: Decodable {
   public init(from decoder: Decoder) throws {
-    try self.init([Element](from: decoder))
+    let elements = try [Element](from: decoder)
+    self.init()
+    self._dictionary.reserveCapacity(elements.count)
+    for element in elements {
+      self.append(element)
+    }
   }
 }
 
@@ -212,6 +208,18 @@ extension StackState: Encodable where Element: Encodable {
     try [Element](self).encode(to: encoder)
   }
 }
+
+//extension StackState: CustomStringConvertible {
+//  public var description: String {
+//    self._dictionary.values.elements.description
+//  }
+//}
+//
+//extension StackState: CustomDebugStringConvertible {
+//  public var debugDescription: String {
+//    self._dictionary.values.elements.debugDescription
+//  }
+//}
 
 extension StackState: CustomReflectable {
   public var customMirror: Mirror {

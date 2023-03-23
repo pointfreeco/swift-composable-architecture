@@ -5,13 +5,7 @@ import XCTest
   @MainActor
   final class StackReducerTests: XCTestCase {
     func testStackState() async {
-      var stack: StackState<Int> = [2, 3, 1]
-      XCTAssertEqual(stack, [2, 3, 1])
-      XCTAssertEqual(stack.ids, [0, 1, 2])
-
-      stack.sort()
-      XCTAssertEqual(stack, [1, 2, 3])
-      XCTAssertEqual(stack.ids, [2, 0, 1])
+      // TODO: flesh out state test
     }
 
     func testPresent() async {
@@ -36,7 +30,7 @@ import XCTest
       }
       struct Parent: ReducerProtocol {
         struct State: Equatable {
-          var children: StackState<Child.State> = []
+          var children = StackState<Child.State>()
         }
         enum Action: Equatable {
           case children(StackAction<Child.Action>)
@@ -61,9 +55,7 @@ import XCTest
       let store = TestStore(initialState: Parent.State(), reducer: Parent())
 
       await store.send(.pushChild) {
-        $0.children = [
-          Child.State()
-        ]
+        $0.children.append(Child.State())
       }
     }
 
@@ -84,7 +76,7 @@ import XCTest
       }
       struct Parent: ReducerProtocol {
         struct State: Equatable {
-          var children: StackState<Child.State> = []
+          var children = StackState<Child.State>()
         }
         enum Action: Equatable {
           case children(StackAction<Child.Action>)
@@ -113,13 +105,11 @@ import XCTest
       let store = TestStore(initialState: Parent.State(), reducer: Parent())
 
       await store.send(.pushChild) {
-        $0.children = [
-          Child.State()
-        ]
+        $0.children.append(Child.State())
       }
       await store.send(.children(.element(id: 0, action: .onAppear)))
       await store.send(.popChild) {
-        $0.children = []
+        $0.children.removeLast()
       }
     }
 
@@ -146,7 +136,7 @@ import XCTest
       }
       struct Parent: ReducerProtocol {
         struct State: Equatable {
-          var children: StackState<Child.State> = []
+          var children = StackState<Child.State>()
         }
         enum Action: Equatable {
           case children(StackAction<Child.Action>)
@@ -171,14 +161,12 @@ import XCTest
       let store = TestStore(initialState: Parent.State(), reducer: Parent())
 
       await store.send(.pushChild) {
-        $0.children = [
-          Child.State()
-        ]
+        $0.children.append(Child.State())
       }
       await store.send(.children(.element(id: 0, action: .onAppear)))
       await store.send(.children(.element(id: 0, action: .closeButtonTapped)))
       await store.receive(.children(.popFrom(id: 0))) {
-        $0.children = []
+        $0.children.removeLast()
       }
     }
 
@@ -200,7 +188,7 @@ import XCTest
       }
       struct Parent: ReducerProtocol {
         struct State: Equatable {
-          var children: StackState<Child.State> = []
+          var children = StackState<Child.State>()
         }
         enum Action: Equatable {
           case children(StackAction<Child.Action>)
@@ -222,12 +210,15 @@ import XCTest
         }
       }
 
+      var children = StackState<Child.State>()
+      children.append(Child.State())
       let store = TestStore(
-        initialState: Parent.State(children: [Child.State()]), reducer: Parent())
+        initialState: Parent.State(children: children), reducer: Parent()
+      )
 
       await store.send(.children(.element(id: 0, action: .closeButtonTapped)))
       await store.receive(.children(.popFrom(id: 0))) {
-        $0.children = []
+        $0.children.removeAll()
       }
     }
 
@@ -278,7 +269,7 @@ import XCTest
       }
       struct Parent: ReducerProtocol {
         struct State: Equatable {
-          var navigation: StackState<Navigation.State> = []
+          var navigation = StackState<Navigation.State>()
         }
         enum Action: Equatable {
           case navigation(StackAction<Navigation.Action>)
@@ -306,31 +297,16 @@ import XCTest
 
       let store = TestStore(initialState: Parent.State(), reducer: Parent()._printChanges())
       await store.send(.pushChild1) {
-        /*
-       $0.navigation = [
-         0: .child1(Child.State())
-       ]
-       $0.navigation[id: 0] = .child1(Child.State())
-       $0.append(id: 0, .child1(Child.State()) // Too many overloads?
-       $0.append(.child1(Child.State())
-       */
-        $0.navigation = [
-          .child1(Child.State())
-        ]
+        $0.navigation.append(.child1(Child.State()))
       }
       await store.send(.navigation(.element(id: 0, action: .child1(.onAppear))))
       await store.send(.pushChild2) {
-        $0.navigation = [
-          .child1(Child.State()),
-          .child2(Child.State()),
-        ]
+        $0.navigation.append(.child2(Child.State()))
       }
       await store.send(.navigation(.element(id: 1, action: .child2(.onAppear))))
       await store.send(.navigation(.popFrom(id: 0))) {
-        $0.navigation = []
+        $0.navigation.removeAll()
       }
-      // TODO: Fix crash
-//      await store.send(.navigation(.element(id: 2, action: .child2(.onAppear))))
     }
   }
 #endif
