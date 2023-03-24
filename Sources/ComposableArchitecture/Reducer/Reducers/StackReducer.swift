@@ -2,9 +2,14 @@ import Combine
 import Foundation
 import OrderedCollections
 
-public struct StackElementID: Hashable {
+public struct StackElementID: Hashable, Sendable {
   var generation: Int
-  var rawValue: AnyHashable
+  var rawValue: AnyHashableSendable
+
+  init<RawValue: Hashable & Sendable>(generation: Int, rawValue: RawValue) {
+    self.generation = generation
+    self.rawValue = AnyHashableSendable(rawValue)
+  }
 }
 
 extension StackElementID: CustomDebugStringConvertible {
@@ -21,11 +26,18 @@ extension StackElementID: CustomDumpStringConvertible {
 
 extension StackElementID: ExpressibleByIntegerLiteral {
   public init(integerLiteral value: Int) {
-    // TODO: runtime warn if not in test context
     #if DEBUG
-      @Dependency(\.stackElementID) var stackElementID
-      if stackElementID.peek().rawValue.base is UUID {
-        runtimeWarn("TODO")
+      @Dependency(\.context) var context
+      if context != .test {
+        runtimeWarn(
+          """
+          Specifying stack element IDs by integer literal is not allowed outside of tests.
+
+          In tests, integer literal stack element IDs can be used as a shorthand to the \
+          auto-incrementing generation of the current dependency context. This can be useful when \
+          asserting against actions received by a specific element.
+          """
+        )
       }
     #endif
     self.init(generation: value, rawValue: value)
@@ -116,18 +128,37 @@ public struct StackState<Element>: RandomAccessCollection {
     self._dictionary = [:]
   }
 
-  // TODO: should `[id: …] = ???` with a new ID cause an insert?
   public subscript(id id: StackElementID) -> Element? {
     _read { yield self._dictionary[id] }
-    _modify { yield &self._dictionary[id] }
+    _modify {
+      // TODO: Prevent insertions and runtime warn when an insertion is attempted
+      yield &self._dictionary[id]
+      if !self._dictionary.keys.contains(id) {
+        self._mounted.remove(id)
+      }
+    }
   }
 
-  // TODO: should we remove since we have `[id: …] = nil` ?
-  @discardableResult
-  public mutating func remove(id: StackElementID) -> Element? {
-    self._mounted.remove(id)
-    return self._dictionary.removeValue(forKey: id)
-  }
+  // TODO: Think about this
+//  public func id(after id: StackElementID) -> StackElementID? {
+//    guard
+//      let current = self._dictionary.keys.firstIndex(of: id),
+//      let next = self._dictionary.keys.index(
+//        current, offsetBy: 1, limitedBy: self._dictionary.keys.endIndex
+//      )
+//    else { return nil }
+//    return self._dictionary.keys[next]
+//  }
+//
+//  public func id(before id: StackElementID) -> StackElementID? {
+//    guard
+//      let current = self._dictionary.keys.firstIndex(of: id),
+//      let previous = self._dictionary.keys.index(
+//        current, offsetBy: -1, limitedBy: self._dictionary.keys.endIndex
+//      )
+//    else { return nil }
+//    return self._dictionary.keys[previous]
+//  }
 
   @discardableResult
   public mutating func pop(from id: StackElementID) -> Bool {
@@ -179,15 +210,20 @@ public struct StackState<Element>: RandomAccessCollection {
 
   @discardableResult
   public mutating func removeLast() -> Element {
-    self._dictionary.removeLast().value
+    let element = self._dictionary.removeLast()
+    self._mounted.remove(element.key)
+    return element.value
   }
 
   public mutating func removeLast(_ n: Int) {
-    self._dictionary.removeLast(n)
+    for _ in 1...n {
+      self._dictionary.removeLast()
+    }
   }
 
   public mutating func removeAll() {
     self._dictionary.removeAll()
+    self._mounted.removeAll()
   }
 }
 
@@ -206,7 +242,8 @@ extension StackState: Hashable where Element: Hashable {
   }
 }
 
-extension StackState: Sendable where Element: Sendable {}
+// NB: We can remove `@unchecked` when swift-collections 1.1 is released.
+extension StackState: @unchecked Sendable where Element: Sendable {}
 
 extension StackState: Decodable where Element: Decodable {
   public init(from decoder: Decoder) throws {
@@ -222,6 +259,7 @@ extension StackState: Encodable where Element: Encodable {
   }
 }
 
+// TODO: revisit
 //extension StackState: CustomStringConvertible {
 //  public var description: String {
 //    self._dictionary.values.elements.description
@@ -284,8 +322,6 @@ public struct _StackReducer<
   @Dependency(\.navigationIDPath) var navigationIDPath
 
   public func reduce(into state: inout Base.State, action: Base.Action) -> EffectTask<Base.Action> {
-    // TODO: is there anything to do with ephemeral state in here?
-
     let idsBefore = state[keyPath: self.toStackState]._ids
     let destinationEffects: EffectTask<Base.Action>
     let baseEffects: EffectTask<Base.Action>
