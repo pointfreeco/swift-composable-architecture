@@ -43,12 +43,13 @@
     ///   - send: A function that wraps an alert action in the view store's action type.
     public convenience init<Action>(
       state: AlertState<Action>,
-      send: @escaping (Action?) -> Void
+      send: @escaping (Action?) -> Void,
+      preferredStyle: UIAlertController.Style = .alert
     ) {
       self.init(
         title: String(state: state.title),
         message: state.message.map { String(state: $0) },
-        preferredStyle: .alert
+        preferredStyle: preferredStyle
       )
       for button in state.buttons {
         self.addAction(.init(button, action: send))
