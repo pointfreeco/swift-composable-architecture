@@ -8,7 +8,16 @@ extension EffectPublisher where Failure == Never {
   public static func publisher<P: Publisher>(_ createPublisher: @escaping () -> P) -> Self
   where P.Output == Action, P.Failure == Never {
     Self(
-      operation: .publisher(Deferred(createPublisher: createPublisher).eraseToAnyPublisher())
+      operation: .publisher(
+        withEscapedDependencies { continuation in
+          Deferred {
+            continuation.yield {
+              createPublisher()
+            }
+          }
+        }
+        .eraseToAnyPublisher()
+      )
     )
   }
 }

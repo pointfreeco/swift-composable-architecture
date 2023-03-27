@@ -3,7 +3,7 @@
   import ComposableArchitecture
   import XCTest
 
-  final class RuntimeWarningTests: XCTestCase {
+  final class RuntimeWarningTests: BaseTCATestCase {
     func testStoreCreationMainThread() {
       XCTExpectFailure {
         $0.compactDescription == """

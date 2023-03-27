@@ -2,7 +2,7 @@ import ComposableArchitecture
 import XCTest
 
 @available(*, deprecated)
-final class DeprecatedTests: XCTestCase {
+final class DeprecatedTests: BaseTCATestCase {
   func testUncheckedStore() {
     var expectations: [XCTestExpectation] = []
     for n in 1...100 {

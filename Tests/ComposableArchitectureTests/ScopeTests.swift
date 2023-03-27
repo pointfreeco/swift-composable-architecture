@@ -2,7 +2,7 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
-final class ScopeTests: XCTestCase {
+final class ScopeTests: BaseTCATestCase {
   func testStructChild() async {
     let store = TestStore(
       initialState: Feature.State(),
