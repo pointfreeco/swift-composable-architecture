@@ -3,10 +3,10 @@ import Foundation
 import OrderedCollections
 
 public struct StackElementID: Hashable, Sendable {
-  var generation: Int
-  var rawValue: AnyHashableSendable
+  @_spi(Internals) public var generation: Int
+  @_spi(Internals) public var rawValue: AnyHashableSendable
 
-  init<RawValue: Hashable & Sendable>(generation: Int, rawValue: RawValue) {
+  @_spi(Internals) public init<RawValue: Hashable & Sendable>(generation: Int, rawValue: RawValue) {
     self.generation = generation
     self.rawValue = AnyHashableSendable(rawValue)
   }
@@ -44,15 +44,15 @@ extension StackElementID: ExpressibleByIntegerLiteral {
   }
 }
 
-struct StackElementIDGenerator: DependencyKey, Sendable {
-  let next: @Sendable () -> StackElementID
-  let peek: @Sendable () -> StackElementID
+@_spi(Internals) public struct StackElementIDGenerator: DependencyKey, Sendable {
+  public let next: @Sendable () -> StackElementID
+  public let peek: @Sendable () -> StackElementID
 
   func callAsFunction() -> StackElementID {
     self.next()
   }
 
-  static var liveValue: Self {
+  public static var liveValue: Self {
     let next = LockIsolated(StackElementID(generation: 0, rawValue: UUID()))
     return Self(
       next: {
@@ -65,7 +65,7 @@ struct StackElementIDGenerator: DependencyKey, Sendable {
     )
   }
 
-  static var testValue: Self {
+  public static var testValue: Self {
     let next = LockIsolated(StackElementID(generation: 0, rawValue: 0))
     return Self(
       next: {
@@ -98,7 +98,7 @@ struct StackElementIDGenerator: DependencyKey, Sendable {
 }
 
 extension DependencyValues {
-  var stackElementID: StackElementIDGenerator {
+  @_spi(Internals) public var stackElementID: StackElementIDGenerator {
     get { self[StackElementIDGenerator.self] }
     set { self[StackElementIDGenerator.self] = newValue }
   }

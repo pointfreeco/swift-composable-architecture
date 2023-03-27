@@ -136,8 +136,8 @@ struct NavigationID: Hashable, @unchecked Sendable {
   // TODO: better custom debug convertible stuff
 }
 
-struct AnyHashableSendable: Hashable, @unchecked Sendable {
-  let base: AnyHashable
+@_spi(Internals) public struct AnyHashableSendable: Hashable, @unchecked Sendable {
+  @_spi(Internals) public let base: AnyHashable
   init<Base: Hashable & Sendable>(_ base: Base) {
     self.base = base
   }

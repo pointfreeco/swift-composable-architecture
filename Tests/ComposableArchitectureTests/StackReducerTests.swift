@@ -1,4 +1,4 @@
-import ComposableArchitecture
+@_spi(Internals) import ComposableArchitecture
 import XCTest
 
 #if swift(>=5.7)
@@ -6,6 +6,22 @@ import XCTest
   final class StackReducerTests: XCTestCase {
     func testStackState() async {
       // TODO: flesh out state test
+    }
+
+    func testCustomDebugStringConvertible() {
+      @Dependency(\.stackElementID) var stackElementID
+      XCTAssertEqual(stackElementID.peek().rawValue.base.base as! Int, 0)
+      XCTAssertEqual(stackElementID.next().customDumpDescription, "#0")
+      XCTAssertEqual(stackElementID.peek().rawValue.base.base as! Int, 1)
+      XCTAssertEqual(stackElementID.next().customDumpDescription, "#1")
+
+      withDependencies {
+        $0.context = .live
+      } operation: {
+        XCTAssertEqual(stackElementID.next().customDumpDescription, "#0")
+        XCTAssertEqual(stackElementID.next().customDumpDescription, "#1")
+        XCTAssertTrue(stackElementID.peek().rawValue.base.base is UUID)
+      }
     }
 
     func testPresent() async {
@@ -466,7 +482,7 @@ import XCTest
       }
     }
 
-    func testSwapElementsInStackWithEffects() async {
+    func testFirstChildWhileEffectInFlight_DeliversToCorrectID() async {
       struct Child: ReducerProtocol {
         let id: Int
         struct State: Equatable {
@@ -490,7 +506,7 @@ import XCTest
           }
         }
       }
-      // TODO: naming options: Stack, Path, 
+      // TODO: naming options: Stack, Path,
       struct Navigation: ReducerProtocol {
         enum State: Equatable {
           case child1(Child.State)
@@ -511,6 +527,7 @@ import XCTest
         }
         enum Action: Equatable {
           case navigation(StackAction<Navigation.Action>)
+          case popAll
           case popFirst
         }
         var body: some ReducerProtocol<State, Action> {
@@ -518,8 +535,11 @@ import XCTest
             switch action {
             case .navigation:
               return .none
+            case .popAll:
+              state.navigation = StackState()
+              return .none
             case .popFirst:
-              state.navigation.remove(id: state.navigation.ids[0])
+              state.navigation[id: state.navigation.ids[0]] = nil
               return .none
             }
           }
@@ -569,6 +589,9 @@ import XCTest
         XCTModify(&$0.navigation[id: 1], case: /Navigation.State.child2) {
           $0.count = 4
         }
+      }
+      await store.send(.popFirst) {
+        $0.navigation[id: 1] = nil
       }
     }
 
@@ -629,7 +652,7 @@ import XCTest
       )
       await store.send(.navigation(.popFrom(id: 999)))
     }
-
+ 
     func testChildWithInFlightEffect() async {
       struct Child: ReducerProtocol {
         struct State: Equatable {}
@@ -683,6 +706,24 @@ import XCTest
           then make sure those effects are torn down by marking the effect ".cancellable" and \
           returning a corresponding cancellation effect ("Effect.cancel") from another action, or, \
           if your effect is driven by a Combine subject, send it a completion.
+          """
+      }
+    }
+
+    func testExpressibleByIntegerLiteralWarning() {
+      XCTExpectFailure {
+        withDependencies {
+          $0.context = .live
+        } operation: {
+          let _: StackElementID = 0
+        }
+      } issueMatcher: {
+        $0.compactDescription == """
+          Specifying stack element IDs by integer literal is not allowed outside of tests.
+
+          In tests, integer literal stack element IDs can be used as a shorthand to the \
+          auto-incrementing generation of the current dependency context. This can be useful when \
+          asserting against actions received by a specific element.
           """
       }
     }
