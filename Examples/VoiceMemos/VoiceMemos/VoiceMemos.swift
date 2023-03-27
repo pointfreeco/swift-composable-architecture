@@ -85,13 +85,12 @@ struct VoiceMemos: ReducerProtocol {
         state.audioRecorderPermission = permission ? .allowed : .denied
         if permission {
           state.recordingMemo = newRecordingMemo
-          return .none
         } else {
           state.alert = AlertState {
             TextState("Permission is required to record voice memos.")
           }
-          return .none
         }
+        return .none
 
       case .voiceMemo(id: _, action: .audioPlayerClient(.failure)):
         state.alert = AlertState { TextState("Voice memo playback failed.") }
