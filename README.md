@@ -492,15 +492,18 @@ extension DependencyValues {
 ```
 
 With that little bit of upfront work done you can instantly start making use of the dependency in 
-any feature:
+any feature by using the `@Dependency` property wrapper:
 
-```swift
-struct Feature: ReducerProtocol {
-  struct State { … }
-  enum Action { … }
-  @Dependency(\.numberFact) var numberFact
-  …
-}
+```diff
+ struct Feature: ReducerProtocol {
+-  let numberFact: (Int) async throws -> String
++  @Dependency(\.numberFact) var numberFact
+   
+   …
+
+-  try await self.numberFact(count)
++  try await self.numberFact.fetch(count)
+ }
 ```
 
 This code works exactly as it did before, but you no longer have to explicitly pass the dependency 
@@ -523,14 +526,6 @@ struct MyApp: App {
   }
 }
 ```
-
-Then we can use it in the `reduce` implementation with the additional of `fetch`:
-
-```swift
-case .numberFactButtonTapped:
-  return .task { [count = state.count] in 
-    await .numberFactResponse(TaskResult { try await self.numberFact.fetch(count) })
-  }
 
 And the test store can be constructed without specifying any dependencies, but you can still 
 override any dependency you need to for the purpose of the test:
