@@ -323,7 +323,6 @@ public final class Store<State, Action> {
     line: UInt = #line
   ) -> Store<ChildState, ChildAction> {
     self.threadCheck(status: .scope)
-
     #if swift(>=5.7)
       return self.reducer.rescope(
         self,
@@ -356,20 +355,12 @@ public final class Store<State, Action> {
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<ChildState>(
     state toChildState: @escaping (State) -> ChildState,
+    removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) -> Store<ChildState, Action> {
-    self.scope(state: toChildState, action: { $0 }, file: file, line: line)
+    self.scope(state: toChildState, action: { $0 }, removeDuplicates: isDuplicate, file: file, line: line)
   }
-
-public func scope<ChildState: Equatable, ChildAction>(
-  state toChildState: @escaping (State) -> ChildState,
-  action fromChildAction: @escaping (ChildAction) -> Action,
-  file: StaticString = #file,
-  line: UInt = #line
-) -> Store<ChildState, ChildAction> {
-  scope(state: toChildState, action: fromChildAction, removeDuplicates: ==, file: file, line: line)
-}
 
   func filter(
     _ isSent: @escaping (State, Action) -> Bool,
