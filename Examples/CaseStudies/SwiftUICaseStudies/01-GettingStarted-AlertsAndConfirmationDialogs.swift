@@ -55,7 +55,6 @@ struct AlertAndConfirmationDialog: ReducerProtocol {
       return .none
 
     case .alertDismissed:
-      state.alert = nil
       return .none
 
     case .confirmationDialogButtonTapped:
