@@ -4,7 +4,7 @@
   @testable import ComposableArchitecture
 
   @MainActor
-  class EffectOperationTests: XCTestCase {
+  class EffectOperationTests: BaseTCATestCase {
     func testMergeDiscardsNones() async {
       var effect = EffectTask<Int>.none
         .merge(with: .none)

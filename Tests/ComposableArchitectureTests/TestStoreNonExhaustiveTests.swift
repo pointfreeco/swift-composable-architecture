@@ -3,7 +3,7 @@
   import XCTest
 
   @MainActor
-  final class TestStoreNonExhaustiveTests: XCTestCase {
+  final class TestStoreNonExhaustiveTests: BaseTCATestCase {
     func testSkipReceivedActions_NonStrict() async {
       let store = TestStore(
         initialState: 0,

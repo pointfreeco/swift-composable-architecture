@@ -4,7 +4,7 @@
   import XCTest
 
   @MainActor
-  final class EffectFailureTests: XCTestCase {
+  final class EffectFailureTests: BaseTCATestCase {
     var cancellables: Set<AnyCancellable> = []
 
     func testTaskUnexpectedThrows() async {

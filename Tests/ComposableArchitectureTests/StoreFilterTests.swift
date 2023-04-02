@@ -5,7 +5,7 @@
   @testable import ComposableArchitecture
 
   @MainActor
-  final class StoreFilterTests: XCTestCase {
+  final class StoreFilterTests: BaseTCATestCase {
     var cancellables: Set<AnyCancellable> = []
 
     func testFilter() {

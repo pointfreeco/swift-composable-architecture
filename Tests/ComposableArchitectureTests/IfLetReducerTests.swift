@@ -2,7 +2,7 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
-final class IfLetReducerTests: XCTestCase {
+final class IfLetReducerTests: BaseTCATestCase {
   #if DEBUG
     func testNilChild() async {
       let store = TestStore(

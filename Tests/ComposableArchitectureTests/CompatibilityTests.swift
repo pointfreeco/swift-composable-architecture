@@ -3,7 +3,7 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
-final class CompatibilityTests: XCTestCase {
+final class CompatibilityTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
 
   // Actions can be re-entrantly sent into the store if an action is sent that holds an object

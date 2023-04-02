@@ -2,7 +2,7 @@ import Combine
 import ComposableArchitecture
 import XCTest
 
-final class MemoryManagementTests: XCTestCase {
+final class MemoryManagementTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
 
   func testOwnership_ScopeHoldsOntoParent() {
