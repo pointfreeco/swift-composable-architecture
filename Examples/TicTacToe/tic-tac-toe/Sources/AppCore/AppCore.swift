@@ -24,21 +24,21 @@ public struct TicTacToe: ReducerProtocol {
       switch action {
       case .login(.twoFactor(.twoFactorResponse(.success))):
         state = .newGame(NewGame.State())
-        return .none
+        return nil
 
       case let .login(.loginResponse(.success(response))) where !response.twoFactorRequired:
         state = .newGame(NewGame.State())
-        return .none
+        return nil
 
       case .login:
-        return .none
+        return nil
 
       case .newGame(.logoutButtonTapped):
         state = .login(Login.State())
-        return .none
+        return nil
 
       case .newGame:
-        return .none
+        return nil
       }
     }
     .ifCaseLet(/State.login, action: /Action.login) {
