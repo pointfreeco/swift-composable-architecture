@@ -80,6 +80,13 @@ extension EffectPublisher {
   }
 }
 
+extension EffectPublisher: ExpressibleByNilLiteral {
+  @inlinable
+  public init(nilLiteral: ()) {
+    self.init(operation: .none)
+  }
+}
+
 /// A type that encapsulates a unit of work that can be run in the outside world, and can feed
 /// actions back to the ``Store``.
 ///
