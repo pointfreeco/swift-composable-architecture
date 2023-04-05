@@ -7,7 +7,7 @@ private let readMe = """
 
 struct NavigationDemo: ReducerProtocol {
   struct State: Equatable {
-    var navigation: StackState<Destinations.State> = []
+    var navigation: StackState<Destinations.State> = StackState() // TODO: array literal?
   }
 
   enum Action: Equatable {
@@ -15,7 +15,6 @@ struct NavigationDemo: ReducerProtocol {
     case goToABCButtonTapped
     case navigation(StackAction<Destinations.Action>)
     case popToRoot
-    case shuffleButtonTapped
   }
 
   var body: some ReducerProtocol<State, Action> {
@@ -51,10 +50,6 @@ struct NavigationDemo: ReducerProtocol {
 
       case .popToRoot:
         state.navigation.removeAll()
-        return .none
-
-      case .shuffleButtonTapped:
-        state.navigation.shuffle()
         return .none
       }
     }
@@ -184,9 +179,6 @@ struct FloatingMenuView: View {
       if viewStore.currentStack.count > 0 {
         VStack(alignment: .leading) {
           Text("Total count: \(viewStore.total)")
-          Button("Shuffle navigation stack") {
-            viewStore.send(.shuffleButtonTapped)
-          }
           Button("Pop to root") {
             viewStore.send(.popToRoot, animation: .default)
           }

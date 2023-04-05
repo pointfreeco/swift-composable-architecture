@@ -1,3 +1,4 @@
+import OrderedCollections
 import SwiftUI
 
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
@@ -5,6 +6,7 @@ public struct NavigationStackStore<State, Action, Content: View, Destination: Vi
   let content: Content
   let destination: (StackElementID) -> IfLetStore<State, Action, Destination?>
   let store: Store<StackState<State>, StackAction<Action>>
+  @StateObject var viewStore: ViewStore<OrderedSet<StackElementID>, StackAction<Action>>
 
   public init(
     _ store: Store<StackState<State>, StackAction<Action>>,
@@ -22,30 +24,31 @@ public struct NavigationStackStore<State, Action, Content: View, Destination: Vi
       )
     }
     self.store = store
+    self._viewStore = StateObject(
+      wrappedValue: ViewStore(
+        store.scope(state: { $0._ids }),
+        removeDuplicates: areOrderedSetsDuplicates
+      )
+    )
   }
 
   public var body: some View {
-    WithViewStore(
-      self.store.scope(state: { $0._ids }),
-      removeDuplicates: areOrderedSetsDuplicates
-    ) { viewStore in
-      // TODO: Does this binding need to be safer to avoid unsafely subscripting into the stack?
-      NavigationStack(
-        // TODO: Better binding
-        path: Binding(
-          get: { viewStore.state.elements },
-          set: { newIDs in
-            if viewStore.state.count > newIDs.count {
-              viewStore.send(.popFrom(id: viewStore.state[newIDs.count]))
-            }
+    // TODO: Does this binding need to be safer to avoid unsafely subscripting into the stack?
+    NavigationStack(
+      // TODO: Better binding
+      path: Binding(
+        get: { self.viewStore.state.elements },
+        set: { newIDs in
+          if self.viewStore.state.count > newIDs.count {
+            self.viewStore.send(.popFrom(id: self.viewStore.state[newIDs.count]))
           }
-        )
-      ) {
-        self.content
-          .navigationDestination(for: StackElementID.self) { id in
-            self.destination(id)
-          }
-      }
+        }
+      )
+    ) {
+      self.content
+        .navigationDestination(for: StackElementID.self) { id in
+          self.destination(id)
+        }
     }
   }
 }
