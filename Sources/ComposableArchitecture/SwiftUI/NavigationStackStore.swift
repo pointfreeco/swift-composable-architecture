@@ -5,7 +5,6 @@ import SwiftUI
 public struct NavigationStackStore<State, Action, Content: View, Destination: View>: View {
   let content: Content
   let destination: (StackElementID) -> IfLetStore<State, Action, Destination?>
-  let store: Store<StackState<State>, StackAction<Action>>
   @StateObject var viewStore: ViewStore<OrderedSet<StackElementID>, StackAction<Action>>
 
   public init(
@@ -23,7 +22,6 @@ public struct NavigationStackStore<State, Action, Content: View, Destination: Vi
         then: destination
       )
     }
-    self.store = store
     self._viewStore = StateObject(
       wrappedValue: ViewStore(
         store.scope(state: { $0._ids }),
