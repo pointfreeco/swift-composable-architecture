@@ -20,53 +20,43 @@ import SwiftUI
 ///   let store: StoreOf<App>
 ///
 ///   var body: some View {
-///     SwitchStore(self.store) {
-///       CaseLet(state: /App.State.loggedIn, action: App.Action.loggedIn) { loggedInStore in
-///         LoggedInView(store: loggedInStore)
-///       }
-///       CaseLet(state: /App.State.loggedOut, action: App.Action.loggedOut) { loggedOutStore in
-///         LoggedOutView(store: loggedOutStore)
+///     SwitchStore(self.store) { state in
+///       switch state {
+///       case .loggedIn:
+///         CaseLet(state: /App.State.loggedIn, action: App.Action.loggedIn) { loggedInStore in
+///           LoggedInView(store: loggedInStore)
+///         }
+///       case .loggedOut:
+///         CaseLet(state: /App.State.loggedOut, action: App.Action.loggedOut) { loggedOutStore in
+///           LoggedOutView(store: loggedOutStore)
+///         }
 ///       }
 ///     }
 ///   }
 /// }
 /// ```
 ///
-/// If a ``SwitchStore`` does not exhaustively handle every case with a corresponding ``CaseLet``
-/// view, a runtime warning will be logged when an unhandled case is encountered. To fall back on a
-/// default view instead, introduce a ``Default`` view at the end of the ``SwitchStore``:
-///
-/// ```swift
-/// SwitchStore(self.store) {
-///   CaseLet(state: /MyState.first, action: MyAction.first) {
-///     FirstView(store: $0)
-///   }
-///   CaseLet(state: /MyState.second, action: MyAction.second) {
-///     SecondView(store: $0)
-///   }
-///   Default {
-///     Text("State is neither first nor second.")
-///   }
-/// }
-/// ```
+/// > Note: The `SwitchStore` view builder is only evaluated when the case of state passed to it
+/// > changes. As such, you should not rely on this value for anything other than checking the
+/// > current case, _e.g._ by switching on it and calling the appropriate `CaseLet`
 ///
 /// See ``ReducerProtocol/ifCaseLet(_:action:then:file:fileID:line:)`` and
 /// ``Scope/init(state:action:child:file:fileID:line:)`` for embedding reducers that operate on each
 /// case of an enum in reducers that operate on the entire enum.
 public struct SwitchStore<State, Action, Content: View>: View {
   public let store: Store<State, Action>
-  public let content: Content
+  public let content: (State) -> Content
 
-  init(
-    store: Store<State, Action>,
-    @ViewBuilder content: () -> Content
+  public init(
+    _ store: Store<State, Action>,
+    @ViewBuilder content: @escaping (State) -> Content
   ) {
     self.store = store
-    self.content = content()
+    self.content = content
   }
 
   public var body: some View {
-    self.content
+    self.content(self.store.state.value)
       .environmentObject(StoreObservableObject(store: self.store))
   }
 }
@@ -134,6 +124,30 @@ extension CaseLet where EnumAction == CaseAction {
 /// If you wish to use ``SwitchStore`` in a non-exhaustive manner (i.e. you do not want to provide
 /// a ``CaseLet`` for each case of the enum), then you must insert a ``Default`` view at the end of
 /// the ``SwitchStore``'s body.
+@available(
+  iOS,
+  deprecated: 9999,
+  message:
+    "Use the 'SwitchStore.init' that can 'switch' over a given 'state' and use 'default' instead."
+)
+@available(
+  macOS,
+  deprecated: 9999,
+  message:
+    "Use the 'SwitchStore.init' that can 'switch' over a given 'state' and use 'default' instead."
+)
+@available(
+  tvOS,
+  deprecated: 9999,
+  message:
+    "Use the 'SwitchStore.init' that can 'switch' over a given 'state' and use 'default' instead."
+)
+@available(
+  watchOS,
+  deprecated: 9999,
+  message:
+    "Use the 'SwitchStore.init' that can 'switch' over a given 'state' and use 'default' instead."
+)
 public struct Default<Content: View>: View {
   private let content: Content
 
@@ -152,6 +166,26 @@ public struct Default<Content: View>: View {
 }
 
 extension SwitchStore {
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<State1, Action1, Content1, DefaultContent>(
     _ store: Store<State, Action>,
     @ViewBuilder content: () -> TupleView<
@@ -172,7 +206,7 @@ extension SwitchStore {
     >
   {
     let content = content().value
-    self.init(store: store) {
+    self.init(store) { _ in
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         if content.0.toCaseState(viewStore.state) != nil {
           content.0
@@ -183,6 +217,26 @@ extension SwitchStore {
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<State1, Action1, Content1>(
     _ store: Store<State, Action>,
     file: StaticString = #file,
@@ -206,6 +260,26 @@ extension SwitchStore {
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<State1, Action1, Content1, State2, Action2, Content2, DefaultContent>(
     _ store: Store<State, Action>,
     @ViewBuilder content: () -> TupleView<
@@ -230,7 +304,7 @@ extension SwitchStore {
     >
   {
     let content = content().value
-    self.init(store: store) {
+    self.init(store) { _ in
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         if content.0.toCaseState(viewStore.state) != nil {
           content.0
@@ -243,6 +317,26 @@ extension SwitchStore {
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<State1, Action1, Content1, State2, Action2, Content2>(
     _ store: Store<State, Action>,
     file: StaticString = #file,
@@ -276,6 +370,26 @@ extension SwitchStore {
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -309,7 +423,7 @@ extension SwitchStore {
     >
   {
     let content = content().value
-    self.init(store: store) {
+    self.init(store) { _ in
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         if content.0.toCaseState(viewStore.state) != nil {
           content.0
@@ -324,6 +438,26 @@ extension SwitchStore {
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<State1, Action1, Content1, State2, Action2, Content2, State3, Action3, Content3>(
     _ store: Store<State, Action>,
     file: StaticString = #file,
@@ -362,6 +496,26 @@ extension SwitchStore {
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -400,7 +554,7 @@ extension SwitchStore {
     >
   {
     let content = content().value
-    self.init(store: store) {
+    self.init(store) { _ in
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         if content.0.toCaseState(viewStore.state) != nil {
           content.0
@@ -417,6 +571,26 @@ extension SwitchStore {
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -465,6 +639,26 @@ extension SwitchStore {
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -508,7 +702,7 @@ extension SwitchStore {
     >
   {
     let content = content().value
-    self.init(store: store) {
+    self.init(store) { _ in
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         if content.0.toCaseState(viewStore.state) != nil {
           content.0
@@ -527,6 +721,26 @@ extension SwitchStore {
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -581,6 +795,26 @@ extension SwitchStore {
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -629,7 +863,7 @@ extension SwitchStore {
     >
   {
     let content = content().value
-    self.init(store: store) {
+    self.init(store) { _ in
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         if content.0.toCaseState(viewStore.state) != nil {
           content.0
@@ -650,6 +884,26 @@ extension SwitchStore {
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -710,6 +964,26 @@ extension SwitchStore {
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -763,7 +1037,7 @@ extension SwitchStore {
     >
   {
     let content = content().value
-    self.init(store: store) {
+    self.init(store) { _ in
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         if content.0.toCaseState(viewStore.state) != nil {
           content.0
@@ -786,6 +1060,26 @@ extension SwitchStore {
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -852,6 +1146,26 @@ extension SwitchStore {
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -910,7 +1224,7 @@ extension SwitchStore {
     >
   {
     let content = content().value
-    self.init(store: store) {
+    self.init(store) { _ in
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         if content.0.toCaseState(viewStore.state) != nil {
           content.0
@@ -935,6 +1249,26 @@ extension SwitchStore {
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -1007,6 +1341,26 @@ extension SwitchStore {
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -1070,7 +1424,7 @@ extension SwitchStore {
     >
   {
     let content = content().value
-    self.init(store: store) {
+    self.init(store) { _ in
       return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
         if content.0.toCaseState(viewStore.state) != nil {
           content.0
@@ -1097,6 +1451,26 @@ extension SwitchStore {
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -1176,6 +1550,26 @@ extension SwitchStore {
   }
 }
 
+@available(
+  iOS,
+  deprecated: 9999,
+  message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+)
+@available(
+  macOS,
+  deprecated: 9999,
+  message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+)
+@available(
+  tvOS,
+  deprecated: 9999,
+  message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+)
+@available(
+  watchOS,
+  deprecated: 9999,
+  message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+)
 public struct _ExhaustivityCheckView<State, Action>: View {
   @EnvironmentObject private var store: StoreObservableObject<State, Action>
   let file: StaticString
