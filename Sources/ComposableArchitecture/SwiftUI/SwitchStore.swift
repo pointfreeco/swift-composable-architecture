@@ -200,23 +200,17 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
-      _ConditionalContent<
-        CaseLet<State, Action, State1, Action1, Content1>,
-        Default<DefaultContent>
-      >
+    Content == _ConditionalContent<
+      CaseLet<State, Action, State1, Action1, Content1>,
+      Default<DefaultContent>
     >
   {
     let content = content().value
-    self.init(store) { _ in
-      return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toCaseState(viewStore.state) != nil {
-          content.0
-        } else {
-          content.1
-        }
+    self.init(store) { state in
+      if content.0.toCaseState(state) != nil {
+        content.0
+      } else {
+        content.1
       }
     }
   }
@@ -249,13 +243,9 @@ extension SwitchStore {
     @ViewBuilder content: () -> CaseLet<State, Action, State1, Action1, Content1>
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
-      _ConditionalContent<
-        CaseLet<State, Action, State1, Action1, Content1>,
-        Default<_ExhaustivityCheckView<State, Action>>
-      >
+    Content == _ConditionalContent<
+      CaseLet<State, Action, State1, Action1, Content1>,
+      Default<_ExhaustivityCheckView<State, Action>>
     >
   {
     self.init(store) {
@@ -295,28 +285,22 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
-        _ConditionalContent<
-          CaseLet<State, Action, State1, Action1, Content1>,
-          CaseLet<State, Action, State2, Action2, Content2>
-        >,
-        Default<DefaultContent>
-      >
+        CaseLet<State, Action, State1, Action1, Content1>,
+        CaseLet<State, Action, State2, Action2, Content2>
+      >,
+      Default<DefaultContent>
     >
   {
     let content = content().value
-    self.init(store) { _ in
-      return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toCaseState(viewStore.state) != nil {
-          content.0
-        } else if content.1.toCaseState(viewStore.state) != nil {
-          content.1
-        } else {
-          content.2
-        }
+    self.init(store) { state in
+      if content.0.toCaseState(state) != nil {
+        content.0
+      } else if content.1.toCaseState(state) != nil {
+        content.1
+      } else {
+        content.2
       }
     }
   }
@@ -354,16 +338,12 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
-        _ConditionalContent<
-          CaseLet<State, Action, State1, Action1, Content1>,
-          CaseLet<State, Action, State2, Action2, Content2>
-        >,
-        Default<_ExhaustivityCheckView<State, Action>>
-      >
+        CaseLet<State, Action, State1, Action1, Content1>,
+        CaseLet<State, Action, State2, Action2, Content2>
+      >,
+      Default<_ExhaustivityCheckView<State, Action>>
     >
   {
     let content = content()
@@ -411,33 +391,27 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
-        _ConditionalContent<
-          CaseLet<State, Action, State1, Action1, Content1>,
-          CaseLet<State, Action, State2, Action2, Content2>
-        >,
-        _ConditionalContent<
-          CaseLet<State, Action, State3, Action3, Content3>,
-          Default<DefaultContent>
-        >
+        CaseLet<State, Action, State1, Action1, Content1>,
+        CaseLet<State, Action, State2, Action2, Content2>
+      >,
+      _ConditionalContent<
+        CaseLet<State, Action, State3, Action3, Content3>,
+        Default<DefaultContent>
       >
     >
   {
     let content = content().value
-    self.init(store) { _ in
-      return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toCaseState(viewStore.state) != nil {
-          content.0
-        } else if content.1.toCaseState(viewStore.state) != nil {
-          content.1
-        } else if content.2.toCaseState(viewStore.state) != nil {
-          content.2
-        } else {
-          content.3
-        }
+    self.init(store) { state in
+      if content.0.toCaseState(state) != nil {
+        content.0
+      } else if content.1.toCaseState(state) != nil {
+        content.1
+      } else if content.2.toCaseState(state) != nil {
+        content.2
+      } else {
+        content.3
       }
     }
   }
@@ -476,18 +450,14 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
-        _ConditionalContent<
-          CaseLet<State, Action, State1, Action1, Content1>,
-          CaseLet<State, Action, State2, Action2, Content2>
-        >,
-        _ConditionalContent<
-          CaseLet<State, Action, State3, Action3, Content3>,
-          Default<_ExhaustivityCheckView<State, Action>>
-        >
+        CaseLet<State, Action, State1, Action1, Content1>,
+        CaseLet<State, Action, State2, Action2, Content2>
+      >,
+      _ConditionalContent<
+        CaseLet<State, Action, State3, Action3, Content3>,
+        Default<_ExhaustivityCheckView<State, Action>>
       >
     >
   {
@@ -539,38 +509,32 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
         _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State1, Action1, Content1>,
-            CaseLet<State, Action, State2, Action2, Content2>
-          >,
-          _ConditionalContent<
-            CaseLet<State, Action, State3, Action3, Content3>,
-            CaseLet<State, Action, State4, Action4, Content4>
-          >
+          CaseLet<State, Action, State1, Action1, Content1>,
+          CaseLet<State, Action, State2, Action2, Content2>
         >,
-        Default<DefaultContent>
-      >
+        _ConditionalContent<
+          CaseLet<State, Action, State3, Action3, Content3>,
+          CaseLet<State, Action, State4, Action4, Content4>
+        >
+      >,
+      Default<DefaultContent>
     >
   {
     let content = content().value
-    self.init(store) { _ in
-      return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toCaseState(viewStore.state) != nil {
-          content.0
-        } else if content.1.toCaseState(viewStore.state) != nil {
-          content.1
-        } else if content.2.toCaseState(viewStore.state) != nil {
-          content.2
-        } else if content.3.toCaseState(viewStore.state) != nil {
-          content.3
-        } else {
-          content.4
-        }
+    self.init(store) { state in
+      if content.0.toCaseState(state) != nil {
+        content.0
+      } else if content.1.toCaseState(state) != nil {
+        content.1
+      } else if content.2.toCaseState(state) != nil {
+        content.2
+      } else if content.3.toCaseState(state) != nil {
+        content.3
+      } else {
+        content.4
       }
     }
   }
@@ -615,22 +579,18 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
         _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State1, Action1, Content1>,
-            CaseLet<State, Action, State2, Action2, Content2>
-          >,
-          _ConditionalContent<
-            CaseLet<State, Action, State3, Action3, Content3>,
-            CaseLet<State, Action, State4, Action4, Content4>
-          >
+          CaseLet<State, Action, State1, Action1, Content1>,
+          CaseLet<State, Action, State2, Action2, Content2>
         >,
-        Default<_ExhaustivityCheckView<State, Action>>
-      >
+        _ConditionalContent<
+          CaseLet<State, Action, State3, Action3, Content3>,
+          CaseLet<State, Action, State4, Action4, Content4>
+        >
+      >,
+      Default<_ExhaustivityCheckView<State, Action>>
     >
   {
     let content = content()
@@ -684,43 +644,37 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
         _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State1, Action1, Content1>,
-            CaseLet<State, Action, State2, Action2, Content2>
-          >,
-          _ConditionalContent<
-            CaseLet<State, Action, State3, Action3, Content3>,
-            CaseLet<State, Action, State4, Action4, Content4>
-          >
+          CaseLet<State, Action, State1, Action1, Content1>,
+          CaseLet<State, Action, State2, Action2, Content2>
         >,
         _ConditionalContent<
-          CaseLet<State, Action, State5, Action5, Content5>,
-          Default<DefaultContent>
+          CaseLet<State, Action, State3, Action3, Content3>,
+          CaseLet<State, Action, State4, Action4, Content4>
         >
+      >,
+      _ConditionalContent<
+        CaseLet<State, Action, State5, Action5, Content5>,
+        Default<DefaultContent>
       >
     >
   {
     let content = content().value
-    self.init(store) { _ in
-      return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toCaseState(viewStore.state) != nil {
-          content.0
-        } else if content.1.toCaseState(viewStore.state) != nil {
-          content.1
-        } else if content.2.toCaseState(viewStore.state) != nil {
-          content.2
-        } else if content.3.toCaseState(viewStore.state) != nil {
-          content.3
-        } else if content.4.toCaseState(viewStore.state) != nil {
-          content.4
-        } else {
-          content.5
-        }
+    self.init(store) { state in
+      if content.0.toCaseState(state) != nil {
+        content.0
+      } else if content.1.toCaseState(state) != nil {
+        content.1
+      } else if content.2.toCaseState(state) != nil {
+        content.2
+      } else if content.3.toCaseState(state) != nil {
+        content.3
+      } else if content.4.toCaseState(state) != nil {
+        content.4
+      } else {
+        content.5
       }
     }
   }
@@ -767,24 +721,20 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
         _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State1, Action1, Content1>,
-            CaseLet<State, Action, State2, Action2, Content2>
-          >,
-          _ConditionalContent<
-            CaseLet<State, Action, State3, Action3, Content3>,
-            CaseLet<State, Action, State4, Action4, Content4>
-          >
+          CaseLet<State, Action, State1, Action1, Content1>,
+          CaseLet<State, Action, State2, Action2, Content2>
         >,
         _ConditionalContent<
-          CaseLet<State, Action, State5, Action5, Content5>,
-          Default<_ExhaustivityCheckView<State, Action>>
+          CaseLet<State, Action, State3, Action3, Content3>,
+          CaseLet<State, Action, State4, Action4, Content4>
         >
+      >,
+      _ConditionalContent<
+        CaseLet<State, Action, State5, Action5, Content5>,
+        Default<_ExhaustivityCheckView<State, Action>>
       >
     >
   {
@@ -842,48 +792,42 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
         _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State1, Action1, Content1>,
-            CaseLet<State, Action, State2, Action2, Content2>
-          >,
-          _ConditionalContent<
-            CaseLet<State, Action, State3, Action3, Content3>,
-            CaseLet<State, Action, State4, Action4, Content4>
-          >
+          CaseLet<State, Action, State1, Action1, Content1>,
+          CaseLet<State, Action, State2, Action2, Content2>
         >,
         _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State5, Action5, Content5>,
-            CaseLet<State, Action, State6, Action6, Content6>
-          >,
-          Default<DefaultContent>
+          CaseLet<State, Action, State3, Action3, Content3>,
+          CaseLet<State, Action, State4, Action4, Content4>
         >
+      >,
+      _ConditionalContent<
+        _ConditionalContent<
+          CaseLet<State, Action, State5, Action5, Content5>,
+          CaseLet<State, Action, State6, Action6, Content6>
+        >,
+        Default<DefaultContent>
       >
     >
   {
     let content = content().value
-    self.init(store) { _ in
-      return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toCaseState(viewStore.state) != nil {
-          content.0
-        } else if content.1.toCaseState(viewStore.state) != nil {
-          content.1
-        } else if content.2.toCaseState(viewStore.state) != nil {
-          content.2
-        } else if content.3.toCaseState(viewStore.state) != nil {
-          content.3
-        } else if content.4.toCaseState(viewStore.state) != nil {
-          content.4
-        } else if content.5.toCaseState(viewStore.state) != nil {
-          content.5
-        } else {
-          content.6
-        }
+    self.init(store) { state in
+      if content.0.toCaseState(state) != nil {
+        content.0
+      } else if content.1.toCaseState(state) != nil {
+        content.1
+      } else if content.2.toCaseState(state) != nil {
+        content.2
+      } else if content.3.toCaseState(state) != nil {
+        content.3
+      } else if content.4.toCaseState(state) != nil {
+        content.4
+      } else if content.5.toCaseState(state) != nil {
+        content.5
+      } else {
+        content.6
       }
     }
   }
@@ -932,27 +876,23 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
         _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State1, Action1, Content1>,
-            CaseLet<State, Action, State2, Action2, Content2>
-          >,
-          _ConditionalContent<
-            CaseLet<State, Action, State3, Action3, Content3>,
-            CaseLet<State, Action, State4, Action4, Content4>
-          >
+          CaseLet<State, Action, State1, Action1, Content1>,
+          CaseLet<State, Action, State2, Action2, Content2>
         >,
         _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State5, Action5, Content5>,
-            CaseLet<State, Action, State6, Action6, Content6>
-          >,
-          Default<_ExhaustivityCheckView<State, Action>>
+          CaseLet<State, Action, State3, Action3, Content3>,
+          CaseLet<State, Action, State4, Action4, Content4>
         >
+      >,
+      _ConditionalContent<
+        _ConditionalContent<
+          CaseLet<State, Action, State5, Action5, Content5>,
+          CaseLet<State, Action, State6, Action6, Content6>
+        >,
+        Default<_ExhaustivityCheckView<State, Action>>
       >
     >
   {
@@ -1013,53 +953,47 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
         _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State1, Action1, Content1>,
-            CaseLet<State, Action, State2, Action2, Content2>
-          >,
-          _ConditionalContent<
-            CaseLet<State, Action, State3, Action3, Content3>,
-            CaseLet<State, Action, State4, Action4, Content4>
-          >
+          CaseLet<State, Action, State1, Action1, Content1>,
+          CaseLet<State, Action, State2, Action2, Content2>
         >,
         _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State5, Action5, Content5>,
-            CaseLet<State, Action, State6, Action6, Content6>
-          >,
-          _ConditionalContent<
-            CaseLet<State, Action, State7, Action7, Content7>,
-            Default<DefaultContent>
-          >
+          CaseLet<State, Action, State3, Action3, Content3>,
+          CaseLet<State, Action, State4, Action4, Content4>
+        >
+      >,
+      _ConditionalContent<
+        _ConditionalContent<
+          CaseLet<State, Action, State5, Action5, Content5>,
+          CaseLet<State, Action, State6, Action6, Content6>
+        >,
+        _ConditionalContent<
+          CaseLet<State, Action, State7, Action7, Content7>,
+          Default<DefaultContent>
         >
       >
     >
   {
     let content = content().value
-    self.init(store) { _ in
-      return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toCaseState(viewStore.state) != nil {
-          content.0
-        } else if content.1.toCaseState(viewStore.state) != nil {
-          content.1
-        } else if content.2.toCaseState(viewStore.state) != nil {
-          content.2
-        } else if content.3.toCaseState(viewStore.state) != nil {
-          content.3
-        } else if content.4.toCaseState(viewStore.state) != nil {
-          content.4
-        } else if content.5.toCaseState(viewStore.state) != nil {
-          content.5
-        } else if content.6.toCaseState(viewStore.state) != nil {
-          content.6
-        } else {
-          content.7
-        }
+    self.init(store) { state in
+      if content.0.toCaseState(state) != nil {
+        content.0
+      } else if content.1.toCaseState(state) != nil {
+        content.1
+      } else if content.2.toCaseState(state) != nil {
+        content.2
+      } else if content.3.toCaseState(state) != nil {
+        content.3
+      } else if content.4.toCaseState(state) != nil {
+        content.4
+      } else if content.5.toCaseState(state) != nil {
+        content.5
+      } else if content.6.toCaseState(state) != nil {
+        content.6
+      } else {
+        content.7
       }
     }
   }
@@ -1110,29 +1044,25 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
         _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State1, Action1, Content1>,
-            CaseLet<State, Action, State2, Action2, Content2>
-          >,
-          _ConditionalContent<
-            CaseLet<State, Action, State3, Action3, Content3>,
-            CaseLet<State, Action, State4, Action4, Content4>
-          >
+          CaseLet<State, Action, State1, Action1, Content1>,
+          CaseLet<State, Action, State2, Action2, Content2>
         >,
         _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State5, Action5, Content5>,
-            CaseLet<State, Action, State6, Action6, Content6>
-          >,
-          _ConditionalContent<
-            CaseLet<State, Action, State7, Action7, Content7>,
-            Default<_ExhaustivityCheckView<State, Action>>
-          >
+          CaseLet<State, Action, State3, Action3, Content3>,
+          CaseLet<State, Action, State4, Action4, Content4>
+        >
+      >,
+      _ConditionalContent<
+        _ConditionalContent<
+          CaseLet<State, Action, State5, Action5, Content5>,
+          CaseLet<State, Action, State6, Action6, Content6>
+        >,
+        _ConditionalContent<
+          CaseLet<State, Action, State7, Action7, Content7>,
+          Default<_ExhaustivityCheckView<State, Action>>
         >
       >
     >
@@ -1197,58 +1127,52 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
         _ConditionalContent<
           _ConditionalContent<
-            _ConditionalContent<
-              CaseLet<State, Action, State1, Action1, Content1>,
-              CaseLet<State, Action, State2, Action2, Content2>
-            >,
-            _ConditionalContent<
-              CaseLet<State, Action, State3, Action3, Content3>,
-              CaseLet<State, Action, State4, Action4, Content4>
-            >
+            CaseLet<State, Action, State1, Action1, Content1>,
+            CaseLet<State, Action, State2, Action2, Content2>
           >,
           _ConditionalContent<
-            _ConditionalContent<
-              CaseLet<State, Action, State5, Action5, Content5>,
-              CaseLet<State, Action, State6, Action6, Content6>
-            >,
-            _ConditionalContent<
-              CaseLet<State, Action, State7, Action7, Content7>,
-              CaseLet<State, Action, State8, Action8, Content8>
-            >
+            CaseLet<State, Action, State3, Action3, Content3>,
+            CaseLet<State, Action, State4, Action4, Content4>
           >
         >,
-        Default<DefaultContent>
-      >
+        _ConditionalContent<
+          _ConditionalContent<
+            CaseLet<State, Action, State5, Action5, Content5>,
+            CaseLet<State, Action, State6, Action6, Content6>
+          >,
+          _ConditionalContent<
+            CaseLet<State, Action, State7, Action7, Content7>,
+            CaseLet<State, Action, State8, Action8, Content8>
+          >
+        >
+      >,
+      Default<DefaultContent>
     >
   {
     let content = content().value
-    self.init(store) { _ in
-      return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toCaseState(viewStore.state) != nil {
-          content.0
-        } else if content.1.toCaseState(viewStore.state) != nil {
-          content.1
-        } else if content.2.toCaseState(viewStore.state) != nil {
-          content.2
-        } else if content.3.toCaseState(viewStore.state) != nil {
-          content.3
-        } else if content.4.toCaseState(viewStore.state) != nil {
-          content.4
-        } else if content.5.toCaseState(viewStore.state) != nil {
-          content.5
-        } else if content.6.toCaseState(viewStore.state) != nil {
-          content.6
-        } else if content.7.toCaseState(viewStore.state) != nil {
-          content.7
-        } else {
-          content.8
-        }
+    self.init(store) { state in
+      if content.0.toCaseState(state) != nil {
+        content.0
+      } else if content.1.toCaseState(state) != nil {
+        content.1
+      } else if content.2.toCaseState(state) != nil {
+        content.2
+      } else if content.3.toCaseState(state) != nil {
+        content.3
+      } else if content.4.toCaseState(state) != nil {
+        content.4
+      } else if content.5.toCaseState(state) != nil {
+        content.5
+      } else if content.6.toCaseState(state) != nil {
+        content.6
+      } else if content.7.toCaseState(state) != nil {
+        content.7
+      } else {
+        content.8
       }
     }
   }
@@ -1301,34 +1225,30 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
         _ConditionalContent<
           _ConditionalContent<
-            _ConditionalContent<
-              CaseLet<State, Action, State1, Action1, Content1>,
-              CaseLet<State, Action, State2, Action2, Content2>
-            >,
-            _ConditionalContent<
-              CaseLet<State, Action, State3, Action3, Content3>,
-              CaseLet<State, Action, State4, Action4, Content4>
-            >
+            CaseLet<State, Action, State1, Action1, Content1>,
+            CaseLet<State, Action, State2, Action2, Content2>
           >,
           _ConditionalContent<
-            _ConditionalContent<
-              CaseLet<State, Action, State5, Action5, Content5>,
-              CaseLet<State, Action, State6, Action6, Content6>
-            >,
-            _ConditionalContent<
-              CaseLet<State, Action, State7, Action7, Content7>,
-              CaseLet<State, Action, State8, Action8, Content8>
-            >
+            CaseLet<State, Action, State3, Action3, Content3>,
+            CaseLet<State, Action, State4, Action4, Content4>
           >
         >,
-        Default<_ExhaustivityCheckView<State, Action>>
-      >
+        _ConditionalContent<
+          _ConditionalContent<
+            CaseLet<State, Action, State5, Action5, Content5>,
+            CaseLet<State, Action, State6, Action6, Content6>
+          >,
+          _ConditionalContent<
+            CaseLet<State, Action, State7, Action7, Content7>,
+            CaseLet<State, Action, State8, Action8, Content8>
+          >
+        >
+      >,
+      Default<_ExhaustivityCheckView<State, Action>>
     >
   {
     let content = content()
@@ -1394,63 +1314,57 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
         _ConditionalContent<
           _ConditionalContent<
-            _ConditionalContent<
-              CaseLet<State, Action, State1, Action1, Content1>,
-              CaseLet<State, Action, State2, Action2, Content2>
-            >,
-            _ConditionalContent<
-              CaseLet<State, Action, State3, Action3, Content3>,
-              CaseLet<State, Action, State4, Action4, Content4>
-            >
+            CaseLet<State, Action, State1, Action1, Content1>,
+            CaseLet<State, Action, State2, Action2, Content2>
           >,
           _ConditionalContent<
-            _ConditionalContent<
-              CaseLet<State, Action, State5, Action5, Content5>,
-              CaseLet<State, Action, State6, Action6, Content6>
-            >,
-            _ConditionalContent<
-              CaseLet<State, Action, State7, Action7, Content7>,
-              CaseLet<State, Action, State8, Action8, Content8>
-            >
+            CaseLet<State, Action, State3, Action3, Content3>,
+            CaseLet<State, Action, State4, Action4, Content4>
           >
         >,
         _ConditionalContent<
-          CaseLet<State, Action, State9, Action9, Content9>,
-          Default<DefaultContent>
+          _ConditionalContent<
+            CaseLet<State, Action, State5, Action5, Content5>,
+            CaseLet<State, Action, State6, Action6, Content6>
+          >,
+          _ConditionalContent<
+            CaseLet<State, Action, State7, Action7, Content7>,
+            CaseLet<State, Action, State8, Action8, Content8>
+          >
         >
+      >,
+      _ConditionalContent<
+        CaseLet<State, Action, State9, Action9, Content9>,
+        Default<DefaultContent>
       >
     >
   {
     let content = content().value
-    self.init(store) { _ in
-      return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toCaseState(viewStore.state) != nil {
-          content.0
-        } else if content.1.toCaseState(viewStore.state) != nil {
-          content.1
-        } else if content.2.toCaseState(viewStore.state) != nil {
-          content.2
-        } else if content.3.toCaseState(viewStore.state) != nil {
-          content.3
-        } else if content.4.toCaseState(viewStore.state) != nil {
-          content.4
-        } else if content.5.toCaseState(viewStore.state) != nil {
-          content.5
-        } else if content.6.toCaseState(viewStore.state) != nil {
-          content.6
-        } else if content.7.toCaseState(viewStore.state) != nil {
-          content.7
-        } else if content.8.toCaseState(viewStore.state) != nil {
-          content.8
-        } else {
-          content.9
-        }
+    self.init(store) { state in
+      if content.0.toCaseState(state) != nil {
+        content.0
+      } else if content.1.toCaseState(state) != nil {
+        content.1
+      } else if content.2.toCaseState(state) != nil {
+        content.2
+      } else if content.3.toCaseState(state) != nil {
+        content.3
+      } else if content.4.toCaseState(state) != nil {
+        content.4
+      } else if content.5.toCaseState(state) != nil {
+        content.5
+      } else if content.6.toCaseState(state) != nil {
+        content.6
+      } else if content.7.toCaseState(state) != nil {
+        content.7
+      } else if content.8.toCaseState(state) != nil {
+        content.8
+      } else {
+        content.9
       }
     }
   }
@@ -1505,36 +1419,32 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
         _ConditionalContent<
           _ConditionalContent<
-            _ConditionalContent<
-              CaseLet<State, Action, State1, Action1, Content1>,
-              CaseLet<State, Action, State2, Action2, Content2>
-            >,
-            _ConditionalContent<
-              CaseLet<State, Action, State3, Action3, Content3>,
-              CaseLet<State, Action, State4, Action4, Content4>
-            >
+            CaseLet<State, Action, State1, Action1, Content1>,
+            CaseLet<State, Action, State2, Action2, Content2>
           >,
           _ConditionalContent<
-            _ConditionalContent<
-              CaseLet<State, Action, State5, Action5, Content5>,
-              CaseLet<State, Action, State6, Action6, Content6>
-            >,
-            _ConditionalContent<
-              CaseLet<State, Action, State7, Action7, Content7>,
-              CaseLet<State, Action, State8, Action8, Content8>
-            >
+            CaseLet<State, Action, State3, Action3, Content3>,
+            CaseLet<State, Action, State4, Action4, Content4>
           >
         >,
         _ConditionalContent<
-          CaseLet<State, Action, State9, Action9, Content9>,
-          Default<_ExhaustivityCheckView<State, Action>>
+          _ConditionalContent<
+            CaseLet<State, Action, State5, Action5, Content5>,
+            CaseLet<State, Action, State6, Action6, Content6>
+          >,
+          _ConditionalContent<
+            CaseLet<State, Action, State7, Action7, Content7>,
+            CaseLet<State, Action, State8, Action8, Content8>
+          >
         >
+      >,
+      _ConditionalContent<
+        CaseLet<State, Action, State9, Action9, Content9>,
+        Default<_ExhaustivityCheckView<State, Action>>
       >
     >
   {
