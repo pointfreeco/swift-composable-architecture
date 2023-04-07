@@ -56,8 +56,12 @@ public struct SwitchStore<State, Action, Content: View>: View {
   }
 
   public var body: some View {
-    self.content(self.store.state.value)
-      .environmentObject(StoreObservableObject(store: self.store))
+    WithViewStore(
+      self.store, observe: { $0 }, removeDuplicates: { enumTag($0) == enumTag($1) }
+    ) { viewStore in
+      self.content(viewStore.state)
+        .environmentObject(StoreObservableObject(store: self.store))
+    }
   }
 }
 
