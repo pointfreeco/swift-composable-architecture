@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// A view that can switch over a store of enum state and handle each case.
+/// A view that observes when enum state held in a store changes cases, and provides stores to
+/// ``CaseLet`` views.
 ///
 /// An application may model parts of its state with enums. For example, app state may differ if a
 /// user is logged-in or not:
@@ -36,9 +37,9 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// > Note: The `SwitchStore` view builder is only evaluated when the case of state passed to it
-/// > changes. As such, you should not rely on this value for anything other than checking the
-/// > current case, _e.g._ by switching on it and calling the appropriate `CaseLet`
+/// > Important: The `SwitchStore` view builder is only evaluated when the case of state passed to
+/// > it changes. As such, you should not rely on this value for anything other than checking the
+/// > current case, _e.g._ by switching on it and routing to an appropriate `CaseLet`.
 ///
 /// See ``ReducerProtocol/ifCaseLet(_:action:then:file:fileID:line:)`` and
 /// ``Scope/init(state:action:child:file:fileID:line:)`` for embedding reducers that operate on each
@@ -67,10 +68,15 @@ public struct SwitchStore<State, Action, Content: View>: View {
 
 /// A view that handles a specific case of enum state in a ``SwitchStore``.
 public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: View>: View {
-  @EnvironmentObject private var store: StoreObservableObject<EnumState, EnumAction>
   public let toCaseState: (EnumState) -> CaseState?
   public let fromCaseAction: (CaseAction) -> EnumAction
   public let content: (Store<CaseState, CaseAction>) -> Content
+
+  private let file: StaticString
+  private let fileID: StaticString
+  private let line: UInt
+
+  @EnvironmentObject private var store: StoreObservableObject<EnumState, EnumAction>
 
   /// Initializes a ``CaseLet`` view that computes content depending on if a store of enum state
   /// matches a particular case.
@@ -82,13 +88,39 @@ public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: Vie
   ///   - content: A function that is given a store of the given case's state and returns a view
   ///     that is visible only when the switch store's state matches.
   public init(
-    state toCaseState: @escaping (EnumState) -> CaseState?,
+    _ toCaseState: @escaping (EnumState) -> CaseState?,
     action fromCaseAction: @escaping (CaseAction) -> EnumAction,
-    @ViewBuilder then content: @escaping (Store<CaseState, CaseAction>) -> Content
+    @ViewBuilder then content: @escaping (Store<CaseState, CaseAction>) -> Content,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
   ) {
     self.toCaseState = toCaseState
     self.fromCaseAction = fromCaseAction
     self.content = content
+    self.file = file
+    self.fileID = fileID
+    self.line = line
+  }
+
+  @available(iOS, deprecated: 9999, message: "Use 'CaseLet.init(_:action:…)' instead.")
+  @available(macOS, deprecated: 9999, message: "Use 'CaseLet.init(_:action:…)' instead.")
+  @available(tvOS, deprecated: 9999, message: "Use 'CaseLet.init(_:action:…)' instead.")
+  @available(watchOS, deprecated: 9999, message: "Use 'CaseLet.init(_:action:…)' instead.")
+  public init(
+    state toCaseState: @escaping (EnumState) -> CaseState?,
+    action fromCaseAction: @escaping (CaseAction) -> EnumAction,
+    @ViewBuilder then content: @escaping (Store<CaseState, CaseAction>) -> Content,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) {
+    self.toCaseState = toCaseState
+    self.fromCaseAction = fromCaseAction
+    self.content = content
+    self.file = file
+    self.fileID = fileID
+    self.line = line
   }
 
   public var body: some View {
@@ -97,7 +129,14 @@ public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: Vie
         state: self.toCaseState,
         action: self.fromCaseAction
       ),
-      then: self.content
+      then: self.content,
+      else: {
+        _CaseLetMismatchView<EnumState, EnumAction>(
+          file: self.file,
+          fileID: self.fileID,
+          line: self.line
+        )
+      }
     )
   }
 }
@@ -116,7 +155,7 @@ extension CaseLet where EnumAction == CaseAction {
     @ViewBuilder then content: @escaping (Store<CaseState, CaseAction>) -> Content
   ) {
     self.init(
-      state: toCaseState,
+      toCaseState,
       action: { $0 },
       then: content
     )
@@ -1530,6 +1569,54 @@ public struct _ExhaustivityCheckView<State, Action>: View {
           line: self.line
         )
       }
+    #else
+      return EmptyView()
+    #endif
+  }
+}
+
+public struct _CaseLetMismatchView<State, Action>: View {
+  @EnvironmentObject private var store: StoreObservableObject<State, Action>
+  let file: StaticString
+  let fileID: StaticString
+  let line: UInt
+
+  public var body: some View {
+    #if DEBUG
+      let message = """
+        A "CaseLet" at "\(self.fileID):\(self.line)" was encountered when state was set to another \
+        case:
+
+            \(debugCaseOutput(self.store.wrappedValue.state.value))
+
+        This usually happens when there is a mismatch between the case being switched on and the \
+        "CaseLet" view being rendered.
+
+        For example, if ".screenA" is being switched on, but the "CaseLet" view is pointed to \
+        ".screenB":
+
+            case .screenA:
+              CaseLet(
+                /State.screenB, action: Action.screenB
+              ) { /* ... */ }
+
+        Look out for typos to ensure that these two cases align.
+        """
+      return VStack(spacing: 17) {
+        #if os(macOS)
+          Text("⚠️")
+        #else
+          Image(systemName: "exclamationmark.triangle.fill")
+            .font(.largeTitle)
+        #endif
+
+        Text(message)
+      }
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
+      .foregroundColor(.white)
+      .padding()
+      .background(Color.red.edgesIgnoringSafeArea(.all))
+      .onAppear { runtimeWarn(message, file: self.file, line: self.line) }
     #else
       return EmptyView()
     #endif
