@@ -181,7 +181,7 @@ import XCTest
       }
       await store.send(.children(.element(id: 0, action: .onAppear)))
       await store.send(.children(.element(id: 0, action: .closeButtonTapped)))
-      await store.receive(.children(._popFrom(id: 0))) {
+      await store.receive(.children(.setPath(store.state.children.dropLast()))) {
         $0.children.removeLast()
       }
     }
@@ -233,7 +233,7 @@ import XCTest
       )
 
       await store.send(.children(.element(id: 0, action: .closeButtonTapped)))
-      await store.receive(.children(._popFrom(id: 0))) {
+      await store.receive(.children(.setPath(StackState()))) {
         $0.children.removeAll()
       }
     }
@@ -320,7 +320,7 @@ import XCTest
         $0.navigation.append(.child2(Child.State()))
       }
       await store.send(.navigation(.element(id: 1, action: .child2(.onAppear))))
-      await store.send(.navigation(._popFrom(id: 0))) {
+      await store.send(.navigation(.setPath(StackState()))) {
         $0.navigation.removeAll()
       }
     }

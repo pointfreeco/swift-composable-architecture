@@ -373,6 +373,17 @@ public enum StackAction<State, Action> {
   case setPath(StackState<State>)
 }
 
+extension StackAction: _InternalAction {
+  var isInternal: Bool {
+    switch self {
+    case ._popFrom:
+      return true
+    case .element, .setPath:
+      return false
+    }
+  }
+}
+
 //public typealias StackActionOf<R: ReducerProtocol> = StackAction<R.State, R.Action>
 
 extension StackAction: Equatable where State: Equatable, Action: Equatable {}
@@ -450,10 +461,13 @@ public struct _StackReducer<
       destinationEffects = .none
       baseEffects = self.base.reduce(into: &state, action: action)
       var stack = state[keyPath: self.toStackState]
-      if !stack.pop(from: id) {
+      if stack.pop(from: id) {
+        return .send(self.toStackAction.embed(.setPath(stack)))
+      } else {
         runtimeWarn("TODO")
+        return .none
       }
-      return .send(self.toStackAction.embed(.setPath(stack)))
+
 
     case let .setPath(stack):
       destinationEffects = .none
