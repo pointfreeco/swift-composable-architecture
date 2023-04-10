@@ -18,7 +18,7 @@ final class SwitchStoreTests: XCTestCase {
 
     XCTAssertTrue(
       app.staticTexts
-        .containing(NSPredicate(format: "label CONTAINS[c] %@", "Warning"))
+        .containing(NSPredicate(format: "label CONTAINS[c] Warning"))
         .element
         .exists
     )
