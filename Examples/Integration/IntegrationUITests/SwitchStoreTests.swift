@@ -16,7 +16,11 @@ final class SwitchStoreTests: XCTestCase {
 
     app.buttons["Swap"].tap()
 
-    // TODO: Figure out how to assert this
-    //XCTAssertTrue(app.staticTexts["Warning"].exists)
+    XCTAssertTrue(
+      app.staticTexts
+        .containing(NSPredicate(format: "label CONTAINS[c] %@", "Warning"))
+        .element
+        .exists
+    )
   }
 }

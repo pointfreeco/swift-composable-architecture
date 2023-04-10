@@ -1584,8 +1584,8 @@ public struct _CaseLetMismatchView<State, Action>: View {
   public var body: some View {
     #if DEBUG
       let message = """
-        A "CaseLet" at "\(self.fileID):\(self.line)" was encountered when state was set to another \
-        case:
+        Warning: A "CaseLet" at "\(self.fileID):\(self.line)" was encountered when state was set \
+        to another case:
 
             \(debugCaseOutput(self.store.wrappedValue.state.value))
 
