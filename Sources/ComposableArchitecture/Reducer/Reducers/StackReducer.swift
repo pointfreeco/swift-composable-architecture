@@ -110,12 +110,6 @@ public struct StackState<Element>: RandomAccessCollection {
 
   @Dependency(\.stackElementID) private var stackElementID
 
-  // TODO: naming of argument
-  public init<S: Sequence>(resettingIdentityOf elements: S) where S.Element == Element {
-    self.init()
-    self.append(contentsOf: elements)
-  }
-
   var _ids: OrderedSet<StackElementID> {
     self._dictionary.keys
   }
@@ -204,6 +198,18 @@ public struct StackState<Element>: RandomAccessCollection {
     }
   }
 
+  public func appending(_ element: Element) -> Self {
+    var stack = self
+    stack.append(element)
+    return stack
+  }
+
+  public func appending<S: Sequence>(contentsOf elements: S) -> Self where S.Element == Element {
+    var stack = self
+    stack.append(contentsOf: elements)
+    return stack
+  }
+
   public mutating func insert(_ newElement: Element, at i: Index) {
     self._dictionary.updateValue(newElement, forKey: self.stackElementID.next(), insertingAt: i)
   }
@@ -224,6 +230,86 @@ public struct StackState<Element>: RandomAccessCollection {
   public mutating func removeAll() {
     self._dictionary.removeAll()
     self._mounted.removeAll()
+  }
+
+  public func dropLast(_ n: Int = 1) -> Self {
+    var stack = self
+    stack.removeLast(Swift.min(stack.count, n))
+    return stack
+  }
+
+  var path: PathView {
+    _read { yield PathView(base: self) }
+//    get { PathView(base: self) }
+    _modify {
+      var path = PathView(base: self)
+      yield &path
+      self = path.base
+    }
+    set { self = newValue.base }
+  }
+
+  struct PathView: MutableCollection, RandomAccessCollection, RangeReplaceableCollection {
+    var base: StackState
+
+    var startIndex: Int { self.base.startIndex }
+    var endIndex: Int { self.base.endIndex }
+    func index(after i: Int) -> Int { self.base.index(after: i) }
+    func index(before i: Int) -> Int { self.base.index(before: i) }
+
+    subscript(position: Int) -> Component<Element> {
+      _read {
+        let (id, element) = self.base._dictionary.elements[position]
+        yield Component(id: id, element: element)
+      }
+//      get {
+//        let (id, element) = self.base._dictionary.elements[position]
+//        return Component(id: id, element: element)
+//      }
+      _modify {
+        let (id, element) = self.base._dictionary.elements[position]
+        var component = Component(id: id, element: element)
+        yield &component
+        self.base._dictionary[id] = component.element
+      }
+      set {
+        self.base._dictionary[newValue.id] = newValue.element
+      }
+    }
+
+    init(base: StackState) {
+      self.base = base
+    }
+
+    init() {
+      self.init(base: StackState())
+    }
+
+    mutating func replaceSubrange<C: Collection>(
+      _ subrange: Range<Int>, with newElements: C
+    ) where C.Element == Component<Element> {
+      for id in self.base._ids[subrange] {
+        self.base._mounted.remove(id)
+      }
+      self.base._dictionary.removeSubrange(subrange)
+      for component in newElements.reversed() {
+        self.base._dictionary
+          .updateValue(component.element, forKey: component.id, insertingAt: subrange.lowerBound)
+      }
+    }
+  }
+}
+
+struct Component<Element>: Hashable {
+  let id: StackElementID
+  var element: Element
+
+  static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.id == rhs.id
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(self.id)
   }
 }
 
@@ -278,18 +364,24 @@ extension StackState: CustomReflectable {
   }
 }
 
-public enum StackAction<Action> {
+// TODO: Is this even worth it?
+//public typealias StackStateOf<R: ReducerProtocol> = StackState<R.State/*, _???*/>
+
+public enum StackAction<State, Action> {
+  case _popFrom(id: StackElementID)
   case element(id: StackElementID, action: Action)
-  case popFrom(id: StackElementID)
+  case setPath(StackState<State>)
 }
 
-extension StackAction: Equatable where Action: Equatable {}
-extension StackAction: Hashable where Action: Hashable {}
+//public typealias StackActionOf<R: ReducerProtocol> = StackAction<R.State, R.Action>
+
+extension StackAction: Equatable where State: Equatable, Action: Equatable {}
+extension StackAction: Hashable where State: Hashable, Action: Hashable {}
 
 extension ReducerProtocol {
   public func forEach<DestinationState, DestinationAction, Destination: ReducerProtocol>(
     _ toStackState: WritableKeyPath<State, StackState<DestinationState>>,
-    action toStackAction: CasePath<Action, StackAction<DestinationAction>>,
+    action toStackAction: CasePath<Action, StackAction<DestinationState, DestinationAction>>,
     @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
@@ -313,7 +405,7 @@ public struct _StackReducer<
 >: ReducerProtocol {
   let base: Base
   let toStackState: WritableKeyPath<Base.State, StackState<Destination.State>>
-  let toStackAction: CasePath<Base.Action, StackAction<Destination.Action>>
+  let toStackAction: CasePath<Base.Action, StackAction<Destination.State, Destination.Action>>
   let destination: Destination
   let file: StaticString
   let fileID: StaticString
@@ -327,13 +419,6 @@ public struct _StackReducer<
     let baseEffects: EffectTask<Base.Action>
 
     switch (self.toStackAction.extract(from: action)) {
-    case let .popFrom(id):
-      destinationEffects = .none
-      baseEffects = self.base.reduce(into: &state, action: action)
-      if !state[keyPath: self.toStackState].pop(from: id) {
-        runtimeWarn("TODO")
-      }
-
     case let .element(elementID, destinationAction):
       if state[keyPath: self.toStackState][id: elementID] != nil {
         let elementNavigationIDPath = self.navigationIDPath(for: elementID)
@@ -360,6 +445,20 @@ public struct _StackReducer<
       }
 
       baseEffects = self.base.reduce(into: &state, action: action)
+
+    case let ._popFrom(id):
+      destinationEffects = .none
+      baseEffects = self.base.reduce(into: &state, action: action)
+      var stack = state[keyPath: self.toStackState]
+      if !stack.pop(from: id) {
+        runtimeWarn("TODO")
+      }
+      return .send(self.toStackAction.embed(.setPath(stack)))
+
+    case let .setPath(stack):
+      destinationEffects = .none
+      baseEffects = self.base.reduce(into: &state, action: action)
+      state[keyPath: self.toStackState] = stack
 
     case .none:
       destinationEffects = .none
@@ -390,7 +489,7 @@ public struct _StackReducer<
               id: NavigationDismissID(elementID: elementID),
               navigationIDPath: navigationDestinationID
             )
-            .append(Just(self.toStackAction.embed(.popFrom(id: elementID))))
+            .append(Just(self.toStackAction.embed(._popFrom(id: elementID))))
             .eraseToEffect()
             ._cancellable(navigationIDPath: navigationDestinationID)
             ._cancellable(id: OnFirstAppearID(), navigationIDPath: .init())

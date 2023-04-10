@@ -49,7 +49,7 @@ import XCTest
           var children = StackState<Child.State>()
         }
         enum Action: Equatable {
-          case children(StackAction<Child.Action>)
+          case children(StackAction<Child.State, Child.Action>)
           case pushChild
         }
         var body: some ReducerProtocol<State, Action> {
@@ -95,7 +95,7 @@ import XCTest
           var children = StackState<Child.State>()
         }
         enum Action: Equatable {
-          case children(StackAction<Child.Action>)
+          case children(StackAction<Child.State, Child.Action>)
           case popChild
           case pushChild
         }
@@ -155,7 +155,7 @@ import XCTest
           var children = StackState<Child.State>()
         }
         enum Action: Equatable {
-          case children(StackAction<Child.Action>)
+          case children(StackAction<Child.State, Child.Action>)
           case pushChild
         }
         var body: some ReducerProtocol<State, Action> {
@@ -181,7 +181,7 @@ import XCTest
       }
       await store.send(.children(.element(id: 0, action: .onAppear)))
       await store.send(.children(.element(id: 0, action: .closeButtonTapped)))
-      await store.receive(.children(.popFrom(id: 0))) {
+      await store.receive(.children(._popFrom(id: 0))) {
         $0.children.removeLast()
       }
     }
@@ -207,7 +207,7 @@ import XCTest
           var children = StackState<Child.State>()
         }
         enum Action: Equatable {
-          case children(StackAction<Child.Action>)
+          case children(StackAction<Child.State, Child.Action>)
           case pushChild
         }
         var body: some ReducerProtocol<State, Action> {
@@ -233,7 +233,7 @@ import XCTest
       )
 
       await store.send(.children(.element(id: 0, action: .closeButtonTapped)))
-      await store.receive(.children(.popFrom(id: 0))) {
+      await store.receive(.children(._popFrom(id: 0))) {
         $0.children.removeAll()
       }
     }
@@ -288,7 +288,7 @@ import XCTest
           var navigation = StackState<Navigation.State>()
         }
         enum Action: Equatable {
-          case navigation(StackAction<Navigation.Action>)
+          case navigation(StackAction<Navigation.State, Navigation.Action>)
           case pushChild1
           case pushChild2
         }
@@ -320,7 +320,7 @@ import XCTest
         $0.navigation.append(.child2(Child.State()))
       }
       await store.send(.navigation(.element(id: 1, action: .child2(.onAppear))))
-      await store.send(.navigation(.popFrom(id: 0))) {
+      await store.send(.navigation(._popFrom(id: 0))) {
         $0.navigation.removeAll()
       }
     }
@@ -339,7 +339,7 @@ import XCTest
           var navigation = StackState<Child.State>()
         }
         enum Action {
-          case navigation(StackAction<Child.Action>)
+          case navigation(StackAction<Child.State, Child.Action>)
           case popToRoot
           case pushChild
         }
@@ -427,7 +427,7 @@ import XCTest
           var navigation = StackState<Navigation.State>()
         }
         enum Action: Equatable {
-          case navigation(StackAction<Navigation.Action>)
+          case navigation(StackAction<Navigation.State, Navigation.Action>)
           case pushChild1
           case pushChild2
         }
@@ -526,7 +526,7 @@ import XCTest
           var navigation = StackState<Navigation.State>()
         }
         enum Action: Equatable {
-          case navigation(StackAction<Navigation.Action>)
+          case navigation(StackAction<Navigation.State, Navigation.Action>)
           case popAll
           case popFirst
         }
@@ -552,12 +552,10 @@ import XCTest
       let mainQueue = DispatchQueue.test
       let store = TestStore(
         initialState: Parent.State(
-          navigation: StackState(
-            resettingIdentityOf: [
-              .child1(Child.State()),
-              .child2(Child.State()),
-            ]
-          )
+          navigation: StackState().appending(contentsOf: [
+            .child1(Child.State()),
+            .child2(Child.State()),
+          ])
         ),
         reducer: Parent()
       ) {
@@ -601,7 +599,7 @@ import XCTest
           var navigation = StackState<Int>()
         }
         enum Action {
-          case navigation(StackAction<Void>)
+          case navigation(StackAction<Int, Void>)
         }
         var body: some ReducerProtocol<State, Action> {
           EmptyReducer()
@@ -630,7 +628,7 @@ import XCTest
           var navigation = StackState<Int>()
         }
         enum Action {
-          case navigation(StackAction<Void>)
+          case navigation(StackAction<Int, Void>)
         }
         var body: some ReducerProtocol<State, Action> {
           EmptyReducer()
@@ -650,7 +648,7 @@ import XCTest
         initialState: Parent.State(navigation: navigation),
         reducer: Parent()
       )
-      await store.send(.navigation(.popFrom(id: 999)))
+      await store.send(.navigation(._popFrom(id: 999)))
     }
  
     func testChildWithInFlightEffect() async {
@@ -666,7 +664,7 @@ import XCTest
           var navigation = StackState<Child.State>()
         }
         enum Action {
-          case navigation(StackAction<Child.Action>)
+          case navigation(StackAction<Child.State, Child.Action>)
         }
         var body: some ReducerProtocol<State, Action> {
           EmptyReducer()

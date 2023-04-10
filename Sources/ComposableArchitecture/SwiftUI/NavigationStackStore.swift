@@ -5,10 +5,10 @@ import SwiftUI
 public struct NavigationStackStore<State, Action, Content: View, Destination: View>: View {
   let content: Content
   let destination: (StackElementID) -> IfLetStore<State, Action, Destination?>
-  @StateObject var viewStore: ViewStore<OrderedSet<StackElementID>, StackAction<Action>>
+  @StateObject private var viewStore: ViewStore<StackState<State>, StackAction<State, Action>>
 
   public init(
-    _ store: Store<StackState<State>, StackAction<Action>>,
+    _ store: Store<StackState<State>, StackAction<State, Action>>,
     @ViewBuilder content: () -> Content,
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination
   ) {
@@ -24,8 +24,8 @@ public struct NavigationStackStore<State, Action, Content: View, Destination: Vi
     }
     self._viewStore = StateObject(
       wrappedValue: ViewStore(
-        store.scope(state: { $0._ids }),
-        removeDuplicates: areOrderedSetsDuplicates
+        store,
+        removeDuplicates: { areOrderedSetsDuplicates($0._ids, $1._ids) }
       )
     )
   }
@@ -33,30 +33,41 @@ public struct NavigationStackStore<State, Action, Content: View, Destination: Vi
   public var body: some View {
     // TODO: Does this binding need to be safer to avoid unsafely subscripting into the stack?
     NavigationStack(
-      // TODO: Better binding
-      path: Binding(
-        get: { self.viewStore.state.elements },
-        set: { newIDs in
-          if self.viewStore.state.count > newIDs.count {
-            self.viewStore.send(.popFrom(id: self.viewStore.state[newIDs.count]))
-          }
-        }
-      )
+      path: self.viewStore.binding(get: { $0.path }, send: { .setPath($0.base) })
     ) {
       self.content
-        .navigationDestination(for: StackElementID.self) { id in
-          self.destination(id)
+        .navigationDestination(for: Component<State>.self) { component in
+          self.destination(component.id)
         }
     }
   }
 }
 
+@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+extension NavigationLink where Destination == Never {
+  public init<P: Hashable>(state: P?, label: () -> Label) {
+    @Dependency(\.stackElementID) var stackElementID
+    self.init(value: state.map { Component(id: stackElementID(), element: $0) }, label: label)
+  }
+
+  public init<P: Hashable>(_ titleKey: LocalizedStringKey, state: P?) where Label == Text {
+    @Dependency(\.stackElementID) var stackElementID
+    self.init(titleKey, value: state.map { Component(id: stackElementID(), element: $0) })
+  }
+
+  @_disfavoredOverload
+  public init<S: StringProtocol, P: Hashable>(_ title: S, state: P?) where Label == Text {
+    @Dependency(\.stackElementID) var stackElementID
+    self.init(title, value: state.map { Component(id: stackElementID(), element: $0) })
+  }
+}
+
 public struct _ForEachStore<State, Action, Content: View>: DynamicViewContent {
-  let store: Store<StackState<State>, StackAction<Action>>
+  let store: Store<StackState<State>, StackAction<State, Action>>
   let content: (Store<State, Action>) -> Content
 
   public init(
-    _ store: Store<StackState<State>, StackAction<Action>>,
+    _ store: Store<StackState<State>, StackAction<State, Action>>,
     @ViewBuilder content: @escaping (Store<State, Action>) -> Content
   ) {
     self.store = store
