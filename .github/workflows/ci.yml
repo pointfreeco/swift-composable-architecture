@@ -18,7 +18,7 @@ jobs:
     runs-on: macos-12
     strategy:
       matrix:
-        xcode: ['13.4.1', '14.0.1']
+        xcode: ['13.4.1', '14.2']
         config: ['debug', 'release']
     steps:
       - uses: actions/checkout@v3
@@ -31,7 +31,7 @@ jobs:
     runs-on: macos-12
     strategy:
       matrix:
-        xcode: ['13.4.1', '14.1']
+        xcode: ['13.4.1', '14.2']
     steps:
       - uses: actions/checkout@v3
       - name: Select Xcode ${{ matrix.xcode }}
@@ -44,7 +44,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Select Xcode 14.1
-        run: sudo xcode-select -s /Applications/Xcode_14.1.app
+        run: sudo xcode-select -s /Applications/Xcode_14.2.app
       - name: Run benchmark
         run: make benchmark
 
@@ -53,6 +53,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Select Xcode ${{ matrix.xcode }}
-        run: sudo xcode-select -s /Applications/Xcode_14.0.1.app
+        run: sudo xcode-select -s /Applications/Xcode_14.2.app
       - name: Run tests
         run: make test-examples

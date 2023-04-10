@@ -38,6 +38,15 @@ struct IntegrationApp: App {
             )
           }
 
+          NavigationLink("SwitchStoreTestCase") {
+            SwitchStoreTestCaseView(
+              store: Store(
+                initialState: SwitchStoreTestCase.State.screenA(SwitchStoreTestCase.Screen.State()),
+                reducer: SwitchStoreTestCase()
+              )
+            )
+          }
+
           NavigationLink("Binding Animations Test Bench") {
             BindingsAnimationsTestBench(
               store: Store(
