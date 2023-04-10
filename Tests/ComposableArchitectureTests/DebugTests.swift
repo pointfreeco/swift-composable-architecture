@@ -51,39 +51,15 @@
       var dump = ""
       customDump(action, to: &dump)
 
-      #if swift(>=5.8)
-        if #available(macOS 13.3, iOS 16.4, watchOS 9.4, tvOS 16.4, *) {
-          XCTAssertEqual(
-            dump,
-            #"""
-            BindingAction.set(
-              \State.$width,
-              50
-            )
-            """#
-          )
-        } else {
-          XCTAssertEqual(
-            dump,
-            #"""
-            BindingAction.set(
-              WritableKeyPath<State, BindingState<Int>>,
-              50
-            )
-            """#
-          )
-        }
-      #else
-        XCTAssertEqual(
-          dump,
-          #"""
-          BindingAction.set(
-            WritableKeyPath<State, BindingState<Int>>,
-            50
-          )
-          """#
+      XCTAssertEqual(
+        dump,
+        #"""
+        BindingAction.set(
+          WritableKeyPath<DebugTests.State, BindingState<Int>>,
+          50
         )
-      #endif
+        """#
+      )
     }
 
     @MainActor

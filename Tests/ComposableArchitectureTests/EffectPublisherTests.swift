@@ -10,7 +10,7 @@ final class EffectPublisherTests: BaseTCATestCase {
     @Dependency(\.date.now) var now
 
     let effect = withDependencies {
-      $0.date.now = Date(timeIntervalSince1970: 1234567890)
+      $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
     } operation: {
       EffectTask.publisher {
         Just(now)
@@ -19,6 +19,6 @@ final class EffectPublisherTests: BaseTCATestCase {
 
     var value: Date?
     effect.sink { value = $0 }.store(in: &self.cancellables)
-    XCTAssertEqual(value, Date(timeIntervalSince1970: 1234567890))
+    XCTAssertEqual(value, Date(timeIntervalSince1970: 1_234_567_890))
   }
 }
