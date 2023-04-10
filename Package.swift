@@ -29,23 +29,24 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "0.8.4"),
   ],
   targets: [
+    .systemLibrary(name: "_CAsyncSupport"),
     .target(
       name: "ComposableArchitecture",
       dependencies: [
+        "_CAsyncSupport",
+        .product(name: "_SwiftUINavigationState", package: "swiftui-navigation"),
         .product(name: "CasePaths", package: "swift-case-paths"),
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
         .product(name: "CustomDump", package: "swift-custom-dump"),
         .product(name: "Dependencies", package: "swift-dependencies"),
         .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
         .product(name: "OrderedCollections", package: "swift-collections"),
-        .product(name: "_SwiftUINavigationState", package: "swiftui-navigation"),
         .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
       ]
     ),
     .testTarget(
       name: "ComposableArchitectureTests",
       dependencies: [
-        "_CAsyncSupport",
         "ComposableArchitecture",
       ]
     ),
@@ -56,7 +57,6 @@ let package = Package(
         .product(name: "Benchmark", package: "swift-benchmark"),
       ]
     ),
-    .systemLibrary(name: "_CAsyncSupport"),
   ]
 )
 

@@ -1,5 +1,5 @@
 import Combine
-@_spi(Canary)@_spi(Internals) import ComposableArchitecture
+@_spi(Canary)@_spi(Concurrency)@_spi(Internals) import ComposableArchitecture
 import XCTest
 
 @MainActor

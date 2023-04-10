@@ -1,5 +1,5 @@
 #if DEBUG
-  import ComposableArchitecture
+  @_spi(Concurrency) import ComposableArchitecture
   import XCTest
 
   @MainActor
