@@ -1816,13 +1816,9 @@ extension TestStore where ScopedState: Equatable {
       }
     }
 
-    while !self.reducer.receivedActions.isEmpty {
-      let (receivedAction, state) = self.reducer.receivedActions.removeFirst()
-      if isInternalAction(receivedAction) {
-        continue
-      }
-      if !predicate(receivedAction) {
-        XCTFailHelper(
+    let (receivedAction, state) = self.reducer.receivedActions.removeFirst()
+    if !predicate(receivedAction) {
+      XCTFailHelper(
         """
         Received unexpected action: …
 
@@ -1830,25 +1826,23 @@ extension TestStore where ScopedState: Equatable {
         """,
         file: file,
         line: line
-        )
-      }
-      let expectedState = self.toScopedState(self.state)
-      do {
-        try self.expectedStateShouldMatch(
-          expected: expectedState,
-          actual: self.toScopedState(state),
-          updateStateToExpectedResult: updateStateToExpectedResult,
-          file: file,
-          line: line
-        )
-      } catch {
-        XCTFail("Threw error: \(error)", file: file, line: line)
-      }
-      self.reducer.state = state
-      if "\(self.file)" == "\(file)" {
-        self.line = line
-      }
-      break
+      )
+    }
+    let expectedState = self.toScopedState(self.state)
+    do {
+      try self.expectedStateShouldMatch(
+        expected: expectedState,
+        actual: self.toScopedState(state),
+        updateStateToExpectedResult: updateStateToExpectedResult,
+        file: file,
+        line: line
+      )
+    } catch {
+      XCTFail("Threw error: \(error)", file: file, line: line)
+    }
+    self.reducer.state = state
+    if "\(self.file)" == "\(file)" {
+      self.line = line
     }
   }
 
@@ -2499,15 +2493,4 @@ extension TestStore {
   ) async -> TestStoreTask {
     TestStoreTask(rawValue: nil, timeout: 0)
   }
-}
-
-protocol _InternalAction {
-  var isInternal: Bool { get }
-}
-
-func isInternalAction(_ value: Any) -> Bool {
-  (value as? _InternalAction)?.isInternal ?? false
-    || Mirror(reflecting: value).children.contains { _, value in
-      isInternalAction(value)
-    }
 }

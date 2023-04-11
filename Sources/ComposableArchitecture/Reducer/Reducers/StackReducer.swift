@@ -105,7 +105,7 @@ extension DependencyValues {
 }
 
 public struct StackState<Element>: RandomAccessCollection {
-  private var _dictionary: OrderedDictionary<StackElementID, Element>
+  fileprivate var _dictionary: OrderedDictionary<StackElementID, Element>
   fileprivate var _mounted: Set<StackElementID> = []
 
   @Dependency(\.stackElementID) private var stackElementID
@@ -364,27 +364,11 @@ extension StackState: CustomReflectable {
   }
 }
 
-// TODO: Is this even worth it?
-//public typealias StackStateOf<R: ReducerProtocol> = StackState<R.State/*, _???*/>
-
 public enum StackAction<State, Action> {
-  case _popFrom(id: StackElementID)
   case element(id: StackElementID, action: Action)
-  case setPath(StackState<State>)
+  case popFrom(id: StackElementID)
+  case push(id: StackElementID, state: State)
 }
-
-extension StackAction: _InternalAction {
-  var isInternal: Bool {
-    switch self {
-    case ._popFrom:
-      return true
-    case .element, .setPath:
-      return false
-    }
-  }
-}
-
-//public typealias StackActionOf<R: ReducerProtocol> = StackAction<R.State, R.Action>
 
 extension StackAction: Equatable where State: Equatable, Action: Equatable {}
 extension StackAction: Hashable where State: Hashable, Action: Hashable {}
@@ -457,22 +441,18 @@ public struct _StackReducer<
 
       baseEffects = self.base.reduce(into: &state, action: action)
 
-    case let ._popFrom(id):
+    case let .popFrom(id):
       destinationEffects = .none
       baseEffects = self.base.reduce(into: &state, action: action)
-      var stack = state[keyPath: self.toStackState]
-      if stack.pop(from: id) {
-        return .send(self.toStackAction.embed(.setPath(stack)))
-      } else {
+      if !state[keyPath: self.toStackState].pop(from: id) {
         runtimeWarn("TODO")
-        return .none
       }
+      return .none
 
-
-    case let .setPath(stack):
+    case let .push(id, element):
       destinationEffects = .none
+      state[keyPath: self.toStackState]._dictionary[id] = element
       baseEffects = self.base.reduce(into: &state, action: action)
-      state[keyPath: self.toStackState] = stack
 
     case .none:
       destinationEffects = .none
@@ -503,7 +483,7 @@ public struct _StackReducer<
               id: NavigationDismissID(elementID: elementID),
               navigationIDPath: navigationDestinationID
             )
-            .append(Just(self.toStackAction.embed(._popFrom(id: elementID))))
+            .append(Just(self.toStackAction.embed(.popFrom(id: elementID))))
             .eraseToEffect()
             ._cancellable(navigationIDPath: navigationDestinationID)
             ._cancellable(id: OnFirstAppearID(), navigationIDPath: .init())

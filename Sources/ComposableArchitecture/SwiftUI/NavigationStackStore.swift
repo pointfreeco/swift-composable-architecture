@@ -33,7 +33,16 @@ public struct NavigationStackStore<State, Action, Content: View, Destination: Vi
   public var body: some View {
     // TODO: Does this binding need to be safer to avoid unsafely subscripting into the stack?
     NavigationStack(
-      path: self.viewStore.binding(get: { $0.path }, send: { .setPath($0.base) })
+      path: self.viewStore.binding(
+        get: { $0.path },
+        send: { newPath in
+          if newPath.count > self.viewStore.path.count, let component = newPath.last {
+            return .push(id: component.id, state: component.element)
+          } else {
+            return .popFrom(id: self.viewStore.path[newPath.count].id)
+          }
+        }
+      )
     ) {
       self.content
         .navigationDestination(for: Component<State>.self) { component in

@@ -181,7 +181,7 @@ import XCTest
       }
       await store.send(.children(.element(id: 0, action: .onAppear)))
       await store.send(.children(.element(id: 0, action: .closeButtonTapped)))
-      await store.receive(.children(.setPath(store.state.children.dropLast()))) {
+      await store.receive(.children(.popFrom(id: 0))) {
         $0.children.removeLast()
       }
     }
@@ -233,7 +233,7 @@ import XCTest
       )
 
       await store.send(.children(.element(id: 0, action: .closeButtonTapped)))
-      await store.receive(.children(.setPath(StackState()))) {
+      await store.receive(.children(.popFrom(id: 0))) {
         $0.children.removeAll()
       }
     }
@@ -320,7 +320,7 @@ import XCTest
         $0.navigation.append(.child2(Child.State()))
       }
       await store.send(.navigation(.element(id: 1, action: .child2(.onAppear))))
-      await store.send(.navigation(.setPath(StackState()))) {
+      await store.send(.navigation(.popFrom(id: 0))) {
         $0.navigation.removeAll()
       }
     }
@@ -648,7 +648,7 @@ import XCTest
         initialState: Parent.State(navigation: navigation),
         reducer: Parent()
       )
-      await store.send(.navigation(._popFrom(id: 999)))
+      await store.send(.navigation(.popFrom(id: 999)))
     }
  
     func testChildWithInFlightEffect() async {
