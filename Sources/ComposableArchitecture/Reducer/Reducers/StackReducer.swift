@@ -168,8 +168,13 @@ extension StackState: CustomReflectable {
 /// Use this type for modeling a feature's domain that needs to present child features using
 /// ``ReducerProtocol/forEach(_:action:destination:file:fileID:line:)-4sflg``.
 public enum StackAction<State, Action> {
+  /// An action sent to the associated stack element at a given identifier.
   case element(id: StackElementID, action: Action)
+
+  /// An action sent to dismiss the associated stack element at a given identifier.
   case popFrom(id: StackElementID)
+
+  /// An action sent to present the given state at a given identifier in a navigation stack.
   case push(id: StackElementID, state: State)
 }
 
@@ -190,6 +195,7 @@ extension ReducerProtocol {
   ///   - destination: A reducer that will be invoked with destination actions against elements of
   ///     destination state.
   /// - Returns: A reducer that combines the destination reducer with the parent reducer.
+  @warn_unqualified_access
   public func forEach<DestinationState, DestinationAction, Destination: ReducerProtocol>(
     _ toStackState: WritableKeyPath<State, StackState<DestinationState>>,
     action toStackAction: CasePath<Action, StackAction<DestinationState, DestinationAction>>,

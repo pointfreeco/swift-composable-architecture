@@ -87,7 +87,10 @@ extension PresentationState: CustomReflectable {
 /// Use this wrapper type for modeling a feature's domain that needs to present a child
 /// feature using ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)-23pza``.
 public enum PresentationAction<Action> {
+  /// An action sent to `nil` out the associated presentation state.
   case dismiss
+
+  /// An action sent to the associated, non-`nil` presentation state.
   case presented(Action)
 }
 
