@@ -186,6 +186,66 @@ import XCTest
       }
     }
 
+    func testDismissFromIntermediateChild() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable { var count = 0 }
+        enum Action: Equatable {
+          case onAppear
+        }
+        @Dependency(\.dismiss) var dismiss
+        @Dependency(\.mainQueue) var mainQueue
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          switch action {
+          case .onAppear:
+            return .fireAndForget { [count = state.count] in
+              try await self.mainQueue.sleep(for: .seconds(count))
+              await self.dismiss()
+            }
+          }
+        }
+      }
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          var children = StackState<Child.State>()
+        }
+        enum Action: Equatable {
+          case child(StackAction<Child.State, Child.Action>)
+        }
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { _, _ in .none }
+            .forEach(\.children, action: /Action.child) { Child() }
+        }
+      }
+
+      let mainQueue = DispatchQueue.test
+      let store = TestStore(initialState: Parent.State(), reducer: Parent()) {
+        $0.mainQueue = mainQueue.eraseToAnyScheduler()
+      }
+
+      await store.send(.child(.push(id: 0, state: Child.State(count: 2)))) {
+        $0.children[id: 0] = Child.State(count: 2)
+      }
+      await store.send(.child(.element(id: 0, action: .onAppear)))
+
+      await store.send(.child(.push(id: 1, state: Child.State(count: 1)))) {
+        $0.children[id: 1] = Child.State(count: 1)
+      }
+      await store.send(.child(.element(id: 1, action: .onAppear)))
+
+      await store.send(.child(.push(id: 2, state: Child.State(count: 2)))) {
+        $0.children[id: 2] = Child.State(count: 2)
+      }
+      await store.send(.child(.element(id: 2, action: .onAppear)))
+
+      await mainQueue.advance(by: .seconds(1))
+      await store.receive(.child(.popFrom(id: 1))) {
+        $0.children.removeLast(2)
+      }
+      await store.send(.child(.popFrom(id: 0))) {
+        $0.children = StackState()
+      }
+    }
+
     func testDismissFromDeepLinkedChild() async {
       struct Child: ReducerProtocol {
         struct State: Equatable {}
@@ -818,13 +878,11 @@ import XCTest
       }
     }
 
-    func testPushPop() async {
+    func testPush() async {
       struct Child: ReducerProtocol {
         struct State: Equatable { }
-        enum Action: Equatable { case tap }
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
-          .run { _ in try await Task.never() }
-        }
+        enum Action: Equatable { }
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> { }
       }
       struct Parent: ReducerProtocol {
         struct State: Equatable {
@@ -870,6 +928,71 @@ import XCTest
       }
       await store.send(.child(.push(id: 0, state: Child.State()))) {
         $0.children[id: 0] = Child.State()
+      }
+    }
+
+    func testPushReusedID() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable { }
+        enum Action: Equatable { }
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {}
+      }
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          var children = StackState<Child.State>()
+        }
+        enum Action: Equatable {
+          case child(StackAction<Child.State, Child.Action>)
+        }
+        var body: some ReducerProtocolOf<Self> {
+          Reduce { _, _ in .none }
+          .forEach(\.children, action: /Action.child) { Child() }
+        }
+      }
+
+      let store = TestStore(initialState: Parent.State(), reducer: Parent())
+
+      XCTExpectFailure {
+        $0.compactDescription == """
+          TODO
+          """
+      }
+
+      await store.send(.child(.push(id: 0, state: Child.State()))) {
+        $0.children[id: 0] = Child.State()
+      }
+      await store.send(.child(.push(id: 0, state: Child.State())))
+    }
+
+    func testPushIDGreaterThanNextGeneration() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable { }
+        enum Action: Equatable { }
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {}
+      }
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          var children = StackState<Child.State>()
+        }
+        enum Action: Equatable {
+          case child(StackAction<Child.State, Child.Action>)
+        }
+        var body: some ReducerProtocolOf<Self> {
+          Reduce { _, _ in .none }
+            .forEach(\.children, action: /Action.child) { Child() }
+        }
+      }
+
+      let store = TestStore(initialState: Parent.State(), reducer: Parent())
+
+      XCTExpectFailure {
+        $0.compactDescription == """
+          TODO
+          """
+      }
+
+      await store.send(.child(.push(id: 1, state: Child.State()))) {
+        $0.children[id: 1] = Child.State()
       }
     }
   }

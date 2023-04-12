@@ -178,12 +178,11 @@ struct FloatingMenuView: View {
   var body: some View {
     WithViewStore(self.store.scope(state: ViewState.init)) { viewStore in
       if viewStore.currentStack.count > 0 {
-        VStack(alignment: .leading) {
+        VStack(alignment: .center) {
           Text("Total count: \(viewStore.total)")
           Button("Pop to root") {
             viewStore.send(.popToRoot, animation: .default)
           }
-
           Menu {
             ForEach(Array(viewStore.currentStack.enumerated()), id: \.offset) { offset, screen in
               Button("\(viewStore.currentStack.count - offset).) \(screen)") {
@@ -202,6 +201,8 @@ struct FloatingMenuView: View {
         .background(Color.white)
         .padding(.bottom, 1)
         .transition(.opacity.animation(.default))
+        .clipped()
+        .shadow(color: .black.opacity(0.2), radius: 5, y: 5)
       }
     }
   }
@@ -249,7 +250,6 @@ struct ScreenA: ReducerProtocol {
     case .factResponse(.failure):
       state.isLoading = false
       state.fact = nil
-      // TODO: Error handling?
       return .none
     }
   }
@@ -261,6 +261,13 @@ struct ScreenAView: View {
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
+        Text("""
+          This screen demonstrates a basic feature hosted in a navigation stack.
+
+          You can also have the child feature dismiss itself, which will communicate back to the \
+          root stack view to pop the feature off the stack.
+          """)
+
         Section {
           HStack {
             Text("\(viewStore.count)")
@@ -294,6 +301,12 @@ struct ScreenAView: View {
         }
 
         Section {
+          Button("Dismiss") {
+//            viewStore.send(.dismissButtonTapped)
+          }
+        }
+
+        Section {
           NavigationLink(
             "Go to screen A",
             state: NavigationDemo.Path.State.screenA(.init(count: viewStore.count))
@@ -304,7 +317,7 @@ struct ScreenAView: View {
           )
           NavigationLink(
             "Go to screen C",
-            state: NavigationDemo.Path.State.screenC(.init())
+            state: NavigationDemo.Path.State.screenC(.init(count: viewStore.count))
           )
         }
       }
@@ -319,7 +332,6 @@ struct ScreenB: ReducerProtocol {
   struct State: Codable, Equatable, Hashable {}
 
   enum Action: Equatable {
-    case dismissButtonTapped
     case screenAButtonTapped
     case screenBButtonTapped
     case screenCButtonTapped
@@ -329,10 +341,6 @@ struct ScreenB: ReducerProtocol {
 
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
-    case .dismissButtonTapped:
-      return .fireAndForget {
-        await self.dismiss()
-      }
     case .screenAButtonTapped:
       return .none
     case .screenBButtonTapped:
@@ -349,8 +357,12 @@ struct ScreenBView: View {
   var body: some View {
     WithViewStore(self.store) { viewStore in
       Form {
-        Button("Dismiss") {
-          viewStore.send(.dismissButtonTapped)
+        Section {
+          Text("""
+            This screen demonstrates how to navigate to other screens without need to compile any \
+            symbols from those screens. You can send an action into the system, and allow the root \
+            feature to intercept that action and push the next feature onto the stack.
+            """)
         }
         Button("Decoupled navigation to screen A") {
           viewStore.send(.screenAButtonTapped)
@@ -414,6 +426,10 @@ struct ScreenCView: View {
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
+        Text("""
+          This screen demonstrates that if you start a long-living effects in a stack, then it \
+          will automatically be torn down when the screen is dismissed.
+          """)
         Section {
           Text("\(viewStore.count)")
           if viewStore.isTimerRunning {
@@ -449,7 +465,11 @@ struct NavigationStack_Previews: PreviewProvider {
   static var previews: some View {
     NavigationDemoView(
       store: Store(
-        initialState: NavigationDemo.State(),
+        initialState: NavigationDemo.State(
+          path: StackState().appending(contentsOf: [
+            .screenA(ScreenA.State())
+          ])
+        ),
         reducer: NavigationDemo()
       )
     )
