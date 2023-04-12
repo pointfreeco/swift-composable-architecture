@@ -7,41 +7,41 @@ private let readMe = """
 
 struct NavigationDemo: ReducerProtocol {
   struct State: Equatable {
-    var navigation = StackState<Path.State>()
+    var path = StackState<Path.State>()
   }
 
   enum Action: Equatable {
     case goBackToScreen(Int)
     case goToABCButtonTapped
-    case navigation(StackAction<Path.State, Path.Action>)
+    case path(StackAction<Path.State, Path.Action>)
     case popToRoot
   }
 
   var body: some ReducerProtocol<State, Action> {
-    Reduce<State, Action> { state, action in
+    Reduce { state, action in
       switch action {
       case let .goBackToScreen(n):
-        state.navigation.removeLast(n)
+        state.path.removeLast(n)
         return .none
 
       case .goToABCButtonTapped:
-        state.navigation.append(.screenA(.init()))
-        state.navigation.append(.screenB(.init()))
-        state.navigation.append(.screenC(.init()))
+        state.path.append(.screenA(.init()))
+        state.path.append(.screenB(.init()))
+        state.path.append(.screenC(.init()))
         return .none
 
-      case let .navigation(action):
+      case let .path(action):
         switch action {
         case .element(id: _, action: .screenB(.screenAButtonTapped)):
-          state.navigation.append(.screenA(.init()))
+          state.path.append(.screenA(.init()))
           return .none
 
         case .element(id: _, action: .screenB(.screenBButtonTapped)):
-          state.navigation.append(.screenB(.init()))
+          state.path.append(.screenB(.init()))
           return .none
 
         case .element(id: _, action: .screenB(.screenCButtonTapped)):
-          state.navigation.append(.screenC(.init()))
+          state.path.append(.screenC(.init()))
           return .none
 
         default:
@@ -49,11 +49,11 @@ struct NavigationDemo: ReducerProtocol {
         }
 
       case .popToRoot:
-        state.navigation.removeAll()
+        state.path.removeAll()
         return .none
       }
     }
-    .forEach(\.navigation, action: /Action.navigation) {
+    .forEach(\.path, action: /Action.path) {
       Path()
     }
   }
@@ -91,7 +91,7 @@ struct NavigationDemoView: View {
   var body: some View {
     ZStack(alignment: .bottom) {
       NavigationStackStore(
-        self.store.scope(state: \.navigation, action: NavigationDemo.Action.navigation)
+        self.store.scope(state: \.path, action: NavigationDemo.Action.path)
       ) {
         Form {
           Section { Text(readMe) }
@@ -120,8 +120,8 @@ struct NavigationDemoView: View {
           }
         }
         .navigationTitle("Root")
-      } destination: { state in
-        switch state {
+      } destination: {
+        switch $0 {
         case .screenA:
           CaseLet(
             state: /NavigationDemo.Path.State.screenA,
@@ -142,10 +142,8 @@ struct NavigationDemoView: View {
           )
         }
       }
-      .zIndex(0)
 
       FloatingMenuView(store: self.store)
-        .zIndex(1)
     }
     .navigationTitle("Navigation Stack")
   }
@@ -162,7 +160,7 @@ struct FloatingMenuView: View {
     init(state: NavigationDemo.State) {
       self.total = 0
       self.currentStack = []
-      for element in state.navigation {
+      for element in state.path {
         switch element {
         case let .screenA(screenAState):
           self.total += screenAState.count

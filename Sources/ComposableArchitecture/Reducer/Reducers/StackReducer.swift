@@ -447,7 +447,6 @@ public struct _StackReducer<
       if !state[keyPath: self.toStackState].pop(from: id) {
         runtimeWarn("TODO")
       }
-      return .none
 
     case let .push(id, element):
       destinationEffects = .none

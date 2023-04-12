@@ -285,27 +285,27 @@ import XCTest
       }
       struct Parent: ReducerProtocol {
         struct State: Equatable {
-          var navigation = StackState<Navigation.State>()
+          var path = StackState<Navigation.State>()
         }
         enum Action: Equatable {
-          case navigation(StackAction<Navigation.State, Navigation.Action>)
+          case path(StackAction<Navigation.State, Navigation.Action>)
           case pushChild1
           case pushChild2
         }
         var body: some ReducerProtocol<State, Action> {
           Reduce { state, action in
             switch action {
-            case .navigation:
+            case .path:
               return .none
             case .pushChild1:
-              state.navigation.append(.child1(Child.State()))
+              state.path.append(.child1(Child.State()))
               return .none
             case .pushChild2:
-              state.navigation.append(.child2(Child.State()))
+              state.path.append(.child2(Child.State()))
               return .none
             }
           }
-          .forEach(\.navigation, action: /Action.navigation) {
+          .forEach(\.path, action: /Action.path) {
             Navigation()
           }
         }
@@ -313,15 +313,15 @@ import XCTest
 
       let store = TestStore(initialState: Parent.State(), reducer: Parent()._printChanges())
       await store.send(.pushChild1) {
-        $0.navigation.append(.child1(Child.State()))
+        $0.path.append(.child1(Child.State()))
       }
-      await store.send(.navigation(.element(id: 0, action: .child1(.onAppear))))
+      await store.send(.path(.element(id: 0, action: .child1(.onAppear))))
       await store.send(.pushChild2) {
-        $0.navigation.append(.child2(Child.State()))
+        $0.path.append(.child2(Child.State()))
       }
-      await store.send(.navigation(.element(id: 1, action: .child2(.onAppear))))
-      await store.send(.navigation(.popFrom(id: 0))) {
-        $0.navigation.removeAll()
+      await store.send(.path(.element(id: 1, action: .child2(.onAppear))))
+      await store.send(.path(.popFrom(id: 0))) {
+        $0.path.removeAll()
       }
     }
 
@@ -336,27 +336,27 @@ import XCTest
       }
       struct Parent: ReducerProtocol {
         struct State: Equatable {
-          var navigation = StackState<Child.State>()
+          var path = StackState<Child.State>()
         }
         enum Action {
-          case navigation(StackAction<Child.State, Child.Action>)
+          case path(StackAction<Child.State, Child.Action>)
           case popToRoot
           case pushChild
         }
         var body: some ReducerProtocol<State, Action> {
           Reduce { state, action in
             switch action {
-            case .navigation:
+            case .path:
               return .none
             case .popToRoot:
-              state.navigation.removeAll()
+              state.path.removeAll()
               return .none
             case .pushChild:
-              state.navigation.append(Child.State())
+              state.path.append(Child.State())
               return .none
             }
           }
-          .forEach(\.navigation, action: /Action.navigation) {
+          .forEach(\.path, action: /Action.path) {
             Child()
           }
         }
@@ -367,15 +367,15 @@ import XCTest
         reducer: Parent()
       )
       await store.send(.pushChild) {
-        $0.navigation.append(Child.State())
+        $0.path.append(Child.State())
       }
-      await store.send(.navigation(.element(id: 0, action: .tap)))
+      await store.send(.path(.element(id: 0, action: .tap)))
       await store.send(.pushChild) {
-        $0.navigation.append(Child.State())
+        $0.path.append(Child.State())
       }
-      await store.send(.navigation(.element(id: 1, action: .tap)))
+      await store.send(.path(.element(id: 1, action: .tap)))
       await store.send(.popToRoot) {
-        $0.navigation.removeAll()
+        $0.path.removeAll()
       }
     }
 
@@ -424,59 +424,59 @@ import XCTest
       }
       struct Parent: ReducerProtocol {
         struct State: Equatable {
-          var navigation = StackState<Navigation.State>()
+          var path = StackState<Navigation.State>()
         }
         enum Action: Equatable {
-          case navigation(StackAction<Navigation.State, Navigation.Action>)
+          case path(StackAction<Navigation.State, Navigation.Action>)
           case pushChild1
           case pushChild2
         }
         var body: some ReducerProtocol<State, Action> {
           Reduce { state, action in
             switch action {
-            case .navigation:
+            case .path:
               return .none
             case .pushChild1:
-              state.navigation.append(.child1(Child.State()))
+              state.path.append(.child1(Child.State()))
               return .none
             case .pushChild2:
-              state.navigation.append(.child2(Child.State()))
+              state.path.append(.child2(Child.State()))
               return .none
             }
           }
-          .forEach(\.navigation, action: /Action.navigation) {
+          .forEach(\.path, action: /Action.path) {
             Navigation()
           }
         }
       }
 
-      var navigation = StackState<Navigation.State>()
-      navigation.append(.child1(Child.State()))
-      navigation.append(.child2(Child.State()))
+      var path = StackState<Navigation.State>()
+      path.append(.child1(Child.State()))
+      path.append(.child2(Child.State()))
       let mainQueue = DispatchQueue.test
       let store = TestStore(
-        initialState: Parent.State(navigation: navigation),
+        initialState: Parent.State(path: path),
         reducer: Parent()
       ) {
         $0.mainQueue = mainQueue.eraseToAnyScheduler()
       }
 
-      await store.send(.navigation(.element(id: 0, action: .child1(.tap))))
-      await store.send(.navigation(.element(id: 1, action: .child2(.tap))))
-      await store.send(.navigation(.element(id: 0, action: .child1(.cancel))))
+      await store.send(.path(.element(id: 0, action: .child1(.tap))))
+      await store.send(.path(.element(id: 1, action: .child2(.tap))))
+      await store.send(.path(.element(id: 0, action: .child1(.cancel))))
       await mainQueue.advance(by: .seconds(1))
-      await store.receive(.navigation(.element(id: 1, action: .child2(.response(42))))) {
-        XCTModify(&$0.navigation[id: 1], case: /Navigation.State.child2) {
+      await store.receive(.path(.element(id: 1, action: .child2(.response(42))))) {
+        XCTModify(&$0.path[id: 1], case: /Navigation.State.child2) {
           $0.count = 42
         }
       }
 
-      await store.send(.navigation(.element(id: 0, action: .child1(.tap))))
-      await store.send(.navigation(.element(id: 1, action: .child2(.tap))))
-      await store.send(.navigation(.element(id: 1, action: .child2(.cancel))))
+      await store.send(.path(.element(id: 0, action: .child1(.tap))))
+      await store.send(.path(.element(id: 1, action: .child2(.tap))))
+      await store.send(.path(.element(id: 1, action: .child2(.cancel))))
       await mainQueue.advance(by: .seconds(1))
-      await store.receive(.navigation(.element(id: 0, action: .child1(.response(42))))) {
-        XCTModify(&$0.navigation[id: 0], case: /Navigation.State.child1) {
+      await store.receive(.path(.element(id: 0, action: .child1(.response(42))))) {
+        XCTModify(&$0.path[id: 0], case: /Navigation.State.child1) {
           $0.count = 42
         }
       }
@@ -523,27 +523,27 @@ import XCTest
       }
       struct Parent: ReducerProtocol {
         struct State: Equatable {
-          var navigation = StackState<Navigation.State>()
+          var path = StackState<Navigation.State>()
         }
         enum Action: Equatable {
-          case navigation(StackAction<Navigation.State, Navigation.Action>)
+          case path(StackAction<Navigation.State, Navigation.Action>)
           case popAll
           case popFirst
         }
         var body: some ReducerProtocol<State, Action> {
           Reduce { state, action in
             switch action {
-            case .navigation:
+            case .path:
               return .none
             case .popAll:
-              state.navigation = StackState()
+              state.path = StackState()
               return .none
             case .popFirst:
-              state.navigation[id: state.navigation.ids[0]] = nil
+              state.path[id: state.path.ids[0]] = nil
               return .none
             }
           }
-          .forEach(\.navigation, action: /Action.navigation) {
+          .forEach(\.path, action: /Action.path) {
             Navigation()
           }
         }
@@ -552,7 +552,7 @@ import XCTest
       let mainQueue = DispatchQueue.test
       let store = TestStore(
         initialState: Parent.State(
-          navigation: StackState().appending(contentsOf: [
+          path: StackState().appending(contentsOf: [
             .child1(Child.State()),
             .child2(Child.State()),
           ])
@@ -562,48 +562,48 @@ import XCTest
         $0.mainQueue = mainQueue.eraseToAnyScheduler()
       }
 
-      await store.send(.navigation(.element(id: 0, action: .child1(.tap))))
-      await store.send(.navigation(.element(id: 1, action: .child2(.tap))))
+      await store.send(.path(.element(id: 0, action: .child1(.tap))))
+      await store.send(.path(.element(id: 1, action: .child2(.tap))))
       await mainQueue.advance(by: .seconds(1))
-      await store.receive(.navigation(.element(id: 0, action: .child1(.response(1))))) {
-        XCTModify(&$0.navigation[id: 0], case: /Navigation.State.child1) {
+      await store.receive(.path(.element(id: 0, action: .child1(.response(1))))) {
+        XCTModify(&$0.path[id: 0], case: /Navigation.State.child1) {
           $0.count = 1
         }
       }
       await mainQueue.advance(by: .seconds(1))
-      await store.receive(.navigation(.element(id: 1, action: .child2(.response(2))))) {
-        XCTModify(&$0.navigation[id: 1], case: /Navigation.State.child2) {
+      await store.receive(.path(.element(id: 1, action: .child2(.response(2))))) {
+        XCTModify(&$0.path[id: 1], case: /Navigation.State.child2) {
           $0.count = 2
         }
       }
 
-      await store.send(.navigation(.element(id: 0, action: .child1(.tap))))
-      await store.send(.navigation(.element(id: 1, action: .child2(.tap))))
+      await store.send(.path(.element(id: 0, action: .child1(.tap))))
+      await store.send(.path(.element(id: 1, action: .child2(.tap))))
       await store.send(.popFirst) {
-        $0.navigation[id: 0] = nil
+        $0.path[id: 0] = nil
       }
       await mainQueue.advance(by: .seconds(2))
-      await store.receive(.navigation(.element(id: 1, action: .child2(.response(2))))) {
-        XCTModify(&$0.navigation[id: 1], case: /Navigation.State.child2) {
+      await store.receive(.path(.element(id: 1, action: .child2(.response(2))))) {
+        XCTModify(&$0.path[id: 1], case: /Navigation.State.child2) {
           $0.count = 4
         }
       }
       await store.send(.popFirst) {
-        $0.navigation[id: 1] = nil
+        $0.path[id: 1] = nil
       }
     }
 
     func testSendActionWithIDThatDoesNotExist() async {
       struct Parent: ReducerProtocol {
         struct State: Equatable {
-          var navigation = StackState<Int>()
+          var path = StackState<Int>()
         }
         enum Action {
-          case navigation(StackAction<Int, Void>)
+          case path(StackAction<Int, Void>)
         }
         var body: some ReducerProtocol<State, Action> {
           EmptyReducer()
-            .forEach(\.navigation, action: /Action.navigation) { EmptyReducer() }
+            .forEach(\.path, action: /Action.path) { EmptyReducer() }
         }
       }
 
@@ -613,26 +613,26 @@ import XCTest
           """
       }
 
-      var navigation = StackState<Int>()
-      navigation.append(1)
+      var path = StackState<Int>()
+      path.append(1)
       let store = TestStore(
-        initialState: Parent.State(navigation: navigation),
+        initialState: Parent.State(path: path),
         reducer: Parent()
       )
-      await store.send(.navigation(.element(id: 999, action: ())))
+      await store.send(.path(.element(id: 999, action: ())))
     }
 
     func testPopIDThatDoesNotExist() async {
       struct Parent: ReducerProtocol {
         struct State: Equatable {
-          var navigation = StackState<Int>()
+          var path = StackState<Int>()
         }
         enum Action {
-          case navigation(StackAction<Int, Void>)
+          case path(StackAction<Int, Void>)
         }
         var body: some ReducerProtocol<State, Action> {
           EmptyReducer()
-            .forEach(\.navigation, action: /Action.navigation) { EmptyReducer() }
+            .forEach(\.path, action: /Action.path) { EmptyReducer() }
         }
       }
 
@@ -642,13 +642,13 @@ import XCTest
           """
       }
 
-      var navigation = StackState<Int>()
-      navigation.append(1)
+      var path = StackState<Int>()
+      path.append(1)
       let store = TestStore(
-        initialState: Parent.State(navigation: navigation),
+        initialState: Parent.State(path: path),
         reducer: Parent()
       )
-      await store.send(.navigation(.popFrom(id: 999)))
+      await store.send(.path(.popFrom(id: 999)))
     }
  
     func testChildWithInFlightEffect() async {
@@ -661,25 +661,25 @@ import XCTest
       }
       struct Parent: ReducerProtocol {
         struct State: Equatable {
-          var navigation = StackState<Child.State>()
+          var path = StackState<Child.State>()
         }
         enum Action {
-          case navigation(StackAction<Child.State, Child.Action>)
+          case path(StackAction<Child.State, Child.Action>)
         }
         var body: some ReducerProtocol<State, Action> {
           EmptyReducer()
-            .forEach(\.navigation, action: /Action.navigation) { Child() }
+            .forEach(\.path, action: /Action.path) { Child() }
         }
       }
 
-      var navigation = StackState<Child.State>()
-      navigation.append(Child.State())
+      var path = StackState<Child.State>()
+      path.append(Child.State())
       let store = TestStore(
-        initialState: Parent.State(navigation: navigation),
+        initialState: Parent.State(path: path),
         reducer: Parent()
       )
       let line = #line
-      await store.send(.navigation(.element(id: 0, action: .tap)))
+      await store.send(.path(.element(id: 0, action: .tap)))
 
       XCTExpectFailure {
         $0.sourceCodeContext.location?.fileURL.absoluteString.contains("BaseTCATestCase") == true
