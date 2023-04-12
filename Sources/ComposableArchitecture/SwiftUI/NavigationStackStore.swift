@@ -3,8 +3,8 @@ import SwiftUI
 
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 public struct NavigationStackStore<State, Action, Content: View, Destination: View>: View {
-  let content: Content
-  let destination: (Component<State>) -> Destination
+  private let content: Content
+  private let destination: (Component<State>) -> Destination
   @StateObject private var viewStore: ViewStore<StackState<State>, StackAction<State, Action>>
 
   public init(
@@ -102,40 +102,71 @@ extension NavigationLink where Destination == Never {
   }
 }
 
-public struct _ForEachStore<State, Action, Content: View>: DynamicViewContent {
-  let store: Store<StackState<State>, StackAction<State, Action>>
-  let content: (Store<State, Action>) -> Content
+private struct Component<Element>: Hashable {
+  let id: StackElementID
+  var element: Element
 
-  public init(
-    _ store: Store<StackState<State>, StackAction<State, Action>>,
-    @ViewBuilder content: @escaping (Store<State, Action>) -> Content
-  ) {
-    self.store = store
-    self.content = content
+  static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.id == rhs.id
   }
 
-  public var body: some View {
-    WithViewStore(
-      self.store,
-      observe: { $0._ids },
-      removeDuplicates: areOrderedSetsDuplicates
-    ) { viewStore in
-      ForEach(viewStore.state, id: \.self) { id in
-        var element = self.store.state.value[id: id]!
-        self.content(
-          self.store.scope(
-            state: {
-              element = $0[id: id] ?? element
-              return element
-            },
-            action: { .element(id: id, action: $0) }
-          )
-        )
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(self.id)
+  }
+}
+
+fileprivate extension StackState {
+  var path: PathView {
+    _read { yield PathView(base: self) }
+    _modify {
+      var path = PathView(base: self)
+      yield &path
+      self = path.base
+    }
+    set { self = newValue.base }
+  }
+
+  struct PathView: MutableCollection, RandomAccessCollection, RangeReplaceableCollection {
+    var base: StackState
+
+    var startIndex: Int { self.base.startIndex }
+    var endIndex: Int { self.base.endIndex }
+    func index(after i: Int) -> Int { self.base.index(after: i) }
+    func index(before i: Int) -> Int { self.base.index(before: i) }
+
+    subscript(position: Int) -> Component<Element> {
+      _read {
+        yield Component(id: self.base.ids[position], element: self.base[position])
+      }
+      _modify {
+        let id = self.base.ids[position]
+        var component = Component(id: id, element: self.base[position])
+        yield &component
+        self.base[id: id] = component.element
+      }
+      set {
+        self.base[id: newValue.id] = newValue.element
       }
     }
-  }
 
-  public var data: StackState<State> {
-    self.store.state.value
+    init(base: StackState) {
+      self.base = base
+    }
+
+    init() {
+      self.init(base: StackState())
+    }
+
+    mutating func replaceSubrange<C: Collection>(
+      _ subrange: Range<Int>, with newElements: C
+    ) where C.Element == Component<Element> {
+      for id in self.base.ids[subrange] {
+        self.base[id: id] = nil
+      }
+      for component in newElements.reversed() {
+        self.base._dictionary
+          .updateValue(component.element, forKey: component.id, insertingAt: subrange.lowerBound)
+      }
+    }
   }
 }

@@ -52,7 +52,7 @@ extension StackElementID: ExpressibleByIntegerLiteral {
 }
 
 public struct StackState<Element>: RandomAccessCollection {
-  fileprivate var _dictionary: OrderedDictionary<StackElementID, Element>
+  var _dictionary: OrderedDictionary<StackElementID, Element>
   fileprivate var _mounted: Set<StackElementID> = []
 
   @Dependency(\.stackElementID) private var stackElementID
@@ -72,34 +72,12 @@ public struct StackState<Element>: RandomAccessCollection {
   public subscript(id id: StackElementID) -> Element? {
     _read { yield self._dictionary[id] }
     _modify {
-      // TODO: Prevent insertions and runtime warn when an insertion is attempted
       yield &self._dictionary[id]
       if !self._dictionary.keys.contains(id) {
         self._mounted.remove(id)
       }
     }
   }
-
-  // TODO: Think about this
-//  public func id(after id: StackElementID) -> StackElementID? {
-//    guard
-//      let current = self._dictionary.keys.firstIndex(of: id),
-//      let next = self._dictionary.keys.index(
-//        current, offsetBy: 1, limitedBy: self._dictionary.keys.endIndex
-//      )
-//    else { return nil }
-//    return self._dictionary.keys[next]
-//  }
-//
-//  public func id(before id: StackElementID) -> StackElementID? {
-//    guard
-//      let current = self._dictionary.keys.firstIndex(of: id),
-//      let previous = self._dictionary.keys.index(
-//        current, offsetBy: -1, limitedBy: self._dictionary.keys.endIndex
-//      )
-//    else { return nil }
-//    return self._dictionary.keys[previous]
-//  }
 
   @discardableResult
   public mutating func pop(from id: StackElementID) -> Bool {
@@ -180,82 +158,8 @@ public struct StackState<Element>: RandomAccessCollection {
     stack.removeLast(Swift.min(stack.count, n))
     return stack
   }
-
-  var path: PathView {
-    _read { yield PathView(base: self) }
-//    get { PathView(base: self) }
-    _modify {
-      var path = PathView(base: self)
-      yield &path
-      self = path.base
-    }
-    set { self = newValue.base }
-  }
-
-  // TODO: Make private and move to NavigationStackStore
-  struct PathView: MutableCollection, RandomAccessCollection, RangeReplaceableCollection {
-    var base: StackState
-
-    var startIndex: Int { self.base.startIndex }
-    var endIndex: Int { self.base.endIndex }
-    func index(after i: Int) -> Int { self.base.index(after: i) }
-    func index(before i: Int) -> Int { self.base.index(before: i) }
-
-    subscript(position: Int) -> Component<Element> {
-      _read {
-        let (id, element) = self.base._dictionary.elements[position]
-        yield Component(id: id, element: element)
-      }
-//      get {
-//        let (id, element) = self.base._dictionary.elements[position]
-//        return Component(id: id, element: element)
-//      }
-      _modify {
-        let (id, element) = self.base._dictionary.elements[position]
-        var component = Component(id: id, element: element)
-        yield &component
-        self.base._dictionary[id] = component.element
-      }
-      set {
-        self.base._dictionary[newValue.id] = newValue.element
-      }
-    }
-
-    init(base: StackState) {
-      self.base = base
-    }
-
-    init() {
-      self.init(base: StackState())
-    }
-
-    mutating func replaceSubrange<C: Collection>(
-      _ subrange: Range<Int>, with newElements: C
-    ) where C.Element == Component<Element> {
-      for id in self.base._ids[subrange] {
-        self.base._mounted.remove(id)
-      }
-      self.base._dictionary.removeSubrange(subrange)
-      for component in newElements.reversed() {
-        self.base._dictionary
-          .updateValue(component.element, forKey: component.id, insertingAt: subrange.lowerBound)
-      }
-    }
-  }
 }
 
-struct Component<Element>: Hashable {
-  let id: StackElementID
-  var element: Element
-
-  static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.id == rhs.id
-  }
-
-  func hash(into hasher: inout Hasher) {
-    hasher.combine(self.id)
-  }
-}
 
 extension StackState: Equatable where Element: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
