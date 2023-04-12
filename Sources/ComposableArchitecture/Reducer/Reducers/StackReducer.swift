@@ -174,7 +174,8 @@ public enum StackAction<State, Action> {
   /// An action sent to dismiss the associated stack element at a given identifier.
   case popFrom(id: StackElementID)
 
-  /// An action sent to present the given state at a given identifier in a navigation stack.
+  /// An action sent to present the given state at a given identifier in a navigation stack. This
+  /// action is typically sent from the view via the `NavigiationLink(value:)` initializer.
   case push(id: StackElementID, state: State)
 }
 
@@ -370,6 +371,7 @@ public struct StackElementID: Hashable, Sendable {
     self.rawValue = AnyHashableSendable(rawValue)
   }
 
+  // TODO: is this still correct? can we get test coverage that breaks when || is changed to && ?
   public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.rawValue == rhs.rawValue || lhs.generation == rhs.generation
   }

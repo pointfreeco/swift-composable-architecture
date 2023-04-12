@@ -186,6 +186,51 @@ import XCTest
       }
     }
 
+    func testDismissReceiveWrongAction() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable {}
+        enum Action: Equatable { case tap }
+        @Dependency(\.dismiss) var dismiss
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          .fireAndForget { await self.dismiss() }
+        }
+      }
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          var children = StackState<Child.State>()
+        }
+        enum Action: Equatable {
+          case children(StackAction<Child.State, Child.Action>)
+        }
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { _, _ in .none }.forEach(\.children, action: /Action.children) { Child() }
+        }
+      }
+
+      let store = TestStore(
+        initialState: Parent.State(children: StackState().appending(contentsOf: [Child.State()])),
+        reducer: Parent()
+      )
+
+      XCTExpectFailure {
+        $0.compactDescription == """
+          Received unexpected action: …
+
+                StackReducerTests.Parent.Action.children(
+              −   .popFrom(id: #1)
+              +   .popFrom(id: #0)
+                )
+
+          (Expected: −, Received: +)
+          """
+      }
+
+      await store.send(.children(.element(id: 0, action: .tap)))
+      await store.receive(.children(.popFrom(id: 1))) {
+        $0.children = StackState()
+      }
+    }
+
     func testDismissFromIntermediateChild() async {
       struct Child: ReducerProtocol {
         struct State: Equatable { var count = 0 }
@@ -992,6 +1037,32 @@ import XCTest
       }
 
       await store.send(.child(.push(id: 1, state: Child.State()))) {
+        $0.children[id: 1] = Child.State()
+      }
+    }
+
+    func testMismatchedIDFailure() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable { }
+        enum Action: Equatable { }
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {}
+      }
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          var children = StackState<Child.State>()
+        }
+        enum Action: Equatable {
+          case child(StackAction<Child.State, Child.Action>)
+        }
+        var body: some ReducerProtocolOf<Self> {
+          Reduce { _, _ in .none }.forEach(\.children, action: /Action.child) { Child() }
+        }
+      }
+
+      let store = TestStore(initialState: Parent.State(), reducer: Parent())
+
+      // TODO: Better error messaging on this
+      await store.send(.child(.push(id: 0, state: Child.State()))) {
         $0.children[id: 1] = Child.State()
       }
     }
