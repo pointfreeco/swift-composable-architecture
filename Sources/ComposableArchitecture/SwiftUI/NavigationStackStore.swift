@@ -4,7 +4,7 @@ import SwiftUI
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 public struct NavigationStackStore<State, Action, Content: View, Destination: View>: View {
   let content: Content
-  let destination: (StackElementID) -> IfLetStore<State, Action, Destination?>
+  let destination: (Component<State>) -> Destination
   @StateObject private var viewStore: ViewStore<StackState<State>, StackAction<State, Action>>
 
   public init(
@@ -13,13 +13,16 @@ public struct NavigationStackStore<State, Action, Content: View, Destination: Vi
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination
   ) {
     self.content = content()
-    self.destination = { id in
-      IfLetStore(
+    self.destination = { component in
+      var state = component.element
+      return destination(
         store.scope(
-          state: returningLastNonNilValue { $0[id: id] },
-          action: { .element(id: id, action: $0) }
-        ),
-        then: destination
+          state: {
+            state = $0[id: component.id] ?? state
+            return state
+          },
+          action: { .element(id: component.id, action: $0) }
+        )
       )
     }
     self._viewStore = StateObject(
@@ -30,12 +33,40 @@ public struct NavigationStackStore<State, Action, Content: View, Destination: Vi
     )
   }
 
+  public init<D: View>(
+    _ store: Store<StackState<State>, StackAction<State, Action>>,
+    @ViewBuilder content: () -> Content,
+    @ViewBuilder destination: @escaping (State) -> D
+  ) where Destination == SwitchStore<State, Action, D> {
+    self.content = content()
+    self.destination = { component in
+      var state = component.element
+      return SwitchStore(
+        store.scope(
+          state: {
+            state = $0[id: component.id] ?? state
+            return state
+          },
+          action: { .element(id: component.id, action: $0) }
+        )
+      ) { _ in
+        destination(component.element)
+      }
+    }
+    self._viewStore = StateObject(
+      wrappedValue: ViewStore(
+        store,
+        removeDuplicates: { areOrderedSetsDuplicates($0._ids, $1._ids) }
+      )
+    )
+  }
+
   public var body: some View {
-    // TODO: Does this binding need to be safer to avoid unsafely subscripting into the stack?
     NavigationStack(
       path: self.viewStore.binding(
         get: { $0.path },
         send: { newPath in
+          // TODO: Tweak binding logic?
           if newPath.count > self.viewStore.path.count, let component = newPath.last {
             return .push(id: component.id, state: component.element)
           } else {
@@ -44,10 +75,9 @@ public struct NavigationStackStore<State, Action, Content: View, Destination: Vi
         }
       )
     ) {
-      self.content
-        .navigationDestination(for: Component<State>.self) { component in
-          self.destination(component.id)
-        }
+      self.content.navigationDestination(for: Component<State>.self) { component in
+        self.destination(component)
+      }
     }
   }
 }

@@ -120,18 +120,21 @@ struct NavigationDemoView: View {
           }
         }
         .navigationTitle("Root")
-      } destination: { store in
-        SwitchStore(store) {
+      } destination: { state in
+        switch state {
+        case .screenA:
           CaseLet(
             state: /NavigationDemo.Path.State.screenA,
             action: NavigationDemo.Path.Action.screenA,
             then: ScreenAView.init(store:)
           )
+        case .screenB:
           CaseLet(
             state: /NavigationDemo.Path.State.screenB,
             action: NavigationDemo.Path.Action.screenB,
             then: ScreenBView.init(store:)
           )
+        case .screenC:
           CaseLet(
             state: /NavigationDemo.Path.State.screenC,
             action: NavigationDemo.Path.Action.screenC,
