@@ -3,7 +3,7 @@ import XCTest
 
 #if swift(>=5.7)
   @MainActor
-  final class StackReducerTests: XCTestCase {
+  final class StackReducerTests: BaseTCATestCase {
     func testStackState() async {
       // TODO: flesh out state test
     }
