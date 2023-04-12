@@ -726,7 +726,7 @@ import XCTest
       }
     }
 
-    func testSwapElements() async {
+    func testMultipleChildEffects() async {
       struct Child: ReducerProtocol {
         struct State: Equatable { var count = 0 }
         enum Action: Equatable { case tap, response(Int) }
@@ -752,12 +752,7 @@ import XCTest
           case child(StackAction<Child.State, Child.Action>)
         }
         var body: some ReducerProtocolOf<Self> {
-          Reduce { state, action in
-            switch action {
-            case .child:
-              return .none
-            }
-          }
+          Reduce { _, _ in .none }
           .forEach(\.children, action: /Action.child) { Child() }
         }
       }
@@ -784,6 +779,97 @@ import XCTest
       await mainQueue.advance(by: .seconds(1))
       await store.receive(.child(.element(id: 1, action: .response(42)))) {
         $0.children[id: 1]?.count = 42
+      }
+    }
+
+    func testChildEffectCancellation() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable { }
+        enum Action: Equatable { case tap }
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          .run { _ in try await Task.never() }
+        }
+      }
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          var children: StackState<Child.State>
+        }
+        enum Action: Equatable {
+          case child(StackAction<Child.State, Child.Action>)
+        }
+        var body: some ReducerProtocolOf<Self> {
+          Reduce { _, _ in .none }
+          .forEach(\.children, action: /Action.child) { Child() }
+        }
+      }
+
+      let store = TestStore(
+        initialState: Parent.State(
+          children: StackState().appending(contentsOf: [
+            Child.State(),
+          ])
+        ),
+        reducer: Parent()
+      )
+
+      await store.send(.child(.element(id: 0, action: .tap)))
+      await store.send(.child(.popFrom(id: 0))) {
+        $0.children[id: 0] = nil
+      }
+    }
+
+    func testPushPop() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable { }
+        enum Action: Equatable { case tap }
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          .run { _ in try await Task.never() }
+        }
+      }
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          var children = StackState<Child.State>()
+        }
+        enum Action: Equatable {
+          case child(StackAction<Child.State, Child.Action>)
+          case push
+        }
+        var body: some ReducerProtocolOf<Self> {
+          Reduce { state, action in
+            switch action {
+            case .child:
+              return .none
+            case .push:
+              state.children.append(Child.State())
+              return .none
+            }
+          }
+            .forEach(\.children, action: /Action.child) { Child() }
+        }
+      }
+
+      let store = TestStore(
+        initialState: Parent.State(),
+        reducer: Parent()
+      )
+
+      await store.send(.child(.push(id: 0, state: Child.State()))) {
+        $0.children[id: 0] = Child.State()
+      }
+      await store.send(.push) {
+        $0.children[id: 1] = Child.State()
+      }
+      await store.send(.child(.push(id: 2, state: Child.State()))) {
+        $0.children[id: 2] = Child.State()
+      }
+      await store.send(.push) {
+        $0.children[id: 3] = Child.State()
+      }
+      await store.send(.child(.popFrom(id: 0))) {
+        $0.children = StackState()
+      }
+      await store.send(.child(.push(id: 0, state: Child.State()))) {
+        $0.children[id: 0] = Child.State()
       }
     }
   }

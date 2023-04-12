@@ -10,6 +10,10 @@ public struct StackElementID: Hashable, Sendable {
     self.generation = generation
     self.rawValue = AnyHashableSendable(rawValue)
   }
+
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.rawValue == rhs.rawValue || lhs.generation == rhs.generation
+  }
 }
 
 extension StackElementID: CustomDebugStringConvertible {
@@ -40,6 +44,9 @@ extension StackElementID: ExpressibleByIntegerLiteral {
         )
       }
     #endif
+//    if value == DependencyValues._current.stackElementID.peek().generation {
+//      _ = DependencyValues._current.stackElementID.next()
+//    }
     self.init(generation: value, rawValue: value)
   }
 }
@@ -252,7 +259,7 @@ struct Component<Element>: Hashable {
 
 extension StackState: Equatable where Element: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.elementsEqual(rhs)
+    lhs._dictionary == rhs._dictionary
   }
 }
 
@@ -304,8 +311,15 @@ extension StackState: CustomReflectable {
 public enum StackAction<State, Action> {
   case element(id: StackElementID, action: Action)
   case popFrom(id: StackElementID)
-  case push(id: StackElementID, state: State)
+  case push(
+    id: StackElementID, // = _defaultStackElementID(),
+    state: State
+  )
 }
+
+//public func _defaultStackElementID() -> StackElementID {
+//  DependencyValues._current.stackElementID.next()
+//}
 
 extension StackAction: Equatable where State: Equatable, Action: Equatable {}
 extension StackAction: Hashable where State: Hashable, Action: Hashable {}
@@ -387,6 +401,17 @@ public struct _StackReducer<
 
     case let .push(id, element):
       destinationEffects = .none
+      if state[keyPath: self.toStackState]._ids.contains(id) {
+        runtimeWarn("TODO")
+        baseEffects = .none
+        break
+      } else if DependencyValues._current.context == .test {
+        if id.generation > DependencyValues._current.stackElementID.peek().generation {
+          runtimeWarn("TODO")
+        } else if id.generation == DependencyValues._current.stackElementID.peek().generation {
+          _ = DependencyValues._current.stackElementID.next()
+        }
+      }
       state[keyPath: self.toStackState]._dictionary[id] = element
       baseEffects = self.base.reduce(into: &state, action: action)
 
@@ -447,3 +472,5 @@ public struct _StackReducer<
 private struct NavigationDismissID: Hashable {
   let elementID: AnyHashable  // TODO: rename
 }
+
+import Dependencies
