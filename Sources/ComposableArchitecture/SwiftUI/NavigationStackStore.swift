@@ -33,6 +33,7 @@ public struct NavigationStackStore<State, Action, Content: View, Destination: Vi
     )
   }
 
+  @_disfavoredOverload
   public init<D: View>(
     _ store: Store<StackState<State>, StackAction<State, Action>>,
     @ViewBuilder content: () -> Content,
