@@ -229,10 +229,10 @@ private struct ChildFeature: ReducerProtocol {
     }
   }
 }
-
+ 
 struct PresentationTestCaseView: View {
   private let store: StoreOf<PresentationTestCase>
-  @StateObject private var viewStore: ViewStore<PresentationTestCase.State, PresentationTestCase.Action>
+  @StateObject private var viewStore: ViewStoreOf<PresentationTestCase>
   @State var alertMessage = ""
 
   init() {

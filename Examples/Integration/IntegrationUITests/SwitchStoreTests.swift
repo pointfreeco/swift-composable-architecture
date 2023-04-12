@@ -1,3 +1,5 @@
+import Integration
+import TestCases
 import XCTest
 
 @MainActor
@@ -10,7 +12,7 @@ final class SwitchStoreTests: XCTestCase {
     let app = XCUIApplication()
     app.launch()
 
-    app.collectionViews.buttons["SwitchStoreTestCase"].tap()
+    app.collectionViews.buttons[TestCase.switchStore.rawValue].tap()
 
     XCTAssertFalse(app.staticTexts["Warning"].exists)
 
