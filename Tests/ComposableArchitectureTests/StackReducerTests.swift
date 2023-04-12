@@ -725,5 +725,66 @@ import XCTest
           """
       }
     }
+
+    func testSwapElements() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable { var count = 0 }
+        enum Action: Equatable { case tap, response(Int) }
+        @Dependency(\.mainQueue) var mainQueue
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          switch action {
+          case .tap:
+            return .run { [count = state.count] send in
+              try await self.mainQueue.sleep(for: .seconds(count))
+              await send(.response(42))
+            }
+          case let .response(value):
+            state.count = value
+            return .none
+          }
+        }
+      }
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          var children: StackState<Child.State>
+        }
+        enum Action: Equatable {
+          case child(StackAction<Child.State, Child.Action>)
+        }
+        var body: some ReducerProtocolOf<Self> {
+          Reduce { state, action in
+            switch action {
+            case .child:
+              return .none
+            }
+          }
+          .forEach(\.children, action: /Action.child) { Child() }
+        }
+      }
+
+      let mainQueue = DispatchQueue.test
+      let store = TestStore(
+        initialState: Parent.State(
+          children: StackState().appending(contentsOf: [
+            Child.State(count: 1),
+            Child.State(count: 2),
+          ])
+        ),
+        reducer: Parent()
+      ) {
+        $0.mainQueue = mainQueue.eraseToAnyScheduler()
+      }
+
+      await store.send(.child(.element(id: 0, action: .tap)))
+      await store.send(.child(.element(id: 1, action: .tap)))
+      await mainQueue.advance(by: .seconds(1))
+      await store.receive(.child(.element(id: 0, action: .response(42)))) {
+        $0.children[id: 0]?.count = 42
+      }
+      await mainQueue.advance(by: .seconds(1))
+      await store.receive(.child(.element(id: 1, action: .response(42)))) {
+        $0.children[id: 1]?.count = 42
+      }
+    }
   }
 #endif

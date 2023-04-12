@@ -150,10 +150,6 @@ public struct StackState<Element>: RandomAccessCollection {
     return stack
   }
 
-  public mutating func insert(_ newElement: Element, at i: Index) {
-    self._dictionary.updateValue(newElement, forKey: self.stackElementID.next(), insertingAt: i)
-  }
-
   @discardableResult
   public mutating func removeLast() -> Element {
     let element = self._dictionary.removeLast()
