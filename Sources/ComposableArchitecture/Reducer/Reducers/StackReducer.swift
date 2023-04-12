@@ -2,67 +2,18 @@ import Combine
 import Foundation
 import OrderedCollections
 
-public struct StackElementID: Hashable, Sendable {
-  @_spi(Internals) public var generation: Int
-  @_spi(Internals) public var rawValue: AnyHashableSendable
-
-  @_spi(Internals) public init<RawValue: Hashable & Sendable>(generation: Int, rawValue: RawValue) {
-    self.generation = generation
-    self.rawValue = AnyHashableSendable(rawValue)
-  }
-
-  public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.rawValue == rhs.rawValue || lhs.generation == rhs.generation
-  }
-}
-
-extension StackElementID: CustomDebugStringConvertible {
-  public var debugDescription: String {
-    "#\(self.generation)"
-  }
-}
-
-extension StackElementID: CustomDumpStringConvertible {
-  public var customDumpDescription: String {
-    self.debugDescription
-  }
-}
-
-extension StackElementID: ExpressibleByIntegerLiteral {
-  public init(integerLiteral value: Int) {
-    #if DEBUG
-      @Dependency(\.context) var context
-      if context != .test {
-        runtimeWarn(
-          """
-          Specifying stack element IDs by integer literal is not allowed outside of tests.
-
-          In tests, integer literal stack element IDs can be used as a shorthand to the \
-          auto-incrementing generation of the current dependency context. This can be useful when \
-          asserting against actions received by a specific element.
-          """
-        )
-      }
-    #endif
-//    if value == DependencyValues._current.stackElementID.peek().generation {
-//      _ = DependencyValues._current.stackElementID.next()
-//    }
-    self.init(generation: value, rawValue: value)
-  }
-}
-
+/// A list of data representing the content of a navigation stack.
+///
+/// Use this type for modeling a feature's domain that needs to present child features using
+/// ``ReducerProtocol/forEach(_:action:destination:file:fileID:line:)-4sflg``.
 public struct StackState<Element>: RandomAccessCollection {
   var _dictionary: OrderedDictionary<StackElementID, Element>
   fileprivate var _mounted: Set<StackElementID> = []
 
   @Dependency(\.stackElementID) private var stackElementID
 
-  var _ids: OrderedSet<StackElementID> {
+  public var ids: OrderedSet<StackElementID> {
     self._dictionary.keys
-  }
-
-  public var ids: [StackElementID] {
-    self._dictionary.keys.elements
   }
 
   public init() {
@@ -264,7 +215,7 @@ public struct _StackReducer<
   @Dependency(\.navigationIDPath) var navigationIDPath
 
   public func reduce(into state: inout Base.State, action: Base.Action) -> EffectTask<Base.Action> {
-    let idsBefore = state[keyPath: self.toStackState]._ids
+    let idsBefore = state[keyPath: self.toStackState].ids
     let destinationEffects: EffectTask<Base.Action>
     let baseEffects: EffectTask<Base.Action>
 
@@ -305,7 +256,7 @@ public struct _StackReducer<
 
     case let .push(id, element):
       destinationEffects = .none
-      if state[keyPath: self.toStackState]._ids.contains(id) {
+      if state[keyPath: self.toStackState].ids.contains(id) {
         runtimeWarn("TODO")
         baseEffects = .none
         break
@@ -324,7 +275,7 @@ public struct _StackReducer<
       baseEffects = self.base.reduce(into: &state, action: action)
     }
 
-    let idsAfter = state[keyPath: self.toStackState]._ids
+    let idsAfter = state[keyPath: self.toStackState].ids
     let idsMounted = state[keyPath: self.toStackState]._mounted
 
     let cancelEffects: EffectTask<Base.Action> =
@@ -373,8 +324,52 @@ public struct _StackReducer<
   }
 }
 
+public struct StackElementID: Hashable, Sendable {
+  @_spi(Internals) public var generation: Int
+  @_spi(Internals) public var rawValue: AnyHashableSendable
+
+  @_spi(Internals) public init<RawValue: Hashable & Sendable>(generation: Int, rawValue: RawValue) {
+    self.generation = generation
+    self.rawValue = AnyHashableSendable(rawValue)
+  }
+
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.rawValue == rhs.rawValue || lhs.generation == rhs.generation
+  }
+}
+
+extension StackElementID: CustomDebugStringConvertible {
+  public var debugDescription: String {
+    "#\(self.generation)"
+  }
+}
+
+extension StackElementID: CustomDumpStringConvertible {
+  public var customDumpDescription: String {
+    self.debugDescription
+  }
+}
+
+extension StackElementID: ExpressibleByIntegerLiteral {
+  public init(integerLiteral value: Int) {
+    #if DEBUG
+      @Dependency(\.context) var context
+      if context != .test {
+        runtimeWarn(
+          """
+          Specifying stack element IDs by integer literal is not allowed outside of tests.
+
+          In tests, integer literal stack element IDs can be used as a shorthand to the \
+          auto-incrementing generation of the current dependency context. This can be useful when \
+          asserting against actions received by a specific element.
+          """
+        )
+      }
+    #endif
+    self.init(generation: value, rawValue: value)
+  }
+}
+
 private struct NavigationDismissID: Hashable {
   let elementID: AnyHashable  // TODO: rename
 }
-
-import Dependencies

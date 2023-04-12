@@ -5,6 +5,8 @@ import SwiftUI
 ///
 /// This view can be used to drive stack-based navigation in the Composable Architecture when passed
 /// a store of ``StackState`` and ``StackAction``.
+///
+/// See SwiftUI's documentation for `NavigationStack` for more.
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 public struct NavigationStackStore<State, Action, Root: View, Destination: View>: View {
   private let root: Root
@@ -40,7 +42,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
     self._viewStore = StateObject(
       wrappedValue: ViewStore(
         store,
-        removeDuplicates: { areOrderedSetsDuplicates($0._ids, $1._ids) }
+        removeDuplicates: { areOrderedSetsDuplicates($0.ids, $1.ids) }
       )
     )
   }
@@ -77,7 +79,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
     self._viewStore = StateObject(
       wrappedValue: ViewStore(
         store,
-        removeDuplicates: { areOrderedSetsDuplicates($0._ids, $1._ids) }
+        removeDuplicates: { areOrderedSetsDuplicates($0.ids, $1.ids) }
       )
     )
   }
