@@ -195,6 +195,7 @@ extension ReducerProtocol {
   ///   - destination: A reducer that will be invoked with destination actions against elements of
   ///     destination state.
   /// - Returns: A reducer that combines the destination reducer with the parent reducer.
+  @inlinable
   @warn_unqualified_access
   public func forEach<DestinationState, DestinationAction, Destination: ReducerProtocol>(
     _ toStackState: WritableKeyPath<State, StackState<DestinationState>>,
@@ -229,6 +230,25 @@ public struct _StackReducer<
   let line: UInt
 
   @Dependency(\.navigationIDPath) var navigationIDPath
+
+  @usableFromInline
+  init(
+    base: Base,
+    toStackState: WritableKeyPath<Base.State, StackState<Destination.State>>,
+    toStackAction: CasePath<Base.Action, StackAction<Destination.State, Destination.Action>>,
+    destination: Destination,
+    file: StaticString,
+    fileID: StaticString,
+    line: UInt
+  ) {
+    self.base = base
+    self.toStackState = toStackState
+    self.toStackAction = toStackAction
+    self.destination = destination
+    self.file = file
+    self.fileID = fileID
+    self.line = line
+  }
 
   public func reduce(into state: inout Base.State, action: Base.Action) -> EffectTask<Base.Action> {
     let idsBefore = state[keyPath: self.toStackState].ids
