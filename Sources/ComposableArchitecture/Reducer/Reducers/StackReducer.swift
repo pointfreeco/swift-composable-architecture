@@ -67,17 +67,17 @@ public struct StackState<Element>: RandomAccessCollection {
     self._dictionary[self.stackElementID.next()] = element
   }
 
+  public func appending(_ element: Element) -> Self {
+    var stack = self
+    stack.append(element)
+    return stack
+  }
+
   public mutating func append<S: Sequence>(contentsOf elements: S) where S.Element == Element {
     self._dictionary.reserveCapacity(self._dictionary.count + elements.underestimatedCount)
     for element in elements {
       self.append(element)
     }
-  }
-
-  public func appending(_ element: Element) -> Self {
-    var stack = self
-    stack.append(element)
-    return stack
   }
 
   public func appending<S: Sequence>(contentsOf elements: S) -> Self where S.Element == Element {
@@ -163,23 +163,33 @@ extension StackState: CustomReflectable {
   }
 }
 
+/// A wrapper type for actions that can be presented in a navigation stack.
+///
+/// Use this type for modeling a feature's domain that needs to present child features using
+/// ``ReducerProtocol/forEach(_:action:destination:file:fileID:line:)-4sflg``.
 public enum StackAction<State, Action> {
   case element(id: StackElementID, action: Action)
   case popFrom(id: StackElementID)
-  case push(
-    id: StackElementID, // = _defaultStackElementID(),
-    state: State
-  )
+  case push(id: StackElementID, state: State)
 }
 
-//public func _defaultStackElementID() -> StackElementID {
-//  DependencyValues._current.stackElementID.next()
-//}
-
 extension StackAction: Equatable where State: Equatable, Action: Equatable {}
+
 extension StackAction: Hashable where State: Hashable, Action: Hashable {}
 
 extension ReducerProtocol {
+  /// Embeds a child reducer in a parent domain that works on elements of a navigation stack in
+  /// parent state.
+  ///
+  /// For example, if a parent feature holds onto a ``StackState`` of destination states, then it
+  /// can perform its core logic _and_ the destination's logic by using the `forEach` operator:
+  ///
+  /// - Parameters:
+  ///   - toStackState: A writable key path from parent state to a stack of destination state.
+  ///   - toStackAction: A case path from parent action to a stack action.
+  ///   - destination: A reducer that will be invoked with destination actions against elements of
+  ///     destination state.
+  /// - Returns: A reducer that combines the destination reducer with the parent reducer.
   public func forEach<DestinationState, DestinationAction, Destination: ReducerProtocol>(
     _ toStackState: WritableKeyPath<State, StackState<DestinationState>>,
     action toStackAction: CasePath<Action, StackAction<DestinationState, DestinationAction>>,
@@ -324,6 +334,7 @@ public struct _StackReducer<
   }
 }
 
+/// An opaque type that identifies an element of ``StackState``.
 public struct StackElementID: Hashable, Sendable {
   @_spi(Internals) public var generation: Int
   @_spi(Internals) public var rawValue: AnyHashableSendable
