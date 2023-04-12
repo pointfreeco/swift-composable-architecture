@@ -1,7 +1,8 @@
 @_spi(Reflection) import CasePaths
 import SwiftUI
 
-/// A view that can switch over a store of enum state and handle each case.
+/// A view that observes when enum state held in a store changes cases, and provides stores to
+/// ``CaseLet`` views.
 ///
 /// An application may model parts of its state with enums. For example, app state may differ if a
 /// user is logged-in or not:
@@ -21,63 +22,62 @@ import SwiftUI
 ///   let store: StoreOf<App>
 ///
 ///   var body: some View {
-///     SwitchStore(self.store) {
-///       CaseLet(state: /App.State.loggedIn, action: App.Action.loggedIn) { loggedInStore in
-///         LoggedInView(store: loggedInStore)
-///       }
-///       CaseLet(state: /App.State.loggedOut, action: App.Action.loggedOut) { loggedOutStore in
-///         LoggedOutView(store: loggedOutStore)
+///     SwitchStore(self.store) { state in
+///       switch state {
+///       case .loggedIn:
+///         CaseLet(state: /App.State.loggedIn, action: App.Action.loggedIn) { loggedInStore in
+///           LoggedInView(store: loggedInStore)
+///         }
+///       case .loggedOut:
+///         CaseLet(state: /App.State.loggedOut, action: App.Action.loggedOut) { loggedOutStore in
+///           LoggedOutView(store: loggedOutStore)
+///         }
 ///       }
 ///     }
 ///   }
 /// }
 /// ```
 ///
-/// If a ``SwitchStore`` does not exhaustively handle every case with a corresponding ``CaseLet``
-/// view, a runtime warning will be logged when an unhandled case is encountered. To fall back on a
-/// default view instead, introduce a ``Default`` view at the end of the ``SwitchStore``:
-///
-/// ```swift
-/// SwitchStore(self.store) {
-///   CaseLet(state: /MyState.first, action: MyAction.first) {
-///     FirstView(store: $0)
-///   }
-///   CaseLet(state: /MyState.second, action: MyAction.second) {
-///     SecondView(store: $0)
-///   }
-///   Default {
-///     Text("State is neither first nor second.")
-///   }
-/// }
-/// ```
+/// > Important: The `SwitchStore` view builder is only evaluated when the case of state passed to
+/// > it changes. As such, you should not rely on this value for anything other than checking the
+/// > current case, _e.g._ by switching on it and routing to an appropriate `CaseLet`.
 ///
 /// See ``ReducerProtocol/ifCaseLet(_:action:then:file:fileID:line:)`` and
 /// ``Scope/init(state:action:child:file:fileID:line:)`` for embedding reducers that operate on each
 /// case of an enum in reducers that operate on the entire enum.
 public struct SwitchStore<State, Action, Content: View>: View {
   public let store: Store<State, Action>
-  public let content: Content
+  public let content: (State) -> Content
 
-  init(
-    store: Store<State, Action>,
-    @ViewBuilder content: () -> Content
+  public init(
+    _ store: Store<State, Action>,
+    @ViewBuilder content: @escaping (State) -> Content
   ) {
     self.store = store
-    self.content = content()
+    self.content = content
   }
 
   public var body: some View {
-    self.content
-      .environmentObject(StoreObservableObject(store: self.store))
+    WithViewStore(
+      self.store, observe: { $0 }, removeDuplicates: { enumTag($0) == enumTag($1) }
+    ) { viewStore in
+      self.content(viewStore.state)
+        .environmentObject(StoreObservableObject(store: self.store))
+    }
   }
 }
 
 /// A view that handles a specific case of enum state in a ``SwitchStore``.
 public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: View>: View {
-  @EnvironmentObject private var store: StoreObservableObject<EnumState, EnumAction>
   public let toCaseState: (EnumState) -> CaseState?
   public let fromCaseAction: (CaseAction) -> EnumAction
   public let content: (Store<CaseState, CaseAction>) -> Content
+
+  private let file: StaticString
+  private let fileID: StaticString
+  private let line: UInt
+
+  @EnvironmentObject private var store: StoreObservableObject<EnumState, EnumAction>
 
   /// Initializes a ``CaseLet`` view that computes content depending on if a store of enum state
   /// matches a particular case.
@@ -89,13 +89,39 @@ public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: Vie
   ///   - content: A function that is given a store of the given case's state and returns a view
   ///     that is visible only when the switch store's state matches.
   public init(
-    state toCaseState: @escaping (EnumState) -> CaseState?,
+    _ toCaseState: @escaping (EnumState) -> CaseState?,
     action fromCaseAction: @escaping (CaseAction) -> EnumAction,
-    @ViewBuilder then content: @escaping (Store<CaseState, CaseAction>) -> Content
+    @ViewBuilder then content: @escaping (Store<CaseState, CaseAction>) -> Content,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
   ) {
     self.toCaseState = toCaseState
     self.fromCaseAction = fromCaseAction
     self.content = content
+    self.file = file
+    self.fileID = fileID
+    self.line = line
+  }
+
+  @available(iOS, deprecated: 9999, message: "Use 'CaseLet.init(_:action:…)' instead.")
+  @available(macOS, deprecated: 9999, message: "Use 'CaseLet.init(_:action:…)' instead.")
+  @available(tvOS, deprecated: 9999, message: "Use 'CaseLet.init(_:action:…)' instead.")
+  @available(watchOS, deprecated: 9999, message: "Use 'CaseLet.init(_:action:…)' instead.")
+  public init(
+    state toCaseState: @escaping (EnumState) -> CaseState?,
+    action fromCaseAction: @escaping (CaseAction) -> EnumAction,
+    @ViewBuilder then content: @escaping (Store<CaseState, CaseAction>) -> Content,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) {
+    self.toCaseState = toCaseState
+    self.fromCaseAction = fromCaseAction
+    self.content = content
+    self.file = file
+    self.fileID = fileID
+    self.line = line
   }
 
   public var body: some View {
@@ -104,7 +130,14 @@ public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: Vie
         state: self.toCaseState,
         action: self.fromCaseAction
       ),
-      then: self.content
+      then: self.content,
+      else: {
+        _CaseLetMismatchView<EnumState, EnumAction>(
+          file: self.file,
+          fileID: self.fileID,
+          line: self.line
+        )
+      }
     )
   }
 }
@@ -123,7 +156,7 @@ extension CaseLet where EnumAction == CaseAction {
     @ViewBuilder then content: @escaping (Store<CaseState, CaseAction>) -> Content
   ) {
     self.init(
-      state: toCaseState,
+      toCaseState,
       action: { $0 },
       then: content
     )
@@ -135,6 +168,30 @@ extension CaseLet where EnumAction == CaseAction {
 /// If you wish to use ``SwitchStore`` in a non-exhaustive manner (i.e. you do not want to provide
 /// a ``CaseLet`` for each case of the enum), then you must insert a ``Default`` view at the end of
 /// the ``SwitchStore``'s body.
+@available(
+  iOS,
+  deprecated: 9999,
+  message:
+    "Use the 'SwitchStore.init' that can 'switch' over a given 'state' and use 'default' instead."
+)
+@available(
+  macOS,
+  deprecated: 9999,
+  message:
+    "Use the 'SwitchStore.init' that can 'switch' over a given 'state' and use 'default' instead."
+)
+@available(
+  tvOS,
+  deprecated: 9999,
+  message:
+    "Use the 'SwitchStore.init' that can 'switch' over a given 'state' and use 'default' instead."
+)
+@available(
+  watchOS,
+  deprecated: 9999,
+  message:
+    "Use the 'SwitchStore.init' that can 'switch' over a given 'state' and use 'default' instead."
+)
 public struct Default<Content: View>: View {
   private let content: Content
 
@@ -153,6 +210,26 @@ public struct Default<Content: View>: View {
 }
 
 extension SwitchStore {
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<State1, Action1, Content1, DefaultContent>(
     _ store: Store<State, Action>,
     @ViewBuilder content: () -> TupleView<
@@ -163,27 +240,41 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
-      _ConditionalContent<
-        CaseLet<State, Action, State1, Action1, Content1>,
-        Default<DefaultContent>
-      >
+    Content == _ConditionalContent<
+      CaseLet<State, Action, State1, Action1, Content1>,
+      Default<DefaultContent>
     >
   {
     let content = content().value
-    self.init(store: store) {
-      return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toCaseState(viewStore.state) != nil {
-          content.0
-        } else {
-          content.1
-        }
+    self.init(store) { state in
+      if content.0.toCaseState(state) != nil {
+        content.0
+      } else {
+        content.1
       }
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<State1, Action1, Content1>(
     _ store: Store<State, Action>,
     file: StaticString = #file,
@@ -192,13 +283,9 @@ extension SwitchStore {
     @ViewBuilder content: () -> CaseLet<State, Action, State1, Action1, Content1>
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
-      _ConditionalContent<
-        CaseLet<State, Action, State1, Action1, Content1>,
-        Default<_ExhaustivityCheckView<State, Action>>
-      >
+    Content == _ConditionalContent<
+      CaseLet<State, Action, State1, Action1, Content1>,
+      Default<_ExhaustivityCheckView<State, Action>>
     >
   {
     self.init(store) {
@@ -207,6 +294,26 @@ extension SwitchStore {
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<State1, Action1, Content1, State2, Action2, Content2, DefaultContent>(
     _ store: Store<State, Action>,
     @ViewBuilder content: () -> TupleView<
@@ -218,32 +325,46 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
-        _ConditionalContent<
-          CaseLet<State, Action, State1, Action1, Content1>,
-          CaseLet<State, Action, State2, Action2, Content2>
-        >,
-        Default<DefaultContent>
-      >
+        CaseLet<State, Action, State1, Action1, Content1>,
+        CaseLet<State, Action, State2, Action2, Content2>
+      >,
+      Default<DefaultContent>
     >
   {
     let content = content().value
-    self.init(store: store) {
-      return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toCaseState(viewStore.state) != nil {
-          content.0
-        } else if content.1.toCaseState(viewStore.state) != nil {
-          content.1
-        } else {
-          content.2
-        }
+    self.init(store) { state in
+      if content.0.toCaseState(state) != nil {
+        content.0
+      } else if content.1.toCaseState(state) != nil {
+        content.1
+      } else {
+        content.2
       }
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<State1, Action1, Content1, State2, Action2, Content2>(
     _ store: Store<State, Action>,
     file: StaticString = #file,
@@ -257,16 +378,12 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
-        _ConditionalContent<
-          CaseLet<State, Action, State1, Action1, Content1>,
-          CaseLet<State, Action, State2, Action2, Content2>
-        >,
-        Default<_ExhaustivityCheckView<State, Action>>
-      >
+        CaseLet<State, Action, State1, Action1, Content1>,
+        CaseLet<State, Action, State2, Action2, Content2>
+      >,
+      Default<_ExhaustivityCheckView<State, Action>>
     >
   {
     let content = content()
@@ -277,6 +394,26 @@ extension SwitchStore {
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -294,37 +431,51 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
-        _ConditionalContent<
-          CaseLet<State, Action, State1, Action1, Content1>,
-          CaseLet<State, Action, State2, Action2, Content2>
-        >,
-        _ConditionalContent<
-          CaseLet<State, Action, State3, Action3, Content3>,
-          Default<DefaultContent>
-        >
+        CaseLet<State, Action, State1, Action1, Content1>,
+        CaseLet<State, Action, State2, Action2, Content2>
+      >,
+      _ConditionalContent<
+        CaseLet<State, Action, State3, Action3, Content3>,
+        Default<DefaultContent>
       >
     >
   {
     let content = content().value
-    self.init(store: store) {
-      return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toCaseState(viewStore.state) != nil {
-          content.0
-        } else if content.1.toCaseState(viewStore.state) != nil {
-          content.1
-        } else if content.2.toCaseState(viewStore.state) != nil {
-          content.2
-        } else {
-          content.3
-        }
+    self.init(store) { state in
+      if content.0.toCaseState(state) != nil {
+        content.0
+      } else if content.1.toCaseState(state) != nil {
+        content.1
+      } else if content.2.toCaseState(state) != nil {
+        content.2
+      } else {
+        content.3
       }
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<State1, Action1, Content1, State2, Action2, Content2, State3, Action3, Content3>(
     _ store: Store<State, Action>,
     file: StaticString = #file,
@@ -339,18 +490,14 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
-        _ConditionalContent<
-          CaseLet<State, Action, State1, Action1, Content1>,
-          CaseLet<State, Action, State2, Action2, Content2>
-        >,
-        _ConditionalContent<
-          CaseLet<State, Action, State3, Action3, Content3>,
-          Default<_ExhaustivityCheckView<State, Action>>
-        >
+        CaseLet<State, Action, State1, Action1, Content1>,
+        CaseLet<State, Action, State2, Action2, Content2>
+      >,
+      _ConditionalContent<
+        CaseLet<State, Action, State3, Action3, Content3>,
+        Default<_ExhaustivityCheckView<State, Action>>
       >
     >
   {
@@ -363,6 +510,26 @@ extension SwitchStore {
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -382,42 +549,56 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
         _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State1, Action1, Content1>,
-            CaseLet<State, Action, State2, Action2, Content2>
-          >,
-          _ConditionalContent<
-            CaseLet<State, Action, State3, Action3, Content3>,
-            CaseLet<State, Action, State4, Action4, Content4>
-          >
+          CaseLet<State, Action, State1, Action1, Content1>,
+          CaseLet<State, Action, State2, Action2, Content2>
         >,
-        Default<DefaultContent>
-      >
+        _ConditionalContent<
+          CaseLet<State, Action, State3, Action3, Content3>,
+          CaseLet<State, Action, State4, Action4, Content4>
+        >
+      >,
+      Default<DefaultContent>
     >
   {
     let content = content().value
-    self.init(store: store) {
-      return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toCaseState(viewStore.state) != nil {
-          content.0
-        } else if content.1.toCaseState(viewStore.state) != nil {
-          content.1
-        } else if content.2.toCaseState(viewStore.state) != nil {
-          content.2
-        } else if content.3.toCaseState(viewStore.state) != nil {
-          content.3
-        } else {
-          content.4
-        }
+    self.init(store) { state in
+      if content.0.toCaseState(state) != nil {
+        content.0
+      } else if content.1.toCaseState(state) != nil {
+        content.1
+      } else if content.2.toCaseState(state) != nil {
+        content.2
+      } else if content.3.toCaseState(state) != nil {
+        content.3
+      } else {
+        content.4
       }
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -438,22 +619,18 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
         _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State1, Action1, Content1>,
-            CaseLet<State, Action, State2, Action2, Content2>
-          >,
-          _ConditionalContent<
-            CaseLet<State, Action, State3, Action3, Content3>,
-            CaseLet<State, Action, State4, Action4, Content4>
-          >
+          CaseLet<State, Action, State1, Action1, Content1>,
+          CaseLet<State, Action, State2, Action2, Content2>
         >,
-        Default<_ExhaustivityCheckView<State, Action>>
-      >
+        _ConditionalContent<
+          CaseLet<State, Action, State3, Action3, Content3>,
+          CaseLet<State, Action, State4, Action4, Content4>
+        >
+      >,
+      Default<_ExhaustivityCheckView<State, Action>>
     >
   {
     let content = content()
@@ -466,6 +643,26 @@ extension SwitchStore {
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -487,47 +684,61 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
         _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State1, Action1, Content1>,
-            CaseLet<State, Action, State2, Action2, Content2>
-          >,
-          _ConditionalContent<
-            CaseLet<State, Action, State3, Action3, Content3>,
-            CaseLet<State, Action, State4, Action4, Content4>
-          >
+          CaseLet<State, Action, State1, Action1, Content1>,
+          CaseLet<State, Action, State2, Action2, Content2>
         >,
         _ConditionalContent<
-          CaseLet<State, Action, State5, Action5, Content5>,
-          Default<DefaultContent>
+          CaseLet<State, Action, State3, Action3, Content3>,
+          CaseLet<State, Action, State4, Action4, Content4>
         >
+      >,
+      _ConditionalContent<
+        CaseLet<State, Action, State5, Action5, Content5>,
+        Default<DefaultContent>
       >
     >
   {
     let content = content().value
-    self.init(store: store) {
-      return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toCaseState(viewStore.state) != nil {
-          content.0
-        } else if content.1.toCaseState(viewStore.state) != nil {
-          content.1
-        } else if content.2.toCaseState(viewStore.state) != nil {
-          content.2
-        } else if content.3.toCaseState(viewStore.state) != nil {
-          content.3
-        } else if content.4.toCaseState(viewStore.state) != nil {
-          content.4
-        } else {
-          content.5
-        }
+    self.init(store) { state in
+      if content.0.toCaseState(state) != nil {
+        content.0
+      } else if content.1.toCaseState(state) != nil {
+        content.1
+      } else if content.2.toCaseState(state) != nil {
+        content.2
+      } else if content.3.toCaseState(state) != nil {
+        content.3
+      } else if content.4.toCaseState(state) != nil {
+        content.4
+      } else {
+        content.5
       }
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -550,24 +761,20 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
         _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State1, Action1, Content1>,
-            CaseLet<State, Action, State2, Action2, Content2>
-          >,
-          _ConditionalContent<
-            CaseLet<State, Action, State3, Action3, Content3>,
-            CaseLet<State, Action, State4, Action4, Content4>
-          >
+          CaseLet<State, Action, State1, Action1, Content1>,
+          CaseLet<State, Action, State2, Action2, Content2>
         >,
         _ConditionalContent<
-          CaseLet<State, Action, State5, Action5, Content5>,
-          Default<_ExhaustivityCheckView<State, Action>>
+          CaseLet<State, Action, State3, Action3, Content3>,
+          CaseLet<State, Action, State4, Action4, Content4>
         >
+      >,
+      _ConditionalContent<
+        CaseLet<State, Action, State5, Action5, Content5>,
+        Default<_ExhaustivityCheckView<State, Action>>
       >
     >
   {
@@ -582,6 +789,26 @@ extension SwitchStore {
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -605,52 +832,66 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
         _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State1, Action1, Content1>,
-            CaseLet<State, Action, State2, Action2, Content2>
-          >,
-          _ConditionalContent<
-            CaseLet<State, Action, State3, Action3, Content3>,
-            CaseLet<State, Action, State4, Action4, Content4>
-          >
+          CaseLet<State, Action, State1, Action1, Content1>,
+          CaseLet<State, Action, State2, Action2, Content2>
         >,
         _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State5, Action5, Content5>,
-            CaseLet<State, Action, State6, Action6, Content6>
-          >,
-          Default<DefaultContent>
+          CaseLet<State, Action, State3, Action3, Content3>,
+          CaseLet<State, Action, State4, Action4, Content4>
         >
+      >,
+      _ConditionalContent<
+        _ConditionalContent<
+          CaseLet<State, Action, State5, Action5, Content5>,
+          CaseLet<State, Action, State6, Action6, Content6>
+        >,
+        Default<DefaultContent>
       >
     >
   {
     let content = content().value
-    self.init(store: store) {
-      return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toCaseState(viewStore.state) != nil {
-          content.0
-        } else if content.1.toCaseState(viewStore.state) != nil {
-          content.1
-        } else if content.2.toCaseState(viewStore.state) != nil {
-          content.2
-        } else if content.3.toCaseState(viewStore.state) != nil {
-          content.3
-        } else if content.4.toCaseState(viewStore.state) != nil {
-          content.4
-        } else if content.5.toCaseState(viewStore.state) != nil {
-          content.5
-        } else {
-          content.6
-        }
+    self.init(store) { state in
+      if content.0.toCaseState(state) != nil {
+        content.0
+      } else if content.1.toCaseState(state) != nil {
+        content.1
+      } else if content.2.toCaseState(state) != nil {
+        content.2
+      } else if content.3.toCaseState(state) != nil {
+        content.3
+      } else if content.4.toCaseState(state) != nil {
+        content.4
+      } else if content.5.toCaseState(state) != nil {
+        content.5
+      } else {
+        content.6
       }
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -675,27 +916,23 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
         _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State1, Action1, Content1>,
-            CaseLet<State, Action, State2, Action2, Content2>
-          >,
-          _ConditionalContent<
-            CaseLet<State, Action, State3, Action3, Content3>,
-            CaseLet<State, Action, State4, Action4, Content4>
-          >
+          CaseLet<State, Action, State1, Action1, Content1>,
+          CaseLet<State, Action, State2, Action2, Content2>
         >,
         _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State5, Action5, Content5>,
-            CaseLet<State, Action, State6, Action6, Content6>
-          >,
-          Default<_ExhaustivityCheckView<State, Action>>
+          CaseLet<State, Action, State3, Action3, Content3>,
+          CaseLet<State, Action, State4, Action4, Content4>
         >
+      >,
+      _ConditionalContent<
+        _ConditionalContent<
+          CaseLet<State, Action, State5, Action5, Content5>,
+          CaseLet<State, Action, State6, Action6, Content6>
+        >,
+        Default<_ExhaustivityCheckView<State, Action>>
       >
     >
   {
@@ -711,6 +948,26 @@ extension SwitchStore {
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -736,57 +993,71 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
         _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State1, Action1, Content1>,
-            CaseLet<State, Action, State2, Action2, Content2>
-          >,
-          _ConditionalContent<
-            CaseLet<State, Action, State3, Action3, Content3>,
-            CaseLet<State, Action, State4, Action4, Content4>
-          >
+          CaseLet<State, Action, State1, Action1, Content1>,
+          CaseLet<State, Action, State2, Action2, Content2>
         >,
         _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State5, Action5, Content5>,
-            CaseLet<State, Action, State6, Action6, Content6>
-          >,
-          _ConditionalContent<
-            CaseLet<State, Action, State7, Action7, Content7>,
-            Default<DefaultContent>
-          >
+          CaseLet<State, Action, State3, Action3, Content3>,
+          CaseLet<State, Action, State4, Action4, Content4>
+        >
+      >,
+      _ConditionalContent<
+        _ConditionalContent<
+          CaseLet<State, Action, State5, Action5, Content5>,
+          CaseLet<State, Action, State6, Action6, Content6>
+        >,
+        _ConditionalContent<
+          CaseLet<State, Action, State7, Action7, Content7>,
+          Default<DefaultContent>
         >
       >
     >
   {
     let content = content().value
-    self.init(store: store) {
-      return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toCaseState(viewStore.state) != nil {
-          content.0
-        } else if content.1.toCaseState(viewStore.state) != nil {
-          content.1
-        } else if content.2.toCaseState(viewStore.state) != nil {
-          content.2
-        } else if content.3.toCaseState(viewStore.state) != nil {
-          content.3
-        } else if content.4.toCaseState(viewStore.state) != nil {
-          content.4
-        } else if content.5.toCaseState(viewStore.state) != nil {
-          content.5
-        } else if content.6.toCaseState(viewStore.state) != nil {
-          content.6
-        } else {
-          content.7
-        }
+    self.init(store) { state in
+      if content.0.toCaseState(state) != nil {
+        content.0
+      } else if content.1.toCaseState(state) != nil {
+        content.1
+      } else if content.2.toCaseState(state) != nil {
+        content.2
+      } else if content.3.toCaseState(state) != nil {
+        content.3
+      } else if content.4.toCaseState(state) != nil {
+        content.4
+      } else if content.5.toCaseState(state) != nil {
+        content.5
+      } else if content.6.toCaseState(state) != nil {
+        content.6
+      } else {
+        content.7
       }
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -813,29 +1084,25 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
         _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State1, Action1, Content1>,
-            CaseLet<State, Action, State2, Action2, Content2>
-          >,
-          _ConditionalContent<
-            CaseLet<State, Action, State3, Action3, Content3>,
-            CaseLet<State, Action, State4, Action4, Content4>
-          >
+          CaseLet<State, Action, State1, Action1, Content1>,
+          CaseLet<State, Action, State2, Action2, Content2>
         >,
         _ConditionalContent<
-          _ConditionalContent<
-            CaseLet<State, Action, State5, Action5, Content5>,
-            CaseLet<State, Action, State6, Action6, Content6>
-          >,
-          _ConditionalContent<
-            CaseLet<State, Action, State7, Action7, Content7>,
-            Default<_ExhaustivityCheckView<State, Action>>
-          >
+          CaseLet<State, Action, State3, Action3, Content3>,
+          CaseLet<State, Action, State4, Action4, Content4>
+        >
+      >,
+      _ConditionalContent<
+        _ConditionalContent<
+          CaseLet<State, Action, State5, Action5, Content5>,
+          CaseLet<State, Action, State6, Action6, Content6>
+        >,
+        _ConditionalContent<
+          CaseLet<State, Action, State7, Action7, Content7>,
+          Default<_ExhaustivityCheckView<State, Action>>
         >
       >
     >
@@ -853,6 +1120,26 @@ extension SwitchStore {
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -880,62 +1167,76 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
         _ConditionalContent<
           _ConditionalContent<
-            _ConditionalContent<
-              CaseLet<State, Action, State1, Action1, Content1>,
-              CaseLet<State, Action, State2, Action2, Content2>
-            >,
-            _ConditionalContent<
-              CaseLet<State, Action, State3, Action3, Content3>,
-              CaseLet<State, Action, State4, Action4, Content4>
-            >
+            CaseLet<State, Action, State1, Action1, Content1>,
+            CaseLet<State, Action, State2, Action2, Content2>
           >,
           _ConditionalContent<
-            _ConditionalContent<
-              CaseLet<State, Action, State5, Action5, Content5>,
-              CaseLet<State, Action, State6, Action6, Content6>
-            >,
-            _ConditionalContent<
-              CaseLet<State, Action, State7, Action7, Content7>,
-              CaseLet<State, Action, State8, Action8, Content8>
-            >
+            CaseLet<State, Action, State3, Action3, Content3>,
+            CaseLet<State, Action, State4, Action4, Content4>
           >
         >,
-        Default<DefaultContent>
-      >
+        _ConditionalContent<
+          _ConditionalContent<
+            CaseLet<State, Action, State5, Action5, Content5>,
+            CaseLet<State, Action, State6, Action6, Content6>
+          >,
+          _ConditionalContent<
+            CaseLet<State, Action, State7, Action7, Content7>,
+            CaseLet<State, Action, State8, Action8, Content8>
+          >
+        >
+      >,
+      Default<DefaultContent>
     >
   {
     let content = content().value
-    self.init(store: store) {
-      return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toCaseState(viewStore.state) != nil {
-          content.0
-        } else if content.1.toCaseState(viewStore.state) != nil {
-          content.1
-        } else if content.2.toCaseState(viewStore.state) != nil {
-          content.2
-        } else if content.3.toCaseState(viewStore.state) != nil {
-          content.3
-        } else if content.4.toCaseState(viewStore.state) != nil {
-          content.4
-        } else if content.5.toCaseState(viewStore.state) != nil {
-          content.5
-        } else if content.6.toCaseState(viewStore.state) != nil {
-          content.6
-        } else if content.7.toCaseState(viewStore.state) != nil {
-          content.7
-        } else {
-          content.8
-        }
+    self.init(store) { state in
+      if content.0.toCaseState(state) != nil {
+        content.0
+      } else if content.1.toCaseState(state) != nil {
+        content.1
+      } else if content.2.toCaseState(state) != nil {
+        content.2
+      } else if content.3.toCaseState(state) != nil {
+        content.3
+      } else if content.4.toCaseState(state) != nil {
+        content.4
+      } else if content.5.toCaseState(state) != nil {
+        content.5
+      } else if content.6.toCaseState(state) != nil {
+        content.6
+      } else if content.7.toCaseState(state) != nil {
+        content.7
+      } else {
+        content.8
       }
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -964,34 +1265,30 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
         _ConditionalContent<
           _ConditionalContent<
-            _ConditionalContent<
-              CaseLet<State, Action, State1, Action1, Content1>,
-              CaseLet<State, Action, State2, Action2, Content2>
-            >,
-            _ConditionalContent<
-              CaseLet<State, Action, State3, Action3, Content3>,
-              CaseLet<State, Action, State4, Action4, Content4>
-            >
+            CaseLet<State, Action, State1, Action1, Content1>,
+            CaseLet<State, Action, State2, Action2, Content2>
           >,
           _ConditionalContent<
-            _ConditionalContent<
-              CaseLet<State, Action, State5, Action5, Content5>,
-              CaseLet<State, Action, State6, Action6, Content6>
-            >,
-            _ConditionalContent<
-              CaseLet<State, Action, State7, Action7, Content7>,
-              CaseLet<State, Action, State8, Action8, Content8>
-            >
+            CaseLet<State, Action, State3, Action3, Content3>,
+            CaseLet<State, Action, State4, Action4, Content4>
           >
         >,
-        Default<_ExhaustivityCheckView<State, Action>>
-      >
+        _ConditionalContent<
+          _ConditionalContent<
+            CaseLet<State, Action, State5, Action5, Content5>,
+            CaseLet<State, Action, State6, Action6, Content6>
+          >,
+          _ConditionalContent<
+            CaseLet<State, Action, State7, Action7, Content7>,
+            CaseLet<State, Action, State8, Action8, Content8>
+          >
+        >
+      >,
+      Default<_ExhaustivityCheckView<State, Action>>
     >
   {
     let content = content()
@@ -1008,6 +1305,26 @@ extension SwitchStore {
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -1037,67 +1354,81 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
         _ConditionalContent<
           _ConditionalContent<
-            _ConditionalContent<
-              CaseLet<State, Action, State1, Action1, Content1>,
-              CaseLet<State, Action, State2, Action2, Content2>
-            >,
-            _ConditionalContent<
-              CaseLet<State, Action, State3, Action3, Content3>,
-              CaseLet<State, Action, State4, Action4, Content4>
-            >
+            CaseLet<State, Action, State1, Action1, Content1>,
+            CaseLet<State, Action, State2, Action2, Content2>
           >,
           _ConditionalContent<
-            _ConditionalContent<
-              CaseLet<State, Action, State5, Action5, Content5>,
-              CaseLet<State, Action, State6, Action6, Content6>
-            >,
-            _ConditionalContent<
-              CaseLet<State, Action, State7, Action7, Content7>,
-              CaseLet<State, Action, State8, Action8, Content8>
-            >
+            CaseLet<State, Action, State3, Action3, Content3>,
+            CaseLet<State, Action, State4, Action4, Content4>
           >
         >,
         _ConditionalContent<
-          CaseLet<State, Action, State9, Action9, Content9>,
-          Default<DefaultContent>
+          _ConditionalContent<
+            CaseLet<State, Action, State5, Action5, Content5>,
+            CaseLet<State, Action, State6, Action6, Content6>
+          >,
+          _ConditionalContent<
+            CaseLet<State, Action, State7, Action7, Content7>,
+            CaseLet<State, Action, State8, Action8, Content8>
+          >
         >
+      >,
+      _ConditionalContent<
+        CaseLet<State, Action, State9, Action9, Content9>,
+        Default<DefaultContent>
       >
     >
   {
     let content = content().value
-    self.init(store: store) {
-      return WithViewStore(store, removeDuplicates: { enumTag($0) == enumTag($1) }) { viewStore in
-        if content.0.toCaseState(viewStore.state) != nil {
-          content.0
-        } else if content.1.toCaseState(viewStore.state) != nil {
-          content.1
-        } else if content.2.toCaseState(viewStore.state) != nil {
-          content.2
-        } else if content.3.toCaseState(viewStore.state) != nil {
-          content.3
-        } else if content.4.toCaseState(viewStore.state) != nil {
-          content.4
-        } else if content.5.toCaseState(viewStore.state) != nil {
-          content.5
-        } else if content.6.toCaseState(viewStore.state) != nil {
-          content.6
-        } else if content.7.toCaseState(viewStore.state) != nil {
-          content.7
-        } else if content.8.toCaseState(viewStore.state) != nil {
-          content.8
-        } else {
-          content.9
-        }
+    self.init(store) { state in
+      if content.0.toCaseState(state) != nil {
+        content.0
+      } else if content.1.toCaseState(state) != nil {
+        content.1
+      } else if content.2.toCaseState(state) != nil {
+        content.2
+      } else if content.3.toCaseState(state) != nil {
+        content.3
+      } else if content.4.toCaseState(state) != nil {
+        content.4
+      } else if content.5.toCaseState(state) != nil {
+        content.5
+      } else if content.6.toCaseState(state) != nil {
+        content.6
+      } else if content.7.toCaseState(state) != nil {
+        content.7
+      } else if content.8.toCaseState(state) != nil {
+        content.8
+      } else {
+        content.9
       }
     }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+  )
   public init<
     State1, Action1, Content1,
     State2, Action2, Content2,
@@ -1128,36 +1459,32 @@ extension SwitchStore {
     >
   )
   where
-    Content == WithViewStore<
-      State,
-      Action,
+    Content == _ConditionalContent<
       _ConditionalContent<
         _ConditionalContent<
           _ConditionalContent<
-            _ConditionalContent<
-              CaseLet<State, Action, State1, Action1, Content1>,
-              CaseLet<State, Action, State2, Action2, Content2>
-            >,
-            _ConditionalContent<
-              CaseLet<State, Action, State3, Action3, Content3>,
-              CaseLet<State, Action, State4, Action4, Content4>
-            >
+            CaseLet<State, Action, State1, Action1, Content1>,
+            CaseLet<State, Action, State2, Action2, Content2>
           >,
           _ConditionalContent<
-            _ConditionalContent<
-              CaseLet<State, Action, State5, Action5, Content5>,
-              CaseLet<State, Action, State6, Action6, Content6>
-            >,
-            _ConditionalContent<
-              CaseLet<State, Action, State7, Action7, Content7>,
-              CaseLet<State, Action, State8, Action8, Content8>
-            >
+            CaseLet<State, Action, State3, Action3, Content3>,
+            CaseLet<State, Action, State4, Action4, Content4>
           >
         >,
         _ConditionalContent<
-          CaseLet<State, Action, State9, Action9, Content9>,
-          Default<_ExhaustivityCheckView<State, Action>>
+          _ConditionalContent<
+            CaseLet<State, Action, State5, Action5, Content5>,
+            CaseLet<State, Action, State6, Action6, Content6>
+          >,
+          _ConditionalContent<
+            CaseLet<State, Action, State7, Action7, Content7>,
+            CaseLet<State, Action, State8, Action8, Content8>
+          >
         >
+      >,
+      _ConditionalContent<
+        CaseLet<State, Action, State9, Action9, Content9>,
+        Default<_ExhaustivityCheckView<State, Action>>
       >
     >
   {
@@ -1177,6 +1504,26 @@ extension SwitchStore {
   }
 }
 
+@available(
+  iOS,
+  deprecated: 9999,
+  message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+)
+@available(
+  macOS,
+  deprecated: 9999,
+  message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+)
+@available(
+  tvOS,
+  deprecated: 9999,
+  message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+)
+@available(
+  watchOS,
+  deprecated: 9999,
+  message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+)
 public struct _ExhaustivityCheckView<State, Action>: View {
   @EnvironmentObject private var store: StoreObservableObject<State, Action>
   let file: StaticString
@@ -1223,6 +1570,54 @@ public struct _ExhaustivityCheckView<State, Action>: View {
           line: self.line
         )
       }
+    #else
+      return EmptyView()
+    #endif
+  }
+}
+
+public struct _CaseLetMismatchView<State, Action>: View {
+  @EnvironmentObject private var store: StoreObservableObject<State, Action>
+  let file: StaticString
+  let fileID: StaticString
+  let line: UInt
+
+  public var body: some View {
+    #if DEBUG
+      let message = """
+        Warning: A "CaseLet" at "\(self.fileID):\(self.line)" was encountered when state was set \
+        to another case:
+
+            \(debugCaseOutput(self.store.wrappedValue.state.value))
+
+        This usually happens when there is a mismatch between the case being switched on and the \
+        "CaseLet" view being rendered.
+
+        For example, if ".screenA" is being switched on, but the "CaseLet" view is pointed to \
+        ".screenB":
+
+            case .screenA:
+              CaseLet(
+                /State.screenB, action: Action.screenB
+              ) { /* ... */ }
+
+        Look out for typos to ensure that these two cases align.
+        """
+      return VStack(spacing: 17) {
+        #if os(macOS)
+          Text("⚠️")
+        #else
+          Image(systemName: "exclamationmark.triangle.fill")
+            .font(.largeTitle)
+        #endif
+
+        Text(message)
+      }
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
+      .foregroundColor(.white)
+      .padding()
+      .background(Color.red.edgesIgnoringSafeArea(.all))
+      .onAppear { runtimeWarn(message, file: self.file, line: self.line) }
     #else
       return EmptyView()
     #endif
