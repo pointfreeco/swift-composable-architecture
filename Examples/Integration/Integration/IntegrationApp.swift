@@ -36,6 +36,11 @@ struct IntegrationApp: App {
                 NavigationLink(test.rawValue) {
                   PresentationTestCaseView()
                 }
+
+              case .switchStore:
+                NavigationLink(test.rawValue) {
+                  SwitchStoreTestCaseView()
+                }
               }
             }
           }
