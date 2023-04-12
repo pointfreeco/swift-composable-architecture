@@ -157,8 +157,8 @@ extension StackState: Encodable where Element: Encodable {
 //  }
 //}
 
-extension StackState: CustomReflectable {
-  public var customMirror: Mirror {
+extension StackState: CustomDumpReflectable {
+  public var customDumpMirror: Mirror {
     Mirror(self, unlabeledChildren: Array(zip(self.ids, self)), displayStyle: .dictionary)
   }
 }
