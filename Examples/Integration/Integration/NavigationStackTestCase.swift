@@ -54,6 +54,9 @@ private struct ChildView: View {
         Button("Dismiss") {
           viewStore.send(.dismissButtonTapped)
         }
+        Button("Pop to root") {
+          viewStore.send(.popToRootButtonTapped)
+        }
         NavigationLink(state: ChildFeature.State(count: viewStore.count)) {
           Text("Go to counter: \(viewStore.count)")
         }
@@ -75,6 +78,9 @@ private struct NavigationStackTestCase: ReducerProtocol {
       switch action {
       case let .child(.element(id: _, action: .response(value))):
         state.childResponse = value
+        return .none
+      case .child(.element(id: _, action: .popToRootButtonTapped)):
+        state.children = StackState()
         return .none
       case .child:
         return .none

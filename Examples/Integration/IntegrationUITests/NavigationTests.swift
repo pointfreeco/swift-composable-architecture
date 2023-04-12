@@ -45,10 +45,28 @@ final class NavigationTests: XCTestCase {
     XCTAssertEqual(self.app.staticTexts["Root"].exists, true)
   }
 
+  func testPopToRoot() {
+    XCTAssertEqual(self.app.staticTexts["Root"].exists, true)
+    self.app.buttons["Go to counter"].tap()
+    XCTAssertEqual(self.app.staticTexts["0"].exists, true)
+    self.app.buttons["Increment"].tap()
+    XCTAssertEqual(self.app.staticTexts["1"].exists, true)
+    self.app.buttons["Go to counter: 1"].tap()
+    XCTAssertEqual(self.app.staticTexts["1"].exists, true)
+    self.app.buttons["Increment"].tap()
+    XCTAssertEqual(self.app.staticTexts["2"].exists, true)
+    self.app.buttons["Go to counter: 2"].tap()
+    XCTAssertEqual(self.app.staticTexts["2"].exists, true)
+    self.app.buttons["Increment"].tap()
+    XCTAssertEqual(self.app.staticTexts["3"].exists, true)
+    self.app.buttons["Pop to root"].tap()
+    XCTAssertEqual(self.app.staticTexts["Root"].exists, true)
+  }
+
   func testChildEffectsCancelOnDismiss() async throws {
     self.app.buttons["Go to counter"].tap()
     self.app.buttons["Start"].tap()
-    self.app.buttons["Back"].tap()
+    self.app.buttons["Root"].tap()
     try await Task.sleep(for: .seconds(3))
     XCTAssertEqual(self.app.staticTexts["Child response: 1"].exists, false)
   }
