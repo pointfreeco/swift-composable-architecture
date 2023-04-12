@@ -1,18 +1,30 @@
 import OrderedCollections
 import SwiftUI
 
+/// A navigation stack that is driven by a store.
+///
+/// This view can be used to drive stack-based navigation in the Composable Architecture when passed
+/// a store of ``StackState`` and ``StackAction``.
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
-public struct NavigationStackStore<State, Action, Content: View, Destination: View>: View {
-  private let content: Content
+public struct NavigationStackStore<State, Action, Root: View, Destination: View>: View {
+  private let root: Root
   private let destination: (Component<State>) -> Destination
   @StateObject private var viewStore: ViewStore<StackState<State>, StackAction<State, Action>>
 
+  /// Creates a navigation stack with a store of stack state and actions.
+  ///
+  /// - Parameters:
+  ///   - path: A store of stack state and actions to power this stack.
+  ///   - root: The view to display when the stack is empty.
+  ///   - destination: A view builder that defines a view to display when an element is appended to
+  ///     the stack's state. The closure takes one argument, which is a store of the value to
+  ///     present.
   public init(
     _ store: Store<StackState<State>, StackAction<State, Action>>,
-    @ViewBuilder content: () -> Content,
+    @ViewBuilder root: () -> Root,
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination
   ) {
-    self.content = content()
+    self.root = root()
     self.destination = { component in
       var state = component.element
       return destination(
@@ -33,13 +45,21 @@ public struct NavigationStackStore<State, Action, Content: View, Destination: Vi
     )
   }
 
+  /// Creates a navigation stack with a store of stack state and actions.
+  ///
+  /// - Parameters:
+  ///   - path: A store of stack state and actions to power this stack.
+  ///   - root: The view to display when the stack is empty.
+  ///   - destination: A view builder that defines a view to display when an element is appended to
+  ///     the stack's state. The closure takes one argument, which is the initial enum state to
+  ///     present. You can switch over this value and use ``CaseLet`` views to handle each case.
   @_disfavoredOverload
   public init<D: View>(
     _ store: Store<StackState<State>, StackAction<State, Action>>,
-    @ViewBuilder content: () -> Content,
+    @ViewBuilder root: () -> Root,
     @ViewBuilder destination: @escaping (State) -> D
   ) where Destination == SwitchStore<State, Action, D> {
-    self.content = content()
+    self.root = root()
     self.destination = { component in
       var state = component.element
       return SwitchStore(
@@ -76,7 +96,7 @@ public struct NavigationStackStore<State, Action, Content: View, Destination: Vi
         }
       )
     ) {
-      self.content.navigationDestination(for: Component<State>.self) { component in
+      self.root.navigationDestination(for: Component<State>.self) { component in
         self.destination(component)
       }
     }
@@ -85,16 +105,56 @@ public struct NavigationStackStore<State, Action, Content: View, Destination: Vi
 
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension NavigationLink where Destination == Never {
+  /// Creates a navigation link that presents the view corresponding to an element of
+  /// ``StackState``.
+  ///
+  /// When someone activates the navigation link that this initializer creates, SwiftUI looks for a
+  /// parent ``NavigationStackStore`` view with a store of ``StackState`` containing elements that
+  /// matches the type of this initializer's `state` input.
+  ///
+  /// See SwiftUI's documentation for `NavigationLink.init(value:label:)` for more.
+  ///
+  /// - Parameters:
+  ///   - state: An optional value to present. When the user selects the link, SwiftUI stores a copy
+  ///     of the value. Pass a `nil` value to disable the link.
+  ///   - label: A label that describes the view that this link presents.
   public init<P: Hashable>(state: P?, label: () -> Label) {
     @Dependency(\.stackElementID) var stackElementID
     self.init(value: state.map { Component(id: stackElementID(), element: $0) }, label: label)
   }
 
+  /// Creates a navigation link that presents the view corresponding to an element of
+  /// ``StackState``, with a text label that the link generates from a localized string key.
+  ///
+  /// When someone activates the navigation link that this initializer creates, SwiftUI looks for a
+  /// parent ``NavigationStackStore`` view with a store of ``StackState`` containing elements that
+  /// matches the type of this initializer's `state` input.
+  ///
+  /// See SwiftUI's documentation for `NavigationLink.init(_:value:)` for more.
+  ///
+  /// - Parameters:
+  ///   - titleKey: A localized string that describes the view that this link
+  ///     presents.
+  ///   - state: An optional value to present. When the user selects the link, SwiftUI stores a copy
+  ///     of the value. Pass a `nil` value to disable the link.
   public init<P: Hashable>(_ titleKey: LocalizedStringKey, state: P?) where Label == Text {
     @Dependency(\.stackElementID) var stackElementID
     self.init(titleKey, value: state.map { Component(id: stackElementID(), element: $0) })
   }
 
+  /// Creates a navigation link that presents the view corresponding to an element of
+  /// ``StackState``, with a text label that the link generates from a title string.
+  ///
+  /// When someone activates the navigation link that this initializer creates, SwiftUI looks for a
+  /// parent ``NavigationStackStore`` view with a store of ``StackState`` containing elements that
+  /// matches the type of this initializer's `state` input.
+  ///
+  /// See SwiftUI's documentation for `NavigationLink.init(_:value:)` for more.
+  ///
+  /// - Parameters:
+  ///   - title: A string that describes the view that this link presents.
+  ///   - state: An optional value to present. When the user selects the link, SwiftUI stores a copy
+  ///     of the value. Pass a `nil` value to disable the link.
   @_disfavoredOverload
   public init<S: StringProtocol, P: Hashable>(_ title: S, state: P?) where Label == Text {
     @Dependency(\.stackElementID) var stackElementID
@@ -115,8 +175,8 @@ private struct Component<Element>: Hashable {
   }
 }
 
-fileprivate extension StackState {
-  var path: PathView {
+extension StackState {
+  fileprivate var path: PathView {
     _read { yield PathView(base: self) }
     _modify {
       var path = PathView(base: self)
@@ -126,7 +186,8 @@ fileprivate extension StackState {
     set { self = newValue.base }
   }
 
-  struct PathView: MutableCollection, RandomAccessCollection, RangeReplaceableCollection {
+  fileprivate struct PathView: MutableCollection, RandomAccessCollection, RangeReplaceableCollection
+  {
     var base: StackState
 
     var startIndex: Int { self.base.startIndex }
