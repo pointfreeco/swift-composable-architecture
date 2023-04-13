@@ -104,7 +104,7 @@
     }
 
     func testCancelInFlightEffects_Strict() async {
-      await _withMainSerialExecutor {
+      await withMainSerialExecutor {
         let store = TestStore(
           initialState: 0,
           reducer: Reduce<Int, Bool> { _, action in
@@ -461,7 +461,7 @@
     // Confirms that when you send an action the test store skips any unreceived actions
     // automatically.
     func testSendWithUnreceivedActions_SkipsActions() async {
-      await _withMainSerialExecutor {
+      await withMainSerialExecutor {
         struct Feature: ReducerProtocol {
           enum Action: Equatable {
             case tap

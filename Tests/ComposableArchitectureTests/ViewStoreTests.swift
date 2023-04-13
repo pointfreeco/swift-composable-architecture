@@ -169,7 +169,7 @@ final class ViewStoreTests: BaseTCATestCase {
   }
 
   func testSendWhile() async {
-    await _withMainSerialExecutor {
+    await withMainSerialExecutor {
       enum Action {
         case response
         case tapped
