@@ -1,6 +1,7 @@
 import Combine
-@_spi(Concurrency) import ComposableArchitecture
+import ComposableArchitecture
 import CustomDump
+@_spi(Concurrency) import Dependencies
 import XCTest
 import os.signpost
 

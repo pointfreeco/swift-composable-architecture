@@ -1,5 +1,6 @@
 import Combine
-@_spi(Concurrency) import ComposableArchitecture
+import ComposableArchitecture
+@_spi(Concurrency) import Dependencies
 import XCTest
 
 @MainActor
