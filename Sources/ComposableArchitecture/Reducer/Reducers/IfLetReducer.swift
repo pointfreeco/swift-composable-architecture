@@ -45,8 +45,8 @@ extension ReducerProtocol {
   @inlinable
   @warn_unqualified_access
   public func ifLet<WrappedState, WrappedAction, Wrapped: ReducerProtocol>(
-    _ toWrappedState: WritableKeyPath<State, WrappedState?>,
-    action toWrappedAction: CasePath<Action, WrappedAction>,
+    _ wrappedKeyPath: WritableKeyPath<State, WrappedState?>,
+    action wrappedCasePath: CasePath<Action, WrappedAction>,
     @ReducerBuilder<WrappedState, WrappedAction> then wrapped: () -> Wrapped,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
@@ -56,8 +56,8 @@ extension ReducerProtocol {
     .init(
       parent: self,
       child: wrapped(),
-      toChildState: toWrappedState,
-      toChildAction: toWrappedAction,
+      wrappedKeyPath: wrappedKeyPath,
+      wrappedCasePath: wrappedCasePath,
       file: file,
       fileID: fileID,
       line: line
@@ -73,10 +73,10 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
   let child: Child
 
   @usableFromInline
-  let toChildState: WritableKeyPath<Parent.State, Child.State?>
+  let wrappedKeyPath: WritableKeyPath<Parent.State, Child.State?>
 
   @usableFromInline
-  let toChildAction: CasePath<Parent.Action, Child.Action>
+  let wrappedCasePath: CasePath<Parent.Action, Child.Action>
 
   @usableFromInline
   let file: StaticString
@@ -91,16 +91,16 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
   init(
     parent: Parent,
     child: Child,
-    toChildState: WritableKeyPath<Parent.State, Child.State?>,
-    toChildAction: CasePath<Parent.Action, Child.Action>,
+    wrappedKeyPath: WritableKeyPath<Parent.State, Child.State?>,
+    wrappedCasePath: CasePath<Parent.Action, Child.Action>,
     file: StaticString,
     fileID: StaticString,
     line: UInt
   ) {
     self.parent = parent
     self.child = child
-    self.toChildState = toChildState
-    self.toChildAction = toChildAction
+    self.wrappedKeyPath = wrappedKeyPath
+    self.wrappedCasePath = wrappedCasePath
     self.file = file
     self.fileID = fileID
     self.line = line
@@ -118,9 +118,9 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
   func reduceChild(
     into state: inout Parent.State, action: Parent.Action
   ) -> EffectTask<Parent.Action> {
-    guard let childAction = self.toChildAction.extract(from: action)
+    guard let childAction = self.wrappedCasePath.extract(from: action)
     else { return .none }
-    guard state[keyPath: self.toChildState] != nil else {
+    guard state[keyPath: self.wrappedKeyPath] != nil else {
       runtimeWarn(
         """
         An "ifLet" at "\(self.fileID):\(self.line)" received a child action when child state was \
@@ -148,7 +148,7 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
       )
       return .none
     }
-    return self.child.reduce(into: &state[keyPath: self.toChildState]!, action: childAction)
-      .map { self.toChildAction.embed($0) }
+    return self.child.reduce(into: &state[keyPath: self.wrappedKeyPath]!, action: childAction)
+      .map { self.wrappedCasePath.embed($0) }
   }
 }

@@ -52,8 +52,8 @@ extension ReducerProtocol {
   @inlinable
   @warn_unqualified_access
   public func forEach<ElementState, ElementAction, ID: Hashable, Element: ReducerProtocol>(
-    _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
-    action toElementAction: CasePath<Action, (ID, ElementAction)>,
+    _ elementKeyPath: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
+    action elementCasePath: CasePath<Action, (ID, ElementAction)>,
     @ReducerBuilder<ElementState, ElementAction> element: () -> Element,
     file: StaticString = #file,
     fileID: StaticString = #fileID,
@@ -62,8 +62,8 @@ extension ReducerProtocol {
   where ElementState == Element.State, ElementAction == Element.Action {
     _ForEachReducer(
       parent: self,
-      toElementsState: toElementsState,
-      toElementAction: toElementAction,
+      elementKeyPath: elementKeyPath,
+      elementCasePath: elementCasePath,
       element: element(),
       file: file,
       fileID: fileID,
@@ -79,10 +79,10 @@ public struct _ForEachReducer<
   let parent: Parent
 
   @usableFromInline
-  let toElementsState: WritableKeyPath<Parent.State, IdentifiedArray<ID, Element.State>>
+  let elementKeyPath: WritableKeyPath<Parent.State, IdentifiedArray<ID, Element.State>>
 
   @usableFromInline
-  let toElementAction: CasePath<Parent.Action, (ID, Element.Action)>
+  let elementCasePath: CasePath<Parent.Action, (ID, Element.Action)>
 
   @usableFromInline
   let element: Element
@@ -99,16 +99,16 @@ public struct _ForEachReducer<
   @usableFromInline
   init(
     parent: Parent,
-    toElementsState: WritableKeyPath<Parent.State, IdentifiedArray<ID, Element.State>>,
-    toElementAction: CasePath<Parent.Action, (ID, Element.Action)>,
+    elementKeyPath: WritableKeyPath<Parent.State, IdentifiedArray<ID, Element.State>>,
+    elementCasePath: CasePath<Parent.Action, (ID, Element.Action)>,
     element: Element,
     file: StaticString,
     fileID: StaticString,
     line: UInt
   ) {
     self.parent = parent
-    self.toElementsState = toElementsState
-    self.toElementAction = toElementAction
+    self.elementKeyPath = elementKeyPath
+    self.elementCasePath = elementCasePath
     self.element = element
     self.file = file
     self.fileID = fileID
@@ -127,8 +127,8 @@ public struct _ForEachReducer<
   func reduceForEach(
     into state: inout Parent.State, action: Parent.Action
   ) -> EffectTask<Parent.Action> {
-    guard let (id, elementAction) = self.toElementAction.extract(from: action) else { return .none }
-    if state[keyPath: self.toElementsState][id: id] == nil {
+    guard let (id, elementAction) = self.elementCasePath.extract(from: action) else { return .none }
+    if state[keyPath: self.elementKeyPath][id: id] == nil {
       runtimeWarn(
         """
         A "forEach" at "\(self.fileID):\(self.line)" received an action for a missing element.
@@ -156,7 +156,7 @@ public struct _ForEachReducer<
       return .none
     }
     return self.element
-      .reduce(into: &state[keyPath: self.toElementsState][id: id]!, action: elementAction)
-      .map { self.toElementAction.embed((id, $0)) }
+      .reduce(into: &state[keyPath: self.elementKeyPath][id: id]!, action: elementAction)
+      .map { self.elementCasePath.embed((id, $0)) }
   }
 }
