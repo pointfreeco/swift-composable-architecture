@@ -152,13 +152,13 @@ extension StackState: CustomDumpReflectable {
 /// ``ReducerProtocol/forEach(_:action:destination:file:fileID:line:)-4sflg``.
 public enum StackAction<State, Action> {
   /// An action sent to the associated stack element at a given identifier.
-  case element(id: StackElementID, action: Action)
+  indirect case element(id: StackElementID, action: Action)
 
   /// An action sent to dismiss the associated stack element at a given identifier.
   case popFrom(id: StackElementID)
 
   /// An action sent to present the given state at a given identifier in a navigation stack. This
-  /// action is typically sent from the view via the `NavigiationLink(value:)` initializer.
+  /// action is typically sent from the view via the `NavigationLink(value:)` initializer.
   case push(id: StackElementID, state: State)
 }
 

@@ -91,7 +91,7 @@ public enum PresentationAction<Action> {
   case dismiss
 
   /// An action sent to the associated, non-`nil` presentation state.
-  case presented(Action)
+  indirect case presented(Action)
 }
 
 extension PresentationAction: Equatable where Action: Equatable {}
