@@ -48,13 +48,13 @@ final class EffectRunTests: BaseTCATestCase {
         var line: UInt!
         XCTExpectFailure(nil, enabled: nil, strict: nil) {
           $0.compactDescription == """
-          An "EffectTask.run" returned from "\(#fileID):\(line+1)" threw an unhandled error. …
+            An "EffectTask.run" returned from "\(#fileID):\(line+1)" threw an unhandled error. …
 
-              EffectRunTests.Failure()
+                EffectRunTests.Failure()
 
-          All non-cancellation errors must be explicitly handled via the "catch" parameter on \
-          "EffectTask.run", or via a "do" block.
-          """
+            All non-cancellation errors must be explicitly handled via the "catch" parameter on \
+            "EffectTask.run", or via a "do" block.
+            """
         }
         struct State: Equatable {}
         enum Action: Equatable { case tapped, response }
@@ -126,20 +126,20 @@ final class EffectRunTests: BaseTCATestCase {
       try await withMainSerialExecutor {
         XCTExpectFailure {
           $0.compactDescription == """
-          An action was sent from a completed effect:
+            An action was sent from a completed effect:
 
-            Action:
-              EffectRunTests.Action.response
+              Action:
+                EffectRunTests.Action.response
 
-            Effect returned from:
-              EffectRunTests.Action.tap
+              Effect returned from:
+                EffectRunTests.Action.tap
 
-          Avoid sending actions using the 'send' argument from 'EffectTask.run' after the effect has \
-          completed. This can happen if you escape the 'send' argument in an unstructured context.
+            Avoid sending actions using the 'send' argument from 'EffectTask.run' after the effect has \
+            completed. This can happen if you escape the 'send' argument in an unstructured context.
 
-          To fix this, make sure that your 'run' closure does not return until you're done calling \
-          'send'.
-          """
+            To fix this, make sure that your 'run' closure does not return until you're done calling \
+            'send'.
+            """
         }
 
         enum Action { case tap, response }
