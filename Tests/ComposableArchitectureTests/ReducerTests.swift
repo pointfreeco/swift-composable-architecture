@@ -1,7 +1,6 @@
 import Combine
 import ComposableArchitecture
 import CustomDump
-@_spi(Concurrency) import Dependencies
 import XCTest
 import os.signpost
 
@@ -23,7 +22,7 @@ final class ReducerTests: BaseTCATestCase {
   #if swift(>=5.7) && (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     func testCombine_EffectsAreMerged() async throws {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        try await withMainSerialExecutor {
+        try await _withMainSerialExecutor {
           enum Action: Equatable {
             case increment
           }

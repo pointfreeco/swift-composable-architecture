@@ -1,6 +1,5 @@
 #if DEBUG
   import ComposableArchitecture
-  @_spi(Concurrency) import Dependencies
   import XCTest
 
   @MainActor
@@ -104,7 +103,7 @@
     }
 
     func testCancelInFlightEffects_Strict() async {
-      await withMainSerialExecutor {
+      await _withMainSerialExecutor {
         let store = TestStore(
           initialState: 0,
           reducer: Reduce<Int, Bool> { _, action in
@@ -461,7 +460,7 @@
     // Confirms that when you send an action the test store skips any unreceived actions
     // automatically.
     func testSendWithUnreceivedActions_SkipsActions() async {
-      await withMainSerialExecutor {
+      await _withMainSerialExecutor {
         struct Feature: ReducerProtocol {
           enum Action: Equatable {
             case tap

@@ -5,30 +5,32 @@ import XCTest
 @MainActor
 final class IfCaseLetReducerTests: BaseTCATestCase {
   func testChildAction() async {
-    struct SomeError: Error, Equatable {}
+    await withMainSerialExecutor {
+      struct SomeError: Error, Equatable {}
 
-    let store = TestStore(
-      initialState: Result.success(0),
-      reducer: Reduce<Result<Int, SomeError>, Result<Int, SomeError>> { state, action in
-        .none
-      }
-      .ifCaseLet(/Result.success, action: /Result.success) {
-        Reduce { state, action in
-          state = action
-          return state < 0 ? .run { await $0(0) } : .none
+      let store = TestStore(
+        initialState: Result.success(0),
+        reducer: Reduce<Result<Int, SomeError>, Result<Int, SomeError>> { state, action in
+          .none
         }
-      }
-    )
+        .ifCaseLet(/Result.success, action: /Result.success) {
+          Reduce { state, action in
+            state = action
+            return state < 0 ? .run { await $0(0) } : .none
+          }
+        }
+      )
 
-    await store.send(.success(1)) {
-      $0 = .success(1)
-    }
-    await store.send(.failure(SomeError()))
-    await store.send(.success(-1)) {
-      $0 = .success(-1)
-    }
-    await store.receive(.success(0)) {
-      $0 = .success(0)
+      await store.send(.success(1)) {
+        $0 = .success(1)
+      }
+      await store.send(.failure(SomeError()))
+      await store.send(.success(-1)) {
+        $0 = .success(-1)
+      }
+      await store.receive(.success(0)) {
+        $0 = .success(0)
+      }
     }
   }
 
