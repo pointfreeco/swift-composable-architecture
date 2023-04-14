@@ -74,7 +74,7 @@ final class ForEachReducerTests: BaseTCATestCase {
   #if swift(>=5.7)
     func testAutomaticEffectCancellation() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        await withMainSerialExecutor {
+        await _withMainSerialExecutor {
           struct Timer: ReducerProtocol {
             struct State: Equatable, Identifiable {
               let id: UUID
