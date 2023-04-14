@@ -79,7 +79,7 @@ public struct NavigationLinkStore<
     state toDestinationState: @escaping (State) -> DestinationState?,
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
     id: DestinationState.ID,
-    action: @escaping () -> Void,
+    onTap: @escaping () -> Void,
     @ViewBuilder destination: @escaping (Store<DestinationState, DestinationAction>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where DestinationState: Identifiable {
@@ -91,7 +91,7 @@ public struct NavigationLinkStore<
     )
     self.toDestinationState = toDestinationState
     self.fromDestinationAction = fromDestinationAction
-    self.onTap = action
+    self.onTap = onTap
     self.destination = destination
     self.label = label()
   }
