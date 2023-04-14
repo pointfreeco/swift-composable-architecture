@@ -144,7 +144,7 @@ final class VoiceMemosTests: XCTestCase {
   // Demonstration of how to write a non-exhaustive test for recording a memo and it failing to
   // record.
   func testRecordMemoFailure_NonExhaustive() async {
-    await withMainSerialExecutor {
+    await _withMainSerialExecutor {
       struct SomeError: Error, Equatable {}
       let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
 
