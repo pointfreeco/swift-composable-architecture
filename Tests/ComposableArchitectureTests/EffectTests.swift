@@ -1,5 +1,6 @@
 import Combine
 @_spi(Canary)@_spi(Internals) import ComposableArchitecture
+@_spi(Concurrency) import Dependencies
 import XCTest
 
 @MainActor
@@ -52,7 +53,7 @@ final class EffectTests: BaseTCATestCase {
 
   #if swift(>=5.7) && (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     func testConcatenate() async {
-      await _withMainSerialExecutor {
+      await withMainSerialExecutor {
         if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
           let clock = TestClock()
           var values: [Int] = []
@@ -107,7 +108,7 @@ final class EffectTests: BaseTCATestCase {
   #if swift(>=5.7) && (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     func testMerge() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        await _withMainSerialExecutor {
+        await withMainSerialExecutor {
           let clock = TestClock()
 
           let effect = EffectPublisher<Int, Never>.merge(
@@ -307,7 +308,7 @@ final class EffectTests: BaseTCATestCase {
   }
 
   func testDependenciesTransferredToEffects_Run() async {
-    await _withMainSerialExecutor {
+    await withMainSerialExecutor {
       struct Feature: Reducer {
         enum Action: Equatable {
           case tap

@@ -311,4 +311,15 @@ final class PresentationTests: XCTestCase {
     XCTAssertEqual(self.app.staticTexts["Hello!"].exists, true)
     XCTAssertEqual(self.app.staticTexts["Dismiss action sent"].exists, true)
   }
+
+  func testDismissAndAlert() async throws {
+    self.app.buttons["Open sheet"].tap()
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
+    self.app.buttons["Dismiss and alert"].tap()
+    XCTTODO("""
+      This test should pass but does not due to a SwiftUI bug. You can now simultaneously close
+      a sheet and open an alert.
+      """)
+    XCTAssertEqual(self.app.staticTexts["Alert open"].exists, true)
+  }
 }

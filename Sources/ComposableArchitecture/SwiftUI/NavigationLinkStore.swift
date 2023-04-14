@@ -112,7 +112,7 @@ public struct NavigationLinkStore<
         set: {
           if $0 {
             self.onTap()
-          } else {
+          } else if self.viewStore.state {
             self.viewStore.send(.dismiss)
           }
         }

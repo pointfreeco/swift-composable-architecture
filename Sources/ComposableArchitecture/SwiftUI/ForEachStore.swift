@@ -73,7 +73,7 @@ import SwiftUI
 ///
 /// ```swift
 /// ForEachStore(
-///   self.store.scope(state: \.todos, AppAction.todo(id:action:))
+///   self.store.scope(state: \.todos, action: AppAction.todo(id:action:))
 /// ) { todoStore in
 ///   TodoView(store: todoStore)
 /// }

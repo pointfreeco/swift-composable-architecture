@@ -61,15 +61,12 @@ public struct _PrintChangesReducer<Base: Reducer>: Reducer {
     self.printer = printer
   }
 
-  @usableFromInline
-  @Dependency(\.context) var context
-
   @inlinable
   public func reduce(
     into state: inout Base.State, action: Base.Action
   ) -> Effect<Base.Action> {
     #if DEBUG
-      if self.context != .test, let printer = self.printer {
+      if let printer = self.printer {
         let oldState = state
         let effects = self.base.reduce(into: &state, action: action)
         return effects.merge(

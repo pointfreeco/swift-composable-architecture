@@ -492,15 +492,18 @@ extension DependencyValues {
 ```
 
 With that little bit of upfront work done you can instantly start making use of the dependency in 
-any feature:
+any feature by using the `@Dependency` property wrapper:
 
-```swift
-struct Feature: Reducer {
-  struct State { … }
-  enum Action { … }
-  @Dependency(\.numberFact) var numberFact
-  …
-}
+```diff
+ struct Feature: Reducer {
+-  let numberFact: (Int) async throws -> String
++  @Dependency(\.numberFact) var numberFact
+   
+   …
+
+-  try await self.numberFact(count)
++  try await self.numberFact.fetch(count)
+ }
 ```
 
 This code works exactly as it did before, but you no longer have to explicitly pass the dependency 
@@ -619,7 +622,9 @@ The following translations of this README have been contributed by members of th
 * [Italian](https://gist.github.com/Bellaposa/5114e6d4d55fdb1388e8186886d48958)
 * [Japanese](https://gist.github.com/kalupas226/bdf577e4a7066377ea0a8aaeebcad428)
 * [Korean](https://gist.github.com/pilgwon/ea05e2207ab68bdd1f49dff97b293b17)
+* [Polish](https://gist.github.com/MarcelStarczyk/6b6153051f46912a665c32199f0d1d54)
 * [Portuguese](https://gist.github.com/SevioCorrea/2bbf337cd084a58c89f2f7f370626dc8)
+* [Russian](https://gist.github.com/artyom-ivanov/ed0417fd1f008f0492d3431c033175df)
 * [Simplified Chinese](https://gist.github.com/sh3l6orrr/10c8f7c634a892a9c37214f3211242ad)
 * [Spanish](https://gist.github.com/pitt500/f5e32fccb575ce112ffea2827c7bf942)
 

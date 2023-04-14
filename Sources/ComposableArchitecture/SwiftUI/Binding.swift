@@ -345,7 +345,7 @@ extension BindingAction {
   ///
   /// ```swift
   /// extension MyFeature.Action {
-  ///   static func view(_ viewAction: MyFeature.View.ViewAction) -> Self {
+  ///   static func view(_ viewAction: MyFeatureView.ViewAction) -> Self {
   ///     switch viewAction {
   ///     case let .binding(action):
   ///       // transform view binding actions into feature binding actions

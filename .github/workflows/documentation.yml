@@ -9,7 +9,6 @@ on:
   push:
     branches:
       - main
-      - protocol-clocks
   workflow_dispatch:
 
 concurrency:
@@ -40,7 +39,7 @@ jobs:
           rm -rf docs-out/main;
           git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | tail -n +6 | xargs -I {} rm -rf {};
 
-          for tag in $(echo "main"; echo "protocol-clocks"; git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | head -6);
+          for tag in $(echo "main"; git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | head -6);
           do
             if [ -d "docs-out/$tag/data/documentation/composablearchitecture" ] 
             then 
