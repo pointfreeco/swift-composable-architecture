@@ -73,6 +73,29 @@ public struct StackState<Element>: RandomAccessCollection, RangeReplaceableColle
       self._dictionary.updateValue(element, forKey: self.stackElementID.next(), insertingAt: offset)
     }
   }
+
+  public var presented: Element? {
+    _read { yield self._dictionary.values.last }
+    _modify {
+      var value = self._dictionary.values.last
+      yield &value
+      if let value = value {
+        self._dictionary.values[self._dictionary.values.endIndex - 1] = value
+      }
+    }
+    set {
+      switch (self._dictionary.values.last, newValue) {
+      case (.none, .none):
+        break
+      case let (.none, .some(element)):
+        self.append(element)
+      case (.some, .none):
+        self.removeLast()
+      case let (.some, .some(element)):
+        self._dictionary.values[self._dictionary.values.endIndex - 1] = element
+      }
+    }
+  }
 }
 
 extension StackState: Equatable where Element: Equatable {
