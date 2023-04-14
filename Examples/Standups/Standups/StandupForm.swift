@@ -59,7 +59,7 @@ struct StandupForm: ReducerProtocol {
   }
 }
 
-struct EditStandupView: View {
+struct StandupFormView: View {
   let store: StoreOf<StandupForm>
   @FocusState var focus: StandupForm.State.Field?
 
@@ -131,7 +131,7 @@ extension Duration {
 struct EditStandup_Previews: PreviewProvider {
   static var previews: some View {
     NavigationStack {
-      EditStandupView(
+      StandupFormView(
         store: Store(
           initialState: StandupForm.State(standup: .mock),
           reducer: StandupForm()

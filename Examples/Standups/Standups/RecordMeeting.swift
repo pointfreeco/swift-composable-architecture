@@ -36,14 +36,16 @@ struct RecordMeeting: ReducerProtocol {
   @Dependency(\.dismiss) var dismiss
   @Dependency(\.speechClient) var speechClient
 
-  private struct TimerID {}
+  private enum CancelID {
+    case timer
+  }
 
   var body: some ReducerProtocolOf<Self> {
     Reduce<State, Action> { state, action in
       switch action {
       case .alert(.presented(.confirmDiscard)):
         return .run { _ in
-          Task.cancel(id: TimerID.self)
+          Task.cancel(id: CancelID.timer)
           await self.dismiss()
         }
 
@@ -133,7 +135,7 @@ struct RecordMeeting: ReducerProtocol {
   }
 
   func startTimer(send: Send<Action>) async {
-    await withTaskCancellation(id: TimerID.self) {
+    await withTaskCancellation(id: CancelID.timer) {
       for await _ in self.clock.timer(interval: .seconds(1)) {
         await send(.timerTick)
       }
@@ -143,7 +145,7 @@ struct RecordMeeting: ReducerProtocol {
   private func meetingFinished(transcript: String) -> EffectTask<Action> {
     return .run { send in
       await send(.delegate(.save(transcript: transcript)))
-      Task.cancel(id: TimerID.self)
+      Task.cancel(id: CancelID.timer)
     }
   }
 }

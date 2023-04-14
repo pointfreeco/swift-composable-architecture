@@ -768,11 +768,11 @@ import XCTest
 
           struct Parent: ReducerProtocol {
             struct State: Equatable {
-              @PresentationState var destination: Destinations.State?
+              @PresentationState var destination: Destination.State?
               var isDeleted = false
             }
             enum Action: Equatable {
-              case destination(PresentationAction<Destinations.Action>)
+              case destination(PresentationAction<Destination.Action>)
               case presentAlert
               case presentChild(id: UUID? = nil)
             }
@@ -802,10 +802,10 @@ import XCTest
                 }
               }
               .ifLet(\.$destination, action: /Action.destination) {
-                Destinations()
+                Destination()
               }
             }
-            struct Destinations: ReducerProtocol {
+            struct Destination: ReducerProtocol {
               enum State: Equatable {
                 case alert(AlertState<Action.Alert>)
                 case child(Child.State)
@@ -844,12 +844,12 @@ import XCTest
           await store.send(.destination(.presented(.child(.startButtonTapped))))
           await clock.advance(by: .seconds(2))
           await store.receive(.destination(.presented(.child(.tick)))) {
-            try (/Parent.Destinations.State.child).modify(&$0.destination) {
+            try (/Parent.Destination.State.child).modify(&$0.destination) {
               $0.count = 1
             }
           }
           await store.receive(.destination(.presented(.child(.tick)))) {
-            try (/Parent.Destinations.State.child).modify(&$0.destination) {
+            try (/Parent.Destination.State.child).modify(&$0.destination) {
               $0.count = 2
             }
           }
@@ -866,30 +866,30 @@ import XCTest
           await store.send(.destination(.presented(.child(.startButtonTapped))))
           await clock.advance(by: .seconds(2))
           await store.receive(.destination(.presented(.child(.tick)))) {
-            try (/Parent.Destinations.State.child).modify(&$0.destination) {
+            try (/Parent.Destination.State.child).modify(&$0.destination) {
               $0.count = 1
             }
           }
           await store.receive(.destination(.presented(.child(.tick)))) {
-            try (/Parent.Destinations.State.child).modify(&$0.destination) {
+            try (/Parent.Destination.State.child).modify(&$0.destination) {
               $0.count = 2
             }
           }
           await store.send(
             .presentChild(id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!)
           ) {
-            try (/Parent.Destinations.State.child).modify(&$0.destination) {
+            try (/Parent.Destination.State.child).modify(&$0.destination) {
               $0.count = 0
             }
           }
           await clock.advance(by: .seconds(2))
           await store.receive(.destination(.presented(.child(.tick)))) {
-            try (/Parent.Destinations.State.child).modify(&$0.destination) {
+            try (/Parent.Destination.State.child).modify(&$0.destination) {
               $0.count = 1
             }
           }
           await store.receive(.destination(.presented(.child(.tick)))) {
-            try (/Parent.Destinations.State.child).modify(&$0.destination) {
+            try (/Parent.Destination.State.child).modify(&$0.destination) {
               $0.count = 2
             }
           }

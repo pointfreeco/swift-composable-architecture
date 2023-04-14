@@ -3,7 +3,7 @@ import SwiftUI
 
 struct StandupDetail: ReducerProtocol {
   struct State: Hashable {
-    @PresentationState var destination: Destinations.State?
+    @PresentationState var destination: Destination.State?
     var standup: Standup
   }
   enum Action: Equatable {
@@ -11,34 +11,36 @@ struct StandupDetail: ReducerProtocol {
     case delegate(Delegate)
     case deleteButtonTapped
     case deleteMeetings(atOffsets: IndexSet)
-    case destination(PresentationAction<Destinations.Action>)
+    case destination(PresentationAction<Destination.Action>)
     case doneEditingButtonTapped
     case editButtonTapped
     case meetingTapped(id: Meeting.ID)
     case startMeetingButtonTapped
-  }
-  enum AlertAction {
-    case confirmDeletion
-    case continueWithoutRecording
-    case openSettings
-  }
-  enum Delegate: Equatable {
-    case deleteStandup
-    case goToMeeting(Meeting)
-    case startMeeting
+
+    enum Delegate: Equatable {
+      case deleteStandup
+      case goToMeeting(Meeting)
+      case startMeeting
+    }
   }
 
   @Dependency(\.speechClient.authorizationStatus) var authorizationStatus
   @Dependency(\.openSettings) var openSettings
 
-  struct Destinations: ReducerProtocol {
+  struct Destination: ReducerProtocol {
     enum State: Equatable, Hashable {
-      case alert(AlertState<AlertAction>)
+      case alert(AlertState<Action.Alert>)
       case edit(StandupForm.State)
     }
     enum Action: Equatable {
-      case alert(AlertAction)
+      case alert(Alert)
       case edit(StandupForm.Action)
+
+      enum Alert {
+        case confirmDeletion
+        case continueWithoutRecording
+        case openSettings
+      }
     }
     var body: some ReducerProtocolOf<Self> {
       Scope(state: /State.edit, action: /Action.edit) {
@@ -115,7 +117,7 @@ struct StandupDetail: ReducerProtocol {
       }
     }
     .ifLet(\.$destination, action: /Action.destination) {
-      Destinations()
+      Destination()
     }
   }
 }
@@ -198,11 +200,11 @@ struct StandupDetailView: View {
       }
       .sheet(
         store: self.store.scope(state: \.$destination, action: StandupDetail.Action.destination),
-        state: /StandupDetail.Destinations.State.edit,
-        action: StandupDetail.Destinations.Action.edit
+        state: /StandupDetail.Destination.State.edit,
+        action: StandupDetail.Destination.Action.edit
       ) { store in
         NavigationStack {
-          EditStandupView(store: store)
+          StandupFormView(store: store)
             .navigationTitle(viewStore.standup.title)
             .toolbar {
               ToolbarItem(placement: .cancellationAction) {
@@ -221,14 +223,14 @@ struct StandupDetailView: View {
       }
       .alert(
         store: self.store.scope(state: \.$destination, action: StandupDetail.Action.destination),
-        state: /StandupDetail.Destinations.State.alert,
-        action: StandupDetail.Destinations.Action.alert
+        state: /StandupDetail.Destination.State.alert,
+        action: StandupDetail.Destination.Action.alert
       )
     }
   }
 }
 
-extension AlertState where Action == StandupDetail.AlertAction {
+extension AlertState where Action == StandupDetail.Destination.Action.Alert {
   static let deleteStandup = Self {
     TextState("Delete?")
   } actions: {

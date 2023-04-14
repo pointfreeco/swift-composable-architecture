@@ -7,12 +7,12 @@ import SwiftUI
 
 struct StandupsList: ReducerProtocol {
   struct State: Equatable {
-    @PresentationState var destination: Destinations.State?
+    @PresentationState var destination: Destination.State?
     var path: StackState<Path.State>
     var standups: IdentifiedArrayOf<Standup> = []
 
     init(
-      destination: Destinations.State? = nil,
+      destination: Destination.State? = nil,
       path: StackState<Path.State> = .init()
     ) {
       self.destination = destination
@@ -30,13 +30,10 @@ struct StandupsList: ReducerProtocol {
   enum Action: Equatable {
     case addStandupButtonTapped
     case confirmAddStandupButtonTapped
-    case destination(PresentationAction<Destinations.Action>)
+    case destination(PresentationAction<Destination.Action>)
     case dismissAddStandupButtonTapped
     case path(StackAction<Path.State, Path.Action>)
     case standupTapped(id: Standup.ID)
-  }
-  enum AlertAction {
-    case confirmLoadMockData
   }
 
   @Dependency(\.continuousClock) var clock
@@ -44,15 +41,19 @@ struct StandupsList: ReducerProtocol {
   @Dependency(\.date.now) var now
   @Dependency(\.uuid) var uuid
 
-  struct Destinations: ReducerProtocol {
+  struct Destination: ReducerProtocol {
     enum State: Equatable {
       case add(StandupForm.State)
-      case alert(AlertState<AlertAction>)
+      case alert(AlertState<Action.Alert>)
     }
 
     enum Action: Equatable {
       case add(StandupForm.Action)
-      case alert(AlertAction)
+      case alert(Alert)
+
+      enum Alert {
+        case confirmLoadMockData
+      }
     }
 
     var body: some ReducerProtocol<State, Action> {
@@ -196,7 +197,7 @@ struct StandupsList: ReducerProtocol {
       Path()
     }
     .ifLet(\.$destination, action: /Action.destination) {
-      Destinations()
+      Destination()
     }
 
     // TODO: Should we polish up onChange and use it here?
@@ -247,11 +248,11 @@ struct StandupsListView: View {
         .navigationTitle("Daily Standups")
         .sheet(
           store: self.store.scope(state: \.$destination, action: StandupsList.Action.destination),
-          state: /StandupsList.Destinations.State.add,
-          action: StandupsList.Destinations.Action.add
+          state: /StandupsList.Destination.State.add,
+          action: StandupsList.Destination.Action.add
         ) { store in
           NavigationStack {
-            EditStandupView(store: store)
+            StandupFormView(store: store)
               .navigationTitle("New standup")
               .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -269,8 +270,8 @@ struct StandupsListView: View {
         }
         .alert(
           store: self.store.scope(state: \.$destination, action: StandupsList.Action.destination),
-          state: /StandupsList.Destinations.State.alert,
-          action: StandupsList.Destinations.Action.alert
+          state: /StandupsList.Destination.State.alert,
+          action: StandupsList.Destination.Action.alert
         )
       }
     } destination: {
@@ -298,7 +299,7 @@ struct StandupsListView: View {
   }
 }
 
-extension AlertState where Action == StandupsList.AlertAction {
+extension AlertState where Action == StandupsList.Destination.Action.Alert {
   static let dataFailedToLoad = Self {
     TextState("Data failed to load")
   } actions: {
@@ -313,7 +314,8 @@ extension AlertState where Action == StandupsList.AlertAction {
       """
       Unfortunately your past data failed to load. Would you like to load some mock data to play \
       around with?
-      """)
+      """
+    )
   }
 }
 
@@ -379,7 +381,8 @@ struct StandupsList_Previews: PreviewProvider {
             \.dataManager,
             .mock(
               initialData: Data("!@#$% bad data ^&*()".utf8)
-            ))
+            )
+          )
       )
     )
     .previewDisplayName("Load data failure")
