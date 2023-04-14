@@ -1,4 +1,5 @@
 import ComposableArchitecture
+@_spi(Concurrency) import Dependencies
 import XCTest
 
 @testable import VoiceMemos
@@ -142,33 +143,36 @@ final class VoiceMemosTests: XCTestCase {
 
   // Demonstration of how to write a non-exhaustive test for recording a memo and it failing to
   // record.
-  // TODO: This test is flakey. Can we bring in `_withMainSerialExecutor`?
   func testRecordMemoFailure_NonExhaustive() async {
-    struct SomeError: Error, Equatable {}
-    let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
+    await withMainSerialExecutor {
+      struct SomeError: Error, Equatable {}
+      let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
 
-    let store = TestStore(
-      initialState: VoiceMemos.State(),
-      reducer: VoiceMemos()
-    ) {
-      $0.audioRecorder.currentTime = { 2.5 }
-      $0.audioRecorder.requestRecordPermission = { true }
-      $0.audioRecorder.startRecording = { _ in
-        try await didFinish.stream.first { _ in true }!
+      let store = TestStore(
+        initialState: VoiceMemos.State(),
+        reducer: VoiceMemos()
+      ) {
+        $0.audioRecorder.currentTime = { 2.5 }
+        $0.audioRecorder.requestRecordPermission = { true }
+        $0.audioRecorder.startRecording = { _ in
+          try await didFinish.stream.first { _ in true }!
+        }
+        $0.continuousClock = self.clock
+        $0.date = .constant(Date(timeIntervalSinceReferenceDate: 0))
+        $0.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
+        $0.uuid = .constant(UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")!)
       }
-      $0.continuousClock = self.clock
-      $0.date = .constant(Date(timeIntervalSinceReferenceDate: 0))
-      $0.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
-      $0.uuid = .constant(UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")!)
-    }
-    store.exhaustivity = .off(showSkippedAssertions: true)
+      store.exhaustivity = .off(showSkippedAssertions: true)
 
-    await store.send(.recordButtonTapped)
-    await store.send(.recordingMemo(.presented(.task)))
-    didFinish.continuation.finish(throwing: SomeError())
-    await store.receive(.recordingMemo(.presented(.delegate(.didFinish(.failure(SomeError())))))) {
-      $0.alert = AlertState { TextState("Voice memo recording failed.") }
-      $0.recordingMemo = nil
+      await store.send(.recordButtonTapped)
+      await store.send(.recordingMemo(.presented(.task)))
+      didFinish.continuation.finish(throwing: SomeError())
+      await store.receive(
+        .recordingMemo(.presented(.delegate(.didFinish(.failure(SomeError())))))
+      ) {
+        $0.alert = AlertState { TextState("Voice memo recording failed.") }
+        $0.recordingMemo = nil
+      }
     }
   }
 

@@ -1,4 +1,5 @@
 import ComposableArchitecture
+@_spi(Concurrency) import Dependencies
 import XCTest
 
 #if swift(>=5.7)
@@ -211,7 +212,7 @@ import XCTest
 
     func testPresentation_parentDismissal_effects() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        await _withMainSerialExecutor {
+        await withMainSerialExecutor {
           struct Child: Reducer {
             struct State: Equatable {
               var count = 0
@@ -292,7 +293,7 @@ import XCTest
 
     func testPresentation_childDismissal_effects() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        await _withMainSerialExecutor {
+        await withMainSerialExecutor {
           struct Child: Reducer {
             struct State: Equatable {
               var count = 0
@@ -381,7 +382,7 @@ import XCTest
 
     func testPresentation_identifiableDismissal_effects() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        await _withMainSerialExecutor {
+        await withMainSerialExecutor {
           struct Child: Reducer {
             struct State: Equatable, Identifiable {
               let id: UUID
@@ -668,7 +669,7 @@ import XCTest
     }
 
     func testPresentation_hydratedDestination_childDismissal() async {
-      await _withMainSerialExecutor {
+      await withMainSerialExecutor {
         struct Child: Reducer {
           struct State: Equatable {
             var count = 0
@@ -733,7 +734,7 @@ import XCTest
 
     func testEnumPresentation() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        await _withMainSerialExecutor {
+        await withMainSerialExecutor {
           struct Child: Reducer {
             struct State: Equatable, Identifiable {
               let id: UUID
@@ -956,7 +957,7 @@ import XCTest
         }
       }
 
-      await _withMainSerialExecutor {
+      await withMainSerialExecutor {
         let store = TestStore(
           initialState: Parent.State(),
           reducer: Parent()
@@ -1049,7 +1050,7 @@ import XCTest
         }
       }
 
-      await _withMainSerialExecutor {
+      await withMainSerialExecutor {
         let store = TestStore(
           initialState: Parent.State(),
           reducer: Parent()
@@ -1129,7 +1130,7 @@ import XCTest
           }
         }
 
-        await _withMainSerialExecutor {
+        await withMainSerialExecutor {
           let clock = TestClock()
           let store = TestStore(
             initialState: Parent.State(),
@@ -1225,7 +1226,7 @@ import XCTest
           }
         }
 
-        await _withMainSerialExecutor {
+        await withMainSerialExecutor {
           let clock = TestClock()
           let store = TestStore(
             initialState: Parent.State(),
@@ -1330,7 +1331,7 @@ import XCTest
           }
         }
 
-        await _withMainSerialExecutor {
+        await withMainSerialExecutor {
           let clock = TestClock()
           let store = TestStore(
             initialState: Parent.State(),
@@ -1527,7 +1528,7 @@ import XCTest
           }
         }
 
-        await _withMainSerialExecutor {
+        await withMainSerialExecutor {
           let clock = TestClock()
           let store = TestStore(
             initialState: Parent.State(),

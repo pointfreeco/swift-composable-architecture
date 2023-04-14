@@ -1,4 +1,5 @@
 import ComposableArchitecture
+@_spi(Concurrency) import Dependencies
 import XCTest
 
 @MainActor
@@ -131,7 +132,7 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
             }
           }
         }
-        await _withMainSerialExecutor {
+        await withMainSerialExecutor {
           let clock = TestClock()
           let store = TestStore(
             initialState: Parent.State.child1(Child.State()),
