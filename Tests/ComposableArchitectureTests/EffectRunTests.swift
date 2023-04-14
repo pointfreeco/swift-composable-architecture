@@ -44,7 +44,7 @@ final class EffectRunTests: BaseTCATestCase {
 
   #if DEBUG
     func testRunUnhandledFailure() async {
-      await withMainSerialExecutor {
+      await _withMainSerialExecutor {
         var line: UInt!
         XCTExpectFailure(nil, enabled: nil, strict: nil) {
           $0.compactDescription == """
@@ -123,7 +123,7 @@ final class EffectRunTests: BaseTCATestCase {
 
   #if DEBUG
     func testRunEscapeFailure() async throws {
-      try await withMainSerialExecutor {
+      try await _withMainSerialExecutor {
         XCTExpectFailure {
           $0.compactDescription == """
             An action was sent from a completed effect:
