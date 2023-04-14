@@ -10,9 +10,14 @@ final class SwitchStoreTests: XCTestCase {
     let app = XCUIApplication()
     app.launch()
 
-    app.collectionViews.buttons["SwitchStoreTestCase"].tap()
+    app.collectionViews.buttons["SwitchStore/CaseLet Warning"].tap()
 
-    XCTAssertFalse(app.staticTexts["Warning"].exists)
+    XCTAssertFalse(
+      app.staticTexts
+        .containing(NSPredicate(format: #"label CONTAINS[c] "Warning: ""#))
+        .element
+        .exists
+    )
 
     app.buttons["Swap"].tap()
 
