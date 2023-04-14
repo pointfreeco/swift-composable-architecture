@@ -466,7 +466,7 @@ struct NavigationStack_Previews: PreviewProvider {
     NavigationDemoView(
       store: Store(
         initialState: NavigationDemo.State(
-          path: StackState().appending(contentsOf: [
+          path: StackState([
             .screenA(ScreenA.State())
           ])
         ),

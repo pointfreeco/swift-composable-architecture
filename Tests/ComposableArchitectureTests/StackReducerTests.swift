@@ -208,7 +208,7 @@ import XCTest
       }
 
       let store = TestStore(
-        initialState: Parent.State(children: StackState().appending(contentsOf: [Child.State()])),
+        initialState: Parent.State(children: StackState([Child.State()])),
         reducer: Parent()
       )
 
@@ -657,7 +657,7 @@ import XCTest
       let mainQueue = DispatchQueue.test
       let store = TestStore(
         initialState: Parent.State(
-          path: StackState().appending(contentsOf: [
+          path: StackState([
             .child1(Child.State()),
             .child2(Child.State()),
           ])
@@ -865,7 +865,7 @@ import XCTest
       let mainQueue = DispatchQueue.test
       let store = TestStore(
         initialState: Parent.State(
-          children: StackState().appending(contentsOf: [
+          children: StackState([
             Child.State(count: 1),
             Child.State(count: 2),
           ])
@@ -910,7 +910,7 @@ import XCTest
 
       let store = TestStore(
         initialState: Parent.State(
-          children: StackState().appending(contentsOf: [
+          children: StackState([
             Child.State(),
           ])
         ),
@@ -1061,7 +1061,20 @@ import XCTest
 
       let store = TestStore(initialState: Parent.State(), reducer: Parent())
 
-      // TODO: Better error messaging on this
+      XCTExpectFailure {
+        $0.compactDescription == """
+          A state change does not match expectation: …
+
+                StackReducerTests.Parent.State(
+                  children: [
+              −     #1: StackReducerTests.Child.State()
+              +     #0: StackReducerTests.Child.State()
+                  ]
+                )
+
+          (Expected: −, Actual: +)
+          """
+      }
       await store.send(.child(.push(id: 0, state: Child.State()))) {
         $0.children[id: 1] = Child.State()
       }

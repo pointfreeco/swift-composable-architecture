@@ -6,7 +6,7 @@ import OrderedCollections
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
 /// ``ReducerProtocol/forEach(_:action:destination:file:fileID:line:)-4sflg``.
-public struct StackState<Element>: RandomAccessCollection {
+public struct StackState<Element>: RandomAccessCollection, RangeReplaceableCollection {
   var _dictionary: OrderedDictionary<StackElementID, Element>
   fileprivate var _mounted: Set<StackElementID> = []
 
@@ -63,54 +63,17 @@ public struct StackState<Element>: RandomAccessCollection {
 
   public subscript(position: Int) -> Element { self._dictionary.values[position] }
 
-  public mutating func append(_ element: Element) {
-    self._dictionary[self.stackElementID.next()] = element
-  }
-
-  public func appending(_ element: Element) -> Self {
-    var stack = self
-    stack.append(element)
-    return stack
-  }
-
-  public mutating func append<S: Sequence>(contentsOf elements: S) where S.Element == Element {
-    self._dictionary.reserveCapacity(self._dictionary.count + elements.underestimatedCount)
-    for element in elements {
-      self.append(element)
+  public mutating func replaceSubrange<C: Collection>(_ subrange: Range<Int>, with newElements: C)
+  where C.Element == Element {
+    for id in self.ids[subrange] {
+      self._mounted.remove(id)
     }
-  }
-
-  public func appending<S: Sequence>(contentsOf elements: S) -> Self where S.Element == Element {
-    var stack = self
-    stack.append(contentsOf: elements)
-    return stack
-  }
-
-  @discardableResult
-  public mutating func removeLast() -> Element {
-    let element = self._dictionary.removeLast()
-    self._mounted.remove(element.key)
-    return element.value
-  }
-
-  public mutating func removeLast(_ n: Int) {
-    for _ in 1...n {
-      self._dictionary.removeLast()
+    self._dictionary.removeSubrange(subrange)
+    for (offset, element) in zip(subrange.lowerBound..., newElements) {
+      self._dictionary.updateValue(element, forKey: self.stackElementID.next(), insertingAt: offset)
     }
-  }
-
-  public mutating func removeAll() {
-    self._dictionary.removeAll()
-    self._mounted.removeAll()
-  }
-
-  public func dropLast(_ n: Int = 1) -> Self {
-    var stack = self
-    stack.removeLast(Swift.min(stack.count, n))
-    return stack
   }
 }
-
 
 extension StackState: Equatable where Element: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
