@@ -106,10 +106,7 @@ extension StackState: Equatable where Element: Equatable {
 
 extension StackState: Hashable where Element: Hashable {
   public func hash(into hasher: inout Hasher) {
-    hasher.combine(self.count)
-    for id in self.ids {
-      hasher.combine(self[id: id])
-    }
+    hasher.combine(self._dictionary)
   }
 }
 
@@ -272,8 +269,11 @@ public struct _StackReducer<
 
     case let .popFrom(id):
       destinationEffects = .none
+      let canPop = state[keyPath: self.toStackState].ids.contains(id)
       baseEffects = self.base.reduce(into: &state, action: action)
-      if !state[keyPath: self.toStackState].pop(from: id) {
+      state[keyPath: self.toStackState].pop(from: id)
+      // TODO: write test to show that if base removes element we do not get runtime warn
+      if !canPop {
         runtimeWarn("TODO")
       }
 
