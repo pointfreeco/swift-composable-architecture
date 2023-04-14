@@ -25,6 +25,7 @@
 		CAF8595829BF8882008721D4 /* SwiftUINavigation in Frameworks */ = {isa = PBXBuildFile; productRef = CAF8595729BF8882008721D4 /* SwiftUINavigation */; };
 		DC140CC529E0BB2C006DF553 /* SwitchStoreTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC140CC429E0BB2C006DF553 /* SwitchStoreTestCase.swift */; };
 		DC140CC729E0E8F3006DF553 /* SwitchStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC140CC629E0E8F3006DF553 /* SwitchStoreTests.swift */; };
+		DC808D6529E91FAA0072B4A9 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC808D6429E91FAA0072B4A9 /* ComposableArchitecture */; };
 		E9919D3E296E28C800C8716B /* EscapedWithViewStoreTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9919D3D296E28C800C8716B /* EscapedWithViewStoreTestCase.swift */; };
 		E9919D40296E3EF400C8716B /* EscapedWithViewStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9919D3F296E3EF400C8716B /* EscapedWithViewStoreTests.swift */; };
 		E9919D42296E47A400C8716B /* BindingsAnimationsTestBench.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9919D41296E47A400C8716B /* BindingsAnimationsTestBench.swift */; };
@@ -106,6 +107,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC808D6529E91FAA0072B4A9 /* ComposableArchitecture in Frameworks */,
 				CAF5802329A564590042FB62 /* TestCases.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -255,6 +257,9 @@
 				CAA1CB0D296DEE79000665B1 /* PBXTargetDependency */,
 			);
 			name = IntegrationUITests;
+			packageProductDependencies = (
+				DC808D6429E91FAA0072B4A9 /* ComposableArchitecture */,
+			);
 			productName = IntegrationUITests;
 			productReference = CAA1CB0B296DEE79000665B1 /* IntegrationUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -736,6 +741,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = CAF8595629BF8882008721D4 /* XCRemoteSwiftPackageReference "swiftui-navigation" */;
 			productName = SwiftUINavigation;
+		};
+		DC808D6429E91FAA0072B4A9 /* ComposableArchitecture */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ComposableArchitecture;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
