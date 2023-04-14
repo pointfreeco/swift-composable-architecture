@@ -5,7 +5,7 @@ import XCTest
 @MainActor
 final class IfCaseLetReducerTests: BaseTCATestCase {
   func testChildAction() async {
-    await withMainSerialExecutor {
+    await _withMainSerialExecutor {
       struct SomeError: Error, Equatable {}
 
       let store = TestStore(
@@ -134,7 +134,7 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
             }
           }
         }
-        await withMainSerialExecutor {
+        await _withMainSerialExecutor {
           let clock = TestClock()
           let store = TestStore(
             initialState: Parent.State.child1(Child.State()),
