@@ -23,7 +23,7 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.8.0"),
     .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "0.14.0"),
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "0.10.0"),
-    .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "0.2.0"),
+    .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "0.4.0"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "0.7.0"),
     .package(url: "https://github.com/pointfreeco/swiftui-navigation", from: "0.7.1"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "0.8.4"),
@@ -32,13 +32,13 @@ let package = Package(
     .target(
       name: "ComposableArchitecture",
       dependencies: [
+        .product(name: "_SwiftUINavigationState", package: "swiftui-navigation"),
         .product(name: "CasePaths", package: "swift-case-paths"),
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
         .product(name: "CustomDump", package: "swift-custom-dump"),
         .product(name: "Dependencies", package: "swift-dependencies"),
         .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
         .product(name: "OrderedCollections", package: "swift-collections"),
-        .product(name: "_SwiftUINavigationState", package: "swiftui-navigation"),
         // TODO: should we depend on this or copy some stuff over?
         .product(name: "SwiftUINavigation", package: "swiftui-navigation"),
         .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
@@ -47,8 +47,7 @@ let package = Package(
     .testTarget(
       name: "ComposableArchitectureTests",
       dependencies: [
-        "_CAsyncSupport",
-        "ComposableArchitecture",
+        "ComposableArchitecture"
       ]
     ),
     .executableTarget(
@@ -58,7 +57,6 @@ let package = Package(
         .product(name: "Benchmark", package: "swift-benchmark"),
       ]
     ),
-    .systemLibrary(name: "_CAsyncSupport"),
   ]
 )
 
