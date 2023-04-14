@@ -1,6 +1,5 @@
 import Combine
 import ComposableArchitecture
-@_spi(Concurrency) import Dependencies
 import XCTest
 
 @MainActor
@@ -169,7 +168,7 @@ final class ViewStoreTests: BaseTCATestCase {
   }
 
   func testSendWhile() async {
-    await withMainSerialExecutor {
+    await _withMainSerialExecutor {
       enum Action {
         case response
         case tapped
