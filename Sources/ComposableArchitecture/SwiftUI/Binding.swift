@@ -386,6 +386,41 @@ extension BindingAction {
       valueIsEqualTo: self.valueIsEqualTo
     )
   }
+
+    public func pullback<NewRoot, Value>(
+        _ keyPath: WritableKeyPath<NewRoot, Root>,
+        destination: WritableKeyPath<NewRoot, BindingState<Value>>,
+        file: StaticString = #file,
+        fileID: StaticString = #fileID,
+        line: UInt = #line
+    ) -> BindingAction<NewRoot> {
+        .init(
+            keyPath: destination as PartialKeyPath<NewRoot>,
+            set: {
+                self.set(&$0[keyPath: keyPath])
+                if let value = self.value as? Value {
+                    $0[keyPath: destination].wrappedValue = value
+                } else {
+                    runtimeWarn(
+                      """
+                      Tried to assign a new destination which didn't have matching type to the \
+                      pulled back BindinAction at "\(fileID):\(line)".
+
+                        Original value type:    \(type(of: self.value))
+                        Destination value type: \(Value.self)
+
+                      To fix this, make sure the destination in pullback(_:destination:) has the \
+                      same type as the property that was updated.
+                      """,
+                      file: file,
+                      line: line
+                    )
+                }
+            },
+            value: self.value,
+            valueIsEqualTo: self.valueIsEqualTo
+        )
+    }
 }
 
 extension BindingAction: CustomDumpReflectable {
