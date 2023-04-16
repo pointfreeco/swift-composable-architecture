@@ -183,7 +183,8 @@ struct FloatingMenuView: View {
           Button("Pop to root") {
             viewStore.send(.popToRoot, animation: .default)
           }
-          Menu {
+          Menu("Current stack") {
+            // TODO: Should this use `stack.identified()` and `stack.pop(from:)`?
             ForEach(Array(viewStore.currentStack.enumerated()), id: \.offset) { offset, screen in
               Button("\(viewStore.currentStack.count - offset).) \(screen)") {
                 viewStore.send(.goBackToScreen(offset))
@@ -193,8 +194,6 @@ struct FloatingMenuView: View {
             Button("Root") {
               viewStore.send(.popToRoot, animation: .default)
             }
-          } label: {
-            Text("Current stack")
           }
         }
         .padding()
