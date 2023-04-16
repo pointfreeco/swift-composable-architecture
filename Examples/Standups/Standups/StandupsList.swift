@@ -128,7 +128,7 @@ struct StandupsList: ReducerProtocol {
         state.destination = nil
         return .none
 
-      case let .path(.element(id: id, .detail(.delegate(delegateAction)))):
+      case let .path(.element(id, .detail(.delegate(delegateAction)))):
         guard case let .some(.detail(detailState)) = state.path[id: id]
         else { return .none }
 
@@ -180,7 +180,7 @@ struct StandupsList: ReducerProtocol {
       case .path:
         return .none
 
-      case let .standupTapped(id: id):
+      case let .standupTapped(id):
         guard let standup = state.standups[id: id]
         else { return .none }
 

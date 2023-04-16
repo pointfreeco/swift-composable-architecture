@@ -2,7 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 private let readMe = """
-  This screen demonstrates how to use NavigationStack with Composable Architecture applications.
+  This screen demonstrates how to use `NavigationStack` with Composable Architecture applications.
   """
 
 struct NavigationDemo: ReducerProtocol {
@@ -94,7 +94,7 @@ struct NavigationDemoView: View {
         self.store.scope(state: \.path, action: NavigationDemo.Action.path)
       ) {
         Form {
-          Section { Text(readMe) }
+          Section { Text(template: readMe) }
 
           Section {
             NavigationLink(
@@ -111,11 +111,9 @@ struct NavigationDemoView: View {
             )
           }
 
-          WithViewStore(self.store.stateless) { viewStore in
-            Section {
-              Button("Go to A → B → C") {
-                viewStore.send(.goToABCButtonTapped)
-              }
+          Section {
+            Button("Go to A → B → C") {
+              ViewStore(self.store.stateless).send(.goToABCButtonTapped)
             }
           }
         }
@@ -142,8 +140,10 @@ struct NavigationDemoView: View {
           )
         }
       }
+      .zIndex(0)
 
       FloatingMenuView(store: self.store)
+        .zIndex(1)
     }
     .navigationTitle("Navigation Stack")
   }
@@ -198,7 +198,7 @@ struct FloatingMenuView: View {
           }
         }
         .padding()
-        .background(Color.white)
+        .background(Color(.systemBackground))
         .padding(.bottom, 1)
         .transition(.opacity.animation(.default))
         .clipped()
@@ -219,11 +219,13 @@ struct ScreenA: ReducerProtocol {
 
   enum Action: Equatable {
     case decrementButtonTapped
+    case dismissButtonTapped
     case incrementButtonTapped
     case factButtonTapped
     case factResponse(TaskResult<String>)
   }
 
+  @Dependency(\.dismiss) var dismiss
   @Dependency(\.factClient) var factClient
 
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
@@ -231,6 +233,11 @@ struct ScreenA: ReducerProtocol {
     case .decrementButtonTapped:
       state.count -= 1
       return .none
+
+    case .dismissButtonTapped:
+      return .fireAndForget {
+        await self.dismiss()
+      }
 
     case .incrementButtonTapped:
       state.count += 1
@@ -261,12 +268,14 @@ struct ScreenAView: View {
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
-        Text("""
+        Text(
+          """
           This screen demonstrates a basic feature hosted in a navigation stack.
 
           You can also have the child feature dismiss itself, which will communicate back to the \
           root stack view to pop the feature off the stack.
-          """)
+          """
+        )
 
         Section {
           HStack {
@@ -285,11 +294,13 @@ struct ScreenAView: View {
           }
           .buttonStyle(.borderless)
 
-          Button(action: { viewStore.send(.factButtonTapped) }) {
+          Button {
+            viewStore.send(.factButtonTapped)
+          } label: {
             HStack {
               Text("Get fact")
-              Spacer()
               if viewStore.isLoading {
+                Spacer()
                 ProgressView()
               }
             }
@@ -302,7 +313,7 @@ struct ScreenAView: View {
 
         Section {
           Button("Dismiss") {
-//            viewStore.send(.dismissButtonTapped)
+            viewStore.send(.dismissButtonTapped)
           }
         }
 
@@ -337,8 +348,6 @@ struct ScreenB: ReducerProtocol {
     case screenCButtonTapped
   }
 
-  @Dependency(\.dismiss) var dismiss
-
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .screenAButtonTapped:
@@ -358,11 +367,13 @@ struct ScreenBView: View {
     WithViewStore(self.store) { viewStore in
       Form {
         Section {
-          Text("""
-            This screen demonstrates how to navigate to other screens without need to compile any \
-            symbols from those screens. You can send an action into the system, and allow the root \
-            feature to intercept that action and push the next feature onto the stack.
-            """)
+          Text(
+            """
+            This screen demonstrates how to navigate to other screens without needing to compile \
+            any symbols from those screens. You can send an action into the system, and allow the \
+            root feature to intercept that action and push the next feature onto the stack.
+            """
+          )
         }
         Button("Decoupled navigation to screen A") {
           viewStore.send(.screenAButtonTapped)
@@ -394,10 +405,9 @@ struct ScreenC: ReducerProtocol {
   }
 
   @Dependency(\.mainQueue) var mainQueue
-  enum TimerID {}
+  enum CancelID { case timer }
 
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
-
     switch action {
     case .startButtonTapped:
       state.isTimerRunning = true
@@ -406,12 +416,12 @@ struct ScreenC: ReducerProtocol {
           await send(.timerTick)
         }
       }
-      .cancellable(id: TimerID.self)
+      .cancellable(id: CancelID.timer)
       .concatenate(with: .init(value: .stopButtonTapped))
 
     case .stopButtonTapped:
       state.isTimerRunning = false
-      return .cancel(id: TimerID.self)
+      return .cancel(id: CancelID.timer)
 
     case .timerTick:
       state.count += 1
@@ -426,10 +436,12 @@ struct ScreenCView: View {
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
-        Text("""
+        Text(
+          """
           This screen demonstrates that if you start a long-living effects in a stack, then it \
           will automatically be torn down when the screen is dismissed.
-          """)
+          """
+        )
         Section {
           Text("\(viewStore.count)")
           if viewStore.isTimerRunning {

@@ -29,6 +29,7 @@
 		DC8C2B0C29EB084900C65286 /* RecordMeetingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8C2B0B29EB084900C65286 /* RecordMeetingTests.swift */; };
 		DC8C2B0E29EB085600C65286 /* StandupDetailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8C2B0D29EB085600C65286 /* StandupDetailTests.swift */; };
 		DC8C2B1029EB086A00C65286 /* StandupsListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8C2B0F29EB086A00C65286 /* StandupsListTests.swift */; };
+		DC8C2B1229EB0E3600C65286 /* AppFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8C2B1129EB0E3600C65286 /* AppFeature.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -72,6 +73,7 @@
 		DC8C2B0B29EB084900C65286 /* RecordMeetingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordMeetingTests.swift; sourceTree = "<group>"; };
 		DC8C2B0D29EB085600C65286 /* StandupDetailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupDetailTests.swift; sourceTree = "<group>"; };
 		DC8C2B0F29EB086A00C65286 /* StandupsListTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupsListTests.swift; sourceTree = "<group>"; };
+		DC8C2B1129EB0E3600C65286 /* AppFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFeature.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -136,6 +138,7 @@
 			isa = PBXGroup;
 			children = (
 				DC808D7229E9C3AC0072B4A9 /* App.swift */,
+				DC8C2B1129EB0E3600C65286 /* AppFeature.swift */,
 				DC808DAA29E9C51D0072B4A9 /* Meeting.swift */,
 				DC808DAC29E9C52A0072B4A9 /* Models.swift */,
 				DC808DAE29E9C53E0072B4A9 /* RecordMeeting.swift */,
@@ -335,6 +338,7 @@
 			files = (
 				DC808DAB29E9C51D0072B4A9 /* Meeting.swift in Sources */,
 				DC808DA729E9C4D60072B4A9 /* SpeechRecognizer.swift in Sources */,
+				DC8C2B1229EB0E3600C65286 /* AppFeature.swift in Sources */,
 				DC808DA529E9C4C70072B4A9 /* OpenSettings.swift in Sources */,
 				DC808DAD29E9C52A0072B4A9 /* Models.swift in Sources */,
 				DC808DB129E9C54A0072B4A9 /* StandupDetail.swift in Sources */,
