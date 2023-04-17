@@ -2,8 +2,6 @@ import ComposableArchitecture
 import SwiftUI
 import SwiftUINavigation
 
-// TODO: should this domain be renamed to StandupForm?
-
 struct StandupForm: ReducerProtocol {
   struct State: Equatable, Hashable {
     @BindingState var focus: Field? = .title

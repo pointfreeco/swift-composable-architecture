@@ -1,9 +1,8 @@
 import ComposableArchitecture
 import SwiftUI
 
-// TODO: extra app domain to be separate from StandupsList domain so that it doesn't
-//       have to depend on any other features. also move presentations to the app
-//       level??
+// TODO: Add extra app domain to be separate from `StandupsList` domain so that it doesn't
+//       have to depend on any other features. Also move presentations to the app level?
 
 struct StandupsList: ReducerProtocol {
   struct State: Equatable {
