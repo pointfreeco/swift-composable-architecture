@@ -8,7 +8,7 @@ import Combine
 @propertyWrapper
 public struct PresentationState<State> {
   private var boxedValue: [State]
-  @usableFromInline  var isPresented = false
+  @usableFromInline var isPresented = false
 
   public init(wrappedValue: State?) {
     self.boxedValue = wrappedValue.map { [$0] } ?? []
@@ -87,8 +87,11 @@ extension PresentationState: CustomReflectable {
 /// Use this wrapper type for modeling a feature's domain that needs to present a child
 /// feature using ``Reducer/ifLet(_:action:then:file:fileID:line:)-qgdj``.
 public enum PresentationAction<Action> {
+  /// An action sent to `nil` out the associated presentation state.
   case dismiss
-  case presented(Action)
+
+  /// An action sent to the associated, non-`nil` presentation state.
+  indirect case presented(Action)
 }
 
 extension PresentationAction: Equatable where Action: Equatable {}
@@ -253,14 +256,14 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
       let destinationNavigationIDPath = self.navigationIDPath(for: destinationState)
       destinationEffects = self.destination
         .dependency(\.dismiss, DismissEffect { @MainActor in
-          Task._cancel(id: DismissID(), navigationID: destinationNavigationIDPath)
+          Task._cancel(id: PresentationDismissID(), navigationID: destinationNavigationIDPath)
         })
         .dependency(\.navigationIDPath, destinationNavigationIDPath)
         .reduce(
           into: &state[keyPath: self.toPresentationState].wrappedValue!, action: destinationAction
         )
         .map { self.toPresentationAction.embed(.presented($0)) }
-        ._cancellable(id: _PresentedID(), navigationIDPath: destinationNavigationIDPath)
+        ._cancellable(navigationIDPath: destinationNavigationIDPath)
       baseEffects = self.base.reduce(into: &state, action: action)
       if isEphemeral(destinationState),
         destinationNavigationIDPath
@@ -324,10 +327,10 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
       state[keyPath: self.toPresentationState].isPresented = true
       presentEffects = Empty(completeImmediately: false)
         .eraseToEffect()
-        ._cancellable(id: DismissID(), navigationIDPath: presentationDestinationID)
+        ._cancellable(id: PresentationDismissID(), navigationIDPath: presentationDestinationID)
         .append(Just(self.toPresentationAction.embed(.dismiss)))
         .eraseToEffect()
-        ._cancellable(id: _PresentedID(), navigationIDPath: presentationDestinationID)
+        ._cancellable(navigationIDPath: presentationDestinationID)
         ._cancellable(id: OnFirstAppearID(), navigationIDPath: .init())
     } else {
       presentEffects = .none
@@ -353,7 +356,7 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
 }
 
 @usableFromInline
-struct DismissID: Hashable {
+struct PresentationDismissID: Hashable {
   @usableFromInline init() {}
 }
 @usableFromInline
@@ -385,7 +388,7 @@ extension Task where Success == Never, Failure == Never {
 extension EffectPublisher {
   @usableFromInline
   internal func _cancellable(
-    id: AnyHashable,
+    id: AnyHashable = _PresentedID(),
     navigationIDPath: NavigationIDPath,
     cancelInFlight: Bool = false
   ) -> Self {

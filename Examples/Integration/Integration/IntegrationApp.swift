@@ -4,6 +4,7 @@ import TestCases
 
 @main
 struct IntegrationApp: App {
+  @State var isNavigationStackTestCasePresented = false
   @State var isNavigationStackBindingTestCasePresented = false
 
   var body: some Scene {
@@ -21,6 +22,15 @@ struct IntegrationApp: App {
               case .forEachBinding:
                 NavigationLink(test.rawValue) {
                   ForEachBindingTestCaseView()
+                }
+
+              case .navigationStack:
+                Button(test.rawValue) {
+                  self.isNavigationStackTestCasePresented = true
+                }
+                .foregroundColor(.black)
+                .sheet(isPresented: self.$isNavigationStackTestCasePresented) {
+                  NavigationStackTestCaseView()
                 }
 
               case .navigationStackBinding:

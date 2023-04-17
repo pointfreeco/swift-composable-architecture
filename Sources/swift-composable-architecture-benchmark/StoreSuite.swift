@@ -35,7 +35,7 @@ let storeSuite = BenchmarkSuite(name: "Store") {
   }
 }
 
-private struct Feature: ReducerProtocol {
+private struct Feature: Reducer {
   struct State {
     @PresentationState var child: State?
     var count = 0
@@ -45,7 +45,7 @@ private struct Feature: ReducerProtocol {
     case tap
     case none
   }
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce<State, Action> { state, action in
       switch action {
       case .child:

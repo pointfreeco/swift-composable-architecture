@@ -561,7 +561,7 @@ final class StoreTests: BaseTCATestCase {
   }
 
   func testStoreVsTestStore() async {
-    struct Feature: ReducerProtocol {
+    struct Feature: Reducer {
       struct State: Equatable {
         var count = 0
       }
@@ -621,7 +621,7 @@ final class StoreTests: BaseTCATestCase {
   }
 
   func testStoreVsTestStore_Publisher() async {
-    struct Feature: ReducerProtocol {
+    struct Feature: Reducer {
       struct State: Equatable {
         var count = 0
       }
@@ -684,8 +684,8 @@ final class StoreTests: BaseTCATestCase {
   }
 
   #if swift(>=5.7)
-    func testChildParentEffectCancellation() async throws {
-      struct Child: ReducerProtocol {
+    func testChidlParentEffectCancellation() async throws {
+      struct Child: Reducer {
         struct State: Equatable {}
         enum Action: Equatable {
           case task
@@ -701,7 +701,7 @@ final class StoreTests: BaseTCATestCase {
           }
         }
       }
-      struct Parent: ReducerProtocol {
+      struct Parent: Reducer {
         struct State: Equatable {
           var count = 0
           var child: Child.State?
@@ -711,7 +711,7 @@ final class StoreTests: BaseTCATestCase {
           case delay
         }
         @Dependency(\.mainQueue) var mainQueue
-        var body: some ReducerProtocol<State, Action> {
+        var body: Reduce<State, Action> {
           Reduce { state, action in
             switch action {
             case .child(.didFinish):

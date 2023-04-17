@@ -3,10 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 53;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CA71F02329A6A32F007AE0DD /* _CAsyncSupport in Frameworks */ = {isa = PBXBuildFile; productRef = CA71F02229A6A32F007AE0DD /* _CAsyncSupport */; };
 		CA93D05C249BF42500A6F65D /* VoiceMemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA93D05B249BF42500A6F65D /* VoiceMemo.swift */; };
 		CA93D05E249BF46E00A6F65D /* Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA93D05D249BF46E00A6F65D /* Helpers.swift */; };
 		CABAB49028A2B5F900122307 /* RecordingMemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = CABAB48F28A2B5F900122307 /* RecordingMemo.swift */; };
@@ -81,6 +82,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DC1394342469E59600EE1157 /* ComposableArchitecture in Frameworks */,
+				CA71F02329A6A32F007AE0DD /* _CAsyncSupport in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -94,6 +96,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		CA71F02129A6A32F007AE0DD /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		DC5BDCA124589177009C65A3 = {
 			isa = PBXGroup;
 			children = (
@@ -102,6 +111,7 @@
 				DC5BDCAB24589177009C65A3 /* Products */,
 				DC5BDCAC24589177009C65A3 /* VoiceMemos */,
 				DC5BDCC324589179009C65A3 /* VoiceMemosTests */,
+				CA71F02129A6A32F007AE0DD /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -177,6 +187,7 @@
 			name = VoiceMemos;
 			packageProductDependencies = (
 				DC1394332469E59600EE1157 /* ComposableArchitecture */,
+				CA71F02229A6A32F007AE0DD /* _CAsyncSupport */,
 			);
 			productName = VoiceMemos;
 			productReference = DC5BDCAA24589177009C65A3 /* VoiceMemos.app */;
@@ -209,8 +220,9 @@
 		DC5BDCA224589177009C65A3 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				BuildIndependentTargetsInParallel = YES;
 				LastSwiftUpdateCheck = 1140;
-				LastUpgradeCheck = 1240;
+				LastUpgradeCheck = 1430;
 				ORGANIZATIONNAME = "Point-Free";
 				TargetAttributes = {
 					DC5BDCA924589177009C65A3 = {
@@ -524,6 +536,10 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		CA71F02229A6A32F007AE0DD /* _CAsyncSupport */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = _CAsyncSupport;
+		};
 		DC1394332469E59600EE1157 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;

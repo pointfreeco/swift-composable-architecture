@@ -37,7 +37,7 @@
 
 ### Supporting types
 
-- ``ReducerProtocolOf``
+- ``ReducerOf``
 
 ### Deprecations
 

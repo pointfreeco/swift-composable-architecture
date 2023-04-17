@@ -14,7 +14,7 @@ private enum NavigationIDPathKey: DependencyKey {
 }
 
 @usableFromInline
-struct NavigationIDPath: Hashable, Identifiable, Sendable {
+struct NavigationIDPath: Hashable, Sendable {
   fileprivate var path: [NavigationID]
 
   @usableFromInline 
@@ -86,6 +86,26 @@ struct NavigationID: Hashable, @unchecked Sendable {
 
   @usableFromInline
   init<Value, Root>(
+    id: StackElementID,
+    keyPath: KeyPath<Root, StackState<Value>>
+  ) {
+    self.kind = .keyPath(keyPath)
+    self.tag = nil
+    self.identifier = AnyHashableSendable(id)
+  }
+
+  @usableFromInline
+  init<Value, Root, ID: Hashable>(
+    id: ID,
+    keyPath: KeyPath<Root, IdentifiedArray<ID, Value>>
+  ) {
+    self.kind = .keyPath(keyPath)
+    self.tag = nil
+    self.identifier = AnyHashableSendable(id)
+  }
+
+  @usableFromInline
+  init<Value, Root>(
     root: Root,
     value: Value,
     casePath: CasePath<Root, Value>
@@ -116,8 +136,8 @@ struct NavigationID: Hashable, @unchecked Sendable {
   // TODO: better custom debug convertible stuff
 }
 
-struct AnyHashableSendable: Hashable, @unchecked Sendable {
-  let base: AnyHashable
+@_spi(Internals) public struct AnyHashableSendable: Hashable, @unchecked Sendable {
+  @_spi(Internals) public let base: AnyHashable
   init<Base: Hashable & Sendable>(_ base: Base) {
     self.base = base
   }

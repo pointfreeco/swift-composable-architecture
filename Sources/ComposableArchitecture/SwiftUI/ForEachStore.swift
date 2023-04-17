@@ -130,14 +130,3 @@ public struct ForEachStore<
     self.content
   }
 }
-
-private func areOrderedSetsDuplicates<ID: Hashable>(lhs: OrderedSet<ID>, rhs: OrderedSet<ID>)
-  -> Bool
-{
-  var lhs = lhs
-  var rhs = rhs
-  if memcmp(&lhs, &rhs, MemoryLayout<OrderedSet<ID>>.size) == 0 {
-    return true
-  }
-  return lhs == rhs
-}

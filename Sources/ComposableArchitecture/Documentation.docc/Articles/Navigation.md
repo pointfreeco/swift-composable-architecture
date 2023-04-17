@@ -38,7 +38,7 @@ struct InventoryFeature: Reducer {
 is being presented, and `nil` presents the feature is dismissed.
 
 Next you can integrate the reducers of the parent and child features by using the 
-``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)-23pza`` reducer operator, as well
+``Reducer/ifLet(_:action:file:fileID:line:)-kood`` reducer operator, as well
 as having an action in the parent domain for populating the child's state to drive navigation:
 
 ```swift

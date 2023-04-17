@@ -69,7 +69,7 @@ import XCTest
     }
 
     func testPresentation_parentDismissal_NilOut() async {
-      struct Child: ReducerProtocol {
+      struct Child: Reducer {
         struct State: Equatable {
           var count = 0
         }
@@ -89,7 +89,7 @@ import XCTest
         }
       }
 
-      struct Parent: ReducerProtocol {
+      struct Parent: Reducer {
         struct State: Equatable {
           @PresentationState var child: Child.State?
         }
@@ -98,7 +98,7 @@ import XCTest
           case dismissChild
           case presentChild
         }
-        var body: some ReducerProtocol<State, Action> {
+        var body: some Reducer<State, Action> {
           Reduce { state, action in
             switch action {
             case .child:
@@ -212,7 +212,7 @@ import XCTest
 
     func testPresentation_parentDismissal_effects() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        await withMainSerialExecutor {
+        await _withMainSerialExecutor {
           struct Child: Reducer {
             struct State: Equatable {
               var count = 0
@@ -293,7 +293,7 @@ import XCTest
 
     func testPresentation_childDismissal_effects() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        await withMainSerialExecutor {
+        await _withMainSerialExecutor {
           struct Child: Reducer {
             struct State: Equatable {
               var count = 0
@@ -382,7 +382,7 @@ import XCTest
 
     func testPresentation_identifiableDismissal_effects() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        await withMainSerialExecutor {
+        await _withMainSerialExecutor {
           struct Child: Reducer {
             struct State: Equatable, Identifiable {
               let id: UUID
@@ -669,7 +669,7 @@ import XCTest
     }
 
     func testPresentation_hydratedDestination_childDismissal() async {
-      await withMainSerialExecutor {
+      await _withMainSerialExecutor {
         struct Child: Reducer {
           struct State: Equatable {
             var count = 0
@@ -734,7 +734,7 @@ import XCTest
 
     func testEnumPresentation() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        await withMainSerialExecutor {
+        await _withMainSerialExecutor {
           struct Child: Reducer {
             struct State: Equatable, Identifiable {
               let id: UUID
@@ -768,11 +768,11 @@ import XCTest
 
           struct Parent: Reducer {
             struct State: Equatable {
-              @PresentationState var destination: Destinations.State?
+              @PresentationState var destination: Destination.State?
               var isDeleted = false
             }
             enum Action: Equatable {
-              case destination(PresentationAction<Destinations.Action>)
+              case destination(PresentationAction<Destination.Action>)
               case presentAlert
               case presentChild(id: UUID? = nil)
             }
@@ -802,10 +802,10 @@ import XCTest
                 }
               }
               .ifLet(\.$destination, action: /Action.destination) {
-                Destinations()
+                Destination()
               }
             }
-            struct Destinations: Reducer {
+            struct Destination: Reducer {
               enum State: Equatable {
                 case alert(AlertState<Action.Alert>)
                 case child(Child.State)
@@ -844,12 +844,12 @@ import XCTest
           await store.send(.destination(.presented(.child(.startButtonTapped))))
           await clock.advance(by: .seconds(2))
           await store.receive(.destination(.presented(.child(.tick)))) {
-            try (/Parent.Destinations.State.child).modify(&$0.destination) {
+            try (/Parent.Destination.State.child).modify(&$0.destination) {
               $0.count = 1
             }
           }
           await store.receive(.destination(.presented(.child(.tick)))) {
-            try (/Parent.Destinations.State.child).modify(&$0.destination) {
+            try (/Parent.Destination.State.child).modify(&$0.destination) {
               $0.count = 2
             }
           }
@@ -866,30 +866,30 @@ import XCTest
           await store.send(.destination(.presented(.child(.startButtonTapped))))
           await clock.advance(by: .seconds(2))
           await store.receive(.destination(.presented(.child(.tick)))) {
-            try (/Parent.Destinations.State.child).modify(&$0.destination) {
+            try (/Parent.Destination.State.child).modify(&$0.destination) {
               $0.count = 1
             }
           }
           await store.receive(.destination(.presented(.child(.tick)))) {
-            try (/Parent.Destinations.State.child).modify(&$0.destination) {
+            try (/Parent.Destination.State.child).modify(&$0.destination) {
               $0.count = 2
             }
           }
           await store.send(
             .presentChild(id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!)
           ) {
-            try (/Parent.Destinations.State.child).modify(&$0.destination) {
+            try (/Parent.Destination.State.child).modify(&$0.destination) {
               $0.count = 0
             }
           }
           await clock.advance(by: .seconds(2))
           await store.receive(.destination(.presented(.child(.tick)))) {
-            try (/Parent.Destinations.State.child).modify(&$0.destination) {
+            try (/Parent.Destination.State.child).modify(&$0.destination) {
               $0.count = 1
             }
           }
           await store.receive(.destination(.presented(.child(.tick)))) {
-            try (/Parent.Destinations.State.child).modify(&$0.destination) {
+            try (/Parent.Destination.State.child).modify(&$0.destination) {
               $0.count = 2
             }
           }
@@ -957,7 +957,7 @@ import XCTest
         }
       }
 
-      await withMainSerialExecutor {
+      await _withMainSerialExecutor {
         let store = TestStore(
           initialState: Parent.State(),
           reducer: Parent()
@@ -1050,7 +1050,7 @@ import XCTest
         }
       }
 
-      await withMainSerialExecutor {
+      await _withMainSerialExecutor {
         let store = TestStore(
           initialState: Parent.State(),
           reducer: Parent()
@@ -1130,7 +1130,7 @@ import XCTest
           }
         }
 
-        await withMainSerialExecutor {
+        await _withMainSerialExecutor {
           let clock = TestClock()
           let store = TestStore(
             initialState: Parent.State(),
@@ -1226,7 +1226,7 @@ import XCTest
           }
         }
 
-        await withMainSerialExecutor {
+        await _withMainSerialExecutor {
           let clock = TestClock()
           let store = TestStore(
             initialState: Parent.State(),
@@ -1331,7 +1331,7 @@ import XCTest
           }
         }
 
-        await withMainSerialExecutor {
+        await _withMainSerialExecutor {
           let clock = TestClock()
           let store = TestStore(
             initialState: Parent.State(),
@@ -1528,7 +1528,7 @@ import XCTest
           }
         }
 
-        await withMainSerialExecutor {
+        await _withMainSerialExecutor {
           let clock = TestClock()
           let store = TestStore(
             initialState: Parent.State(),
@@ -1935,7 +1935,7 @@ import XCTest
 
     func testAlertThenDialog() async {
       if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
-        struct Feature: ReducerProtocol {
+        struct Feature: Reducer {
           struct State: Equatable {
             @PresentationState var destination: Destination.State?
           }
@@ -1945,7 +1945,7 @@ import XCTest
             case showDialog
           }
 
-          struct Destination: ReducerProtocol {
+          struct Destination: Reducer {
             enum State: Equatable {
               case alert(AlertState<AlertDialogAction>)
               case dialog(ConfirmationDialogState<AlertDialogAction>)
@@ -1958,12 +1958,12 @@ import XCTest
               case showAlert
               case showDialog
             }
-            var body: some ReducerProtocolOf<Self> {
+            var body: some ReducerOf<Self> {
               EmptyReducer()
             }
           }
 
-          var body: some ReducerProtocolOf<Self> {
+          var body: some ReducerOf<Self> {
             Reduce<State, Action> { state, action in
               switch action {
               case .destination(.presented(.alert(.showDialog))):
@@ -2037,14 +2037,14 @@ import XCTest
     }
 
     func testPresentation_leaveChildPresented() async {
-      struct Child: ReducerProtocol {
+      struct Child: Reducer {
         struct State: Equatable {}
         enum Action: Equatable {}
         func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
         }
       }
 
-      struct Parent: ReducerProtocol {
+      struct Parent: Reducer {
         struct State: Equatable {
           @PresentationState var child: Child.State?
         }
@@ -2052,7 +2052,7 @@ import XCTest
           case child(PresentationAction<Child.Action>)
           case presentChild
         }
-        var body: some ReducerProtocol<State, Action> {
+        var body: some Reducer<State, Action> {
           Reduce { state, action in
             switch action {
             case .child:
@@ -2079,7 +2079,7 @@ import XCTest
     }
 
     func testPresentation_leaveChildPresented_WithLongLivingEffect() async {
-      struct Child: ReducerProtocol {
+      struct Child: Reducer {
         struct State: Equatable {}
         enum Action: Equatable { case tap }
         func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
@@ -2087,7 +2087,7 @@ import XCTest
         }
       }
 
-      struct Parent: ReducerProtocol {
+      struct Parent: Reducer {
         struct State: Equatable {
           @PresentationState var child: Child.State?
         }
@@ -2095,7 +2095,7 @@ import XCTest
           case child(PresentationAction<Child.Action>)
           case presentChild
         }
-        var body: some ReducerProtocol<State, Action> {
+        var body: some Reducer<State, Action> {
           Reduce { state, action in
             switch action {
             case .child:
@@ -2150,7 +2150,7 @@ import XCTest
     }
 
     func testCancelInFlightEffects() async {
-      struct Child: ReducerProtocol {
+      struct Child: Reducer {
         struct State: Equatable {
           var count = 0
         }
@@ -2175,7 +2175,7 @@ import XCTest
         }
       }
 
-      struct Parent: ReducerProtocol {
+      struct Parent: Reducer {
         struct State: Equatable {
           @PresentationState var child: Child.State?
           var count = 0
@@ -2186,7 +2186,7 @@ import XCTest
           case response(Int)
         }
         @Dependency(\.mainQueue) var mainQueue
-        var body: some ReducerProtocol<State, Action> {
+        var body: some Reducer<State, Action> {
           Reduce { state, action in
             switch action {
             case .child:

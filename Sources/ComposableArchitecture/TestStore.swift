@@ -989,6 +989,7 @@ extension TestStore where ScopedState: Equatable {
 
     let expectedState = self.toScopedState(self.state)
     let previousState = self.reducer.state
+    let previousStackElementID = self.reducer.dependencies.stackElementID.incrementingCopy()
     let task = self.store
       .send(.init(origin: .send(self.fromScopedAction(action)), file: file, line: line))
     for await _ in self.reducer.effectDidSubscribe.stream {
@@ -996,8 +997,13 @@ extension TestStore where ScopedState: Equatable {
     }
     do {
       let currentState = self.state
+      let currentStackElementID = self.reducer.dependencies.stackElementID
       self.reducer.state = previousState
-      defer { self.reducer.state = currentState }
+      self.reducer.dependencies.stackElementID = previousStackElementID
+      defer {
+        self.reducer.state = currentState
+        self.reducer.dependencies.stackElementID = currentStackElementID
+      }
 
       try self.expectedStateShouldMatch(
         expected: expectedState,
@@ -2279,8 +2285,12 @@ class TestReducer<State, Action>: Reducer {
               effectDidSubscribe.continuation.yield()
             }
           },
-          receiveCompletion: { [weak self] _ in self?.inFlightEffects.remove(effect) },
-          receiveCancel: { [weak self] in self?.inFlightEffects.remove(effect) }
+          receiveCompletion: { [weak self] _ in
+            self?.inFlightEffects.remove(effect)
+          },
+          receiveCancel: { [weak self] in
+            self?.inFlightEffects.remove(effect)
+          }
         )
         .map { .init(origin: .receive($0), file: action.file, line: action.line) }
         .eraseToEffectPublisher()

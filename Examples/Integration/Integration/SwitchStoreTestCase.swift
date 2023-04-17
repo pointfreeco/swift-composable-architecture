@@ -1,8 +1,8 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct SwitchStoreTestCase: ReducerProtocol {
-  struct Screen: ReducerProtocol {
+struct SwitchStoreTestCase: Reducer {
+  struct Screen: Reducer {
     struct State: Equatable {
       var count = 0
     }
@@ -32,7 +32,7 @@ struct SwitchStoreTestCase: ReducerProtocol {
     case swap
   }
 
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch (state, action) {
       case (_, .screenA), (_, .screenB):

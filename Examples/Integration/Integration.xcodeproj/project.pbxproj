@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		CA3A7B9D29CB61E9002CD272 /* TestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA3A7B9C29CB61E9002CD272 /* TestHelpers.swift */; };
+		CA4BA5E929E76A7F0004FF9D /* NavigationStackTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4BA5E829E76A7F0004FF9D /* NavigationStackTestCase.swift */; };
+		CA4BA5EB29E76F110004FF9D /* NavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4BA5EA29E76F110004FF9D /* NavigationTests.swift */; };
 		CA595273296DF46D00B5B695 /* NavigationStackBindingTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA595272296DF46D00B5B695 /* NavigationStackBindingTestCase.swift */; };
 		CA595275296DF55A00B5B695 /* NavigationStackBindingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA595274296DF55A00B5B695 /* NavigationStackBindingTests.swift */; };
 		CA595278296DF67E00B5B695 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = CA595277296DF67E00B5B695 /* ComposableArchitecture */; };
@@ -25,6 +27,7 @@
 		CAF8595829BF8882008721D4 /* SwiftUINavigation in Frameworks */ = {isa = PBXBuildFile; productRef = CAF8595729BF8882008721D4 /* SwiftUINavigation */; };
 		DC140CC529E0BB2C006DF553 /* SwitchStoreTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC140CC429E0BB2C006DF553 /* SwitchStoreTestCase.swift */; };
 		DC140CC729E0E8F3006DF553 /* SwitchStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC140CC629E0E8F3006DF553 /* SwitchStoreTests.swift */; };
+		DC808D6529E91FAA0072B4A9 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC808D6429E91FAA0072B4A9 /* ComposableArchitecture */; };
 		E9919D3E296E28C800C8716B /* EscapedWithViewStoreTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9919D3D296E28C800C8716B /* EscapedWithViewStoreTestCase.swift */; };
 		E9919D40296E3EF400C8716B /* EscapedWithViewStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9919D3F296E3EF400C8716B /* EscapedWithViewStoreTests.swift */; };
 		E9919D42296E47A400C8716B /* BindingsAnimationsTestBench.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9919D41296E47A400C8716B /* BindingsAnimationsTestBench.swift */; };
@@ -70,6 +73,8 @@
 
 /* Begin PBXFileReference section */
 		CA3A7B9C29CB61E9002CD272 /* TestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestHelpers.swift; sourceTree = "<group>"; };
+		CA4BA5E829E76A7F0004FF9D /* NavigationStackTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStackTestCase.swift; sourceTree = "<group>"; };
+		CA4BA5EA29E76F110004FF9D /* NavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationTests.swift; sourceTree = "<group>"; };
 		CA595272296DF46D00B5B695 /* NavigationStackBindingTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStackBindingTestCase.swift; sourceTree = "<group>"; };
 		CA595274296DF55A00B5B695 /* NavigationStackBindingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStackBindingTests.swift; sourceTree = "<group>"; };
 		CA595276296DF66B00B5B695 /* swift-composable-architecture */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "swift-composable-architecture"; path = ../..; sourceTree = "<group>"; };
@@ -106,6 +111,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC808D6529E91FAA0072B4A9 /* ComposableArchitecture in Frameworks */,
 				CAF5802329A564590042FB62 /* TestCases.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -156,11 +162,11 @@
 				E9919D41296E47A400C8716B /* BindingsAnimationsTestBench.swift */,
 				E9919D3D296E28C800C8716B /* EscapedWithViewStoreTestCase.swift */,
 				CAA1CB1E296DEEAC000665B1 /* ForEachBindingTestCase.swift */,
-				CA595272296DF46D00B5B695 /* NavigationStackBindingTestCase.swift */,
-				DC140CC429E0BB2C006DF553 /* SwitchStoreTestCase.swift */,
 				CAA1CAF4296DEE78000665B1 /* IntegrationApp.swift */,
 				CA595272296DF46D00B5B695 /* NavigationStackBindingTestCase.swift */,
+				CA4BA5E829E76A7F0004FF9D /* NavigationStackTestCase.swift */,
 				CAF5802429A5651D0042FB62 /* PresentationTestCase.swift */,
+				DC140CC429E0BB2C006DF553 /* SwitchStoreTestCase.swift */,
 				CAA1CAF8296DEE79000665B1 /* Assets.xcassets */,
 				CAA1CAFA296DEE79000665B1 /* Preview Content */,
 			);
@@ -184,6 +190,7 @@
 				DC140CC629E0E8F3006DF553 /* SwitchStoreTests.swift */,
 				CA595274296DF55A00B5B695 /* NavigationStackBindingTests.swift */,
 				CAF5802629A567BB0042FB62 /* PresentationTests.swift */,
+				CA4BA5EA29E76F110004FF9D /* NavigationTests.swift */,
 			);
 			path = IntegrationUITests;
 			sourceTree = "<group>";
@@ -255,6 +262,9 @@
 				CAA1CB0D296DEE79000665B1 /* PBXTargetDependency */,
 			);
 			name = IntegrationUITests;
+			packageProductDependencies = (
+				DC808D6429E91FAA0072B4A9 /* ComposableArchitecture */,
+			);
 			productName = IntegrationUITests;
 			productReference = CAA1CB0B296DEE79000665B1 /* IntegrationUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -355,6 +365,7 @@
 			files = (
 				CAA1CB1F296DEEAC000665B1 /* ForEachBindingTestCase.swift in Sources */,
 				DC140CC529E0BB2C006DF553 /* SwitchStoreTestCase.swift in Sources */,
+				CA4BA5E929E76A7F0004FF9D /* NavigationStackTestCase.swift in Sources */,
 				E9919D42296E47A400C8716B /* BindingsAnimationsTestBench.swift in Sources */,
 				CA595273296DF46D00B5B695 /* NavigationStackBindingTestCase.swift in Sources */,
 				CAF5802529A5651D0042FB62 /* PresentationTestCase.swift in Sources */,
@@ -367,6 +378,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CA4BA5EB29E76F110004FF9D /* NavigationTests.swift in Sources */,
 				E9919D40296E3EF400C8716B /* EscapedWithViewStoreTests.swift in Sources */,
 				CA3A7B9D29CB61E9002CD272 /* TestHelpers.swift in Sources */,
 				CAF5802729A567BB0042FB62 /* PresentationTests.swift in Sources */,
@@ -736,6 +748,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = CAF8595629BF8882008721D4 /* XCRemoteSwiftPackageReference "swiftui-navigation" */;
 			productName = SwiftUINavigation;
+		};
+		DC808D6429E91FAA0072B4A9 /* ComposableArchitecture */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ComposableArchitecture;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

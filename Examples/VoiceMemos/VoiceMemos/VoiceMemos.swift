@@ -7,7 +7,7 @@ struct VoiceMemos: Reducer {
     @PresentationState var alert: AlertState<AlertAction>?
     var audioRecorderPermission = RecorderPermission.undetermined
     @PresentationState var recordingMemo: RecordingMemo.State?
-    var voiceMemos: IdentifiedArrayOf<VoiceMemo.State> = []
+    var voiceMemos: StackState<VoiceMemo.State> = []
 
     enum RecorderPermission {
       case allowed
@@ -22,7 +22,7 @@ struct VoiceMemos: Reducer {
     case recordButtonTapped
     case recordPermissionResponse(Bool)
     case recordingMemo(PresentationAction<RecordingMemo.Action>)
-    case voiceMemo(id: VoiceMemo.State.ID, action: VoiceMemo.Action)
+    case voiceMemos(StackAction<VoiceMemo.Action>)
   }
 
   enum AlertAction: Equatable {}
@@ -90,21 +90,8 @@ struct VoiceMemos: Reducer {
           return .none
         }
 
-      case .voiceMemo(id: _, action: .audioPlayerClient(.failure)):
-        state.alert = AlertState { TextState("Voice memo playback failed.") }
-        return .none
-
-      case let .voiceMemo(id: id, action: .delete):
-        state.voiceMemos.remove(id: id)
-        return .none
-
-      case let .voiceMemo(id: tappedId, action: .playButtonTapped):
-        for id in state.voiceMemos.ids where id != tappedId {
-          state.voiceMemos[id: id]?.mode = .notPlaying
-        }
-        return .none
-
-      case .voiceMemo:
+      case let .voiceMemos(action):
+        self.handleVoiceMemo(state: &state, action: action)
         return .none
       }
     }
@@ -112,8 +99,26 @@ struct VoiceMemos: Reducer {
     .ifLet(\.$recordingMemo, action: /Action.recordingMemo) {
       RecordingMemo()
     }
-    .forEach(\.voiceMemos, action: /Action.voiceMemo(id:action:)) {
+    .forEach(\.voiceMemos, action: /Action.voiceMemos) {
       VoiceMemo()
+    }
+  }
+
+  private func handleVoiceMemo(state: inout State, action: StackAction<VoiceMemo.Action>) {
+    switch action.type {
+    case let .element(id: elementID, action: .delegate(action)):
+      switch action {
+      case .playbackStarted:
+        for id in state.voiceMemos.ids where id != elementID {
+          state.voiceMemos[id: id].mode = .notPlaying
+        }
+
+      case .playbackFailed:
+        state.alert = AlertState { TextState("Voice memo playback failed.") }
+      }
+
+    default:
+      break
     }
   }
 
@@ -135,16 +140,12 @@ struct VoiceMemosView: View {
       NavigationView {
         VStack {
           List {
-            ForEachStore(
-              self.store.scope(state: \.voiceMemos, action: { .voiceMemo(id: $0, action: $1) })
+            _ForEachStore(
+              self.store.scope(state: \.voiceMemos, action: VoiceMemos.Action.voiceMemos)
             ) {
               VoiceMemoView(store: $0)
             }
-            .onDelete { indexSet in
-              for index in indexSet {
-                viewStore.send(.voiceMemo(id: viewStore.voiceMemos[index].id, action: .delete))
-              }
-            }
+            .onDelete { viewStore.send(.voiceMemos(.delete($0))) }
           }
 
           IfLetStore(

@@ -229,10 +229,10 @@ private struct ChildFeature: Reducer {
     }
   }
 }
-
+ 
 struct PresentationTestCaseView: View {
   private let store: StoreOf<PresentationTestCase>
-  @StateObject private var viewStore: ViewStore<PresentationTestCase.State, PresentationTestCase.Action>
+  @StateObject private var viewStore: ViewStoreOf<PresentationTestCase>
   @State var alertMessage = ""
 
   init() {
@@ -391,7 +391,7 @@ private struct ChildView: View {
   }
 }
 
-private struct NavigationLinkDemoFeature: ReducerProtocol {
+private struct NavigationLinkDemoFeature: Reducer {
   struct State: Equatable {
     var message = ""
     @PresentationState var child: ChildFeature.State?
@@ -404,7 +404,7 @@ private struct NavigationLinkDemoFeature: ReducerProtocol {
     case navigationLinkButtonTapped
     case nonDeadbeefIdentifiedNavigationLinkButtonTapped
   }
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce<State, Action> { state, action in
       switch action {
       case .child(.presented) where state.child == nil:
