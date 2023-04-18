@@ -13,7 +13,6 @@
 		DC808D7A29E9C3AD0072B4A9 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC808D7929E9C3AD0072B4A9 /* Preview Assets.xcassets */; };
 		DC808D8429E9C3AD0072B4A9 /* StandupFormTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC808D8329E9C3AD0072B4A9 /* StandupFormTests.swift */; };
 		DC808D8E29E9C3AD0072B4A9 /* StandupsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC808D8D29E9C3AD0072B4A9 /* StandupsUITests.swift */; };
-		DC808D9029E9C3AD0072B4A9 /* StandupsUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC808D8F29E9C3AD0072B4A9 /* StandupsUITestsLaunchTests.swift */; };
 		DC808D9D29E9C3C10072B4A9 /* swift-composable-architecture in Resources */ = {isa = PBXBuildFile; fileRef = DC808D9C29E9C3C10072B4A9 /* swift-composable-architecture */; };
 		DC808DA029E9C4340072B4A9 /* DataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC808D9F29E9C4340072B4A9 /* DataManager.swift */; };
 		DC808DA329E9C4490072B4A9 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC808DA229E9C4490072B4A9 /* ComposableArchitecture */; };
@@ -60,7 +59,6 @@
 		DC808D8329E9C3AD0072B4A9 /* StandupFormTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupFormTests.swift; sourceTree = "<group>"; };
 		DC808D8929E9C3AD0072B4A9 /* StandupsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StandupsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC808D8D29E9C3AD0072B4A9 /* StandupsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupsUITests.swift; sourceTree = "<group>"; };
-		DC808D8F29E9C3AD0072B4A9 /* StandupsUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupsUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		DC808D9C29E9C3C10072B4A9 /* swift-composable-architecture */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "swift-composable-architecture"; path = ../..; sourceTree = "<group>"; };
 		DC808D9F29E9C4340072B4A9 /* DataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataManager.swift; sourceTree = "<group>"; };
 		DC808DA429E9C4C70072B4A9 /* OpenSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSettings.swift; sourceTree = "<group>"; };
@@ -178,7 +176,6 @@
 			isa = PBXGroup;
 			children = (
 				DC808D8D29E9C3AD0072B4A9 /* StandupsUITests.swift */,
-				DC808D8F29E9C3AD0072B4A9 /* StandupsUITestsLaunchTests.swift */,
 			);
 			path = StandupsUITests;
 			sourceTree = "<group>";
@@ -369,7 +366,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DC808D9029E9C3AD0072B4A9 /* StandupsUITestsLaunchTests.swift in Sources */,
 				DC808D8E29E9C3AD0072B4A9 /* StandupsUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
