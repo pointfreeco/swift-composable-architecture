@@ -153,7 +153,7 @@ extension EffectPublisher {
   /// operation will be cancelled.
   ///
   /// ```
-  /// enum CancelID.self {}
+  /// enum CancelID {}
   ///
   /// await withTaskCancellation(id: CancelID.self) {
   ///   // ...
