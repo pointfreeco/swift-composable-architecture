@@ -6,10 +6,10 @@ struct StandupsApp: App {
   var body: some Scene {
     WindowGroup {
       if !_XCTIsTesting {
-        StandupsListView(
+        AppView(
           store: Store(
-            initialState: StandupsList.State(),
-            reducer: StandupsList()
+            initialState: AppFeature.State(),
+            reducer: AppFeature()
               ._printChanges()
           )
         )

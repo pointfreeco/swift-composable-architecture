@@ -1,21 +1,15 @@
 import ComposableArchitecture
 import SwiftUI
 
-// TODO: Add extra app domain to be separate from `StandupsList` domain so that it doesn't
-//       have to depend on any other features. Also move presentations to the app level?
-
 struct StandupsList: ReducerProtocol {
   struct State: Equatable {
     @PresentationState var destination: Destination.State?
-    var path: StackState<Path.State>
     var standups: IdentifiedArrayOf<Standup> = []
 
     init(
-      destination: Destination.State? = nil,
-      path: StackState<Path.State> = .init()
+      destination: Destination.State? = nil
     ) {
       self.destination = destination
-      self.path = path
 
       do {
         @Dependency(\.dataManager.load) var load
@@ -29,17 +23,15 @@ struct StandupsList: ReducerProtocol {
   enum Action: Equatable {
     case addStandupButtonTapped
     case confirmAddStandupButtonTapped
+    case delegate(Delegate)
     case destination(PresentationAction<Destination.Action>)
     case dismissAddStandupButtonTapped
-    case path(StackAction<Path.State, Path.Action>)
     case standupTapped(id: Standup.ID)
+
+    enum Delegate: Equatable {
+      case goToStandup(Standup)
+    }
   }
-
-  @Dependency(\.continuousClock) var clock
-  @Dependency(\.dataManager) var dataManager
-  @Dependency(\.date.now) var now
-  @Dependency(\.uuid) var uuid
-
   struct Destination: ReducerProtocol {
     enum State: Equatable {
       case add(StandupForm.State)
@@ -61,32 +53,13 @@ struct StandupsList: ReducerProtocol {
       }
     }
   }
-
-  struct Path: ReducerProtocol {
-    enum State: Hashable {
-      case detail(StandupDetail.State)
-      case meeting(MeetingReducer.State)
-      case record(RecordMeeting.State)
-    }
-
-    enum Action: Equatable {
-      case detail(StandupDetail.Action)
-      case meeting(MeetingReducer.Action)
-      case record(RecordMeeting.Action)
-    }
-
-    var body: some ReducerProtocol<State, Action> {
-      Scope(state: /State.detail, action: /Action.detail) {
-        StandupDetail()
-      }
-      Scope(state: /State.meeting, action: /Action.meeting) {
-        MeetingReducer()
-      }
-      Scope(state: /State.record, action: /Action.record) {
-        RecordMeeting()
-      }
-    }
+  private enum CancelID {
+    case saveDebounce
   }
+
+  @Dependency(\.continuousClock) var clock
+  @Dependency(\.dataManager) var dataManager
+  @Dependency(\.uuid) var uuid
 
   var body: some ReducerProtocolOf<Self> {
     Reduce<State, Action> { state, action in
@@ -112,6 +85,9 @@ struct StandupsList: ReducerProtocol {
         state.destination = nil
         return .none
 
+      case .delegate:
+        return .none
+
       case .destination(.presented(.alert(.confirmLoadMockData))):
         state.standups = [
           .mock,
@@ -127,89 +103,20 @@ struct StandupsList: ReducerProtocol {
         state.destination = nil
         return .none
 
-      case let .path(.element(id, .detail(.delegate(delegateAction)))):
-        guard case let .some(.detail(detailState)) = state.path[id: id]
-        else { return .none }
-
-        switch delegateAction {
-        case .deleteStandup:
-          state.path.pop(from: id)
-          state.standups.remove(id: detailState.standup.id)
-          return .none
-
-        case let .goToMeeting(meeting):
-          state.path.append(
-            .meeting(
-              MeetingReducer.State(
-                meeting: meeting,
-                standup: detailState.standup
-              )
-            )
-          )
-          return .none
-
-        case .startMeeting:
-          state.path.append(
-            .record(
-              RecordMeeting.State(standup: detailState.standup)
-            )
-          )
-          return .none
-        }
-
-      case let .path(.element(id, .record(.delegate(delegateAction)))):
-        switch delegateAction {
-        case let .save(transcript: transcript):
-          _ = state.path.pop(from: id)
-
-          XCTModify(&state.path.presented, case: /Path.State.detail) { detailState in
-            detailState.standup.meetings.insert(
-              Meeting(
-                id: Meeting.ID(self.uuid()),
-                date: self.now,
-                transcript: transcript
-              ),
-              at: 0
-            )
-          }
-
-          return .none
-        }
-
-      case .path:
-        return .none
-
       case let .standupTapped(id):
         guard let standup = state.standups[id: id]
         else { return .none }
 
-        state.path.append(
-          .detail(
-            StandupDetail.State(standup: standup)
-          )
-        )
-
-        return .none
+        return .send(.delegate(.goToStandup(standup)))
       }
-    }
-    .forEach(\.path, action: /Action.path) {
-      Path()
     }
     .ifLet(\.$destination, action: /Action.destination) {
       Destination()
     }
 
-    // TODO: Should we polish up onChange and use it here?
     Reduce<State, Action> { state, action in
-      // NB: Playback any changes made to stand up in detail
-      for destination in state.path {
-        guard case let .detail(detailState) = destination
-        else { continue }
-        state.standups[id: detailState.standup.id] = detailState.standup
-      }
-
       return .run { [standups = state.standups] _ in
-        try await withTaskCancellation(id: "deadbeef", cancelInFlight: true) {  // TODO: better ID
+        try await withTaskCancellation(id: CancelID.saveDebounce, cancelInFlight: true) {
           try await self.clock.sleep(for: .seconds(1))
           try await self.dataManager.save(JSONEncoder().encode(standups), .standups)
         }
@@ -223,77 +130,52 @@ struct StandupsListView: View {
   let store: StoreOf<StandupsList>
 
   var body: some View {
-    NavigationStackStore(
-      self.store.scope(state: \.path, action: StandupsList.Action.path)
-    ) {
-      WithViewStore(self.store, observe: \.standups) { viewStore in
-        List {
-          ForEach(viewStore.state) { standup in
-            Button {
-              viewStore.send(.standupTapped(id: standup.id))
-            } label: {
-              CardView(standup: standup)
-            }
-            .listRowBackground(standup.theme.mainColor)
-          }
-        }
-        .toolbar {
+    WithViewStore(self.store, observe: \.standups) { viewStore in
+      List {
+        ForEach(viewStore.state) { standup in
           Button {
-            viewStore.send(.addStandupButtonTapped)
+            viewStore.send(.standupTapped(id: standup.id))
           } label: {
-            Image(systemName: "plus")
+            CardView(standup: standup)
           }
+          .listRowBackground(standup.theme.mainColor)
         }
-        .navigationTitle("Daily Standups")
-        .sheet(
-          store: self.store.scope(state: \.$destination, action: StandupsList.Action.destination),
-          state: /StandupsList.Destination.State.add,
-          action: StandupsList.Destination.Action.add
-        ) { store in
-          NavigationStack {
-            StandupFormView(store: store)
-              .navigationTitle("New standup")
-              .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                  Button("Dismiss") {
-                    viewStore.send(.dismissAddStandupButtonTapped)
-                  }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                  Button("Add") {
-                    viewStore.send(.confirmAddStandupButtonTapped)
-                  }
+      }
+      .toolbar {
+        Button {
+          viewStore.send(.addStandupButtonTapped)
+        } label: {
+          Image(systemName: "plus")
+        }
+      }
+      .navigationTitle("Daily Standups")
+      .sheet(
+        store: self.store.scope(state: \.$destination, action: StandupsList.Action.destination),
+        state: /StandupsList.Destination.State.add,
+        action: StandupsList.Destination.Action.add
+      ) { store in
+        NavigationStack {
+          StandupFormView(store: store)
+            .navigationTitle("New standup")
+            .toolbar {
+              ToolbarItem(placement: .cancellationAction) {
+                Button("Dismiss") {
+                  viewStore.send(.dismissAddStandupButtonTapped)
                 }
               }
-          }
+              ToolbarItem(placement: .confirmationAction) {
+                Button("Add") {
+                  viewStore.send(.confirmAddStandupButtonTapped)
+                }
+              }
+            }
         }
-        .alert(
-          store: self.store.scope(state: \.$destination, action: StandupsList.Action.destination),
-          state: /StandupsList.Destination.State.alert,
-          action: StandupsList.Destination.Action.alert
-        )
       }
-    } destination: {
-      switch $0 {
-      case .detail:
-        CaseLet(
-          state: /StandupsList.Path.State.detail,
-          action: StandupsList.Path.Action.detail,
-          then: StandupDetailView.init(store:)
-        )
-      case .meeting:
-        CaseLet(
-          state: /StandupsList.Path.State.meeting,
-          action: StandupsList.Path.Action.meeting,
-          then: MeetingView.init(store:)
-        )
-      case .record:
-        CaseLet(
-          state: /StandupsList.Path.State.record,
-          action: StandupsList.Path.Action.record,
-          then: RecordMeetingView.init(store:)
-        )
-      }
+      .alert(
+        store: self.store.scope(state: \.$destination, action: StandupsList.Action.destination),
+        state: /StandupsList.Destination.State.alert,
+        action: StandupsList.Destination.Action.alert
+      )
     }
   }
 }

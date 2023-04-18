@@ -1,41 +1,43 @@
-//
-//  StandupsUITests.swift
-//  StandupsUITests
-//
-//  Created by Stephen Celis on 4/14/23.
-//
-
 import XCTest
 
 final class StandupsUITests: XCTestCase {
+  var app: XCUIApplication!
 
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+  override func setUpWithError() throws {
+    self.continueAfterFailure = false
+    self.app = XCUIApplication()
+    app.launchEnvironment = [
+      "UITesting": "true"
+    ]
+  }
 
-        // In UI tests it is usually best to stop immediately when a failure occurs.
-        continueAfterFailure = false
+  // This test demonstrates the simple flow of tapping the "Add" button, filling in some fields in
+  // the form, and then adding the standup to the list. It's a very simple test, but it takes
+  // approximately 10 seconds to run, and it depends on a lot of internal implementation details to
+  // get right, such as tapping a button with the literal label "Add".
+  //
+  // This test is also written in the simpler, "unit test" style in StandupsListTests.swift, where
+  // it takes 0.025 seconds (400 times faster) and it even tests more. It further confirms that when
+  // the standup is added to the list its data will be persisted to disk so that it will be
+  // available on next launch.
+  func testAdd() throws {
+    app.launch()
+    app.navigationBars["Daily Standups"].buttons["Add"].tap()
 
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
-    }
+    let collectionViews = app.collectionViews
+    let titleTextField = collectionViews.textFields["Title"]
+    let nameTextField = collectionViews.textFields["Name"]
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
+    titleTextField.typeText("Engineering")
 
-    func testExample() throws {
-        // UI tests must launch the application that they test.
-        let app = XCUIApplication()
-        app.launch()
+    nameTextField.tap()
+    nameTextField.typeText("Blob")
 
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-    }
+    collectionViews.buttons["New attendee"].tap()
+    app.typeText("Blob Jr.")
 
-    func testLaunchPerformance() throws {
-        if #available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 7.0, *) {
-            // This measures how long it takes to launch your application.
-            measure(metrics: [XCTApplicationLaunchMetric()]) {
-                XCUIApplication().launch()
-            }
-        }
-    }
+    app.navigationBars["New standup"].buttons["Add"].tap()
+
+    XCTAssertEqual(collectionViews.staticTexts["Engineering"].exists, true)
+  }
 }

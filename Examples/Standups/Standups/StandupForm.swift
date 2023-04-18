@@ -7,7 +7,7 @@ struct StandupForm: ReducerProtocol {
     @BindingState var focus: Field? = .title
     @BindingState var standup: Standup
 
-    init(focus: Field? = nil, standup: Standup) {
+    init(focus: Field? = .title, standup: Standup) {
       self.focus = focus
       self.standup = standup
       if self.standup.attendees.isEmpty {

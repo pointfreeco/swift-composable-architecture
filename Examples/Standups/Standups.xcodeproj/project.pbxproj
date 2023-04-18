@@ -26,6 +26,8 @@
 		DC808DB129E9C54A0072B4A9 /* StandupDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC808DB029E9C54A0072B4A9 /* StandupDetail.swift */; };
 		DC808DB329E9C5540072B4A9 /* StandupsList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC808DB229E9C5540072B4A9 /* StandupsList.swift */; };
 		DC808DB629E9C58F0072B4A9 /* Tagged in Frameworks */ = {isa = PBXBuildFile; productRef = DC808DB529E9C58F0072B4A9 /* Tagged */; };
+		DC80B1E929EDE5D1001CC0CC /* AppFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC80B1E829EDE5D1001CC0CC /* AppFeature.swift */; };
+		DC80B1EB29EE12A7001CC0CC /* AppFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC80B1EA29EE12A7001CC0CC /* AppFeatureTests.swift */; };
 		DC8C2B0C29EB084900C65286 /* RecordMeetingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8C2B0B29EB084900C65286 /* RecordMeetingTests.swift */; };
 		DC8C2B0E29EB085600C65286 /* StandupDetailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8C2B0D29EB085600C65286 /* StandupDetailTests.swift */; };
 		DC8C2B1029EB086A00C65286 /* StandupsListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8C2B0F29EB086A00C65286 /* StandupsListTests.swift */; };
@@ -69,6 +71,8 @@
 		DC808DAE29E9C53E0072B4A9 /* RecordMeeting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordMeeting.swift; sourceTree = "<group>"; };
 		DC808DB029E9C54A0072B4A9 /* StandupDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupDetail.swift; sourceTree = "<group>"; };
 		DC808DB229E9C5540072B4A9 /* StandupsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupsList.swift; sourceTree = "<group>"; };
+		DC80B1E829EDE5D1001CC0CC /* AppFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFeature.swift; sourceTree = "<group>"; };
+		DC80B1EA29EE12A7001CC0CC /* AppFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFeatureTests.swift; sourceTree = "<group>"; };
 		DC8C2B0B29EB084900C65286 /* RecordMeetingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordMeetingTests.swift; sourceTree = "<group>"; };
 		DC8C2B0D29EB085600C65286 /* StandupDetailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupDetailTests.swift; sourceTree = "<group>"; };
 		DC8C2B0F29EB086A00C65286 /* StandupsListTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupsListTests.swift; sourceTree = "<group>"; };
@@ -136,6 +140,7 @@
 			isa = PBXGroup;
 			children = (
 				DC808D7229E9C3AC0072B4A9 /* App.swift */,
+				DC80B1E829EDE5D1001CC0CC /* AppFeature.swift */,
 				DC808DAA29E9C51D0072B4A9 /* Meeting.swift */,
 				DC808DAC29E9C52A0072B4A9 /* Models.swift */,
 				DC808DAE29E9C53E0072B4A9 /* RecordMeeting.swift */,
@@ -160,6 +165,7 @@
 		DC808D8229E9C3AD0072B4A9 /* StandupsTests */ = {
 			isa = PBXGroup;
 			children = (
+				DC80B1EA29EE12A7001CC0CC /* AppFeatureTests.swift */,
 				DC8C2B0B29EB084900C65286 /* RecordMeetingTests.swift */,
 				DC8C2B0D29EB085600C65286 /* StandupDetailTests.swift */,
 				DC808D8329E9C3AD0072B4A9 /* StandupFormTests.swift */,
@@ -335,6 +341,7 @@
 			files = (
 				DC808DAB29E9C51D0072B4A9 /* Meeting.swift in Sources */,
 				DC808DA729E9C4D60072B4A9 /* SpeechRecognizer.swift in Sources */,
+				DC80B1E929EDE5D1001CC0CC /* AppFeature.swift in Sources */,
 				DC808DA529E9C4C70072B4A9 /* OpenSettings.swift in Sources */,
 				DC808DAD29E9C52A0072B4A9 /* Models.swift in Sources */,
 				DC808DB129E9C54A0072B4A9 /* StandupDetail.swift in Sources */,
@@ -351,6 +358,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DC8C2B0C29EB084900C65286 /* RecordMeetingTests.swift in Sources */,
+				DC80B1EB29EE12A7001CC0CC /* AppFeatureTests.swift in Sources */,
 				DC8C2B0E29EB085600C65286 /* StandupDetailTests.swift in Sources */,
 				DC808D8429E9C3AD0072B4A9 /* StandupFormTests.swift in Sources */,
 				DC8C2B1029EB086A00C65286 /* StandupsListTests.swift in Sources */,
