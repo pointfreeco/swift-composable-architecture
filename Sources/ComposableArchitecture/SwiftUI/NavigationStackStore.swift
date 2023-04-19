@@ -99,7 +99,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
       )
     ) {
       self.root.navigationDestination(for: Component<State>.self) { component in
-        self.destination(component)
+        self.destination(component).id(component.id)
       }
     }
   }
