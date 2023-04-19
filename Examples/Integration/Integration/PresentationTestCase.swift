@@ -44,11 +44,13 @@ private struct PresentationTestCase: ReducerProtocol {
       case ok
       case showDialog
       case showSheet
+      // TODO: Action to re-show alert
     }
     enum DialogAction {
       case ok
       case showAlert
       case showSheet
+      // TODO: Action to re-show dialog
     }
     var body: some ReducerProtocolOf<Self> {
       Scope(state: /State.fullScreenCover, action: /Action.fullScreenCover) {

@@ -9,7 +9,7 @@ extension View {
       PresentationSheetModifier(
         store: store,
         state: { $0 },
-        id: { _ in true },
+        id: { _ in ObjectIdentifier(State.self) },
         action: { $0 },
         content: content
       )
