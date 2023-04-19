@@ -9,7 +9,7 @@ extension View {
       PresentationSheetModifier(
         store: store,
         state: { $0 },
-        id: { _ in ObjectIdentifier(State.self) },
+        id: { $0.wrappedValue.map { _ in ObjectIdentifier(State.self) } },
         action: { $0 },
         content: content
       )
