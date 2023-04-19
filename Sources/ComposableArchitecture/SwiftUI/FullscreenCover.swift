@@ -7,7 +7,15 @@ extension View {
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder content: @escaping (Store<State, Action>) -> Content
   ) -> some View {
-    self.fullScreenCover(store: store, state: { $0 }, action: { $0 }, content: content)
+    self.modifier(
+      PresentationFullScreenCoverModifier(
+        store: store,
+        state: { $0 },
+        id: { _ in true },
+        action: { $0 },
+        content: content
+      )
+    )
   }
 
   @available(iOS 14, tvOS 14, watchOS 7, *)
@@ -22,6 +30,7 @@ extension View {
       PresentationFullScreenCoverModifier(
         store: store,
         state: toDestinationState,
+        id: { $0.id },
         action: fromDestinationAction,
         content: content
       )
@@ -33,6 +42,7 @@ extension View {
 @available(macOS, unavailable)
 private struct PresentationFullScreenCoverModifier<
   State,
+  ID: Hashable,
   Action,
   DestinationState,
   DestinationAction,
@@ -41,12 +51,14 @@ private struct PresentationFullScreenCoverModifier<
   let store: Store<PresentationState<State>, PresentationAction<Action>>
   @ObservedObject var viewStore: ViewStore<PresentationState<State>, PresentationAction<Action>>
   let toDestinationState: (State) -> DestinationState?
+  let toID: (PresentationState<State>) -> ID?
   let fromDestinationAction: (DestinationAction) -> Action
   let coverContent: (Store<DestinationState, DestinationAction>) -> CoverContent
 
   init(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (State) -> DestinationState?,
+    id toID: @escaping (PresentationState<State>) -> ID?,
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
     content coverContent: @escaping (Store<DestinationState, DestinationAction>) -> CoverContent
   ) {
@@ -57,6 +69,7 @@ private struct PresentationFullScreenCoverModifier<
       removeDuplicates: { $0.id == $1.id }
     )
     self.toDestinationState = toDestinationState
+    self.toID = toID
     self.fromDestinationAction = fromDestinationAction
     self.coverContent = coverContent
   }
@@ -67,7 +80,7 @@ private struct PresentationFullScreenCoverModifier<
       item: Binding( // TODO: do proper binding
         get: {
           self.viewStore.wrappedValue.flatMap(self.toDestinationState) != nil
-          ? self.viewStore.id
+          ? toID(self.viewStore.state).map { Identified($0) { $0 } }
           : nil
         },
         set: { newState in

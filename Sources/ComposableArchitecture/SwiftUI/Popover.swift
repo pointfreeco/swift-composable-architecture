@@ -9,13 +9,16 @@ extension View {
     arrowEdge: Edge = .top,
     @ViewBuilder content: @escaping (Store<State, Action>) -> Content
   ) -> some View {
-    self.popover(
-      store: store,
-      state: { $0 },
-      action: { $0 },
-      attachmentAnchor: attachmentAnchor,
-      arrowEdge: arrowEdge,
-      content: content
+    self.modifier(
+      PresentationPopoverModifier(
+        store: store,
+        state: { $0 },
+        id: { _ in true },
+        action: { $0 },
+        attachmentAnchor: attachmentAnchor,
+        arrowEdge: arrowEdge,
+        content: content
+      )
     )
   }
 
@@ -33,6 +36,7 @@ extension View {
       PresentationPopoverModifier(
         store: store,
         state: toDestinationState,
+        id: { $0.id },
         action: fromDestinationAction,
         attachmentAnchor: attachmentAnchor,
         arrowEdge: arrowEdge,
@@ -46,6 +50,7 @@ extension View {
 @available(watchOS, unavailable)
 private struct PresentationPopoverModifier<
   State,
+  ID: Hashable,
   Action,
   DestinationState,
   DestinationAction,
@@ -54,6 +59,7 @@ private struct PresentationPopoverModifier<
   let store: Store<PresentationState<State>, PresentationAction<Action>>
   @ObservedObject var viewStore: ViewStore<PresentationState<State>, PresentationAction<Action>>
   let toDestinationState: (State) -> DestinationState?
+  let toID: (PresentationState<State>) -> ID?
   let fromDestinationAction: (DestinationAction) -> Action
   let attachmentAnchor: PopoverAttachmentAnchor
   let arrowEdge: Edge
@@ -62,6 +68,7 @@ private struct PresentationPopoverModifier<
   init(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (State) -> DestinationState?,
+    id toID: @escaping (PresentationState<State>) -> ID?,
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
     attachmentAnchor: PopoverAttachmentAnchor = .rect(.bounds),
     arrowEdge: Edge = .top,
@@ -74,6 +81,7 @@ private struct PresentationPopoverModifier<
       removeDuplicates: { $0.id == $1.id }
     )
     self.toDestinationState = toDestinationState
+    self.toID = toID
     self.fromDestinationAction = fromDestinationAction
     self.attachmentAnchor = attachmentAnchor
     self.arrowEdge = arrowEdge
@@ -86,7 +94,7 @@ private struct PresentationPopoverModifier<
       item: Binding( // TODO: do proper binding
         get: {
           self.viewStore.wrappedValue.flatMap(self.toDestinationState) != nil
-          ? self.viewStore.id
+          ? self.toID(self.viewStore.state).map { Identified($0) { $0 } }
           : nil
         },
         set: { newState in
