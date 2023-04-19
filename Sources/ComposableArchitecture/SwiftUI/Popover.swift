@@ -13,7 +13,7 @@ extension View {
       PresentationPopoverModifier(
         store: store,
         state: { $0 },
-        id: { _ in true },
+        id: { _ in ObjectIdentifier(State.self) },
         action: { $0 },
         attachmentAnchor: attachmentAnchor,
         arrowEdge: arrowEdge,
