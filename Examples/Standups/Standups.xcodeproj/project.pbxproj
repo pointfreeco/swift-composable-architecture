@@ -13,7 +13,6 @@
 		DC808D7A29E9C3AD0072B4A9 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC808D7929E9C3AD0072B4A9 /* Preview Assets.xcassets */; };
 		DC808D8429E9C3AD0072B4A9 /* StandupFormTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC808D8329E9C3AD0072B4A9 /* StandupFormTests.swift */; };
 		DC808D8E29E9C3AD0072B4A9 /* StandupsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC808D8D29E9C3AD0072B4A9 /* StandupsUITests.swift */; };
-		DC808D9029E9C3AD0072B4A9 /* StandupsUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC808D8F29E9C3AD0072B4A9 /* StandupsUITestsLaunchTests.swift */; };
 		DC808D9D29E9C3C10072B4A9 /* swift-composable-architecture in Resources */ = {isa = PBXBuildFile; fileRef = DC808D9C29E9C3C10072B4A9 /* swift-composable-architecture */; };
 		DC808DA029E9C4340072B4A9 /* DataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC808D9F29E9C4340072B4A9 /* DataManager.swift */; };
 		DC808DA329E9C4490072B4A9 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC808DA229E9C4490072B4A9 /* ComposableArchitecture */; };
@@ -26,10 +25,11 @@
 		DC808DB129E9C54A0072B4A9 /* StandupDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC808DB029E9C54A0072B4A9 /* StandupDetail.swift */; };
 		DC808DB329E9C5540072B4A9 /* StandupsList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC808DB229E9C5540072B4A9 /* StandupsList.swift */; };
 		DC808DB629E9C58F0072B4A9 /* Tagged in Frameworks */ = {isa = PBXBuildFile; productRef = DC808DB529E9C58F0072B4A9 /* Tagged */; };
+		DC80B1E929EDE5D1001CC0CC /* AppFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC80B1E829EDE5D1001CC0CC /* AppFeature.swift */; };
+		DC80B1EB29EE12A7001CC0CC /* AppFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC80B1EA29EE12A7001CC0CC /* AppFeatureTests.swift */; };
 		DC8C2B0C29EB084900C65286 /* RecordMeetingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8C2B0B29EB084900C65286 /* RecordMeetingTests.swift */; };
 		DC8C2B0E29EB085600C65286 /* StandupDetailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8C2B0D29EB085600C65286 /* StandupDetailTests.swift */; };
 		DC8C2B1029EB086A00C65286 /* StandupsListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8C2B0F29EB086A00C65286 /* StandupsListTests.swift */; };
-		DC8C2B1229EB0E3600C65286 /* AppFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8C2B1129EB0E3600C65286 /* AppFeature.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,7 +59,6 @@
 		DC808D8329E9C3AD0072B4A9 /* StandupFormTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupFormTests.swift; sourceTree = "<group>"; };
 		DC808D8929E9C3AD0072B4A9 /* StandupsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StandupsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC808D8D29E9C3AD0072B4A9 /* StandupsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupsUITests.swift; sourceTree = "<group>"; };
-		DC808D8F29E9C3AD0072B4A9 /* StandupsUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupsUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		DC808D9C29E9C3C10072B4A9 /* swift-composable-architecture */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "swift-composable-architecture"; path = ../..; sourceTree = "<group>"; };
 		DC808D9F29E9C4340072B4A9 /* DataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataManager.swift; sourceTree = "<group>"; };
 		DC808DA429E9C4C70072B4A9 /* OpenSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSettings.swift; sourceTree = "<group>"; };
@@ -70,10 +69,11 @@
 		DC808DAE29E9C53E0072B4A9 /* RecordMeeting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordMeeting.swift; sourceTree = "<group>"; };
 		DC808DB029E9C54A0072B4A9 /* StandupDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupDetail.swift; sourceTree = "<group>"; };
 		DC808DB229E9C5540072B4A9 /* StandupsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupsList.swift; sourceTree = "<group>"; };
+		DC80B1E829EDE5D1001CC0CC /* AppFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFeature.swift; sourceTree = "<group>"; };
+		DC80B1EA29EE12A7001CC0CC /* AppFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFeatureTests.swift; sourceTree = "<group>"; };
 		DC8C2B0B29EB084900C65286 /* RecordMeetingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordMeetingTests.swift; sourceTree = "<group>"; };
 		DC8C2B0D29EB085600C65286 /* StandupDetailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupDetailTests.swift; sourceTree = "<group>"; };
 		DC8C2B0F29EB086A00C65286 /* StandupsListTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupsListTests.swift; sourceTree = "<group>"; };
-		DC8C2B1129EB0E3600C65286 /* AppFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFeature.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -138,7 +138,7 @@
 			isa = PBXGroup;
 			children = (
 				DC808D7229E9C3AC0072B4A9 /* App.swift */,
-				DC8C2B1129EB0E3600C65286 /* AppFeature.swift */,
+				DC80B1E829EDE5D1001CC0CC /* AppFeature.swift */,
 				DC808DAA29E9C51D0072B4A9 /* Meeting.swift */,
 				DC808DAC29E9C52A0072B4A9 /* Models.swift */,
 				DC808DAE29E9C53E0072B4A9 /* RecordMeeting.swift */,
@@ -163,6 +163,7 @@
 		DC808D8229E9C3AD0072B4A9 /* StandupsTests */ = {
 			isa = PBXGroup;
 			children = (
+				DC80B1EA29EE12A7001CC0CC /* AppFeatureTests.swift */,
 				DC8C2B0B29EB084900C65286 /* RecordMeetingTests.swift */,
 				DC8C2B0D29EB085600C65286 /* StandupDetailTests.swift */,
 				DC808D8329E9C3AD0072B4A9 /* StandupFormTests.swift */,
@@ -175,7 +176,6 @@
 			isa = PBXGroup;
 			children = (
 				DC808D8D29E9C3AD0072B4A9 /* StandupsUITests.swift */,
-				DC808D8F29E9C3AD0072B4A9 /* StandupsUITestsLaunchTests.swift */,
 			);
 			path = StandupsUITests;
 			sourceTree = "<group>";
@@ -338,7 +338,7 @@
 			files = (
 				DC808DAB29E9C51D0072B4A9 /* Meeting.swift in Sources */,
 				DC808DA729E9C4D60072B4A9 /* SpeechRecognizer.swift in Sources */,
-				DC8C2B1229EB0E3600C65286 /* AppFeature.swift in Sources */,
+				DC80B1E929EDE5D1001CC0CC /* AppFeature.swift in Sources */,
 				DC808DA529E9C4C70072B4A9 /* OpenSettings.swift in Sources */,
 				DC808DAD29E9C52A0072B4A9 /* Models.swift in Sources */,
 				DC808DB129E9C54A0072B4A9 /* StandupDetail.swift in Sources */,
@@ -355,6 +355,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DC8C2B0C29EB084900C65286 /* RecordMeetingTests.swift in Sources */,
+				DC80B1EB29EE12A7001CC0CC /* AppFeatureTests.swift in Sources */,
 				DC8C2B0E29EB085600C65286 /* StandupDetailTests.swift in Sources */,
 				DC808D8429E9C3AD0072B4A9 /* StandupFormTests.swift in Sources */,
 				DC8C2B1029EB086A00C65286 /* StandupsListTests.swift in Sources */,
@@ -365,7 +366,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DC808D9029E9C3AD0072B4A9 /* StandupsUITestsLaunchTests.swift in Sources */,
 				DC808D8E29E9C3AD0072B4A9 /* StandupsUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

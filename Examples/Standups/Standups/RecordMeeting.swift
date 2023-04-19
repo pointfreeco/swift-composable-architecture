@@ -4,7 +4,7 @@ import SwiftUI
 
 struct RecordMeeting: Reducer {
   struct State: Hashable {
-    @PresentationState var alert: AlertState<AlertAction>?
+    @PresentationState var alert: AlertState<Action.Alert>?
     var secondsElapsed = 0
     var speakerIndex = 0
     var standup: Standup
@@ -15,7 +15,7 @@ struct RecordMeeting: Reducer {
     }
   }
   enum Action: Equatable {
-    case alert(PresentationAction<AlertAction>)
+    case alert(PresentationAction<Alert>)
     case delegate(Delegate)
     case endMeetingButtonTapped
     case nextButtonTapped
@@ -23,22 +23,22 @@ struct RecordMeeting: Reducer {
     case timerTick
     case speechFailure
     case speechResult(SpeechRecognitionResult)
+
+    enum Alert {
+      case confirmDiscard
+      case confirmSave
+    }
+    enum Delegate: Equatable {
+      case save(transcript: String)
+    }
   }
-  enum AlertAction {
-    case confirmSave
-    case confirmDiscard
-  }
-  enum Delegate: Equatable {
-    case save(transcript: String)
+  private enum CancelID {
+    case timer
   }
 
   @Dependency(\.continuousClock) var clock
   @Dependency(\.dismiss) var dismiss
   @Dependency(\.speechClient) var speechClient
-
-  private enum CancelID {
-    case timer
-  }
 
   var body: some ReducerOf<Self> {
     Reduce<State, Action> { state, action in
@@ -191,12 +191,11 @@ struct RecordMeetingView: View {
       .navigationBarBackButtonHidden(true)
       .alert(store: self.store.scope(state: \.$alert, action: RecordMeeting.Action.alert))
       .task { await viewStore.send(.task).finish() }
-      //.onChange(of: self.model.isDismissed) { _ in self.dismiss() }
     }
   }
 }
 
-extension AlertState where Action == RecordMeeting.AlertAction {
+extension AlertState where Action == RecordMeeting.Action.Alert {
   static func endMeeting(isDiscardable: Bool) -> Self {
     Self {
       TextState("End meeting?")

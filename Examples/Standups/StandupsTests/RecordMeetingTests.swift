@@ -70,7 +70,8 @@ final class RecordMeetingTests: XCTestCase {
       XCTAssertEqual($0.durationRemaining, .seconds(0))
     }
 
-    await store.receive(.delegate(.save(transcript: ""))) // NB: this improves on the onMeetingFinished pattern from vanilla SwiftUI
+    // NB: this improves on the onMeetingFinished pattern from vanilla SwiftUI
+    await store.receive(.delegate(.save(transcript: "")))
   }
 
   func testRecordTranscript() async throws {

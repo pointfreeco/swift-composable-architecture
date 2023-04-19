@@ -162,6 +162,16 @@ struct RootView: View {
 
         Section(header: Text("Navigation")) {
           NavigationLink(
+            "Stack",
+            destination: NavigationDemoView(
+              store: self.store.scope(
+                state: \.navigationStack,
+                action: Root.Action.navigationStack
+              )
+            )
+          )
+
+          NavigationLink(
             "Navigate and load data",
             destination: NavigateAndLoadView(
               store: self.store.scope(
