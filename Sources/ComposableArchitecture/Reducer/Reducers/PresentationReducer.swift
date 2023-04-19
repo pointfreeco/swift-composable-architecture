@@ -407,7 +407,7 @@ extension EffectPublisher {
   }
 }
 
-struct StableID: Hashable, Identifiable, Sendable {
+struct StableID: Hashable, Sendable {
   private let identifier: AnyHashableSendable?
   private let tag: UInt32?
   private let type: Any.Type

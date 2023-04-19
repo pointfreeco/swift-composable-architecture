@@ -5,7 +5,15 @@ extension View {
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder content: @escaping (Store<State, Action>) -> Content
   ) -> some View {
-    self.sheet(store: store, state: { $0 }, action: { $0 }, content: content)
+    self.modifier(
+      PresentationSheetModifier(
+        store: store,
+        state: { $0 },
+        id: { _ in true },
+        action: { $0 },
+        content: content
+      )
+    )
   }
 
   public func sheet<State, Action, DestinationState, DestinationAction, Content: View>(
@@ -18,6 +26,7 @@ extension View {
       PresentationSheetModifier(
         store: store,
         state: toDestinationState,
+        id: { $0.id },
         action: fromDestinationAction,
         content: content
       )
@@ -27,6 +36,7 @@ extension View {
 
 private struct PresentationSheetModifier<
   State,
+  ID: Hashable,
   Action,
   DestinationState,
   DestinationAction,
@@ -35,12 +45,14 @@ private struct PresentationSheetModifier<
   let store: Store<PresentationState<State>, PresentationAction<Action>>
   @ObservedObject var viewStore: ViewStore<PresentationState<State>, PresentationAction<Action>>
   let toDestinationState: (State) -> DestinationState?
+  let toID: (PresentationState<State>) -> ID?
   let fromDestinationAction: (DestinationAction) -> Action
   let sheetContent: (Store<DestinationState, DestinationAction>) -> SheetContent
 
   init(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (State) -> DestinationState?,
+    id toID: @escaping (PresentationState<State>) -> ID?,
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
     content sheetContent: @escaping (Store<DestinationState, DestinationAction>) -> SheetContent
   ) {
@@ -48,6 +60,7 @@ private struct PresentationSheetModifier<
     self.store = filteredStore
     self.viewStore = ViewStore(filteredStore, observe: { $0 }, removeDuplicates: { $0.id == $1.id })
     self.toDestinationState = toDestinationState
+    self.toID = toID
     self.fromDestinationAction = fromDestinationAction
     self.sheetContent = sheetContent
   }
@@ -58,7 +71,7 @@ private struct PresentationSheetModifier<
       item: Binding( // TODO: do proper binding
         get: {
           self.viewStore.wrappedValue.flatMap(self.toDestinationState) != nil
-          ? self.viewStore.id
+          ? toID(self.viewStore.state).map { Identified($0) { $0 } }
           : nil
         },
         set: { newState in
