@@ -160,7 +160,7 @@
   /// }
   /// ```
   ///
-  public protocol Reducer<State,Action> {
+  public protocol Reducer<State, Action> {
     /// A type that holds the current state of the reducer.
     associatedtype State
 
