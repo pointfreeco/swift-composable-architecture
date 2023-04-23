@@ -597,7 +597,7 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
     *, deprecated,
     message:
       """
-      Dynamic member lookup is no longer supported for bindable state. Instead of dot-chaining on \
+      Dynamic member lookup is no longer supported for binding state. Instead of dot-chaining on \
       the view store, e.g. 'viewStore.$value', invoke the 'binding' method on view store with a \
       key path to the value, e.g. 'viewStore.binding(\\.$value)'. For more on this change, see: \
       https://github.com/pointfreeco/swift-composable-architecture/pull/810

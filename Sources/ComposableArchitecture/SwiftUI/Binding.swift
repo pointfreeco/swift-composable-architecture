@@ -12,10 +12,10 @@ import SwiftUI
 @dynamicMemberLookup
 @propertyWrapper
 public struct BindingState<Value> {
-  /// The underlying value wrapped by the bindable state.
+  /// The underlying value wrapped by the binding state.
   public var wrappedValue: Value
 
-  /// Creates bindable state from the value of another bindable state.
+  /// Creates binding state from the value of another binding state.
   public init(wrappedValue: Value) {
     self.wrappedValue = wrappedValue
   }
@@ -35,10 +35,10 @@ public struct BindingState<Value> {
     set { self = newValue }
   }
 
-  /// Returns bindable state to the resulting value of a given key path.
+  /// Returns binding state to the resulting value of a given key path.
   ///
   /// - Parameter keyPath: A key path to a specific resulting value.
-  /// - Returns: A new bindable state.
+  /// - Returns: A new binding state.
   public subscript<Subject>(
     dynamicMember keyPath: WritableKeyPath<Value, Subject>
   ) -> BindingState<Subject> {
@@ -124,9 +124,9 @@ extension BindableAction {
 }
 
 extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
-  /// Returns a binding to the resulting bindable state of a given key path.
+  /// Returns a binding to the resulting binding state of a given key path.
   ///
-  /// - Parameter keyPath: A key path to a specific bindable state.
+  /// - Parameter keyPath: A key path to a specific binding state.
   /// - Returns: A new binding.
   public func binding<Value: Equatable>(
     _ keyPath: WritableKeyPath<ViewState, BindingState<Value>>,
@@ -199,7 +199,7 @@ public struct BindingAction<Root>: Equatable {
 
 extension BindingAction {
   /// Returns an action that describes simple mutations to some root state at a writable key path
-  /// to bindable state.
+  /// to binding state.
   ///
   /// - Parameters:
   ///   - keyPath: A key path to the property that should be mutated. This property must be
@@ -297,7 +297,7 @@ extension BindingAction {
   /// view-specific domain that contains only the state and actions the view needs. Not only will
   /// this minimize the number of times a view's `body` is computed, it will prevent the view
   /// from accessing state or sending actions outside its purview. We can define it with its own
-  /// bindable state and bindable action:
+  /// binding state and bindable action:
   ///
   /// ```swift
   /// extension MyFeatureView {
@@ -318,7 +318,7 @@ extension BindingAction {
   /// In order to transform a `BindingAction<ViewState>` sent from the view domain into a
   /// `BindingAction<MyFeature.State>`, we need a writable key path from `MyFeature.State` to
   /// `ViewState`. We can synthesize one by defining a computed property on `MyFeature.State` with a
-  /// getter and a setter. The setter should communicate any mutations to bindable state back to the
+  /// getter and a setter. The setter should communicate any mutations to binding state back to the
   /// parent state:
   ///
   /// ```swift

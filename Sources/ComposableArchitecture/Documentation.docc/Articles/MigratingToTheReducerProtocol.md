@@ -460,18 +460,18 @@ Reducer { state, action, environment in
 ```
 
 In reducer builders, use the new top-level ``BindingReducer`` type to specify when to apply
-mutations to bindable state:
+mutations to binding state:
 
 ```swift
 var body: some ReducerProtocol<State, Action> {
   Reduce { state, action in
-    // Logic to run before bindable state mutations are applied
+    // Logic to run before binding state mutations are applied
   }
 
-  BindingReducer()  // Apply bindable state mutations
+  BindingReducer()  // Apply binding state mutations
 
   Reduce { state, action in
-    // Logic to run after bindable state mutations are applied
+    // Logic to run after binding state mutations are applied
   }
 }
 ```

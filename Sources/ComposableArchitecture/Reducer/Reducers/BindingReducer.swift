@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// A reducer that updates bindable state when it receives binding actions.
+/// A reducer that updates binding state when it receives binding actions.
 public struct BindingReducer<State, Action>: ReducerProtocol
 where Action: BindableAction, State == Action.State {
-  /// Initializes a reducer that updates bindable state when it receives binding actions.
+  /// Initializes a reducer that updates binding state when it receives binding actions.
   @inlinable
   public init() {
     self.init(internal: ())
