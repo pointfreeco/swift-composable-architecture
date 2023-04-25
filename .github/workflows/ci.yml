@@ -15,20 +15,22 @@ concurrency:
 
 jobs:
   library-swift-latest:
+    name: Library (swift-latest)
     runs-on: macos-13
     strategy:
       matrix:
         config:
           - debug
           - release
-      steps:
-        - uses: actions/checkout@v3
-        - name: Select Xcode 14.3
-          run: sudo xcode-select -s /Applications/Xcode_14.3.app
-        - name: Run ${{ matrix.config }} tests
-          run: CONFIG=${{ matrix.config }} make test-library
+    steps:
+      - uses: actions/checkout@v3
+      - name: Select Xcode 14.3
+        run: sudo xcode-select -s /Applications/Xcode_14.3.app
+      - name: Run ${{ matrix.config }} tests
+        run: CONFIG=${{ matrix.config }} make test-library
 
   library-swift-5-6:
+    name: Library (swift-5.6)
     runs-on: macos-12
     strategy:
       matrix:
@@ -43,6 +45,7 @@ jobs:
         run: CONFIG=${{ matrix.config }} make test-library
 
   library-evolution:
+    name: Library (evolution)
     runs-on: macos-13
     steps:
       - uses: actions/checkout@v3
