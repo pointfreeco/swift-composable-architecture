@@ -738,9 +738,7 @@ extension AnyReducer {
           To fix this make sure that actions for this reducer can only be sent to a view store \
           when its state contains an element at this index. In SwiftUI applications, use \
           "ForEachStore".
-          """,
-          file: file,
-          line: line
+          """
         )
         return .none
       }

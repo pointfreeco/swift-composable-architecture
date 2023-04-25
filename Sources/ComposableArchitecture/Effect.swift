@@ -171,7 +171,6 @@ extension EffectPublisher where Failure == Never {
     priority: TaskPriority? = nil,
     operation: @escaping @Sendable () async throws -> Action,
     catch handler: (@Sendable (Error) async -> Action)? = nil,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Self {
@@ -197,9 +196,7 @@ extension EffectPublisher where Failure == Never {
 
                     All non-cancellation errors must be explicitly handled via the "catch" \
                     parameter on "EffectTask.task", or via a "do" block.
-                    """,
-                    file: file,
-                    line: line
+                    """
                   )
                 #endif
                 return
@@ -255,7 +252,6 @@ extension EffectPublisher where Failure == Never {
     priority: TaskPriority? = nil,
     operation: @escaping @Sendable (Send<Action>) async throws -> Void,
     catch handler: (@Sendable (Error, Send<Action>) async -> Void)? = nil,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Self {
@@ -280,9 +276,7 @@ extension EffectPublisher where Failure == Never {
 
                     All non-cancellation errors must be explicitly handled via the "catch" parameter \
                     on "EffectTask.run", or via a "do" block.
-                    """,
-                    file: file,
-                    line: line
+                    """
                   )
                 #endif
                 return
