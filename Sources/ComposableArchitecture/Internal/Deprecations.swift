@@ -288,9 +288,7 @@ extension AnyReducer {
     breakpointOnNil: Bool,
     file: StaticString = #fileID,
     line: UInt = #line
-  ) -> AnyReducer<
-    State?, Action, Environment
-  > {
+  ) -> AnyReducer<State?, Action, Environment> {
     self.optional(file: file, line: line)
   }
 
