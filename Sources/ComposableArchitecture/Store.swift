@@ -701,6 +701,9 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
         reducer: reducer
       )
       childStore.parentCancellable = store.state
+        .removeDuplicates { lhs, rhs in
+          _isEqual(lhs, rhs) ?? false
+        }
         .dropFirst()
         .sink { [weak childStore] newValue in
           guard !reducer.isSending else { return }

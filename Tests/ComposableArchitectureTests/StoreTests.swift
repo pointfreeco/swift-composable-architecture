@@ -756,6 +756,97 @@ final class StoreTests: BaseTCATestCase {
       XCTAssertEqual(viewStore.count, 1)
     }
   #endif
+
+  func testScopeDeDuping() {
+    struct App: ReducerProtocol {
+      struct State: Equatable {
+        var tab1 = Child.State()
+        var tab2 = Child.State()
+        var tab3 = Child.State()
+        var tab4 = Child.State()
+      }
+      enum Action: Equatable {
+        case tab1(Child.Action)
+        case tab2(Child.Action)
+        case tab3(Child.Action)
+        case tab4(Child.Action)
+      }
+      var body: some ReducerProtocolOf<Self> {
+        Scope(state: \.tab1, action: /Action.tab1) { Child() }
+        Scope(state: \.tab2, action: /Action.tab2) { Child() }
+        Scope(state: \.tab3, action: /Action.tab3) { Child() }
+        Scope(state: \.tab4, action: /Action.tab4) { Child() }
+      }
+    }
+    struct Child: ReducerProtocol {
+      struct State: Equatable {
+        var tab1 = Grandchild.State()
+        var tab2 = Grandchild.State()
+        var tab3 = Grandchild.State()
+        var tab4 = Grandchild.State()
+      }
+      enum Action: Equatable {
+        case tab1(Grandchild.Action)
+        case tab2(Grandchild.Action)
+        case tab3(Grandchild.Action)
+        case tab4(Grandchild.Action)
+      }
+      var body: some ReducerProtocolOf<Self> {
+        Scope(state: \.tab1, action: /Action.tab1) { Grandchild() }
+        Scope(state: \.tab2, action: /Action.tab2) { Grandchild() }
+        Scope(state: \.tab3, action: /Action.tab3) { Grandchild() }
+        Scope(state: \.tab4, action: /Action.tab4) { Grandchild() }
+      }
+    }
+    struct Grandchild: ReducerProtocol {
+      struct State: Equatable {
+        var count = 0
+      }
+      enum Action: Equatable {
+        case increment
+      }
+      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        state.count += 1
+        return .none
+      }
+    }
+
+    let store = Store(
+      initialState: App.State(),
+      reducer: App()
+    )
+
+    var scopeCount = 0
+    let tab1Store = store.scope { scopeCount += 1; return $0.tab1 }
+    let tab2Store = store.scope { scopeCount += 1; return $0.tab2 }
+    let tab3Store = store.scope { scopeCount += 1; return $0.tab3 }
+    let tab4Store = store.scope { scopeCount += 1; return $0.tab4 }
+    let tab11Store = tab1Store.scope { scopeCount += 1; return $0.tab1 }
+    let tab12Store = tab1Store.scope { scopeCount += 1; return $0.tab2 }
+    let tab13Store = tab1Store.scope { scopeCount += 1; return $0.tab3 }
+    let tab14Store = tab1Store.scope { scopeCount += 1; return $0.tab4 }
+
+    let tab21Store = tab2Store.scope { scopeCount += 1; return $0.tab1 }
+    let tab22Store = tab2Store.scope { scopeCount += 1; return $0.tab2 }
+    let tab23Store = tab2Store.scope { scopeCount += 1; return $0.tab3 }
+    let tab24Store = tab2Store.scope { scopeCount += 1; return $0.tab4 }
+
+    let tab31Store = tab3Store.scope { scopeCount += 1; return $0.tab1 }
+    let tab32Store = tab3Store.scope { scopeCount += 1; return $0.tab2 }
+    let tab33Store = tab3Store.scope { scopeCount += 1; return $0.tab3 }
+    let tab34Store = tab3Store.scope { scopeCount += 1; return $0.tab4 }
+
+    let tab41Store = tab4Store.scope { scopeCount += 1; return $0.tab1 }
+    let tab42Store = tab4Store.scope { scopeCount += 1; return $0.tab2 }
+    let tab43Store = tab4Store.scope { scopeCount += 1; return $0.tab3 }
+    let tab44Store = tab4Store.scope { scopeCount += 1; return $0.tab4 }
+
+    XCTAssertEqual(scopeCount, 20)
+    _ = store.send(.tab1(.tab1(.increment)))
+    XCTAssertEqual(scopeCount, 40)
+    _ = store.send(.tab1(.tab1(.increment)))
+    XCTAssertEqual(scopeCount, 60)
+  }
 }
 
 private struct Count: TestDependencyKey {
