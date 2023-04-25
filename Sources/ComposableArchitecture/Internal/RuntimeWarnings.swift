@@ -14,7 +14,7 @@ func runtimeWarn(
     let category = category ?? "Runtime Warning"
     if _XCTIsTesting {
       if let file = file, let line = line {
-        XCTFail(message, file: file, line: line)
+        XCTFail(message)
       } else {
         XCTFail(message)
       }
