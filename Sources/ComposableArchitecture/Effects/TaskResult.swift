@@ -211,27 +211,28 @@ extension TaskResult: Equatable where Success: Equatable {
     case let (.success(lhs), .success(rhs)):
       return lhs == rhs
     case let (.failure(lhs), .failure(rhs)):
-      return _isEqual(lhs, rhs) ?? {
-        #if DEBUG
-          let lhsType = type(of: lhs)
-          if TaskResultDebugging.emitRuntimeWarnings, lhsType == type(of: rhs) {
-            let lhsTypeName = typeName(lhsType)
-            runtimeWarn(
-              """
-              "\(lhsTypeName)" is not equatable. …
+      return _isEqual(lhs, rhs)
+        ?? {
+          #if DEBUG
+            let lhsType = type(of: lhs)
+            if TaskResultDebugging.emitRuntimeWarnings, lhsType == type(of: rhs) {
+              let lhsTypeName = typeName(lhsType)
+              runtimeWarn(
+                """
+                "\(lhsTypeName)" is not equatable. …
 
-              To test two values of this type, it must conform to the "Equatable" protocol. For \
-              example:
+                To test two values of this type, it must conform to the "Equatable" protocol. For \
+                example:
 
-                  extension \(lhsTypeName): Equatable {}
+                    extension \(lhsTypeName): Equatable {}
 
-              See the documentation of "TaskResult" for more information.
-              """
-            )
-          }
-        #endif
-        return false
-      }()
+                See the documentation of "TaskResult" for more information.
+                """
+              )
+            }
+          #endif
+          return false
+        }()
     default:
       return false
     }

@@ -5,20 +5,13 @@ import Foundation
 @inline(__always)
 func runtimeWarn(
   _ message: @autoclosure () -> String,
-  category: String? = "ComposableArchitecture",
-  file: StaticString? = nil,
-  line: UInt? = nil
+  category: String? = "ComposableArchitecture"
 ) {
   #if DEBUG
     let message = message()
     let category = category ?? "Runtime Warning"
     if _XCTIsTesting {
-      if let file = file, let line = line {
-        // TODO: Passing file/line seems to not be the right thing here. Investigate/remove?
-        XCTFail(message, file: file, line: line)
-      } else {
-        XCTFail(message)
-      }
+      XCTFail(message)
     } else {
       #if canImport(os)
         os_log(
