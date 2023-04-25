@@ -72,7 +72,6 @@ public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: Vie
   public let fromCaseAction: (CaseAction) -> EnumAction
   public let content: (Store<CaseState, CaseAction>) -> Content
 
-  private let file: StaticString
   private let fileID: StaticString
   private let line: UInt
 
@@ -91,14 +90,12 @@ public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: Vie
     _ toCaseState: @escaping (EnumState) -> CaseState?,
     action fromCaseAction: @escaping (CaseAction) -> EnumAction,
     @ViewBuilder then content: @escaping (Store<CaseState, CaseAction>) -> Content,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) {
     self.toCaseState = toCaseState
     self.fromCaseAction = fromCaseAction
     self.content = content
-    self.file = file
     self.fileID = fileID
     self.line = line
   }
@@ -111,14 +108,12 @@ public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: Vie
     state toCaseState: @escaping (EnumState) -> CaseState?,
     action fromCaseAction: @escaping (CaseAction) -> EnumAction,
     @ViewBuilder then content: @escaping (Store<CaseState, CaseAction>) -> Content,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) {
     self.toCaseState = toCaseState
     self.fromCaseAction = fromCaseAction
     self.content = content
-    self.file = file
     self.fileID = fileID
     self.line = line
   }
@@ -132,7 +127,6 @@ public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: Vie
       then: self.content,
       else: {
         _CaseLetMismatchView<EnumState, EnumAction>(
-          file: self.file,
           fileID: self.fileID,
           line: self.line
         )
@@ -276,7 +270,6 @@ extension SwitchStore {
   )
   public init<State1, Action1, Content1>(
     _ store: Store<State, Action>,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line,
     @ViewBuilder content: () -> CaseLet<State, Action, State1, Action1, Content1>
@@ -289,7 +282,7 @@ extension SwitchStore {
   {
     self.init(store) {
       content()
-      Default { _ExhaustivityCheckView<State, Action>(file: file, fileID: fileID, line: line) }
+      Default { _ExhaustivityCheckView<State, Action>(fileID: fileID, line: line) }
     }
   }
 
@@ -366,7 +359,6 @@ extension SwitchStore {
   )
   public init<State1, Action1, Content1, State2, Action2, Content2>(
     _ store: Store<State, Action>,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line,
     @ViewBuilder content: () -> TupleView<
@@ -389,7 +381,7 @@ extension SwitchStore {
     self.init(store) {
       content.value.0
       content.value.1
-      Default { _ExhaustivityCheckView<State, Action>(file: file, fileID: fileID, line: line) }
+      Default { _ExhaustivityCheckView<State, Action>(fileID: fileID, line: line) }
     }
   }
 
@@ -477,7 +469,6 @@ extension SwitchStore {
   )
   public init<State1, Action1, Content1, State2, Action2, Content2, State3, Action3, Content3>(
     _ store: Store<State, Action>,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line,
     @ViewBuilder content: () -> TupleView<
@@ -505,7 +496,7 @@ extension SwitchStore {
       content.value.0
       content.value.1
       content.value.2
-      Default { _ExhaustivityCheckView<State, Action>(file: file, fileID: fileID, line: line) }
+      Default { _ExhaustivityCheckView<State, Action>(fileID: fileID, line: line) }
     }
   }
 
@@ -605,7 +596,6 @@ extension SwitchStore {
     State4, Action4, Content4
   >(
     _ store: Store<State, Action>,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line,
     @ViewBuilder content: () -> TupleView<
@@ -638,7 +628,7 @@ extension SwitchStore {
       content.value.1
       content.value.2
       content.value.3
-      Default { _ExhaustivityCheckView<State, Action>(file: file, fileID: fileID, line: line) }
+      Default { _ExhaustivityCheckView<State, Action>(fileID: fileID, line: line) }
     }
   }
 
@@ -746,7 +736,6 @@ extension SwitchStore {
     State5, Action5, Content5
   >(
     _ store: Store<State, Action>,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line,
     @ViewBuilder content: () -> TupleView<
@@ -784,7 +773,7 @@ extension SwitchStore {
       content.value.2
       content.value.3
       content.value.4
-      Default { _ExhaustivityCheckView<State, Action>(file: file, fileID: fileID, line: line) }
+      Default { _ExhaustivityCheckView<State, Action>(fileID: fileID, line: line) }
     }
   }
 
@@ -900,7 +889,6 @@ extension SwitchStore {
     State6, Action6, Content6
   >(
     _ store: Store<State, Action>,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line,
     @ViewBuilder content: () -> TupleView<
@@ -943,7 +931,7 @@ extension SwitchStore {
       content.value.3
       content.value.4
       content.value.5
-      Default { _ExhaustivityCheckView<State, Action>(file: file, fileID: fileID, line: line) }
+      Default { _ExhaustivityCheckView<State, Action>(fileID: fileID, line: line) }
     }
   }
 
@@ -1067,7 +1055,6 @@ extension SwitchStore {
     State7, Action7, Content7
   >(
     _ store: Store<State, Action>,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line,
     @ViewBuilder content: () -> TupleView<
@@ -1115,7 +1102,7 @@ extension SwitchStore {
       content.value.4
       content.value.5
       content.value.6
-      Default { _ExhaustivityCheckView<State, Action>(file: file, fileID: fileID, line: line) }
+      Default { _ExhaustivityCheckView<State, Action>(fileID: fileID, line: line) }
     }
   }
 
@@ -1247,7 +1234,6 @@ extension SwitchStore {
     State8, Action8, Content8
   >(
     _ store: Store<State, Action>,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line,
     @ViewBuilder content: () -> TupleView<
@@ -1300,7 +1286,7 @@ extension SwitchStore {
       content.value.5
       content.value.6
       content.value.7
-      Default { _ExhaustivityCheckView<State, Action>(file: file, fileID: fileID, line: line) }
+      Default { _ExhaustivityCheckView<State, Action>(fileID: fileID, line: line) }
     }
   }
 
@@ -1440,7 +1426,6 @@ extension SwitchStore {
     State9, Action9, Content9
   >(
     _ store: Store<State, Action>,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line,
     @ViewBuilder content: () -> TupleView<
@@ -1498,7 +1483,7 @@ extension SwitchStore {
       content.value.6
       content.value.7
       content.value.8
-      Default { _ExhaustivityCheckView<State, Action>(file: file, fileID: fileID, line: line) }
+      Default { _ExhaustivityCheckView<State, Action>(fileID: fileID, line: line) }
     }
   }
 }
@@ -1525,14 +1510,13 @@ extension SwitchStore {
 )
 public struct _ExhaustivityCheckView<State, Action>: View {
   @EnvironmentObject private var store: StoreObservableObject<State, Action>
-  let file: StaticString
   let fileID: StaticString
   let line: UInt
 
   public var body: some View {
     #if DEBUG
       let message = """
-        Warning: SwitchStore.body@\(self.file):\(self.line)
+        Warning: SwitchStore.body@\(self.fileID):\(self.line)
 
         "\(debugCaseOutput(self.store.wrappedValue.state.value))" was encountered by a \
         "SwitchStore" that does not handle this case.
@@ -1564,9 +1548,7 @@ public struct _ExhaustivityCheckView<State, Action>: View {
 
           Make sure that you exhaustively provide a "CaseLet" view for each case in your state, \
           or provide a "Default" view at the end of the "SwitchStore".
-          """,
-          file: self.file,
-          line: self.line
+          """
         )
       }
     #else
@@ -1577,7 +1559,6 @@ public struct _ExhaustivityCheckView<State, Action>: View {
 
 public struct _CaseLetMismatchView<State, Action>: View {
   @EnvironmentObject private var store: StoreObservableObject<State, Action>
-  let file: StaticString
   let fileID: StaticString
   let line: UInt
 
@@ -1616,7 +1597,7 @@ public struct _CaseLetMismatchView<State, Action>: View {
       .foregroundColor(.white)
       .padding()
       .background(Color.red.edgesIgnoringSafeArea(.all))
-      .onAppear { runtimeWarn(message, file: self.file, line: self.line) }
+      .onAppear { runtimeWarn(message) }
     #else
       return EmptyView()
     #endif

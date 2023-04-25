@@ -130,7 +130,6 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
   /// - Returns: A new binding.
   public func binding<Value: Equatable>(
     _ keyPath: WritableKeyPath<ViewState, BindingState<Value>>,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Binding<Value> {
@@ -139,8 +138,7 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
       send: { value in
         #if DEBUG
           let debugger = BindableActionViewStoreDebugger(
-            value: value, bindableActionType: ViewAction.self, file: file, fileID: fileID,
-            line: line
+            value: value, bindableActionType: ViewAction.self, fileID: fileID, line: line
           )
           let set: (inout ViewState) -> Void = {
             $0[keyPath: keyPath].wrappedValue = value
@@ -398,7 +396,6 @@ extension BindingAction: CustomDumpReflectable {
   private final class BindableActionViewStoreDebugger<Value> {
     let value: Value
     let bindableActionType: Any.Type
-    let file: StaticString
     let fileID: StaticString
     let line: UInt
     var wasCalled = false
@@ -406,13 +403,11 @@ extension BindingAction: CustomDumpReflectable {
     init(
       value: Value,
       bindableActionType: Any.Type,
-      file: StaticString,
       fileID: StaticString,
       line: UInt
     ) {
       self.value = value
       self.bindableActionType = bindableActionType
-      self.file = file
       self.fileID = fileID
       self.line = line
     }
@@ -428,9 +423,7 @@ extension BindingAction: CustomDumpReflectable {
               \(typeName(self.bindableActionType)).binding(.set(_, \(self.value)))
 
           To fix this, invoke "BindingReducer()" from your feature reducer's "body".
-          """,
-          file: self.file,
-          line: self.line
+          """
         )
         return
       }

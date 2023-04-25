@@ -55,7 +55,6 @@ extension ReducerProtocol {
     _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
     action toElementAction: CasePath<Action, (ID, ElementAction)>,
     @ReducerBuilder<ElementState, ElementAction> element: () -> Element,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> _ForEachReducer<Self, ID, Element>
@@ -65,7 +64,6 @@ extension ReducerProtocol {
       toElementsState: toElementsState,
       toElementAction: toElementAction,
       element: element(),
-      file: file,
       fileID: fileID,
       line: line
     )
@@ -88,9 +86,6 @@ public struct _ForEachReducer<
   let element: Element
 
   @usableFromInline
-  let file: StaticString
-
-  @usableFromInline
   let fileID: StaticString
 
   @usableFromInline
@@ -102,7 +97,6 @@ public struct _ForEachReducer<
     toElementsState: WritableKeyPath<Parent.State, IdentifiedArray<ID, Element.State>>,
     toElementAction: CasePath<Parent.Action, (ID, Element.Action)>,
     element: Element,
-    file: StaticString,
     fileID: StaticString,
     line: UInt
   ) {
@@ -110,7 +104,6 @@ public struct _ForEachReducer<
     self.toElementsState = toElementsState
     self.toElementAction = toElementAction
     self.element = element
-    self.file = file
     self.fileID = fileID
     self.line = line
   }
@@ -149,9 +142,7 @@ public struct _ForEachReducer<
         • This action was sent to the store while its state contained no element at this ID. To \
         fix this make sure that actions for this reducer can only be sent from a view store when \
         its state contains an element at this id. In SwiftUI applications, use "ForEachStore".
-        """,
-        file: self.file,
-        line: self.line
+        """
       )
       return .none
     }
