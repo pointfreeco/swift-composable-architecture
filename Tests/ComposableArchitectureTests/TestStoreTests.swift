@@ -404,6 +404,33 @@ final class TestStoreTests: BaseTCATestCase {
       $0.date = now
     }
   }
+
+  func testEffectEmitAfterSkipInFlightEffects() async {
+    let mainQueue = DispatchQueue.test
+    enum Action: Equatable { case tap, response }
+    let store = TestStore(
+      initialState: 0,
+      reducer: Reduce<Int, Action> { state, action in
+        switch action {
+        case .tap:
+          return .run { send in
+            try await mainQueue.sleep(for: .seconds(1))
+            await send(.response)
+          }
+        case .response:
+          state = 42
+          return .none
+        }
+      }
+    )
+
+    await store.send(.tap)
+    await store.skipInFlightEffects()
+    await mainQueue.advance(by: .seconds(1))
+    await store.receive(.response) {
+      $0 = 42
+    }
+  }
 }
 
 private struct Client: DependencyKey {

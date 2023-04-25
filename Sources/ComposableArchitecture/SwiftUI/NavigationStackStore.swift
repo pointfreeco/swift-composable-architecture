@@ -99,6 +99,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
       )
     ) {
       self.root.navigationDestination(for: Component<State>.self) { component in
+        // TODO: Get integration test logic on the identity here
         self.destination(component).id(component.id)
       }
     }

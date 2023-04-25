@@ -55,7 +55,6 @@ extension Reducer {
     _ toCaseState: CasePath<State, CaseState>,
     action toCaseAction: CasePath<Action, CaseAction>,
     @ReducerBuilder<CaseState, CaseAction> then case: () -> Case,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> _IfCaseLetReducer<Self, Case>
@@ -65,7 +64,6 @@ extension Reducer {
       child: `case`(),
       toChildState: toCaseState,
       toChildAction: toCaseAction,
-      file: file,
       fileID: fileID,
       line: line
     )
@@ -86,9 +84,6 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   let toChildAction: CasePath<Parent.Action, Child.Action>
 
   @usableFromInline
-  let file: StaticString
-
-  @usableFromInline
   let fileID: StaticString
 
   @usableFromInline
@@ -103,7 +98,6 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     child: Child,
     toChildState: CasePath<Parent.State, Child.State>,
     toChildAction: CasePath<Parent.Action, Child.Action>,
-    file: StaticString,
     fileID: StaticString,
     line: UInt
   ) {
@@ -111,7 +105,6 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     self.child = child
     self.toChildState = toChildState
     self.toChildAction = toChildAction
-    self.file = file
     self.fileID = fileID
     self.line = line
   }
@@ -179,9 +172,7 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
         • This action was sent to the store while state was another case. Make sure that actions \
         for this reducer can only be sent from a view store when state is set to the appropriate \
         case. In SwiftUI applications, use "SwitchStore".
-        """,
-        file: self.file,
-        line: self.line
+        """
       )
       return .none
     }

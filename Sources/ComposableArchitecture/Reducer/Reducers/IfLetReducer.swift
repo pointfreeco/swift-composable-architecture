@@ -55,7 +55,6 @@ extension Reducer {
     _ toWrappedState: WritableKeyPath<State, WrappedState?>,
     action toWrappedAction: CasePath<Action, WrappedAction>,
     @ReducerBuilder<WrappedState, WrappedAction> then wrapped: () -> Wrapped,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> _IfLetReducer<Self, Wrapped>
@@ -65,7 +64,6 @@ extension Reducer {
       child: wrapped(),
       toChildState: toWrappedState,
       toChildAction: toWrappedAction,
-      file: file,
       fileID: fileID,
       line: line
     )
@@ -86,9 +84,6 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   let toChildAction: CasePath<Parent.Action, Child.Action>
 
   @usableFromInline
-  let file: StaticString
-
-  @usableFromInline
   let fileID: StaticString
 
   @usableFromInline
@@ -103,7 +98,6 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     child: Child,
     toChildState: WritableKeyPath<Parent.State, Child.State?>,
     toChildAction: CasePath<Parent.Action, Child.Action>,
-    file: StaticString,
     fileID: StaticString,
     line: UInt
   ) {
@@ -111,7 +105,6 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     self.child = child
     self.toChildState = toChildState
     self.toChildAction = toChildAction
-    self.file = file
     self.fileID = fileID
     self.line = line
   }
@@ -176,9 +169,7 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
         • This action was sent to the store while state was "nil". Make sure that actions for this \
         reducer can only be sent from a view store when state is non-"nil". In SwiftUI \
         applications, use "IfLetStore".
-        """,
-        file: self.file,
-        line: self.line
+        """
       )
       return .none
     }

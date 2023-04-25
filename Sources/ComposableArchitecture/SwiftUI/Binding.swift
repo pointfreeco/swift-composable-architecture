@@ -18,10 +18,10 @@ import SwiftUI
 @dynamicMemberLookup
 @propertyWrapper
 public struct BindingState<Value> {
-  /// The underlying value wrapped by the bindable state.
+  /// The underlying value wrapped by the binding state.
   public var wrappedValue: Value
 
-  /// Creates bindable state from the value of another bindable state.
+  /// Creates binding state from the value of another binding state.
   public init(wrappedValue: Value) {
     self.wrappedValue = wrappedValue
   }
@@ -41,10 +41,10 @@ public struct BindingState<Value> {
     set { self = newValue }
   }
 
-  /// Returns bindable state to the resulting value of a given key path.
+  /// Returns binding state to the resulting value of a given key path.
   ///
   /// - Parameter keyPath: A key path to a specific resulting value.
-  /// - Returns: A new bindable state.
+  /// - Returns: A new binding state.
   public subscript<Subject>(
     dynamicMember keyPath: WritableKeyPath<Value, Subject>
   ) -> BindingState<Subject> {
@@ -130,13 +130,12 @@ extension BindableAction {
 }
 
 extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
-  /// Returns a binding to the resulting bindable state of a given key path.
+  /// Returns a binding to the resulting binding state of a given key path.
   ///
-  /// - Parameter keyPath: A key path to a specific bindable state.
+  /// - Parameter keyPath: A key path to a specific binding state.
   /// - Returns: A new binding.
   public func binding<Value: Equatable>(
     _ keyPath: WritableKeyPath<ViewState, BindingState<Value>>,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Binding<Value> {
@@ -145,8 +144,7 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
       send: { value in
         #if DEBUG
           let debugger = BindableActionViewStoreDebugger(
-            value: value, bindableActionType: ViewAction.self, file: file, fileID: fileID,
-            line: line
+            value: value, bindableActionType: ViewAction.self, fileID: fileID, line: line
           )
           let set: (inout ViewState) -> Void = {
             $0[keyPath: keyPath].wrappedValue = value
@@ -205,7 +203,7 @@ public struct BindingAction<Root>: Equatable {
 
 extension BindingAction {
   /// Returns an action that describes simple mutations to some root state at a writable key path
-  /// to bindable state.
+  /// to binding state.
   ///
   /// - Parameters:
   ///   - keyPath: A key path to the property that should be mutated. This property must be
@@ -303,7 +301,7 @@ extension BindingAction {
   /// view-specific domain that contains only the state and actions the view needs. Not only will
   /// this minimize the number of times a view's `body` is computed, it will prevent the view
   /// from accessing state or sending actions outside its purview. We can define it with its own
-  /// bindable state and bindable action:
+  /// binding state and bindable action:
   ///
   /// ```swift
   /// extension MyFeatureView {
@@ -324,7 +322,7 @@ extension BindingAction {
   /// In order to transform a `BindingAction<ViewState>` sent from the view domain into a
   /// `BindingAction<MyFeature.State>`, we need a writable key path from `MyFeature.State` to
   /// `ViewState`. We can synthesize one by defining a computed property on `MyFeature.State` with a
-  /// getter and a setter. The setter should communicate any mutations to bindable state back to the
+  /// getter and a setter. The setter should communicate any mutations to binding state back to the
   /// parent state:
   ///
   /// ```swift
@@ -404,7 +402,6 @@ extension BindingAction: CustomDumpReflectable {
   private final class BindableActionViewStoreDebugger<Value> {
     let value: Value
     let bindableActionType: Any.Type
-    let file: StaticString
     let fileID: StaticString
     let line: UInt
     var wasCalled = false
@@ -412,13 +409,11 @@ extension BindingAction: CustomDumpReflectable {
     init(
       value: Value,
       bindableActionType: Any.Type,
-      file: StaticString,
       fileID: StaticString,
       line: UInt
     ) {
       self.value = value
       self.bindableActionType = bindableActionType
-      self.file = file
       self.fileID = fileID
       self.line = line
     }
@@ -434,9 +429,7 @@ extension BindingAction: CustomDumpReflectable {
               \(typeName(self.bindableActionType)).binding(.set(_, \(self.value)))
 
           To fix this, invoke "BindingReducer()" from your feature reducer's "body".
-          """,
-          file: self.file,
-          line: self.line
+          """
         )
         return
       }

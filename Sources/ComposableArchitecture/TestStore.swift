@@ -2070,10 +2070,6 @@ extension TestStore {
       file: file,
       line: line
     )
-
-    for effect in self.reducer.inFlightEffects {
-      _ = EffectPublisherWrapper(Effect<Never>.cancel(id: effect.id)).sink { _ in }
-    }
     self.reducer.inFlightEffects = []
   }
 

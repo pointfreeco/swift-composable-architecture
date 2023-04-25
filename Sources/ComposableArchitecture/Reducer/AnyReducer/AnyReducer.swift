@@ -491,9 +491,7 @@ public struct AnyReducer<State, Action, Environment> {
           • This action was sent to the store while state was another case. Make sure that \
           actions for this reducer can only be sent to a view store when state is non-"nil". \
           In SwiftUI applications, use "SwitchStore".
-          """,
-          file: file,
-          line: line
+          """
         )
         return .none
       }
@@ -706,9 +704,7 @@ public struct AnyReducer<State, Action, Environment> {
           • This action was sent to the store while state was "nil". Make sure that actions for \
           this reducer can only be sent to a view store when state is non-"nil". In SwiftUI \
           applications, use "IfLetStore".
-          """,
-          file: file,
-          line: line
+          """
         )
         return .none
       }
@@ -802,9 +798,7 @@ public struct AnyReducer<State, Action, Environment> {
           To fix this make sure that actions for this reducer can only be sent to a view store \
           when its state contains an element at this id. In SwiftUI applications, use \
           "ForEachStore".
-          """,
-          file: file,
-          line: line
+          """
         )
         return .none
       }
@@ -871,9 +865,7 @@ public struct AnyReducer<State, Action, Environment> {
           • This action was sent to the store while its state contained no element at this \
           key. To fix this make sure that actions for this reducer can only be sent to a view \
           store when its state contains an element at this key.
-          """,
-          file: file,
-          line: line
+          """
         )
         return .none
       }

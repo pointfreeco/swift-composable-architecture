@@ -100,7 +100,6 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   enum StatePath {
     case casePath(
       CasePath<ParentState, Child.State>,
-      file: StaticString,
       fileID: StaticString,
       line: UInt
     )
@@ -225,12 +224,11 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
     state toChildState: CasePath<ParentState, ChildState>,
     action toChildAction: CasePath<ParentAction, ChildAction>,
     @ReducerBuilder<ChildState, ChildAction> child: () -> Child,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) where ChildState == Child.State, ChildAction == Child.Action {
     self.init(
-      toChildState: .casePath(toChildState, file: file, fileID: fileID, line: line),
+      toChildState: .casePath(toChildState, fileID: fileID, line: line),
       toChildAction: toChildAction,
       child: child()
     )
@@ -243,7 +241,7 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     switch self.toChildState {
-    case let .casePath(toChildState, file, fileID, line):
+    case let .casePath(toChildState, fileID, line):
       guard var childState = toChildState.extract(from: state) else {
         runtimeWarn(
           """
@@ -272,9 +270,7 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
           • This action was sent to the store while state was another case. Make sure that actions \
           for this reducer can only be sent from a view store when state is set to the appropriate \
           case. In SwiftUI applications, use "SwitchStore".
-          """,
-          file: file,
-          line: line
+          """
         )
         return .none
       }
