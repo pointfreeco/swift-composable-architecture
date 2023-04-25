@@ -297,9 +297,7 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
         actions for this reducer can only be sent from a view store when state is present, or \
         from effects that start from this reducer. In SwiftUI applications, use a Composable \
         Architecture view modifier like "sheet(store:…)".
-        """,
-        file: self.file,
-        line: self.line
+        """
       )
       destinationEffects = .none
       baseEffects = self.base.reduce(into: &state, action: action)
