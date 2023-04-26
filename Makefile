@@ -1,8 +1,9 @@
-PLATFORM_IOS = iOS Simulator,name=iPhone 11 Pro Max
+CONFIG = debug
+PLATFORM_IOS = iOS Simulator
 PLATFORM_MACOS = macOS
 PLATFORM_MAC_CATALYST = macOS,variant=Mac Catalyst
-PLATFORM_TVOS = tvOS Simulator,name=Apple TV
-PLATFORM_WATCHOS = watchOS Simulator,name=Apple Watch Series 7 (45mm)
+PLATFORM_TVOS = tvOS Simulator
+PLATFORM_WATCHOS = watchOS Simulator
 
 default: test-all
 
