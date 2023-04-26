@@ -118,22 +118,26 @@ public struct _NavigationLinkStoreContent<State, Label: View>: View {
   @Environment(\.navigationDestinationType) var navigationDestinationType
 
   public var body: some View {
-    self.label.onAppear {
-      if self.navigationDestinationType != State.self {
-        runtimeWarn(
-          """
-          A navigation link at "\(self.fileID):\(self.line)" is unpresentable. …
+    #if DEBUG
+      self.label.onAppear {
+        if self.navigationDestinationType != State.self {
+          runtimeWarn(
+            """
+            A navigation link at "\(self.fileID):\(self.line)" is unpresentable. …
 
-            NavigationStackStore element type:
-              \(self.navigationDestinationType.map(typeName) ?? "(None found in view hierarchy)")
-            NavigationLink state type:
-              \(typeName(State.self))
-            NavigationLink state value:
-            \(String(customDumping: self.state).indent(by: 2))
-          """
-        )
+              NavigationStackStore element type:
+                \(self.navigationDestinationType.map(typeName) ?? "(None found in view hierarchy)")
+              NavigationLink state type:
+                \(typeName(State.self))
+              NavigationLink state value:
+              \(String(customDumping: self.state).indent(by: 2))
+            """
+          )
+        }
       }
-    }
+    #else
+      self.label
+    #endif
   }
 }
 
