@@ -266,9 +266,7 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
           • This action was sent to the store while state was another case. Make sure that actions \
           for this reducer can only be sent from a view store when state is set to the appropriate \
           case. In SwiftUI applications, use "SwitchStore".
-          """,
-          file: file,
-          line: line
+          """
         )
         return .none
       }
