@@ -1,9 +1,9 @@
 CONFIG = debug
-PLATFORM_IOS = iOS Simulator
+PLATFORM_IOS = iOS Simulator,id=$(shell xcrun simctl list --json devices available iPhone | jq -r '.devices | to_entries | map(select(.value | add)) | sort_by(.key) | last.value | last.udid')
 PLATFORM_MACOS = macOS
 PLATFORM_MAC_CATALYST = macOS,variant=Mac Catalyst
-PLATFORM_TVOS = tvOS Simulator
-PLATFORM_WATCHOS = watchOS Simulator
+PLATFORM_TVOS = tvOS Simulator,id=$(shell xcrun simctl list --json devices available TV | jq -r '.devices | to_entries | map(select(.value | add)) | sort_by(.key) | last.value | last.udid')
+PLATFORM_WATCHOS = watchOS Simulator,id=$(shell xcrun simctl list --json devices available Watch | jq -r '.devices | to_entries | map(select(.value | add)) | sort_by(.key) | last.value | last.udid')
 
 default: test-all
 
