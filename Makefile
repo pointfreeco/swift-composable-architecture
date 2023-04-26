@@ -1,9 +1,9 @@
 CONFIG = debug
-PLATFORM_IOS = iOS Simulator,id=$(shell xcrun simctl list --json devices available iPhone | jq -r '.devices | to_entries | map(select(.value | add)) | sort_by(.key) | last.value | last.udid')
+PLATFORM_IOS = iOS Simulator,id=$(call udid_for,iPhone)
 PLATFORM_MACOS = macOS
 PLATFORM_MAC_CATALYST = macOS,variant=Mac Catalyst
-PLATFORM_TVOS = tvOS Simulator,id=$(shell xcrun simctl list --json devices available TV | jq -r '.devices | to_entries | map(select(.value | add)) | sort_by(.key) | last.value | last.udid')
-PLATFORM_WATCHOS = watchOS Simulator,id=$(shell xcrun simctl list --json devices available Watch | jq -r '.devices | to_entries | map(select(.value | add)) | sort_by(.key) | last.value | last.udid')
+PLATFORM_TVOS = tvOS Simulator,id=$(call udid_for,TV)
+PLATFORM_WATCHOS = watchOS Simulator,id=$(call udid_for,Watch)
 
 default: test-all
 
@@ -59,3 +59,7 @@ format:
 		./Examples ./Package.swift ./Sources ./Tests
 
 .PHONY: format test-all test-swift test-workspace
+
+define udid_for
+$(shell xcrun simctl list --json devices available $(1) | jq -r '.devices | to_entries | map(select(.value | add)) | sort_by(.key) | last.value | last.udid')
+endef
