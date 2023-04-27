@@ -2365,16 +2365,23 @@ class TestReducer<State, Action>: ReducerProtocol {
   }
 }
 
-extension Task where Success == Never, Failure == Never {
-  // NB: We would love if this was not necessary, but due to a lack of async testing tools in Swift
-  //     we're not sure if there is an alternative. See this forum post for more information:
+extension Task where Success == Failure, Failure == Never {
+  // NB: We would love if this was not necessary. See this forum post for more information:
   //     https://forums.swift.org/t/reliably-testing-code-that-adopts-swift-concurrency/57304
-  @_spi(Internals) public static func megaYield(count: Int = 10) async {
-    for _ in 1...count {
+  @_spi(Internals) public static func megaYield(count: Int = defaultMegaYieldCount) async {
+    for _ in 0..<count {
       await Task<Void, Never>.detached(priority: .background) { await Task.yield() }.value
     }
   }
 }
+
+@_spi(Internals) public let defaultMegaYieldCount = max(
+  0,
+  min(
+    ProcessInfo.processInfo.environment["TASK_MEGA_YIELD_COUNT"].flatMap(Int.init) ?? 20,
+    10_000
+  )
+)
 
 // NB: Only needed until Xcode ships a macOS SDK that uses the 5.7 standard library.
 // See: https://forums.swift.org/t/xcode-14-rc-cannot-specialize-protocol-type/60171/15
