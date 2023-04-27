@@ -1872,7 +1872,8 @@ extension TestStore where ScopedState: Equatable {
             clock/scheduler, advance it so that the effects may complete, or consider using \
             an immediate clock/scheduler to immediately perform the effect instead.
 
-            If you are not yet using a scheduler, or can not use a scheduler, \(timeoutMessage).
+            If you are not yet using a clock/scheduler, or can not use a clock/scheduler, \
+            \(timeoutMessage).
             """
         }
         XCTFail(
