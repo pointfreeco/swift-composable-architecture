@@ -119,6 +119,7 @@ public struct _NavigationLinkStoreContent<State, Label: View>: View {
 
   public var body: some View {
     #if DEBUG
+      // TODO: Integration test using accessibility label?
       self.label.onAppear {
         if self.navigationDestinationType != State.self {
           runtimeWarn(
