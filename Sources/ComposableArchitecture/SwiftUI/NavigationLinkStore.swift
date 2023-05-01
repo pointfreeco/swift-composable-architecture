@@ -19,6 +19,7 @@ public struct NavigationLinkStore<
   let onTap: () -> Void
   let destination: (Store<DestinationState, DestinationAction>) -> Destination
   let label: Label
+  var isDetailLink = true
 
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
@@ -128,5 +129,17 @@ public struct NavigationLinkStore<
     } label: {
       self.label
     }
+    #if os(iOS)
+      .isDetailLink(self.isDetailLink)
+    #endif
+  }
+
+  @available(macOS, unavailable)
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
+  public func isDetailLink(_ isDetailLink: Bool) -> Self {
+    var link = self
+    link.isDetailLink = isDetailLink
+    return link
   }
 }

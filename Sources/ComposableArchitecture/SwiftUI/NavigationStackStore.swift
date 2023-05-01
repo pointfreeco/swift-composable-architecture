@@ -98,11 +98,47 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
         }
       )
     ) {
-      self.root.navigationDestination(for: Component<State>.self) { component in
-        // TODO: Get integration test logic on the identity here
-        self.destination(component).id(component.id)
-      }
+      self.root
+        .environment(\.navigationDestinationType, State.self)
+        .navigationDestination(for: Component<State>.self) { component in
+          self.destination(component)
+            .environment(\.navigationDestinationType, State.self)
+            // TODO: Get integration test logic on the identity here
+            .id(component.id)
+        }
     }
+  }
+}
+
+public struct _NavigationLinkStoreContent<State, Label: View>: View {
+  let state: State?
+  @ViewBuilder let label: Label
+  let fileID: StaticString
+  let line: UInt
+  @Environment(\.navigationDestinationType) var navigationDestinationType
+
+  public var body: some View {
+    #if DEBUG
+      // TODO: Integration test using accessibility label?
+      self.label.onAppear {
+        if self.navigationDestinationType != State.self {
+          runtimeWarn(
+            """
+            A navigation link at "\(self.fileID):\(self.line)" is unpresentable. …
+
+              NavigationStackStore element type:
+                \(self.navigationDestinationType.map(typeName) ?? "(None found in view hierarchy)")
+              NavigationLink state type:
+                \(typeName(State.self))
+              NavigationLink state value:
+              \(String(customDumping: self.state).indent(by: 2))
+            """
+          )
+        }
+      }
+    #else
+      self.label
+    #endif
   }
 }
 
@@ -121,9 +157,19 @@ extension NavigationLink where Destination == Never {
   ///   - state: An optional value to present. When the user selects the link, SwiftUI stores a copy
   ///     of the value. Pass a `nil` value to disable the link.
   ///   - label: A label that describes the view that this link presents.
-  public init<P: Hashable>(state: P?, label: () -> Label) {
+  public init<P: Hashable, L: View>(
+    state: P?,
+    @ViewBuilder label: () -> L,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  )
+  where Label == _NavigationLinkStoreContent<P, L> {
     @Dependency(\.stackElementID) var stackElementID
-    self.init(value: state.map { Component(id: stackElementID(), element: $0) }, label: label)
+    self.init(value: state.map { Component(id: stackElementID(), element: $0) }) {
+      _NavigationLinkStoreContent<P, L>(
+        state: state, label: { label() }, fileID: fileID, line: line
+      )
+    }
   }
 
   /// Creates a navigation link that presents the view corresponding to an element of
@@ -140,9 +186,11 @@ extension NavigationLink where Destination == Never {
   ///     presents.
   ///   - state: An optional value to present. When the user selects the link, SwiftUI stores a copy
   ///     of the value. Pass a `nil` value to disable the link.
-  public init<P: Hashable>(_ titleKey: LocalizedStringKey, state: P?) where Label == Text {
-    @Dependency(\.stackElementID) var stackElementID
-    self.init(titleKey, value: state.map { Component(id: stackElementID(), element: $0) })
+  public init<P: Hashable>(
+    _ titleKey: LocalizedStringKey, state: P?, fileID: StaticString = #fileID, line: UInt = #line
+  )
+  where Label == _NavigationLinkStoreContent<P, Text> {
+    self.init(state: state, label: { Text(titleKey) }, fileID: fileID, line: line)
   }
 
   /// Creates a navigation link that presents the view corresponding to an element of
@@ -159,9 +207,11 @@ extension NavigationLink where Destination == Never {
   ///   - state: An optional value to present. When the user selects the link, SwiftUI stores a copy
   ///     of the value. Pass a `nil` value to disable the link.
   @_disfavoredOverload
-  public init<S: StringProtocol, P: Hashable>(_ title: S, state: P?) where Label == Text {
-    @Dependency(\.stackElementID) var stackElementID
-    self.init(title, value: state.map { Component(id: stackElementID(), element: $0) })
+  public init<S: StringProtocol, P: Hashable>(
+    _ title: S, state: P?, fileID: StaticString = #fileID, line: UInt = #line
+  )
+  where Label == _NavigationLinkStoreContent<P, Text> {
+    self.init(state: state, label: { Text(title) }, fileID: fileID, line: line)
   }
 }
 
@@ -232,5 +282,16 @@ extension StackState {
           .updateValue(component.element, forKey: component.id, insertingAt: subrange.lowerBound)
       }
     }
+  }
+}
+
+private struct NavigationDestinationTypeKey: EnvironmentKey {
+  static var defaultValue: Any.Type? { nil }
+}
+
+extension EnvironmentValues {
+  fileprivate var navigationDestinationType: Any.Type? {
+    get { self[NavigationDestinationTypeKey.self] }
+    set { self[NavigationDestinationTypeKey.self] = newValue }
   }
 }
