@@ -324,13 +324,15 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
     {
       let presentationDestinationID = self.navigationIDPath(for: presentationState)
       state[keyPath: self.toPresentationState].isPresented = true
-      presentEffects = Empty(completeImmediately: false)
-        .eraseToEffect()
-        ._cancellable(id: PresentationDismissID(), navigationIDPath: presentationDestinationID)
-        .append(Just(self.toPresentationAction.embed(.dismiss)))
-        .eraseToEffect()
-        ._cancellable(navigationIDPath: presentationDestinationID)
-        ._cancellable(id: OnFirstAppearID(), navigationIDPath: .init())
+      presentEffects = .concatenate(
+        Empty(completeImmediately: false)
+          .eraseToEffectPublisher()
+          ._cancellable(id: PresentationDismissID(), navigationIDPath: presentationDestinationID),
+        Just(self.toPresentationAction.embed(.dismiss))
+          .eraseToEffectPublisher()
+      )
+      ._cancellable(navigationIDPath: presentationDestinationID)
+      ._cancellable(id: OnFirstAppearID(), navigationIDPath: .init())
     } else {
       presentEffects = .none
     }

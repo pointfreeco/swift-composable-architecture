@@ -316,16 +316,18 @@ public struct _StackReducer<
         idsAfter.subtracting(idsMounted).map { elementID in
           let navigationDestinationID = self.navigationIDPath(for: elementID)
           state[keyPath: self.toStackState]._mounted.insert(elementID)
-          return Empty(completeImmediately: false)
-            .eraseToEffect()
-            ._cancellable(
-              id: NavigationDismissID(elementID: elementID),
-              navigationIDPath: navigationDestinationID
-            )
-            .append(Just(self.toStackAction.embed(.popFrom(id: elementID))))
-            .eraseToEffect()
-            ._cancellable(navigationIDPath: navigationDestinationID)
-            ._cancellable(id: OnFirstAppearID(), navigationIDPath: .init())
+          return .concatenate(
+            Empty(completeImmediately: false)
+              .eraseToEffectPublisher()
+              ._cancellable(
+                id: NavigationDismissID(elementID: elementID),
+                navigationIDPath: navigationDestinationID
+              ),
+            Just(self.toStackAction.embed(.popFrom(id: elementID)))
+              .eraseToEffectPublisher()
+          )
+          ._cancellable(navigationIDPath: navigationDestinationID)
+          ._cancellable(id: OnFirstAppearID(), navigationIDPath: .init())
         }
       )
 

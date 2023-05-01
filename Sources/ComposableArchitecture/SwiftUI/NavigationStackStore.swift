@@ -42,6 +42,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
     self._viewStore = StateObject(
       wrappedValue: ViewStore(
         store,
+        observe: { $0 },
         removeDuplicates: { areOrderedSetsDuplicates($0.ids, $1.ids) }
       )
     )
@@ -79,6 +80,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
     self._viewStore = StateObject(
       wrappedValue: ViewStore(
         store,
+        observe: { $0 },
         removeDuplicates: { areOrderedSetsDuplicates($0.ids, $1.ids) }
       )
     )
