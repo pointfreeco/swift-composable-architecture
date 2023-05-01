@@ -121,9 +121,14 @@ public struct NavigationLinkStore<
     } label: {
       self.label
     }
-    .isDetailLink(self.isDetailLink)
+    #if os(iOS)
+      .isDetailLink(self.isDetailLink)
+    #endif
   }
 
+  @available(macOS, unavailable)
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
   public func isDetailLink(_ isDetailLink: Bool) -> Self {
     var link = self
     link.isDetailLink = isDetailLink
