@@ -1187,6 +1187,14 @@ extension TestStore where ScopedState: Equatable {
   ) throws {
     let current = expected
     var expected = expected
+
+    let currentStackElementID = self.reducer.dependencies.stackElementID
+    let copiedStackElementID = currentStackElementID.incrementingCopy()
+    self.reducer.dependencies.stackElementID = copiedStackElementID
+    defer {
+      self.reducer.dependencies.stackElementID = currentStackElementID
+    }
+
     let updateStateToExpectedResult = updateStateToExpectedResult.map { original in
       { (state: inout ScopedState) in
         try XCTModifyLocals.$isExhaustive.withValue(self.exhaustivity == .on) {
