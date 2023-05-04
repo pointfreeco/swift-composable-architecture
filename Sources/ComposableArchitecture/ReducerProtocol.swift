@@ -160,7 +160,7 @@
   /// }
   /// ```
   ///
-  public protocol ReducerProtocol<State,Action> {
+  public protocol ReducerProtocol<State, Action> {
     /// A type that holds the current state of the reducer.
     associatedtype State
 
@@ -169,17 +169,29 @@
     associatedtype Action
 
     // NB: For Xcode to favor autocompleting `var body: Body` over `var body: Never` we must use a
-    //     type alias.
-    associatedtype _Body
+    //     type alias. We compile it out of release because this workaround is incompatible with
+    //     library evolution.
+    #if DEBUG
+      associatedtype _Body
 
-    /// A type representing the body of this reducer.
-    ///
-    /// When you create a custom reducer by implementing the ``body-swift.property-7foai``, Swift
-    /// infers this type from the value returned.
-    ///
-    /// If you create a custom reducer by implementing the ``reduce(into:action:)-8yinq``, Swift
-    /// infers this type to be `Never`.
-    typealias Body = _Body
+      /// A type representing the body of this reducer.
+      ///
+      /// When you create a custom reducer by implementing the ``body-swift.property-7foai``, Swift
+      /// infers this type from the value returned.
+      ///
+      /// If you create a custom reducer by implementing the ``reduce(into:action:)-8yinq``, Swift
+      /// infers this type to be `Never`.
+      typealias Body = _Body
+    #else
+      /// A type representing the body of this reducer.
+      ///
+      /// When you create a custom reducer by implementing the ``body-swift.property-7foai``, Swift
+      /// infers this type from the value returned.
+      ///
+      /// If you create a custom reducer by implementing the ``reduce(into:action:)-8yinq``, Swift
+      /// infers this type to be `Never`.
+      associatedtype Body
+    #endif
 
     /// Evolves the current state of the reducer to the next state.
     ///
