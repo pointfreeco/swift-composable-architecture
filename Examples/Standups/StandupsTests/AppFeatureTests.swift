@@ -18,8 +18,7 @@ final class AppFeatureTests: XCTestCase {
       )
     }
 
-    await store.send(.standupsList(.standupTapped(id: standup.id)))
-    await store.receive(.standupsList(.delegate(.goToStandup(standup)))) {
+    await store.send(.path(.push(id: 0, state: .detail(StandupDetail.State(standup: standup))))) {
       $0.path[id: 0] = .detail(StandupDetail.State(standup: standup))
       // TODO: Should this work instead?
       // $0.path.append(.detail(StandupDetail.State(standup: standup)))
@@ -61,8 +60,7 @@ final class AppFeatureTests: XCTestCase {
     let savedData = LockIsolated(Data?.none)
     store.dependencies.dataManager.save = { data, _ in savedData.setValue(data) }
 
-    await store.send(.standupsList(.standupTapped(id: standup.id)))
-    await store.receive(.standupsList(.delegate(.goToStandup(standup)))) {
+    await store.send(.path(.push(id: 0, state: .detail(StandupDetail.State(standup: standup))))) {
       $0.path[id: 0] = .detail(StandupDetail.State(standup: standup))
     }
 

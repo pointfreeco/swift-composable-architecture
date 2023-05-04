@@ -31,17 +31,6 @@ struct AppFeature: ReducerProtocol {
           state.standupsList.standups.remove(id: detailState.standup.id)
           return .none
 
-        case let .goToMeeting(meeting):
-          state.path.append(
-            .meeting(
-              MeetingReducer.State(
-                meeting: meeting,
-                standup: detailState.standup
-              )
-            )
-          )
-          return .none
-
         case .startMeeting:
           state.path.append(
             .record(
@@ -72,13 +61,6 @@ struct AppFeature: ReducerProtocol {
 
       case .path:
         return .none
-
-      case let .standupsList(.delegate(delegateAction)):
-        switch delegateAction {
-        case let .goToStandup(standup):
-          state.path.append(.detail(StandupDetail.State(standup: standup)))
-          return .none
-        }
 
       case .standupsList:
         return .none
