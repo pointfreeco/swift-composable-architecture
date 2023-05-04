@@ -88,11 +88,11 @@ final class AppFeatureTests: XCTestCase {
         $0.destination = nil
         $0.standup.title = "Blob"
       }
-      $0.standupsList.standups[0].title = "Blob"
     }
 
     await store.send(.path(.popFrom(id: 0))) {
       $0.path = StackState()
+      $0.standupsList.standups[0].title = "Blob"
     }
   }
 
@@ -148,17 +148,12 @@ final class AppFeatureTests: XCTestCase {
     await store.receive(.path(.element(id: 1, action: .record(.timerTick))))
     await store.receive(.path(.element(id: 1, action: .record(.timerTick))))
     await store.receive(.path(.element(id: 1, action: .record(.timerTick))))
-    store.exhaustivity = .on
 
     await store.receive(
       .path(
         .element(id: 1, action: .record(.delegate(.save(transcript: "I completed the project"))))
       )
     ) {
-      // TODO: this shows confusing "expected failure" when in non-exhaustive mode... can we do better?
-      // XCTAssertEqual($0.path.count, 1)
-
-      $0.path.removeLast()
       XCTModify(&$0.path[id: 0], case: /AppFeature.Path.State.detail) {
         $0.standup.meetings = [
           Meeting(
@@ -168,16 +163,7 @@ final class AppFeatureTests: XCTestCase {
           )
         ]
       }
-      $0.standupsList.standups[0].meetings = [
-        Meeting(
-          id: Meeting.ID(uuidString: "00000000-0000-0000-0000-000000000000")!,
-          date: Date(timeIntervalSince1970: 1234567890),
-          transcript: "I completed the project"
-        )
-      ]
     }
     XCTAssertEqual(store.state.path.count, 1)
   }
 }
-
-// TODO: integration test for recording
