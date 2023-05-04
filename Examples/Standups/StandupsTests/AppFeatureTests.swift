@@ -20,8 +20,6 @@ final class AppFeatureTests: XCTestCase {
 
     await store.send(.path(.push(id: 0, state: .detail(StandupDetail.State(standup: standup))))) {
       $0.path[id: 0] = .detail(StandupDetail.State(standup: standup))
-      // TODO: Should this work instead?
-      // $0.path.append(.detail(StandupDetail.State(standup: standup)))
     }
 
     await store.send(.path(.element(id: 0, action: .detail(.deleteButtonTapped)))) {

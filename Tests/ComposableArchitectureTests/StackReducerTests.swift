@@ -1080,7 +1080,6 @@ import XCTest
       }
     }
 
-
     func testSendCopiesStackElementIDGenerator() async {
       struct Feature: ReducerProtocol {
         struct State: Equatable {
@@ -1104,8 +1103,7 @@ import XCTest
               return .none
             }
           }
-          .forEach(\.path, action: /Action.path) {
-          }
+          .forEach(\.path, action: /Action.path) {}
         }
       }
 
