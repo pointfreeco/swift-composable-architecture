@@ -5,8 +5,25 @@ how to integrate features in the reducer and view layer, and how to write tests.
 
 ## Overview
 
-TODO
+State-driven navigation is a powerful concept in application development, but can be tricky to 
+master. The Composable Architecture provides the tools necessary to model your domains as concisely
+as possible and drive navigation from state, but there are a few concepts to learn in order to best
+yield these tools.
 
+## Tree-based vs stack-based navigation
+
+There are two main
+
+## Topics
+
+### Types of navigation
+
+- <doc:TreeBasedNavigation>
+- <doc:StackBasedNavigation>
+
+
+
+<!--
 ## Integrating features for navigation
 
 The process for integrating features together for navigation largely consists of 2 steps: 
@@ -38,7 +55,7 @@ struct InventoryFeature: ReducerProtocol {
 is being presented, and `nil` presents the feature is dismissed.
 
 Next you can integrate the reducers of the parent and child features by using the 
-``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)-23pza`` reducer operator, as well
+``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)`` reducer operator, as well
 as having an action in the parent domain for populating the child's state to drive navigation:
 
 ```swift
@@ -117,3 +134,4 @@ presentation domain, including:
 
 <!-- domain modeling with enums -->
 <!-- child dismiss -->
+

@@ -30,27 +30,23 @@ public struct StackState<Element>: RandomAccessCollection, RangeReplaceableColle
     }
   }
 
-  @discardableResult
-  public mutating func pop(from id: StackElementID) -> Bool {
+  public mutating func pop(from id: StackElementID) {
     guard let index = self._dictionary.keys.firstIndex(of: id)
-    else { return false }
+    else { return }
     for id in self._dictionary.keys[index...] {
       self._mounted.remove(id)
     }
     self._dictionary.removeSubrange(index...)
-    return true
   }
 
-  @discardableResult
-  public mutating func pop(to id: StackElementID) -> Bool {
+  public mutating func pop(to id: StackElementID) {
     guard var index = self._dictionary.keys.firstIndex(of: id)
-    else { return false }
+    else { return }
     index += 1
     for id in self._dictionary.keys[index...] {
       self._mounted.remove(id)
     }
     self._dictionary.removeSubrange(index...)
-    return true
   }
 
   public var startIndex: Int { self._dictionary.keys.startIndex }
