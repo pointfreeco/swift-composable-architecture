@@ -20,6 +20,12 @@ extension DependencyValues {
   ///   }
   /// }
   /// ```
+  ///
+  /// This operation works by finding the nearest parent feature that was presented using either the
+  /// ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)`` or the
+  /// ``ReducerProtocol/forEach(_:action:destination:file:fileID:line:)`` operator, and then
+  /// dismisses _that_ feature. If no such parent feature is found a runtime warning is emitted in
+  /// Xcode letting you know that it is not possible to dismiss.
   public var dismiss: DismissEffect {
     get { self[DismissKey.self] }
     set { self[DismissKey.self] = newValue }
@@ -47,8 +53,13 @@ extension DependencyValues {
 ///   }
 /// }
 /// ```
+///
+/// This operation works by finding the nearest parent feature that was presented using either the
+/// ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)`` or the
+/// ``ReducerProtocol/forEach(_:action:destination:file:fileID:line:)`` operator, and then dismisses
+/// _that_ feature. If no such parent feature is found a runtime warning is emitted in Xcode letting
+/// you know that it is not possible to dismiss.
 public struct DismissEffect: Sendable {
-  // TODO: Make `@MainActor`
   var dismiss: (@Sendable () async -> Void)?
 
   public func callAsFunction(
