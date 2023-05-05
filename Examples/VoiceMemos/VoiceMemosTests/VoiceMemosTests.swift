@@ -89,7 +89,8 @@ final class VoiceMemosTests: XCTestCase {
       await store.receive(.voiceMemos(id: deadbeefURL, action: .timerUpdated(2))) {
         $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0.8)
       }
-      await store.receive(.voiceMemos(id: deadbeefURL, action: .audioPlayerClient(.success(true)))) {
+      await store.receive(.voiceMemos(id: deadbeefURL, action: .audioPlayerClient(.success(true))))
+      {
         $0.voiceMemos[id: deadbeefURL]?.mode = .notPlaying
       }
     }
@@ -405,7 +406,7 @@ final class VoiceMemosTests: XCTestCase {
             mode: .playing(progress: 0.3),
             title: "Episode 3",
             url: URL(fileURLWithPath: "pointfreeco/3.m4a")
-          )
+          ),
         ]
       ),
       reducer: VoiceMemos()
@@ -426,7 +427,7 @@ final class VoiceMemosTests: XCTestCase {
           mode: .playing(progress: 0.3),
           title: "Episode 3",
           url: URL(fileURLWithPath: "pointfreeco/3.m4a")
-        )
+        ),
       ]
     }
   }

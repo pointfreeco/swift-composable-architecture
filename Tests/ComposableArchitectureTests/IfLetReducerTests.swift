@@ -88,7 +88,7 @@ final class IfLetReducerTests: BaseTCATestCase {
             .ifLet(\.child, action: /Action.child) {
               Child()
             }
-          } 
+          }
         }
         await _withMainSerialExecutor {
           let clock = TestClock()

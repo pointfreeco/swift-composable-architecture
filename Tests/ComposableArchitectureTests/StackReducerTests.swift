@@ -484,7 +484,6 @@ import XCTest
       }
     }
 
-
     func testSiblingCannotCancel() async {
       struct Child: ReducerProtocol {
         struct State: Equatable {
@@ -755,7 +754,7 @@ import XCTest
       )
       await store.send(.path(.popFrom(id: 999)))
     }
- 
+
     func testChildWithInFlightEffect() async {
       struct Child: ReducerProtocol {
         struct State: Equatable {}
@@ -788,28 +787,28 @@ import XCTest
 
       XCTExpectFailure {
         $0.sourceCodeContext.location?.fileURL.absoluteString.contains("BaseTCATestCase") == true
-        || $0.sourceCodeContext.location?.lineNumber == line + 1
-        && $0.compactDescription == """
-          An effect returned for this action is still running. It must complete before the end of \
-          the test. …
+          || $0.sourceCodeContext.location?.lineNumber == line + 1
+            && $0.compactDescription == """
+              An effect returned for this action is still running. It must complete before the end of \
+              the test. …
 
-          To fix, inspect any effects the reducer returns for this action and ensure that all of \
-          them complete by the end of the test. There are a few reasons why an effect may not have \
-          completed:
+              To fix, inspect any effects the reducer returns for this action and ensure that all of \
+              them complete by the end of the test. There are a few reasons why an effect may not have \
+              completed:
 
-          • If using async/await in your effect, it may need a little bit of time to properly \
-          finish. To fix you can simply perform "await store.finish()" at the end of your test.
+              • If using async/await in your effect, it may need a little bit of time to properly \
+              finish. To fix you can simply perform "await store.finish()" at the end of your test.
 
-          • If an effect uses a clock/scheduler (via "receive(on:)", "delay", "debounce", etc.), \
-          make sure that you wait enough time for it to perform the effect. If you are using a \
-          test clock/scheduler, advance it so that the effects may complete, or consider using an \
-          immediate clock/scheduler to immediately perform the effect instead.
+              • If an effect uses a clock/scheduler (via "receive(on:)", "delay", "debounce", etc.), \
+              make sure that you wait enough time for it to perform the effect. If you are using a \
+              test clock/scheduler, advance it so that the effects may complete, or consider using an \
+              immediate clock/scheduler to immediately perform the effect instead.
 
-          • If you are returning a long-living effect (timers, notifications, subjects, etc.), \
-          then make sure those effects are torn down by marking the effect ".cancellable" and \
-          returning a corresponding cancellation effect ("Effect.cancel") from another action, or, \
-          if your effect is driven by a Combine subject, send it a completion.
-          """
+              • If you are returning a long-living effect (timers, notifications, subjects, etc.), \
+              then make sure those effects are torn down by marking the effect ".cancellable" and \
+              returning a corresponding cancellation effect ("Effect.cancel") from another action, or, \
+              if your effect is driven by a Combine subject, send it a completion.
+              """
       }
     }
 
@@ -834,7 +833,10 @@ import XCTest
     func testMultipleChildEffects() async {
       struct Child: ReducerProtocol {
         struct State: Equatable { var count = 0 }
-        enum Action: Equatable { case tap, response(Int) }
+        enum Action: Equatable {
+          case tap
+          case response(Int)
+        }
         @Dependency(\.mainQueue) var mainQueue
         func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
           switch action {
@@ -858,7 +860,7 @@ import XCTest
         }
         var body: some ReducerProtocolOf<Self> {
           Reduce { _, _ in .none }
-          .forEach(\.children, action: /Action.child) { Child() }
+            .forEach(\.children, action: /Action.child) { Child() }
         }
       }
 
@@ -889,7 +891,7 @@ import XCTest
 
     func testChildEffectCancellation() async {
       struct Child: ReducerProtocol {
-        struct State: Equatable { }
+        struct State: Equatable {}
         enum Action: Equatable { case tap }
         func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
           .run { _ in try await Task.never() }
@@ -904,14 +906,14 @@ import XCTest
         }
         var body: some ReducerProtocolOf<Self> {
           Reduce { _, _ in .none }
-          .forEach(\.children, action: /Action.child) { Child() }
+            .forEach(\.children, action: /Action.child) { Child() }
         }
       }
 
       let store = TestStore(
         initialState: Parent.State(
           children: StackState([
-            Child.State(),
+            Child.State()
           ])
         ),
         reducer: Parent()
@@ -925,9 +927,9 @@ import XCTest
 
     func testPush() async {
       struct Child: ReducerProtocol {
-        struct State: Equatable { }
-        enum Action: Equatable { }
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> { }
+        struct State: Equatable {}
+        enum Action: Equatable {}
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {}
       }
       struct Parent: ReducerProtocol {
         struct State: Equatable {
@@ -947,7 +949,7 @@ import XCTest
               return .none
             }
           }
-            .forEach(\.children, action: /Action.child) { Child() }
+          .forEach(\.children, action: /Action.child) { Child() }
         }
       }
 
@@ -978,8 +980,8 @@ import XCTest
 
     func testPushReusedID() async {
       struct Child: ReducerProtocol {
-        struct State: Equatable { }
-        enum Action: Equatable { }
+        struct State: Equatable {}
+        enum Action: Equatable {}
         func reduce(into state: inout State, action: Action) -> EffectTask<Action> {}
       }
       struct Parent: ReducerProtocol {
@@ -991,7 +993,7 @@ import XCTest
         }
         var body: some ReducerProtocolOf<Self> {
           Reduce { _, _ in .none }
-          .forEach(\.children, action: /Action.child) { Child() }
+            .forEach(\.children, action: /Action.child) { Child() }
         }
       }
 
@@ -1011,8 +1013,8 @@ import XCTest
 
     func testPushIDGreaterThanNextGeneration() async {
       struct Child: ReducerProtocol {
-        struct State: Equatable { }
-        enum Action: Equatable { }
+        struct State: Equatable {}
+        enum Action: Equatable {}
         func reduce(into state: inout State, action: Action) -> EffectTask<Action> {}
       }
       struct Parent: ReducerProtocol {
@@ -1043,8 +1045,8 @@ import XCTest
 
     func testMismatchedIDFailure() async {
       struct Child: ReducerProtocol {
-        struct State: Equatable { }
-        enum Action: Equatable { }
+        struct State: Equatable {}
+        enum Action: Equatable {}
         func reduce(into state: inout State, action: Action) -> EffectTask<Action> {}
       }
       struct Parent: ReducerProtocol {

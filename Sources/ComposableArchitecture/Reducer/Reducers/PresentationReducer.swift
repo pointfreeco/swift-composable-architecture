@@ -203,8 +203,10 @@ public struct _PresentationReducer<
   Base: ReducerProtocol, Destination: ReducerProtocol
 >: ReducerProtocol {
   @usableFromInline let base: Base
-  @usableFromInline let toPresentationState: WritableKeyPath<Base.State, PresentationState<Destination.State>>
-  @usableFromInline let toPresentationAction: CasePath<Base.Action, PresentationAction<Destination.Action>>
+  @usableFromInline let toPresentationState:
+    WritableKeyPath<Base.State, PresentationState<Destination.State>>
+  @usableFromInline let toPresentationAction:
+    CasePath<Base.Action, PresentationAction<Destination.Action>>
   @usableFromInline let destination: Destination
   @usableFromInline let file: StaticString
   @usableFromInline let fileID: StaticString
@@ -256,9 +258,12 @@ public struct _PresentationReducer<
     case let (.some(destinationState), .some(.presented(destinationAction))):
       let destinationNavigationIDPath = self.navigationIDPath(for: destinationState)
       destinationEffects = self.destination
-        .dependency(\.dismiss, DismissEffect { @MainActor in
-          Task._cancel(id: PresentationDismissID(), navigationID: destinationNavigationIDPath)
-        })
+        .dependency(
+          \.dismiss,
+          DismissEffect { @MainActor in
+            Task._cancel(id: PresentationDismissID(), navigationID: destinationNavigationIDPath)
+          }
+        )
         .dependency(\.navigationIDPath, destinationNavigationIDPath)
         .reduce(
           into: &state[keyPath: self.toPresentationState].wrappedValue!, action: destinationAction
@@ -304,8 +309,8 @@ public struct _PresentationReducer<
     }
 
     let presentationIdentityChanged =
-    initialPresentationState.wrappedValue.map(self.navigationIDPath(for:))
-    != state[keyPath: self.toPresentationState].wrappedValue.map(self.navigationIDPath(for:))
+      initialPresentationState.wrappedValue.map(self.navigationIDPath(for:))
+      != state[keyPath: self.toPresentationState].wrappedValue.map(self.navigationIDPath(for:))
 
     let dismissEffects: EffectTask<Base.Action>
     if presentationIdentityChanged,
@@ -379,7 +384,9 @@ extension Task where Success == Never, Failure == Never {
     id: AnyHashable,
     navigationID: NavigationIDPath
   ) {
-    withDependencies { $0.navigationIDPath = navigationID } operation: {
+    withDependencies {
+      $0.navigationIDPath = navigationID
+    } operation: {
       Task.cancel(id: id)
     }
   }
@@ -391,7 +398,9 @@ extension EffectPublisher {
     navigationIDPath: NavigationIDPath,
     cancelInFlight: Bool = false
   ) -> Self {
-    withDependencies { $0.navigationIDPath = navigationIDPath } operation: {
+    withDependencies {
+      $0.navigationIDPath = navigationIDPath
+    } operation: {
       self.cancellable(id: id, cancelInFlight: cancelInFlight)
     }
   }
@@ -400,7 +409,9 @@ extension EffectPublisher {
     id: AnyHashable = _PresentedID(),
     navigationID: NavigationIDPath
   ) -> Self {
-    withDependencies { $0.navigationIDPath = navigationID } operation: {
+    withDependencies {
+      $0.navigationIDPath = navigationID
+    } operation: {
       .cancel(id: id)
     }
   }
@@ -426,8 +437,8 @@ struct StableID: Hashable, Sendable {
 
   static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.identifier == rhs.identifier
-    && lhs.tag == rhs.tag
-    && lhs.type == rhs.type
+      && lhs.tag == rhs.tag
+      && lhs.type == rhs.type
   }
 
   func hash(into hasher: inout Hasher) {

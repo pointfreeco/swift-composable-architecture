@@ -353,7 +353,7 @@ extension Result: _ErrorMechanism {}
 
 @_spi(Internals)
 public class CancellablesCollection {
-  var storage: [_CancelID: Set<AnyCancellable>] = [:] 
+  var storage: [_CancelID: Set<AnyCancellable>] = [:]
 
   func insert(
     _ cancellable: AnyCancellable,

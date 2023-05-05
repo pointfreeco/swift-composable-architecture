@@ -49,7 +49,7 @@ enum Theme: String, CaseIterable, Equatable, Hashable, Identifiable, Codable {
   var accentColor: Color {
     switch self {
     case .bubblegum, .buttercup, .lavender, .orange, .periwinkle, .poppy, .seafoam, .sky, .tan,
-        .teal, .yellow:
+      .teal, .yellow:
       return .black
     case .indigo, .magenta, .navy, .oxblood, .purple:
       return .white
