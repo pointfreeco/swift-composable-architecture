@@ -159,8 +159,8 @@ public enum StackAction<State, Action> {
 }
 
 extension StackAction: Equatable where State: Equatable, Action: Equatable {}
-
 extension StackAction: Hashable where State: Hashable, Action: Hashable {}
+extension StackAction: Sendable where State: Sendable, Action: Sendable {}
 
 extension ReducerProtocol {
   /// Embeds a child reducer in a parent domain that works on elements of a navigation stack in
