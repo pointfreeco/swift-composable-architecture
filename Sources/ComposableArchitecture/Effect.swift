@@ -6,7 +6,7 @@ import XCTestDynamicOverlay
 /// This type is deprecated in favor of ``Effect``. See its documentation for more information.
 @available(
   iOS,
-  deprecated: 9999.0,
+  deprecated: 9999,
   message:
     """
     'EffectPublisher' has been deprecated in favor of 'Effect'.
@@ -18,7 +18,7 @@ import XCTestDynamicOverlay
 )
 @available(
   macOS,
-  deprecated: 9999.0,
+  deprecated: 9999,
   message:
     """
     'EffectPublisher' has been deprecated in favor of 'Effect'.
@@ -30,7 +30,7 @@ import XCTestDynamicOverlay
 )
 @available(
   tvOS,
-  deprecated: 9999.0,
+  deprecated: 9999,
   message:
     """
     'EffectPublisher' has been deprecated in favor of 'Effect'.
@@ -42,7 +42,7 @@ import XCTestDynamicOverlay
 )
 @available(
   watchOS,
-  deprecated: 9999.0,
+  deprecated: 9999,
   message:
     """
     'EffectPublisher' has been deprecated in favor of 'Effect'.

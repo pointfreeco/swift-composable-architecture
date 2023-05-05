@@ -89,7 +89,7 @@ extension EffectPublisher where Failure == Never {
   ///   - tolerance: The allowed timing variance when emitting events. Defaults to `nil`, which
   ///     allows any variance.
   ///   - options: Scheduler options passed to the timer. Defaults to `nil`.
-  @available(*, deprecated, message: "Use 'clock.timer' in an 'Effect.run', instead.")
+  @available(*, deprecated, message: "Use 'clock/scheduler.timer' in an 'Effect.run', instead.")
   public static func timer<S: Scheduler>(
     id: AnyHashable,
     every interval: S.SchedulerTimeType.Stride,
@@ -118,7 +118,7 @@ extension EffectPublisher where Failure == Never {
   ///   - tolerance: The allowed timing variance when emitting events. Defaults to `nil`, which
   ///     allows any variance.
   ///   - options: Scheduler options passed to the timer. Defaults to `nil`.
-  @available(*, deprecated, message: "Use 'clock.timer' in an 'Effect.run', instead.")
+  @available(*, deprecated, message: "Use 'clock/scheduler.timer' in an 'Effect.run', instead.")
   public static func timer<S: Scheduler>(
     id: Any.Type,
     every interval: S.SchedulerTimeType.Stride,

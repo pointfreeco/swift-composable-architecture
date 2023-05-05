@@ -298,7 +298,7 @@
             return .none
           case .increment:
             state.count += 1
-            return Effect(value: .loggedInResponse(true))
+            return .send(.loggedInResponse(true))
           case let .loggedInResponse(response):
             state.isLoggedIn = response
             return .none
@@ -337,7 +337,7 @@
           switch action {
           case .increment:
             state.count += 1
-            return Effect(value: .loggedInResponse(true))
+            return .send(.loggedInResponse(true))
           case let .loggedInResponse(response):
             state.isLoggedIn = response
             return .none
@@ -598,7 +598,7 @@
         reducer: Reduce<Int, Action> { state, action in
           switch action {
           case .tap:
-            return Effect(value: .response(NonEquatable()))
+            return .send(.response(NonEquatable()))
           case .response:
             return .none
           }
@@ -621,7 +621,7 @@
         reducer: Reduce<Int, Action> { state, action in
           switch action {
           case .tap:
-            return Effect(value: .response(NonEquatable()))
+            return .send(.response(NonEquatable()))
           case .response:
             return .none
           }

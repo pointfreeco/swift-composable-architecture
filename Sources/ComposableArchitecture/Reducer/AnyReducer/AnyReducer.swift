@@ -26,7 +26,8 @@ import Combine
 ///   `.fireAndForget` functions on ``Effect``, then the threading is automatically handled for
 ///   you.
 @available(
-  *, deprecated,
+  *,
+  deprecated,
   message:
     """
     This API has been deprecated in favor of 'Reducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
@@ -68,7 +69,8 @@ public struct AnyReducer<State, Action, Environment> {
   /// - Parameter reducer: A function signature that takes state, action and
   ///   environment.
   @available(
-    *, deprecated,
+    *,
+    deprecated,
     message:
       """
       This API has been deprecated in favor of 'Reducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
@@ -83,7 +85,8 @@ public struct AnyReducer<State, Action, Environment> {
   ///
   /// A reducer that performs no state mutations and returns no effects.
   @available(
-    *, deprecated,
+    *,
+    deprecated,
     message:
       """
       This API has been deprecated in favor of 'EmptyReducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
@@ -148,7 +151,8 @@ public struct AnyReducer<State, Action, Environment> {
   /// - Parameter reducers: A list of reducers.
   /// - Returns: A single reducer.
   @available(
-    *, deprecated,
+    *,
+    deprecated,
     message:
       """
       This API has been deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
@@ -171,7 +175,8 @@ public struct AnyReducer<State, Action, Environment> {
   /// - Parameter reducers: An array of reducers.
   /// - Returns: A single reducer.
   @available(
-    *, deprecated,
+    *,
+    deprecated,
     message:
       """
       This API has been deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
@@ -197,7 +202,8 @@ public struct AnyReducer<State, Action, Environment> {
   /// - Parameter other: Another reducer.
   /// - Returns: A single reducer.
   @available(
-    *, deprecated,
+    *,
+    deprecated,
     message:
       """
       This API has been deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
@@ -252,7 +258,8 @@ public struct AnyReducer<State, Action, Environment> {
   ///   - toChildEnvironment: A function that transforms `ParentEnvironment` into `Environment`.
   /// - Returns: A reducer that works on `ParentState`, `ParentAction`, `ParentEnvironment`.
   @available(
-    *, deprecated,
+    *,
+    deprecated,
     message:
       """
       This API has been deprecated in favor of 'Scope'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
@@ -449,7 +456,8 @@ public struct AnyReducer<State, Action, Environment> {
   ///   - toChildEnvironment: A function that transforms `ParentEnvironment` into `Environment`.
   /// - Returns: A reducer that works on `ParentState`, `ParentAction`, `ParentEnvironment`.
   @available(
-    *, deprecated,
+    *,
+    deprecated,
     message:
       """
       This API has been deprecated in favor of 'Reducer.ifCaseLet' and 'Scope'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
@@ -667,7 +675,8 @@ public struct AnyReducer<State, Action, Environment> {
   ///
   /// - Returns: A reducer that works on optional state.
   @available(
-    *, deprecated,
+    *,
+    deprecated,
     message:
       """
       This API has been deprecated in favor of 'Reducer.ifLet'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
@@ -751,7 +760,8 @@ public struct AnyReducer<State, Action, Environment> {
   ///   - toElementEnvironment: A function that transforms `ParentEnvironment` into `Environment`.
   /// - Returns: A reducer that works on `ParentState`, `ParentAction`, `ParentEnvironment`.
   @available(
-    *, deprecated,
+    *,
+    deprecated,
     message:
       """
       This API has been deprecated in favor of 'Reducer.forEach'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
@@ -889,7 +899,8 @@ public struct AnyReducer<State, Action, Environment> {
   ///   - environment: An environment.
   /// - Returns: An effect that can emit zero or more actions.
   @available(
-    *, deprecated,
+    *,
+    deprecated,
     message:
       """
       This API has been deprecated in favor of 'Reducer.reduce(into:action:)'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer

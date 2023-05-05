@@ -15,7 +15,9 @@ extension EffectPublisher {
   ///   - scheduler: The scheduler you want to deliver the defer output to.
   ///   - options: Scheduler options that customize the effect's delivery of elements.
   /// - Returns: An effect that will be executed after `dueTime`
-  @available(*, deprecated, message: "Use 'clock.sleep' in 'Effect.task' or 'Effect.run', instead.")
+  @available(
+    *, deprecated, message: "Use 'clock/scheduler.sleep' in 'Effect.task' or 'Effect.run', instead."
+  )
   public func deferred<S: Scheduler>(
     for dueTime: S.SchedulerTimeType.Stride,
     scheduler: S,

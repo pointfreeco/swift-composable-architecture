@@ -185,13 +185,13 @@ final class StoreTests: BaseTCATestCase {
       switch action {
       case .tap:
         return .merge(
-          Effect(value: .next1),
-          Effect(value: .next2),
+          .send(.next1),
+          .send(.next2),
           .fireAndForget { values.append(1) }
         )
       case .next1:
         return .merge(
-          Effect(value: .end),
+          .send(.end),
           .fireAndForget { values.append(2) }
         )
       case .next2:
@@ -214,7 +214,7 @@ final class StoreTests: BaseTCATestCase {
       switch action {
       case .incr:
         state += 1
-        return state >= 100_000 ? Effect(value: .noop) : Effect(value: .incr)
+        return .send(state >= 100_000 ? .noop : .incr)
       case .noop:
         return .none
       }
@@ -355,9 +355,9 @@ final class StoreTests: BaseTCATestCase {
         switch action {
         case 0:
           return .merge(
-            Effect(value: 1),
-            Effect(value: 2),
-            Effect(value: 3)
+            .send(1),
+            .send(2),
+            .send(3)
           )
         default:
           state = action
@@ -711,7 +711,7 @@ final class StoreTests: BaseTCATestCase {
           case delay
         }
         @Dependency(\.mainQueue) var mainQueue
-        var body: Reduce<State, Action> {
+        var body: some ReducerProtocol<State, Action> {
           Reduce { state, action in
             switch action {
             case .child(.didFinish):

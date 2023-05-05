@@ -5,7 +5,7 @@ extension Reduce {
       """
       'AnyReducer' has been deprecated in favor of 'Reducer'.
 
-      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
+      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   public init<Environment>(
@@ -24,7 +24,7 @@ extension Reduce {
     """
     'AnyReducer' has been deprecated in favor of 'Reducer'.
 
-    See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
+    See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
     """
 )
 extension AnyReducer {
@@ -54,7 +54,7 @@ extension Store {
       """
       'AnyReducer' has been deprecated in favor of 'Reducer'.
 
-      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
+      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
   )
   public convenience init<Environment>(

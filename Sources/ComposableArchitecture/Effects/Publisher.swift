@@ -100,7 +100,7 @@ extension EffectPublisher {
     *,
     deprecated,
     message:
-      "Iterate over 'Publisher.values' in an 'EffectTask.run', instead, or use 'EffectTask.publisher'."
+      "Iterate over 'Publisher.values' in an 'Effect.run', instead, or use 'Effect.publisher'."
   )
   public init<P: Publisher>(_ publisher: P) where P.Output == Output, P.Failure == Failure {
     self.operation = .publisher(publisher.eraseToAnyPublisher())
@@ -306,7 +306,8 @@ extension EffectPublisher where Failure == Error {
   /// - Parameter work: A closure encapsulating some work to execute in the real world.
   /// - Returns: An effect.
   @available(
-    *, deprecated,
+    *,
+    deprecated,
     message: "Throw and catch errors directly in 'Effect.task' and 'Effect.run', instead."
   )
   public static func catching(_ work: @escaping () throws -> Action) -> Self {
@@ -329,9 +330,10 @@ extension Publisher {
   ///
   /// - Returns: An effect that wraps `self`.
   @available(
-    *, deprecated,
+    *,
+    deprecated,
     message:
-      "Iterate over 'Publisher.values' in an 'EffectTask.run', instead, or use 'EffectTask.publisher'."
+      "Iterate over 'Publisher.values' in an 'Effect.run', instead, or use 'Effect.publisher'."
   )
   public func eraseToEffect() -> EffectPublisher<Output, Failure> {
     EffectPublisher(self)
@@ -353,9 +355,10 @@ extension Publisher {
   ///   - transform: A mapping function that converts `Output` to another type.
   /// - Returns: An effect that wraps `self` after mapping `Output` values.
   @available(
-    *, deprecated,
+    *,
+    deprecated,
     message:
-      "Iterate over 'Publisher.values' in an 'EffectTask.run', instead, or use 'EffectTask.publisher'."
+      "Iterate over 'Publisher.values' in an 'Effect.run', instead, or use 'Effect.publisher'."
   )
   public func eraseToEffect<T>(
     _ transform: @escaping (Output) -> T
@@ -389,7 +392,7 @@ extension Publisher {
   @available(
     *, deprecated,
     message:
-      "Iterate over 'Publisher.values' in an 'EffectTask.run', instead, or use 'EffectTask.publisher'."
+      "Iterate over 'Publisher.values' in an 'Effect.run', instead, or use 'Effect.publisher'."
   )
   public func catchToEffect() -> Effect<Result<Output, Failure>> {
     self.catchToEffect { $0 }
@@ -411,9 +414,10 @@ extension Publisher {
   ///   - transform: A mapping function that converts `Result<Output,Failure>` to another type.
   /// - Returns: An effect that wraps `self`.
   @available(
-    *, deprecated,
+    *,
+    deprecated,
     message:
-      "Iterate over 'Publisher.values' in an 'EffectTask.run', instead, or use 'EffectTask.publisher'."
+      "Iterate over 'Publisher.values' in an 'Effect.run', instead, or use 'Effect.publisher'."
   )
   public func catchToEffect<T>(
     _ transform: @escaping (Result<Output, Failure>) -> T
@@ -450,7 +454,8 @@ extension Publisher {
   ///   - failureType: A failure type.
   /// - Returns: An effect that never produces output or errors.
   @available(
-    *, deprecated,
+    *,
+    deprecated,
     message:
       "Iterate over 'Publisher.values' in the static version of 'Effect.fireAndForget', instead."
   )

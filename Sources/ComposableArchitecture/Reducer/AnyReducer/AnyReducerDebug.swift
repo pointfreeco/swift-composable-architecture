@@ -146,7 +146,7 @@ extension AnyReducer {
   *, deprecated,
   message:
     """
-    This API that used this type has been soft-deprecated in favor of 'Reducer._printChanges'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
+    This API that used this type has been deprecated in favor of 'Reducer._printChanges'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
     """
 )
 public enum ActionFormat: Sendable {
@@ -182,7 +182,7 @@ public enum ActionFormat: Sendable {
   *, deprecated,
   message:
     """
-    This API that used this type has been soft-deprecated in favor of 'Reducer._printChanges'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
+    This API that used this type has been deprecated in favor of 'Reducer._printChanges'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
     """
 )
 public struct DebugEnvironment {

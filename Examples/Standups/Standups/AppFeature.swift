@@ -45,7 +45,7 @@ struct AppFeature: Reducer {
       case let .path(.element(id, .record(.delegate(delegateAction)))):
         switch delegateAction {
         case let .save(transcript: transcript):
-          _ = state.path.pop(from: id)
+          state.path.pop(from: id)
 
           XCTModify(&state.path.presented, case: /Path.State.detail) { detailState in
             detailState.standup.meetings.insert(
