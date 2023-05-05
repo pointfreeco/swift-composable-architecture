@@ -42,15 +42,15 @@ private struct PresentationTestCase: Reducer {
     }
     enum AlertAction {
       case ok
+      case showAlert
       case showDialog
       case showSheet
-      // TODO: Action to re-show alert
     }
     enum DialogAction {
       case ok
       case showAlert
+      case showDialog
       case showSheet
-      // TODO: Action to re-show dialog
     }
     var body: some ReducerOf<Self> {
       Scope(state: /State.fullScreenCover, action: /Action.fullScreenCover) {
@@ -90,6 +90,9 @@ private struct PresentationTestCase: Reducer {
             ButtonState(action: .ok) {
               TextState("OK")
             }
+            ButtonState(action: .showAlert) {
+              TextState("Show alert")
+            }
             ButtonState(action: .showDialog) {
               TextState("Show dialog")
             }
@@ -102,26 +105,67 @@ private struct PresentationTestCase: Reducer {
           }
         )
         return .none
+
       case .customAlertButtonTapped:
         state.destination = .customAlert
         return .none
+
       case .destination(.presented(.fullScreenCover(.parentSendDismissActionButtonTapped))),
         .destination(.presented(.sheet(.parentSendDismissActionButtonTapped))),
         .destination(.presented(.popover(.parentSendDismissActionButtonTapped))):
         return .send(.destination(.dismiss))
-      case .destination(.presented(.alert(.showDialog))):
-        state.destination = .dialog(
-          ConfirmationDialogState(titleVisibility: .visible) {
-            TextState("Hello!")
-          } actions: {
-          }
-        )
-        return .none
-      case .destination(.presented(.alert(.showSheet))):
-        state.destination = .sheet(ChildFeature.State())
-        return .none
+
+      case let .destination(.presented(.alert(alertAction))):
+        switch alertAction {
+        case .ok:
+          return .none
+        case .showAlert:
+          state.destination = .alert(
+            AlertState {
+              TextState("Hello again!")
+            } actions: {
+            }
+          )
+          return .none
+        case .showDialog:
+          state.destination = .dialog(
+            ConfirmationDialogState(titleVisibility: .visible) {
+              TextState("Hello!")
+            } actions: {
+            }
+          )
+          return .none
+        case .showSheet:
+          state.destination = .sheet(ChildFeature.State())
+          return .none
+        }
+
+      case let .destination(.presented(.dialog(dialogAction))):
+        switch dialogAction {
+        case .ok:
+          return .none
+        case .showAlert:
+          state.destination = .alert(
+            AlertState {
+              TextState("Hello!")
+            } actions: {
+            }
+          )
+          return .none
+        case .showDialog:
+          state.destination = .dialog(
+            ConfirmationDialogState(titleVisibility: .visible) {
+              TextState("Hello again!")
+            } actions: {
+            }
+          )
+          return .none
+        case .showSheet:
+          state.destination = .sheet(ChildFeature.State())
+          return .none
+        }
+
       case
-          .destination(.presented(.dialog(.showAlert))),
           .destination(.presented(.fullScreenCover(.dismissAndAlert))),
           .destination(.presented(.popover(.dismissAndAlert))),
           .destination(.presented(.navigationDestination(.dismissAndAlert))),
@@ -132,14 +176,14 @@ private struct PresentationTestCase: Reducer {
           }
         )
         return .none
-      case .destination(.presented(.dialog(.showSheet))):
-        state.destination = .sheet(ChildFeature.State())
-        return .none
+
       case .destination(.dismiss):
         state.message = "Dismiss action sent"
         return .none
+
       case .destination:
         return .none
+
       case .dialogButtonTapped:
         state.destination = .dialog(
           ConfirmationDialogState(titleVisibility: .visible) {
@@ -151,24 +195,32 @@ private struct PresentationTestCase: Reducer {
             ButtonState(action: .showAlert) {
               TextState("Show alert")
             }
+            ButtonState(action: .showDialog) {
+              TextState("Show dialog")
+            }
             ButtonState(action: .showSheet) {
               TextState("Show sheet")
             }
           }
         )
         return .none
+
       case .fullScreenCoverButtonTapped:
         state.destination = .fullScreenCover(ChildFeature.State())
         return .none
+
       case .navigationDestinationButtonTapped:
         state.destination = .navigationDestination(ChildFeature.State())
         return .none
+
       case .navigationLinkDemoButtonTapped:
         state.destination = .navigationLinkDemo(NavigationLinkDemoFeature.State())
         return .none
+
       case .popoverButtonTapped:
         state.destination = .popover(ChildFeature.State())
         return .none
+
       case .sheetButtonTapped:
         state.destination = .sheet(ChildFeature.State())
         return .none

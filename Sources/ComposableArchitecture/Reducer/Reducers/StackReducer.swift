@@ -5,7 +5,7 @@ import OrderedCollections
 /// A list of data representing the content of a navigation stack.
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
-/// ``ReducerProtocol/forEach(_:action:destination:file:fileID:line:)-4sflg``.
+/// ``ReducerProtocol/forEach(_:action:destination:file:fileID:line:)``.
 public struct StackState<Element>: RandomAccessCollection, RangeReplaceableCollection {
   var _dictionary: OrderedDictionary<StackElementID, Element>
   fileprivate var _mounted: Set<StackElementID> = []
@@ -30,27 +30,23 @@ public struct StackState<Element>: RandomAccessCollection, RangeReplaceableColle
     }
   }
 
-  @discardableResult
-  public mutating func pop(from id: StackElementID) -> Bool {
+  public mutating func pop(from id: StackElementID) {
     guard let index = self._dictionary.keys.firstIndex(of: id)
-    else { return false }
+    else { return }
     for id in self._dictionary.keys[index...] {
       self._mounted.remove(id)
     }
     self._dictionary.removeSubrange(index...)
-    return true
   }
 
-  @discardableResult
-  public mutating func pop(to id: StackElementID) -> Bool {
+  public mutating func pop(to id: StackElementID) {
     guard var index = self._dictionary.keys.firstIndex(of: id)
-    else { return false }
+    else { return }
     index += 1
     for id in self._dictionary.keys[index...] {
       self._mounted.remove(id)
     }
     self._dictionary.removeSubrange(index...)
-    return true
   }
 
   public var startIndex: Int { self._dictionary.keys.startIndex }
@@ -149,7 +145,7 @@ extension StackState: CustomDumpReflectable {
 /// A wrapper type for actions that can be presented in a navigation stack.
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
-/// ``ReducerProtocol/forEach(_:action:destination:file:fileID:line:)-4sflg``.
+/// ``ReducerProtocol/forEach(_:action:destination:file:fileID:line:)``.
 public enum StackAction<State, Action> {
   /// An action sent to the associated stack element at a given identifier.
   indirect case element(id: StackElementID, action: Action)
@@ -163,8 +159,8 @@ public enum StackAction<State, Action> {
 }
 
 extension StackAction: Equatable where State: Equatable, Action: Equatable {}
-
 extension StackAction: Hashable where State: Hashable, Action: Hashable {}
+extension StackAction: Sendable where State: Sendable, Action: Sendable {}
 
 extension ReducerProtocol {
   /// Embeds a child reducer in a parent domain that works on elements of a navigation stack in

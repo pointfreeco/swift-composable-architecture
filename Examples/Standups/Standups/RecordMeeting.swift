@@ -32,9 +32,6 @@ struct RecordMeeting: Reducer {
       case save(transcript: String)
     }
   }
-  private enum CancelID {
-    case timer
-  }
 
   @Dependency(\.continuousClock) var clock
   @Dependency(\.dismiss) var dismiss
@@ -45,7 +42,6 @@ struct RecordMeeting: Reducer {
       switch action {
       case .alert(.presented(.confirmDiscard)):
         return .run { _ in
-          Task.cancel(id: CancelID.timer)
           await self.dismiss()
         }
 
@@ -123,7 +119,7 @@ struct RecordMeeting: Reducer {
     .ifLet(\.$alert, action: /Action.alert)
   }
 
-  func startSpeechRecognition(send: Send<Action>) async {
+  private func startSpeechRecognition(send: Send<Action>) async {
     do {
       let speechTask = await self.speechClient.startTask(SFSpeechAudioBufferRecognitionRequest())
       for try await result in speechTask {
@@ -134,19 +130,14 @@ struct RecordMeeting: Reducer {
     }
   }
 
-  func startTimer(send: Send<Action>) async {
-    await withTaskCancellation(id: CancelID.timer) {
-      for await _ in self.clock.timer(interval: .seconds(1)) {
-        await send(.timerTick)
-      }
+  private func startTimer(send: Send<Action>) async {
+    for await _ in self.clock.timer(interval: .seconds(1)) {
+      await send(.timerTick)
     }
   }
 
   private func meetingFinished(transcript: String) -> EffectTask<Action> {
-    return .run { send in
-      await send(.delegate(.save(transcript: transcript)))
-      Task.cancel(id: CancelID.timer)
-    }
+    .send(.delegate(.save(transcript: transcript)))
   }
 }
 

@@ -140,7 +140,7 @@ extension EffectPublisher where Failure == Never {
   ///           await .factResponse(TaskResult { try await self.numberFact.fetch(number) })
   ///         }
   ///
-  ///       case .factResponse(.success(fact)):
+  ///       case let .factResponse(.success(fact)):
   ///         // do something with fact
   ///
   ///       case .factResponse(.failure):
@@ -418,7 +418,7 @@ extension EffectPublisher {
   /// Merges a variadic list of effects together into a single effect, which runs the effects at the
   /// same time.
   ///
-  /// - Parameter effects: A list of effects.
+  /// - Parameter effects: A variadic list of effects.
   /// - Returns: A new effect
   @inlinable
   public static func merge(_ effects: Self...) -> Self {

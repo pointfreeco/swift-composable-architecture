@@ -21,6 +21,12 @@ struct AppFeature: Reducer {
     }
     Reduce<State, Action> { state, action in
       switch action {
+      case let .path(.popFrom(id: id)):
+        guard case let .some(.detail(detailState)) = state.path[id: id]
+        else { return .none }
+        state.standupsList.standups[id: detailState.standup.id] = detailState.standup
+        return .none
+
       case let .path(.element(id, action: .detail(.delegate(delegateAction)))):
         guard case let .some(.detail(detailState)) = state.path[id: id]
         else { return .none }
@@ -31,23 +37,8 @@ struct AppFeature: Reducer {
           state.standupsList.standups.remove(id: detailState.standup.id)
           return .none
 
-        case let .goToMeeting(meeting):
-          state.path.append(
-            .meeting(
-              MeetingReducer.State(
-                meeting: meeting,
-                standup: detailState.standup
-              )
-            )
-          )
-          return .none
-
         case .startMeeting:
-          state.path.append(
-            .record(
-              RecordMeeting.State(standup: detailState.standup)
-            )
-          )
+          state.path.append(.record(RecordMeeting.State(standup: detailState.standup)))
           return .none
         }
 
@@ -73,29 +64,12 @@ struct AppFeature: Reducer {
       case .path:
         return .none
 
-      case let .standupsList(.delegate(delegateAction)):
-        switch delegateAction {
-        case let .goToStandup(standup):
-          state.path.append(.detail(StandupDetail.State(standup: standup)))
-          return .none
-        }
-
       case .standupsList:
         return .none
       }
     }
     .forEach(\.path, action: /Action.path) {
       Path()
-    }
-
-    Reduce<State, Action> { state, action in
-      // NB: Playback any changes made to stand up in detail
-      for destination in state.path {
-        guard case let .detail(detailState) = destination
-        else { continue }
-        state.standupsList.standups[id: detailState.standup.id] = detailState.standup
-      }
-      return .none
     }
   }
 

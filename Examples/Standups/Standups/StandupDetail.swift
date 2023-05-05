@@ -14,12 +14,10 @@ struct StandupDetail: Reducer {
     case destination(PresentationAction<Destination.Action>)
     case doneEditingButtonTapped
     case editButtonTapped
-    case meetingTapped(id: Meeting.ID)
     case startMeetingButtonTapped
 
     enum Delegate: Equatable {
       case deleteStandup
-      case goToMeeting(Meeting)
       case startMeeting
     }
   }
@@ -93,11 +91,6 @@ struct StandupDetail: Reducer {
         state.destination = .edit(StandupForm.State(standup: state.standup))
         return .none
 
-      case let .meetingTapped(id: id):
-        guard let meeting = state.standup.meetings[id: id]
-        else { return .none }
-        return EffectTask(value: .delegate(.goToMeeting(meeting)))
-
       case .startMeetingButtonTapped:
         switch self.authorizationStatus() {
         case .notDetermined, .authorized:
@@ -158,9 +151,11 @@ struct StandupDetailView: View {
         if !viewStore.standup.meetings.isEmpty {
           Section {
             ForEach(viewStore.standup.meetings) { meeting in
-              Button {
-                viewStore.send(.meetingTapped(id: meeting.id))
-              } label: {
+              NavigationLink(
+                state: AppFeature.Path.State.meeting(
+                  MeetingReducer.State(meeting: meeting, standup: viewStore.standup)
+                )
+              ) {
                 HStack {
                   Image(systemName: "calendar")
                   Text(meeting.date, style: .date)

@@ -23,14 +23,8 @@ struct StandupsList: Reducer {
   enum Action: Equatable {
     case addStandupButtonTapped
     case confirmAddStandupButtonTapped
-    case delegate(Delegate)
     case destination(PresentationAction<Destination.Action>)
     case dismissAddStandupButtonTapped
-    case standupTapped(id: Standup.ID)
-
-    enum Delegate: Equatable {
-      case goToStandup(Standup)
-    }
   }
   struct Destination: Reducer {
     enum State: Equatable {
@@ -85,9 +79,6 @@ struct StandupsList: Reducer {
         state.destination = nil
         return .none
 
-      case .delegate:
-        return .none
-
       case .destination(.presented(.alert(.confirmLoadMockData))):
         state.standups = [
           .mock,
@@ -102,12 +93,6 @@ struct StandupsList: Reducer {
       case .dismissAddStandupButtonTapped:
         state.destination = nil
         return .none
-
-      case let .standupTapped(id):
-        guard let standup = state.standups[id: id]
-        else { return .none }
-
-        return .send(.delegate(.goToStandup(standup)))
       }
     }
     .ifLet(\.$destination, action: /Action.destination) {
@@ -133,9 +118,7 @@ struct StandupsListView: View {
     WithViewStore(self.store, observe: \.standups) { viewStore in
       List {
         ForEach(viewStore.state) { standup in
-          Button {
-            viewStore.send(.standupTapped(id: standup.id))
-          } label: {
+          NavigationLink(state: AppFeature.Path.State.detail(StandupDetail.State(standup: standup))) {
             CardView(standup: standup)
           }
           .listRowBackground(standup.theme.mainColor)

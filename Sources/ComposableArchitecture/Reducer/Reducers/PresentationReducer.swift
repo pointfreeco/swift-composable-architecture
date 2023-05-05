@@ -56,6 +56,8 @@ extension PresentationState: Hashable where State: Hashable {
   }
 }
 
+extension PresentationState: Sendable where State: Sendable {}
+
 extension PresentationState: Decodable where State: Decodable {
   public init(from decoder: Decoder) throws {
     do {

@@ -1079,5 +1079,59 @@ import XCTest
         $0.children[id: 1] = Child.State()
       }
     }
+
+    func testSendCopiesStackElementIDGenerator() async {
+      struct Feature: ReducerProtocol {
+        struct State: Equatable {
+          var path = StackState<Int>()
+        }
+        enum Action: Equatable {
+          case buttonTapped
+          case path(StackAction<Int, Never>)
+          case response
+        }
+        var body: some ReducerProtocolOf<Self> {
+          Reduce { state, action in
+            switch action {
+            case .buttonTapped:
+              state.path.append(1)
+              return .send(.response)
+            case .path:
+              return .none
+            case .response:
+              state.path.append(2)
+              return .none
+            }
+          }
+          .forEach(\.path, action: /Action.path) {}
+        }
+      }
+
+      let store = TestStore(
+        initialState: Feature.State(),
+        reducer: Feature()
+      )
+
+      await store.send(.buttonTapped) {
+        $0.path[id: 0] = 1
+        @Dependency(\.stackElementID) var stackElementID
+        _ = stackElementID.next()
+        _ = stackElementID.next()
+        _ = stackElementID.next()
+      }
+      await store.receive(.response) {
+        $0.path[id: 1] = 2
+        @Dependency(\.stackElementID) var stackElementID
+        _ = stackElementID.next()
+        _ = stackElementID.next()
+        _ = stackElementID.next()
+      }
+      await store.send(.buttonTapped) {
+        $0.path[id: 2] = 1
+      }
+      await store.receive(.response) {
+        $0.path[id: 3] = 2
+      }
+    }
   }
 #endif

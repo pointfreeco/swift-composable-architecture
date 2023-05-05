@@ -10,7 +10,7 @@ private struct ChildFeature: Reducer {
     case dismissButtonTapped
     case incrementButtonTapped
     case popToRootButtonTapped
-    case startButtonTapped
+    case runButtonTapped
     case response(Int)
   }
   @Dependency(\.dismiss) var dismiss
@@ -26,7 +26,7 @@ private struct ChildFeature: Reducer {
       return .none
     case .popToRootButtonTapped:
       return .none
-    case .startButtonTapped:
+    case .runButtonTapped:
       return .run { [count = state.count] send in
         try await Task.sleep(for: .seconds(2))
         await send(.response(count + 1))
@@ -48,8 +48,8 @@ private struct ChildView: View {
           Button("Decrement") { viewStore.send(.decrementButtonTapped) }
           Button("Increment") { viewStore.send(.incrementButtonTapped) }
         }
-        Button("Start") {
-          viewStore.send(.startButtonTapped)
+        Button("Run effect") {
+          viewStore.send(.runButtonTapped)
         }
         Button("Dismiss") {
           viewStore.send(.dismissButtonTapped)

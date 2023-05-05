@@ -153,6 +153,13 @@ final class PresentationTests: XCTestCase {
     XCTAssertEqual(self.app.staticTexts["Dismiss action sent"].exists, true)
   }
 
+  func testAlertThenAlert() {
+    self.app.buttons["Open alert"].tap()
+    self.app.buttons["Show alert"].tap()
+    _ = self.app.staticTexts["Hello again!"].waitForExistence(timeout: 1)
+    XCTAssertEqual(self.app.staticTexts["Hello again!"].exists, true)
+  }
+
   func testAlertThenDialog() {
     self.app.buttons["Open alert"].tap()
     self.app.buttons["Show dialog"].tap()
@@ -186,6 +193,13 @@ final class PresentationTests: XCTestCase {
     self.app.buttons["Show alert"].tap()
     _ = self.app.staticTexts["Hello!"].waitForExistence(timeout: 1)
     XCTAssertEqual(self.app.staticTexts["Hello!"].exists, true)
+  }
+
+  func testShowDialogThenDialog() {
+    self.app.buttons["Open dialog"].tap()
+    self.app.buttons["Show dialog"].tap()
+    _ = self.app.staticTexts["Hello again!"].waitForExistence(timeout: 1)
+    XCTAssertEqual(self.app.staticTexts["Hello again!"].exists, true)
   }
 
   func testSheetExtraBindingActionsIgnoredOnDismiss() {
@@ -317,9 +331,10 @@ final class PresentationTests: XCTestCase {
     XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
     self.app.buttons["Dismiss and alert"].tap()
     XCTTODO("""
-      This test should pass but does not due to a SwiftUI bug. You can not simultaneously close
+      This test should pass but does not due to a SwiftUI bug. You cannot simultaneously close
       a sheet and open an alert.
       """)
     XCTAssertEqual(self.app.staticTexts["Alert open"].exists, true)
   }
 }
+

@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		CA71F02329A6A32F007AE0DD /* _CAsyncSupport in Frameworks */ = {isa = PBXBuildFile; productRef = CA71F02229A6A32F007AE0DD /* _CAsyncSupport */; };
 		CA93D05C249BF42500A6F65D /* VoiceMemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA93D05B249BF42500A6F65D /* VoiceMemo.swift */; };
 		CA93D05E249BF46E00A6F65D /* Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA93D05D249BF46E00A6F65D /* Helpers.swift */; };
 		CABAB49028A2B5F900122307 /* RecordingMemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = CABAB48F28A2B5F900122307 /* RecordingMemo.swift */; };
@@ -82,7 +81,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				DC1394342469E59600EE1157 /* ComposableArchitecture in Frameworks */,
-				CA71F02329A6A32F007AE0DD /* _CAsyncSupport in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -187,7 +185,6 @@
 			name = VoiceMemos;
 			packageProductDependencies = (
 				DC1394332469E59600EE1157 /* ComposableArchitecture */,
-				CA71F02229A6A32F007AE0DD /* _CAsyncSupport */,
 			);
 			productName = VoiceMemos;
 			productReference = DC5BDCAA24589177009C65A3 /* VoiceMemos.app */;
@@ -536,10 +533,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		CA71F02229A6A32F007AE0DD /* _CAsyncSupport */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = _CAsyncSupport;
-		};
 		DC1394332469E59600EE1157 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;
