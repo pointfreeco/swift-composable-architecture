@@ -150,7 +150,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///     equal, repeat view computations are removed.
   @available(
     iOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       Use 'init(_:observe:removeDuplicates:)' to make state observation explicit.
@@ -162,7 +162,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   )
   @available(
     macOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       Use 'init(_:observe:removeDuplicates:)' to make state observation explicit.
@@ -174,7 +174,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   )
   @available(
     tvOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       Use 'init(_:observe:removeDuplicates:)' to make state observation explicit.
@@ -186,7 +186,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   )
   @available(
     watchOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       Use 'init(_:observe:removeDuplicates:)' to make state observation explicit.
@@ -630,7 +630,7 @@ extension ViewStore where ViewState: Equatable {
   ///   - store: A store.
   @available(
     iOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       Use 'init(_:observe:)' to make state observation explicit.
@@ -642,7 +642,7 @@ extension ViewStore where ViewState: Equatable {
   )
   @available(
     macOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       Use 'init(_:observe:)' to make state observation explicit.
@@ -654,7 +654,7 @@ extension ViewStore where ViewState: Equatable {
   )
   @available(
     tvOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       Use 'init(_:observe:)' to make state observation explicit.
@@ -666,7 +666,7 @@ extension ViewStore where ViewState: Equatable {
   )
   @available(
     watchOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       Use 'init(_:observe:)' to make state observation explicit.

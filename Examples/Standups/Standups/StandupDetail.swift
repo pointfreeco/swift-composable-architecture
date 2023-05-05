@@ -68,9 +68,9 @@ struct StandupDetail: ReducerProtocol {
       case let .destination(.presented(.alert(alertAction))):
         switch alertAction {
         case .confirmDeletion:
-          return EffectTask(value: .delegate(.deleteStandup)).animation()
+          return .send(.delegate(.deleteStandup), animation: .default)
         case .continueWithoutRecording:
-          return EffectTask(value: .delegate(.startMeeting))
+          return .send(.delegate(.startMeeting))
         case .openSettings:
           return .run { _ in
             await self.openSettings()
@@ -94,7 +94,7 @@ struct StandupDetail: ReducerProtocol {
       case .startMeetingButtonTapped:
         switch self.authorizationStatus() {
         case .notDetermined, .authorized:
-          return EffectTask(value: .delegate(.startMeeting))
+          return .send(.delegate(.startMeeting))
 
         case .denied:
           state.destination = .alert(.speechRecognitionDenied)

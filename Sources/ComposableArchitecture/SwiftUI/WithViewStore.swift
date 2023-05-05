@@ -365,7 +365,7 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   ///   - content: A function that can generate content from a view store.
   @available(
     iOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       Use 'init(_:observe:removeDuplicates:content:)' to make state observation explicit.
@@ -377,7 +377,7 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   )
   @available(
     macOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       Use 'init(_:observe:removeDuplicates:content:)' to make state observation explicit.
@@ -389,7 +389,7 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   )
   @available(
     tvOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       Use 'init(_:observe:removeDuplicates:content:)' to make state observation explicit.
@@ -401,7 +401,7 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   )
   @available(
     watchOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       Use 'init(_:observe:removeDuplicates:content:)' to make state observation explicit.
@@ -615,7 +615,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   ///   - content: A function that can generate content from a view store.
   @available(
     iOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       Use 'init(_:observe:content:)' to make state observation explicit.
@@ -627,7 +627,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   )
   @available(
     macOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       Use 'init(_:observe:content:)' to make state observation explicit.
@@ -639,7 +639,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   )
   @available(
     tvOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       Use 'init(_:observe:content:)' to make state observation explicit.
@@ -651,7 +651,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   )
   @available(
     watchOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       Use 'init(_:observe:content:)' to make state observation explicit.
@@ -680,22 +680,22 @@ extension WithViewStore where ViewState == Void, Content: View {
   ///   - content: A function that can generate content from a view store.
   @available(
     iOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message: "Use 'ViewStore(store).send(action)' instead of observing stateless stores."
   )
   @available(
     macOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message: "Use 'ViewStore(store).send(action)' instead of observing stateless stores."
   )
   @available(
     tvOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message: "Use 'ViewStore(store).send(action)' instead of observing stateless stores."
   )
   @available(
     watchOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message: "Use 'ViewStore(store).send(action)' instead of observing stateless stores."
   )
   public init(

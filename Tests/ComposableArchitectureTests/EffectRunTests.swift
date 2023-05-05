@@ -122,8 +122,8 @@ final class EffectRunTests: BaseTCATestCase {
   }
 
   #if DEBUG
-    func testRunEscapeFailure() async throws {
-      try await _withMainSerialExecutor {
+    func testRunEscapeFailure() async {
+      await _withMainSerialExecutor {
         XCTExpectFailure {
           $0.compactDescription == """
             An action was sent from a completed effect:

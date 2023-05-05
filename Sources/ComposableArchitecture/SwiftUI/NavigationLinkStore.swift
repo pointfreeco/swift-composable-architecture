@@ -1,9 +1,9 @@
 import SwiftUI
 
-@available(iOS, introduced: 13.0, deprecated: 16.0)
-@available(macOS, introduced: 10.15, deprecated: 13.0)
-@available(tvOS, introduced: 13.0, deprecated: 16.0)
-@available(watchOS, introduced: 6.0, deprecated: 9.0)
+@available(iOS, introduced: 13, deprecated: 16)
+@available(macOS, introduced: 10.15, deprecated: 13)
+@available(tvOS, introduced: 13, deprecated: 16)
+@available(watchOS, introduced: 6, deprecated: 9)
 public struct NavigationLinkStore<
   State,
   Action,

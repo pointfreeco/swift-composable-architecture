@@ -1,7 +1,7 @@
 extension Reduce {
   @available(
     iOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       'Reducer' has been deprecated in favor of 'ReducerProtocol'.
@@ -11,7 +11,7 @@ extension Reduce {
   )
   @available(
     macOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       'Reducer' has been deprecated in favor of 'ReducerProtocol'.
@@ -21,7 +21,7 @@ extension Reduce {
   )
   @available(
     tvOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       'Reducer' has been deprecated in favor of 'ReducerProtocol'.
@@ -31,7 +31,7 @@ extension Reduce {
   )
   @available(
     watchOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       'Reducer' has been deprecated in favor of 'ReducerProtocol'.
@@ -51,7 +51,7 @@ extension Reduce {
 
 @available(
   iOS,
-  deprecated: 9999.0,
+  deprecated: 9999,
   message:
     """
     'Reducer' has been deprecated in favor of 'ReducerProtocol'.
@@ -61,7 +61,7 @@ extension Reduce {
 )
 @available(
   macOS,
-  deprecated: 9999.0,
+  deprecated: 9999,
   message:
     """
     'Reducer' has been deprecated in favor of 'ReducerProtocol'.
@@ -71,7 +71,7 @@ extension Reduce {
 )
 @available(
   tvOS,
-  deprecated: 9999.0,
+  deprecated: 9999,
   message:
     """
     'Reducer' has been deprecated in favor of 'ReducerProtocol'.
@@ -81,7 +81,7 @@ extension Reduce {
 )
 @available(
   watchOS,
-  deprecated: 9999.0,
+  deprecated: 9999,
   message:
     """
     'Reducer' has been deprecated in favor of 'ReducerProtocol'.
@@ -112,7 +112,7 @@ extension Store {
   ///   - environment: The environment of dependencies for the application.
   @available(
     iOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       'Reducer' has been deprecated in favor of 'ReducerProtocol'.
@@ -122,7 +122,7 @@ extension Store {
   )
   @available(
     macOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       'Reducer' has been deprecated in favor of 'ReducerProtocol'.
@@ -132,7 +132,7 @@ extension Store {
   )
   @available(
     tvOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       'Reducer' has been deprecated in favor of 'ReducerProtocol'.
@@ -142,7 +142,7 @@ extension Store {
   )
   @available(
     watchOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       'Reducer' has been deprecated in favor of 'ReducerProtocol'.

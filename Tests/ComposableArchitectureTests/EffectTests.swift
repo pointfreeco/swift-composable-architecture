@@ -90,7 +90,7 @@ final class EffectTests: BaseTCATestCase {
     var values: [Int] = []
 
     let effect = EffectTask<Int>.concatenate(
-      EffectTask(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect()
+      .send(1).delay(for: 1, scheduler: mainQueue).eraseToEffect()
     )
 
     effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
