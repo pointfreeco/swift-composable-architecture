@@ -260,10 +260,9 @@ struct SharedStateProfileView: View {
 struct SharedState_Previews: PreviewProvider {
   static var previews: some View {
     SharedStateView(
-      store: Store(
-        initialState: SharedState.State(),
-        reducer: SharedState()
-      )
+      store: Store(initialState: SharedState.State()) {
+        SharedState()
+      }
     )
   }
 }

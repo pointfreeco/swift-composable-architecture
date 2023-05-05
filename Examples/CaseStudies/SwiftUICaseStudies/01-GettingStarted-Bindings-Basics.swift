@@ -129,10 +129,9 @@ struct BindingBasicsView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       BindingBasicsView(
-        store: Store(
-          initialState: BindingBasics.State(),
-          reducer: BindingBasics()
-        )
+        store: Store(initialState: BindingBasics.State()) {
+          BindingBasics()
+        }
       )
     }
   }

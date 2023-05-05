@@ -3,6 +3,34 @@ import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
+// MARK: - Deprecated after 0.52.0
+
+extension Store {
+  @available(iOS, deprecated: 9999.0, message: "Pass a closure as the reducer.")
+  @available(macOS, deprecated: 9999.0, message: "Pass a closure as the reducer.")
+  @available(tvOS, deprecated: 9999.0, message: "Pass a closure as the reducer.")
+  @available(watchOS, deprecated: 9999.0, message: "Pass a closure as the reducer.")
+  public convenience init<R: ReducerProtocol>(
+    initialState: @autoclosure () -> R.State,
+    reducer: R,
+    prepareDependencies: ((inout DependencyValues) -> Void)? = nil
+  ) where R.State == State, R.Action == Action {
+    if let prepareDependencies = prepareDependencies {
+      self.init(
+        initialState: withDependencies(prepareDependencies) { initialState() },
+        reducer: reducer.transformDependency(\.self, transform: prepareDependencies),
+        mainThreadChecksEnabled: true
+      )
+    } else {
+      self.init(
+        initialState: initialState(),
+        reducer: reducer,
+        mainThreadChecksEnabled: true
+      )
+    }
+  }
+}
+
 // MARK: - Deprecated after 0.49.2
 
 @available(

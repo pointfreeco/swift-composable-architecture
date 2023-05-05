@@ -6,12 +6,11 @@ struct CaseStudiesApp: App {
   var body: some Scene {
     WindowGroup {
       RootView(
-        store: Store(
-          initialState: Root.State(),
-          reducer: Root()
+        store: Store(initialState: Root.State()) {
+          Root()
             .signpost()
             ._printChanges()
-        )
+        }
       )
     }
   }

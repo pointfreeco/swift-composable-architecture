@@ -128,10 +128,9 @@ struct AlertAndConfirmationDialog_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       AlertAndConfirmationDialogView(
-        store: Store(
-          initialState: AlertAndConfirmationDialog.State(),
-          reducer: AlertAndConfirmationDialog()
-        )
+        store: Store(initialState: AlertAndConfirmationDialog.State()) {
+          AlertAndConfirmationDialog()
+        }
       )
     }
   }

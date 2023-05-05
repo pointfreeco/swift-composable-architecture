@@ -145,9 +145,10 @@ public final class Store<State, Action> {
   ///     by the reducer.
   public convenience init<R: ReducerProtocol>(
     initialState: @autoclosure () -> R.State,
-    reducer: R,
+    @ReducerBuilder<State, Action> reducer: () -> R,
     prepareDependencies: ((inout DependencyValues) -> Void)? = nil
   ) where R.State == State, R.Action == Action {
+    let reducer = reducer()
     if let prepareDependencies = prepareDependencies {
       self.init(
         initialState: withDependencies(prepareDependencies) { initialState() },
