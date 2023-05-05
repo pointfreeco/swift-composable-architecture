@@ -3,6 +3,7 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
+@available(*, deprecated)
 final class EffectThrottleTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
   let mainQueue = DispatchQueue.test

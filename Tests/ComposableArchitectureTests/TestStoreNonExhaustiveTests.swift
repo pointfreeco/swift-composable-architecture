@@ -10,7 +10,7 @@
         reducer: Reduce<Int, Bool> { state, action in
           if action {
             state += 1
-            return .init(value: false)
+            return .send(false)
           } else {
             state += 1
             return .none
@@ -30,7 +30,7 @@
         reducer: Reduce<Int, Bool> { state, action in
           if action {
             state += 1
-            return .init(value: false)
+            return .send(false)
           } else {
             state += 1
             return .none
@@ -54,7 +54,7 @@
         reducer: Reduce<Int, Bool> { state, action in
           if action {
             state += 1
-            return .init(value: false)
+            return .send(false)
           } else {
             state += 1
             return .none
@@ -75,7 +75,7 @@
         reducer: Reduce<Int, Bool> { state, action in
           if action {
             state += 1
-            return .init(value: false)
+            return .send(false)
           } else {
             state += 1
             return .none
@@ -151,7 +151,7 @@
       let store = TestStore(
         initialState: 0,
         reducer: Reduce<Int, Bool> { _, action in
-          action ? .init(value: false) : .none
+          action ? .send(false) : .none
         }
       )
       store.exhaustivity = .off(showSkippedAssertions: true)
@@ -164,7 +164,7 @@
       let store = TestStore(
         initialState: 0,
         reducer: Reduce<Int, Bool> { _, action in
-          action ? .init(value: false) : .none
+          action ? .send(false) : .none
         }
       )
       store.exhaustivity = .off
@@ -841,8 +841,8 @@
       case .onAppear:
         state = State()
         return .merge(
-          .init(value: .response1(42)),
-          .init(value: .response2("Hello"))
+          .send(.response1(42)),
+          .send(.response2("Hello"))
         )
       case let .response1(int):
         state.count += 1
@@ -883,8 +883,8 @@
 
       case .advanceAgeAndMoodAfterDelay:
         return .merge(
-          .init(value: .changeAge(state.age + 1)),
-          .init(value: .changeMood(state.mood + 1))
+          .send(.changeAge(state.age + 1)),
+          .send(.changeMood(state.mood + 1))
         )
         .delay(for: 1, scheduler: self.mainQueue)
         .eraseToEffect()

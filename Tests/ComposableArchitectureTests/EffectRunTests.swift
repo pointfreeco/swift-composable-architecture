@@ -48,12 +48,12 @@ final class EffectRunTests: BaseTCATestCase {
         var line: UInt!
         XCTExpectFailure(nil, enabled: nil, strict: nil) {
           $0.compactDescription == """
-            An "EffectTask.run" returned from "\(#fileID):\(line+1)" threw an unhandled error. …
+            An "Effect.run" returned from "\(#fileID):\(line+1)" threw an unhandled error. …
 
                 EffectRunTests.Failure()
 
             All non-cancellation errors must be explicitly handled via the "catch" parameter on \
-            "EffectTask.run", or via a "do" block.
+            "Effect.run", or via a "do" block.
             """
         }
         struct State: Equatable {}

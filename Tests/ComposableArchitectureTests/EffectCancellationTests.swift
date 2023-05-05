@@ -15,7 +15,7 @@ final class EffectCancellationTests: BaseTCATestCase {
     var values: [Int] = []
 
     let subject = PassthroughSubject<Int, Never>()
-    let effect = EffectPublisher(subject)
+    let effect = Effect.publisher { subject }
       .cancellable(id: CancelID())
 
     effect
@@ -40,7 +40,7 @@ final class EffectCancellationTests: BaseTCATestCase {
     var values: [Int] = []
 
     let subject = PassthroughSubject<Int, Never>()
-    EffectPublisher(subject)
+    Effect.publisher { subject }
       .cancellable(id: CancelID(), cancelInFlight: true)
       .sink { values.append($0) }
       .store(in: &self.cancellables)
@@ -52,7 +52,7 @@ final class EffectCancellationTests: BaseTCATestCase {
     XCTAssertEqual(values, [1, 2])
 
     defer { Task.cancel(id: CancelID()) }
-    EffectPublisher(subject)
+    Effect.publisher { subject }
       .cancellable(id: CancelID(), cancelInFlight: true)
       .sink { values.append($0) }
       .store(in: &self.cancellables)
@@ -130,7 +130,7 @@ final class EffectCancellationTests: BaseTCATestCase {
     var values: [Int] = []
 
     let subject = PassthroughSubject<Int, Never>()
-    let effect = EffectPublisher(subject)
+    let effect = Effect.publisher { subject }
       .cancellable(id: CancelID())
       .cancellable(id: CancelID())
 
@@ -154,7 +154,7 @@ final class EffectCancellationTests: BaseTCATestCase {
     var values: [Int] = []
 
     let subject = PassthroughSubject<Int, Never>()
-    let effect = EffectPublisher(subject)
+    let effect = Effect.publisher { subject }
       .cancellable(id: CancelID())
 
     effect
@@ -289,9 +289,8 @@ final class EffectCancellationTests: BaseTCATestCase {
 
   func testNestedMergeCancellation() {
     let effect = EffectPublisher<Int, Never>.merge(
-      (1...2).publisher
-        .eraseToEffect()
-        .cancellable(id: 1)
+      .publisher { (1...2).publisher }
+      .cancellable(id: 1)
     )
     .cancellable(id: 2)
 
@@ -353,8 +352,7 @@ final class EffectCancellationTests: BaseTCATestCase {
     func testCancellablesCleanUp_OnComplete() {
       let id = UUID()
 
-      Just(1)
-        .eraseToEffect()
+      Effect.send(1)
         .cancellable(id: id)
         .sink(receiveValue: { _ in })
         .store(in: &self.cancellables)

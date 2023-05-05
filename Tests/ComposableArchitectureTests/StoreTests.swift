@@ -18,7 +18,7 @@ final class StoreTests: BaseTCATestCase {
 
   func testCancellableIsRemovedWhenEffectCompletes() {
     let mainQueue = DispatchQueue.test
-    let effect = Effect<Void>(value: ())
+    let effect = Effect.send(())
       .delay(for: 1, scheduler: mainQueue)
       .eraseToEffect()
 
@@ -52,11 +52,12 @@ final class StoreTests: BaseTCATestCase {
     })
 
     let parentStore = Store(initialState: 0, reducer: counterReducer)
-    let parentViewStore = ViewStore(parentStore)
+    let parentViewStore = ViewStore(parentStore, observe: { $0 })
     let childStore = parentStore.scope(state: String.init)
 
     var values: [String] = []
-    ViewStore(childStore).publisher
+    ViewStore(childStore, observe: { $0 })
+      .publisher
       .sink(receiveValue: { values.append($0) })
       .store(in: &self.cancellables)
 
@@ -75,10 +76,11 @@ final class StoreTests: BaseTCATestCase {
 
     let parentStore = Store(initialState: 0, reducer: counterReducer)
     let childStore = parentStore.scope(state: String.init)
-    let childViewStore = ViewStore(childStore)
+    let childViewStore = ViewStore(childStore, observe: { $0 })
 
     var values: [Int] = []
-    ViewStore(parentStore).publisher
+    ViewStore(parentStore, observe: { $0 })
+      .publisher
       .sink(receiveValue: { values.append($0) })
       .store(in: &self.cancellables)
 
@@ -135,10 +137,10 @@ final class StoreTests: BaseTCATestCase {
         return count
       })
 
-    let viewStore1 = ViewStore(store1)
-    let viewStore2 = ViewStore(store2)
-    let viewStore3 = ViewStore(store3)
-    let viewStore4 = ViewStore(store4)
+    let viewStore1 = ViewStore(store1, observe: { $0 })
+    let viewStore2 = ViewStore(store2, observe: { $0 })
+    let viewStore3 = ViewStore(store3, observe: { $0 })
+    let viewStore4 = ViewStore(store4, observe: { $0 })
 
     XCTAssertEqual(numCalls1, 1)
     XCTAssertEqual(numCalls2, 1)
@@ -236,7 +238,7 @@ final class StoreTests: BaseTCATestCase {
     })
 
     let parentStore = Store(initialState: AppState(), reducer: appReducer)
-    let parentViewStore = ViewStore(parentStore)
+    let parentViewStore = ViewStore(parentStore, observe: { $0 })
 
     // NB: This test needs to hold a strong reference to the emitted stores
     var outputs: [Int?] = []
@@ -291,7 +293,7 @@ final class StoreTests: BaseTCATestCase {
 
     parentStore
       .ifLet(then: { childStore in
-        let vs = ViewStore(childStore)
+        let vs = ViewStore(childStore, observe: { $0 })
 
         vs
           .publisher
@@ -327,7 +329,7 @@ final class StoreTests: BaseTCATestCase {
           return .none
 
         case .`init`:
-          return subject.map { .doIncrement }.eraseToEffect()
+          return .publisher { subject.map { .doIncrement } }
 
         case .doIncrement:
           state += 1
@@ -426,13 +428,13 @@ final class StoreTests: BaseTCATestCase {
         action: ParentAction.child
       )
       .ifLet { childStore in
-        ViewStore(childStore).send(2)
+        ViewStore(childStore, observe: { $0 }).send(2)
       }
       .store(in: &cancellables)
 
     XCTAssertEqual(handledActions, [])
 
-    _ = ViewStore(parentStore).send(.button)
+    _ = ViewStore(parentStore, observe: { $0 }).send(.button)
     XCTAssertEqual(
       handledActions,
       [
@@ -640,7 +642,6 @@ final class StoreTests: BaseTCATestCase {
           } operation: {
             EffectTask.task { .response1(self.count.value) }
           }
-          .eraseToEffect()
         case let .response1(count):
           state.count = count
           return withDependencies {
@@ -648,7 +649,6 @@ final class StoreTests: BaseTCATestCase {
           } operation: {
             EffectTask.task { .response2(self.count.value) }
           }
-          .eraseToEffect()
         case let .response2(count):
           state.count = count
           return withDependencies {
@@ -656,7 +656,6 @@ final class StoreTests: BaseTCATestCase {
           } operation: {
             EffectTask.task { .response3(self.count.value) }
           }
-          .eraseToEffect()
         case let .response3(count):
           state.count = count
           return .none
@@ -752,7 +751,8 @@ final class StoreTests: BaseTCATestCase {
       XCTTODO(
         """
         This fails because cancelling a child task will cancel all parent effects too.
-        """)
+        """
+      )
       XCTAssertEqual(viewStore.count, 1)
     }
   #endif

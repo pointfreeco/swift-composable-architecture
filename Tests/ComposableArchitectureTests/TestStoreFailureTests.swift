@@ -10,7 +10,7 @@
         initialState: 0,
         reducer: Reduce<Int, Action> { state, action in
           switch action {
-          case .first: return .init(value: .second)
+          case .first: return .send(.second)
           case .second: return .none
           }
         }
@@ -124,7 +124,7 @@
             initialState: 0,
             reducer: Reduce<Int, Action> { state, action in
               switch action {
-              case .first: return .init(value: .second)
+              case .first: return .send(.second)
               case .second: return .none
               }
             }
@@ -230,7 +230,7 @@
         initialState: 0,
         reducer: Reduce<Int, Action> { state, action in
           switch action {
-          case .first: return .init(value: .second)
+          case .first: return .send(.second)
           case .second: return .none
           }
         }

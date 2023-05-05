@@ -17,7 +17,7 @@ final class TestStoreTests: BaseTCATestCase {
       switch action {
       case .a:
         return .merge(
-          Effect.concatenate(.init(value: .b1), .init(value: .c1))
+          Effect.concatenate(.send(.b1), .send(.c1))
             .delay(for: 1, scheduler: mainQueue)
             .eraseToEffect(),
           Empty(completeImmediately: false)
@@ -27,11 +27,11 @@ final class TestStoreTests: BaseTCATestCase {
       case .b1:
         return
           Effect
-          .concatenate(.init(value: .b2), .init(value: .b3))
+          .concatenate(.send(.b2), .send(.b3))
       case .c1:
         return
           Effect
-          .concatenate(.init(value: .c2), .init(value: .c3))
+          .concatenate(.send(.c2), .send(.c3))
       case .b2, .b3, .c2, .c3:
         return .none
 
@@ -213,7 +213,7 @@ final class TestStoreTests: BaseTCATestCase {
         switch action {
         case .a:
           count += 1
-          return .merge(.init(value: .b), .init(value: .c), .init(value: .d))
+          return .merge(.send(.b), .send(.c), .send(.d))
         case .b, .c, .d:
           count += 1
           return .none
