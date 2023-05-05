@@ -37,7 +37,7 @@ final class RecordMeetingTests: XCTestCase {
 
     await clock.advance(by: .seconds(1))
     await store.receive(.timerTick) {
-      $0.speakerIndex = 1 // TODO: do we wanna do more gnarly timing calcuations to make this fair down to the second??
+      $0.speakerIndex = 1  // TODO: do we wanna do more gnarly timing calcuations to make this fair down to the second??
       $0.secondsElapsed = 2
       XCTAssertEqual($0.durationRemaining, .seconds(4))
     }
@@ -88,7 +88,7 @@ final class RecordMeetingTests: XCTestCase {
         )
       ),
       reducer: RecordMeeting()
-      // , exhaustive: off
+        // , exhaustive: off
     ) {
       $0.continuousClock = ImmediateClock()
       $0.speechClient.authorizationStatus = { .authorized }
@@ -122,7 +122,7 @@ final class RecordMeetingTests: XCTestCase {
     await store.receive(.timerTick)
     await store.receive(.timerTick)
     await store.receive(.timerTick)
-    store.exhaustivity = .on // TODO: store.withExhaustivity(...) { ... }
+    store.exhaustivity = .on  // TODO: store.withExhaustivity(...) { ... }
 
     // TODO: store.withDependencies { ... }
 

@@ -235,19 +235,19 @@ public struct _StackReducer<
     let destinationEffects: EffectTask<Base.Action>
     let baseEffects: EffectTask<Base.Action>
 
-    switch (self.toStackAction.extract(from: action)) {
+    switch self.toStackAction.extract(from: action) {
     case let .element(elementID, destinationAction):
       if state[keyPath: self.toStackState][id: elementID] != nil {
         let elementNavigationIDPath = self.navigationIDPath(for: elementID)
         destinationEffects = self.destination
           .dependency(
             \.dismiss,
-             DismissEffect { @MainActor in
-               Task._cancel(
+            DismissEffect { @MainActor in
+              Task._cancel(
                 id: NavigationDismissID(elementID: elementID),
                 navigationID: elementNavigationIDPath
-               )
-             }
+              )
+            }
           )
           .dependency(\.navigationIDPath, elementNavigationIDPath)
           .reduce(

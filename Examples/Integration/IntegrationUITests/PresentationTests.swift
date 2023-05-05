@@ -265,7 +265,7 @@ final class PresentationTests: XCTestCase {
     self.app.buttons["Parent dismiss"].tap()
     XCTAssertEqual(self.app.staticTexts["Action sent while state nil."].exists, false)
   }
-  
+
   func testIdentifiedNavigationLink_ChildActions() {
     self.app.buttons["Open navigation link demo"].tap()
     self.app.buttons["Open identified navigation link"].tap()
@@ -330,11 +330,11 @@ final class PresentationTests: XCTestCase {
     self.app.buttons["Open sheet"].tap()
     XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
     self.app.buttons["Dismiss and alert"].tap()
-    XCTTODO("""
+    XCTTODO(
+      """
       This test should pass but does not due to a SwiftUI bug. You cannot simultaneously close
       a sheet and open an alert.
       """)
     XCTAssertEqual(self.app.staticTexts["Alert open"].exists, true)
   }
 }
-

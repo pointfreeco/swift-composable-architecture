@@ -345,21 +345,21 @@ final class EffectCancellationTests: BaseTCATestCase {
 }
 
 #if DEBUG
-@testable import ComposableArchitecture
+  @testable import ComposableArchitecture
 
-final class Internal_EffectCancellationTests: BaseTCATestCase {
-  var cancellables: Set<AnyCancellable> = []
+  final class Internal_EffectCancellationTests: BaseTCATestCase {
+    var cancellables: Set<AnyCancellable> = []
 
-  func testCancellablesCleanUp_OnComplete() {
-    let id = UUID()
+    func testCancellablesCleanUp_OnComplete() {
+      let id = UUID()
 
-    Just(1)
-      .eraseToEffect()
-      .cancellable(id: id)
-      .sink(receiveValue: { _ in })
-      .store(in: &self.cancellables)
+      Just(1)
+        .eraseToEffect()
+        .cancellable(id: id)
+        .sink(receiveValue: { _ in })
+        .store(in: &self.cancellables)
 
-    XCTAssertEqual(_cancellationCancellables.exists(at: id, path: NavigationIDPath()), false)
+      XCTAssertEqual(_cancellationCancellables.exists(at: id, path: NavigationIDPath()), false)
+    }
   }
-}
 #endif

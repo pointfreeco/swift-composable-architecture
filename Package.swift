@@ -14,7 +14,7 @@ let package = Package(
     .library(
       name: "ComposableArchitecture",
       targets: ["ComposableArchitecture"]
-    ),
+    )
   ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-collections", from: "1.0.2"),

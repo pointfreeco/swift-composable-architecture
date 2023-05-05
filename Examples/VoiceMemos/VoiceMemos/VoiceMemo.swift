@@ -67,7 +67,7 @@ struct VoiceMemo: Reducer {
 
         return .run { [url = state.url] send in
           await send(.delegate(.playbackStarted))
-          
+
           async let playAudio: Void = send(
             .audioPlayerClient(TaskResult { try await self.audioPlayer.play(url) })
           )

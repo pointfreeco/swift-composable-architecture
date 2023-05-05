@@ -74,7 +74,7 @@ final class StandupFormTests: XCTestCase {
     await store.send(.deleteAttendees(atOffsets: [1])) {
       $0.focus = .attendee($0.standup.attendees[0].id)
       $0.standup.attendees = [
-        $0.standup.attendees[0],
+        $0.standup.attendees[0]
       ]
     }
 

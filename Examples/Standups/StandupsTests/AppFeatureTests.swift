@@ -115,13 +115,13 @@ final class AppFeatureTests: XCTestCase {
       initialState: AppFeature.State(
         path: StackState([
           .detail(StandupDetail.State(standup: standup)),
-          .record(RecordMeeting.State(standup: standup))
+          .record(RecordMeeting.State(standup: standup)),
         ])
       ),
       reducer: AppFeature()
     ) {
       $0.dataManager = .mock(initialData: try! JSONEncoder().encode([standup]))
-      $0.date.now = Date(timeIntervalSince1970: 1234567890)
+      $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
       $0.continuousClock = ImmediateClock()
       $0.speechClient.authorizationStatus = { .authorized }
       $0.speechClient.startTask = { _ in
@@ -158,7 +158,7 @@ final class AppFeatureTests: XCTestCase {
         $0.standup.meetings = [
           Meeting(
             id: Meeting.ID(uuidString: "00000000-0000-0000-0000-000000000000")!,
-            date: Date(timeIntervalSince1970: 1234567890),
+            date: Date(timeIntervalSince1970: 1_234_567_890),
             transcript: "I completed the project"
           )
         ]

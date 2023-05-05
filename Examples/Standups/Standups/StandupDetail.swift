@@ -252,11 +252,13 @@ extension AlertState where Action == StandupDetail.Destination.Action.Alert {
       TextState("Cancel")
     }
   } message: {
-    TextState("""
+    TextState(
+      """
       You previously denied speech recognition and so your meeting meeting will not be \
       recorded. You can enable speech recognition in settings, or you can continue without \
       recording.
-      """)
+      """
+    )
   }
 
   static let speechRecognitionRestricted = Self {
@@ -269,9 +271,11 @@ extension AlertState where Action == StandupDetail.Destination.Action.Alert {
       TextState("Cancel")
     }
   } message: {
-    TextState("""
+    TextState(
+      """
       Your device does not support speech recognition and so your meeting will not be recorded.
-      """)
+      """
+    )
   }
 }
 

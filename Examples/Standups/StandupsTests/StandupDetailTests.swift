@@ -23,7 +23,8 @@ final class StandupDetailTests: XCTestCase {
       initialState: StandupDetail.State(standup: .mock),
       reducer: StandupDetail()
     ) {
-      $0.speechClient.authorizationStatus = { .denied
+      $0.speechClient.authorizationStatus = {
+        .denied
       }
     }
 

@@ -127,7 +127,7 @@ final class ForEachReducerTests: BaseTCATestCase {
               }
             }
           }
-          
+
           let clock = TestClock()
           let store = TestStore(initialState: Timers.State(), reducer: Timers()) {
             $0.uuid = .incrementing
@@ -163,8 +163,9 @@ final class ForEachReducerTests: BaseTCATestCase {
           }
           await store.send(.addTimerButtonTapped) {
             $0.timers = [
-              Timer.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!, elapsed: 2),
-              Timer.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!)
+              Timer.State(
+                id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!, elapsed: 2),
+              Timer.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!),
             ]
           }
           await clock.advance(by: .seconds(1))

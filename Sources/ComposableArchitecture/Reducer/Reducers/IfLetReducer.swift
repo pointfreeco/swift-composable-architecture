@@ -178,7 +178,8 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
         state[keyPath: toChildState] = nil
       }
     }
-    let navigationID = NavigationID(base: state[keyPath: self.toChildState]!, keyPath: self.toChildState)
+    let navigationID = NavigationID(
+      base: state[keyPath: self.toChildState]!, keyPath: self.toChildState)
     return self.child
       .dependency(\.navigationIDPath, self.navigationIDPath.appending(navigationID))
       .reduce(into: &state[keyPath: self.toChildState]!, action: childAction)

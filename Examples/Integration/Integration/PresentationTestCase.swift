@@ -165,10 +165,9 @@ private struct PresentationTestCase: Reducer {
           return .none
         }
 
-      case
-          .destination(.presented(.fullScreenCover(.dismissAndAlert))),
-          .destination(.presented(.popover(.dismissAndAlert))),
-          .destination(.presented(.navigationDestination(.dismissAndAlert))),
+      case .destination(.presented(.fullScreenCover(.dismissAndAlert))),
+        .destination(.presented(.popover(.dismissAndAlert))),
+        .destination(.presented(.navigationDestination(.dismissAndAlert))),
         .destination(.presented(.sheet(.dismissAndAlert))):
         state.destination = .alert(
           AlertState {
@@ -283,7 +282,7 @@ private struct ChildFeature: Reducer {
     }
   }
 }
- 
+
 struct PresentationTestCaseView: View {
   private let store: StoreOf<PresentationTestCase>
   @StateObject private var viewStore: ViewStoreOf<PresentationTestCase>
@@ -323,7 +322,8 @@ struct PresentationTestCaseView: View {
       }
       .alert(
         "Custom alert!",
-        isPresented: viewStore
+        isPresented:
+          viewStore
           .binding(get: \.destination, send: PresentationTestCase.Action.destination(.dismiss))
           .case(/PresentationTestCase.Destination.State.customAlert)
           .isPresent()

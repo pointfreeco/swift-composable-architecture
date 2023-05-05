@@ -72,9 +72,9 @@ struct RecordMeeting: Reducer {
       case .task:
         return .run { send in
           let authorization =
-          await self.speechClient.authorizationStatus() == .notDetermined
-          ? self.speechClient.requestAuthorization()
-          : self.speechClient.authorizationStatus()
+            await self.speechClient.authorizationStatus() == .notDetermined
+            ? self.speechClient.requestAuthorization()
+            : self.speechClient.authorizationStatus()
 
           await withTaskGroup(of: Void.self) { group in
             if authorization == .authorized {

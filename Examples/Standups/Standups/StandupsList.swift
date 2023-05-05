@@ -118,7 +118,8 @@ struct StandupsListView: View {
     WithViewStore(self.store, observe: \.standups) { viewStore in
       List {
         ForEach(viewStore.state) { standup in
-          NavigationLink(state: AppFeature.Path.State.detail(StandupDetail.State(standup: standup))) {
+          NavigationLink(state: AppFeature.Path.State.detail(StandupDetail.State(standup: standup)))
+          {
             CardView(standup: standup)
           }
           .listRowBackground(standup.theme.mainColor)
