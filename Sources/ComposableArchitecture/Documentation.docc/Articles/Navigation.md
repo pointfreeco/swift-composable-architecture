@@ -10,9 +10,150 @@ master. The Composable Architecture provides the tools necessary to model your d
 as possible and drive navigation from state, but there are a few concepts to learn in order to best
 yield these tools.
 
+## What is navigation?
+
+The word "navigation" can mean a lot of different things to different people. For example, most
+people would agree that the drill-down style of navigation afforded to us by `NavigationStack` in
+SwiftUI and `UINavigationController` in UIKit. However, if drill-downs are considered navigation,
+then surely sheets and fullscreen covers should be too. The only difference is that sheets and 
+covers animate from bottom-to-top instead of from right-to-left, but is that actually 
+substantive?
+
+And if sheets and covers are considered navigation, then certainly popovers should be too. We can
+even expand our horizons to include more styles of navigation, such as alerts and 
+confirmation dialogs, and even custom forms of navigation that are not handed down to us from Apple.
+
+So, for the purposes of this documentation, we will use the following loose definition of 
+"navigation":
+
+> Defintion: **Navigation**: A change of mode in the application.
+
+Each of the examples we considered above, such as drill-downs, sheets, popovers, covers, alerts, 
+and more, are all a "change of mode" in the application.
+
+But, we will further refine the concept of "change of mode" to mean that some piece of state went
+from not existing to existing, or vice-versa. So, when a piece of state switches from not existing
+to existing, that represents a navigation to a mode of the application, and when the state switches
+back to not existing, it represents undoing the navigation and returning to the previous mode.
+
+That is very abstract way of describing state-driven navigation, and the next two sections make
+these concepts much more concrete for the two main forms of navigation: 
+ [tree-based](#Tree-based-navigation) and [stack-based](#Stack-based-navigation) navigation.
+
+## Tree-based navigation
+
+In the previous section we defined state-driven navigation as being controlled by the existence
+or non-existence of state. The term "existence" was not defined, and there are a few ways in which
+existence can be defined. If we define the existence or non-existence of state as being 
+represented by a Swift `Optional` type, then we cause this "tree-based" navigation because
+when multiple states of navigation are nested they form a tree-like structure.
+
+For example, suppose you have an inventory feature with a list of items such that tapping one
+of those items performs a drill-down navigation to a detail screen for the item. Then that can
+be modeled with the ``PresentationState`` property wrapper pointing to some optional state:
+
+```swift
+struct InventoryFeature: ReducerProtocol {
+  struct State {
+    @PresentationState var detailItem: DetailItemFeature.State?
+    // ...
+  }
+  // ...
+}
+```
+
+Then, inside that detail screen there may be a button to edit the item in a sheet, and that too
+can be modeled with a ``PresentationState`` property wrapper pointing to a piece of optional 
+state:
+
+```swift
+struct DetailItemFeature: ReducerProtocol {
+  struct State {
+    @PresentationState var editItem: EditItemFeature.State?
+    // ...
+  }
+  // ...
+}
+
+struct EditItemFeature: ReducerProtocol {
+  struct State {
+    var item: Item
+    // ...
+  }
+  // ...
+}
+```
+
+Then the act of deep-linking the application into a state where we are drilled down to a particular
+item _with_ the edit sheet opened, we simply need to construct a deeply nested piece of state
+that represents the navigation:
+
+```swift
+InventoryView(
+  store: Store(
+    initialState: InventoryFeature.State(
+      detailItem: DetailItemFeature.State(
+        editItem: EditItemFeature.State(
+          item: Item(name: "Headphones", quantity: 10)
+        )
+      )
+    ),
+    reducer: InventoryFeature()
+  )
+)
+```
+
+In the above we can start to see the tree-like structure of this form of domain modeling. Each 
+feature in your application represents a node of the tree, and each destination you can navigate
+to represents a branch from the node. Then the act of navigating to a new feature corresponds
+to building another nested piece of state.
+
+That is the basics of tree-based navigation, but now you must read the dedicated 
+<doc:TreeBasedNavigation> article for information on how to use the tools that come with the 
+Composable Architecture to implement tree-based navigation in your application.
+
+## Stack-based navigation
+
+In the [previous section](#Tree-based-navigation) we defined "tree-based" navigation as the process
+of modeling the presentation of a child feature with optional state. This takes on a tree-like
+structure in which a deeply nested feature is represented by a deeply nested piece of state.
+
+There is another powerful tool for modeling the existence and non-existence of state for driving
+navigation: collections. This is most used with SwiftUI's `NavigationStack` view in which an
+entire stack of features are represented by a collection of data. When an item is added to the 
+collection it represents a new feature being pushed onto the stack, and when an item is removed
+from the collection it represents popping the feature off the stack.
+
+Typically one defines an enum that holds all of the possible features that can be navigated to
+on the stack, so continuing the analogy from the previous section, if an inventory list can 
+navigate to a detail feature for an item and then navigate to an edit screen, this can be 
+represented by:
+
+```swift
+enum Path {
+  case detail(DetailItemFeature.State)
+  case edit(DetailItemFeature.State)
+  // …
+}
+```
+
+Then a collection of these states represents the features that are presented on the stack:
+
+```swift
+let path: [Path] = [
+  .detail(DetailItemFeature.State(item: item)),
+  .edit(EditItemFeature.State(item: item)),
+  // …
+]
+```
+
+That is the basics of stack-based navigation, but now you must read the dedicated 
+<doc:StackBasedNavigation> article for information on how to use the tools that come with the 
+Composable Architecture to implement stack-based navigation in your application.
+
 ## Tree-based vs stack-based navigation
 
-There are two main
+Most 
 
 ## Topics
 
@@ -21,117 +162,4 @@ There are two main
 - <doc:TreeBasedNavigation>
 - <doc:StackBasedNavigation>
 
-
-
-<!--
-## Integrating features for navigation
-
-The process for integrating features together for navigation largely consists of 2 steps: 
-integrating the features' domains together and integrating the features' views together.
-One typically starts by integrating the features' domains together. This consists of adding the
-child's state and actions to the parent, and then utilizing a reducer operator to compose the
-child reducer into the parent.
-
-For example, suppose you have a list of items and you want to be able to show a sheet to display
-a form for adding a new item. We can integrate state and actions together by utilizing the 
-``PresentationState`` and ``PresentationAction`` types:
-
-```swift
-struct InventoryFeature: ReducerProtocol {
-  struct State: Equatable {
-    @PresentationState var addItem: ItemFormFeature.State?
-    var items: IdentifiedArrayOf<Item> = []
-    // ...
-  }
-  enum Action: Equatable {
-    case addItem(PresentationAction<ItemFormFeature.Action>)
-    // ...
-  }
-  // ...
-}
-``` 
-
-> Note: The `addItem` state is held as an optional. A non-`nil` value represents that feature
-is being presented, and `nil` presents the feature is dismissed.
-
-Next you can integrate the reducers of the parent and child features by using the 
-``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)`` reducer operator, as well
-as having an action in the parent domain for populating the child's state to drive navigation:
-
-```swift
-struct InventoryFeature: ReducerProtocol {
-  struct State: Equatable { /* ... */ }
-  enum Action: Equatable { /* ... */ }
-  
-  var body: some ReducerProtocolOf<Self> {
-    Reduce<State, Action> { state, action in 
-      switch action {
-      case .addButtonTapped:
-        state.addItem = ItemFormFeature.State()
-        return .none
-      // ...
-      }
-    }
-    .ifLet(\.$addItem, action: /Action.addItem) {
-      ItemFormFeature()
-    }
-  }
-}
-```
-
-> Note: The key path used with `ifLet` focuses on the `@PresentationState` since it uses the `$`
-syntax. Also note that the action uses a [case 
-path](http://github.com/pointfreeco/swift-case-paths), which is analagous to key paths but tuned
-for enums, and uses the forward slash syntax.
-
-That's all that it takes to integrate the domains and logic of the parent and child features. Next
-we need to integrate the features' views. This is done using view modifiers that look similar to
-SwiftUI's, but are tuned specifically to work with the Composable Architecture.
-
-For example, to show a sheet from the `addItem` state in the `InventoryFeature`, we can use
-the `sheet(store:)` modifier that takes a ``Store`` as an argument that is focused on presentation
-state and actions:
-
-```swift
-struct InventoryFeature: View {
-  let store: StoreOf<InventoryFeature>
-
-  var body: some View {
-    List {
-      // ...
-    }
-    .sheet(
-      store: self.store.scope(state: \.$addItem, action: InventoryFeature.Action.addItem)
-    )
-  }
-}
-```
-
-Note that we again specify a key path to the presentation state property wrapper, i.e. `\.$addItem`, 
-but this time we only need to specify the case of the action, `InventoryFeature.Action.addItem`, 
-and not a case path. This means there is no leading forward slash.
-
-With those few steps completed the domains and views of the parent and child features are now
-integrated together, and when the `addItem` state flips to a non-`nil` value the sheet will be
-presented, and when it is `nil`'d out it will be dismissed.
-
-The library ships with overloads for all of SwiftUI's styles of navigation that take stores of 
-presentation domain, including:
-
-* `alert(store:)`
-* `confirmationDialog(store:)`
-* `sheet(store:)`
-* `popover(store:)`
-* `fullScreenCover(store:)`
-* `navigationDestination(store:)`
-* ``NavigationLinkStore``
-
-## Correctness
-
-## Testing
-
-## Advanced
-
-<!-- domain modeling with enums -->
-<!-- child dismiss -->
 

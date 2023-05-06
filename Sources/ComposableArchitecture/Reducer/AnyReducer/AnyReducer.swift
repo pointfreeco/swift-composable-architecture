@@ -450,8 +450,8 @@ public struct AnyReducer<State, Action, Environment> {
   }
 
   /// This API has been soft-deprecated in favor of
-  /// ``ReducerProtocol/ifCaseLet(_:action:then:file:fileID:line:)`` and
-  /// ``Scope/init(state:action:child:file:fileID:line:)``. Read <doc:MigratingToTheReducerProtocol>
+  /// ``ReducerProtocol/ifCaseLet(_:action:then:fileID:line:)`` and
+  /// ``Scope/init(state:action:child:)``. Read <doc:MigratingToTheReducerProtocol>
   /// for more information.
   ///
   /// Transforms a reducer that works on child state, action, and environment into one that works on
