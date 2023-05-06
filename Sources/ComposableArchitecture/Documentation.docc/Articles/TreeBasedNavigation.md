@@ -1,17 +1,23 @@
 # Tree-based navigation
 
+Learn about tree-based navigation, that is navigation modeled with optionals and enums, including
+how to model your domains, how to integrate features, how to test your features, and more.
 
 ## Overview
 
+Tree-based navigation is the process of modeling navigation using optional and enum state. This 
+style of navigation allows you to deep-link into any state of your application by simply 
+constructing a deeply nested piece of state, handing it off to SwiftUI, and letting it take
+care of the rest.
 
-
+## Basics
 
 The tools for this style of navigation include the ``PresentationState`` property wrapper,
 ``PresentationAction``, the ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)`` operator,
 and a whole host of other APIs that mimic SwiftUI's regular tools, but tuned specifically for
 the Composable Architecture.
 
-The process of integration two features together for navigation largely consists of 2 steps:
+The process of integrating two features together for navigation largely consists of 2 steps:
 integrating the features' domains together and integrating the features' views together. 
 One typically starts by integrating the features' domains together. This consists of adding the
 child's state and actions to the parent, and then utilizing a reducer operator to compose the
@@ -28,10 +34,12 @@ struct InventoryFeature: ReducerProtocol {
     var items: IdentifiedArrayOf<Item> = []
     // ...
   }
+
   enum Action: Equatable {
     case addItem(PresentationAction<ItemFormFeature.Action>)
     // ...
   }
+
   // ...
 }
 ``` 
@@ -52,8 +60,10 @@ struct InventoryFeature: ReducerProtocol {
     Reduce<State, Action> { state, action in 
       switch action {
       case .addButtonTapped:
+        // Populating this state causes the navigation
         state.addItem = ItemFormFeature.State()
         return .none
+
       // ...
       }
     }
@@ -64,8 +74,8 @@ struct InventoryFeature: ReducerProtocol {
 }
 ```
 
-> Note: The key path used with `ifLet` focuses on the `@PresentationState` since it uses the `$`
-syntax. Also note that the action uses a [case 
+> Note: The key path used with `ifLet` focuses on the `@PresentationState` projected value since it 
+uses the `$` syntax. Also note that the action uses a [case 
 path](http://github.com/pointfreeco/swift-case-paths), which is analagous to key paths but tuned
 for enums, and uses the forward slash syntax.
 
@@ -86,15 +96,13 @@ struct InventoryFeature: View {
       // ...
     }
     .sheet(
-      store: self.store.scope(state: \.$addItem, action: InventoryFeature.Action.addItem)
+      store: self.store.scope(state: \.$addItem, action: { .addItem($0) })
     )
   }
 }
 ```
 
-Note that we again specify a key path to the presentation state property wrapper, i.e. `\.$addItem`, 
-but this time we only need to specify the case of the action, `InventoryFeature.Action.addItem`, 
-and not a case path. This means there is no leading forward slash.
+Note that we again specify a key path to the presentation state property wrapper, i.e. `\.$addItem`.
 
 With those few steps completed the domains and views of the parent and child features are now
 integrated together, and when the `addItem` state flips to a non-`nil` value the sheet will be
@@ -111,12 +119,178 @@ presentation domain, including:
 * `navigationDestination(store:)`
 * ``NavigationLinkStore``
 
+This should make it possible to use optional state to drive any kind of navigation in a SwiftUI
+application.
 
 ## Correctness
 
+While driving navigation with optional state can be powerful, it can also lead to less-than-ideal
+modeled domains. In particular, if a feature can navigate to multiple screens then you may be 
+tempted to model that with multiple optional values:
+
+```swift
+struct State {
+  @PresentationState var detailItem: DetailFeature.State?
+  @PresentationState var editItem: EditFeature.State?
+  @PresentationState var addItem: AddFeature.State?
+  // …
+}
+```
+
+However, this can lead to invalid states, such as 2 or more states being non-nil at the same time,
+and that can cause a lot of problems. First of all, SwiftUI does not support presenting multiple 
+views at the same time from a single view, and so by allowing this in our state we run the risk of 
+putting our application into an inconsistent state with respect to SwiftUI.
+
+Second, it becomes more difficult for us to determine what feature is actually being presented.
+We must check multiple optionals to figure out which one is non-`nil`, and then we must figure out
+how to interpret when multiple pieces of state are non-`nil` at the same time.
+
+And the number of invalid states increases exponentially with respect to the number of features
+that can be navigated to. For example, 3 optionals leads to 3 invalid states, 4 optionals leads
+to 11 invalid states, and 5 optionals leads to 26 invalid states.
+
+For these reasons, and more, it can be better to model multiple destinations in a feature as a 
+single enum rather than multiple optionals. So the example of above, with 3 optionals, can be 
+refactored as an enum:
+
+```swift
+enum State {
+  case addItem(AddFeature.State)
+  case detailItem(DetailFeature.State)
+  case editItem(EditFeature.State)
+  // …
+}
+```
+
+This gives us compile-time proof that only one single destination can be active at a time.
+
+In order to utilize this style of domain modeling you must take a few extra steps. First you model
+a `Destination` reducer that encapsulates the domains and behavior of all of the features that 
+you can navigate to. And typically it's best to nest this reducer inside the feature that can
+perform the navigation:
+
+```swift
+struct InventoryFeature: ReducerProtocol {
+  // ...
+
+  struct Destination: ReducerProtocol {
+    enum State {
+      case addItem(AddFeature.State)
+      case detailItem(DetailFeature.State)
+      case editItem(EditFeature.State)
+    }
+    enum Action {
+      case addItem(AddFeature.Action)
+      case detailItem(DetailFeature.Action)
+      case editItem(EditFeature.Action)
+    }
+    var body: some ReducerProtocolOf<Self> {
+      Scope(state: /State.addItem, action: /Action.addItem) { 
+        AddFeature()
+      }
+      Scope(state: /State.editItem, action: /Action.editItem) { 
+        EditFeature()
+      }
+      Scope(state: /State.detailItem, action: /Action.detailItem) { 
+        DetailFeature()
+      }
+    }
+  }
+}
+```
+
+> Note: Both the `State` and `Action` types nested in the reducer are enums, with a case for
+each screen that can be navigated to. Further, the `body` computed property has a `Scope` 
+reducer for each feature, and uses case paths for focusing in on the specific case of the state
+and action enums.
+
+With that done we can now hold onto a _single_ piece of optional state in our feature, using the
+`@PresentationState` property wrapper, and we hold onto the destination actions using the
+`PresentationAction` type:
+
+```swift
+struct InventoryFeature: ReducerProtocol {
+  struct State { 
+    @PresentationState var destination: Destination.State?
+    // ...
+  }
+  enum Action {
+    case destination(PresentationAction<Destination.Action>)
+    // ...
+  }
+
+  // ...
+}
+```
+
+Now when we want to present a particular feature we can simply populate the `destination` state
+with a case of the enum:
+
+```swift
+case addButtonTapped:
+  state.destination = .addItem(AddFeature.State())
+  return .none
+```
+
+And at any time we can figure out exactly what feature is being presented by switching or otherwise
+destructuring the single piece of `destination` state rather than checking multiple optional values.
+
+And the final state is to make use of the special view modifiers that come with this library
+that mimic SwiftUI's APIs, but are tuned specifically for enum state. In particular, you provide
+a store that is focused in on the `Destination` domain, and then provide transformations for
+isolating a particular case of the state and action enums.
+
+For example, suppose the "add" screen is presented as a sheet, the "edit" screen is presented 
+by a popover, and the "detail" screen is presented in a drill-down. Then we can use the 
+`.sheet(state:state:action:)`, `.popover(state:state:action:)` and 
+`.navigationDestination(state:state:action:)` view modifiers to have each of those styles of 
+presentation powered by the respective case of the destination enum:
+
+```swift
+struct InventoryView: View {
+  let store: StoreOf<InventoryFeature>
+
+  var body: some View {
+    List {
+      // …
+    }
+    .sheet(
+      store: self.store.scope(state: \.destination, action: { .destination($0) }),
+      state: /InventoryFeature.State.addItem,
+      action: /InventoryFeature.Action.addItem
+    ) { store in 
+      AddFeatureView(store: store)
+    }
+    .popover(
+      store: self.store.scope(state: \.destination, action: { .destination($0) }),
+      state: /InventoryFeature.State.editItem,
+      action: /InventoryFeature.Action.editItem
+    ) { store in 
+      EditFeatureView(store: store)
+    }
+    .navigationDestination(
+      store: self.store.scope(state: \.destination, action: { .destination($0) }),
+      state: /InventoryFeature.State.detailItem,
+      action: /InventoryFeature.Action.detailItem
+    ) { store in 
+      DetailFeatureView(store: store)
+    }
+  }
+}
+```
+
+With those steps completed you can be sure that your domains are modeled as concisely as possible.
+If the "add" item sheet was presented, and you decided to mutate the `destination` state to point
+to the `.detailItem` case, then you can be certain that the sheet will be dismissed and the 
+drill-down will occur immediately. 
+
+#### API Unification
+
+## Dismissal
+
 ## Testing
 
-## Advanced
 
 <!--
 todo: child dismissal

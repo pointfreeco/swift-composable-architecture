@@ -153,7 +153,139 @@ Composable Architecture to implement stack-based navigation in your application.
 
 ## Tree-based vs stack-based navigation
 
-Most 
+Most real-world applications will use a mixture of tree-based and stack-based navigation. For
+example, the root of your application may use stack-based navigation with a `NavigationStack`
+view, but then each feature inside the stack may use tree-based navigation for showing sheets,
+popovers, alerts, etc. But, there are pros and cons to each form of navigation, and so it can
+be important to be aware of their differences when modeling your domains.
+
+#### Pros of tree-based navigation
+
+* Tree-based navigation is a very concise way of modeling navigation. You get to statically 
+describe all of the various navigation paths that are valid for your application, and that makes
+it impossible to restore a navigation that is invalid for your application. For example, if it only
+makes sense to navigate to an "edit" screen after a "detail" screen, then your detail feature needs
+only to hold onto a piece of optional edit state:
+
+  ```swift
+  struct State {
+    @PresentationState var editItem: EditItemFeature.State?
+    // ...
+  }
+  ```
+
+  This statically enforces the relationship that we can only navigate to the edit screen from the
+detail screen.
+
+* Related to the previous pro, tree-based navigation also allows you to describe the finite number
+of navigation paths that your path supports.
+
+* If you modularize the features of your application, then those feature modules will be more
+self-contained when built with the tools of tree-based navigation. This means that Xcode previews
+and preview applications built for the feature will be fully functional.
+
+  For example, if you have a `DetailFeature` module that holds all of the logic and views for the
+detail feature, then you will be able to navigate to the edit feature in previews because
+the edit feature's domain is directly embedded in the detail feature.
+
+* Related to the previous pro, because features are tightly integrated together it makes writing
+unit tests for their integration very simple. You can write deep and nuanced tests that assert 
+how the detail feature and edit feature integrate together, allowing you to prove that they
+interact in the correct way.
+
+* Tree-based navigation unifies all forms of navigation into a single, concise style of API, 
+including drill-downs, sheets, popovers, covers, alerts, dialogs and a lot more. See
+<doc:TreeBasedNavigation#API-Unification> for more information.
+
+#### Cons of tree-based navigation
+
+* Unfortunately it can be cumbersome to express complex or recursive navigation paths using
+tree-based navigation. For example, in a movie application you can navigate to a movie, then a list 
+of actors in the movies, then to a particular actor, and then to the same movie you started at.
+This creates a recursive dependency between features that can be difficult to model in Swift
+data types.
+
+* By design, tree-based navigation couples features together. If you can navigate to an edit
+feature from a detail feature, then you must be able to compile the entire edit feature in order
+to compile the detail feature. This can eventually slow down compile times, especially when
+you work on features closer to the root of the application since you must build all destination
+features.
+
+* Historically, tree-based navigation is more susceptible to SwiftUI's navigation bugs, in 
+particular when dealing with drill-down navigation. However, many of these bugs have been fixed
+in iOS 16.4 and so is less of a concern these days.
+
+#### Pros of stack-based navigation
+
+* Stack-based navigation can easily handle complex and recursive navigation paths. The example
+we considered earlier, that of navigating through movies and actors, is handily accomplished
+with an array of feature states:
+
+  ```swift
+  let path: [Path] = [
+    .movie(…),
+    .actors(…),
+    .actor(…)
+    .movies(…),
+    .movie(…),
+  ]
+  ```
+
+  Notice that we start on the movie feature and end on the movie feature. There is no real 
+recursion in this navigation since it is just a flat array.
+
+* Each feature held in the stack can typically be fully decoupled from all other screens on the
+stack. This means the features can be put into their own modules with no dependencies on each
+other, and can be compiled without compiling any other features.
+
+* The `NavigationStack` API in SwiftUI typically has fewer bugs than `NavigationLink(isActive:)` and
+`navigationDestiation(isPresented:)`, which are used in tree-based navigation. There are still a
+few bugs in `NavigationStack`, but on average it is a lot more stable.
+
+#### Cons of stack-based navigation
+
+* Stack-based navigation is not a concise tool. It makes it possible to expressive navigation
+paths that are completely non-sensical. For example, even though it only makes sense to navigate
+to an edit screen from an edit screen, in a stack it would be possible to present the features in 
+the reverse order:
+
+  ```swift
+  let path: [Path] = [
+    .edit(…),
+    .detail(…)
+  ]
+  ```
+
+  That is completely non-sensical. What does it mean to drill down to an edit screen and _then_
+  a detail screen. You can create other non-sensical navigation paths, such as multiple edit screens
+  pushed on one after another:
+
+  ```swift
+  let path: [Path] = [
+    .edit(…),
+    .edit(…),
+    .edit(…),
+  ]
+  ```
+
+  This too is completely non-sensical, and it is a drawback to the stack-based approach when you 
+want a finite number of well-defined navigation paths in your app.
+
+* If you were to modularize your application and put each feature in its own module, then those
+features, when run in isolation in an Xcode preview, would be mostly inert. For example, a button
+in the detail feature for drilling down to the edit feature can't possibly work in an Xcode preview
+since the detail and edit features have been completely decoupled. This makes it so that you cannot
+test all of the functionality of the detail feature in an Xcode preview, and instead have to resort
+to compiling and running the full application in order to preview everything.
+
+* Related to the above, it is also more difficult to unit test how multiple features integrate
+with each other. Because features are fully decoupled we cannot easily test how the detail and
+edit feature interact with each other. The only way to write that test is to compile and run
+the entire application.
+
+* And finally, stack-based navigation and `NavigationStack` only applies to drill-downs and does 
+not address at all other forms of navigation, such as sheets, popovers, alerts, etc. It's still on 
+you to do the work to decouple those kinds of navigations. 
 
 ## Topics
 
@@ -161,5 +293,3 @@ Most
 
 - <doc:TreeBasedNavigation>
 - <doc:StackBasedNavigation>
-
-
