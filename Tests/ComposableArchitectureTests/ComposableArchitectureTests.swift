@@ -8,59 +8,66 @@ final class ComposableArchitectureTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
 
   func testScheduling() async {
-    struct Counter: Reducer {
-      typealias State = Int
-      enum Action: Equatable {
-        case incrAndSquareLater
-        case incrNow
-        case squareNow
-      }
-      @Dependency(\.mainQueue) var mainQueue
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .incrAndSquareLater:
-          return .merge(
-            .send(.incrNow)
-              .delay(for: 2, scheduler: self.mainQueue)
-              .eraseToEffect(),
-            .send(.squareNow)
-              .delay(for: 1, scheduler: self.mainQueue)
-              .eraseToEffect(),
-            .send(.squareNow)
-              .delay(for: 2, scheduler: self.mainQueue)
-              .eraseToEffect()
-          )
-        case .incrNow:
-          state += 1
-          return .none
-        case .squareNow:
-          state *= state
-          return .none
+    await _withMainSerialExecutor {
+      struct Counter: Reducer {
+        typealias State = Int
+        enum Action: Equatable {
+          case incrAndSquareLater
+          case incrNow
+          case squareNow
+        }
+        @Dependency(\.mainQueue) var mainQueue
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
+          switch action {
+          case .incrAndSquareLater:
+            return .run { send in
+              await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                  try await self.mainQueue.sleep(for: .seconds(2))
+                  await send(.incrNow)
+                }
+                group.addTask {
+                  try await self.mainQueue.sleep(for: .seconds(1))
+                  await send(.squareNow)
+                }
+                group.addTask {
+                  try await self.mainQueue.sleep(for: .seconds(2))
+                  await send(.squareNow)
+                }
+              }
+            }
+          case .incrNow:
+            state += 1
+            return .none
+          case .squareNow:
+            state *= state
+            return .none
+          }
         }
       }
+
+      let mainQueue = DispatchQueue.test
+
+      let store = TestStore(
+        initialState: 2,
+        reducer: Counter()
+      ) {
+        $0.mainQueue = mainQueue.eraseToAnyScheduler()
+      }
+
+      await store.send(.incrAndSquareLater)
+      await mainQueue.advance(by: 1)
+      await store.receive(.squareNow) { $0 = 4 }
+      await mainQueue.advance(by: 1)
+      await store.receive(.incrNow) { $0 = 5 }
+      await store.receive(.squareNow) { $0 = 25 }
+
+      await store.send(.incrAndSquareLater)
+      await mainQueue.advance(by: 2)
+      await store.receive(.squareNow) { $0 = 625 }
+      await store.receive(.incrNow) { $0 = 626 }
+      await store.receive(.squareNow) { $0 = 391876 }
     }
-
-    let mainQueue = DispatchQueue.test
-
-    let store = TestStore(
-      initialState: 2,
-      reducer: Counter()
-    ) {
-      $0.mainQueue = mainQueue.eraseToAnyScheduler()
-    }
-
-    await store.send(.incrAndSquareLater)
-    await mainQueue.advance(by: 1)
-    await store.receive(.squareNow) { $0 = 4 }
-    await mainQueue.advance(by: 1)
-    await store.receive(.incrNow) { $0 = 5 }
-    await store.receive(.squareNow) { $0 = 25 }
-
-    await store.send(.incrAndSquareLater)
-    await mainQueue.advance(by: 2)
-    await store.receive(.squareNow) { $0 = 625 }
-    await store.receive(.incrNow) { $0 = 626 }
-    await store.receive(.squareNow) { $0 = 391876 }
   }
 
   func testSimultaneousWorkOrdering() {

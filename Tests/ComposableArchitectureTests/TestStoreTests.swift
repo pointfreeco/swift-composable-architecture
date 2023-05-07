@@ -120,16 +120,15 @@ final class TestStoreTests: BaseTCATestCase {
         $0.count = 1
       }
 
-      XCTExpectFailure {
-        _ = store.send(.increment) {
-          $0.isChanging = false
-        }
+      XCTExpectFailure()
+      await store.send(.increment) {
+        $0.isChanging = false
       }
-      XCTExpectFailure {
-        store.receive(.changed(from: 1, to: 2)) {
-          $0.isChanging = true
-          $0.count = 1100
-        }
+
+      XCTExpectFailure()
+      await store.receive(.changed(from: 1, to: 2)) {
+        $0.isChanging = true
+        $0.count = 1100
       }
     }
 
@@ -156,15 +155,14 @@ final class TestStoreTests: BaseTCATestCase {
       await store.send(.noop)
       await store.receive(.finished)
 
-      XCTExpectFailure {
-        _ = store.send(.noop) {
-          $0.count = 0
-        }
+      XCTExpectFailure()
+      await store.send(.noop) {
+        $0.count = 0
       }
-      XCTExpectFailure {
-        store.receive(.finished) {
-          $0.count = 0
-        }
+
+      XCTExpectFailure()
+      await store.receive(.finished) {
+        $0.count = 0
       }
     }
 
@@ -193,15 +191,13 @@ final class TestStoreTests: BaseTCATestCase {
       }
       { wait(for: [predicateShouldBeCalledExpectation], timeout: 0) }()
 
-      XCTExpectFailure {
-        store.send(.noop)
-        store.receive(.noop)
-      }
+      await store.send(.noop)
+      XCTExpectFailure()
+      await store.receive(.noop)
 
-      XCTExpectFailure {
-        store.send(.noop)
-        store.receive { $0 == .noop }
-      }
+      await store.send(.noop)
+      XCTExpectFailure()
+      await store.receive { $0 == .noop }
     }
   #endif
 
@@ -243,7 +239,7 @@ final class TestStoreTests: BaseTCATestCase {
     XCTAssertEqual(store.state, 4)
   }
 
-  func testOverrideDependenciesDirectlyOnReducer() {
+  func testOverrideDependenciesDirectlyOnReducer() async {
     struct Counter: Reducer {
       @Dependency(\.calendar) var calendar
       @Dependency(\.locale) var locale
@@ -269,10 +265,10 @@ final class TestStoreTests: BaseTCATestCase {
         .dependency(\.urlSession, URLSession(configuration: .ephemeral))
     )
 
-    store.send(true) { $0 = 1 }
+    await store.send(true) { $0 = 1 }
   }
 
-  func testOverrideDependenciesOnTestStore() {
+  func testOverrideDependenciesOnTestStore() async {
     struct Counter: Reducer {
       @Dependency(\.calendar) var calendar
       @Dependency(\.locale) var locale
@@ -298,10 +294,10 @@ final class TestStoreTests: BaseTCATestCase {
     store.dependencies.timeZone = TimeZone(secondsFromGMT: 0)!
     store.dependencies.urlSession = URLSession(configuration: .ephemeral)
 
-    store.send(true) { $0 = 1 }
+    await store.send(true) { $0 = 1 }
   }
 
-  func testOverrideDependenciesOnTestStore_MidwayChange() {
+  func testOverrideDependenciesOnTestStore_MidwayChange() async {
     struct Counter: Reducer {
       @Dependency(\.date.now) var now
 
@@ -318,14 +314,14 @@ final class TestStoreTests: BaseTCATestCase {
       $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
     }
 
-    store.send(()) { $0 = 1_234_567_890 }
+    await store.send(()) { $0 = 1_234_567_890 }
 
     store.dependencies.date.now = Date(timeIntervalSince1970: 987_654_321)
 
-    store.send(()) { $0 = 987_654_321 }
+    await store.send(()) { $0 = 987_654_321 }
   }
 
-  func testOverrideDependenciesOnTestStore_Init() {
+  func testOverrideDependenciesOnTestStore_Init() async {
     struct Counter: Reducer {
       @Dependency(\.calendar) var calendar
       @Dependency(\.client.fetch) var fetch
@@ -355,7 +351,7 @@ final class TestStoreTests: BaseTCATestCase {
       $0.urlSession = URLSession(configuration: .ephemeral)
     }
 
-    store.send(true) { $0 = 1 }
+    await store.send(true) { $0 = 1 }
   }
 
   func testDependenciesEarlyBinding() async {

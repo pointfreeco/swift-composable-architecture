@@ -233,6 +233,7 @@ final class EffectTests: BaseTCATestCase {
   }
 
   #if DEBUG
+    @available(*, deprecated)
     func testUnimplemented() {
       let effect = Effect<Never>.unimplemented("unimplemented")
       XCTExpectFailure {
@@ -344,7 +345,7 @@ final class EffectTests: BaseTCATestCase {
     let effect = withDependencies {
       $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
     } operation: {
-      Effect<Void>(value: ()).map { date() }
+      Effect.send(()).map { date() }
     }
     var output: Date?
     effect

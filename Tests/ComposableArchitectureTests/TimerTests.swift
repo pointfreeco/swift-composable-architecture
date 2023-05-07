@@ -3,6 +3,7 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
+@available(*, deprecated)
 final class TimerTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
 

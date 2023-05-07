@@ -739,7 +739,7 @@ final class StoreTests: BaseTCATestCase {
       ) {
         $0.mainQueue = mainQueue.eraseToAnyScheduler()
       }
-      let viewStore = ViewStore(store)
+      let viewStore = ViewStore(store, observe: { $0 })
 
       let childTask = viewStore.send(.child(.task))
       try await Task.sleep(nanoseconds: 100_000_000)

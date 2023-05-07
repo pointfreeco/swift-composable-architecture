@@ -929,7 +929,7 @@ import XCTest
       struct Child: Reducer {
         struct State: Equatable {}
         enum Action: Equatable {}
-        func reduce(into state: inout State, action: Action) -> Effect<Action> { }
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {}
       }
       struct Parent: Reducer {
         struct State: Equatable {

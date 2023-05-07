@@ -290,7 +290,7 @@ final class EffectCancellationTests: BaseTCATestCase {
   func testNestedMergeCancellation() {
     let effect = EffectPublisher<Int, Never>.merge(
       .publisher { (1...2).publisher }
-      .cancellable(id: 1)
+        .cancellable(id: 1)
     )
     .cancellable(id: 2)
 
