@@ -187,9 +187,8 @@ Location, Core Motion, Speech Recognition, etc.), and more.
 
 As a simple example, suppose we have a feature with a button such that when you tap it, it starts
 a timer that counts up until you reach 5, and then stops. This can be accomplished using the
-``EffectPublisher/run(priority:operation:catch:file:fileID:line:)`` helper on ``Effect``, 
-which provides you with an asynchronous context to operate in and can send multiple actions back 
-into the system:
+``EffectPublisher/run(priority:operation:catch:fileID:line:)`` helper on ``Effect``, which provides
+you with an asynchronous context to operate in and can send multiple actions back into the system:
 
 ```swift
 struct Feature: Reducer {
@@ -471,7 +470,7 @@ Doing this with exhaustive testing is verbose, and there are a few problems with
 * We need to be intimately knowledgeable in how the login feature works so that we can assert
 on how its state changes and how its effects feed data back into the system. 
 * If the login feature were to change its logic we may get test failures here even though the logic 
-we are acutally trying to test doesn't really care about those changes.
+we are actually trying to test doesn't really care about those changes.
 * This test is very long, and so if there are other similar but slightly different flows we want to
 test we will be tempted to copy-and-paste the whole thing, leading to lots of duplicated, fragile
 tests.

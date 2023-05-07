@@ -282,9 +282,8 @@ public struct AnyReducer<State, Action, Environment> {
   }
 
   /// This API has been soft-deprecated in favor of
-  /// ``Reducer/ifCaseLet(_:action:then:file:fileID:line:)`` and
-  /// ``Scope/init(state:action:child:file:fileID:line:)``. Read <doc:MigratingToTheReducerProtocol>
-  /// for more information.
+  /// ``Reducer/ifCaseLet(_:action:then:fileID:line:)`` and ``Scope/init(state:action:child:)``.
+  /// Read <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// Transforms a reducer that works on child state, action, and environment into one that works on
   /// parent state, action and environment.
@@ -516,9 +515,8 @@ public struct AnyReducer<State, Action, Environment> {
     }
   }
 
-  /// This API has been deprecated in favor of
-  /// ``Reducer/ifLet(_:action:then:file:fileID:line:)-1yyuq``. Read
-  /// <doc:MigratingToTheReducerProtocol> for more information.
+  /// This API has been soft-deprecated in favor of ``Reducer/ifLet(_:action:then:fileID:line:)``.
+  /// Read <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// Transforms a reducer that works on non-optional state into one that works on optional state by
   /// only running the non-optional reducer when state is non-nil.
@@ -722,7 +720,7 @@ public struct AnyReducer<State, Action, Environment> {
   }
 
   /// This API has been soft-deprecated in favor of
-  /// ``Reducer/forEach(_:action:element:file:fileID:line:)``. Read
+  /// ``Reducer/forEach(_:action:element:fileID:line:)``. Read
   /// <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// A version of ``pullback(state:action:environment:)`` that transforms a reducer that works on

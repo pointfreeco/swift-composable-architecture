@@ -232,7 +232,7 @@ struct Settings: Reducer {
 ```
 
 Binding actions are constructed and sent to the store by calling
-``ViewStore/binding(_:file:fileID:line:)`` with a key path to the binding state:
+``ViewStore/binding(_:fileID:line:)`` with a key path to the binding state:
 
 ```swift
 TextField("Display name", text: viewStore.binding(\.$displayName))

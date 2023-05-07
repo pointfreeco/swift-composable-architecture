@@ -93,8 +93,8 @@ extension EffectPublisher {
 /// * If using Swift's native structured concurrency tools then there are 3 main ways to create an
 /// effect, depending on if you want to emit one single action back into the system, or any number
 /// of actions, or just execute some work without emitting any actions:
-///   * ``EffectPublisher/task(priority:operation:catch:file:fileID:line:)``
-///   * ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)``
+///   * ``EffectPublisher/task(priority:operation:catch:fileID:line:)``
+///   * ``EffectPublisher/run(priority:operation:catch:fileID:line:)``
 ///   * ``EffectPublisher/fireAndForget(priority:_:)``
 /// * If using Combine in your application, in particular for the dependencies of your feature
 /// then you can create effects by making use of any of Combine's operators, and then erasing the
@@ -121,7 +121,7 @@ extension EffectPublisher where Failure == Never {
   /// in an ``Effect`` so that the reducer, a non-asynchronous context, can process it.
   ///
   /// For example, if your dependency exposes an `async` function, you can use
-  /// ``task(priority:operation:catch:file:fileID:line:)`` to provide an asynchronous context for
+  /// ``task(priority:operation:catch:fileID:line:)`` to provide an asynchronous context for
   /// invoking that endpoint:
   ///
   /// ```swift
@@ -155,10 +155,10 @@ extension EffectPublisher where Failure == Never {
   /// The above code sample makes use of ``TaskResult`` in order to automatically bundle the success
   /// or failure of the `numberFact` endpoint into a single type that can be sent in an action.
   ///
-  /// The closure provided to ``task(priority:operation:catch:file:fileID:line:)`` is allowed to
-  /// throw, but any non-cancellation errors thrown will cause a runtime warning when run in the
-  /// simulator or on a device, and will cause a test failure in tests. To catch non-cancellation
-  /// errors use the `catch` trailing closure.
+  /// The closure provided to ``task(priority:operation:catch:fileID:line:)`` is allowed to throw,
+  /// but any non-cancellation errors thrown will cause a runtime warning when run in the simulator
+  /// or on a device, and will cause a test failure in tests. To catch non-cancellation errors use
+  /// the `catch` trailing closure.
   ///
   /// - Parameters:
   ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
@@ -210,8 +210,8 @@ extension EffectPublisher where Failure == Never {
 
   /// Wraps an asynchronous unit of work that can emit any number of times in an effect.
   ///
-  /// This effect is similar to ``task(priority:operation:catch:file:fileID:line:)`` except it is
-  /// capable of emitting 0 or more times, not just once.
+  /// This effect is similar to ``task(priority:operation:catch:fileID:line:)`` except it is capable
+  /// of emitting 0 or more times, not just once.
   ///
   /// For example, if you had an async stream in a dependency client:
   ///
@@ -235,10 +235,10 @@ extension EffectPublisher where Failure == Never {
   ///
   /// See ``Send`` for more information on how to use the `send` argument passed to `run`'s closure.
   ///
-  /// The closure provided to ``run(priority:operation:catch:file:fileID:line:)`` is allowed to
-  /// throw, but any non-cancellation errors thrown will cause a runtime warning when run in the
-  /// simulator or on a device, and will cause a test failure in tests. To catch non-cancellation
-  /// errors use the `catch` trailing closure.
+  /// The closure provided to ``run(priority:operation:catch:fileID:line:)`` is allowed to throw,
+  /// but any non-cancellation errors thrown will cause a runtime warning when run in the simulator
+  /// or on a device, and will cause a test failure in tests. To catch non-cancellation errors use
+  /// the `catch` trailing closure.
   ///
   /// - Parameters:
   ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
@@ -347,7 +347,7 @@ extension EffectPublisher where Failure == Never {
 }
 
 /// A type that can send actions back into the system when used from
-/// ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)``.
+/// ``EffectPublisher/run(priority:operation:catch:fileID:line:)``.
 ///
 /// This type implements [`callAsFunction`][callAsFunction] so that you invoke it as a function
 /// rather than calling methods on it:
@@ -369,8 +369,8 @@ extension EffectPublisher where Failure == Never {
 /// defer { send(.finished, animation: .default) }
 /// ```
 ///
-/// See ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)`` for more information on how to
-/// use this value to construct effects that can emit any number of times in an asynchronous
+/// See ``EffectPublisher/run(priority:operation:catch:fileID:line:)`` for more information on how
+/// to use this value to construct effects that can emit any number of times in an asynchronous
 /// context.
 ///
 /// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622

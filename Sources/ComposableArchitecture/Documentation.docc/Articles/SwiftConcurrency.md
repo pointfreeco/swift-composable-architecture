@@ -9,8 +9,8 @@ you will need to know how to prove to the compiler that your types are safe to u
 
 There are 3 primary ways to create an ``Effect`` in the library:
 
-  * ``EffectPublisher/task(priority:operation:catch:file:fileID:line:)``
-  * ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)``
+  * ``EffectPublisher/task(priority:operation:catch:fileID:line:)``
+  * ``EffectPublisher/run(priority:operation:catch:fileID:line:)``
   * ``EffectPublisher/fireAndForget(priority:_:)``
 
 Each of these constructors takes a `@Sendable`, asynchronous closure, which restricts the types of

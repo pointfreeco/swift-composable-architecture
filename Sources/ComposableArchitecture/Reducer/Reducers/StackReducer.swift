@@ -5,7 +5,7 @@ import OrderedCollections
 /// A list of data representing the content of a navigation stack.
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
-/// ``ReducerProtocol/forEach(_:action:destination:file:fileID:line:)``.
+/// ``ReducerProtocol/forEach(_:action:destination:fileID:line:)``.
 public struct StackState<Element>: RandomAccessCollection, RangeReplaceableCollection {
   var _dictionary: OrderedDictionary<StackElementID, Element>
   fileprivate var _mounted: Set<StackElementID> = []
@@ -145,7 +145,7 @@ extension StackState: CustomDumpReflectable {
 /// A wrapper type for actions that can be presented in a navigation stack.
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
-/// ``ReducerProtocol/forEach(_:action:destination:file:fileID:line:)``.
+/// ``ReducerProtocol/forEach(_:action:destination:fileID:line:)``.
 public enum StackAction<State, Action> {
   /// An action sent to the associated stack element at a given identifier.
   indirect case element(id: StackElementID, action: Action)
@@ -181,7 +181,6 @@ extension ReducerProtocol {
     _ toStackState: WritableKeyPath<State, StackState<DestinationState>>,
     action toStackAction: CasePath<Action, StackAction<DestinationState, DestinationAction>>,
     @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> _StackReducer<Self, Destination>
@@ -191,7 +190,6 @@ extension ReducerProtocol {
       toStackState: toStackState,
       toStackAction: toStackAction,
       destination: destination(),
-      file: file,
       fileID: fileID,
       line: line
     )
@@ -205,7 +203,6 @@ public struct _StackReducer<
   let toStackState: WritableKeyPath<Base.State, StackState<Destination.State>>
   let toStackAction: CasePath<Base.Action, StackAction<Destination.State, Destination.Action>>
   let destination: Destination
-  let file: StaticString
   let fileID: StaticString
   let line: UInt
 
@@ -217,7 +214,6 @@ public struct _StackReducer<
     toStackState: WritableKeyPath<Base.State, StackState<Destination.State>>,
     toStackAction: CasePath<Base.Action, StackAction<Destination.State, Destination.Action>>,
     destination: Destination,
-    file: StaticString,
     fileID: StaticString,
     line: UInt
   ) {
@@ -225,7 +221,6 @@ public struct _StackReducer<
     self.toStackState = toStackState
     self.toStackAction = toStackAction
     self.destination = destination
-    self.file = file
     self.fileID = fileID
     self.line = line
   }

@@ -3,7 +3,8 @@ extension DependencyValues {
   /// feature.
   ///
   /// This value is set to true on reducers that are run from within
-  /// ``Reducer/ifLet(_:action:then:file:fileID:line:)-qgdj``.
+  /// ``Reducer/ifLet(_:action:destination:fileID:line:)`` and
+  /// ``Reducer/forEach(_:action:destination:fileID:line:)``.
   public var isPresented: Bool {
     self.dismiss.dismiss != nil
   }

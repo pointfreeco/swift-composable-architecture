@@ -4,7 +4,7 @@ import Combine
 /// A property wrapper for state that can be presented.
 ///
 /// Use this property wrapper for modeling a feature's domain that needs to present a child feature
-/// using ``Reducer/ifLet(_:action:then:file:fileID:line:)-qgdj``.
+/// using ``Reducer/ifLet(_:action:destination:fileID:line:)``.
 @propertyWrapper
 public struct PresentationState<State> {
   private var boxedValue: [State]
@@ -88,7 +88,7 @@ extension PresentationState: CustomReflectable {
 /// A wrapper type for actions that can be presented.
 ///
 /// Use this wrapper type for modeling a feature's domain that needs to present a child
-/// feature using ``Reducer/ifLet(_:action:then:file:fileID:line:)-qgdj``.
+/// feature using ``Reducer/ifLet(_:action:destination:fileID:line:)``.
 public enum PresentationAction<Action> {
   /// An action sent to `nil` out the associated presentation state.
   case dismiss
@@ -160,8 +160,7 @@ extension Reducer {
   public func ifLet<DestinationState, DestinationAction, Destination: Reducer>(
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
     action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
-    @ReducerBuilder<DestinationState, DestinationAction> then destination: () -> Destination,
-    file: StaticString = #file,
+    @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> _PresentationReducer<Self, Destination>
@@ -171,28 +170,25 @@ extension Reducer {
       toPresentationState: toPresentationState,
       toPresentationAction: toPresentationAction,
       destination: destination(),
-      file: file,
       fileID: fileID,
       line: line
     )
   }
 
-  /// A special overload of ``Reducer/ifLet(_:action:then:file:fileID:line:)-qgdj`` for alerts and
+  /// A special overload of ``Reducer/ifLet(_:action:destination:fileID:line:)`` for alerts and
   /// confirmation dialogs that does not require a child reducer.
   @warn_unqualified_access
   @inlinable
   public func ifLet<DestinationState: _EphemeralState, DestinationAction>(
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
     action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> _PresentationReducer<Self, EmptyReducer<DestinationState, DestinationAction>> {
     self.ifLet(
       toPresentationState,
       action: toPresentationAction,
-      then: { EmptyReducer() },
-      file: file,
+      destination: { EmptyReducer() },
       fileID: fileID,
       line: line
     )
@@ -206,7 +202,6 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
   @usableFromInline let toPresentationAction:
     CasePath<Base.Action, PresentationAction<Destination.Action>>
   @usableFromInline let destination: Destination
-  @usableFromInline let file: StaticString
   @usableFromInline let fileID: StaticString
   @usableFromInline let line: UInt
 
@@ -218,7 +213,6 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
     toPresentationState: WritableKeyPath<Base.State, PresentationState<Destination.State>>,
     toPresentationAction: CasePath<Base.Action, PresentationAction<Destination.Action>>,
     destination: Destination,
-    file: StaticString,
     fileID: StaticString,
     line: UInt
   ) {
@@ -226,7 +220,6 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
     self.toPresentationState = toPresentationState
     self.toPresentationAction = toPresentationAction
     self.destination = destination
-    self.file = file
     self.fileID = fileID
     self.line = line
   }
