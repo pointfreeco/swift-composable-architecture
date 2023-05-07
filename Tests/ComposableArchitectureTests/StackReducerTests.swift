@@ -1083,7 +1083,7 @@ import XCTest
     }
 
     func testSendCopiesStackElementIDGenerator() async {
-      struct Feature: ReducerProtocol {
+      struct Feature: Reducer {
         struct State: Equatable {
           var path = StackState<Int>()
         }
@@ -1092,7 +1092,7 @@ import XCTest
           case path(StackAction<Int, Never>)
           case response
         }
-        var body: some ReducerProtocolOf<Self> {
+        var body: some ReducerOf<Self> {
           Reduce { state, action in
             switch action {
             case .buttonTapped:

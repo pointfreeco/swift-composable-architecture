@@ -574,7 +574,7 @@ final class StoreTests: BaseTCATestCase {
         case response3(Int)
       }
       @Dependency(\.count) var count
-      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+      func reduce(into state: inout State, action: Action) -> Effect<Action> {
         switch action {
         case .tap:
           return withDependencies {
@@ -634,27 +634,27 @@ final class StoreTests: BaseTCATestCase {
         case response3(Int)
       }
       @Dependency(\.count) var count
-      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+      func reduce(into state: inout State, action: Action) -> Effect<Action> {
         switch action {
         case .tap:
           return withDependencies {
             $0.count.value += 1
           } operation: {
-            EffectTask.task { .response1(self.count.value) }
+            Effect.task { .response1(self.count.value) }
           }
         case let .response1(count):
           state.count = count
           return withDependencies {
             $0.count.value += 1
           } operation: {
-            EffectTask.task { .response2(self.count.value) }
+            Effect.task { .response2(self.count.value) }
           }
         case let .response2(count):
           state.count = count
           return withDependencies {
             $0.count.value += 1
           } operation: {
-            EffectTask.task { .response3(self.count.value) }
+            Effect.task { .response3(self.count.value) }
           }
         case let .response3(count):
           state.count = count
@@ -691,7 +691,7 @@ final class StoreTests: BaseTCATestCase {
           case didFinish
         }
 
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
           switch action {
           case .task:
             return .run { send in await send(.didFinish) }

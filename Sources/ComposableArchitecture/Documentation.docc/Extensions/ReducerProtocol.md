@@ -7,7 +7,7 @@
 - ``reduce(into:action:)-4zl56``
 - ``State``
 - ``Action``
-- ``EffectTask``
+- ``Effect``
 
 ### Reducer composition
 

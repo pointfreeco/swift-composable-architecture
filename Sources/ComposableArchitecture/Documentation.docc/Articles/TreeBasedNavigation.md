@@ -34,7 +34,7 @@ form for adding a new item. We can integrate state and actions together by utili
 ``PresentationState`` and ``PresentationAction`` types:
 
 ```swift
-struct InventoryFeature: ReducerProtocol {
+struct InventoryFeature: Reducer {
   struct State: Equatable {
     @PresentationState var addItem: ItemFormFeature.State?
     var items: IdentifiedArrayOf<Item> = []
@@ -58,11 +58,11 @@ Next you can integrate the reducers of the parent and child features by using th
 in the parent domain for populating the child's state to drive navigation:
 
 ```swift
-struct InventoryFeature: ReducerProtocol {
+struct InventoryFeature: Reducer {
   struct State: Equatable { /* ... */ }
   enum Action: Equatable { /* ... */ }
   
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce<State, Action> { state, action in 
       switch action {
       case .addButtonTapped:
@@ -180,10 +180,10 @@ navigate to. And typically it's best to nest this reducer inside the feature tha
 navigation:
 
 ```swift
-struct InventoryFeature: ReducerProtocol {
+struct InventoryFeature: Reducer {
   // ...
 
-  struct Destination: ReducerProtocol {
+  struct Destination: Reducer {
     enum State {
       case addItem(AddFeature.State)
       case detailItem(DetailFeature.State)
@@ -194,7 +194,7 @@ struct InventoryFeature: ReducerProtocol {
       case detailItem(DetailFeature.Action)
       case editItem(EditFeature.Action)
     }
-    var body: some ReducerProtocolOf<Self> {
+    var body: some ReducerOf<Self> {
       Scope(state: /State.addItem, action: /Action.addItem) { 
         AddFeature()
       }
@@ -219,7 +219,7 @@ With that done we can now hold onto a _single_ piece of optional state in our fe
 ``PresentationAction`` type:
 
 ```swift
-struct InventoryFeature: ReducerProtocol {
+struct InventoryFeature: Reducer {
   struct State { 
     @PresentationState var destination: Destination.State?
     // ...
@@ -367,14 +367,14 @@ where the rest of your feature's logic and behavior resides. It is accessed via 
 dependency management system (see <doc:DependencyManagement>) using ``DismissEffect``:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   struct State { /* ... */ }
   enum Action { 
     case closeButtonTapped
     // ...
   }
   @Dependency(\.dismiss) var dismiss
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .closeButtonTapped:
       return .fireAndForget { await self.dismiss() }
@@ -408,7 +408,7 @@ As an example, consider the following simple counter feature that wants to dismi
 count is greater than or equal to 5:
 
 ```swift
-struct CounterFeature: ReducerProtocol {
+struct CounterFeature: Reducer {
   struct State: Equatable {
     var count = 0
   }
@@ -419,7 +419,7 @@ struct CounterFeature: ReducerProtocol {
 
   @Dependency(\.dismiss) var dismiss
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .decrementButtonTapped:
       state.count += 1
@@ -438,14 +438,14 @@ struct CounterFeature: ReducerProtocol {
 And then let's embed that feature into a parent feature:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   struct State: Equatable {
     @PresentationState var counter: CounterFeature.State?
   }
   enum Action: Equatable {
     case counter(CounterFeature.Action)
   }
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce { state, action in 
       // ...
     }

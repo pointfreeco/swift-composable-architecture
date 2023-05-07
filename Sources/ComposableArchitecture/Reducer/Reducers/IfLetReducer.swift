@@ -123,7 +123,7 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
       NavigationID(base: $0, keyPath: self.toChildState)
     }
 
-    let childCancelEffects: EffectTask<Parent.Action>
+    let childCancelEffects: Effect<Parent.Action>
     if let childID = childIDBefore, childID != childIDAfter {
       childCancelEffects = ._cancel(id: childID, navigationID: self.navigationIDPath)
     } else {

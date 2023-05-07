@@ -225,15 +225,12 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
   }
 
   @inlinable
-  public func reduce(
-    into state: inout Base.State, action: Base.Action
-  ) -> EffectTask<Base.Action> {
-
+  public func reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action> {
     let initialPresentationState = state[keyPath: self.toPresentationState]
     let presentationAction = self.toPresentationAction.extract(from: action)
 
-    let destinationEffects: EffectTask<Base.Action>
-    let baseEffects: EffectTask<Base.Action>
+    let destinationEffects: Effect<Base.Action>
+    let baseEffects: Effect<Base.Action>
 
     switch (initialPresentationState.wrappedValue, presentationAction) {
     case let (.some(destinationState), .some(.dismiss)):
@@ -303,7 +300,7 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
       initialPresentationState.wrappedValue.map(self.navigationIDPath(for:))
       != state[keyPath: self.toPresentationState].wrappedValue.map(self.navigationIDPath(for:))
 
-    let dismissEffects: EffectTask<Base.Action>
+    let dismissEffects: Effect<Base.Action>
     if presentationIdentityChanged,
       let presentationState = initialPresentationState.wrappedValue,
       !isEphemeral(presentationState)
@@ -313,7 +310,7 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
       dismissEffects = .none
     }
 
-    let presentEffects: EffectTask<Base.Action>
+    let presentEffects: Effect<Base.Action>
     if presentationIdentityChanged || !state[keyPath: self.toPresentationState].isPresented,
       let presentationState = state[keyPath: self.toPresentationState].wrappedValue,
       !isEphemeral(presentationState)

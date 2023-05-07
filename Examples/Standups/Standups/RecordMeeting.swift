@@ -136,7 +136,7 @@ struct RecordMeeting: Reducer {
     }
   }
 
-  private func meetingFinished(transcript: String) -> EffectTask<Action> {
+  private func meetingFinished(transcript: String) -> Effect<Action> {
     .send(.delegate(.save(transcript: transcript)))
   }
 }

@@ -224,7 +224,7 @@ struct ScreenA: Reducer {
   @Dependency(\.dismiss) var dismiss
   @Dependency(\.factClient) var factClient
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .decrementButtonTapped:
       state.count -= 1
@@ -344,7 +344,7 @@ struct ScreenB: Reducer {
     case screenCButtonTapped
   }
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .screenAButtonTapped:
       return .none
@@ -403,7 +403,7 @@ struct ScreenC: Reducer {
   @Dependency(\.mainQueue) var mainQueue
   enum CancelID { case timer }
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .startButtonTapped:
       state.isTimerRunning = true

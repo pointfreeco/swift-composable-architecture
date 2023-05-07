@@ -30,10 +30,10 @@ together. This consists of defining a new reducer, typically called `Path`, that
 of all the features that can be pushed onto the stack:
 
 ```swift
-struct RootFeature: ReducerProtocol {
+struct RootFeature: Reducer {
   // ...
 
-  struct Path: ReducerProtocol {
+  struct Path: Reducer {
     enum State {
       case addItem(AddFeature.State)
       case detailItem(DetailFeature.State)
@@ -44,7 +44,7 @@ struct RootFeature: ReducerProtocol {
       case detailItem(DetailFeature.Action)
       case editItem(EditFeature.Action)
     }
-    var body: some ReducerProtocolOf<Self> {
+    var body: some ReducerOf<Self> {
       Scope(state: /State.addItem, action: /Action.addItem) { 
         AddFeature()
       }
@@ -66,7 +66,7 @@ Once the `Path` reducer is defined we can then hold onto ``StackState`` and ``St
 feature that manages the navigation stack:
 
 ```swift
-struct RootFeature: ReducerProtocol {
+struct RootFeature: Reducer {
   struct State {
     var path = StackState<Path.State>()
     // ...
@@ -86,10 +86,10 @@ method to integrate the domains of all the features that can be navigated to wit
 parent feature:
 
 ```swift
-struct RootFeature: ReducerProtocol {
+struct RootFeature: Reducer {
   // ...
 
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce { state, action in 
       // Core logic for root feature
     }
@@ -172,14 +172,14 @@ where the rest of your feature's logic and behavior resides. It is accessed via 
 dependency management system (see <doc:DependencyManagement>) using ``DismissEffect``:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   struct State { /* ... */ }
   enum Action { 
     case closeButtonTapped
     // …
   }
   @Dependency(\.dismiss) var dismiss
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .closeButtonTapped:
       return .fireAndForget { await self.dismiss() }

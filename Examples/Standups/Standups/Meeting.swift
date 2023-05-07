@@ -7,7 +7,7 @@ struct MeetingReducer: Reducer {
     let standup: Standup
   }
   enum Action: Equatable {}
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
   }
 }
 

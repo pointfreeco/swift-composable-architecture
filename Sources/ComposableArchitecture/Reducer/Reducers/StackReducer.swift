@@ -177,7 +177,7 @@ extension ReducerProtocol {
   /// - Returns: A reducer that combines the destination reducer with the parent reducer.
   @inlinable
   @warn_unqualified_access
-  public func forEach<DestinationState, DestinationAction, Destination: ReducerProtocol>(
+  public func forEach<DestinationState, DestinationAction, Destination: Reducer>(
     _ toStackState: WritableKeyPath<State, StackState<DestinationState>>,
     action toStackAction: CasePath<Action, StackAction<DestinationState, DestinationAction>>,
     @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
@@ -196,9 +196,7 @@ extension ReducerProtocol {
   }
 }
 
-public struct _StackReducer<
-  Base: ReducerProtocol, Destination: ReducerProtocol
->: ReducerProtocol {
+public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
   let base: Base
   let toStackState: WritableKeyPath<Base.State, StackState<Destination.State>>
   let toStackAction: CasePath<Base.Action, StackAction<Destination.State, Destination.Action>>
@@ -225,10 +223,10 @@ public struct _StackReducer<
     self.line = line
   }
 
-  public func reduce(into state: inout Base.State, action: Base.Action) -> EffectTask<Base.Action> {
+  public func reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action> {
     let idsBefore = state[keyPath: self.toStackState].ids
-    let destinationEffects: EffectTask<Base.Action>
-    let baseEffects: EffectTask<Base.Action>
+    let destinationEffects: Effect<Base.Action>
+    let baseEffects: Effect<Base.Action>
 
     switch self.toStackAction.extract(from: action) {
     case let .element(elementID, destinationAction):

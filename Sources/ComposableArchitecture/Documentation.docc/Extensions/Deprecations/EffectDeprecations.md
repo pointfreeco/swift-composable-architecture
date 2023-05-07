@@ -10,8 +10,8 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 ### Type names and aliases
 
-- ``Effect``
 - ``EffectPublisher``
+- ``EffectTask``
 
 ### Creating an effect
 

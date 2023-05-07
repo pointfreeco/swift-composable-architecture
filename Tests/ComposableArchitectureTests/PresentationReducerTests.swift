@@ -14,7 +14,7 @@ import XCTest
           case decrementButtonTapped
           case incrementButtonTapped
         }
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
           switch action {
           case .decrementButtonTapped:
             state.count -= 1
@@ -77,7 +77,7 @@ import XCTest
           case decrementButtonTapped
           case incrementButtonTapped
         }
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
           switch action {
           case .decrementButtonTapped:
             state.count -= 1
@@ -146,7 +146,7 @@ import XCTest
           case incrementButtonTapped
         }
         @Dependency(\.dismiss) var dismiss
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
           switch action {
           case .closeButtonTapped:
             return .fireAndForget {
@@ -222,7 +222,7 @@ import XCTest
               case tick
             }
             @Dependency(\.continuousClock) var clock
-            func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+            func reduce(into state: inout State, action: Action) -> Effect<Action> {
               switch action {
               case .startButtonTapped:
                 return .run { send in
@@ -305,7 +305,7 @@ import XCTest
             }
             @Dependency(\.continuousClock) var clock
             @Dependency(\.dismiss) var dismiss
-            func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+            func reduce(into state: inout State, action: Action) -> Effect<Action> {
               switch action {
               case .closeButtonTapped:
                 return .fireAndForget {
@@ -393,7 +393,7 @@ import XCTest
               case tick
             }
             @Dependency(\.continuousClock) var clock
-            func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+            func reduce(into state: inout State, action: Action) -> Effect<Action> {
               switch action {
               case .startButtonTapped:
                 return .run { send in
@@ -477,7 +477,7 @@ import XCTest
           case decrementButtonTapped
           case incrementButtonTapped
         }
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
           switch action {
           case .decrementButtonTapped:
             state.count -= 1
@@ -680,7 +680,7 @@ import XCTest
             case incrementButtonTapped
           }
           @Dependency(\.dismiss) var dismiss
-          func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          func reduce(into state: inout State, action: Action) -> Effect<Action> {
             switch action {
             case .closeButtonTapped:
               return .fireAndForget {
@@ -747,7 +747,7 @@ import XCTest
             }
             @Dependency(\.continuousClock) var clock
             @Dependency(\.dismiss) var dismiss
-            func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+            func reduce(into state: inout State, action: Action) -> Effect<Action> {
               switch action {
               case .closeButtonTapped:
                 return .fireAndForget {
@@ -919,7 +919,7 @@ import XCTest
           case startButtonTapped
           case stopButtonTapped
         }
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
           switch action {
           case .startButtonTapped:
             return .fireAndForget {
@@ -978,7 +978,7 @@ import XCTest
           case startButtonTapped
         }
         enum CancelID { case effect }
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
           switch action {
           case .startButtonTapped:
             return .fireAndForget {
@@ -1081,7 +1081,7 @@ import XCTest
           }
           enum CancelID { case effect }
           @Dependency(\.continuousClock) var clock
-          func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          func reduce(into state: inout State, action: Action) -> Effect<Action> {
             switch action {
             case let .response(value):
               state.count = value
@@ -1178,7 +1178,7 @@ import XCTest
           }
           enum CancelID { case effect }
           @Dependency(\.continuousClock) var clock
-          func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          func reduce(into state: inout State, action: Action) -> Effect<Action> {
             switch action {
             case let .response(value):
               state.count = value
@@ -1282,7 +1282,7 @@ import XCTest
           }
           enum CancelID { case effect }
           @Dependency(\.continuousClock) var clock
-          func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          func reduce(into state: inout State, action: Action) -> Effect<Action> {
             switch action {
             case let .response(value):
               state.count = value
@@ -1381,7 +1381,7 @@ import XCTest
           enum Action: Equatable {
             case stopButtonTapped
           }
-          func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          func reduce(into state: inout State, action: Action) -> Effect<Action> {
             switch action {
             case .stopButtonTapped:
               return .cancel(id: Parent.CancelID.effect)
@@ -1463,7 +1463,7 @@ import XCTest
           }
           enum CancelID { case effect }
           @Dependency(\.continuousClock) var clock
-          func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          func reduce(into state: inout State, action: Action) -> Effect<Action> {
             switch action {
             case .response:
               return .none
@@ -1563,7 +1563,7 @@ import XCTest
       struct Child: Reducer {
         struct State: Equatable {}
         enum Action: Equatable {}
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
         }
       }
 
@@ -1620,7 +1620,7 @@ import XCTest
         enum Action: Equatable {
           case tap
         }
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
           .none
         }
       }
@@ -1676,7 +1676,7 @@ import XCTest
       struct Child: Reducer {
         struct State: Equatable {}
         enum Action: Equatable {}
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
         }
       }
 
@@ -1719,7 +1719,7 @@ import XCTest
           let id: UUID
         }
         enum Action: Equatable {}
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
         }
       }
 
@@ -1776,7 +1776,7 @@ import XCTest
           case dismissMe
           case task
         }
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
           switch action {
           case .dismiss:
             return .send(.dismissMe)
@@ -1845,7 +1845,7 @@ import XCTest
         }
         @Dependency(\.mainQueue) var mainQueue
         @Dependency(\.uuid) var uuid
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
           switch action {
           case .resetIdentity:
             state.count = 0
@@ -2040,7 +2040,7 @@ import XCTest
       struct Child: Reducer {
         struct State: Equatable {}
         enum Action: Equatable {}
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
         }
       }
 
@@ -2082,7 +2082,7 @@ import XCTest
       struct Child: Reducer {
         struct State: Equatable {}
         enum Action: Equatable { case tap }
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
           .run { _ in try await Task.never() }
         }
       }
@@ -2160,7 +2160,7 @@ import XCTest
         }
         @Dependency(\.mainQueue) var mainQueue
         struct CancelID: Hashable {}
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
           switch action {
           case let .response(value):
             state.count = value

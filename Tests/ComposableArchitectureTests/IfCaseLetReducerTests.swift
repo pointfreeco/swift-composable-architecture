@@ -86,7 +86,7 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
             case timerTick
           }
           @Dependency(\.continuousClock) var clock
-          func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          func reduce(into state: inout State, action: Action) -> Effect<Action> {
             switch action {
             case .timerButtonTapped:
               return .run { send in
