@@ -176,7 +176,7 @@ struct Feature: ReducerProtocol {
   struct State { /* ... */ }
   enum Action { 
     case closeButtonTapped
-    // …
+    // ...
   }
   @Dependency(\.dismiss) var dismiss
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {

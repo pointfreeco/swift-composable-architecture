@@ -81,7 +81,7 @@ action:
 
 ```swift
 await store.send(.incrementButtonTapped) {
-  …
+  // ...
 }
 ```
 
@@ -335,8 +335,8 @@ asynchrony, but in a way that is controllable. One way to do this is to add a cl
 import Clocks
 
 struct Feature: ReducerProtocol {
-  struct State { … }
-  enum Action { … }
+  struct State { /* ... */ }
+  enum Action { /* ... */ }
   @Dependency(\.continuousClock) var clock
 }
 ```
@@ -442,7 +442,7 @@ let store = TestStore(
 await store.send(.login(.submitButtonTapped)) {
   // 2️⃣ Assert how all state changes in the login feature
   $0.login?.isLoading = true
-  …
+  // ...
 }
 
 // 3️⃣ Login feature performs API request to login, and
@@ -450,7 +450,7 @@ await store.send(.login(.submitButtonTapped)) {
 await store.receive(.login(.loginResponse(.success))) {
 // 4️⃣ Assert how all state changes in the login feature
   $0.login?.isLoading = false
-  …
+  // ...
 }
 
 // 5️⃣ Login feature sends a delegate action to let parent
@@ -460,7 +460,7 @@ await store.receive(.login(.delegate(.didLogin))) {
   $0.authenticatedTab = .loggedIn(
     Profile.State(...)
   )
-  …
+  // ...
   // 7️⃣ *Finally* assert that the selected tab switches to activity.
   $0.selectedTab = .activity
 }

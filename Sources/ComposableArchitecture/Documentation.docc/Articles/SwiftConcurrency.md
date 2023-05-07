@@ -29,8 +29,8 @@ from within `@Sendable` closures:
 
 ```swift
 struct Feature: ReducerProtocol {
-  struct State { … }
-  enum Action { … }
+  struct State { /* ... */ }
+  enum Action { /* ... */ }
 
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
@@ -42,7 +42,7 @@ struct Feature: ReducerProtocol {
         //    not allowed in concurrently-executing code
       }
 
-      …
+      // ...
     }
   }
 }

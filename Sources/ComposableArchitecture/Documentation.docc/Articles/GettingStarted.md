@@ -83,7 +83,7 @@ when we receive a response from the fact API request:
 
 ```swift
 struct Feature: ReducerProtocol {
-  struct State: Equatable { … }
+  struct State: Equatable { /* ... */ }
   enum Action: Equatable {
     case factAlertDismissed
     case decrementButtonTapped
@@ -101,8 +101,8 @@ execute effects, and they can return `.none` to represent that:
 
 ```swift
 struct Feature: ReducerProtocol {
-  struct State: Equatable { … }
-  enum Action: Equatable { … }
+  struct State: Equatable { /* ... */ }
+  enum Action: Equatable { /* ... */ }
   
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
@@ -322,7 +322,7 @@ can do this by adding a property to the `Feature` reducer:
 ```swift
 struct Feature: ReducerProtocol {
   let numberFact: (Int) async throws -> String
-  …
+  // ...
 }
 ```
 
@@ -430,10 +430,10 @@ any feature:
 
 ```swift
 struct Feature: ReducerProtocol {
-  struct State { … }
-  enum Action { … }
+  struct State { /* ... */ }
+  enum Action { /* ... */ }
   @Dependency(\.numberFact) var numberFact
-  …
+  // ...
 }
 ```
 

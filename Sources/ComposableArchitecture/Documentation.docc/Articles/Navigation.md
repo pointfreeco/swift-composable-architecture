@@ -222,11 +222,11 @@ be aware of their differences when modeling your domains.
 
     ```swift
     let path: [Path] = [
-      .movie(…),
-      .actors(…),
-      .actor(…)
-      .movies(…),
-      .movie(…),
+      .movie(/* ... */),
+      .actors(/* ... */),
+      .actor(/* ... */)
+      .movies(/* ... */),
+      .movie(/* ... */),
     ]
     ```
 
