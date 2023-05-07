@@ -187,7 +187,7 @@ Location, Core Motion, Speech Recognition, etc.), and more.
 
 As a simple example, suppose we have a feature with a button such that when you tap it, it starts
 a timer that counts up until you reach 5, and then stops. This can be accomplished using the
-``EffectPublisher/run(priority:operation:catch:file:fileID:line:)`` helper on ``EffectTask``, 
+``EffectPublisher/run(priority:operation:catch:fileID:line:)`` helper on ``EffectTask``, 
 which provides you with an asynchronous context to operate in and can send multiple actions back 
 into the system:
 

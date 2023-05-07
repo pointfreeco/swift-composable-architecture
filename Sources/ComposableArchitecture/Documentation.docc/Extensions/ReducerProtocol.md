@@ -18,9 +18,9 @@
 ### Embedding child features
 
 - ``Scope``
-- ``ifLet(_:action:then:file:fileID:line:)-1a0il``
-- ``ifCaseLet(_:action:then:file:fileID:line:)``
-- ``forEach(_:action:element:file:fileID:line:)``
+- ``ifLet(_:action:then:fileID:line:)``
+- ``ifCaseLet(_:action:then:fileID:line:)``
+- ``forEach(_:action:element:fileID:line:)``
 
 ### Supporting reducers
 

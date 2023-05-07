@@ -5,7 +5,7 @@ import OrderedCollections
 /// A list of data representing the content of a navigation stack.
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
-/// ``ReducerProtocol/forEach(_:action:destination:file:fileID:line:)``.
+/// ``ReducerProtocol/forEach(_:action:destination:fileID:line:)``.
 public struct StackState<Element>: RandomAccessCollection, RangeReplaceableCollection {
   var _dictionary: OrderedDictionary<StackElementID, Element>
   fileprivate var _mounted: Set<StackElementID> = []
@@ -145,7 +145,7 @@ extension StackState: CustomDumpReflectable {
 /// A wrapper type for actions that can be presented in a navigation stack.
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
-/// ``ReducerProtocol/forEach(_:action:destination:file:fileID:line:)``.
+/// ``ReducerProtocol/forEach(_:action:destination:fileID:line:)``.
 public enum StackAction<State, Action> {
   /// An action sent to the associated stack element at a given identifier.
   indirect case element(id: StackElementID, action: Action)

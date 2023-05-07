@@ -709,7 +709,7 @@ public struct AnyReducer<State, Action, Environment> {
   }
 
   /// This API has been soft-deprecated in favor of
-  /// ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)-1a0il``. Read
+  /// ``ReducerProtocol/ifLet(_:action:then:fileID:line:)``. Read
   /// <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// Transforms a reducer that works on non-optional state into one that works on optional state by
@@ -938,7 +938,7 @@ public struct AnyReducer<State, Action, Environment> {
   }
 
   /// This API has been soft-deprecated in favor of
-  /// ``ReducerProtocol/forEach(_:action:element:file:fileID:line:)``. Read
+  /// ``ReducerProtocol/forEach(_:action:element:fileID:line:)``. Read
   /// <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// A version of ``pullback(state:action:environment:)`` that transforms a reducer that works on

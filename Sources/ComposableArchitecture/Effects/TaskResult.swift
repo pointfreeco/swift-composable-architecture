@@ -31,7 +31,7 @@ import XCTestDynamicOverlay
 /// }
 /// ```
 ///
-/// And finally you can use ``EffectPublisher/task(priority:operation:catch:file:fileID:line:)`` to
+/// And finally you can use ``EffectPublisher/task(priority:operation:catch:fileID:line:)`` to
 /// construct an effect in the reducer that invokes the `numberFact` endpoint and wraps its response
 /// in a ``TaskResult`` by using its catching initializer, ``TaskResult/init(catching:)``:
 ///

@@ -1,4 +1,4 @@
-# ``ComposableArchitecture/ReducerProtocol/ifLet(_:action:then:file:fileID:line:)-1a0il``
+# ``ComposableArchitecture/ReducerProtocol/ifLet(_:action:then:fileID:line:)``
 
 ## Topics
 
@@ -7,5 +7,5 @@
 - ``PresentationState``
 - ``PresentationAction``
 - ``DismissEffect``
-- ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)-23pza``
-- ``ReducerProtocol/ifLet(_:action:file:fileID:line:)``
+- ``ReducerProtocol/ifLet(_:action:destination:fileID:line:)``
+- ``ReducerProtocol/ifLet(_:action:fileID:line:)``

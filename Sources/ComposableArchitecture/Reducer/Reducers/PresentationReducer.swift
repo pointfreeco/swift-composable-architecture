@@ -4,7 +4,7 @@ import Combine
 /// A property wrapper for state that can be presented.
 ///
 /// Use this property wrapper for modeling a feature's domain that needs to present a child feature
-/// using ``ReducerProtocol/ifLet(_:action:then:fileID:line:)``.
+/// using ``ReducerProtocol/ifLet(_:action:destination:fileID:line:)``.
 @propertyWrapper
 public struct PresentationState<State> {
   private var boxedValue: [State]
@@ -88,7 +88,7 @@ extension PresentationState: CustomReflectable {
 /// A wrapper type for actions that can be presented.
 ///
 /// Use this wrapper type for modeling a feature's domain that needs to present a child
-/// feature using ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)-23pza``.
+/// feature using ``ReducerProtocol/ifLet(_:action:destination:fileID:line:)``.
 public enum PresentationAction<Action> {
   /// An action sent to `nil` out the associated presentation state.
   case dismiss
@@ -160,7 +160,7 @@ extension ReducerProtocol {
   public func ifLet<DestinationState, DestinationAction, Destination: ReducerProtocol>(
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
     action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
-    @ReducerBuilder<DestinationState, DestinationAction> then destination: () -> Destination,
+    @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> _PresentationReducer<Self, Destination>
@@ -175,8 +175,8 @@ extension ReducerProtocol {
     )
   }
 
-  /// A special overload of ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)-23pza`` for
-  /// alerts and confirmation dialogs that does not require a child reducer.
+  /// A special overload of ``ReducerProtocol/ifLet(_:action:destination:fileID:line:)`` for alerts
+  /// and confirmation dialogs that does not require a child reducer.
   @warn_unqualified_access
   @inlinable
   public func ifLet<DestinationState: _EphemeralState, DestinationAction>(
@@ -188,7 +188,7 @@ extension ReducerProtocol {
     self.ifLet(
       toPresentationState,
       action: toPresentationAction,
-      then: { EmptyReducer() },
+      destination: { EmptyReducer() },
       fileID: fileID,
       line: line
     )

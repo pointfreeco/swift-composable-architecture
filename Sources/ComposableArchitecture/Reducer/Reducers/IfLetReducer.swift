@@ -39,8 +39,8 @@ extension ReducerProtocol {
   ///   * Automatically `nil`s out child state when an action is sent for alerts and confirmation
   ///     dialogs.
   ///
-  /// See ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)-23pza`` for a more advanced
-  /// operator suited to navigation.
+  /// See ``ReducerProtocol/ifLet(_:action:destination:fileID:line:)`` for a more advanced operator
+  /// suited to navigation.
   ///
   /// - Parameters:
   ///   - toWrappedState: A writable key path from parent state to a property containing optional
