@@ -26,7 +26,7 @@ confirmation dialogs, and even custom forms of navigation that are not handed do
 So, for the purposes of this documentation, we will use the following loose definition of 
 "navigation":
 
-> Defintion: **Navigation**: A change of mode in the application.
+> Definition: **Navigation**: A change of mode in the application.
 
 Each of the examples we considered above, such as drill-downs, sheets, popovers, covers, alerts, 
 and more, are all a "change of mode" in the application.
@@ -239,7 +239,7 @@ stack. This means the features can be put into their own modules with no depende
 other, and can be compiled without compiling any other features.
 
 * The `NavigationStack` API in SwiftUI typically has fewer bugs than `NavigationLink(isActive:)` and
-`navigationDestiation(isPresented:)`, which are used in tree-based navigation. There are still a
+`navigationDestination(isPresented:)`, which are used in tree-based navigation. There are still a
 few bugs in `NavigationStack`, but on average it is a lot more stable.
 
 #### Cons of stack-based navigation

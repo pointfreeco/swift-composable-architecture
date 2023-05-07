@@ -471,7 +471,7 @@ Doing this with exhaustive testing is verbose, and there are a few problems with
 * We need to be intimately knowledgeable in how the login feature works so that we can assert
 on how its state changes and how its effects feed data back into the system. 
 * If the login feature were to change its logic we may get test failures here even though the logic 
-we are acutally trying to test doesn't really care about those changes.
+we are actually trying to test doesn't really care about those changes.
 * This test is very long, and so if there are other similar but slightly different flows we want to
 test we will be tempted to copy-and-paste the whole thing, leading to lots of duplicated, fragile
 tests.
