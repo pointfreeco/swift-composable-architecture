@@ -19,7 +19,7 @@ It also allows for complex and recusive navigation paths in your application.
 ## Basics
 
 The tools for this style of navigation include ``StackState``, ``StackAction`` and the
-``ReducerProtocol/forEach(_:action:destination:fileID:line:)`` operator, as well as a new 
+``Reducer/forEach(_:action:destination:fileID:line:)`` operator, as well as a new 
 ``NavigationStackStore`` view that behaves like `NavigationStack` but is tuned specifically for the 
 Composable Architecture.
 
@@ -81,7 +81,7 @@ struct RootFeature: Reducer {
 > Note: ``StackAction`` is generic over both state and action of the `Path` domain, which is in
 > contrast to ``PresentationAction``, which only has a single generic.
 
-And then we must make use of the ``ReducerProtocol/forEach(_:action:destination:fileID:line:)``
+And then we must make use of the ``Reducer/forEach(_:action:destination:fileID:line:)``
 method to integrate the domains of all the features that can be navigated to with the domain of the
 parent feature:
 

@@ -19,9 +19,9 @@ the rest.
 ## Basics
 
 The tools for this style of navigation include the ``PresentationState`` property wrapper,
-``PresentationAction``, the ``ReducerProtocol/ifLet(_:action:then:fileID:line:)`` operator, and a
-whole host of other APIs that mimic SwiftUI's regular tools, but tuned specifically for the
-Composable Architecture.
+``PresentationAction``, the ``Reducer/ifLet(_:action:then:fileID:line:)`` operator, and a whole host
+of other APIs that mimic SwiftUI's regular tools, but tuned specifically for the Composable
+Architecture.
 
 The process of integrating two features together for navigation largely consists of 2 steps:
 integrating the features' domains together and integrating the features' views together. One
@@ -54,8 +54,8 @@ struct InventoryFeature: Reducer {
 > being presented, and `nil` presents the feature is dismissed.
 
 Next you can integrate the reducers of the parent and child features by using the 
-``ReducerProtocol/ifLet(_:action:then:fileID:line:)`` reducer operator, as well as having an action
-in the parent domain for populating the child's state to drive navigation:
+``Reducer/ifLet(_:action:then:fileID:line:)`` reducer operator, as well as having an action in the
+parent domain for populating the child's state to drive navigation:
 
 ```swift
 struct InventoryFeature: Reducer {

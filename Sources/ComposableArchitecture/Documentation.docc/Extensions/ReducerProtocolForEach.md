@@ -1,4 +1,4 @@
-# ``ComposableArchitecture/ReducerProtocol/forEach(_:action:element:fileID:line:)``
+# ``ComposableArchitecture/Reducer/forEach(_:action:element:fileID:line:)``
 
 ## Topics
 
@@ -7,4 +7,4 @@
 - ``StackState``
 - ``StackAction``
 - ``DismissEffect``
-- ``ReducerProtocol/forEach(_:action:destination:fileID:line:)``
+- ``Reducer/forEach(_:action:destination:fileID:line:)``
