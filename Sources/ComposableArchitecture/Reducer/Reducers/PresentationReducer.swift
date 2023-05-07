@@ -4,7 +4,7 @@ import Combine
 /// A property wrapper for state that can be presented.
 ///
 /// Use this property wrapper for modeling a feature's domain that needs to present a child feature
-/// using ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)-23pza``.
+/// using ``ReducerProtocol/ifLet(_:action:then:fileID:line:)``.
 @propertyWrapper
 public struct PresentationState<State> {
   private var boxedValue: [State]
@@ -161,7 +161,6 @@ extension ReducerProtocol {
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
     action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
     @ReducerBuilder<DestinationState, DestinationAction> then destination: () -> Destination,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> _PresentationReducer<Self, Destination>
@@ -171,7 +170,6 @@ extension ReducerProtocol {
       toPresentationState: toPresentationState,
       toPresentationAction: toPresentationAction,
       destination: destination(),
-      file: file,
       fileID: fileID,
       line: line
     )
@@ -184,7 +182,6 @@ extension ReducerProtocol {
   public func ifLet<DestinationState: _EphemeralState, DestinationAction>(
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
     action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> _PresentationReducer<Self, EmptyReducer<DestinationState, DestinationAction>> {
@@ -192,7 +189,6 @@ extension ReducerProtocol {
       toPresentationState,
       action: toPresentationAction,
       then: { EmptyReducer() },
-      file: file,
       fileID: fileID,
       line: line
     )
@@ -208,7 +204,6 @@ public struct _PresentationReducer<
   @usableFromInline let toPresentationAction:
     CasePath<Base.Action, PresentationAction<Destination.Action>>
   @usableFromInline let destination: Destination
-  @usableFromInline let file: StaticString
   @usableFromInline let fileID: StaticString
   @usableFromInline let line: UInt
 
@@ -220,7 +215,6 @@ public struct _PresentationReducer<
     toPresentationState: WritableKeyPath<Base.State, PresentationState<Destination.State>>,
     toPresentationAction: CasePath<Base.Action, PresentationAction<Destination.Action>>,
     destination: Destination,
-    file: StaticString,
     fileID: StaticString,
     line: UInt
   ) {
@@ -228,7 +222,6 @@ public struct _PresentationReducer<
     self.toPresentationState = toPresentationState
     self.toPresentationAction = toPresentationAction
     self.destination = destination
-    self.file = file
     self.fileID = fileID
     self.line = line
   }

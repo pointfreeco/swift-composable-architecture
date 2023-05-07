@@ -10,11 +10,11 @@ style of navigation allows you to deep-link into any state of your application b
 constructing a flat collection of data, handing, handing it off to SwiftUI, and letting it take
 care of the rest. It also allows for complex and recusive navigation paths in your application.
 
-* [Basics](#Basics)
-* [Integration](#Integration)
-* [Dismissal](#Dismissal)
-* [Testing](#Testing)
-* [StackState vs NavigationPath](#StackState-vs-NavigationPath)
+  * [Basics](#Basics)
+  * [Integration](#Integration)
+  * [Dismissal](#Dismissal)
+  * [Testing](#Testing)
+  * [StackState vs NavigationPath](#StackState-vs-NavigationPath)
 
 ## Basics
 

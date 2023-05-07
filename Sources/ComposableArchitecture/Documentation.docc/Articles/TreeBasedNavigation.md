@@ -7,30 +7,30 @@ how to model your domains, how to integrate features, how to test your features,
 
 Tree-based navigation is the process of modeling navigation using optional and enum state. This 
 style of navigation allows you to deep-link into any state of your application by simply 
-constructing a deeply nested piece of state, handing it off to SwiftUI, and letting it take
-care of the rest.
+constructing a deeply nested piece of state, handing it off to SwiftUI, and letting it take care of
+the rest.
 
-* [Basics](#Basics)
-* [Enum state](#Enum-state)
-* [Integration](#Integration)
-* [Dismissal](#Dismissal)
-* [Testing](#Testing)
+  * [Basics](#Basics)
+  * [Enum state](#Enum-state)
+  * [Integration](#Integration)
+  * [Dismissal](#Dismissal)
+  * [Testing](#Testing)
 
 ## Basics
 
 The tools for this style of navigation include the ``PresentationState`` property wrapper,
-``PresentationAction``, the ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)`` operator,
-and a whole host of other APIs that mimic SwiftUI's regular tools, but tuned specifically for
-the Composable Architecture.
+``PresentationAction``, the ``ReducerProtocol/ifLet(_:action:then:fileID:line:)`` operator, and a
+whole host of other APIs that mimic SwiftUI's regular tools, but tuned specifically for the
+Composable Architecture.
 
 The process of integrating two features together for navigation largely consists of 2 steps:
-integrating the features' domains together and integrating the features' views together. 
-One typically starts by integrating the features' domains together. This consists of adding the
-child's state and actions to the parent, and then utilizing a reducer operator to compose the
-child reducer into the parent.
+integrating the features' domains together and integrating the features' views together. One
+typically starts by integrating the features' domains together. This consists of adding the child's
+state and actions to the parent, and then utilizing a reducer operator to compose the child reducer
+into the parent.
 
-For example, suppose you have a list of items and you want to be able to show a sheet to display
-a form for adding a new item. We can integrate state and actions together by utilizing the 
+For example, suppose you have a list of items and you want to be able to show a sheet to display a
+form for adding a new item. We can integrate state and actions together by utilizing the 
 ``PresentationState`` and ``PresentationAction`` types:
 
 ```swift
@@ -50,12 +50,12 @@ struct InventoryFeature: ReducerProtocol {
 }
 ``` 
 
-> Note: The `addItem` state is held as an optional. A non-`nil` value represents that feature
-is being presented, and `nil` presents the feature is dismissed.
+> Note: The `addItem` state is held as an optional. A non-`nil` value represents that feature is
+> being presented, and `nil` presents the feature is dismissed.
 
 Next you can integrate the reducers of the parent and child features by using the 
-``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)`` reducer operator, as well
-as having an action in the parent domain for populating the child's state to drive navigation:
+``ReducerProtocol/ifLet(_:action:then:fileID:line:)`` reducer operator, as well as having an action
+in the parent domain for populating the child's state to drive navigation:
 
 ```swift
 struct InventoryFeature: ReducerProtocol {
@@ -66,7 +66,7 @@ struct InventoryFeature: ReducerProtocol {
     Reduce<State, Action> { state, action in 
       switch action {
       case .addButtonTapped:
-        // Populating this state causes the navigation
+        // Populating this state performs the navigation
         state.addItem = ItemFormFeature.State()
         return .none
 
@@ -81,9 +81,9 @@ struct InventoryFeature: ReducerProtocol {
 ```
 
 > Note: The key path used with `ifLet` focuses on the `@PresentationState` projected value since it 
-uses the `$` syntax. Also note that the action uses a [case 
-path](http://github.com/pointfreeco/swift-case-paths), which is analogous to key paths but tuned
-for enums, and uses the forward slash syntax.
+> uses the `$` syntax. Also note that the action uses a
+> [case path](http://github.com/pointfreeco/swift-case-paths), which is analogous to key paths but
+> tuned for enums, and uses the forward slash syntax.
 
 That's all that it takes to integrate the domains and logic of the parent and child features. Next
 we need to integrate the features' views. This is done using view modifiers that look similar to
@@ -94,7 +94,7 @@ the `sheet(store:)` modifier that takes a ``Store`` as an argument that is focus
 state and actions:
 
 ```swift
-struct InventoryFeature: View {
+struct InventoryView: View {
   let store: StoreOf<InventoryFeature>
 
   var body: some View {
@@ -103,12 +103,15 @@ struct InventoryFeature: View {
     }
     .sheet(
       store: self.store.scope(state: \.$addItem, action: { .addItem($0) })
-    )
+    ) { store in
+      ItemFormView(store: store)
+    }
   }
 }
 ```
 
-Note that we again specify a key path to the presentation state property wrapper, i.e. `\.$addItem`.
+Note that we again specify a key path to the presentation state property wrapper, _i.e._
+`\.$addItem`.
 
 With those few steps completed the domains and views of the parent and child features are now
 integrated together, and when the `addItem` state flips to a non-`nil` value the sheet will be
@@ -117,13 +120,13 @@ presented, and when it is `nil`'d out it will be dismissed.
 The library ships with overloads for all of SwiftUI's styles of navigation that take stores of 
 presentation domain, including:
 
-* `alert(store:)`
-* `confirmationDialog(store:)`
-* `sheet(store:)`
-* `popover(store:)`
-* `fullScreenCover(store:)`
-* `navigationDestination(store:)`
-* ``NavigationLinkStore``
+  * `alert(store:)`
+  * `confirmationDialog(store:)`
+  * `sheet(store:)`
+  * `popover(store:)`
+  * `fullScreenCover(store:)`
+  * `navigationDestination(store:)`
+  * ``NavigationLinkStore``
 
 This should make it possible to use optional state to drive any kind of navigation in a SwiftUI
 application.
@@ -139,7 +142,7 @@ struct State {
   @PresentationState var detailItem: DetailFeature.State?
   @PresentationState var editItem: EditFeature.State?
   @PresentationState var addItem: AddFeature.State?
-  // …
+  // ...
 }
 ```
 
@@ -148,16 +151,16 @@ and that can cause a lot of problems. First of all, SwiftUI does not support pre
 views at the same time from a single view, and so by allowing this in our state we run the risk of 
 putting our application into an inconsistent state with respect to SwiftUI.
 
-Second, it becomes more difficult for us to determine what feature is actually being presented.
-We must check multiple optionals to figure out which one is non-`nil`, and then we must figure out
-how to interpret when multiple pieces of state are non-`nil` at the same time.
+Second, it becomes more difficult for us to determine what feature is actually being presented. We
+must check multiple optionals to figure out which one is non-`nil`, and then we must figure out how
+to interpret when multiple pieces of state are non-`nil` at the same time.
 
-And the number of invalid states increases exponentially with respect to the number of features
-that can be navigated to. For example, 3 optionals leads to 3 invalid states, 4 optionals leads
-to 11 invalid states, and 5 optionals leads to 26 invalid states.
+And the number of invalid states increases exponentially with respect to the number of features that
+can be navigated to. For example, 3 optionals leads to 3 invalid states, 4 optionals leads to 11
+invalid states, and 5 optionals leads to 26 invalid states.
 
-For these reasons, and more, it can be better to model multiple destinations in a feature as a 
-single enum rather than multiple optionals. So the example of above, with 3 optionals, can be 
+For these reasons, and more, it can be better to model multiple destinations in a feature as a
+single enum rather than multiple optionals. So the example of above, with 3 optionals, can be
 refactored as an enum:
 
 ```swift
@@ -165,16 +168,16 @@ enum State {
   case addItem(AddFeature.State)
   case detailItem(DetailFeature.State)
   case editItem(EditFeature.State)
-  // …
+  // ...
 }
 ```
 
 This gives us compile-time proof that only one single destination can be active at a time.
 
-In order to utilize this style of domain modeling you must take a few extra steps. First you model
-a `Destination` reducer that encapsulates the domains and behavior of all of the features that 
-you can navigate to. And typically it's best to nest this reducer inside the feature that can
-perform the navigation:
+In order to utilize this style of domain modeling you must take a few extra steps. First you model a
+"destination" reducer that encapsulates the domains and behavior of all of the features that you can
+navigate to. And typically it's best to nest this reducer inside the feature that can perform the
+navigation:
 
 ```swift
 struct InventoryFeature: ReducerProtocol {
@@ -206,14 +209,14 @@ struct InventoryFeature: ReducerProtocol {
 }
 ```
 
-> Note: Both the `State` and `Action` types nested in the reducer are enums, with a case for
-each screen that can be navigated to. Further, the `body` computed property has a `Scope` 
-reducer for each feature, and uses case paths for focusing in on the specific case of the state
-and action enums.
+> Note: Both the `State` and `Action` types nested in the reducer are enums, with a case for each
+> screen that can be navigated to. Further, the `body` computed property has a ``Scope`` reducer for
+> each feature, and uses case paths for focusing in on the specific case of the state and action
+> enums.
 
 With that done we can now hold onto a _single_ piece of optional state in our feature, using the
-`@PresentationState` property wrapper, and we hold onto the destination actions using the
-`PresentationAction` type:
+``PresentationState`` property wrapper, and we hold onto the destination actions using the
+``PresentationAction`` type:
 
 ```swift
 struct InventoryFeature: ReducerProtocol {
@@ -242,15 +245,15 @@ case addButtonTapped:
 And at any time we can figure out exactly what feature is being presented by switching or otherwise
 destructuring the single piece of `destination` state rather than checking multiple optional values.
 
-And the final state is to make use of the special view modifiers that come with this library
-that mimic SwiftUI's APIs, but are tuned specifically for enum state. In particular, you provide
-a store that is focused in on the `Destination` domain, and then provide transformations for
-isolating a particular case of the state and action enums.
+The final step is to make use of the special view modifiers that come with this library that mimic
+SwiftUI's APIs, but are tuned specifically for enum state. In particular, you provide a store that
+is focused in on the `Destination` domain, and then provide transformations for isolating a
+particular case of the state and action enums.
 
 For example, suppose the "add" screen is presented as a sheet, the "edit" screen is presented 
 by a popover, and the "detail" screen is presented in a drill-down. Then we can use the 
-`.sheet(state:state:action:)`, `.popover(state:state:action:)` and 
-`.navigationDestination(state:state:action:)` view modifiers to have each of those styles of 
+`.sheet(store:state:action:)`, `.popover(store:state:action:)`, and 
+`.navigationDestination(store:state:action:)` view modifiers to have each of those styles of 
 presentation powered by the respective case of the destination enum:
 
 ```swift
@@ -259,7 +262,7 @@ struct InventoryView: View {
 
   var body: some View {
     List {
-      // …
+      // ...
     }
     .sheet(
       store: self.store.scope(state: \.destination, action: { .destination($0) }),
@@ -303,8 +306,8 @@ Once your features are integrated together using the steps above, your parent fe
 access to everything happening inside the child feature. You can use this as a means to integrate
 the logic of child and parent features. For example, if you want to detect when the "Save" button
 inside the edit feature is tapped, you can simply destructure on that action. This consists of
-pattern matching on the ``PresentationAction``, then the ``PresentationAction/presented(_:)`` 
-action, then the feature you are interested in, and finally the action you are interested in:
+pattern matching on the ``PresentationAction``, then the ``PresentationAction/presented(_:)`` case,
+then the feature you are interested in, and finally the action you are interested in:
 
 ```swift
 case .destination(.presented(.editItem(.saveButtonTapped))):
@@ -336,13 +339,13 @@ case .closeButtonTapped:
   return .none
 ```
 
-However, in order to `nil` out the presenting state you must have access to that state, and usually
-only the parent has access. But often we would like to encpasulate the logic of dismissing a feature
-to be inside the child feature without needing explicit communication with the parent.
+In order to `nil` out the presenting state you must have access to that state, and usually only the
+parent has access, but often we would like to encpasulate the logic of dismissing a feature to be
+inside the child feature without needing explicit communication with the parent.
 
 SwiftUI provides a wonderful tool for allowing child _views_ to dismiss themselves from the parent,
-all without any explicit communication with the parent. It's an environment value called
-`dismiss`, and it can be used like so:
+all without any explicit communication with the parent. It's an environment value called `dismiss`,
+and it can be used like so:
 
 ```swift
 struct ChildView: View {
@@ -356,19 +359,19 @@ struct ChildView: View {
 ```
 
 When `self.dismiss()` is invoked, SwiftUI finds the closet parent view with a presentation, and
-causes it to dismiss. This can be incredibly useful, but it is also relegated to the view layer.
-It is not possible to use `dismiss` from 
+causes it to dismiss. This can be incredibly useful, but it is also relegated to the view layer. It
+is not possible to use `dismiss` elsewhere, like in an observable object.
 
-The Composable Architecture has a similar tool, except it is appropriate to use from a reducer
+The Composable Architecture has a similar tool, except it is appropriate to use from a reducer,
 where the rest of your feature's logic and behavior resides. It is accessed via the library's
 dependency management system (see <doc:DependencyManagement>) using ``DismissEffect``:
 
 ```swift
 struct Feature: ReducerProtocol {
-  struct State { /* … */ }
+  struct State { /* ... */ }
   enum Action { 
     case closeButtonTapped
-    // …
+    // ...
   }
   @Dependency(\.dismiss) var dismiss
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
@@ -381,23 +384,23 @@ struct Feature: ReducerProtocol {
 ```
 
 > Note: The ``DismissEffect`` function is async which means it cannot be invoked directly inside a 
-reducer. Instead it must be called from either 
-``EffectPublisher/run(priority:operation:catch:fileID:line:)`` or
-``EffectPublisher/fireAndForget(priority:_:)``.
+> reducer. Instead it must be called from either 
+> ``EffectPublisher/run(priority:operation:catch:fileID:line:)`` or
+> ``EffectPublisher/fireAndForget(priority:_:)``.
 
-When `self.dismiss()` is invoked it will `nil` out the state responsible for presenting the feature
+When `self.dismiss()` is invoked it will `nil` out the state responsible for presenting the feature,
 causing the feature to be dismissed. This allows you to encapsulate the logic for dismissing a child 
 feature entirely inside the child domain without explicitly communicating with the parent.
 
 > Warning: SwiftUI's environment value `@Environment(\.dismiss)` and the Composable Architecture's
-dependency value `@Dependency(\.dismiss)` serve similar purposes, but are completely different 
-types. SwiftUI's environment value can only be used in SwiftUI views, and this library's
-dependency value can only be used inside reducers.
+> dependency value `@Dependency(\.dismiss)` serve similar purposes, but are completely different 
+> types. SwiftUI's environment value can only be used in SwiftUI views, and this library's
+> dependency value can only be used inside reducers.
 
 ## Testing
 
-A huge benefit of properly modeling your domains for navigation is that testing because quite
-easy. Further, using "non-exhaustive testing" (see <doc:Testing#Non-exhaustive-testing>) can be very 
+A huge benefit of properly modeling your domains for navigation is that testing because quite easy.
+Further, using "non-exhaustive testing" (see <doc:Testing#Non-exhaustive-testing>) can be very 
 useful for testing navigation since you often only want to assert on a few high level details and 
 not all state mutations and effects.
 
@@ -446,7 +449,7 @@ struct Feature: ReducerProtocol {
     Reduce { state, action in 
       // ...
     }
-    .ifLet(\.counter, action: /Action.counter) {
+    .ifLet(\.$counter, action: /Action.counter) {
       CounterFeature()
     }
   }
@@ -457,7 +460,7 @@ Typically this feature reducer would have a lot more logic.
 
 Now let's try to write a test on the `Feature` reducer that proves that when the child counter 
 feature's count is incremented above 5 it will dismiss itself. To do this we will construct a 
-``TestStore`` for ``Feature`` that starts in a state with the count already set to 3:
+``TestStore`` for `Feature` that starts in a state with the count already set to 3:
 
 ```swift
 func testDismissal() {
