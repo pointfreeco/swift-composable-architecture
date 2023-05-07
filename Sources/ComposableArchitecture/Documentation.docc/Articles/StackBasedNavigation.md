@@ -216,7 +216,7 @@ SwiftUI comes with a powerful type for modeling data in navigation stacks called
 
 The `NavigationPath` data type is a type-erased list of data that is tuned specifically for
 `NavigationStack`s. It allows you to maximally decouple features in the stack since you can add any
-kind of data to a path:
+kind of data to a path, as long as it is `Hashable`:
 
 ```swift
 var path = NavigationPath()
@@ -274,6 +274,8 @@ for element in path {  // 🛑
 
 This can make it very difficult to analyze what is on the stack and aggregate data across the 
 entire stack.
+
+The Composable Architecture's ``StackState`` 
 
 <!--
 TODO: finishs 
