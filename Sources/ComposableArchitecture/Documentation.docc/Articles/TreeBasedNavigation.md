@@ -82,7 +82,7 @@ struct InventoryFeature: ReducerProtocol {
 
 > Note: The key path used with `ifLet` focuses on the `@PresentationState` projected value since it 
 uses the `$` syntax. Also note that the action uses a [case 
-path](http://github.com/pointfreeco/swift-case-paths), which is analagous to key paths but tuned
+path](http://github.com/pointfreeco/swift-case-paths), which is analogous to key paths but tuned
 for enums, and uses the forward slash syntax.
 
 That's all that it takes to integrate the domains and logic of the parent and child features. Next
