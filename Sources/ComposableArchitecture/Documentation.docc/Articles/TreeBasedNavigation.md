@@ -10,6 +10,12 @@ style of navigation allows you to deep-link into any state of your application b
 constructing a deeply nested piece of state, handing it off to SwiftUI, and letting it take
 care of the rest.
 
+* [Basics](#Basics)
+* [Enum state](#Enum-state)
+* [Integration](#Integration)
+* [Dismissal](#Dismissal)
+* [Testing](#Testing)
+
 ## Basics
 
 The tools for this style of navigation include the ``PresentationState`` property wrapper,
@@ -122,7 +128,7 @@ presentation domain, including:
 This should make it possible to use optional state to drive any kind of navigation in a SwiftUI
 application.
 
-## Correctness
+## Enum state
 
 While driving navigation with optional state can be powerful, it can also lead to less-than-ideal
 modeled domains. In particular, if a feature can navigate to multiple screens then you may be 
@@ -287,11 +293,240 @@ drill-down will occur immediately.
 
 #### API Unification
 
+<!--
+todo: finish
+-->
+
+## Integration
+
+Once your features are integrated together using the steps above, your parent feature gets instant
+access to everything happening inside the child feature. You can use this as a means to integrate
+the logic of child and parent features. For example, if you want to detect when the "Save" button
+inside the edit feature is tapped, you can simply destructure on that action. This consists of
+pattern matching on the ``PresentationAction``, then the ``PresentationAction/presented(_:)`` 
+action, then the feature you are interested in, and finally the action you are interested in:
+
+```swift
+case .destination(.presented(.editItem(.saveButtonTapped))):
+  // ...
+```
+
+Once inside that case you can then try extracting out the feature state so that you can perform
+additional logic, such as closing the "edit" feature and saving the edited item to the database:
+
+```swift
+case .destination(.presented(.editItem(.saveButtonTapped))):
+  guard case let .editItem(editItemState) = self.destination
+  else { return .none }
+
+  state.destination = nil
+  return .fireAndForget {
+    self.database.save(editItemState.item)
+  }
+```
+
 ## Dismissal
+
+Dismissing a presented feature is as simple as `nil`-ing out the state that represents the 
+presented feature:
+
+```swift
+case .closeButtonTapped:
+  state.destination = nil
+  return .none
+```
+
+However, in order to `nil` out the presenting state you must have access to that state, and usually
+only the parent has access. But often we would like to encpasulate the logic of dismissing a feature
+to be inside the child feature without needing explicit communication with the parent.
+
+SwiftUI provides a wonderful tool for allowing child _views_ to dismiss themselves from the parent,
+all without any explicit communication with the parent. It's an environment value called
+`dismiss`, and it can be used like so:
+
+```swift
+struct ChildView: View {
+  @Environment(\.dismiss) var dismiss
+  var body: some View {
+    Button("Close") {
+      self.dismiss()
+    }
+  }
+}
+```
+
+When `self.dismiss()` is invoked, SwiftUI finds the closet parent view with a presentation, and
+causes it to dismiss. This can be incredibly useful, but it is also relegated to the view layer.
+It is not possible to use `dismiss` from 
+
+The Composable Architecture has a similar tool, except it is appropriate to use from a reducer
+where the rest of your feature's logic and behavior resides. It is accessed via the library's
+dependency management system (see <doc:DependencyManagement>) using ``DismissEffect``:
+
+```swift
+struct Feature: ReducerProtocol {
+  struct State { /* … */ }
+  enum Action { 
+    case closeButtonTapped
+    // …
+  }
+  @Dependency(\.dismiss) var dismiss
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+    switch action {
+    case .closeButtonTapped:
+      return .fireAndForget { await self.dismiss() }
+    } 
+  }
+}
+```
+
+> Note: The ``DismissEffect`` function is async which means it cannot be invoked directly inside a 
+reducer. Instead it must be called from either 
+``EffectPublisher/run(priority:operation:catch:fileID:line:)`` or
+``EffectPublisher/fireAndForget(priority:_:)``.
+
+When `self.dismiss()` is invoked it will `nil` out the state responsible for presenting the feature
+causing the feature to be dismissed. This allows you to encapsulate the logic for dismissing a child 
+feature entirely inside the child domain without explicitly communicating with the parent.
+
+> Warning: SwiftUI's environment value `@Environment(\.dismiss)` and the Composable Architecture's
+dependency value `@Dependency(\.dismiss)` serve similar purposes, but are completely different 
+types. SwiftUI's environment value can only be used in SwiftUI views, and this library's
+dependency value can only be used inside reducers.
 
 ## Testing
 
+A huge benefit of properly modeling your domains for navigation is that testing because quite
+easy. Further, using "non-exhaustive testing" (see <doc:Testing#Non-exhaustive-testing>) can be very 
+useful for testing navigation since you often only want to assert on a few high level details and 
+not all state mutations and effects.
 
-<!--
-todo: child dismissal
--->
+As an example, consider the following simple counter feature that wants to dismiss itself if its
+count is greater than or equal to 5:
+
+```swift
+struct CounterFeature: ReducerProtocol {
+  struct State: Equatable {
+    var count = 0
+  }
+  enum Action: Equatable {
+    case decrementButtonTapped
+    case incrementButtonTapped
+  }
+
+  @Dependency(\.dismiss) var dismiss
+
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+    switch action {
+    case .decrementButtonTapped:
+      state.count += 1
+      return .none
+
+    case .incrementButtonTapped:
+      state.count += 1
+      return state.count >= 5
+        ? .fireAndForget { await self.dismiss() }
+        : .none
+    }
+  }
+}
+```
+
+And then let's embed that feature into a parent feature:
+
+```swift
+struct Feature: ReducerProtocol {
+  struct State: Equatable {
+    @PresentationState var counter: CounterFeature.State?
+  }
+  enum Action: Equatable {
+    case counter(CounterFeature.Action)
+  }
+  var body: some ReducerProtocolOf<Self> {
+    Reduce { state, action in 
+      // ...
+    }
+    .ifLet(\.counter, action: /Action.counter) {
+      CounterFeature()
+    }
+  }
+}
+```
+
+Typically this feature reducer would have a lot more logic.
+
+Now let's try to write a test on the `Feature` reducer that proves that when the child counter 
+feature's count is incremented above 5 it will dismiss itself. To do this we will construct a 
+``TestStore`` for ``Feature`` that starts in a state with the count already set to 3:
+
+```swift
+func testDismissal() {
+  let store = TestStore(
+    initialState: Feature.State(
+      counter: CounterFeature.State(count: 3)
+    ),
+    reducer: CounterFeature()
+  )
+}
+```
+
+Then we can send the `.incrementButtonTapped` action in the counter child feature to confirm
+that the count goes up by one:
+
+```swift
+await store.send(.counter(.presented(.incrementButtonTapped))) {
+  $0.counter?.count = 4
+}
+```
+
+And then we can send it one more time to see that the count goes up to 5:
+
+```swift 
+await store.send(.counter(.presented(.incrementButtonTapped))) {
+  $0.counter?.count = 5
+}
+```
+
+And then we finally expect that the child dismisses itself, which manifests itself as the `.dismiss`
+action being sent and `nil`ing out the `counter` state:
+
+```swift
+await store.receive(.counter(.dismiss)) {
+  $0.counter = nil
+}
+```
+
+This shows how we can write very naunced tests on how parent and child features interact with
+each other.
+
+However, the more complex the features become, the more cumbersome testing their integration can
+be. By default, ``TestStore`` requires us to be exhaustive in our assertions. We must assert on 
+how every piece of state changes, how every effect feeds data back into the system, and we must
+make sure that all effects finish by the end of the test (see <docs:Testing> for more info).
+
+But ``TestStore`` also supports a form of testing known as "non-exhaustive testing" that allows
+you to assert on only the parts of the features that you actually care about (see 
+<doc:Testing#Non-exhaustive-testing> for more info).
+
+For example, if we turn off exhaustivity on the test store (see ``TestStore/exhaustivity``) then
+we can assert at a high level that when the increment button is tapped twice that eventually we
+receive a dismiss action:
+
+```swift
+func testDismissal() {
+  let store = TestStore(
+    initialState: Feature.State(
+      counter: CounterFeature.State(count: 3)
+    ),
+    reducer: CounterFeature()
+  )
+  store.exhaustivity = .off
+
+  await store.send(.counter(.presented(.incrementButtonTapped)))
+  await store.send(.counter(.presented(.incrementButtonTapped)))
+  await store.receive(.counter(.dismiss)) 
+}
+```
+
+This essentially proves the same thing that the previous test proves, but it does so in much fewer
+lines and is more resilient to future changes in the features that we don't necessarily care about.

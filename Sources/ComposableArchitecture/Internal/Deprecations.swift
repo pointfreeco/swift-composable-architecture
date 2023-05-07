@@ -196,8 +196,7 @@ extension EffectPublisher where Failure == Error {
   *, deprecated,
   message:
     """
-    If you use this initializer, please open a discussion on GitHub and let us know how: \
-    https://github.com/pointfreeco/swift-composable-architecture/discussions/new
+    If you use this initializer, please open a discussion on GitHub and let us know how: https://github.com/pointfreeco/swift-composable-architecture/discussions/new
     """
 )
 extension Store {
