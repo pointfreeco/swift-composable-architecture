@@ -65,6 +65,16 @@ day-to-day when building applications, such as:
 - ``Store``
 - ``ViewStore``
 
+### Navigation
+
+- <doc:Navigation>
+- ``PresentationState``
+- ``PresentationAction``
+- ``ReducerProtocol/ifLet(_:action:destination:fileID:line:)``
+- ``StackState``
+- ``StackAction``
+- ``ReducerProtocol/forEach(_:action:destination:fileID:line:)``
+
 ### Integrations
 
 - <doc:SwiftUI>

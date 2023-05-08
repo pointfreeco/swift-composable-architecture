@@ -159,49 +159,39 @@ This will give you compile-time guarantees that you have handled each case of th
 which can be nice for when you add new types of destinations to the stack.
 
 In each of these cases you can return any kind of view that you want, but ultimately you want to
-make use of 
-
-
+make use of the library's ``CaseLet`` view in order to scope down to a specific case of the 
+`Path.State` enum:
 
 ```swift
-struct RootView: View {
-  let store: StoreOf<RootFeature>
-
-  var body: some View {
-    NavigationStackStore(
-      path: self.store.scope(state: \.path, action: { .path($0) })
-    ) {
-      // Root view of the navigation stack
-    } destination: { state in
-      switch state {
-      case .addItem:
-        CaseLet(
-          state: /RootFeature.Path.State.addItem,
-          action: RootFeature.Path.Action.addItem,
-          then: AddView.init(store:)
-        )
-      case .detailItem:
-        CaseLet(
-          state: /RootFeature.Path.State.detailItem,
-          action: RootFeature.Path.Action.detailItem,
-          then: DetailView.init(store:)
-        )
-      case .editItem:
-        CaseLet(
-          state: /RootFeature.Path.State.editItem,
-          action: RootFeature.Path.Action.editItem,
-          then: EditView.init(store:)
-        )
-      }
-    }
+} destination: { state in
+  switch state {
+  case .addItem:
+    CaseLet(
+      state: /RootFeature.Path.State.addItem,
+      action: RootFeature.Path.Action.addItem,
+      then: AddView.init(store:)
+    )
+  case .detailItem:
+    CaseLet(
+      state: /RootFeature.Path.State.detailItem,
+      action: RootFeature.Path.Action.detailItem,
+      then: DetailView.init(store:)
+    )
+  case .editItem:
+    CaseLet(
+      state: /RootFeature.Path.State.editItem,
+      action: RootFeature.Path.Action.editItem,
+      then: EditView.init(store:)
+    )
   }
 }
 ```
 
-
-<!--
-todo: finish
--->
+And that is all it takes to integrate multiple child features together into a navigation stack, 
+and done so with concisely modeled domains. Once those steps are taken you can easily add 
+additional features to the stack by adding a new case to the `Path` reducer state and action enums, 
+and you get complete introspection into what is happening in each child feature from the parent. 
+Continue reading into <doc:StackBasedNavigation#Integration> for more information on that.
 
 ## Integration
 
