@@ -392,20 +392,17 @@ extension StackElementID: CustomDumpStringConvertible {
 
 extension StackElementID: ExpressibleByIntegerLiteral {
   public init(integerLiteral value: Int) {
-    #if DEBUG
-      @Dependency(\.context) var context
-      if context != .test {
-        runtimeWarn(
-          """
-          Specifying stack element IDs by integer literal is not allowed outside of tests.
+    if !_XCTIsTesting {
+      fatalError(
+        """
+        Specifying stack element IDs by integer literal is not allowed outside of tests.
 
-          In tests, integer literal stack element IDs can be used as a shorthand to the \
-          auto-incrementing generation of the current dependency context. This can be useful when \
-          asserting against actions received by a specific element.
-          """
-        )
-      }
-    #endif
+        In tests, integer literal stack element IDs can be used as a shorthand to the \
+        auto-incrementing generation of the current dependency context. This can be useful when \
+        asserting against actions received by a specific element.
+        """
+      )
+    }
     self.init(generation: value, rawValue: value)
   }
 }
