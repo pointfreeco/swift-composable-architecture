@@ -264,7 +264,29 @@ public struct _StackReducer<
           .map { toStackAction.embed(.element(id: elementID, action: $0)) }
           ._cancellable(navigationIDPath: elementNavigationIDPath)
       } else {
-        runtimeWarn("TODO")
+        runtimeWarn(
+          """
+          A "forEach" at "\(self.fileID):\(self.line)" received an action for a missing element.
+
+            Action:
+              \(debugCaseOutput(destinationAction))
+
+          This is generally considered an application logic error, and can happen for a few reasons:
+
+          • A parent reducer removed an element with this ID before this reducer ran. This reducer \
+          must run before any other reducer removes an element, which ensures that element
+          reducers can handle their actions while their state is still available.
+
+          • An in-flight effect emitted this action when state contained no element at this ID. \
+          While it may be perfectly reasonable to ignore this action, consider canceling the \
+          associated effect before an element is removed, especially if it is a long-living effect.
+
+          • This action was sent to the store while its state contained no element at this ID. To \
+          fix this make sure that actions for this reducer can only be sent from a view store when \
+          its state contains an element at this id. In SwiftUI applications, use \
+          "NavigationStackStore".
+          """
+        )
         destinationEffects = .none
       }
 
