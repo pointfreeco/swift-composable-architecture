@@ -12,33 +12,23 @@ public struct StackState<Element> {
 
   @Dependency(\.stackElementID) private var stackElementID
 
+  /// An ordered set of identifiers, one for each stack element.
+  ///
+  /// You can use this set to iterate over stack elements along with their associated identifiers.
+  ///
+  /// ```swift
+  /// for (id, element) in zip(state.path.ids, state.path) {
+  ///   if element.isDeleted {
+  ///     state.path.pop(from: id)
+  ///     break
+  ///   }
+  /// }
+  /// ```
   public var ids: OrderedSet<StackElementID> {
     self._dictionary.keys
   }
 
-  public var presented: Element? {
-    _read { yield self._dictionary.values.last }
-    _modify {
-      var value = self._dictionary.values.last
-      yield &value
-      if let value = value {
-        self._dictionary.values[self._dictionary.values.endIndex - 1] = value
-      }
-    }
-    set {
-      switch (self._dictionary.values.last, newValue) {
-      case (.none, .none):
-        break
-      case let (.none, .some(element)):
-        self.append(element)
-      case (.some, .none):
-        self.removeLast()
-      case let (.some, .some(element)):
-        self._dictionary.values[self._dictionary.values.endIndex - 1] = element
-      }
-    }
-  }
-
+  /// Accesses the value associated with the given id for reading and writing.
   public subscript(id id: StackElementID) -> Element? {
     _read { yield self._dictionary[id] }
     _modify {
@@ -46,6 +36,10 @@ public struct StackState<Element> {
       if !self._dictionary.keys.contains(id) {
         self._mounted.remove(id)
       }
+    }
+    set {
+      // TODO: precondition(newValue == nil || self._dictionary[id] != nil)
+      self._dictionary[id] = newValue
     }
   }
 
@@ -66,28 +60,6 @@ public struct StackState<Element> {
       self._mounted.remove(id)
     }
     self._dictionary.removeSubrange(index...)
-  }
-
-  /// Returns a sequence of pairs (*id*, *element*).
-  public func identified() -> _IdentifiedSequence {
-    _IdentifiedSequence(base: self)
-  }
-
-  public struct _IdentifiedSequence: Sequence {
-    fileprivate var base: StackState<Element>
-
-    public func makeIterator() -> Iterator {
-      Iterator(iterator: base._dictionary.makeIterator())
-    }
-
-    public struct Iterator: IteratorProtocol {
-      fileprivate var iterator: OrderedDictionary<StackElementID, Element>.Iterator
-
-      public mutating func next() -> (id: StackElementID, element: Element)? {
-        guard let (id, element) = self.iterator.next() else { return nil }
-        return (id: id, element: element)
-      }
-    }
   }
 }
 
