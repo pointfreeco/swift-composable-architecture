@@ -173,7 +173,7 @@ final class EffectTests: BaseTCATestCase {
   }
 
   func testEffectSubscriberInitializer_WithCancellation() {
-    enum CancelID {}
+    enum CancelID { case delay }
 
     let effect = EffectTask<Int>.run { subscriber in
       subscriber.send(1)
@@ -183,7 +183,7 @@ final class EffectTests: BaseTCATestCase {
 
       return AnyCancellable {}
     }
-    .cancellable(id: CancelID.self)
+    .cancellable(id: CancelID.delay)
 
     var values: [Int] = []
     var isComplete = false
@@ -194,7 +194,7 @@ final class EffectTests: BaseTCATestCase {
     XCTAssertEqual(values, [1])
     XCTAssertEqual(isComplete, false)
 
-    EffectTask<Void>.cancel(id: CancelID.self)
+    EffectTask<Void>.cancel(id: CancelID.delay)
       .sink(receiveValue: { _ in })
       .store(in: &self.cancellables)
 

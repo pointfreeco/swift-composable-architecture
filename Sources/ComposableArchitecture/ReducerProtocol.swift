@@ -64,7 +64,7 @@
   ///     case stopTimerButtonTapped
   ///     case timerTick
   ///   }
-  ///   enum TimerID {}
+  ///   enum CancelID { case timer }
   ///
   ///   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
   ///     switch action {
@@ -83,10 +83,10 @@
   ///           await send(.timerTick)
   ///         }
   ///       }
-  ///       .cancellable(TimerID.self)
+  ///       .cancellable(CancelID.timer)
   ///
   ///     case .stopTimerButtonTapped:
-  ///       return .cancel(TimerID.self)
+  ///       return .cancel(CancelID.timer)
   ///
   ///     case .timerTick:
   ///       state.count += 1
