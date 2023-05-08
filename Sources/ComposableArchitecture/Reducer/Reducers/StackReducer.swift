@@ -6,7 +6,7 @@ import OrderedCollections
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
 /// ``ReducerProtocol/forEach(_:action:destination:fileID:line:)``.
-public struct StackState<Element>: RandomAccessCollection, RangeReplaceableCollection {
+public struct StackState<Element> {
   var _dictionary: OrderedDictionary<StackElementID, Element>
   fileprivate var _mounted: Set<StackElementID> = []
 
@@ -16,8 +16,27 @@ public struct StackState<Element>: RandomAccessCollection, RangeReplaceableColle
     self._dictionary.keys
   }
 
-  public init() {
-    self._dictionary = [:]
+  public var presented: Element? {
+    _read { yield self._dictionary.values.last }
+    _modify {
+      var value = self._dictionary.values.last
+      yield &value
+      if let value = value {
+        self._dictionary.values[self._dictionary.values.endIndex - 1] = value
+      }
+    }
+    set {
+      switch (self._dictionary.values.last, newValue) {
+      case (.none, .none):
+        break
+      case let (.none, .some(element)):
+        self.append(element)
+      case (.some, .none):
+        self.removeLast()
+      case let (.some, .some(element)):
+        self._dictionary.values[self._dictionary.values.endIndex - 1] = element
+      }
+    }
   }
 
   public subscript(id id: StackElementID) -> Element? {
@@ -49,6 +68,30 @@ public struct StackState<Element>: RandomAccessCollection, RangeReplaceableColle
     self._dictionary.removeSubrange(index...)
   }
 
+  /// Returns a sequence of pairs (*id*, *element*).
+  public func identified() -> _IdentifiedSequence {
+    _IdentifiedSequence(base: self)
+  }
+
+  public struct _IdentifiedSequence: Sequence {
+    fileprivate var base: StackState<Element>
+
+    public func makeIterator() -> Iterator {
+      Iterator(iterator: base._dictionary.makeIterator())
+    }
+
+    public struct Iterator: IteratorProtocol {
+      fileprivate var iterator: OrderedDictionary<StackElementID, Element>.Iterator
+
+      public mutating func next() -> (id: StackElementID, element: Element)? {
+        guard let (id, element) = self.iterator.next() else { return nil }
+        return (id: id, element: element)
+      }
+    }
+  }
+}
+
+extension StackState: RandomAccessCollection, RangeReplaceableCollection {
   public var startIndex: Int { self._dictionary.keys.startIndex }
 
   public var endIndex: Int { self._dictionary.keys.endIndex }
@@ -59,6 +102,10 @@ public struct StackState<Element>: RandomAccessCollection, RangeReplaceableColle
 
   public subscript(position: Int) -> Element { self._dictionary.values[position] }
 
+  public init() {
+    self._dictionary = [:]
+  }
+
   public mutating func replaceSubrange<C: Collection>(_ subrange: Range<Int>, with newElements: C)
   where C.Element == Element {
     for id in self.ids[subrange] {
@@ -67,29 +114,6 @@ public struct StackState<Element>: RandomAccessCollection, RangeReplaceableColle
     self._dictionary.removeSubrange(subrange)
     for (offset, element) in zip(subrange.lowerBound..., newElements) {
       self._dictionary.updateValue(element, forKey: self.stackElementID.next(), insertingAt: offset)
-    }
-  }
-
-  public var presented: Element? {
-    _read { yield self._dictionary.values.last }
-    _modify {
-      var value = self._dictionary.values.last
-      yield &value
-      if let value = value {
-        self._dictionary.values[self._dictionary.values.endIndex - 1] = value
-      }
-    }
-    set {
-      switch (self._dictionary.values.last, newValue) {
-      case (.none, .none):
-        break
-      case let (.none, .some(element)):
-        self.append(element)
-      case (.some, .none):
-        self.removeLast()
-      case let (.some, .some(element)):
-        self._dictionary.values[self._dictionary.values.endIndex - 1] = element
-      }
     }
   }
 }
