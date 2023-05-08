@@ -1,4 +1,0 @@
-module _CAsyncSupport [system] {
-  header "_CAsyncSupport.h"
-  export *
-}
