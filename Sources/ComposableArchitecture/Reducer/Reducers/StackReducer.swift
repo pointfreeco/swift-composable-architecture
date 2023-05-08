@@ -50,6 +50,8 @@ public struct StackState<Element> {
     }
   }
 
+  /// Pops the element corresponding to `id` from the stack, and all elements after it.
+  /// - Parameter id: The ID of an element in the stack.
   public mutating func pop(from id: StackElementID) {
     guard let index = self._dictionary.keys.firstIndex(of: id)
     else { return }
@@ -59,6 +61,8 @@ public struct StackState<Element> {
     self._dictionary.removeSubrange(index...)
   }
 
+  /// Pops all elements that come after the element corresponding to `id` in the stack.
+  /// - Parameter id: The ID of an element in the stack.
   public mutating func pop(to id: StackElementID) {
     guard var index = self._dictionary.keys.firstIndex(of: id)
     else { return }
