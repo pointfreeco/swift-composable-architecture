@@ -51,7 +51,8 @@ public struct StackState<Element> {
   }
 
   /// Pops the element corresponding to `id` from the stack, and all elements after it.
-  /// - Parameter id: The ID of an element in the stack.
+  ///
+  /// - Parameter id: The identifier of an element in the stack.
   public mutating func pop(from id: StackElementID) {
     guard let index = self._dictionary.keys.firstIndex(of: id)
     else { return }
@@ -62,7 +63,8 @@ public struct StackState<Element> {
   }
 
   /// Pops all elements that come after the element corresponding to `id` in the stack.
-  /// - Parameter id: The ID of an element in the stack.
+  ///
+  /// - Parameter id: The identifier of an element in the stack.
   public mutating func pop(to id: StackElementID) {
     guard var index = self._dictionary.keys.firstIndex(of: id)
     else { return }
@@ -130,18 +132,17 @@ extension StackState: Encodable where Element: Encodable {
   }
 }
 
-// TODO: revisit
-//extension StackState: CustomStringConvertible {
-//  public var description: String {
-//    self._dictionary.values.elements.description
-//  }
-//}
-//
-//extension StackState: CustomDebugStringConvertible {
-//  public var debugDescription: String {
-//    self._dictionary.values.elements.debugDescription
-//  }
-//}
+extension StackState: CustomStringConvertible {
+  public var description: String {
+    self._dictionary.values.elements.description
+  }
+}
+
+extension StackState: CustomDebugStringConvertible {
+  public var debugDescription: String {
+    "\(Self.self)(\(self._dictionary.description))"
+  }
+}
 
 extension StackState: CustomDumpReflectable {
   public var customDumpMirror: Mirror {
