@@ -153,6 +153,10 @@ extension StackState: CustomDumpReflectable {
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
 /// ``ReducerProtocol/forEach(_:action:destination:fileID:line:)``.
+///
+/// See the dedicated article on <doc:Navigation> for more information on the library's navigation
+/// tools, and in particular see <doc:StackBasedNavigation> for information on modeling navigation
+/// using ``StackAction`` for navigation stacks.
 public enum StackAction<State, Action> {
   /// An action sent to the associated stack element at a given identifier.
   indirect case element(id: StackElementID, action: Action)
