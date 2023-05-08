@@ -6,6 +6,10 @@ import OrderedCollections
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
 /// ``ReducerProtocol/forEach(_:action:destination:fileID:line:)``.
+///
+/// See the dedicated article on <doc:Navigation> for more information on the library's navigation
+/// tools, and in particular see <doc:StackBasedNavigation> for information on modeling navigation
+/// using ``StackState`` for navigation stacks.
 public struct StackState<Element> {
   var _dictionary: OrderedDictionary<StackElementID, Element>
   fileprivate var _mounted: Set<StackElementID> = []
