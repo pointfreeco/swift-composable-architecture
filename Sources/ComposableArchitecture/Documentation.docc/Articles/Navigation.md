@@ -10,6 +10,11 @@ master. The Composable Architecture provides the tools necessary to model your d
 as possible and drive navigation from state, but there are a few concepts to learn in order to best
 use these tools.
 
+* [What is navigation?](#What-is-navigation)
+* [Tree-based navigation](#Tree-based-navigation)
+* [Stack-based navigation](#Stack-based-navigation)
+* [Tree-based vs stack-based navigation](#Tree-based-vs-stack-based-navigation)
+
 ## What is navigation?
 
 The word "navigation" can mean a lot of different things to different people. For example, most
@@ -230,7 +235,7 @@ be aware of their differences when modeling your domains.
     ]
     ```
 
-  Notice that we start on the movie feature and end on the movie feature. There is no real 
+    Notice that we start on the movie feature and end on the movie feature. There is no real 
 recursion in this navigation since it is just a flat array.
 
 * Each feature held in the stack can typically be fully decoupled from all other screens on the

@@ -100,6 +100,105 @@ struct RootFeature: ReducerProtocol {
 }
 ```
 
+That completes the steps to integrate the child and parent features together for a navigation stack.
+
+Next we must integrate the child and parent views together. This is done by construct a special
+version of SwiftUI's `NavigationStack` view that comes with this library, called 
+``NavigationStackStore``. This view takes 3 arguments: a store focused in on ``StackState``
+and ``StackAction`` in your domain, and a trailing view builder for the root view of the stack, and
+another trailing view builder for all of the views that can be pushed onto the stack:
+
+```swift
+NavigationStackStore(
+  // Store focused on StackState and StackAction
+) {
+  // Root view of the navigation stack
+} destination: { state in 
+  switch state {
+    // A view for each case of the Path.State enum
+  }
+}
+```
+
+To fill in the first argument you only need to scope your store to the `path` state and `path` 
+action you already hold in the root feature:
+
+```swift
+struct RootView: View {
+  let store: StoreOf<RootFeature>
+
+  var body: some View {
+    NavigationStackStore(
+      path: self.store.scope(state: \.path, action: { .path($0) })
+    ) {
+      // Root view of the navigation stack
+    } destination: { state in
+      // A view for each case of the Path.State enum
+    }
+  }
+}
+```
+
+The root view can be anything you want, and would typically have some `NavigationLink`s or other
+buttons that push new data onto the ``StackState`` held in your domain.
+
+And the last trailing closure is provided a single piece of the `Path.State` enum so that you can 
+switch on it:
+
+```swift
+} destination: { state in
+  switch state {
+  case .addItem:
+  case .detailItem:
+  case .editItem:
+  }
+}
+```
+
+This will give you compile-time guarantees that you have handled each case of the `Path.State` enum,
+which can be nice for when you add new types of destinations to the stack.
+
+In each of these cases you can return any kind of view that you want, but ultimately you want to
+make use of 
+
+
+
+```swift
+struct RootView: View {
+  let store: StoreOf<RootFeature>
+
+  var body: some View {
+    NavigationStackStore(
+      path: self.store.scope(state: \.path, action: { .path($0) })
+    ) {
+      // Root view of the navigation stack
+    } destination: { state in
+      switch state {
+      case .addItem:
+        CaseLet(
+          state: /RootFeature.Path.State.addItem,
+          action: RootFeature.Path.Action.addItem,
+          then: AddView.init(store:)
+        )
+      case .detailItem:
+        CaseLet(
+          state: /RootFeature.Path.State.detailItem,
+          action: RootFeature.Path.Action.detailItem,
+          then: DetailView.init(store:)
+        )
+      case .editItem:
+        CaseLet(
+          state: /RootFeature.Path.State.editItem,
+          action: RootFeature.Path.Action.editItem,
+          then: EditView.init(store:)
+        )
+      }
+    }
+  }
+}
+```
+
+
 <!--
 todo: finish
 -->
@@ -132,6 +231,12 @@ case let .path(.element(id: id, action: .editItem(.saveButtonTapped))):
     self.database.save(editItemState.item)
   }
 ```
+
+Note that when destructuring the ``StackAction/element(id:action:)`` action we get access to not
+only the action that happened in the child domain, but also the ID of the element in the stack.
+``StackState`` automatically manages IDs for every feature added to the stack, which can be used
+to look up specific elements in the stack using ``StackState/subscript(id:)`` and pop elements 
+from the stack using ``StackState/pop(from:)``.
 
 ## Dismissal
 
@@ -204,9 +309,189 @@ explicitly communicating with the parent.
 
 ## Testing
 
-<!--
-todo: finish
--->
+A huge benefit of using the tools of this library to model navigation stacks is that testing because 
+quite easy. Further, using "non-exhaustive testing" (see <doc:Testing#Non-exhaustive-testing>) can 
+be very useful for testing navigation since you often only want to assert on a few high level 
+details and not all state mutations and effects.
+
+As an example, consider the following simple counter feature that wants to dismiss itself if its
+count is greater than or equal to 5:
+
+```swift
+struct CounterFeature: ReducerProtocol {
+  struct State: Equatable {
+    var count = 0
+  }
+  enum Action: Equatable {
+    case decrementButtonTapped
+    case incrementButtonTapped
+  }
+
+  @Dependency(\.dismiss) var dismiss
+
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+    switch action {
+    case .decrementButtonTapped:
+      state.count += 1
+      return .none
+
+    case .incrementButtonTapped:
+      state.count += 1
+      return state.count >= 5
+        ? .fireAndForget { await self.dismiss() }
+        : .none
+    }
+  }
+}
+```
+
+And then let's embed that feature into a parent feature:
+
+```swift
+struct Feature: ReducerProtocol {
+  struct State: Equatable {
+    var path = StackState<Path.State>()
+  }
+  enum Action: Equatable {
+    case path(StackAction<Path.State, Path.Action>)
+  }
+
+  struct Path: ReducerProtocol {
+    enum State: Equatable { case counter(Counter.State) }
+    enum Action: Equatable { case counter(Counter.Action) }
+    var body: some ReducerProtocolOf<Self> {
+      Scope(state: /State.counter, action: /Action.counter) { Counter() }
+    }
+  }
+
+  var body: some ReducerProtocolOf<Self> {
+    Reduce { state, action in 
+      // ...
+    }
+    .forEach(\.path, action: /Action.path) { Path() }
+  }
+}
+```
+
+Typically this feature reducer would have a lot more logic.
+
+Now let's try to write a test on the `Feature` reducer that proves that when the child counter 
+feature's count is incremented above 5 it will dismiss itself. To do this we will construct a 
+``TestStore`` for `Feature` that starts in a state with a single counter already on the stack:
+
+```swift
+func testDismissal() {
+  let store = TestStore(
+    initialState: Feature.State(
+      path: StackState([
+        CounterFeature.State(count: 3)
+      ])
+    ),
+    reducer: CounterFeature()
+  )
+}
+```
+
+Then we can send the `.incrementButtonTapped` action in the counter child feature inside the
+stack in order to to confirm that the count goes up by one, but in order to do so we need to provide
+an ID:
+
+```swift
+await store.send(.path(.element(id: ???, action: .incrementButtonTapped))) {
+  // ...
+}
+```
+
+As mentioned in <doc:StackBasedNavigation#Integration>, ``StackState`` automatically manages IDs
+for each feature and those IDs are mostly opaque to the outside. However, specifically in tests
+those IDs are integers and generational, which means the ID starts at 0 and then for each feature 
+pushed onto the stack the global ID increments by one.
+
+This means that when the ``TestStore`` were constructed with a single element already in the stack
+that it was given an ID of 0, and so that is the ID we can use when sending an action:
+
+```swift
+await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) {
+  // ...
+}
+```
+
+Next we want to assert how the counter feature in the stack changes when the action is sent. To
+do this we must go through multiple layers: first subscript through the ID, then unwrap the 
+optional value returned from that subscript, then pattern match on the case of the `Path.State`
+enum, and then perform the mutation.
+
+The library provides a tool to perform all of these steps in a single step, called `XCTModify`:
+
+```swift
+await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) {
+  XCTModify(&$0[id: 0], case: /Feature.Path.State.counter) {
+    $0.count = 4
+  }
+}
+```
+
+The `XCTModify` function takes an `inout` piece of enum state as its first argument and a case
+path for its second argument, and then uses the case path to extract the payload in that case, 
+allow you to perform a mutation to it, and embed the data back into the enum. So, in the code
+above we are subscripting into ID 0, isolating the `.counter` case of the `Path.State` enum, 
+and mutating the `count` to be 4 since it incremented by one.
+
+And then we can send it one more time to see that the count goes up to 5:
+
+```swift
+await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) {
+  XCTModify(&$0[id: 0], case: /Feature.Path.State.counter) {
+    $0.count = 5
+  }
+}
+```
+
+And then we finally expect that the child dismisses itself, which manifests itself as the 
+``StackAction/popFrom(id:)`` action being sent to pop the counter feature off the stack:
+
+```swift
+await store.receive(.path(.popFrom(id: 0))) {
+  $0.path.removeLast()
+}
+```
+
+This shows how we can write very naunced tests on how parent and child features interact with each
+other in a navigation stack.
+
+However, the more complex the features become, the more cumbersome testing their integration can be.
+By default, ``TestStore`` requires us to be exhaustive in our assertions. We must assert on how
+every piece of state changes, how every effect feeds data back into the system, and we must make
+sure that all effects finish by the end of the test (see <docs:Testing> for more info).
+
+But ``TestStore`` also supports a form of testing known as "non-exhaustive testing" that allows you
+to assert on only the parts of the features that you actually care about (see 
+<doc:Testing#Non-exhaustive-testing> for more info).
+
+For example, if we turn off exhaustivity on the test store (see ``TestStore/exhaustivity``) then we
+can assert at a high level that when the increment button is tapped twice that eventually we receive
+a ``StackAction/popFrom(id:)`` action:
+
+```swift
+func testDismissal() {
+  let store = TestStore(
+    initialState: Feature.State(
+      path: StackState([
+        CounterFeature.State(count: 3)
+      ])
+    ),
+    reducer: CounterFeature()
+  )
+  store.exhaustivity = .off
+
+  await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) 
+  await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) 
+  await store.receive(.path(.popFrom(id: 0)))
+}
+```
+
+This essentially proves the same thing that the previous test proves, but it does so in much fewer
+lines and is more resilient to future changes in the features that we don't necessarily care about.
 
 ## StackState vs NavigationPath
 
@@ -268,6 +553,7 @@ And that is all. You can't insert or remove elements from anywhere but the end, 
 iterate over the path:
 
 ```swift
+let path: NavigationPath = …
 for element in path {  // 🛑
 }
 ```
@@ -275,10 +561,19 @@ for element in path {  // 🛑
 This can make it very difficult to analyze what is on the stack and aggregate data across the 
 entire stack.
 
-The Composable Architecture's ``StackState`` 
+The Composable Architecture's ``StackState`` serves a similar purpose as `NavigationPath`, but
+with different trade offs:
 
-<!--
-TODO: finishs 
--->
+* ``StackState`` is fully statically typed, and so you cannot add just _any_ kind of data to it.
+* But, ``StackState`` conforms to the `Collection` protocol (as well as `RandomAccessCollection` and 
+`RangeReplaceableCollection`), which gives you access to a lot of methods for manipulating the
+collection and introspecting what is inside the stack.
+* Your feature's data does not need to be `Hashable` to put it in a ``StackState``. The data type
+manages stable identifiers for your features under the hood, and automatically derives a hash
+value from those identifiers.
 
-[nav-path-docs]: todo
+We feel that ``StackState`` offers a nice balance between full runtime flexibility and static, 
+compile-time guarantees, and that it is the perfect tool for modeling navigation stacks in the
+Composable Architecture.
+
+[nav-path-docs]: https://developer.apple.com/documentation/swiftui/navigationpath

@@ -490,8 +490,8 @@ await store.send(.counter(.presented(.incrementButtonTapped))) {
 }
 ```
 
-And then we finally expect that the child dismisses itself, which manifests itself as the `.dismiss`
-action being sent and `nil`ing out the `counter` state:
+And then we finally expect that the child dismisses itself, which manifests itself as the 
+``PresentationAction/dismiss`` action being sent and `nil`ing out the `counter` state:
 
 ```swift
 await store.receive(.counter(.dismiss)) {
@@ -533,3 +533,7 @@ func testDismissal() {
 
 This essentially proves the same thing that the previous test proves, but it does so in much fewer
 lines and is more resilient to future changes in the features that we don't necessarily care about.
+
+<!--
+todo: dismiss `XCTModify` and how to test destination enums
+-->
