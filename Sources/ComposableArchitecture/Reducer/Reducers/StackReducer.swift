@@ -312,7 +312,7 @@ public struct _StackReducer<
       } else {
         runtimeWarn(
           """
-          A "forEach" at "\(self.fileID):\(self.line)" received an action for a missing element.
+          A "forEach" at "\(self.fileID):\(self.line)" received an action for a missing element. …
 
             Action:
               \(debugCaseOutput(destinationAction))
@@ -320,7 +320,7 @@ public struct _StackReducer<
           This is generally considered an application logic error, and can happen for a few reasons:
 
           • A parent reducer removed an element with this ID before this reducer ran. This reducer \
-          must run before any other reducer removes an element, which ensures that element
+          must run before any other reducer removes an element, which ensures that element \
           reducers can handle their actions while their state is still available.
 
           • An in-flight effect emitted this action when state contained no element at this ID. \
@@ -346,19 +346,43 @@ public struct _StackReducer<
         state[keyPath: self.toStackState].pop(from: id)
       } else {
         // TODO: write test to show that if base removes element we do not get runtime warn
-        runtimeWarn("TODO")
+        // TODO: finesse
+        runtimeWarn(
+          """
+          A "forEach" at "\(self.fileID):\(self.line)" received a "popFrom" action for a missing \
+          element.
+          """
+        )
       }
 
     case let .push(id, element):
       destinationEffects = .none
       if state[keyPath: self.toStackState].ids.contains(id) {
-        runtimeWarn("TODO")
-        baseEffects = .none
+        // TODO: finesse
+        runtimeWarn(
+          """
+          A "forEach" at "\(self.fileID):\(self.line)" received a "push" action for an element it \
+          already contains.
+          """
+        )
+        baseEffects = self.base.reduce(into: &state, action: action)
         break
       } else if DependencyValues._current.context == .test {
-        if id.generation > DependencyValues._current.stackElementID.peek().generation {
-          runtimeWarn("TODO")
-        } else if id.generation == DependencyValues._current.stackElementID.peek().generation {
+        let nextID = DependencyValues._current.stackElementID.peek()
+        if id.generation > nextID.generation {
+          // TODO: finesse
+          runtimeWarn(
+            """
+            A "forEach" at "\(self.fileID):\(self.line)" received a "push" action with an \
+            unexpected generational ID. …
+
+              Received:
+                \(id)
+              Next:
+                \(nextID)
+            """
+          )
+        } else if id.generation == nextID.generation {
           _ = DependencyValues._current.stackElementID.next()
         }
       }

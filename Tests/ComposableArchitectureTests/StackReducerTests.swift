@@ -707,13 +707,33 @@ import XCTest
         }
         var body: some ReducerProtocol<State, Action> {
           EmptyReducer()
-            .forEach(\.path, action: /Action.path) { EmptyReducer() }
+            .forEach(\.path, action: /Action.path) {}
         }
       }
+      let line = #line - 3
 
       XCTExpectFailure {
         $0.compactDescription == """
-          TODO
+          A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" received an \
+          action for a missing element. …
+
+            Action:
+              ()
+
+          This is generally considered an application logic error, and can happen for a few reasons:
+
+          • A parent reducer removed an element with this ID before this reducer ran. This reducer \
+          must run before any other reducer removes an element, which ensures that element \
+          reducers can handle their actions while their state is still available.
+
+          • An in-flight effect emitted this action when state contained no element at this ID. \
+          While it may be perfectly reasonable to ignore this action, consider canceling the \
+          associated effect before an element is removed, especially if it is a long-living effect.
+
+          • This action was sent to the store while its state contained no element at this ID. To \
+          fix this make sure that actions for this reducer can only be sent from a view store when \
+          its state contains an element at this id. In SwiftUI applications, use \
+          "NavigationStackStore".
           """
       }
 
@@ -736,13 +756,15 @@ import XCTest
         }
         var body: some ReducerProtocol<State, Action> {
           EmptyReducer()
-            .forEach(\.path, action: /Action.path) { EmptyReducer() }
+            .forEach(\.path, action: /Action.path) {}
         }
       }
+      let line = #line - 3
 
       XCTExpectFailure {
         $0.compactDescription == """
-          TODO
+          A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" received a \
+          "popFrom" action for a missing element.
           """
       }
 
@@ -789,44 +811,26 @@ import XCTest
         $0.sourceCodeContext.location?.fileURL.absoluteString.contains("BaseTCATestCase") == true
           || $0.sourceCodeContext.location?.lineNumber == line + 1
             && $0.compactDescription == """
-              An effect returned for this action is still running. It must complete before the end of \
-              the test. …
+              An effect returned for this action is still running. It must complete before the end \
+              of the test. …
 
-              To fix, inspect any effects the reducer returns for this action and ensure that all of \
-              them complete by the end of the test. There are a few reasons why an effect may not have \
-              completed:
+              To fix, inspect any effects the reducer returns for this action and ensure that all \
+              of them complete by the end of the test. There are a few reasons why an effect may \
+              not have completed:
 
               • If using async/await in your effect, it may need a little bit of time to properly \
               finish. To fix you can simply perform "await store.finish()" at the end of your test.
 
-              • If an effect uses a clock/scheduler (via "receive(on:)", "delay", "debounce", etc.), \
-              make sure that you wait enough time for it to perform the effect. If you are using a \
-              test clock/scheduler, advance it so that the effects may complete, or consider using an \
-              immediate clock/scheduler to immediately perform the effect instead.
+              • If an effect uses a clock/scheduler (via "receive(on:)", "delay", "debounce", \
+              etc.), make sure that you wait enough time for it to perform the effect. If you are \
+              using a test clock/scheduler, advance it so that the effects may complete, or \
+              consider using an immediate clock/scheduler to immediately perform the effect instead.
 
               • If you are returning a long-living effect (timers, notifications, subjects, etc.), \
               then make sure those effects are torn down by marking the effect ".cancellable" and \
-              returning a corresponding cancellation effect ("Effect.cancel") from another action, or, \
-              if your effect is driven by a Combine subject, send it a completion.
+              returning a corresponding cancellation effect ("Effect.cancel") from another action, \
+              or, if your effect is driven by a Combine subject, send it a completion.
               """
-      }
-    }
-
-    func testExpressibleByIntegerLiteralWarning() {
-      XCTExpectFailure {
-        withDependencies {
-          $0.context = .live
-        } operation: {
-          let _: StackElementID = 0
-        }
-      } issueMatcher: {
-        $0.compactDescription == """
-          Specifying stack element IDs by integer literal is not allowed outside of tests.
-
-          In tests, integer literal stack element IDs can be used as a shorthand to the \
-          auto-incrementing generation of the current dependency context. This can be useful when \
-          asserting against actions received by a specific element.
-          """
       }
     }
 
@@ -996,12 +1000,14 @@ import XCTest
             .forEach(\.children, action: /Action.child) { Child() }
         }
       }
+      let line = #line - 3
 
       let store = TestStore(initialState: Parent.State(), reducer: Parent())
 
       XCTExpectFailure {
         $0.compactDescription == """
-          TODO
+          A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" received a \
+          "push" action for an element it already contains.
           """
       }
 
@@ -1029,12 +1035,19 @@ import XCTest
             .forEach(\.children, action: /Action.child) { Child() }
         }
       }
+      let line = #line - 3
 
       let store = TestStore(initialState: Parent.State(), reducer: Parent())
 
       XCTExpectFailure {
         $0.compactDescription == """
-          TODO
+          A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" received a \
+          "push" action with an unexpected generational ID. …
+
+            Received:
+              #1
+            Next:
+              #0
           """
       }
 

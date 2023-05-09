@@ -150,7 +150,7 @@ public struct _ForEachReducer<
     if state[keyPath: self.toElementsState][id: id] == nil {
       runtimeWarn(
         """
-        A "forEach" at "\(self.fileID):\(self.line)" received an action for a missing element.
+        A "forEach" at "\(self.fileID):\(self.line)" received an action for a missing element. …
 
           Action:
             \(debugCaseOutput(action))
