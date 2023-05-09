@@ -194,10 +194,14 @@ extension ReducerProtocol {
   /// The `ifLet` operator does a number of things to make integrating parent and child features
   /// ergonomic and enforce correctness:
   ///
-  ///   * It forces a specific order of operations for the child and parent features. It runs the
-  ///     child first, and then the parent. If the order was reversed, then it would be possible for
-  ///     the parent feature to `nil` out the child state, in which case the child feature would not
-  ///     be able to react to that action. That can cause subtle bugs.
+  ///   * It forces a specific order of operations for the child and parent features:
+  ///     * When a ``PresentationAction/dismiss`` action is sent, it runs the parent feature
+  ///       before the child state is `nil`'d out. This gives the parent feature an opportunity to
+  ///       inspect the child state one last time before the state is cleared.
+  ///     * When a ``PresentationAction/presented(_:)`` action is sent it runs runs the
+  ///       child first, and then the parent. If the order was reversed, then it would be possible
+  ///       for the parent feature to `nil` out the child state, in which case the child feature
+  ///       would not be able to react to that action. That can cause subtle bugs.
   ///
   ///   * It automatically cancels all child effects when it detects the child's state is `nil`'d
   ///     out.

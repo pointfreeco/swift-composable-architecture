@@ -178,8 +178,54 @@ extension ReducerProtocol {
   /// Embeds a child reducer in a parent domain that works on elements of a navigation stack in
   /// parent state.
   ///
-  /// For example, if a parent feature holds onto a ``StackState`` of destination states, then it
-  /// can perform its core logic _and_ the destination's logic by using the `forEach` operator:
+  /// This version of `forEach` works when the parent domain holds onto the child domain using
+  /// ``StackState`` and ``StackAction``.
+  ///
+  /// For example, if a parent feature models a navigation stack of child features using the
+  /// ``StackState`` and ``StackAction`` types, then it can perform its core logic _and_ the logic
+  /// of each child feature using the `forEach` operator:
+  ///
+  /// ```swift
+  /// struct ParentFeature: ReducerProtocol {
+  ///   struct State {
+  ///     var path = StackState<Path.State>()
+  ///     // ...
+  ///   }
+  ///   enum Action {
+  ///     case path(StackAction<Path.State, Path.Action>)
+  ///     // ...
+  ///   }
+  ///   var body: some ReducerProtocolOf<Self> {
+  ///     Reduce { state, action in
+  ///       // Core parent logic
+  ///     }
+  ///     .forEach(\.path, action: /Action.path) {
+  ///       Path()
+  ///     }
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// The `forEach` operator does a number of things to make integrating parent and child features
+  /// ergonomic and enforce correctness:
+  ///
+  ///   * It forces a specific order of operations for the child and parent features:
+  ///     * When a ``StackAction/element(id:action:)`` action is sent it runs runs the
+  ///       child first, and then the parent. If the order was reversed, then it would be possible
+  ///       for the parent feature to `nil` out the child state, in which case the child feature
+  ///       would not be able to react to that action. That can cause subtle bugs.
+  ///     * When a ``StackAction/popFrom(id:)`` action is sent it runs the parent feature
+  ///       before the child state is popped off the stack. This gives the parent feature an
+  ///       opportunity to inspect the child state one last time before the state is removed.
+  ///     * When a ``StackAction/push(id:state:)`` action is sent it runs the parent feature
+  ///       after the child state is appended to the stack. This gives the parent feature an
+  ///       opportunity to make extra mutations to the state after it has been added.
+  ///
+  ///   * It automatically cancels all child effects when it detects the child's state is removed
+  ///     from the stack
+  ///
+  ///   * It gives the child feature access to the ``DismissEffect`` dependency, which allows the
+  ///     child feature to dismiss itself without communicating with the parent.
   ///
   /// - Parameters:
   ///   - toStackState: A writable key path from parent state to a stack of destination state.
@@ -373,6 +419,34 @@ public struct _StackReducer<
 }
 
 /// An opaque type that identifies an element of ``StackState``.
+///
+/// The ``StackState`` type creates instances of this identifier when new elements are added to
+/// the stack. This makes it possible to easily look up specific elements in the stack without
+/// resorting to positional indices, which can be error prone, especially when dealing with async
+/// effects.
+///
+/// In production environments (e.g. in Xcode previews, simulators and on devices) the identifier
+/// is backed by a randomly generated UUID, but in tests a deterministic, generational ID is used.
+/// This allows you to predict how IDs will be created and allows you to write tests for how
+/// features behave in the stack.
+///
+/// ```swift
+/// func testBasics() {
+///   var path = StackState<Int>()
+///   path.append(42)
+///   XCTAssertEqual(path[id: 0], 42)
+///   path.append(1729)
+///   XCTAssertEqual(path[id: 1], 1729)
+///
+///   path.removeAll()
+///   path.append(-1)
+///   XCTAssertEqual(path[id: 2], -1)
+/// }
+/// ```
+///
+/// Notice that after removing all elements and appending a new element, the ID generated was 2 and
+/// did not go back to 0. This is because in tests the IDs are _generational_, which means they
+/// keep counting up, even if you remove elements from the stack.
 public struct StackElementID: Hashable, Sendable {
   @_spi(Internals) public var generation: Int
   @_spi(Internals) public var rawValue: AnyHashableSendable
@@ -382,7 +456,7 @@ public struct StackElementID: Hashable, Sendable {
     self.rawValue = AnyHashableSendable(rawValue)
   }
 
-  // TODO: is this still correct? can we get test coverage that breaks when || is changed to && ?
+  // TODO: is this still correct? can we get a test that fails when || is changed to && ?
   public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.rawValue == rhs.rawValue || lhs.generation == rhs.generation
   }
