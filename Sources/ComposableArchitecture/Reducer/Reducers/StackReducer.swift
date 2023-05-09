@@ -342,9 +342,10 @@ public struct _StackReducer<
       destinationEffects = .none
       let canPop = state[keyPath: self.toStackState].ids.contains(id)
       baseEffects = self.base.reduce(into: &state, action: action)
-      state[keyPath: self.toStackState].pop(from: id)
-      // TODO: write test to show that if base removes element we do not get runtime warn
-      if !canPop {
+      if canPop {
+        state[keyPath: self.toStackState].pop(from: id)
+      } else {
+        // TODO: write test to show that if base removes element we do not get runtime warn
         runtimeWarn("TODO")
       }
 
