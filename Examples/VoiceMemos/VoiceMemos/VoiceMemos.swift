@@ -165,7 +165,7 @@ struct VoiceMemosView: View {
           .background(Color.init(white: 0.95))
         }
         .alert(
-          self.store.scope(state: \.alert),
+          self.store.scope(state: \.alert, action: { $0 }),
           dismiss: .alertDismissed
         )
         .navigationTitle("Voice memos")

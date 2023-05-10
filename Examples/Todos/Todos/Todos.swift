@@ -111,7 +111,7 @@ struct AppView: View {
 
   init(store: StoreOf<Todos>) {
     self.store = store
-    self.viewStore = ViewStore(self.store.scope(state: ViewState.init(state:)))
+    self.viewStore = ViewStore(self.store, observe: ViewState.init(state:))
   }
 
   struct ViewState: Equatable {

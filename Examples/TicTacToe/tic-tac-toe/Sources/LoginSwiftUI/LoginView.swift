@@ -95,7 +95,7 @@ public struct LoginView: View {
         .disabled(viewStore.isLoginButtonDisabled)
       }
       .disabled(viewStore.isFormDisabled)
-      .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
+      .alert(self.store.scope(state: \.alert, action: { $0 }), dismiss: .alertDismissed)
     }
     .navigationTitle("Login")
   }
