@@ -804,8 +804,9 @@
     func testEffectfulAssertion_NonExhaustiveTestStore_ShowSkippedAssertions() async {
       struct Model: Equatable {
         let id: UUID
-        init(id: UUID) {
-          self.id = id
+        init() {
+          @Dependency(\.uuid) var uuid
+          self.id = uuid()
         }
       }
       struct Feature: ReducerProtocol {
@@ -815,15 +816,18 @@
         enum Action {
           case addButtonTapped
         }
-        @Dependency(\.uuid) var uuid
         func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
           switch action {
           case .addButtonTapped:
-            state.values.append(Model(id: self.uuid()))
+            state.values.append(Model())
             return .none
           }
         }
       }
+
+      XCTTODO("""
+        This test should pass once we have the concept of "copyable" dependencies.
+        """)
 
       let store = TestStore(initialState: Feature.State(), reducer: Feature()) {
         $0.uuid = .incrementing
@@ -831,15 +835,10 @@
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.addButtonTapped) {
-        $0.values = [
-          Model(id: UUID(0))
-        ]
+        $0.values.insert(Model(), at: 0)
       }
       await store.send(.addButtonTapped) {
-        $0.values = [
-          Model(id: UUID(0)),
-          Model(id: UUID(1))
-        ]
+        $0.values.insert(Model(), at: 1)
       }
     }
   }
