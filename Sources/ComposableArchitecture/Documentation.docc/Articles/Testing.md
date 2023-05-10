@@ -554,6 +554,161 @@ The test still passes, and none of these notifications are test failures. They j
 what things you are not explicitly asserting against, and can be useful to see when tracking down
 bugs that happen in production but that aren't currently detected in tests.
 
+#### Understanding non-exhaustive testing
+
+It can be important to understand how non-exhaustive testing works under the hood because it does
+limit the ways in which you can assert on state changes.
+
+When you construct an _exhaustive_ test store, which is the default, the `$0` used inside the 
+trailing closure of ``TestStore/send(_:assert:file:line:)-1ax61`` represents the state _before_ the 
+action is sent:
+
+```swift
+let store = TestStore(…)
+store.exhaustivity = .on  // ℹ️ "on" is the default so technically this is not needed
+
+store.send(.buttonTapped) {
+  $0  // Represents the state *before* the action was sent
+}
+```
+
+This forces you to apply any mutations necessary to `$0` to match the state _after_ the action
+is sent.
+
+Non-exhaustive test stores flip this on its head. In such a test store, the `$0` handed to the 
+trailing closure of ``TestStore/send(_:assert:file:line:)-1ax61`` represents the state _after_
+the action was sent:
+
+```swift
+let store = TestStore(…)
+store.exhaustivity = .off
+
+store.send(.buttonTapped) {
+  $0  // Represents the state *after* the action was sent
+}
+```
+
+This means you don't have to make any mutations to `$0` at all and the assertion will already pass.
+But, if you do make a mutation, then it must match what is already in the state, thus allowing you
+to assert on only the state changes you are interested in.
+
+However, this difference between how ``TestStore`` behaves when run in exhaustive mode versus 
+non-exhaustive mode does restrict the kinds of mutations you can make inside the trailing closure of
+``TestStore/send(_:assert:file:line:)-1ax61``. For example, suppose you had an action in your 
+feature that removes the last element of a collection:
+
+```swift
+case .removeButtonTapped:
+  state.values.removeLast()
+  return .none
+```
+
+To test this in an exhaustive store it is completely fine to do this:
+
+```swift
+await store.send(.removeButtonTapped) {
+  $0.values.removeLast()
+}
+```
+
+This works because `$0` is the state before the action is sent, and so we can remove the last 
+element to prove that the reduer does the same work.
+
+However, in a non-exhaustive store this will not work:
+
+```swift
+store.exhaustivity = .off
+await store.send(.removeButtonTapped) {
+  $0.values.removeLast()
+}
+```
+
+This will either fail the test suite, or possibly even crash the test suite. This is because in a 
+non-exhaustive test store, `$0` in the trailing closure of `send` represents the state _after_ the
+action has been sent, and so the last element has already been removed. By executing 
+`$0.values.removeLast()` we are just removing an additional element from the end.
+
+So, for non-exhaustive test stores you cannot use "relative" mutations for assertions. That is, 
+you cannot mutate via methods like `removeLast`, `append`, and anything that incrementally applies
+a mutation. Instead you must perform an "absolute" mutation, where you fully replace the collection 
+with its final value:
+
+```swift
+store.exhaustivity = .off
+await store.send(.removeButtonTapped) {
+  $0.values = []
+}
+```
+
+Or you can weaken the assertion by asserting only on the count of its elements rather than the 
+content of the element:
+
+
+```swift
+store.exhaustivity = .off
+await store.send(.removeButtonTapped) {
+  XCTAssertEqual($0.values.count, 0)
+}
+```
+
+<!-- should we drop the below for now? -->
+
+Further, when using non-exhaustive test stores that also show skipped assertions (via )
+``Exhaustivity/off(showSkippedAssertions:)``), then there is another caveat to keep in mind. In
+such test stores, the trailing closure of ``TestStore/send(_:assert:file:line:)-1ax61`` is invoked 
+_twice_ by the test store. First with `$0` representing the state after the action is sent to see if 
+it does not match the true state, and then again with `$0` representing the state  before the action 
+is sent so that we can show what state assertions were skipped.
+
+Because the test store can invoke your trailing assertion closure twice you must be careful
+if your closure performs any side effects, because those effects will be executed twice. 
+
+For example, suppose you have a domain model that uses the controllable `@Dependency(\.uuid)` to
+generate a UUID:
+
+```swift
+struct Model: Equatable {
+  let id: UUID
+  init() {
+    @Dependency(\.uuid) var uuid
+    self.id = uuid()
+  }
+}
+```
+
+This is a perfectly fine to pattern to adopt in the Composable Architecture, but it does cause 
+trouble   
+
+
+
+
+
+For 
+example, suppose you do something silly such as generating a UUID in `send` using the 
+controllable `@Dependency(\.uuid)` like this:
+
+```swift
+store.exhaustivity = .off(showSkippedAssertions: true)
+await store.send(.removeButtonTapped) {
+  @Dependency(\.uuid) var uuid
+  uuid()
+}
+```
+
+If you are using the `incrementing` UUID generator in tests, then invoking `uuid()` in this trailing
+closure will use up the next incremental UUID, and later usages of `
+
+
+```swift
+@Dependency(\.uuid) var uuid
+
+case .addButtonTapped:
+  state.values.append(self.uuid())
+  return .none
+```
+
+
+
 ## Testing gotchas
 
 This is not well known, but when an application target runs tests it actually boots up a simulator
