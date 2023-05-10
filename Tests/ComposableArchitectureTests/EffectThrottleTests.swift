@@ -14,9 +14,7 @@ final class EffectThrottleTests: BaseTCATestCase {
     var values: [Int] = []
     var effectRuns = 0
 
-    // NB: Explicit @MainActor is needed for Swift 5.5.2
-    @MainActor func runThrottledEffect(value: Int) {
-
+    func runThrottledEffect(value: Int) {
       Deferred { () -> Just<Int> in
         effectRuns += 1
         return Just(value)
@@ -71,9 +69,7 @@ final class EffectThrottleTests: BaseTCATestCase {
     var values: [Int] = []
     var effectRuns = 0
 
-    // NB: Explicit @MainActor is needed for Swift 5.5.2
-    @MainActor func runThrottledEffect(value: Int) {
-
+    func runThrottledEffect(value: Int) {
       Deferred { () -> Just<Int> in
         effectRuns += 1
         return Just(value)
@@ -140,8 +136,7 @@ final class EffectThrottleTests: BaseTCATestCase {
     var values: [Int] = []
     var effectRuns = 0
 
-    // NB: Explicit @MainActor is needed for Swift 5.5.2
-    @MainActor func runThrottledEffect(value: Int) {
+    func runThrottledEffect(value: Int) {
 
       Deferred { () -> Just<Int> in
         effectRuns += 1
@@ -188,8 +183,7 @@ final class EffectThrottleTests: BaseTCATestCase {
     var values: [Int] = []
     var effectRuns = 0
 
-    // NB: Explicit @MainActor is needed for Swift 5.5.2
-    @MainActor func runThrottledEffect(value: Int) {
+    func runThrottledEffect(value: Int) {
       Deferred { () -> Just<Int> in
         effectRuns += 1
         return Just(value)
