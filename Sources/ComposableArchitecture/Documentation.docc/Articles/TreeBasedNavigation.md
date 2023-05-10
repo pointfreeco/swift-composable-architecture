@@ -156,7 +156,7 @@ must check multiple optionals to figure out which one is non-`nil`, and then we 
 to interpret when multiple pieces of state are non-`nil` at the same time.
 
 And the number of invalid states increases exponentially with respect to the number of features that
-can be navigated to. For example, 3 optionals leads to 3 invalid states, 4 optionals leads to 11
+can be navigated to. For example, 3 optionals leads to 4 invalid states, 4 optionals leads to 11
 invalid states, and 5 optionals leads to 26 invalid states.
 
 For these reasons, and more, it can be better to model multiple destinations in a feature as a
@@ -340,7 +340,7 @@ case .closeButtonTapped:
 ```
 
 In order to `nil` out the presenting state you must have access to that state, and usually only the
-parent has access, but often we would like to encpasulate the logic of dismissing a feature to be
+parent has access, but often we would like to encapsulate the logic of dismissing a feature to be
 inside the child feature without needing explicit communication with the parent.
 
 SwiftUI provides a wonderful tool for allowing child _views_ to dismiss themselves from the parent,
@@ -499,7 +499,7 @@ await store.receive(.counter(.dismiss)) {
 }
 ```
 
-This shows how we can write very naunced tests on how parent and child features interact with each
+This shows how we can write very nuanced tests on how parent and child features interact with each
 other.
 
 However, the more complex the features become, the more cumbersome testing their integration can be.

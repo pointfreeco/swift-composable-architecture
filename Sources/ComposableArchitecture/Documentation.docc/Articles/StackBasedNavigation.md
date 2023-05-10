@@ -8,7 +8,7 @@ model your domains, how to integrate features, how to test your features, and mo
 Stack-based navigation is the process of modeling navigation using collections of state. This style
 of navigation allows you to deep-link into any state of your application by simply constructing a
 flat collection of data, handing, handing it off to SwiftUI, and letting it take care of the rest.
-It also allows for complex and recusive navigation paths in your application.
+It also allows for complex and recursive navigation paths in your application.
 
   * [Basics](#Basics)
   * [Integration](#Integration)
@@ -240,7 +240,7 @@ case .closeButtonTapped:
 ```
 
 However, in order to do this you must have access to that stack state, and usually only the parent 
-has access. But often we would like to encpasulate the logic of dismissing a feature to be inside 
+has access. But often we would like to encapsulate the logic of dismissing a feature to be inside 
 the child feature without needing explicit communication with the parent.
 
 SwiftUI provides a wonderful tool for allowing child _views_ to dismiss themselves from the parent,
@@ -446,7 +446,7 @@ await store.receive(.path(.popFrom(id: 0))) {
 }
 ```
 
-This shows how we can write very naunced tests on how parent and child features interact with each
+This shows how we can write very nuanced tests on how parent and child features interact with each
 other in a navigation stack.
 
 However, the more complex the features become, the more cumbersome testing their integration can be.
@@ -487,7 +487,7 @@ lines and is more resilient to future changes in the features that we don't nece
 
 SwiftUI comes with a powerful type for modeling data in navigation stacks called 
 [`NavigationPath`][nav-path-docs], and so you might wonder why we created our own data type, 
-``StackState``, instead of leverating `NavigationPath`.
+``StackState``, instead of leveraging `NavigationPath`.
 
 The `NavigationPath` data type is a type-erased list of data that is tuned specifically for
 `NavigationStack`s. It allows you to maximally decouple features in the stack since you can add any
