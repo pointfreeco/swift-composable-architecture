@@ -1,3 +1,5 @@
+import SwiftUI
+
 extension DependencyValues {
   /// An effect that dismisses the current presentation.
   ///
@@ -60,8 +62,9 @@ extension DependencyValues {
 /// _that_ feature. If no such parent feature is found a runtime warning is emitted in Xcode letting
 /// you know that it is not possible to dismiss.
 public struct DismissEffect: Sendable {
-  var dismiss: (@Sendable () async -> Void)?
+  var dismiss: (@MainActor @Sendable () -> Void)?
 
+  @MainActor
   public func callAsFunction(
     file: StaticString = #file,
     fileID: StaticString = #fileID,
@@ -82,12 +85,39 @@ public struct DismissEffect: Sendable {
       )
       return
     }
-    await dismiss()
+    dismiss()
+  }
+
+  @MainActor
+  public func callAsFunction(
+    animation: Animation?,
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) async {
+    guard let dismiss = self.dismiss
+    else {
+      runtimeWarn(
+        """
+        A reducer requested dismissal at "\(fileID):\(line)", but couldn't be dismissed. …
+
+        This is generally considered an application logic error, and can happen when a reducer \
+        assumes it runs in a presentation context. If a reducer can run at both the root level \
+        of an application, as well as in a presentation destination, use \
+        @Dependency(\\.isPresented) to determine if the reducer is being presented before calling \
+        @Dependency(\\.dismiss).
+        """
+      )
+      return
+    }
+    withAnimation(animation) {
+      dismiss()
+    }
   }
 }
 
 extension DismissEffect {
-  public init(_ dismiss: @escaping @Sendable () async -> Void) {
+  public init(_ dismiss: @escaping @MainActor @Sendable () -> Void) {
     self.dismiss = dismiss
   }
 }
