@@ -9,7 +9,9 @@ import OrderedCollections
 ///
 /// See the dedicated article on <doc:Navigation> for more information on the library's navigation
 /// tools, and in particular see <doc:StackBasedNavigation> for information on modeling navigation
-/// using ``StackState`` for navigation stacks.
+/// using ``StackState`` for navigation stacks. Also see
+/// <doc:StackBasedNavigation#StackState-vs-NavigationPath> to understand how ``StackState``
+/// compares to SwiftUI's `NavigationPath` type.
 public struct StackState<Element> {
   var _dictionary: OrderedDictionary<StackElementID, Element>
   fileprivate var _mounted: Set<StackElementID> = []
@@ -78,19 +80,13 @@ public struct StackState<Element> {
 
 extension StackState: RandomAccessCollection, RangeReplaceableCollection {
   public var startIndex: Int { self._dictionary.keys.startIndex }
-
   public var endIndex: Int { self._dictionary.keys.endIndex }
-
   public func index(after i: Int) -> Int { self._dictionary.keys.index(after: i) }
-
   public func index(before i: Int) -> Int { self._dictionary.keys.index(before: i) }
-
   public subscript(position: Int) -> Element { self._dictionary.values[position] }
-
   public init() {
     self._dictionary = [:]
   }
-
   public mutating func replaceSubrange<C: Collection>(_ subrange: Range<Int>, with newElements: C)
   where C.Element == Element {
     for id in self.ids[subrange] {
@@ -210,7 +206,7 @@ extension ReducerProtocol {
   /// ergonomic and enforce correctness:
   ///
   ///   * It forces a specific order of operations for the child and parent features:
-  ///     * When a ``StackAction/element(id:action:)`` action is sent it runs runs the
+  ///     * When a ``StackAction/element(id:action:)`` action is sent it runs the
   ///       child first, and then the parent. If the order was reversed, then it would be possible
   ///       for the parent feature to `nil` out the child state, in which case the child feature
   ///       would not be able to react to that action. That can cause subtle bugs.

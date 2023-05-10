@@ -198,7 +198,7 @@ extension ReducerProtocol {
   ///     * When a ``PresentationAction/dismiss`` action is sent, it runs the parent feature
   ///       before the child state is `nil`'d out. This gives the parent feature an opportunity to
   ///       inspect the child state one last time before the state is cleared.
-  ///     * When a ``PresentationAction/presented(_:)`` action is sent it runs runs the
+  ///     * When a ``PresentationAction/presented(_:)`` action is sent it runs the
   ///       child first, and then the parent. If the order was reversed, then it would be possible
   ///       for the parent feature to `nil` out the child state, in which case the child feature
   ///       would not be able to react to that action. That can cause subtle bugs.
