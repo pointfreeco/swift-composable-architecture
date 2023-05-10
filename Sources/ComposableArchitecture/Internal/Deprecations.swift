@@ -9,7 +9,8 @@ extension EffectPublisher {
   @available(
     *,
     deprecated,
-    message: """
+    message:
+      """
       Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'Effect.cancellable(id: CancelID.timer)'.
       """
   )
@@ -24,7 +25,8 @@ extension EffectPublisher {
   @available(
     *,
     deprecated,
-    message: """
+    message:
+      """
       Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'Effect.cancel(id: CancelID.timer)'.
       """
   )
@@ -37,7 +39,8 @@ extension EffectPublisher {
   @available(
     *,
     deprecated,
-    message: """
+    message:
+      """
       Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'withTaskCancellation(id: CancelID.timer)'.
       """
   )
@@ -57,7 +60,8 @@ extension EffectPublisher {
   @available(
     *,
     deprecated,
-    message: """
+    message:
+      """
       Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'withTaskCancellation(id: CancelID.timer)'.
       """
   )
@@ -78,7 +82,8 @@ extension Task where Success == Never, Failure == Never {
   @available(
     *,
     deprecated,
-    message: """
+    message:
+      """
       Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'Effect.cancel(id: CancelID.timer)'.
       """
   )
