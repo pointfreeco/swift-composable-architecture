@@ -3,6 +3,90 @@ import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
+// MARK: - Deprecated after 0.52.0
+
+extension EffectPublisher {
+  @available(
+    *,
+    deprecated,
+    message: """
+      Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'Effect.cancellable(id: CancelID.timer)'.
+      """
+  )
+  public func cancellable(id: Any.Type, cancelInFlight: Bool = false) -> Self {
+    self.cancellable(id: ObjectIdentifier(id), cancelInFlight: cancelInFlight)
+  }
+
+  public static func cancel(id: Any.Type) -> Self {
+    .cancel(id: ObjectIdentifier(id))
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: """
+      Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'Effect.cancel(id: CancelID.timer)'.
+      """
+  )
+  public static func cancel(ids: [Any.Type]) -> Self {
+    .merge(ids.map(EffectPublisher.cancel(id:)))
+  }
+}
+
+#if swift(>=5.7)
+  @available(
+    *,
+    deprecated,
+    message: """
+      Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'withTaskCancellation(id: CancelID.timer)'.
+      """
+  )
+  @_unsafeInheritExecutor
+  public func withTaskCancellation<T: Sendable>(
+    id: Any.Type,
+    cancelInFlight: Bool = false,
+    operation: @Sendable @escaping () async throws -> T
+  ) async rethrows -> T {
+    try await withTaskCancellation(
+      id: ObjectIdentifier(id),
+      cancelInFlight: cancelInFlight,
+      operation: operation
+    )
+  }
+#else
+  @available(
+    *,
+    deprecated,
+    message: """
+      Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'withTaskCancellation(id: CancelID.timer)'.
+      """
+  )
+  public func withTaskCancellation<T: Sendable>(
+    id: Any.Type,
+    cancelInFlight: Bool = false,
+    operation: @Sendable @escaping () async throws -> T
+  ) async rethrows -> T {
+    try await withTaskCancellation(
+      id: ObjectIdentifier(id),
+      cancelInFlight: cancelInFlight,
+      operation: operation
+    )
+  }
+#endif
+
+extension Task where Success == Never, Failure == Never {
+  @available(
+    *,
+    deprecated,
+    message: """
+      Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'Effect.cancel(id: CancelID.timer)'.
+      """
+  )
+  public static func cancel(id: Any.Type) {
+    self.cancel(id: ObjectIdentifier(id))
+  }
+}
+
 // MARK: - Deprecated after 0.49.2
 
 @available(

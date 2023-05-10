@@ -1,5 +1,6 @@
 import Combine
 @_spi(Canary)@_spi(Internals) import ComposableArchitecture
+@_spi(Concurrency) import Dependencies
 import XCTest
 
 @MainActor
@@ -52,7 +53,7 @@ final class EffectTests: BaseTCATestCase {
 
   #if swift(>=5.7) && (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     func testConcatenate() async {
-      await _withMainSerialExecutor {
+      await withMainSerialExecutor {
         if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
           let clock = TestClock()
           var values: [Int] = []
@@ -107,7 +108,7 @@ final class EffectTests: BaseTCATestCase {
   #if swift(>=5.7) && (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     func testMerge() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        await _withMainSerialExecutor {
+        await withMainSerialExecutor {
           let clock = TestClock()
 
           let effect = EffectPublisher<Int, Never>.merge(
@@ -173,7 +174,7 @@ final class EffectTests: BaseTCATestCase {
   }
 
   func testEffectSubscriberInitializer_WithCancellation() {
-    enum CancelID {}
+    enum CancelID { case delay }
 
     let effect = EffectTask<Int>.run { subscriber in
       subscriber.send(1)
@@ -183,7 +184,7 @@ final class EffectTests: BaseTCATestCase {
 
       return AnyCancellable {}
     }
-    .cancellable(id: CancelID.self)
+    .cancellable(id: CancelID.delay)
 
     var values: [Int] = []
     var isComplete = false
@@ -194,7 +195,7 @@ final class EffectTests: BaseTCATestCase {
     XCTAssertEqual(values, [1])
     XCTAssertEqual(isComplete, false)
 
-    EffectTask<Void>.cancel(id: CancelID.self)
+    EffectTask<Void>.cancel(id: CancelID.delay)
       .sink(receiveValue: { _ in })
       .store(in: &self.cancellables)
 
@@ -307,7 +308,7 @@ final class EffectTests: BaseTCATestCase {
   }
 
   func testDependenciesTransferredToEffects_Run() async {
-    await _withMainSerialExecutor {
+    await withMainSerialExecutor {
       struct Feature: ReducerProtocol {
         enum Action: Equatable {
           case tap

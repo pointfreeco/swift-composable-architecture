@@ -24,12 +24,12 @@ struct Timers: ReducerProtocol {
   }
 
   @Dependency(\.continuousClock) var clock
-  private enum TimerID {}
+  private enum CancelID { case timer }
 
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .onDisappear:
-      return .cancel(id: TimerID.self)
+      return .cancel(id: CancelID.timer)
 
     case .timerTicked:
       state.secondsElapsed += 1
@@ -43,7 +43,7 @@ struct Timers: ReducerProtocol {
           await send(.timerTicked, animation: .interpolatingSpring(stiffness: 3000, damping: 40))
         }
       }
-      .cancellable(id: TimerID.self, cancelInFlight: true)
+      .cancellable(id: CancelID.timer, cancelInFlight: true)
     }
   }
 }

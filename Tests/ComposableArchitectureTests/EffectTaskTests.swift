@@ -75,18 +75,18 @@ final class EffectTaskTests: BaseTCATestCase {
   #endif
 
   func testTaskCancellation() async {
-    enum CancelID {}
+    enum CancelID { case response }
     struct State: Equatable {}
     enum Action: Equatable { case tapped, response }
     let reducer = Reduce<State, Action> { state, action in
       switch action {
       case .tapped:
         return .task {
-          Task.cancel(id: CancelID.self)
+          Task.cancel(id: CancelID.response)
           try Task.checkCancellation()
           return .response
         }
-        .cancellable(id: CancelID.self)
+        .cancellable(id: CancelID.response)
       case .response:
         return .none
       }
@@ -96,20 +96,20 @@ final class EffectTaskTests: BaseTCATestCase {
   }
 
   func testTaskCancellationCatch() async {
-    enum CancelID {}
+    enum CancelID { case responseA }
     struct State: Equatable {}
     enum Action: Equatable { case tapped, responseA, responseB }
     let reducer = Reduce<State, Action> { state, action in
       switch action {
       case .tapped:
         return .task {
-          Task.cancel(id: CancelID.self)
+          Task.cancel(id: CancelID.responseA)
           try Task.checkCancellation()
           return .responseA
         } catch: { @Sendable _ in  // NB: Explicit '@Sendable' required in 5.5.2
           .responseB
         }
-        .cancellable(id: CancelID.self)
+        .cancellable(id: CancelID.responseA)
       case .responseA, .responseB:
         return .none
       }

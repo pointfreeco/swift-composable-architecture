@@ -195,7 +195,6 @@ into the system:
 struct Feature: ReducerProtocol {
   struct State: Equatable { var count = 0 }
   enum Action { case startTimerButtonTapped, timerTick }
-  enum TimerID {}
 
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {

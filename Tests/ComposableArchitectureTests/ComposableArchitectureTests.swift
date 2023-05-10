@@ -1,6 +1,7 @@
 import Combine
 import CombineSchedulers
 import ComposableArchitecture
+@_spi(Concurrency) import Dependencies
 import XCTest
 
 @MainActor
@@ -112,7 +113,7 @@ final class ComposableArchitectureTests: BaseTCATestCase {
   }
 
   func testCancellation() async {
-    await _withMainSerialExecutor {
+    await withMainSerialExecutor {
       let mainQueue = DispatchQueue.test
 
       enum Action: Equatable {
@@ -122,11 +123,11 @@ final class ComposableArchitectureTests: BaseTCATestCase {
       }
 
       let reducer = Reduce<Int, Action> { state, action in
-        enum CancelID {}
+        enum CancelID { case response }
 
         switch action {
         case .cancel:
-          return .cancel(id: CancelID.self)
+          return .cancel(id: CancelID.response)
 
         case .incr:
           state += 1
@@ -134,7 +135,7 @@ final class ComposableArchitectureTests: BaseTCATestCase {
             try await mainQueue.sleep(for: .seconds(1))
             return .response(state * state)
           }
-          .cancellable(id: CancelID.self)
+          .cancellable(id: CancelID.response)
 
         case let .response(value):
           state = value
