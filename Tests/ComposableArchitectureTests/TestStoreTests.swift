@@ -191,7 +191,7 @@ final class TestStoreTests: BaseTCATestCase {
         predicateShouldBeCalledExpectation.fulfill()
         return action == .finished
       }
-      wait(for: [predicateShouldBeCalledExpectation], timeout: 0)
+      _ = { wait(for: [predicateShouldBeCalledExpectation], timeout: 0) }()
 
       XCTExpectFailure {
         store.send(.noop)

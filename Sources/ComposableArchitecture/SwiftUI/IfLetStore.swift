@@ -59,10 +59,13 @@ public struct IfLetStore<State, Action, Content: View>: View {
           first: ifContent(
             store
               .filter { state, _ in state == nil ? !BindingLocal.isActive : true }
-              .scope {
-                state = $0 ?? state
-                return state
-              }
+              .scope(
+                state: {
+                  state = $0 ?? state
+                  return state
+                },
+                action: { $0 }
+              )
           )
         )
       } else {
@@ -88,10 +91,13 @@ public struct IfLetStore<State, Action, Content: View>: View {
         return ifContent(
           store
             .filter { state, _ in state == nil ? !BindingLocal.isActive : true }
-            .scope {
-              state = $0 ?? state
-              return state
-            }
+            .scope(
+              state: {
+                state = $0 ?? state
+                return state
+              },
+              action: { $0 }
+            )
         )
       } else {
         return nil

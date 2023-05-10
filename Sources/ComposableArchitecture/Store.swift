@@ -316,18 +316,6 @@ public final class Store<State, Action> {
     #endif
   }
 
-  /// Scopes the store to one that exposes child state.
-  ///
-  /// A version of ``scope(state:action:)`` that leaves the action type unchanged.
-  ///
-  /// - Parameter toChildState: A function that transforms `State` into `ChildState`.
-  /// - Returns: A new store with its domain (state and action) transformed.
-  public func scope<ChildState>(
-    state toChildState: @escaping (State) -> ChildState
-  ) -> Store<ChildState, Action> {
-    self.scope(state: toChildState, action: { $0 })
-  }
-
   func filter(
     _ isSent: @escaping (State, Action) -> Bool
   ) -> Store<State, Action> {
@@ -485,7 +473,7 @@ public final class Store<State, Action> {
 
   /// Returns a "stateless" store by erasing state to `Void`.
   public var stateless: Store<Void, Action> {
-    self.scope(state: { _ in () })
+    self.scope(state: { _ in () }, action: { $0 })
   }
 
   /// Returns an "actionless" store by erasing action to `Never`.

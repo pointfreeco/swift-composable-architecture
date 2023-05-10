@@ -11,8 +11,8 @@ final class MemoryManagementTests: BaseTCATestCase {
       return .none
     }
     let store = Store(initialState: 0, reducer: counterReducer)
-      .scope(state: { "\($0)" })
-      .scope(state: { Int($0)! })
+      .scope(state: { "\($0)" }, action: { $0 })
+      .scope(state: { Int($0)! }, action: { $0 })
     let viewStore = ViewStore(store, observe: { $0 })
 
     var count = 0
@@ -57,7 +57,12 @@ final class MemoryManagementTests: BaseTCATestCase {
         }
       }
     )
-    let viewStore = ViewStore(store.scope(state: { $0 }).scope(state: { $0 }), observe: { $0 })
+    let viewStore = ViewStore(
+      store
+        .scope(state: { $0 }, action: { $0 })
+        .scope(state: { $0 }, action: { $0 }),
+      observe: { $0 }
+    )
 
     var values: [Bool] = []
     viewStore.publisher
