@@ -804,9 +804,8 @@
     func testEffectfulAssertion_NonExhaustiveTestStore_ShowSkippedAssertions() async {
       struct Model: Equatable {
         let id: UUID
-        init() {
-          @Dependency(\.uuid) var uuid
-          self.id = uuid()
+        init(id: UUID) {
+          self.id = id
         }
       }
       struct Feature: ReducerProtocol {
@@ -820,7 +819,7 @@
         func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
           switch action {
           case .addButtonTapped:
-            state.values.append(Model())
+            state.values.append(Model(id: self.uuid()))
             return .none
           }
         }
@@ -833,13 +832,13 @@
 
       await store.send(.addButtonTapped) {
         $0.values = [
-          Model()
+          Model(id: UUID(0))
         ]
       }
       await store.send(.addButtonTapped) {
         $0.values = [
-          Model(),
-          Model()
+          Model(id: UUID(0)),
+          Model(id: UUID(1))
         ]
       }
     }

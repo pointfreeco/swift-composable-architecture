@@ -576,8 +576,7 @@ This forces you to apply any mutations necessary to `$0` to match the state _aft
 is sent.
 
 Non-exhaustive test stores flip this on its head. In such a test store, the `$0` handed to the 
-trailing closure of ``TestStore/send(_:assert:file:line:)-1ax61`` represents the state _after_
-the action was sent:
+trailing closure of `send` represents the state _after_ the action was sent:
 
 ```swift
 let store = TestStore(…)
@@ -594,8 +593,8 @@ to assert on only the state changes you are interested in.
 
 However, this difference between how ``TestStore`` behaves when run in exhaustive mode versus 
 non-exhaustive mode does restrict the kinds of mutations you can make inside the trailing closure of
-``TestStore/send(_:assert:file:line:)-1ax61``. For example, suppose you had an action in your 
-feature that removes the last element of a collection:
+`send`. For example, suppose you had an action in your feature that removes the last element of a 
+collection:
 
 ```swift
 case .removeButtonTapped:
@@ -619,7 +618,7 @@ However, in a non-exhaustive store this will not work:
 ```swift
 store.exhaustivity = .off
 await store.send(.removeButtonTapped) {
-  $0.values.removeLast()
+  $0.values.removeLast()  // 🛑
 }
 ```
 
@@ -651,8 +650,6 @@ await store.send(.removeButtonTapped) {
 }
 ```
 
-<!-- should we drop the below for now? -->
-
 Further, when using non-exhaustive test stores that also show skipped assertions (via )
 ``Exhaustivity/off(showSkippedAssertions:)``), then there is another caveat to keep in mind. In
 such test stores, the trailing closure of ``TestStore/send(_:assert:file:line:)-1ax61`` is invoked 
@@ -661,9 +658,8 @@ it does not match the true state, and then again with `$0` representing the stat
 is sent so that we can show what state assertions were skipped.
 
 Because the test store can invoke your trailing assertion closure twice you must be careful
-if your closure performs any side effects, because those effects will be executed twice. 
-
-For example, suppose you have a domain model that uses the controllable `@Dependency(\.uuid)` to
+if your closure performs any side effects, because those effects will be executed twice. For 
+example, suppose you have a domain model that uses the controllable `@Dependency(\.uuid)` to 
 generate a UUID:
 
 ```swift
@@ -677,37 +673,115 @@ struct Model: Equatable {
 ```
 
 This is a perfectly fine to pattern to adopt in the Composable Architecture, but it does cause 
-trouble   
-
-
-
-
-
-For 
-example, suppose you do something silly such as generating a UUID in `send` using the 
-controllable `@Dependency(\.uuid)` like this:
+trouble when using non-exhaustive test stores and showing skipped assertions. To see this, consider
+the following simple reducer that appends a new model to an array when an action is sent:
 
 ```swift
-store.exhaustivity = .off(showSkippedAssertions: true)
-await store.send(.removeButtonTapped) {
-  @Dependency(\.uuid) var uuid
-  uuid()
+struct Feature: ReducerProtocol {
+  struct State: Equatable { var values: [Model] = [] }
+  enum Action { case addButtonTapped }
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+    switch action {
+    case .addButtonTapped:
+      state.values.append(Model()
+      return .none
+    }
+  }
 }
 ```
 
-If you are using the `incrementing` UUID generator in tests, then invoking `uuid()` in this trailing
-closure will use up the next incremental UUID, and later usages of `
-
+We'd like to be able to write a test for this by asserting that when the `addButtonTapped` action
+is sent a model is append to the `values` array:
 
 ```swift
-@Dependency(\.uuid) var uuid
+func testAdd() async {
+  let store = TestStore(initialState: Feature.State(), reducer: Feature()) {
+    $0.uuid = .incrementing
+  }
+  store.exhaustivity = .off(showSkippedAssertions: true)
 
-case .addButtonTapped:
-  state.values.append(self.uuid())
-  return .none
+  await store.send(.addButtonTapped) {
+    $0.values = [Model()]
+  }
+}
 ```
 
+However even this simple passes when `showSkippedAssertions` is set to true:
 
+> 🛑 Failure:
+> A state change does not match expectation: …
+> 
+>       TestStoreNonExhaustiveTests.Feature.State(
+>         values: [
+>     −     [0]: TestStoreNonExhaustiveTests.Model(id: UUID(00000000-0000-0000-0000-000000000001))
+>     +     [0]: TestStoreNonExhaustiveTests.Model(id: UUID(00000000-0000-0000-0000-000000000000))
+>         ]
+>       )
+> 
+> (Expected: −, Actual: +)
+
+This is happening because the trailing closure is invoked twice, and the side effect that is 
+executed when the closure is first invoked is bleeding over into when it is invoked a second time.
+
+In particular, when the closure is evaluated the first time it causes `Model()` to be constructed,
+which secretly generates the next auto-incrementing UUID. Then, when we run the closure again 
+_another_ auto-incrementing UUID is generated, and that value does not match our expectations.
+
+If you want to use the `showSkippedAssertions` option for 
+``Exhaustivity/off(showSkippedAssertions:)`` then you should avoid performing any kind of side
+effect in `send`, including using `@Dependency` directly in your models' initializers. Instead 
+force those values to be provided at the moment of initializing the model:
+
+```swift
+struct Model: Equatable {
+  let id: UUID
+  init(id: UUID) {
+    self.id = id
+  }
+}
+```
+
+And then move the responsibility of generating new IDs to the reducer:
+
+```swift
+struct Feature: ReducerProtocol {
+  // ...
+  @Dependency(\.uuid) var uuid
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+    switch action {
+    case .addButtonTapped:
+      state.values.append(Model(id: self.uuid()))
+      return .none
+    }
+  }
+}
+```
+
+And now you can write the test more simply by providing the ID explicitly:
+
+```swift
+await store.send(.addButtonTapped) {
+  $0.values = [
+    Model(id: UUID(0))
+  ]
+}
+```
+
+And it works if you send the action multiple times:
+
+```swift
+await store.send(.addButtonTapped) {
+  $0.values = [
+    Model(id: UUID(0))
+  ]
+}
+await store.send(.addButtonTapped) {
+  $0.values = [
+    Model(id: UUID(0)),
+    Model(id: UUID(1))
+  ]
+}
+```
 
 ## Testing gotchas
 
