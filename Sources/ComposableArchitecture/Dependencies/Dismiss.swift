@@ -66,7 +66,6 @@ public struct DismissEffect: Sendable {
 
   @MainActor
   public func callAsFunction(
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) async {
@@ -91,7 +90,6 @@ public struct DismissEffect: Sendable {
   @MainActor
   public func callAsFunction(
     animation: Animation?,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) async {
