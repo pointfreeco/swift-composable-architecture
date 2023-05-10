@@ -252,7 +252,7 @@ extension ReducerProtocol {
     self.ifLet(
       toPresentationState,
       action: toPresentationAction,
-      destination: { EmptyReducer() },
+      destination: {},
       fileID: fileID,
       line: line
     )
