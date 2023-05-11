@@ -90,12 +90,9 @@ extension EffectPublisher {
 /// There are 2 distinct ways to create an `Effect`: one using Swift's native concurrency tools, and
 /// the other using Apple's Combine framework:
 ///
-/// * If using Swift's native structured concurrency tools then there are 3 main ways to create an
-/// effect, depending on if you want to emit one single action back into the system, or any number
-/// of actions, or just execute some work without emitting any actions:
-///   * ``EffectPublisher/task(priority:operation:catch:file:fileID:line:)``
-///   * ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)``
-///   * ``EffectPublisher/fireAndForget(priority:_:)``
+/// * If using Swift's native structured concurrency tools then there is one main way to create an
+/// effect: ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)``.
+///
 /// * If using Combine in your application, in particular for the dependencies of your feature
 /// then you can create effects by making use of any of Combine's operators, and then erasing the
 /// publisher type to ``EffectPublisher`` with either `eraseToEffect` or `catchToEffect`. Note that

@@ -949,8 +949,8 @@ extension TestStore where ScopedState: Equatable {
   /// ```
   ///
   /// This method suspends in order to allow any effects to start. For example, if you track an
-  /// analytics event in a ``EffectPublisher/fireAndForget(priority:_:)`` when an action is sent,
-  /// you can assert on that behavior immediately after awaiting `store.send`:
+  /// analytics event in an effect when an action is sent, you can assert on that behavior
+  /// immediately after awaiting `store.send`:
   ///
   /// ```swift
   /// @MainActor
