@@ -765,17 +765,17 @@ final class StoreTests: BaseTCATestCase {
           self.date = date()
         }
       }
-      enum Action: Equatable { }
+      enum Action: Equatable {}
       func reduce(into state: inout State, action: Action) -> EffectTask<Action> {}
     }
 
     let store = Store(initialState: Feature.State()) {
       Feature()
     } withDependencies: {
-      $0.date = .constant(Date(timeIntervalSinceReferenceDate: 1234567890))
+      $0.date = .constant(Date(timeIntervalSinceReferenceDate: 1_234_567_890))
     }
 
-    XCTAssertEqual(store.state.value.date, Date(timeIntervalSinceReferenceDate: 1234567890))
+    XCTAssertEqual(store.state.value.date, Date(timeIntervalSinceReferenceDate: 1_234_567_890))
   }
 
   func testInit_ReducerBuilder_WithDependencies() async {
@@ -793,11 +793,11 @@ final class StoreTests: BaseTCATestCase {
     let store = Store(initialState: Feature.State()) {
       Feature(date: date())
     } withDependencies: {
-      $0.date = .constant(Date(timeIntervalSinceReferenceDate: 1234567890))
+      $0.date = .constant(Date(timeIntervalSinceReferenceDate: 1_234_567_890))
     }
 
     _ = store.send(.tap)
-    XCTAssertEqual(store.state.value.date, Date(timeIntervalSinceReferenceDate: 1234567890))
+    XCTAssertEqual(store.state.value.date, Date(timeIntervalSinceReferenceDate: 1_234_567_890))
   }
 }
 

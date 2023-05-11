@@ -149,7 +149,7 @@ public final class Store<State, Action> {
   ) where R.State == State, R.Action == Action {
     if let prepareDependencies = prepareDependencies {
       let (initialState, reducer) = withDependencies(prepareDependencies) {
-        (initialState(), reducer()) 
+        (initialState(), reducer())
       }
       self.init(
         initialState: initialState,
