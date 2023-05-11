@@ -60,7 +60,10 @@
         wrappedValue: ViewStore(
           store
             .filterSend { state, _ in state.wrappedValue != nil }
-            .scope(state: { $0.wrappedValue.flatMap(toDestinationState) != nil })
+            .scope(
+              state: { $0.wrappedValue.flatMap(toDestinationState) != nil },
+              action: { $0 }
+            )
         )
       )
       self.toDestinationState = toDestinationState

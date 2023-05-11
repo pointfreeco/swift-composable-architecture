@@ -39,8 +39,7 @@ struct Search: ReducerProtocol {
   }
 
   @Dependency(\.weatherClient) var weatherClient
-  private enum SearchLocationID {}
-  private enum SearchWeatherID {}
+  private enum CancelID { case location, weather }
 
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
@@ -73,7 +72,7 @@ struct Search: ReducerProtocol {
       guard !query.isEmpty else {
         state.results = []
         state.weather = nil
-        return .cancel(id: SearchLocationID.self)
+        return .cancel(id: CancelID.location)
       }
       return .none
 
@@ -84,7 +83,7 @@ struct Search: ReducerProtocol {
       return .task { [query = state.searchQuery] in
         await .searchResponse(TaskResult { try await self.weatherClient.search(query) })
       }
-      .cancellable(id: SearchLocationID.self)
+      .cancellable(id: CancelID.location)
 
     case .searchResponse(.failure):
       state.results = []
@@ -103,7 +102,7 @@ struct Search: ReducerProtocol {
           TaskResult { try await self.weatherClient.forecast(location) }
         )
       }
-      .cancellable(id: SearchWeatherID.self, cancelInFlight: true)
+      .cancellable(id: CancelID.weather, cancelInFlight: true)
     }
   }
 }
@@ -218,10 +217,9 @@ private let dateFormatter: DateFormatter = {
 struct SearchView_Previews: PreviewProvider {
   static var previews: some View {
     SearchView(
-      store: Store(
-        initialState: Search.State(),
-        reducer: Search()
-      )
+      store: Store(initialState: Search.State()) {
+        Search()
+      }
     )
   }
 }

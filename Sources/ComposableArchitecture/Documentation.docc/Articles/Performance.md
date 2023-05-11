@@ -184,7 +184,7 @@ struct AppView: View {
       TabView {
         ActivityView(
           store: self.store
-            .scope(state: \.activity, action: AppAction.activity
+            .scope(state: \.activity, action: AppAction.activity)
         )
         .badge("\(viewStore.unreadActivityCount)")
 
@@ -271,10 +271,9 @@ with unnecessary internal details, and the test no longer reads as a script from
 actions the user is taking in the feature:
 
 ```swift
-let store = TestStore(
-  initialState: Feature.State(), 
-  reducer: Feature()
-)
+let store = TestStore(initialState: Feature.State()) {
+  Feature()
+}
 
 store.send(.buttonTapped) {
   $0.count = 1
@@ -358,10 +357,9 @@ shared actions being sent around. The test reads  like a user script of what the
 in the feature:
 
 ```swift
-let store = TestStore(
-  initialState: Feature.State(), 
-  reducer: Feature()
-)
+let store = TestStore(initialState: Feature.State()) {
+  Feature()
+}
 
 store.send(.buttonTapped) {
   $0.count = 1

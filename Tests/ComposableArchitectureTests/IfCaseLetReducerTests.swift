@@ -5,12 +5,11 @@ import XCTest
 @MainActor
 final class IfCaseLetReducerTests: BaseTCATestCase {
   func testChildAction() async {
-    await _withMainSerialExecutor {
+    await withMainSerialExecutor {
       struct SomeError: Error, Equatable {}
 
-      let store = TestStore(
-        initialState: Result.success(0),
-        reducer: Reduce<Result<Int, SomeError>, Result<Int, SomeError>> { state, action in
+      let store = TestStore(initialState: Result.success(0)) {
+        Reduce<Result<Int, SomeError>, Result<Int, SomeError>> { state, action in
           .none
         }
         .ifCaseLet(/Result.success, action: /Result.success) {
@@ -19,7 +18,7 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
             return state < 0 ? .run { await $0(0) } : .none
           }
         }
-      )
+      }
 
       await store.send(.success(1)) {
         $0 = .success(1)
@@ -38,11 +37,10 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
     func testNilChild() async {
       struct SomeError: Error, Equatable {}
 
-      let store = TestStore(
-        initialState: Result.failure(SomeError()),
-        reducer: EmptyReducer<Result<Int, SomeError>, Result<Int, SomeError>>()
+      let store = TestStore(initialState: Result.failure(SomeError())) {
+        EmptyReducer<Result<Int, SomeError>, Result<Int, SomeError>>()
           .ifCaseLet(/Result.success, action: /Result.success) {}
-      )
+      }
 
       XCTExpectFailure {
         $0.compactDescription == """
@@ -134,12 +132,11 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
             }
           }
         }
-        await _withMainSerialExecutor {
+        await withMainSerialExecutor {
           let clock = TestClock()
-          let store = TestStore(
-            initialState: Parent.State.child1(Child.State()),
-            reducer: Parent()
-          ) {
+          let store = TestStore(initialState: Parent.State.child1(Child.State())) {
+            Parent()
+          } withDependencies: {
             $0.continuousClock = clock
           }
           await store.send(.child1(.timerButtonTapped))

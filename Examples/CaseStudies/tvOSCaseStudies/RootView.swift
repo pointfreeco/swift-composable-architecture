@@ -34,10 +34,9 @@ struct ContentView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       RootView(
-        store: Store(
-          initialState: Root.State(),
-          reducer: Root()
-        )
+        store: Store(initialState: Root.State()) {
+          Root()
+        }
       )
     }
   }

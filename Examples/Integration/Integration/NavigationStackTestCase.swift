@@ -95,11 +95,10 @@ struct NavigationStackTestCaseView: View {
   @StateObject private var viewStore: ViewStoreOf<NavigationStackTestCase>
 
   init() {
-    let store = Store(
-      initialState: NavigationStackTestCase.State(),
-      reducer: NavigationStackTestCase()
+    let store = Store(initialState: NavigationStackTestCase.State()) {
+      NavigationStackTestCase()
         ._printChanges()
-    )
+    }
     self.store = store
     self._viewStore = StateObject(
       wrappedValue: ViewStore(store, observe: { $0 })

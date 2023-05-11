@@ -11,10 +11,9 @@ let storeSuite = BenchmarkSuite(name: "Store") {
     $0.benchmark("Nested send tap: \(level)") {
       _ = store.send(tap(level: level))
     } setUp: {
-      store = Store(
-        initialState: state(level: level),
-        reducer: Feature()
-      )
+      store = Store(initialState: state(level: level)) {
+        Feature()
+      }
     } tearDown: {
       precondition(count(of: store.state.value, level: level) == 1)
       _cancellationCancellables.removeAll()
@@ -24,10 +23,9 @@ let storeSuite = BenchmarkSuite(name: "Store") {
     $0.benchmark("Nested send none: \(level)") {
       _ = store.send(none(level: level))
     } setUp: {
-      store = Store(
-        initialState: state(level: level),
-        reducer: Feature()
-      )
+      store = Store(initialState: state(level: level)) {
+        Feature()
+      }
     } tearDown: {
       precondition(count(of: store.state.value, level: level) == 0)
       _cancellationCancellables.removeAll()

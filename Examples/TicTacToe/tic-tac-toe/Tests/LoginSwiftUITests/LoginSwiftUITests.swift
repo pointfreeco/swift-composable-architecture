@@ -8,12 +8,13 @@ import XCTest
 @MainActor
 final class LoginSwiftUITests: XCTestCase {
   func testFlow_Success() async {
-    let store = TestStore(
-      initialState: Login.State(),
-      reducer: Login(),
-      observe: LoginView.ViewState.init,
-      send: Login.Action.init
-    ) {
+    let store = TestStore(initialState: Login.State()) {
+      Login()
+    } observe: {
+      LoginView.ViewState(state: $0)
+    } send: {
+      Login.Action(action: $0)
+    } withDependencies: {
       $0.authenticationClient.login = { _ in
         AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
       }
@@ -41,12 +42,13 @@ final class LoginSwiftUITests: XCTestCase {
   }
 
   func testFlow_Success_TwoFactor() async {
-    let store = TestStore(
-      initialState: Login.State(),
-      reducer: Login(),
-      observe: LoginView.ViewState.init,
-      send: Login.Action.init
-    ) {
+    let store = TestStore(initialState: Login.State()) {
+      Login()
+    } observe: {
+      LoginView.ViewState(state: $0)
+    } send: {
+      Login.Action(action: $0)
+    } withDependencies: {
       $0.authenticationClient.login = { _ in
         AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true)
       }
@@ -75,12 +77,13 @@ final class LoginSwiftUITests: XCTestCase {
   }
 
   func testFlow_Failure() async {
-    let store = TestStore(
-      initialState: Login.State(),
-      reducer: Login(),
-      observe: LoginView.ViewState.init,
-      send: Login.Action.init
-    ) {
+    let store = TestStore(initialState: Login.State()) {
+      Login()
+    } observe: {
+      LoginView.ViewState(state: $0)
+    } send: {
+      Login.Action(action: $0)
+    } withDependencies: {
       $0.authenticationClient.login = { _ in
         throw AuthenticationError.invalidUserPassword
       }

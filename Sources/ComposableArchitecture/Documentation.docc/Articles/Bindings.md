@@ -263,10 +263,9 @@ send a ``BindingAction`` action that describes which key path is being set to wh
 `.set(\.$displayName, "Blob")`:
 
 ```swift
-let store = TestStore(
-  initialState: Settings.State(),
-  reducer: Settings()
-)
+let store = TestStore(initialState: Settings.State()) {
+  Settings()
+}
 
 store.send(.set(\.$displayName, "Blob")) {
   $0.displayName = "Blob"

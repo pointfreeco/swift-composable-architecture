@@ -27,10 +27,9 @@ private struct ForEachBindingTestCase: ReducerProtocol {
 
 struct ForEachBindingTestCaseView: View {
   @State var assertion: String?
-  private let store = Store(
-    initialState: ForEachBindingTestCase.State(),
-    reducer: ForEachBindingTestCase()
-  )
+  private let store = Store(initialState: ForEachBindingTestCase.State()) {
+    ForEachBindingTestCase()
+  }
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in

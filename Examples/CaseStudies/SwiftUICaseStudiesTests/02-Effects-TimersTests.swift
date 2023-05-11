@@ -8,10 +8,9 @@ final class TimersTests: XCTestCase {
   func testStart() async {
     let clock = TestClock()
 
-    let store = TestStore(
-      initialState: Timers.State(),
-      reducer: Timers()
-    ) {
+    let store = TestStore(initialState: Timers.State()) {
+      Timers()
+    } withDependencies: {
       $0.continuousClock = clock
     }
 

@@ -29,7 +29,12 @@ public struct NavigationLinkStore<
   ) where State == DestinationState, Action == DestinationAction {
     let filteredStore = store.filterSend { state, _ in state.wrappedValue != nil }
     self.store = filteredStore
-    self.viewStore = ViewStore(filteredStore.scope(state: { $0.wrappedValue != nil }))
+    self.viewStore = ViewStore(
+      filteredStore.scope(
+        state: { $0.wrappedValue != nil },
+        action: { $0 }
+      )
+    )
     self.toDestinationState = { $0 }
     self.fromDestinationAction = { $0 }
     self.onTap = onTap
@@ -49,7 +54,10 @@ public struct NavigationLinkStore<
     self.viewStore = ViewStore(
       store
         .filterSend { state, _ in state.wrappedValue != nil }
-        .scope(state: { $0.wrappedValue.flatMap(toDestinationState) != nil })
+        .scope(
+          state: { $0.wrappedValue.flatMap(toDestinationState) != nil },
+          action: { $0 }
+        )
     )
     self.toDestinationState = toDestinationState
     self.fromDestinationAction = fromDestinationAction
@@ -67,7 +75,12 @@ public struct NavigationLinkStore<
   ) where State == DestinationState, Action == DestinationAction, State: Identifiable {
     let filteredStore = store.filterSend { state, _ in state.wrappedValue != nil }
     self.store = filteredStore
-    self.viewStore = ViewStore(filteredStore.scope(state: { $0.wrappedValue?.id == id }))
+    self.viewStore = ViewStore(
+      filteredStore.scope(
+        state: { $0.wrappedValue?.id == id },
+        action: { $0 }
+      )
+    )
     self.toDestinationState = { $0 }
     self.fromDestinationAction = { $0 }
     self.onTap = onTap
@@ -88,7 +101,10 @@ public struct NavigationLinkStore<
     self.viewStore = ViewStore(
       store
         .filterSend { state, _ in state.wrappedValue != nil }
-        .scope(state: { $0.wrappedValue.flatMap(toDestinationState)?.id == id })
+        .scope(
+          state: { $0.wrappedValue.flatMap(toDestinationState)?.id == id },
+          action: { $0 }
+        )
     )
     self.toDestinationState = toDestinationState
     self.fromDestinationAction = fromDestinationAction

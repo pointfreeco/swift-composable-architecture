@@ -15,7 +15,7 @@ struct EagerNavigation: ReducerProtocol {
     case setNavigationIsActiveDelayCompleted
   }
 
-  private enum CancelID {}
+  private enum CancelID { case load }
   @Dependency(\.continuousClock) var clock
 
   var body: some ReducerProtocol<State, Action> {
@@ -27,12 +27,12 @@ struct EagerNavigation: ReducerProtocol {
           try await self.clock.sleep(for: .seconds(1))
           return .setNavigationIsActiveDelayCompleted
         }
-        .cancellable(id: CancelID.self)
+        .cancellable(id: CancelID.load)
 
       case .setNavigation(isActive: false):
         state.isNavigationActive = false
         state.optionalCounter = nil
-        return .cancel(id: CancelID.self)
+        return .cancel(id: CancelID.load)
 
       case .setNavigationIsActiveDelayCompleted:
         state.optionalCounter = Counter.State()
@@ -119,10 +119,9 @@ struct EagerNavigationViewController_Previews: PreviewProvider {
   static var previews: some View {
     let vc = UINavigationController(
       rootViewController: EagerNavigationViewController(
-        store: Store(
-          initialState: EagerNavigation.State(),
-          reducer: EagerNavigation()
-        )
+        store: Store(initialState: EagerNavigation.State()) {
+          EagerNavigation()
+        }
       )
     )
     return UIViewRepresented(makeUIView: { _ in vc.view })

@@ -10,11 +10,12 @@ final class GameSwiftUITests: XCTestCase {
     initialState: Game.State(
       oPlayerName: "Blob Jr.",
       xPlayerName: "Blob Sr."
-    ),
-    reducer: Game(),
-    observe: GameView.ViewState.init,
-    send: { $0 }
-  )
+    )
+  ) {
+    Game()
+  } observe: {
+    GameView.ViewState(state: $0)
+  }
 
   func testFlow_Winner_Quit() async {
     await self.store.send(.cellTapped(row: 0, column: 0)) {

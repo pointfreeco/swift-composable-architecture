@@ -7,7 +7,7 @@ final class StoreTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
 
   func testCancellableIsRemovedOnImmediatelyCompletingEffect() {
-    let store = Store(initialState: (), reducer: EmptyReducer<Void, Void>())
+    let store = Store<Void, Void>(initialState: ()) {}
 
     XCTAssertEqual(store.effectCancellables.count, 0)
 
@@ -32,7 +32,7 @@ final class StoreTests: BaseTCATestCase {
         return .none
       }
     })
-    let store = Store(initialState: (), reducer: reducer)
+    let store = Store(initialState: ()) { reducer }
 
     XCTAssertEqual(store.effectCancellables.count, 0)
 
@@ -51,9 +51,9 @@ final class StoreTests: BaseTCATestCase {
       return .none
     })
 
-    let parentStore = Store(initialState: 0, reducer: counterReducer)
+    let parentStore = Store(initialState: 0) { counterReducer }
     let parentViewStore = ViewStore(parentStore)
-    let childStore = parentStore.scope(state: String.init)
+    let childStore = parentStore.scope(state: String.init, action: { $0 })
 
     var values: [String] = []
     ViewStore(childStore).publisher
@@ -73,8 +73,8 @@ final class StoreTests: BaseTCATestCase {
       return .none
     })
 
-    let parentStore = Store(initialState: 0, reducer: counterReducer)
-    let childStore = parentStore.scope(state: String.init)
+    let parentStore = Store(initialState: 0) { counterReducer }
+    let childStore = parentStore.scope(state: String.init, action: { $0 })
     let childViewStore = ViewStore(childStore)
 
     var values: [Int] = []
@@ -96,11 +96,14 @@ final class StoreTests: BaseTCATestCase {
     })
 
     var numCalls1 = 0
-    _ = Store(initialState: 0, reducer: counterReducer)
-      .scope(state: { (count: Int) -> Int in
-        numCalls1 += 1
-        return count
-      })
+    _ = Store(initialState: 0) { counterReducer }
+      .scope(
+        state: { (count: Int) -> Int in
+          numCalls1 += 1
+          return count
+        },
+        action: { $0 }
+      )
 
     XCTAssertEqual(numCalls1, 1)
   }
@@ -115,25 +118,34 @@ final class StoreTests: BaseTCATestCase {
     var numCalls2 = 0
     var numCalls3 = 0
 
-    let store1 = Store(initialState: 0, reducer: counterReducer)
+    let store1 = Store(initialState: 0) { counterReducer }
     let store2 =
       store1
-      .scope(state: { (count: Int) -> Int in
-        numCalls1 += 1
-        return count
-      })
+      .scope(
+        state: { (count: Int) -> Int in
+          numCalls1 += 1
+          return count
+        },
+        action: { $0 }
+      )
     let store3 =
       store2
-      .scope(state: { (count: Int) -> Int in
-        numCalls2 += 1
-        return count
-      })
+      .scope(
+        state: { (count: Int) -> Int in
+          numCalls2 += 1
+          return count
+        },
+        action: { $0 }
+      )
     let store4 =
       store3
-      .scope(state: { (count: Int) -> Int in
-        numCalls3 += 1
-        return count
-      })
+      .scope(
+        state: { (count: Int) -> Int in
+          numCalls3 += 1
+          return count
+        },
+        action: { $0 }
+      )
 
     let viewStore1 = ViewStore(store1)
     let viewStore2 = ViewStore(store2)
@@ -201,7 +213,7 @@ final class StoreTests: BaseTCATestCase {
       }
     })
 
-    let store = Store(initialState: (), reducer: counterReducer)
+    let store = Store(initialState: ()) { counterReducer }
 
     _ = ViewStore(store, observe: {}, removeDuplicates: ==).send(.tap)
 
@@ -220,7 +232,7 @@ final class StoreTests: BaseTCATestCase {
       }
     })
 
-    let store = Store(initialState: 0, reducer: reducer)
+    let store = Store(initialState: 0) { reducer }
     _ = ViewStore(store, observe: { $0 }).send(.incr)
     XCTAssertEqual(ViewStore(store, observe: { $0 }).state, 100_000)
   }
@@ -235,7 +247,7 @@ final class StoreTests: BaseTCATestCase {
       return .none
     })
 
-    let parentStore = Store(initialState: AppState(), reducer: appReducer)
+    let parentStore = Store(initialState: AppState()) { appReducer }
     let parentViewStore = ViewStore(parentStore)
 
     // NB: This test needs to hold a strong reference to the emitted stores
@@ -243,7 +255,7 @@ final class StoreTests: BaseTCATestCase {
     var stores: [Any] = []
 
     parentStore
-      .scope(state: { $0.count })
+      .scope(state: { $0.count }, action: { $0 })
       .ifLet(
         then: { store in
           stores.append(store)
@@ -277,17 +289,16 @@ final class StoreTests: BaseTCATestCase {
   }
 
   func testIfLetTwo() {
-    let parentStore = Store(
-      initialState: 0,
-      reducer: Reduce<Int?, Bool>({ state, action in
+    let parentStore = Store(initialState: 0) {
+      Reduce<Int?, Bool> { state, action in
         if action {
           state? += 1
           return .none
         } else {
           return .task { true }
         }
-      })
-    )
+      }
+    }
 
     parentStore
       .ifLet(then: { childStore in
@@ -318,9 +329,8 @@ final class StoreTests: BaseTCATestCase {
       case doIncrement
     }
 
-    let store = TestStore(
-      initialState: 0,
-      reducer: Reduce<Int, Action>({ state, action in
+    let store = TestStore(initialState: 0) {
+      Reduce<Int, Action> { state, action in
         switch action {
         case .incrementTapped:
           subject.send()
@@ -333,8 +343,8 @@ final class StoreTests: BaseTCATestCase {
           state += 1
           return .none
         }
-      })
-    )
+      }
+    }
 
     await store.send(.`init`)
     await store.send(.incrementTapped)
@@ -349,9 +359,8 @@ final class StoreTests: BaseTCATestCase {
   }
 
   func testCoalesceSynchronousActions() {
-    let store = Store(
-      initialState: 0,
-      reducer: Reduce<Int, Int>({ state, action in
+    let store = Store(initialState: 0) {
+      Reduce<Int, Int> { state, action in
         switch action {
         case 0:
           return .merge(
@@ -363,8 +372,8 @@ final class StoreTests: BaseTCATestCase {
           state = action
           return .none
         }
-      })
-    )
+      }
+    }
 
     var emissions: [Int] = []
     let viewStore = ViewStore(store, observe: { $0 })
@@ -415,10 +424,9 @@ final class StoreTests: BaseTCATestCase {
       })
     }
 
-    let parentStore = Store(
-      initialState: ParentState(),
-      reducer: parentReducer
-    )
+    let parentStore = Store(initialState: ParentState()) {
+      parentReducer
+    }
 
     parentStore
       .scope(
@@ -443,29 +451,26 @@ final class StoreTests: BaseTCATestCase {
 
   func testCascadingTaskCancellation() async {
     enum Action { case task, response, response1, response2 }
-    let reducer = Reduce<Int, Action>({ state, action in
-      switch action {
-      case .task:
-        return .task { .response }
-      case .response:
-        return .merge(
-          Empty(completeImmediately: false).eraseToEffect(),
-          .task { .response1 }
-        )
-      case .response1:
-        return .merge(
-          Empty(completeImmediately: false).eraseToEffect(),
-          .task { .response2 }
-        )
-      case .response2:
-        return Empty(completeImmediately: false).eraseToEffect()
+    let store = TestStore(initialState: 0) {
+      Reduce<Int, Action> { state, action in
+        switch action {
+        case .task:
+          return .task { .response }
+        case .response:
+          return .merge(
+            Empty(completeImmediately: false).eraseToEffect(),
+            .task { .response1 }
+          )
+        case .response1:
+          return .merge(
+            Empty(completeImmediately: false).eraseToEffect(),
+            .task { .response2 }
+          )
+        case .response2:
+          return Empty(completeImmediately: false).eraseToEffect()
+        }
       }
-    })
-
-    let store = TestStore(
-      initialState: 0,
-      reducer: reducer
-    )
+    }
 
     let task = await store.send(.task)
     await store.receive(.response)
@@ -477,15 +482,14 @@ final class StoreTests: BaseTCATestCase {
   func testTaskCancellationEmpty() async {
     enum Action { case task }
 
-    let store = TestStore(
-      initialState: 0,
-      reducer: Reduce<Int, Action>({ state, action in
+    let store = TestStore(initialState: 0) {
+      Reduce<Int, Action> { state, action in
         switch action {
         case .task:
           return .fireAndForget { try await Task.never() }
         }
-      })
-    )
+      }
+    }
 
     await store.send(.task).cancel()
   }
@@ -493,15 +497,14 @@ final class StoreTests: BaseTCATestCase {
   func testScopeCancellation() async throws {
     let neverEndingTask = Task<Void, Error> { try await Task.never() }
 
-    let store = Store(
-      initialState: (),
-      reducer: Reduce<Void, Void>({ _, _ in
+    let store = Store(initialState: ()) {
+      Reduce<Void, Void> { _, _ in
         .fireAndForget {
           try await neverEndingTask.value
         }
-      })
-    )
-    let scopedStore = store.scope(state: { $0 })
+      }
+    }
+    let scopedStore = store.scope(state: { $0 }, action: { $0 })
 
     let sendTask = scopedStore.send(())
     await Task.yield()
@@ -528,14 +531,13 @@ final class StoreTests: BaseTCATestCase {
       }
     }
 
-    let store = Store(
-      initialState: 0,
-      reducer: Counter()
+    let store = Store(initialState: 0) {
+      Counter()
         .dependency(\.calendar, Calendar(identifier: .gregorian))
         .dependency(\.locale, Locale(identifier: "en_US"))
         .dependency(\.timeZone, TimeZone(secondsFromGMT: 0)!)
         .dependency(\.urlSession, URLSession(configuration: .ephemeral))
-    )
+    }
 
     ViewStore(store, observe: { $0 }).send(true)
   }
@@ -552,7 +554,9 @@ final class StoreTests: BaseTCATestCase {
 
     @Dependency(\.uuid) var uuid
 
-    let store = Store(initialState: uuid(), reducer: MyReducer()) {
+    let store = Store(initialState: uuid()) {
+      MyReducer()
+    } withDependencies: {
       $0.uuid = .constant(UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!)
     }
     let viewStore = ViewStore(store, observe: { $0 })
@@ -601,10 +605,9 @@ final class StoreTests: BaseTCATestCase {
       }
     }
 
-    let testStore = TestStore(
-      initialState: Feature.State(),
-      reducer: Feature()
-    )
+    let testStore = TestStore(initialState: Feature.State()) {
+      Feature()
+    }
     await testStore.send(.tap)
     await testStore.receive(.response1(1)) {
       $0.count = 1
@@ -612,10 +615,9 @@ final class StoreTests: BaseTCATestCase {
     await testStore.receive(.response2(1))
     await testStore.receive(.response3(1))
 
-    let store = Store(
-      initialState: Feature.State(),
-      reducer: Feature()
-    )
+    let store = Store(initialState: Feature.State()) {
+      Feature()
+    }
     await store.send(.tap)?.value
     XCTAssertEqual(store.state.value.count, testStore.state.count)
   }
@@ -664,10 +666,9 @@ final class StoreTests: BaseTCATestCase {
       }
     }
 
-    let testStore = TestStore(
-      initialState: Feature.State(),
-      reducer: Feature()
-    )
+    let testStore = TestStore(initialState: Feature.State()) {
+      Feature()
+    }
     await testStore.send(.tap)
     await testStore.receive(.response1(1)) {
       $0.count = 1
@@ -675,16 +676,15 @@ final class StoreTests: BaseTCATestCase {
     await testStore.receive(.response2(1))
     await testStore.receive(.response3(1))
 
-    let store = Store(
-      initialState: Feature.State(),
-      reducer: Feature()
-    )
+    let store = Store(initialState: Feature.State()) {
+      Feature()
+    }
     await store.send(.tap)?.value
     XCTAssertEqual(store.state.value.count, testStore.state.count)
   }
 
   #if swift(>=5.7)
-    func testChidlParentEffectCancellation() async throws {
+    func testChildParentEffectCancellation() async throws {
       struct Child: ReducerProtocol {
         struct State: Equatable {}
         enum Action: Equatable {
@@ -734,10 +734,9 @@ final class StoreTests: BaseTCATestCase {
       }
 
       let mainQueue = DispatchQueue.test
-      let store = Store(
-        initialState: Parent.State(child: Child.State()),
-        reducer: Parent()
-      ) {
+      let store = Store(initialState: Parent.State(child: Child.State())) {
+        Parent()
+      } withDependencies: {
         $0.mainQueue = mainQueue.eraseToAnyScheduler()
       }
       let viewStore = ViewStore(store)
@@ -756,6 +755,50 @@ final class StoreTests: BaseTCATestCase {
       XCTAssertEqual(viewStore.count, 1)
     }
   #endif
+
+  func testInit_InitialState_WithDependencies() async {
+    struct Feature: ReducerProtocol {
+      struct State: Equatable {
+        var date: Date
+        init() {
+          @Dependency(\.date) var date
+          self.date = date()
+        }
+      }
+      enum Action: Equatable {}
+      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {}
+    }
+
+    let store = Store(initialState: Feature.State()) {
+      Feature()
+    } withDependencies: {
+      $0.date = .constant(Date(timeIntervalSinceReferenceDate: 1_234_567_890))
+    }
+
+    XCTAssertEqual(store.state.value.date, Date(timeIntervalSinceReferenceDate: 1_234_567_890))
+  }
+
+  func testInit_ReducerBuilder_WithDependencies() async {
+    struct Feature: ReducerProtocol {
+      let date: Date
+      struct State: Equatable { var date: Date? }
+      enum Action: Equatable { case tap }
+      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        state.date = self.date
+        return .none
+      }
+    }
+
+    @Dependency(\.date) var date
+    let store = Store(initialState: Feature.State()) {
+      Feature(date: date())
+    } withDependencies: {
+      $0.date = .constant(Date(timeIntervalSinceReferenceDate: 1_234_567_890))
+    }
+
+    _ = store.send(.tap)
+    XCTAssertEqual(store.state.value.date, Date(timeIntervalSinceReferenceDate: 1_234_567_890))
+  }
 }
 
 private struct Count: TestDependencyKey {

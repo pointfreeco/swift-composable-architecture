@@ -8,10 +8,9 @@ final class SpeechRecognitionTests: XCTestCase {
   let recognitionTask = AsyncThrowingStream<SpeechRecognitionResult, Error>.streamWithContinuation()
 
   func testDenyAuthorization() async {
-    let store = TestStore(
-      initialState: SpeechRecognition.State(),
-      reducer: SpeechRecognition()
-    ) {
+    let store = TestStore(initialState: SpeechRecognition.State()) {
+      SpeechRecognition()
+    } withDependencies: {
       $0.speechClient.requestAuthorization = { .denied }
     }
 
@@ -31,10 +30,9 @@ final class SpeechRecognitionTests: XCTestCase {
   }
 
   func testRestrictedAuthorization() async {
-    let store = TestStore(
-      initialState: SpeechRecognition.State(),
-      reducer: SpeechRecognition()
-    ) {
+    let store = TestStore(initialState: SpeechRecognition.State()) {
+      SpeechRecognition()
+    } withDependencies: {
       $0.speechClient.requestAuthorization = { .restricted }
     }
 
@@ -48,10 +46,9 @@ final class SpeechRecognitionTests: XCTestCase {
   }
 
   func testAllowAndRecord() async {
-    let store = TestStore(
-      initialState: SpeechRecognition.State(),
-      reducer: SpeechRecognition()
-    ) {
+    let store = TestStore(initialState: SpeechRecognition.State()) {
+      SpeechRecognition()
+    } withDependencies: {
       $0.speechClient.finishTask = { self.recognitionTask.continuation.finish() }
       $0.speechClient.startTask = { _ in self.recognitionTask.stream }
       $0.speechClient.requestAuthorization = { .authorized }
@@ -92,10 +89,9 @@ final class SpeechRecognitionTests: XCTestCase {
   }
 
   func testAudioSessionFailure() async {
-    let store = TestStore(
-      initialState: SpeechRecognition.State(),
-      reducer: SpeechRecognition()
-    ) {
+    let store = TestStore(initialState: SpeechRecognition.State()) {
+      SpeechRecognition()
+    } withDependencies: {
       $0.speechClient.startTask = { _ in self.recognitionTask.stream }
       $0.speechClient.requestAuthorization = { .authorized }
     }
@@ -113,10 +109,9 @@ final class SpeechRecognitionTests: XCTestCase {
   }
 
   func testAudioEngineFailure() async {
-    let store = TestStore(
-      initialState: SpeechRecognition.State(),
-      reducer: SpeechRecognition()
-    ) {
+    let store = TestStore(initialState: SpeechRecognition.State()) {
+      SpeechRecognition()
+    } withDependencies: {
       $0.speechClient.startTask = { _ in self.recognitionTask.stream }
       $0.speechClient.requestAuthorization = { .authorized }
     }

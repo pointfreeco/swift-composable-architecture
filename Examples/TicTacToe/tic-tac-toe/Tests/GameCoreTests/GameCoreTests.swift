@@ -8,9 +8,10 @@ final class GameCoreTests: XCTestCase {
     initialState: Game.State(
       oPlayerName: "Blob Jr.",
       xPlayerName: "Blob Sr."
-    ),
-    reducer: Game()
-  )
+    )
+  ) {
+    Game()
+  }
 
   func testFlow_Winner_Quit() async {
     await self.store.send(.cellTapped(row: 0, column: 0)) {

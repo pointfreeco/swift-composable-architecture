@@ -88,9 +88,10 @@ struct CountersTableViewController_Previews: PreviewProvider {
               Counter.State(),
               Counter.State(),
             ]
-          ),
-          reducer: CounterList()
-        )
+          )
+        ) {
+          CounterList()
+        }
       )
     )
     return UIViewRepresented(makeUIView: { _ in vc.view })

@@ -289,11 +289,10 @@ struct PresentationTestCaseView: View {
   @State var alertMessage = ""
 
   init() {
-    let store = Store(
-      initialState: PresentationTestCase.State(),
-      reducer: PresentationTestCase()
+    let store = Store(initialState: PresentationTestCase.State()) {
+      PresentationTestCase()
         ._printChanges()
-    )
+    }
     self.store = store
     self._viewStore = StateObject(
       wrappedValue: ViewStore(store, observe: { $0 })

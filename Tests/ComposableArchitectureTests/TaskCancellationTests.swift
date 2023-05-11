@@ -4,17 +4,17 @@ import XCTest
 
 final class TaskCancellationTests: BaseTCATestCase {
   func testCancellation() async throws {
-    enum ID {}
+    enum CancelID { case task }
     let (stream, continuation) = AsyncStream<Void>.streamWithContinuation()
     let task = Task {
-      try await withTaskCancellation(id: ID.self) {
+      try await withTaskCancellation(id: CancelID.task) {
         continuation.yield()
         continuation.finish()
         try await Task.never()
       }
     }
     await stream.first(where: { true })
-    Task.cancel(id: ID.self)
+    Task.cancel(id: CancelID.task)
     await Task.megaYield(count: 20)
     XCTAssertEqual(_cancellationCancellables.count, 0)
     do {

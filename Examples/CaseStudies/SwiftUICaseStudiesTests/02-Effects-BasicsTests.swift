@@ -6,10 +6,9 @@ import XCTest
 @MainActor
 final class EffectsBasicsTests: XCTestCase {
   func testCountDown() async {
-    let store = TestStore(
-      initialState: EffectsBasics.State(),
-      reducer: EffectsBasics()
-    ) {
+    let store = TestStore(initialState: EffectsBasics.State()) {
+      EffectsBasics()
+    } withDependencies: {
       $0.continuousClock = ImmediateClock()
     }
 
@@ -22,10 +21,9 @@ final class EffectsBasicsTests: XCTestCase {
   }
 
   func testNumberFact() async {
-    let store = TestStore(
-      initialState: EffectsBasics.State(),
-      reducer: EffectsBasics()
-    ) {
+    let store = TestStore(initialState: EffectsBasics.State()) {
+      EffectsBasics()
+    } withDependencies: {
       $0.factClient.fetch = { "\($0) is a good number Brent" }
       $0.continuousClock = ImmediateClock()
     }
@@ -43,10 +41,9 @@ final class EffectsBasicsTests: XCTestCase {
   }
 
   func testDecrement() async {
-    let store = TestStore(
-      initialState: EffectsBasics.State(),
-      reducer: EffectsBasics()
-    ) {
+    let store = TestStore(initialState: EffectsBasics.State()) {
+      EffectsBasics()
+    } withDependencies: {
       $0.continuousClock = ImmediateClock()
     }
 
@@ -59,10 +56,9 @@ final class EffectsBasicsTests: XCTestCase {
   }
 
   func testDecrementCancellation() async {
-    let store = TestStore(
-      initialState: EffectsBasics.State(),
-      reducer: EffectsBasics()
-    ) {
+    let store = TestStore(initialState: EffectsBasics.State()) {
+      EffectsBasics()
+    } withDependencies: {
       $0.continuousClock = TestClock()
     }
 

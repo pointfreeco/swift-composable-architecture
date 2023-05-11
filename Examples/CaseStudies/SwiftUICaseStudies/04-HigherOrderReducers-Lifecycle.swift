@@ -65,7 +65,7 @@ struct LifecycleDemo: ReducerProtocol {
   }
 
   @Dependency(\.continuousClock) var clock
-  private enum CancelID {}
+  private enum CancelID { case lifecycle }
 
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
@@ -87,8 +87,8 @@ struct LifecycleDemo: ReducerProtocol {
               await send(.tick)
             }
           }
-          .cancellable(id: CancelID.self),
-          onDisappear: .cancel(id: CancelID.self)
+          .cancellable(id: CancelID.lifecycle),
+          onDisappear: .cancel(id: CancelID.lifecycle)
         )
     }
   }
@@ -170,10 +170,9 @@ struct Lifecycle_Previews: PreviewProvider {
     Group {
       NavigationView {
         LifecycleDemoView(
-          store: Store(
-            initialState: LifecycleDemo.State(),
-            reducer: LifecycleDemo()
-          )
+          store: Store(initialState: LifecycleDemo.State()) {
+            LifecycleDemo()
+          }
         )
       }
     }

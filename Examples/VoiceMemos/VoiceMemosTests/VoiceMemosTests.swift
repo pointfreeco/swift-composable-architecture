@@ -102,10 +102,9 @@ final class VoiceMemosTests: XCTestCase {
 
     let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
 
-    let store = TestStore(
-      initialState: VoiceMemos.State(),
-      reducer: VoiceMemos()
-    ) {
+    let store = TestStore(initialState: VoiceMemos.State()) {
+      VoiceMemos()
+    } withDependencies: {
       $0.audioRecorder.currentTime = { 2.5 }
       $0.audioRecorder.requestRecordPermission = { true }
       $0.audioRecorder.startRecording = { _ in
@@ -169,10 +168,9 @@ final class VoiceMemosTests: XCTestCase {
 
   func testPermissionDenied() async {
     var didOpenSettings = false
-    let store = TestStore(
-      initialState: VoiceMemos.State(),
-      reducer: VoiceMemos()
-    ) {
+    let store = TestStore(initialState: VoiceMemos.State()) {
+      VoiceMemos()
+    } withDependencies: {
       $0.audioRecorder.requestRecordPermission = { false }
       $0.openSettings = { @MainActor in didOpenSettings = true }
     }
@@ -193,10 +191,9 @@ final class VoiceMemosTests: XCTestCase {
     struct SomeError: Error, Equatable {}
     let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
 
-    let store = TestStore(
-      initialState: VoiceMemos.State(),
-      reducer: VoiceMemos()
-    ) {
+    let store = TestStore(initialState: VoiceMemos.State()) {
+      VoiceMemos()
+    } withDependencies: {
       $0.audioRecorder.requestRecordPermission = { true }
       $0.audioRecorder.startRecording = { _ in
         try await didFinish.stream.first { _ in true }!
@@ -233,10 +230,9 @@ final class VoiceMemosTests: XCTestCase {
       struct SomeError: Error, Equatable {}
       let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
 
-      let store = TestStore(
-        initialState: VoiceMemos.State(),
-        reducer: VoiceMemos()
-      ) {
+      let store = TestStore(initialState: VoiceMemos.State()) {
+        VoiceMemos()
+      } withDependencies: {
         $0.audioRecorder.currentTime = { 2.5 }
         $0.audioRecorder.requestRecordPermission = { true }
         $0.audioRecorder.startRecording = { _ in
@@ -274,9 +270,10 @@ final class VoiceMemosTests: XCTestCase {
             url: url
           )
         ]
-      ),
-      reducer: VoiceMemos()
+      )
     ) {
+      VoiceMemos()
+    } withDependencies: {
       $0.audioPlayer.play = { _ in
         try await self.clock.sleep(for: .milliseconds(1_250))
         return true
@@ -317,9 +314,10 @@ final class VoiceMemosTests: XCTestCase {
             url: url
           )
         ]
-      ),
-      reducer: VoiceMemos()
+      )
     ) {
+      VoiceMemos()
+    } withDependencies: {
       $0.audioPlayer.play = { _ in throw SomeError() }
       $0.continuousClock = self.clock
     }
@@ -350,9 +348,10 @@ final class VoiceMemosTests: XCTestCase {
             url: url
           )
         ]
-      ),
-      reducer: VoiceMemos()
-    )
+      )
+    ) {
+      VoiceMemos()
+    }
 
     await store.send(.voiceMemos(id: url, action: .playButtonTapped)) {
       $0.voiceMemos[id: url]?.mode = .notPlaying
@@ -372,9 +371,10 @@ final class VoiceMemosTests: XCTestCase {
             url: url
           )
         ]
-      ),
-      reducer: VoiceMemos()
-    )
+      )
+    ) {
+      VoiceMemos()
+    }
 
     await store.send(.onDelete([0])) {
       $0.voiceMemos = []
@@ -446,9 +446,10 @@ final class VoiceMemosTests: XCTestCase {
             url: url
           )
         ]
-      ),
-      reducer: VoiceMemos()
+      )
     ) {
+      VoiceMemos()
+    } withDependencies: {
       $0.audioPlayer.play = { _ in try await Task.never() }
       $0.continuousClock = self.clock
     }
