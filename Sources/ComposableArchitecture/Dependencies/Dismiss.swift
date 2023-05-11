@@ -62,7 +62,9 @@ extension DependencyValues {
 /// >
 /// > ```swift
 /// > let isDismissInvoked = LockIsolated(false)
-/// > let store = Store(initialState: Child.State(), reducer: Child()) {
+/// > let store = Store(initialState: Child.State()) {
+/// >   Child()
+/// > } withDependencies: {
 /// >   $0.dismiss = { isDismissInvoked.setValue(true) }
 /// > }
 /// >

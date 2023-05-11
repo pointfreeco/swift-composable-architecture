@@ -128,7 +128,9 @@ final class ForEachReducerTests: BaseTCATestCase {
           }
 
           let clock = TestClock()
-          let store = TestStore(initialState: Timers.State(), reducer: Timers()) {
+          let store = TestStore(initialState: Timers.State()) {
+            Timers()
+          } withDependencies: {
             $0.uuid = .incrementing
             $0.continuousClock = clock
           }

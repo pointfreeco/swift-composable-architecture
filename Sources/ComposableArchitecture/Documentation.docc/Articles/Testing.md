@@ -686,7 +686,9 @@ is sent a model is append to the `values` array:
 
 ```swift
 func testAdd() async {
-  let store = TestStore(initialState: Feature.State(), reducer: Feature()) {
+  let store = TestStore(initialState: Feature.State()) {
+    Feature()
+  } withDependencies: {
     $0.uuid = .incrementing
   }
   store.exhaustivity = .off(showSkippedAssertions: true)

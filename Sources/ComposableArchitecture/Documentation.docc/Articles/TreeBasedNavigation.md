@@ -520,9 +520,10 @@ func testDismissal() {
   let store = TestStore(
     initialState: Feature.State(
       counter: CounterFeature.State(count: 3)
-    ),
-    reducer: CounterFeature()
-  )
+    )
+  ) {
+    CounterFeature()
+  }
 }
 ```
 
@@ -574,9 +575,10 @@ func testDismissal() {
   let store = TestStore(
     initialState: Feature.State(
       counter: CounterFeature.State(count: 3)
-    ),
-    reducer: CounterFeature()
-  )
+    )
+  ) {
+    CounterFeature()
+  }
   store.exhaustivity = .off
 
   await store.send(.counter(.presented(.incrementButtonTapped)))

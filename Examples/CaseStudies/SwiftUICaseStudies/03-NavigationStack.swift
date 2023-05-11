@@ -477,9 +477,10 @@ struct NavigationStack_Previews: PreviewProvider {
           path: StackState([
             .screenA(ScreenA.State())
           ])
-        ),
-        reducer: NavigationDemo()
-      )
+        )
+      ) {
+        NavigationDemo()
+      }
     )
   }
 }

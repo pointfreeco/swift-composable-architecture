@@ -8,10 +8,9 @@ final class AppFeatureTests: XCTestCase {
   func testDelete() async throws {
     let standup = Standup.mock
 
-    let store = TestStore(
-      initialState: AppFeature.State(),
-      reducer: AppFeature()
-    ) {
+    let store = TestStore(initialState: AppFeature.State()) {
+      AppFeature()
+    } withDependencies: {
       $0.continuousClock = ImmediateClock()
       $0.dataManager = .mock(
         initialData: try! JSONEncoder().encode([standup])
@@ -45,10 +44,9 @@ final class AppFeatureTests: XCTestCase {
   func testDetailEdit() async throws {
     let standup = Standup.mock
 
-    let store = TestStore(
-      initialState: AppFeature.State(),
-      reducer: AppFeature()
-    ) {
+    let store = TestStore(initialState: AppFeature.State()) {
+      AppFeature()
+    } withDependencies: {
       $0.continuousClock = ImmediateClock()
       $0.dataManager = .mock(
         initialData: try! JSONEncoder().encode([standup])
@@ -117,9 +115,10 @@ final class AppFeatureTests: XCTestCase {
           .detail(StandupDetail.State(standup: standup)),
           .record(RecordMeeting.State(standup: standup)),
         ])
-      ),
-      reducer: AppFeature()
+      )
     ) {
+      AppFeature()
+    } withDependencies: {
       $0.dataManager = .mock(initialData: try! JSONEncoder().encode([standup]))
       $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
       $0.continuousClock = ImmediateClock()

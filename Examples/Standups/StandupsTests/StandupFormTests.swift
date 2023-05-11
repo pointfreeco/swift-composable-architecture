@@ -13,9 +13,10 @@ final class StandupFormTests: XCTestCase {
           attendees: [],
           title: "Engineering"
         )
-      ),
-      reducer: StandupForm()
+      )
     ) {
+      StandupForm()
+    } withDependencies: {
       $0.uuid = .incrementing
     }
 
@@ -48,11 +49,12 @@ final class StandupFormTests: XCTestCase {
           ],
           title: "Engineering"
         )
-      ),
-      reducer: StandupForm()
-    )
-
-    store.dependencies.uuid = .incrementing
+      )
+    ) {
+      StandupForm()
+    } withDependencies: {
+      $0.uuid = .incrementing
+    }
 
     await store.send(.deleteAttendees(atOffsets: [0])) {
       $0.focus = .attendee($0.standup.attendees[1].id)

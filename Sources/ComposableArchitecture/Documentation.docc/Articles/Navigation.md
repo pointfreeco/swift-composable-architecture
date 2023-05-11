@@ -117,9 +117,10 @@ InventoryView(
           }
         )
       )
-    ),
-    reducer: InventoryFeature()
-  )
+    )
+  ) {
+    InventoryFeature()
+  }
 )
 ```
 

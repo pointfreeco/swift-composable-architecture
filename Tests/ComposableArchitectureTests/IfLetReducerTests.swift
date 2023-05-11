@@ -91,10 +91,9 @@ final class IfLetReducerTests: BaseTCATestCase {
         }
         await withMainSerialExecutor {
           let clock = TestClock()
-          let store = TestStore(
-            initialState: Parent.State(),
-            reducer: Parent()
-          ) {
+          let store = TestStore(initialState: Parent.State()) {
+            Parent()
+          } withDependencies: {
             $0.continuousClock = clock
           }
           await store.send(.childButtonTapped) {
@@ -187,10 +186,9 @@ final class IfLetReducerTests: BaseTCATestCase {
         }
         await withMainSerialExecutor {
           let clock = TestClock()
-          let store = TestStore(
-            initialState: Parent.State(),
-            reducer: Parent()
-          ) {
+          let store = TestStore(initialState: Parent.State()) {
+            Parent()
+          } withDependencies: {
             $0.continuousClock = clock
           }
           await store.send(.startButtonTapped) {
@@ -238,10 +236,9 @@ final class IfLetReducerTests: BaseTCATestCase {
           }
         }
         await withMainSerialExecutor {
-          let store = TestStore(
-            initialState: Parent.State(),
-            reducer: Parent()
-          )
+          let store = TestStore(initialState: Parent.State()) {
+            Parent()
+          }
           await store.send(.tap) {
             $0.alert = AlertState { TextState("Hi!") }
           }

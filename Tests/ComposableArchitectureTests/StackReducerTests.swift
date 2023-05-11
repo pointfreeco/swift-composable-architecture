@@ -68,7 +68,9 @@ final class StackReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State(), reducer: Parent())
+    let store = TestStore(initialState: Parent.State()) {
+      Parent()
+    }
 
     await store.send(.pushChild) {
       $0.children.append(Child.State())
@@ -118,7 +120,9 @@ final class StackReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State(), reducer: Parent())
+    let store = TestStore(initialState: Parent.State()) {
+      Parent()
+    }
 
     await store.send(.pushChild) {
       $0.children.append(Child.State())
@@ -174,7 +178,9 @@ final class StackReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State(), reducer: Parent())
+    let store = TestStore(initialState: Parent.State()) {
+      Parent()
+    }
 
     await store.send(.pushChild) {
       $0.children.append(Child.State())
@@ -208,10 +214,9 @@ final class StackReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(
-      initialState: Parent.State(children: StackState([Child.State()])),
-      reducer: Parent()
-    )
+    let store = TestStore(initialState: Parent.State(children: StackState([Child.State()]))) {
+      Parent()
+    }
 
     XCTExpectFailure {
       $0.compactDescription == """
@@ -265,7 +270,9 @@ final class StackReducerTests: BaseTCATestCase {
     }
 
     let mainQueue = DispatchQueue.test
-    let store = TestStore(initialState: Parent.State(), reducer: Parent()) {
+    let store = TestStore(initialState: Parent.State()) {
+      Parent()
+    } withDependencies: {
       $0.mainQueue = mainQueue.eraseToAnyScheduler()
     }
 
@@ -335,9 +342,9 @@ final class StackReducerTests: BaseTCATestCase {
 
     var children = StackState<Child.State>()
     children.append(Child.State())
-    let store = TestStore(
-      initialState: Parent.State(children: children), reducer: Parent()
-    )
+    let store = TestStore(initialState: Parent.State(children: children)) {
+      Parent()
+    }
 
     await store.send(.children(.element(id: 0, action: .closeButtonTapped)))
     await store.receive(.children(.popFrom(id: 0))) {
@@ -418,7 +425,9 @@ final class StackReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State(), reducer: Parent()._printChanges())
+    let store = TestStore(initialState: Parent.State()) {
+      Parent()
+    }
     await store.send(.pushChild1) {
       $0.path.append(.child1(Child.State()))
     }
@@ -469,10 +478,9 @@ final class StackReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(
-      initialState: Parent.State(),
-      reducer: Parent()
-    )
+    let store = TestStore(initialState: Parent.State()) {
+      Parent()
+    }
     await store.send(.pushChild) {
       $0.path.append(Child.State())
     }
@@ -560,10 +568,9 @@ final class StackReducerTests: BaseTCATestCase {
     path.append(.child1(Child.State()))
     path.append(.child2(Child.State()))
     let mainQueue = DispatchQueue.test
-    let store = TestStore(
-      initialState: Parent.State(path: path),
-      reducer: Parent()
-    ) {
+    let store = TestStore(initialState: Parent.State(path: path)) {
+      Parent()
+    } withDependencies: {
       $0.mainQueue = mainQueue.eraseToAnyScheduler()
     }
 
@@ -661,9 +668,10 @@ final class StackReducerTests: BaseTCATestCase {
           .child1(Child.State()),
           .child2(Child.State()),
         ])
-      ),
-      reducer: Parent()
+      )
     ) {
+      Parent()
+    } withDependencies: {
       $0.mainQueue = mainQueue.eraseToAnyScheduler()
     }
 
@@ -741,10 +749,9 @@ final class StackReducerTests: BaseTCATestCase {
 
     var path = StackState<Int>()
     path.append(1)
-    let store = TestStore(
-      initialState: Parent.State(path: path),
-      reducer: Parent()
-    )
+    let store = TestStore(initialState: Parent.State(path: path)) {
+      Parent()
+    }
     await store.send(.path(.element(id: 999, action: ())))
   }
 #endif
@@ -774,10 +781,9 @@ final class StackReducerTests: BaseTCATestCase {
 
     var path = StackState<Int>()
     path.append(1)
-    let store = TestStore(
-      initialState: Parent.State(path: path),
-      reducer: Parent()
-    )
+    let store = TestStore(initialState: Parent.State(path: path)) {
+      Parent()
+    }
     await store.send(.path(.popFrom(id: 999)))
   }
   #endif
@@ -805,10 +811,9 @@ final class StackReducerTests: BaseTCATestCase {
 
     var path = StackState<Child.State>()
     path.append(Child.State())
-    let store = TestStore(
-      initialState: Parent.State(path: path),
-      reducer: Parent()
-    )
+    let store = TestStore(initialState: Parent.State(path: path)) {
+      Parent()
+    }
     let line = #line
     await store.send(.path(.element(id: 0, action: .tap)))
 
@@ -880,9 +885,10 @@ final class StackReducerTests: BaseTCATestCase {
           Child.State(count: 1),
           Child.State(count: 2),
         ])
-      ),
-      reducer: Parent()
+      )
     ) {
+      Parent()
+    } withDependencies: {
       $0.mainQueue = mainQueue.eraseToAnyScheduler()
     }
 
@@ -924,9 +930,10 @@ final class StackReducerTests: BaseTCATestCase {
         children: StackState([
           Child.State()
         ])
-      ),
-      reducer: Parent()
-    )
+      )
+    ) {
+      Parent()
+    }
 
     await store.send(.child(.element(id: 0, action: .tap)))
     await store.send(.child(.popFrom(id: 0))) {
@@ -962,10 +969,9 @@ final class StackReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(
-      initialState: Parent.State(),
-      reducer: Parent()
-    )
+    let store = TestStore(initialState: Parent.State()) {
+      Parent()
+    }
 
     await store.send(.child(.push(id: 0, state: Child.State()))) {
       $0.children[id: 0] = Child.State()
@@ -1008,7 +1014,9 @@ final class StackReducerTests: BaseTCATestCase {
     }
     let line = #line - 3
 
-    let store = TestStore(initialState: Parent.State(), reducer: Parent())
+    let store = TestStore(initialState: Parent.State()) {
+      Parent()
+    }
 
     XCTExpectFailure {
       $0.compactDescription == """
@@ -1045,7 +1053,9 @@ final class StackReducerTests: BaseTCATestCase {
     }
     let line = #line - 3
 
-    let store = TestStore(initialState: Parent.State(), reducer: Parent())
+    let store = TestStore(initialState: Parent.State()) {
+      Parent()
+    }
 
     XCTExpectFailure {
       $0.compactDescription == """
@@ -1083,7 +1093,9 @@ final class StackReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State(), reducer: Parent())
+    let store = TestStore(initialState: Parent.State()) {
+      Parent()
+    }
 
     XCTExpectFailure {
       $0.compactDescription == """
@@ -1131,10 +1143,9 @@ final class StackReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(
-      initialState: Feature.State(),
-      reducer: Feature()
-    )
+    let store = TestStore(initialState: Feature.State()) {
+      Feature()
+    }
 
     await store.send(.buttonTapped) {
       $0.path[id: 0] = 1

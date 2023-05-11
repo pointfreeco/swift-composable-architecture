@@ -6,15 +6,12 @@ import XCTest
 @MainActor
 final class StandupsListTests: XCTestCase {
   func testAdd() async throws {
-    let store = withDependencies {
+    let store = TestStore(initialState: StandupsList.State()) {
+      StandupsList()
+    } withDependencies: {
       $0.continuousClock = ImmediateClock()
       $0.dataManager = .mock()
       $0.uuid = .incrementing
-    } operation: {
-      TestStore(
-        initialState: StandupsList.State(),
-        reducer: StandupsList()
-      )
     }
 
     await store.send(.addStandupButtonTapped) {
@@ -69,9 +66,10 @@ final class StandupsListTests: XCTestCase {
             )
           )
         )
-      ),
-      reducer: StandupsList()
+      )
     ) {
+      StandupsList()
+    } withDependencies: {
       $0.continuousClock = ImmediateClock()
       $0.dataManager = .mock()
       $0.uuid = .incrementing
@@ -92,10 +90,9 @@ final class StandupsListTests: XCTestCase {
   }
 
   func testLoadingDataDecodingFailed() async throws {
-    let store = TestStore(
-      initialState: StandupsList.State(),
-      reducer: StandupsList()
-    ) {
+    let store = TestStore(initialState: StandupsList.State()) {
+      StandupsList()
+    } withDependencies: {
       $0.continuousClock = ImmediateClock()
       $0.dataManager = .mock(
         initialData: Data("!@#$ BAD DATA %^&*()".utf8)
@@ -115,10 +112,9 @@ final class StandupsListTests: XCTestCase {
   }
 
   func testLoadingDataFileNotFound() async throws {
-    let store = TestStore(
-      initialState: StandupsList.State(),
-      reducer: StandupsList()
-    ) {
+    let store = TestStore(initialState: StandupsList.State()) {
+      StandupsList()
+    } withDependencies: {
       $0.continuousClock = ImmediateClock()
       $0.dataManager.load = { _ in
         struct FileNotFound: Error {}

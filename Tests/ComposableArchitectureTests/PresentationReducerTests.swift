@@ -50,10 +50,9 @@ import XCTest
         }
       }
 
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      )
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      }
 
       await store.send(.presentChild) {
         $0.child = Child.State()
@@ -117,10 +116,9 @@ import XCTest
         }
       }
 
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      )
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      }
 
       await store.send(.presentChild) {
         $0.child = Child.State()
@@ -190,10 +188,9 @@ import XCTest
         }
       }
 
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      )
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      }
 
       await store.send(.presentChild) {
         $0.child = Child.State()
@@ -262,10 +259,9 @@ import XCTest
           }
 
           let clock = TestClock()
-          let store = TestStore(
-            initialState: Parent.State(),
-            reducer: Parent()
-          ) {
+          let store = TestStore(initialState: Parent.State()) {
+            Parent()
+          } withDependencies: {
             $0.continuousClock = clock
           }
 
@@ -350,10 +346,9 @@ import XCTest
           }
 
           let clock = TestClock()
-          let store = TestStore(
-            initialState: Parent.State(),
-            reducer: Parent()
-          ) {
+          let store = TestStore(initialState: Parent.State()) {
+            Parent()
+          } withDependencies: {
             $0.continuousClock = clock
           }
 
@@ -434,10 +429,9 @@ import XCTest
           }
 
           let clock = TestClock()
-          let store = TestStore(
-            initialState: Parent.State(),
-            reducer: Parent()
-          ) {
+          let store = TestStore(initialState: Parent.State()) {
+            Parent()
+          } withDependencies: {
             $0.continuousClock = clock
             $0.uuid = .incrementing
           }
@@ -513,10 +507,9 @@ import XCTest
         }
       }
 
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      )
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      }
 
       await store.send(.presentChild) {
         $0.child = Child.State()
@@ -552,10 +545,9 @@ import XCTest
           }
         }
 
-        let store = TestStore(
-          initialState: Parent.State(),
-          reducer: Parent()
-        )
+        let store = TestStore(initialState: Parent.State()) {
+          Parent()
+        }
 
         await store.send(.presentAlert) {
           $0.alert = AlertState {
@@ -593,10 +585,9 @@ import XCTest
           }
         }
 
-        let store = TestStore(
-          initialState: Parent.State(),
-          reducer: Parent()
-        )
+        let store = TestStore(initialState: Parent.State()) {
+          Parent()
+        }
 
         await store.send(.presentAlert) {
           $0.alert = AlertState {
@@ -647,10 +638,9 @@ import XCTest
           }
         }
 
-        let store = TestStore(
-          initialState: Parent.State(),
-          reducer: Parent()
-        )
+        let store = TestStore(initialState: Parent.State()) {
+          Parent()
+        }
 
         await store.send(.presentAlert) {
           $0.alert = AlertState {
@@ -720,10 +710,9 @@ import XCTest
           }
         }
 
-        let store = TestStore(
-          initialState: Parent.State(child: Child.State()),
-          reducer: Parent()
-        )
+        let store = TestStore(initialState: Parent.State(child: Child.State())) {
+          Parent()
+        }
 
         await store.send(.child(.presented(.closeButtonTapped)))
         await store.receive(.child(.dismiss)) {
@@ -828,10 +817,9 @@ import XCTest
           }
 
           let clock = TestClock()
-          let store = TestStore(
-            initialState: Parent.State(),
-            reducer: Parent()
-          ) {
+          let store = TestStore(initialState: Parent.State()) {
+            Parent()
+          } withDependencies: {
             $0.continuousClock = clock
             $0.uuid = .incrementing
           }
@@ -958,10 +946,9 @@ import XCTest
       }
 
       await withMainSerialExecutor {
-        let store = TestStore(
-          initialState: Parent.State(),
-          reducer: Parent()
-        )
+        let store = TestStore(initialState: Parent.State()) {
+          Parent()
+        }
         let presentationTask = await store.send(.presentChild) {
           $0.child = Child.State()
         }
@@ -1051,10 +1038,9 @@ import XCTest
       }
 
       await withMainSerialExecutor {
-        let store = TestStore(
-          initialState: Parent.State(),
-          reducer: Parent()
-        )
+        let store = TestStore(initialState: Parent.State()) {
+          Parent()
+        }
         let childPresentationTask = await store.send(.presentChild) {
           $0.child = Child.State()
         }
@@ -1132,10 +1118,9 @@ import XCTest
 
         await withMainSerialExecutor {
           let clock = TestClock()
-          let store = TestStore(
-            initialState: Parent.State(),
-            reducer: Parent()
-          ) {
+          let store = TestStore(initialState: Parent.State()) {
+            Parent()
+          } withDependencies: {
             $0.continuousClock = clock
           }
           await store.send(.presentChildren) {
@@ -1228,10 +1213,9 @@ import XCTest
 
         await withMainSerialExecutor {
           let clock = TestClock()
-          let store = TestStore(
-            initialState: Parent.State(),
-            reducer: Parent()
-          ) {
+          let store = TestStore(initialState: Parent.State()) {
+            Parent()
+          } withDependencies: {
             $0.continuousClock = clock
           }
           await store.send(.presentChildren) {
@@ -1333,10 +1317,9 @@ import XCTest
 
         await withMainSerialExecutor {
           let clock = TestClock()
-          let store = TestStore(
-            initialState: Parent.State(),
-            reducer: Parent()
-          ) {
+          let store = TestStore(initialState: Parent.State()) {
+            Parent()
+          } withDependencies: {
             $0.continuousClock = clock
             $0.uuid = .incrementing
           }
@@ -1431,10 +1414,9 @@ import XCTest
         }
 
         let clock = TestClock()
-        let store = TestStore(
-          initialState: Parent.State(),
-          reducer: Parent()
-        ) {
+        let store = TestStore(initialState: Parent.State()) {
+          Parent()
+        } withDependencies: {
           $0.continuousClock = clock
         }
         await store.send(.presentChild) {
@@ -1530,10 +1512,9 @@ import XCTest
 
         await withMainSerialExecutor {
           let clock = TestClock()
-          let store = TestStore(
-            initialState: Parent.State(),
-            reducer: Parent()
-          ) {
+          let store = TestStore(initialState: Parent.State()) {
+            Parent()
+          } withDependencies: {
             $0.continuousClock = clock
           }
           await store.send(.presentChild) {
@@ -1585,10 +1566,9 @@ import XCTest
           }
         }
 
-        let store = TestStore(
-          initialState: Parent.State(),
-          reducer: Parent()
-        )
+        let store = TestStore(initialState: Parent.State()) {
+          Parent()
+        }
 
         XCTExpectFailure {
           $0.compactDescription == """
@@ -1645,10 +1625,9 @@ import XCTest
           }
         }
 
-        let store = TestStore(
-          initialState: Parent.State(),
-          reducer: Parent()
-        )
+        let store = TestStore(initialState: Parent.State()) {
+          Parent()
+        }
 
         XCTExpectFailure {
           $0.compactDescription == """
@@ -1707,10 +1686,9 @@ import XCTest
         }
       }
 
-      let store = TestStore(
-        initialState: Parent.State(child: Child.State()),
-        reducer: Parent()
-      )
+      let store = TestStore(initialState: Parent.State(child: Child.State())) {
+        Parent()
+      }
 
       await store.send(.child(.dismiss)) {
         $0.child = nil
@@ -1756,9 +1734,10 @@ import XCTest
       let store = TestStore(
         initialState: Parent.State(
           child: Child.State(id: UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")!)
-        ),
-        reducer: Parent()
+        )
       ) {
+        Parent()
+      } withDependencies: {
         $0.uuid = .incrementing
       }
 
@@ -1821,10 +1800,9 @@ import XCTest
         }
       }
 
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      )
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      }
 
       await store.send(.presentChild) {
         $0.child = Child.State()
@@ -1907,10 +1885,9 @@ import XCTest
       }
 
       let mainQueue = DispatchQueue.test
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      ) {
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      } withDependencies: {
         $0.uuid = .incrementing
         $0.mainQueue = mainQueue.eraseToAnyScheduler()
       }
@@ -2009,10 +1986,9 @@ import XCTest
           }
         }
 
-        let store = TestStore(
-          initialState: Feature.State(),
-          reducer: Feature()
-        )
+        let store = TestStore(initialState: Feature.State()) {
+          Feature()
+        }
 
         await store.send(.showAlert) {
           $0.destination = .alert(Feature.alert)
@@ -2072,10 +2048,9 @@ import XCTest
         }
       }
 
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      )
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      }
 
       await store.send(.presentChild) {
         $0.child = Child.State()
@@ -2115,10 +2090,9 @@ import XCTest
         }
       }
 
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      )
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      }
 
       await store.send(.presentChild) {
         $0.child = Child.State()
@@ -2214,10 +2188,9 @@ import XCTest
       }
 
       let mainQueue = DispatchQueue.test
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      ) {
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      } withDependencies: {
         $0.mainQueue = mainQueue.eraseToAnyScheduler()
       }
 

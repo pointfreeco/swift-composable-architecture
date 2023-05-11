@@ -130,10 +130,9 @@ struct EditStandup_Previews: PreviewProvider {
   static var previews: some View {
     NavigationStack {
       StandupFormView(
-        store: Store(
-          initialState: StandupForm.State(standup: .mock),
-          reducer: StandupForm()
-        )
+        store: Store(initialState: StandupForm.State(standup: .mock)) {
+          StandupForm()
+        }
       )
     }
   }

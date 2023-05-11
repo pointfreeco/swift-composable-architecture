@@ -15,10 +15,9 @@ final class VoiceMemosTests: XCTestCase {
     try await withMainSerialExecutor {
 
       let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
-      let store = TestStore(
-        initialState: VoiceMemos.State(),
-        reducer: VoiceMemos()
-      ) {
+      let store = TestStore(initialState: VoiceMemos.State()) {
+        VoiceMemos()
+      } withDependencies: {
         $0.audioPlayer.play = { _ in
           try await self.clock.sleep(for: .milliseconds(2_500))
           return true
@@ -408,9 +407,10 @@ final class VoiceMemosTests: XCTestCase {
             url: URL(fileURLWithPath: "pointfreeco/3.m4a")
           ),
         ]
-      ),
-      reducer: VoiceMemos()
-    )
+      )
+    ) {
+      VoiceMemos()
+    }
 
     await store.send(.onDelete([1])) {
       $0.voiceMemos = [

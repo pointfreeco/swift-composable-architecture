@@ -390,9 +390,10 @@ func testDismissal() {
       path: StackState([
         CounterFeature.State(count: 3)
       ])
-    ),
-    reducer: CounterFeature()
-  )
+    )
+  ) {
+    CounterFeature()
+  }
 }
 ```
 
@@ -486,9 +487,10 @@ func testDismissal() {
       path: StackState([
         CounterFeature.State(count: 3)
       ])
-    ),
-    reducer: CounterFeature()
-  )
+    )
+  ) {
+    CounterFeature()
+  }
   store.exhaustivity = .off
 
   await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) 

@@ -6,10 +6,9 @@ import XCTest
 @MainActor
 final class StandupDetailTests: XCTestCase {
   func testSpeechRestricted() async {
-    let store = TestStore(
-      initialState: StandupDetail.State(standup: .mock),
-      reducer: StandupDetail()
-    ) {
+    let store = TestStore(initialState: StandupDetail.State(standup: .mock)) {
+      StandupDetail()
+    } withDependencies: {
       $0.speechClient.authorizationStatus = { .restricted }
     }
 
@@ -19,10 +18,9 @@ final class StandupDetailTests: XCTestCase {
   }
 
   func testSpeechDenied() async throws {
-    let store = TestStore(
-      initialState: StandupDetail.State(standup: .mock),
-      reducer: StandupDetail()
-    ) {
+    let store = TestStore(initialState: StandupDetail.State(standup: .mock)) {
+      StandupDetail()
+    } withDependencies: {
       $0.speechClient.authorizationStatus = {
         .denied
       }
@@ -40,9 +38,10 @@ final class StandupDetailTests: XCTestCase {
       initialState: StandupDetail.State(
         destination: .alert(.speechRecognitionDenied),
         standup: .mock
-      ),
-      reducer: StandupDetail()
+      )
     ) {
+      StandupDetail()
+    } withDependencies: {
       $0.openSettings = { settingsOpened.setValue(true) }
       $0.speechClient.authorizationStatus = { .denied }
     }
@@ -58,9 +57,10 @@ final class StandupDetailTests: XCTestCase {
       initialState: StandupDetail.State(
         destination: .alert(.speechRecognitionDenied),
         standup: .mock
-      ),
-      reducer: StandupDetail()
+      )
     ) {
+      StandupDetail()
+    } withDependencies: {
       $0.speechClient.authorizationStatus = { .denied }
     }
 
@@ -72,10 +72,9 @@ final class StandupDetailTests: XCTestCase {
   }
 
   func testSpeechAuthorized() async throws {
-    let store = TestStore(
-      initialState: StandupDetail.State(standup: .mock),
-      reducer: StandupDetail()
-    ) {
+    let store = TestStore(initialState: StandupDetail.State(standup: .mock)) {
+      StandupDetail()
+    } withDependencies: {
       $0.speechClient.authorizationStatus = { .authorized }
     }
 
@@ -85,10 +84,9 @@ final class StandupDetailTests: XCTestCase {
   }
 
   func testEdit() async {
-    let store = TestStore(
-      initialState: StandupDetail.State(standup: .mock),
-      reducer: StandupDetail()
-    ) {
+    let store = TestStore(initialState: StandupDetail.State(standup: .mock)) {
+      StandupDetail()
+    } withDependencies: {
       $0.uuid = .incrementing
     }
 

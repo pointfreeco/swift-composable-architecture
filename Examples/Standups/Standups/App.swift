@@ -13,11 +13,10 @@ struct StandupsApp: App {
         UITestingView()
       } else {
         AppView(
-          store: Store(
-            initialState: AppFeature.State(),
-            reducer: AppFeature()
+          store: Store(initialState: AppFeature.State()) {
+            AppFeature()
               ._printChanges()
-          )
+          }
         )
       }
     }
@@ -27,10 +26,9 @@ struct StandupsApp: App {
 struct UITestingView: View {
   var body: some View {
     AppView(
-      store: Store(
-        initialState: AppFeature.State(),
-        reducer: AppFeature()
-      ) {
+      store: Store(initialState: AppFeature.State()) {
+        AppFeature()
+      } withDependencies: {
         $0.dataManager = .mock()
       }
     )

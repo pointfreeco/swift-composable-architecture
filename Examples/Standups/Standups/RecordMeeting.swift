@@ -377,10 +377,9 @@ struct RecordMeeting_Previews: PreviewProvider {
   static var previews: some View {
     NavigationStack {
       RecordMeetingView(
-        store: Store(
-          initialState: RecordMeeting.State(standup: .mock),
-          reducer: RecordMeeting()
-        )
+        store: Store(initialState: RecordMeeting.State(standup: .mock)) {
+          RecordMeeting()
+        }
       )
     }
   }
