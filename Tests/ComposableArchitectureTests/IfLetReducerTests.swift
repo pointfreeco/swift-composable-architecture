@@ -89,7 +89,7 @@ final class IfLetReducerTests: BaseTCATestCase {
             }
           }
         }
-        await _withMainSerialExecutor {
+        await withMainSerialExecutor {
           let clock = TestClock()
           let store = TestStore(
             initialState: Parent.State(),
@@ -185,7 +185,7 @@ final class IfLetReducerTests: BaseTCATestCase {
             }
           }
         }
-        await _withMainSerialExecutor {
+        await withMainSerialExecutor {
           let clock = TestClock()
           let store = TestStore(
             initialState: Parent.State(),
@@ -237,7 +237,7 @@ final class IfLetReducerTests: BaseTCATestCase {
             }
           }
         }
-        await _withMainSerialExecutor {
+        await withMainSerialExecutor {
           let store = TestStore(
             initialState: Parent.State(),
             reducer: Parent()
