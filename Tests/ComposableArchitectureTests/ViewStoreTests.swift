@@ -41,10 +41,10 @@ final class ViewStoreTests: BaseTCATestCase {
       reducer: EmptyReducer<State, Void>()
     )
 
-    let store1 = store.scope(state: { $0 })
-    let store2 = store1.scope(state: { $0 })
-    let store3 = store2.scope(state: { $0 })
-    let store4 = store3.scope(state: { $0 })
+    let store1 = store.scope(state: { $0 }, action: { $0 })
+    let store2 = store1.scope(state: { $0 }, action: { $0 })
+    let store3 = store2.scope(state: { $0 }, action: { $0 })
+    let store4 = store3.scope(state: { $0 }, action: { $0 })
 
     let viewStore1 = ViewStore(store1)
     let viewStore2 = ViewStore(store2)

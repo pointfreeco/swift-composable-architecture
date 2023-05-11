@@ -29,7 +29,7 @@ public final class GameViewController: UIViewController {
 
   public init(store: StoreOf<Game>) {
     self.store = store
-    self.viewStore = ViewStore(store.scope(state: ViewState.init))
+    self.viewStore = ViewStore(store, observe: ViewState.init)
     super.init(nibName: nil, bundle: nil)
   }
 

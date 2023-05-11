@@ -75,7 +75,7 @@
 
       let store = Store<Int, Void>(initialState: 0, reducer: EmptyReducer())
       Task {
-        _ = store.scope(state: { $0 })
+        _ = store.scope(state: { $0 }, action: { $0 })
       }
       _ = XCTWaiter.wait(for: [.init()], timeout: 0.5)
     }

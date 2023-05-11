@@ -5,6 +5,23 @@ import XCTestDynamicOverlay
 
 // MARK: - Deprecated after 0.52.0
 
+extension Store {
+  @available(
+    *,
+    deprecated,
+    message: """
+      'Store.scope' requires an explicit 'action' transform and is intended to be used to transform a store of a parent domain into a store of a child domain.
+
+      When transforming store state into view state, use the 'observe' parameter when constructing a view store.
+      """
+  )
+  public func scope<ChildState>(
+    state toChildState: @escaping (State) -> ChildState
+  ) -> Store<ChildState, Action> {
+    self.scope(state: toChildState, action: { $0 })
+  }
+}
+
 extension EffectPublisher {
   @available(
     *,
@@ -856,7 +873,7 @@ extension ForEachStore {
   {
     let data = store.state.value
     self.data = data
-    self.content = WithViewStore(store.scope(state: { $0.map { $0[keyPath: id] } })) { viewStore in
+    self.content = WithViewStore(store, observe: { $0.map { $0[keyPath: id] } }) { viewStore in
       ForEach(Array(viewStore.state.enumerated()), id: \.element) { index, _ in
         content(
           store.scope(

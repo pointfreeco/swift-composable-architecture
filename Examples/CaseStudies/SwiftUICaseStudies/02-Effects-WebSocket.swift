@@ -180,7 +180,7 @@ struct WebSocketView: View {
           Text("Received messages")
         }
       }
-      .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
+      .alert(self.store.scope(state: \.alert, action: { $0 }), dismiss: .alertDismissed)
       .navigationTitle("Web Socket")
     }
   }

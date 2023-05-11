@@ -53,7 +53,7 @@ final class StoreTests: BaseTCATestCase {
 
     let parentStore = Store(initialState: 0, reducer: counterReducer)
     let parentViewStore = ViewStore(parentStore)
-    let childStore = parentStore.scope(state: String.init)
+    let childStore = parentStore.scope(state: String.init, action: { $0 })
 
     var values: [String] = []
     ViewStore(childStore).publisher
@@ -74,7 +74,7 @@ final class StoreTests: BaseTCATestCase {
     })
 
     let parentStore = Store(initialState: 0, reducer: counterReducer)
-    let childStore = parentStore.scope(state: String.init)
+    let childStore = parentStore.scope(state: String.init, action: { $0 })
     let childViewStore = ViewStore(childStore)
 
     var values: [Int] = []
@@ -97,10 +97,13 @@ final class StoreTests: BaseTCATestCase {
 
     var numCalls1 = 0
     _ = Store(initialState: 0, reducer: counterReducer)
-      .scope(state: { (count: Int) -> Int in
-        numCalls1 += 1
-        return count
-      })
+      .scope(
+        state: { (count: Int) -> Int in
+          numCalls1 += 1
+          return count
+        },
+        action: { $0 }
+      )
 
     XCTAssertEqual(numCalls1, 1)
   }
@@ -118,22 +121,31 @@ final class StoreTests: BaseTCATestCase {
     let store1 = Store(initialState: 0, reducer: counterReducer)
     let store2 =
       store1
-      .scope(state: { (count: Int) -> Int in
-        numCalls1 += 1
-        return count
-      })
+      .scope(
+        state: { (count: Int) -> Int in
+          numCalls1 += 1
+          return count
+        },
+        action: { $0 }
+      )
     let store3 =
       store2
-      .scope(state: { (count: Int) -> Int in
-        numCalls2 += 1
-        return count
-      })
+      .scope(
+        state: { (count: Int) -> Int in
+          numCalls2 += 1
+          return count
+        },
+        action: { $0 }
+      )
     let store4 =
       store3
-      .scope(state: { (count: Int) -> Int in
-        numCalls3 += 1
-        return count
-      })
+      .scope(
+        state: { (count: Int) -> Int in
+          numCalls3 += 1
+          return count
+        },
+        action: { $0 }
+      )
 
     let viewStore1 = ViewStore(store1)
     let viewStore2 = ViewStore(store2)
@@ -243,7 +255,7 @@ final class StoreTests: BaseTCATestCase {
     var stores: [Any] = []
 
     parentStore
-      .scope(state: { $0.count })
+      .scope(state: { $0.count }, action: { $0 })
       .ifLet(
         then: { store in
           stores.append(store)
@@ -501,7 +513,7 @@ final class StoreTests: BaseTCATestCase {
         }
       })
     )
-    let scopedStore = store.scope(state: { $0 })
+    let scopedStore = store.scope(state: { $0 }, action: { $0 })
 
     let sendTask = scopedStore.send(())
     await Task.yield()
@@ -684,7 +696,7 @@ final class StoreTests: BaseTCATestCase {
   }
 
   #if swift(>=5.7)
-    func testChidlParentEffectCancellation() async throws {
+    func testChildParentEffectCancellation() async throws {
       struct Child: ReducerProtocol {
         struct State: Equatable {}
         enum Action: Equatable {
@@ -711,7 +723,7 @@ final class StoreTests: BaseTCATestCase {
           case delay
         }
         @Dependency(\.mainQueue) var mainQueue
-        var body: Reduce<State, Action> {
+        var body: some ReducerProtocol<State, Action> {
           Reduce { state, action in
             switch action {
             case .child(.didFinish):

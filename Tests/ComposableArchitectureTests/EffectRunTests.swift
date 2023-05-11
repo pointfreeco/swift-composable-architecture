@@ -30,7 +30,7 @@ final class EffectRunTests: BaseTCATestCase {
         return .run { _ in
           struct Failure: Error {}
           throw Failure()
-        } catch: { @Sendable _, send in  // NB: Explicit '@Sendable' required in 5.5.2
+        } catch: { _, send in
           await send(.response)
         }
       case .response:
@@ -109,7 +109,7 @@ final class EffectRunTests: BaseTCATestCase {
           Task.cancel(id: CancelID.responseA)
           try Task.checkCancellation()
           await send(.responseA)
-        } catch: { @Sendable _, send in  // NB: Explicit '@Sendable' required in 5.5.2
+        } catch: { _, send in
           await send(.responseB)
         }
         .cancellable(id: CancelID.responseA)
