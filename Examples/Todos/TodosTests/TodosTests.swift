@@ -19,7 +19,7 @@ final class TodosTests: XCTestCase {
       $0.todos.insert(
         Todo.State(
           description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+          id: UUID(0),
           isComplete: false
         ),
         at: 0
@@ -30,12 +30,12 @@ final class TodosTests: XCTestCase {
       $0.todos = [
         Todo.State(
           description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+          id: UUID(1),
           isComplete: false
         ),
         Todo.State(
           description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+          id: UUID(0),
           isComplete: false
         ),
       ]
@@ -47,7 +47,7 @@ final class TodosTests: XCTestCase {
       todos: [
         Todo.State(
           description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+          id: UUID(0),
           isComplete: false
         )
       ]
@@ -70,12 +70,12 @@ final class TodosTests: XCTestCase {
       todos: [
         Todo.State(
           description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+          id: UUID(0),
           isComplete: false
         ),
         Todo.State(
           description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+          id: UUID(1),
           isComplete: false
         ),
       ]
@@ -105,12 +105,12 @@ final class TodosTests: XCTestCase {
       todos: [
         Todo.State(
           description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+          id: UUID(0),
           isComplete: false
         ),
         Todo.State(
           description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+          id: UUID(1),
           isComplete: false
         ),
       ]
@@ -139,12 +139,12 @@ final class TodosTests: XCTestCase {
       todos: [
         Todo.State(
           description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+          id: UUID(0),
           isComplete: false
         ),
         Todo.State(
           description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+          id: UUID(1),
           isComplete: true
         ),
       ]
@@ -167,17 +167,17 @@ final class TodosTests: XCTestCase {
       todos: [
         Todo.State(
           description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+          id: UUID(0),
           isComplete: false
         ),
         Todo.State(
           description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+          id: UUID(1),
           isComplete: false
         ),
         Todo.State(
           description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!,
+          id: UUID(2),
           isComplete: false
         ),
       ]
@@ -202,17 +202,17 @@ final class TodosTests: XCTestCase {
       todos: [
         Todo.State(
           description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+          id: UUID(0),
           isComplete: false
         ),
         Todo.State(
           description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+          id: UUID(1),
           isComplete: false
         ),
         Todo.State(
           description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!,
+          id: UUID(2),
           isComplete: true
         ),
       ]
@@ -236,17 +236,17 @@ final class TodosTests: XCTestCase {
       todos: [
         Todo.State(
           description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+          id: UUID(0),
           isComplete: false
         ),
         Todo.State(
           description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+          id: UUID(1),
           isComplete: false
         ),
         Todo.State(
           description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!,
+          id: UUID(2),
           isComplete: false
         ),
       ]
@@ -278,22 +278,22 @@ final class TodosTests: XCTestCase {
       todos: [
         Todo.State(
           description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+          id: UUID(0),
           isComplete: false
         ),
         Todo.State(
           description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+          id: UUID(1),
           isComplete: false
         ),
         Todo.State(
           description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!,
+          id: UUID(2),
           isComplete: true
         ),
         Todo.State(
           description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000003")!,
+          id: UUID(3),
           isComplete: true
         ),
       ]
@@ -330,12 +330,12 @@ final class TodosTests: XCTestCase {
       todos: [
         Todo.State(
           description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+          id: UUID(0),
           isComplete: false
         ),
         Todo.State(
           description: "",
-          id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+          id: UUID(1),
           isComplete: true
         ),
       ]

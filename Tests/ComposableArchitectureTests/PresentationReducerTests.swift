@@ -443,7 +443,7 @@ import XCTest
           }
 
           await store.send(.presentChild) {
-            $0.child = Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
+            $0.child = Child.State(id: UUID(0))
           }
           await store.send(.child(.presented(.startButtonTapped)))
           await clock.advance(by: .seconds(2))
@@ -458,7 +458,7 @@ import XCTest
             }
           }
           await store.send(.presentChild) {
-            $0.child = Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!)
+            $0.child = Child.State(id: UUID(1))
           }
           await clock.advance(by: .seconds(2))
           await store.send(.child(.dismiss)) {
@@ -838,7 +838,7 @@ import XCTest
 
           await store.send(.presentChild()) {
             $0.destination = .child(
-              Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
+              Child.State(id: UUID(0))
             )
           }
           await store.send(.destination(.presented(.child(.startButtonTapped))))
@@ -859,7 +859,7 @@ import XCTest
           }
           await store.send(.presentChild()) {
             $0.destination = .child(
-              Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!)
+              Child.State(id: UUID(1))
             )
           }
           await clock.advance(by: .seconds(2))
@@ -876,7 +876,7 @@ import XCTest
             }
           }
           await store.send(
-            .presentChild(id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!)
+            .presentChild(id: UUID(1))
           ) {
             try (/Parent.Destination.State.child).modify(&$0.destination) {
               $0.count = 0
@@ -1341,8 +1341,8 @@ import XCTest
             $0.uuid = .incrementing
           }
           await store.send(.presentChildren) {
-            $0.child1 = Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
-            $0.child2 = Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!)
+            $0.child1 = Child.State(id: UUID(0))
+            $0.child2 = Child.State(id: UUID(1))
           }
           await store.send(.child1(.presented(.startButtonTapped)))
           await clock.advance(by: .seconds(1))
@@ -1763,7 +1763,7 @@ import XCTest
       }
 
       await store.send(.child(.dismiss)) {
-        $0.child = Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
+        $0.child = Child.State(id: UUID(0))
       }
       await store.send(.child(.dismiss)) {
         $0.child = nil
@@ -1917,7 +1917,7 @@ import XCTest
 
       await store.send(.presentChild1) {
         $0.destination = .child1(
-          Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
+          Child.State(id: UUID(0))
         )
       }
       await store.send(.destination(.presented(.child1(.tap)))) {
@@ -1927,7 +1927,7 @@ import XCTest
       }
       await store.send(.destination(.presented(.child1(.resetIdentity)))) {
         try (/Parent.Destination.State.child1).modify(&$0.destination) {
-          $0.id = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
+          $0.id = UUID(1)
           $0.count = 0
         }
       }

@@ -135,19 +135,19 @@ final class ForEachReducerTests: BaseTCATestCase {
           }
           await store.send(.addTimerButtonTapped) {
             $0.timers = [
-              Timer.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
+              Timer.State(id: UUID(0))
             ]
           }
           await store.send(
             .timers(
-              id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+              id: UUID(0),
               action: .startButtonTapped
             )
           )
           await clock.advance(by: .seconds(2))
           await store.receive(
             .timers(
-              id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+              id: UUID(0),
               action: .tick
             )
           ) {
@@ -155,7 +155,7 @@ final class ForEachReducerTests: BaseTCATestCase {
           }
           await store.receive(
             .timers(
-              id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+              id: UUID(0),
               action: .tick
             )
           ) {
@@ -164,14 +164,14 @@ final class ForEachReducerTests: BaseTCATestCase {
           await store.send(.addTimerButtonTapped) {
             $0.timers = [
               Timer.State(
-                id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!, elapsed: 2),
-              Timer.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!),
+                id: UUID(0), elapsed: 2),
+              Timer.State(id: UUID(1)),
             ]
           }
           await clock.advance(by: .seconds(1))
           await store.receive(
             .timers(
-              id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+              id: UUID(0),
               action: .tick
             )
           ) {
@@ -179,14 +179,14 @@ final class ForEachReducerTests: BaseTCATestCase {
           }
           await store.send(
             .timers(
-              id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+              id: UUID(1),
               action: .startButtonTapped
             )
           )
           await clock.advance(by: .seconds(1))
           await store.receive(
             .timers(
-              id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+              id: UUID(0),
               action: .tick
             )
           ) {
@@ -194,7 +194,7 @@ final class ForEachReducerTests: BaseTCATestCase {
           }
           await store.receive(
             .timers(
-              id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+              id: UUID(1),
               action: .tick
             )
           ) {
@@ -202,13 +202,13 @@ final class ForEachReducerTests: BaseTCATestCase {
           }
           await store.send(.removeLastTimerButtonTapped) {
             $0.timers = [
-              Timer.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!, elapsed: 4)
+              Timer.State(id: UUID(0), elapsed: 4)
             ]
           }
           await clock.advance(by: .seconds(1))
           await store.receive(
             .timers(
-              id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+              id: UUID(0),
               action: .tick
             )
           ) {

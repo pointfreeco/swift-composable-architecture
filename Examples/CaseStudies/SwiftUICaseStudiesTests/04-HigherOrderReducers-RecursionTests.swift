@@ -13,8 +13,8 @@ final class RecursionTests: XCTestCase {
       $0.uuid = .incrementing
     }
 
-    let id0 = UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
-    let id1 = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
+    let id0 = UUID(0)
+    let id1 = UUID(1)
 
     await store.send(.addRowButtonTapped) {
       $0.rows.append(Nested.State(id: id0))
@@ -37,9 +37,9 @@ final class RecursionTests: XCTestCase {
   }
 
   func testDeleteRow() async {
-    let id0 = UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
-    let id1 = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
-    let id2 = UUID(uuidString: "00000000-0000-0000-0000-000000000002")!
+    let id0 = UUID(0)
+    let id1 = UUID(1)
+    let id2 = UUID(2)
 
     let store = TestStore(
       initialState: Nested.State(
