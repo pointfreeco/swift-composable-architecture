@@ -173,7 +173,7 @@ struct FloatingMenuView: View {
   }
 
   var body: some View {
-    WithViewStore(self.store.scope(state: ViewState.init)) { viewStore in
+    WithViewStore(self.store, observe: ViewState.init) { viewStore in
       if viewStore.currentStack.count > 0 {
         VStack(alignment: .center) {
           Text("Total count: \(viewStore.total)")
