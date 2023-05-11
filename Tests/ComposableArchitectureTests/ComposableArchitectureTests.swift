@@ -82,7 +82,7 @@ final class ComposableArchitectureTests: BaseTCATestCase {
   func testLongLivingEffects() async {
     enum Action { case end, incr, start }
 
-    let effect = AsyncStream<Void>.streamWithContinuation()
+    let effect = AsyncStream.makeStream(of: Void.self)
 
     let store = TestStore(initialState: 0) {
       Reduce<Int, Action> { state, action in

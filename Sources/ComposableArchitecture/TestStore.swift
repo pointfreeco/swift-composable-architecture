@@ -2283,7 +2283,7 @@ public struct TestStoreTask: Hashable, Sendable {
 class TestReducer<State, Action>: ReducerProtocol {
   let base: Reduce<State, Action>
   var dependencies = DependencyValues()
-  let effectDidSubscribe = AsyncStream<Void>.streamWithContinuation()
+  let effectDidSubscribe = AsyncStream.makeStream(of: Void.self)
   var inFlightEffects: Set<LongLivingEffect> = []
   var receivedActions: [(action: Action, state: State)] = []
   var state: State
