@@ -14,6 +14,11 @@ use these tools.
 * [Tree-based navigation](#Tree-based-navigation)
 * [Stack-based navigation](#Stack-based-navigation)
 * [Tree-based vs stack-based navigation](#Tree-based-vs-stack-based-navigation)
+  * [Pros of tree-based navigation](#Pros-of-tree-based-navigation)
+  * [Cons of tree-based navigation](#Cons-of-tree-based-navigation)
+  * [Pros of stack-based navigation](#Pros-of-stack-based-navigation)
+  * [Cons of stack-based navigation](#Cons-of-stack-based-navigation)
+
 
 ## What is navigation?
 
@@ -31,7 +36,7 @@ dialogs, and even custom forms of navigation that are not handed down to us from
 So, for the purposes of this documentation, we will use the following loose definition of 
 "navigation":
 
-> Definition: **Navigation**: A change of mode in the application.
+> Definition: **Navigation** is a change of mode in the application.
 
 Each of the examples we considered above, such as drill-downs, sheets, popovers, covers, alerts, 
 dialogs, and more, are all a "change of mode" in the application.
@@ -43,7 +48,7 @@ switches back to not existing, it represents undoing the navigation and returnin
 mode.
 
 That is very abstract way of describing state-driven navigation, and the next two sections make
-these concepts much more concrete for the two main forms of navigation:
+these concepts much more concrete for the two main forms of state-driven navigation:
 [tree-based](#Tree-based-navigation) and [stack-based](#Stack-based-navigation) navigation.
 
 ## Tree-based navigation
@@ -79,27 +84,37 @@ struct DetailItemFeature: ReducerProtocol {
   }
   // ...
 }
+```
 
+And further, inside the "edit item" feature there can be a piece of optional state that represents
+whether or not an alert is displayed:
+
+```swift
 struct EditItemFeature: ReducerProtocol {
   struct State {
-    var item: Item
+    @PresentationState var alert: AlertState<AlertAction>?
     // ...
   }
   // ...
 }
 ```
 
-Then the act of deep-linking the application into a state where we are drilled down to a particular
-item _with_ the edit sheet opened, we simply need to construct a deeply nested piece of state that
-represents the navigation:
+And this can continue on and on for as many layers of navigation exist in the application.
+
+With that done, the act of deep-linking into the application is a mere exercise in constructing
+a piece of deeply nested state. So, if we wanted to launch the inventory view into a state where
+we are drilled down to a particular item _with_ the edit sheet opened _and_ an alert opened, we 
+simply need to construct the piece of state that represents the navigation:
 
 ```swift
 InventoryView(
   store: Store(
     initialState: InventoryFeature.State(
-      detailItem: DetailItemFeature.State(
-        editItem: EditItemFeature.State(
-          item: Item(name: "Headphones", quantity: 10)
+      detailItem: DetailItemFeature.State(      // Drill-down to detail screen
+        editItem: EditItemFeature.State(        // Open edit modal
+          alert: AlertState {                   // Open alert
+            TextState("This item is invalid.")
+          }
         )
       )
     ),
@@ -151,6 +166,10 @@ let path: [Path] = [
 ]
 ```
 
+This collection of `Path` elements can be any length necessary, including very long to represent
+being drilled down many layers deep, or even empty to represent that we are at the root of the 
+stack.
+
 That is the basics of stack-based navigation. Read the dedicated 
 <doc:StackBasedNavigation> article for information on how to use the tools that come with the 
 Composable Architecture to implement stack-based navigation in your application.
@@ -186,7 +205,7 @@ be aware of their differences when modeling your domains.
 
   * If you modularize the features of your application, then those feature modules will be more
     self-contained when built with the tools of tree-based navigation. This means that Xcode
-    previews and preview applications built for the feature will be fully functional.
+    previews and preview apps built for the feature will be fully functional.
 
     For example, if you have a `DetailFeature` module that holds all of the logic and views for the
     detail feature, then you will be able to navigate to the edit feature in previews because the
@@ -290,7 +309,15 @@ few bugs in `NavigationStack`, but on average it is a lot more stable.
 
   * And finally, stack-based navigation and `NavigationStack` only applies to drill-downs and does 
     not address at all other forms of navigation, such as sheets, popovers, alerts, etc. It's still
-    on you to do the work to decouple those kinds of navigations. 
+    on you to do the work to decouple those kinds of navigations.
+
+---
+
+We have now defined the basic terms of navigation, in particular state-driven navigation, and we
+have further divided navigation into two categories: tree-based and stack-based. Continue reading
+the dedicated articles <doc:TreeBasedNavigation> and <doc:StackBasedNavigation> to learn about the 
+tools the Composable Architecture provides for modeling your domains and integrating features 
+together for navigation.
 
 ## Topics
 
