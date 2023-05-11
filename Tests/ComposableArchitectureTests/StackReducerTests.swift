@@ -372,7 +372,7 @@ final class StackReducerTests: BaseTCATestCase {
         }
       }
     }
-    struct Navigation: ReducerProtocol {
+    struct Path: ReducerProtocol {
       enum State: Equatable {
         case child1(Child.State)
         case child2(Child.State)
@@ -392,10 +392,10 @@ final class StackReducerTests: BaseTCATestCase {
     }
     struct Parent: ReducerProtocol {
       struct State: Equatable {
-        var path = StackState<Navigation.State>()
+        var path = StackState<Path.State>()
       }
       enum Action: Equatable {
-        case path(StackAction<Navigation.State, Navigation.Action>)
+        case path(StackAction<Path.State, Path.Action>)
         case pushChild1
         case pushChild2
       }
@@ -413,7 +413,7 @@ final class StackReducerTests: BaseTCATestCase {
           }
         }
         .forEach(\.path, action: /Action.path) {
-          Navigation()
+          Path()
         }
       }
     }
@@ -514,7 +514,7 @@ final class StackReducerTests: BaseTCATestCase {
         }
       }
     }
-    struct Navigation: ReducerProtocol {
+    struct Path: ReducerProtocol {
       enum State: Equatable {
         case child1(Child.State)
         case child2(Child.State)
@@ -530,10 +530,10 @@ final class StackReducerTests: BaseTCATestCase {
     }
     struct Parent: ReducerProtocol {
       struct State: Equatable {
-        var path = StackState<Navigation.State>()
+        var path = StackState<Path.State>()
       }
       enum Action: Equatable {
-        case path(StackAction<Navigation.State, Navigation.Action>)
+        case path(StackAction<Path.State, Path.Action>)
         case pushChild1
         case pushChild2
       }
@@ -551,12 +551,12 @@ final class StackReducerTests: BaseTCATestCase {
           }
         }
         .forEach(\.path, action: /Action.path) {
-          Navigation()
+          Path()
         }
       }
     }
 
-    var path = StackState<Navigation.State>()
+    var path = StackState<Path.State>()
     path.append(.child1(Child.State()))
     path.append(.child2(Child.State()))
     let mainQueue = DispatchQueue.test
@@ -572,7 +572,7 @@ final class StackReducerTests: BaseTCATestCase {
     await store.send(.path(.element(id: 0, action: .child1(.cancel))))
     await mainQueue.advance(by: .seconds(1))
     await store.receive(.path(.element(id: 1, action: .child2(.response(42))))) {
-      XCTModify(&$0.path[id: 1], case: /Navigation.State.child2) {
+      XCTModify(&$0.path[id: 1], case: /Path.State.child2) {
         $0.count = 42
       }
     }
@@ -582,7 +582,7 @@ final class StackReducerTests: BaseTCATestCase {
     await store.send(.path(.element(id: 1, action: .child2(.cancel))))
     await mainQueue.advance(by: .seconds(1))
     await store.receive(.path(.element(id: 0, action: .child1(.response(42))))) {
-      XCTModify(&$0.path[id: 0], case: /Navigation.State.child1) {
+      XCTModify(&$0.path[id: 0], case: /Path.State.child1) {
         $0.count = 42
       }
     }
@@ -612,8 +612,7 @@ final class StackReducerTests: BaseTCATestCase {
         }
       }
     }
-    // TODO: naming options: Stack, Path,
-    struct Navigation: ReducerProtocol {
+    struct Path: ReducerProtocol {
       enum State: Equatable {
         case child1(Child.State)
         case child2(Child.State)
@@ -629,10 +628,10 @@ final class StackReducerTests: BaseTCATestCase {
     }
     struct Parent: ReducerProtocol {
       struct State: Equatable {
-        var path = StackState<Navigation.State>()
+        var path = StackState<Path.State>()
       }
       enum Action: Equatable {
-        case path(StackAction<Navigation.State, Navigation.Action>)
+        case path(StackAction<Path.State, Path.Action>)
         case popAll
         case popFirst
       }
@@ -650,7 +649,7 @@ final class StackReducerTests: BaseTCATestCase {
           }
         }
         .forEach(\.path, action: /Action.path) {
-          Navigation()
+          Path()
         }
       }
     }
@@ -672,13 +671,13 @@ final class StackReducerTests: BaseTCATestCase {
     await store.send(.path(.element(id: 1, action: .child2(.tap))))
     await mainQueue.advance(by: .seconds(1))
     await store.receive(.path(.element(id: 0, action: .child1(.response(1))))) {
-      XCTModify(&$0.path[id: 0], case: /Navigation.State.child1) {
+      XCTModify(&$0.path[id: 0], case: /Path.State.child1) {
         $0.count = 1
       }
     }
     await mainQueue.advance(by: .seconds(1))
     await store.receive(.path(.element(id: 1, action: .child2(.response(2))))) {
-      XCTModify(&$0.path[id: 1], case: /Navigation.State.child2) {
+      XCTModify(&$0.path[id: 1], case: /Path.State.child2) {
         $0.count = 2
       }
     }
@@ -690,7 +689,7 @@ final class StackReducerTests: BaseTCATestCase {
     }
     await mainQueue.advance(by: .seconds(2))
     await store.receive(.path(.element(id: 1, action: .child2(.response(2))))) {
-      XCTModify(&$0.path[id: 1], case: /Navigation.State.child2) {
+      XCTModify(&$0.path[id: 1], case: /Path.State.child2) {
         $0.count = 4
       }
     }
