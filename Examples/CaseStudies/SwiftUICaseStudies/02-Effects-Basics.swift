@@ -156,10 +156,9 @@ struct EffectsBasicsView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       EffectsBasicsView(
-        store: Store(
-          initialState: EffectsBasics.State(),
-          reducer: EffectsBasics()
-        )
+        store: Store(initialState: EffectsBasics.State()) {
+          EffectsBasics()
+        }
       )
     }
   }

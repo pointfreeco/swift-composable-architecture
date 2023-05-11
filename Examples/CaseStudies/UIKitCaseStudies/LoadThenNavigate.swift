@@ -134,10 +134,9 @@ struct LazyNavigationViewController_Previews: PreviewProvider {
   static var previews: some View {
     let vc = UINavigationController(
       rootViewController: LazyNavigationViewController(
-        store: Store(
-          initialState: LazyNavigation.State(),
-          reducer: LazyNavigation()
-        )
+        store: Store(initialState: LazyNavigation.State()) {
+          LazyNavigation()
+        }
       )
     )
     return UIViewRepresented(makeUIView: { _ in vc.view })

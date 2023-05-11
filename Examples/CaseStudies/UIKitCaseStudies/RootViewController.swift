@@ -17,10 +17,9 @@ let dataSource: [CaseStudy] = [
   CaseStudy(
     title: "Basics",
     viewController: CounterViewController(
-      store: Store(
-        initialState: Counter.State(),
-        reducer: Counter()
-      )
+      store: Store(initialState: Counter.State()) {
+        Counter()
+      }
     )
   ),
   CaseStudy(
@@ -33,27 +32,26 @@ let dataSource: [CaseStudy] = [
             Counter.State(),
             Counter.State(),
           ]
-        ),
-        reducer: CounterList()
-      )
+        )
+      ) {
+        CounterList()
+      }
     )
   ),
   CaseStudy(
     title: "Navigate and load",
     viewController: EagerNavigationViewController(
-      store: Store(
-        initialState: EagerNavigation.State(),
-        reducer: EagerNavigation()
-      )
+      store: Store(initialState: EagerNavigation.State()) {
+        EagerNavigation()
+      }
     )
   ),
   CaseStudy(
     title: "Load then navigate",
     viewController: LazyNavigationViewController(
-      store: Store(
-        initialState: LazyNavigation.State(),
-        reducer: LazyNavigation()
-      )
+      store: Store(initialState: LazyNavigation.State()) {
+        LazyNavigation()
+      }
     )
   ),
 ]

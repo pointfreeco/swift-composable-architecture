@@ -26,7 +26,7 @@
         }
       }
 
-      let store = Store(initialState: MyReducer.State(), reducer: MyReducer())
+      let store = Store(initialState: MyReducer.State()) { MyReducer() }
       let viewStore = ViewStore(store, observe: { $0 })
 
       let binding = viewStore.binding(get: \.text) { text in

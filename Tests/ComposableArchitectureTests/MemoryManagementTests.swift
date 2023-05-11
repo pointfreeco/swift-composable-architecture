@@ -10,7 +10,7 @@ final class MemoryManagementTests: BaseTCATestCase {
       state += 1
       return .none
     }
-    let store = Store(initialState: 0, reducer: counterReducer)
+    let store = Store(initialState: 0) { counterReducer }
       .scope(state: { "\($0)" })
       .scope(state: { Int($0)! })
     let viewStore = ViewStore(store, observe: { $0 })
@@ -42,9 +42,8 @@ final class MemoryManagementTests: BaseTCATestCase {
     let expectation = self.expectation(description: "")
 
     enum Action { case tap, response }
-    let store = Store(
-      initialState: false,
-      reducer: Reduce<Bool, Action> { state, action in
+    let store = Store(initialState: false) {
+      Reduce<Bool, Action> { state, action in
         switch action {
         case .tap:
           state = false
@@ -56,7 +55,7 @@ final class MemoryManagementTests: BaseTCATestCase {
           }
         }
       }
-    )
+    }
     let viewStore = ViewStore(store.scope(state: { $0 }).scope(state: { $0 }), observe: { $0 })
 
     var values: [Bool] = []

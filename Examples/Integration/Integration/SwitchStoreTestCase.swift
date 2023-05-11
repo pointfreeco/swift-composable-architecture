@@ -23,8 +23,8 @@ struct SwitchStoreTestCase: ReducerProtocol {
   }
 
   enum State: Equatable {
-    case screenA(Screen.State)
-    case screenB(Screen.State)
+    case screenA(Screen.State = .init())
+    case screenB(Screen.State = .init())
   }
   enum Action {
     case screenA(Screen.Action)

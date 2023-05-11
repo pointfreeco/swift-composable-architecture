@@ -312,10 +312,9 @@ struct MyApp: App {
   var body: some Scene {
     WindowGroup {
       FeatureView(
-        store: Store(
-          initialState: Feature.State(),
-          reducer: Feature()
-        )
+        store: Store(initialState: Feature.State()) {
+          Feature()
+        }
       )
     }
   }
@@ -518,10 +517,9 @@ This means the entry point to the application no longer needs to construct depen
 struct MyApp: App {
   var body: some Scene {
     FeatureView(
-      store: Store(
-        initialState: Feature.State(),
-        reducer: Feature()
-      )
+      store: Store(initialState: Feature.State()) {
+        Feature()
+      }
     )
   }
 }
@@ -531,10 +529,9 @@ And the test store can be constructed without specifying any dependencies, but y
 override any dependency you need to for the purpose of the test:
 
 ```swift
-let store = TestStore(
-  initialState: Feature.State(),
-  reducer: Feature()
-) {
+let store = TestStore(initialState: Feature.State()) {
+  Feature()
+} withDependencies: {
   $0.numberFact.fetch = { "\($0) is a good number Brent" }
 }
 

@@ -146,9 +146,8 @@ final class EffectRunTests: BaseTCATestCase {
 
         let queue = DispatchQueue.test
 
-        let store = Store(
-          initialState: 0,
-          reducer: Reduce<Int, Action> { _, action in
+        let store = Store(initialState: 0) {
+          Reduce<Int, Action> { _, action in
             switch action {
             case .tap:
               return .run { send in
@@ -161,7 +160,7 @@ final class EffectRunTests: BaseTCATestCase {
               return .none
             }
           }
-        )
+        }
 
         let viewStore = ViewStore(store, observe: { $0 })
         await viewStore.send(.tap).finish()
@@ -189,9 +188,8 @@ final class EffectRunTests: BaseTCATestCase {
 
       let queue = DispatchQueue.test
 
-      let store = Store(
-        initialState: 0,
-        reducer: Reduce<Int, Action> { _, action in
+      let store = Store(initialState: 0) {
+        Reduce<Int, Action> { _, action in
           switch action {
           case .tap:
             return .run { send in
@@ -205,7 +203,7 @@ final class EffectRunTests: BaseTCATestCase {
             return .none
           }
         }
-      )
+      }
 
       let viewStore = ViewStore(store, observe: { $0 })
       await viewStore.send(.tap).finish()

@@ -120,10 +120,9 @@ struct TimersView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       TimersView(
-        store: Store(
-          initialState: Timers.State(),
-          reducer: Timers()
-        )
+        store: Store(initialState: Timers.State()) {
+          Timers()
+        }
       )
     }
   }

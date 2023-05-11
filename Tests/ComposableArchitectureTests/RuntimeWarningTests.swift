@@ -37,9 +37,8 @@
       }
 
       enum Action { case tap, response }
-      let store = Store(
-        initialState: 0,
-        reducer: Reduce<Int, Action> { state, action in
+      let store = Store(initialState: 0) {
+        Reduce<Int, Action> { state, action in
           switch action {
           case .tap:
             return Empty()
@@ -49,7 +48,7 @@
             return .none
           }
         }
-      )
+      }
       ViewStore(store, observe: { $0 }).send(.tap)
       _ = XCTWaiter.wait(for: [.init()], timeout: 0.5)
     }
@@ -165,9 +164,8 @@
         }
 
         enum Action { case tap, response }
-        let store = Store(
-          initialState: 0,
-          reducer: Reduce<Int, Action> { state, action in
+        let store = Store(initialState: 0) {
+          Reduce<Int, Action> { state, action in
             switch action {
             case .tap:
               return .run { subscriber in
@@ -182,7 +180,7 @@
               return .none
             }
           }
-        )
+        }
         await ViewStore(store, observe: { $0 }).send(.tap).finish()
       }
     #endif
@@ -195,10 +193,7 @@
       enum Action: BindableAction, Equatable {
         case binding(BindingAction<State>)
       }
-      let store = Store(
-        initialState: State(),
-        reducer: EmptyReducer<State, Action>()
-      )
+      let store = Store<State, Action>(initialState: State()) {}
 
       var line: UInt = 0
       XCTExpectFailure {

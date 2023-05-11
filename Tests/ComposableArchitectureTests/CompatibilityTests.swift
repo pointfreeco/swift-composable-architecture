@@ -57,10 +57,9 @@ final class CompatibilityTests: BaseTCATestCase {
       }
     }
 
-    let store = Store(
-      initialState: .init(),
-      reducer: reducer
-    )
+    let store = Store(initialState: .init()) {
+      reducer
+    }
 
     let viewStore = ViewStore(store, observe: { $0 })
 
