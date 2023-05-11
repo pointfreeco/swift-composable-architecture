@@ -5,9 +5,7 @@
 ### Creating an effect
 
 - ``EffectPublisher/none``
-- ``EffectPublisher/task(priority:operation:catch:file:fileID:line:)``
 - ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)``
-- ``EffectPublisher/fireAndForget(priority:_:)``
 - ``EffectPublisher/send(_:)``
 - ``TaskResult``
 
