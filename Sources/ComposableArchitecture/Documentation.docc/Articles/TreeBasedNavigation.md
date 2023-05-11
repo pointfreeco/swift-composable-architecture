@@ -588,6 +588,25 @@ func testDismissal() {
 This essentially proves the same thing that the previous test proves, but it does so in much fewer
 lines and is more resilient to future changes in the features that we don't necessarily care about.
 
-<!--
-todo: dismiss `XCTModify` and how to test destination enums
--->
+That is the basics of testing, but things get a little more complicated when you leverage the 
+concepts outlined in <doc:TreeBasedNavigation#Enum-state> in which you model multiple destinations
+as an enum instead of multiple optionals. In order to assert on state changes when using enum
+state you must be able to extract the associated state from the enum, make a mutation, and then
+embed the new state back into the enum.
+
+The library provides a tool to perform these steps in a single step, and it is called `XCTModify`:
+
+```swift
+await store.send(.destination(.presented(.counter(.incrementButtonTapped)))) {
+  XCTModify(&$0.destination, case: /Feature.Destination.State.counter) { 
+    $0.count = 4
+  }
+}
+```
+
+The `XCTModify` function takes an `inout` piece of enum state as its first argument and a case
+path for its second argument, and then uses the case path to extract the payload in that case, 
+allow you to perform a mutation to it, and embed the data back into the enum. So, in the code
+above, we are wanting to mutate the `$0.destination` enum by isolating the `.counter` case, 
+and mutating the `count` to be 4 since it incremented by one. Further, if the case of 
+`$0.destination` didn't match the case path, then a test failure would be emitted.

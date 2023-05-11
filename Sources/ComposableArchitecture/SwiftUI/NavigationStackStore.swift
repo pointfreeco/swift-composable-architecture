@@ -4,9 +4,10 @@ import SwiftUI
 /// A navigation stack that is driven by a store.
 ///
 /// This view can be used to drive stack-based navigation in the Composable Architecture when passed
-/// a store of ``StackState`` and ``StackAction``.
+/// a store that is focused on ``StackState`` and ``StackAction``.
 ///
-/// See SwiftUI's documentation for `NavigationStack` for more.
+/// See the dedicated article on <doc:Navigation> for more information on the library's navigation
+/// tools, and in particular see <doc:StackBasedNavigation> for information on using this view.
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 public struct NavigationStackStore<State, Action, Root: View, Destination: View>: View {
   private let root: Root

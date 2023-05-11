@@ -78,8 +78,8 @@ struct RootFeature: ReducerProtocol {
 }
 ```
 
-> Note: ``StackAction`` is generic over both state and action of the `Path` domain, which is in
-> contrast to ``PresentationAction``, which only has a single generic.
+> Note: ``StackAction`` is generic over both state and action of the `Path` domain. This is 
+> different from ``PresentationAction``, which only has a single generic.
 
 And then we must make use of the ``ReducerProtocol/forEach(_:action:destination:fileID:line:)``
 method to integrate the domains of all the features that can be navigated to with the domain of the
@@ -105,7 +105,7 @@ That completes the steps to integrate the child and parent features together for
 Next we must integrate the child and parent views together. This is done by construct a special
 version of SwiftUI's `NavigationStack` view that comes with this library, called 
 ``NavigationStackStore``. This view takes 3 arguments: a store focused in on ``StackState``
-and ``StackAction`` in your domain, and a trailing view builder for the root view of the stack, and
+and ``StackAction`` in your domain, a trailing view builder for the root view of the stack, and
 another trailing view builder for all of the views that can be pushed onto the stack:
 
 ```swift
@@ -251,16 +251,16 @@ and it can be used like so:
 struct ChildView: View {
   @Environment(\.dismiss) var dismiss
   var body: some View {
-    Button("Close") {
-      self.dismiss()
-    }
+    Button("Close") { self.dismiss() }
   }
 }
 ```
 
-When `self.dismiss()` is invoked, SwiftUI finds the closet parent view with a presentation, and
-causes it to dismiss. This can be incredibly useful, but it is also relegated to the view layer. It
-is not possible to use `dismiss` elsewhere, like in an observable object.
+When `self.dismiss()` is invoked, SwiftUI finds the closet parent view that is presented in the
+navigation stack, and removes that state from the collection powering the stack. This can be 
+incredibly useful, but it is also relegated to the view layer. It is not possible to use 
+`dismiss` elsewhere, like in an observable object, which would allow you to have nuanced logic
+for dismissal such as validation or async work.
 
 The Composable Architecture has a similar tool, except it is appropriate to use from a reducer,
 where the rest of your feature's logic and behavior resides. It is accessed via the library's
@@ -278,6 +278,7 @@ struct Feature: ReducerProtocol {
     switch action {
     case .closeButtonTapped:
       return .fireAndForget { await self.dismiss() }
+    // ...
     } 
   }
 }
@@ -288,9 +289,24 @@ struct Feature: ReducerProtocol {
 > ``EffectPublisher/run(priority:operation:catch:fileID:line:)`` or
 > ``EffectPublisher/fireAndForget(priority:_:)``.
 
-When `self.dismiss()` is invoked it will pop the feature off the navigation stack. This allows you 
-to encapsulate the logic for dismissing a child feature entirely inside the child domain without 
-explicitly communicating with the parent.
+When `self.dismiss()` is invoked it will remove the corresponding value from the ``StackState``
+powering the navigation stack. It does this by sending a ``StackAction/popFrom(id:)`` action back
+into the system, causing the feature state to be removed. This allows you to encapsulate the logic 
+for dismissing a child feature entirely inside the child domain without explicitly communicating 
+with the parent.
+
+> Note: Because dismissal is handled by sending an action, it is not valid to ever send an action
+> after invoking `dismiss()`:
+> 
+> ```swift
+> return .run { send in 
+>   await self.dismiss()
+>   await send(.tick)  // ⚠️
+> }
+> ```
+> 
+> To do so would be to send an action for a feature while its state is not present in the stack, 
+> and that will cause a runtime warning in Xcode and a test failure when running tests.
 
 > Warning: SwiftUI's environment value `@Environment(\.dismiss)` and the Composable Architecture's
 > dependency value `@Dependency(\.dismiss)` serve similar purposes, but are completely different 
@@ -356,14 +372,12 @@ struct Feature: ReducerProtocol {
 
   var body: some ReducerProtocolOf<Self> {
     Reduce { state, action in 
-      // ...
+      // Logic and behavior for core feature.
     }
     .forEach(\.path, action: /Action.path) { Path() }
   }
 }
 ```
-
-Typically this feature reducer would have a lot more logic.
 
 Now let's try to write a test on the `Feature` reducer that proves that when the child counter 
 feature's count is incremented above 5 it will dismiss itself. To do this we will construct a 
@@ -425,7 +439,8 @@ The `XCTModify` function takes an `inout` piece of enum state as its first argum
 path for its second argument, and then uses the case path to extract the payload in that case, 
 allow you to perform a mutation to it, and embed the data back into the enum. So, in the code
 above we are subscripting into ID 0, isolating the `.counter` case of the `Path.State` enum, 
-and mutating the `count` to be 4 since it incremented by one.
+and mutating the `count` to be 4 since it incremented by one. Further, if the case of `$0[id: 0]`
+didn't match the case path, then a test failure would be emitted.
 
 And then we can send it one more time to see that the count goes up to 5:
 
@@ -438,7 +453,9 @@ await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) {
 ```
 
 And then we finally expect that the child dismisses itself, which manifests itself as the 
-``StackAction/popFrom(id:)`` action being sent to pop the counter feature off the stack:
+``StackAction/popFrom(id:)`` action being sent to pop the counter feature off the stack, which we 
+can assert using the ``TestStore/receive(_:timeout:assert:file:line:)-1rwdd`` method on 
+``TestStore``:
 
 ```swift
 await store.receive(.path(.popFrom(id: 0))) {
@@ -505,8 +522,10 @@ corresponding to a type of data:
 
 ```swift
 struct RootView: View {
+  @State var path = NavigationPath()
+
   var body: some View {
-    NavigationStack {
+    NavigationStack(path: self.$path) {
       Form {
         // ...
       }
