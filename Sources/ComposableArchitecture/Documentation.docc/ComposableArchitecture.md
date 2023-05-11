@@ -65,7 +65,7 @@ day-to-day when building applications, such as:
 - ``Store``
 - ``ViewStore``
 
-### Navigation
+### Navigation tools
 
 - <doc:Navigation>
 - ``PresentationState``
@@ -74,6 +74,7 @@ day-to-day when building applications, such as:
 - ``StackState``
 - ``StackAction``
 - ``ReducerProtocol/forEach(_:action:destination:fileID:line:)``
+- ``DismissEffect``
 
 ### Integrations
 
