@@ -38,7 +38,7 @@ final class ForEachReducerTests: BaseTCATestCase {
   #if DEBUG
     func testMissingElement() async {
       let store = TestStore(initialState: Elements.State()) {
-        EmptyReducer()
+        EmptyReducer<Elements.State, Elements.Action>()
           .forEach(\.rows, action: /Elements.Action.row) {}
       }
 
