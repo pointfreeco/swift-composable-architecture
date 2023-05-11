@@ -31,6 +31,109 @@ extension Store {
   }
 }
 
+extension TestStore {
+   public convenience init<R: ReducerProtocol>(
+    initialState: @autoclosure () -> State,
+    reducer: R,
+    prepareDependencies: (inout DependencyValues) -> Void = { _ in },
+    file: StaticString = #file,
+    line: UInt = #line
+  )
+  where
+    R.State == State,
+    R.Action == Action,
+    State == ScopedState,
+    State: Equatable,
+    Action == ScopedAction,
+    Environment == Void
+  {
+    self.init(
+      initialState: initialState(),
+      reducer: reducer,
+      observe: { $0 },
+      send: { $0 },
+      prepareDependencies: prepareDependencies,
+      file: file,
+      line: line
+    )
+  }
+
+  public convenience init<R: ReducerProtocol>(
+    initialState: @autoclosure () -> State,
+    reducer: R,
+    observe toScopedState: @escaping (State) -> ScopedState,
+    prepareDependencies: (inout DependencyValues) -> Void = { _ in },
+    file: StaticString = #file,
+    line: UInt = #line
+  )
+  where
+    R.State == State,
+    R.Action == Action,
+    ScopedState: Equatable,
+    Action == ScopedAction,
+    Environment == Void
+  {
+    self.init(
+      initialState: initialState(),
+      reducer: reducer,
+      observe: toScopedState,
+      send: { $0 },
+      prepareDependencies: prepareDependencies,
+      file: file,
+      line: line
+    )
+  }
+  public convenience init<R: ReducerProtocol>(
+    initialState: @autoclosure () -> State,
+    reducer: R,
+    observe toScopedState: @escaping (State) -> ScopedState,
+    send fromScopedAction: @escaping (ScopedAction) -> Action,
+    prepareDependencies: (inout DependencyValues) -> Void = { _ in },
+    file: StaticString = #file,
+    line: UInt = #line
+  )
+  where
+    R.State == State,
+    R.Action == Action,
+    ScopedState: Equatable,
+    Environment == Void
+  {
+    self.init(
+      initialState: initialState(),
+      reducer: { reducer },
+      observe: toScopedState,
+      send: fromScopedAction,
+      withDependencies: prepareDependencies,
+      file: file,
+      line: line
+    )
+  }
+
+  @available(*, deprecated, message: "State must be equatable to perform assertions.")
+  public convenience init<R: ReducerProtocol>(
+    initialState: @autoclosure () -> State,
+    reducer: R,
+    prepareDependencies: (inout DependencyValues) -> Void = { _ in },
+    file: StaticString = #file,
+    line: UInt = #line
+  )
+  where
+    R.State == State,
+    R.Action == Action,
+    State == ScopedState,
+    Action == ScopedAction,
+    Environment == Void
+  {
+    self.init(
+      initialState: initialState(),
+      reducer: { reducer },
+      withDependencies: prepareDependencies,
+      file: file,
+      line: line
+    )
+  }
+}
+
 // MARK: - Deprecated after 0.49.2
 
 @available(

@@ -275,10 +275,9 @@ does extra work to allow you to assert how your feature evolves as actions are s
 ```swift
 @MainActor
 func testFeature() async {
-  let store = TestStore(
-    initialState: Feature.State(),
-    reducer: Feature()
-  )
+  let store = TestStore(initialState: Feature.State()) {
+    Feature()
+  }
 }
 ```
 
@@ -361,12 +360,9 @@ But in tests we can use a mock dependency that immediately returns a determinist
 ```swift
 @MainActor
 func testFeature() async {
-  let store = TestStore(
-    initialState: Feature.State(),
-    reducer: Feature(
-      numberFact: { "\($0) is a good number Brent" }
-    )
-  )
+  let store = TestStore(initialState: Feature.State()) {
+    Feature(numberFact: { "\($0) is a good number Brent" })
+  }
 }
 ```
 

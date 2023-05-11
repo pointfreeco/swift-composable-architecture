@@ -7,15 +7,16 @@ final class EffectTaskTests: BaseTCATestCase {
   func testTask() async {
     struct State: Equatable {}
     enum Action: Equatable { case tapped, response }
-    let reducer = Reduce<State, Action> { state, action in
-      switch action {
-      case .tapped:
-        return .task { .response }
-      case .response:
-        return .none
+    let store = TestStore(initialState: State()) {
+      Reduce<State, Action> { state, action in
+        switch action {
+        case .tapped:
+          return .task { .response }
+        case .response:
+          return .none
+        }
       }
     }
-    let store = TestStore(initialState: State(), reducer: reducer)
     await store.send(.tapped)
     await store.receive(.response)
   }
@@ -23,20 +24,21 @@ final class EffectTaskTests: BaseTCATestCase {
   func testTaskCatch() async {
     struct State: Equatable {}
     enum Action: Equatable, Sendable { case tapped, response }
-    let reducer = Reduce<State, Action> { state, action in
-      switch action {
-      case .tapped:
-        return .task {
-          struct Failure: Error {}
-          throw Failure()
-        } catch: { @Sendable _ in  // NB: Explicit '@Sendable' required in 5.5.2
-          .response
+    let store = TestStore(initialState: State()) {
+      Reduce<State, Action> { state, action in
+        switch action {
+        case .tapped:
+          return .task {
+            struct Failure: Error {}
+            throw Failure()
+          } catch: { @Sendable _ in  // NB: Explicit '@Sendable' required in 5.5.2
+            .response
+          }
+        case .response:
+          return .none
         }
-      case .response:
-        return .none
       }
     }
-    let store = TestStore(initialState: State(), reducer: reducer)
     await store.send(.tapped)
     await store.receive(.response)
   }
@@ -56,19 +58,20 @@ final class EffectTaskTests: BaseTCATestCase {
       }
       struct State: Equatable {}
       enum Action: Equatable { case tapped, response }
-      let reducer = Reduce<State, Action> { state, action in
-        switch action {
-        case .tapped:
-          line = #line
-          return .task {
-            struct Failure: Error {}
-            throw Failure()
+      let store = TestStore(initialState: State()) {
+        Reduce<State, Action> { state, action in
+          switch action {
+          case .tapped:
+            line = #line
+            return .task {
+              struct Failure: Error {}
+              throw Failure()
+            }
+          case .response:
+            return .none
           }
-        case .response:
-          return .none
         }
       }
-      let store = TestStore(initialState: State(), reducer: reducer)
       // NB: We wait a long time here because XCTest failures take a long time to generate
       await store.send(.tapped).finish(timeout: 5 * NSEC_PER_SEC)
     }
@@ -78,20 +81,21 @@ final class EffectTaskTests: BaseTCATestCase {
     enum CancelID {}
     struct State: Equatable {}
     enum Action: Equatable { case tapped, response }
-    let reducer = Reduce<State, Action> { state, action in
-      switch action {
-      case .tapped:
-        return .task {
-          Task.cancel(id: CancelID.self)
-          try Task.checkCancellation()
-          return .response
+    let store = TestStore(initialState: State()) {
+      Reduce<State, Action> { state, action in
+        switch action {
+        case .tapped:
+          return .task {
+            Task.cancel(id: CancelID.self)
+            try Task.checkCancellation()
+            return .response
+          }
+          .cancellable(id: CancelID.self)
+        case .response:
+          return .none
         }
-        .cancellable(id: CancelID.self)
-      case .response:
-        return .none
       }
     }
-    let store = TestStore(initialState: State(), reducer: reducer)
     await store.send(.tapped).finish()
   }
 
