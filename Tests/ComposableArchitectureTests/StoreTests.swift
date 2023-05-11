@@ -750,6 +750,50 @@ final class StoreTests: BaseTCATestCase {
       XCTAssertEqual(viewStore.count, 1)
     }
   #endif
+
+  func testInit_InitialState_WithDependencies() async {
+    struct Feature: ReducerProtocol {
+      struct State: Equatable {
+        var date: Date
+        init() {
+          @Dependency(\.date) var date
+          self.date = date()
+        }
+      }
+      enum Action: Equatable { }
+      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {}
+    }
+
+    let store = Store(initialState: Feature.State()) {
+      Feature()
+    } withDependencies: {
+      $0.date = .constant(Date(timeIntervalSinceReferenceDate: 1234567890))
+    }
+
+    XCTAssertEqual(store.state.value.date, Date(timeIntervalSinceReferenceDate: 1234567890))
+  }
+
+  func testInit_ReducerBuilder_WithDependencies() async {
+    struct Feature: ReducerProtocol {
+      let date: Date
+      struct State: Equatable { var date: Date? }
+      enum Action: Equatable { case tap }
+      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        state.date = self.date
+        return .none
+      }
+    }
+
+    @Dependency(\.date) var date
+    let store = Store(initialState: Feature.State()) {
+      Feature(date: date())
+    } withDependencies: {
+      $0.date = .constant(Date(timeIntervalSinceReferenceDate: 1234567890))
+    }
+
+    _ = store.send(.tap)
+    XCTAssertEqual(store.state.value.date, Date(timeIntervalSinceReferenceDate: 1234567890))
+  }
 }
 
 private struct Count: TestDependencyKey {

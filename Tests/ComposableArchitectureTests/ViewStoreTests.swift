@@ -31,7 +31,7 @@ final class ViewStoreTests: BaseTCATestCase {
   }
 
   func testEqualityChecks() {
-    let store = Store<State, Void>(initialState: 0) {}
+    let store = Store<State, Void>(initialState: State()) {}
 
     let store1 = store.scope(state: { $0 })
     let store2 = store1.scope(state: { $0 })
