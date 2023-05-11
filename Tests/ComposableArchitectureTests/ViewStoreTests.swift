@@ -14,11 +14,7 @@ final class ViewStoreTests: BaseTCATestCase {
   }
 
   func testPublisherFirehose() {
-    let store = Store(
-      initialState: 0,
-      reducer: EmptyReducer<Int, Void>()
-    )
-
+    let store = Store<Int, Void>(initialState: 0) {}
     let viewStore = ViewStore(store, observe: { $0 })
 
     var emissionCount = 0
@@ -36,10 +32,7 @@ final class ViewStoreTests: BaseTCATestCase {
   }
 
   func testEqualityChecks() {
-    let store = Store(
-      initialState: State(),
-      reducer: EmptyReducer<State, Void>()
-    )
+    let store = Store<State, Void>(initialState: State()) {}
 
     let store1 = store.scope(state: { $0 }, action: { $0 })
     let store2 = store1.scope(state: { $0 }, action: { $0 })
@@ -82,7 +75,7 @@ final class ViewStoreTests: BaseTCATestCase {
       return .none
     }
 
-    let store = Store(initialState: 0, reducer: reducer)
+    let store = Store(initialState: 0) { reducer }
     let viewStore = ViewStore(store, observe: { $0 })
 
     var results: [Int] = []
@@ -104,7 +97,7 @@ final class ViewStoreTests: BaseTCATestCase {
       return .none
     }
 
-    let store = Store(initialState: 0, reducer: reducer)
+    let store = Store(initialState: 0) { reducer }
     let viewStore = ViewStore(store, observe: { $0 })
 
     var results: [Int] = []
@@ -125,7 +118,7 @@ final class ViewStoreTests: BaseTCATestCase {
       count += 1
       return .none
     }
-    let store = Store(initialState: 0, reducer: reducer)
+    let store = Store(initialState: 0) { reducer }
 
     var results: [Int] = []
     ViewStore(store, observe: { $0 })
@@ -142,7 +135,7 @@ final class ViewStoreTests: BaseTCATestCase {
       count += 1
       return .none
     }
-    let store = Store(initialState: 0, reducer: reducer)
+    let store = Store(initialState: 0) { reducer }
     let viewStore = ViewStore(store, observe: { $0 })
 
     var results: [Int] = []
@@ -185,7 +178,7 @@ final class ViewStoreTests: BaseTCATestCase {
         }
       }
 
-      let store = Store(initialState: false, reducer: reducer)
+      let store = Store(initialState: false) { reducer }
       let viewStore = ViewStore(store, observe: { $0 })
 
       XCTAssertEqual(viewStore.state, false)
@@ -212,7 +205,7 @@ final class ViewStoreTests: BaseTCATestCase {
         }
       }
 
-      let store = Store(initialState: false, reducer: reducer)
+      let store = Store(initialState: false) { reducer }
       let viewStore = ViewStore(store, observe: { $0 })
 
       XCTAssertEqual(viewStore.state, false)
@@ -230,9 +223,8 @@ final class ViewStoreTests: BaseTCATestCase {
       case tap
       case response(Int)
     }
-    let store = Store(
-      initialState: 0,
-      reducer: Reduce<Int, Action> { state, action in
+    let store = Store(initialState: 0) {
+      Reduce<Int, Action> { state, action in
         switch action {
         case .tap:
           return .task {
@@ -243,7 +235,7 @@ final class ViewStoreTests: BaseTCATestCase {
           return .none
         }
       }
-    )
+    }
 
     let viewStore = ViewStore(store, observe: { $0 })
 
@@ -257,9 +249,8 @@ final class ViewStoreTests: BaseTCATestCase {
       case tap
       case response(Int)
     }
-    let store = Store(
-      initialState: 0,
-      reducer: Reduce<Int, Action> { state, action in
+    let store = Store(initialState: 0) {
+      Reduce<Int, Action> { state, action in
         switch action {
         case .tap:
           return .task {
@@ -271,7 +262,7 @@ final class ViewStoreTests: BaseTCATestCase {
           return .none
         }
       }
-    )
+    }
 
     let viewStore = ViewStore(store, observe: { $0 })
 

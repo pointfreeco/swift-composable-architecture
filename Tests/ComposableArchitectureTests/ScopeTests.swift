@@ -4,10 +4,9 @@ import XCTest
 @MainActor
 final class ScopeTests: BaseTCATestCase {
   func testStructChild() async {
-    let store = TestStore(
-      initialState: Feature.State(),
-      reducer: Feature()
-    )
+    let store = TestStore(initialState: Feature.State()) {
+      Feature()
+    }
 
     await store.send(.child1(.incrementButtonTapped)) {
       $0.child1.count = 1
@@ -24,10 +23,9 @@ final class ScopeTests: BaseTCATestCase {
   }
 
   func testEnumChild() async {
-    let store = TestStore(
-      initialState: Feature.State(),
-      reducer: Feature()
-    )
+    let store = TestStore(initialState: Feature.State()) {
+      Feature()
+    }
 
     await store.send(.child2(.count(1))) {
       $0.child2 = .count(1)
@@ -42,10 +40,9 @@ final class ScopeTests: BaseTCATestCase {
 
   #if DEBUG
     func testNilChild() async {
-      let store = TestStore(
-        initialState: Child2.State.count(0),
-        reducer: Scope(state: /Child2.State.name, action: /Child2.Action.name) {}
-      )
+      let store = TestStore(initialState: Child2.State.count(0)) {
+        Scope(state: /Child2.State.name, action: /Child2.Action.name) {}
+      }
 
       XCTExpectFailure {
         $0.compactDescription == """

@@ -11,9 +11,10 @@ final class ForEachReducerTests: BaseTCATestCase {
           .init(id: 2, value: "Blob Jr."),
           .init(id: 3, value: "Blob Sr."),
         ]
-      ),
-      reducer: Elements()
-    )
+      )
+    ) {
+      Elements()
+    }
 
     await store.send(.row(id: 1, action: "Blob Esq.")) {
       $0.rows[id: 1]?.value = "Blob Esq."
@@ -27,21 +28,19 @@ final class ForEachReducerTests: BaseTCATestCase {
   }
 
   func testNonElementAction() async {
-    let store = TestStore(
-      initialState: Elements.State(),
-      reducer: Elements()
-    )
+    let store = TestStore(initialState: Elements.State()) {
+      Elements()
+    }
 
     await store.send(.buttonTapped)
   }
 
   #if DEBUG
     func testMissingElement() async {
-      let store = TestStore(
-        initialState: Elements.State(),
-        reducer: EmptyReducer()
+      let store = TestStore(initialState: Elements.State()) {
+        EmptyReducer<Elements.State, Elements.Action>()
           .forEach(\.rows, action: /Elements.Action.row) {}
-      )
+      }
 
       XCTExpectFailure {
         $0.compactDescription == """

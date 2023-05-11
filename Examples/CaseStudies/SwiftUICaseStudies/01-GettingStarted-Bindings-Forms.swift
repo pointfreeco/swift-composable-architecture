@@ -116,10 +116,9 @@ struct BindingFormView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       BindingFormView(
-        store: Store(
-          initialState: BindingForm.State(),
-          reducer: BindingForm()
-        )
+        store: Store(initialState: BindingForm.State()) {
+          BindingForm()
+        }
       )
     }
   }

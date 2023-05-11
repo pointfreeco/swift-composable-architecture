@@ -6,9 +6,8 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
   func testChildAction() async {
     struct SomeError: Error, Equatable {}
 
-    let store = TestStore(
-      initialState: Result.success(0),
-      reducer: Reduce<Result<Int, SomeError>, Result<Int, SomeError>> { state, action in
+    let store = TestStore(initialState: Result.success(0)) {
+      Reduce<Result<Int, SomeError>, Result<Int, SomeError>> { state, action in
         .none
       }
       .ifCaseLet(/Result.success, action: /Result.success) {
@@ -17,7 +16,7 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
           return state < 0 ? .run { await $0(0) } : .none
         }
       }
-    )
+    }
 
     await store.send(.success(1)) {
       $0 = .success(1)
@@ -35,11 +34,10 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
     func testNilChild() async {
       struct SomeError: Error, Equatable {}
 
-      let store = TestStore(
-        initialState: Result.failure(SomeError()),
-        reducer: EmptyReducer<Result<Int, SomeError>, Result<Int, SomeError>>()
+      let store = TestStore(initialState: Result.failure(SomeError())) {
+        EmptyReducer<Result<Int, SomeError>, Result<Int, SomeError>>()
           .ifCaseLet(/Result.success, action: /Result.success) {}
-      )
+      }
 
       XCTExpectFailure {
         $0.compactDescription == """

@@ -356,10 +356,9 @@ struct WebSocketView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       WebSocketView(
-        store: Store(
-          initialState: WebSocket.State(receivedMessages: ["Hi"]),
-          reducer: WebSocket()
-        )
+        store: Store(initialState: WebSocket.State(receivedMessages: ["Hi"])) {
+          WebSocket()
+        }
       )
     }
   }

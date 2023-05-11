@@ -108,10 +108,9 @@ struct LoadThenNavigateView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       LoadThenNavigateView(
-        store: Store(
-          initialState: LoadThenNavigate.State(),
-          reducer: LoadThenNavigate()
-        )
+        store: Store(initialState: LoadThenNavigate.State()) {
+          LoadThenNavigate()
+        }
       )
     }
     .navigationViewStyle(.stack)

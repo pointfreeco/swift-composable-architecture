@@ -604,7 +604,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///
   ///     ```swift
   ///     SwitchStore(self.parentStore) {
-  ///       CaseLet(state: /ParentState.child, action: ParentAction.child) { childStore in
+  ///       CaseLet(/ParentState.child, action: ParentAction.child) { childStore in
   ///         // This destination only appears when child state matches
   ///         WithViewStore(childStore) { childViewStore in
   ///           // So this action can only be sent when child state is available

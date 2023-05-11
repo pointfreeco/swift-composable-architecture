@@ -11,18 +11,16 @@ struct IntegrationApp: App {
         List {
           NavigationLink("EscapedWithViewStoreTestCase") {
             EscapedWithViewStoreTestCaseView(
-              store: Store(
-                initialState: 10,
-                reducer: EscapedWithViewStoreTestCase()
-              )
+              store: Store(initialState: 10) {
+                EscapedWithViewStoreTestCase()
+              }
             )
           }
           NavigationLink("ForEachBindingTestCase") {
             ForEachBindingTestCaseView(
-              store: Store(
-                initialState: ForEachBindingTestCase.State(),
-                reducer: ForEachBindingTestCase()
-              )
+              store: Store(initialState: ForEachBindingTestCase.State()) {
+                ForEachBindingTestCase()
+              }
             )
           }
 
@@ -31,28 +29,25 @@ struct IntegrationApp: App {
           }
           .sheet(isPresented: self.$isNavigationStackBindingTestCasePresented) {
             NavigationStackBindingTestCaseView(
-              store: Store(
-                initialState: NavigationStackBindingTestCase.State(),
-                reducer: NavigationStackBindingTestCase()
-              )
+              store: Store(initialState: NavigationStackBindingTestCase.State()) {
+                NavigationStackBindingTestCase()
+              }
             )
           }
 
           NavigationLink("SwitchStoreTestCase") {
             SwitchStoreTestCaseView(
-              store: Store(
-                initialState: SwitchStoreTestCase.State.screenA(SwitchStoreTestCase.Screen.State()),
-                reducer: SwitchStoreTestCase()
-              )
+              store: Store(initialState: SwitchStoreTestCase.State.screenA()) {
+                SwitchStoreTestCase()
+              }
             )
           }
 
           NavigationLink("Binding Animations Test Bench") {
             BindingsAnimationsTestBench(
-              store: Store(
-                initialState: false,
-                reducer: BindingsAnimations()
-              )
+              store: Store(initialState: false) {
+                BindingsAnimations()
+              }
             )
           }
         }

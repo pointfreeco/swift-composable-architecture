@@ -252,10 +252,9 @@ reducer that will power the application:
 struct MyApp: App {
   var body: some Scene {
     FeatureView(
-      store: Store(
-        initialState: Feature.State(),
-        reducer: Feature()
-      )
+      store: Store(initialState: Feature.State()) {
+        Feature()
+      }
     )
   }
 }
@@ -276,10 +275,9 @@ does extra work to allow you to assert how your feature evolves as actions are s
 ```swift
 @MainActor
 func testFeature() async {
-  let store = TestStore(
-    initialState: Feature.State(),
-    reducer: Feature()
-  )
+  let store = TestStore(initialState: Feature.State()) {
+    Feature()
+  }
 }
 ```
 
@@ -343,16 +341,15 @@ interacts with the real world API server:
 struct MyApp: App {
   var body: some Scene {
     FeatureView(
-      store: Store(
-        initialState: Feature.State(),
-        reducer: Feature(
+      store: Store(initialState: Feature.State()) {
+        Feature(
           numberFact: { number in
             let (data, _) = try await URLSession.shared
               .data(from: .init(string: "http://numbersapi.com/\(number)")!)
             return String(decoding: data, as: UTF8.self)
           }
         )
-      )
+      }
     )
   }
 }
@@ -363,12 +360,9 @@ But in tests we can use a mock dependency that immediately returns a determinist
 ```swift
 @MainActor
 func testFeature() async {
-  let store = TestStore(
-    initialState: Feature.State(),
-    reducer: Feature(
-      numberFact: { "\($0) is a good number Brent" }
-    )
-  )
+  let store = TestStore(initialState: Feature.State()) {
+    Feature(numberFact: { "\($0) is a good number Brent" })
+  }
 }
 ```
 
@@ -449,10 +443,9 @@ This means the entry point to the application no longer needs to construct depen
 struct MyApp: App {
   var body: some Scene {
     FeatureView(
-      store: Store(
-        initialState: Feature.State(),
-        reducer: Feature()
-      )
+      store: Store(initialState: Feature.State()) {
+        Feature()
+      }
     )
   }
 }
@@ -462,10 +455,9 @@ And the test store can be constructed without specifying any dependencies, but y
 override any dependency you need to for the purpose of the test:
 
 ```swift
-let store = TestStore(
-  initialState: Feature.State(),
-  reducer: Feature()
-) {
+let store = TestStore(initialState: Feature.State()) {
+  Feature()
+} withDependencies: {
   $0.numberFact.fetch = { "\($0) is a good number Brent" }
 }
 

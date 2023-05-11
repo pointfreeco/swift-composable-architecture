@@ -12,10 +12,9 @@ import Foundation
 ///   var body: some Scene {
 ///     WindowGroup {
 ///       RootView(
-///         store: Store(
-///           initialState: AppReducer.State(),
-///           reducer: AppReducer()
-///         )
+///         store: Store(initialState: AppReducer.State()) {
+///           AppReducer()
+///         }
 ///       )
 ///     }
 ///   }
@@ -145,19 +144,22 @@ public final class Store<State, Action> {
   ///     by the reducer.
   public convenience init<R: ReducerProtocol>(
     initialState: @autoclosure () -> R.State,
-    reducer: R,
-    prepareDependencies: ((inout DependencyValues) -> Void)? = nil
+    @ReducerBuilder<State, Action> reducer: () -> R,
+    withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
   ) where R.State == State, R.Action == Action {
     if let prepareDependencies = prepareDependencies {
+      let (initialState, reducer) = withDependencies(prepareDependencies) {
+        (initialState(), reducer()) 
+      }
       self.init(
-        initialState: withDependencies(prepareDependencies) { initialState() },
+        initialState: initialState,
         reducer: reducer.transformDependency(\.self, transform: prepareDependencies),
         mainThreadChecksEnabled: true
       )
     } else {
       self.init(
         initialState: initialState(),
-        reducer: reducer,
+        reducer: reducer(),
         mainThreadChecksEnabled: true
       )
     }
@@ -174,10 +176,9 @@ public final class Store<State, Action> {
   /// enum Action { case login(LoginAction), ... }
   ///
   /// // A store that runs the entire application.
-  /// let store = Store(
-  ///   initialState: AppReducer.State(),
-  ///   reducer: AppReducer()
-  /// )
+  /// let store = Store(initialState: AppReducer.State()) {
+  ///   AppReducer()
+  /// }
   ///
   /// // Construct a login view by scoping the store to one that works with only login domain.
   /// LoginView(

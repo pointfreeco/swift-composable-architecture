@@ -136,9 +136,10 @@ struct LoadThenNavigateListView_Previews: PreviewProvider {
               LoadThenNavigateList.State.Row(count: 42, id: UUID()),
               LoadThenNavigateList.State.Row(count: 100, id: UUID()),
             ]
-          ),
-          reducer: LoadThenNavigateList()
-        )
+          )
+        ) {
+          LoadThenNavigateList()
+        }
       )
     }
     .navigationViewStyle(.stack)

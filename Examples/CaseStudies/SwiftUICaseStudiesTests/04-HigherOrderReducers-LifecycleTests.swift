@@ -8,10 +8,9 @@ final class LifecycleTests: XCTestCase {
   func testLifecycle() async {
     let clock = TestClock()
 
-    let store = TestStore(
-      initialState: LifecycleDemo.State(),
-      reducer: LifecycleDemo()
-    ) {
+    let store = TestStore(initialState: LifecycleDemo.State()) {
+      LifecycleDemo()
+    } withDependencies: {
       $0.continuousClock = clock
     }
 

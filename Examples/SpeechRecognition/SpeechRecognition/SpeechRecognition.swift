@@ -152,10 +152,9 @@ struct SpeechRecognitionView: View {
 struct SpeechRecognitionView_Previews: PreviewProvider {
   static var previews: some View {
     SpeechRecognitionView(
-      store: Store(
-        initialState: SpeechRecognition.State(transcribedText: "Test test 123"),
-        reducer: SpeechRecognition()
-      )
+      store: Store(initialState: SpeechRecognition.State(transcribedText: "Test test 123")) {
+        SpeechRecognition()
+      }
     )
   }
 }

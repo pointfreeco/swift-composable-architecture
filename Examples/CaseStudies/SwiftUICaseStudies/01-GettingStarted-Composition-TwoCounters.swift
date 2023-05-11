@@ -68,10 +68,9 @@ struct TwoCountersView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       TwoCountersView(
-        store: Store(
-          initialState: TwoCounters.State(),
-          reducer: TwoCounters()
-        )
+        store: Store(initialState: TwoCounters.State()) {
+          TwoCounters()
+        }
       )
     }
   }

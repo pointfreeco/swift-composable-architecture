@@ -170,10 +170,9 @@ struct Lifecycle_Previews: PreviewProvider {
     Group {
       NavigationView {
         LifecycleDemoView(
-          store: Store(
-            initialState: LifecycleDemo.State(),
-            reducer: LifecycleDemo()
-          )
+          store: Store(initialState: LifecycleDemo.State()) {
+            LifecycleDemo()
+          }
         )
       }
     }

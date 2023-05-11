@@ -98,10 +98,9 @@ struct PresentAndLoadView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       PresentAndLoadView(
-        store: Store(
-          initialState: PresentAndLoad.State(),
-          reducer: PresentAndLoad()
-        )
+        store: Store(initialState: PresentAndLoad.State()) {
+          PresentAndLoad()
+        }
       )
     }
   }

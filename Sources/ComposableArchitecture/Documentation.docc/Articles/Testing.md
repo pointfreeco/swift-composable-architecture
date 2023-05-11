@@ -63,10 +63,9 @@ initial state of the feature and the ``Reducer`` that run's the feature's logic:
 @MainActor
 class CounterTests: XCTestCase {
   func testBasics() async {
-    let store = TestStore(
-      initialState: Feature.State(count: 0),
-      reducer: Feature()
-    )
+    let store = TestStore(initialState: Feature.State(count: 0)) {
+      Feature()
+    }
   }
 }
 ```
@@ -222,10 +221,9 @@ when testing state mutations:
 @MainActor
 class TimerTests: XCTestCase {
   func testBasics() async {
-    let store = TestStore(
-      initialState: Feature.State(count: 0),
-      reducer: Feature()
-    )
+    let store = TestStore(initialState: Feature.State(count: 0)) {
+      Feature()
+    }
   }
 }
 ```
@@ -362,10 +360,9 @@ By having a clock as a dependency in the feature we can supply a controlled vers
 as an immediate clock that does not suspend at all when you ask it to sleep:
 
 ```swift
-let store = TestStore(
-  initialState: Feature.State(count: 0),
-  reducer: Feature()
-) {
+let store = TestStore(initialState: Feature.State(count: 0)) {
+  Feature()
+} withDependencies: {
   $0.continuousClock = ImmediateClock()
 }
 ```
@@ -432,10 +429,9 @@ actions that mimic the user logging in, and then eventually assert that the sele
 to activity:
 
 ```swift
-let store = TestStore(
-  initialState: App.State(),
-  reducer: App()
-)
+let store = TestStore(initialState: App.State()) {
+  App()
+}
 
 // 1️⃣ Emulate user tapping on submit button.
 await store.send(.login(.submitButtonTapped)) {
@@ -481,10 +477,9 @@ happening inside the login feature. To do this, we can turn off ``TestStore/exha
 test store, and then just assert on what we are interested in:
 
 ```swift
-let store = TestStore(
-  initialState: App.State(),
-  reducer: App()
-)
+let store = TestStore(initialState: App.State()) {
+  App()
+}
 store.exhaustivity = .off  // ⬅️
 
 await store.send(.login(.submitButtonTapped))
@@ -504,10 +499,9 @@ without any notification. If you would like to see what test failures are being 
 actually causing a failure, you can use ``Exhaustivity/off(showSkippedAssertions:)``:
 
 ```swift
-let store = TestStore(
-  initialState: App.State(),
-  reducer: App()
-)
+let store = TestStore(initialState: App.State()) {
+  App()
+}
 store.exhaustivity = .off(showSkippedAssertions: true)  // ⬅️
 
 await store.send(.login(.submitButtonTapped))

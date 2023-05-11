@@ -6,10 +6,9 @@ import XCTest
 @MainActor
 final class BindingFormTests: XCTestCase {
   func testBasics() async {
-    let store = TestStore(
-      initialState: BindingForm.State(),
-      reducer: BindingForm()
-    )
+    let store = TestStore(initialState: BindingForm.State()) {
+      BindingForm()
+    }
 
     await store.send(.set(\.$sliderValue, 2)) {
       $0.sliderValue = 2

@@ -6,9 +6,8 @@
   @MainActor
   final class TestStoreNonExhaustiveTests: BaseTCATestCase {
     func testSkipReceivedActions_NonStrict() async {
-      let store = TestStore(
-        initialState: 0,
-        reducer: Reduce<Int, Bool> { state, action in
+      let store = TestStore(initialState: 0) {
+        Reduce<Int, Bool> { state, action in
           if action {
             state += 1
             return .init(value: false)
@@ -17,7 +16,7 @@
             return .none
           }
         }
-      )
+      }
 
       await store.send(true) { $0 = 1 }
       XCTAssertEqual(store.state, 1)
@@ -26,9 +25,8 @@
     }
 
     func testSkipReceivedActions_Strict() async {
-      let store = TestStore(
-        initialState: 0,
-        reducer: Reduce<Int, Bool> { state, action in
+      let store = TestStore(initialState: 0) {
+        Reduce<Int, Bool> { state, action in
           if action {
             state += 1
             return .init(value: false)
@@ -37,7 +35,7 @@
             return .none
           }
         }
-      )
+      }
 
       await store.send(true) { $0 = 1 }
       XCTAssertEqual(store.state, 1)
@@ -50,9 +48,8 @@
     }
 
     func testSkipReceivedActions_NonExhaustive() async {
-      let store = TestStore(
-        initialState: 0,
-        reducer: Reduce<Int, Bool> { state, action in
+      let store = TestStore(initialState: 0) {
+        Reduce<Int, Bool> { state, action in
           if action {
             state += 1
             return .init(value: false)
@@ -61,7 +58,7 @@
             return .none
           }
         }
-      )
+      }
       store.exhaustivity = .off
 
       await store.send(true) { $0 = 1 }
@@ -71,9 +68,8 @@
     }
 
     func testSkipReceivedActions_PartialExhaustive() async {
-      let store = TestStore(
-        initialState: 0,
-        reducer: Reduce<Int, Bool> { state, action in
+      let store = TestStore(initialState: 0) {
+        Reduce<Int, Bool> { state, action in
           if action {
             state += 1
             return .init(value: false)
@@ -82,7 +78,7 @@
             return .none
           }
         }
-      )
+      }
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(true) { $0 = 1 }
@@ -92,12 +88,11 @@
     }
 
     func testCancelInFlightEffects_NonStrict() async {
-      let store = TestStore(
-        initialState: 0,
-        reducer: Reduce<Int, Bool> { _, action in
+      let store = TestStore(initialState: 0) {
+        Reduce<Int, Bool> { _, action in
           .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
         }
-      )
+      }
 
       await store.send(true)
       await store.skipInFlightEffects(strict: false)
@@ -105,12 +100,11 @@
 
     func testCancelInFlightEffects_Strict() async {
       await withMainSerialExecutor {
-        let store = TestStore(
-          initialState: 0,
-          reducer: Reduce<Int, Bool> { _, action in
+        let store = TestStore(initialState: 0) {
+          Reduce<Int, Bool> { _, action in
             .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC / 4) }
           }
-        )
+        }
 
         let task = await store.send(true)
         await task.finish(timeout: NSEC_PER_SEC / 2)
@@ -122,12 +116,11 @@
     }
 
     func testCancelInFlightEffects_NonExhaustive() async {
-      let store = TestStore(
-        initialState: 0,
-        reducer: Reduce<Int, Bool> { _, action in
+      let store = TestStore(initialState: 0) {
+        Reduce<Int, Bool> { _, action in
           .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
         }
-      )
+      }
       store.exhaustivity = .off
 
       await store.send(true)
@@ -135,12 +128,11 @@
     }
 
     func testCancelInFlightEffects_PartialExhaustive() async {
-      let store = TestStore(
-        initialState: 0,
-        reducer: Reduce<Int, Bool> { _, action in
+      let store = TestStore(initialState: 0) {
+        Reduce<Int, Bool> { _, action in
           .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
         }
-      )
+      }
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(true)
@@ -149,12 +141,11 @@
 
     // Confirms that you don't have to receive all actions before the test completes.
     func testIgnoreReceiveActions_PartialExhaustive() {
-      let store = TestStore(
-        initialState: 0,
-        reducer: Reduce<Int, Bool> { _, action in
+      let store = TestStore(initialState: 0) {
+        Reduce<Int, Bool> { _, action in
           action ? .init(value: false) : .none
         }
-      )
+      }
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       store.send(true)
@@ -162,12 +153,11 @@
 
     // Confirms that you don't have to receive all actions before the test completes.
     func testIgnoreReceiveActions_NonExhaustive() {
-      let store = TestStore(
-        initialState: 0,
-        reducer: Reduce<Int, Bool> { _, action in
+      let store = TestStore(initialState: 0) {
+        Reduce<Int, Bool> { _, action in
           action ? .init(value: false) : .none
         }
-      )
+      }
       store.exhaustivity = .off
 
       store.send(true)
@@ -175,12 +165,11 @@
 
     // Confirms that all effects do not need to complete before the test completes.
     func testIgnoreInFlightEffects_PartialExhaustive() {
-      let store = TestStore(
-        initialState: 0,
-        reducer: Reduce<Int, Bool> { _, action in
+      let store = TestStore(initialState: 0) {
+        Reduce<Int, Bool> { _, action in
           .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
         }
-      )
+      }
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       store.send(true)
@@ -188,12 +177,11 @@
 
     // Confirms that all effects do not need to complete before the test completes.
     func testIgnoreInFlightEffects_NonExhaustive() {
-      let store = TestStore(
-        initialState: 0,
-        reducer: Reduce<Int, Bool> { _, action in
+      let store = TestStore(initialState: 0) {
+        Reduce<Int, Bool> { _, action in
           .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
         }
-      )
+      }
       store.exhaustivity = .off
 
       store.send(true)
@@ -201,10 +189,9 @@
 
     // Confirms that you don't have to assert on all state changes in a non-exhaustive test store.
     func testNonExhaustiveSend_PartialExhaustive() {
-      let store = TestStore(
-        initialState: Counter.State(),
-        reducer: Counter()
-      )
+      let store = TestStore(initialState: Counter.State()) {
+        Counter()
+      }
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       store.send(.increment) {
@@ -222,10 +209,9 @@
     }
 
     func testNonExhaustiveSend_PartialExhaustive_Prefix() {
-      let store = TestStore(
-        initialState: Counter.State(),
-        reducer: Counter()
-      )
+      let store = TestStore(initialState: Counter.State()) {
+        Counter()
+      }
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       store.send(.increment) {
@@ -237,10 +223,9 @@
     // Confirms that you don't have to assert on all state changes in a non-exhaustive test store,
     // *but* if you make an incorrect mutation you will still get a failure.
     func testNonExhaustiveSend_PartialExhaustive_BadAssertion() {
-      let store = TestStore(
-        initialState: Counter.State(),
-        reducer: Counter()
-      )
+      let store = TestStore(initialState: Counter.State()) {
+        Counter()
+      }
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       #if DEBUG
@@ -267,10 +252,9 @@
     // Confirms that you don't have to assert on all state changes in a non-exhaustive test store,
     // *and* that informational boxes of what was not asserted on is not shown.
     func testNonExhaustiveSend_NonExhaustive() {
-      let store = TestStore(
-        initialState: Counter.State(),
-        reducer: Counter()
-      )
+      let store = TestStore(initialState: Counter.State()) {
+        Counter()
+      }
       store.exhaustivity = .off
 
       store.send(.increment) {
@@ -306,10 +290,9 @@
           }
         }
       }
-      let store = TestStore(
-        initialState: Feature.State(),
-        reducer: Feature()
-      )
+      let store = TestStore(initialState: Feature.State()) {
+        Feature()
+      }
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       store.send(.increment) {
@@ -345,10 +328,9 @@
           }
         }
       }
-      let store = TestStore(
-        initialState: Feature.State(),
-        reducer: Feature()
-      )
+      let store = TestStore(initialState: Feature.State()) {
+        Feature()
+      }
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       store.send(.increment) {
@@ -377,10 +359,9 @@
     // Confirms that with non-exhaustive test stores you can send multiple actions without asserting
     // on any state changes until the very last action.
     func testMultipleSendsWithAssertionOnLast() {
-      let store = TestStore(
-        initialState: Counter.State(),
-        reducer: Counter()
-      )
+      let store = TestStore(initialState: Counter.State()) {
+        Counter()
+      }
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       store.send(.increment)
@@ -398,10 +379,9 @@
     // Confirms that you don't have to assert on all state changes when receiving an action from an
     // effect in a non-exhaustive test store.
     func testReceive_StateChange() async {
-      let store = TestStore(
-        initialState: NonExhaustiveReceive.State(),
-        reducer: NonExhaustiveReceive()
-      )
+      let store = TestStore(initialState: NonExhaustiveReceive.State()) {
+        NonExhaustiveReceive()
+      }
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.onAppear)
@@ -422,10 +402,9 @@
 
     // Confirms that you can skip receiving certain effect actions in a non-exhaustive test store.
     func testReceive_SkipAction() async {
-      let store = TestStore(
-        initialState: NonExhaustiveReceive.State(),
-        reducer: NonExhaustiveReceive()
-      )
+      let store = TestStore(initialState: NonExhaustiveReceive.State()) {
+        NonExhaustiveReceive()
+      }
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.onAppear)
@@ -443,10 +422,9 @@
     // Confirms that you are allowed to send actions without having received all actions queued
     // from effects.
     func testSendWithUnreceivedAction() async {
-      let store = TestStore(
-        initialState: NonExhaustiveReceive.State(),
-        reducer: NonExhaustiveReceive()
-      )
+      let store = TestStore(initialState: NonExhaustiveReceive.State()) {
+        NonExhaustiveReceive()
+      }
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.onAppear)
@@ -479,10 +457,9 @@
           }
         }
 
-        let store = TestStore(
-          initialState: 0,
-          reducer: Feature()
-        )
+        let store = TestStore(initialState: 0) {
+          Feature()
+        }
         store.exhaustivity = .off
 
         await store.send(.tap)
@@ -503,9 +480,8 @@
         case buttonTapped
         case response(Int)
       }
-      let store = TestStore(
-        initialState: 0,
-        reducer: Reduce<Int, Action> { state, action in
+      let store = TestStore(initialState: 0) {
+        Reduce<Int, Action> { state, action in
           switch action {
           case .buttonTapped:
             state += 1
@@ -519,7 +495,7 @@
             return .none
           }
         }
-      )
+      }
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.buttonTapped)
@@ -539,10 +515,9 @@
     }
 
     func testCasePathReceive_PartialExhaustive() async {
-      let store = TestStore(
-        initialState: NonExhaustiveReceive.State(),
-        reducer: NonExhaustiveReceive()
-      )
+      let store = TestStore(initialState: NonExhaustiveReceive.State()) {
+        NonExhaustiveReceive()
+      }
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.onAppear)
@@ -555,10 +530,9 @@
     }
 
     func testCasePathReceive_NonExhaustive() async {
-      let store = TestStore(
-        initialState: NonExhaustiveReceive.State(),
-        reducer: NonExhaustiveReceive()
-      )
+      let store = TestStore(initialState: NonExhaustiveReceive.State()) {
+        NonExhaustiveReceive()
+      }
       store.exhaustivity = .off
 
       await store.send(.onAppear)
@@ -571,10 +545,9 @@
     }
 
     func testCasePathReceive_Exhaustive() async {
-      let store = TestStore(
-        initialState: NonExhaustiveReceive.State(),
-        reducer: NonExhaustiveReceive()
-      )
+      let store = TestStore(initialState: NonExhaustiveReceive.State()) {
+        NonExhaustiveReceive()
+      }
 
       await store.send(.onAppear)
       await store.receive(/NonExhaustiveReceive.Action.response1) {
@@ -594,9 +567,8 @@
         case response(NonEquatable)
       }
 
-      let store = TestStore(
-        initialState: 0,
-        reducer: Reduce<Int, Action> { state, action in
+      let store = TestStore(initialState: 0) {
+        Reduce<Int, Action> { state, action in
           switch action {
           case .tap:
             return EffectTask(value: .response(NonEquatable()))
@@ -604,7 +576,7 @@
             return .none
           }
         }
-      )
+      }
 
       await store.send(.tap)
       await store.receive(/Action.response)
@@ -617,9 +589,8 @@
         case response(NonEquatable)
       }
 
-      let store = TestStore(
-        initialState: 0,
-        reducer: Reduce<Int, Action> { state, action in
+      let store = TestStore(initialState: 0) {
+        Reduce<Int, Action> { state, action in
           switch action {
           case .tap:
             return EffectTask(value: .response(NonEquatable()))
@@ -627,17 +598,16 @@
             return .none
           }
         }
-      )
+      }
 
       await store.send(.tap)
       await store.receive({ (/Action.response) ~= $0 })
     }
 
     func testCasePathReceive_SkipReceivedAction() async {
-      let store = TestStore(
-        initialState: NonExhaustiveReceive.State(),
-        reducer: NonExhaustiveReceive()
-      )
+      let store = TestStore(initialState: NonExhaustiveReceive.State()) {
+        NonExhaustiveReceive()
+      }
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.onAppear)
@@ -647,10 +617,9 @@
     }
 
     func testCasePathReceive_WrongAction() async {
-      let store = TestStore(
-        initialState: NonExhaustiveReceive.State(),
-        reducer: NonExhaustiveReceive()
-      )
+      let store = TestStore(initialState: NonExhaustiveReceive.State()) {
+        NonExhaustiveReceive()
+      }
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.onAppear)
@@ -667,10 +636,9 @@
     }
 
     func testCasePathReceive_ReceivedExtraAction() async {
-      let store = TestStore(
-        initialState: NonExhaustiveReceive.State(),
-        reducer: NonExhaustiveReceive()
-      )
+      let store = TestStore(initialState: NonExhaustiveReceive.State()) {
+        NonExhaustiveReceive()
+      }
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.onAppear)
@@ -691,9 +659,8 @@
         var count = 0
       }
       enum Action: Equatable { case tap, response }
-      let store = TestStore(
-        initialState: State(),
-        reducer: Reduce<State, Action> { state, action in
+      let store = TestStore(initialState: State()) {
+        Reduce<State, Action> { state, action in
           switch action {
           case .tap:
             state.count += 1
@@ -703,7 +670,7 @@
             return .none
           }
         }
-      )
+      }
 
       await store.send(.tap) { state in
         state.count = 1
@@ -729,9 +696,8 @@
 
     func testXCTModifyNonExhaustive() async {
       enum Action { case tap, response }
-      let store = TestStore(
-        initialState: Optional(1),
-        reducer: Reduce<Int?, Action> { state, action in
+      let store = TestStore(initialState: Optional(1)) {
+        Reduce<Int?, Action> { state, action in
           switch action {
           case .tap:
             return .send(.response)
@@ -739,7 +705,7 @@
             return .none
           }
         }
-      )
+      }
       store.exhaustivity = .off
 
       await store.send(.tap) {
@@ -753,10 +719,9 @@
     // This example comes from Krzysztof Zabłocki's blog post:
     // https://www.merowing.info/exhaustive-testing-in-tca/
     func testKrzysztofExample1() {
-      let store = TestStore(
-        initialState: KrzysztofExample.State(),
-        reducer: KrzysztofExample()
-      )
+      let store = TestStore(initialState: KrzysztofExample.State()) {
+        KrzysztofExample()
+      }
       store.exhaustivity = .off
 
       store.send(.changeIdentity(name: "Marek", surname: "Ignored")) {
@@ -767,10 +732,9 @@
     // This example comes from Krzysztof Zabłocki's blog post:
     // https://www.merowing.info/exhaustive-testing-in-tca/
     func testKrzysztofExample2() {
-      let store = TestStore(
-        initialState: KrzysztofExample.State(),
-        reducer: KrzysztofExample()
-      )
+      let store = TestStore(initialState: KrzysztofExample.State()) {
+        KrzysztofExample()
+      }
       store.exhaustivity = .off
 
       store.send(.changeIdentity(name: "Adam", surname: "Stern"))
@@ -786,10 +750,9 @@
     func testKrzysztofExample3() {
       let mainQueue = DispatchQueue.test
 
-      let store = TestStore(
-        initialState: KrzysztofExample.State(),
-        reducer: KrzysztofExample()
-      ) {
+      let store = TestStore(initialState: KrzysztofExample.State()) {
+        KrzysztofExample()
+      } withDependencies: {
         $0.mainQueue = mainQueue.eraseToAnyScheduler()
       }
       store.exhaustivity = .off
@@ -831,7 +794,9 @@
         This test should pass once we have the concept of "copyable" dependencies.
         """)
 
-      let store = TestStore(initialState: Feature.State(), reducer: Feature()) {
+      let store = TestStore(initialState: Feature.State()) {
+        Feature()
+      } withDependencies: {
         $0.uuid = .incrementing
       }
       store.exhaustivity = .off(showSkippedAssertions: true)

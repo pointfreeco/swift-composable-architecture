@@ -52,10 +52,9 @@ extension EffectPublisher where Failure == Never {
   /// func testTimer() async {
   ///   let mainQueue = DispatchQueue.test
   ///
-  ///   let store = TestStore(
-  ///     initialState: Feature.State(),
-  ///     reducer: Feature()
-  ///   ) {
+  ///   let store = TestStore(initialState: Feature.State()) {
+  ///     Feature()
+  ///   } withDependencies: {
   ///     $0.mainQueue = mainQueue.eraseToAnyScheduler()
   ///   }
   ///

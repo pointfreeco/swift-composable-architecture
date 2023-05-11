@@ -24,11 +24,11 @@ import SwiftUI
 ///     SwitchStore(self.store) { state in
 ///       switch state {
 ///       case .loggedIn:
-///         CaseLet(state: /App.State.loggedIn, action: App.Action.loggedIn) { loggedInStore in
+///         CaseLet(/App.State.loggedIn, action: App.Action.loggedIn) { loggedInStore in
 ///           LoggedInView(store: loggedInStore)
 ///         }
 ///       case .loggedOut:
-///         CaseLet(state: /App.State.loggedOut, action: App.Action.loggedOut) { loggedOutStore in
+///         CaseLet(/App.State.loggedOut, action: App.Action.loggedOut) { loggedOutStore in
 ///           LoggedOutView(store: loggedOutStore)
 ///         }
 ///       }

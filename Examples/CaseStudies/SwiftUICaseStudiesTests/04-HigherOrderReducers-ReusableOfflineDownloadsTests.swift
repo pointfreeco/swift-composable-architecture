@@ -13,9 +13,10 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
         id: 1,
         mode: .notDownloaded,
         url: URL(string: "https://www.pointfree.co")!
-      ),
-      reducer: DownloadComponent()
+      )
     ) {
+      DownloadComponent()
+    } withDependencies: {
       $0.downloadClient.download = { _ in self.download.stream }
     }
 
@@ -41,9 +42,10 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
         id: 1,
         mode: .notDownloaded,
         url: URL(string: "https://www.pointfree.co")!
-      ),
-      reducer: DownloadComponent()
+      )
     ) {
+      DownloadComponent()
+    } withDependencies: {
       $0.downloadClient.download = { _ in self.download.stream }
     }
 
@@ -81,9 +83,10 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
         id: 1,
         mode: .notDownloaded,
         url: URL(string: "https://www.pointfree.co")!
-      ),
-      reducer: DownloadComponent()
+      )
     ) {
+      DownloadComponent()
+    } withDependencies: {
       $0.downloadClient.download = { _ in self.download.stream }
     }
 
@@ -120,9 +123,10 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
         id: 1,
         mode: .downloaded,
         url: URL(string: "https://www.pointfree.co")!
-      ),
-      reducer: DownloadComponent()
+      )
     ) {
+      DownloadComponent()
+    } withDependencies: {
       $0.downloadClient.download = { _ in self.download.stream }
     }
 

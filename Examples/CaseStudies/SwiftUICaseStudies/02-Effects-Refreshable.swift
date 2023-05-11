@@ -118,10 +118,9 @@ struct RefreshableView: View {
 struct Refreshable_Previews: PreviewProvider {
   static var previews: some View {
     RefreshableView(
-      store: Store(
-        initialState: Refreshable.State(),
-        reducer: Refreshable()
-      )
+      store: Store(initialState: Refreshable.State()) {
+        Refreshable()
+      }
     )
   }
 }

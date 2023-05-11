@@ -101,10 +101,9 @@ struct NewGame_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       NewGameView(
-        store: Store(
-          initialState: NewGame.State(),
-          reducer: NewGame()
-        )
+        store: Store(initialState: NewGame.State()) {
+          NewGame()
+        }
       )
     }
   }

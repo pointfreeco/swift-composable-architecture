@@ -9,10 +9,9 @@ final class WebSocketTests: XCTestCase {
     let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
     let messages = AsyncStream<TaskResult<WebSocketClient.Message>>.streamWithContinuation()
 
-    let store = TestStore(
-      initialState: WebSocket.State(),
-      reducer: WebSocket()
-    ) {
+    let store = TestStore(initialState: WebSocket.State()) {
+      WebSocket()
+    } withDependencies: {
       $0.continuousClock = ImmediateClock()
       $0.webSocket.open = { _, _, _ in actions.stream }
       $0.webSocket.receive = { _ in messages.stream }
@@ -61,10 +60,9 @@ final class WebSocketTests: XCTestCase {
     let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
     let messages = AsyncStream<TaskResult<WebSocketClient.Message>>.streamWithContinuation()
 
-    let store = TestStore(
-      initialState: WebSocket.State(),
-      reducer: WebSocket()
-    ) {
+    let store = TestStore(initialState: WebSocket.State()) {
+      WebSocket()
+    } withDependencies: {
       $0.continuousClock = ImmediateClock()
       $0.webSocket.open = { _, _, _ in actions.stream }
       $0.webSocket.receive = { _ in messages.stream }
@@ -109,10 +107,9 @@ final class WebSocketTests: XCTestCase {
     let clock = TestClock()
     var pingsCount = 0
 
-    let store = TestStore(
-      initialState: WebSocket.State(),
-      reducer: WebSocket()
-    ) {
+    let store = TestStore(initialState: WebSocket.State()) {
+      WebSocket()
+    } withDependencies: {
       $0.continuousClock = clock
       $0.webSocket.open = { _, _, _ in actions.stream }
       $0.webSocket.receive = { _ in try await Task.never() }
@@ -142,10 +139,9 @@ final class WebSocketTests: XCTestCase {
   func testWebSocketConnectError() async {
     let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
 
-    let store = TestStore(
-      initialState: WebSocket.State(),
-      reducer: WebSocket()
-    ) {
+    let store = TestStore(initialState: WebSocket.State()) {
+      WebSocket()
+    } withDependencies: {
       $0.continuousClock = ImmediateClock()
       $0.webSocket.open = { _, _, _ in actions.stream }
       $0.webSocket.receive = { _ in try await Task.never() }

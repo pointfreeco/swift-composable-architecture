@@ -11,10 +11,9 @@ final class AnimationTests: XCTestCase {
     await withMainSerialExecutor {
       let clock = TestClock()
 
-      let store = TestStore(
-        initialState: Animations.State(),
-        reducer: Animations()
-      ) {
+      let store = TestStore(initialState: Animations.State()) {
+        Animations()
+      } withDependencies: {
         $0.continuousClock = clock
       }
 
@@ -65,10 +64,9 @@ final class AnimationTests: XCTestCase {
   func testReset() async {
     let clock = TestClock()
 
-    let store = TestStore(
-      initialState: Animations.State(),
-      reducer: Animations()
-    ) {
+    let store = TestStore(initialState: Animations.State()) {
+      Animations()
+    } withDependencies: {
       $0.continuousClock = clock
     }
 

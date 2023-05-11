@@ -96,10 +96,9 @@ struct NavigateAndLoadView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       NavigateAndLoadView(
-        store: Store(
-          initialState: NavigateAndLoad.State(),
-          reducer: NavigateAndLoad()
-        )
+        store: Store(initialState: NavigateAndLoad.State()) {
+          NavigateAndLoad()
+        }
       )
     }
     .navigationViewStyle(.stack)

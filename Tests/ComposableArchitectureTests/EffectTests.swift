@@ -295,11 +295,10 @@ final class EffectTests: BaseTCATestCase {
         }
       }
     }
-    let store = TestStore(
-      initialState: 0,
-      reducer: Feature()
+    let store = TestStore(initialState: 0) {
+      Feature()
         .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1_234_567_890)))
-    )
+    }
 
     await store.send(.tap).finish(timeout: NSEC_PER_SEC)
     await store.receive(.response(1_234_567_890)) {
@@ -327,11 +326,10 @@ final class EffectTests: BaseTCATestCase {
           }
         }
       }
-      let store = TestStore(
-        initialState: 0,
-        reducer: Feature()
+      let store = TestStore(initialState: 0) {
+        Feature()
           .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1_234_567_890)))
-      )
+      }
 
       await store.send(.tap).finish(timeout: NSEC_PER_SEC)
       await store.receive(.response(1_234_567_890)) {

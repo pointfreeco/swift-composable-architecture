@@ -50,13 +50,10 @@ final class ReducerTests: BaseTCATestCase {
 
           let clock = TestClock()
 
-          let store = TestStore(
-            initialState: 0,
-            reducer: CombineReducers {
-              Delayed(delay: .seconds(1), setValue: { @MainActor in fastValue = 42 })
-              Delayed(delay: .seconds(2), setValue: { @MainActor in slowValue = 1729 })
-            }
-          ) {
+          let store = TestStore(initialState: 0) {
+            Delayed(delay: .seconds(1), setValue: { @MainActor in fastValue = 42 })
+            Delayed(delay: .seconds(2), setValue: { @MainActor in slowValue = 1729 })
+          } withDependencies: {
             $0.continuousClock = clock
           }
 
@@ -98,13 +95,10 @@ final class ReducerTests: BaseTCATestCase {
     var first = false
     var second = false
 
-    let store = TestStore(
-      initialState: 0,
-      reducer: CombineReducers {
-        One(effect: { @MainActor in first = true })
-        One(effect: { @MainActor in second = true })
-      }
-    )
+    let store = TestStore(initialState: 0) {
+      One(effect: { @MainActor in first = true })
+      One(effect: { @MainActor in second = true })
+    }
 
     await store
       .send(.increment) { $0 = 2 }

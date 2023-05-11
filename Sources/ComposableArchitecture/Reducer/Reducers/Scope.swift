@@ -210,7 +210,7 @@ public struct Scope<ParentState, ParentAction, Child: ReducerProtocol>: ReducerP
   /// >   // ...
   /// >   }
   /// > }
-  /// > .ifCaseLet(state: /State.loggedIn, action: /Action.loggedIn) {
+  /// > .ifCaseLet(/State.loggedIn, action: /Action.loggedIn) {
   /// >   LoggedIn()  // ✅ Receives actions before its case can change
   /// > }
   /// > ```

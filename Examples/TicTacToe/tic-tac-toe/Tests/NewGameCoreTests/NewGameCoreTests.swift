@@ -5,10 +5,9 @@ import XCTest
 
 @MainActor
 final class NewGameCoreTests: XCTestCase {
-  let store = TestStore(
-    initialState: NewGame.State(),
-    reducer: NewGame()
-  )
+  let store = TestStore(initialState: NewGame.State()) {
+    NewGame()
+  }
 
   func testFlow_NewGame_Integration() async {
     await self.store.send(.oPlayerNameChanged("Blob Sr.")) {

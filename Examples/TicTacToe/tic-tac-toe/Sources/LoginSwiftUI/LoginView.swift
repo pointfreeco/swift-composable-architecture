@@ -122,10 +122,9 @@ struct LoginView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       LoginView(
-        store: Store(
-          initialState: Login.State(),
-          reducer: Login()
-        ) {
+        store: Store(initialState: Login.State()) {
+          Login()
+        } withDependencies: {
           $0.authenticationClient.login = { _ in
             AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
           }
