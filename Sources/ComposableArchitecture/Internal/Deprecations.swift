@@ -9,7 +9,8 @@ extension Store {
   @available(
     *,
     deprecated,
-    message: """
+    message:
+      """
       'Store.scope' requires an explicit 'action' transform and is intended to be used to transform a store of a parent domain into a store of a child domain.
 
       When transforming store state into view state, use the 'observe' parameter when constructing a view store.
