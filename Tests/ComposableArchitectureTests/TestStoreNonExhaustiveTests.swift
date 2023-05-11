@@ -801,6 +801,47 @@
       }
       XCTAssertEqual(store.state.age, 34)
     }
+
+    func testEffectfulAssertion_NonExhaustiveTestStore_ShowSkippedAssertions() async {
+      struct Model: Equatable {
+        let id: UUID
+        init() {
+          @Dependency(\.uuid) var uuid
+          self.id = uuid()
+        }
+      }
+      struct Feature: ReducerProtocol {
+        struct State: Equatable {
+          var values: [Model] = []
+        }
+        enum Action {
+          case addButtonTapped
+        }
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          switch action {
+          case .addButtonTapped:
+            state.values.append(Model())
+            return .none
+          }
+        }
+      }
+
+      XCTTODO("""
+        This test should pass once we have the concept of "copyable" dependencies.
+        """)
+
+      let store = TestStore(initialState: Feature.State(), reducer: Feature()) {
+        $0.uuid = .incrementing
+      }
+      store.exhaustivity = .off(showSkippedAssertions: true)
+
+      await store.send(.addButtonTapped) {
+        $0.values.insert(Model(), at: 0)
+      }
+      await store.send(.addButtonTapped) {
+        $0.values.insert(Model(), at: 1)
+      }
+    }
   }
 
   struct Counter: ReducerProtocol {
