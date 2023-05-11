@@ -826,7 +826,8 @@
         }
       }
 
-      XCTTODO("""
+      XCTTODO(
+        """
         This test should pass once we have the concept of "copyable" dependencies.
         """)
 
