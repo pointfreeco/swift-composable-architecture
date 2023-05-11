@@ -32,7 +32,7 @@ struct NavigateAndLoadList: ReducerProtocol {
   }
 
   @Dependency(\.continuousClock) var clock
-  private enum CancelID {}
+  private enum CancelID { case load }
 
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
@@ -46,14 +46,14 @@ struct NavigateAndLoadList: ReducerProtocol {
           try await self.clock.sleep(for: .seconds(1))
           return .setNavigationSelectionDelayCompleted
         }
-        .cancellable(id: CancelID.self, cancelInFlight: true)
+        .cancellable(id: CancelID.load, cancelInFlight: true)
 
       case .setNavigation(selection: .none):
         if let selection = state.selection, let count = selection.value?.count {
           state.rows[id: selection.id]?.count = count
         }
         state.selection = nil
-        return .cancel(id: CancelID.self)
+        return .cancel(id: CancelID.load)
 
       case .setNavigationSelectionDelayCompleted:
         guard let id = state.selection?.id else { return .none }

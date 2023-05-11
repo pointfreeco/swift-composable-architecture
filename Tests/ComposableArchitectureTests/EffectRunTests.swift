@@ -32,7 +32,7 @@ final class EffectRunTests: BaseTCATestCase {
           return .run { _ in
             struct Failure: Error {}
             throw Failure()
-          } catch: { @Sendable _, send in  // NB: Explicit '@Sendable' required in 5.5.2
+          } catch: { _, send in
             await send(.response)
           }
         case .response:
@@ -46,7 +46,7 @@ final class EffectRunTests: BaseTCATestCase {
 
   #if DEBUG
     func testRunUnhandledFailure() async {
-      await _withMainSerialExecutor {
+      await withMainSerialExecutor {
         var line: UInt!
         XCTExpectFailure(nil, enabled: nil, strict: nil) {
           $0.compactDescription == """
@@ -81,7 +81,7 @@ final class EffectRunTests: BaseTCATestCase {
   #endif
 
   func testRunCancellation() async {
-    enum CancelID {}
+    enum CancelID { case response }
     struct State: Equatable {}
     enum Action: Equatable { case tapped, response }
     let store = TestStore(initialState: State()) {
@@ -89,11 +89,11 @@ final class EffectRunTests: BaseTCATestCase {
         switch action {
         case .tapped:
           return .run { send in
-            Task.cancel(id: CancelID.self)
+            Task.cancel(id: CancelID.response)
             try Task.checkCancellation()
             await send(.response)
           }
-          .cancellable(id: CancelID.self)
+          .cancellable(id: CancelID.response)
         case .response:
           return .none
         }
@@ -103,7 +103,7 @@ final class EffectRunTests: BaseTCATestCase {
   }
 
   func testRunCancellationCatch() async {
-    enum CancelID {}
+    enum CancelID { case responseA }
     struct State: Equatable {}
     enum Action: Equatable { case tapped, responseA, responseB }
     let store = TestStore(initialState: State()) {
@@ -111,13 +111,13 @@ final class EffectRunTests: BaseTCATestCase {
         switch action {
         case .tapped:
           return .run { send in
-            Task.cancel(id: CancelID.self)
+            Task.cancel(id: CancelID.responseA)
             try Task.checkCancellation()
             await send(.responseA)
-          } catch: { @Sendable _, send in  // NB: Explicit '@Sendable' required in 5.5.2
+          } catch: { _, send in
             await send(.responseB)
           }
-          .cancellable(id: CancelID.self)
+          .cancellable(id: CancelID.responseA)
         case .responseA, .responseB:
           return .none
         }
@@ -128,7 +128,7 @@ final class EffectRunTests: BaseTCATestCase {
 
   #if DEBUG
     func testRunEscapeFailure() async {
-      await _withMainSerialExecutor {
+      await withMainSerialExecutor {
         XCTExpectFailure {
           $0.compactDescription == """
             An action was sent from a completed effect:

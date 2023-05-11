@@ -8,10 +8,9 @@ final class TodosTests: XCTestCase {
   let clock = TestClock()
 
   func testAddTodo() async {
-    let store = TestStore(
-      initialState: Todos.State(),
-      reducer: Todos()
-    ) {
+    let store = TestStore(initialState: Todos.State()) {
+      Todos()
+    } withDependencies: {
       $0.uuid = .incrementing
     }
 
@@ -53,10 +52,9 @@ final class TodosTests: XCTestCase {
       ]
     )
 
-    let store = TestStore(
-      initialState: state,
-      reducer: Todos()
-    )
+    let store = TestStore(initialState: state) {
+      Todos()
+    }
 
     await store.send(
       .todo(id: state.todos[0].id, action: .textFieldChanged("Learn Composable Architecture"))
@@ -81,10 +79,9 @@ final class TodosTests: XCTestCase {
       ]
     )
 
-    let store = TestStore(
-      initialState: state,
-      reducer: Todos()
-    ) {
+    let store = TestStore(initialState: state) {
+      Todos()
+    } withDependencies: {
       $0.continuousClock = self.clock
     }
 
@@ -116,10 +113,9 @@ final class TodosTests: XCTestCase {
       ]
     )
 
-    let store = TestStore(
-      initialState: state,
-      reducer: Todos()
-    ) {
+    let store = TestStore(initialState: state) {
+      Todos()
+    } withDependencies: {
       $0.continuousClock = self.clock
     }
 
@@ -150,10 +146,9 @@ final class TodosTests: XCTestCase {
       ]
     )
 
-    let store = TestStore(
-      initialState: state,
-      reducer: Todos()
-    )
+    let store = TestStore(initialState: state) {
+      Todos()
+    }
 
     await store.send(.clearCompletedButtonTapped) {
       $0.todos = [
@@ -183,10 +178,9 @@ final class TodosTests: XCTestCase {
       ]
     )
 
-    let store = TestStore(
-      initialState: state,
-      reducer: Todos()
-    )
+    let store = TestStore(initialState: state) {
+      Todos()
+    }
 
     await store.send(.delete([1])) {
       $0.todos = [
@@ -218,10 +212,9 @@ final class TodosTests: XCTestCase {
       ]
     )
 
-    let store = TestStore(
-      initialState: state,
-      reducer: Todos()
-    )
+    let store = TestStore(initialState: state) {
+      Todos()
+    }
 
     await store.send(.delete([0])) {
       $0.todos = [
@@ -252,10 +245,9 @@ final class TodosTests: XCTestCase {
       ]
     )
 
-    let store = TestStore(
-      initialState: state,
-      reducer: Todos()
-    ) {
+    let store = TestStore(initialState: state) {
+      Todos()
+    } withDependencies: {
       $0.continuousClock = self.clock
     }
 
@@ -299,10 +291,9 @@ final class TodosTests: XCTestCase {
       ]
     )
 
-    let store = TestStore(
-      initialState: state,
-      reducer: Todos()
-    ) {
+    let store = TestStore(initialState: state) {
+      Todos()
+    } withDependencies: {
       $0.continuousClock = self.clock
       $0.uuid = .incrementing
     }
@@ -341,10 +332,9 @@ final class TodosTests: XCTestCase {
       ]
     )
 
-    let store = TestStore(
-      initialState: state,
-      reducer: Todos()
-    )
+    let store = TestStore(initialState: state) {
+      Todos()
+    }
 
     await store.send(.filterPicked(.completed)) {
       $0.filter = .completed

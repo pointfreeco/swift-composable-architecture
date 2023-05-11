@@ -15,7 +15,7 @@
       }
 
       Task {
-        _ = Store<Int, Void>(initialState: 0, reducer: EmptyReducer())
+        _ = Store<Int, Void>(initialState: 0) {}
       }
       _ = XCTWaiter.wait(for: [.init()], timeout: 0.5)
     }
@@ -72,9 +72,9 @@
         ].contains($0.compactDescription)
       }
 
-      let store = Store<Int, Void>(initialState: 0, reducer: EmptyReducer())
+      let store = Store<Int, Void>(initialState: 0) {}
       Task {
-        _ = store.scope(state: { $0 })
+        _ = store.scope(state: { $0 }, action: { $0 })
       }
       _ = XCTWaiter.wait(for: [.init()], timeout: 0.5)
     }
@@ -104,7 +104,7 @@
         ].contains($0.compactDescription)
       }
 
-      let store = Store<Int, Void>(initialState: 0, reducer: EmptyReducer())
+      let store = Store<Int, Void>(initialState: 0) {}
       Task {
         ViewStore(store, observe: { $0 }).send(())
       }

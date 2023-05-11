@@ -31,7 +31,7 @@ final class EffectTaskTests: BaseTCATestCase {
           return .task {
             struct Failure: Error {}
             throw Failure()
-          } catch: { @Sendable _ in  // NB: Explicit '@Sendable' required in 5.5.2
+          } catch: { _ in
             .response
           }
         case .response:
@@ -78,7 +78,7 @@ final class EffectTaskTests: BaseTCATestCase {
   #endif
 
   func testTaskCancellation() async {
-    enum CancelID {}
+    enum CancelID { case response }
     struct State: Equatable {}
     enum Action: Equatable { case tapped, response }
     let store = TestStore(initialState: State()) {
@@ -86,11 +86,11 @@ final class EffectTaskTests: BaseTCATestCase {
         switch action {
         case .tapped:
           return .task {
-            Task.cancel(id: CancelID.self)
+            Task.cancel(id: CancelID.response)
             try Task.checkCancellation()
             return .response
           }
-          .cancellable(id: CancelID.self)
+          .cancellable(id: CancelID.response)
         case .response:
           return .none
         }
@@ -100,25 +100,26 @@ final class EffectTaskTests: BaseTCATestCase {
   }
 
   func testTaskCancellationCatch() async {
-    enum CancelID {}
+    enum CancelID { case responseA }
     struct State: Equatable {}
     enum Action: Equatable { case tapped, responseA, responseB }
-    let reducer = Reduce<State, Action> { state, action in
-      switch action {
-      case .tapped:
-        return .task {
-          Task.cancel(id: CancelID.self)
-          try Task.checkCancellation()
-          return .responseA
-        } catch: { @Sendable _ in  // NB: Explicit '@Sendable' required in 5.5.2
-          .responseB
+    let store = TestStore(initialState: State()) {
+      Reduce<State, Action> { state, action in
+        switch action {
+        case .tapped:
+          return .task {
+            Task.cancel(id: CancelID.responseA)
+            try Task.checkCancellation()
+            return .responseA
+          } catch: { _ in
+            .responseB
+          }
+          .cancellable(id: CancelID.responseA)
+        case .responseA, .responseB:
+          return .none
         }
-        .cancellable(id: CancelID.self)
-      case .responseA, .responseB:
-        return .none
       }
     }
-    let store = TestStore(initialState: State(), reducer: reducer)
     await store.send(.tapped).finish()
   }
 }

@@ -27,13 +27,13 @@ struct LoadThenPresent: ReducerProtocol {
   }
 
   @Dependency(\.continuousClock) var clock
-  private enum CancelID {}
+  private enum CancelID { case load }
 
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
       case .onDisappear:
-        return .cancel(id: CancelID.self)
+        return .cancel(id: CancelID.load)
 
       case .setSheet(isPresented: true):
         state.isActivityIndicatorVisible = true
@@ -41,7 +41,7 @@ struct LoadThenPresent: ReducerProtocol {
           try await self.clock.sleep(for: .seconds(1))
           return .setSheetIsPresentedDelayCompleted
         }
-        .cancellable(id: CancelID.self)
+        .cancellable(id: CancelID.load)
 
       case .setSheet(isPresented: false):
         state.optionalCounter = nil

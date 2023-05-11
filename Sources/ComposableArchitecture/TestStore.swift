@@ -133,7 +133,7 @@ import XCTestDynamicOverlay
 ///
 ///   @Dependency(\.apiClient) var apiClient
 ///   @Dependency(\.continuousClock) var clock
-///   private enum SearchID {}
+///   private enum CancelID { case search }
 ///
 ///   func reduce(
 ///     into state: inout State, action: Action
@@ -149,7 +149,7 @@ import XCTestDynamicOverlay
 ///
 ///         await send(.response(results))
 ///       }
-///       .cancellable(id: SearchID.self)
+///       .cancellable(id: CancelID.search, cancelInFlight: true)
 ///
 ///     case let .searchResponse(.success(results)):
 ///       state.results = results
@@ -370,10 +370,9 @@ import XCTestDynamicOverlay
 /// without actually causing a failure, you can use ``Exhaustivity/off(showSkippedAssertions:)``:
 ///
 /// ```swift
-/// let store = TestStore(
-///   initialState: App.State(),
-///   reducer: App()
-/// )
+/// let store = TestStore(initialState: App.State()) {
+///   App()
+/// }
 /// store.exhaustivity = .off(showSkippedAssertions: true) // ⬅️
 ///
 /// await store.send(.login(.submitButtonTapped))

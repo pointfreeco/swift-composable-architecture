@@ -134,6 +134,111 @@ extension TestStore {
   }
 }
 
+extension Store {
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      'Store.scope' requires an explicit 'action' transform and is intended to be used to transform a store of a parent domain into a store of a child domain.
+
+      When transforming store state into view state, use the 'observe' parameter when constructing a view store.
+      """
+  )
+  public func scope<ChildState>(
+    state toChildState: @escaping (State) -> ChildState
+  ) -> Store<ChildState, Action> {
+    self.scope(state: toChildState, action: { $0 })
+  }
+}
+
+extension EffectPublisher {
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'Effect.cancellable(id: CancelID.timer)'.
+      """
+  )
+  public func cancellable(id: Any.Type, cancelInFlight: Bool = false) -> Self {
+    self.cancellable(id: ObjectIdentifier(id), cancelInFlight: cancelInFlight)
+  }
+
+  public static func cancel(id: Any.Type) -> Self {
+    .cancel(id: ObjectIdentifier(id))
+  }
+
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'Effect.cancel(id: CancelID.timer)'.
+      """
+  )
+  public static func cancel(ids: [Any.Type]) -> Self {
+    .merge(ids.map(EffectPublisher.cancel(id:)))
+  }
+}
+
+#if swift(>=5.7)
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'withTaskCancellation(id: CancelID.timer)'.
+      """
+  )
+  @_unsafeInheritExecutor
+  public func withTaskCancellation<T: Sendable>(
+    id: Any.Type,
+    cancelInFlight: Bool = false,
+    operation: @Sendable @escaping () async throws -> T
+  ) async rethrows -> T {
+    try await withTaskCancellation(
+      id: ObjectIdentifier(id),
+      cancelInFlight: cancelInFlight,
+      operation: operation
+    )
+  }
+#else
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'withTaskCancellation(id: CancelID.timer)'.
+      """
+  )
+  public func withTaskCancellation<T: Sendable>(
+    id: Any.Type,
+    cancelInFlight: Bool = false,
+    operation: @Sendable @escaping () async throws -> T
+  ) async rethrows -> T {
+    try await withTaskCancellation(
+      id: ObjectIdentifier(id),
+      cancelInFlight: cancelInFlight,
+      operation: operation
+    )
+  }
+#endif
+
+extension Task where Success == Never, Failure == Never {
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'Effect.cancel(id: CancelID.timer)'.
+      """
+  )
+  public static func cancel(id: Any.Type) {
+    self.cancel(id: ObjectIdentifier(id))
+  }
+}
+
 // MARK: - Deprecated after 0.49.2
 
 @available(
@@ -898,7 +1003,7 @@ extension ForEachStore {
   {
     let data = store.state.value
     self.data = data
-    self.content = WithViewStore(store.scope(state: { $0.map { $0[keyPath: id] } })) { viewStore in
+    self.content = WithViewStore(store, observe: { $0.map { $0[keyPath: id] } }) { viewStore in
       ForEach(Array(viewStore.state.enumerated()), id: \.element) { index, _ in
         content(
           store.scope(

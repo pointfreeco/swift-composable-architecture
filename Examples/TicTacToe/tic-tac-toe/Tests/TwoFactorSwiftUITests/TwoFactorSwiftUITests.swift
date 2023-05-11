@@ -8,12 +8,13 @@ import XCTest
 @MainActor
 final class TwoFactorSwiftUITests: XCTestCase {
   func testFlow_Success() async {
-    let store = TestStore(
-      initialState: TwoFactor.State(token: "deadbeefdeadbeef"),
-      reducer: TwoFactor(),
-      observe: TwoFactorView.ViewState.init,
-      send: TwoFactor.Action.init
-    ) {
+    let store = TestStore(initialState: TwoFactor.State(token: "deadbeefdeadbeef")) {
+      TwoFactor()
+    } observe: {
+      TwoFactorView.ViewState(state: $0)
+    } send: {
+      TwoFactor.Action(action: $0)
+    } withDependencies: {
       $0.authenticationClient.twoFactor = { _ in
         AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
       }
@@ -49,12 +50,13 @@ final class TwoFactorSwiftUITests: XCTestCase {
   }
 
   func testFlow_Failure() async {
-    let store = TestStore(
-      initialState: TwoFactor.State(token: "deadbeefdeadbeef"),
-      reducer: TwoFactor(),
-      observe: TwoFactorView.ViewState.init,
-      send: TwoFactor.Action.init
-    ) {
+    let store = TestStore(initialState: TwoFactor.State(token: "deadbeefdeadbeef")) {
+      TwoFactor()
+    } observe: {
+      TwoFactorView.ViewState(state: $0)
+    } send: {
+      TwoFactor.Action(action: $0)
+    } withDependencies: {
       $0.authenticationClient.twoFactor = { _ in
         throw AuthenticationError.invalidTwoFactor
       }

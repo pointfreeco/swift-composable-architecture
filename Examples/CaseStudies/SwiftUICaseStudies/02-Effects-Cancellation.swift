@@ -29,19 +29,19 @@ struct EffectsCancellation: ReducerProtocol {
   }
 
   @Dependency(\.factClient) var factClient
-  private enum NumberFactRequestID {}
+  private enum CancelID { case factRequest }
 
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .cancelButtonTapped:
       state.isFactRequestInFlight = false
-      return .cancel(id: NumberFactRequestID.self)
+      return .cancel(id: CancelID.factRequest)
 
     case let .stepperChanged(value):
       state.count = value
       state.currentFact = nil
       state.isFactRequestInFlight = false
-      return .cancel(id: NumberFactRequestID.self)
+      return .cancel(id: CancelID.factRequest)
 
     case .factButtonTapped:
       state.currentFact = nil
@@ -50,7 +50,7 @@ struct EffectsCancellation: ReducerProtocol {
       return .task { [count = state.count] in
         await .factResponse(TaskResult { try await self.factClient.fetch(count) })
       }
-      .cancellable(id: NumberFactRequestID.self)
+      .cancellable(id: CancelID.factRequest)
 
     case let .factResponse(.success(response)):
       state.isFactRequestInFlight = false

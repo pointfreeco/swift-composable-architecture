@@ -1,5 +1,6 @@
 import Combine
 import ComposableArchitecture
+@_spi(Concurrency) import Dependencies
 import XCTest
 
 @MainActor
@@ -33,10 +34,10 @@ final class ViewStoreTests: BaseTCATestCase {
   func testEqualityChecks() {
     let store = Store<State, Void>(initialState: State()) {}
 
-    let store1 = store.scope(state: { $0 })
-    let store2 = store1.scope(state: { $0 })
-    let store3 = store2.scope(state: { $0 })
-    let store4 = store3.scope(state: { $0 })
+    let store1 = store.scope(state: { $0 }, action: { $0 })
+    let store2 = store1.scope(state: { $0 }, action: { $0 })
+    let store3 = store2.scope(state: { $0 }, action: { $0 })
+    let store4 = store3.scope(state: { $0 }, action: { $0 })
 
     let viewStore1 = ViewStore(store1)
     let viewStore2 = ViewStore(store2)
@@ -161,7 +162,7 @@ final class ViewStoreTests: BaseTCATestCase {
   }
 
   func testSendWhile() async {
-    await _withMainSerialExecutor {
+    await withMainSerialExecutor {
       enum Action {
         case response
         case tapped

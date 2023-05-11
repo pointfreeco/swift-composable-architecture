@@ -53,7 +53,7 @@ final class StoreTests: BaseTCATestCase {
 
     let parentStore = Store(initialState: 0) { counterReducer }
     let parentViewStore = ViewStore(parentStore)
-    let childStore = parentStore.scope(state: String.init)
+    let childStore = parentStore.scope(state: String.init, action: { $0 })
 
     var values: [String] = []
     ViewStore(childStore).publisher
@@ -74,7 +74,7 @@ final class StoreTests: BaseTCATestCase {
     })
 
     let parentStore = Store(initialState: 0) { counterReducer }
-    let childStore = parentStore.scope(state: String.init)
+    let childStore = parentStore.scope(state: String.init, action: { $0 })
     let childViewStore = ViewStore(childStore)
 
     var values: [Int] = []
@@ -96,11 +96,14 @@ final class StoreTests: BaseTCATestCase {
     })
 
     var numCalls1 = 0
-    _ = Store(initialState: 0, reducer: counterReducer)
-      .scope(state: { (count: Int) -> Int in
-        numCalls1 += 1
-        return count
-      })
+    _ = Store(initialState: 0) { counterReducer }
+      .scope(
+        state: { (count: Int) -> Int in
+          numCalls1 += 1
+          return count
+        },
+        action: { $0 }
+      )
 
     XCTAssertEqual(numCalls1, 1)
   }
@@ -118,22 +121,31 @@ final class StoreTests: BaseTCATestCase {
     let store1 = Store(initialState: 0) { counterReducer }
     let store2 =
       store1
-      .scope(state: { (count: Int) -> Int in
-        numCalls1 += 1
-        return count
-      })
+      .scope(
+        state: { (count: Int) -> Int in
+          numCalls1 += 1
+          return count
+        },
+        action: { $0 }
+      )
     let store3 =
       store2
-      .scope(state: { (count: Int) -> Int in
-        numCalls2 += 1
-        return count
-      })
+      .scope(
+        state: { (count: Int) -> Int in
+          numCalls2 += 1
+          return count
+        },
+        action: { $0 }
+      )
     let store4 =
       store3
-      .scope(state: { (count: Int) -> Int in
-        numCalls3 += 1
-        return count
-      })
+      .scope(
+        state: { (count: Int) -> Int in
+          numCalls3 += 1
+          return count
+        },
+        action: { $0 }
+      )
 
     let viewStore1 = ViewStore(store1)
     let viewStore2 = ViewStore(store2)
@@ -243,7 +255,7 @@ final class StoreTests: BaseTCATestCase {
     var stores: [Any] = []
 
     parentStore
-      .scope(state: { $0.count })
+      .scope(state: { $0.count }, action: { $0 })
       .ifLet(
         then: { store in
           stores.append(store)
@@ -317,9 +329,8 @@ final class StoreTests: BaseTCATestCase {
       case doIncrement
     }
 
-    let store = TestStore(
-      initialState: 0,
-      reducer: Reduce<Int, Action>({ state, action in
+    let store = TestStore(initialState: 0) {
+      Reduce<Int, Action> { state, action in
         switch action {
         case .incrementTapped:
           subject.send()
@@ -332,8 +343,8 @@ final class StoreTests: BaseTCATestCase {
           state += 1
           return .none
         }
-      })
-    )
+      }
+    }
 
     await store.send(.`init`)
     await store.send(.incrementTapped)
@@ -440,29 +451,26 @@ final class StoreTests: BaseTCATestCase {
 
   func testCascadingTaskCancellation() async {
     enum Action { case task, response, response1, response2 }
-    let reducer = Reduce<Int, Action>({ state, action in
-      switch action {
-      case .task:
-        return .task { .response }
-      case .response:
-        return .merge(
-          Empty(completeImmediately: false).eraseToEffect(),
-          .task { .response1 }
-        )
-      case .response1:
-        return .merge(
-          Empty(completeImmediately: false).eraseToEffect(),
-          .task { .response2 }
-        )
-      case .response2:
-        return Empty(completeImmediately: false).eraseToEffect()
+    let store = TestStore(initialState: 0) {
+      Reduce<Int, Action> { state, action in
+        switch action {
+        case .task:
+          return .task { .response }
+        case .response:
+          return .merge(
+            Empty(completeImmediately: false).eraseToEffect(),
+            .task { .response1 }
+          )
+        case .response1:
+          return .merge(
+            Empty(completeImmediately: false).eraseToEffect(),
+            .task { .response2 }
+          )
+        case .response2:
+          return Empty(completeImmediately: false).eraseToEffect()
+        }
       }
-    })
-
-    let store = TestStore(
-      initialState: 0,
-      reducer: reducer
-    )
+    }
 
     let task = await store.send(.task)
     await store.receive(.response)
@@ -474,15 +482,14 @@ final class StoreTests: BaseTCATestCase {
   func testTaskCancellationEmpty() async {
     enum Action { case task }
 
-    let store = TestStore(
-      initialState: 0,
-      reducer: Reduce<Int, Action>({ state, action in
+    let store = TestStore(initialState: 0) {
+      Reduce<Int, Action> { state, action in
         switch action {
         case .task:
           return .fireAndForget { try await Task.never() }
         }
-      })
-    )
+      }
+    }
 
     await store.send(.task).cancel()
   }
@@ -497,7 +504,7 @@ final class StoreTests: BaseTCATestCase {
         }
       }
     }
-    let scopedStore = store.scope(state: { $0 })
+    let scopedStore = store.scope(state: { $0 }, action: { $0 })
 
     let sendTask = scopedStore.send(())
     await Task.yield()
@@ -598,10 +605,9 @@ final class StoreTests: BaseTCATestCase {
       }
     }
 
-    let testStore = TestStore(
-      initialState: Feature.State(),
-      reducer: Feature()
-    )
+    let testStore = TestStore(initialState: Feature.State()) {
+      Feature()
+    }
     await testStore.send(.tap)
     await testStore.receive(.response1(1)) {
       $0.count = 1
@@ -660,10 +666,9 @@ final class StoreTests: BaseTCATestCase {
       }
     }
 
-    let testStore = TestStore(
-      initialState: Feature.State(),
-      reducer: Feature()
-    )
+    let testStore = TestStore(initialState: Feature.State()) {
+      Feature()
+    }
     await testStore.send(.tap)
     await testStore.receive(.response1(1)) {
       $0.count = 1

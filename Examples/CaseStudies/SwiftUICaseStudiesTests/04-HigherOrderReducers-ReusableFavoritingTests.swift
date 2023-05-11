@@ -25,15 +25,14 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
         title: "Functions"
       ),
     ]
-    let store = TestStore(
-      initialState: Episodes.State(episodes: episodes),
-      reducer: Episodes(
+    let store = TestStore(initialState: Episodes.State(episodes: episodes)) {
+      Episodes(
         favorite: { _, isFavorite in
           try await clock.sleep(for: .seconds(1))
           return isFavorite
         }
       )
-    )
+    }
 
     await store.send(.episode(id: episodes[0].id, action: .favorite(.buttonTapped))) {
       $0.episodes[id: episodes[0].id]?.isFavorite = true
@@ -59,12 +58,9 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
         title: "Functions"
       )
     ]
-    let store = TestStore(
-      initialState: Episodes.State(episodes: episodes),
-      reducer: Episodes(
-        favorite: { _, _ in throw FavoriteError() }
-      )
-    )
+    let store = TestStore(initialState: Episodes.State(episodes: episodes)) {
+      Episodes(favorite: { _, _ in throw FavoriteError() })
+    }
 
     await store.send(.episode(id: episodes[0].id, action: .favorite(.buttonTapped))) {
       $0.episodes[id: episodes[0].id]?.isFavorite = true

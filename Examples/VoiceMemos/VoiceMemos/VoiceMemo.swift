@@ -37,16 +37,16 @@ struct VoiceMemo: ReducerProtocol {
 
   @Dependency(\.audioPlayer) var audioPlayer
   @Dependency(\.continuousClock) var clock
-  private enum PlayID {}
+  private enum CancelID { case play }
 
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .audioPlayerClient:
       state.mode = .notPlaying
-      return .cancel(id: PlayID.self)
+      return .cancel(id: CancelID.play)
 
     case .delete:
-      return .cancel(id: PlayID.self)
+      return .cancel(id: CancelID.play)
 
     case .playButtonTapped:
       switch state.mode {
@@ -66,11 +66,11 @@ struct VoiceMemo: ReducerProtocol {
 
           await playAudio
         }
-        .cancellable(id: PlayID.self, cancelInFlight: true)
+        .cancellable(id: CancelID.play, cancelInFlight: true)
 
       case .playing:
         state.mode = .notPlaying
-        return .cancel(id: PlayID.self)
+        return .cancel(id: CancelID.play)
       }
 
     case let .timerUpdated(time):

@@ -185,10 +185,9 @@ struct AnimatedFromBindingWithObservation {
 struct BindingsAnimationsTestBench_Previews: PreviewProvider {
   static var previews: some View {
     BindingsAnimationsTestBench(
-      store: .init(
-        initialState: false,
-        reducer: BindingsAnimations()
-      )
+      store: .init(initialState: false) {
+        BindingsAnimations()
+      }
     )
   }
 }

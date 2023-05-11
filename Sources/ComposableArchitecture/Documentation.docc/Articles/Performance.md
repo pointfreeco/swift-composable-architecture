@@ -184,7 +184,7 @@ struct AppView: View {
       TabView {
         ActivityView(
           store: self.store
-            .scope(state: \.activity, action: AppAction.activity
+            .scope(state: \.activity, action: AppAction.activity)
         )
         .badge("\(viewStore.unreadActivityCount)")
 

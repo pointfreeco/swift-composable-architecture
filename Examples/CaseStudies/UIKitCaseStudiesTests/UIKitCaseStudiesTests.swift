@@ -6,10 +6,9 @@ import XCTest
 @MainActor
 final class UIKitCaseStudiesTests: XCTestCase {
   func testCountDown() async {
-    let store = TestStore(
-      initialState: Counter.State(),
-      reducer: Counter()
-    )
+    let store = TestStore(initialState: Counter.State()) {
+      Counter()
+    }
 
     await store.send(.incrementButtonTapped) {
       $0.count = 1
@@ -27,9 +26,10 @@ final class UIKitCaseStudiesTests: XCTestCase {
     let store = TestStore(
       initialState: CounterList.State(
         counters: [firstState, secondState, thirdState]
-      ),
-      reducer: CounterList()
-    )
+      )
+    ) {
+      CounterList()
+    }
 
     await store.send(.counter(id: firstState.id, action: .incrementButtonTapped)) {
       $0.counters[id: firstState.id]?.count = 1

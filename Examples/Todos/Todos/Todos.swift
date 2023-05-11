@@ -35,7 +35,7 @@ struct Todos: ReducerProtocol {
 
   @Dependency(\.continuousClock) var clock
   @Dependency(\.uuid) var uuid
-  private enum TodoCompletionID {}
+  private enum CancelID { case todoCompletion }
 
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
@@ -93,7 +93,7 @@ struct Todos: ReducerProtocol {
           try await self.clock.sleep(for: .seconds(1))
           await send(.sortCompletedTodos, animation: .default)
         }
-        .cancellable(id: TodoCompletionID.self, cancelInFlight: true)
+        .cancellable(id: CancelID.todoCompletion, cancelInFlight: true)
 
       case .todo:
         return .none
@@ -111,7 +111,7 @@ struct AppView: View {
 
   init(store: StoreOf<Todos>) {
     self.store = store
-    self.viewStore = ViewStore(self.store.scope(state: ViewState.init(state:)))
+    self.viewStore = ViewStore(self.store, observe: ViewState.init(state:))
   }
 
   struct ViewState: Equatable {
