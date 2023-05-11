@@ -134,11 +134,11 @@ extension EffectPublisher {
   ///
   /// // ...
   ///
-  /// return .task {
+  /// return .run { send in
   ///   await withTaskCancellation(id: CancelID.response, cancelInFlight: true) {
   ///     try await self.clock.sleep(for: .seconds(0.3))
-  ///     return await .debouncedResponse(
-  ///       TaskResult { try await environment.request() }
+  ///     await .send(
+  ///       .debouncedResponse(TaskResult { try await environment.request() })
   ///     )
   ///   }
   /// }

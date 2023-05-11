@@ -131,9 +131,9 @@ final class ComposableArchitectureTests: BaseTCATestCase {
 
           case .incr:
             state += 1
-            return .task { [state] in
+            return .run { [state] send in
               try await mainQueue.sleep(for: .seconds(1))
-              return .response(state * state)
+              await send(.response(state * state))
             }
             .cancellable(id: CancelID.sleep)
 

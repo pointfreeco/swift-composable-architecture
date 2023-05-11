@@ -37,9 +37,9 @@ struct LoadThenPresent: ReducerProtocol {
 
       case .setSheet(isPresented: true):
         state.isActivityIndicatorVisible = true
-        return .task {
+        return .run { send in
           try await self.clock.sleep(for: .seconds(1))
-          return .setSheetIsPresentedDelayCompleted
+          await send(.setSheetIsPresentedDelayCompleted)
         }
         .cancellable(id: CancelID.load)
 

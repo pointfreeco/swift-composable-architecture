@@ -37,9 +37,9 @@ struct LoadThenNavigate: ReducerProtocol {
 
       case .setNavigation(isActive: true):
         state.isActivityIndicatorVisible = true
-        return .task {
+        return .run { send in
           try await self.clock.sleep(for: .seconds(1))
-          return .setNavigationIsActiveDelayCompleted
+          await send(.setNavigationIsActiveDelayCompleted)
         }
         .cancellable(id: CancelID.load)
 

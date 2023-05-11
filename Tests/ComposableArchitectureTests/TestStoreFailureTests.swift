@@ -40,7 +40,7 @@
 
     func testStateChangeFailure() {
       struct State: Equatable { var count = 0 }
-      let store = TestStore(initialState: .init()) {
+      let store = TestStore(initialState: State()) {
         Reduce<State, Void> { state, action in
           state.count += 1
           return .none
@@ -63,7 +63,7 @@
 
     func testUnexpectedStateChangeOnSendFailure() {
       struct State: Equatable { var count = 0 }
-      let store = TestStore(initialState: .init()) {
+      let store = TestStore(initialState: State()) {
         Reduce<State, Void> { state, action in
           state.count += 1
           return .none
@@ -87,7 +87,7 @@
     func testUnexpectedStateChangeOnReceiveFailure() {
       struct State: Equatable { var count = 0 }
       enum Action { case first, second }
-      let store = TestStore(initialState: .init()) {
+      let store = TestStore(initialState: State()) {
         Reduce<State, Action> { state, action in
           switch action {
           case .first: return .init(value: .second)

@@ -15,7 +15,7 @@ public struct Login: ReducerProtocol, Sendable {
     public init() {}
   }
 
-  public enum Action: Equatable {
+  public enum Action: Equatable, Sendable {
     case alertDismissed
     case emailChanged(String)
     case passwordChanged(String)
@@ -60,13 +60,15 @@ public struct Login: ReducerProtocol, Sendable {
 
       case .loginButtonTapped:
         state.isLoginRequestInFlight = true
-        return .task { [email = state.email, password = state.password] in
-          .loginResponse(
-            await TaskResult {
-              try await self.authenticationClient.login(
-                .init(email: email, password: password)
-              )
-            }
+        return .run { [email = state.email, password = state.password] send in
+          await send(
+            .loginResponse(
+              await TaskResult {
+                try await self.authenticationClient.login(
+                  .init(email: email, password: password)
+                )
+              }
+            )
           )
         }
 
@@ -75,7 +77,7 @@ public struct Login: ReducerProtocol, Sendable {
 
       case .twoFactorDismissed:
         state.twoFactor = nil
-        return .cancel(id: TwoFactor.TearDownToken.self)
+        return .cancel(id: TwoFactor.CancelID.tearDown)
       }
     }
     .ifLet(\.twoFactor, action: /Action.twoFactor) {
