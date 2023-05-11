@@ -6,10 +6,10 @@ import XCTestDynamicOverlay
 // MARK: - Deprecated after 0.52.0
 
 extension Store {
-  @available(iOS, deprecated: 9999.0, message: "Pass a closure as the reducer.")
-  @available(macOS, deprecated: 9999.0, message: "Pass a closure as the reducer.")
-  @available(tvOS, deprecated: 9999.0, message: "Pass a closure as the reducer.")
-  @available(watchOS, deprecated: 9999.0, message: "Pass a closure as the reducer.")
+  @available(iOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(macOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(tvOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(watchOS, deprecated: 9999, message: "Pass a closure as the reducer.")
   public convenience init<R: ReducerProtocol>(
     initialState: @autoclosure () -> R.State,
     reducer: R,
@@ -32,7 +32,11 @@ extension Store {
 }
 
 extension TestStore {
-   public convenience init<R: ReducerProtocol>(
+  @available(iOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(macOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(tvOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(watchOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  public convenience init<R: ReducerProtocol>(
     initialState: @autoclosure () -> State,
     reducer: R,
     prepareDependencies: (inout DependencyValues) -> Void = { _ in },
@@ -58,6 +62,10 @@ extension TestStore {
     )
   }
 
+  @available(iOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(macOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(tvOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(watchOS, deprecated: 9999, message: "Pass a closure as the reducer.")
   public convenience init<R: ReducerProtocol>(
     initialState: @autoclosure () -> State,
     reducer: R,
