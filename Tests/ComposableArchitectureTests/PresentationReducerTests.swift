@@ -443,7 +443,7 @@ import XCTest
           }
 
           await store.send(.presentChild) {
-            $0.child = Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
+            $0.child = Child.State(id: UUID(0))
           }
           await store.send(.child(.presented(.startButtonTapped)))
           await clock.advance(by: .seconds(2))
@@ -458,7 +458,7 @@ import XCTest
             }
           }
           await store.send(.presentChild) {
-            $0.child = Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!)
+            $0.child = Child.State(id: UUID(1))
           }
           await clock.advance(by: .seconds(2))
           await store.send(.child(.dismiss)) {
@@ -838,7 +838,7 @@ import XCTest
 
           await store.send(.presentChild()) {
             $0.destination = .child(
-              Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
+              Child.State(id: UUID(0))
             )
           }
           await store.send(.destination(.presented(.child(.startButtonTapped))))
@@ -859,7 +859,7 @@ import XCTest
           }
           await store.send(.presentChild()) {
             $0.destination = .child(
-              Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!)
+              Child.State(id: UUID(1))
             )
           }
           await clock.advance(by: .seconds(2))
@@ -876,7 +876,7 @@ import XCTest
             }
           }
           await store.send(
-            .presentChild(id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!)
+            .presentChild(id: UUID(1))
           ) {
             try (/Parent.Destination.State.child).modify(&$0.destination) {
               $0.count = 0
@@ -1341,8 +1341,8 @@ import XCTest
             $0.uuid = .incrementing
           }
           await store.send(.presentChildren) {
-            $0.child1 = Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
-            $0.child2 = Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!)
+            $0.child1 = Child.State(id: UUID(0))
+            $0.child2 = Child.State(id: UUID(1))
           }
           await store.send(.child1(.presented(.startButtonTapped)))
           await clock.advance(by: .seconds(1))
@@ -1559,118 +1559,122 @@ import XCTest
       }
     }
 
-    func testRuntimeWarn_NilChild_SendDismissAction() async {
-      struct Child: ReducerProtocol {
-        struct State: Equatable {}
-        enum Action: Equatable {}
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+    #if DEBUG
+      func testRuntimeWarn_NilChild_SendDismissAction() async {
+        struct Child: ReducerProtocol {
+          struct State: Equatable {}
+          enum Action: Equatable {}
+          func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          }
         }
-      }
 
-      struct Parent: ReducerProtocol {
-        struct State: Equatable {
-          @PresentationState var child: Child.State?
+        struct Parent: ReducerProtocol {
+          struct State: Equatable {
+            @PresentationState var child: Child.State?
+          }
+          enum Action: Equatable {
+            case child(PresentationAction<Child.Action>)
+          }
+          var body: some ReducerProtocol<State, Action> {
+            Reduce { state, action in
+              .none
+            }
+            .ifLet(\.$child, action: /Action.child) {
+              Child()
+            }
+          }
         }
-        enum Action: Equatable {
-          case child(PresentationAction<Child.Action>)
+
+        let store = TestStore(
+          initialState: Parent.State(),
+          reducer: Parent()
+        )
+
+        XCTExpectFailure {
+          $0.compactDescription == """
+            A "ifLet" at \
+            "ComposableArchitectureTests/PresentationReducerTests.swift:\(#line - 14)" received a \
+            presentation action when destination state was absent. …
+
+              Action:
+                PresentationReducerTests.Parent.Action.child(.dismiss)
+
+            This is generally considered an application logic error, and can happen for a few reasons:
+
+            • A parent reducer set destination state to "nil" before this reducer ran. This reducer \
+            must run before any other reducer sets destination state to "nil". This ensures that \
+            destination reducers can handle their actions while their state is still present.
+
+            • This action was sent to the store while destination state was "nil". Make sure that \
+            actions for this reducer can only be sent from a view store when state is present, or \
+            from effects that start from this reducer. In SwiftUI applications, use a Composable \
+            Architecture view modifier like "sheet(store:…)".
+            """
         }
-        var body: some ReducerProtocol<State, Action> {
-          Reduce { state, action in
+
+        await store.send(.child(.dismiss))
+      }
+    #endif
+
+    #if DEBUG
+      func testRuntimeWarn_NilChild_SendChildAction() async {
+        struct Child: ReducerProtocol {
+          struct State: Equatable {}
+          enum Action: Equatable {
+            case tap
+          }
+          func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
             .none
           }
-          .ifLet(\.$child, action: /Action.child) {
-            Child()
+        }
+
+        struct Parent: ReducerProtocol {
+          struct State: Equatable {
+            @PresentationState var child: Child.State?
+          }
+          enum Action: Equatable {
+            case child(PresentationAction<Child.Action>)
+          }
+          var body: some ReducerProtocol<State, Action> {
+            Reduce { state, action in
+              .none
+            }
+            .ifLet(\.$child, action: /Action.child) {
+              Child()
+            }
           }
         }
-      }
 
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      )
+        let store = TestStore(
+          initialState: Parent.State(),
+          reducer: Parent()
+        )
 
-      XCTExpectFailure {
-        $0.compactDescription == """
-          A "ifLet" at \
-          "ComposableArchitectureTests/PresentationReducerTests.swift:\(#line - 14)" received a \
-          presentation action when destination state was absent. …
+        XCTExpectFailure {
+          $0.compactDescription == """
+            A "ifLet" at \
+            "ComposableArchitectureTests/PresentationReducerTests.swift:\(#line - 14)" received a \
+            presentation action when destination state was absent. …
 
-            Action:
-              PresentationReducerTests.Parent.Action.child(.dismiss)
+              Action:
+                PresentationReducerTests.Parent.Action.child(.presented(.tap))
 
-          This is generally considered an application logic error, and can happen for a few reasons:
+            This is generally considered an application logic error, and can happen for a few reasons:
 
-          • A parent reducer set destination state to "nil" before this reducer ran. This reducer \
-          must run before any other reducer sets destination state to "nil". This ensures that \
-          destination reducers can handle their actions while their state is still present.
+            • A parent reducer set destination state to "nil" before this reducer ran. This reducer \
+            must run before any other reducer sets destination state to "nil". This ensures that \
+            destination reducers can handle their actions while their state is still present.
 
-          • This action was sent to the store while destination state was "nil". Make sure that \
-          actions for this reducer can only be sent from a view store when state is present, or \
-          from effects that start from this reducer. In SwiftUI applications, use a Composable \
-          Architecture view modifier like "sheet(store:…)".
-          """
-      }
-
-      await store.send(.child(.dismiss))
-    }
-
-    func testRuntimeWarn_NilChild_SendChildAction() async {
-      struct Child: ReducerProtocol {
-        struct State: Equatable {}
-        enum Action: Equatable {
-          case tap
+            • This action was sent to the store while destination state was "nil". Make sure that \
+            actions for this reducer can only be sent from a view store when state is present, or \
+            from effects that start from this reducer. In SwiftUI applications, use a Composable \
+            Architecture view modifier like "sheet(store:…)".
+            """
         }
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
-          .none
-        }
+
+        await store.send(.child(.presented(.tap)))
       }
-
-      struct Parent: ReducerProtocol {
-        struct State: Equatable {
-          @PresentationState var child: Child.State?
-        }
-        enum Action: Equatable {
-          case child(PresentationAction<Child.Action>)
-        }
-        var body: some ReducerProtocol<State, Action> {
-          Reduce { state, action in
-            .none
-          }
-          .ifLet(\.$child, action: /Action.child) {
-            Child()
-          }
-        }
-      }
-
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      )
-
-      XCTExpectFailure {
-        $0.compactDescription == """
-          A "ifLet" at \
-          "ComposableArchitectureTests/PresentationReducerTests.swift:\(#line - 14)" received a \
-          presentation action when destination state was absent. …
-
-            Action:
-              PresentationReducerTests.Parent.Action.child(.presented(.tap))
-
-          This is generally considered an application logic error, and can happen for a few reasons:
-
-          • A parent reducer set destination state to "nil" before this reducer ran. This reducer \
-          must run before any other reducer sets destination state to "nil". This ensures that \
-          destination reducers can handle their actions while their state is still present.
-
-          • This action was sent to the store while destination state was "nil". Make sure that \
-          actions for this reducer can only be sent from a view store when state is present, or \
-          from effects that start from this reducer. In SwiftUI applications, use a Composable \
-          Architecture view modifier like "sheet(store:…)".
-          """
-      }
-
-      await store.send(.child(.presented(.tap)))
-    }
+    #endif
 
     func testRehydrateSameChild_SendDismissAction() async {
       struct Child: ReducerProtocol {
@@ -1759,7 +1763,7 @@ import XCTest
       }
 
       await store.send(.child(.dismiss)) {
-        $0.child = Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
+        $0.child = Child.State(id: UUID(0))
       }
       await store.send(.child(.dismiss)) {
         $0.child = nil
@@ -1913,7 +1917,7 @@ import XCTest
 
       await store.send(.presentChild1) {
         $0.destination = .child1(
-          Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
+          Child.State(id: UUID(0))
         )
       }
       await store.send(.destination(.presented(.child1(.tap)))) {
@@ -1923,7 +1927,7 @@ import XCTest
       }
       await store.send(.destination(.presented(.child1(.resetIdentity)))) {
         try (/Parent.Destination.State.child1).modify(&$0.destination) {
-          $0.id = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
+          $0.id = UUID(1)
           $0.count = 0
         }
       }
