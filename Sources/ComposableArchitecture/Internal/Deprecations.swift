@@ -5,6 +5,13 @@ import XCTestDynamicOverlay
 
 // MARK: - Deprecated after 0.52.0
 
+extension WithViewStore {
+  @available(*, deprecated, renamed: "_printChanges(_:)")
+  public func debug(_ prefix: String = "") -> Self {
+    self._printChanges(prefix)
+  }
+}
+
 extension Store {
   @available(iOS, deprecated: 9999, message: "Pass a closure as the reducer.")
   @available(macOS, deprecated: 9999, message: "Pass a closure as the reducer.")
