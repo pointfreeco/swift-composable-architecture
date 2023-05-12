@@ -89,7 +89,7 @@ final class ComposableArchitectureTests: BaseTCATestCase {
   func testLongLivingEffects() async {
     enum Action { case end, incr, start }
 
-    let effect = AsyncStream<Void>.streamWithContinuation()
+    let effect = AsyncStream.makeStream(of: Void.self)
 
     let store = TestStore(initialState: 0) {
       Reduce<Int, Action> { state, action in
@@ -138,9 +138,9 @@ final class ComposableArchitectureTests: BaseTCATestCase {
 
           case .incr:
             state += 1
-            return .task { [state] in
+            return .run { [state] send in
               try await mainQueue.sleep(for: .seconds(1))
-              return .response(state * state)
+              await send(.response(state * state))
             }
             .cancellable(id: CancelID.sleep)
 

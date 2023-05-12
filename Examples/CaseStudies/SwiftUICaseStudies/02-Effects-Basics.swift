@@ -47,9 +47,9 @@ struct EffectsBasics: Reducer {
       // Return an effect that re-increments the count after 1 second if the count is negative
       return state.count >= 0
         ? .none
-        : .task {
+        : .run { send in
           try await self.clock.sleep(for: .seconds(1))
-          return .decrementDelayResponse
+          await send(.decrementDelayResponse)
         }
         .cancellable(id: CancelID.delay)
 
@@ -71,8 +71,8 @@ struct EffectsBasics: Reducer {
       state.numberFact = nil
       // Return an effect that fetches a number fact from the API and returns the
       // value back to the reducer's `numberFactResponse` action.
-      return .task { [count = state.count] in
-        await .numberFactResponse(TaskResult { try await self.factClient.fetch(count) })
+      return .run { [count = state.count] send in
+        await send(.numberFactResponse(TaskResult { try await self.factClient.fetch(count) }))
       }
 
     case let .numberFactResponse(.success(response)):

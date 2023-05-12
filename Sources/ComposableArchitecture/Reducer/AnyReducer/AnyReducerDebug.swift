@@ -131,7 +131,7 @@ extension AnyReducer {
         case .publisher:
           return .fireAndForget { print() }.merge(with: effects)
         case .run:
-          return .fireAndForget { () async in print() }.merge(with: effects)
+          return .run { _ in print() }.merge(with: effects)
         }
       }
     #else

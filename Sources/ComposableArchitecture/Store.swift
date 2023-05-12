@@ -656,7 +656,7 @@ public typealias StoreOf<R: Reducer> = Store<R.State, R.Action>
         self.isSending = false
       }
       if let action = self.fromScopedAction(state, action), let task = self.rootStore.send(action) {
-        return .fireAndForget { await task.cancellableValue }
+        return .run { _ in await task.cancellableValue }
       } else {
         return .none
       }
@@ -746,7 +746,7 @@ public typealias StoreOf<R: Reducer> = Store<R.State, R.Action>
           let task = self.root.send(rootAction)
           rescopedState = toRescopedState(scopedStore.state.value)
           if let task = task {
-            return .fireAndForget { await task.cancellableValue }
+            return .run { _ in await task.cancellableValue }
           } else {
             return .none
           }

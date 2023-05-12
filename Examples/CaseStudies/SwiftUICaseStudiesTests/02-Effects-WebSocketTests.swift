@@ -6,8 +6,8 @@ import XCTest
 @MainActor
 final class WebSocketTests: XCTestCase {
   func testWebSocketHappyPath() async {
-    let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
-    let messages = AsyncStream<TaskResult<WebSocketClient.Message>>.streamWithContinuation()
+    let actions = AsyncStream.makeStream(of: WebSocketClient.Action.self)
+    let messages = AsyncStream.makeStream(of: TaskResult<WebSocketClient.Message>.self)
 
     let store = TestStore(initialState: WebSocket.State()) {
       WebSocket()
@@ -57,8 +57,8 @@ final class WebSocketTests: XCTestCase {
   }
 
   func testWebSocketSendFailure() async {
-    let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
-    let messages = AsyncStream<TaskResult<WebSocketClient.Message>>.streamWithContinuation()
+    let actions = AsyncStream.makeStream(of: WebSocketClient.Action.self)
+    let messages = AsyncStream.makeStream(of: TaskResult<WebSocketClient.Message>.self)
 
     let store = TestStore(initialState: WebSocket.State()) {
       WebSocket()
@@ -103,7 +103,7 @@ final class WebSocketTests: XCTestCase {
   }
 
   func testWebSocketPings() async {
-    let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
+    let actions = AsyncStream.makeStream(of: WebSocketClient.Action.self)
     let clock = TestClock()
     var pingsCount = 0
 
@@ -137,7 +137,7 @@ final class WebSocketTests: XCTestCase {
   }
 
   func testWebSocketConnectError() async {
-    let actions = AsyncStream<WebSocketClient.Action>.streamWithContinuation()
+    let actions = AsyncStream.makeStream(of: WebSocketClient.Action.self)
 
     let store = TestStore(initialState: WebSocket.State()) {
       WebSocket()

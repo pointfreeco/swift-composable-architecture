@@ -35,7 +35,7 @@ struct SpeechRecognition: Reducer {
 
       guard state.isRecording
       else {
-        return .fireAndForget {
+        return .run { _ in
           await self.speechClient.finishTask()
         }
       }

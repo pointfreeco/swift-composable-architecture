@@ -455,8 +455,7 @@ extension Publisher {
   @available(
     *,
     deprecated,
-    message:
-      "Iterate over 'Publisher.values' in the static version of 'Effect.fireAndForget', instead."
+    message: "Iterate over 'Publisher.values' in an 'Effect.run', instead, or use Effect.publisher"
   )
   public func fireAndForget<NewOutput, NewFailure>(
     outputType: NewOutput.Type = NewOutput.self,

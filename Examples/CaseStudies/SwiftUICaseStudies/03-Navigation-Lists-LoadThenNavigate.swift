@@ -50,9 +50,9 @@ struct LoadThenNavigateList: Reducer {
         for row in state.rows {
           state.rows[id: row.id]?.isActivityIndicatorVisible = row.id == navigatedId
         }
-        return .task {
+        return .run { send in
           try await self.clock.sleep(for: .seconds(1))
-          return .setNavigationSelectionDelayCompleted(navigatedId)
+          await send(.setNavigationSelectionDelayCompleted(navigatedId))
         }
         .cancellable(id: CancelID.load, cancelInFlight: true)
 

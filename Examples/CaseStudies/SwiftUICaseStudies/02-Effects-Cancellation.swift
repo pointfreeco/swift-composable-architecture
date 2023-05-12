@@ -47,8 +47,8 @@ struct EffectsCancellation: Reducer {
       state.currentFact = nil
       state.isFactRequestInFlight = true
 
-      return .task { [count = state.count] in
-        await .factResponse(TaskResult { try await self.factClient.fetch(count) })
+      return .run { [count = state.count] send in
+        await send(.factResponse(TaskResult { try await self.factClient.fetch(count) }))
       }
       .cancellable(id: CancelID.factRequest)
 

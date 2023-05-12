@@ -1,5 +1,5 @@
 import ComposableArchitecture
-import SwiftUI
+@preconcurrency import SwiftUI
 
 private let readMe = """
   This application demonstrates how to make use of SwiftUI's `refreshable` API in the Composable \
@@ -53,10 +53,12 @@ struct Refreshable: Reducer {
 
     case .refresh:
       state.fact = nil
-      return .task { [count = state.count] in
-        await .factResponse(TaskResult { try await self.factClient.fetch(count) })
+      return .run { [count = state.count] send in
+        await send(
+          .factResponse(TaskResult { try await self.factClient.fetch(count) }),
+          animation: .default
+        )
       }
-      .animation()
       .cancellable(id: CancelID.factRequest)
     }
   }

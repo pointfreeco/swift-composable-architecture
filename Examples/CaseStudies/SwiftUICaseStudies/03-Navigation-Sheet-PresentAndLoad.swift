@@ -30,9 +30,9 @@ struct PresentAndLoad: Reducer {
       switch action {
       case .setSheet(isPresented: true):
         state.isSheetPresented = true
-        return .task {
+        return .run { send in
           try await self.clock.sleep(for: .seconds(1))
-          return .setSheetIsPresentedDelayCompleted
+          await send(.setSheetIsPresentedDelayCompleted)
         }
         .cancellable(id: CancelID.load)
 

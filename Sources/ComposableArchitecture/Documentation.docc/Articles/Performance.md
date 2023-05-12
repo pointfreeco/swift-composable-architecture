@@ -400,7 +400,7 @@ and then delivering the result in an action:
 
 ```swift
 case .buttonTapped:
-  return .task {
+  return .run { send in
     var result = // ...
     for (index, value) in someLargeCollection.enumerated() {
       // Some intense computation with value
@@ -410,7 +410,7 @@ case .buttonTapped:
         await Task.yield()
       }
     }
-    return .computationResponse(result)
+    await send(.computationResponse(result))
   }
 
 case let .computationResponse(result):

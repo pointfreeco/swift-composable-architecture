@@ -101,11 +101,11 @@ struct WebSocket: Reducer {
     case .sendButtonTapped:
       let messageToSend = state.messageToSend
       state.messageToSend = ""
-      return .task {
+      return .run { send in
         try await self.webSocket.send(WebSocketClient.ID(), .string(messageToSend))
-        return .sendResponse(didSucceed: true)
-      } catch: { _ in
-        .sendResponse(didSucceed: false)
+        await send(.sendResponse(didSucceed: true))
+      } catch: { _, send in
+        await send(.sendResponse(didSucceed: false))
       }
       .cancellable(id: WebSocketClient.ID())
 

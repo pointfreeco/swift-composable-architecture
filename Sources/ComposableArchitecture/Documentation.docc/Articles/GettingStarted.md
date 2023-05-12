@@ -119,15 +119,17 @@ struct Feature: Reducer {
         return .none
 
       case .numberFactButtonTapped:
-        return .task { [count = state.count] in 
-          await .numberFactResponse(
-            TaskResult { 
-              String(
-                decoding: try await URLSession.shared
-                  .data(from: URL(string: "http://numbersapi.com/\(count)/trivia")!).0,
-                as: UTF8.self
-              )
-            }
+        return .run { [count = state.count] send in
+          await send(
+            .numberFactResponse(
+              TaskResult { 
+                String(
+                  decoding: try await URLSession.shared
+                    .data(from: URL(string: "http://numbersapi.com/\(count)/trivia")!).0,
+                  as: UTF8.self
+                )
+              }
+            )
           )
         }
 
@@ -328,8 +330,10 @@ Then we can use it in the `reduce` implementation:
 
 ```swift
 case .numberFactButtonTapped:
-  return .task { [count = state.count] in 
-    await .numberFactResponse(TaskResult { try await self.numberFact(count) })
+  return .run { [count = state.count] send in 
+    await send(
+      .numberFactResponse(TaskResult { try await self.numberFact(count) })
+    )
   }
 ```
 

@@ -6,8 +6,8 @@ extension EffectPublisher {
   ///
   /// ```swift
   /// case .buttonTapped:
-  ///   return .task {
-  ///     .activityResponse(await self.apiClient.fetchActivity())
+  ///   return .run { send in
+  ///     await send(.activityResponse(self.apiClient.fetchActivity()))
   ///   }
   ///   .animation()
   /// ```
@@ -24,8 +24,8 @@ extension EffectPublisher {
   /// case .buttonTapped:
   ///   var transaction = Transaction(animation: .default)
   ///   transaction.disablesAnimations = true
-  ///   return .task {
-  ///     .activityResponse(await self.apiClient.fetchActivity())
+  ///   return .run { send in
+  ///     await send(.activityResponse(self.apiClient.fetchActivity()))
   ///   }
   ///   .transaction(transaction)
   /// ```
