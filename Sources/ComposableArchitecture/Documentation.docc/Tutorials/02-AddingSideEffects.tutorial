@@ -1,4 +1,4 @@
-@Tutorial(time: 45) { <!-- todo: better estimate -->
+@Tutorial(time: 45) {
   @Intro(title: "Adding side effects") {
     Learn how to communicate with the outside work in your features, and feed data from the outside
     back into your feature.
@@ -67,7 +67,7 @@
         Let's add the additional state and actions that have been dictated to us by the view.
         We know we need some `fact` and `isLoading` state, and we need a `factButtonTapped` action.
         We can also implement that action in the reducer by flipping `isLoading` to `true`, and 
-        we'll clear the `fact state when any button is tapped. And finally we will return `.none` 
+        we'll clear the `fact` state when any button is tapped. And finally we will return `.none` 
         just like we did in all the other cases.
 
         @Code(name: "CounterFeature.swift", file: 02-01-code-0004.swift)
