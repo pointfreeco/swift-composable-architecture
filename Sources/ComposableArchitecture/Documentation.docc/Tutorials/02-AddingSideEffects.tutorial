@@ -8,30 +8,97 @@
   
   @Section(title: "What is a side-effect?") {
     @ContentAndMedia {
-      Side-effects are by far the most important aspect of feature development, but also the most
-      difficult. They allow you to communicate with the outside world, such as making API requests,
-      interacting with file systems, and performing time-based asynchrony.
-    
-      The Composable Architecture bakes the notion of "effect" directly into the definition of 
-      ``ComposableArchitecture/ReducerProtocol``. When a reducer processes an action it can not only
-      mutate state, but it can also return an ``EffectTask``, which represents an asynchronous unit
-      of work run in the outside world.
+      Side-effects are by far the most important aspect of feature development. They are what allow
+      us to communicate with the outside world, such as making API requests, interacting with file 
+      systems, and performing time-based asynchrony. Without them our applications could not do
+      anything of real value for our users.
+      
+      However, side effects are also the most complex part of our features. State mutations are 
+      simple processes. If you run the reducer with the same piece of state and same action you will
+      always get the same result. But effects are susceptible to the vagaries of the outside world, 
+      such as network connectivity, disk permissions, and more. Each time you run an effect you
+      can get back a completely different answer.
+      
+      Let's start by seeing why we can't simply perform effectful work directly in our 
+      ``ComposableArchitecture/ReducerProtocol`` conformances, and then we will see what tools the
+      library provides for performing effects.
       
       <!--      @Image(source: <#file#>, alt: "<#accessible description#>")-->
     }
     
     @Steps {
       @Step {
-        <#text#>
+        Let's add a new bit of functionality to the counter feature we built in 
+        <doc:01-YourFirstFeature>. We will add a button that when tapped makes a network request to
+        fetch a fact about the number that is currently displayed.
         
-        <!--        @Image(source: <#file#>, alt: "<#accessible description#>")-->
+        There are two ways you can approach this. Sometimes people like to work on the reducer
+        feature first, and then the view. Others like to start with the view, which is what we will
+        do now. We have added an additional button to the bottom of `CounterView`, and when it is
+        tapped we are sending a `factButtonTapped` action, which does not yet exist in the counter 
+        domain, but will soon.
+        
+        @Code(name: "CounterFeature.swift", file: 02-01-code-0001.swift) {
+          @Image(source: "02-01-image-0001")
+        }
       }
       
       @Step {
-        <#text#>
+        We will also add a progress view at the bottom to display while we are loading the fact,
+        and we will unwrap a bit of optional state to display the fact. We are using the
+        `isLoading` and `fact` state to accomplish this, neither of which exist in the counter 
+        feature yet, but will soon.
         
-        @Code(name: "<#display name#>", file: <#filename.swift#>)
+        That is all it takes for the view. The code is not yet compiling because we are using
+        state and actions that don't yet exist, so let's fix those errors in the reducer.
+
+        @Code(name: "CounterFeature.swift", file: 02-01-code-0002.swift)
+      }
+      
+      @Step {
+        Recall that this is what our `CounterFeature` reducer looks like so far, as built in
+        <doc:01-YourFirstFeature>. It has a simple `State` and `Action` type, and the reducer
+        simply decrements or increments the `count` state depending on which action is sent.
+        
+        @Code(name: "CounterFeature.swift", file: 02-01-code-0003.swift)
+      }
+      
+      @Step {
+        Let's add the additional state and actions that have been dictated to us by the view.
+        We know we need some `fact` and `isLoading` state, and we need a `factButtonTapped` action.
+        We can also implement that action in the reducer by flipping `isLoading` to `true` and 
+        return `.none` like we did in all the other cases.
+
+        @Code(name: "CounterFeature.swift", file: 02-01-code-0004.swift)
+      }
+      
+      @Step {
+        Now the question is: how can we perform a side-effect? We will be using 
+        [numbersapi.com][numbersapi.com] to fetch a fact for the state's current count. We might
+        hope we can just use `URLSession` directly in the reducer to perform some async work, but
+        unfortunately that is not allowed. The Composable Architecture separates the simple, pure
+        transformations of state from the complex, messy side effects. There are a lot of benefits
+        to doing this, and it is one of the core tenets of the library.
+        
+        @Code(name: "CounterFeature.swift", file: 02-01-code-0005.swift)
       }
     }
   }
+  
+  @Section(title: "Performing a side-effect") {
+    @ContentAndMedia {
+      Now that we understand what a side-effect is and why they cannot be performed directly in
+      a reducer, let's see how to fix the code we wrote above. 
+    }
+  }
 }
+
+
+<!--
+        > Tip: Unfortunately [numbersapi.com][numbersapi.com] does not offer HTTPS, so you will need 
+        to add an entry to your application's Info.plist in order to allow HTTP requests. See 
+        [this][always-allow] article for information on how to do that.
+        
+        [numbersapi.com]: http://www.numbersapi.com
+        [always-allow]: https://developer.apple.com/documentation/bundleresources/information_property_list/nsapptransportsecurity
+-->
