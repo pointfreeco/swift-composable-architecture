@@ -15,7 +15,9 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 ### Creating an effect
 
+- ``EffectPublisher/task(priority:operation:catch:file:fileID:line:)``
 - ``EffectPublisher/task(priority:operation:)``
+- ``EffectPublisher/fireAndForget(priority:_:)``
 
 ### Cancellation
 

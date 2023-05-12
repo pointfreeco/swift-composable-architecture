@@ -45,15 +45,15 @@ struct VoiceMemos: ReducerProtocol {
         return .none
 
       case .openSettingsButtonTapped:
-        return .fireAndForget {
+        return .run { _ in
           await self.openSettings()
         }
 
       case .recordButtonTapped:
         switch state.audioRecorderPermission {
         case .undetermined:
-          return .task {
-            await .recordPermissionResponse(self.requestRecordPermission())
+          return .run { send in
+            await send(.recordPermissionResponse(self.requestRecordPermission()))
           }
 
         case .denied:

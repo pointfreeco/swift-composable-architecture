@@ -143,7 +143,7 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   ///
   /// - Parameter prefix: A string with which to prefix all debug messages.
   /// - Returns: A structure that prints debug messages for all computations.
-  public func debug(_ prefix: String = "") -> Self {
+  public func _printChanges(_ prefix: String = "") -> Self {
     var view = self
     #if DEBUG
       view.prefix = prefix

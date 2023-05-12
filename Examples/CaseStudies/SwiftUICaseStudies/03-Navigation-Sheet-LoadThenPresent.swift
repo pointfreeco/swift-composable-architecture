@@ -33,9 +33,9 @@ struct LoadThenPresent: ReducerProtocol {
 
       case .counterButtonTapped:
         state.isActivityIndicatorVisible = true
-        return .task {
+        return .run { send in
           try await self.clock.sleep(for: .seconds(1))
-          return .counterPresentationDelayCompleted
+          await send(.counterPresentationDelayCompleted)
         }
 
       case .counterPresentationDelayCompleted:

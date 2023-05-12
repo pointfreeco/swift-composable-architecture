@@ -60,13 +60,15 @@ public struct Login: ReducerProtocol, Sendable {
 
       case .loginButtonTapped:
         state.isLoginRequestInFlight = true
-        return .task { [email = state.email, password = state.password] in
-          .loginResponse(
-            await TaskResult {
-              try await self.authenticationClient.login(
-                .init(email: email, password: password)
-              )
-            }
+        return .run { [email = state.email, password = state.password] send in
+          await send(
+            .loginResponse(
+              await TaskResult {
+                try await self.authenticationClient.login(
+                  .init(email: email, password: password)
+                )
+              }
+            )
           )
         }
 

@@ -5,6 +5,72 @@ import XCTestDynamicOverlay
 
 // MARK: - Deprecated after 0.52.0
 
+extension WithViewStore {
+  @available(*, deprecated, renamed: "_printChanges(_:)")
+  public func debug(_ prefix: String = "") -> Self {
+    self._printChanges(prefix)
+  }
+}
+
+extension EffectPublisher where Failure == Never {
+  @available(iOS, deprecated: 9999, message: "Use 'Effect.run' and pass the action to 'send'.")
+  @available(macOS, deprecated: 9999, message: "Use 'Effect.run' and pass the action to 'send'.")
+  @available(tvOS, deprecated: 9999, message: "Use 'Effect.run' and pass the action to 'send'.")
+  @available(watchOS, deprecated: 9999, message: "Use 'Effect.run' and pass the action to 'send'.")
+  public static func task(
+    priority: TaskPriority? = nil,
+    operation: @escaping @Sendable () async throws -> Action,
+    catch handler: (@Sendable (Error) async -> Action)? = nil,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> Self {
+    withEscapedDependencies { escaped in
+      Self(
+        operation: .run(priority) { send in
+          await escaped.yield {
+            do {
+              try await send(operation())
+            } catch is CancellationError {
+              return
+            } catch {
+              guard let handler = handler else {
+                #if DEBUG
+                  var errorDump = ""
+                  customDump(error, to: &errorDump, indent: 4)
+                  runtimeWarn(
+                    """
+                    An "Effect.task" returned from "\(fileID):\(line)" threw an unhandled \
+                    error. …
+
+                    \(errorDump)
+
+                    All non-cancellation errors must be explicitly handled via the "catch" \
+                    parameter on "EffectTask.task", or via a "do" block.
+                    """
+                  )
+                #endif
+                return
+              }
+              await send(handler(error))
+            }
+          }
+        }
+      )
+    }
+  }
+
+  @available(iOS, deprecated: 9999, message: "Use 'Effect.run' and ignore 'send' instead.")
+  @available(macOS, deprecated: 9999, message: "Use 'Effect.run' and ignore 'send' instead.")
+  @available(tvOS, deprecated: 9999, message: "Use 'Effect.run' and ignore 'send' instead.")
+  @available(watchOS, deprecated: 9999, message: "Use 'Effect.run' and ignore 'send' instead.")
+  public static func fireAndForget(
+    priority: TaskPriority? = nil,
+    _ work: @escaping @Sendable () async throws -> Void
+  ) -> Self {
+    Self.run(priority: priority) { _ in try? await work() }
+  }
+}
+
 extension Store {
   @available(iOS, deprecated: 9999, message: "Pass a closure as the reducer.")
   @available(macOS, deprecated: 9999, message: "Pass a closure as the reducer.")
@@ -799,7 +865,7 @@ extension Store {
             let task = self.send(fromChildAction(childAction))
             childState = extractChildState(self.state.value) ?? childState
             if let task = task {
-              return .fireAndForget { await task.cancellableValue }
+              return .run { _ in await task.cancellableValue }
             } else {
               return .none
             }

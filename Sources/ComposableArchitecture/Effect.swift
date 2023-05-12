@@ -90,12 +90,9 @@ extension EffectPublisher {
 /// There are 2 distinct ways to create an `Effect`: one using Swift's native concurrency tools, and
 /// the other using Apple's Combine framework:
 ///
-/// * If using Swift's native structured concurrency tools then there are 3 main ways to create an
-/// effect, depending on if you want to emit one single action back into the system, or any number
-/// of actions, or just execute some work without emitting any actions:
-///   * ``EffectPublisher/task(priority:operation:catch:fileID:line:)``
-///   * ``EffectPublisher/run(priority:operation:catch:fileID:line:)``
-///   * ``EffectPublisher/fireAndForget(priority:_:)``
+/// * If using Swift's native structured concurrency tools then there is one main way to create an
+/// effect: ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)``.
+///
 /// * If using Combine in your application, in particular for the dependencies of your feature
 /// then you can create effects by making use of any of Combine's operators, and then erasing the
 /// publisher type to ``EffectPublisher`` with either `eraseToEffect` or `catchToEffect`. Note that
@@ -110,105 +107,11 @@ extension EffectPublisher {
 /// > then it must receive values on the main thread.
 /// >
 /// > This is only an issue if using the Combine interface of ``EffectPublisher`` as mentioned
-/// > above. If  you are using Swift's concurrency tools and the `.task`, `.run`, and
-/// > `.fireAndForget` functions on ``EffectTask``, then threading is automatically handled for you.
+/// > above. If you are using Swift's concurrency tools and the `.run` function on ``EffectTask``,
+/// > then threading is automatically handled for you.
 public typealias EffectTask<Action> = EffectPublisher<Action, Never>
 
 extension EffectPublisher where Failure == Never {
-  /// Wraps an asynchronous unit of work in an effect.
-  ///
-  /// This function is useful for executing work in an asynchronous context and capturing the result
-  /// in an ``EffectTask`` so that the reducer, a non-asynchronous context, can process it.
-  ///
-  /// For example, if your dependency exposes an `async` function, you can use
-  /// ``task(priority:operation:catch:fileID:line:)`` to provide an asynchronous context for
-  /// invoking that endpoint:
-  ///
-  /// ```swift
-  /// struct Feature: ReducerProtocol {
-  ///   struct State { /* ... */ }
-  ///   enum FeatureAction {
-  ///     case factButtonTapped
-  ///     case factResponse(TaskResult<String>)
-  ///   }
-  ///   @Dependency(\.numberFact) var numberFact
-  ///
-  ///   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
-  ///     switch action {
-  ///       case .factButtonTapped:
-  ///         return .task { [number = state.number] in
-  ///           await .factResponse(TaskResult { try await self.numberFact.fetch(number) })
-  ///         }
-  ///
-  ///       case let .factResponse(.success(fact)):
-  ///         // do something with fact
-  ///
-  ///       case .factResponse(.failure):
-  ///         // handle error
-  ///
-  ///       ...
-  ///     }
-  ///   }
-  /// }
-  /// ```
-  ///
-  /// The above code sample makes use of ``TaskResult`` in order to automatically bundle the success
-  /// or failure of the `numberFact` endpoint into a single type that can be sent in an action.
-  ///
-  /// The closure provided to ``task(priority:operation:catch:fileID:line:)`` is allowed to throw,
-  /// but any non-cancellation errors thrown will cause a runtime warning when run in the simulator
-  /// or on a device, and will cause a test failure in tests. To catch non-cancellation errors use
-  /// the `catch` trailing closure.
-  ///
-  /// - Parameters:
-  ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
-  ///     `Task.currentPriority`.
-  ///   - operation: The operation to execute.
-  ///   - catch: An error handler, invoked if the operation throws an error other than
-  ///     `CancellationError`.
-  /// - Returns: An effect wrapping the given asynchronous work.
-  public static func task(
-    priority: TaskPriority? = nil,
-    operation: @escaping @Sendable () async throws -> Action,
-    catch handler: (@Sendable (Error) async -> Action)? = nil,
-    fileID: StaticString = #fileID,
-    line: UInt = #line
-  ) -> Self {
-    withEscapedDependencies { escaped in
-      Self(
-        operation: .run(priority) { send in
-          await escaped.yield {
-            do {
-              try await send(operation())
-            } catch is CancellationError {
-              return
-            } catch {
-              guard let handler = handler else {
-                #if DEBUG
-                  var errorDump = ""
-                  customDump(error, to: &errorDump, indent: 4)
-                  runtimeWarn(
-                    """
-                    An "EffectTask.task" returned from "\(fileID):\(line)" threw an unhandled \
-                    error. …
-
-                    \(errorDump)
-
-                    All non-cancellation errors must be explicitly handled via the "catch" \
-                    parameter on "EffectTask.task", or via a "do" block.
-                    """
-                  )
-                #endif
-                return
-              }
-              await send(handler(error))
-            }
-          }
-        }
-      )
-    }
-  }
-
   /// Wraps an asynchronous unit of work that can emit any number of times in an effect.
   ///
   /// This effect is similar to ``task(priority:operation:catch:fileID:line:)`` except it is capable
@@ -287,35 +190,6 @@ extension EffectPublisher where Failure == Never {
         }
       )
     }
-  }
-
-  /// Creates an effect that executes some work in the real world that doesn't need to feed data
-  /// back into the store. If an error is thrown, the effect will complete and the error will be
-  /// ignored.
-  ///
-  /// This effect is handy for executing some asynchronous work that your feature doesn't need to
-  /// react to. One such example is analytics:
-  ///
-  /// ```swift
-  /// case .buttonTapped:
-  ///   return .fireAndForget {
-  ///     try self.analytics.track("Button Tapped")
-  ///   }
-  /// ```
-  ///
-  /// The closure provided to ``fireAndForget(priority:_:)`` is allowed to throw, and any error
-  /// thrown will be ignored.
-  ///
-  /// - Parameters:
-  ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
-  ///     `Task.currentPriority`.
-  ///   - work: A closure encapsulating some work to execute in the real world.
-  /// - Returns: An effect.
-  public static func fireAndForget(
-    priority: TaskPriority? = nil,
-    _ work: @escaping @Sendable () async throws -> Void
-  ) -> Self {
-    Self.run(priority: priority) { _ in try? await work() }
   }
 
   /// Initializes an effect that immediately emits the action passed in.

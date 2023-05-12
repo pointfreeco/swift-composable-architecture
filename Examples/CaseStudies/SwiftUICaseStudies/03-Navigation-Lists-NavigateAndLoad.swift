@@ -42,9 +42,9 @@ struct NavigateAndLoadList: ReducerProtocol {
 
       case let .setNavigation(selection: .some(id)):
         state.selection = Identified(nil, id: id)
-        return .task {
+        return .run { send in
           try await self.clock.sleep(for: .seconds(1))
-          return .setNavigationSelectionDelayCompleted
+          await send(.setNavigationSelectionDelayCompleted)
         }
         .cancellable(id: CancelID.load, cancelInFlight: true)
 
