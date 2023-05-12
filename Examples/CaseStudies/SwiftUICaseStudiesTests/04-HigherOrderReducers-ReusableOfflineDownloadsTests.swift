@@ -5,7 +5,7 @@ import XCTest
 
 @MainActor
 final class ReusableComponentsDownloadComponentTests: XCTestCase {
-  let download = AsyncThrowingStream<DownloadClient.Event, Error>.streamWithContinuation()
+  let download = AsyncThrowingStream.makeStream(of: DownloadClient.Event.self)
 
   func testDownloadFlow() async {
     let store = TestStore(

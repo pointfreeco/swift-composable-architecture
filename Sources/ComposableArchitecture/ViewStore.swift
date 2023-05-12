@@ -332,8 +332,8 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///     switch action {
   ///     case .pulledToRefresh:
   ///       state.isLoading = true
-  ///       return .task {
-  ///         await .receivedResponse(TaskResult { try await self.fetch() })
+  ///       return .run { send in
+  ///         await send(.receivedResponse(TaskResult { try await self.fetch() }))
   ///       }
   ///
   ///     case let .receivedResponse(result):

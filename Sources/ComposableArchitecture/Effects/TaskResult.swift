@@ -31,15 +31,17 @@ import XCTestDynamicOverlay
 /// }
 /// ```
 ///
-/// And finally you can use ``EffectPublisher/task(priority:operation:catch:file:fileID:line:)`` to
+/// And finally you can use ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)`` to
 /// construct an effect in the reducer that invokes the `numberFact` endpoint and wraps its response
 /// in a ``TaskResult`` by using its catching initializer, ``TaskResult/init(catching:)``:
 ///
 /// ```swift
 /// case .factButtonTapped:
-///   return .task {
-///     await .factResponse(
-///       TaskResult { try await self.numberFact.fetch(state.number) }
+///   return .run { send in
+///     await send(
+///       .factResponse(
+///         TaskResult { try await self.numberFact.fetch(state.number) }
+///       )
 ///     )
 ///   }
 ///
