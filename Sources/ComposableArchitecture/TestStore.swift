@@ -1384,16 +1384,18 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     ///     is expected.
     @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
     @MainActor
-    public func receive(
+    public func receive<ClockType: Clock>(
       _ expectedAction: Action,
       timeout duration: Duration,
+      clock: ClockType = ContinuousClock(),
       assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
-    ) async {
+    ) async where ClockType.Duration == Duration {
       await self.receive(
         expectedAction,
         timeout: duration.nanoseconds,
+        clock: clock,
         assert: updateStateToExpectedResult,
         file: file,
         line: line
@@ -1739,6 +1741,7 @@ extension TestStore where ScopedState: Equatable {
       _ actionCase: CasePath<Action, Value>,
       timeout duration: Duration,
       assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+      clock: any Clock = ContinuousClock(),
       file: StaticString = #file,
       line: UInt = #line
     ) async {
@@ -1752,6 +1755,7 @@ extension TestStore where ScopedState: Equatable {
       await self.receiveAction(
         actionPredicate: { actionCase.extract(from: $0) != nil },
         timeout: duration.nanoseconds,
+        clock: clock
         file: file,
         line: line
       )
@@ -1877,7 +1881,7 @@ extension TestStore where ScopedState: Equatable {
           return
         }
       }
-
+      
       guard start.distance(to: DispatchTime.now().uptimeNanoseconds) < nanoseconds
       else {
         let suggestion: String
@@ -1904,7 +1908,7 @@ extension TestStore where ScopedState: Equatable {
         }
         XCTFail(
           """
-          Expected to receive an action, but received none\
+          Expected to receive \(self.exhaustivity == .on ? "an action" : "a matching action"), but received none\
           \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds" : "").
 
           \(suggestion)
