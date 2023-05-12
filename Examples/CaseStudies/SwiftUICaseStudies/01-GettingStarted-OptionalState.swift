@@ -87,19 +87,19 @@ struct OptionalBasicsView_Previews: PreviewProvider {
     Group {
       NavigationView {
         OptionalBasicsView(
-          store: Store(
-            initialState: OptionalBasics.State(),
-            reducer: OptionalBasics()
-          )
+          store: Store(initialState: OptionalBasics.State()) {
+            OptionalBasics()
+          }
         )
       }
 
       NavigationView {
         OptionalBasicsView(
           store: Store(
-            initialState: OptionalBasics.State(optionalCounter: Counter.State(count: 42)),
-            reducer: OptionalBasics()
-          )
+            initialState: OptionalBasics.State(optionalCounter: Counter.State(count: 42))
+          ) {
+            OptionalBasics()
+          }
         )
       }
     }

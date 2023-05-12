@@ -86,10 +86,9 @@ final class CounterViewController: UIViewController {
 struct CounterViewController_Previews: PreviewProvider {
   static var previews: some View {
     let vc = CounterViewController(
-      store: Store(
-        initialState: Counter.State(),
-        reducer: Counter()
-      )
+      store: Store(initialState: Counter.State()) {
+        Counter()
+      }
     )
     return UIViewRepresented(makeUIView: { _ in vc.view })
   }

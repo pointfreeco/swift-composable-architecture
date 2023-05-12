@@ -5,6 +5,9 @@ extension DependencyValues {
   /// This value is set to true on reducers that are run from within
   /// ``Reducer/ifLet(_:action:destination:fileID:line:)`` and
   /// ``Reducer/forEach(_:action:destination:fileID:line:)``.
+  ///
+  /// See ``DismissEffect`` for more information on how child features can easily dismiss themselves
+  /// without communicating to the parent.
   public var isPresented: Bool {
     self.dismiss.dismiss != nil
   }

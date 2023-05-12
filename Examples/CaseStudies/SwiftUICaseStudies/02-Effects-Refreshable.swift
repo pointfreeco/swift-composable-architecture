@@ -28,12 +28,12 @@ struct Refreshable: Reducer {
   }
 
   @Dependency(\.factClient) var factClient
-  private enum FactRequestID {}
+  private enum CancelID { case factRequest }
 
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .cancelButtonTapped:
-      return .cancel(id: FactRequestID.self)
+      return .cancel(id: CancelID.factRequest)
 
     case .decrementButtonTapped:
       state.count -= 1
@@ -57,7 +57,7 @@ struct Refreshable: Reducer {
         await .factResponse(TaskResult { try await self.factClient.fetch(count) })
       }
       .animation()
-      .cancellable(id: FactRequestID.self)
+      .cancellable(id: CancelID.factRequest)
     }
   }
 }
@@ -118,10 +118,9 @@ struct RefreshableView: View {
 struct Refreshable_Previews: PreviewProvider {
   static var previews: some View {
     RefreshableView(
-      store: Store(
-        initialState: Refreshable.State(),
-        reducer: Refreshable()
-      )
+      store: Store(initialState: Refreshable.State()) {
+        Refreshable()
+      }
     )
   }
 }

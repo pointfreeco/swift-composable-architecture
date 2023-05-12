@@ -180,19 +180,15 @@ struct DownloadList_Previews: PreviewProvider {
     Group {
       NavigationView {
         CitiesView(
-          store: Store(
-            initialState: MapApp.State(cityMaps: .mocks),
-            reducer: MapApp()
-          )
+          store: Store(initialState: MapApp.State(cityMaps: .mocks)) {
+            MapApp()
+          }
         )
       }
 
       NavigationView {
         CityMapDetailView(
-          store: Store(
-            initialState: IdentifiedArrayOf<CityMap.State>.mocks.first!,
-            reducer: EmptyReducer()
-          )
+          store: Store(initialState: IdentifiedArrayOf<CityMap.State>.mocks.first!) {}
         )
       }
     }

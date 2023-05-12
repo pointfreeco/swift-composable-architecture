@@ -402,7 +402,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///     let childReducer = Reducer<
   ///       ChildState, ChildAction, ChildEnvironment
   ///     > { state, action environment in
-  ///       enum MotionID {}
+  ///       enum CancelID { case motion }
   ///
   ///       switch action {
   ///       case .onAppear:
@@ -410,11 +410,11 @@ public struct AnyReducer<State, Action, Environment> {
   ///         return environment.motionClient
   ///           .start()
   ///           .map(ChildAction.motion)
-  ///           .cancellable(id: MotionID.self)
+  ///           .cancellable(id: CancelID.motion)
   ///
   ///       case .onDisappear:
   ///         // And explicitly cancel them when the domain is torn down
-  ///         return .cancel(id: MotionID.self)
+  ///         return .cancel(id: CancelID.motion)
   ///       ...
   ///       }
   ///     }
@@ -435,7 +435,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///
   ///     ```swift
   ///     SwitchStore(self.parentStore) {
-  ///       CaseLet(state: /ParentState.child, action: ParentAction.child) { childStore in
+  ///       CaseLet(/ParentState.child, action: ParentAction.child) { childStore in
   ///         // This destination only appears when child state matches
   ///         WithViewStore(childStore) { childViewStore in
   ///           // So this action can only be sent when child state is available
@@ -622,7 +622,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///     let childReducer = Reducer<
   ///       ChildState, ChildAction, ChildEnvironment
   ///     > { state, action environment in
-  ///       enum MotionID {}
+  ///       enum CancelID { case motion }
   ///
   ///       switch action {
   ///       case .onAppear:
@@ -630,11 +630,11 @@ public struct AnyReducer<State, Action, Environment> {
   ///         return environment.motionClient
   ///           .start()
   ///           .map(ChildAction.motion)
-  ///           .cancellable(id: MotionID.self)
+  ///           .cancellable(id: CancelID.motion)
   ///
   ///       case .onDisappear:
   ///         // And explicitly cancel them when the domain is torn down
-  ///         return .cancel(id: MotionID.self)
+  ///         return .cancel(id: CancelID.motion)
   ///       ...
   ///       }
   ///     }

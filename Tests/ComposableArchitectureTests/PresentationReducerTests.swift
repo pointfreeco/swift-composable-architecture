@@ -50,10 +50,9 @@ import XCTest
         }
       }
 
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      )
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      }
 
       await store.send(.presentChild) {
         $0.child = Child.State()
@@ -117,10 +116,9 @@ import XCTest
         }
       }
 
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      )
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      }
 
       await store.send(.presentChild) {
         $0.child = Child.State()
@@ -190,10 +188,9 @@ import XCTest
         }
       }
 
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      )
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      }
 
       await store.send(.presentChild) {
         $0.child = Child.State()
@@ -212,7 +209,7 @@ import XCTest
 
     func testPresentation_parentDismissal_effects() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        await _withMainSerialExecutor {
+        await withMainSerialExecutor {
           struct Child: Reducer {
             struct State: Equatable {
               var count = 0
@@ -262,10 +259,9 @@ import XCTest
           }
 
           let clock = TestClock()
-          let store = TestStore(
-            initialState: Parent.State(),
-            reducer: Parent()
-          ) {
+          let store = TestStore(initialState: Parent.State()) {
+            Parent()
+          } withDependencies: {
             $0.continuousClock = clock
           }
 
@@ -293,7 +289,7 @@ import XCTest
 
     func testPresentation_childDismissal_effects() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        await _withMainSerialExecutor {
+        await withMainSerialExecutor {
           struct Child: Reducer {
             struct State: Equatable {
               var count = 0
@@ -350,10 +346,9 @@ import XCTest
           }
 
           let clock = TestClock()
-          let store = TestStore(
-            initialState: Parent.State(),
-            reducer: Parent()
-          ) {
+          let store = TestStore(initialState: Parent.State()) {
+            Parent()
+          } withDependencies: {
             $0.continuousClock = clock
           }
 
@@ -382,7 +377,7 @@ import XCTest
 
     func testPresentation_identifiableDismissal_effects() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        await _withMainSerialExecutor {
+        await withMainSerialExecutor {
           struct Child: Reducer {
             struct State: Equatable, Identifiable {
               let id: UUID
@@ -434,16 +429,15 @@ import XCTest
           }
 
           let clock = TestClock()
-          let store = TestStore(
-            initialState: Parent.State(),
-            reducer: Parent()
-          ) {
+          let store = TestStore(initialState: Parent.State()) {
+            Parent()
+          } withDependencies: {
             $0.continuousClock = clock
             $0.uuid = .incrementing
           }
 
           await store.send(.presentChild) {
-            $0.child = Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
+            $0.child = Child.State(id: UUID(0))
           }
           await store.send(.child(.presented(.startButtonTapped)))
           await clock.advance(by: .seconds(2))
@@ -458,7 +452,7 @@ import XCTest
             }
           }
           await store.send(.presentChild) {
-            $0.child = Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!)
+            $0.child = Child.State(id: UUID(1))
           }
           await clock.advance(by: .seconds(2))
           await store.send(.child(.dismiss)) {
@@ -513,10 +507,9 @@ import XCTest
         }
       }
 
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      )
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      }
 
       await store.send(.presentChild) {
         $0.child = Child.State()
@@ -552,10 +545,9 @@ import XCTest
           }
         }
 
-        let store = TestStore(
-          initialState: Parent.State(),
-          reducer: Parent()
-        )
+        let store = TestStore(initialState: Parent.State()) {
+          Parent()
+        }
 
         await store.send(.presentAlert) {
           $0.alert = AlertState {
@@ -593,10 +585,9 @@ import XCTest
           }
         }
 
-        let store = TestStore(
-          initialState: Parent.State(),
-          reducer: Parent()
-        )
+        let store = TestStore(initialState: Parent.State()) {
+          Parent()
+        }
 
         await store.send(.presentAlert) {
           $0.alert = AlertState {
@@ -647,10 +638,9 @@ import XCTest
           }
         }
 
-        let store = TestStore(
-          initialState: Parent.State(),
-          reducer: Parent()
-        )
+        let store = TestStore(initialState: Parent.State()) {
+          Parent()
+        }
 
         await store.send(.presentAlert) {
           $0.alert = AlertState {
@@ -669,7 +659,7 @@ import XCTest
     }
 
     func testPresentation_hydratedDestination_childDismissal() async {
-      await _withMainSerialExecutor {
+      await withMainSerialExecutor {
         struct Child: Reducer {
           struct State: Equatable {
             var count = 0
@@ -720,10 +710,9 @@ import XCTest
           }
         }
 
-        let store = TestStore(
-          initialState: Parent.State(child: Child.State()),
-          reducer: Parent()
-        )
+        let store = TestStore(initialState: Parent.State(child: Child.State())) {
+          Parent()
+        }
 
         await store.send(.child(.presented(.closeButtonTapped)))
         await store.receive(.child(.dismiss)) {
@@ -734,7 +723,7 @@ import XCTest
 
     func testEnumPresentation() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        await _withMainSerialExecutor {
+        await withMainSerialExecutor {
           struct Child: Reducer {
             struct State: Equatable, Identifiable {
               let id: UUID
@@ -828,17 +817,16 @@ import XCTest
           }
 
           let clock = TestClock()
-          let store = TestStore(
-            initialState: Parent.State(),
-            reducer: Parent()
-          ) {
+          let store = TestStore(initialState: Parent.State()) {
+            Parent()
+          } withDependencies: {
             $0.continuousClock = clock
             $0.uuid = .incrementing
           }
 
           await store.send(.presentChild()) {
             $0.destination = .child(
-              Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
+              Child.State(id: UUID(0))
             )
           }
           await store.send(.destination(.presented(.child(.startButtonTapped))))
@@ -859,7 +847,7 @@ import XCTest
           }
           await store.send(.presentChild()) {
             $0.destination = .child(
-              Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!)
+              Child.State(id: UUID(1))
             )
           }
           await clock.advance(by: .seconds(2))
@@ -876,7 +864,7 @@ import XCTest
             }
           }
           await store.send(
-            .presentChild(id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!)
+            .presentChild(id: UUID(1))
           ) {
             try (/Parent.Destination.State.child).modify(&$0.destination) {
               $0.count = 0
@@ -957,11 +945,10 @@ import XCTest
         }
       }
 
-      await _withMainSerialExecutor {
-        let store = TestStore(
-          initialState: Parent.State(),
-          reducer: Parent()
-        )
+      await withMainSerialExecutor {
+        let store = TestStore(initialState: Parent.State()) {
+          Parent()
+        }
         let presentationTask = await store.send(.presentChild) {
           $0.child = Child.State()
         }
@@ -1050,11 +1037,10 @@ import XCTest
         }
       }
 
-      await _withMainSerialExecutor {
-        let store = TestStore(
-          initialState: Parent.State(),
-          reducer: Parent()
-        )
+      await withMainSerialExecutor {
+        let store = TestStore(initialState: Parent.State()) {
+          Parent()
+        }
         let childPresentationTask = await store.send(.presentChild) {
           $0.child = Child.State()
         }
@@ -1130,12 +1116,11 @@ import XCTest
           }
         }
 
-        await _withMainSerialExecutor {
+        await withMainSerialExecutor {
           let clock = TestClock()
-          let store = TestStore(
-            initialState: Parent.State(),
-            reducer: Parent()
-          ) {
+          let store = TestStore(initialState: Parent.State()) {
+            Parent()
+          } withDependencies: {
             $0.continuousClock = clock
           }
           await store.send(.presentChildren) {
@@ -1226,12 +1211,11 @@ import XCTest
           }
         }
 
-        await _withMainSerialExecutor {
+        await withMainSerialExecutor {
           let clock = TestClock()
-          let store = TestStore(
-            initialState: Parent.State(),
-            reducer: Parent()
-          ) {
+          let store = TestStore(initialState: Parent.State()) {
+            Parent()
+          } withDependencies: {
             $0.continuousClock = clock
           }
           await store.send(.presentChildren) {
@@ -1331,18 +1315,17 @@ import XCTest
           }
         }
 
-        await _withMainSerialExecutor {
+        await withMainSerialExecutor {
           let clock = TestClock()
-          let store = TestStore(
-            initialState: Parent.State(),
-            reducer: Parent()
-          ) {
+          let store = TestStore(initialState: Parent.State()) {
+            Parent()
+          } withDependencies: {
             $0.continuousClock = clock
             $0.uuid = .incrementing
           }
           await store.send(.presentChildren) {
-            $0.child1 = Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
-            $0.child2 = Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!)
+            $0.child1 = Child.State(id: UUID(0))
+            $0.child2 = Child.State(id: UUID(1))
           }
           await store.send(.child1(.presented(.startButtonTapped)))
           await clock.advance(by: .seconds(1))
@@ -1431,10 +1414,9 @@ import XCTest
         }
 
         let clock = TestClock()
-        let store = TestStore(
-          initialState: Parent.State(),
-          reducer: Parent()
-        ) {
+        let store = TestStore(initialState: Parent.State()) {
+          Parent()
+        } withDependencies: {
           $0.continuousClock = clock
         }
         await store.send(.presentChild) {
@@ -1528,12 +1510,11 @@ import XCTest
           }
         }
 
-        await _withMainSerialExecutor {
+        await withMainSerialExecutor {
           let clock = TestClock()
-          let store = TestStore(
-            initialState: Parent.State(),
-            reducer: Parent()
-          ) {
+          let store = TestStore(initialState: Parent.State()) {
+            Parent()
+          } withDependencies: {
             $0.continuousClock = clock
           }
           await store.send(.presentChild) {
@@ -1559,118 +1540,120 @@ import XCTest
       }
     }
 
-    func testRuntimeWarn_NilChild_SendDismissAction() async {
-      struct Child: Reducer {
-        struct State: Equatable {}
-        enum Action: Equatable {}
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
+    #if DEBUG
+      func testRuntimeWarn_NilChild_SendDismissAction() async {
+        struct Child: Reducer {
+          struct State: Equatable {}
+          enum Action: Equatable {}
+          func reduce(into state: inout State, action: Action) -> Effect<Action> {
+          }
         }
-      }
 
-      struct Parent: Reducer {
-        struct State: Equatable {
-          @PresentationState var child: Child.State?
+        struct Parent: Reducer {
+          struct State: Equatable {
+            @PresentationState var child: Child.State?
+          }
+          enum Action: Equatable {
+            case child(PresentationAction<Child.Action>)
+          }
+          var body: some Reducer<State, Action> {
+            Reduce { state, action in
+              .none
+            }
+            .ifLet(\.$child, action: /Action.child) {
+              Child()
+            }
+          }
         }
-        enum Action: Equatable {
-          case child(PresentationAction<Child.Action>)
+
+        let store = TestStore(initialState: Parent.State()) {
+          Parent()
         }
-        var body: some Reducer<State, Action> {
-          Reduce { state, action in
+
+        XCTExpectFailure {
+          $0.compactDescription == """
+            A "ifLet" at \
+            "ComposableArchitectureTests/PresentationReducerTests.swift:\(#line - 13)" received a \
+            presentation action when destination state was absent. …
+
+              Action:
+                PresentationReducerTests.Parent.Action.child(.dismiss)
+
+            This is generally considered an application logic error, and can happen for a few reasons:
+
+            • A parent reducer set destination state to "nil" before this reducer ran. This reducer \
+            must run before any other reducer sets destination state to "nil". This ensures that \
+            destination reducers can handle their actions while their state is still present.
+
+            • This action was sent to the store while destination state was "nil". Make sure that \
+            actions for this reducer can only be sent from a view store when state is present, or \
+            from effects that start from this reducer. In SwiftUI applications, use a Composable \
+            Architecture view modifier like "sheet(store:…)".
+            """
+        }
+
+        await store.send(.child(.dismiss))
+      }
+    #endif
+
+    #if DEBUG
+      func testRuntimeWarn_NilChild_SendChildAction() async {
+        struct Child: Reducer {
+          struct State: Equatable {}
+          enum Action: Equatable {
+            case tap
+          }
+          func reduce(into state: inout State, action: Action) -> Effect<Action> {
             .none
           }
-          .ifLet(\.$child, action: /Action.child) {
-            Child()
+        }
+
+        struct Parent: Reducer {
+          struct State: Equatable {
+            @PresentationState var child: Child.State?
+          }
+          enum Action: Equatable {
+            case child(PresentationAction<Child.Action>)
+          }
+          var body: some Reducer<State, Action> {
+            Reduce { state, action in
+              .none
+            }
+            .ifLet(\.$child, action: /Action.child) {
+              Child()
+            }
           }
         }
-      }
 
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      )
-
-      XCTExpectFailure {
-        $0.compactDescription == """
-          A "ifLet" at \
-          "ComposableArchitectureTests/PresentationReducerTests.swift:\(#line - 14)" received a \
-          presentation action when destination state was absent. …
-
-            Action:
-              PresentationReducerTests.Parent.Action.child(.dismiss)
-
-          This is generally considered an application logic error, and can happen for a few reasons:
-
-          • A parent reducer set destination state to "nil" before this reducer ran. This reducer \
-          must run before any other reducer sets destination state to "nil". This ensures that \
-          destination reducers can handle their actions while their state is still present.
-
-          • This action was sent to the store while destination state was "nil". Make sure that \
-          actions for this reducer can only be sent from a view store when state is present, or \
-          from effects that start from this reducer. In SwiftUI applications, use a Composable \
-          Architecture view modifier like "sheet(store:…)".
-          """
-      }
-
-      await store.send(.child(.dismiss))
-    }
-
-    func testRuntimeWarn_NilChild_SendChildAction() async {
-      struct Child: Reducer {
-        struct State: Equatable {}
-        enum Action: Equatable {
-          case tap
+        let store = TestStore(initialState: Parent.State()) {
+          Parent()
         }
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
-          .none
+
+        XCTExpectFailure {
+          $0.compactDescription == """
+            A "ifLet" at \
+            "ComposableArchitectureTests/PresentationReducerTests.swift:\(#line - 13)" received a \
+            presentation action when destination state was absent. …
+
+              Action:
+                PresentationReducerTests.Parent.Action.child(.presented(.tap))
+
+            This is generally considered an application logic error, and can happen for a few reasons:
+
+            • A parent reducer set destination state to "nil" before this reducer ran. This reducer \
+            must run before any other reducer sets destination state to "nil". This ensures that \
+            destination reducers can handle their actions while their state is still present.
+
+            • This action was sent to the store while destination state was "nil". Make sure that \
+            actions for this reducer can only be sent from a view store when state is present, or \
+            from effects that start from this reducer. In SwiftUI applications, use a Composable \
+            Architecture view modifier like "sheet(store:…)".
+            """
         }
+
+        await store.send(.child(.presented(.tap)))
       }
-
-      struct Parent: Reducer {
-        struct State: Equatable {
-          @PresentationState var child: Child.State?
-        }
-        enum Action: Equatable {
-          case child(PresentationAction<Child.Action>)
-        }
-        var body: some Reducer<State, Action> {
-          Reduce { state, action in
-            .none
-          }
-          .ifLet(\.$child, action: /Action.child) {
-            Child()
-          }
-        }
-      }
-
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      )
-
-      XCTExpectFailure {
-        $0.compactDescription == """
-          A "ifLet" at \
-          "ComposableArchitectureTests/PresentationReducerTests.swift:\(#line - 14)" received a \
-          presentation action when destination state was absent. …
-
-            Action:
-              PresentationReducerTests.Parent.Action.child(.presented(.tap))
-
-          This is generally considered an application logic error, and can happen for a few reasons:
-
-          • A parent reducer set destination state to "nil" before this reducer ran. This reducer \
-          must run before any other reducer sets destination state to "nil". This ensures that \
-          destination reducers can handle their actions while their state is still present.
-
-          • This action was sent to the store while destination state was "nil". Make sure that \
-          actions for this reducer can only be sent from a view store when state is present, or \
-          from effects that start from this reducer. In SwiftUI applications, use a Composable \
-          Architecture view modifier like "sheet(store:…)".
-          """
-      }
-
-      await store.send(.child(.presented(.tap)))
-    }
+    #endif
 
     func testRehydrateSameChild_SendDismissAction() async {
       struct Child: Reducer {
@@ -1703,10 +1686,9 @@ import XCTest
         }
       }
 
-      let store = TestStore(
-        initialState: Parent.State(child: Child.State()),
-        reducer: Parent()
-      )
+      let store = TestStore(initialState: Parent.State(child: Child.State())) {
+        Parent()
+      }
 
       await store.send(.child(.dismiss)) {
         $0.child = nil
@@ -1752,14 +1734,15 @@ import XCTest
       let store = TestStore(
         initialState: Parent.State(
           child: Child.State(id: UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")!)
-        ),
-        reducer: Parent()
+        )
       ) {
+        Parent()
+      } withDependencies: {
         $0.uuid = .incrementing
       }
 
       await store.send(.child(.dismiss)) {
-        $0.child = Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
+        $0.child = Child.State(id: UUID(0))
       }
       await store.send(.child(.dismiss)) {
         $0.child = nil
@@ -1817,10 +1800,9 @@ import XCTest
         }
       }
 
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      )
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      }
 
       await store.send(.presentChild) {
         $0.child = Child.State()
@@ -1903,17 +1885,16 @@ import XCTest
       }
 
       let mainQueue = DispatchQueue.test
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      ) {
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      } withDependencies: {
         $0.uuid = .incrementing
         $0.mainQueue = mainQueue.eraseToAnyScheduler()
       }
 
       await store.send(.presentChild1) {
         $0.destination = .child1(
-          Child.State(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
+          Child.State(id: UUID(0))
         )
       }
       await store.send(.destination(.presented(.child1(.tap)))) {
@@ -1923,7 +1904,7 @@ import XCTest
       }
       await store.send(.destination(.presented(.child1(.resetIdentity)))) {
         try (/Parent.Destination.State.child1).modify(&$0.destination) {
-          $0.id = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
+          $0.id = UUID(1)
           $0.count = 0
         }
       }
@@ -2005,10 +1986,9 @@ import XCTest
           }
         }
 
-        let store = TestStore(
-          initialState: Feature.State(),
-          reducer: Feature()
-        )
+        let store = TestStore(initialState: Feature.State()) {
+          Feature()
+        }
 
         await store.send(.showAlert) {
           $0.destination = .alert(Feature.alert)
@@ -2068,10 +2048,9 @@ import XCTest
         }
       }
 
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      )
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      }
 
       await store.send(.presentChild) {
         $0.child = Child.State()
@@ -2111,10 +2090,9 @@ import XCTest
         }
       }
 
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      )
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      }
 
       await store.send(.presentChild) {
         $0.child = Child.State()
@@ -2210,10 +2188,9 @@ import XCTest
       }
 
       let mainQueue = DispatchQueue.test
-      let store = TestStore(
-        initialState: Parent.State(),
-        reducer: Parent()
-      ) {
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      } withDependencies: {
         $0.mainQueue = mainQueue.eraseToAnyScheduler()
       }
 

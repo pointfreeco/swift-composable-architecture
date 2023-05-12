@@ -77,7 +77,7 @@ struct FavoriteButton<ID: Hashable & Sendable>: View {
         Image(systemName: "heart")
           .symbolVariant(viewStore.isFavorite ? .fill : .none)
       }
-      .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
+      .alert(self.store.scope(state: \.alert, action: { $0 }), dismiss: .alertDismissed)
     }
   }
 }
@@ -181,9 +181,10 @@ struct EpisodesView_Previews: PreviewProvider {
         store: Store(
           initialState: Episodes.State(
             episodes: .mocks
-          ),
-          reducer: Episodes(favorite: favorite(id:isFavorite:))
-        )
+          )
+        ) {
+          Episodes(favorite: favorite(id:isFavorite:))
+        }
       )
     }
   }

@@ -26,10 +26,9 @@ private struct NavigationStackBindingTestCase: Reducer {
 }
 
 struct NavigationStackBindingTestCaseView: View {
-  private let store = Store(
-    initialState: NavigationStackBindingTestCase.State(),
-    reducer: NavigationStackBindingTestCase()
-  )
+  private let store = Store(initialState: NavigationStackBindingTestCase.State()) {
+    NavigationStackBindingTestCase()
+  }
 
   var body: some View {
     WithViewStore(store) { viewStore in

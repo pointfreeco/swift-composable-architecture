@@ -125,10 +125,9 @@ struct NestedView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       NestedView(
-        store: Store(
-          initialState: .mock,
-          reducer: Nested()
-        )
+        store: Store(initialState: .mock) {
+          Nested()
+        }
       )
     }
   }

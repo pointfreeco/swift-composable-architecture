@@ -54,10 +54,9 @@ final class CompatibilityTests: BaseTCATestCase {
       }
     }
 
-    let store = Store(
-      initialState: .init(),
-      reducer: reducer
-    )
+    let store = Store(initialState: .init()) {
+      reducer
+    }
 
     let viewStore = ViewStore(store, observe: { $0 })
 
@@ -83,13 +82,12 @@ final class CompatibilityTests: BaseTCATestCase {
   // `isSending` to false _after_ the store's state mutation is made so that re-entrant actions
   // are buffered rather than immediately handled.
   func testCaseStudy_ActionReentranceFromStateObservation() {
-    let store = Store<Int, Int>(
-      initialState: 0,
-      reducer: Reduce { state, action in
+    let store = Store<Int, Int>(initialState: 0) {
+      Reduce { state, action in
         state = action
         return .none
       }
-    )
+    }
 
     let viewStore = ViewStore(store, observe: { $0 })
 

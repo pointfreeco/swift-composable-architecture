@@ -126,7 +126,7 @@ extension EffectPublisher where Failure == Never {
   ///
   /// ```swift
   /// struct Feature: Reducer {
-  ///   struct State { … }
+  ///   struct State { /* ... */ }
   ///   enum FeatureAction {
   ///     case factButtonTapped
   ///     case factResponse(TaskResult<String>)

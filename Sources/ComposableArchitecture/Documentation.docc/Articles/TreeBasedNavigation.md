@@ -19,9 +19,9 @@ the rest.
 ## Basics
 
 The tools for this style of navigation include the ``PresentationState`` property wrapper,
-``PresentationAction``, the ``Reducer/ifLet(_:action:then:fileID:line:)`` operator, and a whole host
-of other APIs that mimic SwiftUI's regular tools, but tuned specifically for the Composable
-Architecture.
+``PresentationAction``, the ``Reducer/ifLet(_:action:then:fileID:line:)`` operator, and a bunch of
+APIs that mimic SwiftUI's regular tools, such as `.sheet`, `.popover`, etc., but tuned specifically
+for the Composable Architecture.
 
 The process of integrating two features together for navigation largely consists of 2 steps:
 integrating the features' domains together and integrating the features' views together. One
@@ -110,15 +110,15 @@ struct InventoryView: View {
 }
 ```
 
-Note that we again specify a key path to the presentation state property wrapper, _i.e._
+> Note:  We again must specify a key path to the `@PresentationState` projected value, _i.e._
 `\.$addItem`.
 
 With those few steps completed the domains and views of the parent and child features are now
 integrated together, and when the `addItem` state flips to a non-`nil` value the sheet will be
 presented, and when it is `nil`'d out it will be dismissed.
 
-The library ships with overloads for all of SwiftUI's styles of navigation that take stores of 
-presentation domain, including:
+In this example we are using the `.sheet` view modifier, but the library ships with overloads for 
+all of SwiftUI's navigation APIs that take stores of presentation domain, including:
 
   * `alert(store:)`
   * `confirmationDialog(store:)`
@@ -156,7 +156,7 @@ must check multiple optionals to figure out which one is non-`nil`, and then we 
 to interpret when multiple pieces of state are non-`nil` at the same time.
 
 And the number of invalid states increases exponentially with respect to the number of features that
-can be navigated to. For example, 3 optionals leads to 3 invalid states, 4 optionals leads to 11
+can be navigated to. For example, 3 optionals leads to 4 invalid states, 4 optionals leads to 11
 invalid states, and 5 optionals leads to 26 invalid states.
 
 For these reasons, and more, it can be better to model multiple destinations in a feature as a
@@ -296,9 +296,49 @@ drill-down will occur immediately.
 
 #### API Unification
 
-<!--
-todo: finish
--->
+One of the best features of tree-based navigation is that it unifies all forms of navigation
+with a single style of API. First of all, regardless of the type of navigation you plan on 
+performing, integrating the parent and child features together can be done with the single
+``ReducerProtocol/ifLet(_:action:destination:fileID:line:)`` operator. This one single API services
+all forms of optional-driven navigation.
+
+And then in the view, whether you are wanting to perform a drill-down, show a sheet, display
+an alert, or even show a custom navigation component, all you need to do is invoke an API that
+is provided a store focused on some ``PresentationState`` and ``PresentationAction``. If you do
+that, then the API can handle the rest, making sure to present the child view when the state
+becomes non-`nil` and dismissing when it goes back to `nil`.
+
+This means that theoretically you could have a single view that needs to be able to show a sheet,
+popover, drill-down, alert _and_ confirmation dialog, and all of the work to display the various
+forms of navigation could be as simple as this:
+
+```swift
+.sheet(
+  store: self.store.scope(state: \.addItem, action: { .addItem($0) })
+) { store in 
+  AddFeatureView(store: store)
+}
+.popover(
+  store: self.store.scope(state: \.editItem, action: { .editItem($0) })
+) { store in 
+  EditFeatureView(store: store)
+}
+.navigationDestination(
+  store: self.store.scope(state: \.detailItem, action: { .detailItem($0) })
+) { store in 
+  DetailFeatureView(store: store)
+}
+.alert(
+  store: self.store.scope(state: \.alert, action: { .alert($0) })
+)
+.confirmationDialog(
+  store: self.store.scope(state: \.confirmationDialog, action: { .confirmationDialog($0) })
+)
+```
+
+In each case we provide a store scoped to the presentation domain, and a view that will be presented
+when its corresponding state flips to non-`nil`. It is incredibly powerful to see that so many
+seemingly disparate forms of navigation can be unified under a single style of API.
 
 ## Integration
 
@@ -340,7 +380,7 @@ case .closeButtonTapped:
 ```
 
 In order to `nil` out the presenting state you must have access to that state, and usually only the
-parent has access, but often we would like to encpasulate the logic of dismissing a feature to be
+parent has access, but often we would like to encapsulate the logic of dismissing a feature to be
 inside the child feature without needing explicit communication with the parent.
 
 SwiftUI provides a wonderful tool for allowing child _views_ to dismiss themselves from the parent,
@@ -351,16 +391,16 @@ and it can be used like so:
 struct ChildView: View {
   @Environment(\.dismiss) var dismiss
   var body: some View {
-    Button("Close") {
-      self.dismiss()
-    }
+    Button("Close") { self.dismiss() }
   }
 }
 ```
 
 When `self.dismiss()` is invoked, SwiftUI finds the closet parent view with a presentation, and
-causes it to dismiss. This can be incredibly useful, but it is also relegated to the view layer. It
-is not possible to use `dismiss` elsewhere, like in an observable object.
+causes it to dismiss by writing `false` or `nil` to the binding that drives the presentation. This 
+can be incredibly useful, but it is also relegated to the view layer. It is not possible to use 
+`dismiss` elsewhere, like in an observable object, which would allow you to have nuanced logic
+for dismissal such as validation or async work.
 
 The Composable Architecture has a similar tool, except it is appropriate to use from a reducer,
 where the rest of your feature's logic and behavior resides. It is accessed via the library's
@@ -388,9 +428,23 @@ struct Feature: Reducer {
 > ``EffectPublisher/run(priority:operation:catch:fileID:line:)`` or
 > ``EffectPublisher/fireAndForget(priority:_:)``.
 
-When `self.dismiss()` is invoked it will `nil` out the state responsible for presenting the feature,
-causing the feature to be dismissed. This allows you to encapsulate the logic for dismissing a child 
-feature entirely inside the child domain without explicitly communicating with the parent.
+When `self.dismiss()` is invoked it will `nil` out the state responsible for presenting the feature
+by sending a ``PresentationAction/dismiss`` action back into the system, causing the feature to be
+dismissed. This allows you to encapsulate the logic for dismissing a child feature entirely inside 
+the child domain without explicitly communicating with the parent.
+
+> Note: Because dismissal is handled by sending an action, it is not valid to ever send an action
+> after invoking `dismiss()`:
+> 
+> ```swift
+> return .run { send in 
+>   await self.dismiss()
+>   await send(.tick)  // ⚠️
+> }
+> ```
+> 
+> To do so would be to send an action for a feature while its state is `nil`, and that will cause
+> a runtime warning in Xcode and a test failure when running tests.
 
 > Warning: SwiftUI's environment value `@Environment(\.dismiss)` and the Composable Architecture's
 > dependency value `@Dependency(\.dismiss)` serve similar purposes, but are completely different 
@@ -435,7 +489,8 @@ struct CounterFeature: Reducer {
 }
 ```
 
-And then let's embed that feature into a parent feature:
+And then let's embed that feature into a parent feature using ``PresentationState``, 
+``PresentationAction`` and ``ReducerProtocol/ifLet(_:action:destination:fileID:line:)``:
 
 ```swift
 struct Feature: Reducer {
@@ -447,7 +502,7 @@ struct Feature: Reducer {
   }
   var body: some ReducerOf<Self> {
     Reduce { state, action in 
-      // ...
+      // Logic and behavior for core feature.
     }
     .ifLet(\.$counter, action: /Action.counter) {
       CounterFeature()
@@ -455,8 +510,6 @@ struct Feature: Reducer {
   }
 }
 ```
-
-Typically this feature reducer would have a lot more logic.
 
 Now let's try to write a test on the `Feature` reducer that proves that when the child counter 
 feature's count is incremented above 5 it will dismiss itself. To do this we will construct a 
@@ -467,9 +520,10 @@ func testDismissal() {
   let store = TestStore(
     initialState: Feature.State(
       counter: CounterFeature.State(count: 3)
-    ),
-    reducer: CounterFeature()
-  )
+    )
+  ) {
+    CounterFeature()
+  }
 }
 ```
 
@@ -490,8 +544,9 @@ await store.send(.counter(.presented(.incrementButtonTapped))) {
 }
 ```
 
-And then we finally expect that the child dismisses itself, which manifests itself as the `.dismiss`
-action being sent and `nil`ing out the `counter` state:
+And then we finally expect that the child dismisses itself, which manifests itself as the 
+``PresentationAction/dismiss`` action being sent to `nil` out the `counter` state, which we can
+assert using the ``TestStore/receive(_:timeout:assert:file:line:)-1rwdd`` method on ``TestStore``:
 
 ```swift
 await store.receive(.counter(.dismiss)) {
@@ -499,7 +554,7 @@ await store.receive(.counter(.dismiss)) {
 }
 ```
 
-This shows how we can write very naunced tests on how parent and child features interact with each
+This shows how we can write very nuanced tests on how parent and child features interact with each
 other.
 
 However, the more complex the features become, the more cumbersome testing their integration can be.
@@ -520,9 +575,10 @@ func testDismissal() {
   let store = TestStore(
     initialState: Feature.State(
       counter: CounterFeature.State(count: 3)
-    ),
-    reducer: CounterFeature()
-  )
+    )
+  ) {
+    CounterFeature()
+  }
   store.exhaustivity = .off
 
   await store.send(.counter(.presented(.incrementButtonTapped)))
@@ -533,3 +589,26 @@ func testDismissal() {
 
 This essentially proves the same thing that the previous test proves, but it does so in much fewer
 lines and is more resilient to future changes in the features that we don't necessarily care about.
+
+That is the basics of testing, but things get a little more complicated when you leverage the 
+concepts outlined in <doc:TreeBasedNavigation#Enum-state> in which you model multiple destinations
+as an enum instead of multiple optionals. In order to assert on state changes when using enum
+state you must be able to extract the associated state from the enum, make a mutation, and then
+embed the new state back into the enum.
+
+The library provides a tool to perform these steps in a single step, and it is called `XCTModify`:
+
+```swift
+await store.send(.destination(.presented(.counter(.incrementButtonTapped)))) {
+  XCTModify(&$0.destination, case: /Feature.Destination.State.counter) { 
+    $0.count = 4
+  }
+}
+```
+
+The `XCTModify` function takes an `inout` piece of enum state as its first argument and a case
+path for its second argument, and then uses the case path to extract the payload in that case, 
+allow you to perform a mutation to it, and embed the data back into the enum. So, in the code
+above, we are wanting to mutate the `$0.destination` enum by isolating the `.counter` case, 
+and mutating the `count` to be 4 since it incremented by one. Further, if the case of 
+`$0.destination` didn't match the case path, then a test failure would be emitted.

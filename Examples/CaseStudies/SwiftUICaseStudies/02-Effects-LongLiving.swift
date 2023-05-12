@@ -109,10 +109,9 @@ struct LongLivingEffectsView: View {
 struct EffectsLongLiving_Previews: PreviewProvider {
   static var previews: some View {
     let appView = LongLivingEffectsView(
-      store: Store(
-        initialState: LongLivingEffects.State(),
-        reducer: LongLivingEffects()
-      )
+      store: Store(initialState: LongLivingEffects.State()) {
+        LongLivingEffects()
+      }
     )
 
     return Group {

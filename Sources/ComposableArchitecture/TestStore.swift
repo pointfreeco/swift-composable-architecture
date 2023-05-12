@@ -79,8 +79,9 @@ import XCTestDynamicOverlay
 ///     let store = TestStore(
 ///       // Given: a counter state of 0
 ///       initialState: Counter.State(count: 0),
-///       reducer: Counter()
-///     )
+///     ) {
+///       Counter()
+///     }
 ///
 ///     // When: the increment button is tapped
 ///     await store.send(.incrementButtonTapped) {
@@ -132,7 +133,7 @@ import XCTestDynamicOverlay
 ///
 ///   @Dependency(\.apiClient) var apiClient
 ///   @Dependency(\.continuousClock) var clock
-///   private enum SearchID {}
+///   private enum CancelID { case search }
 ///
 ///   func reduce(
 ///     into state: inout State, action: Action
@@ -148,7 +149,7 @@ import XCTestDynamicOverlay
 ///
 ///         await send(.response(results))
 ///       }
-///       .cancellable(id: SearchID.self)
+///       .cancellable(id: CancelID.search, cancelInFlight: true)
 ///
 ///     case let .searchResponse(.success(results)):
 ///       state.results = results
@@ -169,10 +170,9 @@ import XCTestDynamicOverlay
 /// // Create a test clock to control the timing of effects
 /// let clock = TestClock()
 ///
-/// let store = TestStore(
-///   initialState: Search.State(),
-///   reducer: Search()
-/// ) {
+/// let store = TestStore(initialState: Search.State()) {
+///   Search()
+/// } withDependencies: {
 ///   // Override the clock dependency with the test clock
 ///   $0.continuousClock = clock
 ///
@@ -300,10 +300,9 @@ import XCTestDynamicOverlay
 /// tab switched to activity:
 ///
 /// ```swift
-/// let store = TestStore(
-///   initialState: App.State(),
-///   reducer: App()
-/// )
+/// let store = TestStore(initialState: App.State()) {
+///   App()
+/// }
 ///
 /// // 1️⃣ Emulate user tapping on submit button.
 /// await store.send(.login(.submitButtonTapped)) {
@@ -349,10 +348,9 @@ import XCTestDynamicOverlay
 /// the test store, and then just assert on what we are interested in:
 ///
 /// ```swift
-/// let store = TestStore(
-///   initialState: App.State(),
-///   reducer: App()
-/// )
+/// let store = TestStore(App.State()) {
+///   App()
+/// }
 /// store.exhaustivity = .off // ⬅️
 ///
 /// await store.send(.login(.submitButtonTapped))
@@ -372,10 +370,9 @@ import XCTestDynamicOverlay
 /// without actually causing a failure, you can use ``Exhaustivity/off(showSkippedAssertions:)``:
 ///
 /// ```swift
-/// let store = TestStore(
-///   initialState: App.State(),
-///   reducer: App()
-/// )
+/// let store = TestStore(initialState: App.State()) {
+///   App()
+/// }
 /// store.exhaustivity = .off(showSkippedAssertions: true) // ⬅️
 ///
 /// await store.send(.login(.submitButtonTapped))
@@ -514,7 +511,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   /// The default timeout used in all methods that take an optional timeout.
   ///
   /// This is the default timeout used in all methods that take an optional timeout, such as
-  /// ``receive(_:timeout:assert:file:line:)-1rwdd`` and ``finish(timeout:file:line:)``.
+  /// ``receive(_:timeout:assert:file:line:)-1rwdd`` and ``finish(timeout:file:line:)-43l4y``.
   public var timeout: UInt64
 
   private var _environment: Box<Environment>
@@ -538,8 +535,8 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   ///     state.
   public convenience init<R: Reducer>(
     initialState: @autoclosure () -> State,
-    reducer: R,
-    prepareDependencies: (inout DependencyValues) -> Void = { _ in },
+    @ReducerBuilder<State, Action> reducer: () -> R,
+    withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in },
     file: StaticString = #file,
     line: UInt = #line
   )
@@ -556,7 +553,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
       reducer: reducer,
       observe: { $0 },
       send: { $0 },
-      prepareDependencies: prepareDependencies,
+      withDependencies: prepareDependencies,
       file: file,
       line: line
     )
@@ -578,9 +575,9 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   ///     state.
   public convenience init<R: Reducer>(
     initialState: @autoclosure () -> State,
-    reducer: R,
+    @ReducerBuilder<State, Action> reducer: () -> R,
     observe toScopedState: @escaping (State) -> ScopedState,
-    prepareDependencies: (inout DependencyValues) -> Void = { _ in },
+    withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in },
     file: StaticString = #file,
     line: UInt = #line
   )
@@ -596,7 +593,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
       reducer: reducer,
       observe: toScopedState,
       send: { $0 },
-      prepareDependencies: prepareDependencies,
+      withDependencies: prepareDependencies,
       file: file,
       line: line
     )
@@ -621,10 +618,10 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   ///     state.
   public init<R: Reducer>(
     initialState: @autoclosure () -> State,
-    reducer: R,
+    @ReducerBuilder<State, Action> reducer: () -> R,
     observe toScopedState: @escaping (State) -> ScopedState,
     send fromScopedAction: @escaping (ScopedAction) -> Action,
-    prepareDependencies: (inout DependencyValues) -> Void = { _ in },
+    withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in },
     file: StaticString = #file,
     line: UInt = #line
   )
@@ -642,7 +639,9 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
       initialState()
     }
 
-    let reducer = TestReducer(Reduce(reducer), initialState: initialState)
+    let reducer = TestReducer(
+      Reduce(withDependencies(prepareDependencies) { reducer() }), initialState: initialState
+    )
     self._environment = .init(wrappedValue: ())
     self.file = file
     self.fromScopedAction = fromScopedAction
@@ -665,8 +664,8 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   @available(*, deprecated, message: "State must be equatable to perform assertions.")
   public init<R: Reducer>(
     initialState: @autoclosure () -> State,
-    reducer: R,
-    prepareDependencies: (inout DependencyValues) -> Void = { _ in },
+    @ReducerBuilder<State, Action> reducer: () -> R,
+    withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in },
     file: StaticString = #file,
     line: UInt = #line
   )
@@ -685,7 +684,9 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
       initialState()
     }
 
-    let reducer = TestReducer(Reduce(reducer), initialState: initialState)
+    let reducer = TestReducer(
+      Reduce(withDependencies(prepareDependencies) { reducer() }), initialState: initialState
+    )
     self._environment = .init(wrappedValue: ())
     self.file = file
     self.fromScopedAction = { $0 }
@@ -909,11 +910,11 @@ extension TestStore where ScopedState: Equatable {
   ///     }
   ///   )
   ///
-  ///   let store = TestStore(
-  ///     initialState: State(),
-  ///     reducer: reducer,
-  ///     environment: Environment(analytics: analytics)
-  ///   )
+  ///   let store = TestStore(initialState: Feature.State()) {
+  ///     Feature()
+  ///   } withDependencies {
+  ///     $0.analytics = analytics
+  ///   }
   ///
   ///   await store.send(.buttonTapped)
   ///
@@ -2135,7 +2136,7 @@ extension TestStore {
 /// await store.send(.stopTimerButtonTapped).finish()
 /// ```
 ///
-/// See ``TestStore/finish(timeout:file:line:)`` for the ability to await all in-flight
+/// See ``TestStore/finish(timeout:file:line:)-43l4y`` for the ability to await all in-flight
 /// effects in the test store.
 ///
 /// See ``ViewStoreTask`` for the analog provided to ``ViewStore``.

@@ -21,10 +21,9 @@ struct BindingsAnimationsTestBench: View {
 
   init() {
     self.viewStore = ViewStore(
-      Store(
-        initialState: false,
-        reducer: BindingsAnimations()
-      ),
+      Store(initialState: false) {
+        BindingsAnimations()
+      },
       observe: { $0 }
     )
   }

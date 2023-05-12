@@ -4,10 +4,7 @@ import ComposableArchitecture
 import Foundation
 
 let viewStoreSuite = BenchmarkSuite(name: "ViewStore") {
-  let store = Store(
-    initialState: 0,
-    reducer: EmptyReducer<Int, Void>()
-  )
+  let store = Store<Int, Void>(initialState: 0) {}
 
   $0.benchmark("Create view store to send action") {
     doNotOptimizeAway(ViewStore(store).send(()))

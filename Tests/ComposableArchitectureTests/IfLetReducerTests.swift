@@ -6,11 +6,10 @@ import XCTest
 final class IfLetReducerTests: BaseTCATestCase {
   #if DEBUG
     func testNilChild() async {
-      let store = TestStore(
-        initialState: Int?.none,
-        reducer: EmptyReducer<Int?, Void>()
+      let store = TestStore(initialState: Int?.none) {
+        EmptyReducer<Int?, Void>()
           .ifLet(\.self, action: /.self) {}
-      )
+      }
 
       XCTExpectFailure {
         $0.compactDescription == """
@@ -90,12 +89,11 @@ final class IfLetReducerTests: BaseTCATestCase {
             }
           }
         }
-        await _withMainSerialExecutor {
+        await withMainSerialExecutor {
           let clock = TestClock()
-          let store = TestStore(
-            initialState: Parent.State(),
-            reducer: Parent()
-          ) {
+          let store = TestStore(initialState: Parent.State()) {
+            Parent()
+          } withDependencies: {
             $0.continuousClock = clock
           }
           await store.send(.childButtonTapped) {
@@ -186,12 +184,11 @@ final class IfLetReducerTests: BaseTCATestCase {
             }
           }
         }
-        await _withMainSerialExecutor {
+        await withMainSerialExecutor {
           let clock = TestClock()
-          let store = TestStore(
-            initialState: Parent.State(),
-            reducer: Parent()
-          ) {
+          let store = TestStore(initialState: Parent.State()) {
+            Parent()
+          } withDependencies: {
             $0.continuousClock = clock
           }
           await store.send(.startButtonTapped) {
@@ -238,11 +235,10 @@ final class IfLetReducerTests: BaseTCATestCase {
             }
           }
         }
-        await _withMainSerialExecutor {
-          let store = TestStore(
-            initialState: Parent.State(),
-            reducer: Parent()
-          )
+        await withMainSerialExecutor {
+          let store = TestStore(initialState: Parent.State()) {
+            Parent()
+          }
           await store.send(.tap) {
             $0.alert = AlertState { TextState("Hi!") }
           }

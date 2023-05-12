@@ -89,10 +89,9 @@ struct FocusDemo_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       FocusDemoView(
-        store: Store(
-          initialState: FocusDemo.State(),
-          reducer: FocusDemo()
-        )
+        store: Store(initialState: FocusDemo.State()) {
+          FocusDemo()
+        }
       )
     }
   }

@@ -225,9 +225,8 @@ extension URL {
 struct StandupsList_Previews: PreviewProvider {
   static var previews: some View {
     StandupsListView(
-      store: Store(
-        initialState: StandupsList.State(),
-        reducer: StandupsList()
+      store: Store(initialState: StandupsList.State()) {
+        StandupsList()
           .dependency(\.dataManager.load) { _ in
             try JSONEncoder().encode([
               Standup.mock,
@@ -235,20 +234,19 @@ struct StandupsList_Previews: PreviewProvider {
               .engineeringMock,
             ])
           }
-      )
+      }
     )
 
     StandupsListView(
-      store: Store(
-        initialState: StandupsList.State(),
-        reducer: StandupsList()
+      store: Store(initialState: StandupsList.State()) {
+        StandupsList()
           .dependency(
             \.dataManager,
             .mock(
               initialData: Data("!@#$% bad data ^&*()".utf8)
             )
           )
-      )
+      }
     )
     .previewDisplayName("Load data failure")
   }

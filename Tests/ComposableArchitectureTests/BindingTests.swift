@@ -32,7 +32,7 @@ final class BindingTests: BaseTCATestCase {
         }
       }
 
-      let store = Store(initialState: BindingTest.State(), reducer: BindingTest())
+      let store = Store(initialState: BindingTest.State()) { BindingTest() }
 
       let viewStore = ViewStore(store, observe: { $0 })
 

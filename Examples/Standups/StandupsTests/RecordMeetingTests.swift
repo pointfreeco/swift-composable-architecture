@@ -19,9 +19,10 @@ final class RecordMeetingTests: XCTestCase {
           ],
           duration: .seconds(6)
         )
-      ),
-      reducer: RecordMeeting()
+      )
     ) {
+      RecordMeeting()
+    } withDependencies: {
       $0.continuousClock = clock
       $0.speechClient.authorizationStatus = { .denied }
     }
@@ -37,7 +38,7 @@ final class RecordMeetingTests: XCTestCase {
 
     await clock.advance(by: .seconds(1))
     await store.receive(.timerTick) {
-      $0.speakerIndex = 1  // TODO: do we wanna do more gnarly timing calcuations to make this fair down to the second??
+      $0.speakerIndex = 1  // TODO: do we wanna do more gnarly timing calculations to make this fair down to the second??
       $0.secondsElapsed = 2
       XCTAssertEqual($0.durationRemaining, .seconds(4))
     }
@@ -86,10 +87,10 @@ final class RecordMeetingTests: XCTestCase {
           ],
           duration: .seconds(6)
         )
-      ),
-      reducer: RecordMeeting()
-        // , exhaustive: off
+      )
     ) {
+      RecordMeeting()
+    } withDependencies: {
       $0.continuousClock = ImmediateClock()
       $0.speechClient.authorizationStatus = { .authorized }
       $0.speechClient.startTask = { _ in
@@ -132,10 +133,9 @@ final class RecordMeetingTests: XCTestCase {
   func testEndMeetingSave() async throws {
     let clock = TestClock()
 
-    let store = TestStore(
-      initialState: RecordMeeting.State(standup: .mock),
-      reducer: RecordMeeting()
-    ) {
+    let store = TestStore(initialState: RecordMeeting.State(standup: .mock)) {
+      RecordMeeting()
+    } withDependencies: {
       $0.continuousClock = clock
       $0.speechClient.authorizationStatus = { .denied }
     }
@@ -162,17 +162,17 @@ final class RecordMeetingTests: XCTestCase {
 
   func testEndMeetingDiscard() async throws {
     let clock = TestClock()
+    let dismissed = self.expectation(description: "dismissed")
 
-    let store = TestStore(
-      initialState: RecordMeeting.State(standup: .mock),
-      reducer: RecordMeeting()
-    ) {
+    let store = TestStore(initialState: RecordMeeting.State(standup: .mock)) {
+      RecordMeeting()
+    } withDependencies: {
       $0.continuousClock = clock
+      $0.dismiss = DismissEffect { dismissed.fulfill() }
       $0.speechClient.authorizationStatus = { .denied }
     }
 
     let task = await store.send(.task)
-    store.dependencies.dismiss = .init { await task.cancel() }
 
     await store.send(.endMeetingButtonTapped) {
       $0.alert = .endMeeting(isDiscardable: true)
@@ -182,6 +182,7 @@ final class RecordMeetingTests: XCTestCase {
       $0.alert = nil
     }
 
+    await self.fulfillment(of: [dismissed])
     await task.cancel()
   }
 
@@ -199,9 +200,10 @@ final class RecordMeetingTests: XCTestCase {
           ],
           duration: .seconds(6)
         )
-      ),
-      reducer: RecordMeeting()
+      )
     ) {
+      RecordMeeting()
+    } withDependencies: {
       $0.continuousClock = clock
       $0.speechClient.authorizationStatus = { .denied }
     }
@@ -243,9 +245,10 @@ final class RecordMeetingTests: XCTestCase {
           ],
           duration: .seconds(6)
         )
-      ),
-      reducer: RecordMeeting()
+      )
     ) {
+      RecordMeeting()
+    } withDependencies: {
       $0.continuousClock = clock
       $0.speechClient.authorizationStatus = { .authorized }
       $0.speechClient.startTask = { _ in
@@ -298,11 +301,12 @@ final class RecordMeetingTests: XCTestCase {
   func testSpeechRecognitionFailure_Discard() async throws {
     let clock = TestClock()
 
-    let store = TestStore(
-      initialState: RecordMeeting.State(standup: .mock),
-      reducer: RecordMeeting()
-    ) {
+    let dismissed = self.expectation(description: "dismissed")
+    let store = TestStore(initialState: RecordMeeting.State(standup: .mock)) {
+      RecordMeeting()
+    } withDependencies: {
       $0.continuousClock = clock
+      $0.dismiss = DismissEffect { dismissed.fulfill() }
       $0.speechClient.authorizationStatus = { .authorized }
       $0.speechClient.startTask = { _ in
         AsyncThrowingStream {
@@ -313,8 +317,6 @@ final class RecordMeetingTests: XCTestCase {
     }
 
     let task = await store.send(.task)
-    store.dependencies.dismiss = .init { await task.cancel() }
-    // TODO: way to tie these two lines together in a nicer way?
 
     await store.receive(.speechFailure) {
       $0.alert = .speechRecognizerFailed
@@ -323,5 +325,8 @@ final class RecordMeetingTests: XCTestCase {
     await store.send(.alert(.presented(.confirmDiscard))) {
       $0.alert = nil
     }
+
+    await self.fulfillment(of: [dismissed])
+    await task.cancel()
   }
 }

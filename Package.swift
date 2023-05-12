@@ -47,8 +47,7 @@ let package = Package(
     .testTarget(
       name: "ComposableArchitectureTests",
       dependencies: [
-        "_CAsyncSupport",
-        "ComposableArchitecture",
+        "ComposableArchitecture"
       ]
     ),
     .executableTarget(
@@ -58,7 +57,6 @@ let package = Package(
         .product(name: "Benchmark", package: "swift-benchmark"),
       ]
     ),
-    .systemLibrary(name: "_CAsyncSupport"),
   ]
 )
 

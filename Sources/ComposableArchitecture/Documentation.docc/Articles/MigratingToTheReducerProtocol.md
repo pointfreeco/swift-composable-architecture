@@ -561,10 +561,9 @@ Stores can be initialized from an initial state and an instance of a type confor
 
 ```swift
 FeatureView(
-  store: Store(
-    initialState: Feature.State(),
-    reducer: Feature()
-  )
+  store: Store(initialState: Feature.State()) {
+    Feature()
+  }
 )
 ```
 
@@ -583,10 +582,9 @@ Test stores can be initialized from an initial state and an instance of a type c
 ``Reducer``.
 
 ```swift
-let store = TestStore(
-  initialState: Feature.State(),
-  reducer: Feature()
-)
+let store = TestStore(initialState: Feature.State()) {
+  Feature()
+}
 ```
 
 By default test stores will employ "test" dependencies wherever a dependency is accessed from a
@@ -602,10 +600,9 @@ For example, to install a test clock as the continuous clock dependency you can 
 ```swift
 let clock = TestClock()
 
-let store = TestStore(
-  initialState: Feature.State(),
-  reducer: Feature()
-) {
+let store = TestStore(initialState: Feature.State()) {
+  Feature()
+} withDependencies: {
   $0.continuousClock = .clock 
 }
 ```

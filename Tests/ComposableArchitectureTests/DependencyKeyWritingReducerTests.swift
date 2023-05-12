@@ -26,14 +26,11 @@ final class DependencyKeyWritingReducerTests: BaseTCATestCase {
   }
 
   func testWritingFusionOrder() async {
-    let reducer = Feature()
-      .dependency(\.myValue, 42)
-      .dependency(\.myValue, 1729)
-
-    let store = TestStore(
-      initialState: Feature.State(),
-      reducer: reducer
-    )
+    let store = TestStore(initialState: Feature.State()) {
+      Feature()
+        .dependency(\.myValue, 42)
+        .dependency(\.myValue, 1729)
+    }
 
     await store.send(.tap) {
       $0.value = 42
@@ -41,14 +38,11 @@ final class DependencyKeyWritingReducerTests: BaseTCATestCase {
   }
 
   func testTransformFusionOrder() async {
-    let reducer = Feature()
-      .transformDependency(\.myValue) { $0 = 42 }
-      .transformDependency(\.myValue) { $0 = 1729 }
-
-    let store = TestStore(
-      initialState: Feature.State(),
-      reducer: reducer
-    )
+    let store = TestStore(initialState: Feature.State()) {
+      Feature()
+        .transformDependency(\.myValue) { $0 = 42 }
+        .transformDependency(\.myValue) { $0 = 1729 }
+    }
 
     await store.send(.tap) {
       $0.value = 42
@@ -56,16 +50,13 @@ final class DependencyKeyWritingReducerTests: BaseTCATestCase {
   }
 
   func testWritingOrder() async {
-    let reducer = CombineReducers {
-      Feature()
-        .dependency(\.myValue, 42)
+    let store = TestStore(initialState: Feature.State()) {
+      CombineReducers {
+        Feature()
+          .dependency(\.myValue, 42)
+      }
+      .dependency(\.myValue, 1729)
     }
-    .dependency(\.myValue, 1729)
-
-    let store = TestStore(
-      initialState: Feature.State(),
-      reducer: reducer
-    )
 
     await store.send(.tap) {
       $0.value = 42
@@ -73,16 +64,13 @@ final class DependencyKeyWritingReducerTests: BaseTCATestCase {
   }
 
   func testTransformOrder() async {
-    let reducer = CombineReducers {
-      Feature()
-        .transformDependency(\.myValue) { $0 = 42 }
+    let store = TestStore(initialState: Feature.State()) {
+      CombineReducers {
+        Feature()
+          .transformDependency(\.myValue) { $0 = 42 }
+      }
+      .transformDependency(\.myValue) { $0 = 1729 }
     }
-    .transformDependency(\.myValue) { $0 = 1729 }
-
-    let store = TestStore(
-      initialState: Feature.State(),
-      reducer: reducer
-    )
 
     await store.send(.tap) {
       $0.value = 42
@@ -116,11 +104,10 @@ final class DependencyKeyWritingReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(
-      initialState: Feature.State(),
-      reducer: Feature()
+    let store = TestStore(initialState: Feature.State()) {
+      Feature()
         .dependency(\.myValue, 42)
-    )
+    }
 
     await store.send(.tap) {
       $0.count = 1

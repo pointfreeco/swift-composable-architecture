@@ -1,6 +1,7 @@
 import Combine
 import CombineSchedulers
 import ComposableArchitecture
+@_spi(Concurrency) import Dependencies
 import XCTest
 
 @MainActor
@@ -8,7 +9,7 @@ final class ComposableArchitectureTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
 
   func testScheduling() async {
-    await _withMainSerialExecutor {
+    await withMainSerialExecutor {
       struct Counter: Reducer {
         typealias State = Int
         enum Action: Equatable {
@@ -48,10 +49,9 @@ final class ComposableArchitectureTests: BaseTCATestCase {
 
       let mainQueue = DispatchQueue.test
 
-      let store = TestStore(
-        initialState: 2,
-        reducer: Counter()
-      ) {
+      let store = TestStore(initialState: 2) {
+        Counter()
+      } withDependencies: {
         $0.mainQueue = mainQueue.eraseToAnyScheduler()
       }
 
@@ -91,25 +91,25 @@ final class ComposableArchitectureTests: BaseTCATestCase {
 
     let effect = AsyncStream<Void>.streamWithContinuation()
 
-    let reducer = Reduce<Int, Action> { state, action in
-      switch action {
-      case .end:
-        return .fireAndForget {
-          effect.continuation.finish()
-        }
-      case .incr:
-        state += 1
-        return .none
-      case .start:
-        return .run { send in
-          for await _ in effect.stream {
-            await send(.incr)
+    let store = TestStore(initialState: 0) {
+      Reduce<Int, Action> { state, action in
+        switch action {
+        case .end:
+          return .fireAndForget {
+            effect.continuation.finish()
+          }
+        case .incr:
+          state += 1
+          return .none
+        case .start:
+          return .run { send in
+            for await _ in effect.stream {
+              await send(.incr)
+            }
           }
         }
       }
     }
-
-    let store = TestStore(initialState: 0, reducer: reducer)
 
     await store.send(.start)
     await store.send(.incr) { $0 = 1 }
@@ -119,7 +119,7 @@ final class ComposableArchitectureTests: BaseTCATestCase {
   }
 
   func testCancellation() async {
-    await _withMainSerialExecutor {
+    await withMainSerialExecutor {
       let mainQueue = DispatchQueue.test
 
       enum Action: Equatable {
@@ -128,31 +128,28 @@ final class ComposableArchitectureTests: BaseTCATestCase {
         case response(Int)
       }
 
-      let reducer = Reduce<Int, Action> { state, action in
-        enum CancelID {}
+      let store = TestStore(initialState: 0) {
+        Reduce<Int, Action> { state, action in
+          enum CancelID { case sleep }
 
-        switch action {
-        case .cancel:
-          return .cancel(id: CancelID.self)
+          switch action {
+          case .cancel:
+            return .cancel(id: CancelID.sleep)
 
-        case .incr:
-          state += 1
-          return .task { [state] in
-            try await mainQueue.sleep(for: .seconds(1))
-            return .response(state * state)
+          case .incr:
+            state += 1
+            return .task { [state] in
+              try await mainQueue.sleep(for: .seconds(1))
+              return .response(state * state)
+            }
+            .cancellable(id: CancelID.sleep)
+
+          case let .response(value):
+            state = value
+            return .none
           }
-          .cancellable(id: CancelID.self)
-
-        case let .response(value):
-          state = value
-          return .none
         }
       }
-
-      let store = TestStore(
-        initialState: 0,
-        reducer: reducer
-      )
 
       await store.send(.incr) { $0 = 1 }
       await mainQueue.advance(by: .seconds(1))

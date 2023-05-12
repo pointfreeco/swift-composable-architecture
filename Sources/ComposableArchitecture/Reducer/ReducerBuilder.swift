@@ -1,5 +1,5 @@
 /// A result builder for combining reducers into a single reducer by running each, one after the
-/// other, and returning their merged effects.
+/// other, and merging their effects.
 ///
 /// It is most common to encounter a reducer builder context when conforming a type to
 /// ``Reducer`` and implementing its ``Reducer/body-swift.property-8lumc`` property.

@@ -30,7 +30,10 @@ public struct NavigationLinkStore<
     let filteredStore = store.filterSend { state, _ in state.wrappedValue != nil }
     self.store = filteredStore
     self.viewStore = ViewStore(
-      filteredStore.scope(state: { $0.wrappedValue != nil }),
+      filteredStore.scope(
+        state: { $0.wrappedValue != nil },
+        action: { $0 }
+      ),
       observe: { $0 }
     )
     self.toDestinationState = { $0 }
@@ -52,7 +55,10 @@ public struct NavigationLinkStore<
     self.viewStore = ViewStore(
       store
         .filterSend { state, _ in state.wrappedValue != nil }
-        .scope(state: { $0.wrappedValue.flatMap(toDestinationState) != nil }),
+        .scope(
+          state: { $0.wrappedValue.flatMap(toDestinationState) != nil },
+          action: { $0 }
+        ),
       observe: { $0 }
     )
     self.toDestinationState = toDestinationState
@@ -72,7 +78,10 @@ public struct NavigationLinkStore<
     let filteredStore = store.filterSend { state, _ in state.wrappedValue != nil }
     self.store = filteredStore
     self.viewStore = ViewStore(
-      filteredStore.scope(state: { $0.wrappedValue?.id == id }),
+      filteredStore.scope(
+        state: { $0.wrappedValue?.id == id },
+        action: { $0 }
+      ),
       observe: { $0 }
     )
     self.toDestinationState = { $0 }
@@ -95,7 +104,10 @@ public struct NavigationLinkStore<
     self.viewStore = ViewStore(
       store
         .filterSend { state, _ in state.wrappedValue != nil }
-        .scope(state: { $0.wrappedValue.flatMap(toDestinationState)?.id == id }),
+        .scope(
+          state: { $0.wrappedValue.flatMap(toDestinationState)?.id == id },
+          action: { $0 }
+        ),
       observe: { $0 }
     )
     self.toDestinationState = toDestinationState

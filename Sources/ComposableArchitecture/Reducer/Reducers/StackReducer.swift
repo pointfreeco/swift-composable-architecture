@@ -6,20 +6,35 @@ import OrderedCollections
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
 /// ``Reducer/forEach(_:action:destination:fileID:line:)``.
-public struct StackState<Element>: RandomAccessCollection, RangeReplaceableCollection {
+///
+/// See the dedicated article on <doc:Navigation> for more information on the library's navigation
+/// tools, and in particular see <doc:StackBasedNavigation> for information on modeling navigation
+/// using ``StackState`` for navigation stacks. Also see
+/// <doc:StackBasedNavigation#StackState-vs-NavigationPath> to understand how ``StackState``
+/// compares to SwiftUI's `NavigationPath` type.
+public struct StackState<Element> {
   var _dictionary: OrderedDictionary<StackElementID, Element>
   fileprivate var _mounted: Set<StackElementID> = []
 
   @Dependency(\.stackElementID) private var stackElementID
 
+  /// An ordered set of identifiers, one for each stack element.
+  ///
+  /// You can use this set to iterate over stack elements along with their associated identifiers.
+  ///
+  /// ```swift
+  /// for (id, element) in zip(state.path.ids, state.path) {
+  ///   if element.isDeleted {
+  ///     state.path.pop(from: id)
+  ///     break
+  ///   }
+  /// }
+  /// ```
   public var ids: OrderedSet<StackElementID> {
     self._dictionary.keys
   }
 
-  public init() {
-    self._dictionary = [:]
-  }
-
+  /// Accesses the value associated with the given id for reading and writing.
   public subscript(id id: StackElementID) -> Element? {
     _read { yield self._dictionary[id] }
     _modify {
@@ -28,8 +43,18 @@ public struct StackState<Element>: RandomAccessCollection, RangeReplaceableColle
         self._mounted.remove(id)
       }
     }
+    set {
+      // TODO: precondition(newValue == nil || self._dictionary[id] != nil)
+      self._dictionary[id] = newValue
+      if newValue == nil {
+        self._mounted.remove(id)
+      }
+    }
   }
 
+  /// Pops the element corresponding to `id` from the stack, and all elements after it.
+  ///
+  /// - Parameter id: The identifier of an element in the stack.
   public mutating func pop(from id: StackElementID) {
     guard let index = self._dictionary.keys.firstIndex(of: id)
     else { return }
@@ -39,6 +64,9 @@ public struct StackState<Element>: RandomAccessCollection, RangeReplaceableColle
     self._dictionary.removeSubrange(index...)
   }
 
+  /// Pops all elements that come after the element corresponding to `id` in the stack.
+  ///
+  /// - Parameter id: The identifier of an element in the stack.
   public mutating func pop(to id: StackElementID) {
     guard var index = self._dictionary.keys.firstIndex(of: id)
     else { return }
@@ -48,17 +76,17 @@ public struct StackState<Element>: RandomAccessCollection, RangeReplaceableColle
     }
     self._dictionary.removeSubrange(index...)
   }
+}
 
+extension StackState: RandomAccessCollection, RangeReplaceableCollection {
   public var startIndex: Int { self._dictionary.keys.startIndex }
-
   public var endIndex: Int { self._dictionary.keys.endIndex }
-
   public func index(after i: Int) -> Int { self._dictionary.keys.index(after: i) }
-
   public func index(before i: Int) -> Int { self._dictionary.keys.index(before: i) }
-
   public subscript(position: Int) -> Element { self._dictionary.values[position] }
-
+  public init() {
+    self._dictionary = [:]
+  }
   public mutating func replaceSubrange<C: Collection>(_ subrange: Range<Int>, with newElements: C)
   where C.Element == Element {
     for id in self.ids[subrange] {
@@ -67,29 +95,6 @@ public struct StackState<Element>: RandomAccessCollection, RangeReplaceableColle
     self._dictionary.removeSubrange(subrange)
     for (offset, element) in zip(subrange.lowerBound..., newElements) {
       self._dictionary.updateValue(element, forKey: self.stackElementID.next(), insertingAt: offset)
-    }
-  }
-
-  public var presented: Element? {
-    _read { yield self._dictionary.values.last }
-    _modify {
-      var value = self._dictionary.values.last
-      yield &value
-      if let value = value {
-        self._dictionary.values[self._dictionary.values.endIndex - 1] = value
-      }
-    }
-    set {
-      switch (self._dictionary.values.last, newValue) {
-      case (.none, .none):
-        break
-      case let (.none, .some(element)):
-        self.append(element)
-      case (.some, .none):
-        self.removeLast()
-      case let (.some, .some(element)):
-        self._dictionary.values[self._dictionary.values.endIndex - 1] = element
-      }
     }
   }
 }
@@ -123,18 +128,17 @@ extension StackState: Encodable where Element: Encodable {
   }
 }
 
-// TODO: revisit
-//extension StackState: CustomStringConvertible {
-//  public var description: String {
-//    self._dictionary.values.elements.description
-//  }
-//}
-//
-//extension StackState: CustomDebugStringConvertible {
-//  public var debugDescription: String {
-//    self._dictionary.values.elements.debugDescription
-//  }
-//}
+extension StackState: CustomStringConvertible {
+  public var description: String {
+    self._dictionary.values.elements.description
+  }
+}
+
+extension StackState: CustomDebugStringConvertible {
+  public var debugDescription: String {
+    "\(Self.self)(\(self._dictionary.description))"
+  }
+}
 
 extension StackState: CustomDumpReflectable {
   public var customDumpMirror: Mirror {
@@ -146,6 +150,10 @@ extension StackState: CustomDumpReflectable {
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
 /// ``Reducer/forEach(_:action:destination:fileID:line:)``.
+///
+/// See the dedicated article on <doc:Navigation> for more information on the library's navigation
+/// tools, and in particular see <doc:StackBasedNavigation> for information on modeling navigation
+/// using ``StackAction`` for navigation stacks.
 public enum StackAction<State, Action> {
   /// An action sent to the associated stack element at a given identifier.
   indirect case element(id: StackElementID, action: Action)
@@ -166,8 +174,54 @@ extension Reducer {
   /// Embeds a child reducer in a parent domain that works on elements of a navigation stack in
   /// parent state.
   ///
-  /// For example, if a parent feature holds onto a ``StackState`` of destination states, then it
-  /// can perform its core logic _and_ the destination's logic by using the `forEach` operator:
+  /// This version of `forEach` works when the parent domain holds onto the child domain using
+  /// ``StackState`` and ``StackAction``.
+  ///
+  /// For example, if a parent feature models a navigation stack of child features using the
+  /// ``StackState`` and ``StackAction`` types, then it can perform its core logic _and_ the logic
+  /// of each child feature using the `forEach` operator:
+  ///
+  /// ```swift
+  /// struct ParentFeature: ReducerProtocol {
+  ///   struct State {
+  ///     var path = StackState<Path.State>()
+  ///     // ...
+  ///   }
+  ///   enum Action {
+  ///     case path(StackAction<Path.State, Path.Action>)
+  ///     // ...
+  ///   }
+  ///   var body: some ReducerProtocolOf<Self> {
+  ///     Reduce { state, action in
+  ///       // Core parent logic
+  ///     }
+  ///     .forEach(\.path, action: /Action.path) {
+  ///       Path()
+  ///     }
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// The `forEach` operator does a number of things to make integrating parent and child features
+  /// ergonomic and enforce correctness:
+  ///
+  ///   * It forces a specific order of operations for the child and parent features:
+  ///     * When a ``StackAction/element(id:action:)`` action is sent it runs the
+  ///       child first, and then the parent. If the order was reversed, then it would be possible
+  ///       for the parent feature to `nil` out the child state, in which case the child feature
+  ///       would not be able to react to that action. That can cause subtle bugs.
+  ///     * When a ``StackAction/popFrom(id:)`` action is sent it runs the parent feature
+  ///       before the child state is popped off the stack. This gives the parent feature an
+  ///       opportunity to inspect the child state one last time before the state is removed.
+  ///     * When a ``StackAction/push(id:state:)`` action is sent it runs the parent feature
+  ///       after the child state is appended to the stack. This gives the parent feature an
+  ///       opportunity to make extra mutations to the state after it has been added.
+  ///
+  ///   * It automatically cancels all child effects when it detects the child's state is removed
+  ///     from the stack
+  ///
+  ///   * It gives the child feature access to the ``DismissEffect`` dependency, which allows the
+  ///     child feature to dismiss itself without communicating with the parent.
   ///
   /// - Parameters:
   ///   - toStackState: A writable key path from parent state to a stack of destination state.
@@ -250,7 +304,29 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
           .map { toStackAction.embed(.element(id: elementID, action: $0)) }
           ._cancellable(navigationIDPath: elementNavigationIDPath)
       } else {
-        runtimeWarn("TODO")
+        runtimeWarn(
+          """
+          A "forEach" at "\(self.fileID):\(self.line)" received an action for a missing element. …
+
+            Action:
+              \(debugCaseOutput(destinationAction))
+
+          This is generally considered an application logic error, and can happen for a few reasons:
+
+          • A parent reducer removed an element with this ID before this reducer ran. This reducer \
+          must run before any other reducer removes an element, which ensures that element \
+          reducers can handle their actions while their state is still available.
+
+          • An in-flight effect emitted this action when state contained no element at this ID. \
+          While it may be perfectly reasonable to ignore this action, consider canceling the \
+          associated effect before an element is removed, especially if it is a long-living effect.
+
+          • This action was sent to the store while its state contained no element at this ID. To \
+          fix this make sure that actions for this reducer can only be sent from a view store when \
+          its state contains an element at this id. In SwiftUI applications, use \
+          "NavigationStackStore".
+          """
+        )
         destinationEffects = .none
       }
 
@@ -260,22 +336,47 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
       destinationEffects = .none
       let canPop = state[keyPath: self.toStackState].ids.contains(id)
       baseEffects = self.base.reduce(into: &state, action: action)
-      state[keyPath: self.toStackState].pop(from: id)
-      // TODO: write test to show that if base removes element we do not get runtime warn
-      if !canPop {
-        runtimeWarn("TODO")
+      if canPop {
+        state[keyPath: self.toStackState].pop(from: id)
+      } else {
+        // TODO: write test to show that if base removes element we do not get runtime warn
+        // TODO: finesse
+        runtimeWarn(
+          """
+          A "forEach" at "\(self.fileID):\(self.line)" received a "popFrom" action for a missing \
+          element.
+          """
+        )
       }
 
     case let .push(id, element):
       destinationEffects = .none
       if state[keyPath: self.toStackState].ids.contains(id) {
-        runtimeWarn("TODO")
-        baseEffects = .none
+        // TODO: finesse
+        runtimeWarn(
+          """
+          A "forEach" at "\(self.fileID):\(self.line)" received a "push" action for an element it \
+          already contains.
+          """
+        )
+        baseEffects = self.base.reduce(into: &state, action: action)
         break
       } else if DependencyValues._current.context == .test {
-        if id.generation > DependencyValues._current.stackElementID.peek().generation {
-          runtimeWarn("TODO")
-        } else if id.generation == DependencyValues._current.stackElementID.peek().generation {
+        let nextID = DependencyValues._current.stackElementID.peek()
+        if id.generation > nextID.generation {
+          // TODO: finesse
+          runtimeWarn(
+            """
+            A "forEach" at "\(self.fileID):\(self.line)" received a "push" action with an \
+            unexpected generational ID. …
+
+              Received:
+                \(id)
+              Next:
+                \(nextID)
+            """
+          )
+        } else if id.generation == nextID.generation {
           _ = DependencyValues._current.stackElementID.next()
         }
       }
@@ -339,6 +440,34 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
 }
 
 /// An opaque type that identifies an element of ``StackState``.
+///
+/// The ``StackState`` type creates instances of this identifier when new elements are added to
+/// the stack. This makes it possible to easily look up specific elements in the stack without
+/// resorting to positional indices, which can be error prone, especially when dealing with async
+/// effects.
+///
+/// In production environments (e.g. in Xcode previews, simulators and on devices) the identifier
+/// is backed by a randomly generated UUID, but in tests a deterministic, generational ID is used.
+/// This allows you to predict how IDs will be created and allows you to write tests for how
+/// features behave in the stack.
+///
+/// ```swift
+/// func testBasics() {
+///   var path = StackState<Int>()
+///   path.append(42)
+///   XCTAssertEqual(path[id: 0], 42)
+///   path.append(1729)
+///   XCTAssertEqual(path[id: 1], 1729)
+///
+///   path.removeAll()
+///   path.append(-1)
+///   XCTAssertEqual(path[id: 2], -1)
+/// }
+/// ```
+///
+/// Notice that after removing all elements and appending a new element, the ID generated was 2 and
+/// did not go back to 0. This is because in tests the IDs are _generational_, which means they
+/// keep counting up, even if you remove elements from the stack.
 public struct StackElementID: Hashable, Sendable {
   @_spi(Internals) public var generation: Int
   @_spi(Internals) public var rawValue: AnyHashableSendable
@@ -348,7 +477,7 @@ public struct StackElementID: Hashable, Sendable {
     self.rawValue = AnyHashableSendable(rawValue)
   }
 
-  // TODO: is this still correct? can we get test coverage that breaks when || is changed to && ?
+  // TODO: is this still correct? can we get a test that fails when || is changed to && ?
   public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.rawValue == rhs.rawValue || lhs.generation == rhs.generation
   }
@@ -368,20 +497,17 @@ extension StackElementID: CustomDumpStringConvertible {
 
 extension StackElementID: ExpressibleByIntegerLiteral {
   public init(integerLiteral value: Int) {
-    #if DEBUG
-      @Dependency(\.context) var context
-      if context != .test {
-        runtimeWarn(
-          """
-          Specifying stack element IDs by integer literal is not allowed outside of tests.
+    if !_XCTIsTesting {
+      fatalError(
+        """
+        Specifying stack element IDs by integer literal is not allowed outside of tests.
 
-          In tests, integer literal stack element IDs can be used as a shorthand to the \
-          auto-incrementing generation of the current dependency context. This can be useful when \
-          asserting against actions received by a specific element.
-          """
-        )
-      }
-    #endif
+        In tests, integer literal stack element IDs can be used as a shorthand to the \
+        auto-incrementing generation of the current dependency context. This can be useful when \
+        asserting against actions received by a specific element.
+        """
+      )
+    }
     self.init(generation: value, rawValue: value)
   }
 }

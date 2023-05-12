@@ -96,10 +96,9 @@ struct Game_Previews: PreviewProvider {
   static var previews: some View {
     NavigationStack {
       GameView(
-        store: Store(
-          initialState: Game.State(oPlayerName: "Blob Jr.", xPlayerName: "Blob Sr."),
-          reducer: Game()
-        )
+        store: Store(initialState: Game.State(oPlayerName: "Blob Jr.", xPlayerName: "Blob Sr.")) {
+          Game()
+        }
       )
     }
   }

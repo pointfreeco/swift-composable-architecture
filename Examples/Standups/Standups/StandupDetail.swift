@@ -283,10 +283,9 @@ struct StandupDetail_Previews: PreviewProvider {
   static var previews: some View {
     NavigationStack {
       StandupDetailView(
-        store: Store(
-          initialState: StandupDetail.State(standup: .mock),
-          reducer: StandupDetail()
-        )
+        store: Store(initialState: StandupDetail.State(standup: .mock)) {
+          StandupDetail()
+        }
       )
     }
   }

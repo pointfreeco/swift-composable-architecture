@@ -61,7 +61,7 @@ import SwiftUI
 /// ```swift
 /// var body: some Reducer<State, Action> {
 ///   Reduce { state, action in
-///     ...
+///     // ...
 ///   }
 ///   .forEach(\.todos, action: /Action.todo(id:action:)) {
 ///     Todo()

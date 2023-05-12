@@ -75,10 +75,9 @@ struct FocusView: View {
 struct FocusView_Previews: PreviewProvider {
   static var previews: some View {
     FocusView(
-      store: Store(
-        initialState: Focus.State(),
-        reducer: Focus()
-      )
+      store: Store(initialState: Focus.State()) {
+        Focus()
+      }
     )
   }
 }

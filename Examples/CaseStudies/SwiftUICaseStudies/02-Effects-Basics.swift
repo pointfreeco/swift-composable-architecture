@@ -37,7 +37,7 @@ struct EffectsBasics: Reducer {
 
   @Dependency(\.continuousClock) var clock
   @Dependency(\.factClient) var factClient
-  private enum DelayID {}
+  private enum CancelID { case delay }
 
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
@@ -51,7 +51,7 @@ struct EffectsBasics: Reducer {
           try await self.clock.sleep(for: .seconds(1))
           return .decrementDelayResponse
         }
-        .cancellable(id: DelayID.self)
+        .cancellable(id: CancelID.delay)
 
     case .decrementDelayResponse:
       if state.count < 0 {
@@ -63,7 +63,7 @@ struct EffectsBasics: Reducer {
       state.count += 1
       state.numberFact = nil
       return state.count >= 0
-        ? .cancel(id: DelayID.self)
+        ? .cancel(id: CancelID.delay)
         : .none
 
     case .numberFactButtonTapped:
@@ -156,10 +156,9 @@ struct EffectsBasicsView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       EffectsBasicsView(
-        store: Store(
-          initialState: EffectsBasics.State(),
-          reducer: EffectsBasics()
-        )
+        store: Store(initialState: EffectsBasics.State()) {
+          EffectsBasics()
+        }
       )
     }
   }

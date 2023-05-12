@@ -16,10 +16,10 @@ extension EffectPublisher {
   ///
   /// ```swift
   /// case let .textChanged(text):
-  ///   enum SearchID {}
+  ///   enum CancelID { case search }
   ///
   ///   return self.apiClient.search(text)
-  ///     .debounce(id: SearchID.self, for: 0.5, scheduler: self.mainQueue)
+  ///     .debounce(id: CancelID.search, for: 0.5, scheduler: self.mainQueue)
   ///     .map(Action.searchResponse)
   /// ```
   ///

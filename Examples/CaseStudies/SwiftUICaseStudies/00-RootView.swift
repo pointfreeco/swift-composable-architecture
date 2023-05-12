@@ -295,10 +295,9 @@ struct RootView: View {
 struct RootView_Previews: PreviewProvider {
   static var previews: some View {
     RootView(
-      store: Store(
-        initialState: Root.State(),
-        reducer: Root()
-      )
+      store: Store(initialState: Root.State()) {
+        Root()
+      }
     )
   }
 }

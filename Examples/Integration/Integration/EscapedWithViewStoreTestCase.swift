@@ -20,10 +20,9 @@ private struct EscapedWithViewStoreTestCase: Reducer {
 }
 
 struct EscapedWithViewStoreTestCaseView: View {
-  private let store = Store(
-    initialState: 10,
-    reducer: EscapedWithViewStoreTestCase()
-  )
+  private let store = Store(initialState: 10) {
+    EscapedWithViewStoreTestCase()
+  }
 
   var body: some View {
     VStack {

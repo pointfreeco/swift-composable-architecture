@@ -29,20 +29,20 @@ from within `@Sendable` closures:
 
 ```swift
 struct Feature: Reducer {
-  struct State { … }
-  enum Action { … }
+  struct State { /* ... */ }
+  enum Action { /* ... */ }
 
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .buttonTapped:
       return .task {
-        try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+        try await Task.sleep(for: .seconds(1))
         return .delayed(state.count) 
         // 🛑 Mutable capture of 'inout' parameter 'state' is 
         //    not allowed in concurrently-executing code
       }
 
-      …
+      // ...
     }
   }
 }
@@ -53,7 +53,7 @@ closure:
 
 ```swift
 return .task { [state] in 
-  try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+  try await Task.sleep(for: .seconds(1))
   return .delayed(state.count) // ✅
 }
 ```

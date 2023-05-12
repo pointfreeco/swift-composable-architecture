@@ -223,9 +223,10 @@ struct VoiceMemos_Previews: PreviewProvider {
               url: URL(string: "https://www.pointfree.co/untitled")!
             ),
           ]
-        ),
-        reducer: VoiceMemos()
-      )
+        )
+      ) {
+        VoiceMemos()
+      }
     )
   }
 }

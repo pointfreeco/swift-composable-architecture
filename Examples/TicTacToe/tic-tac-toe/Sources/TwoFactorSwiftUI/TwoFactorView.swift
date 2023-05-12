@@ -66,12 +66,7 @@ public struct TwoFactorView: View {
           }
         }
       }
-      .alert(
-        store: self.store.scope(
-          state: \.$alert,
-          action: TwoFactor.Action.alert
-        )
-      )
+      .alert(store: self.store.scope(state: \.$alert, action: TwoFactor.Action.alert))
       .disabled(viewStore.isFormDisabled)
       .navigationTitle("Confirmation Code")
     }
@@ -95,10 +90,9 @@ struct TwoFactorView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationStack {
       TwoFactorView(
-        store: Store(
-          initialState: TwoFactor.State(token: "deadbeef"),
-          reducer: TwoFactor()
-        ) {
+        store: Store(initialState: TwoFactor.State(token: "deadbeef")) {
+          TwoFactor()
+        } withDependencies: {
           $0.authenticationClient.login = { _ in
             AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
           }

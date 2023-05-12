@@ -23,8 +23,8 @@ struct SwitchStoreTestCase: Reducer {
   }
 
   enum State: Equatable {
-    case screenA(Screen.State)
-    case screenB(Screen.State)
+    case screenA(Screen.State = .init())
+    case screenB(Screen.State = .init())
   }
   enum Action {
     case screenA(Screen.Action)
@@ -55,10 +55,9 @@ struct SwitchStoreTestCase: Reducer {
 }
 
 struct SwitchStoreTestCaseView: View {
-  let store = Store(
-    initialState: .screenA(SwitchStoreTestCase.Screen.State()),
-    reducer: SwitchStoreTestCase()
-  )
+  let store = Store(initialState: .screenA()) {
+    SwitchStoreTestCase()
+  }
 
   var body: some View {
     WithViewStore(store.stateless) { viewStore in

@@ -5,6 +5,44 @@ import Combine
 ///
 /// Use this property wrapper for modeling a feature's domain that needs to present a child feature
 /// using ``Reducer/ifLet(_:action:destination:fileID:line:)``.
+///
+/// For example, if you have a `ChildFeature` reducer that encapsulates the logic and behavior for a
+/// feature, then any feature that wants to present that feature will hold onto `ChildFeature.State`
+/// like so:
+///
+/// ```swift
+/// struct ParentFeature: Reducer {
+///   struct State {
+///     @PresentationState var child: Child.State?
+///      // ...
+///   }
+///   // ...
+/// }
+/// ```
+///
+/// For the most part your feature's logic can deal with `child` as a plain optional value, but
+/// there are times you need to know that you are secretly dealing with `PresentationState`. For
+/// example, when using the ``Reducer/ifLet(_:action:destination:fileID:line:)`` reducer operator to
+/// integrate the parent and child features together, you will construct a key path to the projected
+/// value `\.$child`:
+///
+/// ```swift
+/// struct ParentFeature: Reducer {
+///   // ...
+///   var body: some ReducerOf<Self> {
+///     Reduce { state, action in
+///       // Core logic for parent feature
+///     }
+///     .ifLet(\.$child, action: /Action.child) {
+///       ChildFeature()
+///     }
+///   }
+/// }
+/// ```
+///
+/// See the dedicated article on <doc:Navigation> for more information on the library's navigation
+/// tools, and in particular see <doc:TreeBasedNavigation> for information on modeling navigation
+/// using optionals and enums.
 @propertyWrapper
 public struct PresentationState<State> {
   private var boxedValue: [State]
@@ -36,11 +74,6 @@ public struct PresentationState<State> {
     get { self }
     set { self = newValue }
     _modify { yield &self }
-  }
-
-  // TODO: Move to view
-  var id: StableID? {
-    self.wrappedValue.map(StableID.init(base:))
   }
 }
 
@@ -89,6 +122,30 @@ extension PresentationState: CustomReflectable {
 ///
 /// Use this wrapper type for modeling a feature's domain that needs to present a child
 /// feature using ``Reducer/ifLet(_:action:destination:fileID:line:)``.
+///
+/// For example, if you have a `ChildFeature` reducer that encapsulates the logic and behavior
+/// for a feature, then any feature that wants to present that feature will hold onto
+/// `ChildFeature.Action` like so:
+///
+/// ```swift
+/// struct ParentFeature: Reducer {
+///   // ...
+///   struct Action {
+///     case child(PresentationAction<Child.State>)
+///      // ...
+///   }
+///   // ...
+/// }
+/// ```
+///
+/// The ``PresentationAction`` enum has two cases that represent the two fundamental operations
+/// you can do when presenting a child feature: ``PresentationAction/presented(_:)`` represents
+/// an action happening _inside_ the child feature, and ``PresentationAction/dismiss`` represents
+/// dismissing the child feature by `nil`-ing its state.
+///
+/// See the dedicated article on <doc:Navigation> for more information on the library's navigation
+/// tools, and in particular see <doc:TreeBasedNavigation> for information on modeling navigation
+/// using optionals and enums.
 public enum PresentationAction<Action> {
   /// An action sent to `nil` out the associated presentation state.
   case dismiss
@@ -100,12 +157,14 @@ public enum PresentationAction<Action> {
 extension PresentationAction: Equatable where Action: Equatable {}
 extension PresentationAction: Hashable where Action: Hashable {}
 extension PresentationAction: Sendable where Action: Sendable {}
-
 extension PresentationAction: Decodable where Action: Decodable {}
 extension PresentationAction: Encodable where Action: Encodable {}
 
 extension Reducer {
   /// Embeds a child reducer in a parent domain that works on an optional property of parent state.
+  ///
+  /// This version of `ifLet` requires the usage of ``PresentationState`` and ``PresentationAction``
+  /// in your feature's domain.
   ///
   /// For example, if a parent feature holds onto a piece of optional child state, then it can
   /// perform its core logic _and_ the child's logic by using the `ifLet` operator:
@@ -132,12 +191,17 @@ extension Reducer {
   /// }
   /// ```
   ///
-  /// The `ifLet` operator does a number of things to try to enforce correctness:
+  /// The `ifLet` operator does a number of things to make integrating parent and child features
+  /// ergonomic and enforce correctness:
   ///
-  ///   * It forces a specific order of operations for the child and parent features. It runs the
-  ///     child first, and then the parent. If the order was reversed, then it would be possible for
-  ///     the parent feature to `nil` out the child state, in which case the child feature would not
-  ///     be able to react to that action. That can cause subtle bugs.
+  ///   * It forces a specific order of operations for the child and parent features:
+  ///     * When a ``PresentationAction/dismiss`` action is sent, it runs the parent feature
+  ///       before the child state is `nil`'d out. This gives the parent feature an opportunity to
+  ///       inspect the child state one last time before the state is cleared.
+  ///     * When a ``PresentationAction/presented(_:)`` action is sent it runs the
+  ///       child first, and then the parent. If the order was reversed, then it would be possible
+  ///       for the parent feature to `nil` out the child state, in which case the child feature
+  ///       would not be able to react to that action. That can cause subtle bugs.
   ///
   ///   * It automatically cancels all child effects when it detects the child's state is `nil`'d
   ///     out.
@@ -188,7 +252,7 @@ extension Reducer {
     self.ifLet(
       toPresentationState,
       action: toPresentationAction,
-      destination: { EmptyReducer() },
+      destination: {},
       fileID: fileID,
       line: line
     )
@@ -404,6 +468,13 @@ extension EffectPublisher {
     } operation: {
       .cancel(id: id)
     }
+  }
+}
+
+extension PresentationState {
+  // TODO: Move to view
+  var id: StableID? {
+    self.wrappedValue.map(StableID.init(base:))
   }
 }
 
