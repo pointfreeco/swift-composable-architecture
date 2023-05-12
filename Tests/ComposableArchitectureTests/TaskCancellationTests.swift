@@ -5,7 +5,7 @@ import XCTest
 final class TaskCancellationTests: BaseTCATestCase {
   func testCancellation() async throws {
     enum CancelID { case task }
-    let (stream, continuation) = AsyncStream<Void>.streamWithContinuation()
+    let (stream, continuation) = AsyncStream.makeStream(of: Void.self)
     let task = Task {
       try await withTaskCancellation(id: CancelID.task) {
         continuation.yield()
