@@ -6,7 +6,7 @@ import XCTest
 @MainActor
 final class LongLivingEffectsTests: XCTestCase {
   func testReducer() async {
-    let (screenshots, takeScreenshot) = AsyncStream<Void>.streamWithContinuation()
+    let (screenshots, takeScreenshot) = AsyncStream.makeStream(of: Void.self)
 
     let store = TestStore(initialState: LongLivingEffects.State()) {
       LongLivingEffects()

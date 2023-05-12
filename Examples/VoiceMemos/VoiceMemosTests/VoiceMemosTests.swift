@@ -11,7 +11,7 @@ final class VoiceMemosTests: XCTestCase {
     // NB: Combine's concatenation behavior is different in 13.3
     guard #available(iOS 13.4, *) else { return }
 
-    let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
+    let didFinish = AsyncThrowingStream.makeStream(of: Bool.self)
 
     let store = TestStore(initialState: VoiceMemos.State()) {
       VoiceMemos()
@@ -98,7 +98,7 @@ final class VoiceMemosTests: XCTestCase {
 
   func testRecordMemoFailure() async {
     struct SomeError: Error, Equatable {}
-    let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
+    let didFinish = AsyncThrowingStream.makeStream(of: Bool.self)
 
     let store = TestStore(initialState: VoiceMemos.State()) {
       VoiceMemos()
@@ -139,7 +139,7 @@ final class VoiceMemosTests: XCTestCase {
   // record.
   func testRecordMemoFailure_NonExhaustive() async {
     struct SomeError: Error, Equatable {}
-    let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
+    let didFinish = AsyncThrowingStream.makeStream(of: Bool.self)
 
     let store = TestStore(initialState: VoiceMemos.State()) {
       VoiceMemos()

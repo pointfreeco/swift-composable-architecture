@@ -575,22 +575,22 @@ extension Publisher {
   @available(
     iOS, deprecated: 9999.0,
     message:
-      "Iterate over 'Publisher.values' in the static version of 'Effect.fireAndForget', instead."
+      "Iterate over 'Publisher.values' in the static version of 'Effect.run', instead."
   )
   @available(
     macOS, deprecated: 9999.0,
     message:
-      "Iterate over 'Publisher.values' in the static version of 'Effect.fireAndForget', instead."
+      "Iterate over 'Publisher.values' in the static version of 'Effect.run', instead."
   )
   @available(
     tvOS, deprecated: 9999.0,
     message:
-      "Iterate over 'Publisher.values' in the static version of 'Effect.fireAndForget', instead."
+      "Iterate over 'Publisher.values' in the static version of 'Effect.run', instead."
   )
   @available(
     watchOS, deprecated: 9999.0,
     message:
-      "Iterate over 'Publisher.values' in the static version of 'Effect.fireAndForget', instead."
+      "Iterate over 'Publisher.values' in the static version of 'Effect.run', instead."
   )
   public func fireAndForget<NewOutput, NewFailure>(
     outputType: NewOutput.Type = NewOutput.self,
