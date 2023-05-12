@@ -5,6 +5,13 @@ import XCTestDynamicOverlay
 
 // MARK: - Deprecated after 0.52.0
 
+extension WithViewStore {
+  @available(*, deprecated, renamed: "_printChanges(_:)")
+  public func debug(_ prefix: String = "") -> Self {
+    self._printChanges(prefix)
+  }
+}
+
 extension EffectPublisher where Failure == Never {
   @available(iOS, deprecated: 9999, message: "Use 'Effect.run' and pass the action to 'send'.")
   @available(macOS, deprecated: 9999, message: "Use 'Effect.run' and pass the action to 'send'.")
