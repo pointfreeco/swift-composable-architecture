@@ -21,16 +21,10 @@ struct CounterFeature: ReducerProtocol {
 
     case .factButtonTapped:
       state.isLoading = true
-
-      let (data, _) = try await URLSession.shared
-        .data(from: URL("http://numbersapi.com/\(state.count)")!)
-      // 🛑 'async' call in a function that does not support concurrency
-      // 🛑 Errors thrown from here are not handled
-      
-      state.fact = String(decoding: data, as: UTF8.self)
-      state.isLoading = false
-
-      return .none
+      return .run { send in
+        // ✅ Do async work in here, and send actions
+        //    back into the system.
+      }
 
     case .incrementButtonTapped:
       state.count += 1

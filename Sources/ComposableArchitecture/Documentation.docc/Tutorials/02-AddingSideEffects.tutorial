@@ -80,6 +80,8 @@
         transformations of state from the complex, messy side effects. There are a lot of benefits
         to doing this, and it is one of the core tenets of the library.
         
+        [numbersapi.com]: http://www.numbersapi.com
+        
         @Code(name: "CounterFeature.swift", file: 02-01-code-0005.swift)
       }
     }
@@ -89,6 +91,52 @@
     @ContentAndMedia {
       Now that we understand what a side-effect is and why they cannot be performed directly in
       a reducer, let's see how to fix the code we wrote above. 
+      
+      The Composable Architecture bakes the notion of "effect" directly into the definition of 
+      ``ComposableArchitecture/ReducerProtocol``. After a reducer processes an action by mutating
+      state, it can return something called an ``ComposableArchitecture/EffectTask``, which 
+      represents an asynchronous unit of work to be run in the outside world. The effect can 
+      communicate with outside systems, and then feed data from the outside back into the reducer.
+      
+      This is exactly what we want to do for our number fact effect. We want to make a network 
+      request, and then feed that information back into the reducer. So, let's get started.
+    }
+    
+    @Steps {
+      @Step {
+        The primary way one constructs an ``ComposableArchitecture/EffectTask`` is via the static
+        method ``ComposableArchitecture/EffectPublisher/run(priority:operation:catch:fileID:line:)``.
+        This provides you with an asynchronous context to perform any kind of work you want, as well
+        as a handle (`send`) for sending actions back into the system.
+        
+        @Code(name: "CounterFeature.swift", file: 02-02-code-0001.swift)
+      }
+      
+      @Step {
+        The trailing closure of `.run` is the perfect place to perform our network request to fetch
+        data from [numbersapi.com][numbersapi.com] and turn it into a string.
+        
+        [numbersapi.com]: http://www.numbersapi.com
+        
+        @Code(name: "CounterFeature.swift", file: 02-02-code-0002.swift)
+      }
+      
+      @Step {
+        However, it is not possible to then mutate the `state.count` in the effect after fetching
+        the data from the network. This is strictly enforced by the compiler since sendable closures
+        cannot capture `inout` state. This is showing how the library chooses to separate the nice, 
+        simple and pure state mutations that reducers perform from the messy, complex effects. 
+        
+        @Code(name: "CounterFeature.swift", file: 02-02-code-0003.swift)
+      }
+      
+      @Step {
+        In order for us to feed the information from the effect back into our reducer we need to
+        introduce another action, called `factResponse`, and it will have an associated value of the
+        string that is fetched from the network. Then we can send that action in the effect 
+        
+        @Code(name: "CounterFeature.swift", file: 02-02-code-0004.swift)
+      }
     }
   }
 }
