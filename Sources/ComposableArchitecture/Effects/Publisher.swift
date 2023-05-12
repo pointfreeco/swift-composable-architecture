@@ -1,5 +1,18 @@
 import Combine
 
+extension EffectPublisher where Failure == Never {
+  /// Creates an effect from a Combine publisher.
+  ///
+  /// - Parameter createPublisher: The closure to execute when the effect is performed.
+  /// - Returns: An effect wrapping a Combine publisher.
+  public static func publisher<P: Publisher>(_ createPublisher: @escaping () -> P) -> Self
+  where P.Output == Action, P.Failure == Never {
+    Self(
+      operation: .publisher(Deferred(createPublisher: createPublisher).eraseToAnyPublisher())
+    )
+  }
+}
+
 @available(iOS, deprecated: 9999.0)
 @available(macOS, deprecated: 9999.0)
 @available(tvOS, deprecated: 9999.0)
@@ -27,7 +40,7 @@ extension EffectPublisher: Publisher {
             var isCompleted = false
             defer { isCompleted = true }
           #endif
-          let send = Send {
+          let send = Send<Action> {
             #if DEBUG
               if isCompleted {
                 runtimeWarn(
@@ -79,19 +92,23 @@ extension EffectPublisher {
   /// - Parameter publisher: A publisher.
   @available(
     iOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
+    message:
+      "Iterate over 'Publisher.values' in an 'EffectTask.run', instead, or use 'EffectTask.publisher'."
   )
   @available(
     macOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
+    message:
+      "Iterate over 'Publisher.values' in an 'EffectTask.run', instead, or use 'EffectTask.publisher'."
   )
   @available(
     tvOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
+    message:
+      "Iterate over 'Publisher.values' in an 'EffectTask.run', instead, or use 'EffectTask.publisher'."
   )
   @available(
     watchOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
+    message:
+      "Iterate over 'Publisher.values' in an 'EffectTask.run', instead, or use 'EffectTask.publisher'."
   )
   public init<P: Publisher>(_ publisher: P) where P.Output == Output, P.Failure == Failure {
     self.operation = .publisher(publisher.eraseToAnyPublisher())
@@ -367,19 +384,23 @@ extension Publisher {
   /// - Returns: An effect that wraps `self`.
   @available(
     iOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
+    message:
+      "Iterate over 'Publisher.values' in an 'EffectTask.run', instead, or use 'EffectTask.publisher'."
   )
   @available(
     macOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
+    message:
+      "Iterate over 'Publisher.values' in an 'EffectTask.run', instead, or use 'EffectTask.publisher'."
   )
   @available(
     tvOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
+    message:
+      "Iterate over 'Publisher.values' in an 'EffectTask.run', instead, or use 'EffectTask.publisher'."
   )
   @available(
     watchOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
+    message:
+      "Iterate over 'Publisher.values' in an 'EffectTask.run', instead, or use 'EffectTask.publisher'."
   )
   public func eraseToEffect() -> EffectPublisher<Output, Failure> {
     EffectPublisher(self)
@@ -402,19 +423,23 @@ extension Publisher {
   /// - Returns: An effect that wraps `self` after mapping `Output` values.
   @available(
     iOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
+    message:
+      "Iterate over 'Publisher.values' in an 'EffectTask.run', instead, or use 'EffectTask.publisher'."
   )
   @available(
     macOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
+    message:
+      "Iterate over 'Publisher.values' in an 'EffectTask.run', instead, or use 'EffectTask.publisher'."
   )
   @available(
     tvOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
+    message:
+      "Iterate over 'Publisher.values' in an 'EffectTask.run', instead, or use 'EffectTask.publisher'."
   )
   @available(
     watchOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
+    message:
+      "Iterate over 'Publisher.values' in an 'EffectTask.run', instead, or use 'EffectTask.publisher'."
   )
   public func eraseToEffect<T>(
     _ transform: @escaping (Output) -> T
@@ -447,19 +472,23 @@ extension Publisher {
   /// - Returns: An effect that wraps `self`.
   @available(
     iOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
+    message:
+      "Iterate over 'Publisher.values' in an 'EffectTask.run', instead, or use 'EffectTask.publisher'."
   )
   @available(
     macOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
+    message:
+      "Iterate over 'Publisher.values' in an 'EffectTask.run', instead, or use 'EffectTask.publisher'."
   )
   @available(
     tvOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
+    message:
+      "Iterate over 'Publisher.values' in an 'EffectTask.run', instead, or use 'EffectTask.publisher'."
   )
   @available(
     watchOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
+    message:
+      "Iterate over 'Publisher.values' in an 'EffectTask.run', instead, or use 'EffectTask.publisher'."
   )
   public func catchToEffect() -> EffectTask<Result<Output, Failure>> {
     self.catchToEffect { $0 }
@@ -482,19 +511,23 @@ extension Publisher {
   /// - Returns: An effect that wraps `self`.
   @available(
     iOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
+    message:
+      "Iterate over 'Publisher.values' in an 'EffectTask.run', instead, or use 'EffectTask.publisher'."
   )
   @available(
     macOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
+    message:
+      "Iterate over 'Publisher.values' in an 'EffectTask.run', instead, or use 'EffectTask.publisher'."
   )
   @available(
     tvOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
+    message:
+      "Iterate over 'Publisher.values' in an 'EffectTask.run', instead, or use 'EffectTask.publisher'."
   )
   @available(
     watchOS, deprecated: 9999.0,
-    message: "Iterate over 'Publisher.values' in an 'EffectTask.run', instead."
+    message:
+      "Iterate over 'Publisher.values' in an 'EffectTask.run', instead, or use 'EffectTask.publisher'."
   )
   public func catchToEffect<T>(
     _ transform: @escaping (Result<Output, Failure>) -> T
