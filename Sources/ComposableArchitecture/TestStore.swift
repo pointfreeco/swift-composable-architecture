@@ -1447,7 +1447,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
       return
     }
     await self.receiveAction(
-      actionPredicate: {expectedAction == $0},
+      actionPredicate: { expectedAction == $0 },
       timeout: nanoseconds,
       file: file,
       line: line
