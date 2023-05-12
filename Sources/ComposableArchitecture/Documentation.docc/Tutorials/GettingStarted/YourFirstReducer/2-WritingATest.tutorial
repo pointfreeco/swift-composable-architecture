@@ -1,0 +1,36 @@
+@Tutorial(time: 100) { <!-- todo: better estimate -->
+  @Intro(title: "Writing a test") {
+    Learn how to write a test for the simple feature just implemented.
+    
+    <!--    @Image(source: <#file#>, alt: "<#accessible description#>")-->
+  }
+  
+  @Section(title: "Title 1") {
+    @ContentAndMedia {
+      <#text#>
+      
+      <!--      @Image(source: <#file#>, alt: "<#accessible description#>")-->
+    }
+    
+    @Steps {
+      @Step {
+        <#text#>
+        
+        <!--        @Image(source: <#file#>, alt: "<#accessible description#>")-->
+      }
+      
+      @Step {
+        <#text#>
+        
+        @Code(name: "<#display name#>", file: <#filename.swift#>)
+      }
+    }
+  }
+  
+  @Section(title: "Title 2") {
+  }
+  @Section(title: "Title 3") {
+  }
+  @Section(title: "Title 4") {
+  }
+}

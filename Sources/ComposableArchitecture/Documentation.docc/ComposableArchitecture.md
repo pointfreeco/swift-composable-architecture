@@ -52,6 +52,10 @@ day-to-day when building applications, such as:
 - <doc:Testing>
 - <doc:Performance>
 
+### Tutorials
+
+- <doc:MeetComposableArchitecture>
+
 ### Upgrade guides
 
 - <doc:SwiftConcurrency>
