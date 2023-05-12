@@ -17,14 +17,17 @@ struct CounterFeature: ReducerProtocol {
     switch action {
     case .decrementButtonTapped:
       state.count -= 1
+      state.fact = nil
       return .none
 
     case .factButtonTapped:
+      state.fact = nil
       state.isLoading = true
       return .none
 
     case .incrementButtonTapped:
       state.count += 1
+      state.fact = nil
       return .none
     }
   }

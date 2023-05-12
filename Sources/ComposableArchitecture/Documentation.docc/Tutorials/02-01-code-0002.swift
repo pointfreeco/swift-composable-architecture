@@ -28,6 +28,8 @@ struct CounterView: View {
         } else if let fact = viewStore.fact {
           Text(fact)
             .font(.largeTitle)
+            .multilineTextAlignment(.center)
+            .padding()
         }
       }
     }

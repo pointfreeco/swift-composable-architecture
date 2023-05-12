@@ -17,9 +17,11 @@ struct CounterFeature: ReducerProtocol {
     switch action {
     case .decrementButtonTapped:
       state.count -= 1
+      state.fact = nil
       return .none
 
     case .factButtonTapped:
+      state.fact = nil
       state.isLoading = true
       return .run { send in
         // ✅ Do async work in here, and send actions
@@ -28,6 +30,7 @@ struct CounterFeature: ReducerProtocol {
 
     case .incrementButtonTapped:
       state.count += 1
+      state.fact = nil
       return .none
     }
   }
