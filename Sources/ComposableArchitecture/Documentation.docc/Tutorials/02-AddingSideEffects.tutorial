@@ -1,5 +1,5 @@
 @Tutorial(time: 100) { <!-- todo: better estimate -->
-  @Intro(title: "Writing a test") {
+  @Intro(title: "Adding side effects") {
     Learn how to write a test for the simple feature just implemented.
     
     <!--    @Image(source: <#file#>, alt: "<#accessible description#>")-->

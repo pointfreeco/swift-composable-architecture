@@ -1,8 +1,6 @@
 @Tutorial(time: 100) { <!-- todo: better estimate -->
-  @Intro(title: "Integrating with SwiftUI") {
-    Learn how to integrate your Composable Architecture feature into a SwiftUI by leveraging 
-    ``Store`` to encapsulate the runtime behavior of your feature, and using ``WithViewStore`` to
-    observe state changes and send user actions.
+  @Intro(title: "Testing your feature") {
+    Learn how to write a test for the simple feature just implemented.
     
     <!--    @Image(source: <#file#>, alt: "<#accessible description#>")-->
   }
@@ -27,12 +25,5 @@
         @Code(name: "<#display name#>", file: <#filename.swift#>)
       }
     }
-  }
-  
-  @Section(title: "Title 2") {
-  }
-  @Section(title: "Title 3") {
-  }
-  @Section(title: "Title 4") {
   }
 }

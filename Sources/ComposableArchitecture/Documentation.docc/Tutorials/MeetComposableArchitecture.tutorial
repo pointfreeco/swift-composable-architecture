@@ -1,30 +1,29 @@
-@Tutorials(name: "Meet Composable Architecture") {
-  @Intro(title: "Meet Composable Architecture") {
+@Tutorials(name: "Meet the Composable Architecture") {
+  @Intro(title: "Meet the Composable Architecture") {
     Learn how to implement a basic feature using the Composable feature, including how to implement
     a reducer, how to manage a simple side effect, and how to integrate with SwiftUI.
-    
-    <!--        @Image(source: <#file#>, alt: "<#accessible description#>")-->
+  
+    <!-- TODO: image -->
   }
   
-  @Chapter(name: "Your first reducer") {
-    Text2
+  @Chapter(name: "Essentials") {
+    Explore the basics of creating a new feature in the Composable Architecture and writing a test
+    suite for the feature.
     
-    <!--        @Image(source: <#file#>, alt: "<#accessible description#>")-->
-    
-    @TutorialReference(tutorial: "doc:0-YourFirstReducer")
-    @TutorialReference(tutorial: "doc:1-IntegratingWithSwiftUI")
-    @TutorialReference(tutorial: "doc:2-WritingATest")
+    <!-- TODO: image -->
+
+    @TutorialReference(tutorial: "doc:01-YourFirstFeature")
+    @TutorialReference(tutorial: "doc:02-AddingSideEffects")
+    @TutorialReference(tutorial: "doc:03-TestingYourFeature")
   }
   
   @Resources {
     Additional resources for exploring how to build applications using the Composable Architecture.
     
-    @Documentation(destination: "https://docs.runestone.app") {
-      Browse and search detailed API documentation.
-      
-      - [Getting Started](https://docs.runestone.app/documentation/runestone/gettingstarted)
-      - [Creating a Theme](https://docs.runestone.app/documentation/runestone/creatingatheme)
-      - [Adding a Tree-sitter Language](https://docs.runestone.app/documentation/runestone/addingatreesitterlanguage)
+    @Videos(destination: "https://www.pointfree.co") {
+      Point-Free is a video series that explores advanced topics in the Swift programming language.
+      We built nearly every part of the Composable Architecture from first principles in a [long
+      series of episodes](https://www.pointfree.co/collections/composable-architecture).
     }
       
     @Forums(
@@ -50,6 +49,14 @@
       - [TicTacToe](https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/TicTacToe)
       - [Todos](https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/Todos)
       - [Voice memos](https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/VoiceMemos)
+    }
+    
+    @Documentation(destination: "https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/") {
+      Browse the full documentation online.
+      
+      - [GitHub](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture)
+      
+      <!-- Todo: more links? -->
     }
   }
 }
