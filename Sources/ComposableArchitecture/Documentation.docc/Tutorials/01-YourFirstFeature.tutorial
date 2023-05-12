@@ -1,4 +1,4 @@
-@Tutorial(time: 100) { <!-- todo: better estimate --> 
+@Tutorial(time: 30) { 
   @Intro(title: "Your first feature") {
     Learn how to create a conformance to ``ComposableArchitecture/ReducerProtocol`` for implementing
     the logic and behavior of a feature, and then learn how to hook up that feature to a SwiftUI
@@ -122,7 +122,10 @@
         for now we will provide stubs for that behavior.
         
         @Code(name: "CounterFeature.swift", file: 01-02-code-0003.swift) {
-          @Image(source: "01-02-image-0003.png", alt: "TODO")
+          @Image(
+            source: "01-02-image-0003.png", 
+            alt: "iOS application showing a text view in the center displaying a 0 and two buttons underneath it, one for decrementing the count and one for incrementing."
+          )
         }
       }
       
@@ -132,15 +135,102 @@
         SwiftUI views there is a convenience view called a ``ComposableArchitecture/WithViewStore``
         that provides a lightweight syntax for construct a view store.
         
-        Once the view store is constructed we can access the feature's state and send it actions
-        when the user taps on buttons.
+        View stores require that `State` be `Equatable`, so we must do that first. Once the view 
+        store is constructed we can access the feature's state and send it actions when the user 
+        taps on buttons.
         
-        > Note: Currently we are observing _all_ state in the store by using `observe: { $0 }`, 
+        > Tip: Currently we are observing _all_ state in the store by using `observe: { $0 }`, 
         but typically features hold onto a lot more state than what is needed in the view. See
         our article <doc:Performance> for more information on how to best observe only the bare
         essentials a view needs to do its job.
         
         @Code(name: "CounterFeature.swift", file: 01-02-code-0004.swift)
+      }
+      
+      @Step {
+        Next we want to actually run the feature. We will start with a preview. To do this we will
+        construct a `CounterView`, and to do that we need to construct a `StoreOf<CounterFeature>`.
+        Stores can be constructed by providing the initial state you want the feature to begin in,
+        as well as a trailing closure that specifies the reducer that powers the feature.
+        
+        With that done we can run the preview to see that tapping the "+" and "-" buttons does
+        indeed change the visible count in the UI.
+        
+        @Code(name: "CounterFeature.swift", file: 01-02-code-0005.swift) {
+          @Video(source: "01-02-video-0005.mp4")
+        }
+      }
+      
+      @Step {
+        Before moving onto the next section, let's quickly show off a super power of the Composable
+        Architecture. Because all of the feature's logic and behavior is contained in the reducer,
+        we can run the preview with a completely different reducer to alter how it executes.
+        
+        For example, we can use the ``ComposableArchitecture/EmptyReducer`` that comes with the
+        library, which is a reducer that performs no state mutations or effects. This allows us
+        to preview the design of the feature without worrying about any of its logic or behavior.
+        
+        > Note: Notice that tapping the video demonstrates that tapping the buttons does not cause
+        the count to increase or decrease. That is because we are using the empty reducer in the 
+        preview.
+        
+        @Code(name: "CounterFeature.swift", file: 01-02-code-0006.swift) {
+          @Video(source: "01-02-video-0006.mp4")
+        }
+      }
+      
+      @Step {
+        That is all
+      }
+    }
+  }
+  
+  @Section(title: "Integrating into the app") {
+    @ContentAndMedia {
+      We have now integrated our Composable Architecture feature into a SwiftUI view and we've been
+      able to run it in the preview. Next we need to figure out how to run the feature in the full
+      application by altering its entry point. This will allow us to run the feature in a simulator
+      or on a device.
+    }
+    @Steps {
+      @Step {
+        By default the entry point of your application is probably in a file called App.swift
+        and looks something like this code.
+        
+        @Code(name: "App.swift", file: 01-03-code-0001.swift) 
+      }
+      @Step {
+        We will change the entry point of the application so that it constructs a `CounterView`
+        and provides a store, just as we did in the preview.
+        
+        @Code(name: "App.swift", file: 01-03-code-0002.swift) 
+      }
+      @Step {
+        It is important to note that the `Store` that powers the application should only be created
+        a single time. For most applications it should be sufficient to create it directly in the
+        `WindowGroup` at the root of the scene. But, it can also be held as a `@State` variable
+        and then provided in the scene.
+        
+        @Code(name: "App.swift", file: 01-03-code-0003.swift) 
+      }
+      @Step {
+        We can demonstrate another super power of the Composable Architecture. Reducers have a
+        method called ``ComposableArchitecture/ReducerProtocol/_printChanges(_:)`` that is similar
+        to a tool that SwiftUI provides. When used it will print every action that the reducer
+        processes to the console, and it will print how the state changed after processing the 
+        action.
+        
+        The method will also go through great lengths to collapse the state difference to a compact 
+        form. This includes not displaying nested state if it hasn't changed, and not showing 
+        elements in collections that haven't changed.
+        
+        @Code(name: "App.swift", file: 01-03-code-0004.swift)  
+      }
+      @Step {
+        Now when you run the application in the simulator and tap the "+" and "-" buttons a few
+        times you should see logs printed to the console showing you exactly what is happening.
+        
+        @Image(source: "01-03-image-0005.jpg")
       }
     }
   }

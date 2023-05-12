@@ -1,5 +1,4 @@
-import ComposableArchitecture
-import SwiftUI
+extension CounterFeature.State: Equatable {}
 
 struct CounterView: View {
   let store: StoreOf<CounterFeature>
@@ -20,7 +19,7 @@ struct CounterView: View {
           .padding()
           .background(Color.black.opacity(0.1))
           .cornerRadius(10)
-          
+
           Button("+") {
             viewStore.send(.incrementButtonTapped)
           }
