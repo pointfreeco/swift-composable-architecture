@@ -1,13 +1,21 @@
 @Tutorial(time: 100) { <!-- todo: better estimate -->
   @Intro(title: "Adding side effects") {
-    Learn how to write a test for the simple feature just implemented.
+    Learn how to communicate with the outside work in your features, and feed data from the outside
+    back into your feature.
     
     <!--    @Image(source: <#file#>, alt: "<#accessible description#>")-->
   }
   
-  @Section(title: "Title 1") {
+  @Section(title: "What is a side-effect?") {
     @ContentAndMedia {
-      <#text#>
+      Side-effects are by far the most important aspect of feature development, but also the most
+      difficult. They allow you to communicate with the outside world, such as making API requests,
+      interacting with file systems, and performing time-based asynchrony.
+    
+      The Composable Architecture bakes the notion of "effect" directly into the definition of 
+      ``ComposableArchitecture/ReducerProtocol``. When a reducer processes an action it can not only
+      mutate state, but it can also return an ``EffectTask``, which represents an asynchronous unit
+      of work run in the outside world.
       
       <!--      @Image(source: <#file#>, alt: "<#accessible description#>")-->
     }
@@ -25,12 +33,5 @@
         @Code(name: "<#display name#>", file: <#filename.swift#>)
       }
     }
-  }
-  
-  @Section(title: "Title 2") {
-  }
-  @Section(title: "Title 3") {
-  }
-  @Section(title: "Title 4") {
   }
 }

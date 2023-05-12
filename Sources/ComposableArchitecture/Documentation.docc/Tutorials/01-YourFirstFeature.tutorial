@@ -62,6 +62,10 @@
         always begins by switching on the incoming action to determine what logic you need to 
         perform.
         
+        > Note: The `reduce` method takes `State` as an argument and it is marked as `inout`. This
+        means you can make any mutations you want directly to the state. There is no need to make
+        a copy of the state just to return it.
+        
         @Code(name: "CounterFeature.swift", file: 01-01-code-0005.swift)
       }
       
