@@ -1,28 +1,39 @@
-@Tutorial(time: 100) { <!-- todo: better estimate -->
+@Tutorial(time: 40) {
   @Intro(title: "Testing your feature") {
-    Learn how to write a test for the simple feature just implemented.
-    
-    <!--    @Image(source: <#file#>, alt: "<#accessible description#>")-->
+    Learn how to write test for the counter built in previous tutorials, including how to assert 
+    against  state changes and how effects execute and feed data back into the system.
   }
   
-  @Section(title: "Title 1") {
+  @Section(title: "Testing state changes") {
     @ContentAndMedia {
-      <#text#>
+      State changes are by far the easiest part to test in the Composable Architecture since they
+      form a pure function. All you need to do is feed a piece of state and an action to the reducer
+      and then assert on how the state changed.
       
-      <!--      @Image(source: <#file#>, alt: "<#accessible description#>")-->
+      But, the Composable Architecture makes an easy process even easier thanks to the 
+      ``ComposableArchitecture/TestStore``. The test store is a testable runtime for your feature 
+      that monitors everything happening on the inside as you send actions, making it possible for 
+      you to write simple assertions, and when your assertion fails it provides a nicely formatted 
+      failure message.
     }
     
     @Steps {
       @Step {
-        <#text#>
+        Blah
         
-        <!--        @Image(source: <#file#>, alt: "<#accessible description#>")-->
+        @Code(name: "CounterFeatureTests.swift", file: <#filename.swift#>)
       }
-      
+    }
+  }
+  
+  @Section(title: "Testing effects") {
+    @ContentAndMedia {
+      Blah
+    }
+    
+    @Steps {
       @Step {
-        <#text#>
-        
-        @Code(name: "<#display name#>", file: <#filename.swift#>)
+        Blah
       }
     }
   }

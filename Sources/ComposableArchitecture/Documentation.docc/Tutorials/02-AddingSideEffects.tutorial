@@ -164,10 +164,10 @@
     
   @Section(title: "Managing a timer") {
     @ContentAndMedia {
-      Network requests are probably one of the most common types of side effects, but there are a 
-      lot more kinds out there. Let's add a new bit of functionality to our counter feature. We 
-      will add another button that when tapped starts a one second repeating timer, and for each
-      tick we will increment the state's `count` by one.
+      Network requests are probably one of the most common types of side effects, but they are not
+      the only kind. Let's add a new bit of functionality to our counter feature. We will add 
+      another button that when tapped starts a one second repeating timer, and for each tick we will 
+      increment the state's `count` by one.
     }
     
     @Steps {
