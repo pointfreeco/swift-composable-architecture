@@ -112,7 +112,7 @@ extension EffectPublisher {
 public typealias EffectTask<Action> = EffectPublisher<Action, Never>
 
 extension EffectPublisher where Failure == Never {
-  /// Wraps an asynchronous unit of work that can emit any number of times in an effect.
+  /// Wraps an asynchronous unit of work that can emit actions any number of times in an effect.
   ///
   /// For example, if you had an async stream in a dependency client:
   ///
