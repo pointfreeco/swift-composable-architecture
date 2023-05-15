@@ -44,7 +44,6 @@ public struct StackState<Element> {
       }
     }
     set {
-      // TODO: precondition(newValue == nil || self._dictionary[id] != nil)
       self._dictionary[id] = newValue
       if newValue == nil {
         self._mounted.remove(id)
@@ -512,5 +511,5 @@ extension StackElementID: ExpressibleByIntegerLiteral {
 }
 
 private struct NavigationDismissID: Hashable {
-  let elementID: AnyHashable  // TODO: rename
+  let elementID: AnyHashable
 }
