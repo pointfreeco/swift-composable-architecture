@@ -23,11 +23,11 @@ use these tools.
 ## What is navigation?
 
 The word "navigation" can mean a lot of different things to different people. For example, most
-people would agree to call the drill-down style of navigation afforded to us by `NavigationStack` in
-SwiftUI and `UINavigationController` in UIKit "navigation". However, if drill-downs are considered
-navigation, then surely sheets and fullscreen covers should be too. The only difference is that
-sheets and covers animate from bottom-to-top instead of from right-to-left, but is that actually 
-substantive?
+people would say that an example of "navigation" is the drill-down style of navigation afforded to 
+us by `NavigationStack` in SwiftUI and `UINavigationController` in UIKit "navigation". However, 
+if drill-downs are considered navigation, then surely sheets and fullscreen covers should be too. 
+The only difference is that sheets and covers animate from bottom-to-top instead of from 
+right-to-left, but is that actually substantive?
 
 And if sheets and covers are considered navigation, then certainly popovers should be too. We can
 even expand our horizons to include more styles of navigation, such as alerts and confirmation
@@ -41,11 +41,15 @@ So, for the purposes of this documentation, we will use the following loose defi
 Each of the examples we considered above, such as drill-downs, sheets, popovers, covers, alerts, 
 dialogs, and more, are all a "change of mode" in the application.
 
-But, we will further refine the concept of "change of mode" to mean that some piece of state went
-from not existing to existing, or vice-versa. So, when a piece of state switches from not existing
-to existing, that represents a navigation and change mode in the application, and when the state
-switches back to not existing, it represents undoing the navigation and returning to the previous
-mode.
+But, so far we have just defined one term, "navigation", by using another undefined term, 
+"change of mode", so we will further make the following definition:
+
+> Definition: A **change of mode** is when some piece of state goes from not existing to existing,
+or vice-versa.
+
+So, when a piece of state switches from not existing to existing, that represents a navigation and 
+change mode in the application, and when the state switches back to not existing, it represents 
+undoing the navigation and returning to the previous mode.
 
 That is very abstract way of describing state-driven navigation, and the next two sections make
 these concepts much more concrete for the two main forms of state-driven navigation:

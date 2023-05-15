@@ -15,7 +15,7 @@ struct StandupsApp: App {
         AppView(
           store: Store(initialState: AppFeature.State()) {
             AppFeature()
-              ._printChanges()
+//              ._printChanges()
           }
         )
       }

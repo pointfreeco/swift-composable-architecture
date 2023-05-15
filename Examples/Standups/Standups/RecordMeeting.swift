@@ -37,6 +37,8 @@ struct RecordMeeting: ReducerProtocol {
   @Dependency(\.dismiss) var dismiss
   @Dependency(\.speechClient) var speechClient
 
+  private enum CancelID { case timer }
+
   var body: some ReducerProtocolOf<Self> {
     Reduce<State, Action> { state, action in
       switch action {
@@ -87,6 +89,7 @@ struct RecordMeeting: ReducerProtocol {
             }
           }
         }
+        .cancellable(id: CancelID.timer)
 
       case .timerTick:
         guard state.alert == nil
@@ -137,7 +140,10 @@ struct RecordMeeting: ReducerProtocol {
   }
 
   private func meetingFinished(transcript: String) -> EffectTask<Action> {
-    .send(.delegate(.save(transcript: transcript)))
+    .merge(
+      .cancel(id: CancelID.timer),
+      .send(.delegate(.save(transcript: transcript)))
+    )
   }
 }
 
