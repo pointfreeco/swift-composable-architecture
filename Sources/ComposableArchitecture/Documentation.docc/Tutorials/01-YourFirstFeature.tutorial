@@ -214,7 +214,7 @@
       @Step {
         It is important to note that the `Store` that powers the application should only be created
         a single time. For most applications it should be sufficient to create it directly in the
-        `WindowGroup` at the root of the scene. But, it can also be held as a `@State` variable
+        `WindowGroup` at the root of the scene. But, it can also be held as a static variable
         and then provided in the scene.
         
         @Code(name: "App.swift", file: 01-03-code-0003.swift) 
