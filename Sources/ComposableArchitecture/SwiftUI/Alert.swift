@@ -120,7 +120,7 @@ private struct PresentationAlertModifier<State, Action, ButtonAction>: ViewModif
     let alertState = self.viewStore.wrappedValue.flatMap(self.toDestinationState)
     content.alert(
       (alertState?.title).map(Text.init) ?? Text(""),
-      isPresented: Binding(  // TODO: do proper binding
+      isPresented: Binding(  
         get: { self.viewStore.wrappedValue.flatMap(self.toDestinationState) != nil },
         set: { newState in
           if !newState, self.viewStore.wrappedValue != nil, self.viewStore.id == id {

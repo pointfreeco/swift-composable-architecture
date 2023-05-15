@@ -115,7 +115,6 @@ public struct NavigationLinkStore<
 
   public var body: some View {
     NavigationLink(
-      // TODO: construct better binding that handles animation
       isActive: Binding(
         get: { self.viewStore.state },
         set: {

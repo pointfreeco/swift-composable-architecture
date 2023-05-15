@@ -132,8 +132,6 @@ struct NavigationID: Hashable, @unchecked Sendable {
     hasher.combine(self.identifier)
     hasher.combine(self.tag)
   }
-
-  // TODO: better custom debug convertible stuff
 }
 
 @_spi(Internals) public struct AnyHashableSendable: Hashable, @unchecked Sendable {

@@ -4,10 +4,6 @@ import XCTest
 #if swift(>=5.7)
 @MainActor
 final class StackReducerTests: BaseTCATestCase {
-  func testStackState() async {
-    // TODO: flesh out state test
-  }
-
   func testCustomDebugStringConvertible() {
     @Dependency(\.stackElementID) var stackElementID
     XCTAssertEqual(stackElementID.peek().rawValue.base.base as! Int, 0)
@@ -775,13 +771,16 @@ final class StackReducerTests: BaseTCATestCase {
     XCTExpectFailure {
       $0.compactDescription == """
           A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" received a \
-          "popFrom" action for a missing element.
+          "popFrom" action for a missing element. …
+
+            ID:
+              #999
+            Path IDs:
+              [#0]
           """
     }
 
-    var path = StackState<Int>()
-    path.append(1)
-    let store = TestStore(initialState: Parent.State(path: path)) {
+    let store = TestStore(initialState: Parent.State(path: StackState<Int>([1]))) {
       Parent()
     }
     await store.send(.path(.popFrom(id: 999)))
@@ -1021,7 +1020,12 @@ final class StackReducerTests: BaseTCATestCase {
     XCTExpectFailure {
       $0.compactDescription == """
           A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" received a \
-          "push" action for an element it already contains.
+          "push" action for an element it already contains. …
+
+            ID:
+              #0
+            Path IDs:
+              [#0]
           """
     }
 
@@ -1062,9 +1066,9 @@ final class StackReducerTests: BaseTCATestCase {
           A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" received a \
           "push" action with an unexpected generational ID. …
 
-            Received:
+            Received ID:
               #1
-            Next:
+            Expected ID:
               #0
           """
     }

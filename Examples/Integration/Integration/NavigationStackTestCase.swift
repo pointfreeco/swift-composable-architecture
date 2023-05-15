@@ -4,14 +4,17 @@ import SwiftUI
 private struct ChildFeature: ReducerProtocol {
   struct State: Hashable {
     var count = 0
+    var hasAppeared = false
   }
   enum Action {
     case decrementButtonTapped
     case dismissButtonTapped
     case incrementButtonTapped
+    case onAppear
     case popToRootButtonTapped
-    case runButtonTapped
+    case recreateStack
     case response(Int)
+    case runButtonTapped
   }
   @Dependency(\.dismiss) var dismiss
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
@@ -24,16 +27,21 @@ private struct ChildFeature: ReducerProtocol {
     case .incrementButtonTapped:
       state.count += 1
       return .none
+    case .onAppear:
+      state.hasAppeared = true
+      return .none
     case .popToRootButtonTapped:
+      return .none
+    case .recreateStack:
+      return .none
+    case let .response(value):
+      state.count = value
       return .none
     case .runButtonTapped:
       return .run { [count = state.count] send in
         try await Task.sleep(for: .seconds(2))
         await send(.response(count + 1))
       }
-    case let .response(value):
-      state.count = value
-      return .none
     }
   }
 }
@@ -43,6 +51,10 @@ private struct ChildView: View {
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
+        if viewStore.hasAppeared {
+          Text("Has appeared")
+        }
+        
         Section {
           Text("\(viewStore.count)")
           Button("Decrement") { viewStore.send(.decrementButtonTapped) }
@@ -57,9 +69,16 @@ private struct ChildView: View {
         Button("Pop to root") {
           viewStore.send(.popToRootButtonTapped)
         }
+        Button("Recreate stack") {
+          viewStore.send(.recreateStack)
+        }
         NavigationLink(state: ChildFeature.State(count: viewStore.count)) {
           Text("Go to counter: \(viewStore.count)")
         }
+      }
+      .onAppear {
+        print("onAppear")
+        viewStore.send(.onAppear)
       }
     }
   }
@@ -78,6 +97,9 @@ private struct NavigationStackTestCase: ReducerProtocol {
       switch action {
       case let .child(.element(id: _, action: .response(value))):
         state.childResponse = value
+        return .none
+      case .child(.element(id: _, action: .recreateStack)):
+        state.children = StackState(state.children.map { _ in ChildFeature.State() })
         return .none
       case .child(.element(id: _, action: .popToRootButtonTapped)):
         state.children = StackState()

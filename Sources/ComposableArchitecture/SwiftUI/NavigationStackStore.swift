@@ -91,7 +91,6 @@ import SwiftUI
         path: self.viewStore.binding(
           get: { $0.path },
           send: { newPath in
-            // TODO: Tweak binding logic?
             if newPath.count > self.viewStore.path.count, let component = newPath.last {
               return .push(id: component.id, state: component.element)
             } else {
@@ -105,7 +104,6 @@ import SwiftUI
           .navigationDestination(for: Component<State>.self) { component in
             self.destination(component)
               .environment(\.navigationDestinationType, State.self)
-              // TODO: Get integration test logic on the identity here
               .id(component.id)
           }
       }
@@ -121,7 +119,6 @@ import SwiftUI
 
     public var body: some View {
       #if DEBUG
-        // TODO: Integration test using accessibility label?
         self.label.onAppear {
           if self.navigationDestinationType != State.self {
             runtimeWarn(

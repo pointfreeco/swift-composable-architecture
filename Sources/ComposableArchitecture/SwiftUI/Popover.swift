@@ -91,7 +91,7 @@ private struct PresentationPopoverModifier<
   func body(content: Content) -> some View {
     let id = self.viewStore.id
     content.popover(
-      item: Binding(  // TODO: do proper binding
+      item: Binding(  
         get: {
           self.viewStore.wrappedValue.flatMap(self.toDestinationState) != nil
             ? self.toID(self.viewStore.state).map { Identified($0) { $0 } }

@@ -71,7 +71,7 @@ private struct PresentationSheetModifier<
   func body(content: Content) -> some View {
     let id = self.viewStore.id
     content.sheet(
-      item: Binding(  // TODO: do proper binding
+      item: Binding(  
         get: {
           self.viewStore.wrappedValue.flatMap(self.toDestinationState) != nil
             ? toID(self.viewStore.state).map { Identified($0) { $0 } }

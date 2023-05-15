@@ -73,7 +73,6 @@
 
     func body(content: Content) -> some View {
       content.navigationDestination(
-        // TODO: do binding with ID check
         unwrapping: self.viewStore.binding(send: .dismiss).presence
       ) { _ in
         IfLetStore(

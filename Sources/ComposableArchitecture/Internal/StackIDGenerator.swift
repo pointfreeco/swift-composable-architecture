@@ -14,7 +14,7 @@ extension DependencyValues {
   func callAsFunction() -> StackElementID {
     self.next()
   }
-
+ 
   public static var liveValue: Self {
     let next = LockIsolated(StackElementID(generation: 0, rawValue: UUID()))
     return Self(

@@ -341,12 +341,15 @@ public struct _StackReducer<
       if canPop {
         state[keyPath: self.toStackState].pop(from: id)
       } else {
-        // TODO: write test to show that if base removes element we do not get runtime warn
-        // TODO: finesse
         runtimeWarn(
           """
           A "forEach" at "\(self.fileID):\(self.line)" received a "popFrom" action for a missing \
-          element.
+          element. …
+
+            ID:
+              \(id)
+            Path IDs:
+              \(state[keyPath: self.toStackState].ids)
           """
         )
       }
@@ -354,11 +357,15 @@ public struct _StackReducer<
     case let .push(id, element):
       destinationEffects = .none
       if state[keyPath: self.toStackState].ids.contains(id) {
-        // TODO: finesse
         runtimeWarn(
           """
           A "forEach" at "\(self.fileID):\(self.line)" received a "push" action for an element it \
-          already contains.
+          already contains. …
+
+            ID:
+              \(id)
+            Path IDs:
+              \(state[keyPath: self.toStackState].ids)
           """
         )
         baseEffects = self.base.reduce(into: &state, action: action)
@@ -366,15 +373,14 @@ public struct _StackReducer<
       } else if DependencyValues._current.context == .test {
         let nextID = DependencyValues._current.stackElementID.peek()
         if id.generation > nextID.generation {
-          // TODO: finesse
           runtimeWarn(
             """
             A "forEach" at "\(self.fileID):\(self.line)" received a "push" action with an \
             unexpected generational ID. …
 
-              Received:
+              Received ID:
                 \(id)
-              Next:
+              Expected ID:
                 \(nextID)
             """
           )
@@ -477,10 +483,10 @@ public struct StackElementID: Hashable, Sendable {
     self.rawValue = AnyHashableSendable(rawValue)
   }
 
-  // TODO: is this still correct? can we get a test that fails when || is changed to && ?
-  public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.rawValue == rhs.rawValue || lhs.generation == rhs.generation
-  }
+//  // TODO: is this still correct? can we get a test that fails when || is changed to && ?
+//  public static func == (lhs: Self, rhs: Self) -> Bool {
+//    lhs.rawValue == rhs.rawValue || lhs.generation == rhs.generation
+//  }
 }
 
 extension StackElementID: CustomDebugStringConvertible {

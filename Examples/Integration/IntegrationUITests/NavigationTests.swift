@@ -70,4 +70,11 @@ final class NavigationTests: XCTestCase {
     try await Task.sleep(for: .seconds(3))
     XCTAssertEqual(self.app.staticTexts["Child response: 1"].exists, false)
   }
+
+  func testChildViewIdentity() {
+    self.app.buttons["Go to counter"].tap()
+    XCTAssertEqual(self.app.staticTexts["Has appeared"].exists, true)
+    self.app.buttons["Recreate stack"].tap()
+    XCTAssertEqual(self.app.staticTexts["Has appeared"].exists, true)
+  }
 }
