@@ -47,6 +47,7 @@ day-to-day when building applications, such as:
 
 ### Essentials
 
+- <doc:MeetComposableArchitecture>
 - <doc:GettingStarted>
 - <doc:DependencyManagement>
 - <doc:Testing>

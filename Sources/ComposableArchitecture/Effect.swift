@@ -136,10 +136,10 @@ extension EffectPublisher where Failure == Never {
   ///
   /// See ``Send`` for more information on how to use the `send` argument passed to `run`'s closure.
   ///
-  /// The closure provided to ``run(priority:operation:catch:fileID:line:)`` is allowed to throw,
-  /// but any non-cancellation errors thrown will cause a runtime warning when run in the simulator
-  /// or on a device, and will cause a test failure in tests. To catch non-cancellation errors use
-  /// the `catch` trailing closure.
+  /// The closure provided to ``run(priority:operation:catch:fileID:line:)`` is allowed to
+  /// throw, but any non-cancellation errors thrown will cause a runtime warning when run in the
+  /// simulator or on a device, and will cause a test failure in tests. To catch non-cancellation
+  /// errors use the `catch` trailing closure.
   ///
   /// - Parameters:
   ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
@@ -163,7 +163,7 @@ extension EffectPublisher where Failure == Never {
               try await operation(send)
             } catch is CancellationError {
               return
-            } catch {
+            } catch { 
               guard let handler = handler else {
                 #if DEBUG
                   var errorDump = ""
@@ -241,8 +241,8 @@ extension EffectPublisher where Failure == Never {
 /// defer { send(.finished, animation: .default) }
 /// ```
 ///
-/// See ``EffectPublisher/run(priority:operation:catch:fileID:line:)`` for more information on how
-/// to use this value to construct effects that can emit any number of times in an asynchronous
+/// See ``EffectPublisher/run(priority:operation:catch:fileID:line:)`` for more information on how to
+/// use this value to construct effects that can emit any number of times in an asynchronous
 /// context.
 ///
 /// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
