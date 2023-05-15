@@ -3,16 +3,12 @@
     The Composable Architecture (TCA, for short) is a library for building applications in a 
     consistent and understandable way, with composition, testing, and ergonomics in mind. It can be 
     used in SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, tvOS, and watchOS).  
-    
-    <!-- TODO: image -->
   }
   
   @Chapter(name: "Essentials") {
     Explore the basics of creating a new feature in the Composable Architecture, layering on
     side effects, and writing a complete test suite for the feature.
     
-    <!-- TODO: image -->
-
     @TutorialReference(tutorial: "doc:01-YourFirstFeature")
     @TutorialReference(tutorial: "doc:02-AddingSideEffects")
     @TutorialReference(tutorial: "doc:03-TestingYourFeature")
@@ -56,8 +52,6 @@
       Browse the full documentation online.
       
       - [GitHub](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture)
-      
-      <!-- Todo: more links? -->
     }
   }
 }

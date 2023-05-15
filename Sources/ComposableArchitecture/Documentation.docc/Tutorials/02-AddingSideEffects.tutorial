@@ -2,8 +2,6 @@
   @Intro(title: "Adding side effects") {
     Learn how to communicate with the outside world in your features, and feed data from the outside
     back into your feature.
-    
-    <!--    @Image(source: <#file#>, alt: "<#accessible description#>")-->
   }
   
   @Section(title: "What is a side-effect?") {
@@ -22,8 +20,6 @@
       Let's start by seeing why we can't simply perform effectful work directly in our 
       ``ComposableArchitecture/ReducerProtocol`` conformances, and then we will see what tools the
       library provides for performing effects.
-      
-      <!--      @Image(source: <#file#>, alt: "<#accessible description#>")-->
     }
     
     @Steps {

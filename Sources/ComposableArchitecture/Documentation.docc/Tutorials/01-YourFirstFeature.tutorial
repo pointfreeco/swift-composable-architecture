@@ -171,7 +171,7 @@
         performs no state mutations or effects. This allows us to preview the design of the feature 
         without worrying about any of its logic or behavior.
         
-        > Note: Notice that tapping the video demonstrates that tapping the buttons does not cause
+        > Note: Notice that the video demonstrates that tapping the buttons does not cause
         the count to increase or decrease. That is because we are using the empty reducer in the 
         preview.
         
