@@ -24,8 +24,7 @@ struct CounterFeature: ReducerProtocol {
       state.fact = nil
       state.isLoading = true
       return .run { send in
-        // ✅ Do async work in here, and send actions
-        //    back into the system.
+        // ✅ Do async work in here, and send actions back into the system.
       }
 
     case .incrementButtonTapped:

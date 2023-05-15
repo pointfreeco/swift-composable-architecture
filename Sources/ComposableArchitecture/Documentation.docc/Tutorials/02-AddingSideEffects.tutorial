@@ -4,9 +4,9 @@
     back into your feature.
   }
   
-  @Section(title: "What is a side-effect?") {
+  @Section(title: "What is a side effect?") {
     @ContentAndMedia {
-      Side-effects are by far the most important aspect of feature development. They are what allow
+      Side effects are by far the most important aspect of feature development. They are what allow
       us to communicate with the outside world, such as making API requests, interacting with file 
       systems, and performing time-based asynchrony. Without them our applications could not do
       anything of real value for our users.
@@ -29,12 +29,12 @@
         fetch a fact about the number that is currently displayed.
         
         There are two ways you can approach this. Sometimes people like to work on the reducer
-        feature first, and then the view. Others like to start with the view, which is what we will
-        do now. We have added an additional button to the bottom of `CounterView`, and when it is
-        tapped we are sending a `factButtonTapped` action, which does not yet exist in the counter 
-        domain, but will soon.
+        first, and then the view. Others like to start with the view, which is what we will do now.
+        We have added an additional button to the bottom of `CounterView`, and when it is tapped we
+        will send a `factButtonTapped` action, which does not yet exist in the counter domain, but
+        will soon.
         
-        @Code(name: "CounterFeature.swift", file: 02-01-code-0001.swift) {
+        @Code(name: "CounterFeature.swift", file: 02-01-code-0001.swift, previousFile: 02-01-code-0001-previous.swift) {
           @Image(source: "02-01-image-0001")
         }
       }
@@ -48,15 +48,15 @@
         @Code(name: "CounterFeature.swift", file: 02-01-code-0002.swift)
       }
       
-      That is all it takes for the view. The code is not yet compiling because we are using
-      state and actions that don't yet exist, so let's fix those errors in the reducer.
+      That is all it takes for the view. The code is not yet compiling because we are using state
+      and actions that don't yet exist, so let's fix those errors in the reducer.
       
       @Step {
         Recall that this is what our `CounterFeature` reducer looks like so far, as built in
         <doc:01-YourFirstFeature>. It has a simple `State` and `Action` type, and the reducer
         simply decrements or increments the `count` state depending on which action is sent.
         
-        @Code(name: "CounterFeature.swift", file: 02-01-code-0003.swift)
+        @Code(name: "CounterFeature.swift", file: 02-01-code-0003.swift, reset: true)
       }
       
       @Step {
@@ -119,8 +119,8 @@
         data from [numbersapi.com][numbersapi.com] and turn it into a string.
         
         > Tip: Unfortunately [numbersapi.com][numbersapi.com] does not offer HTTPS, so you will need 
-        to add an entry to your application's Info.plist in order to allow HTTP requests. See 
-        [this][always-allow] article for information on how to do that.
+        > to add an entry to your application's Info.plist in order to allow HTTP requests. See 
+        > [this][always-allow] article for information on how to do that.
         
         [numbersapi.com]: http://www.numbersapi.com
         [always-allow]: https://developer.apple.com/documentation/bundleresources/information_property_list/nsapptransportsecurity
@@ -142,11 +142,11 @@
         introduce another action, called `factResponse`, and it will have an associated value of the
         string that is fetched from the network. Then we can send that action in the effect after
         performing the asynchronous work, and we can handle the new action by flipping `isLoading`
-        back to `false` and udpating the `fact` state.
+        back to `false` and updating the `fact` state.
         
         > Warning: Currently we are ignoring any errors that can be thrown by `URLSession`. In a 
-        more complete application you would want to leverage ``ComposableArchitecture/TaskResult``
-        to have errors fed back into the reducer so that you can react appropriately.
+        > more complete application you would want to leverage ``ComposableArchitecture/TaskResult``
+        > to have errors fed back into the reducer so that you can react appropriately.
         
         @Code(name: "CounterFeature.swift", file: 02-02-code-0004.swift)
       }
@@ -179,9 +179,9 @@
         view.
         
         > Note: The `isTimerRunning` state and `toggleTimerButtonTapped` actions do not yet exist. 
-        We will add them in the next step.
+        > We will add them in the next step.
         
-        @Code(name: "CounterFeature.swift", file: 02-03-code-0001.swift)
+        @Code(name: "CounterFeature.swift", file: 02-03-code-0001.swift, previousFile: 02-01-code-0002.swift)
       }
       
       @Step {
@@ -190,7 +190,7 @@
         action. We know we will want to execute some asynchronous work, in particular a timer, so
         we have gone ahead and opened up a `run` effect.
         
-        @Code(name: "CounterFeature.swift", file: 02-03-code-0002.swift)
+        @Code(name: "CounterFeature.swift", file: 02-03-code-0002.swift, previousFile: 02-02-code-0005.swift)
       }
       
       @Step {

@@ -47,8 +47,8 @@
         decrement the count.
         
         > Tip: It is best to name the `Action` cases after literally what the user does in the UI,
-        such as `incrementButtonTapped`, rather than what logic you want to perform, such as 
-        `incrementCount`.
+        > such as `incrementButtonTapped`, rather than what logic you want to perform, such as 
+        > `incrementCount`.
         
         @Code(name: "CounterFeature.swift", file: 01-01-code-0004.swift)
       }
@@ -63,8 +63,8 @@
         perform.
         
         > Note: The `reduce` method takes `State` as an argument and it is marked as `inout`. This
-        means you can make any mutations you want directly to the state. There is no need to make
-        a copy of the state just to return it.
+        > means you can make any mutations you want directly to the state. There is no need to make
+        > a copy of the state just to return it.
         
         @Code(name: "CounterFeature.swift", file: 01-01-code-0005.swift)
       }
@@ -116,7 +116,7 @@
       }
       
       @Step {
-        Next we can implement some basic view heirachy for displaying the count and providing 
+        Next we can implement some basic view hierarchy for displaying the count and providing 
         buttons for incrementing and decrementing. Note that you cannot read state from a 
         ``ComposableArchitecture/Store`` directly, nor can you send actions to it directly. So, 
         for now we will provide stubs for that behavior.
@@ -140,11 +140,11 @@
         taps on buttons.
         
         > Tip: Currently we are observing _all_ state in the store by using `observe: { $0 }`, 
-        but typically features hold onto a lot more state than what is needed in the view. See
-        our article <doc:Performance> for more information on how to best observe only the bare
-        essentials a view needs to do its job.
+        > but typically features hold onto a lot more state than what is needed in the view. See
+        > our article <doc:Performance> for more information on how to best observe only the bare
+        > essentials a view needs to do its job.
         
-        @Code(name: "CounterFeature.swift", file: 01-02-code-0004.swift)
+        @Code(name: "CounterFeature.swift", file: 01-02-code-0004.swift, previousFile: 01-02-code-0004-previous.swift)
       }
       
       @Step {
@@ -156,7 +156,7 @@
         With that done we can run the preview to see that tapping the "+" and "-" buttons does
         indeed change the visible count in the UI.
         
-        @Code(name: "CounterFeature.swift", file: 01-02-code-0005.swift) {
+        @Code(name: "CounterFeature.swift", file: 01-02-code-0005.swift, reset: true) {
           @Video(source: "01-02-video-0005.mp4")
         }
       }
@@ -166,14 +166,13 @@
       we can run the preview with a completely different reducer to alter how it executes.
       
       @Step {  
-        For example, in the preview, replace the `CounterFeature` reducer with the the 
-        ``ComposableArchitecture/EmptyReducer`` that comes with the library, which is a reducer that 
-        performs no state mutations or effects. This allows us to preview the design of the feature 
-        without worrying about any of its logic or behavior.
+        For example, in the preview, comment out the `CounterFeature` reducer and the store will be
+        given a reducer that performs no state mutations or effects. This allows us to preview the
+        design of the feature without worrying about any of its logic or behavior.
         
         > Note: Notice that the video demonstrates that tapping the buttons does not cause
-        the count to increase or decrease. That is because we are using the empty reducer in the 
-        preview.
+        > the count to increase or decrease. That is because we are using the empty reducer in the 
+        > preview.
         
         @Code(name: "CounterFeature.swift", file: 01-02-code-0006.swift) {
           @Video(source: "01-02-video-0006.mp4")

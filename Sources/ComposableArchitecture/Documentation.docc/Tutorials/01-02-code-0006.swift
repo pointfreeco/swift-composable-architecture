@@ -3,7 +3,6 @@ struct CounterPreview: PreviewProvider {
     CounterView(
       store: Store(initialState: CounterFeature.State()) {
         // CounterFeature()
-        EmptyReducer()
       }
     )
   }

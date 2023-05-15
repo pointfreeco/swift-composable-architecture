@@ -27,7 +27,9 @@ struct CounterFeature: ReducerProtocol {
         let (data, _) = try await URLSession.shared
           .data(from: URL(string: "http://numbersapi.com/\(count)")!)
         let fact = String(decoding: data, as: UTF8.self)
-        state.fact = fact  // 🛑 
+        state.fact = fact
+        // 🛑 Mutable capture of 'inout' parameter 'state' is not allowed in
+        //    concurrently-executing code
       }
 
     case .incrementButtonTapped:

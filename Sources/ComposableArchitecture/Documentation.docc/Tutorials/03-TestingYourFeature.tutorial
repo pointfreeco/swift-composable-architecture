@@ -27,8 +27,8 @@
         feature. We will start by creating a CounterFeatureTests.swift file with some basic 
         scaffolding in place for the test.
         
-        > Note: We are going to pre-emptively make the test method `async` because the testing tools
-        of the Composable Architecture do make use of asynchrony.
+        > Note: We are going to preemptively make the test method `async` because the testing tools
+        > of the Composable Architecture do make use of asynchrony.
         
         @Code(name: "CounterFeatureTests.swift", file: 03-01-code-0001.swift)
       }
@@ -68,7 +68,7 @@
       
       @Step {
         To fix the test failures we need to assert how the state changed after sending each action,
-        and the test store makes this very ergnomic. You only need to provide a trailing closure to
+        and the test store makes this very ergonomic. You only need to provide a trailing closure to
         the `send` method, that closure is handed a mutable version of the state _before_ the action
         was sent, and it's your job to mutate `$0` so that it equals the state _after_ the action is
         sent.
@@ -107,7 +107,7 @@
         Let's get the scaffolding of a new test into place by creating a new async test method
         and constructing a ``ComposableArchitecture/TestStore``.
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-02-code-0001.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 03-02-code-0001.swift, previousFile: 03-02-code-0001-previous.swift)
       }
       
       @Step {
@@ -194,11 +194,11 @@
       out of the box.
       
       @Step {
-        Go back to CounterFeature.swift and add a dependecy on a continuous clock to the reducer.
+        Go back to CounterFeature.swift and add a dependency on a continuous clock to the reducer.
         And then, in the implementation of `reduce`, do not reach out to `Task.sleep` and instead 
         use the `clock` the feature depends on.
         
-        @Code(name: "CounterFeature.swift", file: 03-02-code-0008.swift)
+        @Code(name: "CounterFeature.swift", file: 03-02-code-0008.swift, previousFile: 02-03-code-0006.swift)
       }
       
       With that little bit of upfront work to control the dependency on time-based asynchrony
@@ -221,7 +221,7 @@
         > Note: The `TestClock` type comes from our [swift-clocks][swift-clocks] open source 
         library, which provides a number of useful clock implementations and tools.
         
-        [swift-clocks]: http://github.com/pointfreeco/swift-clocks
+        [swift-clocks]: https://github.com/pointfreeco/swift-clocks
         
         @Code(name: "CounterFeatureTests.swift", file: 03-02-code-0010.swift)
       }
@@ -254,7 +254,7 @@
         Also go ahead and get some scaffolding into place for the 
         ``ComposableArchitecture/TestStore``.
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-03-code-0001.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 03-03-code-0001.swift, previousFile: 03-03-code-0001-previous.swift)
       }
       
       For the test we want to emulate the flow of the user tapping the fact button, seeing the 
@@ -325,11 +325,11 @@
         feature in simulators and devices, but you can use a more controlled version during tests.
         
         > Tip: While protocols are by far the most popular way of abstracting dependency interfaces,
-        they are not the only way. We prefer to use structs with mutable properties to represent
-        the interface, and then construct values of the struct to represent conformances. You can
-        use protocols for your dependencies if you so wish, but if you are interested in learning
-        more about the struct style, see our [series of videos][dependencies-collection] for more 
-        information. 
+        > they are not the only way. We prefer to use structs with mutable properties to represent
+        > the interface, and then construct values of the struct to represent conformances. You can
+        > use protocols for your dependencies if you so wish, but if you are interested in learning
+        > more about the struct style, see our [series of videos][dependencies-collection] for more 
+        > information.
         
         [dependencies-collection]: https://www.pointfree.co/collections/dependencies
         
@@ -338,16 +338,16 @@
       
       @Step {
         Next you need to register your dependency with the library, which requires two steps. First
-        you conform the client to the `DepenencyKey` protocol, which requires you to provide a
+        you conform the client to the `DependencyKey` protocol, which requires you to provide a
         `liveValue`. This is the value used when your feature is run in simulators and devices,
         and it's the place where it is appropriate to make live network requests.
         
         > Note: Technically the dependency management system in the Composable Architecture is 
-        provided by another library of our, [swift-dependencies][swift-dependencies]. We split
-        that library out of the Composable Architecture once it became clear that it could be
-        useful even in vanilla SwiftUI and UIKit applications.
+        > provided by another library of our, [swift-dependencies][swift-dependencies]. We split
+        > that library out of the Composable Architecture once it became clear that it could be
+        > useful even in vanilla SwiftUI and UIKit applications.
         
-        [swift-dependencies]: http://github.com/pointfreeco/swift-dependencies
+        [swift-dependencies]: https://github.com/pointfreeco/swift-dependencies
         
         @Code(name: "NumberFactClient.swift", file: 03-04-code-0003.swift)
       }
@@ -358,8 +358,8 @@
         syntax `@Dependency(\.numberFact)` in the reducer.
         
         > Note: Registering a dependency with the library is not unlike registering an
-        environment value with SwiftUI, which requires conforming to `EnvironmentKey` to provide
-        a `defaultValue` value and extending `EnvironmentValues` to provide a computed property.
+        > environment value with SwiftUI, which requires conforming to `EnvironmentKey` to provide
+        > a `defaultValue` value and extending `EnvironmentValues` to provide a computed property.
         
         @Code(name: "NumberFactClient.swift", file: 03-04-code-0004.swift)
       }
@@ -374,7 +374,7 @@
         `factButtonTapped`, use the `numberFact` dependency to load the fact rather than reaching
         out to `URLSession` to make a live network request.
         
-        @Code(name: "CounterFeature.swift", file: 03-04-code-0005.swift)
+        @Code(name: "CounterFeature.swift", file: 03-04-code-0005.swift, previousFile: 03-02-code-0008.swift)
       }
       
       With that little bit of work done in the feature you can now instantly and easily write a
@@ -385,23 +385,17 @@
       @Step {
         Without making any changes to the test, run the test in Xcode again.
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-04-code-0006.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 03-04-code-0006.swift, previousFile: 03-04-code-0006-previous.swift)
       }
       
       The test fails with the same messages, but there is a new one. It tells us that we are using
-      a live dependency in our test without overridding it. This is a _fantastic_ failure to get
+      a live dependency in our test without overriding it. This is a _fantastic_ failure to get
       because it notifies us whenever you may be accidentally making a network request, or writing
       something to disk, or tracking analytics, in a test when you don't mean to.
       
       We definitely do not want to make a live network request in our test, so let's fix it, and
-      this will make our test pass immediately and deterministically, 100% of the time.
-      
-      @Step {
-        Go back to your test in CounterFeatureTests.swift. We are going to make 1 small change that
-        instantly makes the feature testable.
-        
-        @Code(name: "CounterFeatureTests.swift", file: 03-04-code-0007.swift)
-      }
+      this will make our test pass immediately and deterministically, 100% of the time. We are going
+      to make 1 small change that instantly makes the feature testable.
       
       @Step {
         Override dependencies on the ``ComposableArchitecture/TestStore`` by opening the 
@@ -411,14 +405,14 @@
         a hard coded string. Notice that there is no true async or request work being performed
         in the endpoint.
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-04-code-0008.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 03-04-code-0007.swift)
       }
       
       @Step {
         Now that we have overridden the `numberFact` client to always return something predictable,
         we can drop the `timeout` from `receive` and properly assert on how state changes.
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-04-code-0009.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 03-04-code-0008.swift)
       }
       
       That is all it takes to prepare your feature for testing. It does take a few upfront steps,

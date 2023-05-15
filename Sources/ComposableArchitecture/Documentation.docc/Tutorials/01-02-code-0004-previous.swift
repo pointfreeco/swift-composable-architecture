@@ -1,19 +1,15 @@
-extension CounterFeature.State: Equatable {}
-
 struct CounterView: View {
   let store: StoreOf<CounterFeature>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
       VStack {
-        Text("\(viewStore.count)")
+        Text("0")
           .font(.largeTitle)
           .padding()
           .background(Color.black.opacity(0.1))
           .cornerRadius(10)
         HStack {
           Button("-") {
-            viewStore.send(.decrementButtonTapped)
           }
           .font(.largeTitle)
           .padding()
@@ -21,7 +17,6 @@ struct CounterView: View {
           .cornerRadius(10)
 
           Button("+") {
-            viewStore.send(.incrementButtonTapped)
           }
           .font(.largeTitle)
           .padding()
@@ -29,6 +24,5 @@ struct CounterView: View {
           .cornerRadius(10)
         }
       }
-    }
   }
 }

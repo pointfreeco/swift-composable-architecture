@@ -15,7 +15,7 @@ struct CounterFeature: ReducerProtocol {
     case .decrementButtonTapped:
 
     case .incrementButtonTapped:
-      
+
     }
   }
 }

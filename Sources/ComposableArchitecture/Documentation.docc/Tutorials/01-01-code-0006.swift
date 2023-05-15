@@ -15,6 +15,7 @@ struct CounterFeature: ReducerProtocol {
     case .decrementButtonTapped:
       state.count -= 1
       return .none
+
     case .incrementButtonTapped:
       state.count += 1
       return .none
