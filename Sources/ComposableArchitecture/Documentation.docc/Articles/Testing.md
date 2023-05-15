@@ -615,7 +615,7 @@ await store.send(.removeButtonTapped) {
 }
 ```
 
-This will either fail, or possibly even crash. the test suite. This is because in a non-exhaustive
+This will either fail, or possibly even crash the test suite. This is because in a non-exhaustive
 test store, `$0` in the trailing closure of `send` represents the state _after_ the action has been
 sent, and so the last element has already been removed. By executing `$0.values.removeLast()` we are
 just removing an additional element from the end.
