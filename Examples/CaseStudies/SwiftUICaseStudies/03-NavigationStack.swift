@@ -11,7 +11,7 @@ struct NavigationDemo: ReducerProtocol {
   }
 
   enum Action: Equatable {
-    case goBackToScreen(Int)
+    case goBackToScreen(id: StackElementID)
     case goToABCButtonTapped
     case path(StackAction<Path.State, Path.Action>)
     case popToRoot
@@ -20,8 +20,8 @@ struct NavigationDemo: ReducerProtocol {
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
-      case let .goBackToScreen(n):
-        state.path.removeLast(n)
+      case let .goBackToScreen(id):
+        state.path.pop(to: id)
         return .none
 
       case .goToABCButtonTapped:
@@ -152,21 +152,26 @@ struct FloatingMenuView: View {
   let store: StoreOf<NavigationDemo>
 
   struct ViewState: Equatable {
-    var currentStack: [String]
+    struct Screen: Equatable, Identifiable {
+      let id: StackElementID
+      let name: String
+    }
+
+    var currentStack: [Screen]
     var total: Int
     init(state: NavigationDemo.State) {
       self.total = 0
       self.currentStack = []
-      for element in state.path {
+      for (id, element) in zip(state.path.ids, state.path) {
         switch element {
         case let .screenA(screenAState):
           self.total += screenAState.count
-          self.currentStack.insert("Screen A", at: 0)
+          self.currentStack.insert(Screen(id: id, name: "Screen A"), at: 0)
         case .screenB:
-          self.currentStack.insert("Screen B", at: 0)
+          self.currentStack.insert(Screen(id: id, name: "Screen B"), at: 0)
         case let .screenC(screenBState):
           self.total += screenBState.count
-          self.currentStack.insert("Screen C", at: 0)
+          self.currentStack.insert(Screen(id: id, name: "Screen C"), at: 0)
         }
       }
     }
@@ -181,12 +186,11 @@ struct FloatingMenuView: View {
             viewStore.send(.popToRoot, animation: .default)
           }
           Menu("Current stack") {
-            // TODO: Should this use `stack.identified()` and `stack.pop(from:)`?
-            ForEach(Array(viewStore.currentStack.enumerated()), id: \.offset) { offset, screen in
-              Button("\(viewStore.currentStack.count - offset).) \(screen)") {
-                viewStore.send(.goBackToScreen(offset))
+            ForEach(viewStore.currentStack) { screen in
+              Button("\(String(describing: screen.id))) \(screen.name)") {
+                viewStore.send(.goBackToScreen(id: screen.id))
               }
-              .disabled(offset == 0)
+              .disabled(screen == viewStore.currentStack.first)
             }
             Button("Root") {
               viewStore.send(.popToRoot, animation: .default)
