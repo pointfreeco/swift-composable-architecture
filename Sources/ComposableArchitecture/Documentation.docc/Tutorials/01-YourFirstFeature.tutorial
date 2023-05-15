@@ -1,4 +1,4 @@
-@Tutorial(time: 30) { 
+@Tutorial(time: 20) { 
   @Intro(title: "Your first feature") {
     Learn how to create a conformance to ``ComposableArchitecture/ReducerProtocol`` for implementing
     the logic and behavior of a feature, and then learn how to hook up that feature to a SwiftUI
