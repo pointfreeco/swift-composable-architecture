@@ -1267,7 +1267,7 @@ extension TestStore where ScopedState: Equatable {
     case .on:
       var expectedWhenGivenPreviousState = expected
       if let updateStateToExpectedResult = updateStateToExpectedResult {
-        try withDependencies {
+        try Dependencies.withDependencies {
           $0 = self.dependencies
         } operation: {
           try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
@@ -1284,7 +1284,7 @@ extension TestStore where ScopedState: Equatable {
     case .off:
       var expectedWhenGivenActualState = actual
       if let updateStateToExpectedResult = updateStateToExpectedResult {
-        try withDependencies {
+        try Dependencies.withDependencies {
           $0 = self.dependencies
         } operation: {
           try updateStateToExpectedResult(&expectedWhenGivenActualState)
@@ -1303,7 +1303,7 @@ extension TestStore where ScopedState: Equatable {
         if let updateStateToExpectedResult = updateStateToExpectedResult {
           _XCTExpectFailure(strict: false) {
             do {
-              try withDependencies {
+              try Dependencies.withDependencies {
                 $0 = self.dependencies
               } operation: {
                 try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
