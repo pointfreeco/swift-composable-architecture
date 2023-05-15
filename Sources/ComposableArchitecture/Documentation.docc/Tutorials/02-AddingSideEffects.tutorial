@@ -77,14 +77,18 @@
         Now the question is: how can we perform a side-effect? We will be using 
         [numbersapi.com][numbersapi.com] to fetch a fact for the state's current count. We might
         hope we can just use `URLSession` directly in the reducer to perform some async work, but
-        unfortunately that is not allowed. The Composable Architecture separates the simple, pure
-        transformations of state from the complex, messy side effects. There are a lot of benefits
-        to doing this, and it is one of the core tenets of the library.
+        unfortunately that is not allowed. 
         
         [numbersapi.com]: http://www.numbersapi.com
         
         @Code(name: "CounterFeature.swift", file: 02-01-code-0005.swift)
       }
+      
+      The Composable Architecture separates the simple, pure transformations of state from the 
+      complex, messy side effects. It is one of the core tenets of the library and there are a lot 
+      of benefits to doing so. Luckily for us the library gives us a tool that is appropriate
+      for executing side effects. It is called ``ComposableArchitecture/EffectTask`` and it is
+      explored in the next section.
     }
   }
   
@@ -96,8 +100,9 @@
       The Composable Architecture bakes the notion of "effect" directly into the definition of 
       ``ComposableArchitecture/ReducerProtocol``. After a reducer processes an action by mutating
       state, it can return something called an ``ComposableArchitecture/EffectTask``, which 
-      represents an asynchronous unit of work to be run in the outside world. The effect can 
-      communicate with outside systems, and then feed data from the outside back into the reducer.
+      represents an asynchronous unit that is run by the ``ComposableArchitecture/Store``. Effects
+      are what can communicate with outside systems and then feed data from the outside back into 
+      the reducer.
       
       This is exactly what we want to do for our number fact effect. We want to make a network 
       request, and then feed that information back into the reducer. So, let's get started.
