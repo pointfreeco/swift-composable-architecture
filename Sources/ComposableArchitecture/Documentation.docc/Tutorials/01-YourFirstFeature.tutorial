@@ -116,10 +116,12 @@
       }
       
       @Step {
-        Next we can implement some basic view hierarchy for displaying the count and providing 
-        buttons for incrementing and decrementing. Note that you cannot read state from a 
-        ``ComposableArchitecture/Store`` directly, nor can you send actions to it directly. So, 
-        for now we will provide stubs for that behavior.
+        Next we can implement some basic view heirarchy for displaying the count and providing 
+        buttons for incrementing and decrementing. 
+        
+        > Note: You cannot read state from a ``ComposableArchitecture/Store`` directly, nor can you 
+        send actions to it directly. So, for now we will provide stubs for that behavior, but once
+        a ``ComposableArchitecture/ViewStore`` is added we can provide the real implementations.
         
         @Code(name: "CounterFeature.swift", file: 01-02-code-0003.swift) {
           @Image(
@@ -129,12 +131,12 @@
         }
       }
       
-      @Step {
-        With some basic view scaffolding in place we can now start actually observing state in the
-        `store`. This is done by constructing a ``ComposableArchitecture/ViewStore``, and for 
-        SwiftUI views there is a convenience view called a ``ComposableArchitecture/WithViewStore``
-        that provides a lightweight syntax for construct a view store.
-        
+      With some basic view scaffolding in place we can now start actually observing state in the
+      `store`. This is done by constructing a ``ComposableArchitecture/ViewStore``, and for 
+      SwiftUI views there is a convenience view called a ``ComposableArchitecture/WithViewStore``
+      that provides a lightweight syntax for construct a view store.
+      
+      @Step {  
         View stores require that `State` be `Equatable`, so we must do that first. Once the view 
         store is constructed we can access the feature's state and send it actions when the user 
         taps on buttons.
