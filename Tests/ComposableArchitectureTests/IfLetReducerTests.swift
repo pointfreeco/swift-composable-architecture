@@ -315,43 +315,43 @@ final class IfLetReducerTests: BaseTCATestCase {
         $0.child = Child.State(id: 2, value: 2)
       }
     }
-  #endif
 
-  func testEphemeralDismissal() async {
-    struct Feature: ReducerProtocol {
-      struct State: Equatable {
-        var alert: AlertState<AlertAction>?
-      }
-      enum Action: Equatable {
-        case alert(AlertAction)
-        case tap
-      }
-      enum AlertAction: Equatable {
-        case again
-        case ok
-      }
-      var body: some ReducerProtocol<State, Action> {
-        Reduce { state, action in
-          switch action {
-          case .alert(.ok):
-            return .none
-          case .alert(.again), .tap:
-            state.alert = AlertState(title: TextState("Hello"))
-            return .none
-          }
+    func testEphemeralDismissal() async {
+      struct Feature: ReducerProtocol {
+        struct State: Equatable {
+          var alert: AlertState<AlertAction>?
         }
-        .ifLet(\.alert, action: /Action.alert)
+        enum Action: Equatable {
+          case alert(AlertAction)
+          case tap
+        }
+        enum AlertAction: Equatable {
+          case again
+          case ok
+        }
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .alert(.ok):
+              return .none
+            case .alert(.again), .tap:
+              state.alert = AlertState(title: TextState("Hello"))
+              return .none
+            }
+          }
+          .ifLet(\.alert, action: /Action.alert)
+        }
+      }
+
+      let store = TestStore(initialState: Feature.State()) { Feature() }
+
+      await store.send(.tap) {
+        $0.alert = AlertState(title: TextState("Hello"))
+      }
+      await store.send(.alert(.again))
+      await store.send(.alert(.ok)) {
+        $0.alert = nil
       }
     }
-
-    let store = TestStore(initialState: Feature.State()) { Feature() }
-
-    await store.send(.tap) {
-      $0.alert = AlertState(title: TextState("Hello"))
-    }
-    await store.send(.alert(.again))
-    await store.send(.alert(.ok)) {
-      $0.alert = nil
-    }
-  }
+  #endif
 }
