@@ -85,7 +85,7 @@ iOS word search game built in SwiftUI and the Composable Architecture.
 
 ## Basic Usage
 
-> For a step-by-step interactive tutorial, be sure to check out [Meet the Composable
+> Note: For a step-by-step interactive tutorial, be sure to check out [Meet the Composable
 > Architecture][meet-tca].
 
 To build a feature using the Composable Architecture you define some types and values that model 
