@@ -92,6 +92,7 @@ final class AppFeatureTests: XCTestCase {
       $0.path = StackState()
       $0.standupsList.standups[0].title = "Blob"
     }
+    .finish()
   }
 
   func testRecording() async {
