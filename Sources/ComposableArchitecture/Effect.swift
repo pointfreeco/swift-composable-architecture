@@ -163,7 +163,7 @@ extension EffectPublisher where Failure == Never {
               try await operation(send)
             } catch is CancellationError {
               return
-            } catch { 
+            } catch {
               guard let handler = handler else {
                 #if DEBUG
                   var errorDump = ""
