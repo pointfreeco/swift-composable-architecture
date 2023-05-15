@@ -52,11 +52,13 @@ benchmark:
 		swift-composable-architecture-benchmark
 
 format:
-	swift format \
+	@mv ./Sources/ComposableArchitecture/Documentation.docc ./tmp.docc
+	@swift format \
 		--ignore-unparsable-files \
 		--in-place \
 		--recursive \
 		./Examples ./Package.swift ./Sources ./Tests
+	@mv ./tmp.docc ./Sources/ComposableArchitecture/Documentation.docc
 
 .PHONY: format test-all test-swift test-workspace
 
