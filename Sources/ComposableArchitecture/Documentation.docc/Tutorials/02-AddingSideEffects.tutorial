@@ -49,11 +49,11 @@
         `isLoading` and `fact` state to accomplish this, neither of which exist in the counter 
         feature yet, but will soon.
         
-        That is all it takes for the view. The code is not yet compiling because we are using
-        state and actions that don't yet exist, so let's fix those errors in the reducer.
-
         @Code(name: "CounterFeature.swift", file: 02-01-code-0002.swift)
       }
+      
+      That is all it takes for the view. The code is not yet compiling because we are using
+      state and actions that don't yet exist, so let's fix those errors in the reducer.
       
       @Step {
         Recall that this is what our `CounterFeature` reducer looks like so far, as built in

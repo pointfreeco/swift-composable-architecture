@@ -4,16 +4,7 @@ struct CounterView: View {
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       VStack {
-        Text("\(viewStore.count)")
-        HStack {
-          Button("-") {
-            viewStore.send(.decrementButtonTapped)
-          }
-
-          Button("+") {
-            viewStore.send(.incrementButtonTapped)
-          }
-        }
+        // ...
 
         Button("Fact") {
           viewStore.send(.factButtonTapped)
