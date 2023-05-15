@@ -163,7 +163,7 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
         case child(Child.Action)
         case newChild
       }
-      var body: some ReducerProtocolOf<Self> {
+      var body: some ReducerProtocol<State, Action> {
         Reduce { state, action in
           switch action {
           case .child:

@@ -150,7 +150,7 @@ final class IfLetReducerTests: BaseTCATestCase {
           enum Action: Equatable {
             case grandChild(GrandChild.Action)
           }
-          var body: some ReducerProtocolOf<Self> {
+          var body: some ReducerProtocol<State, Action> {
             EmptyReducer()
               .ifLet(\.grandChild, action: /Action.grandChild) {
                 GrandChild()
@@ -259,7 +259,7 @@ final class IfLetReducerTests: BaseTCATestCase {
         case child(Child.Action)
         case newChild
       }
-      var body: some ReducerProtocolOf<Self> {
+      var body: some ReducerProtocol<State, Action> {
         Reduce { state, action in
           switch action {
           case .child:
@@ -327,7 +327,7 @@ final class IfLetReducerTests: BaseTCATestCase {
         case again
         case ok
       }
-      var body: some ReducerProtocolOf<Self> {
+      var body: some ReducerProtocol<State, Action> {
         Reduce { state, action in
           switch action {
           case .alert(.ok):

@@ -43,7 +43,7 @@ private struct Feature: ReducerProtocol {
     case tap
     case none
   }
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerProtocol<State, Action> {
     Reduce<State, Action> { state, action in
       switch action {
       case .child:

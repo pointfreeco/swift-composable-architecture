@@ -870,7 +870,7 @@ final class StackReducerTests: BaseTCATestCase {
       enum Action: Equatable {
         case child(StackAction<Child.State, Child.Action>)
       }
-      var body: some ReducerProtocolOf<Self> {
+      var body: some ReducerProtocol<State, Action> {
         Reduce { _, _ in .none }
           .forEach(\.children, action: /Action.child) { Child() }
       }
@@ -917,7 +917,7 @@ final class StackReducerTests: BaseTCATestCase {
       enum Action: Equatable {
         case child(StackAction<Child.State, Child.Action>)
       }
-      var body: some ReducerProtocolOf<Self> {
+      var body: some ReducerProtocol<State, Action> {
         Reduce { _, _ in .none }
           .forEach(\.children, action: /Action.child) { Child() }
       }
@@ -953,7 +953,7 @@ final class StackReducerTests: BaseTCATestCase {
         case child(StackAction<Child.State, Child.Action>)
         case push
       }
-      var body: some ReducerProtocolOf<Self> {
+      var body: some ReducerProtocol<State, Action> {
         Reduce { state, action in
           switch action {
           case .child:
@@ -1005,7 +1005,7 @@ final class StackReducerTests: BaseTCATestCase {
       enum Action: Equatable {
         case child(StackAction<Child.State, Child.Action>)
       }
-      var body: some ReducerProtocolOf<Self> {
+      var body: some ReducerProtocol<State, Action> {
         Reduce { _, _ in .none }
           .forEach(\.children, action: /Action.child) { Child() }
       }
@@ -1049,7 +1049,7 @@ final class StackReducerTests: BaseTCATestCase {
       enum Action: Equatable {
         case child(StackAction<Child.State, Child.Action>)
       }
-      var body: some ReducerProtocolOf<Self> {
+      var body: some ReducerProtocol<State, Action> {
         Reduce { _, _ in .none }
           .forEach(\.children, action: /Action.child) { Child() }
       }
@@ -1091,7 +1091,7 @@ final class StackReducerTests: BaseTCATestCase {
       enum Action: Equatable {
         case child(StackAction<Child.State, Child.Action>)
       }
-      var body: some ReducerProtocolOf<Self> {
+      var body: some ReducerProtocol<State, Action> {
         Reduce { _, _ in .none }.forEach(\.children, action: /Action.child) { Child() }
       }
     }
@@ -1129,7 +1129,7 @@ final class StackReducerTests: BaseTCATestCase {
         case path(StackAction<Int, Never>)
         case response
       }
-      var body: some ReducerProtocolOf<Self> {
+      var body: some ReducerProtocol<State, Action> {
         Reduce { state, action in
           switch action {
           case .buttonTapped:

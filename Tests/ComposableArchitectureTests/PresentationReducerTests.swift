@@ -986,7 +986,7 @@ import XCTest
           case startButtonTapped
         }
         enum CancelID { case effect }
-        var body: some ReducerProtocolOf<Self> {
+        var body: some ReducerProtocol<State, Action> {
           Reduce { state, action in
             switch action {
             case .grandchild:
@@ -1467,7 +1467,7 @@ import XCTest
             case grandchild(PresentationAction<Grandchild.Action>)
             case presentGrandchild
           }
-          var body: some ReducerProtocolOf<Self> {
+          var body: some ReducerProtocol<State, Action> {
             Reduce { state, action in
               switch action {
               case .grandchild:
@@ -1863,7 +1863,7 @@ import XCTest
             case child1(Child.Action)
             case child2(Child.Action)
           }
-          var body: some ReducerProtocolOf<Self> {
+          var body: some ReducerProtocol<State, Action> {
             Scope(state: /State.child1, action: /Action.child1) { Child() }
             Scope(state: /State.child2, action: /Action.child2) { Child() }
           }
@@ -1939,12 +1939,12 @@ import XCTest
               case showAlert
               case showDialog
             }
-            var body: some ReducerProtocolOf<Self> {
+            var body: some ReducerProtocol<State, Action> {
               EmptyReducer()
             }
           }
 
-          var body: some ReducerProtocolOf<Self> {
+          var body: some ReducerProtocol<State, Action> {
             Reduce<State, Action> { state, action in
               switch action {
               case .destination(.presented(.alert(.showDialog))):
