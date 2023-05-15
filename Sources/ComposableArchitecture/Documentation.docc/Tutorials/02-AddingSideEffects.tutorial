@@ -1,6 +1,6 @@
 @Tutorial(time: 30) {
   @Intro(title: "Adding side effects") {
-    Learn how to communicate with the outside work in your features, and feed data from the outside
+    Learn how to communicate with the outside world in your features, and feed data from the outside
     back into your feature.
     
     <!--    @Image(source: <#file#>, alt: "<#accessible description#>")-->

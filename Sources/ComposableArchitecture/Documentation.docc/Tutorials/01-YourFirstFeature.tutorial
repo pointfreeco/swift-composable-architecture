@@ -80,14 +80,10 @@
         @Code(name: "CounterFeature.swift", file: 01-01-code-0006.swift)
       }
       
-      @Step {
-        That is all it takes to implement a _very_ basic feature in the Composable Architecture.
-        There is of course a lot more to know about, such as executing effects and feeding data
-        back into the system, using dependencies in reducers, composing multiple reducers together, 
-        and a lot more. But we will stop here for this feature right now and move onto the view.
-        
-        @Code(name: "CounterFeature.swift", file: 01-01-code-0007.swift)
-      }
+      That is all it takes to implement a _very_ basic feature in the Composable Architecture.
+      There is of course a lot more to know about, such as executing effects and feeding data
+      back into the system, using dependencies in reducers, composing multiple reducers together, 
+      and a lot more. But we will stop here for this feature right now and move onto the view.
     }
   }
     
