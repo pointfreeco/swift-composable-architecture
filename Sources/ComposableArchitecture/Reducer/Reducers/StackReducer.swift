@@ -476,17 +476,10 @@ public struct _StackReducer<
 /// keep counting up, even if you remove elements from the stack.
 public struct StackElementID: Hashable, Sendable {
   @_spi(Internals) public var generation: Int
-  @_spi(Internals) public var rawValue: AnyHashableSendable
 
-  @_spi(Internals) public init<RawValue: Hashable & Sendable>(generation: Int, rawValue: RawValue) {
+  @_spi(Internals) public init(generation: Int) {
     self.generation = generation
-    self.rawValue = AnyHashableSendable(rawValue)
   }
-
-//  // TODO: is this still correct? can we get a test that fails when || is changed to && ?
-//  public static func == (lhs: Self, rhs: Self) -> Bool {
-//    lhs.rawValue == rhs.rawValue || lhs.generation == rhs.generation
-//  }
 }
 
 extension StackElementID: CustomDebugStringConvertible {
@@ -514,7 +507,7 @@ extension StackElementID: ExpressibleByIntegerLiteral {
         """
       )
     }
-    self.init(generation: value, rawValue: value)
+    self.init(generation: value)
   }
 }
 
