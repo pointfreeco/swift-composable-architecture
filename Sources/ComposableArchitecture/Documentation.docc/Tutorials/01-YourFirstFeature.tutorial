@@ -165,14 +165,15 @@
         }
       }
       
-      @Step {
-        Before moving onto the next section, let's quickly show off a super power of the Composable
-        Architecture. Because all of the feature's logic and behavior is contained in the reducer,
-        we can run the preview with a completely different reducer to alter how it executes.
-        
-        For example, we can use the ``ComposableArchitecture/EmptyReducer`` that comes with the
-        library, which is a reducer that performs no state mutations or effects. This allows us
-        to preview the design of the feature without worrying about any of its logic or behavior.
+      Before moving onto the next section, let's quickly show off a super power of the Composable
+      Architecture. Because all of the feature's logic and behavior is contained in the reducer,
+      we can run the preview with a completely different reducer to alter how it executes.
+      
+      @Step {  
+        For example, in the preview, replace the `CounterFeature` reducer with the the 
+        ``ComposableArchitecture/EmptyReducer`` that comes with the library, which is a reducer that 
+        performs no state mutations or effects. This allows us to preview the design of the feature 
+        without worrying about any of its logic or behavior.
         
         > Note: Notice that tapping the video demonstrates that tapping the buttons does not cause
         the count to increase or decrease. That is because we are using the empty reducer in the 
@@ -183,9 +184,10 @@
         }
       }
       
-      @Step {
-        That is all
-      }
+      That is all there is to implementing a basic feature in the Composable Architecture. The
+      feature is of course very simple, and doesn't involve anything interesting like side effects
+      (which will be the topic of <doc:02-AddingSideEffects>), but before any of that let's see
+      how to integrate this feature into an application.
     }
   }
   
@@ -217,16 +219,18 @@
         
         @Code(name: "App.swift", file: 01-03-code-0003.swift) 
       }
+      
+      We can demonstrate another super power of the Composable Architecture. Reducers have a
+      method called ``ComposableArchitecture/ReducerProtocol/_printChanges(_:)`` that is similar
+      to a tool that SwiftUI provides. When used it will print every action that the reducer
+      processes to the console, and it will print how the state changed after processing the 
+      action. The method will also go through great lengths to collapse the state difference to a 
+      compact form. This includes not displaying nested state if it hasn't changed, and not showing 
+      elements in collections that haven't changed.
+      
       @Step {
-        We can demonstrate another super power of the Composable Architecture. Reducers have a
-        method called ``ComposableArchitecture/ReducerProtocol/_printChanges(_:)`` that is similar
-        to a tool that SwiftUI provides. When used it will print every action that the reducer
-        processes to the console, and it will print how the state changed after processing the 
-        action.
-        
-        The method will also go through great lengths to collapse the state difference to a compact 
-        form. This includes not displaying nested state if it hasn't changed, and not showing 
-        elements in collections that haven't changed.
+        Update the entry point of the application to invoke
+        ``ComposableArchitecture/ReducerProtocol/_printChanges(_:)`` on the reducer.
         
         @Code(name: "App.swift", file: 01-03-code-0004.swift)  
       }
