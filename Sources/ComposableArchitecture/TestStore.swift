@@ -663,22 +663,18 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     Environment == Void
   {
     var dependencies = DependencyValues._current
-    let initialState = withDependencies {
+    let reducer = withDependencies {
       prepareDependencies(&dependencies)
       $0 = dependencies
     } operation: {
-      initialState()
+      TestReducer(Reduce(reducer()), initialState: initialState())
     }
-
-    let reducer = TestReducer(
-      Reduce(withDependencies(prepareDependencies) { reducer() }), initialState: initialState
-    )
     self._environment = .init(wrappedValue: ())
     self.file = file
     self.fromScopedAction = fromScopedAction
     self.line = line
     self.reducer = reducer
-    self.store = Store(initialState: initialState, reducer: reducer)
+    self.store = Store(initialState: reducer.state, reducer: reducer)
     self.timeout = 100 * NSEC_PER_MSEC
     self.toScopedState = toScopedState
     self.dependencies = dependencies
@@ -708,22 +704,18 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     Environment == Void
   {
     var dependencies = DependencyValues._current
-    prepareDependencies(&dependencies)
-    let initialState = withDependencies {
+    let reducer = withDependencies {
+      prepareDependencies(&dependencies)
       $0 = dependencies
     } operation: {
-      initialState()
+      TestReducer(Reduce(reducer()), initialState: initialState())
     }
-
-    let reducer = TestReducer(
-      Reduce(withDependencies(prepareDependencies) { reducer() }), initialState: initialState
-    )
     self._environment = .init(wrappedValue: ())
     self.file = file
     self.fromScopedAction = { $0 }
     self.line = line
     self.reducer = reducer
-    self.store = Store(initialState: initialState, reducer: reducer)
+    self.store = Store(initialState: reducer.state, reducer: reducer)
     self.timeout = 100 * NSEC_PER_MSEC
     self.toScopedState = { $0 }
     self.dependencies = dependencies
