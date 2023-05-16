@@ -7,7 +7,7 @@
   
   @Section(title: "Create a reducer") {
     @ContentAndMedia {
-      The fundamental unit that features are built with in the Composable Architecture is the
+      The fundamental unit that features are built within the Composable Architecture is the
       ``ComposableArchitecture/ReducerProtocol``. A conformance to that protocol represents the 
       logic and behavior for a feature in your application. This includes how to evolve the current
       state to the next state when an action is sent into the system, and how effects communicate
@@ -36,7 +36,7 @@
         To conform to ``ComposableArchitecture/ReducerProtocol`` you will start with a domain 
         modeling exercise. You will create a `State` type that holds the state your feature needs 
         to do its job, typically a struct. Then you will create an `Action` type that holds all 
-        the actions the user can perform  in the feature, typically an enum. 
+        the actions the user can perform in the feature, typically an enum. 
         
         @Code(name: "CounterFeature.swift", file: 01-01-code-0003.swift)
       }
@@ -74,7 +74,7 @@
         to the state's count. We must also return a value of ``ComposableArchitecture/EffectTask`` 
         that represents the effect to be executed in the outside world, but in this case we do not 
         need to execute anything. So we can return a special
-        ``ComposableArchitecture/EffectPublisher/none`` value to represents we have no effects to
+        ``ComposableArchitecture/EffectPublisher/none`` value to represent we have no effects to
         execute.
         
         @Code(name: "CounterFeature.swift", file: 01-01-code-0006.swift)
@@ -116,7 +116,7 @@
       }
       
       @Step {
-        Next we can implement some basic view heirarchy for displaying the count and providing 
+        Next, we can implement some basic view hierarchy for displaying the count and providing 
         buttons for incrementing and decrementing. 
         
         > Note: You cannot read state from a ``ComposableArchitecture/Store`` directly, nor can you 
@@ -134,7 +134,7 @@
       With some basic view scaffolding in place we can now start actually observing state in the
       `store`. This is done by constructing a ``ComposableArchitecture/ViewStore``, and for 
       SwiftUI views there is a convenience view called a ``ComposableArchitecture/WithViewStore``
-      that provides a lightweight syntax for construct a view store.
+      that provides a lightweight syntax for constructing a view store.
       
       @Step {  
         View stores require that `State` be `Equatable`, so we must do that first. Once the view 
@@ -164,7 +164,7 @@
       }
       
       Before moving onto the next section, let's quickly show off a super power of the Composable
-      Architecture. Because all of the feature's logic and behavior is contained in the reducer,
+      Architecture. Because all of the feature's logic and behavior are contained in the reducer,
       we can run the preview with a completely different reducer to alter how it executes.
       
       @Step {  
