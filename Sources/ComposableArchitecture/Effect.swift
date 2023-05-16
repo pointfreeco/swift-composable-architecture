@@ -247,8 +247,8 @@ extension EffectPublisher where Failure == Never {
 ///
 /// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
 @MainActor
-public struct Send<Action> {
-  public let send: @MainActor @Sendable (Action) -> Void
+public struct Send<Action>: Sendable {
+  let send: @MainActor @Sendable (Action) -> Void
 
   public init(send: @escaping @MainActor @Sendable (Action) -> Void) {
     self.send = send
