@@ -314,7 +314,7 @@
       @Step {
         Start by creating a new file, NumberFactClient.swift, and import the Composable 
         Architecture. This will give you access to the tools necessary to control any dependency
-        on your feature.
+        in your feature.
         
         @Code(name: "NumberFactClient.swift", file: 03-04-code-0001.swift)
       }
