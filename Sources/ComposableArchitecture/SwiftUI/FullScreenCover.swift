@@ -62,7 +62,9 @@ private struct PresentationFullScreenCoverModifier<
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
     content coverContent: @escaping (Store<DestinationState, DestinationAction>) -> CoverContent
   ) {
-    let filteredStore = store.filterSend { state, _ in state.wrappedValue != nil }
+    let filteredStore = store.filterSend { state, _ in
+      state.wrappedValue.flatMap(toDestinationState) == nil ? !BindingLocal.isActive : true
+    }
     self.store = filteredStore
     self.viewStore = ViewStore(
       filteredStore,

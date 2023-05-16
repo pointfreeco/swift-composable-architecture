@@ -54,15 +54,16 @@
       content destinationContent:
         @escaping (Store<DestinationState, DestinationAction>) -> DestinationContent
     ) {
-      self.store = store
+      let filteredStore = store.filterSend { state, _ in
+        state.wrappedValue.flatMap(toDestinationState) == nil ? !BindingLocal.isActive : true
+      }
+      self.store = filteredStore
       self._viewStore = StateObject(
         wrappedValue: ViewStore(
-          store
-            .filterSend { state, _ in state.wrappedValue != nil }
-            .scope(
-              state: { $0.wrappedValue.flatMap(toDestinationState) != nil },
-              action: { $0 }
-            )
+          filteredStore.scope(
+            state: { $0.wrappedValue.flatMap(toDestinationState) != nil },
+            action: { $0 }
+          )
         )
       )
       self.toDestinationState = toDestinationState

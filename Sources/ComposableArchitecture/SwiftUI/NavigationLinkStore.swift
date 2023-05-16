@@ -52,7 +52,9 @@ public struct NavigationLinkStore<
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where State == DestinationState, Action == DestinationAction {
-    let filteredStore = store.filterSend { state, _ in state.wrappedValue != nil }
+    let filteredStore = store.filterSend { state, _ in
+      state.wrappedValue == nil ? !BindingLocal.isActive : true
+    }
     self.store = filteredStore
     self.viewStore = ViewStore(
       filteredStore.scope(
@@ -75,14 +77,15 @@ public struct NavigationLinkStore<
     @ViewBuilder destination: @escaping (Store<DestinationState, DestinationAction>) -> Destination,
     @ViewBuilder label: () -> Label
   ) {
-    self.store = store
+    let filteredStore = store.filterSend { state, _ in
+      state.wrappedValue.flatMap(toDestinationState) == nil ? !BindingLocal.isActive : true
+    }
+    self.store = filteredStore
     self.viewStore = ViewStore(
-      store
-        .filterSend { state, _ in state.wrappedValue != nil }
-        .scope(
-          state: { $0.wrappedValue.flatMap(toDestinationState) != nil },
-          action: { $0 }
-        )
+      filteredStore.scope(
+        state: { $0.wrappedValue.flatMap(toDestinationState) != nil },
+        action: { $0 }
+      )
     )
     self.toDestinationState = toDestinationState
     self.fromDestinationAction = fromDestinationAction
@@ -98,7 +101,9 @@ public struct NavigationLinkStore<
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where State == DestinationState, Action == DestinationAction, State: Identifiable {
-    let filteredStore = store.filterSend { state, _ in state.wrappedValue != nil }
+    let filteredStore = store.filterSend { state, _ in
+      state.wrappedValue?.id != id ? !BindingLocal.isActive : true
+    }
     self.store = filteredStore
     self.viewStore = ViewStore(
       filteredStore.scope(
@@ -122,14 +127,15 @@ public struct NavigationLinkStore<
     @ViewBuilder destination: @escaping (Store<DestinationState, DestinationAction>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where DestinationState: Identifiable {
-    self.store = store
+    let filteredStore = store.filterSend { state, _ in
+      state.wrappedValue.flatMap(toDestinationState)?.id != id ? !BindingLocal.isActive : true
+    }
+    self.store = filteredStore
     self.viewStore = ViewStore(
-      store
-        .filterSend { state, _ in state.wrappedValue != nil }
-        .scope(
-          state: { $0.wrappedValue.flatMap(toDestinationState)?.id == id },
-          action: { $0 }
-        )
+      filteredStore.scope(
+        state: { $0.wrappedValue.flatMap(toDestinationState)?.id == id },
+        action: { $0 }
+      )
     )
     self.toDestinationState = toDestinationState
     self.fromDestinationAction = fromDestinationAction
