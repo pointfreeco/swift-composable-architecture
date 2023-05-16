@@ -725,9 +725,9 @@
 
           case .tap:
             return .run { send in
-              try await Task.sleep(nanoseconds: 1_000_000)
+              try await Task.sleep(nanoseconds: 10_000_000)
               await send(.response1)
-              try await Task.sleep(nanoseconds: 1_000_000)
+              try await Task.sleep(nanoseconds: 10_000_000)
               await send(.response2)
             }
           case .response1, .response2:
@@ -740,7 +740,7 @@
       store.exhaustivity = .off
 
       await store.send(.tap)
-      await store.receive(.response2, timeout: 3_000_000)
+      await store.receive(.response2, timeout: 30_000_000)
     }
 
     func testReceiveNonExhuastiveWithTimeoutMultipleNonMatching() async {
@@ -752,14 +752,14 @@
 
           case .tap:
             return .run { send in
-              try await Task.sleep(nanoseconds: 1_000_000)
+              try await Task.sleep(nanoseconds: 10_000_000)
               await send(.response1)
-              try await Task.sleep(nanoseconds: 1_000_000)
+              try await Task.sleep(nanoseconds: 10_000_000)
               await send(.response1)
             }
           case .response1:
             return .run { _ in
-              try await Task.sleep(nanoseconds: 4_000_000)
+              try await Task.sleep(nanoseconds: 40_000_000)
             }
           case .response2:
             return .none
@@ -774,13 +774,13 @@
       XCTExpectFailure { issue in
         issue.compactDescription.contains(
           """
-          Expected to receive a matching action, but received none after 0.003 seconds.
+          Expected to receive a matching action, but received none after 0.03 seconds.
           """)
           || (issue.compactDescription.contains(
             "Expected to receive the following action, but didn't")
             && issue.compactDescription.contains("Action.response2"))
       }
-      await store.receive(.response2, timeout: 3_000_000)
+      await store.receive(.response2, timeout: 30_000_000)
     }
 
     func testReceiveNonExhuastiveWithTimeoutMultipleMatching() async {
@@ -792,9 +792,9 @@
 
           case .tap:
             return .run { send in
-              try await Task.sleep(nanoseconds: 1_000_000)
+              try await Task.sleep(nanoseconds: 10_000_000)
               await send(.response2)
-              try await Task.sleep(nanoseconds: 1_000_000)
+              try await Task.sleep(nanoseconds: 10_000_000)
               await send(.response2)
             }
           case .response1, .response2:
@@ -807,8 +807,8 @@
       store.exhaustivity = .off
 
       await store.send(.tap)
-      await store.receive(.response2, timeout: 3_000_000)
-      await store.receive(.response2, timeout: 3_000_000)
+      await store.receive(.response2, timeout: 30_000_000)
+      await store.receive(.response2, timeout: 30_000_000)
     }
 
     // This example comes from Krzysztof Zabłocki's blog post:
