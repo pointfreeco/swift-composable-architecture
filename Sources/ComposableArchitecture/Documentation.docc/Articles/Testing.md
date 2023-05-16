@@ -674,7 +674,7 @@ struct Feature: ReducerProtocol {
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .addButtonTapped:
-      state.values.append(Model()
+      state.values.append(Model())
       return .none
     }
   }
