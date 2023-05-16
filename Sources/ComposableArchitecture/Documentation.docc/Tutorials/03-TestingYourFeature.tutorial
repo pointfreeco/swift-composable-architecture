@@ -1,7 +1,7 @@
 @Tutorial(time: 60) {
   @Intro(title: "Testing your feature") {
     Learn how to write test for the counter built in previous tutorials, including how to assert 
-    against  state changes and how effects execute and feed data back into the system.
+    against state changes and how effects execute and feed data back into the system.
   }
       
   @Section(title: "Testing state changes") {
@@ -34,7 +34,7 @@
       }
       
       @Step {
-        Next we will create a ``ComposableArchitecture/TestStore``, which is a tool that makes it 
+        Next, we will create a ``ComposableArchitecture/TestStore``, which is a tool that makes it 
         easy to assert on how the behavior of your feature changes as actions are sent into the 
         system. You create a test store in the same way you create a 
         ``ComposableArchitecture/Store``, by providing some initial state to start the feature in
@@ -57,10 +57,10 @@
       
       @Step {
         Run the test by typing cmd+U or clicking the test diamond next to the test method.
-        Unfortunately you will find that the test fails. This is because each time you send an
+        Unfortunately, you will find that the test fails. This is because each time you send an
         action to a ``ComposableArchitecture/TestStore`` you must also describe exactly how the
         state changes after that action is sent. The library also helpfully shows you a detailed
-        failure message showing you exactly how state differed from what you expect (the lines
+        failure message showing you exactly how state differed from what you expected (the lines
         with the minus "-") and the actual value (the lines with the plus "+").
         
         @Code(name: "CounterFeatureTests.swift", file: 03-01-code-0004.swift)
@@ -96,7 +96,7 @@
       the effects it returns that are then processed by the store.
       
       Writing tests against side effects takes a lot more work since you typically have to 
-      control you dependency on external systems and then provide test-friendly versions of those
+      control your dependency on external systems and then provide test-friendly versions of those
       dependencies for tests. Let's start by testing the timer functionality of our feature, 
       which turns out to be a little easier to test than the network request for fetching a number
       fact.
@@ -163,7 +163,7 @@
       @Step {
         Run tests to see that, unfortunately, the test fails. This is happening because our timer
         takes a full second to emit, but the test store will only wait around for a small amount
-        of time to receive an action, and if it doesn't it creates a test failure. This is 
+        of time to receive an action, and if it doesn't, it creates a test failure. This is 
         because the test store doesn't want your tests to be slow, and so rather you take control
         over your dependency on time to write a faster, more deterministic test.
         
