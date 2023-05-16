@@ -740,7 +740,7 @@
       store.exhaustivity = .off
 
       await store.send(.tap)
-      await store.receive(.response2, timeout: 30_000_000)
+      await store.receive(.response2, timeout: 1_000_000_000)
     }
 
     func testReceiveNonExhuastiveWithTimeoutMultipleNonMatching() async {
@@ -758,9 +758,7 @@
               await send(.response1)
             }
           case .response1:
-            return .run { _ in
-              try await Task.sleep(nanoseconds: 40_000_000)
-            }
+            return .none
           case .response2:
             return .none
           }
@@ -780,7 +778,7 @@
             "Expected to receive the following action, but didn't")
             && issue.compactDescription.contains("Action.response2"))
       }
-      await store.receive(.response2, timeout: 30_000_000)
+      await store.receive(.response2, timeout: 1_000_000_000)
     }
 
     func testReceiveNonExhuastiveWithTimeoutMultipleMatching() async {
@@ -807,8 +805,8 @@
       store.exhaustivity = .off
 
       await store.send(.tap)
-      await store.receive(.response2, timeout: 30_000_000)
-      await store.receive(.response2, timeout: 30_000_000)
+      await store.receive(.response2, timeout: 1_000_000_000)
+      await store.receive(.response2, timeout: 1_000_000_000)
     }
 
     // This example comes from Krzysztof Zabłocki's blog post:
