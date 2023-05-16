@@ -395,14 +395,15 @@ final class TestStoreTests: BaseTCATestCase {
   }
 
   func testPrepareDependenciesCalledOnce() {
-    let count = LockIsolated(0)
-    _ = TestStore(initialState: 0) {
+    var count = 0
+    let store = TestStore(initialState: 0) {
       EmptyReducer<Int, Void>()
     } withDependencies: { _ in
-      count.withValue { $0 += 1 }
+      count += 1
     }
 
-    XCTAssertEqual(count.value, 1)
+    XCTAssertEqual(count, 1)
+    _ = store
   }
 
   func testEffectEmitAfterSkipInFlightEffects() async {
