@@ -772,7 +772,7 @@
       XCTExpectFailure { issue in
         issue.compactDescription.contains(
           """
-          Expected to receive a matching action, but received none after 0.03 seconds.
+          Expected to receive a matching action, but received none after 1.0 seconds.
           """)
           || (issue.compactDescription.contains(
             "Expected to receive the following action, but didn't")
