@@ -91,7 +91,7 @@ extension EffectPublisher {
 /// the other using Apple's Combine framework:
 ///
 /// * If using Swift's native structured concurrency tools then there is one main way to create an
-/// effect: ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)``.
+/// effect: ``EffectPublisher/run(priority:operation:catch:fileID:line:)``.
 ///
 /// * If using Combine in your application, in particular for the dependencies of your feature
 /// then you can create effects by making use of any of Combine's operators, and then erasing the
@@ -247,10 +247,10 @@ extension EffectPublisher where Failure == Never {
 ///
 /// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
 @MainActor
-public struct Send<Action> {
-  public let send: @MainActor (Action) -> Void
+public struct Send<Action>: Sendable {
+  let send: @MainActor @Sendable (Action) -> Void
 
-  public init(send: @escaping @MainActor (Action) -> Void) {
+  public init(send: @escaping @MainActor @Sendable (Action) -> Void) {
     self.send = send
   }
 
