@@ -377,7 +377,7 @@ A `Parent` reducer conformances can be made by implementing the
 ``ReducerProtocol/body-swift.property-7foai`` property of the ``ReducerProtocol``, which allows you
 to express the parent's logic as a composition of multiple reducers. In particular, you can use
 the ``Reduce`` entry point to implement the core parent logic, and then chain on the 
-``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)`` operator to identify the optional child
+``ReducerProtocol/ifLet(_:action:then:fileID:line:)`` operator to identify the optional child
 state that you want to run the `Feature` reducer on when non-`nil`:
 
 ```swift
@@ -408,7 +408,7 @@ Because the `ifLet` operator has knowledge of both the parent and child reducers
 order to add an additional layer of correctness.
 
 If you are using an enum to model your state, then there is a corresponding 
-``ReducerProtocol/ifCaseLet(_:action:then:file:fileID:line:)`` operator that can help you run a
+``ReducerProtocol/ifCaseLet(_:action:then:fileID:line:)`` operator that can help you run a
 reducer on just one case of the enum.
 
 ## For-each reducers
@@ -417,7 +417,7 @@ Similar to `optional` reducers, another common pattern in applications is the us
 ``AnyReducer/forEach(state:action:environment:file:fileID:line:)-2ypoa`` to allow running a reducer
 on each element of a collection. Converting such child and parent reducers will look nearly
 identical to what we did above for optional reducers, but it will make use of the new
-``ReducerProtocol/forEach(_:action:element:file:fileID:line:)`` operator instead.
+``ReducerProtocol/forEach(_:action:element:fileID:line:)`` operator instead.
 
 In particular, the new `forEach` method operates on the parent reducer by specifying the collection
 sub-state you want to work on, and providing the element reducer you want to be able to run on

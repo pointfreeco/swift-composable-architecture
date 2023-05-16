@@ -86,7 +86,7 @@ extension EffectPublisher {
   ///
   /// > Important: This Combine interface has been soft-deprecated in favor of Swift concurrency.
   /// > Prefer performing asynchronous work directly in
-  /// > ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)`` by adopting a
+  /// > ``EffectPublisher/run(priority:operation:catch:fileID:line:)`` by adopting a
   /// > non-Combine interface, or by iterating over the publisher's asynchronous sequence of
   /// > `values`:
   /// >
