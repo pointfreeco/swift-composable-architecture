@@ -1864,7 +1864,7 @@ extension TestStore where ScopedState: Equatable {
     let start = DispatchTime.now().uptimeNanoseconds
     while !Task.isCancelled {
       await Task.detached(priority: .background) { await Task.yield() }.value
-      
+
       switch self.exhaustivity {
       case .on:
         guard self.reducer.receivedActions.isEmpty
@@ -1873,7 +1873,7 @@ extension TestStore where ScopedState: Equatable {
         guard !self.reducer.receivedActions.contains(where: { predicate($0.action) })
         else { return }
       }
-      
+
       guard start.distance(to: DispatchTime.now().uptimeNanoseconds) < nanoseconds
       else {
         let suggestion: String
