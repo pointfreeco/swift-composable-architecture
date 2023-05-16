@@ -14,21 +14,28 @@ private let readMe = """
 struct Counter: ReducerProtocol {
   struct State: Equatable {
     var count = 0
+    @BindingState var text = ""
   }
 
-  enum Action: Equatable {
+  enum Action: Equatable, BindableAction{
+    case binding(BindingAction<State>)
     case decrementButtonTapped
     case incrementButtonTapped
   }
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
-    switch action {
-    case .decrementButtonTapped:
-      state.count -= 1
-      return .none
-    case .incrementButtonTapped:
-      state.count += 1
-      return .none
+  var body: some ReducerProtocolOf<Self> {
+    BindingReducer()
+    Reduce { state, action in
+      switch action {
+      case .binding:
+        return .none
+      case .decrementButtonTapped:
+        state.count -= 1
+        return .none
+      case .incrementButtonTapped:
+        state.count += 1
+        return .none
+      }
     }
   }
 }
@@ -37,10 +44,14 @@ struct Counter: ReducerProtocol {
 
 struct CounterView: View {
   let store: StoreOf<Counter>
+  @Environment(\.dismiss) var dismiss
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       HStack {
+        Button("Close") { self.dismiss() }
+        TextField("Test", text: viewStore.binding(\.$text))
+
         Button {
           viewStore.send(.decrementButtonTapped)
         } label: {

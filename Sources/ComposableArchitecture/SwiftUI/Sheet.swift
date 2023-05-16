@@ -85,12 +85,23 @@ private struct PresentationSheetModifier<
       )
     ) { _ in
       IfLetStore(
-        self.store.scope(
+        self.store
+          .handleInvalidation(state: { $0.wrappedValue.flatMap(self.toDestinationState) })
+          .scope(
           state: returningLastNonNilValue { $0.wrappedValue.flatMap(self.toDestinationState) },
           action: { .presented(self.fromDestinationAction($0)) }
         ),
         then: self.sheetContent
       )
     }
+  }
+}
+
+extension Store {
+  func handleInvalidation<Wrapped>(
+    state: @escaping (State) -> Wrapped?
+  ) -> Store<State, Action> {
+    self.isInvalidated = { [weak self] in (self?.state.value).flatMap(state) == nil }
+    return self
   }
 }

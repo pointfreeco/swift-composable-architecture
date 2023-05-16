@@ -135,10 +135,14 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
   ) -> Binding<Value> {
     self.binding(
       get: { $0[keyPath: keyPath].wrappedValue },
-      send: { value in
+      send: { [isInvalidated = self.isInvalidated] value in
         #if DEBUG
           let debugger = BindableActionViewStoreDebugger(
-            value: value, bindableActionType: ViewAction.self, fileID: fileID, line: line
+            value: value,
+            bindableActionType: ViewAction.self,
+            isInvalidated: isInvalidated,
+            fileID: fileID,
+            line: line
           )
           let set: (inout ViewState) -> Void = {
             $0[keyPath: keyPath].wrappedValue = value
@@ -396,6 +400,7 @@ extension BindingAction: CustomDumpReflectable {
   private final class BindableActionViewStoreDebugger<Value> {
     let value: Value
     let bindableActionType: Any.Type
+    let isInvalidated: () -> Bool
     let fileID: StaticString
     let line: UInt
     var wasCalled = false
@@ -403,16 +408,19 @@ extension BindingAction: CustomDumpReflectable {
     init(
       value: Value,
       bindableActionType: Any.Type,
+      isInvalidated: @escaping () -> Bool,
       fileID: StaticString,
       line: UInt
     ) {
       self.value = value
       self.bindableActionType = bindableActionType
+      self.isInvalidated = isInvalidated
       self.fileID = fileID
       self.line = line
     }
 
     deinit {
+      guard !self.isInvalidated() else { return }
       guard self.wasCalled else {
         runtimeWarn(
           """

@@ -74,7 +74,7 @@ struct LoadThenPresentView: View {
       }
       .sheet(
         store: store.scope(state: \.$counter, action: LoadThenPresent.Action.counter),
-        content: CounterView.init(store:)
+        content: { CounterView(store: $0) }
       )
       .navigationTitle("Load and present")
     }
