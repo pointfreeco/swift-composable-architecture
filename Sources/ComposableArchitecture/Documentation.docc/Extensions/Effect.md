@@ -8,6 +8,7 @@
 - ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)``
 - ``EffectPublisher/send(_:)``
 - ``TaskResult``
+- ``Send``
 
 ### Cancellation
 
