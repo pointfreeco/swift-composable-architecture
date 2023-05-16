@@ -662,11 +662,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     ScopedState: Equatable,
     Environment == Void
   {
-    var dependencies = DependencyValues._current
-    let reducer = withDependencies {
-      prepareDependencies(&dependencies)
-      $0 = dependencies
-    } operation: {
+    let reducer = withDependencies(prepareDependencies) {
       TestReducer(Reduce(reducer()), initialState: initialState())
     }
     self._environment = .init(wrappedValue: ())
@@ -677,7 +673,6 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     self.store = Store(initialState: reducer.state, reducer: reducer)
     self.timeout = 100 * NSEC_PER_MSEC
     self.toScopedState = toScopedState
-    self.dependencies = dependencies
   }
 
   /// Creates a test store with an initial state and a reducer powering its runtime.
@@ -703,11 +698,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     Action == ScopedAction,
     Environment == Void
   {
-    var dependencies = DependencyValues._current
-    let reducer = withDependencies {
-      prepareDependencies(&dependencies)
-      $0 = dependencies
-    } operation: {
+    let reducer = withDependencies(prepareDependencies) {
       TestReducer(Reduce(reducer()), initialState: initialState())
     }
     self._environment = .init(wrappedValue: ())
@@ -718,7 +709,6 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     self.store = Store(initialState: reducer.state, reducer: reducer)
     self.timeout = 100 * NSEC_PER_MSEC
     self.toScopedState = { $0 }
-    self.dependencies = dependencies
   }
 
   @available(
@@ -1177,7 +1167,7 @@ extension TestStore where ScopedState: Equatable {
       var expectedWhenGivenPreviousState = expected
       if let updateStateToExpectedResult = updateStateToExpectedResult {
         try withDependencies {
-          $0 = self.dependencies
+          $0 = self.reducer.dependencies
         } operation: {
           try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
         }
@@ -1194,7 +1184,7 @@ extension TestStore where ScopedState: Equatable {
       var expectedWhenGivenActualState = actual
       if let updateStateToExpectedResult = updateStateToExpectedResult {
         try withDependencies {
-          $0 = self.dependencies
+          $0 = self.reducer.dependencies
         } operation: {
           try updateStateToExpectedResult(&expectedWhenGivenActualState)
         }
@@ -1213,7 +1203,7 @@ extension TestStore where ScopedState: Equatable {
           _XCTExpectFailure(strict: false) {
             do {
               try withDependencies {
-                $0 = self.dependencies
+                $0 = self.reducer.dependencies
               } operation: {
                 try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
               }
@@ -2274,7 +2264,7 @@ public struct TestStoreTask: Hashable, Sendable {
 
 class TestReducer<State, Action>: ReducerProtocol {
   let base: Reduce<State, Action>
-  var dependencies = DependencyValues()
+  var dependencies: DependencyValues
   let effectDidSubscribe = AsyncStream.makeStream(of: Void.self)
   var inFlightEffects: Set<LongLivingEffect> = []
   var receivedActions: [(action: Action, state: State)] = []
@@ -2284,7 +2274,9 @@ class TestReducer<State, Action>: ReducerProtocol {
     _ base: Reduce<State, Action>,
     initialState: State
   ) {
+    @Dependency(\.self) var dependencies
     self.base = base
+    self.dependencies = dependencies
     self.state = initialState
   }
 
