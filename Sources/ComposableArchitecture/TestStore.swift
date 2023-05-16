@@ -1447,7 +1447,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
       return
     }
     await self.receiveAction(
-      actionPredicate: { expectedAction == $0 },
+      matching: { expectedAction == $0 },
       timeout: nanoseconds,
       file: file,
       line: line
@@ -1634,7 +1634,7 @@ extension TestStore where ScopedState: Equatable {
       }()
       return
     }
-    await self.receiveAction(actionPredicate: isMatching, timeout: nanoseconds, file: file, line: line)
+    await self.receiveAction(matching: isMatching, timeout: nanoseconds, file: file, line: line)
     _ = {
       self.receive(isMatching, assert: updateStateToExpectedResult, file: file, line: line)
     }()
@@ -1689,7 +1689,7 @@ extension TestStore where ScopedState: Equatable {
       return
     }
     await self.receiveAction(
-      actionPredicate: { actionCase.extract(from: $0) != nil },
+      matching: { actionCase.extract(from: $0) != nil },
       timeout: nanoseconds,
       file: file,
       line: line
@@ -1750,7 +1750,7 @@ extension TestStore where ScopedState: Equatable {
         return
       }
       await self.receiveAction(
-        actionPredicate: { actionCase.extract(from: $0) != nil },
+        matching: { actionCase.extract(from: $0) != nil },
         timeout: duration.nanoseconds,
         file: file,
         line: line
@@ -1853,7 +1853,7 @@ extension TestStore where ScopedState: Equatable {
   }
 
   private func receiveAction(
-    actionPredicate: (Action) -> Bool,
+    matching predicate: (Action) -> Bool,
     timeout nanoseconds: UInt64?,
     file: StaticString,
     line: UInt
@@ -1868,14 +1868,10 @@ extension TestStore where ScopedState: Equatable {
       switch self.exhaustivity {
       case .on:
         guard self.reducer.receivedActions.isEmpty
-        else {
-          return
-        }
+        else { return }
       case .off:
-        guard !self.reducer.receivedActions.map(\.action).contains(where: actionPredicate)
-        else {
-          return
-        }
+        guard !self.reducer.receivedActions.contains(where: { predicate($0.action) })
+        else { return }
       }
       
       guard start.distance(to: DispatchTime.now().uptimeNanoseconds) < nanoseconds

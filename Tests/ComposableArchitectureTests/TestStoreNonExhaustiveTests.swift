@@ -715,14 +715,14 @@
         XCTModify(&$0, case: /Optional.some) { _ in }
       }
     }
-    
+
     func testReceiveNonExhuastiveWithTimeout() async {
       struct Feature: ReducerProtocol {
         struct State: Equatable {}
         enum Action: Equatable { case tap, response1, response2 }
         func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
           switch action {
-            
+
           case .tap:
             return .run { send in
               try await Task.sleep(nanoseconds: 1_000_000)
@@ -735,21 +735,21 @@
           }
         }
       }
-      
+
       let store = TestStore(initialState: Feature.State(), reducer: Feature())
       store.exhaustivity = .off
-      
+
       await store.send(.tap)
       await store.receive(.response2, timeout: 3_000_000)
     }
-    
+
     func testReceiveNonExhuastiveWithTimeoutMultipleNonMatching() async {
       struct Feature: ReducerProtocol {
         struct State: Equatable {}
         enum Action: Equatable { case tap, response1, response2 }
         func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
           switch action {
-            
+
           case .tap:
             return .run { send in
               try await Task.sleep(nanoseconds: 1_000_000)
@@ -766,29 +766,30 @@
           }
         }
       }
-      
+
       let store = TestStore(initialState: Feature.State(), reducer: Feature())
       store.exhaustivity = .off
-      
+
       await store.send(.tap)
       XCTExpectFailure { issue in
-        issue.compactDescription.contains("Expected to receive a matching action, but received none after 0.003 seconds.")
-        || (
-          issue.compactDescription.contains("Expected to receive the following action, but didn't")
-          && issue.compactDescription.contains("Action.response2")
-        )
+        issue.compactDescription.contains(
+          """
+          Expected to receive a matching action, but received none after 0.003 seconds.
+          """)
+          || (issue.compactDescription.contains(
+            "Expected to receive the following action, but didn't")
+            && issue.compactDescription.contains("Action.response2"))
       }
-
       await store.receive(.response2, timeout: 3_000_000)
     }
-    
+
     func testReceiveNonExhuastiveWithTimeoutMultipleMatching() async {
       struct Feature: ReducerProtocol {
         struct State: Equatable {}
         enum Action: Equatable { case tap, response1, response2 }
         func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
           switch action {
-            
+
           case .tap:
             return .run { send in
               try await Task.sleep(nanoseconds: 1_000_000)
@@ -801,12 +802,12 @@
           }
         }
       }
-      
+
       let store = TestStore(initialState: Feature.State(), reducer: Feature())
       store.exhaustivity = .off
-      
+
       await store.send(.tap)
-      
+      await store.receive(.response2, timeout: 3_000_000)
       await store.receive(.response2, timeout: 3_000_000)
     }
 
