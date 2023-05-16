@@ -1428,7 +1428,12 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
       }()
       return
     }
-    await self.receiveAction(timeout: nanoseconds, file: file, line: line)
+    await self.receiveAction(
+      matching: { expectedAction == $0 },
+      timeout: nanoseconds,
+      file: file,
+      line: line
+    )
     _ = {
       self.receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
     }()
@@ -1445,7 +1450,6 @@ extension TestStore where ScopedState: Equatable {
   /// - Parameters:
   ///   - isMatching: A closure that attempts to match an action. If it returns `false`, a test
   ///     failure is reported.
-  ///   - nanoseconds: The amount of time to wait for the expected action.
   ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
   ///     the store. The mutable state sent to this closure must be modified to match the state of
   ///     the store after processing the given action. Do not provide a closure if no change is
@@ -1612,7 +1616,7 @@ extension TestStore where ScopedState: Equatable {
       }()
       return
     }
-    await self.receiveAction(timeout: nanoseconds, file: file, line: line)
+    await self.receiveAction(matching: isMatching, timeout: nanoseconds, file: file, line: line)
     _ = {
       self.receive(isMatching, assert: updateStateToExpectedResult, file: file, line: line)
     }()
@@ -1666,7 +1670,12 @@ extension TestStore where ScopedState: Equatable {
       }()
       return
     }
-    await self.receiveAction(timeout: nanoseconds, file: file, line: line)
+    await self.receiveAction(
+      matching: { actionCase.extract(from: $0) != nil },
+      timeout: nanoseconds,
+      file: file,
+      line: line
+    )
     _ = {
       self.receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
     }()
@@ -1722,7 +1731,12 @@ extension TestStore where ScopedState: Equatable {
         }()
         return
       }
-      await self.receiveAction(timeout: duration.nanoseconds, file: file, line: line)
+      await self.receiveAction(
+        matching: { actionCase.extract(from: $0) != nil },
+        timeout: duration.nanoseconds,
+        file: file,
+        line: line
+      )
       _ = {
         self.receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
       }()
@@ -1821,6 +1835,7 @@ extension TestStore where ScopedState: Equatable {
   }
 
   private func receiveAction(
+    matching predicate: (Action) -> Bool,
     timeout nanoseconds: UInt64?,
     file: StaticString,
     line: UInt
@@ -1832,8 +1847,14 @@ extension TestStore where ScopedState: Equatable {
     while !Task.isCancelled {
       await Task.detached(priority: .background) { await Task.yield() }.value
 
-      guard self.reducer.receivedActions.isEmpty
-      else { break }
+      switch self.exhaustivity {
+      case .on:
+        guard self.reducer.receivedActions.isEmpty
+        else { return }
+      case .off:
+        guard !self.reducer.receivedActions.contains(where: { predicate($0.action) })
+        else { return }
+      }
 
       guard start.distance(to: DispatchTime.now().uptimeNanoseconds) < nanoseconds
       else {
@@ -1861,7 +1882,7 @@ extension TestStore where ScopedState: Equatable {
         }
         XCTFail(
           """
-          Expected to receive an action, but received none\
+          Expected to receive \(self.exhaustivity == .on ? "an action" : "a matching action"), but received none\
           \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds" : "").
 
           \(suggestion)
@@ -1872,9 +1893,6 @@ extension TestStore where ScopedState: Equatable {
         return
       }
     }
-
-    guard !Task.isCancelled
-    else { return }
   }
 }
 
