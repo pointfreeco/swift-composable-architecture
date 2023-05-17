@@ -1,5 +1,5 @@
 extension ReducerProtocol {
-  #if swift(>=5.7)
+  #if swift(>=5.8)
     /// Enhances a reducer with debug logging of received actions and state mutations for the given
     /// printer.
     ///
