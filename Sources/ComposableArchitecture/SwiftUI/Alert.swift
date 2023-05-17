@@ -111,7 +111,7 @@ private struct OldAlertModifier<Action>: ViewModifier {
 
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 private struct PresentationAlertModifier<State, Action, ButtonAction>: ViewModifier {
-  @StateObject var viewStore: ViewStore<PresentationState<State>, PresentationAction<Action>>
+  @ObservedObject var viewStore: ViewStore<PresentationState<State>, PresentationAction<Action>>
   let toDestinationState: (State) -> AlertState<ButtonAction>?
   let fromDestinationAction: (ButtonAction) -> Action
 
