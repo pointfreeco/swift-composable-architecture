@@ -2,14 +2,8 @@ import TestCases
 import XCTest
 
 @MainActor
-final class NavigationStackBindingTests: XCTestCase {
-  override func setUpWithError() throws {
-    self.continueAfterFailure = false
-  }
-
+final class NavigationStackBindingTests: BaseIntegrationTests {
   func testExample() async throws {
-    let app = XCUIApplication()
-    app.launch()
     app.collectionViews.buttons[TestCase.navigationStackBinding.rawValue].tap()
     app.buttons["Go to child"].tap()
     app.buttons["Back"].tap()

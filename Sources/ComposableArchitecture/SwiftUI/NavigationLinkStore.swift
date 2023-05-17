@@ -1,5 +1,30 @@
 import SwiftUI
 
+/// A view that controls a navigation presentation.
+///
+/// This view is similar to SwiftUI's `NavigationLink`, but it allows driving navigation from an
+/// optional or enum instead of just a boolean.
+///
+/// Typically you use this view by first modeling your features as having a parent feature that
+/// holds onto an optional piece of child state using the ``PresentationState``,
+/// ``PresentationAction`` and ``ReducerProtocol/ifLet(_:action:destination:fileID:line:)`` tools
+/// (see <doc:TreeBasedNavigation> for more information). Then in the view you can construct a
+/// `NavigationLinkStore` by passing a ``Store`` that is focused on the presentation domain:
+///
+/// ```swift
+/// NavigationLinkStore(
+///   self.store.scope(state: \.$child, action: { .child($0) })
+/// ) {
+///   viewStore.send(.linkTapped)
+/// } destination: { store in
+///   ChildView(store: store)
+/// } label: {
+///   Text("Go to child")
+/// }
+/// ```
+///
+/// Then when the `child` state flips from `nil` to non-`nil` a drill-down animation will occur
+/// to the child domain.
 @available(iOS, introduced: 13, deprecated: 16)
 @available(macOS, introduced: 10.15, deprecated: 13)
 @available(tvOS, introduced: 13, deprecated: 16)
@@ -27,7 +52,9 @@ public struct NavigationLinkStore<
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where State == DestinationState, Action == DestinationAction {
-    let filteredStore = store.filterSend { state, _ in state.wrappedValue != nil }
+    let filteredStore = store.filterSend { state, _ in
+      state.wrappedValue == nil ? !BindingLocal.isActive : true
+    }
     self.store = filteredStore
     self.viewStore = ViewStore(
       filteredStore.scope(
@@ -51,14 +78,15 @@ public struct NavigationLinkStore<
     @ViewBuilder destination: @escaping (Store<DestinationState, DestinationAction>) -> Destination,
     @ViewBuilder label: () -> Label
   ) {
-    self.store = store
+    let filteredStore = store.filterSend { state, _ in
+      state.wrappedValue.flatMap(toDestinationState) == nil ? !BindingLocal.isActive : true
+    }
+    self.store = filteredStore
     self.viewStore = ViewStore(
-      store
-        .filterSend { state, _ in state.wrappedValue != nil }
-        .scope(
-          state: { $0.wrappedValue.flatMap(toDestinationState) != nil },
-          action: { $0 }
-        ),
+      filteredStore.scope(
+        state: { $0.wrappedValue.flatMap(toDestinationState) != nil },
+        action: { $0 }
+      ),
       observe: { $0 }
     )
     self.toDestinationState = toDestinationState
@@ -75,7 +103,9 @@ public struct NavigationLinkStore<
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where State == DestinationState, Action == DestinationAction, State: Identifiable {
-    let filteredStore = store.filterSend { state, _ in state.wrappedValue != nil }
+    let filteredStore = store.filterSend { state, _ in
+      state.wrappedValue?.id != id ? !BindingLocal.isActive : true
+    }
     self.store = filteredStore
     self.viewStore = ViewStore(
       filteredStore.scope(
@@ -100,14 +130,15 @@ public struct NavigationLinkStore<
     @ViewBuilder destination: @escaping (Store<DestinationState, DestinationAction>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where DestinationState: Identifiable {
-    self.store = store
+    let filteredStore = store.filterSend { state, _ in
+      state.wrappedValue.flatMap(toDestinationState)?.id != id ? !BindingLocal.isActive : true
+    }
+    self.store = filteredStore
     self.viewStore = ViewStore(
-      store
-        .filterSend { state, _ in state.wrappedValue != nil }
-        .scope(
-          state: { $0.wrappedValue.flatMap(toDestinationState)?.id == id },
-          action: { $0 }
-        ),
+      filteredStore.scope(
+        state: { $0.wrappedValue.flatMap(toDestinationState)?.id == id },
+        action: { $0 }
+      ),
       observe: { $0 }
     )
     self.toDestinationState = toDestinationState
@@ -119,7 +150,6 @@ public struct NavigationLinkStore<
 
   public var body: some View {
     NavigationLink(
-      // TODO: construct better binding that handles animation
       isActive: Binding(
         get: { self.viewStore.state },
         set: {

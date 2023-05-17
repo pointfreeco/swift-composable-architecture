@@ -56,7 +56,9 @@ private struct PresentationSheetModifier<
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
     content sheetContent: @escaping (Store<DestinationState, DestinationAction>) -> SheetContent
   ) {
-    let filteredStore = store.filterSend { state, _ in state.wrappedValue != nil }
+    let filteredStore = store.filterSend { state, _ in
+      state.wrappedValue.flatMap(toDestinationState) == nil ? !BindingLocal.isActive : true
+    }
     self.store = filteredStore
     self.viewStore = ViewStore(filteredStore, observe: { $0 }, removeDuplicates: { $0.id == $1.id })
     self.toDestinationState = toDestinationState
@@ -68,7 +70,7 @@ private struct PresentationSheetModifier<
   func body(content: Content) -> some View {
     let id = self.viewStore.id
     content.sheet(
-      item: Binding(  // TODO: do proper binding
+      item: Binding(  
         get: {
           self.viewStore.wrappedValue.flatMap(self.toDestinationState) != nil
             ? toID(self.viewStore.state).map { Identified($0) { $0 } }

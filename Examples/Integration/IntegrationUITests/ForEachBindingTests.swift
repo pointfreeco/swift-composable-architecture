@@ -2,15 +2,8 @@ import TestCases
 import XCTest
 
 @MainActor
-final class ForEachBindingTests: XCTestCase {
-  override func setUpWithError() throws {
-    self.continueAfterFailure = false
-  }
-
+final class ForEachBindingTests: BaseIntegrationTests {
   func testExample() async throws {
-    let app = XCUIApplication()
-    app.launch()
-
     app.collectionViews.buttons[TestCase.forEachBinding.rawValue].tap()
     app.buttons["Remove last"].tap()
     XCTAssertFalse(app.textFields["C"].exists)

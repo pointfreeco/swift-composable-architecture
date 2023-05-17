@@ -61,7 +61,7 @@ extension EffectPublisher where Failure == Never {
                   customDump(error, to: &errorDump, indent: 4)
                   runtimeWarn(
                     """
-                    An "Effect.task" returned from "\(fileID):\(line)" threw an unhandled \
+                    An "EffectTask.task" returned from "\(fileID):\(line)" threw an unhandled \
                     error. …
 
                     \(errorDump)

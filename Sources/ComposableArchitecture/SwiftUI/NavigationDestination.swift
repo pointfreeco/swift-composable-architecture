@@ -1,6 +1,5 @@
 #if swift(>=5.7)
   import SwiftUI
-  import SwiftUINavigation
 
   extension View {
     @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
@@ -55,15 +54,16 @@
       content destinationContent:
         @escaping (Store<DestinationState, DestinationAction>) -> DestinationContent
     ) {
-      self.store = store
+      let filteredStore = store.filterSend { state, _ in
+        state.wrappedValue.flatMap(toDestinationState) == nil ? !BindingLocal.isActive : true
+      }
+      self.store = filteredStore
       self._viewStore = StateObject(
         wrappedValue: ViewStore(
-          store
-            .filterSend { state, _ in state.wrappedValue != nil }
-            .scope(
-              state: { $0.wrappedValue.flatMap(toDestinationState) != nil },
-              action: { $0 }
-            ),
+          filteredStore.scope(
+            state: { $0.wrappedValue.flatMap(toDestinationState) != nil },
+            action: { $0 }
+          ),
           observe: { $0 }
         )
       )
@@ -74,9 +74,8 @@
 
     func body(content: Content) -> some View {
       content.navigationDestination(
-        // TODO: do binding with ID check
-        unwrapping: self.viewStore.binding(send: .dismiss).presence
-      ) { _ in
+        isPresented: self.viewStore.binding(send: .dismiss)
+      ) {
         IfLetStore(
           self.store.scope(
             state: returningLastNonNilValue { $0.wrappedValue.flatMap(self.toDestinationState) },
@@ -85,15 +84,6 @@
           then: self.destinationContent
         )
       }
-    }
-  }
-
-  extension Binding where Value == Bool {
-    fileprivate var presence: Binding<Void?> {
-      .init(
-        get: { self.wrappedValue ? () : nil },
-        set: { self.transaction($1).wrappedValue = $0 != nil }
-      )
     }
   }
 #endif

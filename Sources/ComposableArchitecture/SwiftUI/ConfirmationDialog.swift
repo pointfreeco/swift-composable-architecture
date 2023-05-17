@@ -114,7 +114,7 @@ private struct OldConfirmationDialogModifier<Action>: ViewModifier {
 
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 private struct PresentationConfirmationDialogModifier<State, Action, ButtonAction>: ViewModifier {
-  @StateObject var viewStore: ViewStore<PresentationState<State>, PresentationAction<Action>>
+  @ObservedObject var viewStore: ViewStore<PresentationState<State>, PresentationAction<Action>>
   let toDestinationState: (State) -> ConfirmationDialogState<ButtonAction>?
   let fromDestinationAction: (ButtonAction) -> Action
 
@@ -123,7 +123,7 @@ private struct PresentationConfirmationDialogModifier<State, Action, ButtonActio
     let confirmationDialogState = self.viewStore.wrappedValue.flatMap(self.toDestinationState)
     content.confirmationDialog(
       (confirmationDialogState?.title).map(Text.init) ?? Text(""),
-      isPresented: Binding(  // TODO: do proper binding
+      isPresented: Binding( 
         get: { self.viewStore.wrappedValue.flatMap(self.toDestinationState) != nil },
         set: { newState in
           if !newState, self.viewStore.wrappedValue != nil, self.viewStore.id == id {

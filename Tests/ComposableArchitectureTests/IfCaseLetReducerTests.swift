@@ -152,5 +152,72 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
         }
       }
     }
+
+    func testIdentifiableChild() async {
+      struct Feature: ReducerProtocol {
+        enum State: Equatable {
+          case child(Child.State)
+        }
+        enum Action: Equatable {
+          case child(Child.Action)
+          case newChild
+        }
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .child:
+              return .none
+            case .newChild:
+              guard case let .child(childState) = state
+              else { return .none }
+              state = .child(Child.State(id: childState.id + 1))
+              return .none
+            }
+          }
+          .ifCaseLet(/State.child, action: /Action.child) { Child() }
+        }
+      }
+      struct Child: ReducerProtocol {
+        struct State: Equatable, Identifiable {
+          let id: Int
+          var value = 0
+        }
+        enum Action: Equatable {
+          case tap
+          case response(Int)
+        }
+        @Dependency(\.mainQueue) var mainQueue
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          switch action {
+
+          case .tap:
+            return .run { [id = state.id] send in
+              try await mainQueue.sleep(for: .seconds(0))
+              await send(.response(id))
+            }
+          case let .response(value):
+            state.value = value
+            return .none
+          }
+        }
+      }
+
+      let mainQueue = DispatchQueue.test
+      let store = TestStore(initialState: Feature.State.child(Child.State(id: 1))) {
+        Feature()
+      } withDependencies: {
+        $0.mainQueue = mainQueue.eraseToAnyScheduler()
+      }
+
+      await store.send(.child(.tap))
+      await store.send(.newChild) {
+        $0 = .child(Child.State(id: 2))
+      }
+      await store.send(.child(.tap))
+      await mainQueue.advance()
+      await store.receive(.child(.response(2))) {
+        $0 = .child(Child.State(id: 2, value: 2))
+      }
+    }
   #endif
 }

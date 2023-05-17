@@ -14,13 +14,13 @@ extension DependencyValues {
   func callAsFunction() -> StackElementID {
     self.next()
   }
-
+ 
   public static var liveValue: Self {
-    let next = LockIsolated(StackElementID(generation: 0, rawValue: UUID()))
+    let next = LockIsolated(StackElementID(generation: 0))
     return Self(
       next: {
         defer {
-          next.withValue { $0 = StackElementID(generation: $0.generation + 1, rawValue: UUID()) }
+          next.withValue { $0 = StackElementID(generation: $0.generation + 1) }
         }
         return next.value
       },
@@ -29,12 +29,12 @@ extension DependencyValues {
   }
 
   public static var testValue: Self {
-    let next = LockIsolated(StackElementID(generation: 0, rawValue: 0))
+    let next = LockIsolated(StackElementID(generation: 0))
     return Self(
       next: {
         defer {
           next.withValue {
-            $0 = StackElementID(generation: $0.generation + 1, rawValue: $0.generation + 1)
+            $0 = StackElementID(generation: $0.generation + 1)
           }
         }
         return next.value
@@ -45,12 +45,12 @@ extension DependencyValues {
 
   func incrementingCopy() -> Self {
     let peek = self.peek()
-    let next = LockIsolated(StackElementID(generation: peek.generation, rawValue: peek.generation))
+    let next = LockIsolated(StackElementID(generation: peek.generation))
     return Self(
       next: {
         defer {
           next.withValue {
-            $0 = StackElementID(generation: $0.generation + 1, rawValue: $0.generation + 1)
+            $0 = StackElementID(generation: $0.generation + 1)
           }
         }
         return next.value

@@ -287,5 +287,3 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
     }
   }
 }
-
-// TODO: integrate navigation ID with Scope

@@ -184,7 +184,5 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
       .reduce(into: &childState, action: childAction)
       .map { self.toChildAction.embed($0) }
       .cancellable(id: childID)
-
-    // TODO: check if ID changed and do cancellation
   }
 }

@@ -632,7 +632,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     Environment == Void
   {
     var dependencies = DependencyValues._current
-    let initialState = withDependencies {
+    let initialState = Dependencies.withDependencies {
       prepareDependencies(&dependencies)
       $0 = dependencies
     } operation: {
@@ -640,7 +640,8 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     }
 
     let reducer = TestReducer(
-      Reduce(withDependencies(prepareDependencies) { reducer() }), initialState: initialState
+      Reduce(Dependencies.withDependencies(prepareDependencies) { reducer() }),
+      initialState: initialState
     )
     self._environment = .init(wrappedValue: ())
     self.file = file
@@ -678,14 +679,15 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   {
     var dependencies = DependencyValues._current
     prepareDependencies(&dependencies)
-    let initialState = withDependencies {
+    let initialState = Dependencies.withDependencies {
       $0 = dependencies
     } operation: {
       initialState()
     }
 
     let reducer = TestReducer(
-      Reduce(withDependencies(prepareDependencies) { reducer() }), initialState: initialState
+      Reduce(Dependencies.withDependencies(prepareDependencies) { reducer() }),
+      initialState: initialState
     )
     self._environment = .init(wrappedValue: ())
     self.file = file
@@ -872,11 +874,68 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     }
   }
 
-  private func withExhaustivity(_ exhaustivity: Exhaustivity, operation: () -> Void) {
+  /// Overrides the store's dependencies for a given operation.
+  ///
+  /// - Parameters:
+  ///   - updateValuesForOperation: A closure for updating the store's dependency values for the
+  ///     duration of the operation.
+  ///   - operation: The operation.
+  public func withDependencies<R>(
+    _ updateValuesForOperation: (inout DependencyValues) throws -> Void,
+    operation: () throws -> R
+  ) rethrows -> R {
+    let previous = self.dependencies
+    defer { self.dependencies = previous }
+    try updateValuesForOperation(&self.dependencies)
+    return try operation()
+  }
+
+  /// Overrides the store's dependencies for a given operation.
+  ///
+  /// - Parameters:
+  ///   - updateValuesForOperation: A closure for updating the store's dependency values for the
+  ///     duration of the operation.
+  ///   - operation: The operation.
+  @MainActor
+  public func withDependencies<R>(
+    _ updateValuesForOperation: (inout DependencyValues) async throws -> Void,
+    operation: @MainActor () async throws -> R
+  ) async rethrows -> R {
+    let previous = self.dependencies
+    defer { self.dependencies = previous }
+    try await updateValuesForOperation(&self.dependencies)
+    return try await operation()
+  }
+
+  /// Overrides the store's exhaustivity for a given operation.
+  ///
+  /// - Parameters:
+  ///   - exhaustivity: The exhaustivity.
+  ///   - operation: The operation.
+  public func withExhaustivity<R>(
+    _ exhaustivity: Exhaustivity,
+    operation: () throws -> R
+  ) rethrows -> R {
     let previous = self.exhaustivity
+    defer { self.exhaustivity = previous }
     self.exhaustivity = exhaustivity
-    operation()
-    self.exhaustivity = previous
+    return try operation()
+  }
+
+  /// Overrides the store's exhaustivity for a given operation.
+  ///
+  /// - Parameters:
+  ///   - exhaustivity: The exhaustivity.
+  ///   - operation: The operation.
+  @MainActor
+  public func withExhaustivity<R>(
+    _ exhaustivity: Exhaustivity,
+    operation: @MainActor () async throws -> R
+  ) async rethrows -> R {
+    let previous = self.exhaustivity
+    defer { self.exhaustivity = previous }
+    self.exhaustivity = exhaustivity
+    return try await operation()
   }
 }
 
@@ -1143,7 +1202,7 @@ extension TestStore where ScopedState: Equatable {
     case .on:
       var expectedWhenGivenPreviousState = expected
       if let updateStateToExpectedResult = updateStateToExpectedResult {
-        try withDependencies {
+        try Dependencies.withDependencies {
           $0 = self.dependencies
         } operation: {
           try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
@@ -1160,7 +1219,7 @@ extension TestStore where ScopedState: Equatable {
     case .off:
       var expectedWhenGivenActualState = actual
       if let updateStateToExpectedResult = updateStateToExpectedResult {
-        try withDependencies {
+        try Dependencies.withDependencies {
           $0 = self.dependencies
         } operation: {
           try updateStateToExpectedResult(&expectedWhenGivenActualState)
@@ -1179,7 +1238,7 @@ extension TestStore where ScopedState: Equatable {
         if let updateStateToExpectedResult = updateStateToExpectedResult {
           _XCTExpectFailure(strict: false) {
             do {
-              try withDependencies {
+              try Dependencies.withDependencies {
                 $0 = self.dependencies
               } operation: {
                 try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
@@ -2365,7 +2424,7 @@ extension Task where Success == Failure, Failure == Never {
 #endif
 
 /// The exhaustivity of assertions made by the test store.
-public enum Exhaustivity: Equatable {
+public enum Exhaustivity: Equatable, Sendable {
   /// Exhaustive assertions.
   ///
   /// This setting requires you to exhaustively assert on all state changes and all actions received

@@ -38,7 +38,7 @@ final class RecordMeetingTests: XCTestCase {
 
     await clock.advance(by: .seconds(1))
     await store.receive(.timerTick) {
-      $0.speakerIndex = 1  // TODO: do we wanna do more gnarly timing calculations to make this fair down to the second??
+      $0.speakerIndex = 1
       $0.secondsElapsed = 2
       XCTAssertEqual($0.durationRemaining, .seconds(4))
     }
@@ -116,16 +116,14 @@ final class RecordMeetingTests: XCTestCase {
       $0.transcript = "I completed the project"
     }
 
-    store.exhaustivity = .off(showSkippedAssertions: true)
-    await store.receive(.timerTick)
-    await store.receive(.timerTick)
-    await store.receive(.timerTick)
-    await store.receive(.timerTick)
-    await store.receive(.timerTick)
-    await store.receive(.timerTick)
-    store.exhaustivity = .on  // TODO: store.withExhaustivity(...) { ... }
-
-    // TODO: store.withDependencies { ... }
+    await store.withExhaustivity(.off(showSkippedAssertions: true)) {
+      await store.receive(.timerTick)
+      await store.receive(.timerTick)
+      await store.receive(.timerTick)
+      await store.receive(.timerTick)
+      await store.receive(.timerTick)
+      await store.receive(.timerTick)
+    }
 
     await store.receive(.delegate(.save(transcript: "I completed the project")))
   }

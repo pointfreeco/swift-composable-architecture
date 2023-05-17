@@ -12,8 +12,14 @@ struct AppFeature: Reducer {
     case standupsList(StandupsList.Action)
   }
 
+  @Dependency(\.continuousClock) var clock
   @Dependency(\.date.now) var now
+  @Dependency(\.dataManager.save) var saveData
   @Dependency(\.uuid) var uuid
+
+  private enum CancelID {
+    case saveDebounce
+  }
 
   var body: some ReducerOf<Self> {
     Scope(state: \.standupsList, action: /Action.standupsList) {
@@ -72,6 +78,16 @@ struct AppFeature: Reducer {
     }
     .forEach(\.path, action: /Action.path) {
       Path()
+    }
+
+    Reduce<State, Action> { state, action in
+      return .run { [standups = state.standupsList.standups] _ in
+        try await withTaskCancellation(id: CancelID.saveDebounce, cancelInFlight: true) {
+          try await self.clock.sleep(for: .seconds(1))
+          try await self.saveData(JSONEncoder().encode(standups), .standups)
+        }
+      } catch: { _, _ in
+      }
     }
   }
 
@@ -133,4 +149,8 @@ struct AppView: View {
       }
     }
   }
+}
+
+extension URL {
+  static let standups = Self.documentsDirectory.appending(component: "standups.json")
 }

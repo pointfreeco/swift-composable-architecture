@@ -47,12 +47,8 @@ struct StandupsList: Reducer {
       }
     }
   }
-  private enum CancelID {
-    case saveDebounce
-  }
 
   @Dependency(\.continuousClock) var clock
-  @Dependency(\.dataManager) var dataManager
   @Dependency(\.uuid) var uuid
 
   var body: some ReducerOf<Self> {
@@ -97,16 +93,6 @@ struct StandupsList: Reducer {
     }
     .ifLet(\.$destination, action: /Action.destination) {
       Destination()
-    }
-
-    Reduce<State, Action> { state, action in
-      return .run { [standups = state.standups] _ in
-        try await withTaskCancellation(id: CancelID.saveDebounce, cancelInFlight: true) {
-          try await self.clock.sleep(for: .seconds(1))
-          try await self.dataManager.save(JSONEncoder().encode(standups), .standups)
-        }
-      } catch: { _, _ in
-      }
     }
   }
 }
@@ -216,10 +202,6 @@ struct TrailingIconLabelStyle: LabelStyle {
 
 extension LabelStyle where Self == TrailingIconLabelStyle {
   static var trailingIcon: Self { Self() }
-}
-
-extension URL {
-  fileprivate static let standups = Self.documentsDirectory.appending(component: "standups.json")
 }
 
 struct StandupsList_Previews: PreviewProvider {

@@ -4,15 +4,11 @@ import XCTest
 #if swift(>=5.7)
 @MainActor
 final class StackReducerTests: BaseTCATestCase {
-  func testStackState() async {
-    // TODO: flesh out state test
-  }
-
   func testCustomDebugStringConvertible() {
     @Dependency(\.stackElementID) var stackElementID
-    XCTAssertEqual(stackElementID.peek().rawValue.base.base as! Int, 0)
+    XCTAssertEqual(stackElementID.peek().generation, 0)
     XCTAssertEqual(stackElementID.next().customDumpDescription, "#0")
-    XCTAssertEqual(stackElementID.peek().rawValue.base.base as! Int, 1)
+    XCTAssertEqual(stackElementID.peek().generation, 1)
     XCTAssertEqual(stackElementID.next().customDumpDescription, "#1")
 
     withDependencies {
@@ -20,7 +16,6 @@ final class StackReducerTests: BaseTCATestCase {
     } operation: {
       XCTAssertEqual(stackElementID.next().customDumpDescription, "#0")
       XCTAssertEqual(stackElementID.next().customDumpDescription, "#1")
-      XCTAssertTrue(stackElementID.peek().rawValue.base.base is UUID)
     }
   }
 
@@ -775,13 +770,16 @@ final class StackReducerTests: BaseTCATestCase {
     XCTExpectFailure {
       $0.compactDescription == """
           A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" received a \
-          "popFrom" action for a missing element.
+          "popFrom" action for a missing element. …
+
+            ID:
+              #999
+            Path IDs:
+              [#0]
           """
     }
 
-    var path = StackState<Int>()
-    path.append(1)
-    let store = TestStore(initialState: Parent.State(path: path)) {
+    let store = TestStore(initialState: Parent.State(path: StackState<Int>([1]))) {
       Parent()
     }
     await store.send(.path(.popFrom(id: 999)))
@@ -821,26 +819,26 @@ final class StackReducerTests: BaseTCATestCase {
       $0.sourceCodeContext.location?.fileURL.absoluteString.contains("BaseTCATestCase") == true
       || $0.sourceCodeContext.location?.lineNumber == line + 1
       && $0.compactDescription == """
-              An effect returned for this action is still running. It must complete before the end \
-              of the test. …
+        An effect returned for this action is still running. It must complete before the end \
+        of the test. …
 
-              To fix, inspect any effects the reducer returns for this action and ensure that all \
-              of them complete by the end of the test. There are a few reasons why an effect may \
-              not have completed:
+        To fix, inspect any effects the reducer returns for this action and ensure that all \
+        of them complete by the end of the test. There are a few reasons why an effect may \
+        not have completed:
 
-              • If using async/await in your effect, it may need a little bit of time to properly \
-              finish. To fix you can simply perform "await store.finish()" at the end of your test.
+        • If using async/await in your effect, it may need a little bit of time to properly \
+        finish. To fix you can simply perform "await store.finish()" at the end of your test.
 
-              • If an effect uses a clock/scheduler (via "receive(on:)", "delay", "debounce", \
-              etc.), make sure that you wait enough time for it to perform the effect. If you are \
-              using a test clock/scheduler, advance it so that the effects may complete, or \
-              consider using an immediate clock/scheduler to immediately perform the effect instead.
+        • If an effect uses a clock/scheduler (via "receive(on:)", "delay", "debounce", \
+        etc.), make sure that you wait enough time for it to perform the effect. If you are \
+        using a test clock/scheduler, advance it so that the effects may complete, or \
+        consider using an immediate clock/scheduler to immediately perform the effect instead.
 
-              • If you are returning a long-living effect (timers, notifications, subjects, etc.), \
-              then make sure those effects are torn down by marking the effect ".cancellable" and \
-              returning a corresponding cancellation effect ("Effect.cancel") from another action, \
-              or, if your effect is driven by a Combine subject, send it a completion.
-              """
+        • If you are returning a long-living effect (timers, notifications, subjects, etc.), \
+        then make sure those effects are torn down by marking the effect ".cancellable" and \
+        returning a corresponding cancellation effect ("Effect.cancel") from another action, \
+        or, if your effect is driven by a Combine subject, send it a completion.
+        """
     }
   }
 
@@ -872,7 +870,7 @@ final class StackReducerTests: BaseTCATestCase {
       enum Action: Equatable {
         case child(StackAction<Child.State, Child.Action>)
       }
-      var body: some ReducerProtocolOf<Self> {
+      var body: some ReducerProtocol<State, Action> {
         Reduce { _, _ in .none }
           .forEach(\.children, action: /Action.child) { Child() }
       }
@@ -919,7 +917,7 @@ final class StackReducerTests: BaseTCATestCase {
       enum Action: Equatable {
         case child(StackAction<Child.State, Child.Action>)
       }
-      var body: some ReducerProtocolOf<Self> {
+      var body: some ReducerProtocol<State, Action> {
         Reduce { _, _ in .none }
           .forEach(\.children, action: /Action.child) { Child() }
       }
@@ -955,7 +953,7 @@ final class StackReducerTests: BaseTCATestCase {
         case child(StackAction<Child.State, Child.Action>)
         case push
       }
-      var body: some ReducerProtocolOf<Self> {
+      var body: some ReducerProtocol<State, Action> {
         Reduce { state, action in
           switch action {
           case .child:
@@ -1007,7 +1005,7 @@ final class StackReducerTests: BaseTCATestCase {
       enum Action: Equatable {
         case child(StackAction<Child.State, Child.Action>)
       }
-      var body: some ReducerProtocolOf<Self> {
+      var body: some ReducerProtocol<State, Action> {
         Reduce { _, _ in .none }
           .forEach(\.children, action: /Action.child) { Child() }
       }
@@ -1021,7 +1019,12 @@ final class StackReducerTests: BaseTCATestCase {
     XCTExpectFailure {
       $0.compactDescription == """
           A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" received a \
-          "push" action for an element it already contains.
+          "push" action for an element it already contains. …
+
+            ID:
+              #0
+            Path IDs:
+              [#0]
           """
     }
 
@@ -1046,7 +1049,7 @@ final class StackReducerTests: BaseTCATestCase {
       enum Action: Equatable {
         case child(StackAction<Child.State, Child.Action>)
       }
-      var body: some ReducerProtocolOf<Self> {
+      var body: some ReducerProtocol<State, Action> {
         Reduce { _, _ in .none }
           .forEach(\.children, action: /Action.child) { Child() }
       }
@@ -1062,9 +1065,9 @@ final class StackReducerTests: BaseTCATestCase {
           A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" received a \
           "push" action with an unexpected generational ID. …
 
-            Received:
+            Received ID:
               #1
-            Next:
+            Expected ID:
               #0
           """
     }
@@ -1088,7 +1091,7 @@ final class StackReducerTests: BaseTCATestCase {
       enum Action: Equatable {
         case child(StackAction<Child.State, Child.Action>)
       }
-      var body: some ReducerProtocolOf<Self> {
+      var body: some ReducerProtocol<State, Action> {
         Reduce { _, _ in .none }.forEach(\.children, action: /Action.child) { Child() }
       }
     }
@@ -1126,7 +1129,7 @@ final class StackReducerTests: BaseTCATestCase {
         case path(StackAction<Int, Never>)
         case response
       }
-      var body: some ReducerProtocolOf<Self> {
+      var body: some ReducerProtocol<State, Action> {
         Reduce { state, action in
           switch action {
           case .buttonTapped:

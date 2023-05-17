@@ -68,6 +68,24 @@ extension Reducer {
       line: line
     )
   }
+
+  @inlinable
+  @warn_unqualified_access
+  public func ifLet<WrappedState: _EphemeralState, WrappedAction>(
+    _ toWrappedState: WritableKeyPath<State, WrappedState?>,
+    action toWrappedAction: CasePath<Action, WrappedAction>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> _IfLetReducer<Self, EmptyReducer<WrappedState, WrappedAction>> {
+    .init(
+      parent: self,
+      child: EmptyReducer(),
+      toChildState: toWrappedState,
+      toChildAction: toWrappedAction,
+      fileID: fileID,
+      line: line
+    )
+  }
 }
 
 public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
@@ -123,6 +141,15 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
       NavigationID(base: $0, keyPath: self.toChildState)
     }
 
+    if
+      childIDAfter == childIDBefore,
+      self.toChildAction.extract(from: action) != nil,
+      let childState = state[keyPath: self.toChildState],
+      isEphemeral(childState)
+    {
+      state[keyPath: toChildState] = nil
+    }
+
     let childCancelEffects: Effect<Parent.Action>
     if let childID = childIDBefore, childID != childIDAfter {
       childCancelEffects = ._cancel(id: childID, navigationID: self.navigationIDPath)
@@ -130,8 +157,6 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
       childCancelEffects = .none
     }
 
-    // TODO: should we check inert state and nil out?
-    // TODO: can this just call ifCaseLet under the hood?
     return .merge(
       childEffects,
       parentEffects,
@@ -172,11 +197,6 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
         """
       )
       return .none
-    }
-    defer {
-      if Child.State.self is _EphemeralState.Type {
-        state[keyPath: toChildState] = nil
-      }
     }
     let navigationID = NavigationID(
       base: state[keyPath: self.toChildState]!, keyPath: self.toChildState)

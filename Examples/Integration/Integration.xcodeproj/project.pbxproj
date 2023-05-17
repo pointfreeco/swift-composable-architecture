@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		CA3A7B9D29CB61E9002CD272 /* TestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA3A7B9C29CB61E9002CD272 /* TestHelpers.swift */; };
+		CA487B2C2A15185300F54A79 /* BaseIntegrateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA487B2B2A15185300F54A79 /* BaseIntegrateTests.swift */; };
 		CA4BA5E929E76A7F0004FF9D /* NavigationStackTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4BA5E829E76A7F0004FF9D /* NavigationStackTestCase.swift */; };
 		CA4BA5EB29E76F110004FF9D /* NavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4BA5EA29E76F110004FF9D /* NavigationTests.swift */; };
 		CA595273296DF46D00B5B695 /* NavigationStackBindingTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA595272296DF46D00B5B695 /* NavigationStackBindingTestCase.swift */; };
@@ -73,6 +74,7 @@
 
 /* Begin PBXFileReference section */
 		CA3A7B9C29CB61E9002CD272 /* TestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestHelpers.swift; sourceTree = "<group>"; };
+		CA487B2B2A15185300F54A79 /* BaseIntegrateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseIntegrateTests.swift; sourceTree = "<group>"; };
 		CA4BA5E829E76A7F0004FF9D /* NavigationStackTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStackTestCase.swift; sourceTree = "<group>"; };
 		CA4BA5EA29E76F110004FF9D /* NavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationTests.swift; sourceTree = "<group>"; };
 		CA595272296DF46D00B5B695 /* NavigationStackBindingTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStackBindingTestCase.swift; sourceTree = "<group>"; };
@@ -129,6 +131,7 @@
 		CA3A7B9B29CB61E3002CD272 /* Internal */ = {
 			isa = PBXGroup;
 			children = (
+				CA487B2B2A15185300F54A79 /* BaseIntegrateTests.swift */,
 				CA3A7B9C29CB61E9002CD272 /* TestHelpers.swift */,
 			);
 			path = Internal;
@@ -184,13 +187,13 @@
 		CAA1CB0E296DEE79000665B1 /* IntegrationUITests */ = {
 			isa = PBXGroup;
 			children = (
-				CA3A7B9B29CB61E3002CD272 /* Internal */,
 				E9919D3F296E3EF400C8716B /* EscapedWithViewStoreTests.swift */,
 				CAA1CB0F296DEE79000665B1 /* ForEachBindingTests.swift */,
-				DC140CC629E0E8F3006DF553 /* SwitchStoreTests.swift */,
 				CA595274296DF55A00B5B695 /* NavigationStackBindingTests.swift */,
-				CAF5802629A567BB0042FB62 /* PresentationTests.swift */,
 				CA4BA5EA29E76F110004FF9D /* NavigationTests.swift */,
+				CAF5802629A567BB0042FB62 /* PresentationTests.swift */,
+				DC140CC629E0E8F3006DF553 /* SwitchStoreTests.swift */,
+				CA3A7B9B29CB61E3002CD272 /* Internal */,
 			);
 			path = IntegrationUITests;
 			sourceTree = "<group>";
@@ -382,6 +385,7 @@
 				E9919D40296E3EF400C8716B /* EscapedWithViewStoreTests.swift in Sources */,
 				CA3A7B9D29CB61E9002CD272 /* TestHelpers.swift in Sources */,
 				CAF5802729A567BB0042FB62 /* PresentationTests.swift in Sources */,
+				CA487B2C2A15185300F54A79 /* BaseIntegrateTests.swift in Sources */,
 				CA595275296DF55A00B5B695 /* NavigationStackBindingTests.swift in Sources */,
 				CAA1CB10296DEE79000665B1 /* ForEachBindingTests.swift in Sources */,
 				DC140CC729E0E8F3006DF553 /* SwitchStoreTests.swift in Sources */,
