@@ -67,6 +67,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
   public private(set) lazy var objectWillChange = ObservableObjectPublisher()
 
+  let _isInvalidated: () -> Bool
   private let _send: (ViewAction) -> Task<Void, Never>?
   fileprivate let _state: CurrentValueRelay<ViewState>
   private var viewCancellable: AnyCancellable?
@@ -92,6 +93,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ) {
     self._send = { store.send($0) }
     self._state = CurrentValueRelay(toViewState(store.state.value))
+    self._isInvalidated = store._isInvalidated
     self.viewCancellable = store.state
       .map(toViewState)
       .removeDuplicates(by: isDuplicate)
@@ -125,6 +127,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ) {
     self._send = { store.send(fromViewAction($0)) }
     self._state = CurrentValueRelay(toViewState(store.state.value))
+    self._isInvalidated = store._isInvalidated
     self.viewCancellable = store.state
       .map(toViewState)
       .removeDuplicates(by: isDuplicate)
@@ -165,6 +168,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ) {
     self._send = { store.send($0) }
     self._state = CurrentValueRelay(store.state.value)
+    self._isInvalidated = store._isInvalidated
     self.viewCancellable = store.state
       .removeDuplicates(by: isDuplicate)
       .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
@@ -177,6 +181,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   init(_ viewStore: ViewStore<ViewState, ViewAction>) {
     self._send = viewStore._send
     self._state = viewStore._state
+    self._isInvalidated = viewStore._isInvalidated
     self.objectWillChange = viewStore.objectWillChange
     self.viewCancellable = viewStore.viewCancellable
   }

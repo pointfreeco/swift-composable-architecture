@@ -122,6 +122,7 @@ import Foundation
 public final class Store<State, Action> {
   private var bufferedActions: [Action] = []
   @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] = [:]
+  var _isInvalidated = { false }
   private var isSending = false
   var parentCancellable: AnyCancellable?
   #if swift(>=5.7)
@@ -134,6 +135,12 @@ public final class Store<State, Action> {
   #if DEBUG
     private let mainThreadChecksEnabled: Bool
   #endif
+
+  func invalidate(_ isInvalid: @escaping (State) -> Bool) -> Store {
+    let store = self.scope(state: { $0 }, action: { $0 })
+    store._isInvalidated = { self._isInvalidated() || isInvalid(self.state.value) }
+    return store
+  }
 
   /// Initializes a store from an initial state and a reducer.
   ///
@@ -689,6 +696,7 @@ public typealias StoreOf<R: Reducer> = Store<R.State, R.Action>
         initialState: toRescopedState(store.state.value),
         reducer: reducer
       )
+      childStore._isInvalidated = store._isInvalidated
       childStore.parentCancellable = store.state
         .dropFirst()
         .sink { [weak childStore] newValue in
@@ -752,6 +760,7 @@ public typealias StoreOf<R: Reducer> = Store<R.State, R.Action>
           }
         })
       )
+      rescopedStore._isInvalidated = scopedStore._isInvalidated
       rescopedStore.parentCancellable = scopedStore.state
         .dropFirst()
         .sink { [weak rescopedStore] newValue in
