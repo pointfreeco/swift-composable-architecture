@@ -14,23 +14,11 @@ struct IntegrationApp: App {
 struct ContentView: View {
   @State var isNavigationStackTestCasePresented = false
   @State var isNavigationStackBindingTestCasePresented = false
-  @State var runtimeWarningMessage: String?
+  @State var runtimeWarnings: [String] = []
 
   var body: some View {
     NavigationStack {
       List {
-        if let runtimeWarningMessage = self.runtimeWarningMessage {
-          VStack(alignment: .leading) {
-            HStack {
-              Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundColor(Color.purple)
-              Text("Runtime warning")
-            }
-            .font(.largeTitle)
-            Text(runtimeWarningMessage)
-          }
-        }
-
         Section {
           ForEach(TestCase.allCases) { test in
             switch test {
@@ -80,11 +68,25 @@ struct ContentView: View {
             BindingsAnimationsTestBench()
           }
         }
+
+        ForEach(self.runtimeWarnings, id: \.self) { warning in
+          VStack(alignment: .leading) {
+            HStack {
+              Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundColor(Color.purple)
+              Text("Runtime warning")
+            }
+            .font(.largeTitle)
+            Text(warning)
+          }
+        }
       }
     }
     .task {
       for await notification in NotificationCenter.default.notifications(named: .runtimeWarning) {
-        self.runtimeWarningMessage = notification.userInfo?["message"] as? String
+        if let message = notification.userInfo?["message"] as? String {
+          self.runtimeWarnings.append(message)
+        }
       }
     }
   }
