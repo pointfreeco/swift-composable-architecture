@@ -3,14 +3,9 @@ import TestCases
 import XCTest
 
 @MainActor
-final class NavigationTests: XCTestCase {
-  var app: XCUIApplication!
-
+final class NavigationTests: BaseIntegrationTests {
   override func setUp() {
-    self.continueAfterFailure = false
-
-    self.app = XCUIApplication()
-    self.app.launch()
+    super.setUp()
     self.app.collectionViews.buttons[TestCase.navigationStack.rawValue].tap()
   }
 
@@ -90,6 +85,5 @@ final class NavigationTests: XCTestCase {
       This should pass once we figure out how to prevent the alert from sending a "dismiss" action
       after the element has already been removed from the path.
       """)
-    XCTAssertEqual(self.app.staticTexts["Runtime warning"].exists, false)
   }
 }

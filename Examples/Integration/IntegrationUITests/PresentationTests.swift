@@ -3,14 +3,9 @@ import TestCases
 import XCTest
 
 @MainActor
-final class PresentationTests: XCTestCase {
-  var app: XCUIApplication!
-
+final class PresentationTests: BaseIntegrationTests {
   override func setUp() {
-    self.continueAfterFailure = false
-
-    self.app = XCUIApplication()
-    self.app.launch()
+    super.setUp()
     self.app.collectionViews.buttons[TestCase.presentation.rawValue].tap()
   }
 

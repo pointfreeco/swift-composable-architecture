@@ -3,15 +3,8 @@ import TestCases
 import XCTest
 
 @MainActor
-final class EscapedWithViewStoreTests: XCTestCase {
-  override func setUpWithError() throws {
-    self.continueAfterFailure = false
-  }
-
+final class EscapedWithViewStoreTests: BaseIntegrationTests {
   func testExample() async throws {
-    let app = XCUIApplication()
-    app.launch()
-
     app.collectionViews.buttons[TestCase.escapedWithViewStore.rawValue].tap()
 
     XCTAssertEqual(app.staticTexts["Label"].value as? String, "10")

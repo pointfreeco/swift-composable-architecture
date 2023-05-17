@@ -3,15 +3,8 @@ import TestCases
 import XCTest
 
 @MainActor
-final class SwitchStoreTests: XCTestCase {
-  override func setUpWithError() throws {
-    self.continueAfterFailure = false
-  }
-
+final class SwitchStoreTests: BaseIntegrationTests {
   func testExample() async throws {
-    let app = XCUIApplication()
-    app.launch()
-
     app.collectionViews.buttons[TestCase.switchStore.rawValue].tap()
 
     XCTAssertFalse(
