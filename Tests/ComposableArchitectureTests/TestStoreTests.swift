@@ -390,6 +390,18 @@ final class TestStoreTests: BaseTCATestCase {
     }
   }
 
+  func testPrepareDependenciesCalledOnce() {
+    var count = 0
+    let store = TestStore(initialState: 0) {
+      EmptyReducer<Int, Void>()
+    } withDependencies: { _ in
+      count += 1
+    }
+
+    XCTAssertEqual(count, 1)
+    _ = store
+  }
+
   func testEffectEmitAfterSkipInFlightEffects() async {
     let mainQueue = DispatchQueue.test
     enum Action: Equatable { case tap, response }
