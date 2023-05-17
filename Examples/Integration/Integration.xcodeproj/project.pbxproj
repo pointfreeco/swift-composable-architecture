@@ -29,6 +29,8 @@
 		DC140CC529E0BB2C006DF553 /* SwitchStoreTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC140CC429E0BB2C006DF553 /* SwitchStoreTestCase.swift */; };
 		DC140CC729E0E8F3006DF553 /* SwitchStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC140CC629E0E8F3006DF553 /* SwitchStoreTests.swift */; };
 		DC808D6529E91FAA0072B4A9 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC808D6429E91FAA0072B4A9 /* ComposableArchitecture */; };
+		DCFFB8E72A156488006AF839 /* BindingLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCFFB8E62A156488006AF839 /* BindingLocalTestCase.swift */; };
+		DCFFB8E92A15792C006AF839 /* BindingLocalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCFFB8E82A15792C006AF839 /* BindingLocalTests.swift */; };
 		E9919D3E296E28C800C8716B /* EscapedWithViewStoreTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9919D3D296E28C800C8716B /* EscapedWithViewStoreTestCase.swift */; };
 		E9919D40296E3EF400C8716B /* EscapedWithViewStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9919D3F296E3EF400C8716B /* EscapedWithViewStoreTests.swift */; };
 		E9919D42296E47A400C8716B /* BindingsAnimationsTestBench.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9919D41296E47A400C8716B /* BindingsAnimationsTestBench.swift */; };
@@ -93,6 +95,8 @@
 		CAF5802629A567BB0042FB62 /* PresentationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PresentationTests.swift; sourceTree = "<group>"; };
 		DC140CC429E0BB2C006DF553 /* SwitchStoreTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitchStoreTestCase.swift; sourceTree = "<group>"; };
 		DC140CC629E0E8F3006DF553 /* SwitchStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitchStoreTests.swift; sourceTree = "<group>"; };
+		DCFFB8E62A156488006AF839 /* BindingLocalTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BindingLocalTestCase.swift; sourceTree = "<group>"; };
+		DCFFB8E82A15792C006AF839 /* BindingLocalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BindingLocalTests.swift; sourceTree = "<group>"; };
 		E9919D3D296E28C800C8716B /* EscapedWithViewStoreTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EscapedWithViewStoreTestCase.swift; sourceTree = "<group>"; };
 		E9919D3F296E3EF400C8716B /* EscapedWithViewStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EscapedWithViewStoreTests.swift; sourceTree = "<group>"; };
 		E9919D41296E47A400C8716B /* BindingsAnimationsTestBench.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BindingsAnimationsTestBench.swift; sourceTree = "<group>"; };
@@ -162,6 +166,7 @@
 		CAA1CAF3296DEE78000665B1 /* Integration */ = {
 			isa = PBXGroup;
 			children = (
+				DCFFB8E62A156488006AF839 /* BindingLocalTestCase.swift */,
 				E9919D41296E47A400C8716B /* BindingsAnimationsTestBench.swift */,
 				E9919D3D296E28C800C8716B /* EscapedWithViewStoreTestCase.swift */,
 				CAA1CB1E296DEEAC000665B1 /* ForEachBindingTestCase.swift */,
@@ -187,6 +192,7 @@
 		CAA1CB0E296DEE79000665B1 /* IntegrationUITests */ = {
 			isa = PBXGroup;
 			children = (
+				DCFFB8E82A15792C006AF839 /* BindingLocalTests.swift */,
 				E9919D3F296E3EF400C8716B /* EscapedWithViewStoreTests.swift */,
 				CAA1CB0F296DEE79000665B1 /* ForEachBindingTests.swift */,
 				CA595274296DF55A00B5B695 /* NavigationStackBindingTests.swift */,
@@ -370,6 +376,7 @@
 				DC140CC529E0BB2C006DF553 /* SwitchStoreTestCase.swift in Sources */,
 				CA4BA5E929E76A7F0004FF9D /* NavigationStackTestCase.swift in Sources */,
 				E9919D42296E47A400C8716B /* BindingsAnimationsTestBench.swift in Sources */,
+				DCFFB8E72A156488006AF839 /* BindingLocalTestCase.swift in Sources */,
 				CA595273296DF46D00B5B695 /* NavigationStackBindingTestCase.swift in Sources */,
 				CAF5802529A5651D0042FB62 /* PresentationTestCase.swift in Sources */,
 				E9919D3E296E28C800C8716B /* EscapedWithViewStoreTestCase.swift in Sources */,
@@ -388,6 +395,7 @@
 				CA487B2C2A15185300F54A79 /* BaseIntegrateTests.swift in Sources */,
 				CA595275296DF55A00B5B695 /* NavigationStackBindingTests.swift in Sources */,
 				CAA1CB10296DEE79000665B1 /* ForEachBindingTests.swift in Sources */,
+				DCFFB8E92A15792C006AF839 /* BindingLocalTests.swift in Sources */,
 				DC140CC729E0E8F3006DF553 /* SwitchStoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

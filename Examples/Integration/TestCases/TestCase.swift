@@ -5,6 +5,7 @@ public enum TestCase: String, CaseIterable, Identifiable, RawRepresentable {
   case navigationStackBinding = "NavigationStack Binding"
   case presentation = "Presentation APIs"
   case switchStore = "SwitchStore/CaseLet Warning"
+  case bindingLocal = "BindingLocal Warning"
 
   public var id: Self { self }
 }

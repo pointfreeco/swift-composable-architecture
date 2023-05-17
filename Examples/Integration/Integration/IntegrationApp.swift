@@ -58,6 +58,11 @@ struct ContentView: View {
               NavigationLink(test.rawValue) {
                 SwitchStoreTestCaseView()
               }
+
+            case .bindingLocal:
+              NavigationLink(test.rawValue) {
+                BindingLocalTestCaseView()
+              }
             }
           }
         }
@@ -67,9 +72,10 @@ struct ContentView: View {
             BindingsAnimationsTestBench()
           }
         }
-
-        RuntimeWarnings()
       }
+    }
+    .overlay(alignment: .bottom) {
+      RuntimeWarnings()
     }
   }
 }
@@ -78,15 +84,28 @@ struct RuntimeWarnings: View {
   @State var runtimeWarnings: [String] = []
 
   var body: some View {
-    ForEach(self.runtimeWarnings, id: \.self) { warning in
-      VStack(alignment: .leading) {
-        HStack {
-          Image(systemName: "exclamationmark.triangle.fill")
-            .foregroundColor(Color.purple)
-          Text("Runtime warning")
+    VStack {
+      if !self.runtimeWarnings.isEmpty {
+        ScrollView {
+          ForEach(self.runtimeWarnings, id: \.self) { warning in
+            HStack(alignment: .firstTextBaseline) {
+              Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundColor(.purple)
+              VStack(alignment: .leading, spacing: 4) {
+                Text("Runtime warning")
+                  .font(.headline)
+                Text(warning)
+              }
+            }
+          }
         }
-        .font(.largeTitle)
-        Text(warning)
+        .frame(maxHeight: 100)
+        .padding()
+        .background(Color.white)
+        .cornerRadius(4)
+        .shadow(color: .black.opacity(0.3), radius: 4, y: 4)
+        .padding()
+        .transition(.opacity.animation(.default))
       }
     }
     .onReceive(NotificationCenter.default.publisher(for: .runtimeWarning)) { notification in

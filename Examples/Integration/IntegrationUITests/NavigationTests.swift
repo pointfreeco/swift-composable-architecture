@@ -81,9 +81,11 @@ final class NavigationTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["What do you want to do?"].exists, false)
     try await Task.sleep(for: .seconds(1))
 
-    XCTTODO("""
+    XCTTODO(
+      """
       This should pass once we figure out how to prevent the alert from sending a "dismiss" action
       after the element has already been removed from the path.
-      """)
+      """
+    )
   }
 }
