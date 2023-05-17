@@ -414,13 +414,13 @@ public final class Store<State, Action> {
           tasks.wrappedValue.append(
             Task(priority: priority) { @MainActor in
               #if DEBUG
-                var isCompleted = false
-                defer { isCompleted = true }
+                let isCompleted = LockIsolated(false)
+                defer { isCompleted.setValue(true) }
               #endif
               await operation(
                 Send { effectAction in
                   #if DEBUG
-                    if isCompleted {
+                    if isCompleted.value {
                       runtimeWarn(
                         """
                         An action was sent from a completed effect:

@@ -46,12 +46,12 @@ extension EffectPublisher: Publisher {
         let task = Task(priority: priority) { @MainActor in
           defer { subscriber.send(completion: .finished) }
           #if DEBUG
-            var isCompleted = false
-            defer { isCompleted = true }
+            let isCompleted = LockIsolated(false)
+            defer { isCompleted.setValue(true) }
           #endif
           let send = Send<Action> {
             #if DEBUG
-              if isCompleted {
+              if isCompleted.value {
                 runtimeWarn(
                   """
                   An action was sent from a completed effect:

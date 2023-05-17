@@ -1,5 +1,5 @@
 extension ReducerProtocol {
-  #if swift(>=5.7)
+  #if swift(>=5.8)
     /// Enhances a reducer with debug logging of received actions and state mutations for the given
     /// printer.
     ///
@@ -9,7 +9,7 @@ extension ReducerProtocol {
     /// - Returns: A reducer that prints debug messages for all received actions.
     @inlinable
     @warn_unqualified_access
-    @_documentation(visibility: public)
+    @_documentation(visibility:public)
     public func _printChanges(
       _ printer: _ReducerPrinter<State, Action>? = .customDump
     ) -> _PrintChangesReducer<Self> {

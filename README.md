@@ -85,6 +85,10 @@ iOS word search game built in SwiftUI and the Composable Architecture.
 
 ## Basic Usage
 
+> **Note**
+> For a step-by-step interactive tutorial, be sure to check out [Meet the Composable
+> Architecture][meet-tca].
+
 To build a feature using the Composable Architecture you define some types and values that model 
 your domain:
 
@@ -547,13 +551,14 @@ advanced usages.
 The documentation for releases and `main` are available here:
 
 * [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture)
-* [0.51.0](https://pointfreeco.github.io/swift-composable-architecture/0.51.0/documentation/composablearchitecture/)
+* [0.53.0](https://pointfreeco.github.io/swift-composable-architecture/0.53.0/documentation/composablearchitecture/)
 
 <details>
   <summary>
   Other versions
   </summary>
 
+  * [0.52.0](https://pointfreeco.github.io/swift-composable-architecture/0.52.0/documentation/composablearchitecture/)
   * [0.50.0](https://pointfreeco.github.io/swift-composable-architecture/0.50.0/documentation/composablearchitecture/)
   * [0.49.0](https://pointfreeco.github.io/swift-composable-architecture/0.49.0/documentation/composablearchitecture/)
   * [0.48.0](https://pointfreeco.github.io/swift-composable-architecture/0.48.0/documentation/composablearchitecture/)
@@ -713,3 +718,4 @@ This library is released under the MIT license. See [LICENSE](LICENSE) for detai
 [concurrency-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/swiftconcurrency
 [bindings-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/bindings
 [migrating-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingtothereducerprotocol
+[meet-tca]: https://pointfreeco.github.io/swift-composable-architecture/main/tutorials/meetcomposablearchitecture

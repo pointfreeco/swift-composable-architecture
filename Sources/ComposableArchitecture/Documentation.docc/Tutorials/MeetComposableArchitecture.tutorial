@@ -1,4 +1,4 @@
-@Tutorials(name: "Meet the Composable Architecture") {
+@Tutorials(name: "The Composable Architecture") {
   @Intro(title: "Meet the Composable Architecture") {
     The Composable Architecture (TCA, for short) is a library for building applications in a 
     consistent and understandable way, with composition, testing, and ergonomics in mind. It can be 
