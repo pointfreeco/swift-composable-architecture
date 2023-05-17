@@ -296,11 +296,11 @@ drill-down will occur immediately.
 
 #### API Unification
 
-One of the best features of tree-based navigation is that it unifies all forms of navigation
-with a single style of API. First of all, regardless of the type of navigation you plan on 
-performing, integrating the parent and child features together can be done with the single
-``ReducerProtocol/ifLet(_:action:destination:fileID:line:)`` operator. This one single API services
-all forms of optional-driven navigation.
+One of the best features of tree-based navigation is that it unifies all forms of navigation with a
+single style of API. First of all, regardless of the type of navigation you plan on performing,
+integrating the parent and child features together can be done with the single
+``Reducer/ifLet(_:action:destination:fileID:line:)`` operator. This one single API services all
+forms of optional-driven navigation.
 
 And then in the view, whether you are wanting to perform a drill-down, show a sheet, display
 an alert, or even show a custom navigation component, all you need to do is invoke an API that
@@ -490,7 +490,7 @@ struct CounterFeature: Reducer {
 ```
 
 And then let's embed that feature into a parent feature using ``PresentationState``, 
-``PresentationAction`` and ``ReducerProtocol/ifLet(_:action:destination:fileID:line:)``:
+``PresentationAction`` and ``Reducer/ifLet(_:action:destination:fileID:line:)``:
 
 ```swift
 struct Feature: Reducer {

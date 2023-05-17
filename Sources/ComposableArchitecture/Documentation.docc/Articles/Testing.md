@@ -667,10 +667,10 @@ trouble when using non-exhaustive test stores and showing skipped assertions. To
 the following simple reducer that appends a new model to an array when an action is sent:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   struct State: Equatable { var values: [Model] = [] }
   enum Action { case addButtonTapped }
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .addButtonTapped:
       state.values.append(Model())
@@ -738,10 +738,10 @@ struct Model: Equatable {
 And then move the responsibility of generating new IDs to the reducer:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   // ...
   @Dependency(\.uuid) var uuid
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .addButtonTapped:
       state.values.append(Model(id: self.uuid()))

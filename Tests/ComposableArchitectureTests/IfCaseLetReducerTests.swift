@@ -154,7 +154,7 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
     }
 
     func testIdentifiableChild() async {
-      struct Feature: ReducerProtocol {
+      struct Feature: Reducer {
         enum State: Equatable {
           case child(Child.State)
         }
@@ -162,7 +162,7 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
           case child(Child.Action)
           case newChild
         }
-        var body: some ReducerProtocol<State, Action> {
+        var body: some ReducerOf<Self> {
           Reduce { state, action in
             switch action {
             case .child:
@@ -177,7 +177,7 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
           .ifCaseLet(/State.child, action: /Action.child) { Child() }
         }
       }
-      struct Child: ReducerProtocol {
+      struct Child: Reducer {
         struct State: Equatable, Identifiable {
           let id: Int
           var value = 0
@@ -187,7 +187,7 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
           case response(Int)
         }
         @Dependency(\.mainQueue) var mainQueue
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
           switch action {
 
           case .tap:

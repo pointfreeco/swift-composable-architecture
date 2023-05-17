@@ -71,10 +71,10 @@ day-to-day when building applications, such as:
 - <doc:Navigation>
 - ``PresentationState``
 - ``PresentationAction``
-- ``ReducerProtocol/ifLet(_:action:destination:fileID:line:)``
+- ``Reducer/ifLet(_:action:destination:fileID:line:)``
 - ``StackState``
 - ``StackAction``
-- ``ReducerProtocol/forEach(_:action:destination:fileID:line:)``
+- ``Reducer/forEach(_:action:destination:fileID:line:)``
 - ``DismissEffect``
 
 ### Integrations

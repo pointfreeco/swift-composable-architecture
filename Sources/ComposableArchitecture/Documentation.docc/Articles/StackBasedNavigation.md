@@ -324,7 +324,7 @@ As an example, consider the following simple counter feature that wants to dismi
 count is greater than or equal to 5:
 
 ```swift
-struct CounterFeature: ReducerProtocol {
+struct CounterFeature: Reducer {
   struct State: Equatable {
     var count = 0
   }
@@ -335,7 +335,7 @@ struct CounterFeature: ReducerProtocol {
 
   @Dependency(\.dismiss) var dismiss
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .decrementButtonTapped:
       state.count += 1
@@ -354,7 +354,7 @@ struct CounterFeature: ReducerProtocol {
 And then let's embed that feature into a parent feature:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   struct State: Equatable {
     var path = StackState<Path.State>()
   }
@@ -362,15 +362,15 @@ struct Feature: ReducerProtocol {
     case path(StackAction<Path.State, Path.Action>)
   }
 
-  struct Path: ReducerProtocol {
+  struct Path: Reducer {
     enum State: Equatable { case counter(Counter.State) }
     enum Action: Equatable { case counter(Counter.Action) }
-    var body: some ReducerProtocolOf<Self> {
+    var body: some ReducerOf<Self> {
       Scope(state: /State.counter, action: /Action.counter) { Counter() }
     }
   }
 
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce { state, action in 
       // Logic and behavior for core feature.
     }

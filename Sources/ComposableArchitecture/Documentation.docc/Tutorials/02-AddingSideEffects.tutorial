@@ -18,7 +18,7 @@
       can get back a completely different answer.
       
       Let's start by seeing why we can't simply perform effectful work directly in our 
-      ``ComposableArchitecture/ReducerProtocol`` conformances, and then we will see what tools the
+      ``ComposableArchitecture/Reducer`` conformances, and then we will see what tools the
       library provides for performing effects.
     }
     
@@ -83,7 +83,7 @@
       The Composable Architecture separates the simple, pure transformations of state from the 
       complex, messy side effects. It is one of the core tenets of the library and there are a lot 
       of benefits to doing so. Luckily for us, the library gives us a tool that is appropriate
-      for executing side effects. It is called ``ComposableArchitecture/EffectTask`` and it is
+      for executing side effects. It is called ``ComposableArchitecture/Effect`` and it is
       explored in the next section.
     }
   }
@@ -94,8 +94,8 @@
       a reducer, let's see how to fix the code we wrote above. 
       
       The Composable Architecture bakes the notion of "effect" directly into the definition of 
-      ``ComposableArchitecture/ReducerProtocol``. After a reducer processes an action by mutating
-      state, it can return something called an ``ComposableArchitecture/EffectTask``, which 
+      ``ComposableArchitecture/Reducer``. After a reducer processes an action by mutating
+      state, it can return something called an ``ComposableArchitecture/Effect``, which 
       represents an asynchronous unit that is run by the ``ComposableArchitecture/Store``. Effects
       are what can communicate with outside systems and then feed data from the outside back into 
       the reducer.
@@ -106,7 +106,7 @@
     
     @Steps {
       @Step {
-        The primary way one constructs an ``ComposableArchitecture/EffectTask`` is via the static
+        The primary way one constructs an ``ComposableArchitecture/Effect`` is via the static
         method ``ComposableArchitecture/EffectPublisher/run(priority:operation:catch:fileID:line:)``.
         This provides you with an asynchronous context to perform any kind of work you want, as well
         as a handle (`send`) for sending actions back into the system.

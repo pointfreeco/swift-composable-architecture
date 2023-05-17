@@ -1,14 +1,14 @@
 @Tutorial(time: 20) { 
   @Intro(title: "Your first feature") {
-    Learn how to create a conformance to ``ComposableArchitecture/ReducerProtocol`` for implementing
-    the logic and behavior of a feature, and then learn how to hook up that feature to a SwiftUI
-    view.
+    Learn how to create a conformance to the ``ComposableArchitecture/Reducer`` protocol for
+    implementing the logic and behavior of a feature, and then learn how to hook up that feature to
+    a SwiftUI view.
   }
   
   @Section(title: "Create a reducer") {
     @ContentAndMedia {
       The fundamental unit that features are built with in the Composable Architecture is the
-      ``ComposableArchitecture/ReducerProtocol``. A conformance to that protocol represents the 
+      ``ComposableArchitecture/Reducer``. A conformance to that protocol represents the 
       logic and behavior for a feature in your application. This includes how to evolve the current
       state to the next state when an action is sent into the system, and how effects communicate
       with the outside world and feed data back into the system.
@@ -28,12 +28,12 @@
       
       @Step {
         Define a new struct called CounterFeature that conforms to the 
-        ``ComposableArchitecture/ReducerProtocol``.
+        ``ComposableArchitecture/Reducer`` protocol.
         @Code(name: "CounterFeature.swift", file: 01-01-code-0002.swift)
       }
       
       @Step {
-        To conform to ``ComposableArchitecture/ReducerProtocol`` you will start with a domain 
+        To conform to ``ComposableArchitecture/Reducer`` you will start with a domain 
         modeling exercise. You will create a `State` type that holds the state your feature needs 
         to do its job, typically a struct. Then you will create an `Action` type that holds all 
         the actions the user can perform in the feature, typically an enum. 
@@ -54,9 +54,8 @@
       }
       
       @Step {
-        And finally, to finish conforming to ``ComposableArchitecture/ReducerProtocol``, you must
-        implement a
-        ``ComposableArchitecture/ReducerProtocol/reduce(into:action:)-8yinq`` method
+        And finally, to finish conforming to ``ComposableArchitecture/Reducer``, you must implement
+        a ``ComposableArchitecture/Reducer/reduce(into:action:)-4zl56`` method
         that evolves the state from its current value to the next value given a user action, and
         returns any effects that the feature wants to execute in the outside world. This almost
         always begins by switching on the incoming action to determine what logic you need to 
@@ -71,7 +70,7 @@
       
       @Step {
         The logic for this feature is quite simple. We just want to either subtract one or add one
-        to the state's count. We must also return a value of ``ComposableArchitecture/EffectTask`` 
+        to the state's count. We must also return a value of ``ComposableArchitecture/Effect`` 
         that represents the effect to be executed in the outside world, but in this case we do not 
         need to execute anything. So we can return a special
         ``ComposableArchitecture/EffectPublisher/none`` value to represent we have no effects to
@@ -218,7 +217,7 @@
       }
       
       We can demonstrate another super power of the Composable Architecture. Reducers have a
-      method called ``ComposableArchitecture/ReducerProtocol/_printChanges(_:)`` that is similar
+      method called ``ComposableArchitecture/Reducer/_printChanges(_:)`` that is similar
       to a tool that SwiftUI provides. When used it will print every action that the reducer
       processes to the console, and it will print how the state changed after processing the 
       action. The method will also go through great lengths to collapse the state difference to a 
@@ -227,7 +226,7 @@
       
       @Step {
         Update the entry point of the application to invoke
-        ``ComposableArchitecture/ReducerProtocol/_printChanges(_:)`` on the reducer.
+        ``ComposableArchitecture/Reducer/_printChanges(_:)`` on the reducer.
         
         @Code(name: "App.swift", file: 01-03-code-0004.swift)  
       }

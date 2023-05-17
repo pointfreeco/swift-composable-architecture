@@ -61,8 +61,7 @@ extension EffectPublisher where Failure == Never {
                   customDump(error, to: &errorDump, indent: 4)
                   runtimeWarn(
                     """
-                    An "EffectTask.task" returned from "\(fileID):\(line)" threw an unhandled \
-                    error. …
+                    An "Effect.task" returned from "\(fileID):\(line)" threw an unhandled error. …
 
                     \(errorDump)
 
@@ -98,7 +97,7 @@ extension Store {
   @available(macOS, deprecated: 9999, message: "Pass a closure as the reducer.")
   @available(tvOS, deprecated: 9999, message: "Pass a closure as the reducer.")
   @available(watchOS, deprecated: 9999, message: "Pass a closure as the reducer.")
-  public convenience init<R: ReducerProtocol>(
+  public convenience init<R: Reducer>(
     initialState: @autoclosure () -> R.State,
     reducer: R,
     prepareDependencies: ((inout DependencyValues) -> Void)? = nil
@@ -124,7 +123,7 @@ extension TestStore {
   @available(macOS, deprecated: 9999, message: "Pass a closure as the reducer.")
   @available(tvOS, deprecated: 9999, message: "Pass a closure as the reducer.")
   @available(watchOS, deprecated: 9999, message: "Pass a closure as the reducer.")
-  public convenience init<R: ReducerProtocol>(
+  public convenience init<R: Reducer>(
     initialState: @autoclosure () -> State,
     reducer: R,
     prepareDependencies: (inout DependencyValues) -> Void = { _ in },
@@ -154,7 +153,7 @@ extension TestStore {
   @available(macOS, deprecated: 9999, message: "Pass a closure as the reducer.")
   @available(tvOS, deprecated: 9999, message: "Pass a closure as the reducer.")
   @available(watchOS, deprecated: 9999, message: "Pass a closure as the reducer.")
-  public convenience init<R: ReducerProtocol>(
+  public convenience init<R: Reducer>(
     initialState: @autoclosure () -> State,
     reducer: R,
     observe toScopedState: @escaping (State) -> ScopedState,
@@ -179,7 +178,7 @@ extension TestStore {
       line: line
     )
   }
-  public convenience init<R: ReducerProtocol>(
+  public convenience init<R: Reducer>(
     initialState: @autoclosure () -> State,
     reducer: R,
     observe toScopedState: @escaping (State) -> ScopedState,
@@ -206,7 +205,7 @@ extension TestStore {
   }
 
   @available(*, deprecated, message: "State must be equatable to perform assertions.")
-  public convenience init<R: ReducerProtocol>(
+  public convenience init<R: Reducer>(
     initialState: @autoclosure () -> State,
     reducer: R,
     prepareDependencies: (inout DependencyValues) -> Void = { _ in },

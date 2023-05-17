@@ -13,7 +13,7 @@ final class EffectPublisherTests: BaseTCATestCase {
     let effect = withDependencies {
       $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
     } operation: {
-      EffectTask.publisher {
+      Effect.publisher {
         Just(now)
       }
     }

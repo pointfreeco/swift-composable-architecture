@@ -1,6 +1,6 @@
 import ComposableArchitecture
 
-struct CounterFeature: ReducerProtocol {
+struct CounterFeature: Reducer {
   struct State: Equatable {
     var count = 0
     var fact: String?
@@ -13,7 +13,7 @@ struct CounterFeature: ReducerProtocol {
     case incrementButtonTapped
   }
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .decrementButtonTapped:
       state.count -= 1

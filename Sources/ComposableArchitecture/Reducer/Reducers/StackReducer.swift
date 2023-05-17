@@ -181,7 +181,7 @@ extension Reducer {
   /// of each child feature using the `forEach` operator:
   ///
   /// ```swift
-  /// struct ParentFeature: ReducerProtocol {
+  /// struct ParentFeature: Reducer {
   ///   struct State {
   ///     var path = StackState<Path.State>()
   ///     // ...
@@ -190,7 +190,7 @@ extension Reducer {
   ///     case path(StackAction<Path.State, Path.Action>)
   ///     // ...
   ///   }
-  ///   var body: some ReducerProtocolOf<Self> {
+  ///   var body: some ReducerOf<Self> {
   ///     Reduce { state, action in
   ///       // Core parent logic
   ///     }
@@ -396,7 +396,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
     let idsAfter = state[keyPath: self.toStackState].ids
     let idsMounted = state[keyPath: self.toStackState]._mounted
 
-    let cancelEffects: EffectTask<Base.Action> =
+    let cancelEffects: Effect<Base.Action> =
       areOrderedSetsDuplicates(idsBefore, idsAfter)
       ? .none
       : .merge(
@@ -404,7 +404,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
           ._cancel(navigationID: self.navigationIDPath(for: $0))
         }
       )
-    let presentEffects: EffectTask<Base.Action> =
+    let presentEffects: Effect<Base.Action> =
       idsAfter.count == idsMounted.count
       ? .none
       : .merge(

@@ -757,7 +757,7 @@ final class StoreTests: BaseTCATestCase {
   #endif
 
   func testInit_InitialState_WithDependencies() async {
-    struct Feature: ReducerProtocol {
+    struct Feature: Reducer {
       struct State: Equatable {
         var date: Date
         init() {
@@ -766,7 +766,7 @@ final class StoreTests: BaseTCATestCase {
         }
       }
       enum Action: Equatable {}
-      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {}
+      func reduce(into state: inout State, action: Action) -> Effect<Action> {}
     }
 
     let store = Store(initialState: Feature.State()) {
@@ -779,11 +779,11 @@ final class StoreTests: BaseTCATestCase {
   }
 
   func testInit_ReducerBuilder_WithDependencies() async {
-    struct Feature: ReducerProtocol {
+    struct Feature: Reducer {
       let date: Date
       struct State: Equatable { var date: Date? }
       enum Action: Equatable { case tap }
-      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+      func reduce(into state: inout State, action: Action) -> Effect<Action> {
         state.date = self.date
         return .none
       }

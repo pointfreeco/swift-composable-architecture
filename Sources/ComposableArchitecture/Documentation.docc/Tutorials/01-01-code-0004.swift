@@ -1,6 +1,6 @@
 import ComposableArchitecture
 
-struct CounterFeature: ReducerProtocol {
+struct CounterFeature: Reducer {
   struct State {
     var count = 0
   }

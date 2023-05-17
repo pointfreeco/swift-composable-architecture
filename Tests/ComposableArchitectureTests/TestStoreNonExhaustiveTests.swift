@@ -715,10 +715,10 @@
     }
 
     func testReceiveNonExhuastiveWithTimeout() async {
-      struct Feature: ReducerProtocol {
+      struct Feature: Reducer {
         struct State: Equatable {}
         enum Action: Equatable { case tap, response1, response2 }
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
           switch action {
 
           case .tap:
@@ -742,10 +742,10 @@
     }
 
     func testReceiveNonExhuastiveWithTimeoutMultipleNonMatching() async {
-      struct Feature: ReducerProtocol {
+      struct Feature: Reducer {
         struct State: Equatable {}
         enum Action: Equatable { case tap, response1, response2 }
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
           switch action {
 
           case .tap:
@@ -780,10 +780,10 @@
     }
 
     func testReceiveNonExhuastiveWithTimeoutMultipleMatching() async {
-      struct Feature: ReducerProtocol {
+      struct Feature: Reducer {
         struct State: Equatable {}
         enum Action: Equatable { case tap, response1, response2 }
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
           switch action {
 
           case .tap:
@@ -864,14 +864,14 @@
           self.id = uuid()
         }
       }
-      struct Feature: ReducerProtocol {
+      struct Feature: Reducer {
         struct State: Equatable {
           var values: [Model] = []
         }
         enum Action {
           case addButtonTapped
         }
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
           switch action {
           case .addButtonTapped:
             state.values.append(Model())

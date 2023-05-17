@@ -17,7 +17,7 @@ final class TestStoreTests: BaseTCATestCase {
         switch action {
         case .a:
           return .merge(
-            EffectTask.concatenate(.send(.b1), .send(.c1))
+            Effect.concatenate(.send(.b1), .send(.c1))
               .delay(for: 1, scheduler: mainQueue)
               .eraseToEffect(),
             Empty(completeImmediately: false)
@@ -25,16 +25,11 @@ final class TestStoreTests: BaseTCATestCase {
               .cancellable(id: 1)
           )
         case .b1:
-          return
-            EffectTask
-            .concatenate(.send(.b2), .send(.b3))
+          return .concatenate(.send(.b2), .send(.b3))
         case .c1:
-          return
-            EffectTask
-            .concatenate(.send(.c2), .send(.c3))
+          return .concatenate(.send(.c2), .send(.c3))
         case .b2, .b3, .c2, .c3:
           return .none
-
         case .d:
           return .cancel(id: 1)
         }

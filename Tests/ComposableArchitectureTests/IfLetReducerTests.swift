@@ -250,7 +250,7 @@ final class IfLetReducerTests: BaseTCATestCase {
     }
 
     func testIdentifiableChild() async {
-      struct Feature: ReducerProtocol {
+      struct Feature: Reducer {
         struct State: Equatable {
           var child: Child.State?
         }
@@ -258,7 +258,7 @@ final class IfLetReducerTests: BaseTCATestCase {
           case child(Child.Action)
           case newChild
         }
-        var body: some ReducerProtocol<State, Action> {
+        var body: some ReducerOf<Self> {
           Reduce { state, action in
             switch action {
             case .child:
@@ -273,7 +273,7 @@ final class IfLetReducerTests: BaseTCATestCase {
           .ifLet(\.child, action: /Action.child) { Child() }
         }
       }
-      struct Child: ReducerProtocol {
+      struct Child: Reducer {
         struct State: Equatable, Identifiable {
           let id: Int
           var value = 0
@@ -283,9 +283,8 @@ final class IfLetReducerTests: BaseTCATestCase {
           case response(Int)
         }
         @Dependency(\.mainQueue) var mainQueue
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
           switch action {
-
           case .tap:
             return .run { [id = state.id] send in
               try await mainQueue.sleep(for: .seconds(0))
@@ -317,7 +316,7 @@ final class IfLetReducerTests: BaseTCATestCase {
     }
 
     func testEphemeralDismissal() async {
-      struct Feature: ReducerProtocol {
+      struct Feature: Reducer {
         struct State: Equatable {
           var alert: AlertState<AlertAction>?
         }
@@ -329,7 +328,7 @@ final class IfLetReducerTests: BaseTCATestCase {
           case again
           case ok
         }
-        var body: some ReducerProtocol<State, Action> {
+        var body: some ReducerOf<Self> {
           Reduce { state, action in
             switch action {
             case .alert(.ok):
