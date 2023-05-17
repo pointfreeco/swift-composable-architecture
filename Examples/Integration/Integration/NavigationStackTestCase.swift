@@ -3,10 +3,12 @@ import SwiftUI
 
 private struct ChildFeature: ReducerProtocol {
   struct State: Hashable {
+    @PresentationState var alert: AlertState<Action.Alert>?
     var count = 0
     var hasAppeared = false
   }
   enum Action {
+    case alert(PresentationAction<Alert>)
     case decrementButtonTapped
     case dismissButtonTapped
     case incrementButtonTapped
@@ -15,34 +17,52 @@ private struct ChildFeature: ReducerProtocol {
     case recreateStack
     case response(Int)
     case runButtonTapped
+    case showAlertButtonTapped
+    enum Alert {
+      case pop
+    }
   }
   @Dependency(\.dismiss) var dismiss
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
-    switch action {
-    case .decrementButtonTapped:
-      state.count -= 1
-      return .none
-    case .dismissButtonTapped:
-      return .fireAndForget { await self.dismiss() }
-    case .incrementButtonTapped:
-      state.count += 1
-      return .none
-    case .onAppear:
-      state.hasAppeared = true
-      return .none
-    case .popToRootButtonTapped:
-      return .none
-    case .recreateStack:
-      return .none
-    case let .response(value):
-      state.count = value
-      return .none
-    case .runButtonTapped:
-      return .run { [count = state.count] send in
-        try await Task.sleep(for: .seconds(2))
-        await send(.response(count + 1))
+  var body: some ReducerProtocolOf<Self> {
+    Reduce { state, action in
+      switch action {
+      case .alert:
+        return .none
+      case .decrementButtonTapped:
+        state.count -= 1
+        return .none
+      case .dismissButtonTapped:
+        return .fireAndForget { await self.dismiss() }
+      case .incrementButtonTapped:
+        state.count += 1
+        return .none
+      case .onAppear:
+        state.hasAppeared = true
+        return .none
+      case .popToRootButtonTapped:
+        return .none
+      case .recreateStack:
+        return .none
+      case let .response(value):
+        state.count = value
+        return .none
+      case .runButtonTapped:
+        return .run { [count = state.count] send in
+          try await Task.sleep(for: .seconds(2))
+          await send(.response(count + 1))
+        }
+      case .showAlertButtonTapped:
+        state.alert = AlertState {
+          TextState("What do you want to do?")
+        } actions: {
+          ButtonState(action: .pop) {
+            TextState("Parent pops feature")
+          }
+        }
+        return .none
       }
     }
+    .ifLet(\.$alert, action: /Action.alert)
   }
 }
 
@@ -72,6 +92,9 @@ private struct ChildView: View {
         Button("Recreate stack") {
           viewStore.send(.recreateStack)
         }
+        Button("Show alert") {
+          viewStore.send(.showAlertButtonTapped)
+        }
         NavigationLink(state: ChildFeature.State(count: viewStore.count)) {
           Text("Go to counter: \(viewStore.count)")
         }
@@ -80,6 +103,7 @@ private struct ChildView: View {
         print("onAppear")
         viewStore.send(.onAppear)
       }
+      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
     }
   }
 }
@@ -103,6 +127,9 @@ private struct NavigationStackTestCase: ReducerProtocol {
         return .none
       case .child(.element(id: _, action: .popToRootButtonTapped)):
         state.children = StackState()
+        return .none
+      case let .child(.element(id: id, action: .alert(.presented(.pop)))):
+        state.children.pop(from: id)
         return .none
       case .child:
         return .none

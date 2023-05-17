@@ -77,4 +77,19 @@ final class NavigationTests: XCTestCase {
     self.app.buttons["Recreate stack"].tap()
     XCTAssertEqual(self.app.staticTexts["Has appeared"].exists, true)
   }
+
+  func testSimultaneousDismissAlertAndPop() async throws {
+    self.app.buttons["Go to counter"].tap()
+    self.app.buttons["Show alert"].tap()
+    self.app.buttons["Parent pops feature"].tap()
+    try await Task.sleep(for: .seconds(1))
+    XCTAssertEqual(self.app.staticTexts["What do you want to do?"].exists, false)
+    try await Task.sleep(for: .seconds(1))
+
+    XCTTODO("""
+      This should pass once we figure out how to prevent the alert from sending a "dismiss" action
+      after the element has already been removed from the path.
+      """)
+    XCTAssertEqual(self.app.staticTexts["Runtime warning"].exists, false)
+  }
 }
