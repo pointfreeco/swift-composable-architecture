@@ -42,19 +42,34 @@ public struct _ReducerPrinter<State, Action> {
 
 extension _ReducerPrinter {
   public static var customDump: Self {
-    Self { receivedAction, oldState, newState in
+    Self.customDump { actionDump, stateDiff in
       var target = ""
       target.write("received action:\n")
-      CustomDump.customDump(receivedAction, to: &target, indent: 2)
+      target.write(actionDump)
       target.write("\n")
-      target.write(diff(oldState, newState).map { "\($0)\n" } ?? "  (No state changes)\n")
+      target.write(stateDiff.map { "\($0)\n" } ?? "  (No state changes)\n")
       print(target)
     }
   }
 
   public static var actionLabels: Self {
+    Self.actionLabels {
+      print("received action: \($0)")
+    }
+  }
+
+  public static func customDump(printer: @escaping (_ actionDump: String, _ stateDiff: String?) -> Void) -> Self {
+    Self { receivedAction, oldState, newState in
+      var actionDump = ""
+      CustomDump.customDump(receivedAction, to: &actionDump, indent: 2)
+      let stateDiff = diff(oldState, newState)
+      printer(actionDump, stateDiff)
+    }
+  }
+
+  public static func actionLabels(printer: @escaping (_ action: String) -> Void) -> Self {
     Self { receivedAction, _, _ in
-      print("received action: \(debugCaseOutput(receivedAction))")
+      printer(debugCaseOutput(receivedAction))
     }
   }
 }
