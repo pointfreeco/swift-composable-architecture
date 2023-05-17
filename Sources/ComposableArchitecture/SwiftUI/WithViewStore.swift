@@ -12,10 +12,10 @@ import SwiftUI
 ///
 /// ```swift
 /// struct ProfileView: View {
-///   let store: Store<ProfileState, ProfileAction>
-///   @ObservedObject var viewStore: ViewStore<ProfileState, ProfileAction>
+///   let store: StoreOf<Profile>
+///   @ObservedObject var viewStore: ViewStoreOf<Profile>
 ///
-///   init(store: Store<ProfileState, ProfileAction>) {
+///   init(store: StoreOf<Profile>) {
 ///     self.store = store
 ///     self.viewStore = ViewStore(store)
 ///   }
@@ -31,7 +31,7 @@ import SwiftUI
 ///
 /// ```swift
 /// struct ProfileView: View {
-///   let store: Store<ProfileState, ProfileAction>
+///   let store: StoreOf<Profile>
 ///
 ///   var body: some View {
 ///     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -45,60 +45,60 @@ import SwiftUI
 /// There may be times where the slightly more verbose style of observing a store is preferred
 /// instead of using ``WithViewStore``:
 ///
-/// 1. When ``WithViewStore`` wraps complex views the Swift compiler can quickly become bogged down,
-/// leading to degraded compiler performance and diagnostics. If you are experiencing such instability
-/// you should consider manually setting up observation with an `@ObservedObject` property as
-/// described above.
+///   1. When ``WithViewStore`` wraps complex views the Swift compiler can quickly become bogged
+///      down, leading to degraded compiler performance and diagnostics. If you are experiencing
+///      such instability you should consider manually setting up observation with an
+///      `@ObservedObject` property as described above.
 ///
-/// 2. Sometimes you may want to observe the state in a store in a context that is not a view
-/// builder. In such cases ``WithViewStore`` will not work since it is intended only for SwiftUI
-/// views.
+///   2. Sometimes you may want to observe the state in a store in a context that is not a view
+///      builder. In such cases ``WithViewStore`` will not work since it is intended only for
+///      SwiftUI views.
 ///
-///    An example of this is interfacing with SwiftUI's `App` protocol, which uses a separate
-///    `@SceneBuilder` instead of `@ViewBuilder`. In this case you must use an `@ObservedObject`:
+///      An example of this is interfacing with SwiftUI's `App` protocol, which uses a separate
+///      `@SceneBuilder` instead of `@ViewBuilder`. In this case you must use an `@ObservedObject`:
 ///
-///    ```swift
-///    @main
-///    struct MyApp: App {
-///      let store = Store<AppState, AppAction>(/* ... */)
-///      @ObservedObject var viewStore: ViewStore<SceneState, CommandAction>
+///      ```swift
+///      @main
+///      struct MyApp: App {
+///        let store = StoreOf<AppFeature>(/* ... */)
+///        @ObservedObject var viewStore: ViewStore<SceneState, CommandAction>
 ///
-///      struct SceneState: Equatable {
-///        // ...
-///        init(state: AppState) {
+///        struct SceneState: Equatable {
 ///          // ...
+///          init(state: AppFeature.State) {
+///            // ...
+///          }
 ///        }
-///      }
 ///
-///      init() {
-///        self.viewStore = ViewStore(
-///          self.store.scope(
-///            state: SceneState.init(state:)
-///            action: AppAction.scene
+///        init() {
+///          self.viewStore = ViewStore(
+///            self.store.scope(
+///              state: SceneState.init(state:)
+///              action: AppFeature.Action.scene
+///            )
 ///          )
-///        )
-///      }
-///
-///      var body: some Scene {
-///        WindowGroup {
-///          MyRootView()
 ///        }
-///        .commands {
-///          CommandMenu("Help") {
-///            Button("About \(self.viewStore.appName)") {
-///              self.viewStore.send(.aboutButtonTapped)
+///
+///        var body: some Scene {
+///          WindowGroup {
+///            MyRootView()
+///          }
+///          .commands {
+///            CommandMenu("Help") {
+///              Button("About \(self.viewStore.appName)") {
+///                self.viewStore.send(.aboutButtonTapped)
+///              }
 ///            }
 ///          }
 ///        }
 ///      }
-///    }
-///    ```
+///      ```
 ///
-///    Note that it is highly discouraged for you to observe _all_ of your root store's state.
-///    It is almost never needed and will cause many view recomputations leading to poor
-///    performance. This is why we construct a separate `SceneState` type that holds onto only the
-///    state that the view needs for rendering. See <doc:Performance> for more information on this
-///    topic.
+///      Note that it is highly discouraged for you to observe _all_ of your root store's state.
+///      It is almost never needed and will cause many view recomputations leading to poor
+///      performance. This is why we construct a separate `SceneState` type that holds onto only the
+///      state that the view needs for rendering. See <doc:Performance> for more information on this
+///      topic.
 ///
 /// If your view does not need access to any state in the store and only needs to be able to send
 /// actions, then you should consider not using ``WithViewStore`` at all. Instead, you can send
@@ -194,12 +194,15 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   /// for each tab as well as the currently selected tab:
   ///
   /// ```swift
-  /// struct AppState {
-  ///   var activity: ActivityState
-  ///   var search: SearchState
-  ///   var profile: ProfileState
-  ///   var selectedTab: Tab
+  /// struct AppFeature: ReducerProtocol {
   ///   enum Tab { case activity, search, profile }
+  ///   struct State {
+  ///     var activity: Activity.State
+  ///     var search: Search.State
+  ///     var profile: Profile.State
+  ///     var selectedTab: Tab
+  ///   }
+  ///   // ...
   /// }
   /// ```
   ///
@@ -211,23 +214,23 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   ///
   /// ```swift
   /// struct AppView: View {
-  ///   let store: Store<AppState, AppAction>
+  ///   let store: StoreOf<AppFeature>
   ///
   ///   var body: some View {
   ///     WithViewStore(self.store, observe: \.selectedTab) { viewStore in
-  ///       TabView(selection: viewStore.binding(send: AppAction.tabSelected) {
+  ///       TabView(selection: viewStore.binding(send: AppFeature.Action.tabSelected) {
   ///         ActivityView(
-  ///           store: self.store.scope(state: \.activity, action: AppAction.activity)
+  ///           store: self.store.scope(state: \.activity, action: AppFeature.Action.activity)
   ///         )
-  ///         .tag(AppState.Tab.activity)
+  ///         .tag(AppFeature.Tab.activity)
   ///         SearchView(
-  ///           store: self.store.scope(state: \.search, action: AppAction.search)
+  ///           store: self.store.scope(state: \.search, action: AppFeature.Action.search)
   ///         )
-  ///         .tag(AppState.Tab.search)
+  ///         .tag(AppFeature.Tab.search)
   ///         ProfileView(
-  ///           store: self.store.scope(state: \.profile, action: AppAction.profile)
+  ///           store: self.store.scope(state: \.profile, action: AppFeature.Action.profile)
   ///         )
-  ///         .tag(AppState.Tab.profile)
+  ///         .tag(AppFeature.Tab.profile)
   ///       }
   ///     }
   ///   }
@@ -281,12 +284,15 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   /// for each tab as well as the currently selected tab:
   ///
   /// ```swift
-  /// struct AppState {
-  ///   var activity: ActivityState
-  ///   var search: SearchState
-  ///   var profile: ProfileState
-  ///   var selectedTab: Tab
+  /// struct AppFeature: ReducerProtocol {
   ///   enum Tab { case activity, search, profile }
+  ///   struct State {
+  ///     var activity: Activity.State
+  ///     var search: Search.State
+  ///     var profile: Profile.State
+  ///     var selectedTab: Tab
+  ///   }
+  ///   // ...
   /// }
   /// ```
   ///
@@ -298,23 +304,23 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   ///
   /// ```swift
   /// struct AppView: View {
-  ///   let store: Store<AppState, AppAction>
+  ///   let store: StoreOf<AppFeature>
   ///
   ///   var body: some View {
   ///     WithViewStore(self.store, observe: \.selectedTab) { viewStore in
-  ///       TabView(selection: viewStore.binding(send: AppAction.tabSelected) {
+  ///       TabView(selection: viewStore.binding(send: AppFeature.Action.tabSelected) {
   ///         ActivityView(
-  ///           store: self.store.scope(state: \.activity, action: AppAction.activity)
+  ///           store: self.store.scope(state: \.activity, action: AppFeature.Action.activity)
   ///         )
-  ///         .tag(AppState.Tab.activity)
+  ///         .tag(AppFeature.Tab.activity)
   ///         SearchView(
-  ///           store: self.store.scope(state: \.search, action: AppAction.search)
+  ///           store: self.store.scope(state: \.search, action: AppFeature.Action.search)
   ///         )
-  ///         .tag(AppState.Tab.search)
+  ///         .tag(AppFeature.Tab.search)
   ///         ProfileView(
-  ///           store: self.store.scope(state: \.profile, action: AppAction.profile)
+  ///           store: self.store.scope(state: \.profile, action: AppFeature.Action.profile)
   ///         )
-  ///         .tag(AppState.Tab.profile)
+  ///         .tag(AppFeature.Tab.profile)
   ///       }
   ///     }
   ///   }
@@ -448,12 +454,15 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   /// for each tab as well as the currently selected tab:
   ///
   /// ```swift
-  /// struct AppState {
-  ///   var activity: ActivityState
-  ///   var search: SearchState
-  ///   var profile: ProfileState
-  ///   var selectedTab: Tab
+  /// struct AppFeature: ReducerProtocol {
   ///   enum Tab { case activity, search, profile }
+  ///   struct State {
+  ///     var activity: Activity.State
+  ///     var search: Search.State
+  ///     var profile: Profile.State
+  ///     var selectedTab: Tab
+  ///   }
+  ///   // ...
   /// }
   /// ```
   ///
@@ -465,23 +474,23 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   ///
   /// ```swift
   /// struct AppView: View {
-  ///   let store: Store<AppState, AppAction>
+  ///   let store: StoreOf<AppFeature>
   ///
   ///   var body: some View {
   ///     WithViewStore(self.store, observe: \.selectedTab) { viewStore in
-  ///       TabView(selection: viewStore.binding(send: AppAction.tabSelected) {
+  ///       TabView(selection: viewStore.binding(send: AppFeature.Action.tabSelected) {
   ///         ActivityView(
-  ///           store: self.store.scope(state: \.activity, action: AppAction.activity)
+  ///           store: self.store.scope(state: \.activity, action: AppFeature.Action.activity)
   ///         )
-  ///         .tag(AppState.Tab.activity)
+  ///         .tag(AppFeature.Tab.activity)
   ///         SearchView(
-  ///           store: self.store.scope(state: \.search, action: AppAction.search)
+  ///           store: self.store.scope(state: \.search, action: AppFeature.Action.search)
   ///         )
-  ///         .tag(AppState.Tab.search)
+  ///         .tag(AppFeature.Tab.search)
   ///         ProfileView(
-  ///           store: self.store.scope(state: \.profile, action: AppAction.profile)
+  ///           store: self.store.scope(state: \.profile, action: AppFeature.Action.profile)
   ///         )
-  ///         .tag(AppState.Tab.profile)
+  ///         .tag(AppFeature.Tab.profile)
   ///       }
   ///     }
   ///   }
@@ -534,12 +543,15 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   /// for each tab as well as the currently selected tab:
   ///
   /// ```swift
-  /// struct AppState {
-  ///   var activity: ActivityState
-  ///   var search: SearchState
-  ///   var profile: ProfileState
-  ///   var selectedTab: Tab
+  /// struct AppFeature: ReducerProtocol {
   ///   enum Tab { case activity, search, profile }
+  ///   struct State {
+  ///     var activity: Activity.State
+  ///     var search: Search.State
+  ///     var profile: Profile.State
+  ///     var selectedTab: Tab
+  ///   }
+  ///   // ...
   /// }
   /// ```
   ///
@@ -551,23 +563,23 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   ///
   /// ```swift
   /// struct AppView: View {
-  ///   let store: Store<AppState, AppAction>
+  ///   let store: StoreOf<AppFeature>
   ///
   ///   var body: some View {
   ///     WithViewStore(self.store, observe: \.selectedTab) { viewStore in
-  ///       TabView(selection: viewStore.binding(send: AppAction.tabSelected) {
+  ///       TabView(selection: viewStore.binding(send: AppFeature.Action.tabSelected) {
   ///         ActivityView(
-  ///           store: self.store.scope(state: \.activity, action: AppAction.activity)
+  ///           store: self.store.scope(state: \.activity, action: AppFeature.Action.activity)
   ///         )
-  ///         .tag(AppState.Tab.activity)
+  ///         .tag(AppFeature.Tab.activity)
   ///         SearchView(
-  ///           store: self.store.scope(state: \.search, action: AppAction.search)
+  ///           store: self.store.scope(state: \.search, action: AppFeature.Action.search)
   ///         )
-  ///         .tag(AppState.Tab.search)
+  ///         .tag(AppFeature.Tab.search)
   ///         ProfileView(
-  ///           store: self.store.scope(state: \.profile, action: AppAction.profile)
+  ///           store: self.store.scope(state: \.profile, action: AppFeature.Action.profile)
   ///         )
-  ///         .tag(AppState.Tab.profile)
+  ///         .tag(AppFeature.Tab.profile)
   ///       }
   ///     }
   ///   }

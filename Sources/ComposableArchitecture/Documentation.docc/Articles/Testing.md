@@ -429,8 +429,8 @@ actions that mimic the user logging in, and then eventually assert that the sele
 to activity:
 
 ```swift
-let store = TestStore(initialState: App.State()) {
-  App()
+let store = TestStore(initialState: AppFeature.State()) {
+  AppFeature()
 }
 
 // 1️⃣ Emulate user tapping on submit button.
@@ -477,8 +477,8 @@ happening inside the login feature. To do this, we can turn off ``TestStore/exha
 test store, and then just assert on what we are interested in:
 
 ```swift
-let store = TestStore(initialState: App.State()) {
-  App()
+let store = TestStore(initialState: AppFeature.State()) {
+  AppFeature()
 }
 store.exhaustivity = .off  // ⬅️
 
@@ -499,8 +499,8 @@ without any notification. If you would like to see what test failures are being 
 actually causing a failure, you can use ``Exhaustivity/off(showSkippedAssertions:)``:
 
 ```swift
-let store = TestStore(initialState: App.State()) {
-  App()
+let store = TestStore(initialState: AppFeature.State()) {
+  AppFeature()
 }
 store.exhaustivity = .off(showSkippedAssertions: true)  // ⬅️
 
@@ -516,7 +516,7 @@ fully asserted on:
 ```
 ◽️ A state change does not match expectation: …
 
-     App.State(
+     AppFeature.State(
        authenticatedTab: .loggedOut(
          Login.State(
    −       isLoading: false
@@ -532,7 +532,7 @@ fully asserted on:
 
 ◽️ A state change does not match expectation: …
 
-     App.State(
+     AppFeature.State(
    −   authenticatedTab: .loggedOut(…)
    +   authenticatedTab: .loggedIn(
    +     Profile.State(…)
