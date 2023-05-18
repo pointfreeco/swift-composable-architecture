@@ -84,7 +84,8 @@
       content destinationContent:
         @escaping (Store<DestinationState, DestinationAction>) -> DestinationContent
     ) {
-      let filteredStore = store
+      let filteredStore =
+        store
         .invalidate { $0.wrappedValue.flatMap(toDestinationState) == nil }
         .filterSend { state, _ in
           state.wrappedValue.flatMap(toDestinationState) == nil ? !BindingLocal.isActive : true

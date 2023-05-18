@@ -25,8 +25,8 @@ struct PresentationID: Hashable, Sendable {
 
   static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.identifier == rhs.identifier
-    && lhs.tag == rhs.tag
-    && lhs.type == rhs.type
+      && lhs.tag == rhs.tag
+      && lhs.type == rhs.type
   }
 
   func hash(into hasher: inout Hasher) {

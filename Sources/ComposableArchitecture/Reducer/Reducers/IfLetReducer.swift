@@ -141,8 +141,7 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
       NavigationID(base: $0, keyPath: self.toChildState)
     }
 
-    if
-      childIDAfter == childIDBefore,
+    if childIDAfter == childIDBefore,
       self.toChildAction.extract(from: action) != nil,
       let childState = state[keyPath: self.toChildState],
       isEphemeral(childState)

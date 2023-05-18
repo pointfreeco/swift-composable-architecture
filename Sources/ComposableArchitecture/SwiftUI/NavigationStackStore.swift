@@ -238,7 +238,8 @@ import SwiftUI
       set { self = newValue.base }
     }
 
-    fileprivate struct PathView: MutableCollection, RandomAccessCollection, RangeReplaceableCollection
+    fileprivate struct PathView: MutableCollection, RandomAccessCollection,
+      RangeReplaceableCollection
     {
       var base: StackState
 

@@ -72,7 +72,7 @@ extension DependencyValues {
 /// >   // ...
 /// > }
 /// > XCTAssertEqual(isDismissInvoked.value, true)
-/// > ``` 
+/// > ```
 public struct DismissEffect: Sendable {
   var dismiss: (@MainActor @Sendable () -> Void)?
 
