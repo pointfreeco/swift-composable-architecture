@@ -27,7 +27,7 @@ jobs:
       - name: Select Xcode 14.3
         run: sudo xcode-select -s /Applications/Xcode_14.3.app
       - name: Run ${{ matrix.config }} tests
-        run: CONFIG=${{ matrix.config }} make test-library
+        run: make CONFIG=${{ matrix.config }} test-library
 
   library-swift-5-6:
     name: Library (swift-5.6)
@@ -42,7 +42,7 @@ jobs:
       - name: Select Xcode 13.4.1
         run: sudo xcode-select -s /Applications/Xcode_13.4.1.app
       - name: Run ${{ matrix.config }} tests
-        run: CONFIG=${{ matrix.config }} make test-library
+        run: make CONFIG=${{ matrix.config }} test-library
 
   library-evolution:
     name: Library (evolution)
