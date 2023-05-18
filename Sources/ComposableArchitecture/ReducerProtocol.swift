@@ -174,21 +174,21 @@
     #if DEBUG
       associatedtype _Body
 
-      /// A type representing the body of this reducer.
+      /// A type representing the body of this reducer. // 6f25w
       ///
-      /// When you create a custom reducer by implementing the ``body-swift.property-7foai``, Swift
+      /// When you create a custom reducer by implementing the ``body-swift.property-8lumc``, Swift
       /// infers this type from the value returned.
       ///
-      /// If you create a custom reducer by implementing the ``reduce(into:action:)-8yinq``, Swift
+      /// If you create a custom reducer by implementing the ``reduce(into:action:)-4zl56``, Swift
       /// infers this type to be `Never`.
       typealias Body = _Body
     #else
       /// A type representing the body of this reducer.
       ///
-      /// When you create a custom reducer by implementing the ``body-swift.property-7foai``, Swift
+      /// When you create a custom reducer by implementing the ``body-swift.property-8lumc``, Swift
       /// infers this type from the value returned.
       ///
-      /// If you create a custom reducer by implementing the ``reduce(into:action:)-8yinq``, Swift
+      /// If you create a custom reducer by implementing the ``reduce(into:action:)-4zl56``, Swift
       /// infers this type to be `Never`.
       associatedtype Body
     #endif

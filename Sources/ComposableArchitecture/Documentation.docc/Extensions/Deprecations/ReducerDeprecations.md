@@ -15,3 +15,7 @@ instead.
 - ``ReducerProtocol``
 - ``ReducerProtocolOf``
 - ``DebugEnvironment``
+
+### Reducer modifiers
+
+- ``Reducer/debug()``
