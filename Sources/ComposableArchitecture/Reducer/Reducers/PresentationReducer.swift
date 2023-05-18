@@ -336,7 +336,7 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
     case (.none, .some):
       runtimeWarn(
         """
-        A "ifLet" at "\(self.fileID):\(self.line)" received a presentation action when \
+        An "ifLet" at "\(self.fileID):\(self.line)" received a presentation action when \
         destination state was absent. …
 
           Action:

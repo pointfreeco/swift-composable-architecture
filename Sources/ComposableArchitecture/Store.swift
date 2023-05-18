@@ -12,8 +12,8 @@ import Foundation
 ///   var body: some Scene {
 ///     WindowGroup {
 ///       RootView(
-///         store: Store(initialState: AppReducer.State()) {
-///           AppReducer()
+///         store: Store(initialState: AppFeature.State()) {
+///           AppFeature()
 ///         }
 ///       )
 ///     }
@@ -54,18 +54,24 @@ import Foundation
 ///
 /// ```swift
 /// struct AppView: View {
-///   let store: StoreOf<AppReducer>
+///   let store: StoreOf<AppFeature>
 ///
 ///   var body: some View {
 ///     TabView {
-///       ActivityView(store: self.store.scope(state: \.activity, action: App.Action.activity))
-///         .tabItem { Text("Activity") }
+///       ActivityView(
+///         store: self.store.scope(state: \.activity, action: AppFeature.Action.activity)
+///       )
+///       .tabItem { Text("Activity") }
 ///
-///       SearchView(store: self.store.scope(state: \.search, action: App.Action.search))
-///         .tabItem { Text("Search") }
+///       SearchView(
+///         store: self.store.scope(state: \.search, action: AppFeature.Action.search)
+///       )
+///       .tabItem { Text("Search") }
 ///
-///       ProfileView(store: self.store.scope(state: \.profile, action: App.Action.profile))
-///         .tabItem { Text("Profile") }
+///       ProfileView(
+///         store: self.store.scope(state: \.profile, action: AppFeature.Action.profile)
+///       )
+///       .tabItem { Text("Profile") }
 ///     }
 ///   }
 /// }
@@ -179,25 +185,33 @@ public final class Store<State, Action> {
   ///
   /// ```swift
   /// // Application state made from child states.
-  /// struct State { var login: LoginState, ... }
-  /// enum Action { case login(LoginAction), ... }
+  /// struct AppFeature: ReducerProtocol {
+  ///   struct State {
+  ///     var login: Login.State
+  ///     // ...
+  ///   }
+  ///   enum Action {
+  ///     case login(Login.Action)
+  ///     // ...
+  ///   }
   ///
   /// // A store that runs the entire application.
-  /// let store = Store(initialState: AppReducer.State()) {
-  ///   AppReducer()
+  /// let store = Store(initialState: AppFeature.State()) {
+  ///   AppFeature()
   /// }
   ///
   /// // Construct a login view by scoping the store to one that works with only login domain.
   /// LoginView(
   ///   store: store.scope(
   ///     state: \.login,
-  ///     action: AppReducer.Action.login
+  ///     action: AppFeature.Action.login
   ///   )
   /// )
   /// ```
   ///
   /// Scoping in this fashion allows you to better modularize your application. In this case,
-  /// `LoginView` could be extracted to a module that has no access to `App.State` or `App.Action`.
+  /// `LoginView` could be extracted to a module that has no access to `AppFeature.State` or
+  /// `AppFeature.Action`.
   ///
   /// Scoping also gives a view the opportunity to focus on just the state and actions it cares
   /// about, even if its feature domain is larger.
@@ -207,18 +221,20 @@ public final class Store<State, Action> {
   /// first:
   ///
   /// ```swift
-  /// struct LoginState: Equatable {
-  ///   var email = ""
-  ///   var password = ""
-  ///   var twoFactorAuth: TwoFactorAuthState?
-  /// }
-  ///
-  /// enum LoginAction: Equatable {
-  ///   case emailChanged(String)
-  ///   case loginButtonTapped
-  ///   case loginResponse(Result<TwoFactorAuthState, LoginError>)
-  ///   case passwordChanged(String)
-  ///   case twoFactorAuth(TwoFactorAuthAction)
+  /// struct Login: ReducerProtocol {
+  ///   struct State: Equatable {
+  ///     var email = ""
+  ///     var password = ""
+  ///     var twoFactorAuth: TwoFactorAuthState?
+  ///   }
+  ///   enum Action: Equatable {
+  ///     case emailChanged(String)
+  ///     case loginButtonTapped
+  ///     case loginResponse(Result<TwoFactorAuthState, LoginError>)
+  ///     case passwordChanged(String)
+  ///     case twoFactorAuth(TwoFactorAuthAction)
+  ///   }
+  ///   // ...
   /// }
   /// ```
   ///
@@ -226,9 +242,9 @@ public final class Store<State, Action> {
   ///
   /// ```swift
   /// struct LoginView: View {
-  ///   let store: Store<LoginState, LoginAction>
+  ///   let store: StoreOf<Login>
   ///
-  ///   var body: some View { ... }
+  ///   var body: some View { /* ... */ }
   /// }
   /// ```
   ///
@@ -253,12 +269,12 @@ public final class Store<State, Action> {
   ///
   /// ```swift
   /// extension LoginView {
-  ///   struct State: Equatable {
+  ///   struct ViewState: Equatable {
   ///     var email: String
   ///     var password: String
   ///   }
   ///
-  ///   enum Action: Equatable {
+  ///   enum ViewAction: Equatable {
   ///     case emailChanged(String)
   ///     case loginButtonTapped
   ///     case passwordChanged(String)
@@ -270,14 +286,14 @@ public final class Store<State, Action> {
   /// transform view actions into feature actions.
   ///
   /// ```swift
-  /// extension LoginState {
-  ///   var view: LoginView.State {
+  /// extension Login.State {
+  ///   var view: LoginView.ViewState {
   ///     .init(email: self.email, password: self.password)
   ///   }
   /// }
   ///
-  /// extension LoginView.Action {
-  ///   var feature: LoginAction {
+  /// extension LoginView.ViewAction {
+  ///   var feature: Login.Action {
   ///     switch self {
   ///     case let .emailChanged(email)
   ///       return .emailChanged(email)

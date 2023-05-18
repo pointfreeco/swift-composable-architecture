@@ -2,6 +2,12 @@ import SwiftUI
 
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 extension View {
+  /// Displays a dialog when then store's state becomes non-`nil`, and dismisses it when it becomes
+  /// `nil`.
+  ///
+  /// - Parameters:
+  ///   - store: A store that is focused on ``PresentationState`` and ``PresentationAction`` for a
+  ///     dialog.
   public func confirmationDialog<ButtonAction>(
     store: Store<
       PresentationState<ConfirmationDialogState<ButtonAction>>,
@@ -11,6 +17,15 @@ extension View {
     self.confirmationDialog(store: store, state: { $0 }, action: { $0 })
   }
 
+  /// Displays a dialog when then store's state becomes non-`nil`, and dismisses it when it becomes
+  /// `nil`.
+  ///
+  /// - Parameters:
+  ///   - store: A store that is focused on ``PresentationState`` and ``PresentationAction`` for a
+  ///     dialog.
+  ///   - toDestinationState: A transformation to extract dialog state from the presentation state.
+  ///   - fromDestinationAction: A transformation to embed dialog actions into the presentation
+  ///     action.
   public func confirmationDialog<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (State) -> ConfirmationDialogState<ButtonAction>?,

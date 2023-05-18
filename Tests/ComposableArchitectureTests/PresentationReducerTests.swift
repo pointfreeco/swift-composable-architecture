@@ -1572,7 +1572,7 @@ import XCTest
 
         XCTExpectFailure {
           $0.compactDescription == """
-            A "ifLet" at \
+            An "ifLet" at \
             "ComposableArchitectureTests/PresentationReducerTests.swift:\(#line - 13)" received a \
             presentation action when destination state was absent. …
 
@@ -1631,7 +1631,7 @@ import XCTest
 
         XCTExpectFailure {
           $0.compactDescription == """
-            A "ifLet" at \
+            An "ifLet" at \
             "ComposableArchitectureTests/PresentationReducerTests.swift:\(#line - 13)" received a \
             presentation action when destination state was absent. …
 

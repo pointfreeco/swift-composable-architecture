@@ -37,10 +37,13 @@ For example, if the root of our application was a tab view, then we could model 
 struct that holds each tab's state as a property:
 
 ```swift
-struct State {
-  var activity: Activity.State
-  var search: Search.State
-  var profile: Profile.State
+struct AppFeature: ReducerProtocol {
+  struct State {
+    var activity: Activity.State
+    var search: Search.State
+    var profile: Profile.State
+  }
+  // ...
 }
 ```
 
@@ -49,7 +52,7 @@ because we can pass scoped stores to each child feature view:
 
 ```swift
 struct AppView: View {
-  let store: StoreOf<AppReducer>
+  let store: StoreOf<AppFeature>
 
   var body: some View {
     // No need to observe state changes because the view does
@@ -58,15 +61,15 @@ struct AppView: View {
     TabView {
       ActivityView(
         store: self.store
-          .scope(state: \.activity, action: AppAction.activity)
+          .scope(state: \.activity, action: AppFeature.Action.activity)
       )
       SearchView(
         store: self.store
-          .scope(state: \.search, action: AppAction.search)
+          .scope(state: \.search, action: AppFeature.Action.search)
       )
       ProfileView(
         store: self.store
-          .scope(state: \.profile, action: AppAction.profile)
+          .scope(state: \.profile, action: AppFeature.Action.profile)
       )
     }
   }
@@ -82,12 +85,15 @@ only the bare essentials of state necessary for the view to do its job. For exam
 we need access to the currently selected tab in state:
 
 ```swift
-struct AppState {
-  var activity: ActivityState
-  var search: SearchState
-  var profile: ProfileState
-  var selectedTab: Tab
+struct AppFeature: ReducerProtocol {
   enum Tab { case activity, search, profile }
+  struct State {
+    var activity: Activity.State
+    var search: Search.State
+    var profile: Profile.State
+    var selectedTab: Tab
+  }
+  // ...
 }
 ```
 
@@ -95,50 +101,51 @@ Then we can observe this state so that we can construct a binding to `selectedTa
 
 ```swift
 struct AppView: View {
-  let store: Store<AppState, AppAction>
+  let store: StoreOf<AppFeature>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       TabView(
-        selection: viewStore.binding(state: \.selectedTab, send: AppAction.tabSelected
+        selection: viewStore.binding(state: \.selectedTab, send: AppFeature.Action.tabSelected
       ) {
         ActivityView(
-          store: self.store.scope(state: \.activity, action: AppAction.activity)
+          store: self.store.scope(state: \.activity, action: AppFeature.Action.activity)
         )
-        .tag(AppState.Tab.activity)
+        .tag(AppFeature.Tab.activity)
         SearchView(
-          store: self.store.scope(state: \.search, action: AppAction.search)
+          store: self.store.scope(state: \.search, action: AppFeature.Action.search)
         )
-        .tag(AppState.Tab.search)
+        .tag(AppFeature.Tab.search)
         ProfileView(
-          store: self.store.scope(state: \.profile, action: AppAction.profile)
+          store: self.store.scope(state: \.profile, action: AppFeature.Action.profile)
         )
-        .tag(AppState.Tab.profile)
+        .tag(AppFeature.Tab.profile)
       }
     }
   }
 }
 ```
 
-However, this style of state observation is terribly inefficient since _every_ change to `AppState`
-will cause the view to re-compute even though the only piece of state we actually care about is
-the `selectedTab`. The reason we are observing too much state is because we use `observe: { $0 }`
-in the construction of the ``WithViewStore``, which means the view store will observe all of state.
+However, this style of state observation is terribly inefficient since _every_ change to
+`AppFeature.State` will cause the view to re-compute even though the only piece of state we actually
+care about is the `selectedTab`. The reason we are observing too much state is because we use
+`observe: { $0 }` in the construction of the ``WithViewStore``, which means the view store will
+observe all of state.
 
 To chisel away at the observed state you can provide a closure for that argument that plucks out
 the state the view needs. In this case the view only needs a single field:
 
 ```swift
 WithViewStore(self.store, observe: \.selectedTab) { viewStore in
-  TabView(selection: viewStore.binding(send: AppAction.tabSelected)) {
+  TabView(selection: viewStore.binding(send: AppFeature.Action.tabSelected)) {
     // ...
   }
 }
 ```
 
-In the future, the view may need access to more state. For example, suppose `ActivityState` holds
+In the future, the view may need access to more state. For example, suppose `Activity.State` holds
 onto an `unreadCount` integer to represent how many new activities you have. There's no need to
-observe _all_ of `ActivityState` to get access to this one field. You can observe just the one 
+observe _all_ of `Activity.State` to get access to this one field. You can observe just the one 
 field.
 
 Technically you can do this by mapping your state into a tuple, but because tuples are not 
@@ -150,11 +157,11 @@ WithViewStore(
   observe: { (selectedTab: $0.selectedTab, unreadActivityCount: $0.activity.unreadCount) },
   removeDuplicates: ==
 ) { viewStore in 
-  TabView(selection: viewStore.binding(\.selectedTab, send: AppAction.tabSelected) {
+  TabView(selection: viewStore.binding(\.selectedTab, send: AppFeature.Action.tabSelected) {
     ActivityView(
-      store: self.store.scope(state: \.activity, action: AppAction.activity)
+      store: self.store.scope(state: \.activity, action: AppFeature.Action.activity)
     )
-    .tag(AppState.Tab.activity)
+    .tag(AppFeature.Tab.activity)
     .badge("\(viewStore.unreadActivityCount)")
 
     // ...
@@ -168,12 +175,12 @@ essentials of what the view needs:
 
 ```swift
 struct AppView: View {
-  let store: StoreOf<AppReducer>
+  let store: StoreOf<AppFeature>
   
   struct ViewState: Equatable {
-    let selectedTab: AppState.Tab
+    let selectedTab: AppFeature.Tab
     let unreadActivityCount: Int
-    init(state: AppReducer.State) {
+    init(state: AppFeature.State) {
       self.selectedTab = state.selectedTab
       self.unreadActivityCount = state.activity.unreadCount
     }
@@ -184,7 +191,7 @@ struct AppView: View {
       TabView {
         ActivityView(
           store: self.store
-            .scope(state: \.activity, action: AppAction.activity)
+            .scope(state: \.activity, action: AppFeature.Action.activity)
         )
         .badge("\(viewStore.unreadActivityCount)")
 

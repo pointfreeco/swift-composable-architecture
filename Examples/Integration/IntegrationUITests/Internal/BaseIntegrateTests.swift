@@ -2,10 +2,16 @@ import XCTest
 
 class BaseIntegrationTests: XCTestCase {
   var app: XCUIApplication!
+  var expectRuntimeWarnings = false
 
   override func tearDown() {
     super.tearDown()
-    XCTAssertEqual(self.app.staticTexts["Runtime warning"].exists, false)
+    if self.expectRuntimeWarnings {
+      XCTAssertTrue(self.app.staticTexts["Runtime warning"].waitForExistence(timeout: 1))
+    } else {
+      XCTAssertFalse(self.app.staticTexts["Runtime warning"].exists)
+    }
+    print(self.name)
   }
 
   override func setUp() {

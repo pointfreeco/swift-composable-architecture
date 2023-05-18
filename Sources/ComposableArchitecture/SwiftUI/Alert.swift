@@ -6,8 +6,8 @@ extension View {
   /// `nil`.
   ///
   /// - Parameters:
-  ///   - store: A store that is focused on ``PresentationState`` and ``PresentationAction`` for
-  ///     an alert.
+  ///   - store: A store that is focused on ``PresentationState`` and ``PresentationAction`` for an
+  ///     alert.
   public func alert<ButtonAction>(
     store: Store<PresentationState<AlertState<ButtonAction>>, PresentationAction<ButtonAction>>
   ) -> some View {
@@ -18,8 +18,8 @@ extension View {
   /// `nil`.
   ///
   /// - Parameters:
-  ///   - store: A store that is focused on ``PresentationState`` and ``PresentationAction`` for
-  ///     an alert.
+  ///   - store: A store that is focused on ``PresentationState`` and ``PresentationAction`` for an
+  ///     alert.
   ///   - toDestinationState: A transformation to extract alert state from the presentation state.
   ///   - fromDestinationAction: A transformation to embed alert actions into the presentation
   ///     action.

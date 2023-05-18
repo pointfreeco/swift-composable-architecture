@@ -8,9 +8,12 @@ import SwiftUI
 /// user is logged-in or not:
 ///
 /// ```swift
-/// enum State {
-///   case loggedIn(LoggedInState)
-///   case loggedOut(LoggedOutState)
+/// struct AppFeature: ReducerProtocol {
+///   enum State {
+///     case loggedIn(LoggedInState)
+///     case loggedOut(LoggedOutState)
+///   }
+///   // ...
 /// }
 /// ```
 ///
@@ -19,17 +22,21 @@ import SwiftUI
 ///
 /// ```swift
 /// struct AppView: View {
-///   let store: StoreOf<App>
+///   let store: StoreOf<AppFeature>
 ///
 ///   var body: some View {
 ///     SwitchStore(self.store) { state in
 ///       switch state {
 ///       case .loggedIn:
-///         CaseLet(/App.State.loggedIn, action: App.Action.loggedIn) { loggedInStore in
+///         CaseLet(
+///           /AppFeature.State.loggedIn, action: AppFeature.Action.loggedIn
+///         ) { loggedInStore in
 ///           LoggedInView(store: loggedInStore)
 ///         }
 ///       case .loggedOut:
-///         CaseLet(/App.State.loggedOut, action: App.Action.loggedOut) { loggedOutStore in
+///         CaseLet(
+///           /AppFeature.State.loggedOut, action: AppFeature.Action.loggedOut
+///         ) { loggedOutStore in
 ///           LoggedOutView(store: loggedOutStore)
 ///         }
 ///       }

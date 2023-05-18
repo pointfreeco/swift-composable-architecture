@@ -24,6 +24,8 @@ import SwiftUI
 ///   }
 ///
 ///   func reduce(into state: inout State, action: Action) -> Effect<Action> { ... }
+///     // ...
+///   }
 /// }
 /// ```
 ///
@@ -32,7 +34,7 @@ import SwiftUI
 /// ```swift
 /// struct TodoView: View {
 ///   let store: StoreOf<Todo>
-///   var body: some View { ... }
+///   var body: some View { /* ... */ }
 /// }
 /// ```
 ///
@@ -44,7 +46,7 @@ import SwiftUI
 ///   struct State: Equatable {
 ///     var todos: IdentifiedArrayOf<Todo.State> = []
 ///   }
-///   ...
+///   // ...
 /// }
 /// ```
 ///
