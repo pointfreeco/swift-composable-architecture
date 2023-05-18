@@ -10,11 +10,11 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 ### Creating a test store
 
-- ``TestStore/init(initialState:reducer:withDependencies:file:line:)-1l3ek``
 - ``TestStore/init(initialState:reducer:prepareDependencies:file:line:)-55zkv``
 - ``TestStore/init(initialState:reducer:observe:prepareDependencies:file:line:)``
 - ``TestStore/init(initialState:reducer:observe:send:prepareDependencies:file:line:)``
 - ``TestStore/init(initialState:reducer:environment:file:line:)``
+- ``TestStore/init(initialState:reducer:withDependencies:file:line:)-1l3ek``
 - ``TestStore/init(initialState:reducer:prepareDependencies:file:line:)-72tkt``
 
 ### Configuring a test store
