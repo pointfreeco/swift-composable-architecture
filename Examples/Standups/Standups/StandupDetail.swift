@@ -2,7 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 struct StandupDetail: ReducerProtocol {
-  struct State: Hashable {
+  struct State: Equatable {
     @PresentationState var destination: Destination.State?
     var standup: Standup
   }
@@ -26,7 +26,7 @@ struct StandupDetail: ReducerProtocol {
   @Dependency(\.openSettings) var openSettings
 
   struct Destination: ReducerProtocol {
-    enum State: Equatable, Hashable {
+    enum State: Equatable {
       case alert(AlertState<Action.Alert>)
       case edit(StandupForm.State)
     }

@@ -156,7 +156,7 @@ import SwiftUI
     ///   - state: An optional value to present. When the user selects the link, SwiftUI stores a copy
     ///     of the value. Pass a `nil` value to disable the link.
     ///   - label: A label that describes the view that this link presents.
-    public init<P: Hashable, L: View>(
+    public init<P, L: View>(
       state: P?,
       @ViewBuilder label: () -> L,
       fileID: StaticString = #fileID,
