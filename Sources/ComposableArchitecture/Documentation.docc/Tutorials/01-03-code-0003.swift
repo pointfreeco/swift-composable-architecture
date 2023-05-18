@@ -2,7 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 @main
-struct TCATestApp: App {
+struct MyApp: App {
   static let store = Store(initialState: CounterFeature.State()) {
     CounterFeature()
   }
