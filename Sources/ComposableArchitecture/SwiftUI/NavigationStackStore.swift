@@ -32,12 +32,15 @@ import SwiftUI
       self.destination = { component in
         var state = component.element
         return destination(
-          store.scope(
-            state: {
-              state = $0[id: component.id] ?? state
-              return state
-            },
-            action: { .element(id: component.id, action: $0) }
+          store
+            .invalidate { !$0.ids.contains(component.id) }
+            // TODO: filterSend?
+            .scope(
+              state: {
+                state = $0[id: component.id] ?? state
+                return state
+              },
+              action: { .element(id: component.id, action: $0) }
           )
         )
       }
@@ -68,12 +71,15 @@ import SwiftUI
       self.destination = { component in
         var state = component.element
         return SwitchStore(
-          store.scope(
-            state: {
-              state = $0[id: component.id] ?? state
-              return state
-            },
-            action: { .element(id: component.id, action: $0) }
+          store
+            .invalidate { !$0.ids.contains(component.id) }
+            // TODO: filterSend?
+            .scope(
+              state: {
+                state = $0[id: component.id] ?? state
+                return state
+              },
+              action: { .element(id: component.id, action: $0) }
           )
         ) { _ in
           destination(component.element)
@@ -158,7 +164,7 @@ import SwiftUI
     ///   - state: An optional value to present. When the user selects the link, SwiftUI stores a copy
     ///     of the value. Pass a `nil` value to disable the link.
     ///   - label: A label that describes the view that this link presents.
-    public init<P: Hashable, L: View>(
+    public init<P, L: View>(
       state: P?,
       @ViewBuilder label: () -> L,
       fileID: StaticString = #fileID,

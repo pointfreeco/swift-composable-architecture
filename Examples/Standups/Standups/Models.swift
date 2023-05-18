@@ -2,7 +2,7 @@ import IdentifiedCollections
 import SwiftUI
 import Tagged
 
-struct Standup: Equatable, Hashable, Identifiable, Codable {
+struct Standup: Equatable, Identifiable, Codable {
   let id: Tagged<Self, UUID>
   var attendees: IdentifiedArrayOf<Attendee> = []
   var duration = Duration.seconds(60 * 5)
@@ -15,18 +15,18 @@ struct Standup: Equatable, Hashable, Identifiable, Codable {
   }
 }
 
-struct Attendee: Equatable, Hashable, Identifiable, Codable {
+struct Attendee: Equatable, Identifiable, Codable {
   let id: Tagged<Self, UUID>
   var name = ""
 }
 
-struct Meeting: Equatable, Hashable, Identifiable, Codable {
+struct Meeting: Equatable, Identifiable, Codable {
   let id: Tagged<Self, UUID>
   let date: Date
   var transcript: String
 }
 
-enum Theme: String, CaseIterable, Equatable, Hashable, Identifiable, Codable {
+enum Theme: String, CaseIterable, Equatable, Identifiable, Codable {
   case bubblegum
   case buttercup
   case indigo

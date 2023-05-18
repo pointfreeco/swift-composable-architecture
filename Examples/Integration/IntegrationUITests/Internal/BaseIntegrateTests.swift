@@ -11,7 +11,6 @@ class BaseIntegrationTests: XCTestCase {
     } else {
       XCTAssertFalse(self.app.staticTexts["Runtime warning"].exists)
     }
-    print(self.name)
   }
 
   override func setUp() {

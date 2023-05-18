@@ -12,6 +12,8 @@
     @TutorialReference(tutorial: "doc:01-YourFirstFeature")
     @TutorialReference(tutorial: "doc:02-AddingSideEffects")
     @TutorialReference(tutorial: "doc:03-TestingYourFeature")
+    
+    @Image(source: "01-homepage")
   }
   
   @Resources {

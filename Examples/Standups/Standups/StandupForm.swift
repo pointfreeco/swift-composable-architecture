@@ -3,7 +3,7 @@ import SwiftUI
 import SwiftUINavigation
 
 struct StandupForm: Reducer {
-  struct State: Equatable, Hashable {
+  struct State: Equatable {
     @BindingState var focus: Field? = .title
     @BindingState var standup: Standup
 

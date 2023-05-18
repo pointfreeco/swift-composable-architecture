@@ -30,7 +30,11 @@ extension View {
   ) -> some View {
     self.modifier(
       PresentationAlertModifier(
-        viewStore: ViewStore(store, observe: { $0 }, removeDuplicates: { $0.id == $1.id }),
+        viewStore: ViewStore(
+          store,
+          observe: { $0 },
+          removeDuplicates: { $0.id == $1.id }
+        ),
         toDestinationState: toDestinationState,
         fromDestinationAction: fromDestinationAction
       )
@@ -123,7 +127,7 @@ private struct PresentationAlertModifier<State, Action, ButtonAction>: ViewModif
       isPresented: Binding(
         get: { self.viewStore.wrappedValue.flatMap(self.toDestinationState) != nil },
         set: { newState in
-          if !newState, self.viewStore.wrappedValue != nil, self.viewStore.id == id {
+          if !newState, !self.viewStore._isInvalidated(), self.viewStore.id == id {
             self.viewStore.send(.dismiss)
           }
         }

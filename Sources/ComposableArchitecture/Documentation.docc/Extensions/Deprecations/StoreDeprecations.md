@@ -11,6 +11,7 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 ### Creating a store
 
 - ``Store/init(initialState:reducer:environment:)``
+- ``Store/init(initialState:reducer:prepareDependencies:)``
 
 ### Scoping stores
 

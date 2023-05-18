@@ -92,7 +92,7 @@ struct AppFeature: Reducer {
   }
 
   struct Path: Reducer {
-    enum State: Hashable {
+    enum State: Equatable {
       case detail(StandupDetail.State)
       case meeting(MeetingReducer.State)
       case record(RecordMeeting.State)

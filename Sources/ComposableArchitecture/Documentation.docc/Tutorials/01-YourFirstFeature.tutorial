@@ -180,6 +180,13 @@
         }
       }
       
+      @Step {  
+        Before moving on let's be sure to bring back the `CounterFeature` reducer in the preview,
+        otherwise it will continue to be inert with our next explorations.
+        
+        @Code(name: "CounterFeature.swift", file: 01-02-code-0007.swift)
+      }
+      
       That is all there is to implementing a basic feature in the Composable Architecture. The
       feature is of course very simple, and doesn't involve anything interesting like side effects
       (which will be the topic of <doc:02-AddingSideEffects>), but before any of that let's see

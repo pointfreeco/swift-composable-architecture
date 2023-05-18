@@ -2,7 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 struct MeetingReducer: Reducer {
-  struct State: Equatable, Hashable {
+  struct State: Equatable {
     let meeting: Meeting
     let standup: Standup
   }

@@ -3,7 +3,7 @@ import Speech
 import SwiftUI
 
 struct RecordMeeting: Reducer {
-  struct State: Hashable {
+  struct State: Equatable {
     @PresentationState var alert: AlertState<Action.Alert>?
     var secondsElapsed = 0
     var speakerIndex = 0
