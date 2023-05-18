@@ -141,7 +141,7 @@ private struct PresentationConfirmationDialogModifier<State, Action, ButtonActio
       isPresented: Binding(
         get: { self.viewStore.wrappedValue.flatMap(self.toDestinationState) != nil },
         set: { newState in
-          if !newState, self.viewStore.wrappedValue != nil, self.viewStore.id == id {
+          if !newState, self.viewStore._isInvalidated(), self.viewStore.id == id {
             self.viewStore.send(.dismiss)
           }
         }

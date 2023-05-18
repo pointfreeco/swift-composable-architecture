@@ -32,12 +32,15 @@ import SwiftUI
       self.destination = { component in
         var state = component.element
         return destination(
-          store.scope(
-            state: {
-              state = $0[id: component.id] ?? state
-              return state
-            },
-            action: { .element(id: component.id, action: $0) }
+          store
+            .invalidate { !$0.ids.contains(component.id) }
+            // TODO: filterSend?
+            .scope(
+              state: {
+                state = $0[id: component.id] ?? state
+                return state
+              },
+              action: { .element(id: component.id, action: $0) }
           )
         )
       }
@@ -67,12 +70,15 @@ import SwiftUI
       self.destination = { component in
         var state = component.element
         return SwitchStore(
-          store.scope(
-            state: {
-              state = $0[id: component.id] ?? state
-              return state
-            },
-            action: { .element(id: component.id, action: $0) }
+          store
+            .invalidate { !$0.ids.contains(component.id) }
+            // TODO: filterSend?
+            .scope(
+              state: {
+                state = $0[id: component.id] ?? state
+                return state
+              },
+              action: { .element(id: component.id, action: $0) }
           )
         ) { _ in
           destination(component.element)
