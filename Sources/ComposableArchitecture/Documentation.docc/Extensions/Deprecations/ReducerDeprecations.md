@@ -14,3 +14,7 @@ instead.
 - ``AnyReducer``
 - ``Reducer``
 - ``DebugEnvironment``
+
+### Reducer modifiers
+
+- ``ReducerProtocol/debug()``

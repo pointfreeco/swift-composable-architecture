@@ -157,6 +157,11 @@ extension TestStore {
       line: line
     )
   }
+
+  @available(iOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(macOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(tvOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(watchOS, deprecated: 9999, message: "Pass a closure as the reducer.")
   public convenience init<R: ReducerProtocol>(
     initialState: @autoclosure () -> State,
     reducer: R,

@@ -34,6 +34,7 @@
 - ``dependency(_:_:)``
 - ``transformDependency(_:transform:)``
 - ``signpost(_:log:)``
+- ``_printChanges(_:)``
 
 ### Supporting types
 

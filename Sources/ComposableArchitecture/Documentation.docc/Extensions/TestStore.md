@@ -4,9 +4,9 @@
 
 ### Creating a test store
 
-- ``init(initialState:reducer:prepareDependencies:file:line:)-55zkv``
-- ``init(initialState:reducer:observe:prepareDependencies:file:line:)``
-- ``init(initialState:reducer:observe:send:prepareDependencies:file:line:)``
+- ``init(initialState:reducer:withDependencies:file:line:)-6s32h``
+- ``init(initialState:reducer:observe:withDependencies:file:line:)``
+- ``init(initialState:reducer:observe:send:withDependencies:file:line:)``
 
 ### Configuring a test store
 
