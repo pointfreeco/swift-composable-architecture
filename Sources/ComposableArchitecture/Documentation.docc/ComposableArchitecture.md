@@ -72,7 +72,6 @@ day-to-day when building applications, such as:
 
 ### Testing
 
-- <doc:Testing>
 - ``TestStore``
 
 ## See Also
