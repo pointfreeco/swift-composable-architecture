@@ -1834,6 +1834,7 @@ extension TestStore where ScopedState: Equatable {
     }
   }
 
+  @MainActor
   private func receiveAction(
     matching predicate: (Action) -> Bool,
     timeout nanoseconds: UInt64?,
@@ -2057,6 +2058,7 @@ extension TestStore {
   ///
   /// - Parameter strict: When `true` and there are no in-flight actions to cancel, a test failure
   ///   will be reported.
+  @MainActor
   public func skipInFlightEffects(
     strict: Bool = true,
     file: StaticString = #file,
