@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import SwiftUI
 
-private struct BindingLocalTestCase: ReducerProtocol {
+private struct BindingLocalTestCase: Reducer {
   struct State: Equatable {
     @PresentationState var child: Child.State?
   }
@@ -9,7 +9,7 @@ private struct BindingLocalTestCase: ReducerProtocol {
     case child(PresentationAction<Child.Action>)
     case childButtonTapped
   }
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       case .child:
@@ -25,7 +25,7 @@ private struct BindingLocalTestCase: ReducerProtocol {
   }
 }
 
-private struct Child: ReducerProtocol {
+private struct Child: Reducer {
   struct State: Equatable {
     @BindingState var sendOnDisappear = false
     @BindingState var text = ""
@@ -34,7 +34,7 @@ private struct Child: ReducerProtocol {
     case binding(BindingAction<State>)
     case onDisappear
   }
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     BindingReducer()
   }
 }

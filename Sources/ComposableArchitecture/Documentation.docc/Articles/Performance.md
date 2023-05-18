@@ -37,7 +37,7 @@ For example, if the root of our application was a tab view, then we could model 
 struct that holds each tab's state as a property:
 
 ```swift
-struct AppFeature: ReducerProtocol {
+struct AppFeature: Reducer {
   struct State {
     var activity: Activity.State
     var search: Search.State
@@ -85,7 +85,7 @@ only the bare essentials of state necessary for the view to do its job. For exam
 we need access to the currently selected tab in state:
 
 ```swift
-struct AppFeature: ReducerProtocol {
+struct AppFeature: Reducer {
   enum Tab { case activity, search, profile }
   struct State {
     var activity: Activity.State

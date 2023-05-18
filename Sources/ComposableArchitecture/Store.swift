@@ -185,7 +185,7 @@ public final class Store<State, Action> {
   ///
   /// ```swift
   /// // Application state made from child states.
-  /// struct AppFeature: ReducerProtocol {
+  /// struct AppFeature: Reducer {
   ///   struct State {
   ///     var login: Login.State
   ///     // ...
@@ -221,7 +221,7 @@ public final class Store<State, Action> {
   /// first:
   ///
   /// ```swift
-  /// struct Login: ReducerProtocol {
+  /// struct Login: Reducer {
   ///   struct State: Equatable {
   ///     var email = ""
   ///     var password = ""

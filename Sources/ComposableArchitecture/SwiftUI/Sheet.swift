@@ -89,7 +89,8 @@ private struct PresentationSheetModifier<
     onDismiss: (() -> Void)?,
     content sheetContent: @escaping (Store<DestinationState, DestinationAction>) -> SheetContent
   ) {
-    let filteredStore = store
+    let filteredStore =
+      store
       .invalidate { $0.wrappedValue.flatMap(toDestinationState) == nil }
       .filterSend { state, _ in
         state.wrappedValue.flatMap(toDestinationState) == nil ? !BindingLocal.isActive : true
@@ -106,7 +107,7 @@ private struct PresentationSheetModifier<
   func body(content: Content) -> some View {
     let id = self.viewStore.id
     content.sheet(
-      item: Binding(  
+      item: Binding(
         get: {
           self.viewStore.wrappedValue.flatMap(self.toDestinationState) != nil
             ? toID(self.viewStore.state).map { Identified($0) { $0 } }

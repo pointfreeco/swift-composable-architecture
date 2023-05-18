@@ -8,7 +8,7 @@ import SwiftUI
 /// user is logged-in or not:
 ///
 /// ```swift
-/// struct AppFeature: ReducerProtocol {
+/// struct AppFeature: Reducer {
 ///   enum State {
 ///     case loggedIn(LoggedInState)
 ///     case loggedOut(LoggedOutState)

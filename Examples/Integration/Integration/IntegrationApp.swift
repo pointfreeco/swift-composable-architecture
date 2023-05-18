@@ -98,9 +98,9 @@ struct RuntimeWarnings: View {
               }
             }
           }
+          .padding(EdgeInsets(top: 16, leading: 10, bottom: 16, trailing: 10))
         }
-        .frame(maxHeight: 100)
-        .padding()
+        .frame(maxHeight: 160)
         .background(Color.white)
         .cornerRadius(4)
         .shadow(color: .black.opacity(0.3), radius: 4, y: 4)

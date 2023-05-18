@@ -74,7 +74,7 @@ private struct ChildView: View {
         if viewStore.hasAppeared {
           Text("Has appeared")
         }
-        
+
         Section {
           Text("\(viewStore.count)")
           Button("Decrement") { viewStore.send(.decrementButtonTapped) }

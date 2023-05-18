@@ -105,7 +105,8 @@ private struct PresentationPopoverModifier<
     arrowEdge: Edge = .top,
     content popoverContent: @escaping (Store<DestinationState, DestinationAction>) -> PopoverContent
   ) {
-    let filteredStore = store
+    let filteredStore =
+      store
       .invalidate { $0.wrappedValue.flatMap(toDestinationState) == nil }
       .filterSend { state, _ in
         state.wrappedValue.flatMap(toDestinationState) == nil ? !BindingLocal.isActive : true
@@ -123,7 +124,7 @@ private struct PresentationPopoverModifier<
   func body(content: Content) -> some View {
     let id = self.viewStore.id
     content.popover(
-      item: Binding(  
+      item: Binding(
         get: {
           self.viewStore.wrappedValue.flatMap(self.toDestinationState) != nil
             ? self.toID(self.viewStore.state).map { Identified($0) { $0 } }
