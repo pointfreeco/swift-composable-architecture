@@ -137,29 +137,25 @@ final class PresentationTests: BaseIntegrationTests {
   func testAlertActionDoesNotSendExtraDismiss() {
     self.app.buttons["Open alert"].tap()
     self.app.buttons["OK"].tap()
-    _ = self.app.staticTexts["Dismiss action sent"].waitForExistence(timeout: 1)
-    XCTAssertEqual(self.app.staticTexts["Dismiss action sent"].exists, false)
+    XCTAssertEqual(self.app.staticTexts["Dismiss action sent"].waitForExistence(timeout: 1), false)
   }
 
   func testAlertCancel() {
     self.app.buttons["Open alert"].tap()
     self.app.buttons["Cancel"].tap()
-    _ = self.app.staticTexts["Dismiss action sent"].waitForExistence(timeout: 1)
-    XCTAssertEqual(self.app.staticTexts["Dismiss action sent"].exists, true)
+    XCTAssertEqual(self.app.staticTexts["Dismiss action sent"].waitForExistence(timeout: 1), true)
   }
 
   func testAlertThenAlert() {
     self.app.buttons["Open alert"].tap()
     self.app.buttons["Show alert"].tap()
-    _ = self.app.staticTexts["Hello again!"].waitForExistence(timeout: 1)
-    XCTAssertEqual(self.app.staticTexts["Hello again!"].exists, true)
+    XCTAssertEqual(self.app.staticTexts["Hello again!"].waitForExistence(timeout: 1), true)
   }
 
   func testAlertThenDialog() {
     self.app.buttons["Open alert"].tap()
     self.app.buttons["Show dialog"].tap()
-    _ = self.app.staticTexts["Hello!"].waitForExistence(timeout: 1)
-    XCTAssertEqual(self.app.staticTexts["Hello!"].exists, true)
+    XCTAssertEqual(self.app.staticTexts["Hello!"].waitForExistence(timeout: 1), true)
   }
 
   func testAlertThenSheet() {
@@ -172,29 +168,25 @@ final class PresentationTests: BaseIntegrationTests {
   func testDialogActionDoesNotSendExtraDismiss() {
     self.app.buttons["Open dialog"].tap()
     self.app.buttons["OK"].tap()
-    _ = self.app.staticTexts["Dismiss action sent"].waitForExistence(timeout: 1)
-    XCTAssertEqual(self.app.staticTexts["Dismiss action sent"].exists, false)
+    XCTAssertEqual(self.app.staticTexts["Dismiss action sent"].waitForExistence(timeout: 1), false)
   }
 
   func testDialogCancel() {
     self.app.buttons["Open dialog"].tap()
     self.app.buttons["Cancel"].tap()
-    _ = self.app.staticTexts["Dismiss action sent"].waitForExistence(timeout: 1)
-    XCTAssertEqual(self.app.staticTexts["Dismiss action sent"].exists, true)
+    XCTAssertEqual(self.app.staticTexts["Dismiss action sent"].waitForExistence(timeout: 1), true)
   }
 
   func testShowDialogThenAlert() {
     self.app.buttons["Open dialog"].tap()
     self.app.buttons["Show alert"].tap()
-    _ = self.app.staticTexts["Hello!"].waitForExistence(timeout: 1)
-    XCTAssertEqual(self.app.staticTexts["Hello!"].exists, true)
+    XCTAssertEqual(self.app.staticTexts["Hello!"].waitForExistence(timeout: 1), true)
   }
 
   func testShowDialogThenDialog() {
     self.app.buttons["Open dialog"].tap()
     self.app.buttons["Show dialog"].tap()
-    _ = self.app.staticTexts["Hello again!"].waitForExistence(timeout: 1)
-    XCTAssertEqual(self.app.staticTexts["Hello again!"].exists, true)
+    XCTAssertEqual(self.app.staticTexts["Hello again!"].waitForExistence(timeout: 1), true)
   }
 
   func testSheetExtraBindingActionsIgnoredOnDismiss() {
@@ -329,7 +321,8 @@ final class PresentationTests: BaseIntegrationTests {
       """
       This test should pass but does not due to a SwiftUI bug. You cannot simultaneously close
       a sheet and open an alert.
-      """)
+      """
+    )
     XCTAssertEqual(self.app.staticTexts["Alert open"].exists, true)
   }
 }
