@@ -8,8 +8,8 @@ PLATFORM_WATCHOS = watchOS Simulator,id=$(call udid_for,Watch)
 default: test-all
 
 test-all: test-examples
-	CONFIG=debug $(MAKE) test-library
-	CONFIG=release $(MAKE) test-library
+	$(MAKE) CONFIG=debug test-library
+	$(MAKE) CONFIG=release test-library
 
 test-library:
 	for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_MAC_CATALYST)" "$(PLATFORM_TVOS)" "$(PLATFORM_WATCHOS)"; do \
