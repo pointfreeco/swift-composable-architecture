@@ -17,6 +17,11 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 - ``ViewStore/suspend(while:)``
 
+### Supporting types
+
+- ``ViewStore/State-swift.typealias``
+- ``ViewStore/Action``
+
 ### SwiftUI integration
 
 - ``ViewStore/subscript(dynamicMember:)-3q4xh``
