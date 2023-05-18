@@ -74,6 +74,7 @@ day-to-day when building applications, such as:
 - ``Reducer/ifLet(_:action:destination:fileID:line:)``
 - ``StackState``
 - ``StackAction``
+- ``StackElementID``
 - ``Reducer/forEach(_:action:destination:fileID:line:)``
 - ``DismissEffect``
 
