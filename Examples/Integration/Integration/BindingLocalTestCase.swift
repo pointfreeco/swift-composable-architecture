@@ -3,23 +3,45 @@ import SwiftUI
 
 private struct BindingLocalTestCase: Reducer {
   struct State: Equatable {
-    @PresentationState var child: Child.State?
+    @PresentationState var fullScreenCover: Child.State?
+    @PresentationState var popover: Child.State?
+    @PresentationState var sheet: Child.State?
   }
   enum Action: Equatable {
-    case child(PresentationAction<Child.Action>)
-    case childButtonTapped
+    case fullScreenCover(PresentationAction<Child.Action>)
+    case fullScreenCoverButtonTapped
+    case popover(PresentationAction<Child.Action>)
+    case popoverButtonTapped
+    case sheet(PresentationAction<Child.Action>)
+    case sheetButtonTapped
   }
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
-      case .child:
+      case .fullScreenCover:
         return .none
-      case .childButtonTapped:
-        state.child = Child.State()
+      case .fullScreenCoverButtonTapped:
+        state.fullScreenCover = Child.State()
+        return .none
+      case .popover:
+        return .none
+      case .popoverButtonTapped:
+        state.popover = Child.State()
+        return .none
+      case .sheet:
+        return .none
+      case .sheetButtonTapped:
+        state.sheet = Child.State()
         return .none
       }
     }
-    .ifLet(\.$child, action: /Action.child) {
+    .ifLet(\.$fullScreenCover, action: /Action.fullScreenCover) {
+      Child()
+    }
+    .ifLet(\.$popover, action: /Action.popover) {
+      Child()
+    }
+    .ifLet(\.$sheet, action: /Action.sheet) {
       Child()
     }
   }
@@ -45,10 +67,26 @@ struct BindingLocalTestCaseView: View {
   }
 
   var body: some View {
-    Button("Child") {
-      ViewStore(self.store.stateless).send(.childButtonTapped)
+    VStack {
+      Button("Full-screen-cover") {
+        ViewStore(self.store.stateless).send(.fullScreenCoverButtonTapped)
+      }
+      Button("Popover") {
+        ViewStore(self.store.stateless).send(.popoverButtonTapped)
+      }
+      Button("Sheet") {
+        ViewStore(self.store.stateless).send(.sheetButtonTapped)
+      }
     }
-    .sheet(store: self.store.scope(state: \.$child, action: { .child($0) })) { store in
+    .fullScreenCover(
+      store: self.store.scope(state: \.$fullScreenCover, action: { .fullScreenCover($0) })
+    ) { store in
+      ChildView(store: store)
+    }
+    .popover(store: self.store.scope(state: \.$popover, action: { .popover($0) })) { store in
+      ChildView(store: store)
+    }
+    .sheet(store: self.store.scope(state: \.$sheet, action: { .sheet($0) })) { store in
       ChildView(store: store)
     }
   }
