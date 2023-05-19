@@ -42,7 +42,8 @@ public struct IfLetStore<State, Action, Content: View>: View {
         return ViewBuilder.buildEither(
           first: ifContent(
             store
-              .filterSend { state, _ in state == nil ? !BindingLocal.isActive : true }
+              // TODO: Combine `invalidate`+`scope`
+              .invalidate { $0 == nil }
               .scope(
                 state: {
                   state = $0 ?? state
@@ -75,7 +76,8 @@ public struct IfLetStore<State, Action, Content: View>: View {
       if var state = viewStore.state {
         return ifContent(
           store
-            .filterSend { state, _ in state == nil ? !BindingLocal.isActive : true }
+            // TODO: Combine `invalidate`+`scope`
+            .invalidate { $0 == nil }
             .scope(
               state: {
                 state = $0 ?? state
