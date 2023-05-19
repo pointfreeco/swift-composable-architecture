@@ -432,6 +432,7 @@ final class TestStoreTests: BaseTCATestCase {
     }
   }
 
+  #if DEBUG
   func testAssert_ExhaustiveTestStore() async {
     let store = TestStore(initialState: 0) {
       EmptyReducer<Int, Void>()
@@ -450,6 +451,7 @@ final class TestStoreTests: BaseTCATestCase {
         """
     }
   }
+  #endif
 
   func testAssert_NonExhaustiveTestStore() async {
     let store = TestStore(initialState: 0) {
@@ -462,6 +464,7 @@ final class TestStoreTests: BaseTCATestCase {
     }
   }
 
+  #if DEBUG
   func testAssert_NonExhaustiveTestStore_Failure() async {
     let store = TestStore(initialState: 0) {
       EmptyReducer<Int, Void>()
@@ -483,6 +486,7 @@ final class TestStoreTests: BaseTCATestCase {
         """
     }
   }
+  #endif
 }
 
 private struct Client: DependencyKey {
