@@ -132,28 +132,15 @@ final class AppFeatureTests: XCTestCase {
       }
       $0.uuid = .incrementing
     }
+    store.exhaustivity = .off
 
     await store.send(.path(.element(id: 1, action: .record(.task))))
-
-    await store.receive(.path(.element(id: 1, action: .record(.speechResult(speechResult))))) {
-      XCTModify(&$0.path[id: 1], case: /AppFeature.Path.State.record) {
-        $0.transcript = "I completed the project"
-      }
-    }
-
-    store.exhaustivity = .off(showSkippedAssertions: true)
-    await store.receive(.path(.element(id: 1, action: .record(.timerTick))))
-    await store.receive(.path(.element(id: 1, action: .record(.timerTick))))
-    await store.receive(.path(.element(id: 1, action: .record(.timerTick))))
-    await store.receive(.path(.element(id: 1, action: .record(.timerTick))))
-    await store.receive(.path(.element(id: 1, action: .record(.timerTick))))
-    await store.receive(.path(.element(id: 1, action: .record(.timerTick))))
-
     await store.receive(
       .path(
         .element(id: 1, action: .record(.delegate(.save(transcript: "I completed the project"))))
       )
     ) {
+      $0.path.pop(to: 0)
       XCTModify(&$0.path[id: 0], case: /AppFeature.Path.State.detail) {
         $0.standup.meetings = [
           Meeting(
@@ -164,6 +151,5 @@ final class AppFeatureTests: XCTestCase {
         ]
       }
     }
-    XCTAssertEqual(store.state.path.count, 1)
   }
 }
