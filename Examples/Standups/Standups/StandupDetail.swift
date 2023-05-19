@@ -193,6 +193,11 @@ struct StandupDetailView: View {
           viewStore.send(.editButtonTapped)
         }
       }
+      .alert(
+        store: self.store.scope(state: \.$destination, action: StandupDetail.Action.destination),
+        state: /StandupDetail.Destination.State.alert,
+        action: StandupDetail.Destination.Action.alert
+      )
       .sheet(
         store: self.store.scope(state: \.$destination, action: StandupDetail.Action.destination),
         state: /StandupDetail.Destination.State.edit,
@@ -213,14 +218,8 @@ struct StandupDetailView: View {
                 }
               }
             }
-
         }
       }
-      .alert(
-        store: self.store.scope(state: \.$destination, action: StandupDetail.Action.destination),
-        state: /StandupDetail.Destination.State.alert,
-        action: StandupDetail.Destination.Action.alert
-      )
     }
   }
 }

@@ -124,7 +124,9 @@ struct VoiceMemoView: View {
             .foregroundColor(Color(.systemGray))
         }
 
-        Button(action: { viewStore.send(.playButtonTapped) }) {
+        Button {
+          viewStore.send(.playButtonTapped)
+        } label: {
           Image(systemName: viewStore.mode.isPlaying ? "stop.circle" : "play.circle")
             .font(.system(size: 22))
         }

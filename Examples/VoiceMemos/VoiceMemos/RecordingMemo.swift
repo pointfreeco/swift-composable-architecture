@@ -101,7 +101,9 @@ struct RecordingMemoView: View {
             .foregroundColor(Color(.label))
             .frame(width: 74, height: 74)
 
-          Button(action: { viewStore.send(.stopButtonTapped, animation: .default) }) {
+          Button {
+            viewStore.send(.stopButtonTapped, animation: .default)
+          } label: {
             RoundedRectangle(cornerRadius: 4)
               .foregroundColor(Color(.systemRed))
               .padding(17)

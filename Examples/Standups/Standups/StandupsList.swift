@@ -104,8 +104,9 @@ struct StandupsListView: View {
     WithViewStore(self.store, observe: \.standups) { viewStore in
       List {
         ForEach(viewStore.state) { standup in
-          NavigationLink(state: AppFeature.Path.State.detail(StandupDetail.State(standup: standup)))
-          {
+          NavigationLink(
+            state: AppFeature.Path.State.detail(StandupDetail.State(standup: standup))
+          ) {
             CardView(standup: standup)
           }
           .listRowBackground(standup.theme.mainColor)
@@ -119,6 +120,11 @@ struct StandupsListView: View {
         }
       }
       .navigationTitle("Daily Standups")
+      .alert(
+        store: self.store.scope(state: \.$destination, action: StandupsList.Action.destination),
+        state: /StandupsList.Destination.State.alert,
+        action: StandupsList.Destination.Action.alert
+      )
       .sheet(
         store: self.store.scope(state: \.$destination, action: StandupsList.Action.destination),
         state: /StandupsList.Destination.State.add,
@@ -141,11 +147,6 @@ struct StandupsListView: View {
             }
         }
       }
-      .alert(
-        store: self.store.scope(state: \.$destination, action: StandupsList.Action.destination),
-        state: /StandupsList.Destination.State.alert,
-        action: StandupsList.Destination.Action.alert
-      )
     }
   }
 }
@@ -209,25 +210,22 @@ struct StandupsList_Previews: PreviewProvider {
     StandupsListView(
       store: Store(initialState: StandupsList.State()) {
         StandupsList()
-          .dependency(\.dataManager.load) { _ in
-            try JSONEncoder().encode([
-              Standup.mock,
-              .designMock,
-              .engineeringMock,
-            ])
-          }
+      } withDependencies: {
+        $0.dataManager.load = { _ in
+          try JSONEncoder().encode([
+            Standup.mock,
+            .designMock,
+            .engineeringMock,
+          ])
+        }
       }
     )
 
     StandupsListView(
       store: Store(initialState: StandupsList.State()) {
         StandupsList()
-          .dependency(
-            \.dataManager,
-            .mock(
-              initialData: Data("!@#$% bad data ^&*()".utf8)
-            )
-          )
+      } withDependencies: {
+        $0.dataManager = .mock(initialData: Data("!@#$% bad data ^&*()".utf8))
       }
     )
     .previewDisplayName("Load data failure")

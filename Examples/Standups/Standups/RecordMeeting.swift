@@ -227,7 +227,8 @@ extension AlertState where Action == RecordMeeting.Action.Alert {
       """
       The speech recognizer has failed for some reason and so your meeting will no longer be \
       recorded. What do you want to do?
-      """)
+      """
+    )
   }
 }
 
@@ -267,7 +268,7 @@ struct MeetingHeaderView: View {
   }
 
   private var progress: Double {
-    guard totalDuration > .seconds(0) else { return 0 }
+    guard self.totalDuration > .seconds(0) else { return 0 }
     return Double(self.secondsElapsed) / Double(self.totalDuration.components.seconds)
   }
 }
@@ -277,13 +278,13 @@ struct MeetingProgressViewStyle: ProgressViewStyle {
 
   func makeBody(configuration: Configuration) -> some View {
     ZStack {
-      RoundedRectangle(cornerRadius: 10.0)
-        .fill(theme.accentColor)
-        .frame(height: 20.0)
+      RoundedRectangle(cornerRadius: 10)
+        .fill(self.theme.accentColor)
+        .frame(height: 20)
 
       ProgressView(configuration)
-        .tint(theme.mainColor)
-        .frame(height: 12.0)
+        .tint(self.theme.mainColor)
+        .frame(height: 12)
         .padding(.horizontal)
     }
   }
@@ -331,8 +332,8 @@ struct SpeakerArc: Shape {
   let speakerIndex: Int
 
   func path(in rect: CGRect) -> Path {
-    let diameter = min(rect.size.width, rect.size.height) - 24.0
-    let radius = diameter / 2.0
+    let diameter = min(rect.size.width, rect.size.height) - 24
+    let radius = diameter / 2
     let center = CGPoint(x: rect.midX, y: rect.midY)
     return Path { path in
       path.addArc(
@@ -346,13 +347,13 @@ struct SpeakerArc: Shape {
   }
 
   private var degreesPerSpeaker: Double {
-    360.0 / Double(self.totalSpeakers)
+    360 / Double(self.totalSpeakers)
   }
   private var startAngle: Angle {
-    Angle(degrees: self.degreesPerSpeaker * Double(self.speakerIndex) + 1.0)
+    Angle(degrees: self.degreesPerSpeaker * Double(self.speakerIndex) + 1)
   }
   private var endAngle: Angle {
-    Angle(degrees: self.startAngle.degrees + self.degreesPerSpeaker - 1.0)
+    Angle(degrees: self.startAngle.degrees + self.degreesPerSpeaker - 1)
   }
 }
 

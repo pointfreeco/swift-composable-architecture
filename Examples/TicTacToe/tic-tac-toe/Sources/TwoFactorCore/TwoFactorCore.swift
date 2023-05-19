@@ -16,7 +16,7 @@ public struct TwoFactor: ReducerProtocol, Sendable {
     }
   }
 
-  public enum Action: Equatable {
+  public enum Action: Equatable, Sendable {
     case alert(PresentationAction<Never>)
     case codeChanged(String)
     case submitButtonTapped
@@ -28,7 +28,7 @@ public struct TwoFactor: ReducerProtocol, Sendable {
   public init() {}
 
   public var body: some ReducerProtocolOf<Self> {
-    Reduce<State, Action> { state, action in
+    Reduce { state, action in
       switch action {
       case .alert:
         return .none
