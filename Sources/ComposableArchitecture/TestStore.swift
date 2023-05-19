@@ -662,6 +662,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     ScopedState: Equatable,
     Environment == Void
   {
+    uncheckedUseMainSerialExecutor = true
     let reducer = withDependencies(prepareDependencies) {
       TestReducer(Reduce(reducer()), initialState: initialState())
     }
@@ -867,6 +868,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
 
   deinit {
     self.completed()
+    uncheckedUseMainSerialExecutor = false
   }
 
   func completed() {
@@ -2490,3 +2492,25 @@ extension TestStore {
     TestStoreTask(rawValue: nil, timeout: 0)
   }
 }
+
+
+var uncheckedUseMainSerialExecutor: Bool {
+  get { swift_task_enqueueGlobal_hook != nil }
+  set {
+    swift_task_enqueueGlobal_hook =
+    newValue
+    ? { job, _ in MainActor.shared.enqueue(job) }
+    : nil
+  }
+}
+
+private typealias Original = @convention(thin) (UnownedJob) -> Void
+private typealias Hook = @convention(thin) (UnownedJob, Original) -> Void
+
+private var swift_task_enqueueGlobal_hook: Hook? {
+  get { _swift_task_enqueueGlobal_hook.pointee }
+  set { _swift_task_enqueueGlobal_hook.pointee = newValue }
+}
+private let _swift_task_enqueueGlobal_hook: UnsafeMutablePointer<Hook?> = {
+  dlsym(dlopen(nil, 0), "swift_task_enqueueGlobal_hook").assumingMemoryBound(to: Hook?.self)
+}()
