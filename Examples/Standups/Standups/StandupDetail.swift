@@ -22,8 +22,9 @@ struct StandupDetail: ReducerProtocol {
     }
   }
 
-  @Dependency(\.speechClient.authorizationStatus) var authorizationStatus
+  @Dependency(\.dismiss) var dismiss
   @Dependency(\.openSettings) var openSettings
+  @Dependency(\.speechClient.authorizationStatus) var authorizationStatus
 
   struct Destination: ReducerProtocol {
     enum State: Equatable {
@@ -68,7 +69,10 @@ struct StandupDetail: ReducerProtocol {
       case let .destination(.presented(.alert(alertAction))):
         switch alertAction {
         case .confirmDeletion:
-          return .send(.delegate(.deleteStandup), animation: .default)
+          return .run { send in
+            await send(.delegate(.deleteStandup), animation: .default)
+            await self.dismiss()
+          }
         case .continueWithoutRecording:
           return .send(.delegate(.startMeeting))
         case .openSettings:

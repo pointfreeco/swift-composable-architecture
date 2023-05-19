@@ -36,8 +36,10 @@ final class AppFeatureTests: XCTestCase {
     }
 
     await store.receive(.path(.element(id: 0, action: .detail(.delegate(.deleteStandup))))) {
-      $0.path = StackState()
       $0.standupsList.standups = []
+    }
+    await store.receive(.path(.popFrom(id: 0))) {
+      $0.path = StackState()
     }
   }
 
