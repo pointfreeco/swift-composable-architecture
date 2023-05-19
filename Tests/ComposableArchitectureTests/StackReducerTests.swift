@@ -1076,48 +1076,48 @@ import XCTest
           $0.children[id: 1] = Child.State()
         }
       }
+
+      func testMismatchedIDFailure() async {
+        struct Child: Reducer {
+          struct State: Equatable {}
+          enum Action: Equatable {}
+          func reduce(into state: inout State, action: Action) -> Effect<Action> {}
+        }
+        struct Parent: Reducer {
+          struct State: Equatable {
+            var children = StackState<Child.State>()
+          }
+          enum Action: Equatable {
+            case child(StackAction<Child.State, Child.Action>)
+          }
+          var body: some ReducerOf<Self> {
+            Reduce { _, _ in .none }.forEach(\.children, action: /Action.child) { Child() }
+          }
+        }
+
+        let store = TestStore(initialState: Parent.State()) {
+          Parent()
+        }
+
+        XCTExpectFailure {
+          $0.compactDescription == """
+            A state change does not match expectation: …
+
+                  StackReducerTests.Parent.State(
+                    children: [
+                −     #1: StackReducerTests.Child.State()
+                +     #0: StackReducerTests.Child.State()
+                    ]
+                  )
+
+            (Expected: −, Actual: +)
+            """
+        }
+        await store.send(.child(.push(id: 0, state: Child.State()))) {
+          $0.children[id: 1] = Child.State()
+        }
+      }
     #endif
-
-    func testMismatchedIDFailure() async {
-      struct Child: Reducer {
-        struct State: Equatable {}
-        enum Action: Equatable {}
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {}
-      }
-      struct Parent: Reducer {
-        struct State: Equatable {
-          var children = StackState<Child.State>()
-        }
-        enum Action: Equatable {
-          case child(StackAction<Child.State, Child.Action>)
-        }
-        var body: some ReducerOf<Self> {
-          Reduce { _, _ in .none }.forEach(\.children, action: /Action.child) { Child() }
-        }
-      }
-
-      let store = TestStore(initialState: Parent.State()) {
-        Parent()
-      }
-
-      XCTExpectFailure {
-        $0.compactDescription == """
-          A state change does not match expectation: …
-
-                StackReducerTests.Parent.State(
-                  children: [
-              −     #1: StackReducerTests.Child.State()
-              +     #0: StackReducerTests.Child.State()
-                  ]
-                )
-
-          (Expected: −, Actual: +)
-          """
-      }
-      await store.send(.child(.push(id: 0, state: Child.State()))) {
-        $0.children[id: 1] = Child.State()
-      }
-    }
 
     func testSendCopiesStackElementIDGenerator() async {
       struct Feature: Reducer {
