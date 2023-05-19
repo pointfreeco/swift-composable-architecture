@@ -28,11 +28,9 @@ struct AppFeature: ReducerProtocol {
     Reduce<State, Action> { state, action in
       switch action {
       case let .path(.popFrom(id)):
-        guard
-          case let .some(.detail(detailState)) = state.path[id: id],
-          state.standupsList.standups[id: detailState.standup.id] != nil
+        guard case let .some(.detail(detailState)) = state.path[id: id]
         else { return .none }
-        state.standupsList.standups[id: detailState.standup.id] = detailState.standup
+        state.standupsList.standups[id: detailState.standup.id]? = detailState.standup
         return .none
 
       case let .path(.element(id, .detail(.delegate(delegateAction)))):
