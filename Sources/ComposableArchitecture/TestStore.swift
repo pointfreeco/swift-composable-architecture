@@ -1053,6 +1053,56 @@ extension TestStore where ScopedState: Equatable {
     return .init(rawValue: task, timeout: self.timeout)
   }
 
+  /// Assert against the current state of the store.
+  ///
+  /// The trailing closure provided is given a mutable argument that represents the current state,
+  /// and you can provide any mutations you want to the state. If your mutations cause the argument
+  /// to differ from the current state of the test store, a test failure will be triggered.
+  ///
+  /// This tool is most useful in non-exhaustive test stores (see
+  /// <doc:Testing#Non-exhaustive-testing>), which allow you to assert on a subset of the things
+  /// happening inside your features. For example, you can send an action in a child feature
+  /// without asserting on how many changes in the system, and then tell the test store to
+  /// ``finish(timeout:file:line:)`` by executing all of its effects and receiving all actions.
+  /// After that is done you can assert on the final state of the store:
+  ///
+  /// ```swift
+  /// store.exhaustivity = .off
+  /// await store.send(.child(.closeButtonTapped))
+  /// await store.finish()
+  /// store.assert {
+  ///   $0.child = nil
+  /// }
+  /// ```
+  ///
+  /// > Note: This helper is only intended to be used with non-exhaustive test stores. It is not
+  /// needed in exhaustive test stores since any assertion you may make inside the trailing closure
+  /// has already been handled by a previous `send` or `receive`.
+  ///
+  /// - Parameters:
+  ///   - updateStateToExpectedResult: A closure that asserts against the current state of the test
+  ///   store.
+  @MainActor
+  public func assert(
+    _ updateStateToExpectedResult: ((inout ScopedState) throws -> Void)?,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) {
+    let expectedState = self.toScopedState(self.state)
+    let currentState = self.reducer.state
+    do {
+      try self.expectedStateShouldMatch(
+        expected: expectedState,
+        actual: self.toScopedState(currentState),
+        updateStateToExpectedResult: updateStateToExpectedResult,
+        file: file,
+        line: line
+      )
+    } catch {
+      XCTFail("Threw error: \(error)", file: file, line: line)
+    }
+  }
+
   /// Sends an action to the store and asserts when state changes.
   ///
   /// This method returns a ``TestStoreTask``, which represents the lifecycle of the effect started
