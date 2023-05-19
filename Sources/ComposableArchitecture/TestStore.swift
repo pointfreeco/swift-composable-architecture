@@ -1075,6 +1075,10 @@ extension TestStore where ScopedState: Equatable {
   /// }
   /// ```
   ///
+  /// > Note: This helper is only intended to be used with non-exhaustive test stores. It is not
+  /// needed in exhaustive test stores since any assertion you may make inside the trailing closure
+  /// has already been handled by a previous `send` or `receive`.
+  ///
   /// - Parameters:
   ///   - updateStateToExpectedResult: A closure that asserts against the current state of the test
   ///   store.
