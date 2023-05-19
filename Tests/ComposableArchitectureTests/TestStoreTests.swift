@@ -433,24 +433,24 @@ final class TestStoreTests: BaseTCATestCase {
   }
 
   #if DEBUG
-  func testAssert_ExhaustiveTestStore() async {
-    let store = TestStore(initialState: 0) {
-      EmptyReducer<Int, Void>()
-    }
-
-    XCTExpectFailure {
-      store.assert {
-        $0 = 0
+    func testAssert_ExhaustiveTestStore() async {
+      let store = TestStore(initialState: 0) {
+        EmptyReducer<Int, Void>()
       }
-    } issueMatcher: {
-      $0.compactDescription == """
-        Expected state to change, but no change occurred.
 
-        The trailing closure made no observable modifications to state. If no change to state is \
-        expected, omit the trailing closure.
-        """
+      XCTExpectFailure {
+        store.assert {
+          $0 = 0
+        }
+      } issueMatcher: {
+        $0.compactDescription == """
+          Expected state to change, but no change occurred.
+
+          The trailing closure made no observable modifications to state. If no change to state is \
+          expected, omit the trailing closure.
+          """
+      }
     }
-  }
   #endif
 
   func testAssert_NonExhaustiveTestStore() async {
@@ -465,27 +465,27 @@ final class TestStoreTests: BaseTCATestCase {
   }
 
   #if DEBUG
-  func testAssert_NonExhaustiveTestStore_Failure() async {
-    let store = TestStore(initialState: 0) {
-      EmptyReducer<Int, Void>()
-    }
-    store.exhaustivity = .off
-
-    XCTExpectFailure {
-      store.assert {
-        $0 = 1
+    func testAssert_NonExhaustiveTestStore_Failure() async {
+      let store = TestStore(initialState: 0) {
+        EmptyReducer<Int, Void>()
       }
-    } issueMatcher: {
-      $0.compactDescription == """
-        A state change does not match expectation: …
+      store.exhaustivity = .off
 
-            − 1
-            + 0
+      XCTExpectFailure {
+        store.assert {
+          $0 = 1
+        }
+      } issueMatcher: {
+        $0.compactDescription == """
+          A state change does not match expectation: …
 
-        (Expected: −, Actual: +)
-        """
+              − 1
+              + 0
+
+          (Expected: −, Actual: +)
+          """
+      }
     }
-  }
   #endif
 }
 
