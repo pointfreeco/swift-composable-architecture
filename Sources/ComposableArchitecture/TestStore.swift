@@ -1084,7 +1084,7 @@ extension TestStore where ScopedState: Equatable {
   ///   store.
   @MainActor
   public func assert(
-    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)?,
+    _ updateStateToExpectedResult: ((inout ScopedState) throws -> Void)?,
     file: StaticString = #file,
     line: UInt = #line
   ) {
