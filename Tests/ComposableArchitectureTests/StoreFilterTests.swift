@@ -10,7 +10,7 @@
 
     func testFilter() {
       let store = Store<Int?, Void>(initialState: nil) {}
-        .filterSend { state, _ in state != nil }
+        .invalidate { $0 != nil }
 
       let viewStore = ViewStore(store, observe: { $0 })
       var count = 0
