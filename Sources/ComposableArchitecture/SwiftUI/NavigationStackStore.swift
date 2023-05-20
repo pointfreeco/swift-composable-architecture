@@ -191,7 +191,7 @@ import SwiftUI
     ///     presents.
     ///   - state: An optional value to present. When the user selects the link, SwiftUI stores a copy
     ///     of the value. Pass a `nil` value to disable the link.
-    public init<P: Hashable>(
+    public init<P>(
       _ titleKey: LocalizedStringKey, state: P?, fileID: StaticString = #fileID, line: UInt = #line
     )
     where Label == _NavigationLinkStoreContent<P, Text> {
@@ -212,7 +212,7 @@ import SwiftUI
     ///   - state: An optional value to present. When the user selects the link, SwiftUI stores a copy
     ///     of the value. Pass a `nil` value to disable the link.
     @_disfavoredOverload
-    public init<S: StringProtocol, P: Hashable>(
+    public init<S: StringProtocol, P>(
       _ title: S, state: P?, fileID: StaticString = #fileID, line: UInt = #line
     )
     where Label == _NavigationLinkStoreContent<P, Text> {

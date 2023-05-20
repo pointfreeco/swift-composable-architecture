@@ -27,6 +27,54 @@ final class BindingLocalTests: BaseIntegrationTests {
     app.buttons["Dismiss"].tap()
   }
 
+  func testNoBindingWarning_NavigationDestination() {
+    app.collectionViews.buttons[TestCase.bindingLocal.rawValue].tap()
+
+    app.buttons["Navigation destination"].tap()
+
+    app.textFields["Text"].tap()
+
+    app.buttons["Dismiss"].tap()
+  }
+
+  func testOnDisappearWarning_NavigationDestination() {
+    self.expectRuntimeWarnings = true
+
+    app.collectionViews.buttons[TestCase.bindingLocal.rawValue].tap()
+
+    app.buttons["Navigation destination"].tap()
+
+    app.buttons["Send onDisappear"].tap()
+
+    app.textFields["Text"].tap()
+
+    app.buttons["Dismiss"].tap()
+  }
+
+  func testNoBindingWarning_Path() {
+    app.collectionViews.buttons[TestCase.bindingLocal.rawValue].tap()
+
+    app.buttons["Path"].tap()
+
+    app.textFields["Text"].tap()
+
+    app.buttons["Dismiss"].tap()
+  }
+
+  func testOnDisappearWarning_Path() {
+    self.expectRuntimeWarnings = true
+
+    app.collectionViews.buttons[TestCase.bindingLocal.rawValue].tap()
+
+    app.buttons["Path"].tap()
+
+    app.buttons["Send onDisappear"].tap()
+
+    app.textFields["Text"].tap()
+
+    app.buttons["Dismiss"].tap()
+  }
+
   func testNoBindingWarning_Popover() {
     app.collectionViews.buttons[TestCase.bindingLocal.rawValue].tap()
 

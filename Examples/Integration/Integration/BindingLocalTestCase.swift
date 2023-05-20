@@ -4,12 +4,17 @@ import SwiftUI
 private struct BindingLocalTestCase: ReducerProtocol {
   struct State: Equatable {
     @PresentationState var fullScreenCover: Child.State?
+    @PresentationState var navigationDestination: Child.State?
+    var path = StackState<Child.State>()
     @PresentationState var popover: Child.State?
     @PresentationState var sheet: Child.State?
   }
   enum Action: Equatable {
     case fullScreenCover(PresentationAction<Child.Action>)
     case fullScreenCoverButtonTapped
+    case navigationDestination(PresentationAction<Child.Action>)
+    case navigationDestinationButtonTapped
+    case path(StackAction<Child.State, Child.Action>)
     case popover(PresentationAction<Child.Action>)
     case popoverButtonTapped
     case sheet(PresentationAction<Child.Action>)
@@ -23,6 +28,13 @@ private struct BindingLocalTestCase: ReducerProtocol {
       case .fullScreenCoverButtonTapped:
         state.fullScreenCover = Child.State()
         return .none
+      case .navigationDestination:
+        return .none
+      case .navigationDestinationButtonTapped:
+        state.navigationDestination = Child.State()
+        return .none
+      case .path:
+        return .none
       case .popover:
         return .none
       case .popoverButtonTapped:
@@ -35,7 +47,13 @@ private struct BindingLocalTestCase: ReducerProtocol {
         return .none
       }
     }
+    .forEach(\.path, action: /Action.path) {
+      Child()
+    }
     .ifLet(\.$fullScreenCover, action: /Action.fullScreenCover) {
+      Child()
+    }
+    .ifLet(\.$navigationDestination, action: /Action.navigationDestination) {
       Child()
     }
     .ifLet(\.$popover, action: /Action.popover) {
@@ -67,26 +85,41 @@ struct BindingLocalTestCaseView: View {
   }
 
   var body: some View {
-    VStack {
-      Button("Full-screen-cover") {
-        ViewStore(self.store.stateless).send(.fullScreenCoverButtonTapped)
+    NavigationStackStore(self.store.scope(state: \.path, action: { .path($0) })) {
+      VStack {
+        Button("Full-screen-cover") {
+          ViewStore(self.store.stateless).send(.fullScreenCoverButtonTapped)
+        }
+        Button("Navigation destination") {
+          ViewStore(self.store.stateless).send(.navigationDestinationButtonTapped)
+        }
+        NavigationLink("Path", state: Child.State())
+        Button("Popover") {
+          ViewStore(self.store.stateless).send(.popoverButtonTapped)
+        }
+        Button("Sheet") {
+          ViewStore(self.store.stateless).send(.sheetButtonTapped)
+        }
       }
-      Button("Popover") {
-        ViewStore(self.store.stateless).send(.popoverButtonTapped)
+      .fullScreenCover(
+        store: self.store.scope(state: \.$fullScreenCover, action: { .fullScreenCover($0) })
+      ) { store in
+        ChildView(store: store)
       }
-      Button("Sheet") {
-        ViewStore(self.store.stateless).send(.sheetButtonTapped)
+      .navigationDestination(
+        store: self.store.scope(
+          state: \.$navigationDestination, action: { .navigationDestination($0) }
+        )
+      ) { store in
+        ChildView(store: store)
       }
-    }
-    .fullScreenCover(
-      store: self.store.scope(state: \.$fullScreenCover, action: { .fullScreenCover($0) })
-    ) { store in
-      ChildView(store: store)
-    }
-    .popover(store: self.store.scope(state: \.$popover, action: { .popover($0) })) { store in
-      ChildView(store: store)
-    }
-    .sheet(store: self.store.scope(state: \.$sheet, action: { .sheet($0) })) { store in
+      .popover(store: self.store.scope(state: \.$popover, action: { .popover($0) })) { store in
+        ChildView(store: store)
+      }
+      .sheet(store: self.store.scope(state: \.$sheet, action: { .sheet($0) })) { store in
+        ChildView(store: store)
+      }
+    } destination: { store in
       ChildView(store: store)
     }
   }
