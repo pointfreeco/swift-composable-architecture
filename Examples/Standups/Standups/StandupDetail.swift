@@ -122,8 +122,15 @@ struct StandupDetail: ReducerProtocol {
 struct StandupDetailView: View {
   let store: StoreOf<StandupDetail>
 
+  struct ViewState: Equatable {
+    let standup: Standup
+    init(state: StandupDetail.State) {
+      self.standup = state.standup
+    }
+  }
+
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { (viewStore: ViewStoreOf<StandupDetail>) in
+    WithViewStore(self.store, observe: ViewState.init) { viewStore in
       List {
         Section {
           Button {
