@@ -335,7 +335,7 @@ final class EffectCancellationTests: BaseTCATestCase {
       XCTAssertTrue(!Thread.isMainThread)
       let ids = (1...100).map { _ in UUID() }
 
-      let areCancelled = await withTaskGroup(of: Bool.self) { group in
+      let areCancelled = await withTaskGroup(of: Bool.self, returning: [Bool].self) { group in
         (1...10_000).forEach { index in
           let id = ids[index.quotientAndRemainder(dividingBy: ids.count).remainder]
           group.addTask {
