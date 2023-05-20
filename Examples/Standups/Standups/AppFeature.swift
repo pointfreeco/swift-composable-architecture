@@ -27,19 +27,18 @@ struct AppFeature: Reducer {
     }
     Reduce<State, Action> { state, action in
       switch action {
-      case let .path(.popFrom(id: id)):
+      case let .path(.popFrom(id)):
         guard case let .some(.detail(detailState)) = state.path[id: id]
         else { return .none }
-        state.standupsList.standups[id: detailState.standup.id] = detailState.standup
+        state.standupsList.standups[id: detailState.standup.id]? = detailState.standup
         return .none
 
-      case let .path(.element(id, action: .detail(.delegate(delegateAction)))):
+      case let .path(.element(id, .detail(.delegate(delegateAction)))):
         guard case let .some(.detail(detailState)) = state.path[id: id]
         else { return .none }
 
         switch delegateAction {
         case .deleteStandup:
-          state.path.pop(from: id)
           state.standupsList.standups.remove(id: detailState.standup.id)
           return .none
 

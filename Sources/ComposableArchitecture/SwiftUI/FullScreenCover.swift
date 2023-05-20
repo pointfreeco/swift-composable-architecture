@@ -99,14 +99,9 @@ private struct PresentationFullScreenCoverModifier<
     onDismiss: (() -> Void)?,
     content coverContent: @escaping (Store<DestinationState, DestinationAction>) -> CoverContent
   ) {
-    let filteredStore =
-      store
-      .invalidate { $0.wrappedValue.flatMap(toDestinationState) == nil }
-      .filterSend { state, _ in
-        state.wrappedValue.flatMap(toDestinationState) == nil ? !BindingLocal.isActive : true
-      }
-    self.store = filteredStore
-    self.viewStore = ViewStore(filteredStore, observe: { $0 }, removeDuplicates: { $0.id == $1.id })
+    let store = store.invalidate { $0.wrappedValue.flatMap(toDestinationState) == nil }
+    self.store = store
+    self.viewStore = ViewStore(store, observe: { $0 }, removeDuplicates: { $0.id == $1.id })
     self.toDestinationState = toDestinationState
     self.toID = toID
     self.fromDestinationAction = fromDestinationAction

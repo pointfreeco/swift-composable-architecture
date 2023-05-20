@@ -142,12 +142,6 @@ public final class Store<State, Action> {
     private let mainThreadChecksEnabled: Bool
   #endif
 
-  func invalidate(_ isInvalid: @escaping (State) -> Bool) -> Store {
-    let store = self.scope(state: { $0 }, action: { $0 })
-    store._isInvalidated = { self._isInvalidated() || isInvalid(self.state.value) }
-    return store
-  }
-
   /// Initializes a store from an initial state and a reducer.
   ///
   /// - Parameters:
@@ -340,17 +334,25 @@ public final class Store<State, Action> {
     #endif
   }
 
-  func filterSend(
-    _ isSent: @escaping (State, Action) -> Bool
-  ) -> Store<State, Action> {
+  func invalidate(_ isInvalid: @escaping (State) -> Bool) -> Store {
     self.threadCheck(status: .scope)
 
+    let store: Store
     #if swift(>=5.7)
-      return self.reducer.rescope(self, state: { $0 }, action: { isSent($0, $1) ? $1 : nil })
+      store = self.reducer.rescope(
+        self,
+        state: { $0 },
+        action: { state, action in isInvalid(state) && BindingLocal.isActive ? nil : action }
+      )
     #else
-      return (self.scope ?? StoreScope(root: self))
-        .rescope(self, state: { $0 }, action: { isSent($0, $1) ? $1 : nil })
+      store = (self.scope ?? StoreScope(root: self)).rescope(
+        self,
+        state: { $0 },
+        action: { state, action in isInvalid(state) && BindingLocal.isActive ? nil : action }
+      )
     #endif
+    store._isInvalidated = { self._isInvalidated() || isInvalid(self.state.value) }
+    return store
   }
 
   @_spi(Internals) public func send(

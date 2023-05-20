@@ -329,6 +329,37 @@ final class EffectCancellationTests: BaseTCATestCase {
       }
     }
 
+    func testAsyncConcurrentCancels() async {
+      XCTAssertTrue(!Thread.isMainThread)
+      let ids = (1...100).map { _ in UUID() }
+
+      let areCancelled = await withTaskGroup(of: Bool.self, returning: [Bool].self) { group in
+        (1...10_000).forEach { index in
+          let id = ids[index.quotientAndRemainder(dividingBy: ids.count).remainder]
+          group.addTask {
+            await withTaskCancellation(id: id) {
+              nil == (try? await Task.sleep(nanoseconds: 2_000_000_000))
+            }
+          }
+          Task {
+            try? await Task.sleep(nanoseconds: .random(in: 1_000_000 ... 2_000_000))
+            Task.cancel(id: id)
+          }
+        }
+        return await group.reduce(into: [Bool]()) { $0.append($1) }
+      }
+
+      XCTAssertTrue(areCancelled.allSatisfy({ isCancelled in isCancelled }))
+
+      for id in ids {
+        XCTAssertEqual(
+          _cancellationCancellables.exists(at: id, path: NavigationIDPath()),
+          false,
+          "cancellationCancellables should not contain id \(id)"
+        )
+      }
+    }
+
     func testNestedCancels() {
       let id = UUID()
 

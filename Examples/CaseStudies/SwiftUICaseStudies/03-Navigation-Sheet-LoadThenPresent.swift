@@ -62,7 +62,9 @@ struct LoadThenPresentView: View {
         Section {
           AboutView(readMe: readMe)
         }
-        Button(action: { viewStore.send(.counterButtonTapped) }) {
+        Button {
+          viewStore.send(.counterButtonTapped)
+        } label: {
           HStack {
             Text("Load optional counter")
             if viewStore.isActivityIndicatorVisible {

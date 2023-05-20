@@ -138,7 +138,9 @@ struct SearchView: View {
           List {
             ForEach(viewStore.results) { location in
               VStack(alignment: .leading) {
-                Button(action: { viewStore.send(.searchResultTapped(location)) }) {
+                Button {
+                  viewStore.send(.searchResultTapped(location))
+                } label: {
                   HStack {
                     Text(location.name)
 
@@ -173,31 +175,26 @@ struct SearchView: View {
     }
   }
 
+  @ViewBuilder
   func weatherView(locationWeather: Search.State.Weather?) -> some View {
-    guard let locationWeather = locationWeather else {
-      return AnyView(EmptyView())
-    }
+    if let locationWeather = locationWeather {
+      let days = locationWeather.days
+        .enumerated()
+        .map { idx, weather in formattedWeather(day: weather, isToday: idx == 0) }
 
-    let days = locationWeather.days
-      .enumerated()
-      .map { idx, weather in formattedWeatherDay(weather, isToday: idx == 0) }
-
-    return AnyView(
       VStack(alignment: .leading) {
         ForEach(days, id: \.self) { day in
           Text(day)
         }
       }
       .padding(.leading, 16)
-    )
+    }
   }
 }
 
 // MARK: - Private helpers
 
-private func formattedWeatherDay(_ day: Search.State.Weather.Day, isToday: Bool)
-  -> String
-{
+private func formattedWeather(day: Search.State.Weather.Day, isToday: Bool) -> String {
   let date =
     isToday
     ? "Today"

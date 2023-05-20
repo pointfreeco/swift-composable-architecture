@@ -15,7 +15,7 @@ public struct Login: Reducer, Sendable {
     public init() {}
   }
 
-  public enum Action: Equatable {
+  public enum Action: Equatable, Sendable {
     case alert(PresentationAction<AlertAction>)
     case emailChanged(String)
     case passwordChanged(String)
@@ -24,7 +24,7 @@ public struct Login: Reducer, Sendable {
     case twoFactor(PresentationAction<TwoFactor.Action>)
   }
 
-  public enum AlertAction: Equatable {}
+  public enum AlertAction: Equatable, Sendable {}
 
   @Dependency(\.authenticationClient) var authenticationClient
 

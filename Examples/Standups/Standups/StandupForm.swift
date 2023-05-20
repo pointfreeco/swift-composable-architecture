@@ -103,7 +103,7 @@ struct ThemePicker: View {
   @Binding var selection: Theme
 
   var body: some View {
-    Picker("Theme", selection: $selection) {
+    Picker("Theme", selection: self.$selection) {
       ForEach(Theme.allCases) { theme in
         ZStack {
           RoundedRectangle(cornerRadius: 4)

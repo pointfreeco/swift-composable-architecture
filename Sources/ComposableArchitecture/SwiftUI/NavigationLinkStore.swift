@@ -52,18 +52,10 @@ public struct NavigationLinkStore<
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where State == DestinationState, Action == DestinationAction {
-    let filteredStore =
-      store
-      .invalidate { $0.wrappedValue == nil }
-      .filterSend { state, _ in
-        state.wrappedValue == nil ? !BindingLocal.isActive : true
-      }
-    self.store = filteredStore
+    let store = store.invalidate { $0.wrappedValue == nil }
+    self.store = store
     self.viewStore = ViewStore(
-      filteredStore.scope(
-        state: { $0.wrappedValue != nil },
-        action: { $0 }
-      ),
+      store.scope(state: { $0.wrappedValue != nil }, action: { $0 }),
       observe: { $0 }
     )
     self.toDestinationState = { $0 }
@@ -81,15 +73,10 @@ public struct NavigationLinkStore<
     @ViewBuilder destination: @escaping (Store<DestinationState, DestinationAction>) -> Destination,
     @ViewBuilder label: () -> Label
   ) {
-    let filteredStore =
-      store
-      .invalidate { $0.wrappedValue.flatMap(toDestinationState) == nil }
-      .filterSend { state, _ in
-        state.wrappedValue.flatMap(toDestinationState) == nil ? !BindingLocal.isActive : true
-      }
-    self.store = filteredStore
+    let store = store.invalidate { $0.wrappedValue.flatMap(toDestinationState) == nil }
+    self.store = store
     self.viewStore = ViewStore(
-      filteredStore.scope(
+      store.scope(
         state: { $0.wrappedValue.flatMap(toDestinationState) != nil },
         action: { $0 }
       ),
@@ -109,18 +96,10 @@ public struct NavigationLinkStore<
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where State == DestinationState, Action == DestinationAction, State: Identifiable {
-    let filteredStore =
-      store
-      .invalidate { $0.wrappedValue?.id != id }
-      .filterSend { state, _ in
-        state.wrappedValue?.id != id ? !BindingLocal.isActive : true
-      }
-    self.store = filteredStore
+    let store = store.invalidate { $0.wrappedValue?.id != id }
+    self.store = store
     self.viewStore = ViewStore(
-      filteredStore.scope(
-        state: { $0.wrappedValue?.id == id },
-        action: { $0 }
-      ),
+      store.scope(state: { $0.wrappedValue?.id == id }, action: { $0 }),
       observe: { $0 }
     )
     self.toDestinationState = { $0 }
@@ -139,15 +118,10 @@ public struct NavigationLinkStore<
     @ViewBuilder destination: @escaping (Store<DestinationState, DestinationAction>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where DestinationState: Identifiable {
-    let filteredStore =
-      store
-      .invalidate { $0.wrappedValue.flatMap(toDestinationState)?.id != id }
-      .filterSend { state, _ in
-        state.wrappedValue.flatMap(toDestinationState)?.id != id ? !BindingLocal.isActive : true
-      }
-    self.store = filteredStore
+    let store = store.invalidate { $0.wrappedValue.flatMap(toDestinationState)?.id != id }
+    self.store = store
     self.viewStore = ViewStore(
-      filteredStore.scope(
+      store.scope(
         state: { $0.wrappedValue.flatMap(toDestinationState)?.id == id },
         action: { $0 }
       ),

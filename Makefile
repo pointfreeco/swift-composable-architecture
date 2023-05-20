@@ -41,7 +41,7 @@ test-docs:
 		&& exit 1)
 
 test-examples:
-	for scheme in "CaseStudies (SwiftUI)" "CaseStudies (UIKit)" Integration Search SpeechRecognition TicTacToe Todos VoiceMemos; do \
+	for scheme in "CaseStudies (SwiftUI)" "CaseStudies (UIKit)" Integration Search Standups SpeechRecognition TicTacToe Todos VoiceMemos; do \
 		xcodebuild test \
 			-scheme "$$scheme" \
 			-destination platform="$(PLATFORM_IOS)" || exit 1; \

@@ -16,7 +16,7 @@ public struct TwoFactor: Reducer, Sendable {
     }
   }
 
-  public enum Action: Equatable {
+  public enum Action: Equatable, Sendable {
     case alert(PresentationAction<Never>)
     case codeChanged(String)
     case submitButtonTapped

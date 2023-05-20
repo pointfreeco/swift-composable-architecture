@@ -12,6 +12,7 @@ struct IntegrationApp: App {
 }
 
 struct ContentView: View {
+  @State var isBindingLocalTestCasePresented = false
   @State var isNavigationStackTestCasePresented = false
   @State var isNavigationStackBindingTestCasePresented = false
 
@@ -60,7 +61,11 @@ struct ContentView: View {
               }
 
             case .bindingLocal:
-              NavigationLink(test.rawValue) {
+              Button(test.rawValue) {
+                self.isBindingLocalTestCasePresented = true
+              }
+              .foregroundColor(.black)
+              .sheet(isPresented: self.$isBindingLocalTestCasePresented) {
                 BindingLocalTestCaseView()
               }
             }

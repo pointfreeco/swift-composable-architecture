@@ -22,8 +22,9 @@ struct StandupDetail: Reducer {
     }
   }
 
-  @Dependency(\.speechClient.authorizationStatus) var authorizationStatus
+  @Dependency(\.dismiss) var dismiss
   @Dependency(\.openSettings) var openSettings
+  @Dependency(\.speechClient.authorizationStatus) var authorizationStatus
 
   struct Destination: Reducer {
     enum State: Equatable {
@@ -68,7 +69,10 @@ struct StandupDetail: Reducer {
       case let .destination(.presented(.alert(alertAction))):
         switch alertAction {
         case .confirmDeletion:
-          return .send(.delegate(.deleteStandup), animation: .default)
+          return .run { send in
+            await send(.delegate(.deleteStandup), animation: .default)
+            await self.dismiss()
+          }
         case .continueWithoutRecording:
           return .send(.delegate(.startMeeting))
         case .openSettings:
@@ -193,6 +197,11 @@ struct StandupDetailView: View {
           viewStore.send(.editButtonTapped)
         }
       }
+      .alert(
+        store: self.store.scope(state: \.$destination, action: StandupDetail.Action.destination),
+        state: /StandupDetail.Destination.State.alert,
+        action: StandupDetail.Destination.Action.alert
+      )
       .sheet(
         store: self.store.scope(state: \.$destination, action: StandupDetail.Action.destination),
         state: /StandupDetail.Destination.State.edit,
@@ -213,14 +222,8 @@ struct StandupDetailView: View {
                 }
               }
             }
-
         }
       }
-      .alert(
-        store: self.store.scope(state: \.$destination, action: StandupDetail.Action.destination),
-        state: /StandupDetail.Destination.State.alert,
-        action: StandupDetail.Destination.Action.alert
-      )
     }
   }
 }
