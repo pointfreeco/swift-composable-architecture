@@ -3,6 +3,7 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
+@available(*, deprecated)
 final class EffectDebounceTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
 
@@ -12,8 +13,7 @@ final class EffectDebounceTests: BaseTCATestCase {
 
     func runDebouncedEffect(value: Int) {
       struct CancelToken: Hashable {}
-      Just(value)
-        .eraseToEffect()
+      Effect.send(value)
         .debounce(id: CancelToken(), for: 1, scheduler: mainQueue)
         .sink { values.append($0) }
         .store(in: &self.cancellables)

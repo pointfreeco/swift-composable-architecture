@@ -119,7 +119,7 @@ extension EffectPublisher {
   @available(
     *,
     deprecated,
-    message: "Throw and catch errors directly in 'Effect.task' and 'Effect.run', instead."
+    message: "Throw and catch errors directly in an 'Effect.run', instead."
   )
   public init(error: Failure) {
     // NB: Ideally we'd return a `Fail` publisher here, but due to a bug in iOS 13 that publisher
@@ -165,7 +165,7 @@ extension EffectPublisher {
   ///
   /// - Parameter attemptToFulfill: A closure that takes a `callback` as an argument which can be
   ///   used to feed it `Result<Output, Failure>` values.
-  @available(*, deprecated, message: "Use 'Effect.task', instead.")
+  @available(*, deprecated, message: "Use 'Effect.run', instead.")
   public static func future(
     _ attemptToFulfill: @escaping (@escaping (Result<Action, Failure>) -> Void) -> Void
   ) -> Self {
@@ -203,7 +203,7 @@ extension EffectPublisher {
   ///
   /// - Parameter attemptToFulfill: A closure encapsulating some work to execute in the real world.
   /// - Returns: An effect.
-  @available(*, deprecated, message: "Use 'Effect.task', instead.")
+  @available(*, deprecated, message: "Use 'Effect.run', instead.")
   public static func result(_ attemptToFulfill: @escaping () -> Result<Action, Failure>) -> Self {
     .future { $0(attemptToFulfill()) }
   }
@@ -262,7 +262,7 @@ extension EffectPublisher {
   ///
   /// - Parameter work: A closure encapsulating some work to execute in the real world.
   /// - Returns: An effect.
-  @available(*, deprecated, message: "Use the async version, instead.")
+  @available(*, deprecated, message: "Use 'Effect.run { _ in … }', instead.")
   public static func fireAndForget(_ work: @escaping () throws -> Void) -> Self {
     // NB: Ideally we'd return a `Deferred` wrapping an `Empty(completeImmediately: true)`, but
     //     due to a bug in iOS 13.2 that publisher will never complete. The bug was fixed in
@@ -307,7 +307,7 @@ extension EffectPublisher where Failure == Error {
   @available(
     *,
     deprecated,
-    message: "Throw and catch errors directly in 'Effect.task' and 'Effect.run', instead."
+    message: "Throw and catch errors directly in an 'Effect.run', instead."
   )
   public static func catching(_ work: @escaping () throws -> Action) -> Self {
     .future { $0(Result { try work() }) }

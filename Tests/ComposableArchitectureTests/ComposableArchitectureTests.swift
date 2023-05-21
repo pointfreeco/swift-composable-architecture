@@ -95,7 +95,7 @@ final class ComposableArchitectureTests: BaseTCATestCase {
       Reduce<Int, Action> { state, action in
         switch action {
         case .end:
-          return .fireAndForget {
+          return .run { _ in
             effect.continuation.finish()
           }
         case .incr:

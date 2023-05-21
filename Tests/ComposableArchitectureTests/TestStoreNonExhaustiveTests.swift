@@ -143,7 +143,7 @@
     func testIgnoreReceiveActions_PartialExhaustive() async {
       let store = TestStore(initialState: 0) {
         Reduce<Int, Bool> { _, action in
-          action ? .init(value: false) : .none
+          action ? .send(false) : .none
         }
       }
       store.exhaustivity = .off(showSkippedAssertions: true)
@@ -155,7 +155,7 @@
     func testIgnoreReceiveActions_NonExhaustive() async {
       let store = TestStore(initialState: 0) {
         Reduce<Int, Bool> { _, action in
-          action ? .init(value: false) : .none
+          action ? .send(false) : .none
         }
       }
       store.exhaustivity = .off

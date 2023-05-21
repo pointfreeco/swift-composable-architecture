@@ -8,6 +8,7 @@ final class EffectTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
   let mainQueue = DispatchQueue.test
 
+  @available(*, deprecated)
   func testCatchToEffect() {
     struct Error: Swift.Error, Equatable {}
 
@@ -138,6 +139,7 @@ final class EffectTests: BaseTCATestCase {
     }
   #endif
 
+  @available(*, deprecated)
   func testEffectSubscriberInitializer() {
     let effect = Effect<Int>.run { subscriber in
       subscriber.send(1)
@@ -173,6 +175,7 @@ final class EffectTests: BaseTCATestCase {
     XCTAssertEqual(isComplete, true)
   }
 
+  @available(*, deprecated)
   func testEffectSubscriberInitializer_WithCancellation() {
     enum CancelID { case delay }
 
@@ -205,6 +208,7 @@ final class EffectTests: BaseTCATestCase {
     XCTAssertEqual(isComplete, true)
   }
 
+  @available(*, deprecated)
   func testEffectErrorCrash() {
     let expectation = self.expectation(description: "Complete")
 
@@ -224,8 +228,7 @@ final class EffectTests: BaseTCATestCase {
   func testDoubleCancelInFlight() {
     var result: Int?
 
-    _ = Just(42)
-      .eraseToEffect()
+    _ = Effect.send(42)
       .cancellable(id: "id", cancelInFlight: true)
       .cancellable(id: "id", cancelInFlight: true)
       .sink { result = $0 }

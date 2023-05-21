@@ -89,12 +89,13 @@ final class EffectCancellationTests: BaseTCATestCase {
     let mainQueue = DispatchQueue.test
     var value: Int?
 
-    Just(1)
-      .delay(for: 2, scheduler: mainQueue)
-      .eraseToEffect()
-      .cancellable(id: CancelID())
-      .sink { value = $0 }
-      .store(in: &self.cancellables)
+    Effect.publisher {
+      Just(1)
+        .delay(for: 2, scheduler: mainQueue)
+    }
+    .cancellable(id: CancelID())
+    .sink { value = $0 }
+    .store(in: &self.cancellables)
 
     XCTAssertEqual(value, nil)
 
@@ -189,11 +190,12 @@ final class EffectCancellationTests: BaseTCATestCase {
 
     var expectedOutput: [Int] = []
     // Don't hold onto cancellable so that it is deallocated immediately.
-    _ = Deferred { Just(1) }
-      .delay(for: 1, scheduler: mainQueue)
-      .eraseToEffect()
-      .cancellable(id: "id")
-      .sink { expectedOutput.append($0) }
+    _ = Effect.publisher {
+      Deferred { Just(1) }
+        .delay(for: 1, scheduler: mainQueue)
+    }
+    .cancellable(id: "id")
+    .sink { expectedOutput.append($0) }
 
     XCTAssertEqual(expectedOutput, [])
     mainQueue.advance(by: 1)
@@ -225,10 +227,11 @@ final class EffectCancellationTests: BaseTCATestCase {
 
     let ids: [AnyHashable] = [A(), B(), C()]
     let effects = ids.map { id in
-      Just(id)
-        .delay(for: 1, scheduler: mainQueue)
-        .eraseToEffect()
-        .cancellable(id: id)
+      Effect.publisher {
+        Just(id)
+          .delay(for: 1, scheduler: mainQueue)
+      }
+      .cancellable(id: id)
     }
 
     Effect<AnyHashable>.merge(effects)
@@ -266,12 +269,13 @@ final class EffectCancellationTests: BaseTCATestCase {
       let id = UUID()
 
       let mainQueue = DispatchQueue.test
-      Just(1)
-        .delay(for: 1, scheduler: mainQueue)
-        .eraseToEffect()
-        .cancellable(id: id)
-        .sink(receiveValue: { _ in })
-        .store(in: &self.cancellables)
+      Effect.publisher {
+        Just(1)
+          .delay(for: 1, scheduler: mainQueue)
+      }
+      .cancellable(id: id)
+      .sink(receiveValue: { _ in })
+      .store(in: &self.cancellables)
 
       EffectPublisher<Int, Never>.cancel(id: id)
         .sink(receiveValue: { _ in })
@@ -297,19 +301,21 @@ final class EffectCancellationTests: BaseTCATestCase {
           let id = ids[idx % 10]
 
           return EffectPublisher.merge(
-            Just(idx)
-              .delay(
-                for: .milliseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
-              )
-              .eraseToEffect()
-              .cancellable(id: id),
+            .publisher {
+              Just(idx)
+                .delay(
+                  for: .milliseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
+                )
+            }
+            .cancellable(id: id),
 
-            Just(())
-              .delay(
-                for: .milliseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
-              )
-              .flatMap { EffectPublisher.cancel(id: id) }
-              .eraseToEffect()
+            .publisher {
+              Just(())
+                .delay(
+                  for: .milliseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
+                )
+                .flatMap { EffectPublisher.cancel(id: id) }
+            }
           )
         }
       )
@@ -363,9 +369,10 @@ final class EffectCancellationTests: BaseTCATestCase {
     func testNestedCancels() {
       let id = UUID()
 
-      var effect = Empty<Void, Never>(completeImmediately: false)
-        .eraseToEffect()
-        .cancellable(id: id)
+      var effect = Effect.publisher {
+        Empty<Void, Never>(completeImmediately: false)
+      }
+      .cancellable(id: id)
 
       for _ in 1...1_000 {
         effect = effect.cancellable(id: id)

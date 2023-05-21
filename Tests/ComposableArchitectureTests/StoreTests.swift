@@ -460,16 +460,16 @@ final class StoreTests: BaseTCATestCase {
           return .task { .response }
         case .response:
           return .merge(
-            Empty(completeImmediately: false).eraseToEffect(),
-            .task { .response1 }
+            .run { _ in try await Task.never() },
+            .run { await $0(.response1) }
           )
         case .response1:
           return .merge(
-            Empty(completeImmediately: false).eraseToEffect(),
-            .task { .response2 }
+            .run { _ in try await Task.never() },
+            .run { await $0(.response2) }
           )
         case .response2:
-          return Empty(completeImmediately: false).eraseToEffect()
+          return .run { _ in try await Task.never() }
         }
       }
     }
