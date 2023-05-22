@@ -20,6 +20,7 @@
 - ``receive(_:timeout:assert:file:line:)-1rwdd``
 - ``receive(_:timeout:assert:file:line:)-8xkqt``
 - ``receive(_:timeout:assert:file:line:)-2ju31``
+- ``assert(_:file:line:)``
 - ``finish(timeout:file:line:)``
 - ``TestStoreTask``
 

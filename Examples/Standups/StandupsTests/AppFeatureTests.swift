@@ -45,18 +45,20 @@ final class AppFeatureTests: XCTestCase {
 
   func testDetailEdit() async throws {
     let standup = Standup.mock
+    let savedData = LockIsolated(Data?.none)
 
     let store = TestStore(initialState: AppFeature.State()) {
       AppFeature()
-    } withDependencies: {
-      $0.continuousClock = ImmediateClock()
-      $0.dataManager = .mock(
+    } withDependencies: { dependencies in
+      dependencies.continuousClock = ImmediateClock()
+      dependencies.dataManager = .mock(
         initialData: try! JSONEncoder().encode([standup])
       )
+      dependencies.dataManager.save = { [dependencies] data, url in
+        savedData.setValue(data)
+        try await dependencies.dataManager.save(data, url)
+      }
     }
-
-    let savedData = LockIsolated(Data?.none)
-    store.dependencies.dataManager.save = { data, _ in savedData.setValue(data) }
 
     await store.send(.path(.push(id: 0, state: .detail(StandupDetail.State(standup: standup))))) {
       $0.path[id: 0] = .detail(StandupDetail.State(standup: standup))
@@ -95,6 +97,10 @@ final class AppFeatureTests: XCTestCase {
       $0.standupsList.standups[0].title = "Blob"
     }
     .finish()
+
+    var savedStandup = standup
+    savedStandup.title = "Blob"
+    XCTAssertEqual(savedData.value, try! JSONEncoder().encode([savedStandup]))
   }
 
   func testRecording() async {

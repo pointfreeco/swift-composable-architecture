@@ -150,8 +150,21 @@ struct RecordMeeting: Reducer {
 struct RecordMeetingView: View {
   let store: StoreOf<RecordMeeting>
 
+  struct ViewState: Equatable {
+    let durationRemaining: Duration
+    let secondsElapsed: Int
+    let speakerIndex: Int
+    let standup: Standup
+    init(state: RecordMeeting.State) {
+      self.durationRemaining = state.durationRemaining
+      self.secondsElapsed = state.secondsElapsed
+      self.standup = state.standup
+      self.speakerIndex = state.speakerIndex
+    }
+  }
+
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
+    WithViewStore(self.store, observe: ViewState.init) { viewStore in
       ZStack {
         RoundedRectangle(cornerRadius: 16)
           .fill(viewStore.standup.theme.mainColor)
