@@ -676,7 +676,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     self.useMainSerialExecutor = true
   }
 
-  var useMainSerialExecutor: Bool {
+  public var useMainSerialExecutor: Bool {
     get { uncheckedUseMainSerialExecutor }
     set { uncheckedUseMainSerialExecutor = newValue }
   }
