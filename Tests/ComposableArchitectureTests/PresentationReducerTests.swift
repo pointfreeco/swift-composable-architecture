@@ -462,25 +462,11 @@ import XCTest
       }
     }
 
-    func testPresentation_requiresDismissal() async {
+    func testPresentation_LeavePresented() async {
       struct Child: ReducerProtocol {
-        struct State: Equatable {
-          var count = 0
-        }
-        enum Action: Equatable {
-          case decrementButtonTapped
-          case incrementButtonTapped
-        }
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
-          switch action {
-          case .decrementButtonTapped:
-            state.count -= 1
-            return .none
-          case .incrementButtonTapped:
-            state.count += 1
-            return .none
-          }
-        }
+        struct State: Equatable {}
+        enum Action: Equatable {}
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {}
       }
 
       struct Parent: ReducerProtocol {
@@ -514,7 +500,47 @@ import XCTest
       await store.send(.presentChild) {
         $0.child = Child.State()
       }
-      await store.skipInFlightEffects(strict: true)
+    }
+
+    func testPresentation_LeavePresented_FinishStore() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable {}
+        enum Action: Equatable {}
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {}
+      }
+
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          @PresentationState var child: Child.State?
+        }
+        enum Action: Equatable {
+          case child(PresentationAction<Child.Action>)
+          case presentChild
+        }
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .child:
+              return .none
+            case .presentChild:
+              state.child = Child.State()
+              return .none
+            }
+          }
+          .ifLet(\.$child, action: /Action.child) {
+            Child()
+          }
+        }
+      }
+
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      }
+
+      await store.send(.presentChild) {
+        $0.child = Child.State()
+      }
+      await store.finish()
     }
 
     func testInertPresentation() async {
