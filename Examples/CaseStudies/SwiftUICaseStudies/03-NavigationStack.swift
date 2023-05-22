@@ -364,7 +364,7 @@ struct ScreenBView: View {
   let store: StoreOf<ScreenB>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
         Section {
           Text(
@@ -417,7 +417,7 @@ struct ScreenC: Reducer {
         }
       }
       .cancellable(id: CancelID.timer)
-      .concatenate(with: .init(value: .stopButtonTapped))
+      .concatenate(with: .send(.stopButtonTapped))
 
     case .stopButtonTapped:
       state.isTimerRunning = false

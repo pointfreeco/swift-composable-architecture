@@ -54,7 +54,7 @@ struct TimersView: View {
   let store: StoreOf<Timers>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
         AboutView(readMe: readMe)
 
