@@ -662,7 +662,6 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     ScopedState: Equatable,
     Environment == Void
   {
-    uncheckedUseMainSerialExecutor = true
     let reducer = withDependencies(prepareDependencies) {
       TestReducer(Reduce(reducer()), initialState: initialState())
     }
@@ -674,6 +673,12 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     self.store = Store(initialState: reducer.state, reducer: reducer)
     self.timeout = 100 * NSEC_PER_MSEC
     self.toScopedState = toScopedState
+    self.useMainSerialExecutor = true
+  }
+
+  var useMainSerialExecutor: Bool {
+    get { uncheckedUseMainSerialExecutor }
+    set { uncheckedUseMainSerialExecutor = newValue }
   }
 
   /// Creates a test store with an initial state and a reducer powering its runtime.
@@ -868,7 +873,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
 
   deinit {
     self.completed()
-    uncheckedUseMainSerialExecutor = false
+    self.useMainSerialExecutor = false
   }
 
   func completed() {
