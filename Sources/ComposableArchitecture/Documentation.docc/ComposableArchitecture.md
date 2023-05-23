@@ -51,13 +51,8 @@ day-to-day when building applications, such as:
 - <doc:GettingStarted>
 - <doc:DependencyManagement>
 - <doc:Testing>
-- <doc:Performance>
 - <doc:Navigation>
-
-### Upgrade guides
-
-- <doc:SwiftConcurrency>
-- <doc:MigratingToTheReducerProtocol>
+- <doc:Performance>
 
 ### State management
 
@@ -65,18 +60,6 @@ day-to-day when building applications, such as:
 - ``EffectTask``
 - ``Store``
 - ``ViewStore``
-
-### Navigation tools
-
-- <doc:Navigation>
-- ``PresentationState``
-- ``PresentationAction``
-- ``ReducerProtocol/ifLet(_:action:destination:fileID:line:)``
-- ``StackState``
-- ``StackAction``
-- ``StackElementID``
-- ``ReducerProtocol/forEach(_:action:destination:fileID:line:)``
-- ``DismissEffect``
 
 ### Integrations
 
@@ -86,6 +69,11 @@ day-to-day when building applications, such as:
 ### Testing
 
 - ``TestStore``
+
+### Upgrade guides
+
+- <doc:SwiftConcurrency>
+- <doc:MigratingToTheReducerProtocol>
 
 ## See Also
 

@@ -25,7 +25,7 @@
     @Steps {
       @Step {
         Let's add a new bit of functionality to the counter feature we built in 
-        <doc:01-YourFirstFeature>. We will add a button that when tapped makes a network request to
+        <doc:01-01-YourFirstFeature>. We will add a button that when tapped makes a network request to
         fetch a fact about the number that is currently displayed.
         
         There are two ways you can approach this. Sometimes people like to work on the reducer
@@ -34,7 +34,7 @@
         will send a `factButtonTapped` action, which does not yet exist in the counter domain, but
         will soon.
         
-        @Code(name: "CounterFeature.swift", file: 02-01-code-0001.swift, previousFile: 02-01-code-0001-previous.swift) {
+        @Code(name: "CounterFeature.swift", file: 01-02-01-code-0001.swift, previousFile: 02-01-code-0001-previous.swift) {
           @Image(source: "02-01-image-0001")
         }
       }
@@ -45,7 +45,7 @@
         `isLoading` and `fact` state to accomplish this, neither of which exists in the counter 
         feature yet, but will soon.
         
-        @Code(name: "CounterFeature.swift", file: 02-01-code-0002.swift)
+        @Code(name: "CounterFeature.swift", file: 01-02-01-code-0002.swift)
       }
       
       That is all it takes for the view. The code is not yet compiling because we are using state
@@ -53,10 +53,10 @@
       
       @Step {
         Recall that this is what our `CounterFeature` reducer looks like so far, as built in
-        <doc:01-YourFirstFeature>. It has a simple `State` and `Action` type, and the reducer
+        <doc:01-01-YourFirstFeature>. It has a simple `State` and `Action` type, and the reducer
         simply decrements or increments the `count` state depending on which action is sent.
         
-        @Code(name: "CounterFeature.swift", file: 02-01-code-0003.swift, reset: true)
+        @Code(name: "CounterFeature.swift", file: 01-02-01-code-0003.swift, reset: true)
       }
       
       @Step {
@@ -66,7 +66,7 @@
         we'll clear the `fact` state when any button is tapped. And finally, we will return `.none` 
         just like we did in all the other cases.
 
-        @Code(name: "CounterFeature.swift", file: 02-01-code-0004.swift)
+        @Code(name: "CounterFeature.swift", file: 01-02-01-code-0004.swift)
       }
       
       @Step {
@@ -77,7 +77,7 @@
         
         [numbersapi.com]: http://www.numbersapi.com
         
-        @Code(name: "CounterFeature.swift", file: 02-01-code-0005.swift)
+        @Code(name: "CounterFeature.swift", file: 01-02-01-code-0005.swift)
       }
       
       The Composable Architecture separates the simple, pure transformations of state from the 
@@ -111,7 +111,7 @@
         This provides you with an asynchronous context to perform any kind of work you want, as well
         as a handle (`send`) for sending actions back into the system.
         
-        @Code(name: "CounterFeature.swift", file: 02-02-code-0001.swift, previousFile: 02-01-code-0005.swift)
+        @Code(name: "CounterFeature.swift", file: 01-02-02-code-0001.swift, previousFile: 02-01-code-0005.swift)
       }
       
       @Step {
@@ -125,7 +125,7 @@
         [numbersapi.com]: http://www.numbersapi.com
         [always-allow]: https://developer.apple.com/documentation/bundleresources/information_property_list/nsapptransportsecurity
                 
-        @Code(name: "CounterFeature.swift", file: 02-02-code-0002.swift)
+        @Code(name: "CounterFeature.swift", file: 01-02-02-code-0002.swift)
       }
       
       @Step {
@@ -134,7 +134,7 @@
         cannot capture `inout` state. This is showing how the library chooses to separate the nice, 
         simple and pure state mutations that reducers perform from the messy, complex effects. 
         
-        @Code(name: "CounterFeature.swift", file: 02-02-code-0003.swift)
+        @Code(name: "CounterFeature.swift", file: 01-02-02-code-0003.swift)
       }
       
       @Step {
@@ -148,7 +148,7 @@
         > more complete application you would want to leverage ``ComposableArchitecture/TaskResult``
         > to have errors fed back into the reducer so that you can react appropriately.
         
-        @Code(name: "CounterFeature.swift", file: 02-02-code-0004.swift)
+        @Code(name: "CounterFeature.swift", file: 01-02-02-code-0004.swift)
       }
       
       @Step {
@@ -156,7 +156,7 @@
         works as we expect. We can count up to a number, tap the "Fact" button, and a moment
         later a fact will be displayed at the bottom of the UI.
         
-        @Code(name: "CounterFeature.swift", file: 02-02-code-0005.swift) {
+        @Code(name: "CounterFeature.swift", file: 01-02-02-code-0005.swift) {
           @Video(source: "02-02-video-0005")
         }
       }
@@ -181,7 +181,7 @@
         > Note: The `isTimerRunning` state and `toggleTimerButtonTapped` actions do not yet exist. 
         > We will add them in the next step.
         
-        @Code(name: "CounterFeature.swift", file: 02-03-code-0001.swift, previousFile: 02-01-code-0002.swift)
+        @Code(name: "CounterFeature.swift", file: 01-02-03-code-0001.swift, previousFile: 02-01-code-0002.swift)
       }
       
       @Step {
@@ -190,7 +190,7 @@
         action. We know we will want to execute some asynchronous work, in particular a timer, so
         we have gone ahead and opened up a `run` effect.
         
-        @Code(name: "CounterFeature.swift", file: 02-03-code-0002.swift, previousFile: 02-02-code-0005.swift)
+        @Code(name: "CounterFeature.swift", file: 01-02-03-code-0002.swift, previousFile: 02-02-code-0005.swift)
       }
       
       @Step {
@@ -198,7 +198,7 @@
         loop and sleeping for one second inside the loop. This is not the best way to construct a
         timer as it allows for drift to occur, but it will be fine for our purposes right now.
         
-        @Code(name: "CounterFeature.swift", file: 02-03-code-0003.swift)
+        @Code(name: "CounterFeature.swift", file: 01-02-03-code-0003.swift)
       }
       
       @Step {
@@ -207,7 +207,7 @@
         increment the state's `count`.
         
         
-        @Code(name: "CounterFeature.swift", file: 02-03-code-0004.swift)
+        @Code(name: "CounterFeature.swift", file: 01-02-03-code-0004.swift)
       }
       
       However, there is a bug. If we tap the "Start timer" button to start the timer, and then tap
@@ -220,7 +220,7 @@
         by providing an ID, and then at a later time we can cancel that effect using 
         ``ComposableArchitecture/EffectPublisher/cancel(id:)-6hzsl``.
         
-        @Code(name: "CounterFeature.swift", file: 02-03-code-0005.swift)
+        @Code(name: "CounterFeature.swift", file: 01-02-03-code-0005.swift)
       }
       
       @Step {
@@ -228,7 +228,7 @@
         count up, and then we can stop the timer. This shows how to manage a long-living effect,
         including how to cancel effects.
         
-        @Code(name: "CounterFeature.swift", file: 02-03-code-0006.swift) {
+        @Code(name: "CounterFeature.swift", file: 01-02-03-code-0006.swift) {
           @Video(source: "03-03-video-0006")
         }
       }
