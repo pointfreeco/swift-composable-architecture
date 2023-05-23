@@ -16,6 +16,17 @@
     @Image(source: "01-homepage")
   }
   
+  @Chapter(name: "Navigation") {
+    Learn how to model your domains for navigation from parent feature to child feature, and how to
+    do so in a concise manner.
+    
+    @TutorialReference(tutorial: "doc:02-01-YourFirstPresentation")
+    @TutorialReference(tutorial: "doc:02-02-OtherTypesOfPresentation")
+    @TutorialReference(tutorial: "doc:02-03-NavigationStacks")
+    
+    @Image(source: "02-homepage")
+  }
+  
   @Resources {
     Additional resources for exploring how to build applications using the Composable Architecture.
     
