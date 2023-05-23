@@ -308,7 +308,7 @@ public final class Store<State, Action> {
   ///    WithViewStore(
   ///      self.store, observe: \.view, send: \.feature
   ///    ) { viewStore in
-  ///      ...
+  ///      // ...
   ///    }
   ///  }
   /// ```

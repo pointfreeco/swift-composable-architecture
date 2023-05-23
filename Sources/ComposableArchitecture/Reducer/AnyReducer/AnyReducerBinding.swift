@@ -10,7 +10,7 @@ extension AnyReducer where Action: BindableAction, State == Action.State {
   ///
   /// ```swift
   /// enum SettingsAction: BindableAction {
-  ///   ...
+  ///   // ...
   ///   case binding(BindingAction<SettingsState>)
   /// }
   /// ```
@@ -20,7 +20,7 @@ extension AnyReducer where Action: BindableAction, State == Action.State {
   ///
   /// ```swift
   /// let settingsReducer = AnyReducer<SettingsState, SettingsAction, SettingsEnvironment> {
-  ///   ...
+  ///   // ...
   /// }
   /// .binding()
   /// ```
