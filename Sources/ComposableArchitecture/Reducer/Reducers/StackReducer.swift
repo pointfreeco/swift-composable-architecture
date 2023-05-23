@@ -44,7 +44,16 @@ public struct StackState<Element> {
       }
     }
     set {
-      self._dictionary[id] = newValue
+      switch (self.ids.contains(id), newValue, _XCTIsTesting) {
+      case (true, _, _), (false, .some, true):
+        self._dictionary[id] = newValue
+      case (false, .some, false):
+        if !_XCTIsTesting {
+          runtimeWarn("Can't assign element at missing ID.")
+        }
+      case (false, .none, _):
+        break
+      }
       if newValue == nil {
         self._mounted.remove(id)
       }
@@ -57,23 +66,16 @@ public struct StackState<Element> {
   public mutating func pop(from id: StackElementID) {
     guard let index = self._dictionary.keys.firstIndex(of: id)
     else { return }
-    for id in self._dictionary.keys[index...] {
-      self._mounted.remove(id)
-    }
-    self._dictionary.removeSubrange(index...)
+    self.removeSubrange(index...)
   }
 
   /// Pops all elements that come after the element corresponding to `id` in the stack.
   ///
   /// - Parameter id: The identifier of an element in the stack.
   public mutating func pop(to id: StackElementID) {
-    guard var index = self._dictionary.keys.firstIndex(of: id)
+    guard let index = self._dictionary.keys.firstIndex(of: id)
     else { return }
-    index += 1
-    for id in self._dictionary.keys[index...] {
-      self._mounted.remove(id)
-    }
-    self._dictionary.removeSubrange(index...)
+    self.removeSubrange(index.advanced(by: 1)...)
   }
 }
 
@@ -116,8 +118,7 @@ extension StackState: @unchecked Sendable where Element: Sendable {}
 extension StackState: Decodable where Element: Decodable {
   public init(from decoder: Decoder) throws {
     let elements = try [Element](from: decoder)
-    self.init()
-    self.append(contentsOf: elements)
+    self.init(elements)
   }
 }
 

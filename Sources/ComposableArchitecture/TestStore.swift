@@ -820,6 +820,9 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   ///
   /// Can be used to assert that all effects have finished.
   ///
+  /// > Important: `TestStore.finish()` should only be called once per test store, at the end of the
+  /// > test. Interacting with a finished test store is undefined.
+  ///
   /// - Parameter nanoseconds: The amount of time to wait before asserting.
   @_disfavoredOverload
   @MainActor
@@ -828,6 +831,8 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     file: StaticString = #file,
     line: UInt = #line
   ) async {
+    Task.cancel(id: OnFirstAppearID())
+
     let nanoseconds = nanoseconds ?? self.timeout
     let start = DispatchTime.now().uptimeNanoseconds
     await Task.megaYield()
