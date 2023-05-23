@@ -324,13 +324,30 @@ public final class Store<State, Action> {
     state toChildState: @escaping (State) -> ChildState,
     action fromChildAction: @escaping (ChildAction) -> Action
   ) -> Store<ChildState, ChildAction> {
+    self.scope(state: toChildState, action: fromChildAction, removeDuplicates: nil)
+  }
+
+  public func scope<ChildState, ChildAction>(
+    state toChildState: @escaping (State) -> ChildState,
+    action fromChildAction: @escaping (ChildAction) -> Action,
+    removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
+  ) -> Store<ChildState, ChildAction> {
     self.threadCheck(status: .scope)
 
     #if swift(>=5.7)
-      return self.reducer.rescope(self, state: toChildState, action: { fromChildAction($1) })
+      return self.reducer.rescope(
+        self,
+        state: toChildState,
+        action: { fromChildAction($1) },
+        removeDuplicates: isDuplicate
+      )
     #else
-      return (self.scope ?? StoreScope(root: self))
-        .rescope(self, state: toChildState, action: { fromChildAction($1) })
+      return (self.scope ?? StoreScope(root: self)).rescope(
+        self,
+        state: toChildState,
+        action: { fromChildAction($1) },
+        removeDuplicates: isDuplicate
+      )
     #endif
   }
 
@@ -342,13 +359,15 @@ public final class Store<State, Action> {
       store = self.reducer.rescope(
         self,
         state: { $0 },
-        action: { state, action in isInvalid(state) && BindingLocal.isActive ? nil : action }
+        action: { state, action in isInvalid(state) && BindingLocal.isActive ? nil : action },
+        removeDuplicates: { isInvalid($0) && isInvalid($1) }
       )
     #else
       store = (self.scope ?? StoreScope(root: self)).rescope(
         self,
         state: { $0 },
-        action: { state, action in isInvalid(state) && BindingLocal.isActive ? nil : action }
+        action: { state, action in isInvalid(state) && BindingLocal.isActive ? nil : action },
+        removeDuplicates: { isInvalid($0) && isInvalid($1) }
       )
     #endif
     store._isInvalidated = { self._isInvalidated() || isInvalid(self.state.value) }
@@ -633,10 +652,15 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     fileprivate func rescope<ChildState, ChildAction>(
       _ store: Store<State, Action>,
       state toChildState: @escaping (State) -> ChildState,
-      action fromChildAction: @escaping (ChildState, ChildAction) -> Action?
+      action fromChildAction: @escaping (ChildState, ChildAction) -> Action?,
+      removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
     ) -> Store<ChildState, ChildAction> {
-      (self as? any AnyScopedReducer ?? ScopedReducer(rootStore: store))
-        .rescope(store, state: toChildState, action: fromChildAction)
+      (self as? any AnyScopedReducer ?? ScopedReducer(rootStore: store)).rescope(
+        store,
+        state: toChildState,
+        action: fromChildAction,
+        removeDuplicates: isDuplicate
+      )
     }
   }
 
@@ -692,7 +716,8 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     func rescope<ScopedState, ScopedAction, RescopedState, RescopedAction>(
       _ store: Store<ScopedState, ScopedAction>,
       state toRescopedState: @escaping (ScopedState) -> RescopedState,
-      action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?
+      action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?,
+      removeDuplicates isDuplicate: ((RescopedState, RescopedState) -> Bool)?
     ) -> Store<RescopedState, RescopedAction>
   }
 
@@ -701,7 +726,8 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     func rescope<ScopedState, ScopedAction, RescopedState, RescopedAction>(
       _ store: Store<ScopedState, ScopedAction>,
       state toRescopedState: @escaping (ScopedState) -> RescopedState,
-      action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?
+      action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?,
+      removeDuplicates isDuplicate: ((RescopedState, RescopedState) -> Bool)?
     ) -> Store<RescopedState, RescopedAction> {
       let fromScopedAction = self.fromScopedAction as! (ScopedState, ScopedAction) -> RootAction?
       let reducer = ScopedReducer<RootState, RootAction, RescopedState, RescopedAction>(
@@ -718,8 +744,10 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
       childStore.parentCancellable = store.state
         .dropFirst()
         .sink { [weak childStore] newValue in
-          guard !reducer.isSending else { return }
-          childStore?.state.value = toRescopedState(newValue)
+          guard let childStore = childStore, !reducer.isSending else { return }
+          let newValue = toRescopedState(newValue)
+          guard isDuplicate.map({ !$0(childStore.state.value, newValue) }) ?? true else { return }
+          childStore.state.value = newValue
         }
       return childStore
     }
@@ -729,7 +757,8 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     func rescope<ScopedState, ScopedAction, RescopedState, RescopedAction>(
       _ store: Store<ScopedState, ScopedAction>,
       state toRescopedState: @escaping (ScopedState) -> RescopedState,
-      action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?
+      action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?,
+      removeDuplicates isDuplicate: ((RescopedState, RescopedState) -> Bool)?
     ) -> Store<RescopedState, RescopedAction>
   }
 
@@ -755,7 +784,8 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     func rescope<ScopedState, ScopedAction, RescopedState, RescopedAction>(
       _ scopedStore: Store<ScopedState, ScopedAction>,
       state toRescopedState: @escaping (ScopedState) -> RescopedState,
-      action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?
+      action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?,
+      removeDuplicates isDuplicate: ((RescopedState, RescopedState) -> Bool)?
     ) -> Store<RescopedState, RescopedAction> {
       let fromScopedAction = self.fromScopedAction as! (ScopedState, ScopedAction) -> RootAction?
 
@@ -783,8 +813,10 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
       rescopedStore.parentCancellable = scopedStore.state
         .dropFirst()
         .sink { [weak rescopedStore] newValue in
-          guard !isSending else { return }
-          rescopedStore?.state.value = toRescopedState(newValue)
+          guard let rescopedStore = rescopedStore, !isSending else { return }
+          let newValue = toRescopedState(newValue)
+          guard isDuplicate.map({ !$0(rescopedStore.state.value, newValue) }) ?? true else { return }
+          rescopedStore.state.value = newValue
         }
       rescopedStore.scope = StoreScope<RootState, RootAction>(
         root: self.root,
