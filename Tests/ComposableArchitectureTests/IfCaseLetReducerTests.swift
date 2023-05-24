@@ -72,152 +72,150 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
     }
   #endif
 
-  #if swift(>=5.7)
-    func testEffectCancellation_Siblings() async {
-      if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        struct Child: ReducerProtocol {
-          struct State: Equatable {
-            var count = 0
-          }
-          enum Action: Equatable {
-            case timerButtonTapped
-            case timerTick
-          }
-          @Dependency(\.continuousClock) var clock
-          func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
-            switch action {
-            case .timerButtonTapped:
-              return .run { send in
-                for await _ in self.clock.timer(interval: .seconds(1)) {
-                  await send(.timerTick)
-                }
-              }
-            case .timerTick:
-              state.count += 1
-              return .none
-            }
-          }
-        }
-        struct Parent: ReducerProtocol {
-          enum State: Equatable {
-            case child1(Child.State)
-            case child2(Child.State)
-          }
-          enum Action: Equatable {
-            case child1(Child.Action)
-            case child1ButtonTapped
-            case child2(Child.Action)
-            case child2ButtonTapped
-          }
-          var body: some ReducerProtocol<State, Action> {
-            Reduce { state, action in
-              switch action {
-              case .child1:
-                return .none
-              case .child1ButtonTapped:
-                state = .child1(Child.State())
-                return .none
-              case .child2:
-                return .none
-              case .child2ButtonTapped:
-                state = .child2(Child.State())
-                return .none
-              }
-            }
-            .ifCaseLet(/State.child1, action: /Action.child1) {
-              Child()
-            }
-            .ifCaseLet(/State.child2, action: /Action.child2) {
-              Child()
-            }
-          }
-        }
-        await withMainSerialExecutor {
-          let clock = TestClock()
-          let store = TestStore(initialState: Parent.State.child1(Child.State())) {
-            Parent()
-          } withDependencies: {
-            $0.continuousClock = clock
-          }
-          await store.send(.child1(.timerButtonTapped))
-          await clock.advance(by: .seconds(1))
-          await store.receive(.child1(.timerTick)) {
-            try (/Parent.State.child1).modify(&$0) {
-              $0.count = 1
-            }
-          }
-          await store.send(.child2ButtonTapped) {
-            $0 = .child2(Child.State())
-          }
-        }
-      }
-    }
-
-    func testIdentifiableChild() async {
-      struct Feature: ReducerProtocol {
-        enum State: Equatable {
-          case child(Child.State)
-        }
-        enum Action: Equatable {
-          case child(Child.Action)
-          case newChild
-        }
-        var body: some ReducerProtocol<State, Action> {
-          Reduce { state, action in
-            switch action {
-            case .child:
-              return .none
-            case .newChild:
-              guard case let .child(childState) = state
-              else { return .none }
-              state = .child(Child.State(id: childState.id + 1))
-              return .none
-            }
-          }
-          .ifCaseLet(/State.child, action: /Action.child) { Child() }
-        }
-      }
+  func testEffectCancellation_Siblings() async {
+    if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
       struct Child: ReducerProtocol {
-        struct State: Equatable, Identifiable {
-          let id: Int
-          var value = 0
+        struct State: Equatable {
+          var count = 0
         }
         enum Action: Equatable {
-          case tap
-          case response(Int)
+          case timerButtonTapped
+          case timerTick
         }
-        @Dependency(\.mainQueue) var mainQueue
+        @Dependency(\.continuousClock) var clock
         func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
           switch action {
-
-          case .tap:
-            return .run { [id = state.id] send in
-              try await mainQueue.sleep(for: .seconds(0))
-              await send(.response(id))
+          case .timerButtonTapped:
+            return .run { send in
+              for await _ in self.clock.timer(interval: .seconds(1)) {
+                await send(.timerTick)
+              }
             }
-          case let .response(value):
-            state.value = value
+          case .timerTick:
+            state.count += 1
             return .none
           }
         }
       }
-
-      let mainQueue = DispatchQueue.test
-      let store = TestStore(initialState: Feature.State.child(Child.State(id: 1))) {
-        Feature()
-      } withDependencies: {
-        $0.mainQueue = mainQueue.eraseToAnyScheduler()
+      struct Parent: ReducerProtocol {
+        enum State: Equatable {
+          case child1(Child.State)
+          case child2(Child.State)
+        }
+        enum Action: Equatable {
+          case child1(Child.Action)
+          case child1ButtonTapped
+          case child2(Child.Action)
+          case child2ButtonTapped
+        }
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .child1:
+              return .none
+            case .child1ButtonTapped:
+              state = .child1(Child.State())
+              return .none
+            case .child2:
+              return .none
+            case .child2ButtonTapped:
+              state = .child2(Child.State())
+              return .none
+            }
+          }
+          .ifCaseLet(/State.child1, action: /Action.child1) {
+            Child()
+          }
+          .ifCaseLet(/State.child2, action: /Action.child2) {
+            Child()
+          }
+        }
       }
-
-      await store.send(.child(.tap))
-      await store.send(.newChild) {
-        $0 = .child(Child.State(id: 2))
-      }
-      await store.send(.child(.tap))
-      await mainQueue.advance()
-      await store.receive(.child(.response(2))) {
-        $0 = .child(Child.State(id: 2, value: 2))
+      await withMainSerialExecutor {
+        let clock = TestClock()
+        let store = TestStore(initialState: Parent.State.child1(Child.State())) {
+          Parent()
+        } withDependencies: {
+          $0.continuousClock = clock
+        }
+        await store.send(.child1(.timerButtonTapped))
+        await clock.advance(by: .seconds(1))
+        await store.receive(.child1(.timerTick)) {
+          try (/Parent.State.child1).modify(&$0) {
+            $0.count = 1
+          }
+        }
+        await store.send(.child2ButtonTapped) {
+          $0 = .child2(Child.State())
+        }
       }
     }
-  #endif
+  }
+
+  func testIdentifiableChild() async {
+    struct Feature: ReducerProtocol {
+      enum State: Equatable {
+        case child(Child.State)
+      }
+      enum Action: Equatable {
+        case child(Child.Action)
+        case newChild
+      }
+      var body: some ReducerProtocol<State, Action> {
+        Reduce { state, action in
+          switch action {
+          case .child:
+            return .none
+          case .newChild:
+            guard case let .child(childState) = state
+            else { return .none }
+            state = .child(Child.State(id: childState.id + 1))
+            return .none
+          }
+        }
+        .ifCaseLet(/State.child, action: /Action.child) { Child() }
+      }
+    }
+    struct Child: ReducerProtocol {
+      struct State: Equatable, Identifiable {
+        let id: Int
+        var value = 0
+      }
+      enum Action: Equatable {
+        case tap
+        case response(Int)
+      }
+      @Dependency(\.mainQueue) var mainQueue
+      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        switch action {
+
+        case .tap:
+          return .run { [id = state.id] send in
+            try await mainQueue.sleep(for: .seconds(0))
+            await send(.response(id))
+          }
+        case let .response(value):
+          state.value = value
+          return .none
+        }
+      }
+    }
+
+    let mainQueue = DispatchQueue.test
+    let store = TestStore(initialState: Feature.State.child(Child.State(id: 1))) {
+      Feature()
+    } withDependencies: {
+      $0.mainQueue = mainQueue.eraseToAnyScheduler()
+    }
+
+    await store.send(.child(.tap))
+    await store.send(.newChild) {
+      $0 = .child(Child.State(id: 2))
+    }
+    await store.send(.child(.tap))
+    await mainQueue.advance()
+    await store.receive(.child(.response(2))) {
+      $0 = .child(Child.State(id: 2, value: 2))
+    }
+  }
 }

@@ -30,9 +30,7 @@ final class StandupsListTests: XCTestCase {
     await store.send(
       .destination(.presented(.add(.binding(.set(\.$standup.title, "Engineering")))))
     ) {
-      XCTModify(&$0.destination, case: /StandupsList.Destination.State.add) {
-        $0.standup.title = "Engineering"
-      }
+      $0.$destination[case: /StandupsList.Destination.State.add]?.standup.title = "Engineering"
     }
 
     await store.send(.confirmAddStandupButtonTapped) {

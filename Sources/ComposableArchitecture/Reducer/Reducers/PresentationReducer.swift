@@ -1,4 +1,4 @@
-import CasePaths
+@_spi(Reflection) import CasePaths
 import Combine
 
 /// A property wrapper for state that can be presented.
@@ -45,28 +45,27 @@ import Combine
 /// using optionals and enums.
 @propertyWrapper
 public struct PresentationState<State> {
-  private var boxedValue: [State]
+  private class Storage: @unchecked Sendable {
+    var state: State?
+    init(state: State?) {
+      self.state = state
+    }
+  }
+
+  private var storage: Storage
   @usableFromInline var isPresented = false
 
   public init(wrappedValue: State?) {
-    self.boxedValue = wrappedValue.map { [$0] } ?? []
+    self.storage = Storage(state: wrappedValue)
   }
 
   public var wrappedValue: State? {
-    _read { yield self.boxedValue.first }
+    _read { yield self.storage.state }
     _modify {
-      var state = self.boxedValue.first
-      yield &state
-      switch (state, self.boxedValue.isEmpty) {
-      case (nil, true):
-        return
-      case (nil, false):
-        self.boxedValue = []
-      case let (.some(state), true):
-        self.boxedValue.insert(state, at: 0)
-      case let (.some(state), false):
-        self.boxedValue[0] = state
+      if !isKnownUniquelyReferenced(&self.storage) {
+        self.storage = Storage(state: self.storage.state)
       }
+      yield &self.storage.state
     }
   }
 
@@ -74,6 +73,40 @@ public struct PresentationState<State> {
     get { self }
     set { self = newValue }
     _modify { yield &self }
+  }
+
+  /// Accesses the value associated with the given case for reading and writing.
+  ///
+  /// > Note: Accessing the wrong case will result in a runtime warning.
+  public subscript<Case>(case path: CasePath<State, Case>) -> Case? {
+    _read { yield self.wrappedValue.flatMap(path.extract) }
+    _modify {
+      let root = self.wrappedValue
+      var value = root.flatMap(path.extract)
+      let success = value != nil
+      yield &value
+      guard success else {
+        var description: String?
+        if
+          let root = root,
+          let metadata = EnumMetadata(State.self),
+          let caseName = metadata.caseName(forTag: metadata.tag(of: root))
+        {
+          description = caseName
+        }
+        runtimeWarn(
+          """
+          Can't modify unrelated case\(description.map { " \($0.debugDescription)" } ?? "")
+          """
+        )
+        return
+      }
+      self.wrappedValue = value.map(path.embed)
+    }
+  }
+
+  func sharesStorage(with other: Self) -> Bool {
+    self.storage === other.storage
   }
 }
 

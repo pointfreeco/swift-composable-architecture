@@ -14,7 +14,7 @@ final class BindingLocalTests: BaseIntegrationTests {
   }
 
   func testOnDisappearWarning_FullScreenCover() {
-    self.expectRuntimeWarnings = true
+    self.expectRuntimeWarnings()
 
     app.collectionViews.buttons[TestCase.bindingLocal.rawValue].tap()
 
@@ -38,7 +38,7 @@ final class BindingLocalTests: BaseIntegrationTests {
   }
 
   func testOnDisappearWarning_NavigationDestination() {
-    self.expectRuntimeWarnings = true
+    self.expectRuntimeWarnings()
 
     app.collectionViews.buttons[TestCase.bindingLocal.rawValue].tap()
 
@@ -62,7 +62,7 @@ final class BindingLocalTests: BaseIntegrationTests {
   }
 
   func testOnDisappearWarning_Path() {
-    self.expectRuntimeWarnings = true
+    self.expectRuntimeWarnings()
 
     app.collectionViews.buttons[TestCase.bindingLocal.rawValue].tap()
 
@@ -86,7 +86,7 @@ final class BindingLocalTests: BaseIntegrationTests {
   }
 
   func testOnDisappearWarning_Popover() {
-    self.expectRuntimeWarnings = true
+    self.expectRuntimeWarnings()
 
     app.collectionViews.buttons[TestCase.bindingLocal.rawValue].tap()
 
@@ -110,7 +110,7 @@ final class BindingLocalTests: BaseIntegrationTests {
   }
 
   func testOnDisappearWarning_Sheet() {
-    self.expectRuntimeWarnings = true
+    self.expectRuntimeWarnings()
 
     app.collectionViews.buttons[TestCase.bindingLocal.rawValue].tap()
 

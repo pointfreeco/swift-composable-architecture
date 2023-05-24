@@ -6,7 +6,7 @@ extension PresentationState {
   }
 }
 
-struct PresentationID: Hashable, Sendable {
+struct PresentationID: Hashable, Identifiable, Sendable {
   private let identifier: AnyHashableSendable?
   private let tag: UInt32?
   private let type: Any.Type
