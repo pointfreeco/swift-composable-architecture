@@ -274,14 +274,14 @@ extension BindingAction {
   ///   struct State: Equatable {
   ///     @BindingState var count = 0
   ///     var fact: String?
-  ///     ...
+  ///     // ...
   ///   }
   ///
   ///   enum Action: BindableAction {
   ///     case binding(BindingAction<State>)
   ///     case factButtonTapped
   ///     case factResponse(String?)
-  ///     ...
+  ///     // ...
   ///   }
   ///
   ///   @Dependency(\.numberFact) var numberFact

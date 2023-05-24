@@ -22,16 +22,11 @@ extension View {
     onDismiss: (() -> Void)? = nil,
     @ViewBuilder content: @escaping (Store<State, Action>) -> Content
   ) -> some View {
-    self.modifier(
-      PresentationFullScreenCoverModifier(
-        store: store,
-        state: { $0 },
-        id: { $0.wrappedValue.map { _ in ObjectIdentifier(State.self) } },
-        action: { $0 },
-        onDismiss: onDismiss,
-        content: content
-      )
-    )
+    self.presentation(store: store) { `self`, $item, destination in
+      self.fullScreenCover(item: $item, onDismiss: onDismiss) { _ in
+        destination(content)
+      }
+    }
   }
 
   /// Presents a modal view that covers as much of the screen as possible using the store you
@@ -60,79 +55,12 @@ extension View {
     onDismiss: (() -> Void)? = nil,
     @ViewBuilder content: @escaping (Store<DestinationState, DestinationAction>) -> Content
   ) -> some View {
-    self.modifier(
-      PresentationFullScreenCoverModifier(
-        store: store,
-        state: toDestinationState,
-        id: { $0.id },
-        action: fromDestinationAction,
-        onDismiss: onDismiss,
-        content: content
-      )
-    )
-  }
-}
-
-@available(iOS 14, macCatalyst 14, tvOS 14, watchOS 7, *)
-@available(macOS, unavailable)
-private struct PresentationFullScreenCoverModifier<
-  State,
-  ID: Hashable,
-  Action,
-  DestinationState,
-  DestinationAction,
-  CoverContent: View
->: ViewModifier {
-  let store: Store<PresentationState<State>, PresentationAction<Action>>
-  @ObservedObject var viewStore: ViewStore<PresentationState<State>, PresentationAction<Action>>
-  let toDestinationState: (State) -> DestinationState?
-  let toID: (PresentationState<State>) -> ID?
-  let fromDestinationAction: (DestinationAction) -> Action
-  let onDismiss: (() -> Void)?
-  let coverContent: (Store<DestinationState, DestinationAction>) -> CoverContent
-
-  init(
-    store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping (State) -> DestinationState?,
-    id toID: @escaping (PresentationState<State>) -> ID?,
-    action fromDestinationAction: @escaping (DestinationAction) -> Action,
-    onDismiss: (() -> Void)?,
-    content coverContent: @escaping (Store<DestinationState, DestinationAction>) -> CoverContent
-  ) {
-    let store = store.invalidate { $0.wrappedValue.flatMap(toDestinationState) == nil }
-    self.store = store
-    self.viewStore = ViewStore(store, observe: { $0 }, removeDuplicates: { $0.id == $1.id })
-    self.toDestinationState = toDestinationState
-    self.toID = toID
-    self.fromDestinationAction = fromDestinationAction
-    self.onDismiss = onDismiss
-    self.coverContent = coverContent
-  }
-
-  func body(content: Content) -> some View {
-    let id = self.viewStore.id
-    content.fullScreenCover(
-      item: Binding(
-        get: {
-          self.viewStore.wrappedValue.flatMap(self.toDestinationState) != nil
-            ? toID(self.viewStore.state).map { Identified($0) { $0 } }
-            : nil
-        },
-        set: { newState in
-          if newState == nil, self.viewStore.wrappedValue != nil, self.viewStore.id == id {
-            self.viewStore.send(.dismiss)
-          }
-        }
-      ),
-      onDismiss: self.onDismiss
-    ) { _ in
-      IfLetStore(
-        self.store.scope(
-          state: returningLastNonNilValue { $0.wrappedValue.flatMap(self.toDestinationState) },
-          action: { .presented(self.fromDestinationAction($0)) }
-        ),
-        then: self.coverContent
-      )
+    self.presentation(
+      store: store, state: toDestinationState, action: fromDestinationAction
+    ) { `self`, $item, destination in
+      self.fullScreenCover(item: $item, onDismiss: onDismiss) { _ in
+        destination(content)
+      }
     }
   }
 }

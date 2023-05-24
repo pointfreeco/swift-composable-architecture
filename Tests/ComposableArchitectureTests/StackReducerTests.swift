@@ -4,6 +4,47 @@ import XCTest
 #if swift(>=5.7)
   @MainActor
   final class StackReducerTests: BaseTCATestCase {
+    func testStackStateSubscriptCase() {
+      enum Element: Equatable {
+        case int(Int)
+        case text(String)
+      }
+
+      var stack = StackState<Element>([.int(42)])
+      stack[id: 0, case: /Element.int]? += 1
+      XCTAssertEqual(stack[id: 0], .int(43))
+
+      stack[id: 0, case: /Element.int] = nil
+      XCTAssertTrue(stack.isEmpty)
+    }
+
+    func testStackStateSubscriptCase_Unexpected() {
+      enum Element: Equatable {
+        case int(Int)
+        case text(String)
+      }
+
+      var stack = StackState<Element>([.int(42)])
+
+      XCTExpectFailure {
+        stack[id: 0, case: /Element.text]?.append("!")
+      } issueMatcher: {
+        $0.compactDescription == """
+          Can't modify unrelated case "int"
+          """
+      }
+
+      XCTExpectFailure {
+        stack[id: 0, case: /Element.text] = nil
+      } issueMatcher: {
+        $0.compactDescription == """
+          Can't modify unrelated case "int"
+          """
+      }
+
+      XCTAssertEqual(Array(stack), [.int(42)])
+    }
+
     func testCustomDebugStringConvertible() {
       @Dependency(\.stackElementID) var stackElementID
       XCTAssertEqual(stackElementID.peek().generation, 0)
@@ -574,9 +615,7 @@ import XCTest
       await store.send(.path(.element(id: 0, action: .child1(.cancel))))
       await mainQueue.advance(by: .seconds(1))
       await store.receive(.path(.element(id: 1, action: .child2(.response(42))))) {
-        XCTModify(&$0.path[id: 1], case: /Path.State.child2) {
-          $0.count = 42
-        }
+        $0.path[id: 1, case: /Path.State.child2]?.count = 42
       }
 
       await store.send(.path(.element(id: 0, action: .child1(.tap))))
@@ -584,9 +623,7 @@ import XCTest
       await store.send(.path(.element(id: 1, action: .child2(.cancel))))
       await mainQueue.advance(by: .seconds(1))
       await store.receive(.path(.element(id: 0, action: .child1(.response(42))))) {
-        XCTModify(&$0.path[id: 0], case: /Path.State.child1) {
-          $0.count = 42
-        }
+        $0.path[id: 0, case: /Path.State.child1]?.count = 42
       }
     }
 
@@ -674,15 +711,11 @@ import XCTest
       await store.send(.path(.element(id: 1, action: .child2(.tap))))
       await mainQueue.advance(by: .seconds(1))
       await store.receive(.path(.element(id: 0, action: .child1(.response(1))))) {
-        XCTModify(&$0.path[id: 0], case: /Path.State.child1) {
-          $0.count = 1
-        }
+        $0.path[id: 0, case: /Path.State.child1]?.count = 1
       }
       await mainQueue.advance(by: .seconds(1))
       await store.receive(.path(.element(id: 1, action: .child2(.response(2))))) {
-        XCTModify(&$0.path[id: 1], case: /Path.State.child2) {
-          $0.count = 2
-        }
+        $0.path[id: 1, case: /Path.State.child2]?.count = 2
       }
 
       await store.send(.path(.element(id: 0, action: .child1(.tap))))
@@ -692,9 +725,7 @@ import XCTest
       }
       await mainQueue.advance(by: .seconds(2))
       await store.receive(.path(.element(id: 1, action: .child2(.response(2))))) {
-        XCTModify(&$0.path[id: 1], case: /Path.State.child2) {
-          $0.count = 4
-        }
+        $0.path[id: 1, case: /Path.State.child2]?.count = 4
       }
       await store.send(.popFirst) {
         $0.path[id: 1] = nil

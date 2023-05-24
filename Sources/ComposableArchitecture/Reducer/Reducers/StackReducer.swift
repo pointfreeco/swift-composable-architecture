@@ -1,3 +1,4 @@
+@_spi(Reflection) import CasePaths
 import Combine
 import Foundation
 import OrderedCollections
@@ -44,10 +45,49 @@ public struct StackState<Element> {
       }
     }
     set {
-      self._dictionary[id] = newValue
+      switch (self.ids.contains(id), newValue, _XCTIsTesting) {
+      case (true, _, _), (false, .some, true):
+        self._dictionary[id] = newValue
+      case (false, .some, false):
+        if !_XCTIsTesting {
+          runtimeWarn("Can't assign element at missing ID.")
+        }
+      case (false, .none, _):
+        break
+      }
       if newValue == nil {
         self._mounted.remove(id)
       }
+    }
+  }
+
+  /// Accesses the value associated with the given id and case for reading and writing.
+  ///
+  /// > Note: Accessing the wrong case will result in a runtime warning.
+  public subscript<Case>(id id: StackElementID, case path: CasePath<Element, Case>) -> Case? {
+    _read { yield self[id: id].flatMap(path.extract) }
+    _modify {
+      let root = self[id: id]
+      var value = root.flatMap(path.extract)
+      let success = value != nil
+      yield &value
+      guard success else {
+        var description: String?
+        if
+          let root = root,
+          let metadata = EnumMetadata(Element.self),
+          let caseName = metadata.caseName(forTag: metadata.tag(of: root))
+        {
+          description = caseName
+        }
+        runtimeWarn(
+          """
+          Can't modify unrelated case\(description.map { " \($0.debugDescription)" } ?? "")
+          """
+        )
+        return
+      }
+      self[id: id] = value.map(path.embed)
     }
   }
 
@@ -57,23 +97,16 @@ public struct StackState<Element> {
   public mutating func pop(from id: StackElementID) {
     guard let index = self._dictionary.keys.firstIndex(of: id)
     else { return }
-    for id in self._dictionary.keys[index...] {
-      self._mounted.remove(id)
-    }
-    self._dictionary.removeSubrange(index...)
+    self.removeSubrange(index...)
   }
 
   /// Pops all elements that come after the element corresponding to `id` in the stack.
   ///
   /// - Parameter id: The identifier of an element in the stack.
   public mutating func pop(to id: StackElementID) {
-    guard var index = self._dictionary.keys.firstIndex(of: id)
+    guard let index = self._dictionary.keys.firstIndex(of: id)
     else { return }
-    index += 1
-    for id in self._dictionary.keys[index...] {
-      self._mounted.remove(id)
-    }
-    self._dictionary.removeSubrange(index...)
+    self.removeSubrange(index.advanced(by: 1)...)
   }
 }
 
@@ -116,8 +149,7 @@ extension StackState: @unchecked Sendable where Element: Sendable {}
 extension StackState: Decodable where Element: Decodable {
   public init(from decoder: Decoder) throws {
     let elements = try [Element](from: decoder)
-    self.init()
-    self.append(contentsOf: elements)
+    self.init(elements)
   }
 }
 

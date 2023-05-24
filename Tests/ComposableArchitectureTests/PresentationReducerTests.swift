@@ -5,6 +5,56 @@ import XCTest
 #if swift(>=5.7)
   @MainActor
   final class PresentationReducerTests: BaseTCATestCase {
+    func testPresentationStateSubscriptCase() {
+      enum Child: Equatable {
+        case int(Int)
+        case text(String)
+      }
+
+      struct Parent: Equatable {
+        @PresentationState var child: Child?
+      }
+
+      var parent = Parent(child: .int(42))
+
+      parent.$child[case: /Child.int]? += 1
+      XCTAssertEqual(parent.child, .int(43))
+
+      parent.$child[case: /Child.int] = nil
+      XCTAssertNil(parent.child)
+    }
+
+    func testPresentationStateSubscriptCase_Unexpected() {
+      enum Child: Equatable {
+        case int(Int)
+        case text(String)
+      }
+
+      struct Parent: Equatable {
+        @PresentationState var child: Child?
+      }
+
+      var parent = Parent(child: .int(42))
+
+      XCTExpectFailure {
+        parent.$child[case: /Child.text]?.append("!")
+      } issueMatcher: {
+        $0.compactDescription == """
+          Can't modify unrelated case "int"
+          """
+      }
+
+      XCTExpectFailure {
+        parent.$child[case: /Child.text] = nil
+      } issueMatcher: {
+        $0.compactDescription == """
+          Can't modify unrelated case "int"
+          """
+      }
+
+      XCTAssertEqual(parent.child, .int(42))
+    }
+
     func testPresentation_parentDismissal() async {
       struct Child: Reducer {
         struct State: Equatable {
@@ -462,25 +512,11 @@ import XCTest
       }
     }
 
-    func testPresentation_requiresDismissal() async {
-      struct Child: Reducer {
-        struct State: Equatable {
-          var count = 0
-        }
-        enum Action: Equatable {
-          case decrementButtonTapped
-          case incrementButtonTapped
-        }
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
-          switch action {
-          case .decrementButtonTapped:
-            state.count -= 1
-            return .none
-          case .incrementButtonTapped:
-            state.count += 1
-            return .none
-          }
-        }
+    func testPresentation_LeavePresented() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable {}
+        enum Action: Equatable {}
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {}
       }
 
       struct Parent: Reducer {
@@ -514,7 +550,47 @@ import XCTest
       await store.send(.presentChild) {
         $0.child = Child.State()
       }
-      await store.skipInFlightEffects(strict: true)
+    }
+
+    func testPresentation_LeavePresented_FinishStore() async {
+      struct Child: ReducerProtocol {
+        struct State: Equatable {}
+        enum Action: Equatable {}
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {}
+      }
+
+      struct Parent: ReducerProtocol {
+        struct State: Equatable {
+          @PresentationState var child: Child.State?
+        }
+        enum Action: Equatable {
+          case child(PresentationAction<Child.Action>)
+          case presentChild
+        }
+        var body: some ReducerProtocol<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .child:
+              return .none
+            case .presentChild:
+              state.child = Child.State()
+              return .none
+            }
+          }
+          .ifLet(\.$child, action: /Action.child) {
+            Child()
+          }
+        }
+      }
+
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      }
+
+      await store.send(.presentChild) {
+        $0.child = Child.State()
+      }
+      await store.finish()
     }
 
     func testInertPresentation() async {

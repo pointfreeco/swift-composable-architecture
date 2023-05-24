@@ -55,6 +55,11 @@ struct ContentView: View {
                 PresentationTestCaseView()
               }
 
+            case .presentationItem:
+              NavigationLink(test.rawValue) {
+                PresentationItemTestCaseView()
+              }
+
             case .switchStore:
               NavigationLink(test.rawValue) {
                 SwitchStoreTestCaseView()

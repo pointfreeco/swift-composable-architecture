@@ -16,15 +16,15 @@ import Combine
 ///     ``Effect``s, such as API clients, analytics clients, random number generators, etc.
 ///
 /// > Important: The thread on which effects output is important. An effect's output is immediately
-///   sent back into the store, and ``Store`` is not thread safe. This means all effects must
-///   receive values on the same thread, **and** if the ``Store`` is being used to drive UI then all
-///   output must be on the main thread. You can use the `Publisher` method `receive(on:)` for make
-///   the effect output its values on the thread of your choice.
+/// > sent back into the store, and ``Store`` is not thread safe. This means all effects must
+/// > receive values on the same thread, **and** if the ``Store`` is being used to drive UI then all
+/// > output must be on the main thread. You can use the `Publisher` method `receive(on:)` for make
+/// > the effect output its values on the thread of your choice.
 /// >
 /// > This is only an issue if using the Combine interface of ``EffectPublisher`` as mentioned
-///   above. If you are only using Swift's concurrency tools and the `.task`, `.run` and
-///   `.fireAndForget` functions on ``Effect``, then the threading is automatically handled for
-///   you.
+/// > above. If you are only using Swift's concurrency tools and the `.task`, `.run` and
+/// > `.fireAndForget` functions on ``Effect``, then the threading is automatically handled for
+/// > you.
 @available(
   *,
   deprecated,
@@ -142,7 +142,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///     case .child(.dismiss):
   ///       state.child = nil
   ///       return .none
-  ///     ...
+  ///     // ...
   ///     }
   ///   },
   /// )
@@ -344,7 +344,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///           // And `nil`s out child state when processing a child action
   ///           state.child = .anotherChild(AnotherChildState())
   ///           return .none
-  ///         ...
+  ///         // ...
   ///         }
   ///       },
   ///       // Before the child reducer runs
@@ -356,7 +356,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///     > { state, action environment in
   ///       case .didDisappear:
   ///         // This action is never received here because child state cannot be extracted
-  ///       ...
+  ///       // ...
   ///     }
   ///     ```
   ///
@@ -369,7 +369,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///       childReducer.pullback(state: /ParentState.child, ...),
   ///       // The parent runs after
   ///       Reducer { state, action, environment in
-  ///         ...
+  ///         // ...
   ///       }
   ///     )
   ///     ```
@@ -389,7 +389,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///
   ///       case let .response(response):
   ///         // But the child cannot process this action if its state is unavailable
-  ///       ...
+  ///       // ...
   ///       }
   ///     }
   ///     ```
@@ -415,7 +415,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///       case .onDisappear:
   ///         // And explicitly cancel them when the domain is torn down
   ///         return .cancel(id: CancelID.motion)
-  ///       ...
+  ///       // ...
   ///       }
   ///     }
   ///     ```
@@ -426,7 +426,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///     WithViewStore(self.parentStore) { parentViewStore in
   ///       // If child state is `nil`, it cannot process this action.
   ///       Button("Child Action") { parentViewStore.send(.child(.action)) }
-  ///       ...
+  ///       // ...
   ///     }
   ///     ```
   ///
@@ -442,7 +442,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///           Button("Child Action") { childViewStore.send(.action) }
   ///         }
   ///       }
-  ///       ...
+  ///       // ...
   ///     }
   ///     ```
   ///
@@ -542,7 +542,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///     environment: { ModalEnvironment(mainQueue: $0.mainQueue) }
   ///   ),
   ///   Reducer { state, action, environment in
-  ///     ...
+  ///     // ...
   ///   }
   /// )
   /// ```
@@ -564,7 +564,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///           // And `nil`s out child state when processing a child action
   ///           state.child = nil
   ///           return .none
-  ///         ...
+  ///         // ...
   ///         }
   ///       },
   ///       // Before the child reducer runs
@@ -576,7 +576,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///     > { state, action environment in
   ///       case .didDisappear:
   ///         // This action is never received here because child state is `nil` in the parent
-  ///       ...
+  ///       // ...
   ///     }
   ///     ```
   ///
@@ -589,7 +589,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///       childReducer.optional().pullback(...),
   ///       // The parent runs after
   ///       Reducer { state, action, environment in
-  ///         ...
+  ///         // ...
   ///       }
   ///     )
   ///     ```
@@ -609,7 +609,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///
   ///       case let .response(response):
   ///         // But the child cannot process this action if its state is `nil` in the parent
-  ///       ...
+  ///       // ...
   ///       }
   ///     }
   ///     ```
@@ -635,7 +635,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///       case .onDisappear:
   ///         // And explicitly cancel them when the domain is torn down
   ///         return .cancel(id: CancelID.motion)
-  ///       ...
+  ///       // ...
   ///       }
   ///     }
   ///     ```
@@ -646,7 +646,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///     WithViewStore(self.parentStore) { parentViewStore in
   ///       // If child state is `nil`, it cannot process this action.
   ///       Button("Child Action") { parentViewStore.send(.child(.action)) }
-  ///       ...
+  ///       // ...
   ///     }
   ///     ```
   ///
@@ -662,7 +662,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///         // So this action can only be sent when child state is non-`nil`
   ///         Button("Child Action") { childViewStore.send(.action) }
   ///       }
-  ///       ...
+  ///       // ...
   ///     }
   ///     ```
   ///
@@ -743,7 +743,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///     environment: { _ in TodoEnvironment() }
   ///   ),
   ///   Reducer { state, action, environment in
-  ///     ...
+  ///     // ...
   ///   }
   /// )
   /// ```

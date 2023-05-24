@@ -30,7 +30,7 @@
         > Note: We are going to preemptively make the test method `async` because the testing tools
         > of the Composable Architecture do make use of asynchrony.
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-01-code-0001.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-01-code-0001.swift)
       }
       
       @Step {
@@ -40,7 +40,7 @@
         ``ComposableArchitecture/Store``, by providing some initial state to start the feature in
         and providing a trailing closure to describe the reducer that will be powering the feature.
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-01-code-0002.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-01-code-0002.swift)
       }
       
       @Step {
@@ -52,7 +52,7 @@
         the test store is async because most features involve asynchronous side effects, and the
         test store using the async context to track those effects.
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-01-code-0003.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-01-code-0003.swift)
       }
       
       @Step {
@@ -63,7 +63,7 @@
         failure message showing you exactly how state differed from what you expected (the lines
         with the minus "-") and the actual value (the lines with the plus "+").
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-01-code-0004.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-01-code-0004.swift)
       }
       
       @Step {
@@ -78,7 +78,7 @@
         know the exact state your feature is in rather than merely what transformation was applied
         to your state.
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-01-code-0005.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-01-code-0005.swift)
       }
       
       Now the test passes and so proves that the incrementing and decrementing logic does work
@@ -107,7 +107,7 @@
         Let's get the scaffolding of a new test into place by creating a new async test method
         and constructing a ``ComposableArchitecture/TestStore``.
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-02-code-0001.swift, previousFile: 03-02-code-0001-previous.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-02-code-0001.swift, previousFile: 03-02-code-0001-previous.swift)
       }
       
       @Step {
@@ -116,7 +116,7 @@
         starting the timer by sending the `toggleTimerButtonTapped`, and we can even assert on
         how state changes since we know the `isTimerRunning` state should flip to `true`.
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-02-code-0002.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-02-code-0002.swift)
       }
       
       @Step {
@@ -124,7 +124,7 @@
         effect was still running.
           
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-02-code-0003.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-02-code-0003.swift)
       }
       
       This is a failure because the ``ComposableArchitecture/TestStore`` 
@@ -140,7 +140,7 @@
         To get the test to pass we simply have to emulate the user toggling the timer again by
         sending the `toggleTimerButtonTapped` action.
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-02-code-0004.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-02-code-0004.swift)
       }
       
       While this test does pass, it also isn't asserting on any of the timer behavior. We would
@@ -157,7 +157,7 @@
         > Note: In order to use `receive` the `Action` type of your feature must be `Equatable`. 
         This is because the test store needs to assert on the action received.
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-02-code-0005.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-02-code-0005.swift)
       }
       
       @Step {
@@ -167,7 +167,7 @@
         because the test store doesn't want your tests to be slow, and so rather you take control
         over your dependency on time to write a faster, more deterministic test.
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-02-code-0006.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-02-code-0006.swift)
       }
       
       @Step {
@@ -176,7 +176,7 @@
         wait more than 1 second because `Task.sleep` is not an exact tool, but with the explicit 
         timeout the test now passes.
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-02-code-0007.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-02-code-0007.swift)
       }
       
       However, the test now takes over 1 second to run. And say we wanted to assert on a few more
@@ -199,7 +199,7 @@
         And then, in the implementation of `reduce`, do not reach out to `Task.sleep` and instead 
         use the `clock` the feature depends on.
         
-        @Code(name: "CounterFeature.swift", file: 03-02-code-0008.swift, previousFile: 02-03-code-0006.swift)
+        @Code(name: "CounterFeature.swift", file: 01-03-02-code-0008.swift, previousFile: 02-03-code-0006.swift)
       }
       
       With that little bit of upfront work to control the dependency on time-based asynchrony
@@ -209,7 +209,7 @@
         Go back to CounterFeatureTests.swift so that we can make some changes where we explicitly
         provide a controllable clock to use for tests.
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-02-code-0009.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-02-code-0009.swift)
       }
       
       @Step {
@@ -224,7 +224,7 @@
         
         [swift-clocks]: https://github.com/pointfreeco/swift-clocks
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-02-code-0010.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-02-code-0010.swift)
       }
       
       Now this test passes immediately, and we can be confident it will pass deterministically, 100%
@@ -255,7 +255,7 @@
         Also go ahead and get some scaffolding into place for the 
         ``ComposableArchitecture/TestStore``.
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-03-code-0001.swift, previousFile: 03-03-code-0001-previous.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-03-code-0001.swift, previousFile: 03-03-code-0001-previous.swift)
       }
       
       For the test we want to emulate the flow of the user tapping the fact button, seeing the 
@@ -265,7 +265,7 @@
         Emulate the user tapping the button by sending the `factButtonTapped` action, and we can 
         already assert that `isLoading` must flip to `true`.
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-03-code-0002.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-03-code-0002.swift)
       }
       
       @Step {
@@ -274,7 +274,7 @@
         us to assert on how all effects execute, and since the network request has not yet finished
         we are getting a failure.
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-03-code-0003.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-03-code-0003.swift)
       }
       
       @Step {
@@ -282,14 +282,14 @@
         `factResponse` action. But then the question is how do we assert on the fact returned from
         the server? Each time we ask for a fact from the server it may send us something different.
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-03-code-0004.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-03-code-0004.swift)
       }
       
       @Step {
         Run tests to see that the test fails because we receive a fact from the server we could not
         have possibly predicted.
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-03-code-0005.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-03-code-0005.swift)
       }
       
       What we are seeing here is that there is no way to test this behavior. The server will send
@@ -316,7 +316,7 @@
         Architecture. This will give you access to the tools necessary to control any dependency
         in your feature.
         
-        @Code(name: "NumberFactClient.swift", file: 03-04-code-0001.swift)
+        @Code(name: "NumberFactClient.swift", file: 01-03-04-code-0001.swift)
       }
       
       @Step {
@@ -334,7 +334,7 @@
         
         [dependencies-collection]: https://www.pointfree.co/collections/dependencies
         
-        @Code(name: "NumberFactClient.swift", file: 03-04-code-0002.swift)
+        @Code(name: "NumberFactClient.swift", file: 01-03-04-code-0002.swift)
       }
       
       @Step {
@@ -350,7 +350,7 @@
         
         [swift-dependencies]: https://github.com/pointfreeco/swift-dependencies
         
-        @Code(name: "NumberFactClient.swift", file: 03-04-code-0003.swift)
+        @Code(name: "NumberFactClient.swift", file: 01-03-04-code-0003.swift)
       }
       
       @Step {
@@ -362,7 +362,7 @@
         > environment value with SwiftUI, which requires conforming to `EnvironmentKey` to provide
         > a `defaultValue` value and extending `EnvironmentValues` to provide a computed property.
         
-        @Code(name: "NumberFactClient.swift", file: 03-04-code-0004.swift)
+        @Code(name: "NumberFactClient.swift", file: 01-03-04-code-0004.swift)
       }
       
       That is all it takes to put a controllable interface in front your dependency. With that
@@ -375,7 +375,7 @@
         `factButtonTapped`, use the `numberFact` dependency to load the fact rather than reaching
         out to `URLSession` to make a live network request.
         
-        @Code(name: "CounterFeature.swift", file: 03-04-code-0005.swift, previousFile: 03-02-code-0008.swift)
+        @Code(name: "CounterFeature.swift", file: 01-03-04-code-0005.swift, previousFile: 03-02-code-0008.swift)
       }
       
       With that little bit of work done in the feature you can now instantly and easily write a
@@ -386,7 +386,7 @@
       @Step {
         Without making any changes to the test, run the test in Xcode again.
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-04-code-0006.swift, previousFile: 03-04-code-0006-previous.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-04-code-0006.swift, previousFile: 03-04-code-0006-previous.swift)
       }
       
       The test fails with the same messages, but there is a new one. It tells us that we are using
@@ -406,14 +406,14 @@
         a hard coded string. Notice that there is no true async or request work being performed
         in the endpoint.
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-04-code-0007.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-04-code-0007.swift)
       }
       
       @Step {
         Now that we have overridden the `numberFact` client to always return something predictable,
         we can drop the `timeout` from `receive` and properly assert on how state changes.
         
-        @Code(name: "CounterFeatureTests.swift", file: 03-04-code-0008.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-04-code-0008.swift)
       }
       
       That is all it takes to prepare your feature for testing. It does take a few upfront steps,

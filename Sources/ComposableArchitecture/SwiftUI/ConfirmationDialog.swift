@@ -31,13 +31,41 @@ extension View {
     state toDestinationState: @escaping (State) -> ConfirmationDialogState<ButtonAction>?,
     action fromDestinationAction: @escaping (ButtonAction) -> Action
   ) -> some View {
-    self.modifier(
-      PresentationConfirmationDialogModifier(
-        viewStore: ViewStore(store, observe: { $0 }, removeDuplicates: { $0.id == $1.id }),
-        toDestinationState: toDestinationState,
-        fromDestinationAction: fromDestinationAction
+    self.presentation(
+      store: store, state: toDestinationState, action: fromDestinationAction
+    ) { `self`, $isPresented, destination in
+      let confirmationDialogState = store.state.value.wrappedValue.flatMap(toDestinationState)
+      self.confirmationDialog(
+        (confirmationDialogState?.title).map(Text.init) ?? Text(""),
+        isPresented: $isPresented,
+        titleVisibility: (confirmationDialogState?.titleVisibility).map(Visibility.init)
+          ?? .automatic,
+        presenting: confirmationDialogState,
+        actions: { confirmationDialogState in
+          ForEach(confirmationDialogState.buttons) { button in
+            Button(role: button.role.map(ButtonRole.init)) {
+              switch button.action.type {
+              case let .send(action):
+                if let action = action {
+                  _ = store.send(.presented(fromDestinationAction(action)))
+                }
+              case let .animatedSend(action, animation):
+                if let action = action {
+                  _ = withAnimation(animation) {
+                    store.send(.presented(fromDestinationAction(action)))
+                  }
+                }
+              }
+            } label: {
+              Text(button.label)
+            }
+          }
+        },
+        message: {
+          $0.message.map(Text.init)
+        }
       )
-    )
+    }
   }
 }
 
@@ -124,54 +152,5 @@ private struct OldConfirmationDialogModifier<Action>: ViewModifier {
     #else
       EmptyView()
     #endif
-  }
-}
-
-@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
-private struct PresentationConfirmationDialogModifier<State, Action, ButtonAction>: ViewModifier {
-  @ObservedObject var viewStore: ViewStore<PresentationState<State>, PresentationAction<Action>>
-  let toDestinationState: (State) -> ConfirmationDialogState<ButtonAction>?
-  let fromDestinationAction: (ButtonAction) -> Action
-
-  func body(content: Content) -> some View {
-    let id = self.viewStore.id
-    let confirmationDialogState = self.viewStore.wrappedValue.flatMap(self.toDestinationState)
-    content.confirmationDialog(
-      (confirmationDialogState?.title).map(Text.init) ?? Text(""),
-      isPresented: Binding(
-        get: { self.viewStore.wrappedValue.flatMap(self.toDestinationState) != nil },
-        set: { newState in
-          if !newState, !self.viewStore._isInvalidated(), self.viewStore.id == id {
-            self.viewStore.send(.dismiss)
-          }
-        }
-      ),
-      titleVisibility: (confirmationDialogState?.titleVisibility).map(Visibility.init)
-        ?? .automatic,
-      presenting: confirmationDialogState,
-      actions: { confirmationDialogState in
-        ForEach(confirmationDialogState.buttons) { button in
-          Button(role: button.role.map(ButtonRole.init)) {
-            switch button.action.type {
-            case let .send(action):
-              if let action = action {
-                viewStore.send(.presented(self.fromDestinationAction(action)))
-              }
-            case let .animatedSend(action, animation):
-              if let action = action {
-                _ = withAnimation(animation) {
-                  viewStore.send(.presented(self.fromDestinationAction(action)))
-                }
-              }
-            }
-          } label: {
-            Text(button.label)
-          }
-        }
-      },
-      message: {
-        $0.message.map(Text.init)
-      }
-    )
   }
 }
