@@ -105,7 +105,7 @@ extension View {
     ) -> Content
   ) -> some View {
     let store = store.invalidate { $0.wrappedValue.flatMap(toDestinationState) == nil }
-    WithViewStore(store, removeDuplicates: { toID($0) == toID($1) }) { viewStore in
+    WithViewStore(store, observe: { $0 }, removeDuplicates: { toID($0) == toID($1) }) { viewStore in
       body(
         self,
         viewStore.binding(
