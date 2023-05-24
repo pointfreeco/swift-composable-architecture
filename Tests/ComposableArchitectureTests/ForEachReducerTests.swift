@@ -120,33 +120,8 @@ final class ForEachReducerTests: BaseTCATestCase {
                 return .none
               }
             }
-          }
-          struct Timers: Reducer {
-            struct State: Equatable {
-              var timers: IdentifiedArrayOf<Timer.State> = []
-            }
-            enum Action: Equatable {
-              case addTimerButtonTapped
-              case removeLastTimerButtonTapped
-              case timers(id: Timer.State.ID, action: Timer.Action)
-            }
-            @Dependency(\.uuid) var uuid
-            var body: some Reducer<State, Action> {
-              Reduce { state, action in
-                switch action {
-                case .addTimerButtonTapped:
-                  state.timers.append(Timer.State(id: self.uuid()))
-                  return .none
-                case .removeLastTimerButtonTapped:
-                  state.timers.removeLast()
-                  return .none
-                case .timers:
-                  return .none
-                }
-              }
-              .forEach(\.timers, action: /Action.timers) {
-                Timer()
-              }
+            .forEach(\.timers, action: /Action.timers) {
+              Timer()
             }
           }
         }
