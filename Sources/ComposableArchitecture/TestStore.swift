@@ -831,8 +831,6 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     file: StaticString = #file,
     line: UInt = #line
   ) async {
-    Task.cancel(id: OnFirstAppearID())
-
     let nanoseconds = nanoseconds ?? self.timeout
     let start = DispatchTime.now().uptimeNanoseconds
     await Task.megaYield()
@@ -853,7 +851,9 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
           If you are not yet using a clock/scheduler, or can not use a clock/scheduler, \
           \(timeoutMessage).
           """
-
+        Task.cancel(id: OnFirstAppearID())
+        guard !self.reducer.inFlightEffects.isEmpty
+        else { break }
         XCTFailHelper(
           """
           Expected effects to finish, but there are still effects in-flight\
@@ -875,8 +875,6 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   }
 
   func completed() {
-    Task.cancel(id: OnFirstAppearID())
-
     if !self.reducer.receivedActions.isEmpty {
       var actions = ""
       customDump(self.reducer.receivedActions.map(\.action), to: &actions)
@@ -891,7 +889,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
         line: self.line
       )
     }
-
+    Task.cancel(id: OnFirstAppearID())
     for effect in self.reducer.inFlightEffects {
       XCTFailHelper(
         """
