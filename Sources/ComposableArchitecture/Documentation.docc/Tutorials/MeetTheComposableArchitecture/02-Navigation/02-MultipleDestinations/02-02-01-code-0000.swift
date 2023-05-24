@@ -6,6 +6,7 @@ struct ContactsFeature: ReducerProtocol {
   enum Action {
     case addButtonTapped
     case addContact(PresentationAction<AddContactFeature.Action>)
+    case deleteButtonTapped(id: Contact.ID)
   }
   var body: some ReducerProtocolOf<Self> {
     Reduce { state, action in
@@ -16,16 +17,14 @@ struct ContactsFeature: ReducerProtocol {
         )
         return .none
 
-      case .addContact(.presented(.delegate(.cancel))):
-        state.addContact = nil
-        return .none
-
       case let .addContact(.presented(.delegate(.saveContact(contact)))):
         state.contacts.append(contact)
-        state.addContact = nil
         return .none
 
       case .addContact:
+        return .none
+
+      case let .deleteButtonTapped(id: id):
         return .none
       }
     }

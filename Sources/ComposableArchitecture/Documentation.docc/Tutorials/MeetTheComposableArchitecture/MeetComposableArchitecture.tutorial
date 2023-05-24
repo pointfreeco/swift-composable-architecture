@@ -25,7 +25,7 @@
     do so in a concise manner.
     
     @TutorialReference(tutorial: "doc:02-01-YourFirstPresentation")
-    @TutorialReference(tutorial: "doc:02-02-MultiplePresentations")
+    @TutorialReference(tutorial: "doc:02-02-MultipleDestinations")
     @TutorialReference(tutorial: "doc:02-03-NavigationStacks")
     
     @Image(source: "02-homepage")

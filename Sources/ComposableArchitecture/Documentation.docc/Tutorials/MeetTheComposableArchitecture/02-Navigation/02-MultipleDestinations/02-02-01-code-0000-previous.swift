@@ -16,13 +16,8 @@ struct ContactsFeature: ReducerProtocol {
         )
         return .none
 
-      case .addContact(.presented(.delegate(.cancel))):
-        state.addContact = nil
-        return .none
-
       case let .addContact(.presented(.delegate(.saveContact(contact)))):
         state.contacts.append(contact)
-        state.addContact = nil
         return .none
 
       case .addContact:

@@ -20,7 +20,7 @@ struct ContactsFeature: ReducerProtocol {
       //   state.addContact = nil
       //   return .none
 
-      case let contact .addContact(.presented(.delegate(.saveContact(contact)))):
+      case let .addContact(.presented(.delegate(.saveContact(contact)))):
         state.contacts.append(contact)
         // state.addContact = nil
         return .none

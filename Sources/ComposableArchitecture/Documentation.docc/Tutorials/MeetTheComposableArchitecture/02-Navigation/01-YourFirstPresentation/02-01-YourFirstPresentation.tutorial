@@ -3,8 +3,6 @@
     The Composable Architecture offers a variety of tools to help you present child features
     from parent features. To begin, we will explore presenting a feature that is driven off
     of optional state.
-    
-    @Image(source: <#file#>, alt: "<#accessible description#>")
   }
   
   @Section(title: "Project set up") {
@@ -204,9 +202,7 @@
         the "AddContactFeature" in a sheet, and tapping "Save" adds a new contact to the list, 
         whereas tapping "Cancel" does not.
         
-        @Code(name: "ContactsFeature.swift", file: "02-01-02-code-0010") {
-          @Video(source: "ch02-sub01-sec03-image-0000")
-        }        
+        @Video(source: "ch02-sub01-sec03-image-0000") 
       }
     }
   }
