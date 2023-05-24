@@ -28,16 +28,40 @@ extension View {
     state toDestinationState: @escaping (State) -> AlertState<ButtonAction>?,
     action fromDestinationAction: @escaping (ButtonAction) -> Action
   ) -> some View {
-    self.modifier(
-      PresentationAlertModifier(
-        viewStore: ViewStore(
-          store,
-          removeDuplicates: { $0.id == $1.id }
-        ),
-        toDestinationState: toDestinationState,
-        fromDestinationAction: fromDestinationAction
-      )
-    )
+    self.presentation(
+      store: store, state: toDestinationState, action: fromDestinationAction
+    ) { `self`, $isPresented, destination in
+      self
+//      let alertState = self.viewStore.wrappedValue.flatMap(self.toDestinationState)
+//      self.alert(
+//        (alertState?.title).map(Text.init) ?? Text(""),
+//        isPresented: $isPresented,
+//        presenting: alertState,
+//        actions: { alertState in
+//          ForEach(alertState.buttons) { button in
+//            Button(role: button.role.map(ButtonRole.init)) {
+//              switch button.action.type {
+//              case let .send(action):
+//                if let action = action {
+//                  self.viewStore.send(.presented(self.fromDestinationAction(action)))
+//                }
+//              case let .animatedSend(action, animation):
+//                if let action = action {
+//                  _ = withAnimation(animation) {
+//                    self.viewStore.send(.presented(self.fromDestinationAction(action)))
+//                  }
+//                }
+//              }
+//            } label: {
+//              Text(button.label)
+//            }
+//          }
+//        },
+//        message: {
+//          $0.message.map(Text.init) ?? Text("")
+//        }
+//      )
+    }
   }
 }
 

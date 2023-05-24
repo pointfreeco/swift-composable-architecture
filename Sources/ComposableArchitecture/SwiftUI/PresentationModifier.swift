@@ -15,6 +15,7 @@ extension View {
     }
   }
 
+  @_disfavoredOverload
   @ViewBuilder
   public func presentation<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
@@ -57,6 +58,7 @@ extension View {
     }
   }
 
+  @_disfavoredOverload
   @ViewBuilder
   public func presentation<
     State,
@@ -84,7 +86,7 @@ extension View {
   }
 
   @ViewBuilder
-  func presentation<
+  private func presentation<
     State,
     ID: Hashable,
     Action,
