@@ -31,36 +31,36 @@ extension View {
     self.presentation(
       store: store, state: toDestinationState, action: fromDestinationAction
     ) { `self`, $isPresented, destination in
-      self
-//      let alertState = self.viewStore.wrappedValue.flatMap(self.toDestinationState)
-//      self.alert(
-//        (alertState?.title).map(Text.init) ?? Text(""),
-//        isPresented: $isPresented,
-//        presenting: alertState,
-//        actions: { alertState in
-//          ForEach(alertState.buttons) { button in
-//            Button(role: button.role.map(ButtonRole.init)) {
-//              switch button.action.type {
-//              case let .send(action):
-//                if let action = action {
-//                  self.viewStore.send(.presented(self.fromDestinationAction(action)))
-//                }
-//              case let .animatedSend(action, animation):
-//                if let action = action {
-//                  _ = withAnimation(animation) {
-//                    self.viewStore.send(.presented(self.fromDestinationAction(action)))
-//                  }
-//                }
-//              }
-//            } label: {
-//              Text(button.label)
-//            }
-//          }
-//        },
-//        message: {
-//          $0.message.map(Text.init) ?? Text("")
-//        }
-//      )
+      let viewStore = ViewStore(store, observe: { $0 }, removeDuplicates: { _, _ in true })
+      let alertState = viewStore.wrappedValue.flatMap(toDestinationState)
+      self.alert(
+        (alertState?.title).map(Text.init) ?? Text(""),
+        isPresented: $isPresented,
+        presenting: alertState,
+        actions: { alertState in
+          ForEach(alertState.buttons) { button in
+            Button(role: button.role.map(ButtonRole.init)) {
+              switch button.action.type {
+              case let .send(action):
+                if let action = action {
+                  viewStore.send(.presented(fromDestinationAction(action)))
+                }
+              case let .animatedSend(action, animation):
+                if let action = action {
+                  _ = withAnimation(animation) {
+                    viewStore.send(.presented(fromDestinationAction(action)))
+                  }
+                }
+              }
+            } label: {
+              Text(button.label)
+            }
+          }
+        },
+        message: {
+          $0.message.map(Text.init) ?? Text("")
+        }
+      )
     }
   }
 }
@@ -133,52 +133,5 @@ private struct OldAlertModifier<Action>: ViewModifier {
         }
       }
     }
-  }
-}
-
-@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
-private struct PresentationAlertModifier<State, Action, ButtonAction>: ViewModifier {
-  @ObservedObject var viewStore: ViewStore<PresentationState<State>, PresentationAction<Action>>
-  let toDestinationState: (State) -> AlertState<ButtonAction>?
-  let fromDestinationAction: (ButtonAction) -> Action
-
-  func body(content: Content) -> some View {
-    let id = self.viewStore.id
-    let alertState = self.viewStore.wrappedValue.flatMap(self.toDestinationState)
-    content.alert(
-      (alertState?.title).map(Text.init) ?? Text(""),
-      isPresented: Binding(
-        get: { self.viewStore.wrappedValue.flatMap(self.toDestinationState) != nil },
-        set: { newState in
-          if !newState, !self.viewStore._isInvalidated(), self.viewStore.id == id {
-            self.viewStore.send(.dismiss)
-          }
-        }
-      ),
-      presenting: alertState,
-      actions: { alertState in
-        ForEach(alertState.buttons) { button in
-          Button(role: button.role.map(ButtonRole.init)) {
-            switch button.action.type {
-            case let .send(action):
-              if let action = action {
-                self.viewStore.send(.presented(self.fromDestinationAction(action)))
-              }
-            case let .animatedSend(action, animation):
-              if let action = action {
-                _ = withAnimation(animation) {
-                  self.viewStore.send(.presented(self.fromDestinationAction(action)))
-                }
-              }
-            }
-          } label: {
-            Text(button.label)
-          }
-        }
-      },
-      message: {
-        $0.message.map(Text.init) ?? Text("")
-      }
-    )
   }
 }

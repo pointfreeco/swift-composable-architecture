@@ -47,7 +47,7 @@ extension View {
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
     @ViewBuilder body: @escaping (
       _ content: Self,
-      _ isPresent: Binding<Bool>,
+      _ isPresented: Binding<Bool>,
       _ destination: DestinationContent<DestinationState, DestinationAction>
     ) -> Content
   ) -> some View {
