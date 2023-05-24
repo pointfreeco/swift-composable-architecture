@@ -20,7 +20,7 @@ final class ReducerTests: BaseTCATestCase {
     XCTAssertEqual(state, 1)
   }
 
-  #if swift(>=5.7) && (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
+  #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     func testCombine_EffectsAreMerged() async throws {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
         try await withMainSerialExecutor {

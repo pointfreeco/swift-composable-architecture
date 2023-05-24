@@ -1,8 +1,8 @@
 import ComposableArchitecture
 import SwiftUI
 
-private struct PresentationItemTestCase: ReducerProtocol {
-  struct Destination: ReducerProtocol {
+private struct PresentationItemTestCase: Reducer {
+  struct Destination: Reducer {
     enum State: Equatable {
       case childA(Child.State)
       case childB(Child.State)
@@ -28,7 +28,7 @@ private struct PresentationItemTestCase: ReducerProtocol {
     case childBButtonTapped
     case destination(PresentationAction<Destination.Action>)
   }
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       case .childAButtonTapped, .destination(.presented(.childB(.swapButtonTapped))):
@@ -47,12 +47,12 @@ private struct PresentationItemTestCase: ReducerProtocol {
   }
 }
 
-private struct Child: ReducerProtocol {
+private struct Child: Reducer {
   struct State: Equatable {}
   enum Action: Equatable {
     case swapButtonTapped
   }
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     EmptyReducer()
   }
 }

@@ -26,7 +26,7 @@ struct SpeechRecognition: Reducer {
 
   @Dependency(\.speechClient) var speechClient
 
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       case .alert:

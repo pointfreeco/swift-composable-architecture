@@ -737,7 +737,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
 
   // NB: Only needed until Xcode ships a macOS SDK that uses the 5.7 standard library.
   // See: https://forums.swift.org/t/xcode-14-rc-cannot-specialize-protocol-type/60171/15
-  #if swift(>=5.7) && !os(macOS) && !targetEnvironment(macCatalyst)
+  #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     /// Suspends until all in-flight effects have finished, or until it times out.
     ///
     /// Can be used to assert that all effects have finished.
@@ -769,8 +769,6 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     file: StaticString = #file,
     line: UInt = #line
   ) async {
-    Task.cancel(id: OnFirstAppearID())
-
     let nanoseconds = nanoseconds ?? self.timeout
     let start = DispatchTime.now().uptimeNanoseconds
     await Task.megaYield()
@@ -791,7 +789,9 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
           If you are not yet using a clock/scheduler, or can not use a clock/scheduler, \
           \(timeoutMessage).
           """
-
+        Task.cancel(id: OnFirstAppearID())
+        guard !self.reducer.inFlightEffects.isEmpty
+        else { break }
         XCTFailHelper(
           """
           Expected effects to finish, but there are still effects in-flight\
@@ -813,8 +813,6 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   }
 
   func completed() {
-    Task.cancel(id: OnFirstAppearID())
-
     if !self.reducer.receivedActions.isEmpty {
       var actions = ""
       customDump(self.reducer.receivedActions.map(\.action), to: &actions)
@@ -829,7 +827,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
         line: self.line
       )
     }
-
+    Task.cancel(id: OnFirstAppearID())
     for effect in self.reducer.inFlightEffects {
       XCTFailHelper(
         """
@@ -1404,7 +1402,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
 
   // NB: Only needed until Xcode ships a macOS SDK that uses the 5.7 standard library.
   // See: https://forums.swift.org/t/xcode-14-rc-cannot-specialize-protocol-type/60171/15
-  #if swift(>=5.7) && !os(macOS) && !targetEnvironment(macCatalyst)
+  #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     /// Asserts an action was received from an effect and asserts how the state changes.
     ///
     /// When an effect is executed in your feature and sends an action back into the system, you can
@@ -1597,7 +1595,7 @@ extension TestStore where ScopedState: Equatable {
 
   // NB: Only needed until Xcode ships a macOS SDK that uses the 5.7 standard library.
   // See: https://forums.swift.org/t/xcode-14-rc-cannot-specialize-protocol-type/60171/15
-  #if swift(>=5.7) && !os(macOS) && !targetEnvironment(macCatalyst)
+  #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     /// Asserts an action was received from an effect that matches a predicate, and asserts how the
     /// state changes.
     ///
@@ -1764,7 +1762,7 @@ extension TestStore where ScopedState: Equatable {
     await Task.megaYield()
   }
 
-  #if swift(>=5.7) && !os(macOS) && !targetEnvironment(macCatalyst)
+  #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     /// Asserts an action was received matching a case path and asserts how the state changes.
     ///
     /// This method is similar to ``receive(_:timeout:assert:file:line:)-4he05``, except it allows
@@ -2285,7 +2283,7 @@ public struct TestStoreTask: Hashable, Sendable {
 
   // NB: Only needed until Xcode ships a macOS SDK that uses the 5.7 standard library.
   // See: https://forums.swift.org/t/xcode-14-rc-cannot-specialize-protocol-type/60171/15
-  #if swift(>=5.7) && !os(macOS) && !targetEnvironment(macCatalyst)
+  #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     /// Asserts the underlying task finished.
     ///
     /// - Parameter duration: The amount of time to wait before asserting.
@@ -2470,7 +2468,7 @@ extension Task where Success == Failure, Failure == Never {
 
 // NB: Only needed until Xcode ships a macOS SDK that uses the 5.7 standard library.
 // See: https://forums.swift.org/t/xcode-14-rc-cannot-specialize-protocol-type/60171/15
-#if swift(>=5.7) && !os(macOS) && !targetEnvironment(macCatalyst)
+#if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   extension Duration {
     fileprivate var nanoseconds: UInt64 {

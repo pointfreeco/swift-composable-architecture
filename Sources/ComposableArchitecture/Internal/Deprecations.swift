@@ -282,48 +282,25 @@ extension EffectPublisher {
   }
 }
 
-#if swift(>=5.7)
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'withTaskCancellation(id: CancelID.timer)'.
-      """
+@available(
+  *,
+  deprecated,
+  message:
+    """
+    Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'withTaskCancellation(id: CancelID.timer)'.
+    """
+)
+public func withTaskCancellation<T: Sendable>(
+  id: Any.Type,
+  cancelInFlight: Bool = false,
+  operation: @Sendable @escaping () async throws -> T
+) async rethrows -> T {
+  try await withTaskCancellation(
+    id: ObjectIdentifier(id),
+    cancelInFlight: cancelInFlight,
+    operation: operation
   )
-  @_unsafeInheritExecutor
-  public func withTaskCancellation<T: Sendable>(
-    id: Any.Type,
-    cancelInFlight: Bool = false,
-    operation: @Sendable @escaping () async throws -> T
-  ) async rethrows -> T {
-    try await withTaskCancellation(
-      id: ObjectIdentifier(id),
-      cancelInFlight: cancelInFlight,
-      operation: operation
-    )
-  }
-#else
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'withTaskCancellation(id: CancelID.timer)'.
-      """
-  )
-  public func withTaskCancellation<T: Sendable>(
-    id: Any.Type,
-    cancelInFlight: Bool = false,
-    operation: @Sendable @escaping () async throws -> T
-  ) async rethrows -> T {
-    try await withTaskCancellation(
-      id: ObjectIdentifier(id),
-      cancelInFlight: cancelInFlight,
-      operation: operation
-    )
-  }
-#endif
+}
 
 extension Task where Success == Never, Failure == Never {
   @available(
@@ -402,30 +379,28 @@ extension Reducer {
   }
 }
 
-#if swift(>=5.7)
-  extension ReducerBuilder {
-    @_disfavoredOverload
-    @available(
-      *,
-      deprecated,
-      message:
-        """
-        Reducer bodies should return 'some Reducer<State, Action>' instead of 'Reduce<State, Action>'.
-        """
-    )
-    @inlinable
-    public static func buildFinalResult<R: Reducer>(_ reducer: R) -> Reduce<State, Action>
-    where R.State == State, R.Action == Action {
-      Reduce(reducer)
-    }
-
-    @_disfavoredOverload
-    @inlinable
-    public static func buildFinalResult(_ reducer: Reduce<State, Action>) -> Reduce<State, Action> {
-      reducer
-    }
+extension ReducerBuilder {
+  @_disfavoredOverload
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      Reducer bodies should return 'some Reducer<State, Action>' instead of 'Reduce<State, Action>'.
+      """
+  )
+  @inlinable
+  public static func buildFinalResult<R: Reducer>(_ reducer: R) -> Reduce<State, Action>
+  where R.State == State, R.Action == Action {
+    Reduce(reducer)
   }
-#endif
+
+  @_disfavoredOverload
+  @inlinable
+  public static func buildFinalResult(_ reducer: Reduce<State, Action>) -> Reduce<State, Action> {
+    reducer
+  }
+}
 
 // MARK: - Deprecated after 0.39.1:
 
