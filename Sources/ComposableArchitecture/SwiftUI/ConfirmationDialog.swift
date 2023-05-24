@@ -34,8 +34,7 @@ extension View {
     self.presentation(
       store: store, state: toDestinationState, action: fromDestinationAction
     ) { `self`, $isPresented, destination in
-      let viewStore = ViewStore(store, observe: { $0 }, removeDuplicates: { _, _ in true })
-      let confirmationDialogState = viewStore.wrappedValue.flatMap(toDestinationState)
+      let confirmationDialogState = store.state.value.wrappedValue.flatMap(toDestinationState)
       self.confirmationDialog(
         (confirmationDialogState?.title).map(Text.init) ?? Text(""),
         isPresented: $isPresented,
@@ -48,12 +47,12 @@ extension View {
               switch button.action.type {
               case let .send(action):
                 if let action = action {
-                  viewStore.send(.presented(fromDestinationAction(action)))
+                  _ = store.send(.presented(fromDestinationAction(action)))
                 }
               case let .animatedSend(action, animation):
                 if let action = action {
                   _ = withAnimation(animation) {
-                    viewStore.send(.presented(fromDestinationAction(action)))
+                    store.send(.presented(fromDestinationAction(action)))
                   }
                 }
               }
