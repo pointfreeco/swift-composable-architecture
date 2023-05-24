@@ -16,12 +16,16 @@
     @Image(source: "01-homepage")
   }
   
+  @Comment {
+    separate "presentation" from navigation stacks?
+  }
+  
   @Chapter(name: "Navigation") {
     Learn how to model your domains for navigation from parent feature to child feature, and how to
     do so in a concise manner.
     
     @TutorialReference(tutorial: "doc:02-01-YourFirstPresentation")
-    @TutorialReference(tutorial: "doc:02-02-OtherTypesOfPresentation")
+    @TutorialReference(tutorial: "doc:02-02-MultiplePresentations")
     @TutorialReference(tutorial: "doc:02-03-NavigationStacks")
     
     @Image(source: "02-homepage")
