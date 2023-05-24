@@ -221,6 +221,46 @@
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0013)
       }
+      
+      That's all it takes to convert two independent, imprecisely modeled optional values into a 
+      single optional enum, and we can now prove that only one destination can be active at a time.
+      All that is left is to update the view so that we can specify which case of the destination
+      enum drives the sheet and alert.
+      
+      @Step {
+        There is an additional overload of `.sheet(store:)` and `.alert(store:)` that takes two
+        extra arguments: a state transformation for extracting a particular case from the 
+        `Destination.State` enum, and an action transformation for embedding a child action into
+        a particular case of the `Destination.Action` enum.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0014, previousFile: 02-02-02-code-0014-previous)
+      }
+      
+      @Step {
+        The state transformation is responsible for taking a piece of `Destination.State`, which
+        is an enum, and extracting a particular case from it. We can do this by using a case path
+        derived from the `addContact` case.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0015)
+      }
+      
+      @Step {
+        The action transformation is responsible for taking a child action in the 
+        `AddContactFeature` domain and embedding it into the `Destination.Action` enum. This can
+        be done by using the case of the enum as a function.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0016)
+      }
+      
+      @Step {
+        The same can be done for the `.alert(store:)` view modifier.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0017)
+      }
+      
+      That completes the refactor of the reducer and view to use a single piece of optional enum
+      state instead using multiple optional values. The application works exactly as it did before,
+      but now its domain is more concisely modeled.
     }
   }
 }

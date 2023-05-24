@@ -22,7 +22,10 @@ struct AddContactFeature: ReducerProtocol {
     case .delegate:
       return .none
     case .saveButtonTapped:
-      return .send(.delegate(.saveContact(state.contact)))
+      return .run { [contact = state.contact] send in
+        await send(.delegate(.saveContact(state.contact)))
+        await self.dismiss()
+      }
     case let .setName(name):
       state.contact.name = name
       return .none
