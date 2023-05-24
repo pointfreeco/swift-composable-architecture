@@ -45,9 +45,8 @@ import Combine
 /// using optionals and enums.
 @propertyWrapper
 public struct PresentationState<State> {
-  private class Storage {
+  private class Storage: @unchecked Sendable {
     var state: State?
-
     init(state: State?) {
       self.state = state
     }
@@ -76,7 +75,7 @@ public struct PresentationState<State> {
     _modify { yield &self }
   }
 
-  func memcmp(_ other: Self) -> Bool {
+  func sharesStorage(with other: Self) -> Bool {
     self.storage === other.storage
   }
 }

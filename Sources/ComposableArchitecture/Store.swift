@@ -334,7 +334,7 @@ public final class Store<State, Action> {
     self.scope(
       state: toChildState,
       action: fromChildAction,
-      removeDuplicates: { $0.memcmp($1) }
+      removeDuplicates: { $0.sharesStorage(with: $1) }
     )
   }
 
