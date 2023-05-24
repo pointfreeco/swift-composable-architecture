@@ -45,28 +45,28 @@ import Combine
 /// using optionals and enums.
 @propertyWrapper
 public struct PresentationState<State> {
-  private var boxedValue: [State]
+  private class Storage {
+    var state: State?
+
+    init(state: State?) {
+      self.state = state
+    }
+  }
+
+  private var storage: Storage
   @usableFromInline var isPresented = false
 
   public init(wrappedValue: State?) {
-    self.boxedValue = wrappedValue.map { [$0] } ?? []
+    self.storage = Storage(state: wrappedValue)
   }
 
   public var wrappedValue: State? {
-    _read { yield self.boxedValue.first }
+    _read { yield self.storage.state }
     _modify {
-      var state = self.boxedValue.first
-      yield &state
-      switch (state, self.boxedValue.isEmpty) {
-      case (nil, true):
-        return
-      case (nil, false):
-        self.boxedValue = []
-      case let (.some(state), true):
-        self.boxedValue.insert(state, at: 0)
-      case let (.some(state), false):
-        self.boxedValue[0] = state
+      if !isKnownUniquelyReferenced(&self.storage) {
+        self.storage = Storage(state: self.storage.state)
       }
+      yield &self.storage.state
     }
   }
 
@@ -74,6 +74,10 @@ public struct PresentationState<State> {
     get { self }
     set { self = newValue }
     _modify { yield &self }
+  }
+
+  func memcmp(_ other: Self) -> Bool {
+    self.storage === other.storage
   }
 }
 

@@ -328,6 +328,17 @@ public final class Store<State, Action> {
   }
 
   public func scope<ChildState, ChildAction>(
+    state toChildState: @escaping (State) -> PresentationState<ChildState>,
+    action fromChildAction: @escaping (PresentationAction<ChildAction>) -> Action
+  ) -> Store<PresentationState<ChildState>, PresentationAction<ChildAction>> {
+    self.scope(
+      state: toChildState,
+      action: fromChildAction,
+      removeDuplicates: { $0.memcmp($1) }
+    )
+  }
+
+  func scope<ChildState, ChildAction>(
     state toChildState: @escaping (State) -> ChildState,
     action fromChildAction: @escaping (ChildAction) -> Action,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
