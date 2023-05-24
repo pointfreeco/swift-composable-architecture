@@ -22,17 +22,13 @@ final class AppFeatureTests: XCTestCase {
     }
 
     await store.send(.path(.element(id: 0, action: .detail(.deleteButtonTapped)))) {
-      XCTModify(&$0.path[id: 0], case: /AppFeature.Path.State.detail) {
-        $0.destination = .alert(.deleteStandup)
-      }
+      $0.path[id: 0, case: /AppFeature.Path.State.detail]?.destination = .alert(.deleteStandup)
     }
 
     await store.send(
       .path(.element(id: 0, action: .detail(.destination(.presented(.alert(.confirmDeletion))))))
     ) {
-      XCTModify(&$0.path[id: 0], case: /AppFeature.Path.State.detail) {
-        $0.destination = nil
-      }
+      $0.path[id: 0, case: /AppFeature.Path.State.detail]?.destination = nil
     }
 
     await store.receive(.path(.element(id: 0, action: .detail(.delegate(.deleteStandup))))) {
@@ -65,9 +61,9 @@ final class AppFeatureTests: XCTestCase {
     }
 
     await store.send(.path(.element(id: 0, action: .detail(.editButtonTapped)))) {
-      XCTModify(&$0.path[id: 0], case: /AppFeature.Path.State.detail) {
-        $0.destination = .edit(StandupForm.State(standup: standup))
-      }
+      $0.path[id: 0, case: /AppFeature.Path.State.detail]?.destination = .edit(
+        StandupForm.State(standup: standup)
+      )
     }
 
     await store.send(
@@ -78,11 +74,8 @@ final class AppFeatureTests: XCTestCase {
         )
       )
     ) {
-      XCTModify(&$0.path[id: 0], case: /AppFeature.Path.State.detail) {
-        XCTModify(&$0.destination, case: /StandupDetail.Destination.State.edit) {
-          $0.standup.title = "Blob"
-        }
-      }
+      $0.path[id: 0, case: /AppFeature.Path.State.detail]?
+        .$destination[case: /StandupDetail.Destination.State.edit]?.standup.title = "Blob"
     }
 
     await store.send(.path(.element(id: 0, action: .detail(.doneEditingButtonTapped)))) {
@@ -149,15 +142,13 @@ final class AppFeatureTests: XCTestCase {
       )
     ) {
       $0.path.pop(to: 0)
-      XCTModify(&$0.path[id: 0], case: /AppFeature.Path.State.detail) {
-        $0.standup.meetings = [
-          Meeting(
-            id: Meeting.ID(uuidString: "00000000-0000-0000-0000-000000000000")!,
-            date: Date(timeIntervalSince1970: 1_234_567_890),
-            transcript: "I completed the project"
-          )
-        ]
-      }
+      $0.path[id: 0, case: /AppFeature.Path.State.detail]?.standup.meetings = [
+        Meeting(
+          id: Meeting.ID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+          date: Date(timeIntervalSince1970: 1_234_567_890),
+          transcript: "I completed the project"
+        )
+      ]
     }
   }
 }

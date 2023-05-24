@@ -5,6 +5,56 @@ import XCTest
 #if swift(>=5.7)
   @MainActor
   final class PresentationReducerTests: BaseTCATestCase {
+    func testPresentationStateSubscriptCase() {
+      enum Child: Equatable {
+        case int(Int)
+        case text(String)
+      }
+
+      struct Parent: Equatable {
+        @PresentationState var child: Child?
+      }
+
+      var parent = Parent(child: .int(42))
+
+      parent.$child[case: /Child.int]? += 1
+      XCTAssertEqual(parent.child, .int(43))
+
+      parent.$child[case: /Child.int] = nil
+      XCTAssertNil(parent.child)
+    }
+
+    func testPresentationStateSubscriptCase_Unexpected() {
+      enum Child: Equatable {
+        case int(Int)
+        case text(String)
+      }
+
+      struct Parent: Equatable {
+        @PresentationState var child: Child?
+      }
+
+      var parent = Parent(child: .int(42))
+
+      XCTExpectFailure {
+        parent.$child[case: /Child.text]?.append("!")
+      } issueMatcher: {
+        $0.compactDescription == """
+          Can't modify unrelated case "int"
+          """
+      }
+
+      XCTExpectFailure {
+        parent.$child[case: /Child.text] = nil
+      } issueMatcher: {
+        $0.compactDescription == """
+          Can't modify unrelated case "int"
+          """
+      }
+
+      XCTAssertEqual(parent.child, .int(42))
+    }
+
     func testPresentation_parentDismissal() async {
       struct Child: ReducerProtocol {
         struct State: Equatable {

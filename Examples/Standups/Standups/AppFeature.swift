@@ -52,19 +52,17 @@ struct AppFeature: ReducerProtocol {
         case let .save(transcript: transcript):
           state.path.pop(from: id)
 
-          if let id = state.path.ids.last {
-            XCTModify(&state.path[id: id], case: /Path.State.detail) { detailState in
-              detailState.standup.meetings.insert(
-                Meeting(
-                  id: Meeting.ID(self.uuid()),
-                  date: self.now,
-                  transcript: transcript
-                ),
-                at: 0
-              )
-            }
-          }
+          guard let id = state.path.ids.last
+          else { return .none }
 
+          state.path[id: id, case: /Path.State.detail]?.standup.meetings.insert(
+            Meeting(
+              id: Meeting.ID(self.uuid()),
+              date: self.now,
+              transcript: transcript
+            ),
+            at: 0
+          )
           return .none
         }
 

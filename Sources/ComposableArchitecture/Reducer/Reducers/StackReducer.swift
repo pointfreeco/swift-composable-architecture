@@ -1,3 +1,4 @@
+@_spi(Reflection) import CasePaths
 import Combine
 import Foundation
 import OrderedCollections
@@ -57,6 +58,34 @@ public struct StackState<Element> {
       if newValue == nil {
         self._mounted.remove(id)
       }
+    }
+  }
+
+  /// Accesses the value associated with the given id for reading and writing.
+  public subscript<Case>(id id: StackElementID, case path: CasePath<Element, Case>) -> Case? {
+    _read { yield self[id: id].flatMap(path.extract) }
+    _modify {
+      let root = self[id: id]
+      var value = root.flatMap(path.extract)
+      let success = value != nil
+      yield &value
+      guard success else {
+        var description: String?
+        if
+          let root = root,
+          let metadata = EnumMetadata(Element.self),
+          let caseName = metadata.caseName(forTag: metadata.tag(of: root))
+        {
+          description = caseName
+        }
+        runtimeWarn(
+          """
+          Can't modify unrelated case\(description.map { " \($0.debugDescription)" } ?? "")
+          """
+        )
+        return
+      }
+      self[id: id] = value.map(path.embed)
     }
   }
 

@@ -1,4 +1,4 @@
-import CasePaths
+@_spi(Reflection) import CasePaths
 import Combine
 
 /// A property wrapper for state that can be presented.
@@ -73,6 +73,33 @@ public struct PresentationState<State> {
     get { self }
     set { self = newValue }
     _modify { yield &self }
+  }
+
+  public subscript<Case>(case path: CasePath<State, Case>) -> Case? {
+    _read { yield self.wrappedValue.flatMap(path.extract) }
+    _modify {
+      let root = self.wrappedValue
+      var value = root.flatMap(path.extract)
+      let success = value != nil
+      yield &value
+      guard success else {
+        var description: String?
+        if
+          let root = root,
+          let metadata = EnumMetadata(State.self),
+          let caseName = metadata.caseName(forTag: metadata.tag(of: root))
+        {
+          description = caseName
+        }
+        runtimeWarn(
+          """
+          Can't modify unrelated case\(description.map { " \($0.debugDescription)" } ?? "")
+          """
+        )
+        return
+      }
+      self.wrappedValue = value.map(path.embed)
+    }
   }
 
   func sharesStorage(with other: Self) -> Bool {
