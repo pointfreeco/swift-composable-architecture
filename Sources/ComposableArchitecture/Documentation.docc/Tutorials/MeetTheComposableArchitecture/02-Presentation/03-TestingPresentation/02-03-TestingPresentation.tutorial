@@ -1,0 +1,20 @@
+@Tutorial(time: 0) {
+  @Intro(title: "Testing presentation") {
+    Learn how to write tests for features built using the library's navigation tools, including
+    how multiple features integrate together and communicate with each other.
+  }
+  
+  @Section(title: "Testing the add contact flow") {
+    @ContentAndMedia {
+      The first functionality we will test 
+    }
+    
+    @Steps {      
+      @Step {
+        <#text#>
+        
+        @Code(name: "<#display name#>", file: <#filename.swift#>)
+      }
+    }
+  }
+}
