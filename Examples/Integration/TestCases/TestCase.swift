@@ -4,6 +4,7 @@ public enum TestCase: String, CaseIterable, Identifiable, RawRepresentable {
   case navigationStack = "NavigationStack"
   case navigationStackBinding = "NavigationStack Binding"
   case presentation = "Presentation APIs"
+  case presentationItem = "Presentation Item"
   case switchStore = "SwitchStore/CaseLet Warning"
   case bindingLocal = "BindingLocal Warning"
 

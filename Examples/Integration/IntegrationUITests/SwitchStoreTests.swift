@@ -5,7 +5,7 @@ import XCTest
 @MainActor
 final class SwitchStoreTests: BaseIntegrationTests {
   func testExample() async throws {
-    self.expectRuntimeWarnings = true
+    self.expectRuntimeWarnings()
 
     app.collectionViews.buttons[TestCase.switchStore.rawValue].tap()
 

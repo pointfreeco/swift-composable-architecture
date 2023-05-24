@@ -16,15 +16,15 @@ import Combine
 ///     ``EffectTask``s, such as API clients, analytics clients, random number generators, etc.
 ///
 /// > Important: The thread on which effects output is important. An effect's output is immediately
-///   sent back into the store, and ``Store`` is not thread safe. This means all effects must
-///   receive values on the same thread, **and** if the ``Store`` is being used to drive UI then all
-///   output must be on the main thread. You can use the `Publisher` method `receive(on:)` for make
-///   the effect output its values on the thread of your choice.
+/// > sent back into the store, and ``Store`` is not thread safe. This means all effects must
+/// > receive values on the same thread, **and** if the ``Store`` is being used to drive UI then all
+/// > output must be on the main thread. You can use the `Publisher` method `receive(on:)` for make
+/// > the effect output its values on the thread of your choice.
 /// >
 /// > This is only an issue if using the Combine interface of ``EffectPublisher`` as mentioned
-///   above. If you are only using Swift's concurrency tools and the `.task`, `.run` and
-///   `.fireAndForget` functions on ``EffectTask``, then the threading is automatically handled for
-///   you.
+/// > above. If you are only using Swift's concurrency tools and the `.task`, `.run` and
+/// > `.fireAndForget` functions on ``EffectTask``, then the threading is automatically handled for
+/// > you.
 @available(
   iOS,
   deprecated: 9999,
