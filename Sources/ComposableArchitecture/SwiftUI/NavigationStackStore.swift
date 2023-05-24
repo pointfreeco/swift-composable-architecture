@@ -34,7 +34,6 @@ import SwiftUI
         return destination(
           store
             .invalidate { !$0.ids.contains(component.id) }
-            // TODO: filterSend?
             .scope(
               state: {
                 state = $0[id: component.id] ?? state
@@ -72,7 +71,6 @@ import SwiftUI
         return SwitchStore(
           store
             .invalidate { !$0.ids.contains(component.id) }
-            // TODO: filterSend?
             .scope(
               state: {
                 state = $0[id: component.id] ?? state
