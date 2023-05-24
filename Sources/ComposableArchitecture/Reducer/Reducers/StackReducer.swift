@@ -61,7 +61,9 @@ public struct StackState<Element> {
     }
   }
 
-  /// Accesses the value associated with the given id for reading and writing.
+  /// Accesses the value associated with the given id and case for reading and writing.
+  ///
+  /// > Note: Accessing the wrong case will result in a runtime warning.
   public subscript<Case>(id id: StackElementID, case path: CasePath<Element, Case>) -> Case? {
     _read { yield self[id: id].flatMap(path.extract) }
     _modify {
