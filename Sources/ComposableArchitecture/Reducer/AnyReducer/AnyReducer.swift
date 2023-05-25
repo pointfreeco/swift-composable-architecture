@@ -599,7 +599,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///     }
   ///     ```
   ///
-  ///     Use ``Store/scope(state:action:)`` with ``SwitchStore`` to ensure that views can only send
+  ///     Use ``Store/scope(state:action:)-9iai9`` with ``SwitchStore`` to ensure that views can only send
   ///     child actions when the child domain is available.
   ///
   ///     ```swift
@@ -844,7 +844,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///     }
   ///     ```
   ///
-  ///     Use ``Store/scope(state:action:)`` with ``IfLetStore`` or ``Store/ifLet(then:else:)`` to
+  ///     Use ``Store/scope(state:action:)-9iai9`` with ``IfLetStore`` or ``Store/ifLet(then:else:)`` to
   ///     ensure that views can only send child actions when the child domain is non-`nil`.
   ///
   ///     ```swift

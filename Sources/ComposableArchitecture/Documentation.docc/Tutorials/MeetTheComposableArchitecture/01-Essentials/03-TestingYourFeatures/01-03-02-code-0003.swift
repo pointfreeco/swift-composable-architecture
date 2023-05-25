@@ -11,7 +11,7 @@ final class CounterFeatureTests: XCTestCase {
     await store.send(.toggleTimerButtonTapped) {
       $0.isTimerRunning = true
     }
-    // 🛑 An effect returned for this action is still running.
+    // ❌ An effect returned for this action is still running.
     //    It must complete before the end of the test. …
   }
 }

@@ -9,7 +9,7 @@ final class CounterFeatureTests: XCTestCase {
     }
 
     await store.send(.incrementButtonTapped)
-    // 🛑 State was not expected to change, but a change occurred: …
+    // ❌ State was not expected to change, but a change occurred: …
     //
     //       CounterFeature.State(
     //     −   count: 0,
@@ -21,7 +21,7 @@ final class CounterFeatureTests: XCTestCase {
     //
     // (Expected: −, Actual: +)
     await store.send(.decrementButtonTapped)
-    // 🛑 State was not expected to change, but a change occurred: …
+    // ❌ State was not expected to change, but a change occurred: …
     //
     //       CounterFeature.State(
     //     −   count: 1,
