@@ -593,8 +593,8 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ) -> Value {
     get { fromState.rawValue(self.state) }
     set {
-      if let action = toAction.rawValue(newValue) {
-        BindingLocal.$isActive.withValue(true) {
+      BindingLocal.$isActive.withValue(true) {
+        if let action = toAction.rawValue(newValue) {
           self.send(action)
         }
       }
