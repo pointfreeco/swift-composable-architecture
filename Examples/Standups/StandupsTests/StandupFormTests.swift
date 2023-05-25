@@ -23,15 +23,15 @@ final class StandupFormTests: XCTestCase {
     XCTAssertNoDifference(
       store.state.standup.attendees,
       [
-        Attendee(id: Attendee.ID(uuidString: "00000000-0000-0000-0000-000000000000")!)
+        Attendee(id: Attendee.ID(UUID(0)))
       ]
     )
 
     await store.send(.addAttendeeButtonTapped) {
-      $0.focus = .attendee(Attendee.ID(uuidString: "00000000-0000-0000-0000-000000000001")!)
+      $0.focus = .attendee(Attendee.ID(UUID(1)))
       $0.standup.attendees = [
-        Attendee(id: Attendee.ID(uuidString: "00000000-0000-0000-0000-000000000000")!),
-        Attendee(id: Attendee.ID(uuidString: "00000000-0000-0000-0000-000000000001")!),
+        Attendee(id: Attendee.ID(UUID(0))),
+        Attendee(id: Attendee.ID(UUID(1))),
       ]
     }
   }
@@ -81,9 +81,9 @@ final class StandupFormTests: XCTestCase {
     }
 
     await store.send(.deleteAttendees(atOffsets: [0])) {
-      $0.focus = .attendee(Attendee.ID(uuidString: "00000000-0000-0000-0000-000000000000")!)
+      $0.focus = .attendee(Attendee.ID(UUID(0)))
       $0.standup.attendees = [
-        Attendee(id: Attendee.ID(uuidString: "00000000-0000-0000-0000-000000000000")!)
+        Attendee(id: Attendee.ID(UUID(0)))
       ]
     }
   }
