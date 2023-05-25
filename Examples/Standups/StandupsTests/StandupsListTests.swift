@@ -18,9 +18,9 @@ final class StandupsListTests: XCTestCase {
       $0.destination = .add(
         StandupForm.State(
           standup: Standup(
-            id: Standup.ID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+            id: Standup.ID(UUID(0)),
             attendees: [
-              Attendee(id: Attendee.ID(uuidString: "00000000-0000-0000-0000-000000000001")!)
+              Attendee(id: Attendee.ID(UUID(1)))
             ]
           )
         )
@@ -37,9 +37,9 @@ final class StandupsListTests: XCTestCase {
       $0.destination = nil
       $0.standups = [
         Standup(
-          id: Standup.ID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+          id: Standup.ID(UUID(0)),
           attendees: [
-            Attendee(id: Attendee.ID(uuidString: "00000000-0000-0000-0000-000000000001")!)
+            Attendee(id: Attendee.ID(UUID(1)))
           ],
           title: "Engineering"
         )
@@ -79,7 +79,7 @@ final class StandupsListTests: XCTestCase {
         Standup(
           id: Standup.ID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!,
           attendees: [
-            Attendee(id: Attendee.ID(uuidString: "00000000-0000-0000-0000-000000000000")!)
+            Attendee(id: Attendee.ID(UUID(0)))
           ],
           title: "Design"
         )
