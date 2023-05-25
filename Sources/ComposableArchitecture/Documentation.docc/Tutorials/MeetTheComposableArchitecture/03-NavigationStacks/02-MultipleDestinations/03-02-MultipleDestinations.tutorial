@@ -1,28 +1,23 @@
-@Tutorial(time: <#number#>) {
+@Tutorial(time: 0) {
   @Intro(title: "Multiple destinations") {
-    <#text#>
-    
-    @Image(source: <#file#>, alt: "<#accessible description#>")
+    We add another destination to the navigation stack of our contacts application. We will add
+    an address field to the `Contact` data type, and allow you to drill down to a map view of a
+    user's address.
   }
   
-  @Section(title: "<#text#>") {
+  @Section(title: "Address feature") {
     @ContentAndMedia {
-      <#text#>
-      
-      @Image(source: <#file#>, alt: "<#accessible description#>")
+      We are going to add a new "Address Detail" feature that will allow us to drill down to another
+      kind of destination on the navigation stack. This will also give us an opportunity to explore 
+      adding a side effect to the app: that of reverse geocoding an address into a geographic
+      coordinate.
     }
     
     @Steps {
       @Step {
-        <#text#>
+        Blah
         
-        @Image(source: <#file#>, alt: "<#accessible description#>")
-      }
-      
-      @Step {
-        <#text#>
-        
-        @Code(name: "<#display name#>", file: <#filename.swift#>)
+        @Code(name: "AddressDetailFeature.swift", file: 03-02-01-code-0000)
       }
     }
   }

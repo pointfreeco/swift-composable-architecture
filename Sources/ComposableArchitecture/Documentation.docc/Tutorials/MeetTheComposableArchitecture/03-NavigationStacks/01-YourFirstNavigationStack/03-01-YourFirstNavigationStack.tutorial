@@ -168,9 +168,31 @@
     
     @Steps {
       @Step {
-        Blah 
+        Go to ContactsFeature.swift and add a new field to the `Contact` data type so that it holds 
+        an array of friends. 
         
-        @Code(name: "ContactsFeature.swift", file: 03-01-03-code-0000) 
+        @Code(name: "ContactsFeature.swift", file: 03-01-03-code-0000, previousFile: 03-01-03-code-0000-previous) 
+      }
+      
+      @Step {
+        Go to ContactDetailFeature.swift and add a list that holds each friend of the contact.
+        We will also wrap the rows in a `NavigationLink(state:)` so that tapping the row will 
+        drill down to another contact detail.
+        
+        @Code(name: "ContactDetailFeature.swift", file: 03-01-03-code-0001, previousFile: 03-01-03-code-0001-previous) 
+      }
+      
+      @Step {
+        Go back to ContactsFeature.swift and update the preview to give each user at the root a 
+        couple of friends.
+        
+        @Code(name: "ContactDetailFeature.swift", file: 03-01-03-code-0002, previousFile: 03-01-03-code-0002-previous) 
+      }
+      
+      @Step {
+        Run the preview to see that you can now drill down multiple layers.
+        
+        @Video(source: ch03-sub01-sec03-video-0000)
       }
     }
   }
@@ -179,12 +201,4 @@
 @Comment {
   * drill down multiple layers
   * demonstrate deep linking
-  
 }
-<!--      @Step {-->
-<!--        Go to the ContactsFeature.swift file and update the `Contact` data type to hold a bit more-->
-<!--        data. We will add an array of contacts that represents the contact's friends. This will -->
-<!--        make it easier to explore stack navigation concepts.-->
-<!--        -->
-<!--        @Code(name: "ContactsFeature.swift", file: 03-01-01-code-0000, previousFile: 03-01-01-code-0000-previous)-->
-<!--      }-->

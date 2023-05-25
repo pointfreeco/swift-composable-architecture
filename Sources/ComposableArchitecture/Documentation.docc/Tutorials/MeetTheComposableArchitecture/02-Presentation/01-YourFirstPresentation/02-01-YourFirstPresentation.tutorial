@@ -290,9 +290,4 @@
       }
     }
   }
-  
-  @Comment {
-    section showing how to make child feature dismiss itself
-    show how to improve child-to-parent communication with delegate actions?
-  }
 }
