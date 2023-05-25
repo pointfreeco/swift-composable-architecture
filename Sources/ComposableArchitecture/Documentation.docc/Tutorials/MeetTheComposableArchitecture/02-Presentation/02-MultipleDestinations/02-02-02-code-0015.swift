@@ -2,8 +2,8 @@ struct ContentView: View {
   let store: StoreOf<ContactsFeature>
 
   var body: some View {
-    WithViewStore(self.store, observe: \.contacts) { viewStore in
-      NavigationStack {
+    NavigationStack {
+      WithViewStore(self.store, observe: \.contacts) { viewStore in
         List {
           ForEach(viewStore.state) { contact in
             HStack {
@@ -28,21 +28,21 @@ struct ContentView: View {
             }
           }
         }
-        .sheet(
-          store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-          state: /ContactsFeature.Destination.State.addContact,
-          action:
-        ) { addContactStore in
-          NavigationStack {
-            AddContactView(store: addContactStore)
-          }
-        }
-        .alert(
-          store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-          state: ,
-          action:
-        )
       }
     }
+    .sheet(
+      store: self.store.scope(state: \.$destination, action: { .destination($0) }),
+      state: /ContactsFeature.Destination.State.addContact,
+      action:
+    ) { addContactStore in
+      NavigationStack {
+        AddContactView(store: addContactStore)
+      }
+    }
+    .alert(
+      store: self.store.scope(state: \.$destination, action: { .destination($0) }),
+      state: ,
+      action:
+    )
   }
 }

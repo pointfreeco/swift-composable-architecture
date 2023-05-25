@@ -2,8 +2,8 @@ struct ContentView: View {
   let store: StoreOf<ContactsFeature>
 
   var body: some View {
-    WithViewStore(self.store, observe: \.contacts) { viewStore in
-      NavigationStack {
+    NavigationStack {
+      WithViewStore(self.store, observe: \.contacts) { viewStore in
         List {
           ForEach(viewStore.state) { contact in
             Text(contact.name)

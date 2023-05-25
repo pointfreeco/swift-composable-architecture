@@ -1,0 +1,35 @@
+@Tutorial(time: <#number#>) {
+  @Intro(title: "Multiple destinations") {
+    <#text#>
+    
+    @Image(source: <#file#>, alt: "<#accessible description#>")
+  }
+  
+  @Section(title: "<#text#>") {
+    @ContentAndMedia {
+      <#text#>
+      
+      @Image(source: <#file#>, alt: "<#accessible description#>")
+    }
+    
+    @Steps {
+      @Step {
+        <#text#>
+        
+        @Image(source: <#file#>, alt: "<#accessible description#>")
+      }
+      
+      @Step {
+        <#text#>
+        
+        @Code(name: "<#display name#>", file: <#filename.swift#>)
+      }
+    }
+  }
+}
+
+@Comment {
+  * drill down multiple layers
+  * demonstrate deep linking
+  * add delete functionality from detail screen
+}

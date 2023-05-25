@@ -2,20 +2,20 @@ struct ContentView: View {
   let store: StoreOf<ContactsFeature>
 
   var body: some View {
-    NavigationStack {
+    NavigationStackStore(self.store.scope(state: \.path, action: { .path($0) })) {
       WithViewStore(self.store, observe: \.contacts) { viewStore in
         List {
           ForEach(viewStore.state) { contact in
-            HStack {
-              Text(contact.name)
-              Spacer()
-              Button {
-                viewStore.send(.deleteButtonTapped(id: contact.id))
-              } label: {
-                Image(systemName: "trash")
-                  .foregroundColor(.red)
+              HStack {
+                Text(contact.name)
+                Spacer()
+                Button {
+                  viewStore.send(.deleteButtonTapped(id: contact.id))
+                } label: {
+                  Image(systemName: "trash")
+                    .foregroundColor(.red)
+                }
               }
-            }
           }
         }
         .navigationTitle("Contacts")
@@ -29,11 +29,13 @@ struct ContentView: View {
           }
         }
       }
+    } destination: { store in
+      ContactDetailView(store: store)
     }
     .sheet(
       store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-      state: ,
-      action:
+      state: /ContactsFeature.Destination.State.addContact,
+      action: ContactsFeature.Destination.Action.addContact,
     ) { addContactStore in
       NavigationStack {
         AddContactView(store: addContactStore)
@@ -41,8 +43,8 @@ struct ContentView: View {
     }
     .alert(
       store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-      state: ,
-      action:
+      state: /ContactsFeature.Destination.State.alert,
+      action: ContactsFeature.Destination.Action.alert,
     )
   }
 }

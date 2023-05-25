@@ -1,0 +1,190 @@
+@Tutorial(time: 0) {
+  @Intro(title: "Your first navigation stack") {
+    We will continue with the contacts application built in the "Presentation" chapter by adding
+    a navigation stack to the root of the application so that we can drill down to a contact.
+  }
+  
+  @Section(title: "Contact detail feature") {
+    @ContentAndMedia {
+      We are going to add a new "Contact Detail" feature that will allow us to drill down a layer
+      from the contacts list at the root.
+    }
+    
+    @Steps {
+      @Step {
+        Create a new file called ContactDetail.swift, import the Composable Architecture, and start
+        a stub of a reducer conformance.
+        
+        @Code(name: "ContactDetailFeature.swift", file: 03-01-01-code-0000)
+      }
+      
+      @Step {
+        Add a `State` struct to fulfill that requirement for the 
+        ``ComposableArchitecture/ReducerProtocol``. The only state we currently need is the contact,
+        and it can be `let` since we do not plan on mutating it from this screen.
+        
+        @Code(name: "ContactDetailFeature.swift", file: 03-01-01-code-0001)
+      }
+      
+      @Step {
+        Add an `Action` enum to fulfill that requirement for the
+        ``ComposableArchitecture/ReducerProtocol``. There are not currently any actions that can
+        be performed in this feature, so we will leave it empty.
+        
+        @Code(name: "ContactDetailFeature.swift", file: 03-01-01-code-0002)
+      }
+      
+      @Step {
+        Implement a basic `reduce(into:state:)` method to fulfill that requirement of
+        ``ComposableArchitecture/ReducerProtocol``. Since there are no actions in this feature
+        there is nothing we can do in the reducer. More will be added to this later.
+        
+        @Code(name: "ContactDetailFeature.swift", file: 03-01-01-code-0003)
+      }
+      
+      @Step {
+        Create a stub for a `ContactDetailView`.
+        
+        @Code(name: "ContactDetailFeature.swift", file: 03-01-01-code-0004, reset: true)
+      }
+      
+      @Step {
+        The view will hold onto a ``ComposableArchitecture/Store`` of the 
+        `ContactDetailFeature` domain, allowing it to observe the feature's state changes and 
+        send actions.
+        
+        @Code(name: "ContactDetailFeature.swift", file: 03-01-01-code-0005)
+      }
+      
+      @Step {
+        Observe the store so that we can get access to state using 
+        ``ComposableArchitecture/WithViewStore``. There is no real information to show in this 
+        view now other than the contact's name, but more will be added later.
+        
+        @Code(name: "ContactDetailFeature.swift", file: 03-01-01-code-0006)
+      }
+      
+      @Step {
+        Add a preview so that we can see what the view looks like.
+        
+        @Code(name: "ContactDetailFeature.swift", file: 03-01-01-code-0007) {
+          @Image(source: ch03-sub01-sec01-image-0000)
+        }
+      }
+      
+      Nothing special so far, but we need a basic feature built so that we start pushing it onto
+      a navigation stack.
+    }
+  }
+  
+  @Section(title: "Drill-down to contact detail") {
+    @ContentAndMedia {
+      Now that a new "Contact Detail" feature has been built we will make it possible to drill
+      down to it from the main list of contacts.
+    }
+    
+    @Steps {
+      @Step {
+        Go to ContactsFeature.swift and add a new field to the state. It will be of type 
+        ``ComposableArchitecture/StackState``, generic of the feature that you want to be able to
+        push onto the stack. This state represents the features that are currently
+        pushed onto the stack.
+        
+        > Note: The ``ComposableArchitecture/StackState`` type is specifically made for the 
+        Composable Architecture, and makes it easy and ergnomic to integrate stack navigation
+        into your applications.
+        
+        @Code(name: "ContactsFeature.swift", file: 03-01-02-code-0000, previousFile: 03-01-02-code-0000-previous) 
+      }
+      
+      @Step {
+        Add a case to the action enum that holds onto ``ComposableArchitecture/StackAction``.
+        This represents the actions that can happen inside the stack, such as pushing or popping
+        an element off the stack, or an action happening inside a particular feature inside the
+        stack.
+        
+        We will also handle the `.path` case in the reducer and return 
+        ``ComposableArchitecture/EffectPublisher/none`` for now.
+        
+        @Code(name: "ContactsFeature.swift", file: 03-01-02-code-0001) 
+      }
+      
+      @Step {
+        At the very end of the reducer use the
+        ``ComposableArchitecture/ReducerProtocol/forEach(_:action:destination:fileID:line:)``
+        operator to integrate the `ContactDetailFeature` into the stack of the `ContactsFeature`.
+        
+        > Tip: Scroll down to the bottom of the code snippet to see the application of the
+        > `forEach` operator.
+        
+        @Code(name: "ContactsFeature.swift", file: 03-01-02-code-0002) 
+      }
+      
+      @Step {
+        Go to the `ContentView` that holds the view for the contacts list. Swap out the
+        `NavigationStore` for a ``ComposableArchitecture/NavigationStackStore``. This is a type
+        specifically tuned for driving stacks from a ``ComposableArchitecture/Store``. 
+        You hand it a store that is scopped down to ``ComposableArchitecture/StackState`` and
+        ``ComposableArchitecture/StackAction``, and it handles the rest.
+        
+        @Code(name: "ContactsFeature.swift", file: 03-01-02-code-0003, previousFile: 03-01-02-code-0003-previous) 
+      }
+      
+      @Step {
+        ``ComposableArchitecture/NavigationStackStore`` takes two trailing closures. The first is
+        for the root of the stack, which is our list of contacts. The second is to describe the
+        destinations that can be naviated to. It is handled a store that is focused on the domain
+        of just a single element in the stack.
+        
+        @Code(name: "ContactsFeature.swift", file: 03-01-02-code-0004) 
+      }
+      
+      @Step {
+        Wrap the row in the contacts list in a `NavigationLink`, using the special 
+        `NavigationLink(state:)` initializer that ships with this libary. We are also applying a
+        `.borderless` button style so that we can have the delete button in the row too.
+        
+        > Warning: It is necessary to use the `init(state)` initializer on `NavigationLink`, 
+        > instead of the `init(value:)` that comes with SwiftUI.
+        
+        @Code(name: "ContactsFeature.swift", file: 03-01-02-code-0005, previousFile: 03-01-02-code-0005-previous) 
+      }
+      
+      @Step {
+        Run the application to see that we can now drill down one level, for each contact.
+        
+        @Video(source: ch03-sub01-sec01-video-0000) 
+      }
+    }
+  }
+    
+  @Section(title: "Drill-down multiple levels") {
+    @ContentAndMedia {
+      We now have some drill-down functionality in our contacts app, but currently we can only
+      go one layer deep. Let's enhance the domain of our feature a bit so that we can drill down
+      more layers. We will do this by adding an array of friends to the `Contact` data type, 
+      and display those friends in the contact's detail.
+    }
+    
+    @Steps {
+      @Step {
+        Blah 
+        
+        @Code(name: "ContactsFeature.swift", file: 03-01-03-code-0000) 
+      }
+    }
+  }
+}
+
+@Comment {
+  * drill down multiple layers
+  * demonstrate deep linking
+  
+}
+<!--      @Step {-->
+<!--        Go to the ContactsFeature.swift file and update the `Contact` data type to hold a bit more-->
+<!--        data. We will add an array of contacts that represents the contact's friends. This will -->
+<!--        make it easier to explore stack navigation concepts.-->
+<!--        -->
+<!--        @Code(name: "ContactsFeature.swift", file: 03-01-01-code-0000, previousFile: 03-01-01-code-0000-previous)-->
+<!--      }-->

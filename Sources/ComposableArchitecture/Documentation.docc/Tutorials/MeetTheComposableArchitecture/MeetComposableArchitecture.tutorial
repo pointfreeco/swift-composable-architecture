@@ -16,19 +16,26 @@
     @Image(source: "01-homepage")
   }
   
-  @Comment {
-    separate "presentation" from navigation stacks?
-  }
-  
   @Chapter(name: "Presentation") {
     Learn how to model your domains for navigation from parent feature to child feature, and how to
-    do so in a concise manner.
+    do so in a concise manner using optionals and enums.
     
     @TutorialReference(tutorial: "doc:02-01-YourFirstPresentation")
     @TutorialReference(tutorial: "doc:02-02-MultipleDestinations")
     @TutorialReference(tutorial: "doc:02-03-TestingPresentation")
     
     @Image(source: "02-homepage")
+  }
+  
+  @Chapter(name: "Navigation stacks") {
+    Learn how to push many features onto a navigation stack, and how to integrate those features
+    together using the tools of the Composable Architecture.
+    
+    @TutorialReference(tutorial: "doc:03-01-YourFirstNavigationStack")
+    @TutorialReference(tutorial: "doc:03-02-MultipleDestinations")
+    @TutorialReference(tutorial: "doc:03-03-TestingNavigationStacks")
+    
+    @Image(source: "03-homepage")
   }
   
   @Resources {
