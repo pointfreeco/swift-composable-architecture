@@ -18,10 +18,13 @@ struct AddContactFeature: ReducerProtocol {
     switch action {
     case .cancelButtonTapped:
       return .send(.delegate(.cancel))
+
     case .delegate:
       return .none
+
     case .saveButtonTapped:
       return .send(.delegate(.saveContact(state.contact)))
+
     case let .setName(name):
       state.contact.name = name
       return .none

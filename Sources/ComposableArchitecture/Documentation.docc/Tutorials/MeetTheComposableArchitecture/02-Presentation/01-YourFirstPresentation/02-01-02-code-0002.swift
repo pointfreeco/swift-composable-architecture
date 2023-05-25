@@ -11,7 +11,7 @@ struct ContactsFeature: ReducerProtocol {
     Reduce { state, action in
       switch action {
       case .addButtonTapped:
-        // TODO
+        // TODO: Handle action
         return .none
       }
     }

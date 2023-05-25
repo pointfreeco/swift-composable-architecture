@@ -10,7 +10,7 @@ struct AddContactFeature: ReducerProtocol {
     case saveButtonTapped
     case setName(String)
     enum Delegate {
-      //case cancel
+      // case cancel
       case saveContact(Contact)
     }
   }
@@ -19,13 +19,16 @@ struct AddContactFeature: ReducerProtocol {
     switch action {
     case .cancelButtonTapped:
       return .fireAndForget { await self.dismiss() }
+
     case .delegate:
       return .none
+
     case .saveButtonTapped:
       return .run { [contact = state.contact] send in
         await send(.delegate(.saveContact(state.contact)))
         await self.dismiss()
       }
+
     case let .setName(name):
       state.contact.name = name
       return .none
