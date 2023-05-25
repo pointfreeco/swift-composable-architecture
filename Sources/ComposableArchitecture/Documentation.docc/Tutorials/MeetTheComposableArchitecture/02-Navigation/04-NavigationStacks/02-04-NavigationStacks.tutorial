@@ -1,6 +1,6 @@
-@Tutorial(time: 0) {
-  @Intro(title: "Your first navigation stack") {
-    We will continue with the contacts application built in the "Presentation" chapter by adding
+@Tutorial(time: 30) {
+  @Intro(title: "Navigation stacks") {
+    We will continue with the contacts application built in previous sections by adding
     a navigation stack to the root of the application so that we can drill down to a contact.
   }
   
@@ -15,7 +15,7 @@
         Create a new file called ContactDetail.swift, import the Composable Architecture, and start
         a stub of a reducer conformance.
         
-        @Code(name: "ContactDetailFeature.swift", file: 03-01-01-code-0000)
+        @Code(name: "ContactDetailFeature.swift", file: 02-04-01-code-0000)
       }
       
       @Step {
@@ -23,7 +23,7 @@
         ``ComposableArchitecture/ReducerProtocol``. The only state we currently need is the contact,
         and it can be `let` since we do not plan on mutating it from this screen.
         
-        @Code(name: "ContactDetailFeature.swift", file: 03-01-01-code-0001)
+        @Code(name: "ContactDetailFeature.swift", file: 02-04-01-code-0001)
       }
       
       @Step {
@@ -31,21 +31,21 @@
         ``ComposableArchitecture/ReducerProtocol``. There are not currently any actions that can
         be performed in this feature, so we will leave it empty.
         
-        @Code(name: "ContactDetailFeature.swift", file: 03-01-01-code-0002)
+        @Code(name: "ContactDetailFeature.swift", file: 02-04-01-code-0002)
       }
       
       @Step {
-        Implement a basic `reduce(into:state:)` method to fulfill that requirement of
+        Implement a basic `body` property to fulfill that requirement of
         ``ComposableArchitecture/ReducerProtocol``. Since there are no actions in this feature
         there is nothing we can do in the reducer. More will be added to this later.
         
-        @Code(name: "ContactDetailFeature.swift", file: 03-01-01-code-0003)
+        @Code(name: "ContactDetailFeature.swift", file: 02-04-01-code-0003)
       }
       
       @Step {
         Create a stub for a `ContactDetailView`.
         
-        @Code(name: "ContactDetailFeature.swift", file: 03-01-01-code-0004, reset: true)
+        @Code(name: "ContactDetailFeature.swift", file: 02-04-01-code-0004, reset: true)
       }
       
       @Step {
@@ -53,7 +53,7 @@
         `ContactDetailFeature` domain, allowing it to observe the feature's state changes and 
         send actions.
         
-        @Code(name: "ContactDetailFeature.swift", file: 03-01-01-code-0005)
+        @Code(name: "ContactDetailFeature.swift", file: 02-04-01-code-0005)
       }
       
       @Step {
@@ -61,14 +61,14 @@
         ``ComposableArchitecture/WithViewStore``. There is no real information to show in this 
         view now other than the contact's name, but more will be added later.
         
-        @Code(name: "ContactDetailFeature.swift", file: 03-01-01-code-0006)
+        @Code(name: "ContactDetailFeature.swift", file: 02-04-01-code-0006)
       }
       
       @Step {
         Add a preview so that we can see what the view looks like.
         
-        @Code(name: "ContactDetailFeature.swift", file: 03-01-01-code-0007) {
-          @Image(source: ch03-sub01-sec01-image-0000)
+        @Code(name: "ContactDetailFeature.swift", file: 02-04-01-code-0007) {
+          @Image(source: ch02-sub04-sec01-image-0000)
         }
       }
       
@@ -94,7 +94,7 @@
         Composable Architecture, and makes it easy and ergnomic to integrate stack navigation
         into your applications.
         
-        @Code(name: "ContactsFeature.swift", file: 03-01-02-code-0000, previousFile: 03-01-02-code-0000-previous) 
+        @Code(name: "ContactsFeature.swift", file: 02-04-02-code-0000, previousFile: 02-04-02-code-0000-previous) 
       }
       
       @Step {
@@ -106,7 +106,7 @@
         We will also handle the `.path` case in the reducer and return 
         ``ComposableArchitecture/EffectPublisher/none`` for now.
         
-        @Code(name: "ContactsFeature.swift", file: 03-01-02-code-0001) 
+        @Code(name: "ContactsFeature.swift", file: 02-04-02-code-0001) 
       }
       
       @Step {
@@ -117,7 +117,7 @@
         > Tip: Scroll down to the bottom of the code snippet to see the application of the
         > `forEach` operator.
         
-        @Code(name: "ContactsFeature.swift", file: 03-01-02-code-0002) 
+        @Code(name: "ContactsFeature.swift", file: 02-04-02-code-0002) 
       }
       
       @Step {
@@ -127,7 +127,7 @@
         You hand it a store that is scopped down to ``ComposableArchitecture/StackState`` and
         ``ComposableArchitecture/StackAction``, and it handles the rest.
         
-        @Code(name: "ContactsFeature.swift", file: 03-01-02-code-0003, previousFile: 03-01-02-code-0003-previous) 
+        @Code(name: "ContactsFeature.swift", file: 02-04-02-code-0003, previousFile: 02-04-02-code-0003-previous) 
       }
       
       @Step {
@@ -136,7 +136,7 @@
         destinations that can be naviated to. It is handled a store that is focused on the domain
         of just a single element in the stack.
         
-        @Code(name: "ContactsFeature.swift", file: 03-01-02-code-0004) 
+        @Code(name: "ContactsFeature.swift", file: 02-04-02-code-0004) 
       }
       
       @Step {
@@ -147,58 +147,78 @@
         > Warning: It is necessary to use the `init(state)` initializer on `NavigationLink`, 
         > instead of the `init(value:)` that comes with SwiftUI.
         
-        @Code(name: "ContactsFeature.swift", file: 03-01-02-code-0005, previousFile: 03-01-02-code-0005-previous) 
+        @Code(name: "ContactsFeature.swift", file: 02-04-02-code-0005, previousFile: 02-04-02-code-0005-previous) 
       }
       
       @Step {
         Run the application to see that we can now drill down one level, for each contact.
         
-        @Video(source: ch03-sub01-sec01-video-0000) 
+        @Video(source: ch02-sub04-sec01-video-0000) 
       }
     }
   }
     
-  @Section(title: "Drill-down multiple levels") {
+  @Section(title: "Deleting a contact") {
     @ContentAndMedia {
-      We now have some drill-down functionality in our contacts app, but currently we can only
-      go one layer deep. Let's enhance the domain of our feature a bit so that we can drill down
-      more layers. We will do this by adding an array of friends to the `Contact` data type, 
-      and display those friends in the contact's detail.
+      We now have some drill-down functionality in our contacts app, but currently there is no 
+      interaction between the detail screen and the contacts list. Let's change this by allowing
+      you to delete a contact from the detail screen. We will first prompt the user with an alert
+      asking them to confirm deletion, just as we did in <doc:02-02-MultipleDestinations>.
     }
     
     @Steps {
       @Step {
-        Go to ContactsFeature.swift and add a new field to the `Contact` data type so that it holds 
-        an array of friends. 
+        Go to ContactDetailFeature.swift to add more functionality to the reducer and view. We
+        will start by adding some optional ``ComposableArchitecture/PresentationState`` to represent
+        show the alert.
         
-        @Code(name: "ContactsFeature.swift", file: 03-01-03-code-0000, previousFile: 03-01-03-code-0000-previous) 
+        @Code(name: "ContactDetailFeature.swift", file: 02-04-03-code-0000, previousFile: 02-04-03-code-0000-previous) 
       }
       
       @Step {
-        Go to ContactDetailFeature.swift and add a list that holds each friend of the contact.
-        We will also wrap the rows in a `NavigationLink(state:)` so that tapping the row will 
-        drill down to another contact detail.
+        Add cases to `ContactDetailFeature.State` for all the things the user can do in the UI,
+        such as tapping the "Delete" button, as well as any actions inside the alert and the 
+        delegate actions for when we need to tell the parent feature to delete the contact.
         
-        @Code(name: "ContactDetailFeature.swift", file: 03-01-03-code-0001, previousFile: 03-01-03-code-0001-previous) 
+        > Note: The alert and delegate actions do not need an ID like was needed before. You will
+        > see why soon.
+        
+        @Code(name: "ContactDetailFeature.swift", file: 02-04-03-code-0001) 
       }
       
       @Step {
-        Go back to ContactsFeature.swift and update the preview to give each user at the root a 
-        couple of friends.
+        Implement the new actions in the `body` property. This is very similar to what we did in 
+        <doc:02-02-MultipleDestinations>. We will handle confirming of deletion by sending a 
+        delegate action and dismissing using the ``ComposableArchitecture/DismissEffect`` 
+        dependency, and we have extracted the alert state to its own helper to make it easier to 
+        test later.
         
-        @Code(name: "ContactDetailFeature.swift", file: 03-01-03-code-0002, previousFile: 03-01-03-code-0002-previous) 
+        @Code(name: "ContactDetailFeature.swift", file: 02-04-03-code-0002) 
       }
       
       @Step {
-        Run the preview to see that you can now drill down multiple layers.
+        Go to the `ContactDetailView` struct and add a button for deleting the contact, as well as
+        use the `alert(store:)` modifier to show an alert with the `alert` state becomes non-`nil`.
         
-        @Video(source: ch03-sub01-sec03-video-0000)
+        @Code(name: "ContactDetailFeature.swift", file: 02-04-03-code-0003, previousFile: 02-04-03-code-0003-previous) 
+      }
+      
+      @Step {
+        Go to ContactsFeature.swift and destructure the `.path` action in order to inspect what
+        is happening in each element of the stack. In particular, we want to listen for when a 
+        `.delegate(.confirmDeletion)` action is sent, and in that case remove the contact from the
+        array.
+        
+        @Code(name: "ContactsFeature.swift", file: 02-04-03-code-0004, previousFile: 02-04-03-code-0004-previous) 
+      }
+      
+      @Step {
+        Run the preview to see that the application works as expected. You can drill down to a 
+        contact, tap the delete button, confirm deletion, and then the detail is popped off the
+        stack and the contact is removed from the list.
+        
+        @Video(source: "ch02-sub04-sec03-video-0000") 
       }
     }
   }
-}
-
-@Comment {
-  * drill down multiple layers
-  * demonstrate deep linking
 }

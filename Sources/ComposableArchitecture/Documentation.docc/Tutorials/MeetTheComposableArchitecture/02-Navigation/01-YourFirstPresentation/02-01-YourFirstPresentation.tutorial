@@ -1,4 +1,4 @@
-@Tutorial(time: 0) {
+@Tutorial(time: 30) {
   @Intro(title: "Your first presentation") {
     The Composable Architecture offers a variety of tools to help you present child features from
     parent features. To begin, we will explore presenting a feature that is driven off of optional

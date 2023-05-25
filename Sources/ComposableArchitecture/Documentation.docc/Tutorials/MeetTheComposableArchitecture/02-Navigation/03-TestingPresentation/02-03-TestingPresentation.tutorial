@@ -1,4 +1,4 @@
-@Tutorial(time: 0) {
+@Tutorial(time: 40) {
   @Intro(title: "Testing presentation") {
     Learn how to write tests for features built using the library's navigation tools, including
     how multiple features integrate together and communicate with each other.

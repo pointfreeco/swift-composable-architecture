@@ -1,5 +1,5 @@
-@Tutorial(time: 0) {
-  @Intro(title: "Multiple destinations") {
+@Tutorial(time: 30) {
+  @Intro(title: "Multiple presentation destinations") {
     In the previous section you learned how model your domains so that a parent feature can 
     present a child feature. Now let's learn what has to be done if a parent feature wants to be
     able to present _many_ features.

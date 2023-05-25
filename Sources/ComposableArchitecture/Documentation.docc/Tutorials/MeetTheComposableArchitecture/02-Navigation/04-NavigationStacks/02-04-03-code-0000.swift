@@ -2,12 +2,16 @@ import ComposableArchitecture
 
 struct ContactDetailFeature: ReducerProtocol {
   struct State: Equatable {
+    @PresentationState var alert: AlertState<Action.Alert>?
     let contact: Contact
   }
   enum Action {
   }
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
-    switch action {
+  var body: some ReducerProtocolOf<Self> {
+    Reduce { state, action in
+      switch action {
+
+      }
     }
   }
 }
