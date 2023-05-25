@@ -9,7 +9,7 @@ struct StandupsApp: App {
       //     dependencies for the duration of the test (e.g. the data manager). We do not really
       //     recommend performing UI tests in general, but we do want to demonstrate how it can be
       //     done.
-      if ProcessInfo.processInfo.environment["UITesting"] == "true" {
+      if _XCTIsTesting || ProcessInfo.processInfo.environment["UITesting"] == "true" {
         UITestingView()
       } else {
         AppView(
