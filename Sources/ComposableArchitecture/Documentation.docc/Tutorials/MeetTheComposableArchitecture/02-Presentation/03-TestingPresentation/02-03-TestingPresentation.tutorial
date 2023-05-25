@@ -87,6 +87,12 @@
       @Step {
         Now we can predict the UUID geneated when the contact is created.
         
+        > Note: The initializer on UUID that allows providing an integer is provided by our 
+        > [swift-dependencies][swift-dependencies] library, which the Composable Architecture 
+        > depends on.
+        
+        [swift-dependencies]: http://github.com/pointfreeco/swift-dependencies
+        
         @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0009)
       }
       
@@ -170,13 +176,13 @@
         Start a new test case to test the same "Add Contact" user flow as above, but this time
         we will do it in the non-exhaustive style.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0016)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0000)
       }
       
       @Step {
         Set the test store's ``ComposableArchitecture/TestStore/exhaustivity`` to `.off`.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0017)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0001)
       }
       
       @Step {
@@ -184,20 +190,20 @@
         closure. In non-exhaustive test stores there is no need to assert on state changes if you
         do not want to.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0018)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0002)
       } 
       
       @Step {
         Emulate the user typing into the name text field of the contact, but again do not assert
         on any state changes in the child feature.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0019)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0003)
       }
       
       @Step {
         Emulate the user tapping the "Save" button in the child feature.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0020)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0004)
       }
       
       @Step {
@@ -206,15 +212,117 @@
         on that until all the actions have been received, and so we can do that by using
         ``ComposableArchitecture/TestStore/skipReceivedActions(strict:file:line:)-a4ri``.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0021)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0005)
       }
       
       @Step {
         Assert that the final state of the feature has a new contact added to the array and the
         `destination` state is `nil`'d out.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0022)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0006)
       }
+      
+      That's all it takes to write a very high level test covering the full user flow of adding
+      a new contact to the list. We don't need to assert on all of the nitty gritty details in
+      the child feature, and instead can just assert that the contact was indeed added after the
+      user completed their steps.
+    }
+  }
+  
+  @Section(title: "Testing the delete contact flow") {
+    @ContentAndMedia {
+      The last important piece of functionality to test is deleting a contact. This involves tapping
+      a button, asserting that an alert is shown, confirming the deletion through the alert, and
+      then asserting that indeed the contact was removed.
+    }
+    
+    @Steps {
+      @Step {
+        Start a new test method to test the delete flow.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0000)
+      }
+      
+      @Step {
+        Create a ``ComposableArchitecture/TestStore`` for testing the `ContactsFeature` reducer.
+        This time we do not need to override any dependencies because we do not expect any to be
+        used
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0001)
+      }
+      
+      @Step {
+        Start the initial state of the feature with some contacts already added to the array. This
+        will make it easier to test the deletion behavior.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0002)
+      }
+      
+      @Step {
+        Emulate the user tapping on the delete button by sending the `deleteButtonTapped` action.
+        We will test deleting the second contact, which has an ID of `UUID(1)`.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0003)
+      }
+      
+      @Step {
+        We expect that the state's `destination` field will be populated with the `alert` case 
+        since an alert should appear.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0004)
+      }
+      
+      @Step {
+        Technically we can simply repeat exactly what we did in the reducer for constructing the
+        alert. It's verbose, but it does get the test passing.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0005)
+      }
+      
+      However, that is a bit of a pain to repeat all of that work. There is a better way.
+      
+      @Step {
+        Go back to ContactsFeature.swift where the reducer is implemented. Extend `AlertState` 
+        with its `Action` generic constrained to `ContactsFeature.Action`. Add a static function
+        that constructs the alert, which allows us to reuse this logic in multiple places.
+        
+        @Code(name: "ContactsFeature.swift", file: 02-03-03-code-0006)
+      }
+      
+      @Step {
+        Make use of the new `deleteConfirmation` static alert function in the `CounterFeature` 
+        reducer, rather than building `AlertState` from scratch.
+        
+        @Code(name: "ContactsFeature.swift", file: 02-03-03-code-0007, previousFile: 02-03-03-code-0007-previous)
+      }
+      
+      @Step {
+        Go back to ContactsFeatureTests.swift and use the new `deleteConfirmation` static function
+        to assert against the alert, rather than building `AlertState` from scratch.
+        
+        Run the test to see this passes. This proves that when the delete button is tapped, an
+        alert is shown to the user.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0008, previousFile: 02-03-03-code-0008-previous)
+      }
+      
+      @Step {
+        Emulate the user confirming to delete contact by sending the `confirmDeletion` action 
+        in the alert.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0009)
+      }
+      
+      @Step {
+        Assert that the alert was dismissed and that the contact corresponding to the ID of 
+        `UUID(1)` was removed. 
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0010)
+      }
+      
+      That is all it takes to test the deletion flow. Run the test suite to see everything passes,
+      proving that when the user taps the confirmation button in the alert that indeed the contact
+      will be removed.
     }
   }
 }
