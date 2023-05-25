@@ -7,12 +7,12 @@ struct DataManager: Sendable {
 }
 
 extension DataManager: DependencyKey {
-  static let liveValue = DataManager(
+  static let liveValue = Self(
     load: { url in try Data(contentsOf: url) },
     save: { data, url in try data.write(to: url) }
   )
 
-  static let testValue = DataManager(
+  static let testValue = Self(
     load: unimplemented("DataManager.load"),
     save: unimplemented("DataManager.save")
   )
@@ -26,9 +26,9 @@ extension DependencyValues {
 }
 
 extension DataManager {
-  static func mock(initialData: Data? = nil) -> DataManager {
+  static func mock(initialData: Data? = nil) -> Self {
     let data = LockIsolated(initialData)
-    return DataManager(
+    return Self(
       load: { _ in
         guard let data = data.value
         else {
@@ -41,7 +41,7 @@ extension DataManager {
     )
   }
 
-  static let failToWrite = DataManager(
+  static let failToWrite = Self(
     load: { url in Data() },
     save: { data, url in
       struct SaveError: Error {}
@@ -49,7 +49,7 @@ extension DataManager {
     }
   )
 
-  static let failToLoad = DataManager(
+  static let failToLoad = Self(
     load: { _ in
       struct LoadError: Error {}
       throw LoadError()

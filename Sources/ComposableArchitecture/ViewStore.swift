@@ -451,6 +451,15 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       .projectedValue[get: .init(rawValue: get), send: .init(rawValue: valueToAction)]
   }
 
+  @_disfavoredOverload
+  func binding<Value>(
+    get: @escaping (ViewState) -> Value,
+    compactSend valueToAction: @escaping (Value) -> ViewAction?
+  ) -> Binding<Value> {
+    ObservedObject(wrappedValue: self)
+      .projectedValue[get: .init(rawValue: get), send: .init(rawValue: valueToAction)]
+  }
+
   /// Derives a binding from the store that prevents direct writes to state and instead sends
   /// actions to the store.
   ///
@@ -542,13 +551,15 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   }
 
   private subscript<Value>(
-    get state: HashableWrapper<(ViewState) -> Value>,
-    send action: HashableWrapper<(Value) -> ViewAction>
+    get fromState: HashableWrapper<(ViewState) -> Value>,
+    send toAction: HashableWrapper<(Value) -> ViewAction?>
   ) -> Value {
-    get { state.rawValue(self.state) }
+    get { fromState.rawValue(self.state) }
     set {
       BindingLocal.$isActive.withValue(true) {
-        self.send(action.rawValue(newValue))
+        if let action = toAction.rawValue(newValue) {
+          self.send(action)
+        }
       }
     }
   }

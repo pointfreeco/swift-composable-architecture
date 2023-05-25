@@ -23,36 +23,38 @@ final class PresentationReducerTests: BaseTCATestCase {
     XCTAssertNil(parent.child)
   }
 
-  func testPresentationStateSubscriptCase_Unexpected() {
-    enum Child: Equatable {
-      case int(Int)
-      case text(String)
+  #if DEBUG
+    func testPresentationStateSubscriptCase_Unexpected() {
+      enum Child: Equatable {
+        case int(Int)
+        case text(String)
+      }
+
+      struct Parent: Equatable {
+        @PresentationState var child: Child?
+      }
+
+      var parent = Parent(child: .int(42))
+
+      XCTExpectFailure {
+        parent.$child[case: /Child.text]?.append("!")
+      } issueMatcher: {
+        $0.compactDescription == """
+          Can't modify unrelated case "int"
+          """
+      }
+
+      XCTExpectFailure {
+        parent.$child[case: /Child.text] = nil
+      } issueMatcher: {
+        $0.compactDescription == """
+          Can't modify unrelated case "int"
+          """
+      }
+
+      XCTAssertEqual(parent.child, .int(42))
     }
-
-    struct Parent: Equatable {
-      @PresentationState var child: Child?
-    }
-
-    var parent = Parent(child: .int(42))
-
-    XCTExpectFailure {
-      parent.$child[case: /Child.text]?.append("!")
-    } issueMatcher: {
-      $0.compactDescription == """
-        Can't modify unrelated case "int"
-        """
-    }
-
-    XCTExpectFailure {
-      parent.$child[case: /Child.text] = nil
-    } issueMatcher: {
-      $0.compactDescription == """
-        Can't modify unrelated case "int"
-        """
-    }
-
-    XCTAssertEqual(parent.child, .int(42))
-  }
+  #endif
 
   func testPresentation_parentDismissal() async {
     struct Child: Reducer {

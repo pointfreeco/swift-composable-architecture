@@ -17,32 +17,34 @@ final class StackReducerTests: BaseTCATestCase {
     XCTAssertTrue(stack.isEmpty)
   }
 
-  func testStackStateSubscriptCase_Unexpected() {
-    enum Element: Equatable {
-      case int(Int)
-      case text(String)
+  #if DEBUG
+    func testStackStateSubscriptCase_Unexpected() {
+      enum Element: Equatable {
+        case int(Int)
+        case text(String)
+      }
+
+      var stack = StackState<Element>([.int(42)])
+
+      XCTExpectFailure {
+        stack[id: 0, case: /Element.text]?.append("!")
+      } issueMatcher: {
+        $0.compactDescription == """
+          Can't modify unrelated case "int"
+          """
+      }
+
+      XCTExpectFailure {
+        stack[id: 0, case: /Element.text] = nil
+      } issueMatcher: {
+        $0.compactDescription == """
+          Can't modify unrelated case "int"
+          """
+      }
+
+      XCTAssertEqual(Array(stack), [.int(42)])
     }
-
-    var stack = StackState<Element>([.int(42)])
-
-    XCTExpectFailure {
-      stack[id: 0, case: /Element.text]?.append("!")
-    } issueMatcher: {
-      $0.compactDescription == """
-        Can't modify unrelated case "int"
-        """
-    }
-
-    XCTExpectFailure {
-      stack[id: 0, case: /Element.text] = nil
-    } issueMatcher: {
-      $0.compactDescription == """
-        Can't modify unrelated case "int"
-        """
-    }
-
-    XCTAssertEqual(Array(stack), [.int(42)])
-  }
+  #endif
 
   func testCustomDebugStringConvertible() {
     @Dependency(\.stackElementID) var stackElementID

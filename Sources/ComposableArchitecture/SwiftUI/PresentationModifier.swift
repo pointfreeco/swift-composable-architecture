@@ -106,6 +106,7 @@ extension View {
   ) -> some View {
     let store = store.invalidate { $0.wrappedValue.flatMap(toDestinationState) == nil }
     WithViewStore(store, observe: { $0 }, removeDuplicates: { toID($0) == toID($1) }) { viewStore in
+      let id = toID(viewStore.state)
       body(
         self,
         viewStore.binding(
@@ -114,7 +115,9 @@ extension View {
               ? toID($0).map { AnyIdentifiable(Identified($0) { $0 }) }
               : nil
           },
-          send: .dismiss
+          compactSend: {
+            $0 == nil && toID(viewStore.state) == id ? .dismiss : nil
+          }
         ),
         DestinationContent(
           store: store.scope(

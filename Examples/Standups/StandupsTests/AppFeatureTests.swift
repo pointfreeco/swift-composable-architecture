@@ -144,7 +144,7 @@ final class AppFeatureTests: XCTestCase {
       $0.path.pop(to: 0)
       $0.path[id: 0, case: /AppFeature.Path.State.detail]?.standup.meetings = [
         Meeting(
-          id: Meeting.ID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+          id: Meeting.ID(UUID(0)),
           date: Date(timeIntervalSince1970: 1_234_567_890),
           transcript: "I completed the project"
         )
