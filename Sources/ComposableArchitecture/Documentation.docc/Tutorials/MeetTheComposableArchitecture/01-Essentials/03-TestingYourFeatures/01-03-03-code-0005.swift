@@ -15,7 +15,7 @@ final class CounterFeatureTests: XCTestCase {
       $0.isLoading = false
       $0.fact = "???"
     }
-    // 🛑 A state change does not match expectation: …
+    // ❌ A state change does not match expectation: …
     //
     //       CounterFeature.State(
     //         count: 0,

@@ -105,15 +105,16 @@ import XCTestDynamicOverlay
 /// }
 /// ```
 ///
-/// ```
-/// 🛑 A state change does not match expectation: …
-///
-///      TestStoreFailureTests.State(
-///     −   count: 42
-///     +   count: 1
-///      )
-///
-/// (Expected: −, Actual: +)
+/// > ❌ Failure: A state change does not match expectation: …
+/// >
+/// > ```diff
+/// >  TestStoreFailureTests.State(
+/// > -   count: 42
+/// > +   count: 1
+/// >  )
+/// > ```
+/// >
+/// > (Expected: −, Actual: +)
 /// ```
 ///
 /// For a more complex example, consider the following bare-bones search feature that uses a clock
@@ -203,13 +204,13 @@ import XCTestDynamicOverlay
 /// If we did not assert that the `searchResponse` action was received, we would get the following
 /// test failure:
 ///
-/// ```
-/// 🛑 The store received 1 unexpected action after this one: …
-///
-///     Unhandled actions: [
-///       [0]: Search.Action.searchResponse
-///     ]
-/// ```
+/// > ❌ Failure: The store received 1 unexpected action after this one: …
+/// >
+/// > ```
+/// > Unhandled actions: [
+/// >   [0]: Search.Action.searchResponse
+/// > ]
+/// > ```
 ///
 /// This helpfully lets us know that we have no asserted on everything that happened in the feature,
 /// which could be hiding a bug from us.
@@ -217,13 +218,13 @@ import XCTestDynamicOverlay
 /// Or if we had sent another action before handling the effect's action we would have also gotten
 /// a test failure:
 ///
-/// ```
-/// 🛑 Must handle 1 received action before sending an action: …
-///
-///     Unhandled actions: [
-///       [0]: Search.Action.searchResponse
-///     ]
-/// ```
+/// > ❌ Failure: Must handle 1 received action before sending an action: …
+/// >
+/// > ```
+/// > Unhandled actions: [
+/// >   [0]: Search.Action.searchResponse
+/// > ]
+/// > ```
 ///
 /// All of these types of failures help you prove that you know exactly how your feature evolves as
 /// actions are sent into the system. If the library did not produce a test failure in these
@@ -384,35 +385,35 @@ import XCTestDynamicOverlay
 /// When this is run you will get grey, informational boxes on each assertion where some change
 /// wasn't fully asserted on:
 ///
-/// ```
-/// ◽️ A state change does not match expectation: …
-///
-///      App.State(
-///        authenticatedTab: .loggedOut(
-///          Login.State(
-///    −       isLoading: false
-///    +       isLoading: true,
-///            …
-///          )
-///        )
-///      )
-///
-///    (Expected: −, Actual: +)
-///
-/// ◽️ Skipped receiving .login(.loginResponse(.success))
-///
-/// ◽️ A state change does not match expectation: …
-///
-///      App.State(
-///    −   authenticatedTab: .loggedOut(…)
-///    +   authenticatedTab: .loggedIn(
-///    +     Profile.State(…)
-///    +   ),
-///        …
-///      )
-///
-///    (Expected: −, Actual: +)
-/// ```
+/// > ◽️ Expected failure: A state change does not match expectation: …
+/// >
+/// > ```diff
+/// >   App.State(
+/// >     authenticatedTab: .loggedOut(
+/// >       Login.State(
+/// > -       isLoading: false
+/// > +       isLoading: true,
+/// >         …
+/// >       )
+/// >     )
+/// >   )
+/// > ```
+/// >
+/// > Skipped receiving .login(.loginResponse(.success))
+/// >
+/// > A state change does not match expectation: …
+/// >
+/// > ```diff
+/// >   App.State(
+/// > -   authenticatedTab: .loggedOut(…)
+/// > +   authenticatedTab: .loggedIn(
+/// > +     Profile.State(…)
+/// > +   ),
+/// >     …
+/// >   )
+/// > ```
+/// >
+/// > (Expected: −, Actual: +)
 ///
 /// The test still passes, and none of these notifications are test failures. They just let you know
 /// what things you are not explicitly asserting against, and can be useful to see when tracking

@@ -79,11 +79,11 @@ import XCTestDynamicOverlay
 /// store.send(.refresh) { $0.isLoading = true }
 ///
 /// // Assert against failure
-/// await store.receive(.refreshResponse(.failure(RefreshFailure())) { // ❌
+/// await store.receive(.refreshResponse(.failure(RefreshFailure())) { // 🛑
 ///   $0.errorLabelText = "An error occurred."
 ///   $0.isLoading = false
 /// }
-/// // ❌ 'RefreshFailure' is not equatable
+/// // 🛑 'RefreshFailure' is not equatable
 /// ```
 ///
 /// To get a passing test, explicitly conform your custom error to the `Equatable` protocol:

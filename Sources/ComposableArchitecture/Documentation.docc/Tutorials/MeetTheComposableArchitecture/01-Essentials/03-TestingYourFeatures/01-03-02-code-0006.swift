@@ -14,7 +14,7 @@ final class CounterFeatureTests: XCTestCase {
     await store.receive(.timerTick) {
       $0.count = 1
     }
-    // 🛑 Expected to receive an action, but received none after 0.1 seconds.
+    // ❌ Expected to receive an action, but received none after 0.1 seconds.
     await store.send(.toggleTimerButtonTapped) {
       $0.isTimerRunning = false
     }

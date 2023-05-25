@@ -189,7 +189,8 @@ public final class Store<State, Action> {
   ///   AppFeature()
   /// }
   ///
-  /// // Construct a login view by scoping the store to one that works with only login domain.
+  /// // Construct a login view by scoping the store
+  /// // to one that works with only login domain.
   /// LoginView(
   ///   store: store.scope(
   ///     state: \.login,
