@@ -1,9 +1,9 @@
-# ``ComposableArchitecture/Store/scope(state:action:)``
+# ``ComposableArchitecture/Store/scope(state:action:)-9iai9``
 
 ## Topics
 
 ### Overloads
 
-- ``scope(state:)``
+- ``scope(state:action:)-hei8``
 - ``stateless``
 - ``actionless``
