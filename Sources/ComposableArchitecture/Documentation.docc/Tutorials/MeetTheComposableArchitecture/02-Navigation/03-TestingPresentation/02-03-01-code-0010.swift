@@ -20,7 +20,6 @@ final class ContactsFeatureTests: XCTestCase {
       )
     }
     await store.send(.destination(.presented(.addContact(.setName("Blob Jr."))))) {
-      
     }
   }
 }

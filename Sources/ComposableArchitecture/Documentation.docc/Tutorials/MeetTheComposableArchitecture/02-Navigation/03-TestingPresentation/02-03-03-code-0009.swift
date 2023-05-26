@@ -21,7 +21,6 @@ final class ContactsFeatureTests: XCTestCase {
       state.destination = .alert(.deleteConfirmation(id: id))
     }
     await store.send(.destination(.presented(.alert(.confirmDeletion(id: UUID(1)))))) {
-      
     }
   }
 }

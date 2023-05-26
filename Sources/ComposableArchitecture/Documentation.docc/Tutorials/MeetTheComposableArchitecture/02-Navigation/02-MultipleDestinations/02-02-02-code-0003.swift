@@ -5,7 +5,6 @@ extension ContactsFeature {
       case alert(AlertState<ContactsFeature.Action.Alert>)
     }
     enum Action {
-      
     }
   }
 }

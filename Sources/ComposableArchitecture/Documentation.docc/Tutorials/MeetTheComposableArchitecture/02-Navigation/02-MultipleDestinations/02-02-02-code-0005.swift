@@ -9,7 +9,6 @@ extension ContactsFeature {
       case alert(ContactsFeature.Action.Alert)
     }
     var body: some ReducerProtocolOf<Self> {
-      
     }
   }
 }

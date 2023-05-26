@@ -28,7 +28,6 @@ final class ContactsFeatureTests: XCTestCase {
         .presented(.addContact(.delegate(.saveContact(Contact(id: UUID(0), name: "Blob Jr.")))))
       )
     ) {
-      
     }
   }
 }

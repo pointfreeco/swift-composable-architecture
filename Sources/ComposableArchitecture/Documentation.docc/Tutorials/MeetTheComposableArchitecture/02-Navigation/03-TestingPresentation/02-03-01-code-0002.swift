@@ -11,7 +11,6 @@ final class ContactsFeatureTests: XCTestCase {
     }
 
     await store.send(.addButtonTapped) {
-
     }
   }
 }

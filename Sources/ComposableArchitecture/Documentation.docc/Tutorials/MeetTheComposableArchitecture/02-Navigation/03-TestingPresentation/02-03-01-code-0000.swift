@@ -6,6 +6,5 @@ import XCTest
 @MainActor
 final class ContactsFeatureTests: XCTestCase {
   func testAddFlow() async {
-    
   }
 }

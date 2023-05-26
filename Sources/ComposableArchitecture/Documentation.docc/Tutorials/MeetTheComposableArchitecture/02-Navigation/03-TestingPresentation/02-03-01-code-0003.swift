@@ -12,7 +12,6 @@ final class ContactsFeatureTests: XCTestCase {
 
     await store.send(.addButtonTapped) {
       $0.destination = .addContact(
-        
       )
     }
   }

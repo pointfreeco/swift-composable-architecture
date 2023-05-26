@@ -18,7 +18,6 @@ final class ContactsFeatureTests: XCTestCase {
     }
 
     await store.send(.deleteButtonTapped(id: UUID(1))) {
-
     }
   }
 }
