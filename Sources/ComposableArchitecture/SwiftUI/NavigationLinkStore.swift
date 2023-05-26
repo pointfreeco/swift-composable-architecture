@@ -133,9 +133,9 @@ public struct NavigationLinkStore<
         get: { self.viewStore.state },
         set: {
           if $0 {
-            self.onTap()
+            withTransaction($1, self.onTap)
           } else if self.viewStore.state {
-            self.viewStore.send(.dismiss)
+            self.viewStore.send(.dismiss, transaction: $1)
           }
         }
       )
