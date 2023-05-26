@@ -798,6 +798,92 @@ final class StoreTests: BaseTCATestCase {
     _ = store.send(.tap)
     XCTAssertEqual(store.state.value.date, Date(timeIntervalSinceReferenceDate: 1_234_567_890))
   }
+
+  func testPresentationScope() async {
+    struct Feature: ReducerProtocol {
+      struct State: Equatable {
+        var count = 0
+        @PresentationState var child: Feature.State?
+      }
+      enum Action {
+        case child(PresentationAction<Feature.Action>)
+        case tap
+      }
+      var body: some ReducerProtocolOf<Self> {
+        Reduce { state, action in
+          switch action {
+          case .child:
+            return .none
+          case .tap:
+            state.count += 1
+            return .none
+          }
+        }
+        .ifLet(\.$child, action: /Action.child) {
+          Feature()
+        }
+      }
+    }
+
+    let store = Store(initialState: Feature.State(child: Feature.State(child: Feature.State()))) {
+      Feature()
+    }
+    var removeDuplicatesCount1 = 0
+    var stateScopeCount1 = 0
+    var removeDuplicatesCount2 = 0
+    var stateScopeCount2 = 0
+    var viewStoreCount1 = 0
+    var viewStoreCount2 = 0
+    let childStore1 = store.scope(
+      state: {
+        stateScopeCount1 += 1
+        return $0.$child
+      },
+      action: { .child($0) }
+    )
+    let childStore2 = store.scope(
+      state: {
+        stateScopeCount2 += 1
+        return $0.$child
+      },
+      action: { .child($0) }
+    )
+    let childViewStore1 = ViewStore(
+      childStore1,
+      observe: { $0 },
+      removeDuplicates: { lhs, rhs in
+        removeDuplicatesCount1 += 1
+        return lhs == rhs
+      }
+    )
+    let childViewStore2 = ViewStore(
+      childStore2,
+      observe: { $0 },
+      removeDuplicates: { lhs, rhs in
+        removeDuplicatesCount2 += 1
+        return lhs == rhs
+      }
+    )
+    let c1 = childViewStore1.objectWillChange.sink { _ in viewStoreCount1 += 1 }
+    let c2 = childViewStore1.objectWillChange.sink { _ in viewStoreCount2 += 1 }
+
+    _ = store.send(.tap)
+    XCTAssertEqual(removeDuplicatesCount1, 0)
+    XCTAssertEqual(stateScopeCount1, 2)
+    XCTAssertEqual(viewStoreCount1, 0)
+    XCTAssertEqual(removeDuplicatesCount2, 0)
+    XCTAssertEqual(stateScopeCount2, 2)
+    XCTAssertEqual(viewStoreCount2, 0)
+    _ = store.send(.tap)
+    XCTAssertEqual(removeDuplicatesCount1, 0)
+    XCTAssertEqual(stateScopeCount1, 3)
+    XCTAssertEqual(viewStoreCount1, 0)
+    XCTAssertEqual(removeDuplicatesCount2, 0)
+    XCTAssertEqual(stateScopeCount2, 3)
+    XCTAssertEqual(viewStoreCount2, 0)
+    _ = store.send(.child(.dismiss))
+    _ = (childViewStore1, childViewStore2, c1, c2)
+  }
 }
 
 private struct Count: TestDependencyKey {

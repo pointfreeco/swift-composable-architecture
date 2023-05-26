@@ -323,6 +323,15 @@ public final class Store<State, Action> {
     self.scope(state: toChildState, action: fromChildAction, removeDuplicates: nil)
   }
 
+  /// Scopes the store to one that exposes child state and actions.
+  ///
+  /// This is a special overload of ``scope(state:action:)-9iai9`` that works specifically for
+  /// ``PresentationState`` and ``PresentationAction``.
+  ///
+  /// - Parameters:
+  ///   - toChildState: A function that transforms `State` into ``PresentationState``.
+  ///   - fromChildAction: A function that transforms ``PresentationAction`` into `Action`.
+  /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<ChildState, ChildAction>(
     state toChildState: @escaping (State) -> PresentationState<ChildState>,
     action fromChildAction: @escaping (PresentationAction<ChildAction>) -> Action
