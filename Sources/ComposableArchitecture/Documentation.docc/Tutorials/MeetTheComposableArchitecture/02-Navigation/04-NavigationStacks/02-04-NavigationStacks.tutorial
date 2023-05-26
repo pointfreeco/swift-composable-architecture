@@ -91,7 +91,7 @@
         pushed onto the stack.
         
         > Note: The ``ComposableArchitecture/StackState`` type is specifically made for the 
-        Composable Architecture, and makes it easy and ergnomic to integrate stack navigation
+        Composable Architecture, and makes it easy and ergonomic to integrate stack navigation
         into your applications.
         
         @Code(name: "ContactsFeature.swift", file: 02-04-02-code-0000, previousFile: 02-04-02-code-0000-previous) 
@@ -124,7 +124,7 @@
         Go to the `ContentView` that holds the view for the contacts list. Swap out the
         `NavigationStore` for a ``ComposableArchitecture/NavigationStackStore``. This is a type
         specifically tuned for driving stacks from a ``ComposableArchitecture/Store``. 
-        You hand it a store that is scopped down to ``ComposableArchitecture/StackState`` and
+        You hand it a store that is scoped down to ``ComposableArchitecture/StackState`` and
         ``ComposableArchitecture/StackAction``, and it handles the rest.
         
         @Code(name: "ContactsFeature.swift", file: 02-04-02-code-0003, previousFile: 02-04-02-code-0003-previous) 
@@ -133,7 +133,7 @@
       @Step {
         ``ComposableArchitecture/NavigationStackStore`` takes two trailing closures. The first is
         for the root of the stack, which is our list of contacts. The second is to describe the
-        destinations that can be naviated to. It is handled a store that is focused on the domain
+        destinations that can be navigated to. It is handled a store that is focused on the domain
         of just a single element in the stack.
         
         @Code(name: "ContactsFeature.swift", file: 02-04-02-code-0004) 
@@ -141,7 +141,7 @@
       
       @Step {
         Wrap the row in the contacts list in a `NavigationLink`, using the special 
-        `NavigationLink(state:)` initializer that ships with this libary. We are also applying a
+        `NavigationLink(state:)` initializer that ships with this library. We are also applying a
         `.borderless` button style so that we can have the delete button in the row too.
         
         > Warning: It is necessary to use the `init(state)` initializer on `NavigationLink`, 

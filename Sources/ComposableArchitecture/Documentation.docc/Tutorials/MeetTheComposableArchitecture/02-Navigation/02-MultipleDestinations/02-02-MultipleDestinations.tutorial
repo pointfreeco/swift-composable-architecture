@@ -44,7 +44,7 @@
       }
       
       Now that we have new state modeled in our domain for the presentation of the alert, we can
-      properly implement the `deleteButttonTapped` action.
+      properly implement the `deleteButtonTapped` action.
       
       @Step {
         When the delete button is tapped we can populate the `alert` state in order to ask the user
@@ -75,7 +75,7 @@
       purpose.
       
       @Step {
-        Add the `.alert(store:)` view modifier to the `ContactsView`, and hand it a store that is
+        Add the `alert(store:)` view modifier to the `ContactsView`, and hand it a store that is
         scoped to the alert domain.
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0006, previousFile: 02-02-01-code-0006-previous)
@@ -228,8 +228,8 @@
       enum drives the sheet and alert.
       
       @Step {
-        There is an additional overload of `.sheet(store:)` and `.alert(store:)` that takes two
-        extra arguments: a state transformation for extracting a particular case from the 
+        There is an additional overload of `sheet(store:)` and `alert(store:)` that takes two extra
+        arguments: a state transformation for extracting a particular case from the 
         `Destination.State` enum, and an action transformation for embedding a child action into
         a particular case of the `Destination.Action` enum.
         
@@ -253,7 +253,7 @@
       }
       
       @Step {
-        The same can be done for the `.alert(store:)` view modifier.
+        The same can be done for the `alert(store:)` view modifier.
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0017)
       }

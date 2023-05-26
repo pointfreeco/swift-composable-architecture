@@ -85,7 +85,7 @@
       }
       
       @Step {
-        Now we can predict the UUID geneated when the contact is created.
+        Now we can predict the UUID generated when the contact is created.
         
         > Note: The initializer on UUID that allows providing an integer is provided by our 
         > [swift-dependencies][swift-dependencies] library, which the Composable Architecture 
@@ -100,7 +100,7 @@
       up for the "Add Contact" feature. Let's keep asserting on more of the user flow.
       
       @Step {
-        Emulate the user typing ito the name text field of the contact. The trailing closure is
+        Emulate the user typing into the name text field of the contact. The trailing closure is
         where we can assert on how state changed after sending the action.
         
         @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0010)
@@ -129,7 +129,7 @@
       }
       
       @Step {
-        Emulate the delgate action `saveContact` being received by the test store. This action is
+        Emulate the delegate action `saveContact` being received by the test store. This action is
         sent from the `AddContactFeature` when the "Save" button is tapped.
         
         @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0013)
