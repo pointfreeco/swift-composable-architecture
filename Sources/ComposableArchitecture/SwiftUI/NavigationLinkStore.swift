@@ -52,14 +52,14 @@ public struct NavigationLinkStore<
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where State == DestinationState, Action == DestinationAction {
-    let store = store.invalidate { $0.wrappedValue == nil }
-    self.store = store
-    self.viewStore = ViewStore(store.scope(state: { $0.wrappedValue != nil }, action: { $0 }))
-    self.toDestinationState = { $0 }
-    self.fromDestinationAction = { $0 }
-    self.onTap = onTap
-    self.destination = destination
-    self.label = label()
+    self.init(
+      store,
+      state: { $0 },
+      action: { $0 },
+      onTap: onTap,
+      destination: destination,
+      label: label
+    )
   }
 
   public init(
@@ -92,14 +92,15 @@ public struct NavigationLinkStore<
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where State == DestinationState, Action == DestinationAction, State: Identifiable {
-    let store = store.invalidate { $0.wrappedValue?.id != id }
-    self.store = store
-    self.viewStore = ViewStore(store.scope(state: { $0.wrappedValue?.id == id }, action: { $0 }))
-    self.toDestinationState = { $0 }
-    self.fromDestinationAction = { $0 }
-    self.onTap = onTap
-    self.destination = destination
-    self.label = label()
+    self.init(
+      store,
+      state: { $0 },
+      action: { $0 },
+      id: id,
+      onTap: onTap,
+      destination: destination,
+      label: label
+    )
   }
 
   public init(
