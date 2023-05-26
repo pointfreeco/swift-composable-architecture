@@ -21,13 +21,13 @@ import Foundation
 /// }
 /// ```
 ///
-/// …and then use the ``scope(state:action:)`` method to derive more focused stores that can be
-/// passed to subviews.
+/// …and then use the ``scope(state:action:)-9iai9`` method to derive more focused stores that can
+/// be passed to subviews.
 ///
 /// ### Scoping
 ///
-/// The most important operation defined on ``Store`` is the ``scope(state:action:)`` method, which
-/// allows you to transform a store into one that deals with child state and actions. This is
+/// The most important operation defined on ``Store`` is the ``scope(state:action:)-9iai9`` method,
+/// which allows you to transform a store into one that deals with child state and actions. This is
 /// necessary for passing stores to subviews that only care about a small portion of the entire
 /// application's domain.
 ///
@@ -48,8 +48,8 @@ import Foundation
 /// }
 /// ```
 ///
-/// We can construct a view for each of these domains by applying ``scope(state:action:)`` to a
-/// store that holds onto the full app domain in order to transform it into a store for each
+/// We can construct a view for each of these domains by applying ``scope(state:action:)-9iai9`` to
+/// a store that holds onto the full app domain in order to transform it into a store for each
 /// sub-domain:
 ///
 /// ```swift
@@ -123,8 +123,8 @@ import Foundation
 /// The store performs some basic thread safety checks in order to help catch mistakes. Stores
 /// constructed via the initializer ``init(initialState:reducer:prepareDependencies:)`` are assumed
 /// to run only on the main thread, and so a check is executed immediately to make sure that is the
-/// case. Further, all actions sent to the store and all scopes (see ``scope(state:action:)``) of
-/// the store are also checked to make sure that work is performed on the main thread.
+/// case. Further, all actions sent to the store and all scopes (see ``scope(state:action:)-9iai9``)
+/// of the store are also checked to make sure that work is performed on the main thread.
 public final class Store<State, Action> {
   private var bufferedActions: [Action] = []
   @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] = [:]
@@ -322,6 +322,15 @@ public final class Store<State, Action> {
     self.scope(state: toChildState, action: fromChildAction, removeDuplicates: nil)
   }
 
+  /// Scopes the store to one that exposes child state and actions.
+  ///
+  /// This is a special overload of ``scope(state:action:)-9iai9`` that works specifically for
+  /// ``PresentationState`` and ``PresentationAction``.
+  ///
+  /// - Parameters:
+  ///   - toChildState: A function that transforms `State` into ``PresentationState``.
+  ///   - fromChildAction: A function that transforms ``PresentationAction`` into `Action`.
+  /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<ChildState, ChildAction>(
     state toChildState: @escaping (State) -> PresentationState<ChildState>,
     action fromChildAction: @escaping (PresentationAction<ChildAction>) -> Action
