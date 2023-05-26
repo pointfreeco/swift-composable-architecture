@@ -581,6 +581,18 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
 public typealias ViewStoreOf<R: Reducer> = ViewStore<R.State, R.Action>
 
 extension ViewStore where ViewState: Equatable {
+  /// Initializes a view store from a store which observes changes to state.
+  ///
+  /// It is recommended that the `observe` argument transform the store's state into the bare
+  /// minimum of data needed for the feature to do its job in order to not hinder performance.
+  /// This is especially true for root level features, and less important for leaf features.
+  ///
+  /// To read more about this performance technique, read the <doc:Performance> article.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - toViewState: A transformation of `ViewState` to the state that will be observed for
+  ///   changes.
   public convenience init<State>(
     _ store: Store<State, ViewAction>,
     observe toViewState: @escaping (State) -> ViewState
@@ -588,6 +600,18 @@ extension ViewStore where ViewState: Equatable {
     self.init(store, observe: toViewState, removeDuplicates: ==)
   }
 
+  /// Initializes a view store from a store which observes changes to state.
+  ///
+  /// It is recommended that the `observe` argument transform the store's state into the bare
+  /// minimum of data needed for the feature to do its job in order to not hinder performance.
+  /// This is especially true for root level features, and less important for leaf features.
+  ///
+  /// To read more about this performance technique, read the <doc:Performance> article.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - toViewState: A transformation of `ViewState` to the state that will be observed for
+  ///   changes.
   public convenience init<State, Action>(
     _ store: Store<State, Action>,
     observe toViewState: @escaping (State) -> ViewState,

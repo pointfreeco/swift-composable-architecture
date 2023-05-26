@@ -107,14 +107,14 @@ await store.send(.incrementButtonTapped) {
 }
 ```
 
-```
-❌ A state change does not match expectation: …
-
-  − TestStoreTests.State(count: 999)
-  + TestStoreTests.State(count: 1)
-
-(Expected: −, Actual: +)
-```
+> ❌ Failure: A state change does not match expectation: …
+>
+> ```diff
+> - TestStoreTests.State(count: 999)
+> + TestStoreTests.State(count: 1)
+> ```
+>
+> (Expected: −, Actual: +)
 
 You can also send multiple actions to emulate a script of user actions and assert each step of the
 way how the state evolved:
@@ -169,7 +169,7 @@ state mutation, like so:
 
 ```swift
 store.send(.incrementButtonTapped) {
-  $0 = store.state  // ❌ store.state is the previous state, not new state.
+  $0 = store.state  // ❌ store.state is the previous, not current, state.
 }
 ```
 
@@ -239,10 +239,8 @@ await store.send(.startTimerButtonTapped)
 However, if we run the test as-is with no further interactions with the test store, we get a
 failure:
 
-```
-❌ An effect returned for this action is still running.
-   It must complete before the end of the test. …
-```
+> ❌ Failure: An effect returned for this action is still running. It must complete before the end
+> of the test. …
 
 This is happening because ``TestStore`` requires you to exhaustively prove how the entire system
 of your feature evolves over time. If an effect is still running when the test finishes and the
@@ -264,9 +262,7 @@ await store.receive(.timerTick) {
 However, if we run this test we still get a failure because we asserted a `timerTick` action was
 going to be received, but after waiting around for a small amount of time no action was received:
 
-```
-❌ Expected to receive an action, but received none after 0.1 seconds.
-```
+> ❌ Failure: Expected to receive an action, but received none after 0.1 seconds.
 
 This is because our timer is on a 1 second interval, and by default
 ``TestStore/receive(_:timeout:assert:file:line:)-1rwdd`` only waits for a fraction of a second. This
@@ -512,35 +508,35 @@ await store.receive(.login(.delegate(.didLogin))) {
 When this is run you will get grey, informational boxes on each assertion where some change wasn't
 fully asserted on:
 
-```
-◽️ A state change does not match expectation: …
-
-     AppFeature.State(
-       authenticatedTab: .loggedOut(
-         Login.State(
-   −       isLoading: false
-   +       isLoading: true,
-           …
-         )
-       )
-     )
-   
-   (Expected: −, Actual: +)
-
-◽️ Skipped receiving .login(.loginResponse(.success))
-
-◽️ A state change does not match expectation: …
-
-     AppFeature.State(
-   −   authenticatedTab: .loggedOut(…)
-   +   authenticatedTab: .loggedIn(
-   +     Profile.State(…)
-   +   ),
-       …
-     )
-   
-   (Expected: −, Actual: +)
-```
+> ◽️ Expected failure: A state change does not match expectation: …
+>
+> ```diff
+>   AppFeature.State(
+>     authenticatedTab: .loggedOut(
+>       Login.State(
+> -       isLoading: false
+> +       isLoading: true,
+>         …
+>       )
+>     )
+>   )
+> ```
+>
+> Skipped receiving .login(.loginResponse(.success))
+>
+> A state change does not match expectation: …
+>
+> ```diff
+>   AppFeature.State(
+> -   authenticatedTab: .loggedOut(…)
+> +   authenticatedTab: .loggedIn(
+> +     Profile.State(…)
+> +   ),
+>     …
+>   )
+> ```
+>
+> (Expected: −, Actual: +)
 
 The test still passes, and none of these notifications are test failures. They just let you know
 what things you are not explicitly asserting against, and can be useful to see when tracking down
@@ -557,7 +553,8 @@ action is sent:
 
 ```swift
 let store = TestStore(/* ... */)
-store.exhaustivity = .on  // ℹ️ "on" is the default so technically this is not needed
+// ℹ️ "on" is the default so technically this is not needed
+store.exhaustivity = .on
 
 store.send(.buttonTapped) {
   $0  // Represents the state *before* the action was sent
@@ -700,18 +697,20 @@ func testAdd() async {
 
 However even this simple passes when `showSkippedAssertions` is set to true:
 
-```
-❌ A state change does not match expectation: …
-
-     TestStoreNonExhaustiveTests.Feature.State(
-       values: [
-   −     [0]: TestStoreNonExhaustiveTests.Model(id: UUID(00000000-0000-0000-0000-000000000001))
-   +     [0]: TestStoreNonExhaustiveTests.Model(id: UUID(00000000-0000-0000-0000-000000000000))
-       ]
-     )
-
-(Expected: −, Actual: +)
-```
+> ❌ Failure: A state change does not match expectation: …
+>
+> ```diff
+>   TestStoreNonExhaustiveTests.Feature.State(
+>     values: [
+>       [0]: TestStoreNonExhaustiveTests.Model(
+> -       id: UUID(00000000-0000-0000-0000-000000000001)
+> +       id: UUID(00000000-0000-0000-0000-000000000000)
+>       )
+>     ]
+>   )
+> ```
+>
+> (Expected: −, Actual: +)
 
 This is happening because the trailing closure is invoked twice, and the side effect that is
 executed when the closure is first invoked is bleeding over into when it is invoked a second time.

@@ -15,6 +15,7 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 ### Scoping stores
 
+- ``Store/scope(state:)``
 - ``Store/publisherScope(state:action:)``
 - ``Store/publisherScope(state:)``
 - ``Store/unchecked(initialState:reducer:environment:)``

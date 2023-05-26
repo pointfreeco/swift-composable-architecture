@@ -14,7 +14,7 @@ let package = Package(
   dependencies: [
     .package(
       url: "https://github.com/pointfreeco/swift-composable-architecture",
-      from: "0.42.0"
+      from: "0.53.0"
     ),
   ],
   targets: [
@@ -89,7 +89,7 @@ struct Feature: Reducer {
     case decrementButtonTapped
     case incrementButtonTapped
     case numberFactButtonTapped
-    case numberFactResponse(TaskResult<String>)
+    case numberFactResponse(String)
   }
 }
 ```
@@ -120,25 +120,16 @@ struct Feature: Reducer {
 
       case .numberFactButtonTapped:
         return .run { [count = state.count] send in
+          let (data, _) = try await URLSession.shared.data(
+            from: URL(string: "http://numbersapi.com/\(count)/trivia")!
+          )
           await send(
-            .numberFactResponse(
-              TaskResult { 
-                String(
-                  decoding: try await URLSession.shared
-                    .data(from: URL(string: "http://numbersapi.com/\(count)/trivia")!).0,
-                  as: UTF8.self
-                )
-              }
-            )
+            .numberFactResponse(String(decoding: data, as: UTF8.self)
           )
         }
 
-      case let .numberFactResponse(.success(fact)):
+      case let .numberFactResponse(fact):
         state.numberFactAlert = fact
-        return .none
-
-      case .numberFactResponse(.failure):
-        state.numberFactAlert = "Could not load a number fact :("
         return .none
       } 
     }
@@ -223,7 +214,7 @@ class FeatureViewController: UIViewController {
         )
         alertController.addAction(
           UIAlertAction(
-            title: "Ok",
+            title: "OK",
             style: .default,
             handler: { _ in self?.viewStore.send(.factAlertDismissed) }
           )
@@ -304,7 +295,7 @@ receive a fact response back with the fact, which then causes the alert to show:
 ```swift
 await store.send(.numberFactButtonTapped)
 
-await store.receive(.numberFactResponse(.success("???"))) {
+await store.receive(.numberFactResponse("???")) {
   $0.numberFactAlert = "???"
 }
 ```
@@ -330,10 +321,9 @@ Then we can use it in the `reduce` implementation:
 
 ```swift
 case .numberFactButtonTapped:
-  return .run { [count = state.count] send in 
-    await send(
-      .numberFactResponse(TaskResult { try await self.numberFact(count) })
-    )
+  return .run { [count = state.count] send in
+    let fact = try await self.numberFact(count)
+    await send(.numberFactResponse(fact))
   }
 ```
 
@@ -348,8 +338,9 @@ struct MyApp: App {
       store: Store(initialState: Feature.State()) {
         Feature(
           numberFact: { number in
-            let (data, _) = try await URLSession.shared
-              .data(from: .init(string: "http://numbersapi.com/\(number)")!)
+            let (data, _) = try await URLSession.shared.data(
+              from: .init(string: "http://numbersapi.com/\(number)")!
+            )
             return String(decoding: data, as: UTF8.self)
           }
         )
@@ -377,7 +368,7 @@ the alert:
 ```swift
 await store.send(.numberFactButtonTapped)
 
-await store.receive(.numberFactResponse(.success("0 is a good number Brent"))) {
+await store.receive(.numberFactResponse("0 is a good number Brent")) {
   $0.numberFactAlert = "0 is a good number Brent"
 }
 
@@ -408,8 +399,9 @@ dependency to be used by default:
 private enum NumberFactClientKey: DependencyKey {
   static let liveValue = NumberFactClient(
     fetch: { number in
-      let (data, _) = try await URLSession.shared
-        .data(from: .init(string: "http://numbersapi.com/\(number)")!)
+      let (data, _) = try await URLSession.shared.data(
+        from: .init(string: "http://numbersapi.com/\(number)")!
+      )
       return String(decoding: data, as: UTF8.self)
     }
   )
@@ -466,7 +458,7 @@ let store = TestStore(initialState: Feature.State()) {
 }
 
 await store.send(.numberFactButtonTapped)
-await store.receive(.numberFactResponse(.success("0 is a good number Brent"))) {
+await store.receive(.numberFactResponse("0 is a good number Brent")) {
   $0.numberFactAlert = "0 is a good number Brent"
 }
 ```

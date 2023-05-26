@@ -361,7 +361,7 @@ extension BindingAction {
   /// }
   /// ```
   ///
-  /// Finally, in the view we can invoke ``Store/scope(state:action:)`` with these domain
+  /// Finally, in the view we can invoke ``Store/scope(state:action:)-9iai9`` with these domain
   /// transformations to leverage the view store's binding helpers:
   ///
   /// ```swift

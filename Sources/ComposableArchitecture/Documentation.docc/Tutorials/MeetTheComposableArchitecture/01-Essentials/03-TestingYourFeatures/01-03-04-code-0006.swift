@@ -15,7 +15,7 @@ final class CounterFeatureTests: XCTestCase {
       $0.isLoading = false
       $0.fact = "???"
     }
-    // 🛑 @Dependency(\.numberFact) has no test implementation, but was
+    // ❌ @Dependency(\.numberFact) has no test implementation, but was
     //    accessed from a test context:
     //
     //   Location:

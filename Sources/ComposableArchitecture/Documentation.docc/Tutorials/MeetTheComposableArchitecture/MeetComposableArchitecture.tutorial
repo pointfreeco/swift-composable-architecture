@@ -12,8 +12,16 @@
     @TutorialReference(tutorial: "doc:01-01-YourFirstFeature")
     @TutorialReference(tutorial: "doc:01-02-AddingSideEffects")
     @TutorialReference(tutorial: "doc:01-03-TestingYourFeature")
+  }
+  
+  @Chapter(name: "Navigation") {
+    Learn how to model your domains for navigation from parent feature to child feature, and how to
+    do so in a concise manner using optionals, enums and collections.
     
-    @Image(source: "01-homepage")
+    @TutorialReference(tutorial: "doc:02-01-YourFirstPresentation")
+    @TutorialReference(tutorial: "doc:02-02-MultipleDestinations")
+    @TutorialReference(tutorial: "doc:02-03-TestingPresentation")
+    @TutorialReference(tutorial: "doc:02-04-NavigationStacks")
   }
   
   @Resources {

@@ -42,7 +42,6 @@ public struct IfLetStore<State, Action, Content: View>: View {
         return ViewBuilder.buildEither(
           first: ifContent(
             store
-              // TODO: Combine `invalidate`+`scope`
               .invalidate { $0 == nil }
               .scope(
                 state: {
@@ -76,7 +75,6 @@ public struct IfLetStore<State, Action, Content: View>: View {
       if var state = viewStore.state {
         return ifContent(
           store
-            // TODO: Combine `invalidate`+`scope`
             .invalidate { $0 == nil }
             .scope(
               state: {

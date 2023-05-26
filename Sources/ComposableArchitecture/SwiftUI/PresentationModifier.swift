@@ -88,7 +88,6 @@ extension View {
   @ViewBuilder
   private func presentation<
     State,
-    ID: Hashable,
     Action,
     DestinationState,
     DestinationAction,
@@ -96,7 +95,7 @@ extension View {
   >(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (State) -> DestinationState?,
-    id toID: @escaping (PresentationState<State>) -> ID?,
+    id toID: @escaping (PresentationState<State>) -> AnyHashable?,
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
     @ViewBuilder body: @escaping (
       Self,
@@ -104,42 +103,146 @@ extension View {
       DestinationContent<DestinationState, DestinationAction>
     ) -> Content
   ) -> some View {
-    let store = store.invalidate { $0.wrappedValue.flatMap(toDestinationState) == nil }
-    WithViewStore(store, observe: { $0 }, removeDuplicates: { toID($0) == toID($1) }) { viewStore in
-      let id = toID(viewStore.state)
-      body(
-        self,
-        viewStore.binding(
-          get: {
-            $0.wrappedValue.flatMap(toDestinationState) != nil
-              ? toID($0).map { AnyIdentifiable(Identified($0) { $0 }) }
-              : nil
-          },
-          compactSend: {
-            $0 == nil && toID(viewStore.state) == id ? .dismiss : nil
-          }
-        ),
-        DestinationContent(
-          store: store.scope(
-            state: { $0.wrappedValue.flatMap(toDestinationState) },
-            action: { .presented(fromDestinationAction($0)) }
-          )
-        )
-      )
+    PresentationStore(
+      store, state: toDestinationState, id: toID, action: fromDestinationAction
+    ) { $item, destination in
+      body(self, $item, destination)
     }
   }
 }
 
+@_spi(Presentation)
+public struct PresentationStore<
+  State, Action, DestinationState, DestinationAction, Content: View
+>: View {
+  let store: Store<PresentationState<State>, PresentationAction<Action>>
+  let toDestinationState: (State) -> DestinationState?
+  let toID: (PresentationState<State>) -> AnyHashable?
+  let fromDestinationAction: (DestinationAction) -> Action
+  let content: (
+    Binding<AnyIdentifiable?>,
+    DestinationContent<DestinationState, DestinationAction>
+  ) -> Content
+
+  @ObservedObject var viewStore: ViewStore<PresentationState<State>, PresentationAction<Action>>
+
+  public init(
+    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
+    @ViewBuilder content: @escaping (
+      _ isPresented: Binding<Bool>,
+      _ destination: DestinationContent<DestinationState, DestinationAction>
+    ) -> Content
+  ) where State == DestinationState, Action == DestinationAction {
+    self.init(store) { $item, destination in
+      content($item.isPresent(), destination)
+    }
+  }
+
+  @_disfavoredOverload
+  public init(
+    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
+    @ViewBuilder content: @escaping (
+      _ item: Binding<AnyIdentifiable?>,
+      _ destination: DestinationContent<DestinationState, DestinationAction>
+    ) -> Content
+  ) where State == DestinationState, Action == DestinationAction {
+    self.init(
+      store,
+      state: { $0 },
+      action: { $0 },
+      content: content
+    )
+  }
+
+  public init(
+    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
+    state toDestinationState: @escaping (State) -> DestinationState?,
+    action fromDestinationAction: @escaping (DestinationAction) -> Action,
+    @ViewBuilder content: @escaping (
+      _ isPresented: Binding<Bool>,
+      _ destination: DestinationContent<DestinationState, DestinationAction>
+    ) -> Content
+  ) {
+    self.init(
+      store, state: toDestinationState, action: fromDestinationAction
+    ) { $item, destination in
+      content($item.isPresent(), destination)
+    }
+  }
+
+  @_disfavoredOverload
+  public init(
+    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
+    state toDestinationState: @escaping (State) -> DestinationState?,
+    action fromDestinationAction: @escaping (DestinationAction) -> Action,
+    @ViewBuilder content: @escaping (
+      _ item: Binding<AnyIdentifiable?>,
+      _ destination: DestinationContent<DestinationState, DestinationAction>
+    ) -> Content
+  ) {
+    self.init(
+      store,
+      state: toDestinationState,
+      id: { $0.id },
+      action: fromDestinationAction,
+      content: content
+    )
+  }
+
+  fileprivate init<ID: Hashable>(
+    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
+    state toDestinationState: @escaping (State) -> DestinationState?,
+    id toID: @escaping (PresentationState<State>) -> ID?,
+    action fromDestinationAction: @escaping (DestinationAction) -> Action,
+    content: @escaping (
+      _ item: Binding<AnyIdentifiable?>,
+      _ destination: DestinationContent<DestinationState, DestinationAction>
+    ) -> Content
+  ) {
+    let store = store.invalidate { $0.wrappedValue.flatMap(toDestinationState) == nil }
+    let viewStore = ViewStore(store, observe: { $0 }, removeDuplicates: { toID($0) == toID($1) })
+
+    self.store = store
+    self.toDestinationState = toDestinationState
+    self.toID = toID
+    self.fromDestinationAction = fromDestinationAction
+    self.content = content
+    self.viewStore = viewStore
+  }
+
+  public var body: some View {
+    let id = self.toID(self.viewStore.state)
+    self.content(
+      self.viewStore.binding(
+        get: {
+          $0.wrappedValue.flatMap(toDestinationState) != nil
+            ? toID($0).map { AnyIdentifiable(Identified($0) { $0 }) }
+            : nil
+        },
+        compactSend: {
+          $0 == nil && self.toID(self.viewStore.state) == id ? .dismiss : nil
+        }
+      ),
+      DestinationContent(
+        store: self.store.scope(
+          state: { $0.wrappedValue.flatMap(self.toDestinationState) },
+          action: { .presented(fromDestinationAction($0)) }
+        )
+      )
+    )
+  }
+}
+
+@_spi(Presentation)
 public struct AnyIdentifiable: Identifiable {
-  public let base: Any
   public let id: AnyHashable
 
   public init<Base: Identifiable>(_ base: Base) {
-    self.base = base
     self.id = base.id
   }
 }
 
+@_spi(Presentation)
 public struct DestinationContent<State, Action> {
   let store: Store<State?, Action>
 
