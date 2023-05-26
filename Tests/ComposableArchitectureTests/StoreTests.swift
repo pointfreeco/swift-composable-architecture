@@ -830,20 +830,15 @@ final class StoreTests: BaseTCATestCase {
     }
     var removeDuplicatesCount1 = 0
     var stateScopeCount1 = 0
-    var removeDuplicatesCount2 = 0
-    var stateScopeCount2 = 0
     var viewStoreCount1 = 0
+    var removeDuplicatesCount2 = 0
+    var storeStateCount1 = 0
+    var stateScopeCount2 = 0
     var viewStoreCount2 = 0
+    var storeStateCount2 = 0
     let childStore1 = store.scope(
       state: {
         stateScopeCount1 += 1
-        return $0.$child
-      },
-      action: { .child($0) }
-    )
-    let childStore2 = store.scope(
-      state: {
-        stateScopeCount2 += 1
         return $0.$child
       },
       action: { .child($0) }
@@ -856,6 +851,19 @@ final class StoreTests: BaseTCATestCase {
         return lhs == rhs
       }
     )
+    childViewStore1.objectWillChange
+      .sink { _ in viewStoreCount1 += 1 }
+      .store(in: &self.cancellables)
+    childStore1.state
+      .sink { _ in storeStateCount1 += 1 }
+      .store(in: &self.cancellables)
+    let childStore2 = store.scope(
+      state: {
+        stateScopeCount2 += 1
+        return $0.$child
+      },
+      action: { .child($0) }
+    )
     let childViewStore2 = ViewStore(
       childStore2,
       observe: { $0 },
@@ -864,25 +872,34 @@ final class StoreTests: BaseTCATestCase {
         return lhs == rhs
       }
     )
-    let c1 = childViewStore1.objectWillChange.sink { _ in viewStoreCount1 += 1 }
-    let c2 = childViewStore1.objectWillChange.sink { _ in viewStoreCount2 += 1 }
+    childViewStore2.objectWillChange
+      .sink { _ in viewStoreCount2 += 1 }
+      .store(in: &self.cancellables)
+    childStore2.state
+      .sink { _ in storeStateCount2 += 1 }
+      .store(in: &self.cancellables)
 
     _ = store.send(.tap)
     XCTAssertEqual(removeDuplicatesCount1, 0)
     XCTAssertEqual(stateScopeCount1, 2)
     XCTAssertEqual(viewStoreCount1, 0)
+    XCTAssertEqual(storeStateCount1, 1)
     XCTAssertEqual(removeDuplicatesCount2, 0)
     XCTAssertEqual(stateScopeCount2, 2)
     XCTAssertEqual(viewStoreCount2, 0)
+    XCTAssertEqual(storeStateCount2, 1)
     _ = store.send(.tap)
     XCTAssertEqual(removeDuplicatesCount1, 0)
     XCTAssertEqual(stateScopeCount1, 3)
     XCTAssertEqual(viewStoreCount1, 0)
+    XCTAssertEqual(storeStateCount1, 1)
     XCTAssertEqual(removeDuplicatesCount2, 0)
     XCTAssertEqual(stateScopeCount2, 3)
     XCTAssertEqual(viewStoreCount2, 0)
+    XCTAssertEqual(storeStateCount2, 1)
+
     _ = store.send(.child(.dismiss))
-    _ = (childViewStore1, childViewStore2, c1, c2)
+    _ = (childViewStore1, childViewStore2, childStore1, childStore2)
   }
 }
 

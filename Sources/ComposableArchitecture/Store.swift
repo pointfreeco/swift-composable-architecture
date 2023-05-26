@@ -339,7 +339,9 @@ public final class Store<State, Action> {
     self.scope(
       state: toChildState,
       action: fromChildAction,
-      removeDuplicates: { $0.sharesStorage(with: $1) }
+      removeDuplicates: {
+        $0.sharesStorage(with: $1)
+      }
     )
   }
 
@@ -730,9 +732,12 @@ extension ScopedReducer: AnyScopedReducer {
     childStore.parentCancellable = store.state
       .dropFirst()
       .sink { [weak childStore] newValue in
-        guard let childStore = childStore, !reducer.isSending else { return }
+        guard !reducer.isSending, let childStore = childStore else { return }
         let newValue = toRescopedState(newValue)
-        guard isDuplicate.map({ !$0(childStore.state.value, newValue) }) ?? true else { return }
+        guard isDuplicate.map({ !$0(childStore.state.value, newValue) }) ?? true else {
+          print("!!!")
+          return
+        }
         childStore.state.value = newValue
       }
     return childStore
