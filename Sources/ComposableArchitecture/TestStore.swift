@@ -1067,6 +1067,20 @@ extension TestStore where ScopedState: Equatable {
     return .init(rawValue: task, timeout: self.timeout)
   }
 
+  @MainActor
+  @discardableResult
+  public func send(
+    _ action: ScopedAction,
+    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    withDependencies updateValuesForAction: (inout DependencyValues) async -> Void,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) async -> TestStoreTask {
+    await self.withDependencies(updateValuesForAction) {
+      await self.send(action, assert: updateStateToExpectedResult, file: file, line: line)
+    }
+  }
+
   /// Assert against the current state of the store.
   ///
   /// The trailing closure provided is given a mutable argument that represents the current state,
@@ -1449,6 +1463,27 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
         line: line
       )
     }
+
+    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+    @MainActor
+    public func receive(
+      _ expectedAction: Action,
+      timeout duration: Duration,
+      assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+      withDependencies updateValuesForAction: (inout DependencyValues) async -> Void,
+      file: StaticString = #file,
+      line: UInt = #line
+    ) async {
+      await self.withDependencies(updateValuesForAction) {
+        await self.receive(
+          expectedAction,
+          timeout: duration,
+          assert: updateStateToExpectedResult,
+          file: file,
+          line: line
+        )
+      }
+    }
   #endif
 
   /// Asserts an action was received from an effect and asserts how the state changes.
@@ -1506,6 +1541,27 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
       self._receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
     }()
     await Task.megaYield()
+  }
+
+  @MainActor
+  @_disfavoredOverload
+  public func receive(
+    _ expectedAction: Action,
+    timeout nanoseconds: UInt64? = nil,
+    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    withDependencies updateValuesForAction: (inout DependencyValues) async -> Void,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) async {
+    await self.withDependencies(updateValuesForAction) {
+      await self.receive(
+        expectedAction,
+        timeout: nanoseconds,
+        assert: updateStateToExpectedResult,
+        file: file,
+        line: line
+      )
+    }
   }
 }
 
@@ -1646,6 +1702,28 @@ extension TestStore where ScopedState: Equatable {
         line: line
       )
     }
+
+    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+    @MainActor
+    @_disfavoredOverload
+    public func receive(
+      _ isMatching: (Action) -> Bool,
+      timeout duration: Duration,
+      assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+      withDependencies updateValuesForAction: (inout DependencyValues) async -> Void,
+      file: StaticString = #file,
+      line: UInt = #line
+    ) async {
+      await self.withDependencies(updateValuesForAction) {
+        await self.receive(
+          isMatching,
+          timeout: duration,
+          assert: updateStateToExpectedResult,
+          file: file,
+          line: line
+        )
+      }
+    }
   #endif
 
   /// Asserts an action was received from an effect that matches a predicate, and asserts how the
@@ -1701,6 +1779,27 @@ extension TestStore where ScopedState: Equatable {
       self._receive(isMatching, assert: updateStateToExpectedResult, file: file, line: line)
     }()
     await Task.megaYield()
+  }
+
+  @MainActor
+  @_disfavoredOverload
+  public func receive(
+    _ isMatching: (Action) -> Bool,
+    timeout nanoseconds: UInt64? = nil,
+    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    withDependencies updateValuesForAction: (inout DependencyValues) async -> Void,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) async {
+    await self.withDependencies(updateValuesForAction) {
+      await self.receive(
+        isMatching,
+        timeout: nanoseconds,
+        assert: updateStateToExpectedResult,
+        file: file,
+        line: line
+      )
+    }
   }
 
   /// Asserts an action was received matching a case path and asserts how the state changes.
@@ -1762,6 +1861,27 @@ extension TestStore where ScopedState: Equatable {
     await Task.megaYield()
   }
 
+  @MainActor
+  @_disfavoredOverload
+  public func receive<Value>(
+    _ actionCase: CasePath<Action, Value>,
+    timeout nanoseconds: UInt64? = nil,
+    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    withDependencies updateValuesForAction: (inout DependencyValues) async -> Void,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) async {
+    await self.withDependencies(updateValuesForAction) {
+      await self.receive(
+        actionCase,
+        timeout: nanoseconds,
+        assert: updateStateToExpectedResult,
+        file: file,
+        line: line
+      )
+    }
+  }
+
   #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     /// Asserts an action was received matching a case path and asserts how the state changes.
     ///
@@ -1821,6 +1941,28 @@ extension TestStore where ScopedState: Equatable {
         self._receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
       }()
       await Task.megaYield()
+    }
+
+    @MainActor
+    @_disfavoredOverload
+    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+    public func receive<Value>(
+      _ actionCase: CasePath<Action, Value>,
+      timeout duration: Duration,
+      assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+      withDependencies updateValuesForAction: (inout DependencyValues) async -> Void,
+      file: StaticString = #file,
+      line: UInt = #line
+    ) async {
+      await self.withDependencies(updateValuesForAction) {
+        await self.receive(
+          actionCase,
+          timeout: duration,
+          assert: updateStateToExpectedResult,
+          file: file,
+          line: line
+        )
+      }
     }
   #endif
 
