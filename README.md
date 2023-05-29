@@ -76,6 +76,7 @@ the Composable Architecture. Check out [this](./Examples) directory to see them 
 * [Motion manager](https://github.com/pointfreeco/composable-core-motion/tree/main/Examples/MotionManager)
 * [Search](./Examples/Search)
 * [Speech Recognition](./Examples/SpeechRecognition)
+* [Standups app](./Examples/Standups)
 * [Tic-Tac-Toe](./Examples/TicTacToe)
 * [Todos](./Examples/Todos)
 * [Voice memos](./Examples/VoiceMemos)
