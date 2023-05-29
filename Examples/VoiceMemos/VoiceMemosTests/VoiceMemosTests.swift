@@ -212,7 +212,7 @@ final class VoiceMemosTests: XCTestCase {
         url: deadbeefURL
       )
     }
-    await store.send(.recordingMemo(.presented(.task)))
+    await store.send(.recordingMemo(.presented(.onTask)))
 
     didFinish.continuation.finish(throwing: SomeError())
     await store.receive(.recordingMemo(.presented(.audioRecorderDidFinish(.failure(SomeError())))))
@@ -245,7 +245,7 @@ final class VoiceMemosTests: XCTestCase {
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.recordButtonTapped)
-      await store.send(.recordingMemo(.presented(.task)))
+      await store.send(.recordingMemo(.presented(.onTask)))
       didFinish.continuation.finish(throwing: SomeError())
       await store.receive(
         .recordingMemo(.presented(.delegate(.didFinish(.failure(SomeError())))))
