@@ -371,7 +371,7 @@ struct Feature: Reducer {
   }
 
   var body: some ReducerOf<Self> {
-    Reduce { state, action in 
+    Reduce { state, action in
       // Logic and behavior for core feature.
     }
     .forEach(\.path, action: /Action.path) { Path() }
@@ -426,7 +426,8 @@ do this we must go through multiple layers: first subscript through the ID, then
 optional value returned from that subscript, then pattern match on the case of the `Path.State`
 enum, and then perform the mutation.
 
-The library provides a tool to perform all of these steps in a single step, called `XCTModify`:
+The library provides two different tools to perform all of these steps in a single step. You can
+use the `XCTModify` helper:
 
 ```swift
 await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) {
@@ -443,7 +444,19 @@ above we are subscripting into ID 0, isolating the `.counter` case of the `Path.
 and mutating the `count` to be 4 since it incremented by one. Further, if the case of `$0[id: 0]`
 didn't match the case path, then a test failure would be emitted.
 
-And then we can send it one more time to see that the count goes up to 5:
+Another option is to use ``StackState/subscript(id:case:)`` to simultaneously subscript into an 
+ID on the stack _and_ a case of the path enum:
+
+```swift
+await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) {
+  $0[id: 0, case: /Feature.Path.State.counter]?.count = 4
+}
+```
+
+The `XCTModify` style is best when you have many things you need to modify on the state, and the
+``StackState/subscript(id:case:)`` style is best when you have simple mutations.
+
+Continuing with the test, we can send it one more time to see that the count goes up to 5:
 
 ```swift
 await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) {
@@ -460,7 +473,7 @@ can assert using the ``TestStore/receive(_:timeout:assert:file:line:)-1rwdd`` me
 
 ```swift
 await store.receive(.path(.popFrom(id: 0))) {
-  $0.path.removeLast()
+  $0.path[id: 0] = nil
 }
 ```
 

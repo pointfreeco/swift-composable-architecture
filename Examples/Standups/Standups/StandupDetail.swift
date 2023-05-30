@@ -205,12 +205,12 @@ struct StandupDetailView: View {
         }
       }
       .alert(
-        store: self.store.scope(state: \.$destination, action: StandupDetail.Action.destination),
+        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
         state: /StandupDetail.Destination.State.alert,
         action: StandupDetail.Destination.Action.alert
       )
       .sheet(
-        store: self.store.scope(state: \.$destination, action: StandupDetail.Action.destination),
+        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
         state: /StandupDetail.Destination.State.edit,
         action: StandupDetail.Destination.Action.edit
       ) { store in

@@ -730,9 +730,11 @@ extension ScopedReducer: AnyScopedReducer {
     childStore.parentCancellable = store.state
       .dropFirst()
       .sink { [weak childStore] newValue in
-        guard let childStore = childStore, !reducer.isSending else { return }
+        guard !reducer.isSending, let childStore = childStore else { return }
         let newValue = toRescopedState(newValue)
-        guard isDuplicate.map({ !$0(childStore.state.value, newValue) }) ?? true else { return }
+        guard isDuplicate.map({ !$0(childStore.state.value, newValue) }) ?? true else {
+          return
+        }
         childStore.state.value = newValue
       }
     return childStore

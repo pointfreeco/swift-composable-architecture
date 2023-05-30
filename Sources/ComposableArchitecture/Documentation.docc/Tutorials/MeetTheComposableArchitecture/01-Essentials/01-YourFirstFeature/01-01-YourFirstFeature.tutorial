@@ -28,7 +28,7 @@
       
       @Step {
         Define a new struct called CounterFeature that conforms to the 
-        ``ComposableArchitecture/Reducer``.
+        ``ComposableArchitecture/Reducer`` protocol.
         @Code(name: "CounterFeature.swift", file: 01-01-01-code-0002.swift)
       }
       

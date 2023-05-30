@@ -274,7 +274,7 @@ like so:
 struct FeatureState { 
   // ...
 }
-struct FeatureAction { 
+enum FeatureAction { 
   // ...
 }
 struct FeatureEnvironment { 

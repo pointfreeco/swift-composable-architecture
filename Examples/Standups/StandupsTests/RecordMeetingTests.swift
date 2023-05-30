@@ -28,7 +28,7 @@ final class RecordMeetingTests: XCTestCase {
       $0.speechClient.authorizationStatus = { .denied }
     }
 
-    await store.send(.task)
+    await store.send(.onTask)
 
     await clock.advance(by: .seconds(1))
     await store.receive(.timerTick) {
@@ -107,7 +107,7 @@ final class RecordMeetingTests: XCTestCase {
       }
     }
 
-    await store.send(.task)
+    await store.send(.onTask)
 
     await store.receive(
       .speechResult(
@@ -139,7 +139,7 @@ final class RecordMeetingTests: XCTestCase {
       $0.speechClient.authorizationStatus = { .denied }
     }
 
-    await store.send(.task)
+    await store.send(.onTask)
 
     await store.send(.endMeetingButtonTapped) {
       $0.alert = .endMeeting(isDiscardable: true)
@@ -171,7 +171,7 @@ final class RecordMeetingTests: XCTestCase {
       $0.speechClient.authorizationStatus = { .denied }
     }
 
-    let task = await store.send(.task)
+    let task = await store.send(.onTask)
 
     await store.send(.endMeetingButtonTapped) {
       $0.alert = .endMeeting(isDiscardable: true)
@@ -207,7 +207,7 @@ final class RecordMeetingTests: XCTestCase {
       $0.speechClient.authorizationStatus = { .denied }
     }
 
-    await store.send(.task)
+    await store.send(.onTask)
 
     await store.send(.nextButtonTapped) {
       $0.speakerIndex = 1
@@ -265,7 +265,7 @@ final class RecordMeetingTests: XCTestCase {
         }
       }
 
-      await store.send(.task)
+      await store.send(.onTask)
 
       await store.receive(
         .speechResult(
@@ -317,7 +317,7 @@ final class RecordMeetingTests: XCTestCase {
       }
     }
 
-    let task = await store.send(.task)
+    let task = await store.send(.onTask)
 
     await store.receive(.speechFailure) {
       $0.alert = .speechRecognizerFailed

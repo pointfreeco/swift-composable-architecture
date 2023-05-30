@@ -13,8 +13,7 @@ final class VoiceMemosTests: XCTestCase {
 
   func testRecordAndPlayback() async throws {
     try await withMainSerialExecutor {
-
-      let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
+      let didFinish = AsyncThrowingStream.makeStream(of: Bool.self)
       let store = TestStore(initialState: VoiceMemos.State()) {
         VoiceMemos()
       } withDependencies: {
@@ -96,9 +95,6 @@ final class VoiceMemosTests: XCTestCase {
   }
 
   func testRecordMemoHappyPath() async throws {
-    // NB: Combine's concatenation behavior is different in 13.3
-    guard #available(iOS 13.4, *) else { return }
-
     let didFinish = AsyncThrowingStream.makeStream(of: Bool.self)
 
     let store = TestStore(initialState: VoiceMemos.State()) {
@@ -129,7 +125,7 @@ final class VoiceMemosTests: XCTestCase {
         url: URL(fileURLWithPath: "/tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")
       )
     }
-    let recordingMemoTask = await store.send(.recordingMemo(.presented(.task)))
+    let recordingMemoTask = await store.send(.recordingMemo(.presented(.onTask)))
     await self.clock.advance(by: .seconds(1))
     await store.receive(.recordingMemo(.presented(.timerUpdated))) {
       $0.recordingMemo?.duration = 1
@@ -212,7 +208,7 @@ final class VoiceMemosTests: XCTestCase {
         url: deadbeefURL
       )
     }
-    await store.send(.recordingMemo(.presented(.task)))
+    await store.send(.recordingMemo(.presented(.onTask)))
 
     didFinish.continuation.finish(throwing: SomeError())
     await store.receive(.recordingMemo(.presented(.audioRecorderDidFinish(.failure(SomeError())))))
@@ -245,7 +241,7 @@ final class VoiceMemosTests: XCTestCase {
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.recordButtonTapped)
-      await store.send(.recordingMemo(.presented(.task)))
+      await store.send(.recordingMemo(.presented(.onTask)))
       didFinish.continuation.finish(throwing: SomeError())
       await store.receive(
         .recordingMemo(.presented(.delegate(.didFinish(.failure(SomeError())))))

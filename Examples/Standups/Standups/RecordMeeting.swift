@@ -19,7 +19,7 @@ struct RecordMeeting: Reducer {
     case delegate(Delegate)
     case endMeetingButtonTapped
     case nextButtonTapped
-    case task
+    case onTask
     case timerTick
     case speechFailure
     case speechResult(SpeechRecognitionResult)
@@ -71,7 +71,7 @@ struct RecordMeeting: Reducer {
           state.speakerIndex * Int(state.standup.durationPerAttendee.components.seconds)
         return .none
 
-      case .task:
+      case .onTask:
         return .run { send in
           let authorization =
             await self.speechClient.authorizationStatus() == .notDetermined
@@ -199,8 +199,8 @@ struct RecordMeetingView: View {
         }
       }
       .navigationBarBackButtonHidden(true)
-      .alert(store: self.store.scope(state: \.$alert, action: RecordMeeting.Action.alert))
-      .task { await viewStore.send(.task).finish() }
+      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
+      .task { await viewStore.send(.onTask).finish() }
     }
   }
 }

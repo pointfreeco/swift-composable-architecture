@@ -501,7 +501,7 @@ struct Feature: Reducer {
     case counter(CounterFeature.Action)
   }
   var body: some ReducerOf<Self> {
-    Reduce { state, action in 
+    Reduce { state, action in
       // Logic and behavior for core feature.
     }
     .ifLet(\.$counter, action: /Action.counter) {

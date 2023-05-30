@@ -15,9 +15,9 @@ but also how effects are executed and feed data back into the system.
 ## Testing state changes
 
 State changes are by far the simplest thing to test in features built with the library. A
-``Reducer``'s first responsibility is to mutate the current state based on the action received into
-the system. To test this we can technically run a piece of mutable state through the reducer and
-then assert on how it changed after, like this:
+``ReducerProtocol``'s first responsibility is to mutate the current state based on the action 
+received into the system. To test this we can technically run a piece of mutable state through the 
+reducer and then assert on how it changed after, like this:
 
 ```swift
 struct Feature: Reducer {

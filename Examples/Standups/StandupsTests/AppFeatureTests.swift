@@ -137,7 +137,7 @@ final class AppFeatureTests: XCTestCase {
       }
       store.exhaustivity = .off
 
-      await store.send(.path(.element(id: 1, action: .record(.task))))
+      await store.send(.path(.element(id: 1, action: .record(.onTask))))
       await store.receive(
         .path(
           .element(id: 1, action: .record(.delegate(.save(transcript: "I completed the project"))))

@@ -41,7 +41,7 @@ struct StandupsList: Reducer {
       }
     }
 
-    var body: some Reducer<State, Action> {
+    var body: some ReducerOf<Self> {
       Scope(state: /State.add, action: /Action.add) {
         StandupForm()
       }
@@ -121,12 +121,12 @@ struct StandupsListView: View {
       }
       .navigationTitle("Daily Standups")
       .alert(
-        store: self.store.scope(state: \.$destination, action: StandupsList.Action.destination),
+        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
         state: /StandupsList.Destination.State.alert,
         action: StandupsList.Destination.Action.alert
       )
       .sheet(
-        store: self.store.scope(state: \.$destination, action: StandupsList.Action.destination),
+        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
         state: /StandupsList.Destination.State.add,
         action: StandupsList.Destination.Action.add
       ) { store in
