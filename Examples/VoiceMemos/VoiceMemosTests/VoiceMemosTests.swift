@@ -14,7 +14,7 @@ final class VoiceMemosTests: XCTestCase {
   func testRecordAndPlayback() async throws {
     try await withMainSerialExecutor {
 
-      let didFinish = AsyncThrowingStream<Bool, Error>.streamWithContinuation()
+      let didFinish = AsyncThrowingStream.makeStream(of: Bool.self)
       let store = TestStore(initialState: VoiceMemos.State()) {
         VoiceMemos()
       } withDependencies: {
@@ -96,9 +96,6 @@ final class VoiceMemosTests: XCTestCase {
   }
 
   func testRecordMemoHappyPath() async throws {
-    // NB: Combine's concatenation behavior is different in 13.3
-    guard #available(iOS 13.4, *) else { return }
-
     let didFinish = AsyncThrowingStream.makeStream(of: Bool.self)
 
     let store = TestStore(initialState: VoiceMemos.State()) {
