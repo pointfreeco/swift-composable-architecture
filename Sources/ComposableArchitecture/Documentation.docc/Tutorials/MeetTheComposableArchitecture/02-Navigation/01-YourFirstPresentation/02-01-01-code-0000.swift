@@ -5,14 +5,14 @@ struct Contact: Equatable, Identifiable {
   var name: String
 }
 
-struct ContactsFeature: ReducerProtocol {
+struct ContactsFeature: Reducer {
   struct State: Equatable {
     var contacts: IdentifiedArrayOf<Contact> = []
   }
   enum Action {
     case addButtonTapped
   }
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       case .addButtonTapped:

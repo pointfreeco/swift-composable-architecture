@@ -11,7 +11,7 @@ private struct PresentationItemTestCase: Reducer {
       case childA(Child.Action)
       case childB(Child.Action)
     }
-    var body: some ReducerProtocol<State, Action> {
+    var body: some Reducer<State, Action> {
       Scope(state: /State.childA, action: /Action.childA) {
         Child()
       }
