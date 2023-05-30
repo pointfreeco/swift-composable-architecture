@@ -348,7 +348,7 @@ final class EffectCancellationTests: BaseTCATestCase {
             }
           }
           Task {
-            try? await Task.sleep(nanoseconds: .random(in: 1_000_000 ... 2_000_000))
+            try? await Task.sleep(nanoseconds: .random(in: 1_000_000...2_000_000))
             Task.cancel(id: id)
           }
         }

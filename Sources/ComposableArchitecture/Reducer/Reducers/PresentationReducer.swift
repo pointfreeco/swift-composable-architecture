@@ -87,8 +87,7 @@ public struct PresentationState<State> {
       yield &value
       guard success else {
         var description: String?
-        if
-          let root = root,
+        if let root = root,
           let metadata = EnumMetadata(State.self),
           let caseName = metadata.caseName(forTag: metadata.tag(of: root))
         {

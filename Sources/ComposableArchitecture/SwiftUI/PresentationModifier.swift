@@ -119,10 +119,11 @@ public struct PresentationStore<
   let toDestinationState: (State) -> DestinationState?
   let toID: (PresentationState<State>) -> AnyHashable?
   let fromDestinationAction: (DestinationAction) -> Action
-  let content: (
-    Binding<AnyIdentifiable?>,
-    DestinationContent<DestinationState, DestinationAction>
-  ) -> Content
+  let content:
+    (
+      Binding<AnyIdentifiable?>,
+      DestinationContent<DestinationState, DestinationAction>
+    ) -> Content
 
   @ObservedObject var viewStore: ViewStore<PresentationState<State>, PresentationAction<Action>>
 
