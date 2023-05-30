@@ -86,25 +86,14 @@ private struct Feature: ReducerProtocol {
     case child1(Child1.Action)
     case child2(Child2.Action)
   }
-  #if swift(>=5.7)
-    var body: some ReducerProtocol<State, Action> {
-      Scope(state: \.child1, action: /Action.child1) {
-        Child1()
-      }
-      Scope(state: \.child2, action: /Action.child2) {
-        Child2()
-      }
+  var body: some ReducerProtocol<State, Action> {
+    Scope(state: \.child1, action: /Action.child1) {
+      Child1()
     }
-  #else
-    var body: Reduce<State, Action> {
-      Scope(state: \.child1, action: /Action.child1) {
-        Child1()
-      }
-      Scope(state: \.child2, action: /Action.child2) {
-        Child2()
-      }
+    Scope(state: \.child2, action: /Action.child2) {
+      Child2()
     }
-  #endif
+  }
 }
 
 private struct Child1: ReducerProtocol {
@@ -138,43 +127,22 @@ private struct Child2: ReducerProtocol {
     case count(Int)
     case name(String)
   }
-  #if swift(>=5.7)
-    var body: some ReducerProtocol<State, Action> {
-      Scope(state: /State.count, action: /Action.count) {
-        Reduce { state, action in
-          state = action
-          return state < 0
-            ? .run { await $0(0) }
-            : .none
-        }
-      }
-      Scope(state: /State.name, action: /Action.name) {
-        Reduce { state, action in
-          state = action
-          return state.isEmpty
-            ? .run { await $0("Empty") }
-            : .none
-        }
+  var body: some ReducerProtocol<State, Action> {
+    Scope(state: /State.count, action: /Action.count) {
+      Reduce { state, action in
+        state = action
+        return state < 0
+          ? .run { await $0(0) }
+          : .none
       }
     }
-  #else
-    var body: Reduce<State, Action> {
-      Scope(state: /State.count, action: /Action.count) {
-        Reduce { state, action in
-          state = action
-          return state < 0
-            ? .run { await $0(0) }
-            : .none
-        }
-      }
-      Scope(state: /State.name, action: /Action.name) {
-        Reduce { state, action in
-          state = action
-          return state.isEmpty
-            ? .run { await $0("Empty") }
-            : .none
-        }
+    Scope(state: /State.name, action: /Action.name) {
+      Reduce { state, action in
+        state = action
+        return state.isEmpty
+          ? .run { await $0("Empty") }
+          : .none
       }
     }
-  #endif
+  }
 }

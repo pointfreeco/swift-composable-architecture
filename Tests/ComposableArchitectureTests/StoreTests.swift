@@ -197,13 +197,13 @@ final class StoreTests: BaseTCATestCase {
       switch action {
       case .tap:
         return .merge(
-          EffectTask(value: .next1),
-          EffectTask(value: .next2),
+          .send(.next1),
+          .send(.next2),
           .fireAndForget { values.append(1) }
         )
       case .next1:
         return .merge(
-          EffectTask(value: .end),
+          .send(.end),
           .fireAndForget { values.append(2) }
         )
       case .next2:
@@ -226,7 +226,7 @@ final class StoreTests: BaseTCATestCase {
       switch action {
       case .incr:
         state += 1
-        return state >= 100_000 ? EffectTask(value: .noop) : EffectTask(value: .incr)
+        return .send(state >= 100_000 ? .noop : .incr)
       case .noop:
         return .none
       }
@@ -364,9 +364,9 @@ final class StoreTests: BaseTCATestCase {
         switch action {
         case 0:
           return .merge(
-            EffectTask(value: 1),
-            EffectTask(value: 2),
-            EffectTask(value: 3)
+            .send(1),
+            .send(2),
+            .send(3)
           )
         default:
           state = action
@@ -683,78 +683,77 @@ final class StoreTests: BaseTCATestCase {
     XCTAssertEqual(store.state.value.count, testStore.state.count)
   }
 
-  #if swift(>=5.7)
-    func testChildParentEffectCancellation() async throws {
-      struct Child: ReducerProtocol {
-        struct State: Equatable {}
-        enum Action: Equatable {
-          case task
-          case didFinish
-        }
+  func testChildParentEffectCancellation() async throws {
+    struct Child: ReducerProtocol {
+      struct State: Equatable {}
+      enum Action: Equatable {
+        case task
+        case didFinish
+      }
 
-        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+        switch action {
+        case .task:
+          return .run { send in await send(.didFinish) }
+        case .didFinish:
+          return .none
+        }
+      }
+    }
+    struct Parent: ReducerProtocol {
+      struct State: Equatable {
+        var count = 0
+        var child: Child.State?
+      }
+      enum Action: Equatable {
+        case child(Child.Action)
+        case delay
+      }
+      @Dependency(\.mainQueue) var mainQueue
+      var body: some ReducerProtocol<State, Action> {
+        Reduce { state, action in
           switch action {
-          case .task:
-            return .run { send in await send(.didFinish) }
-          case .didFinish:
+          case .child(.didFinish):
+            state.child = nil
+            return .task {
+              try await self.mainQueue.sleep(for: .seconds(1))
+              return .delay
+            }
+          case .child:
+            return .none
+          case .delay:
+            state.count += 1
             return .none
           }
         }
-      }
-      struct Parent: ReducerProtocol {
-        struct State: Equatable {
-          var count = 0
-          var child: Child.State?
-        }
-        enum Action: Equatable {
-          case child(Child.Action)
-          case delay
-        }
-        @Dependency(\.mainQueue) var mainQueue
-        var body: some ReducerProtocol<State, Action> {
-          Reduce { state, action in
-            switch action {
-            case .child(.didFinish):
-              state.child = nil
-              return .task {
-                try await self.mainQueue.sleep(for: .seconds(1))
-                return .delay
-              }
-            case .child:
-              return .none
-            case .delay:
-              state.count += 1
-              return .none
-            }
-          }
-          .ifLet(\.child, action: /Action.child) {
-            Child()
-          }
+        .ifLet(\.child, action: /Action.child) {
+          Child()
         }
       }
-
-      let mainQueue = DispatchQueue.test
-      let store = Store(initialState: Parent.State(child: Child.State())) {
-        Parent()
-      } withDependencies: {
-        $0.mainQueue = mainQueue.eraseToAnyScheduler()
-      }
-      let viewStore = ViewStore(store)
-
-      let childTask = viewStore.send(.child(.task))
-      try await Task.sleep(nanoseconds: 100_000_000)
-      XCTAssertEqual(viewStore.child, nil)
-
-      await childTask.cancel()
-      await mainQueue.advance(by: 1)
-      try await Task.sleep(nanoseconds: 100_000_000)
-      XCTTODO(
-        """
-        This fails because cancelling a child task will cancel all parent effects too.
-        """)
-      XCTAssertEqual(viewStore.count, 1)
     }
-  #endif
+
+    let mainQueue = DispatchQueue.test
+    let store = Store(initialState: Parent.State(child: Child.State())) {
+      Parent()
+    } withDependencies: {
+      $0.mainQueue = mainQueue.eraseToAnyScheduler()
+    }
+    let viewStore = ViewStore(store)
+
+    let childTask = viewStore.send(.child(.task))
+    try await Task.sleep(nanoseconds: 100_000_000)
+    XCTAssertEqual(viewStore.child, nil)
+
+    await childTask.cancel()
+    await mainQueue.advance(by: 1)
+    try await Task.sleep(nanoseconds: 100_000_000)
+    XCTTODO(
+      """
+      This fails because cancelling a child task will cancel all parent effects too.
+      """
+    )
+    XCTAssertEqual(viewStore.count, 1)
+  }
 
   func testInit_InitialState_WithDependencies() async {
     struct Feature: ReducerProtocol {
@@ -798,6 +797,109 @@ final class StoreTests: BaseTCATestCase {
 
     _ = store.send(.tap)
     XCTAssertEqual(store.state.value.date, Date(timeIntervalSinceReferenceDate: 1_234_567_890))
+  }
+
+  func testPresentationScope() async {
+    struct Feature: ReducerProtocol {
+      struct State: Equatable {
+        var count = 0
+        @PresentationState var child: Feature.State?
+      }
+      enum Action {
+        case child(PresentationAction<Feature.Action>)
+        case tap
+      }
+      var body: some ReducerProtocolOf<Self> {
+        Reduce { state, action in
+          switch action {
+          case .child:
+            return .none
+          case .tap:
+            state.count += 1
+            return .none
+          }
+        }
+        .ifLet(\.$child, action: /Action.child) {
+          Feature()
+        }
+      }
+    }
+
+    let store = Store(initialState: Feature.State(child: Feature.State(child: Feature.State()))) {
+      Feature()
+    }
+    var removeDuplicatesCount1 = 0
+    var stateScopeCount1 = 0
+    var viewStoreCount1 = 0
+    var removeDuplicatesCount2 = 0
+    var storeStateCount1 = 0
+    var stateScopeCount2 = 0
+    var viewStoreCount2 = 0
+    var storeStateCount2 = 0
+    let childStore1 = store.scope(
+      state: {
+        stateScopeCount1 += 1
+        return $0.$child
+      },
+      action: { .child($0) }
+    )
+    let childViewStore1 = ViewStore(
+      childStore1,
+      observe: { $0 },
+      removeDuplicates: { lhs, rhs in
+        removeDuplicatesCount1 += 1
+        return lhs == rhs
+      }
+    )
+    childViewStore1.objectWillChange
+      .sink { _ in viewStoreCount1 += 1 }
+      .store(in: &self.cancellables)
+    childStore1.state
+      .sink { _ in storeStateCount1 += 1 }
+      .store(in: &self.cancellables)
+    let childStore2 = store.scope(
+      state: {
+        stateScopeCount2 += 1
+        return $0.$child
+      },
+      action: { .child($0) }
+    )
+    let childViewStore2 = ViewStore(
+      childStore2,
+      observe: { $0 },
+      removeDuplicates: { lhs, rhs in
+        removeDuplicatesCount2 += 1
+        return lhs == rhs
+      }
+    )
+    childViewStore2.objectWillChange
+      .sink { _ in viewStoreCount2 += 1 }
+      .store(in: &self.cancellables)
+    childStore2.state
+      .sink { _ in storeStateCount2 += 1 }
+      .store(in: &self.cancellables)
+
+    _ = store.send(.tap)
+    XCTAssertEqual(removeDuplicatesCount1, 0)
+    XCTAssertEqual(stateScopeCount1, 2)
+    XCTAssertEqual(viewStoreCount1, 0)
+    XCTAssertEqual(storeStateCount1, 1)
+    XCTAssertEqual(removeDuplicatesCount2, 0)
+    XCTAssertEqual(stateScopeCount2, 2)
+    XCTAssertEqual(viewStoreCount2, 0)
+    XCTAssertEqual(storeStateCount2, 1)
+    _ = store.send(.tap)
+    XCTAssertEqual(removeDuplicatesCount1, 0)
+    XCTAssertEqual(stateScopeCount1, 3)
+    XCTAssertEqual(viewStoreCount1, 0)
+    XCTAssertEqual(storeStateCount1, 1)
+    XCTAssertEqual(removeDuplicatesCount2, 0)
+    XCTAssertEqual(stateScopeCount2, 3)
+    XCTAssertEqual(viewStoreCount2, 0)
+    XCTAssertEqual(storeStateCount2, 1)
+
+    _ = store.send(.child(.dismiss))
+    _ = (childViewStore1, childViewStore2, childStore1, childStore2)
   }
 }
 

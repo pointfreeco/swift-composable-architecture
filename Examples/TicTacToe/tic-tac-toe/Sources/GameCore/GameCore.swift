@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import SwiftUI
 
-public struct Game: ReducerProtocol {
+public struct Game: ReducerProtocol, Sendable {
   public struct State: Equatable {
     public var board: Three<Three<Player?>> = .empty
     public var currentPlayer: Player = .x
@@ -27,6 +27,8 @@ public struct Game: ReducerProtocol {
     case quitButtonTapped
   }
 
+  @Dependency(\.dismiss) var dismiss
+
   public init() {}
 
   public func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
@@ -50,7 +52,9 @@ public struct Game: ReducerProtocol {
       return .none
 
     case .quitButtonTapped:
-      return .none
+      return .fireAndForget {
+        await self.dismiss()
+      }
     }
   }
 }

@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct ForEachBindingTestCase: ReducerProtocol {
+private struct ForEachBindingTestCase: ReducerProtocol {
   struct State: Equatable {
     var values = ["A", "B", "C"]
   }
@@ -27,7 +27,9 @@ struct ForEachBindingTestCase: ReducerProtocol {
 
 struct ForEachBindingTestCaseView: View {
   @State var assertion: String?
-  let store: StoreOf<ForEachBindingTestCase>
+  private let store = Store(initialState: ForEachBindingTestCase.State()) {
+    ForEachBindingTestCase()
+  }
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in

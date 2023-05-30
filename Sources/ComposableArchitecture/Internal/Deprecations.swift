@@ -261,48 +261,25 @@ extension EffectPublisher {
   }
 }
 
-#if swift(>=5.7)
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'withTaskCancellation(id: CancelID.timer)'.
-      """
+@available(
+  *,
+  deprecated,
+  message:
+    """
+    Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'withTaskCancellation(id: CancelID.timer)'.
+    """
+)
+public func withTaskCancellation<T: Sendable>(
+  id: Any.Type,
+  cancelInFlight: Bool = false,
+  operation: @Sendable @escaping () async throws -> T
+) async rethrows -> T {
+  try await withTaskCancellation(
+    id: ObjectIdentifier(id),
+    cancelInFlight: cancelInFlight,
+    operation: operation
   )
-  @_unsafeInheritExecutor
-  public func withTaskCancellation<T: Sendable>(
-    id: Any.Type,
-    cancelInFlight: Bool = false,
-    operation: @Sendable @escaping () async throws -> T
-  ) async rethrows -> T {
-    try await withTaskCancellation(
-      id: ObjectIdentifier(id),
-      cancelInFlight: cancelInFlight,
-      operation: operation
-    )
-  }
-#else
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'withTaskCancellation(id: CancelID.timer)'.
-      """
-  )
-  public func withTaskCancellation<T: Sendable>(
-    id: Any.Type,
-    cancelInFlight: Bool = false,
-    operation: @Sendable @escaping () async throws -> T
-  ) async rethrows -> T {
-    try await withTaskCancellation(
-      id: ObjectIdentifier(id),
-      cancelInFlight: cancelInFlight,
-      operation: operation
-    )
-  }
-#endif
+}
 
 extension Task where Success == Never, Failure == Never {
   @available(
@@ -400,30 +377,28 @@ extension ReducerProtocol {
   }
 }
 
-#if swift(>=5.7)
-  extension ReducerBuilder {
-    @_disfavoredOverload
-    @available(
-      *,
-      deprecated,
-      message:
-        """
-        Reducer bodies should return 'some ReducerProtocol<State, Action>' instead of 'Reduce<State, Action>'.
-        """
-    )
-    @inlinable
-    public static func buildFinalResult<R: ReducerProtocol>(_ reducer: R) -> Reduce<State, Action>
-    where R.State == State, R.Action == Action {
-      Reduce(reducer)
-    }
-
-    @_disfavoredOverload
-    @inlinable
-    public static func buildFinalResult(_ reducer: Reduce<State, Action>) -> Reduce<State, Action> {
-      reducer
-    }
+extension ReducerBuilder {
+  @_disfavoredOverload
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      Reducer bodies should return 'some ReducerProtocol<State, Action>' instead of 'Reduce<State, Action>'.
+      """
+  )
+  @inlinable
+  public static func buildFinalResult<R: ReducerProtocol>(_ reducer: R) -> Reduce<State, Action>
+  where R.State == State, R.Action == Action {
+    Reduce(reducer)
   }
-#endif
+
+  @_disfavoredOverload
+  @inlinable
+  public static func buildFinalResult(_ reducer: Reduce<State, Action>) -> Reduce<State, Action> {
+    reducer
+  }
+}
 
 // MARK: - Deprecated after 0.39.1:
 
@@ -511,8 +486,7 @@ extension EffectPublisher where Failure == Error {
   *, deprecated,
   message:
     """
-    If you use this initializer, please open a discussion on GitHub and let us know how: \
-    https://github.com/pointfreeco/swift-composable-architecture/discussions/new
+    If you use this initializer, please open a discussion on GitHub and let us know how: https://github.com/pointfreeco/swift-composable-architecture/discussions/new
     """
 )
 extension Store {
@@ -532,10 +506,10 @@ extension Store {
 // MARK: - Deprecated after 0.38.0:
 
 extension EffectPublisher {
-  @available(iOS, deprecated: 9999.0, renamed: "unimplemented")
-  @available(macOS, deprecated: 9999.0, renamed: "unimplemented")
-  @available(tvOS, deprecated: 9999.0, renamed: "unimplemented")
-  @available(watchOS, deprecated: 9999.0, renamed: "unimplemented")
+  @available(iOS, deprecated: 9999, renamed: "unimplemented")
+  @available(macOS, deprecated: 9999, renamed: "unimplemented")
+  @available(tvOS, deprecated: 9999, renamed: "unimplemented")
+  @available(watchOS, deprecated: 9999, renamed: "unimplemented")
   public static func failing(_ prefix: String) -> Self {
     self.unimplemented(prefix)
   }

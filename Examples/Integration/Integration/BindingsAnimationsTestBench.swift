@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct BindingsAnimations: ReducerProtocol {
+private struct BindingsAnimations: ReducerProtocol {
   func reduce(into state: inout Bool, action: Void) -> EffectTask<Void> {
     state.toggle()
     return .none
@@ -16,11 +16,16 @@ let mediumAnimation = Animation.linear(duration: 0.7)
 let fastAnimation = Animation.linear(duration: 0.2)
 
 struct BindingsAnimationsTestBench: View {
-  let viewStore: ViewStoreOf<BindingsAnimations>
+  private let viewStore: ViewStoreOf<BindingsAnimations>
   let vanillaModel = VanillaModel()
 
-  init(store: StoreOf<BindingsAnimations>) {
-    self.viewStore = ViewStore(store, observe: { $0 })
+  init() {
+    self.viewStore = ViewStore(
+      Store(initialState: false) {
+        BindingsAnimations()
+      },
+      observe: { $0 }
+    )
   }
 
   var body: some View {
@@ -98,7 +103,7 @@ struct SideBySide<ObservedObjectView: View, ViewStoreView: View>: View {
   }
 }
 
-struct ContentView: View {
+private struct BindingsContentView: View {
   @Binding var flag: Bool
 
   var body: some View {
@@ -112,12 +117,12 @@ struct ContentView: View {
   }
 }
 
-struct AnimatedWithObservation {
+private struct AnimatedWithObservation {
   struct ObservedObjectBinding: View {
     @EnvironmentObject var vanillaModel: VanillaModel
     var body: some View {
       ZStack {
-        ContentView(flag: $vanillaModel.flag)
+        BindingsContentView(flag: $vanillaModel.flag)
           .animation(mediumAnimation, value: vanillaModel.flag)
         Toggle("", isOn: $vanillaModel.flag)
       }
@@ -128,7 +133,7 @@ struct AnimatedWithObservation {
     @EnvironmentObject var viewStore: ViewStoreOf<BindingsAnimations>
     var body: some View {
       ZStack {
-        ContentView(flag: viewStore.binding(send: ()))
+        BindingsContentView(flag: viewStore.binding(send: ()))
           .animation(mediumAnimation, value: viewStore.state)
         Toggle("", isOn: viewStore.binding(send: ()))
       }
@@ -136,12 +141,12 @@ struct AnimatedWithObservation {
   }
 }
 
-struct AnimatedFromBinding {
+private struct AnimatedFromBinding {
   struct ObservedObjectBinding: View {
     @EnvironmentObject var vanillaModel: VanillaModel
     var body: some View {
       ZStack {
-        ContentView(flag: $vanillaModel.flag)
+        BindingsContentView(flag: $vanillaModel.flag)
         Toggle("", isOn: $vanillaModel.flag.animation(fastAnimation))
       }
     }
@@ -151,19 +156,19 @@ struct AnimatedFromBinding {
     @EnvironmentObject var viewStore: ViewStoreOf<BindingsAnimations>
     var body: some View {
       ZStack {
-        ContentView(flag: viewStore.binding(send: ()))
+        BindingsContentView(flag: viewStore.binding(send: ()))
         Toggle("", isOn: viewStore.binding(send: ()).animation(fastAnimation))
       }
     }
   }
 }
 
-struct AnimatedFromBindingWithObservation {
+private struct AnimatedFromBindingWithObservation {
   struct ObservedObjectBinding: View {
     @EnvironmentObject var vanillaModel: VanillaModel
     var body: some View {
       ZStack {
-        ContentView(flag: $vanillaModel.flag)
+        BindingsContentView(flag: $vanillaModel.flag)
           .animation(mediumAnimation, value: vanillaModel.flag)
         Toggle("", isOn: $vanillaModel.flag.animation(fastAnimation))
       }
@@ -174,7 +179,7 @@ struct AnimatedFromBindingWithObservation {
     @EnvironmentObject var viewStore: ViewStoreOf<BindingsAnimations>
     var body: some View {
       ZStack {
-        ContentView(flag: viewStore.binding(send: ()))
+        BindingsContentView(flag: viewStore.binding(send: ()))
           .animation(mediumAnimation, value: viewStore.state)
         Toggle("", isOn: viewStore.binding(send: ()).animation(fastAnimation))
       }
@@ -182,12 +187,8 @@ struct AnimatedFromBindingWithObservation {
   }
 }
 
-struct BindingsAnimationsTestBench_Previews: PreviewProvider {
+private struct BindingsAnimationsTestBench_Previews: PreviewProvider {
   static var previews: some View {
-    BindingsAnimationsTestBench(
-      store: .init(initialState: false) {
-        BindingsAnimations()
-      }
-    )
+    BindingsAnimationsTestBench()
   }
 }

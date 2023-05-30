@@ -51,12 +51,8 @@ day-to-day when building applications, such as:
 - <doc:GettingStarted>
 - <doc:DependencyManagement>
 - <doc:Testing>
+- <doc:Navigation>
 - <doc:Performance>
-
-### Upgrade guides
-
-- <doc:SwiftConcurrency>
-- <doc:MigratingToTheReducerProtocol>
 
 ### State management
 
@@ -73,6 +69,11 @@ day-to-day when building applications, such as:
 ### Testing
 
 - ``TestStore``
+
+### Upgrade guides
+
+- <doc:SwiftConcurrency>
+- <doc:MigratingToTheReducerProtocol>
 
 ## See Also
 

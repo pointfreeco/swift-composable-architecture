@@ -14,6 +14,9 @@
 - ``body-swift.property-97ymy``
 - ``Body-swift.typealias``
 - ``ReducerBuilder``
+
+### Embedding child features
+
 - ``Scope``
 - ``ifLet(_:action:then:fileID:line:)``
 - ``ifCaseLet(_:action:then:fileID:line:)``

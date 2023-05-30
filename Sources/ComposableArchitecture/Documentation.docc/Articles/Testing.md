@@ -15,16 +15,18 @@ but also how effects are executed and feed data back into the system.
 ## Testing state changes
 
 State changes are by far the simplest thing to test in features built with the library. A
-``Reducer``'s first responsibility is to mutate the current state based on the action received into
-the system. To test this we can technically run a piece of mutable state through the reducer and
-then assert on how it changed after, like this:
+``ReducerProtocol``'s first responsibility is to mutate the current state based on the action 
+received into the system. To test this we can technically run a piece of mutable state through the 
+reducer and then assert on how it changed after, like this:
 
 ```swift
 struct Feature: ReducerProtocol {
   struct State: Equatable { var count = 0 }
   enum Action { case incrementButtonTapped, decrementButtonTapped }
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(
+    into state: inout State, action: Action
+  ) -> EffectTask<Action> {
     switch action {
     case .incrementButtonTapped:
       state.count += 1
@@ -107,14 +109,14 @@ await store.send(.incrementButtonTapped) {
 }
 ```
 
-```
-❌ A state change does not match expectation: …
-
-  − TestStoreTests.State(count: 999)
-  + TestStoreTests.State(count: 1)
-
-(Expected: −, Actual: +)
-```
+> ❌ Failure: A state change does not match expectation: …
+>
+> ```diff
+> - TestStoreTests.State(count: 999)
+> + TestStoreTests.State(count: 1)
+> ```
+>
+> (Expected: −, Actual: +)
 
 You can also send multiple actions to emulate a script of user actions and assert each step of the
 way how the state evolved:
@@ -169,7 +171,7 @@ state mutation, like so:
 
 ```swift
 store.send(.incrementButtonTapped) {
-  $0 = store.state  // ❌ store.state is the previous state, not new state.
+  $0 = store.state  // ❌ store.state is the previous, not current, state.
 }
 ```
 
@@ -186,16 +188,18 @@ Location, Core Motion, Speech Recognition, etc.), and more.
 
 As a simple example, suppose we have a feature with a button such that when you tap it, it starts
 a timer that counts up until you reach 5, and then stops. This can be accomplished using the
-``EffectPublisher/run(priority:operation:catch:fileID:line:)`` helper on ``EffectTask``,
-which provides you with an asynchronous context to operate in and can send multiple actions back 
-into the system:
+``EffectPublisher/run(priority:operation:catch:fileID:line:)`` helper on ``EffectTask``, which
+provides you with an asynchronous context to operate in and can send multiple actions back into the
+system:
 
 ```swift
 struct Feature: ReducerProtocol {
   struct State: Equatable { var count = 0 }
   enum Action { case startTimerButtonTapped, timerTick }
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(
+    into state: inout State, action: Action
+  ) -> EffectTask<Action> {
     switch action {
     case .startTimerButtonTapped:
       state.count = 0
@@ -240,10 +244,8 @@ await store.send(.startTimerButtonTapped)
 However, if we run the test as-is with no further interactions with the test store, we get a
 failure:
 
-```
-❌ An effect returned for this action is still running.
-   It must complete before the end of the test. …
-```
+> ❌ Failure: An effect returned for this action is still running. It must complete before the end
+> of the test. …
 
 This is happening because ``TestStore`` requires you to exhaustively prove how the entire system
 of your feature evolves over time. If an effect is still running when the test finishes and the
@@ -265,9 +267,7 @@ await store.receive(.timerTick) {
 However, if we run this test we still get a failure because we asserted a `timerTick` action was
 going to be received, but after waiting around for a small amount of time no action was received:
 
-```
-❌ Expected to receive an action, but received none after 0.1 seconds.
-```
+> ❌ Failure: Expected to receive an action, but received none after 0.1 seconds.
 
 This is because our timer is on a 1 second interval, and by default
 ``TestStore/receive(_:timeout:assert:file:line:)-1rwdd`` only waits for a fraction of a second. This
@@ -429,8 +429,8 @@ actions that mimic the user logging in, and then eventually assert that the sele
 to activity:
 
 ```swift
-let store = TestStore(initialState: App.State()) {
-  App()
+let store = TestStore(initialState: AppFeature.State()) {
+  AppFeature()
 }
 
 // 1️⃣ Emulate user tapping on submit button.
@@ -477,8 +477,8 @@ happening inside the login feature. To do this, we can turn off ``TestStore/exha
 test store, and then just assert on what we are interested in:
 
 ```swift
-let store = TestStore(initialState: App.State()) {
-  App()
+let store = TestStore(initialState: AppFeature.State()) {
+  AppFeature()
 }
 store.exhaustivity = .off  // ⬅️
 
@@ -499,8 +499,8 @@ without any notification. If you would like to see what test failures are being 
 actually causing a failure, you can use ``Exhaustivity/off(showSkippedAssertions:)``:
 
 ```swift
-let store = TestStore(initialState: App.State()) {
-  App()
+let store = TestStore(initialState: AppFeature.State()) {
+  AppFeature()
 }
 store.exhaustivity = .off(showSkippedAssertions: true)  // ⬅️
 
@@ -513,35 +513,35 @@ await store.receive(.login(.delegate(.didLogin))) {
 When this is run you will get grey, informational boxes on each assertion where some change wasn't
 fully asserted on:
 
-```
-◽️ A state change does not match expectation: …
-
-     App.State(
-       authenticatedTab: .loggedOut(
-         Login.State(
-   −       isLoading: false
-   +       isLoading: true,
-           …
-         )
-       )
-     )
-   
-   (Expected: −, Actual: +)
-
-◽️ Skipped receiving .login(.loginResponse(.success))
-
-◽️ A state change does not match expectation: …
-
-     App.State(
-   −   authenticatedTab: .loggedOut(…)
-   +   authenticatedTab: .loggedIn(
-   +     Profile.State(…)
-   +   ),
-       …
-     )
-   
-   (Expected: −, Actual: +)
-```
+> ◽️ Expected failure: A state change does not match expectation: …
+>
+> ```diff
+>   AppFeature.State(
+>     authenticatedTab: .loggedOut(
+>       Login.State(
+> -       isLoading: false
+> +       isLoading: true,
+>         …
+>       )
+>     )
+>   )
+> ```
+>
+> Skipped receiving .login(.loginResponse(.success))
+>
+> A state change does not match expectation: …
+>
+> ```diff
+>   AppFeature.State(
+> -   authenticatedTab: .loggedOut(…)
+> +   authenticatedTab: .loggedIn(
+> +     Profile.State(…)
+> +   ),
+>     …
+>   )
+> ```
+>
+> (Expected: −, Actual: +)
 
 The test still passes, and none of these notifications are test failures. They just let you know
 what things you are not explicitly asserting against, and can be useful to see when tracking down
@@ -558,7 +558,8 @@ action is sent:
 
 ```swift
 let store = TestStore(/* ... */)
-store.exhaustivity = .on  // ℹ️ "on" is the default so technically this is not needed
+// ℹ️ "on" is the default so technically this is not needed
+store.exhaustivity = .on
 
 store.send(.buttonTapped) {
   $0  // Represents the state *before* the action was sent
@@ -615,7 +616,7 @@ await store.send(.removeButtonTapped) {
 }
 ```
 
-This will either fail, or possibly even crash. the test suite. This is because in a non-exhaustive
+This will either fail, or possibly even crash the test suite. This is because in a non-exhaustive
 test store, `$0` in the trailing closure of `send` represents the state _after_ the action has been
 sent, and so the last element has already been removed. By executing `$0.values.removeLast()` we are
 just removing an additional element from the end.
@@ -671,7 +672,9 @@ the following simple reducer that appends a new model to an array when an action
 struct Feature: ReducerProtocol {
   struct State: Equatable { var values: [Model] = [] }
   enum Action { case addButtonTapped }
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(
+    into state: inout State, action: Action
+  ) -> EffectTask<Action> {
     switch action {
     case .addButtonTapped:
       state.values.append(Model())
@@ -686,7 +689,9 @@ is sent a model is append to the `values` array:
 
 ```swift
 func testAdd() async {
-  let store = TestStore(initialState: Feature.State(), reducer: Feature()) {
+  let store = TestStore(initialState: Feature.State()) {
+    Feature()
+  } withDependencies: {
     $0.uuid = .incrementing
   }
   store.exhaustivity = .off(showSkippedAssertions: true)
@@ -699,18 +704,20 @@ func testAdd() async {
 
 However even this simple passes when `showSkippedAssertions` is set to true:
 
-```
-❌ A state change does not match expectation: …
-
-     TestStoreNonExhaustiveTests.Feature.State(
-       values: [
-   −     [0]: TestStoreNonExhaustiveTests.Model(id: UUID(00000000-0000-0000-0000-000000000001))
-   +     [0]: TestStoreNonExhaustiveTests.Model(id: UUID(00000000-0000-0000-0000-000000000000))
-       ]
-     )
-
-(Expected: −, Actual: +)
-```
+> ❌ Failure: A state change does not match expectation: …
+>
+> ```diff
+>   TestStoreNonExhaustiveTests.Feature.State(
+>     values: [
+>       [0]: TestStoreNonExhaustiveTests.Model(
+> -       id: UUID(00000000-0000-0000-0000-000000000001)
+> +       id: UUID(00000000-0000-0000-0000-000000000000)
+>       )
+>     ]
+>   )
+> ```
+>
+> (Expected: −, Actual: +)
 
 This is happening because the trailing closure is invoked twice, and the side effect that is
 executed when the closure is first invoked is bleeding over into when it is invoked a second time.
@@ -740,7 +747,9 @@ And then move the responsibility of generating new IDs to the reducer:
 struct Feature: ReducerProtocol {
   // ...
   @Dependency(\.uuid) var uuid
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(
+    into state: inout State, action: Action
+  ) -> EffectTask<Action> {
     switch action {
     case .addButtonTapped:
       state.values.append(Model(id: self.uuid()))

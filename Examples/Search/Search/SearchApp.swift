@@ -7,7 +7,8 @@ struct SearchApp: App {
     WindowGroup {
       SearchView(
         store: Store(initialState: Search.State()) {
-          Search()._printChanges()
+          Search()
+            ._printChanges()
         }
       )
     }

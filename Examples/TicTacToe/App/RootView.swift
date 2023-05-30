@@ -35,7 +35,7 @@ struct RootView: View {
   @State var showGame: GameType?
 
   var body: some View {
-    NavigationView {
+    NavigationStack {
       Form {
         Text(readMe)
 
@@ -53,7 +53,6 @@ struct RootView: View {
       }
       .navigationTitle("Tic-Tac-Toe")
     }
-    .navigationViewStyle(.stack)
   }
 }
 

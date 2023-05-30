@@ -368,17 +368,17 @@ Now the question is, how do we migrate `parentReducer` to a protocol conformance
 
 This gives us an opportunity to improve the correctness of this code. It turns out there is a gotcha 
 with the `optional` operator: it must be run _before_ the parent logic runs. If it is not, then it 
-is possible for a child action to come into the system, the parent observes the action and decides to 
-`nil` out the child state, and then the child reducer will not get a chance to react to the action.
-This can cause subtle bugs, and so we have documentation advising you to order things the correct 
-way, and if we detect a child action while state is `nil` we display a runtime warning.
+is possible for a child action to come into the system, the parent observes the action and decides
+to  `nil` out the child state, and then the child reducer will not get a chance to react to the
+action. This can cause subtle bugs, and so we have documentation advising you to order things the
+correct  way, and if we detect a child action while state is `nil` we display a runtime warning.
 
 A `Parent` reducer conformances can be made by implementing the 
 ``ReducerProtocol/body-swift.property-7foai`` property of the ``ReducerProtocol``, which allows you
 to express the parent's logic as a composition of multiple reducers. In particular, you can use
 the ``Reduce`` entry point to implement the core parent logic, and then chain on the 
-``ReducerProtocol/ifLet(_:action:then:fileID:line:)`` operator to identify the optional child
-state that you want to run the `Feature` reducer on when non-`nil`:
+``ReducerProtocol/ifLet(_:action:then:fileID:line:)`` operator to identify the optional child state
+that you want to run the `Feature` reducer on when non-`nil`:
 
 ```swift
 struct Parent: ReducerProtocol {

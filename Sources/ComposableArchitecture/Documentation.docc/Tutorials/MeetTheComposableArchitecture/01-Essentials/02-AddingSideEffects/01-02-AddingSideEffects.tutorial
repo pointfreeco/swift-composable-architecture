@@ -1,0 +1,237 @@
+@Tutorial(time: 30) {
+  @Intro(title: "Adding side effects") {
+    Learn how to communicate with the outside world in your features, and feed data from the outside
+    back into your feature.
+  }
+  
+  @Section(title: "What is a side effect?") {
+    @ContentAndMedia {
+      Side effects are by far the most important aspect of feature development. They are what allow
+      us to communicate with the outside world, such as making API requests, interacting with file 
+      systems, and performing time-based asynchrony. Without them, our applications could not do
+      anything of real value for our users.
+      
+      However, side effects are also the most complex part of our features. State mutations are 
+      simple processes. If you run the reducer with the same piece of state and same action, you will
+      always get the same result. But effects are susceptible to the vagaries of the outside world, 
+      such as network connectivity, disk permissions, and more. Each time you run an effect, you
+      can get back a completely different answer.
+      
+      Let's start by seeing why we can't simply perform effectful work directly in our 
+      ``ComposableArchitecture/ReducerProtocol`` conformances, and then we will see what tools the
+      library provides for performing effects.
+    }
+    
+    @Steps {
+      @Step {
+        Let's add a new bit of functionality to the counter feature we built in 
+        <doc:01-01-YourFirstFeature>. We will add a button that when tapped makes a network request to
+        fetch a fact about the number that is currently displayed.
+        
+        There are two ways you can approach this. Sometimes people like to work on the reducer
+        first, and then the view. Others like to start with the view, which is what we will do now.
+        We have added an additional button to the bottom of `CounterView`, and when it is tapped we
+        will send a `factButtonTapped` action, which does not yet exist in the counter domain, but
+        will soon.
+        
+        @Code(name: "CounterFeature.swift", file: 01-02-01-code-0001.swift, previousFile: 02-01-code-0001-previous.swift) {
+          @Image(source: "02-01-image-0001")
+        }
+      }
+      
+      @Step {
+        We will also add a progress view at the bottom to display while we are loading the fact,
+        and we will unwrap a bit of optional state to display the fact. We are using the
+        `isLoading` and `fact` state to accomplish this, neither of which exists in the counter 
+        feature yet, but will soon.
+        
+        @Code(name: "CounterFeature.swift", file: 01-02-01-code-0002.swift)
+      }
+      
+      That is all it takes for the view. The code is not yet compiling because we are using state
+      and actions that don't yet exist, so let's fix those errors in the reducer.
+      
+      @Step {
+        Recall that this is what our `CounterFeature` reducer looks like so far, as built in
+        <doc:01-01-YourFirstFeature>. It has a simple `State` and `Action` type, and the reducer
+        simply decrements or increments the `count` state depending on which action is sent.
+        
+        @Code(name: "CounterFeature.swift", file: 01-02-01-code-0003.swift, reset: true)
+      }
+      
+      @Step {
+        Let's add the additional state and actions that have been dictated to us by the view.
+        We know we need some `fact` and `isLoading` state, and we need a `factButtonTapped` action.
+        We can also implement that action in the reducer by flipping `isLoading` to `true`, and 
+        we'll clear the `fact` state when any button is tapped. And finally, we will return `.none` 
+        just like we did in all the other cases.
+
+        @Code(name: "CounterFeature.swift", file: 01-02-01-code-0004.swift)
+      }
+      
+      @Step {
+        Now the question is: how can we perform a side-effect? We will be using 
+        [numbersapi.com][numbersapi.com] to fetch a fact for the state's current count. We might
+        hope we can just use `URLSession` directly in the reducer to perform some async work, but
+        unfortunately that is not allowed. 
+        
+        [numbersapi.com]: http://www.numbersapi.com
+        
+        @Code(name: "CounterFeature.swift", file: 01-02-01-code-0005.swift)
+      }
+      
+      The Composable Architecture separates the simple, pure transformations of state from the 
+      complex, messy side effects. It is one of the core tenets of the library and there are a lot 
+      of benefits to doing so. Luckily for us, the library gives us a tool that is appropriate
+      for executing side effects. It is called ``ComposableArchitecture/EffectTask`` and it is
+      explored in the next section.
+    }
+  }
+  
+  @Section(title: "Performing a network request") {
+    @ContentAndMedia {
+      Now that we understand what a side-effect is and why they cannot be performed directly in
+      a reducer, let's see how to fix the code we wrote above. 
+      
+      The Composable Architecture bakes the notion of "effect" directly into the definition of 
+      ``ComposableArchitecture/ReducerProtocol``. After a reducer processes an action by mutating
+      state, it can return something called an ``ComposableArchitecture/EffectTask``, which 
+      represents an asynchronous unit that is run by the ``ComposableArchitecture/Store``. Effects
+      are what can communicate with outside systems and then feed data from the outside back into 
+      the reducer.
+      
+      This is exactly what we want to do for our number fact effect. We want to make a network 
+      request, and then feed that information back into the reducer. So, let's get started.
+    }
+    
+    @Steps {
+      @Step {
+        The primary way one constructs an ``ComposableArchitecture/EffectTask`` is via the static
+        method ``ComposableArchitecture/EffectPublisher/run(priority:operation:catch:fileID:line:)``.
+        This provides you with an asynchronous context to perform any kind of work you want, as well
+        as a handle (`send`) for sending actions back into the system.
+        
+        @Code(name: "CounterFeature.swift", file: 01-02-02-code-0001.swift, previousFile: 02-01-code-0005.swift)
+      }
+      
+      @Step {
+        The trailing closure of `.run` is the perfect place to perform our network request to fetch
+        data from [numbersapi.com][numbersapi.com] and turn it into a string.
+        
+        > Tip: Unfortunately [numbersapi.com][numbersapi.com] does not offer HTTPS, so you will need 
+        > to add an entry to your application's Info.plist in order to allow HTTP requests. See 
+        > [this][always-allow] article for information on how to do that.
+        
+        [numbersapi.com]: http://www.numbersapi.com
+        [always-allow]: https://developer.apple.com/documentation/bundleresources/information_property_list/nsapptransportsecurity
+                
+        @Code(name: "CounterFeature.swift", file: 01-02-02-code-0002.swift)
+      }
+      
+      @Step {
+        However, it is not possible to then mutate the `state.count` in the effect after fetching
+        the data from the network. This is strictly enforced by the compiler since sendable closures
+        cannot capture `inout` state. This is showing how the library chooses to separate the nice, 
+        simple and pure state mutations that reducers perform from the messy, complex effects. 
+        
+        @Code(name: "CounterFeature.swift", file: 01-02-02-code-0003.swift)
+      }
+      
+      @Step {
+        In order for us to feed the information from the effect back into our reducer we need to
+        introduce another action, called `factResponse`, and it will have an associated value of the
+        string that is fetched from the network. Then we can send that action in the effect after
+        performing the asynchronous work, and we can handle the new action by flipping `isLoading`
+        back to `false` and updating the `fact` state.
+        
+        > Warning: Currently we are ignoring any errors that can be thrown by `URLSession`. In a 
+        > more complete application you would want to leverage ``ComposableArchitecture/TaskResult``
+        > to have errors fed back into the reducer so that you can react appropriately.
+        
+        @Code(name: "CounterFeature.swift", file: 01-02-02-code-0004.swift)
+      }
+      
+      @Step {
+        We can now run the application in the simulator or in a preview and see that the feature
+        works as we expect. We can count up to a number, tap the "Fact" button, and a moment
+        later a fact will be displayed at the bottom of the UI.
+        
+        @Code(name: "CounterFeature.swift", file: 01-02-02-code-0005.swift) {
+          @Video(source: "02-02-video-0005")
+        }
+      }
+    }
+  }
+    
+  @Section(title: "Managing a timer") {
+    @ContentAndMedia {
+      Network requests are probably one of the most common types of side effects, but they are not
+      the only kind. Let's add a new bit of functionality to our counter feature. We will add 
+      another button that when tapped starts a one second repeating timer, and for each tick we will 
+      increment the state's `count` by one.
+    }
+    
+    @Steps {
+      @Step {
+        We will start with the view layer, just as we did before. We will add a button that either
+        displays "Start timer" or "Stop timer", depending on some `isTimerRunning` state, and
+        when tapped we will send a `toggleTimerButtonTapped` action. That's all it takes for the
+        view.
+        
+        > Note: The `isTimerRunning` state and `toggleTimerButtonTapped` actions do not yet exist. 
+        > We will add them in the next step.
+        
+        @Code(name: "CounterFeature.swift", file: 01-02-03-code-0001.swift, previousFile: 02-01-code-0002.swift)
+      }
+      
+      @Step {
+        Next we will update the reducer by adding the `isTimerRunning` state, a new 
+        `toggleTimerButtonTapped` action, and stubbing in the basics of the logic for the new 
+        action. We know we will want to execute some asynchronous work, in particular a timer, so
+        we have gone ahead and opened up a `run` effect.
+        
+        @Code(name: "CounterFeature.swift", file: 01-02-03-code-0002.swift, previousFile: 02-02-code-0005.swift)
+      }
+      
+      @Step {
+        Inside the `run` effect we can emulate a very crude timer by starting an infinite `while`
+        loop and sleeping for one second inside the loop. This is not the best way to construct a
+        timer as it allows for drift to occur, but it will be fine for our purposes right now.
+        
+        @Code(name: "CounterFeature.swift", file: 01-02-03-code-0003.swift)
+      }
+      
+      @Step {
+        In order to react to each timer tick in the reducer we need to introduce a new action,
+        `timerTick`, that will be sent after each `Task.sleep`. And it's in that action we will
+        increment the state's `count`.
+        
+        
+        @Code(name: "CounterFeature.swift", file: 01-02-03-code-0004.swift)
+      }
+      
+      However, there is a bug. If we tap the "Start timer" button to start the timer, and then tap
+      "Stop timer", we will see that the timer did not stop.
+      
+      @Step {
+        To fix the bug, we can leverage a powerful feature of the Composable Architecture known as 
+        "effect cancellation". We can mark any effect as cancellable using the 
+        ``ComposableArchitecture/EffectPublisher/cancellable(id:cancelInFlight:)-29q60`` method
+        by providing an ID, and then at a later time we can cancel that effect using 
+        ``ComposableArchitecture/EffectPublisher/cancel(id:)-6hzsl``.
+        
+        @Code(name: "CounterFeature.swift", file: 01-02-03-code-0005.swift)
+      }
+      
+      @Step {
+        Now the feature works as we expect. We can start the timer, wait a few seconds to see it
+        count up, and then we can stop the timer. This shows how to manage a long-living effect,
+        including how to cancel effects.
+        
+        @Code(name: "CounterFeature.swift", file: 01-02-03-code-0006.swift) {
+          @Video(source: "03-03-video-0006")
+        }
+      }
+    }
+  }
+}

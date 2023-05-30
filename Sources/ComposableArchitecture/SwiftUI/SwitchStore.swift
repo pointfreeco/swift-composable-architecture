@@ -1,3 +1,4 @@
+@_spi(Reflection) import CasePaths
 import SwiftUI
 
 /// A view that observes when enum state held in a store changes cases, and provides stores to
@@ -7,9 +8,12 @@ import SwiftUI
 /// user is logged-in or not:
 ///
 /// ```swift
-/// enum State {
-///   case loggedIn(LoggedInState)
-///   case loggedOut(LoggedOutState)
+/// struct AppFeature: ReducerProtocol {
+///   enum State {
+///     case loggedIn(LoggedInState)
+///     case loggedOut(LoggedOutState)
+///   }
+///   // ...
 /// }
 /// ```
 ///
@@ -18,17 +22,21 @@ import SwiftUI
 ///
 /// ```swift
 /// struct AppView: View {
-///   let store: StoreOf<App>
+///   let store: StoreOf<AppFeature>
 ///
 ///   var body: some View {
 ///     SwitchStore(self.store) { state in
 ///       switch state {
 ///       case .loggedIn:
-///         CaseLet(/App.State.loggedIn, action: App.Action.loggedIn) { loggedInStore in
+///         CaseLet(
+///           /AppFeature.State.loggedIn, action: AppFeature.Action.loggedIn
+///         ) { loggedInStore in
 ///           LoggedInView(store: loggedInStore)
 ///         }
 ///       case .loggedOut:
-///         CaseLet(/App.State.loggedOut, action: App.Action.loggedOut) { loggedOutStore in
+///         CaseLet(
+///           /AppFeature.State.loggedOut, action: AppFeature.Action.loggedOut
+///         ) { loggedOutStore in
 ///           LoggedOutView(store: loggedOutStore)
 ///         }
 ///       }
@@ -1613,19 +1621,5 @@ private final class StoreObservableObject<State, Action>: ObservableObject {
 }
 
 private func enumTag<Case>(_ `case`: Case) -> UInt32? {
-  let metadataPtr = unsafeBitCast(type(of: `case`), to: UnsafeRawPointer.self)
-  let kind = metadataPtr.load(as: Int.self)
-  let isEnumOrOptional = kind == 0x201 || kind == 0x202
-  guard isEnumOrOptional else { return nil }
-  let vwtPtr = (metadataPtr - MemoryLayout<UnsafeRawPointer>.size).load(as: UnsafeRawPointer.self)
-  let vwt = vwtPtr.load(as: EnumValueWitnessTable.self)
-  return withUnsafePointer(to: `case`) { vwt.getEnumTag($0, metadataPtr) }
-}
-
-private struct EnumValueWitnessTable {
-  let f1, f2, f3, f4, f5, f6, f7, f8: UnsafeRawPointer
-  let f9, f10: Int
-  let f11, f12: UInt32
-  let getEnumTag: @convention(c) (UnsafeRawPointer, UnsafeRawPointer) -> UInt32
-  let f13, f14: UnsafeRawPointer
+  EnumMetadata(Case.self)?.tag(of: `case`)
 }

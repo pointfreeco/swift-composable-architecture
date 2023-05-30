@@ -262,7 +262,7 @@
       let store = TestStore(initialState: 0) {
         Reduce<Int, Bool> { state, action in
           switch action {
-          case true: return EffectTask(value: false)
+          case true: return .send(false)
           case false: return .none
           }
         }

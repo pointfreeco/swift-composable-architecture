@@ -15,7 +15,7 @@ test-library:
 	for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_MAC_CATALYST)" "$(PLATFORM_TVOS)" "$(PLATFORM_WATCHOS)"; do \
 		xcodebuild test \
 			-configuration $(CONFIG) \
-			-workspace ComposableArchitecture.xcworkspace \
+			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$$platform" || exit 1; \
 	done;
@@ -41,7 +41,7 @@ test-docs:
 		&& exit 1)
 
 test-examples:
-	for scheme in "CaseStudies (SwiftUI)" "CaseStudies (UIKit)" Integration Search SpeechRecognition TicTacToe Todos VoiceMemos; do \
+	for scheme in "CaseStudies (SwiftUI)" "CaseStudies (UIKit)" Integration Search Standups SpeechRecognition TicTacToe Todos VoiceMemos; do \
 		xcodebuild test \
 			-scheme "$$scheme" \
 			-destination platform="$(PLATFORM_IOS)" || exit 1; \

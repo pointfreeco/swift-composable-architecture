@@ -21,13 +21,13 @@ final class ComposableArchitectureTests: BaseTCATestCase {
         switch action {
         case .incrAndSquareLater:
           return .merge(
-            EffectTask(value: .incrNow)
+            .send(.incrNow)
               .delay(for: 2, scheduler: self.mainQueue)
               .eraseToEffect(),
-            EffectTask(value: .squareNow)
+            .send(.squareNow)
               .delay(for: 1, scheduler: self.mainQueue)
               .eraseToEffect(),
-            EffectTask(value: .squareNow)
+            .send(.squareNow)
               .delay(for: 2, scheduler: self.mainQueue)
               .eraseToEffect()
           )

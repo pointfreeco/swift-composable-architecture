@@ -96,7 +96,7 @@ final class TestStoreTests: BaseTCATestCase {
           switch action {
           case .increment:
             state.isChanging = true
-            return EffectTask(value: .changed(from: state.count, to: state.count + 1))
+            return .send(.changed(from: state.count, to: state.count + 1))
           case .changed(let from, let to):
             state.isChanging = false
             if state.count == from {
@@ -141,7 +141,7 @@ final class TestStoreTests: BaseTCATestCase {
         Reduce<State, Action> { state, action in
           switch action {
           case .noop:
-            return EffectTask(value: .finished)
+            return .send(.finished)
           case .finished:
             return .none
           }
@@ -172,7 +172,7 @@ final class TestStoreTests: BaseTCATestCase {
         Reduce<Int, Action> { state, action in
           switch action {
           case .noop:
-            return EffectTask(value: .finished)
+            return .send(.finished)
           case .finished:
             return .none
           }

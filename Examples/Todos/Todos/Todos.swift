@@ -178,17 +178,17 @@ extension IdentifiedArray where ID == Todo.State.ID, Element == Todo.State {
   static let mock: Self = [
     Todo.State(
       description: "Check Mail",
-      id: UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEDDEADBEEF")!,
+      id: UUID(),
       isComplete: false
     ),
     Todo.State(
       description: "Buy Milk",
-      id: UUID(uuidString: "CAFEBEEF-CAFE-BEEF-CAFE-BEEFCAFEBEEF")!,
+      id: UUID(),
       isComplete: false
     ),
     Todo.State(
       description: "Call Mom",
-      id: UUID(uuidString: "D00DCAFE-D00D-CAFE-D00D-CAFED00DCAFE")!,
+      id: UUID(),
       isComplete: true
     ),
   ]

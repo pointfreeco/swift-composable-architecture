@@ -23,7 +23,7 @@ extension AnyReducer {
   /// - Returns: A reducer that has been enhanced with instrumentation.
   @available(
     iOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol.signpost'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -31,7 +31,7 @@ extension AnyReducer {
   )
   @available(
     macOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol.signpost'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -39,7 +39,7 @@ extension AnyReducer {
   )
   @available(
     tvOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol.signpost'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -47,7 +47,7 @@ extension AnyReducer {
   )
   @available(
     watchOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol.signpost'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol

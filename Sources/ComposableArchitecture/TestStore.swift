@@ -105,15 +105,16 @@ import XCTestDynamicOverlay
 /// }
 /// ```
 ///
-/// ```
-/// 🛑 A state change does not match expectation: …
-///
-///      TestStoreFailureTests.State(
-///     −   count: 42
-///     +   count: 1
-///      )
-///
-/// (Expected: −, Actual: +)
+/// > ❌ Failure: A state change does not match expectation: …
+/// >
+/// > ```diff
+/// >  TestStoreFailureTests.State(
+/// > -   count: 42
+/// > +   count: 1
+/// >  )
+/// > ```
+/// >
+/// > (Expected: −, Actual: +)
 /// ```
 ///
 /// For a more complex example, consider the following bare-bones search feature that uses a clock
@@ -203,13 +204,13 @@ import XCTestDynamicOverlay
 /// If we did not assert that the `searchResponse` action was received, we would get the following
 /// test failure:
 ///
-/// ```
-/// 🛑 The store received 1 unexpected action after this one: …
-///
-///     Unhandled actions: [
-///       [0]: Search.Action.searchResponse
-///     ]
-/// ```
+/// > ❌ Failure: The store received 1 unexpected action after this one: …
+/// >
+/// > ```
+/// > Unhandled actions: [
+/// >   [0]: Search.Action.searchResponse
+/// > ]
+/// > ```
 ///
 /// This helpfully lets us know that we have no asserted on everything that happened in the feature,
 /// which could be hiding a bug from us.
@@ -217,13 +218,13 @@ import XCTestDynamicOverlay
 /// Or if we had sent another action before handling the effect's action we would have also gotten
 /// a test failure:
 ///
-/// ```
-/// 🛑 Must handle 1 received action before sending an action: …
-///
-///     Unhandled actions: [
-///       [0]: Search.Action.searchResponse
-///     ]
-/// ```
+/// > ❌ Failure: Must handle 1 received action before sending an action: …
+/// >
+/// > ```
+/// > Unhandled actions: [
+/// >   [0]: Search.Action.searchResponse
+/// > ]
+/// > ```
 ///
 /// All of these types of failures help you prove that you know exactly how your feature evolves as
 /// actions are sent into the system. If the library did not produce a test failure in these
@@ -384,35 +385,35 @@ import XCTestDynamicOverlay
 /// When this is run you will get grey, informational boxes on each assertion where some change
 /// wasn't fully asserted on:
 ///
-/// ```
-/// ◽️ A state change does not match expectation: …
-///
-///      App.State(
-///        authenticatedTab: .loggedOut(
-///          Login.State(
-///    −       isLoading: false
-///    +       isLoading: true,
-///            …
-///          )
-///        )
-///      )
-///
-///    (Expected: −, Actual: +)
-///
-/// ◽️ Skipped receiving .login(.loginResponse(.success))
-///
-/// ◽️ A state change does not match expectation: …
-///
-///      App.State(
-///    −   authenticatedTab: .loggedOut(…)
-///    +   authenticatedTab: .loggedIn(
-///    +     Profile.State(…)
-///    +   ),
-///        …
-///      )
-///
-///    (Expected: −, Actual: +)
-/// ```
+/// > ◽️ Expected failure: A state change does not match expectation: …
+/// >
+/// > ```diff
+/// >   App.State(
+/// >     authenticatedTab: .loggedOut(
+/// >       Login.State(
+/// > -       isLoading: false
+/// > +       isLoading: true,
+/// >         …
+/// >       )
+/// >     )
+/// >   )
+/// > ```
+/// >
+/// > Skipped receiving .login(.loginResponse(.success))
+/// >
+/// > A state change does not match expectation: …
+/// >
+/// > ```diff
+/// >   App.State(
+/// > -   authenticatedTab: .loggedOut(…)
+/// > +   authenticatedTab: .loggedIn(
+/// > +     Profile.State(…)
+/// > +   ),
+/// >     …
+/// >   )
+/// > ```
+/// >
+/// > (Expected: −, Actual: +)
 ///
 /// The test still passes, and none of these notifications are test failures. They just let you know
 /// what things you are not explicitly asserting against, and can be useful to see when tracking
@@ -542,7 +543,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   /// The default timeout used in all methods that take an optional timeout.
   ///
   /// This is the default timeout used in all methods that take an optional timeout, such as
-  /// ``receive(_:timeout:assert:file:line:)-1rwdd`` and ``finish(timeout:file:line:)``.
+  /// ``receive(_:timeout:assert:file:line:)-1rwdd`` and ``finish(timeout:file:line:)-53gi5``.
   public var timeout: UInt64
 
   private var _environment: Box<Environment>
@@ -662,7 +663,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     ScopedState: Equatable,
     Environment == Void
   {
-    let reducer = withDependencies(prepareDependencies) {
+    let reducer = Dependencies.withDependencies(prepareDependencies) {
       TestReducer(Reduce(reducer()), initialState: initialState())
     }
     self._environment = .init(wrappedValue: ())
@@ -698,7 +699,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     Action == ScopedAction,
     Environment == Void
   {
-    let reducer = withDependencies(prepareDependencies) {
+    let reducer = Dependencies.withDependencies(prepareDependencies) {
       TestReducer(Reduce(reducer()), initialState: initialState())
     }
     self._environment = .init(wrappedValue: ())
@@ -799,7 +800,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
 
   // NB: Only needed until Xcode ships a macOS SDK that uses the 5.7 standard library.
   // See: https://forums.swift.org/t/xcode-14-rc-cannot-specialize-protocol-type/60171/15
-  #if swift(>=5.7) && !os(macOS) && !targetEnvironment(macCatalyst)
+  #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     /// Suspends until all in-flight effects have finished, or until it times out.
     ///
     /// Can be used to assert that all effects have finished.
@@ -820,6 +821,9 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   ///
   /// Can be used to assert that all effects have finished.
   ///
+  /// > Important: `TestStore.finish()` should only be called once per test store, at the end of the
+  /// > test. Interacting with a finished test store is undefined.
+  ///
   /// - Parameter nanoseconds: The amount of time to wait before asserting.
   @_disfavoredOverload
   @MainActor
@@ -828,6 +832,8 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     file: StaticString = #file,
     line: UInt = #line
   ) async {
+    Task.cancel(id: OnFirstAppearID())
+    
     let nanoseconds = nanoseconds ?? self.timeout
     let start = DispatchTime.now().uptimeNanoseconds
     await Task.megaYield()
@@ -848,7 +854,6 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
           If you are not yet using a clock/scheduler, or can not use a clock/scheduler, \
           \(timeoutMessage).
           """
-
         XCTFailHelper(
           """
           Expected effects to finish, but there are still effects in-flight\
@@ -884,6 +889,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
         line: self.line
       )
     }
+    Task.cancel(id: OnFirstAppearID())
     for effect in self.reducer.inFlightEffects {
       XCTFailHelper(
         """
@@ -911,6 +917,70 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
         line: effect.action.line
       )
     }
+  }
+
+  /// Overrides the store's dependencies for a given operation.
+  ///
+  /// - Parameters:
+  ///   - updateValuesForOperation: A closure for updating the store's dependency values for the
+  ///     duration of the operation.
+  ///   - operation: The operation.
+  public func withDependencies<R>(
+    _ updateValuesForOperation: (inout DependencyValues) throws -> Void,
+    operation: () throws -> R
+  ) rethrows -> R {
+    let previous = self.dependencies
+    defer { self.dependencies = previous }
+    try updateValuesForOperation(&self.dependencies)
+    return try operation()
+  }
+
+  /// Overrides the store's dependencies for a given operation.
+  ///
+  /// - Parameters:
+  ///   - updateValuesForOperation: A closure for updating the store's dependency values for the
+  ///     duration of the operation.
+  ///   - operation: The operation.
+  @MainActor
+  public func withDependencies<R>(
+    _ updateValuesForOperation: (inout DependencyValues) async throws -> Void,
+    operation: @MainActor () async throws -> R
+  ) async rethrows -> R {
+    let previous = self.dependencies
+    defer { self.dependencies = previous }
+    try await updateValuesForOperation(&self.dependencies)
+    return try await operation()
+  }
+
+  /// Overrides the store's exhaustivity for a given operation.
+  ///
+  /// - Parameters:
+  ///   - exhaustivity: The exhaustivity.
+  ///   - operation: The operation.
+  public func withExhaustivity<R>(
+    _ exhaustivity: Exhaustivity,
+    operation: () throws -> R
+  ) rethrows -> R {
+    let previous = self.exhaustivity
+    defer { self.exhaustivity = previous }
+    self.exhaustivity = exhaustivity
+    return try operation()
+  }
+
+  /// Overrides the store's exhaustivity for a given operation.
+  ///
+  /// - Parameters:
+  ///   - exhaustivity: The exhaustivity.
+  ///   - operation: The operation.
+  @MainActor
+  public func withExhaustivity<R>(
+    _ exhaustivity: Exhaustivity,
+    operation: @MainActor () async throws -> R
+  ) async rethrows -> R {
+    let previous = self.exhaustivity
+    defer { self.exhaustivity = previous }
+    self.exhaustivity = exhaustivity
+    return try await operation()
   }
 }
 
@@ -1024,6 +1094,7 @@ extension TestStore where ScopedState: Equatable {
 
     let expectedState = self.toScopedState(self.state)
     let previousState = self.reducer.state
+    let previousStackElementID = self.reducer.dependencies.stackElementID.incrementingCopy()
     let task = self.store
       .send(.init(origin: .send(self.fromScopedAction(action)), file: file, line: line))
     for await _ in self.reducer.effectDidSubscribe.stream {
@@ -1031,8 +1102,13 @@ extension TestStore where ScopedState: Equatable {
     }
     do {
       let currentState = self.state
+      let currentStackElementID = self.reducer.dependencies.stackElementID
       self.reducer.state = previousState
-      defer { self.reducer.state = currentState }
+      self.reducer.dependencies.stackElementID = previousStackElementID
+      defer {
+        self.reducer.state = currentState
+        self.reducer.dependencies.stackElementID = currentStackElementID
+      }
 
       try self.expectedStateShouldMatch(
         expected: expectedState,
@@ -1063,8 +1139,8 @@ extension TestStore where ScopedState: Equatable {
   /// <doc:Testing#Non-exhaustive-testing>), which allow you to assert on a subset of the things
   /// happening inside your features. For example, you can send an action in a child feature
   /// without asserting on how many changes in the system, and then tell the test store to
-  /// ``finish(timeout:file:line:)`` by executing all of its effects and receiving all actions.
-  /// After that is done you can assert on the final state of the store:
+  /// ``finish(timeout:file:line:)-53gi5`` by executing all of its effects and receiving all
+  /// actions. After that is done you can assert on the final state of the store:
   ///
   /// ```swift
   /// store.exhaustivity = .off
@@ -1204,6 +1280,14 @@ extension TestStore where ScopedState: Equatable {
   ) throws {
     let current = expected
     var expected = expected
+
+    let currentStackElementID = self.reducer.dependencies.stackElementID
+    let copiedStackElementID = currentStackElementID.incrementingCopy()
+    self.reducer.dependencies.stackElementID = copiedStackElementID
+    defer {
+      self.reducer.dependencies.stackElementID = currentStackElementID
+    }
+
     let updateStateToExpectedResult = updateStateToExpectedResult.map { original in
       { (state: inout ScopedState) in
         try XCTModifyLocals.$isExhaustive.withValue(self.exhaustivity == .on) {
@@ -1216,7 +1300,7 @@ extension TestStore where ScopedState: Equatable {
     case .on:
       var expectedWhenGivenPreviousState = expected
       if let updateStateToExpectedResult = updateStateToExpectedResult {
-        try withDependencies {
+        try Dependencies.withDependencies {
           $0 = self.reducer.dependencies
         } operation: {
           try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
@@ -1233,7 +1317,7 @@ extension TestStore where ScopedState: Equatable {
     case .off:
       var expectedWhenGivenActualState = actual
       if let updateStateToExpectedResult = updateStateToExpectedResult {
-        try withDependencies {
+        try Dependencies.withDependencies {
           $0 = self.reducer.dependencies
         } operation: {
           try updateStateToExpectedResult(&expectedWhenGivenActualState)
@@ -1252,7 +1336,7 @@ extension TestStore where ScopedState: Equatable {
         if let updateStateToExpectedResult = updateStateToExpectedResult {
           _XCTExpectFailure(strict: false) {
             do {
-              try withDependencies {
+              try Dependencies.withDependencies {
                 $0 = self.reducer.dependencies
               } operation: {
                 try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
@@ -1323,13 +1407,6 @@ extension TestStore where ScopedState: Equatable {
       )
     }
   }
-
-  private func withExhaustivity(_ exhaustivity: Exhaustivity, operation: () -> Void) {
-    let previous = self.exhaustivity
-    self.exhaustivity = exhaustivity
-    operation()
-    self.exhaustivity = previous
-  }
 }
 
 extension TestStore where ScopedState: Equatable, Action: Equatable {
@@ -1384,7 +1461,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
 
   // NB: Only needed until Xcode ships a macOS SDK that uses the 5.7 standard library.
   // See: https://forums.swift.org/t/xcode-14-rc-cannot-specialize-protocol-type/60171/15
-  #if swift(>=5.7) && !os(macOS) && !targetEnvironment(macCatalyst)
+  #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     /// Asserts an action was received from an effect and asserts how the state changes.
     ///
     /// When an effect is executed in your feature and sends an action back into the system, you can
@@ -1565,7 +1642,7 @@ extension TestStore where ScopedState: Equatable {
 
   // NB: Only needed until Xcode ships a macOS SDK that uses the 5.7 standard library.
   // See: https://forums.swift.org/t/xcode-14-rc-cannot-specialize-protocol-type/60171/15
-  #if swift(>=5.7) && !os(macOS) && !targetEnvironment(macCatalyst)
+  #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     /// Asserts an action was received from an effect that matches a predicate, and asserts how the
     /// state changes.
     ///
@@ -1732,7 +1809,7 @@ extension TestStore where ScopedState: Equatable {
     await Task.megaYield()
   }
 
-  #if swift(>=5.7) && !os(macOS) && !targetEnvironment(macCatalyst)
+  #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     /// Asserts an action was received matching a case path and asserts how the state changes.
     ///
     /// This method is similar to ``receive(_:timeout:assert:file:line:)-4he05``, except it allows
@@ -2224,8 +2301,8 @@ extension TestStore {
 /// await store.send(.stopTimerButtonTapped).finish()
 /// ```
 ///
-/// See ``TestStore/finish(timeout:file:line:)`` for the ability to await all in-flight effects in
-/// the test store.
+/// See ``TestStore/finish(timeout:file:line:)-53gi5`` for the ability to await all in-flight
+/// effects in the test store.
 ///
 /// See ``ViewStoreTask`` for the analog provided to ``ViewStore``.
 public struct TestStoreTask: Hashable, Sendable {
@@ -2259,7 +2336,7 @@ public struct TestStoreTask: Hashable, Sendable {
 
   // NB: Only needed until Xcode ships a macOS SDK that uses the 5.7 standard library.
   // See: https://forums.swift.org/t/xcode-14-rc-cannot-specialize-protocol-type/60171/15
-  #if swift(>=5.7) && !os(macOS) && !targetEnvironment(macCatalyst)
+  #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     /// Asserts the underlying task finished.
     ///
     /// - Parameter duration: The amount of time to wait before asserting.
@@ -2381,8 +2458,12 @@ class TestReducer<State, Action>: ReducerProtocol {
               effectDidSubscribe.continuation.yield()
             }
           },
-          receiveCompletion: { [weak self] _ in self?.inFlightEffects.remove(effect) },
-          receiveCancel: { [weak self] in self?.inFlightEffects.remove(effect) }
+          receiveCompletion: { [weak self] _ in
+            self?.inFlightEffects.remove(effect)
+          },
+          receiveCancel: { [weak self] in
+            self?.inFlightEffects.remove(effect)
+          }
         )
         .map { .init(origin: .receive($0), file: action.file, line: action.line) }
         .eraseToEffect()
@@ -2440,7 +2521,7 @@ extension Task where Success == Failure, Failure == Never {
 
 // NB: Only needed until Xcode ships a macOS SDK that uses the 5.7 standard library.
 // See: https://forums.swift.org/t/xcode-14-rc-cannot-specialize-protocol-type/60171/15
-#if swift(>=5.7) && !os(macOS) && !targetEnvironment(macCatalyst)
+#if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   extension Duration {
     fileprivate var nanoseconds: UInt64 {
@@ -2451,7 +2532,7 @@ extension Task where Success == Failure, Failure == Never {
 #endif
 
 /// The exhaustivity of assertions made by the test store.
-public enum Exhaustivity: Equatable {
+public enum Exhaustivity: Equatable, Sendable {
   /// Exhaustive assertions.
   ///
   /// This setting requires you to exhaustively assert on all state changes and all actions received

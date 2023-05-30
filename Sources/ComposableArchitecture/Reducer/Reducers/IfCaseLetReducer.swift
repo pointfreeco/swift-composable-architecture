@@ -30,10 +30,14 @@ extension ReducerProtocol {
   /// }
   /// ```
   ///
-  /// The `ifCaseLet` forces a specific order of operations for the child and parent features. It
-  /// runs the child first, and then the parent. If the order was reversed, then it would be
-  /// possible for the parent feature to change the case of the enum, in which case the child
-  /// feature would not be able to react to that action. That can cause subtle bugs.
+  /// The `ifCaseLet` operator does a number of things to try to enforce correctness:
+  ///
+  ///   * It forces a specific order of operations for the child and parent features. It runs the
+  ///     child first, and then the parent. If the order was reversed, then it would be possible for
+  ///     for the parent feature to change the case of the child enum, in which case the child
+  ///     feature would not be able to react to that action. That can cause subtle bugs.
+  ///
+  ///   * It automatically cancels all child effects when it detects the child enum case changes.
   ///
   /// It is still possible for a parent feature higher up in the application to change the case of
   /// the enum before the child has a chance to react to the action. In such cases a runtime
@@ -86,6 +90,9 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
   let line: UInt
 
   @usableFromInline
+  @Dependency(\.navigationIDPath) var navigationIDPath
+
+  @usableFromInline
   init(
     parent: Parent,
     child: Child,
@@ -106,8 +113,28 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
   public func reduce(
     into state: inout Parent.State, action: Parent.Action
   ) -> EffectTask<Parent.Action> {
-    self.reduceChild(into: &state, action: action)
-      .merge(with: self.parent.reduce(into: &state, action: action))
+    let childEffects = self.reduceChild(into: &state, action: action)
+
+    let childIDBefore = self.toChildState.extract(from: state).map {
+      NavigationID(root: state, value: $0, casePath: self.toChildState)
+    }
+    let parentEffects = self.parent.reduce(into: &state, action: action)
+    let childIDAfter = self.toChildState.extract(from: state).map {
+      NavigationID(root: state, value: $0, casePath: self.toChildState)
+    }
+
+    let childCancelEffects: EffectTask<Parent.Action>
+    if let childElement = childIDBefore, childElement != childIDAfter {
+      childCancelEffects = .cancel(id: childElement)
+    } else {
+      childCancelEffects = .none
+    }
+
+    return .merge(
+      childEffects,
+      parentEffects,
+      childCancelEffects
+    )
   }
 
   @inlinable
@@ -117,15 +144,19 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     guard var childState = self.toChildState.extract(from: state) else {
+      var actionDump = ""
+      customDump(action, to: &actionDump, indent: 4)
+      var stateDump = ""
+      customDump(state, to: &stateDump, indent: 4)
       runtimeWarn(
         """
         An "ifCaseLet" at "\(self.fileID):\(self.line)" received a child action when child state \
         was set to a different case. …
 
           Action:
-            \(debugCaseOutput(action))
+        \(actionDump)
           State:
-            \(debugCaseOutput(state))
+        \(stateDump)
 
         This is generally considered an application logic error, and can happen for a few reasons:
 
@@ -146,7 +177,12 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
       return .none
     }
     defer { state = self.toChildState.embed(childState) }
-    return self.child.reduce(into: &childState, action: childAction)
+    let childID = NavigationID(root: state, value: childState, casePath: self.toChildState)
+    let newNavigationID = self.navigationIDPath.appending(childID)
+    return self.child
+      .dependency(\.navigationIDPath, newNavigationID)
+      .reduce(into: &childState, action: childAction)
       .map { self.toChildAction.embed($0) }
+      .cancellable(id: childID)
   }
 }

@@ -1,3 +1,5 @@
+import OrderedCollections
+
 extension ReducerProtocol {
   /// Embeds a child reducer in a parent domain that works on elements of a collection in parent
   /// state.
@@ -92,6 +94,9 @@ public struct _ForEachReducer<
   let line: UInt
 
   @usableFromInline
+  @Dependency(\.navigationIDPath) var navigationIDPath
+
+  @usableFromInline
   init(
     parent: Parent,
     toElementsState: WritableKeyPath<Parent.State, IdentifiedArray<ID, Element.State>>,
@@ -112,8 +117,29 @@ public struct _ForEachReducer<
   public func reduce(
     into state: inout Parent.State, action: Parent.Action
   ) -> EffectTask<Parent.Action> {
-    self.reduceForEach(into: &state, action: action)
-      .merge(with: self.parent.reduce(into: &state, action: action))
+    let elementEffects = self.reduceForEach(into: &state, action: action)
+
+    let idsBefore = state[keyPath: self.toElementsState].ids
+    let parentEffects = self.parent.reduce(into: &state, action: action)
+    let idsAfter = state[keyPath: self.toElementsState].ids
+
+    let elementCancelEffects: EffectTask<Parent.Action> =
+      areOrderedSetsDuplicates(idsBefore, idsAfter)
+      ? .none
+      : .merge(
+        idsBefore.subtracting(idsAfter).map {
+          ._cancel(
+            id: NavigationID(id: $0, keyPath: self.toElementsState),
+            navigationID: self.navigationIDPath
+          )
+        }
+      )
+
+    return .merge(
+      elementEffects,
+      parentEffects,
+      elementCancelEffects
+    )
   }
 
   @inlinable
@@ -124,7 +150,7 @@ public struct _ForEachReducer<
     if state[keyPath: self.toElementsState][id: id] == nil {
       runtimeWarn(
         """
-        A "forEach" at "\(self.fileID):\(self.line)" received an action for a missing element.
+        A "forEach" at "\(self.fileID):\(self.line)" received an action for a missing element. …
 
           Action:
             \(debugCaseOutput(action))
@@ -146,8 +172,12 @@ public struct _ForEachReducer<
       )
       return .none
     }
+    let navigationID = NavigationID(id: id, keyPath: self.toElementsState)
+    let elementNavigationID = self.navigationIDPath.appending(navigationID)
     return self.element
+      .dependency(\.navigationIDPath, elementNavigationID)
       .reduce(into: &state[keyPath: self.toElementsState][id: id]!, action: elementAction)
       .map { self.toElementAction.embed((id, $0)) }
+      ._cancellable(id: navigationID, navigationIDPath: self.navigationIDPath)
   }
 }

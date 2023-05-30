@@ -14,6 +14,7 @@ The Composable Architecture can be used to power applications built in many fram
 - ``IfLetStore``
 - ``ForEachStore``
 - ``SwitchStore``
+- ``NavigationStackStore``
 
 ### Bindings
 

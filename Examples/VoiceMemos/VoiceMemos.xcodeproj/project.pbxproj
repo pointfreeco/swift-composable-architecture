@@ -94,6 +94,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		CA71F02129A6A32F007AE0DD /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		DC5BDCA124589177009C65A3 = {
 			isa = PBXGroup;
 			children = (
@@ -102,6 +109,7 @@
 				DC5BDCAB24589177009C65A3 /* Products */,
 				DC5BDCAC24589177009C65A3 /* VoiceMemos */,
 				DC5BDCC324589179009C65A3 /* VoiceMemosTests */,
+				CA71F02129A6A32F007AE0DD /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};

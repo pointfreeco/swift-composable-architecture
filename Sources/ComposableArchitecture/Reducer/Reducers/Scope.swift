@@ -199,8 +199,8 @@ public struct Scope<ParentState, ParentAction, Child: ReducerProtocol>: ReducerP
   /// > ```
   /// >
   /// > If the parent domain contains additional logic for switching between cases of child state,
-  /// > prefer ``ReducerProtocol/ifCaseLet(_:action:then:fileID:line:)``, which better ensures
-  /// > that child logic runs _before_ any parent logic can replace child state:
+  /// > prefer ``ReducerProtocol/ifCaseLet(_:action:then:fileID:line:)``, which better ensures that
+  /// > child logic runs _before_ any parent logic can replace child state:
   /// >
   /// > ```swift
   /// > Reduce { state, action in
