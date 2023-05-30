@@ -191,20 +191,32 @@ private struct Root: ReducerProtocol {
 
     #if swift(>=5.7)
       var body: some ReducerProtocol<State, Action> {
-        Scope(state: /State.featureA, action: /Action.featureA) {
-          Feature()
-        }
-        Scope(state: /State.featureB, action: /Action.featureB) {
-          Feature()
+        ReducerReader { state, _ in
+          switch state {
+          case .featureA:
+            Scope(state: /State.featureA, action: /Action.featureA) {
+              Feature()
+            }
+          case .featureB:
+            Scope(state: /State.featureB, action: /Action.featureB) {
+              Feature()
+            }
+          }
         }
       }
     #else
       var body: Reduce<State, Action> {
-        Scope(state: /State.featureA, action: /Action.featureA) {
-          Feature()
-        }
-        Scope(state: /State.featureB, action: /Action.featureB) {
-          Feature()
+        ReducerReader { state, _ in
+          switch state {
+          case .featureA:
+            Scope(state: /State.featureA, action: /Action.featureA) {
+              Feature()
+            }
+          case .featureB:
+            Scope(state: /State.featureB, action: /Action.featureB) {
+              Feature()
+            }
+          }
         }
       }
     #endif
