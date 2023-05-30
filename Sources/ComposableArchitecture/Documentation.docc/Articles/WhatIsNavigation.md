@@ -155,7 +155,7 @@ a detail feature for an item and then navigate to an edit screen, this can be re
 ```swift
 enum Path {
   case detail(DetailItemFeature.State)
-  case edit(DetailItemFeature.State)
+  case edit(EditItemFeature.State)
   // ...
 }
 ```
