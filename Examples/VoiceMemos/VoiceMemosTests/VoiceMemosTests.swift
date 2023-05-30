@@ -46,7 +46,7 @@ final class VoiceMemosTests: XCTestCase {
           url: deadbeefURL
         )
       }
-      await store.send(.recordingMemo(.presented(.task)))
+      await store.send(.recordingMemo(.presented(.onTask)))
       await store.send(.recordingMemo(.presented(.stopButtonTapped))) {
         $0.recordingMemo?.mode = .encoding
       }
@@ -129,7 +129,7 @@ final class VoiceMemosTests: XCTestCase {
         url: URL(fileURLWithPath: "/tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")
       )
     }
-    let recordingMemoTask = await store.send(.recordingMemo(.presented(.task)))
+    let recordingMemoTask = await store.send(.recordingMemo(.presented(.onTask)))
     await self.clock.advance(by: .seconds(1))
     await store.receive(.recordingMemo(.presented(.timerUpdated))) {
       $0.recordingMemo?.duration = 1
