@@ -833,7 +833,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     line: UInt = #line
   ) async {
     Task.cancel(id: OnFirstAppearID())
-    
+
     let nanoseconds = nanoseconds ?? self.timeout
     let start = DispatchTime.now().uptimeNanoseconds
     await Task.megaYield()

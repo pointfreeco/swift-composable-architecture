@@ -39,7 +39,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
               return state
             },
             action: { .element(id: component.id, action: $0) }
-        )
+          )
       )
     }
     self._viewStore = StateObject(
@@ -76,7 +76,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
               return state
             },
             action: { .element(id: component.id, action: $0) }
-        )
+          )
       ) { _ in
         destination(component.element)
       }

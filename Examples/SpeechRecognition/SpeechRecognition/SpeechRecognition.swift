@@ -59,7 +59,7 @@ struct SpeechRecognition: ReducerProtocol {
         }
 
       case .speech(.failure(SpeechClient.Failure.couldntConfigureAudioSession)),
-          .speech(.failure(SpeechClient.Failure.couldntStartAudioEngine)):
+        .speech(.failure(SpeechClient.Failure.couldntStartAudioEngine)):
         state.alert = AlertState { TextState("Problem with audio device. Please try again.") }
         return .none
 
@@ -83,10 +83,10 @@ struct SpeechRecognition: ReducerProtocol {
         case .denied:
           state.alert = AlertState {
             TextState(
-            """
-            You denied access to speech recognition. This app needs access to transcribe your \
-            speech.
-            """
+              """
+              You denied access to speech recognition. This app needs access to transcribe your \
+              speech.
+              """
             )
           }
           return .none

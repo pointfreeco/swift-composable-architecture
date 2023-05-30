@@ -73,8 +73,7 @@ public struct StackState<Element> {
       yield &value
       guard success else {
         var description: String?
-        if
-          let root = root,
+        if let root = root,
           let metadata = EnumMetadata(Element.self),
           let caseName = metadata.caseName(forTag: metadata.tag(of: root))
         {

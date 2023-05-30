@@ -13,7 +13,7 @@ let dependenciesSuite = BenchmarkSuite(name: "Dependencies") { suite in
     .dependency(\.mainRunLoop, .immediate)
     .dependency(\.timeZone, .autoupdatingCurrent)
     .dependency(\.uuid, .init { UUID() })
-  
+
   suite.benchmark("Dependency key writing") {
     var state = 0
     _ = reducer.reduce(into: &state, action: ())
