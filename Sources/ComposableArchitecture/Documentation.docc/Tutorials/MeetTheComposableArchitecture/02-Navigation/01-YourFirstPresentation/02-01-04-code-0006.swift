@@ -18,7 +18,7 @@ struct AddContactFeature: ReducerProtocol {
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .cancelButtonTapped:
-      return .fireAndForget { await self.dismiss() }
+      return .run { _ in await self.dismiss() }
 
     case .delegate:
       return .none
