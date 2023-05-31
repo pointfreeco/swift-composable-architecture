@@ -18,16 +18,16 @@ final class StoreTests: BaseTCATestCase {
 
   func testCancellableIsRemovedWhenEffectCompletes() {
     let mainQueue = DispatchQueue.test
-    let effect = Effect.send(())
-      .delay(for: 1, scheduler: mainQueue)
-      .eraseToEffect()
 
     enum Action { case start, end }
 
     let reducer = Reduce<Void, Action>({ _, action in
       switch action {
       case .start:
-        return effect.map { .end }
+        return .publisher {
+          Just(.end)
+            .delay(for: 1, scheduler: mainQueue)
+        }
       case .end:
         return .none
       }
@@ -201,17 +201,29 @@ final class StoreTests: BaseTCATestCase {
         return .merge(
           .send(.next1),
           .send(.next2),
-          .fireAndForget { values.append(1) }
+          .publisher {
+            values.append(1)
+            return Empty(outputType: Action.self, failureType: Never.self)
+          }
         )
       case .next1:
         return .merge(
           .send(.end),
-          .fireAndForget { values.append(2) }
+          .publisher {
+            values.append(2)
+            return Empty(outputType: Action.self, failureType: Never.self)
+          }
         )
       case .next2:
-        return .fireAndForget { values.append(3) }
+        return .publisher {
+          values.append(3)
+          return Empty(outputType: Action.self, failureType: Never.self)
+        }
       case .end:
-        return .fireAndForget { values.append(4) }
+        return .publisher {
+          values.append(4)
+          return Empty(outputType: Action.self, failureType: Never.self)
+        }
       }
     })
 
@@ -737,7 +749,7 @@ final class StoreTests: BaseTCATestCase {
     } withDependencies: {
       $0.mainQueue = mainQueue.eraseToAnyScheduler()
     }
-    let viewStore = ViewStore(store)
+    let viewStore = ViewStore(store, observe: { $0 })
 
     let childTask = viewStore.send(.child(.task))
     try await Task.sleep(nanoseconds: 100_000_000)

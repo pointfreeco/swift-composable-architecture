@@ -17,12 +17,13 @@ final class TestStoreTests: BaseTCATestCase {
         switch action {
         case .a:
           return .merge(
-            Effect.concatenate(.send(.b1), .send(.c1))
-              .delay(for: 1, scheduler: mainQueue)
-              .eraseToEffect(),
-            Empty(completeImmediately: false)
-              .eraseToEffect()
-              .cancellable(id: 1)
+            .run { send in
+              try await mainQueue.sleep(for: .seconds(1))
+              await send(.b1)
+              await send(.c1)
+            },
+            .run { _ in try await Task.never() }
+            .cancellable(id: 1)
           )
         case .b1:
           return .concatenate(.send(.b2), .send(.b3))
