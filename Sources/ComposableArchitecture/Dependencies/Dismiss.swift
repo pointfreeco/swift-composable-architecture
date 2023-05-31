@@ -24,9 +24,9 @@ extension DependencyValues {
 ///   @Dependency(\.dismiss) var dismiss
 ///   func reduce(into state: inout State, action: Action) -> Effect<Action> {
 ///     switch action {
-///       case .exitButtonTapped:
-///         return .fireAndForget { await self.dismiss() }
-///       // ...
+///     case .exitButtonTapped:
+///       return .fireAndForget { await self.dismiss() }
+///     // ...
 ///     }
 ///   }
 /// }
