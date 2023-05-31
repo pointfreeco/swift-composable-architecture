@@ -787,6 +787,8 @@ await store.send(.addButtonTapped) {
 
 ## Testing gotchas
 
+### Testing host application
+
 This is not well known, but when an application target runs tests it actually boots up a simulator
 and runs your actual application entry point in the simulator. This means while tests are running,
 your application's code is separately also running. This can be a huge gotcha because it means you
@@ -828,6 +830,25 @@ struct MyApp: App {
 
 That will allow tests to run in the application target without your actual application code
 interfering.
+
+### Statically linking your tests target to ComposableArchitecture
+
+If you statically link the `ComposableArchitecture` module, or any of its transitive dependencies 
+such as `Dependencies`, to your tests target, its implementation may clash with the implementation 
+that is statically linked to the app itself. The most usually manifests by getting mysterious
+test failures telling you that you are using live dependencies in your tests even though you have
+overridden your dependencies. 
+
+In such cases Xcode will display multiple warnings similar to:
+
+> Class _TtC12Dependencies[…] is implemented in both […] and […].
+> One of the two will be used. Which one is undefined.
+
+The solution is to remove the static link to `ComposableArchitecture`, and any transitive dependency
+in the library, from your test target, as you automatically get access to it through the app itself. 
+In Xcode, go to "Build Phases" and remove "ComposableArchitecture" from the "Link Binary With 
+Libraries" section. When using SwiftPM, remove the "ComposableArchitecture" entry from the 
+`testTarget`'s' `dependencies` array in `Package.swift`.
 
 [xctest-dynamic-overlay-gh]: http://github.com/pointfreeco/xctest-dynamic-overlay
 [Testing-state-changes]: #Testing-state-changes
