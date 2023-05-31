@@ -41,9 +41,10 @@
         Reduce<Int, Action> { state, action in
           switch action {
           case .tap:
-            return Empty()
-              .receive(on: DispatchQueue(label: "background"))
-              .eraseToEffect()
+            return .publisher {
+              Empty()
+                .receive(on: DispatchQueue(label: "background"))
+            }
           case .response:
             return .none
           }
