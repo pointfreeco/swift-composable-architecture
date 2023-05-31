@@ -8,7 +8,7 @@ as well as their tradeoffs.
 State-driven navigation broadly falls into 2 main categories: tree-based, where you use optionals
 and enums to model navigation, and stack-based, where you use flat collections to model navigation.
 Nearly all navigations will use a combination of the two styles, but it is important to know
-their strenghts and weaknesses.
+their strengths and weaknesses.
 
 * [Tree-based navigation](#Tree-based-navigation)
 * [Stack-based navigation](#Stack-based-navigation)
