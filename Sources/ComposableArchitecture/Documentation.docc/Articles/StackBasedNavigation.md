@@ -217,8 +217,8 @@ case let .path(.element(id: id, action: .editItem(.saveButtonTapped))):
   else { return .none }
 
   state.path.pop(from: id)
-  return .fireAndForget {
-    self.database.save(editItemState.item)
+  return .run {
+    await self.database.save(editItemState.item)
   }
 ```
 
@@ -277,7 +277,7 @@ struct Feature: ReducerProtocol {
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .closeButtonTapped:
-      return .fireAndForget { await self.dismiss() }
+      return .run { await self.dismiss() }
     // ...
     } 
   }
@@ -344,7 +344,7 @@ struct CounterFeature: ReducerProtocol {
     case .incrementButtonTapped:
       state.count += 1
       return state.count >= 5
-        ? .fireAndForget { await self.dismiss() }
+        ? .run { await self.dismiss() }
         : .none
     }
   }
