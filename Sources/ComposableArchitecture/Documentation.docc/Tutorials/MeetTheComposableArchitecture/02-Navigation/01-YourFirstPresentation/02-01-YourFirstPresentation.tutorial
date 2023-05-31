@@ -247,7 +247,7 @@
         @Code(name: "ContactsFeature.swift", file: 02-01-04-code-0003, previousFile: 02-01-04-code-0003-previous)
       }
       
-      The application should work exactly has it did before the "delegate action" refactor, but now
+      The application should work exactly as it did before the "delegate action" refactor, but now
       the child feature can accurately describe what it wants the parent to do rather than the
       parent make assumptions. There is still room for improvement though. It is very common for a
       child feature to want to dismiss itself, such as is the case when tapping "Cancel". It is too

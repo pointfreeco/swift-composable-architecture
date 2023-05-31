@@ -33,7 +33,7 @@ struct ContentView: View {
     .sheet(
       store: self.store.scope(state: \.$destination, action: { .destination($0) }),
       state: /ContactsFeature.Destination.State.addContact,
-      action: ContactsFeature.Destination.Action.addContact,
+      action: ContactsFeature.Destination.Action.addContact
     ) { addContactStore in
       NavigationStack {
         AddContactView(store: addContactStore)

@@ -18,7 +18,7 @@ final class ContactsFeatureTests: XCTestCase {
     }
 
     await store.send(.deleteButtonTapped(id: UUID(1))) {
-      state.destination = .alert(.deleteConfirmation(id: id))
+      state.destination = .alert(.deleteConfirmation(id: UUID(1)))
     }
     await store.send(.destination(.presented(.alert(.confirmDeletion(id: UUID(1)))))) {
       $0.contacts.remove(id: UUID(1))

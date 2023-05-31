@@ -18,14 +18,14 @@ struct AddContactFeature: Reducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .cancelButtonTapped:
-      return .fireAndForget { await self.dismiss() }
+      return .run { _ in await self.dismiss() }
 
     case .delegate:
       return .none
 
     case .saveButtonTapped:
       return .run { [contact = state.contact] send in
-        await send(.delegate(.saveContact(state.contact)))
+        await send(.delegate(.saveContact(contact)))
         await self.dismiss()
       }
 

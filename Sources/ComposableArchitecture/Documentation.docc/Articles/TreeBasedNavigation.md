@@ -453,7 +453,7 @@ the child domain without explicitly communicating with the parent.
 
 ## Testing
 
-A huge benefit of properly modeling your domains for navigation is that testing because quite easy.
+A huge benefit of properly modeling your domains for navigation is that testing becomes quite easy.
 Further, using "non-exhaustive testing" (see <doc:Testing#Non-exhaustive-testing>) can be very 
 useful for testing navigation since you often only want to assert on a few high level details and 
 not all state mutations and effects.
@@ -476,7 +476,7 @@ struct CounterFeature: Reducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .decrementButtonTapped:
-      state.count += 1
+      state.count -= 1
       return .none
 
     case .incrementButtonTapped:
