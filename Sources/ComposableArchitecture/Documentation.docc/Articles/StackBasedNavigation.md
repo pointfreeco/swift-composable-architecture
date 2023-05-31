@@ -230,7 +230,7 @@ from the stack using ``StackState/pop(from:)``.
 
 ## Dismissal
 
-Dismissing a feature in a stack is as simple as using mutating the ``StackState`` using one of its
+Dismissing a feature in a stack is as simple as mutating the ``StackState`` using one of its
 methods, such as ``StackState/popLast()``, ``StackState/pop(from:)`` and more:
 
 ```swift
@@ -315,7 +315,7 @@ with the parent.
 
 ## Testing
 
-A huge benefit of using the tools of this library to model navigation stacks is that testing because 
+A huge benefit of using the tools of this library to model navigation stacks is that testing becomes 
 quite easy. Further, using "non-exhaustive testing" (see <doc:Testing#Non-exhaustive-testing>) can 
 be very useful for testing navigation since you often only want to assert on a few high level 
 details and not all state mutations and effects.
@@ -398,7 +398,7 @@ func testDismissal() {
 ```
 
 Then we can send the `.incrementButtonTapped` action in the counter child feature inside the
-stack in order to to confirm that the count goes up by one, but in order to do so we need to provide
+stack in order to confirm that the count goes up by one, but in order to do so we need to provide
 an ID:
 
 ```swift
