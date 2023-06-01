@@ -210,21 +210,27 @@ final class EffectCancellationTests: BaseTCATestCase {
     XCTAssertEqual(expectedOutput, [1, 2])
   }
 
-  func testImmediateCancellation() {
+  func testImmediateCancellation() async {
     let mainQueue = DispatchQueue.test
 
-    var expectedOutput: [Int] = []
-    // Don't hold onto cancellable so that it is deallocated immediately.
-    _ = Effect.publisher {
-      Deferred { Just(1) }
-        .delay(for: 1, scheduler: mainQueue)
+    let expectedOutput = LockIsolated<[Int]>([])
+    let effect = Effect.run { send in
+      try await mainQueue.sleep(for: .seconds(1))
+      await send(1)
     }
     .cancellable(id: "id")
-    .sink { expectedOutput.append($0) }
 
-    XCTAssertEqual(expectedOutput, [])
-    mainQueue.advance(by: 1)
-    XCTAssertEqual(expectedOutput, [])
+    let task = Task {
+      for await n in effect.actions {
+        expectedOutput.withValue { $0.append(n) }
+      }
+    }
+
+    XCTAssertEqual(expectedOutput.value, [])
+    task.cancel()
+
+    await mainQueue.advance(by: 1)
+    XCTAssertEqual(expectedOutput.value, [])
   }
 
   func testNestedMergeCancellation() {

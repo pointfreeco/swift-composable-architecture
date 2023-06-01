@@ -151,6 +151,8 @@ final class EffectTests: BaseTCATestCase {
 
           await clock.advance(by: .seconds(1))
           XCTAssertEqual(values.value, [1, 2, 3])
+
+          await task.value
         }
       }
     }
