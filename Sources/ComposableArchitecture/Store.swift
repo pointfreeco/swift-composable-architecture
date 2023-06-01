@@ -742,3 +742,17 @@ extension ScopedReducer: AnyScopedReducer {
     return childStore
   }
 }
+
+extension Store where Action == Never {
+    /// Scopes an actionless store to one that exposes child state and actions.
+    ///
+    /// - Parameters:
+    ///   - toChildState: A function that transforms `State` into `ChildState`.
+    /// - Returns: A new store with its domain (state and action) transformed.
+    public func scope<ChildState>(
+      state toChildState: @escaping (State) -> ChildState
+    ) -> Store<ChildState, Never> {
+        func absurd<A>(_: Never) -> A { }
+        return self.scope(state: toChildState, action: absurd)
+    }
+}
