@@ -28,7 +28,7 @@
         throw Unexpected()
       }
 
-      for await _ in effect.values {}
+      for await _ in effect.actions {}
     }
 
     func testRunUnexpectedThrows() async {
@@ -52,7 +52,7 @@
         throw Unexpected()
       }
 
-      for await _ in effect.values {}
+      for await _ in effect.actions {}
     }
   }
 #endif

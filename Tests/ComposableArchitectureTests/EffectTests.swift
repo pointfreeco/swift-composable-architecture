@@ -57,9 +57,9 @@ final class EffectTests: BaseTCATestCase {
       await withMainSerialExecutor {
         if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
           let clock = TestClock()
-          var values: [Int] = []
+          let values = LockIsolated<[Int]>([])
 
-          let effect = EffectPublisher<Int, Never>.concatenate(
+          let effect = EffectTask<Int>.concatenate(
             (1...3).map { count in
               .task {
                 try await clock.sleep(for: .seconds(count))
@@ -68,42 +68,54 @@ final class EffectTests: BaseTCATestCase {
             }
           )
 
-          effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+          let task = Task {
+            for await n in effect.actions {
+              values.withValue { $0.append(n) }
+            }
+          }
 
-          XCTAssertEqual(values, [])
+          XCTAssertEqual(values.value, [])
 
           await clock.advance(by: .seconds(1))
-          XCTAssertEqual(values, [1])
+          XCTAssertEqual(values.value, [1])
 
           await clock.advance(by: .seconds(2))
-          XCTAssertEqual(values, [1, 2])
+          XCTAssertEqual(values.value, [1, 2])
 
           await clock.advance(by: .seconds(3))
-          XCTAssertEqual(values, [1, 2, 3])
+          XCTAssertEqual(values.value, [1, 2, 3])
 
           await clock.run()
-          XCTAssertEqual(values, [1, 2, 3])
+          XCTAssertEqual(values.value, [1, 2, 3])
+
+          await task.value
         }
       }
     }
   #endif
 
-  func testConcatenateOneEffect() {
-    var values: [Int] = []
+  func testConcatenateOneEffect() async {
+    let values = LockIsolated<[Int]>([])
 
     let effect = Effect<Int>.concatenate(
-      .send(1).delay(for: 1, scheduler: mainQueue).eraseToEffect()
+      .publisher { Just(1).delay(for: 1, scheduler: self.mainQueue) }
     )
 
-    effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+    let task = Task {
+      for await n in effect.actions {
+        values.withValue { $0.append(n) }
+      }
+    }
 
-    XCTAssertEqual(values, [])
+    XCTAssertEqual(values.value, [])
 
-    self.mainQueue.advance(by: 1)
-    XCTAssertEqual(values, [1])
+    await self.mainQueue.advance(by: 1)
+    XCTAssertEqual(values.value, [1])
 
-    self.mainQueue.run()
-    XCTAssertEqual(values, [1])
+    await self.mainQueue.run()
+    XCTAssertEqual(values.value, [1])
+
+    await task.value
   }
 
   #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
@@ -121,19 +133,24 @@ final class EffectTests: BaseTCATestCase {
             }
           )
 
-          var values: [Int] = []
-          effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+          let values = LockIsolated<[Int]>([])
 
-          XCTAssertEqual(values, [])
+          let task = Task {
+            for await n in effect.actions {
+              values.withValue { $0.append(n) }
+            }
+          }
+
+          XCTAssertEqual(values.value, [])
 
           await clock.advance(by: .seconds(1))
-          XCTAssertEqual(values, [1])
+          XCTAssertEqual(values.value, [1])
 
           await clock.advance(by: .seconds(1))
-          XCTAssertEqual(values, [1, 2])
+          XCTAssertEqual(values.value, [1, 2])
 
           await clock.advance(by: .seconds(1))
-          XCTAssertEqual(values, [1, 2, 3])
+          XCTAssertEqual(values.value, [1, 2, 3])
         }
       }
     }
@@ -225,13 +242,17 @@ final class EffectTests: BaseTCATestCase {
     self.wait(for: [expectation], timeout: 0)
   }
 
-  func testDoubleCancelInFlight() {
+  func testDoubleCancelInFlight() async {
     var result: Int?
 
-    _ = Effect.send(42)
+    let effect = Effect.send(42)
       .cancellable(id: "id", cancelInFlight: true)
       .cancellable(id: "id", cancelInFlight: true)
-      .sink { result = $0 }
+
+    for await n in effect.actions {
+      XCTAssertNil(result)
+      result = n
+    }
 
     XCTAssertEqual(result, 42)
   }
