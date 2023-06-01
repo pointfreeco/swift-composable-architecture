@@ -45,7 +45,7 @@ final class VoiceMemosTests: XCTestCase {
           url: deadbeefURL
         )
       }
-      await store.send(.recordingMemo(.presented(.task)))
+      await store.send(.recordingMemo(.presented(.onTask)))
       await store.send(.recordingMemo(.presented(.stopButtonTapped))) {
         $0.recordingMemo?.mode = .encoding
       }

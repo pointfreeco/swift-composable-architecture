@@ -9,6 +9,7 @@ private let readMe = """
   inspired by Elm's `subscriptions` API.
   """
 
+@available(*, deprecated)
 extension AnyReducer {
   static func subscriptions(
     _ subscriptions: @escaping (State, Environment) -> [AnyHashable: Effect<Action>]
@@ -50,6 +51,7 @@ struct ClockEnvironment {
   var clock: any Clock<Duration>
 }
 
+@available(*, deprecated)
 let clockReducer = AnyReducer<ClockState, ClockAction, ClockEnvironment>.combine(
   AnyReducer { state, action, environment in
     switch action {
@@ -139,6 +141,7 @@ struct ClockView: View {
 
 // MARK: - SwiftUI previews
 
+@available(*, deprecated)
 struct Subscriptions_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {

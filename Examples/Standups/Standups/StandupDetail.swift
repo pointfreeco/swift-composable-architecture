@@ -1,12 +1,12 @@
 import ComposableArchitecture
-import SwiftUI
+@preconcurrency import SwiftUI
 
 struct StandupDetail: Reducer {
   struct State: Equatable {
     @PresentationState var destination: Destination.State?
     var standup: Standup
   }
-  enum Action: Equatable {
+  enum Action: Equatable, Sendable {
     case cancelEditButtonTapped
     case delegate(Delegate)
     case deleteButtonTapped
@@ -31,7 +31,7 @@ struct StandupDetail: Reducer {
       case alert(AlertState<Action.Alert>)
       case edit(StandupForm.State)
     }
-    enum Action: Equatable {
+    enum Action: Equatable, Sendable {
       case alert(Alert)
       case edit(StandupForm.Action)
 

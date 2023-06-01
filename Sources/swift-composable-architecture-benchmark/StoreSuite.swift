@@ -50,9 +50,7 @@ private struct Feature: Reducer {
         return .none
       case .tap:
         state.count = 1
-        return Empty(completeImmediately: true)
-          .eraseToEffect()
-          .cancellable(id: UUID())
+        return .publisher { Empty() }.cancellable(id: UUID())
       case .none:
         return .none
       }

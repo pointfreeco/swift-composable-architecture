@@ -59,7 +59,7 @@ class LazyNavigationViewController: UIViewController {
 
   init(store: StoreOf<LazyNavigation>) {
     self.store = store
-    self.viewStore = ViewStore(store)
+    self.viewStore = ViewStore(store, observe: { $0 })
     super.init(nibName: nil, bundle: nil)
   }
 

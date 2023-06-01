@@ -107,7 +107,7 @@ struct VoiceMemoView: View {
   let store: StoreOf<VoiceMemo>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       let currentTime =
         viewStore.mode.progress.map { $0 * viewStore.duration } ?? viewStore.duration
       HStack {

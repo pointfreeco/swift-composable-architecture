@@ -31,7 +31,7 @@ final class CounterViewController: UIViewController {
   private var cancellables: Set<AnyCancellable> = []
 
   init(store: StoreOf<Counter>) {
-    self.viewStore = ViewStore(store)
+    self.viewStore = ViewStore(store, observe: { $0 })
     super.init(nibName: nil, bundle: nil)
   }
 

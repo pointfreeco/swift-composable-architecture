@@ -3,7 +3,7 @@ import SwiftUI
 import SwiftUINavigation
 
 struct StandupForm: Reducer {
-  struct State: Equatable {
+  struct State: Equatable, Sendable {
     @BindingState var focus: Field? = .title
     @BindingState var standup: Standup
 
@@ -21,7 +21,7 @@ struct StandupForm: Reducer {
       case title
     }
   }
-  enum Action: BindableAction, Equatable {
+  enum Action: BindableAction, Equatable, Sendable {
     case addAttendeeButtonTapped
     case binding(BindingAction<State>)
     case deleteAttendees(atOffsets: IndexSet)
