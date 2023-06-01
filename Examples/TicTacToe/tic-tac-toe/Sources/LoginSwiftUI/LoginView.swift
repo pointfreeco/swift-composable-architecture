@@ -9,7 +9,6 @@ public struct LoginView: View {
   let store: StoreOf<Login>
 
   struct ViewState: Equatable {
-    var alert: AlertState<Login.AlertAction>?
     @BindingViewState var email: String
     var isActivityIndicatorVisible: Bool
     var isFormDisabled: Bool
@@ -75,7 +74,6 @@ public struct LoginView: View {
 extension BindingViewStore<Login.State> {
   var view: LoginView.ViewState {
     LoginView.ViewState(
-      alert: self.alert,
       email: self.$email,
       isActivityIndicatorVisible: self.isLoginRequestInFlight,
       isFormDisabled: self.isLoginRequestInFlight,

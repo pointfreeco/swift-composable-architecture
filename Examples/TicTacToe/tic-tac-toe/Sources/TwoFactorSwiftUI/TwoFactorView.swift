@@ -7,7 +7,6 @@ public struct TwoFactorView: View {
   let store: StoreOf<TwoFactor>
 
   struct ViewState: Equatable {
-    var alert: AlertState<TwoFactor.Action.Alert>?
     @BindingViewState var code: String
     var isActivityIndicatorVisible: Bool
     var isFormDisabled: Bool
@@ -57,7 +56,6 @@ public struct TwoFactorView: View {
 extension BindingViewStore<TwoFactor.State> {
   var view: TwoFactorView.ViewState {
     TwoFactorView.ViewState(
-      alert: self.alert,
       code: self.$code,
       isActivityIndicatorVisible: self.isTwoFactorRequestInFlight,
       isFormDisabled: self.isTwoFactorRequestInFlight,
