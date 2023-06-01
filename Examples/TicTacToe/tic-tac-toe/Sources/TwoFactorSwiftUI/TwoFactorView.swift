@@ -7,7 +7,7 @@ public struct TwoFactorView: View {
   let store: StoreOf<TwoFactor>
 
   struct ViewState: Equatable {
-    var alert: AlertState<Never>?
+    var alert: AlertState<TwoFactor.Action.Alert>?
     @BindingViewState var code: String
     var isActivityIndicatorVisible: Bool
     var isFormDisabled: Bool
@@ -27,7 +27,7 @@ public struct TwoFactorView: View {
   }
 
   public var body: some View {
-    WithViewStore(self.store, observe: ViewState.init) { viewStore in
+    WithViewStore(self.store, observe: ViewState.init, send: { .view($0) }) { viewStore in
       Form {
         Text(#"To confirm the second factor enter "1234" into the form."#)
 
