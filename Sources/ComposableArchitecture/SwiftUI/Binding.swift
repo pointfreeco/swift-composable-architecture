@@ -210,6 +210,7 @@ public struct BindingViewStore<State> {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) where Action.State == State {
+    // TODO: Can we avoid this store scoping?
     self.store = store.scope(state: { $0 }, action: Action.binding)
     #if DEBUG
       self.bindableActionType = type(of: Action.self)
@@ -241,6 +242,7 @@ public struct BindingViewStore<State> {
     dynamicMember keyPath: WritableKeyPath<State, BindingState<Value>>
   ) -> BindingViewState<Value> {
     BindingViewState(
+      // OPTIMIZE: Can we derive bindings directly from `Store` and avoid the work of creating a `ViewStore`?
       binding: ViewStore(self.store, removeDuplicates: { _, _ in false }).binding(
         get: { $0[keyPath: keyPath].wrappedValue },
         send: { value in
@@ -282,6 +284,7 @@ extension WithViewStore where Content: View {
       observe: { (_: State) in
         toViewState(
           BindingViewStore(
+            // TODO: Can we avoid this store scoping?
             store: store.scope(state: { $0 }, action: fromViewAction)
           )
         )
