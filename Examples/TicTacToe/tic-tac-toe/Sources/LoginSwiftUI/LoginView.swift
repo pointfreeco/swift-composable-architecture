@@ -15,15 +15,6 @@ public struct LoginView: View {
     var isFormDisabled: Bool
     var isLoginButtonDisabled: Bool
     @BindingViewState var password: String
-
-    init(state: BindingViewStore<Login.State>) {
-      self.alert = state.alert
-      self._email = state.$email
-      self.isActivityIndicatorVisible = state.isLoginRequestInFlight
-      self.isFormDisabled = state.isLoginRequestInFlight
-      self.isLoginButtonDisabled = !state.isFormValid
-      self._password = state.$password
-    }
   }
 
   public init(store: StoreOf<Login>) {
@@ -31,7 +22,7 @@ public struct LoginView: View {
   }
 
   public var body: some View {
-    WithViewStore(self.store, observe: ViewState.init, send: { .view($0) }) { viewStore in
+    WithViewStore(self.store, observe: \.view, send: { .view($0) }) { viewStore in
       Form {
         Text(
           """
@@ -78,6 +69,19 @@ public struct LoginView: View {
       )
     }
     .navigationTitle("Login")
+  }
+}
+
+extension BindingViewStore<Login.State> {
+  var view: LoginView.ViewState {
+    LoginView.ViewState(
+      alert: self.alert,
+      email: self.$email,
+      isActivityIndicatorVisible: self.isLoginRequestInFlight,
+      isFormDisabled: self.isLoginRequestInFlight,
+      isLoginButtonDisabled: !self.isFormValid,
+      password: self.$password
+    )
   }
 }
 

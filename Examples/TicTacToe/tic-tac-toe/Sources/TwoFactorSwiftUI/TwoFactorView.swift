@@ -12,14 +12,6 @@ public struct TwoFactorView: View {
     var isActivityIndicatorVisible: Bool
     var isFormDisabled: Bool
     var isSubmitButtonDisabled: Bool
-
-    init(store: BindingViewStore<TwoFactor.State>) {
-      self.alert = store.alert
-      self._code = store.$code
-      self.isActivityIndicatorVisible = store.isTwoFactorRequestInFlight
-      self.isFormDisabled = store.isTwoFactorRequestInFlight
-      self.isSubmitButtonDisabled = !store.isFormValid
-    }
   }
 
   public init(store: StoreOf<TwoFactor>) {
@@ -27,7 +19,7 @@ public struct TwoFactorView: View {
   }
 
   public var body: some View {
-    WithViewStore(self.store, observe: ViewState.init, send: { .view($0) }) { viewStore in
+    WithViewStore(self.store, observe: \.view, send: { .view($0) }) { viewStore in
       Form {
         Text(#"To confirm the second factor enter "1234" into the form."#)
 
@@ -59,6 +51,18 @@ public struct TwoFactorView: View {
       .disabled(viewStore.isFormDisabled)
       .navigationTitle("Confirmation Code")
     }
+  }
+}
+
+extension BindingViewStore<TwoFactor.State> {
+  var view: TwoFactorView.ViewState {
+    TwoFactorView.ViewState(
+      alert: self.alert,
+      code: self.$code,
+      isActivityIndicatorVisible: self.isTwoFactorRequestInFlight,
+      isFormDisabled: self.isTwoFactorRequestInFlight,
+      isSubmitButtonDisabled: !self.isFormValid
+    )
   }
 }
 
