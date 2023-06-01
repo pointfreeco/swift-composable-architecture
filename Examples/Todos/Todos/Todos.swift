@@ -34,7 +34,7 @@ struct Todos: ReducerProtocol {
 
   @Dependency(\.continuousClock) var clock
   @Dependency(\.uuid) var uuid
-  private enum TodoCompletionID {}
+  private enum CancelID { case todoCompletion }
 
   var body: some ReducerProtocol<State, Action> {
     BindingReducer()
@@ -88,7 +88,7 @@ struct Todos: ReducerProtocol {
           try await self.clock.sleep(for: .seconds(1))
           await send(.sortCompletedTodos, animation: .default)
         }
-        .cancellable(id: TodoCompletionID.self, cancelInFlight: true)
+        .cancellable(id: CancelID.todoCompletion, cancelInFlight: true)
 
       case .todo:
         return .none
@@ -159,17 +159,17 @@ extension IdentifiedArray where ID == Todo.State.ID, Element == Todo.State {
   static let mock: Self = [
     Todo.State(
       description: "Check Mail",
-      id: UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEDDEADBEEF")!,
+      id: UUID(),
       isComplete: false
     ),
     Todo.State(
       description: "Buy Milk",
-      id: UUID(uuidString: "CAFEBEEF-CAFE-BEEF-CAFE-BEEFCAFEBEEF")!,
+      id: UUID(),
       isComplete: false
     ),
     Todo.State(
       description: "Call Mom",
-      id: UUID(uuidString: "D00DCAFE-D00D-CAFE-D00D-CAFED00DCAFE")!,
+      id: UUID(),
       isComplete: true
     ),
   ]
@@ -178,10 +178,9 @@ extension IdentifiedArray where ID == Todo.State.ID, Element == Todo.State {
 struct AppView_Previews: PreviewProvider {
   static var previews: some View {
     AppView(
-      store: Store(
-        initialState: Todos.State(todos: .mock),
-        reducer: Todos()
-      )
+      store: Store(initialState: Todos.State(todos: .mock)) {
+        Todos()
+      }
     )
   }
 }

@@ -12,10 +12,9 @@ import SwiftUI
 @dynamicMemberLookup
 @propertyWrapper
 public struct BindingState<Value> {
-  /// The underlying value wrapped by the bindable state.
+  /// The underlying value wrapped by the binding state.
   public var wrappedValue: Value
   #if DEBUG
-    let file: StaticString
     let fileID: StaticString
     let line: UInt
   #endif
@@ -23,13 +22,11 @@ public struct BindingState<Value> {
   /// Creates bindable state from the value of another bindable state.
   public init(
     wrappedValue: Value,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) {
     self.wrappedValue = wrappedValue
     #if DEBUG
-      self.file = file
       self.fileID = fileID
       self.line = line
     #endif
@@ -50,7 +47,7 @@ public struct BindingState<Value> {
     set { self = newValue }
   }
 
-  /// Returns bindable state to the resulting value of a given key path.
+  /// Returns binding state to the resulting value of a given key path.
   ///
   /// - Parameter keyPath: A key path to a specific resulting value.
   /// - Returns: A new bindable state.
@@ -120,6 +117,8 @@ extension BindingState: CustomDebugStringConvertible where Value: CustomDebugStr
     self.wrappedValue.debugDescription
   }
 }
+
+extension BindingState: Sendable where Value: Sendable {}
 
 /// An action type that exposes a `binding` case that holds a ``BindingAction``.
 ///
@@ -202,21 +201,18 @@ public struct BindingViewStore<State> {
   let store: Store<State, BindingAction<State>>
   #if DEBUG
     let bindableActionType: Any.Type
-    let file: StaticString
     let fileID: StaticString
     let line: UInt
   #endif
 
   init<Action: BindableAction>(
     store: Store<State, Action>,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) where Action.State == State {
     self.store = store.scope(state: { $0 }, action: Action.binding)
     #if DEBUG
       self.bindableActionType = type(of: Action.self)
-      self.file = file
       self.fileID = fileID
       self.line = line
     #endif
@@ -253,7 +249,7 @@ public struct BindingViewStore<State> {
               value: value,
               bindableActionType: self.bindableActionType,
               context: .bindingStore,
-              file: self.file,
+              isInvalidated: self.store._isInvalidated,
               fileID: self.fileID,
               line: self.line
             )
@@ -370,7 +366,7 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
             value: value,
             bindableActionType: ViewAction.self,
             context: .bindingState,
-            file: bindingState.file,
+            isInvalidated: self._isInvalidated,
             fileID: bindingState.fileID,
             line: bindingState.line
           )
@@ -386,25 +382,25 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
     )
   }
 
-  /// Returns a binding to the resulting bindable state of a given key path.
+  // TODO: Deprecate?
+  /// Returns a binding to the resulting binding state of a given key path.
   ///
-  /// - Parameter keyPath: A key path to a specific bindable state.
+  /// - Parameter keyPath: A key path to a specific binding state.
   /// - Returns: A new binding.
   public func binding<Value: Equatable>(
     _ keyPath: WritableKeyPath<ViewState, BindingState<Value>>,
-    file: StaticString = #file,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Binding<Value> {
     self.binding(
       get: { $0[keyPath: keyPath].wrappedValue },
-      send: { value in
+      send: { [isInvalidated = self._isInvalidated] value in
         #if DEBUG
           let debugger = BindableActionViewStoreDebugger(
             value: value,
             bindableActionType: ViewAction.self,
             context: .viewStore,
-            file: file,
+            isInvalidated: isInvalidated,
             fileID: fileID,
             line: line
           )
@@ -432,8 +428,31 @@ public struct BindingAction<Root>: Equatable, @unchecked Sendable {
 
   @usableFromInline
   let set: @Sendable (inout Root) -> Void
-  let value: AnySendable
+  // NB: swift(<5.8) has an enum existential layout bug that can cause crashes when extracting
+  //     payloads. We can box the existential to work around the bug.
+  #if swift(<5.8)
+    private let _value: [AnySendable]
+    var value: AnySendable { self._value[0] }
+  #else
+    let value: AnySendable
+  #endif
   let valueIsEqualTo: @Sendable (Any) -> Bool
+
+  init(
+    keyPath: PartialKeyPath<Root>,
+    set: @escaping @Sendable (inout Root) -> Void,
+    value: AnySendable,
+    valueIsEqualTo: @escaping @Sendable (Any) -> Bool
+  ) {
+    self.keyPath = keyPath
+    self.set = set
+    #if swift(<5.8)
+      self._value = [value]
+    #else
+      self.value = value
+    #endif
+    self.valueIsEqualTo = valueIsEqualTo
+  }
 
   public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.keyPath == rhs.keyPath && lhs.valueIsEqualTo(rhs.value)
@@ -450,7 +469,7 @@ struct AnySendable: @unchecked Sendable {
 
 extension BindingAction {
   /// Returns an action that describes simple mutations to some root state at a writable key path
-  /// to bindable state.
+  /// to binding state.
   ///
   /// - Parameters:
   ///   - keyPath: A key path to the property that should be mutated. This property must be
@@ -517,14 +536,14 @@ extension BindingAction {
   ///   struct State: Equatable {
   ///     @BindingState var count = 0
   ///     var fact: String?
-  ///     ...
+  ///     // ...
   ///   }
   ///
   ///   enum Action: BindableAction {
   ///     case binding(BindingAction<State>)
   ///     case factButtonTapped
   ///     case factResponse(String?)
-  ///     ...
+  ///     // ...
   ///   }
   ///
   ///   @Dependency(\.numberFact) var numberFact
@@ -548,7 +567,7 @@ extension BindingAction {
   /// view-specific domain that contains only the state and actions the view needs. Not only will
   /// this minimize the number of times a view's `body` is computed, it will prevent the view
   /// from accessing state or sending actions outside its purview. We can define it with its own
-  /// bindable state and bindable action:
+  /// binding state and bindable action:
   ///
   /// ```swift
   /// extension MyFeatureView {
@@ -569,7 +588,7 @@ extension BindingAction {
   /// In order to transform a `BindingAction<ViewState>` sent from the view domain into a
   /// `BindingAction<MyFeature.State>`, we need a writable key path from `MyFeature.State` to
   /// `ViewState`. We can synthesize one by defining a computed property on `MyFeature.State` with a
-  /// getter and a setter. The setter should communicate any mutations to bindable state back to the
+  /// getter and a setter. The setter should communicate any mutations to binding state back to the
   /// parent state:
   ///
   /// ```swift
@@ -590,7 +609,7 @@ extension BindingAction {
   ///
   /// ```swift
   /// extension MyFeature.Action {
-  ///   static func view(_ viewAction: MyFeature.View.ViewAction) -> Self {
+  ///   static func view(_ viewAction: MyFeatureView.ViewAction) -> Self {
   ///     switch viewAction {
   ///     case let .binding(action):
   ///       // transform view binding actions into feature binding actions
@@ -604,7 +623,7 @@ extension BindingAction {
   /// }
   /// ```
   ///
-  /// Finally, in the view we can invoke ``Store/scope(state:action:)`` with these domain
+  /// Finally, in the view we can invoke ``Store/scope(state:action:)-9iai9`` with these domain
   /// transformations to leverage the view store's binding helpers:
   ///
   /// ```swift
@@ -657,7 +676,7 @@ extension BindingAction: CustomDumpReflectable {
     let value: Value
     let bindableActionType: Any.Type
     let context: Context
-    let file: StaticString
+    let isInvalidated: () -> Bool
     let fileID: StaticString
     let line: UInt
     var wasCalled = false
@@ -666,32 +685,32 @@ extension BindingAction: CustomDumpReflectable {
       value: Value,
       bindableActionType: Any.Type,
       context: Context,
-      file: StaticString,
+      isInvalidated: @escaping () -> Bool,
       fileID: StaticString,
       line: UInt
     ) {
       self.value = value
       self.bindableActionType = bindableActionType
       self.context = context
-      self.file = file
+      self.isInvalidated = isInvalidated
       self.fileID = fileID
       self.line = line
     }
 
     deinit {
+      guard !self.isInvalidated() else { return }
       guard self.wasCalled else {
         runtimeWarn(
           """
-          A binding action sent from a view store at "\(self.fileID):\(self.line)" was not \
-          handled. …
+          A binding action sent from a view store \
+          \(self.context == .bindingState ? "for binding state defined " : "")at \
+          "\(self.fileID):\(self.line)" was not handled. …
 
             Action:
               \(typeName(self.bindableActionType)).binding(.set(_, \(self.value)))
 
           To fix this, invoke "BindingReducer()" from your feature reducer's "body".
-          """,
-          file: self.file,
-          line: self.line
+          """
         )
         return
       }

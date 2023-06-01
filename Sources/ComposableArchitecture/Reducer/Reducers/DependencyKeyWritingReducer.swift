@@ -66,6 +66,7 @@ extension ReducerProtocol {
   ///   - value: The new value to set for the item specified by `keyPath`.
   /// - Returns: A reducer that has the given value set in its dependencies.
   @inlinable
+  @warn_unqualified_access
   public func dependency<Value>(
     _ keyPath: WritableKeyPath<DependencyValues, Value>,
     _ value: Value
@@ -117,6 +118,7 @@ extension ReducerProtocol {
   ///   - transform: A closure that is handed a mutable instance of the value specified by the key
   ///     path.
   @inlinable
+  @warn_unqualified_access
   public func transformDependency<V>(
     _ keyPath: WritableKeyPath<DependencyValues, V>,
     transform: @escaping (inout V) -> Void
@@ -146,7 +148,7 @@ public struct _DependencyKeyWritingReducer<Base: ReducerProtocol>: ReducerProtoc
   public func reduce(
     into state: inout Base.State, action: Base.Action
   ) -> EffectTask<Base.Action> {
-    DependencyValues.withValues {
+    withDependencies {
       self.update(&$0)
     } operation: {
       self.base.reduce(into: &state, action: action)

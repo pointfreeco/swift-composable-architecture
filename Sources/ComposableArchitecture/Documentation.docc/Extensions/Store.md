@@ -4,12 +4,12 @@
 
 ### Creating a store
 
-- ``init(initialState:reducer:)``
+- ``init(initialState:reducer:withDependencies:)``
 - ``StoreOf``
 
 ### Scoping stores
 
-- ``scope(state:action:)``
+- ``scope(state:action:)-9iai9``
 
 ### Combine integration
 

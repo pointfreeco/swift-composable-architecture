@@ -6,13 +6,13 @@ import XCTest
 @MainActor
 final class LifecycleTests: XCTestCase {
   func testLifecycle() async {
-    let store = TestStore(
-      initialState: LifecycleDemo.State(),
-      reducer: LifecycleDemo()
-    )
-
     let clock = TestClock()
-    store.dependencies.continuousClock = clock
+
+    let store = TestStore(initialState: LifecycleDemo.State()) {
+      LifecycleDemo()
+    } withDependencies: {
+      $0.continuousClock = clock
+    }
 
     await store.send(.toggleTimerButtonTapped) {
       $0.count = 0

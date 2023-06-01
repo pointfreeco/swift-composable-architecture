@@ -1,0 +1,328 @@
+@Tutorial(time: 40) {
+  @Intro(title: "Testing presentation") {
+    Learn how to write tests for features built using the library's navigation tools, including
+    how multiple features integrate together and communicate with each other.
+  }
+  
+  @Section(title: "Testing the add contact flow") {
+    @ContentAndMedia {
+      The first functionality we will test is adding a new contact. This entails emulating the 
+      entire use flow of the user tapping the "+" button, typing into the name text field, 
+      tapping the "Save" button, and confirming that the sheet is dismissed and the new contact
+      is added to the list.
+    }
+    
+    @Steps {      
+      @Step {
+        Add a new file, ContactsFeatureTests.swift, to your test target and paste in some basic
+        scaffolding for a test.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0000)
+      }
+      
+      @Step {
+        Construct a test store by supplying the initial state the feature should start in, as well
+        as the reducer that is being tested.
+        
+        > Note: See <doc:01-03-TestingYourFeature> for a tutorial on testing, as well as the article
+        <doc:Testing> for more detailed information.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0001)
+      }
+      
+      @Step {
+        Emulate the user tapping on the "+" button by sending the `addButtonTapped` action. The 
+        trailing closure provided is where we will assert on how state changes after sending
+        the action.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0002)
+      }
+      
+      @Step {
+        The only mutation we expect to happen is that the `destination` field becomes populated
+        with some data, in particular the `addContact` case of the destination enum.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0003)
+      }
+      
+      @Step {
+        The `addContact` case will hold onto some data, which is `AddContactFeature.State`.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0004)
+      }
+      
+      @Step {
+        To construct that state we need to construct a `Contact` value, and now we run into 
+        trouble. What can we provide for the ID?
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0005)
+      }
+      
+      The `ContactsFeature` currently makes use of an uncontrolled dependency, making it very hard
+      to test this feature. It constructs a random UUID when presenting this feature, and we can't
+      predict that ID to get a passing test. So, just as we did in <doc:01-03-TestingYourFeature>,
+      we will add a dependency on a UUID generator to our `ContactsFeature`.
+      
+      @Step {
+        Go back to ContactsFeature.swift, and add a dependency on the UUID generator.
+        
+        @Code(name: "ContactsFeature.swift", file: 02-03-01-code-0006, previousFile: 02-03-01-code-0006-previous)
+      }
+      
+      @Step {
+        Use the newly added UUID dependency for creating UUIDs rather than reaching out to the
+        global, uncontrollable initializer.
+        
+        @Code(name: "ContactsFeature.swift", file: 02-03-01-code-0007)
+      }
+      
+      @Step {
+        Go back to ContactsFeatureTests.swift and override the dependencies on the test store so
+        that it uses a controlled UUID generator. In particular, we will use the "incrementing"
+        generator, which generates sequential, increasing IDs starting at 0.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0008, previousFile: 02-03-01-code-0008-previous)
+      }
+      
+      @Step {
+        Now we can predict the UUID generated when the contact is created.
+        
+        > Note: The initializer on UUID that allows providing an integer is provided by our 
+        > [swift-dependencies][swift-dependencies] library, which the Composable Architecture 
+        > depends on.
+        
+        [swift-dependencies]: http://github.com/pointfreeco/swift-dependencies
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0009)
+      }
+      
+      This test passes! So this proves that when the "+" button is tapped, that a sheet will fly
+      up for the "Add Contact" feature. Let's keep asserting on more of the user flow.
+      
+      @Step {
+        Emulate the user typing into the name text field of the contact. The trailing closure is
+        where we can assert on how state changed after sending the action.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0010)
+      }
+      
+      @Step {
+        Assert on how state changed by mutating the `destination` through the `addContact` case of
+        the destination enum. 
+        
+        To do this we use a special subscript defined on 
+        ``ComposableArchitecture/PresentationState`` that allows you to modify the data in the case
+        of any enum.
+        
+        > Tip: See ``ComposableArchitecture/PresentationState/subscript(case:)`` for documentation
+        > on this subscript.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0011)
+      }
+      
+      @Step {
+        Emulate the user tapping the "Save" button in the "Add Contact" feature. We do not 
+        expect the state to change immediately when sending this action, and so we do not need
+        to provide a trailing closure.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0012)
+      }
+      
+      @Step {
+        Emulate the delegate action `saveContact` being received by the test store. This action is
+        sent from the `AddContactFeature` when the "Save" button is tapped.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0013)
+      }
+      
+      @Step {
+        Assert that when the `saveContact` delegate action is received that state mutates by adding
+        a contact to the array.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0014)
+      }
+      
+      @Step {
+        Finally assert that the test store receives a 
+        ``ComposableArchitecture/PresentationAction/dismiss`` action, which causes the "Add Contact"
+        feature to be dismissed.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0015)
+      }
+      
+      This is a fully passing test, and proves the end-to-end lifecycle of presenting a child
+      feature, interacting with it, and how the child communicates information back to the parent.
+      However, this test is quite verbose, and is asserting on behavior that is local to just the
+      "Add Contact" feature. If we are only wanting to test at a high level that we can present
+      and dismiss a child feature, there is a better tool available called "non-exhaustive"
+      testing.
+    }
+  }
+  
+  @Section(title: "Non-exhaustive testing") {
+    @ContentAndMedia {
+      The previously written test is powerful and impressive, but also verbose. We had to assert
+      on how everything evolves in the child feature, and had to assert how every effect action
+      is received by the store. Sometimes it can be useful to write tests in a less exhaustive 
+      manner, especially when testing the integration of many features, such as is the case with
+      features performing navigation.
+      
+      See <doc:Testing#Non-exhaustive-testing> for more information on non-exhaustive testing
+      techniques.
+    }
+    
+    @Steps {
+      @Step {
+        Start a new test case to test the same "Add Contact" user flow as above, but this time
+        we will do it in the non-exhaustive style.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0000)
+      }
+      
+      @Step {
+        Set the test store's ``ComposableArchitecture/TestStore/exhaustivity`` to `.off`.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0001)
+      }
+      
+      @Step {
+        Emulate the user tapping on the "+" button, but this time do not provide a trailing
+        closure. In non-exhaustive test stores there is no need to assert on state changes if you
+        do not want to.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0002)
+      } 
+      
+      @Step {
+        Emulate the user typing into the name text field of the contact, but again do not assert
+        on any state changes in the child feature.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0003)
+      }
+      
+      @Step {
+        Emulate the user tapping the "Save" button in the child feature.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0004)
+      }
+      
+      @Step {
+        Next we want to assert that sometime after the user taps the "Save" button that the 
+        contact is added to the array and the child feature is dismissed. However, we cannot assert
+        on that until all the actions have been received, and so we can do that by using
+        ``ComposableArchitecture/TestStore/skipReceivedActions(strict:file:line:)-a4ri``.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0005)
+      }
+      
+      @Step {
+        Assert that the final state of the feature has a new contact added to the array and the
+        `destination` state is `nil`'d out.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0006)
+      }
+      
+      That's all it takes to write a very high level test covering the full user flow of adding
+      a new contact to the list. We don't need to assert on all of the nitty gritty details in
+      the child feature, and instead can just assert that the contact was indeed added after the
+      user completed their steps.
+    }
+  }
+  
+  @Section(title: "Testing the delete contact flow") {
+    @ContentAndMedia {
+      The last important piece of functionality to test is deleting a contact. This involves tapping
+      a button, asserting that an alert is shown, confirming the deletion through the alert, and
+      then asserting that indeed the contact was removed.
+    }
+    
+    @Steps {
+      @Step {
+        Start a new test method to test the delete flow.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0000)
+      }
+      
+      @Step {
+        Create a ``ComposableArchitecture/TestStore`` for testing the `ContactsFeature` reducer.
+        This time we do not need to override any dependencies because we do not expect any to be
+        used
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0001)
+      }
+      
+      @Step {
+        Start the initial state of the feature with some contacts already added to the array. This
+        will make it easier to test the deletion behavior.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0002)
+      }
+      
+      @Step {
+        Emulate the user tapping on the delete button by sending the `deleteButtonTapped` action.
+        We will test deleting the second contact, which has an ID of `UUID(1)`.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0003)
+      }
+      
+      @Step {
+        We expect that the state's `destination` field will be populated with the `alert` case 
+        since an alert should appear.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0004)
+      }
+      
+      @Step {
+        Technically we can simply repeat exactly what we did in the reducer for constructing the
+        alert. It's verbose, but it does get the test passing.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0005)
+      }
+      
+      However, that is a bit of a pain to repeat all of that work. There is a better way.
+      
+      @Step {
+        Go back to ContactsFeature.swift where the reducer is implemented. Extend `AlertState` 
+        with its `Action` generic constrained to `ContactsFeature.Action`. Add a static function
+        that constructs the alert, which allows us to reuse this logic in multiple places.
+        
+        @Code(name: "ContactsFeature.swift", file: 02-03-03-code-0006)
+      }
+      
+      @Step {
+        Make use of the new `deleteConfirmation` static alert function in the `CounterFeature` 
+        reducer, rather than building `AlertState` from scratch.
+        
+        @Code(name: "ContactsFeature.swift", file: 02-03-03-code-0007, previousFile: 02-03-03-code-0007-previous)
+      }
+      
+      @Step {
+        Go back to ContactsFeatureTests.swift and use the new `deleteConfirmation` static function
+        to assert against the alert, rather than building `AlertState` from scratch.
+        
+        Run the test to see this passes. This proves that when the delete button is tapped, an
+        alert is shown to the user.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0008, previousFile: 02-03-03-code-0008-previous)
+      }
+      
+      @Step {
+        Emulate the user confirming to delete contact by sending the `confirmDeletion` action 
+        in the alert.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0009)
+      }
+      
+      @Step {
+        Assert that the alert was dismissed and that the contact corresponding to the ID of 
+        `UUID(1)` was removed. 
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0010)
+      }
+      
+      That is all it takes to test the deletion flow. Run the test suite to see everything passes,
+      proving that when the user taps the confirmation button in the alert that indeed the contact
+      will be removed.
+    }
+  }
+}

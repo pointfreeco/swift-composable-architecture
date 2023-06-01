@@ -5,24 +5,25 @@ import TwoFactorCore
 
 public struct Login: ReducerProtocol, Sendable {
   public struct State: Equatable {
-    public var alert: AlertState<Action>?
+    @PresentationState public var alert: AlertState<AlertAction>?
     @BindingState public var email = ""
     public var isFormValid = false
     public var isLoginRequestInFlight = false
     @BindingState public var password = ""
-    public var twoFactor: TwoFactor.State?
+    @PresentationState public var twoFactor: TwoFactor.State?
 
     public init() {}
   }
 
   public enum Action: BindableAction, Equatable {
-    case alertDismissed
+    case alert(PresentationAction<AlertAction>)
     case binding(BindingAction<State>)
     case loginButtonTapped
     case loginResponse(TaskResult<AuthenticationResponse>)
-    case twoFactor(TwoFactor.Action)
-    case twoFactorDismissed
+    case twoFactor(PresentationAction<TwoFactor.Action>)
   }
+
+  public enum AlertAction: Equatable, Sendable {}
 
   @Dependency(\.authenticationClient) var authenticationClient
 
@@ -32,8 +33,7 @@ public struct Login: ReducerProtocol, Sendable {
     BindingReducer()
     Reduce { state, action in
       switch action {
-      case .alertDismissed:
-        state.alert = nil
+      case .alert:
         return .none
 
       case .binding:
@@ -54,25 +54,24 @@ public struct Login: ReducerProtocol, Sendable {
 
       case .loginButtonTapped:
         state.isLoginRequestInFlight = true
-        return .task { [email = state.email, password = state.password] in
-          .loginResponse(
-            await TaskResult {
-              try await self.authenticationClient.login(
-                .init(email: email, password: password)
-              )
-            }
+        return .run { [email = state.email, password = state.password] send in
+          await send(
+            .loginResponse(
+              await TaskResult {
+                try await self.authenticationClient.login(
+                  .init(email: email, password: password)
+                )
+              }
+            )
           )
         }
 
       case .twoFactor:
         return .none
-
-      case .twoFactorDismissed:
-        state.twoFactor = nil
-        return .cancel(id: TwoFactor.TearDownToken.self)
       }
     }
-    .ifLet(\.twoFactor, action: /Action.twoFactor) {
+    .ifLet(\.$alert, action: /Action.alert)
+    .ifLet(\.$twoFactor, action: /Action.twoFactor) {
       TwoFactor()
     }
   }

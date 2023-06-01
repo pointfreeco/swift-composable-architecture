@@ -3,10 +3,329 @@ import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
-// MARK: - Deprecated after 0.47.2:
+// MARK: - Deprecated after 0.52.0
 
+extension WithViewStore {
+  @available(*, deprecated, renamed: "_printChanges(_:)")
+  public func debug(_ prefix: String = "") -> Self {
+    self._printChanges(prefix)
+  }
+}
+
+extension EffectPublisher where Failure == Never {
+  @available(iOS, deprecated: 9999, message: "Use 'Effect.run' and pass the action to 'send'.")
+  @available(macOS, deprecated: 9999, message: "Use 'Effect.run' and pass the action to 'send'.")
+  @available(tvOS, deprecated: 9999, message: "Use 'Effect.run' and pass the action to 'send'.")
+  @available(watchOS, deprecated: 9999, message: "Use 'Effect.run' and pass the action to 'send'.")
+  public static func task(
+    priority: TaskPriority? = nil,
+    operation: @escaping @Sendable () async throws -> Action,
+    catch handler: (@Sendable (Error) async -> Action)? = nil,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> Self {
+    withEscapedDependencies { escaped in
+      Self(
+        operation: .run(priority) { send in
+          await escaped.yield {
+            do {
+              try await send(operation())
+            } catch is CancellationError {
+              return
+            } catch {
+              guard let handler = handler else {
+                #if DEBUG
+                  var errorDump = ""
+                  customDump(error, to: &errorDump, indent: 4)
+                  runtimeWarn(
+                    """
+                    An "EffectTask.task" returned from "\(fileID):\(line)" threw an unhandled \
+                    error. …
+
+                    \(errorDump)
+
+                    All non-cancellation errors must be explicitly handled via the "catch" \
+                    parameter on "EffectTask.task", or via a "do" block.
+                    """
+                  )
+                #endif
+                return
+              }
+              await send(handler(error))
+            }
+          }
+        }
+      )
+    }
+  }
+
+  @available(iOS, deprecated: 9999, message: "Use 'Effect.run' and ignore 'send' instead.")
+  @available(macOS, deprecated: 9999, message: "Use 'Effect.run' and ignore 'send' instead.")
+  @available(tvOS, deprecated: 9999, message: "Use 'Effect.run' and ignore 'send' instead.")
+  @available(watchOS, deprecated: 9999, message: "Use 'Effect.run' and ignore 'send' instead.")
+  public static func fireAndForget(
+    priority: TaskPriority? = nil,
+    _ work: @escaping @Sendable () async throws -> Void
+  ) -> Self {
+    Self.run(priority: priority) { _ in try? await work() }
+  }
+}
+
+extension Store {
+  @available(iOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(macOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(tvOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(watchOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  public convenience init<R: ReducerProtocol>(
+    initialState: @autoclosure () -> R.State,
+    reducer: R,
+    prepareDependencies: ((inout DependencyValues) -> Void)? = nil
+  ) where R.State == State, R.Action == Action {
+    if let prepareDependencies = prepareDependencies {
+      self.init(
+        initialState: withDependencies(prepareDependencies) { initialState() },
+        reducer: reducer.transformDependency(\.self, transform: prepareDependencies),
+        mainThreadChecksEnabled: true
+      )
+    } else {
+      self.init(
+        initialState: initialState(),
+        reducer: reducer,
+        mainThreadChecksEnabled: true
+      )
+    }
+  }
+}
+
+extension TestStore {
+  @available(iOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(macOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(tvOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(watchOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  public convenience init<R: ReducerProtocol>(
+    initialState: @autoclosure () -> State,
+    reducer: R,
+    prepareDependencies: (inout DependencyValues) -> Void = { _ in },
+    file: StaticString = #file,
+    line: UInt = #line
+  )
+  where
+    R.State == State,
+    R.Action == Action,
+    State == ScopedState,
+    State: Equatable,
+    Action == ScopedAction,
+    Environment == Void
+  {
+    self.init(
+      initialState: initialState(),
+      reducer: reducer,
+      observe: { $0 },
+      send: { $0 },
+      prepareDependencies: prepareDependencies,
+      file: file,
+      line: line
+    )
+  }
+
+  @available(iOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(macOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(tvOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(watchOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  public convenience init<R: ReducerProtocol>(
+    initialState: @autoclosure () -> State,
+    reducer: R,
+    observe toScopedState: @escaping (State) -> ScopedState,
+    prepareDependencies: (inout DependencyValues) -> Void = { _ in },
+    file: StaticString = #file,
+    line: UInt = #line
+  )
+  where
+    R.State == State,
+    R.Action == Action,
+    ScopedState: Equatable,
+    Action == ScopedAction,
+    Environment == Void
+  {
+    self.init(
+      initialState: initialState(),
+      reducer: reducer,
+      observe: toScopedState,
+      send: { $0 },
+      prepareDependencies: prepareDependencies,
+      file: file,
+      line: line
+    )
+  }
+
+  @available(iOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(macOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(tvOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(watchOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  public convenience init<R: ReducerProtocol>(
+    initialState: @autoclosure () -> State,
+    reducer: R,
+    observe toScopedState: @escaping (State) -> ScopedState,
+    send fromScopedAction: @escaping (ScopedAction) -> Action,
+    prepareDependencies: (inout DependencyValues) -> Void = { _ in },
+    file: StaticString = #file,
+    line: UInt = #line
+  )
+  where
+    R.State == State,
+    R.Action == Action,
+    ScopedState: Equatable,
+    Environment == Void
+  {
+    self.init(
+      initialState: initialState(),
+      reducer: { reducer },
+      observe: toScopedState,
+      send: fromScopedAction,
+      withDependencies: prepareDependencies,
+      file: file,
+      line: line
+    )
+  }
+
+  @available(*, deprecated, message: "State must be equatable to perform assertions.")
+  public convenience init<R: ReducerProtocol>(
+    initialState: @autoclosure () -> State,
+    reducer: R,
+    prepareDependencies: (inout DependencyValues) -> Void = { _ in },
+    file: StaticString = #file,
+    line: UInt = #line
+  )
+  where
+    R.State == State,
+    R.Action == Action,
+    State == ScopedState,
+    Action == ScopedAction,
+    Environment == Void
+  {
+    self.init(
+      initialState: initialState(),
+      reducer: { reducer },
+      withDependencies: prepareDependencies,
+      file: file,
+      line: line
+    )
+  }
+}
+
+extension Store {
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      'Store.scope' requires an explicit 'action' transform and is intended to be used to transform a store of a parent domain into a store of a child domain.
+
+      When transforming store state into view state, use the 'observe' parameter when constructing a view store.
+      """
+  )
+  public func scope<ChildState>(
+    state toChildState: @escaping (State) -> ChildState
+  ) -> Store<ChildState, Action> {
+    self.scope(state: toChildState, action: { $0 })
+  }
+}
+
+extension EffectPublisher {
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'Effect.cancellable(id: CancelID.timer)'.
+      """
+  )
+  public func cancellable(id: Any.Type, cancelInFlight: Bool = false) -> Self {
+    self.cancellable(id: ObjectIdentifier(id), cancelInFlight: cancelInFlight)
+  }
+
+  public static func cancel(id: Any.Type) -> Self {
+    .cancel(id: ObjectIdentifier(id))
+  }
+
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'Effect.cancel(id: CancelID.timer)'.
+      """
+  )
+  public static func cancel(ids: [Any.Type]) -> Self {
+    .merge(ids.map(EffectPublisher.cancel(id:)))
+  }
+}
+
+@available(
+  *,
+  deprecated,
+  message:
+    """
+    Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'withTaskCancellation(id: CancelID.timer)'.
+    """
+)
+public func withTaskCancellation<T: Sendable>(
+  id: Any.Type,
+  cancelInFlight: Bool = false,
+  operation: @Sendable @escaping () async throws -> T
+) async rethrows -> T {
+  try await withTaskCancellation(
+    id: ObjectIdentifier(id),
+    cancelInFlight: cancelInFlight,
+    operation: operation
+  )
+}
+
+extension Task where Success == Never, Failure == Never {
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'Effect.cancel(id: CancelID.timer)'.
+      """
+  )
+  public static func cancel(id: Any.Type) {
+    self.cancel(id: ObjectIdentifier(id))
+  }
+}
+
+// MARK: - Deprecated after 0.49.2
+
+@available(
+  *,
+  deprecated,
+  message: "Use 'ReducerBuilder<_, _>' with explicit 'State' and 'Action' generics, instead."
+)
+public typealias ReducerBuilderOf<R: ReducerProtocol> = ReducerBuilder<R.State, R.Action>
+
+// NB: As of Swift 5.7, property wrapper deprecations are not diagnosed, so we may want to keep this
+//     deprecation around for now:
+//     https://github.com/apple/swift/issues/63139
 @available(*, deprecated, renamed: "BindingState")
 public typealias BindableState = BindingState
+
+// MARK: - Deprecated after 0.47.2
+
+extension ActorIsolated {
+  @available(
+    *,
+    deprecated,
+    message: "Use the non-async version of 'withValue'."
+  )
+  public func withValue<T: Sendable>(
+    _ operation: @Sendable (inout Value) async throws -> T
+  ) async rethrows -> T {
+    var value = self.value
+    defer { self.value = value }
+    return try await operation(&value)
+  }
+}
 
 // MARK: - Deprecated after 0.45.0:
 
@@ -52,416 +371,32 @@ extension ViewStore {
 
 extension ReducerProtocol {
   @available(*, deprecated, renamed: "_printChanges")
+  @warn_unqualified_access
   public func debug() -> _PrintChangesReducer<Self> {
     self._printChanges()
   }
 }
 
-#if swift(>=5.7)
-  extension ReducerBuilder {
-    @_disfavoredOverload
-    @available(
-      *,
-      deprecated,
-      message:
-        """
-        Reducer bodies should return 'some ReducerProtocol<State, Action>' instead of 'Reduce<State, Action>'.
-        """
-    )
-    @inlinable
-    public static func buildFinalResult<R: ReducerProtocol>(_ reducer: R) -> Reduce<State, Action>
-    where R.State == State, R.Action == Action {
-      Reduce(reducer)
-    }
-
-    @_disfavoredOverload
-    @inlinable
-    public static func buildFinalResult(_ reducer: Reduce<State, Action>) -> Reduce<State, Action> {
-      reducer
-    }
-  }
-#endif
-
-// MARK: - Deprecated after 0.40.0:
-
-@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
-extension WithViewStore: AccessibilityRotorContent where Content: AccessibilityRotorContent {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute accessibility rotor content from store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store.
-  ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
-  ///     are equal, repeat view computations are removed,
-  ///   - content: A function that can generate content from a view store.
+extension ReducerBuilder {
+  @_disfavoredOverload
   @available(
     *,
     deprecated,
     message:
       """
-      For compiler performance, using "WithViewStore" from an accessibility rotor content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
-
-      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
+      Reducer bodies should return 'some ReducerProtocol<State, Action>' instead of 'Reduce<State, Action>'.
       """
   )
-  public init(
-    _ store: Store<ViewState, ViewAction>,
-    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
-    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<ViewState, ViewAction>) ->
-      Content,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  ) {
-    self.init(
-      store: store,
-      removeDuplicates: isDuplicate,
-      content: content,
-      file: file,
-      line: line
-    )
+  @inlinable
+  public static func buildFinalResult<R: ReducerProtocol>(_ reducer: R) -> Reduce<State, Action>
+  where R.State == State, R.Action == Action {
+    Reduce(reducer)
   }
-}
 
-@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
-extension WithViewStore where ViewState: Equatable, Content: AccessibilityRotorContent {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute accessibility rotor content from equatable store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store of equatable state.
-  ///   - content: A function that can generate content from a view store.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      For compiler performance, using "WithViewStore" from an accessibility rotor content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
-
-      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
-      """
-  )
-  public init(
-    _ store: Store<ViewState, ViewAction>,
-    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<ViewState, ViewAction>) ->
-      Content,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  ) {
-    self.init(store, removeDuplicates: ==, content: content, file: file, line: line)
-  }
-}
-
-@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
-extension WithViewStore where ViewState == Void, Content: AccessibilityRotorContent {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute accessibility rotor content from void store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store of equatable state.
-  ///   - content: A function that can generate content from a view store.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      For compiler performance, using "WithViewStore" from an accessibility rotor content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
-
-      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
-      """
-  )
-  public init(
-    _ store: Store<ViewState, ViewAction>,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @AccessibilityRotorContentBuilder content: @escaping (ViewStore<ViewState, ViewAction>) ->
-      Content
-  ) {
-    self.init(store, removeDuplicates: ==, content: content, file: file, line: line)
-  }
-}
-
-@available(iOS 14, macOS 11, *)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-extension WithViewStore: Commands where Content: Commands {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute commands from store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store.
-  ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
-  ///     are equal, repeat view computations are removed,
-  ///   - content: A function that can generate content from a view store.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      For compiler performance, using "WithViewStore" from a command builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
-
-      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
-      """
-  )
-  public init(
-    _ store: Store<ViewState, ViewAction>,
-    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
-    @CommandsBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  ) {
-    self.init(
-      store: store,
-      removeDuplicates: isDuplicate,
-      content: content,
-      file: file,
-      line: line
-    )
-  }
-}
-
-@available(iOS 14, macOS 11, *)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-extension WithViewStore where ViewState: Equatable, Content: Commands {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute commands from equatable store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store of equatable state.
-  ///   - content: A function that can generate content from a view store.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      For compiler performance, using "WithViewStore" from a command builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
-
-      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
-      """
-  )
-  public init(
-    _ store: Store<ViewState, ViewAction>,
-    @CommandsBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  ) {
-    self.init(store, removeDuplicates: ==, content: content, file: file, line: line)
-  }
-}
-
-@available(iOS 14, macOS 11, *)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-extension WithViewStore where ViewState == Void, Content: Commands {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute commands from void store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store of equatable state.
-  ///   - content: A function that can generate content from a view store.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      For compiler performance, using "WithViewStore" from a command builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
-
-      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
-      """
-  )
-  public init(
-    _ store: Store<ViewState, ViewAction>,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @CommandsBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content
-  ) {
-    self.init(store, removeDuplicates: ==, content: content, file: file, line: line)
-  }
-}
-
-@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
-extension WithViewStore: Scene where Content: Scene {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute scenes from store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store.
-  ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
-  ///     are equal, repeat view computations are removed,
-  ///   - content: A function that can generate content from a view store.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      For compiler performance, using "WithViewStore" from a scene builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
-
-      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
-      """
-  )
-  public init(
-    _ store: Store<ViewState, ViewAction>,
-    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
-    @SceneBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  ) {
-    self.init(
-      store: store,
-      removeDuplicates: isDuplicate,
-      content: content,
-      file: file,
-      line: line
-    )
-  }
-}
-
-@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
-extension WithViewStore where ViewState: Equatable, Content: Scene {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute scenes from equatable store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store of equatable state.
-  ///   - content: A function that can generate content from a view store.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      For compiler performance, using "WithViewStore" from a scene builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
-
-      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
-      """
-  )
-  public init(
-    _ store: Store<ViewState, ViewAction>,
-    @SceneBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  ) {
-    self.init(store, removeDuplicates: ==, content: content, file: file, line: line)
-  }
-}
-
-@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
-extension WithViewStore where ViewState == Void, Content: Scene {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute scenes from void store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store of equatable state.
-  ///   - content: A function that can generate content from a view store.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      For compiler performance, using "WithViewStore" from a scene builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
-
-      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
-      """
-  )
-  public init(
-    _ store: Store<ViewState, ViewAction>,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @SceneBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content
-  ) {
-    self.init(store, removeDuplicates: ==, content: content, file: file, line: line)
-  }
-}
-
-@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
-extension WithViewStore: ToolbarContent where Content: ToolbarContent {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute toolbar content from store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store.
-  ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
-  ///     are equal, repeat view computations are removed,
-  ///   - content: A function that can generate content from a view store.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      For compiler performance, using "WithViewStore" from a toolbar content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
-
-      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
-      """
-  )
-  public init(
-    _ store: Store<ViewState, ViewAction>,
-    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @ToolbarContentBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content
-  ) {
-    self.init(
-      store: store,
-      removeDuplicates: isDuplicate,
-      content: content,
-      file: file,
-      line: line
-    )
-  }
-}
-
-@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
-extension WithViewStore where ViewState: Equatable, Content: ToolbarContent {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute toolbar content from equatable store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store of equatable state.
-  ///   - content: A function that can generate content from a view store.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      For compiler performance, using "WithViewStore" from a toolbar content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
-
-      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
-      """
-  )
-  public init(
-    _ store: Store<ViewState, ViewAction>,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @ToolbarContentBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content
-  ) {
-    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
-  }
-}
-
-@available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
-extension WithViewStore where ViewState == Void, Content: ToolbarContent {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute toolbar content from void store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store of equatable state.
-  ///   - content: A function that can generate content from a view store.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      For compiler performance, using "WithViewStore" from a toolbar content builder is no longer supported. Extract this "WithViewStore" to the parent view, instead, or observe your view store from an "@ObservedObject" property.
-
-      See the documentation for "WithViewStore" (https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/viewstore#overview) for more information.
-      """
-  )
-  public init(
-    _ store: Store<ViewState, ViewAction>,
-    file: StaticString = #fileID,
-    line: UInt = #line,
-    @ToolbarContentBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content
-  ) {
-    self.init(store, removeDuplicates: ==, file: file, line: line, content: content)
+  @_disfavoredOverload
+  @inlinable
+  public static func buildFinalResult(_ reducer: Reduce<State, Action>) -> Reduce<State, Action> {
+    reducer
   }
 }
 
@@ -551,8 +486,7 @@ extension EffectPublisher where Failure == Error {
   *, deprecated,
   message:
     """
-    If you use this initializer, please open a discussion on GitHub and let us know how: \
-    https://github.com/pointfreeco/swift-composable-architecture/discussions/new
+    If you use this initializer, please open a discussion on GitHub and let us know how: https://github.com/pointfreeco/swift-composable-architecture/discussions/new
     """
 )
 extension Store {
@@ -572,10 +506,10 @@ extension Store {
 // MARK: - Deprecated after 0.38.0:
 
 extension EffectPublisher {
-  @available(iOS, deprecated: 9999.0, renamed: "unimplemented")
-  @available(macOS, deprecated: 9999.0, renamed: "unimplemented")
-  @available(tvOS, deprecated: 9999.0, renamed: "unimplemented")
-  @available(watchOS, deprecated: 9999.0, renamed: "unimplemented")
+  @available(iOS, deprecated: 9999, renamed: "unimplemented")
+  @available(macOS, deprecated: 9999, renamed: "unimplemented")
+  @available(tvOS, deprecated: 9999, renamed: "unimplemented")
+  @available(watchOS, deprecated: 9999, renamed: "unimplemented")
   public static func failing(_ prefix: String) -> Self {
     self.unimplemented(prefix)
   }
@@ -643,9 +577,7 @@ extension AnyReducer {
     breakpointOnNil: Bool,
     file: StaticString = #fileID,
     line: UInt = #line
-  ) -> AnyReducer<
-    State?, Action, Environment
-  > {
+  ) -> AnyReducer<State?, Action, Environment> {
     self.optional(file: file, line: line)
   }
 
@@ -913,7 +845,7 @@ extension Store {
             let task = self.send(fromChildAction(childAction))
             childState = extractChildState(self.state.value) ?? childState
             if let task = task {
-              return .fireAndForget { await task.cancellableValue }
+              return .run { _ in await task.cancellableValue }
             } else {
               return .none
             }
@@ -1073,9 +1005,7 @@ extension AnyReducer {
           To fix this make sure that actions for this reducer can only be sent to a view store \
           when its state contains an element at this index. In SwiftUI applications, use \
           "ForEachStore".
-          """,
-          file: file,
-          line: line
+          """
         )
         return .none
       }
@@ -1104,7 +1034,7 @@ extension ForEachStore {
   {
     let data = store.state.value
     self.data = data
-    self.content = WithViewStore(store.scope(state: { $0.map { $0[keyPath: id] } })) { viewStore in
+    self.content = WithViewStore(store, observe: { $0.map { $0[keyPath: id] } }) { viewStore in
       ForEach(Array(viewStore.state.enumerated()), id: \.element) { index, _ in
         content(
           store.scope(

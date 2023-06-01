@@ -37,7 +37,7 @@ struct EffectsBasics: ReducerProtocol {
 
   @Dependency(\.continuousClock) var clock
   @Dependency(\.factClient) var factClient
-  private enum DelayID {}
+  private enum CancelID { case delay }
 
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
@@ -47,11 +47,11 @@ struct EffectsBasics: ReducerProtocol {
       // Return an effect that re-increments the count after 1 second if the count is negative
       return state.count >= 0
         ? .none
-        : .task {
+        : .run { send in
           try await self.clock.sleep(for: .seconds(1))
-          return .decrementDelayResponse
+          await send(.decrementDelayResponse)
         }
-        .cancellable(id: DelayID.self)
+        .cancellable(id: CancelID.delay)
 
     case .decrementDelayResponse:
       if state.count < 0 {
@@ -63,7 +63,7 @@ struct EffectsBasics: ReducerProtocol {
       state.count += 1
       state.numberFact = nil
       return state.count >= 0
-        ? .cancel(id: DelayID.self)
+        ? .cancel(id: CancelID.delay)
         : .none
 
     case .numberFactButtonTapped:
@@ -71,8 +71,8 @@ struct EffectsBasics: ReducerProtocol {
       state.numberFact = nil
       // Return an effect that fetches a number fact from the API and returns the
       // value back to the reducer's `numberFactResponse` action.
-      return .task { [count = state.count] in
-        await .numberFactResponse(TaskResult { try await self.factClient.fetch(count) })
+      return .run { [count = state.count] send in
+        await send(.numberFactResponse(TaskResult { try await self.factClient.fetch(count) }))
       }
 
     case let .numberFactResponse(.success(response)):
@@ -156,10 +156,9 @@ struct EffectsBasicsView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       EffectsBasicsView(
-        store: Store(
-          initialState: EffectsBasics.State(),
-          reducer: EffectsBasics()
-        )
+        store: Store(initialState: EffectsBasics.State()) {
+          EffectsBasics()
+        }
       )
     }
   }

@@ -7,7 +7,7 @@ public struct TwoFactorView: View {
   let store: StoreOf<TwoFactor>
 
   struct ViewState: Equatable {
-    var alert: AlertState<TwoFactor.Action>?
+    var alert: AlertState<Never>?
     @BindingViewState var code: String
     var isActivityIndicatorVisible: Bool
     var isFormDisabled: Bool
@@ -55,7 +55,7 @@ public struct TwoFactorView: View {
           }
         }
       }
-      .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
+      .alert(store: self.store.scope(state: \.$alert, action: TwoFactor.Action.alert))
       .disabled(viewStore.isFormDisabled)
       .navigationTitle("Confirmation Code")
     }
@@ -64,18 +64,18 @@ public struct TwoFactorView: View {
 
 struct TwoFactorView_Previews: PreviewProvider {
   static var previews: some View {
-    NavigationView {
+    NavigationStack {
       TwoFactorView(
-        store: Store(
-          initialState: TwoFactor.State(token: "deadbeef"),
-          reducer: TwoFactor()
-            .dependency(\.authenticationClient.login) { _ in
-              AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
-            }
-            .dependency(\.authenticationClient.twoFactor) { _ in
-              AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
-            }
-        )
+        store: Store(initialState: TwoFactor.State(token: "deadbeef")) {
+          TwoFactor()
+        } withDependencies: {
+          $0.authenticationClient.login = { _ in
+            AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
+          }
+          $0.authenticationClient.twoFactor = { _ in
+            AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
+          }
+        }
       )
     }
   }

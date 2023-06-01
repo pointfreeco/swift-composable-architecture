@@ -16,18 +16,18 @@ extension EffectPublisher {
   ///   - options: Scheduler options that customize the effect's delivery of elements.
   /// - Returns: An effect that will be executed after `dueTime`
   @available(
-    iOS, deprecated: 9999.0, message: "Use 'clock.sleep' in `Effect.task` or 'Effect.run', instead."
+    iOS, deprecated: 9999, message: "Use 'clock.sleep' in `Effect.task` or 'Effect.run', instead."
   )
   @available(
-    macOS, deprecated: 9999.0,
+    macOS, deprecated: 9999,
     message: "Use 'clock.sleep' in `Effect.task` or 'Effect.run', instead."
   )
   @available(
-    tvOS, deprecated: 9999.0,
+    tvOS, deprecated: 9999,
     message: "Use 'clock.sleep' in `Effect.task` or 'Effect.run', instead."
   )
   @available(
-    watchOS, deprecated: 9999.0,
+    watchOS, deprecated: 9999,
     message: "Use 'clock.sleep' in `Effect.task` or 'Effect.run', instead."
   )
   public func deferred<S: Scheduler>(

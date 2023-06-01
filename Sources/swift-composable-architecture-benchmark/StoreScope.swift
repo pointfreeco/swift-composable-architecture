@@ -16,10 +16,10 @@ private struct Counter: ReducerProtocol {
 }
 
 let storeScopeSuite = BenchmarkSuite(name: "Store scoping") { suite in
-  var store = Store(initialState: 0, reducer: Counter())
+  var store = Store(initialState: 0) { Counter() }
   var viewStores: [ViewStore<Int, Bool>] = [ViewStore(store)]
   for _ in 1...4 {
-    store = store.scope(state: { $0 })
+    store = store.scope(state: { $0 }, action: { $0 })
     viewStores.append(ViewStore(store))
   }
   let lastViewStore = viewStores.last!

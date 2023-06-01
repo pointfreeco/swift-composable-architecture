@@ -7,16 +7,11 @@ and functions that are not thread-safe in concurrent contexts. Many of these war
 for the time being, but in Swift 6 most (if not all) of these warnings will become errors, and so
 you will need to know how to prove to the compiler that your types are safe to use concurrently.
 
-There are 3 primary ways to create an ``EffectTask`` in the library:
-
-  * ``EffectPublisher/task(priority:operation:catch:file:fileID:line:)``
-  * ``EffectPublisher/run(priority:operation:catch:file:fileID:line:)``
-  * ``EffectPublisher/fireAndForget(priority:_:)``
-
-Each of these constructors takes a `@Sendable`, asynchronous closure, which restricts the types of
-closures you can use for your effects. In particular, the closure can only capture `Sendable`
-variables that are bound with `let`. Mutable variables and non-`Sendable` types are simply not
-allowed to be passed to `@Sendable` closures.
+There primary way to create an ``EffectTask`` in the library is via
+``EffectPublisher/run(priority:operation:catch:fileID:line:)``. It takes a `@Sendable`,
+asynchronous closure, which restricts the types of closures you can use for your effects. In
+particular, the closure can only capture `Sendable` variables that are bound with `let`. Mutable
+variables and non-`Sendable` types are simply not allowed to be passed to `@Sendable` closures.
 
 There are two primary ways you will run into this restriction when building a feature in the
 Composable Architecture: accessing state from within an effect, and accessing a dependency from
@@ -29,20 +24,20 @@ from within `@Sendable` closures:
 
 ```swift
 struct Feature: ReducerProtocol {
-  struct State { … }
-  enum Action { … }
+  struct State { /* ... */ }
+  enum Action { /* ... */ }
 
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .buttonTapped:
-      return .task {
-        try await Task.sleep(nanoseconds: NSEC_PER_SEC)
-        return .delayed(state.count) 
-        // 🛑 Mutable capture of 'inout' parameter 'state' is 
+      return .run { send in
+        try await Task.sleep(for: .seconds(1))
+        await send(.delayed(state.count))
+        // 🛑 Mutable capture of 'inout' parameter 'state' is
         //    not allowed in concurrently-executing code
       }
 
-      …
+      // ...
     }
   }
 }
@@ -52,9 +47,9 @@ To work around this you must explicitly capture the state as an immutable value 
 closure:
 
 ```swift
-return .task { [state] in 
-  try await Task.sleep(nanoseconds: NSEC_PER_SEC)
-  return .delayed(state.count) // ✅
+return .run { [state] send in
+  try await Task.sleep(for: .seconds(1))
+  await send(.delayed(state.count))  // ✅
 }
 ```
 
@@ -62,9 +57,9 @@ You can also capture just the minimal parts of the state you need for the effect
 variable name for the capture:
 
 ```swift
-return .task { [count = state.count] in 
-  try await Task.sleep(nanoseconds: NSEC_PER_SEC)
-  return .delayed(count) // ✅
+return .run { [count = state.count] send in
+  try await Task.sleep(for: .seconds(1))
+  return .delayed(count)  // ✅
 }
 ```
 

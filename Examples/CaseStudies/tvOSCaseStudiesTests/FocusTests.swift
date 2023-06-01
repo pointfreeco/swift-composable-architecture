@@ -6,12 +6,11 @@ import XCTest
 @MainActor
 final class tvOSCaseStudiesTests: XCTestCase {
   func testFocus() async {
-    let store = TestStore(
-      initialState: Focus.State(currentFocus: 1),
-      reducer: Focus()
-    )
-
-    store.dependencies.withRandomNumberGenerator = .init(LCRNG())
+    let store = TestStore(initialState: Focus.State(currentFocus: 1)) {
+      Focus()
+    } withDependencies: {
+      $0.withRandomNumberGenerator = .init(LCRNG())
+    }
 
     await store.send(.randomButtonClicked)
     await store.send(.randomButtonClicked) {

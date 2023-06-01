@@ -8,14 +8,16 @@ import XCTest
 @MainActor
 final class LoginSwiftUITests: XCTestCase {
   func testFlow_Success() async {
-    let store = TestStore(
-      initialState: Login.State(),
-      reducer: Login()
-    )
-    .scope(state: LoginView.ViewState.init, action: Login.Action.init)
-
-    store.dependencies.authenticationClient.login = { _ in
-      AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
+    let store = TestStore(initialState: Login.State()) {
+      Login()
+    } observe: {
+      LoginView.ViewState(state: $0)
+    } send: {
+      Login.Action(action: $0)
+    } withDependencies: {
+      $0.authenticationClient.login = { _ in
+        AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
+      }
     }
 
     await store.send(.emailChanged("blob@pointfree.co")) {
@@ -40,14 +42,16 @@ final class LoginSwiftUITests: XCTestCase {
   }
 
   func testFlow_Success_TwoFactor() async {
-    let store = TestStore(
-      initialState: Login.State(),
-      reducer: Login()
-    )
-    .scope(state: LoginView.ViewState.init, action: Login.Action.init)
-
-    store.dependencies.authenticationClient.login = { _ in
-      AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true)
+    let store = TestStore(initialState: Login.State()) {
+      Login()
+    } observe: {
+      LoginView.ViewState(state: $0)
+    } send: {
+      Login.Action(action: $0)
+    } withDependencies: {
+      $0.authenticationClient.login = { _ in
+        AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true)
+      }
     }
 
     await store.send(.emailChanged("2fa@pointfree.co")) {
@@ -57,7 +61,7 @@ final class LoginSwiftUITests: XCTestCase {
       $0.password = "password"
       $0.isLoginButtonDisabled = false
     }
-    await store.send(.loginButtonTapped) {
+    let twoFactorPresentationTask = await store.send(.loginButtonTapped) {
       $0.isActivityIndicatorVisible = true
       $0.isFormDisabled = true
     }
@@ -68,22 +72,21 @@ final class LoginSwiftUITests: XCTestCase {
     ) {
       $0.isActivityIndicatorVisible = false
       $0.isFormDisabled = false
-      $0.isTwoFactorActive = true
     }
-    await store.send(.twoFactorDismissed) {
-      $0.isTwoFactorActive = false
-    }
+    await twoFactorPresentationTask.cancel()
   }
 
   func testFlow_Failure() async {
-    let store = TestStore(
-      initialState: Login.State(),
-      reducer: Login()
-    )
-    .scope(state: LoginView.ViewState.init, action: Login.Action.init)
-
-    store.dependencies.authenticationClient.login = { _ in
-      throw AuthenticationError.invalidUserPassword
+    let store = TestStore(initialState: Login.State()) {
+      Login()
+    } observe: {
+      LoginView.ViewState(state: $0)
+    } send: {
+      Login.Action(action: $0)
+    } withDependencies: {
+      $0.authenticationClient.login = { _ in
+        throw AuthenticationError.invalidUserPassword
+      }
     }
 
     await store.send(.emailChanged("blob")) {
@@ -103,9 +106,6 @@ final class LoginSwiftUITests: XCTestCase {
       }
       $0.isActivityIndicatorVisible = false
       $0.isFormDisabled = false
-    }
-    await store.send(.alertDismissed) {
-      $0.alert = nil
     }
   }
 }

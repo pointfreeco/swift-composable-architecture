@@ -3,7 +3,7 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
-final class CompatibilityTests: XCTestCase {
+final class CompatibilityTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
 
   // Actions can be re-entrantly sent into the store if an action is sent that holds an object
@@ -36,7 +36,7 @@ final class CompatibilityTests: XCTestCase {
 
     var handledActions: [String] = []
 
-    let reducer = AnyReducer<State, Action, Void> { state, action, env in
+    let reducer = Reduce<State, Action> { state, action in
       handledActions.append(action.description)
 
       switch action {
@@ -47,7 +47,7 @@ final class CompatibilityTests: XCTestCase {
           .cancellable(id: cancelID)
 
       case .kickOffAction:
-        return EffectTask(value: .actionSender(OnDeinit { passThroughSubject.send(.stop) }))
+        return .send(.actionSender(OnDeinit { passThroughSubject.send(.stop) }))
 
       case .actionSender:
         return .none
@@ -57,13 +57,11 @@ final class CompatibilityTests: XCTestCase {
       }
     }
 
-    let store = Store(
-      initialState: .init(),
-      reducer: reducer,
-      environment: ()
-    )
+    let store = Store(initialState: .init()) {
+      reducer
+    }
 
-    let viewStore = ViewStore(store)
+    let viewStore = ViewStore(store, observe: { $0 })
 
     viewStore.send(.start)
     viewStore.send(.kickOffAction)
@@ -87,16 +85,14 @@ final class CompatibilityTests: XCTestCase {
   // `isSending` to false _after_ the store's state mutation is made so that re-entrant actions
   // are buffered rather than immediately handled.
   func testCaseStudy_ActionReentranceFromStateObservation() {
-    let store = Store<Int, Int>(
-      initialState: 0,
-      reducer: .init { state, action, _ in
+    let store = Store<Int, Int>(initialState: 0) {
+      Reduce { state, action in
         state = action
         return .none
-      },
-      environment: ()
-    )
+      }
+    }
 
-    let viewStore = ViewStore(store)
+    let viewStore = ViewStore(store, observe: { $0 })
 
     viewStore.publisher
       .sink { value in

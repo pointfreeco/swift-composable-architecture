@@ -3,25 +3,25 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
-final class EffectThrottleTests: XCTestCase {
+final class EffectThrottleTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
   let mainQueue = DispatchQueue.test
 
   func testThrottleLatest() async {
+    struct CancelID: Hashable {}
+    defer { Task.cancel(id: CancelID()) }
+
     var values: [Int] = []
     var effectRuns = 0
 
-    // NB: Explicit @MainActor is needed for Swift 5.5.2
-    @MainActor func runThrottledEffect(value: Int) {
-      enum CancelToken {}
-
+    func runThrottledEffect(value: Int) {
       Deferred { () -> Just<Int> in
         effectRuns += 1
         return Just(value)
       }
       .eraseToEffect()
       .throttle(
-        id: CancelToken.self, for: 1, scheduler: mainQueue.eraseToAnyScheduler(), latest: true
+        id: CancelID(), for: 1, scheduler: mainQueue.eraseToAnyScheduler(), latest: true
       )
       .sink { values.append($0) }
       .store(in: &self.cancellables)
@@ -63,20 +63,20 @@ final class EffectThrottleTests: XCTestCase {
   }
 
   func testThrottleFirst() async {
+    struct CancelID: Hashable {}
+    defer { Task.cancel(id: CancelID()) }
+
     var values: [Int] = []
     var effectRuns = 0
 
-    // NB: Explicit @MainActor is needed for Swift 5.5.2
-    @MainActor func runThrottledEffect(value: Int) {
-      enum CancelToken {}
-
+    func runThrottledEffect(value: Int) {
       Deferred { () -> Just<Int> in
         effectRuns += 1
         return Just(value)
       }
       .eraseToEffect()
       .throttle(
-        id: CancelToken.self, for: 1, scheduler: mainQueue.eraseToAnyScheduler(), latest: false
+        id: CancelID(), for: 1, scheduler: mainQueue.eraseToAnyScheduler(), latest: false
       )
       .sink { values.append($0) }
       .store(in: &self.cancellables)
@@ -131,12 +131,12 @@ final class EffectThrottleTests: XCTestCase {
   }
 
   func testThrottleAfterInterval() async {
+    struct CancelID: Hashable {}
+
     var values: [Int] = []
     var effectRuns = 0
 
-    // NB: Explicit @MainActor is needed for Swift 5.5.2
-    @MainActor func runThrottledEffect(value: Int) {
-      enum CancelToken {}
+    func runThrottledEffect(value: Int) {
 
       Deferred { () -> Just<Int> in
         effectRuns += 1
@@ -144,7 +144,7 @@ final class EffectThrottleTests: XCTestCase {
       }
       .eraseToEffect()
       .throttle(
-        id: CancelToken.self, for: 1, scheduler: mainQueue.eraseToAnyScheduler(), latest: true
+        id: CancelID(), for: 1, scheduler: mainQueue.eraseToAnyScheduler(), latest: true
       )
       .sink { values.append($0) }
       .store(in: &self.cancellables)
@@ -177,20 +177,20 @@ final class EffectThrottleTests: XCTestCase {
   }
 
   func testThrottleEmitsFirstValueOnce() async {
+    struct CancelID: Hashable {}
+    defer { Task.cancel(id: CancelID()) }
+
     var values: [Int] = []
     var effectRuns = 0
 
-    // NB: Explicit @MainActor is needed for Swift 5.5.2
-    @MainActor func runThrottledEffect(value: Int) {
-      enum CancelToken {}
-
+    func runThrottledEffect(value: Int) {
       Deferred { () -> Just<Int> in
         effectRuns += 1
         return Just(value)
       }
       .eraseToEffect()
       .throttle(
-        id: CancelToken.self, for: 1, scheduler: mainQueue.eraseToAnyScheduler(), latest: false
+        id: CancelID(), for: 1, scheduler: mainQueue.eraseToAnyScheduler(), latest: false
       )
       .sink { values.append($0) }
       .store(in: &self.cancellables)

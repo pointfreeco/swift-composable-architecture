@@ -8,13 +8,11 @@ public struct NewGameView: View {
   let store: StoreOf<NewGame>
 
   struct ViewState: Equatable {
-    var isGameActive: Bool
     var isLetsPlayButtonDisabled: Bool
     var oPlayerName: String
     var xPlayerName: String
 
     init(state: NewGame.State) {
-      self.isGameActive = state.game != nil
       self.isLetsPlayButtonDisabled = state.oPlayerName.isEmpty || state.xPlayerName.isEmpty
       self.oPlayerName = state.oPlayerName
       self.xPlayerName = state.xPlayerName
@@ -22,7 +20,6 @@ public struct NewGameView: View {
   }
 
   enum ViewAction {
-    case gameDismissed
     case letsPlayButtonTapped
     case logoutButtonTapped
     case oPlayerNameChanged(String)
@@ -34,8 +31,7 @@ public struct NewGameView: View {
   }
 
   public var body: some View {
-    WithViewStore(self.store, observe: ViewState.init, send: NewGame.Action.init) {
-      viewStore in
+    WithViewStore(self.store, observe: ViewState.init, send: NewGame.Action.init) { viewStore in
       Form {
         Section {
           TextField(
@@ -61,21 +57,17 @@ public struct NewGameView: View {
           Text("O Player Name")
         }
 
-        NavigationLink(
-          destination: IfLetStore(self.store.scope(state: \.game, action: NewGame.Action.game)) {
-            GameView(store: $0)
-          },
-          isActive: viewStore.binding(
-            get: \.isGameActive,
-            send: { $0 ? .letsPlayButtonTapped : .gameDismissed }
-          )
-        ) {
-          Text("Let's play!")
+        Button("Let's play!") {
+          viewStore.send(.letsPlayButtonTapped)
         }
         .disabled(viewStore.isLetsPlayButtonDisabled)
-        .navigationTitle("New Game")
-        .navigationBarItems(trailing: Button("Logout") { viewStore.send(.logoutButtonTapped) })
       }
+      .navigationTitle("New Game")
+      .navigationBarItems(trailing: Button("Logout") { viewStore.send(.logoutButtonTapped) })
+      .navigationDestination(
+        store: self.store.scope(state: \.$game, action: NewGame.Action.game),
+        destination: GameView.init
+      )
     }
   }
 }
@@ -83,8 +75,6 @@ public struct NewGameView: View {
 extension NewGame.Action {
   init(action: NewGameView.ViewAction) {
     switch action {
-    case .gameDismissed:
-      self = .gameDismissed
     case .letsPlayButtonTapped:
       self = .letsPlayButtonTapped
     case .logoutButtonTapped:
@@ -99,12 +89,11 @@ extension NewGame.Action {
 
 struct NewGame_Previews: PreviewProvider {
   static var previews: some View {
-    NavigationView {
+    NavigationStack {
       NewGameView(
-        store: Store(
-          initialState: NewGame.State(),
-          reducer: NewGame()
-        )
+        store: Store(initialState: NewGame.State()) {
+          NewGame()
+        }
       )
     }
   }

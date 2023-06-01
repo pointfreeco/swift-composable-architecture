@@ -3,11 +3,11 @@ import SwiftUI
 
 private let readMe = """
   This file demonstrates how to handle two-way bindings in the Composable Architecture using \
-  bindable state and actions.
+  binding state and actions.
 
-  Bindable state and actions allow you to safely eliminate the boilerplate caused by needing to \
+  Binding state and actions allow you to safely eliminate the boilerplate caused by needing to \
   have a unique action for every UI control. Instead, all UI bindings can be consolidated into a \
-  single `binding` action that holds onto a `BindingAction` value, and all bindable state can be \
+  single `binding` action that holds onto a `BindingAction` value, and all binding state can be \
   safeguarded with the `BindingState` property wrapper.
 
   It is instructive to compare this case study to the "Binding Basics" case study.
@@ -60,22 +60,18 @@ struct BindingFormView: View {
         }
 
         HStack {
-          TextField("Type here", text: viewStore.binding(\.$text))
+          TextField("Type here", text: viewStore.$text)
             .disableAutocorrection(true)
             .foregroundStyle(viewStore.toggleIsOn ? Color.secondary : .primary)
           Text(alternate(viewStore.text))
         }
         .disabled(viewStore.toggleIsOn)
 
-        Toggle(
-          "Disable other controls",
-          isOn: viewStore.binding(\.$toggleIsOn)
-            .resignFirstResponder()
-        )
+        Toggle("Disable other controls", isOn: viewStore.$toggleIsOn.resignFirstResponder())
 
         Stepper(
           "Max slider value: \(viewStore.stepCount)",
-          value: viewStore.binding(\.$stepCount),
+          value: viewStore.$stepCount,
           in: 0...100
         )
         .disabled(viewStore.toggleIsOn)
@@ -83,7 +79,7 @@ struct BindingFormView: View {
         HStack {
           Text("Slider value: \(Int(viewStore.sliderValue))")
 
-          Slider(value: viewStore.binding(\.$sliderValue), in: 0...Double(viewStore.stepCount))
+          Slider(value: viewStore.$sliderValue, in: 0...Double(viewStore.stepCount))
             .tint(.accentColor)
         }
         .disabled(viewStore.toggleIsOn)
@@ -116,10 +112,9 @@ struct BindingFormView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       BindingFormView(
-        store: Store(
-          initialState: BindingForm.State(),
-          reducer: BindingForm()
-        )
+        store: Store(initialState: BindingForm.State()) {
+          BindingForm()
+        }
       )
     }
   }

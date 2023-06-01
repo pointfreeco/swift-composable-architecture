@@ -1,4 +1,4 @@
-# ``ComposableArchitecture/EffectPublisher/run(priority:operation:catch:file:fileID:line:)``
+# ``ComposableArchitecture/EffectPublisher/run(priority:operation:catch:fileID:line:)``
 
 ## Topics
 

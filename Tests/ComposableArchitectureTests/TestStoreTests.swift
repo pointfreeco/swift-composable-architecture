@@ -3,7 +3,7 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
-final class TestStoreTests: XCTestCase {
+final class TestStoreTests: BaseTCATestCase {
   func testEffectConcatenation() async {
     struct State: Equatable {}
 
@@ -12,38 +12,34 @@ final class TestStoreTests: XCTestCase {
     }
 
     let mainQueue = DispatchQueue.test
+    let store = TestStore(initialState: State()) {
+      Reduce<State, Action> { _, action in
+        switch action {
+        case .a:
+          return .merge(
+            EffectTask.concatenate(.init(value: .b1), .init(value: .c1))
+              .delay(for: 1, scheduler: mainQueue)
+              .eraseToEffect(),
+            Empty(completeImmediately: false)
+              .eraseToEffect()
+              .cancellable(id: 1)
+          )
+        case .b1:
+          return
+            EffectTask
+            .concatenate(.init(value: .b2), .init(value: .b3))
+        case .c1:
+          return
+            EffectTask
+            .concatenate(.init(value: .c2), .init(value: .c3))
+        case .b2, .b3, .c2, .c3:
+          return .none
 
-    let reducer = Reduce<State, Action> { _, action in
-      switch action {
-      case .a:
-        return .merge(
-          EffectTask.concatenate(.init(value: .b1), .init(value: .c1))
-            .delay(for: 1, scheduler: mainQueue)
-            .eraseToEffect(),
-          Empty(completeImmediately: false)
-            .eraseToEffect()
-            .cancellable(id: 1)
-        )
-      case .b1:
-        return
-          EffectTask
-          .concatenate(.init(value: .b2), .init(value: .b3))
-      case .c1:
-        return
-          EffectTask
-          .concatenate(.init(value: .c2), .init(value: .c3))
-      case .b2, .b3, .c2, .c3:
-        return .none
-
-      case .d:
-        return .cancel(id: 1)
+        case .d:
+          return .cancel(id: 1)
+        }
       }
     }
-
-    let store = TestStore(
-      initialState: State(),
-      reducer: reducer
-    )
 
     await store.send(.a)
 
@@ -65,9 +61,8 @@ final class TestStoreTests: XCTestCase {
       case tap
       case response(Int)
     }
-    let store = TestStore(
-      initialState: 0,
-      reducer: Reduce<Int, Action> { state, action in
+    let store = TestStore(initialState: 0) {
+      Reduce<Int, Action> { state, action in
         switch action {
         case .tap:
           return .task { .response(42) }
@@ -76,7 +71,7 @@ final class TestStoreTests: XCTestCase {
           return .none
         }
       }
-    )
+    }
 
     await store.send(.tap)
     await store.receive(.response(42)) {
@@ -96,21 +91,21 @@ final class TestStoreTests: XCTestCase {
         case changed(from: Int, to: Int)
       }
 
-      let reducer = Reduce<State, Action> { state, action in
-        switch action {
-        case .increment:
-          state.isChanging = true
-          return EffectTask(value: .changed(from: state.count, to: state.count + 1))
-        case .changed(let from, let to):
-          state.isChanging = false
-          if state.count == from {
-            state.count = to
+      let store = TestStore(initialState: State()) {
+        Reduce<State, Action> { state, action in
+          switch action {
+          case .increment:
+            state.isChanging = true
+            return .send(.changed(from: state.count, to: state.count + 1))
+          case .changed(let from, let to):
+            state.isChanging = false
+            if state.count == from {
+              state.count = to
+            }
+            return .none
           }
-          return .none
         }
       }
-
-      let store = TestStore(initialState: State(), reducer: reducer)
 
       await store.send(.increment) {
         $0.isChanging = true
@@ -142,16 +137,16 @@ final class TestStoreTests: XCTestCase {
         case noop, finished
       }
 
-      let reducer = Reduce<State, Action> { state, action in
-        switch action {
-        case .noop:
-          return EffectTask(value: .finished)
-        case .finished:
-          return .none
+      let store = TestStore(initialState: State()) {
+        Reduce<State, Action> { state, action in
+          switch action {
+          case .noop:
+            return .send(.finished)
+          case .finished:
+            return .none
+          }
         }
       }
-
-      let store = TestStore(initialState: State(), reducer: reducer)
 
       await store.send(.noop)
       await store.receive(.finished)
@@ -167,13 +162,48 @@ final class TestStoreTests: XCTestCase {
         }
       }
     }
+
+    func testReceiveActionMatchingPredicate() async {
+      enum Action: Equatable {
+        case noop, finished
+      }
+
+      let store = TestStore(initialState: 0) {
+        Reduce<Int, Action> { state, action in
+          switch action {
+          case .noop:
+            return .send(.finished)
+          case .finished:
+            return .none
+          }
+        }
+      }
+
+      let predicateShouldBeCalledExpectation = expectation(
+        description: "predicate should be called")
+      await store.send(.noop)
+      await store.receive { action in
+        predicateShouldBeCalledExpectation.fulfill()
+        return action == .finished
+      }
+      _ = { wait(for: [predicateShouldBeCalledExpectation], timeout: 0) }()
+
+      XCTExpectFailure {
+        store.send(.noop)
+        store.receive(.noop)
+      }
+
+      XCTExpectFailure {
+        store.send(.noop)
+        store.receive { $0 == .noop }
+      }
+    }
   #endif
 
   func testStateAccess() async {
     enum Action { case a, b, c, d }
-    let store = TestStore(
-      initialState: 0,
-      reducer: Reduce<Int, Action> { count, action in
+    let store = TestStore(initialState: 0) {
+      Reduce<Int, Action> { count, action in
         switch action {
         case .a:
           count += 1
@@ -183,7 +213,7 @@ final class TestStoreTests: XCTestCase {
           return .none
         }
       }
-    )
+    }
 
     await store.send(.a) {
       $0 = 1
@@ -224,14 +254,13 @@ final class TestStoreTests: XCTestCase {
       }
     }
 
-    let store = TestStore(
-      initialState: 0,
-      reducer: Counter()
+    let store = TestStore(initialState: 0) {
+      Counter()
         .dependency(\.calendar, Calendar(identifier: .gregorian))
         .dependency(\.locale, Locale(identifier: "en_US"))
         .dependency(\.timeZone, TimeZone(secondsFromGMT: 0)!)
         .dependency(\.urlSession, URLSession(configuration: .ephemeral))
-    )
+    }
 
     store.send(true) { $0 = 1 }
   }
@@ -253,14 +282,68 @@ final class TestStoreTests: XCTestCase {
       }
     }
 
-    let store = TestStore(
-      initialState: 0,
-      reducer: Counter()
-    )
+    let store = TestStore(initialState: 0) {
+      Counter()
+    }
     store.dependencies.calendar = Calendar(identifier: .gregorian)
     store.dependencies.locale = Locale(identifier: "en_US")
     store.dependencies.timeZone = TimeZone(secondsFromGMT: 0)!
     store.dependencies.urlSession = URLSession(configuration: .ephemeral)
+
+    store.send(true) { $0 = 1 }
+  }
+
+  func testOverrideDependenciesOnTestStore_MidwayChange() {
+    struct Counter: ReducerProtocol {
+      @Dependency(\.date.now) var now
+
+      func reduce(into state: inout Int, action: ()) -> EffectTask<Void> {
+        state = Int(self.now.timeIntervalSince1970)
+        return .none
+      }
+    }
+
+    let store = TestStore(initialState: 0) {
+      Counter()
+    } withDependencies: {
+      $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
+    }
+
+    store.send(()) { $0 = 1_234_567_890 }
+
+    store.dependencies.date.now = Date(timeIntervalSince1970: 987_654_321)
+
+    store.send(()) { $0 = 987_654_321 }
+  }
+
+  func testOverrideDependenciesOnTestStore_Init() {
+    struct Counter: ReducerProtocol {
+      @Dependency(\.calendar) var calendar
+      @Dependency(\.client.fetch) var fetch
+      @Dependency(\.locale) var locale
+      @Dependency(\.timeZone) var timeZone
+      @Dependency(\.urlSession) var urlSession
+
+      func reduce(into state: inout Int, action: Bool) -> EffectTask<Bool> {
+        _ = self.calendar
+        _ = self.fetch()
+        _ = self.locale
+        _ = self.timeZone
+        _ = self.urlSession
+        state += action ? 1 : -1
+        return .none
+      }
+    }
+
+    let store = TestStore(initialState: 0) {
+      Counter()
+    } withDependencies: {
+      $0.calendar = Calendar(identifier: .gregorian)
+      $0.client.fetch = { 1 }
+      $0.locale = Locale(identifier: "en_US")
+      $0.timeZone = TimeZone(secondsFromGMT: 0)!
+      $0.urlSession = URLSession(configuration: .ephemeral)
+    }
 
     store.send(true) { $0 = 1 }
   }
@@ -293,10 +376,9 @@ final class TestStoreTests: XCTestCase {
       }
     }
 
-    let store = TestStore(
-      initialState: Feature.State(),
-      reducer: Feature()
-    ) {
+    let store = TestStore(initialState: Feature.State()) {
+      Feature()
+    } withDependencies: {
       $0.date = .constant(Date(timeIntervalSince1970: 1_234_567_890))
     }
 
@@ -310,5 +392,110 @@ final class TestStoreTests: XCTestCase {
       $0.count = 42
       $0.date = now
     }
+  }
+
+  func testPrepareDependenciesCalledOnce() {
+    var count = 0
+    let store = TestStore(initialState: 0) {
+      EmptyReducer<Int, Void>()
+    } withDependencies: { _ in
+      count += 1
+    }
+
+    XCTAssertEqual(count, 1)
+    _ = store
+  }
+
+  func testEffectEmitAfterSkipInFlightEffects() async {
+    let mainQueue = DispatchQueue.test
+    enum Action: Equatable { case tap, response }
+    let store = TestStore(initialState: 0) {
+      Reduce<Int, Action> { state, action in
+        switch action {
+        case .tap:
+          return .run { send in
+            try await mainQueue.sleep(for: .seconds(1))
+            await send(.response)
+          }
+        case .response:
+          state = 42
+          return .none
+        }
+      }
+    }
+
+    await store.send(.tap)
+    await store.skipInFlightEffects()
+    await mainQueue.advance(by: .seconds(1))
+    await store.receive(.response) {
+      $0 = 42
+    }
+  }
+
+  #if DEBUG
+    func testAssert_ExhaustiveTestStore() async {
+      let store = TestStore(initialState: 0) {
+        EmptyReducer<Int, Void>()
+      }
+
+      XCTExpectFailure {
+        store.assert {
+          $0 = 0
+        }
+      } issueMatcher: {
+        $0.compactDescription == """
+          Expected state to change, but no change occurred.
+
+          The trailing closure made no observable modifications to state. If no change to state is \
+          expected, omit the trailing closure.
+          """
+      }
+    }
+  #endif
+
+  func testAssert_NonExhaustiveTestStore() async {
+    let store = TestStore(initialState: 0) {
+      EmptyReducer<Int, Void>()
+    }
+    store.exhaustivity = .off
+
+    store.assert {
+      $0 = 0
+    }
+  }
+
+  #if DEBUG
+    func testAssert_NonExhaustiveTestStore_Failure() async {
+      let store = TestStore(initialState: 0) {
+        EmptyReducer<Int, Void>()
+      }
+      store.exhaustivity = .off
+
+      XCTExpectFailure {
+        store.assert {
+          $0 = 1
+        }
+      } issueMatcher: {
+        $0.compactDescription == """
+          A state change does not match expectation: …
+
+              − 1
+              + 0
+
+          (Expected: −, Actual: +)
+          """
+      }
+    }
+  #endif
+}
+
+private struct Client: DependencyKey {
+  var fetch: () -> Int
+  static let liveValue = Client(fetch: { 42 })
+}
+extension DependencyValues {
+  fileprivate var client: Client {
+    get { self[Client.self] }
+    set { self[Client.self] = newValue }
   }
 }

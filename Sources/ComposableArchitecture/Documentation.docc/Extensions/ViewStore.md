@@ -4,7 +4,9 @@
 
 ### Creating a view store
 
+- ``init(_:observe:send:removeDuplicates:)``
 - ``init(_:observe:removeDuplicates:)``
+- ``init(_:observe:send:)``
 - ``init(_:observe:)``
 - ``init(_:)-4il0f``
 - ``ViewStoreOf``
@@ -25,6 +27,7 @@
 
 - ``send(_:animation:)``
 - ``send(_:animation:while:)``
+- ``send(_:transaction:)``
 - <doc:Bindings>
 - ``objectWillChange-5oies``
 

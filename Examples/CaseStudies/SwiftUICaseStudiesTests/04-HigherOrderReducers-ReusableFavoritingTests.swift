@@ -10,30 +10,29 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
 
     let episodes: IdentifiedArrayOf<Episode.State> = [
       Episode.State(
-        id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+        id: UUID(0),
         isFavorite: false,
         title: "Functions"
       ),
       Episode.State(
-        id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+        id: UUID(1),
         isFavorite: false,
         title: "Functions"
       ),
       Episode.State(
-        id: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!,
+        id: UUID(2),
         isFavorite: false,
         title: "Functions"
       ),
     ]
-    let store = TestStore(
-      initialState: Episodes.State(episodes: episodes),
-      reducer: Episodes(
+    let store = TestStore(initialState: Episodes.State(episodes: episodes)) {
+      Episodes(
         favorite: { _, isFavorite in
           try await clock.sleep(for: .seconds(1))
           return isFavorite
         }
       )
-    )
+    }
 
     await store.send(.episode(id: episodes[0].id, action: .favorite(.buttonTapped))) {
       $0.episodes[id: episodes[0].id]?.isFavorite = true
@@ -54,17 +53,14 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
   func testUnhappyPath() async {
     let episodes: IdentifiedArrayOf<Episode.State> = [
       Episode.State(
-        id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+        id: UUID(0),
         isFavorite: false,
         title: "Functions"
       )
     ]
-    let store = TestStore(
-      initialState: Episodes.State(episodes: episodes),
-      reducer: Episodes(
-        favorite: { _, _ in throw FavoriteError() }
-      )
-    )
+    let store = TestStore(initialState: Episodes.State(episodes: episodes)) {
+      Episodes(favorite: { _, _ in throw FavoriteError() })
+    }
 
     await store.send(.episode(id: episodes[0].id, action: .favorite(.buttonTapped))) {
       $0.episodes[id: episodes[0].id]?.isFavorite = true

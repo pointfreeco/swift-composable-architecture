@@ -162,6 +162,16 @@ struct RootView: View {
 
         Section(header: Text("Navigation")) {
           NavigationLink(
+            "Stack",
+            destination: NavigationDemoView(
+              store: self.store.scope(
+                state: \.navigationStack,
+                action: Root.Action.navigationStack
+              )
+            )
+          )
+
+          NavigationLink(
             "Navigate and load data",
             destination: NavigateAndLoadView(
               store: self.store.scope(
@@ -285,10 +295,9 @@ struct RootView: View {
 struct RootView_Previews: PreviewProvider {
   static var previews: some View {
     RootView(
-      store: Store(
-        initialState: Root.State(),
-        reducer: Root()
-      )
+      store: Store(initialState: Root.State()) {
+        Root()
+      }
     )
   }
 }

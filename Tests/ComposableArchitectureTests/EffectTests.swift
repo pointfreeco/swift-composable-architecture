@@ -1,9 +1,10 @@
 import Combine
-@_spi(Canary) import ComposableArchitecture
+@_spi(Canary)@_spi(Internals) import ComposableArchitecture
+@_spi(Concurrency) import Dependencies
 import XCTest
 
 @MainActor
-final class EffectTests: XCTestCase {
+final class EffectTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
   let mainQueue = DispatchQueue.test
 
@@ -50,36 +51,38 @@ final class EffectTests: XCTestCase {
       .store(in: &self.cancellables)
   }
 
-  #if swift(>=5.7) && (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
+  #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     func testConcatenate() async {
-      if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        let clock = TestClock()
-        var values: [Int] = []
+      await withMainSerialExecutor {
+        if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
+          let clock = TestClock()
+          var values: [Int] = []
 
-        let effect = EffectPublisher<Int, Never>.concatenate(
-          (1...3).map { count in
-            .task {
-              try await clock.sleep(for: .seconds(count))
-              return count
+          let effect = EffectPublisher<Int, Never>.concatenate(
+            (1...3).map { count in
+              .task {
+                try await clock.sleep(for: .seconds(count))
+                return count
+              }
             }
-          }
-        )
+          )
 
-        effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+          effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
 
-        XCTAssertEqual(values, [])
+          XCTAssertEqual(values, [])
 
-        await clock.advance(by: .seconds(1))
-        XCTAssertEqual(values, [1])
+          await clock.advance(by: .seconds(1))
+          XCTAssertEqual(values, [1])
 
-        await clock.advance(by: .seconds(2))
-        XCTAssertEqual(values, [1, 2])
+          await clock.advance(by: .seconds(2))
+          XCTAssertEqual(values, [1, 2])
 
-        await clock.advance(by: .seconds(3))
-        XCTAssertEqual(values, [1, 2, 3])
+          await clock.advance(by: .seconds(3))
+          XCTAssertEqual(values, [1, 2, 3])
 
-        await clock.run()
-        XCTAssertEqual(values, [1, 2, 3])
+          await clock.run()
+          XCTAssertEqual(values, [1, 2, 3])
+        }
       }
     }
   #endif
@@ -88,7 +91,7 @@ final class EffectTests: XCTestCase {
     var values: [Int] = []
 
     let effect = EffectTask<Int>.concatenate(
-      EffectTask(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect()
+      .send(1).delay(for: 1, scheduler: mainQueue).eraseToEffect()
     )
 
     effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
@@ -102,33 +105,35 @@ final class EffectTests: XCTestCase {
     XCTAssertEqual(values, [1])
   }
 
-  #if swift(>=5.7) && (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
+  #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     func testMerge() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        let clock = TestClock()
+        await withMainSerialExecutor {
+          let clock = TestClock()
 
-        let effect = EffectPublisher<Int, Never>.merge(
-          (1...3).map { count in
-            .task {
-              try await clock.sleep(for: .seconds(count))
-              return count
+          let effect = EffectPublisher<Int, Never>.merge(
+            (1...3).map { count in
+              .task {
+                try await clock.sleep(for: .seconds(count))
+                return count
+              }
             }
-          }
-        )
+          )
 
-        var values: [Int] = []
-        effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+          var values: [Int] = []
+          effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
 
-        XCTAssertEqual(values, [])
+          XCTAssertEqual(values, [])
 
-        await clock.advance(by: .seconds(1))
-        XCTAssertEqual(values, [1])
+          await clock.advance(by: .seconds(1))
+          XCTAssertEqual(values, [1])
 
-        await clock.advance(by: .seconds(1))
-        XCTAssertEqual(values, [1, 2])
+          await clock.advance(by: .seconds(1))
+          XCTAssertEqual(values, [1, 2])
 
-        await clock.advance(by: .seconds(1))
-        XCTAssertEqual(values, [1, 2, 3])
+          await clock.advance(by: .seconds(1))
+          XCTAssertEqual(values, [1, 2, 3])
+        }
       }
     }
   #endif
@@ -169,7 +174,7 @@ final class EffectTests: XCTestCase {
   }
 
   func testEffectSubscriberInitializer_WithCancellation() {
-    enum CancelID {}
+    enum CancelID { case delay }
 
     let effect = EffectTask<Int>.run { subscriber in
       subscriber.send(1)
@@ -179,7 +184,7 @@ final class EffectTests: XCTestCase {
 
       return AnyCancellable {}
     }
-    .cancellable(id: CancelID.self)
+    .cancellable(id: CancelID.delay)
 
     var values: [Int] = []
     var isComplete = false
@@ -190,7 +195,7 @@ final class EffectTests: XCTestCase {
     XCTAssertEqual(values, [1])
     XCTAssertEqual(isComplete, false)
 
-    EffectTask<Void>.cancel(id: CancelID.self)
+    EffectTask<Void>.cancel(id: CancelID.delay)
       .sink(receiveValue: { _ in })
       .store(in: &self.cancellables)
 
@@ -290,11 +295,10 @@ final class EffectTests: XCTestCase {
         }
       }
     }
-    let store = TestStore(
-      initialState: 0,
-      reducer: Feature()
+    let store = TestStore(initialState: 0) {
+      Feature()
         .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1_234_567_890)))
-    )
+    }
 
     await store.send(.tap).finish(timeout: NSEC_PER_SEC)
     await store.receive(.response(1_234_567_890)) {
@@ -303,44 +307,44 @@ final class EffectTests: XCTestCase {
   }
 
   func testDependenciesTransferredToEffects_Run() async {
-    struct Feature: ReducerProtocol {
-      enum Action: Equatable {
-        case tap
-        case response(Int)
-      }
-      @Dependency(\.date) var date
-      func reduce(into state: inout Int, action: Action) -> EffectTask<Action> {
-        switch action {
-        case .tap:
-          return .run { send in
-            await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
+    await withMainSerialExecutor {
+      struct Feature: ReducerProtocol {
+        enum Action: Equatable {
+          case tap
+          case response(Int)
+        }
+        @Dependency(\.date) var date
+        func reduce(into state: inout Int, action: Action) -> EffectTask<Action> {
+          switch action {
+          case .tap:
+            return .run { send in
+              await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
+            }
+          case let .response(value):
+            state = value
+            return .none
           }
-        case let .response(value):
-          state = value
-          return .none
         }
       }
-    }
-    let store = TestStore(
-      initialState: 0,
-      reducer: Feature()
-        .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1_234_567_890)))
-    )
+      let store = TestStore(initialState: 0) {
+        Feature()
+          .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1_234_567_890)))
+      }
 
-    await store.send(.tap).finish(timeout: NSEC_PER_SEC)
-    await store.receive(.response(1_234_567_890)) {
-      $0 = 1_234_567_890
+      await store.send(.tap).finish(timeout: NSEC_PER_SEC)
+      await store.receive(.response(1_234_567_890)) {
+        $0 = 1_234_567_890
+      }
     }
   }
 
   func testMap() async {
     @Dependency(\.date) var date
-    let effect =
-      DependencyValues
-      .withValue(\.date, .init { Date(timeIntervalSince1970: 1_234_567_890) }) {
-        EffectTask<Void>(value: ())
-          .map { date() }
-      }
+    let effect = withDependencies {
+      $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
+    } operation: {
+      EffectTask<Void>(value: ()).map { date() }
+    }
     var output: Date?
     effect
       .sink { output = $0 }
@@ -348,12 +352,11 @@ final class EffectTests: XCTestCase {
     XCTAssertEqual(output, Date(timeIntervalSince1970: 1_234_567_890))
 
     if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
-      let effect =
-        DependencyValues
-        .withValue(\.date, .init { Date(timeIntervalSince1970: 1_234_567_890) }) {
-          EffectTask<Void>.task {}
-            .map { date() }
-        }
+      let effect = withDependencies {
+        $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
+      } operation: {
+        EffectTask<Void>.task {}.map { date() }
+      }
       output = await effect.values.first(where: { _ in true })
       XCTAssertEqual(output, Date(timeIntervalSince1970: 1_234_567_890))
     }

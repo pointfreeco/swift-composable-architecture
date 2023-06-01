@@ -47,20 +47,17 @@ day-to-day when building applications, such as:
 
 ### Essentials
 
+- <doc:MeetComposableArchitecture>
 - <doc:GettingStarted>
 - <doc:DependencyManagement>
 - <doc:Testing>
+- <doc:Navigation>
 - <doc:Performance>
-
-### Upgrade guides
-
-- <doc:SwiftConcurrency>
-- <doc:MigratingToTheReducerProtocol>
 
 ### State management
 
 - ``ReducerProtocol``
-- ``EffectPublisher``
+- ``EffectTask``
 - ``Store``
 - ``ViewStore``
 
@@ -71,9 +68,12 @@ day-to-day when building applications, such as:
 
 ### Testing
 
-- <doc:Testing>
 - ``TestStore``
-- ``ActorIsolated``
+
+### Upgrade guides
+
+- <doc:SwiftConcurrency>
+- <doc:MigratingToTheReducerProtocol>
 
 ## See Also
 

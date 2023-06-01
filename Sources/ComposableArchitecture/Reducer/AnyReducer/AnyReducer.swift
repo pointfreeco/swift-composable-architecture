@@ -16,18 +16,18 @@ import Combine
 ///     ``EffectTask``s, such as API clients, analytics clients, random number generators, etc.
 ///
 /// > Important: The thread on which effects output is important. An effect's output is immediately
-///   sent back into the store, and ``Store`` is not thread safe. This means all effects must
-///   receive values on the same thread, **and** if the ``Store`` is being used to drive UI then all
-///   output must be on the main thread. You can use the `Publisher` method `receive(on:)` for make
-///   the effect output its values on the thread of your choice.
+/// > sent back into the store, and ``Store`` is not thread safe. This means all effects must
+/// > receive values on the same thread, **and** if the ``Store`` is being used to drive UI then all
+/// > output must be on the main thread. You can use the `Publisher` method `receive(on:)` for make
+/// > the effect output its values on the thread of your choice.
 /// >
 /// > This is only an issue if using the Combine interface of ``EffectPublisher`` as mentioned
-///   above. If you are only using Swift's concurrency tools and the `.task`, `.run` and
-///   `.fireAndForget` functions on ``EffectTask``, then the threading is automatically handled for
-///   you.
+/// > above. If you are only using Swift's concurrency tools and the `.task`, `.run` and
+/// > `.fireAndForget` functions on ``EffectTask``, then the threading is automatically handled for
+/// > you.
 @available(
   iOS,
-  deprecated: 9999.0,
+  deprecated: 9999,
   message:
     """
     This API has been soft-deprecated in favor of 'ReducerProtocol'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -35,7 +35,7 @@ import Combine
 )
 @available(
   macOS,
-  deprecated: 9999.0,
+  deprecated: 9999,
   message:
     """
     This API has been soft-deprecated in favor of 'ReducerProtocol'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -43,7 +43,7 @@ import Combine
 )
 @available(
   tvOS,
-  deprecated: 9999.0,
+  deprecated: 9999,
   message:
     """
     This API has been soft-deprecated in favor of 'ReducerProtocol'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -51,7 +51,7 @@ import Combine
 )
 @available(
   watchOS,
-  deprecated: 9999.0,
+  deprecated: 9999,
   message:
     """
     This API has been soft-deprecated in favor of 'ReducerProtocol'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -94,7 +94,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///   environment.
   @available(
     iOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -102,7 +102,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     macOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -110,7 +110,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     tvOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -118,7 +118,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     watchOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -134,7 +134,7 @@ public struct AnyReducer<State, Action, Environment> {
   /// A reducer that performs no state mutations and returns no effects.
   @available(
     iOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'EmptyReducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -142,7 +142,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     macOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'EmptyReducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -150,7 +150,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     tvOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'EmptyReducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -158,7 +158,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     watchOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'EmptyReducer'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -214,7 +214,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///     case .child(.dismiss):
   ///       state.child = nil
   ///       return .none
-  ///     ...
+  ///     // ...
   ///     }
   ///   },
   /// )
@@ -224,7 +224,7 @@ public struct AnyReducer<State, Action, Environment> {
   /// - Returns: A single reducer.
   @available(
     iOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -232,7 +232,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     macOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -240,7 +240,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     tvOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -248,7 +248,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     watchOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -272,7 +272,7 @@ public struct AnyReducer<State, Action, Environment> {
   /// - Returns: A single reducer.
   @available(
     iOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -280,7 +280,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     macOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -288,7 +288,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     tvOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -296,7 +296,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     watchOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -323,7 +323,7 @@ public struct AnyReducer<State, Action, Environment> {
   /// - Returns: A single reducer.
   @available(
     iOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -331,7 +331,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     macOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -339,7 +339,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     tvOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -347,7 +347,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     watchOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of combining reducers in a 'ReducerBuilder'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -403,7 +403,7 @@ public struct AnyReducer<State, Action, Environment> {
   /// - Returns: A reducer that works on `ParentState`, `ParentAction`, `ParentEnvironment`.
   @available(
     iOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'Scope'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -411,7 +411,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     macOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'Scope'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -419,7 +419,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     tvOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'Scope'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -427,7 +427,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     watchOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'Scope'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -445,13 +445,13 @@ public struct AnyReducer<State, Action, Environment> {
         childAction,
         toChildEnvironment(parentEnvironment)
       )
-      .map(toChildAction.embed)
+      .map { toChildAction.embed($0) }
     }
   }
 
   /// This API has been soft-deprecated in favor of
-  /// ``ReducerProtocol/ifCaseLet(_:action:then:file:fileID:line:)`` and
-  /// ``Scope/init(state:action:_:file:fileID:line:)``. Read <doc:MigratingToTheReducerProtocol>
+  /// ``ReducerProtocol/ifCaseLet(_:action:then:fileID:line:)`` and
+  /// ``Scope/init(state:action:child:)``. Read <doc:MigratingToTheReducerProtocol>
   /// for more information.
   ///
   /// Transforms a reducer that works on child state, action, and environment into one that works on
@@ -513,7 +513,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///           // And `nil`s out child state when processing a child action
   ///           state.child = .anotherChild(AnotherChildState())
   ///           return .none
-  ///         ...
+  ///         // ...
   ///         }
   ///       },
   ///       // Before the child reducer runs
@@ -525,7 +525,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///     > { state, action environment in
   ///       case .didDisappear:
   ///         // This action is never received here because child state cannot be extracted
-  ///       ...
+  ///       // ...
   ///     }
   ///     ```
   ///
@@ -538,7 +538,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///       childReducer.pullback(state: /ParentState.child, ...),
   ///       // The parent runs after
   ///       Reducer { state, action, environment in
-  ///         ...
+  ///         // ...
   ///       }
   ///     )
   ///     ```
@@ -558,7 +558,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///
   ///       case let .response(response):
   ///         // But the child cannot process this action if its state is unavailable
-  ///       ...
+  ///       // ...
   ///       }
   ///     }
   ///     ```
@@ -571,7 +571,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///     let childReducer = Reducer<
   ///       ChildState, ChildAction, ChildEnvironment
   ///     > { state, action environment in
-  ///       enum MotionID {}
+  ///       enum CancelID { case motion }
   ///
   ///       switch action {
   ///       case .onAppear:
@@ -579,12 +579,12 @@ public struct AnyReducer<State, Action, Environment> {
   ///         return environment.motionClient
   ///           .start()
   ///           .map(ChildAction.motion)
-  ///           .cancellable(id: MotionID.self)
+  ///           .cancellable(id: CancelID.motion)
   ///
   ///       case .onDisappear:
   ///         // And explicitly cancel them when the domain is torn down
-  ///         return .cancel(id: MotionID.self)
-  ///       ...
+  ///         return .cancel(id: CancelID.motion)
+  ///       // ...
   ///       }
   ///     }
   ///     ```
@@ -595,23 +595,23 @@ public struct AnyReducer<State, Action, Environment> {
   ///     WithViewStore(self.parentStore) { parentViewStore in
   ///       // If child state is `nil`, it cannot process this action.
   ///       Button("Child Action") { parentViewStore.send(.child(.action)) }
-  ///       ...
+  ///       // ...
   ///     }
   ///     ```
   ///
-  ///     Use ``Store/scope(state:action:)`` with ``SwitchStore`` to ensure that views can only send
+  ///     Use ``Store/scope(state:action:)-9iai9`` with ``SwitchStore`` to ensure that views can only send
   ///     child actions when the child domain is available.
   ///
   ///     ```swift
   ///     SwitchStore(self.parentStore) {
-  ///       CaseLet(state: /ParentState.child, action: ParentAction.child) { childStore in
+  ///       CaseLet(/ParentState.child, action: ParentAction.child) { childStore in
   ///         // This destination only appears when child state matches
   ///         WithViewStore(childStore) { childViewStore in
   ///           // So this action can only be sent when child state is available
   ///           Button("Child Action") { childViewStore.send(.action) }
   ///         }
   ///       }
-  ///       ...
+  ///       // ...
   ///     }
   ///     ```
   ///
@@ -625,7 +625,7 @@ public struct AnyReducer<State, Action, Environment> {
   /// - Returns: A reducer that works on `ParentState`, `ParentAction`, `ParentEnvironment`.
   @available(
     iOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol.ifCaseLet' and 'Scope'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -633,7 +633,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     macOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol.ifCaseLet' and 'Scope'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -641,7 +641,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     tvOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol.ifCaseLet' and 'Scope'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -649,7 +649,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     watchOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol.ifCaseLet' and 'Scope'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -691,9 +691,7 @@ public struct AnyReducer<State, Action, Environment> {
           • This action was sent to the store while state was another case. Make sure that \
           actions for this reducer can only be sent to a view store when state is non-"nil". \
           In SwiftUI applications, use "SwitchStore".
-          """,
-          file: file,
-          line: line
+          """
         )
         return .none
       }
@@ -704,14 +702,14 @@ public struct AnyReducer<State, Action, Environment> {
         childAction,
         toChildEnvironment(parentEnvironment)
       )
-      .map(toChildAction.embed)
+      .map { toChildAction.embed($0) }
 
       return effects
     }
   }
 
   /// This API has been soft-deprecated in favor of
-  /// ``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)``. Read
+  /// ``ReducerProtocol/ifLet(_:action:then:fileID:line:)``. Read
   /// <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// Transforms a reducer that works on non-optional state into one that works on optional state by
@@ -738,7 +736,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///     environment: { ModalEnvironment(mainQueue: $0.mainQueue) }
   ///   ),
   ///   Reducer { state, action, environment in
-  ///     ...
+  ///     // ...
   ///   }
   /// )
   /// ```
@@ -760,7 +758,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///           // And `nil`s out child state when processing a child action
   ///           state.child = nil
   ///           return .none
-  ///         ...
+  ///         // ...
   ///         }
   ///       },
   ///       // Before the child reducer runs
@@ -772,7 +770,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///     > { state, action environment in
   ///       case .didDisappear:
   ///         // This action is never received here because child state is `nil` in the parent
-  ///       ...
+  ///       // ...
   ///     }
   ///     ```
   ///
@@ -785,7 +783,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///       childReducer.optional().pullback(...),
   ///       // The parent runs after
   ///       Reducer { state, action, environment in
-  ///         ...
+  ///         // ...
   ///       }
   ///     )
   ///     ```
@@ -805,7 +803,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///
   ///       case let .response(response):
   ///         // But the child cannot process this action if its state is `nil` in the parent
-  ///       ...
+  ///       // ...
   ///       }
   ///     }
   ///     ```
@@ -818,7 +816,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///     let childReducer = Reducer<
   ///       ChildState, ChildAction, ChildEnvironment
   ///     > { state, action environment in
-  ///       enum MotionID {}
+  ///       enum CancelID { case motion }
   ///
   ///       switch action {
   ///       case .onAppear:
@@ -826,12 +824,12 @@ public struct AnyReducer<State, Action, Environment> {
   ///         return environment.motionClient
   ///           .start()
   ///           .map(ChildAction.motion)
-  ///           .cancellable(id: MotionID.self)
+  ///           .cancellable(id: CancelID.motion)
   ///
   ///       case .onDisappear:
   ///         // And explicitly cancel them when the domain is torn down
-  ///         return .cancel(id: MotionID.self)
-  ///       ...
+  ///         return .cancel(id: CancelID.motion)
+  ///       // ...
   ///       }
   ///     }
   ///     ```
@@ -842,11 +840,11 @@ public struct AnyReducer<State, Action, Environment> {
   ///     WithViewStore(self.parentStore) { parentViewStore in
   ///       // If child state is `nil`, it cannot process this action.
   ///       Button("Child Action") { parentViewStore.send(.child(.action)) }
-  ///       ...
+  ///       // ...
   ///     }
   ///     ```
   ///
-  ///     Use ``Store/scope(state:action:)`` with ``IfLetStore`` or ``Store/ifLet(then:else:)`` to
+  ///     Use ``Store/scope(state:action:)-9iai9`` with ``IfLetStore`` or ``Store/ifLet(then:else:)`` to
   ///     ensure that views can only send child actions when the child domain is non-`nil`.
   ///
   ///     ```swift
@@ -858,7 +856,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///         // So this action can only be sent when child state is non-`nil`
   ///         Button("Child Action") { childViewStore.send(.action) }
   ///       }
-  ///       ...
+  ///       // ...
   ///     }
   ///     ```
   ///
@@ -870,7 +868,7 @@ public struct AnyReducer<State, Action, Environment> {
   /// - Returns: A reducer that works on optional state.
   @available(
     iOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol.ifLet'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -878,7 +876,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     macOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol.ifLet'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -886,7 +884,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     tvOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol.ifLet'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -894,7 +892,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     watchOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol.ifLet'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -931,9 +929,7 @@ public struct AnyReducer<State, Action, Environment> {
           • This action was sent to the store while state was "nil". Make sure that actions for \
           this reducer can only be sent to a view store when state is non-"nil". In SwiftUI \
           applications, use "IfLetStore".
-          """,
-          file: file,
-          line: line
+          """
         )
         return .none
       }
@@ -942,7 +938,7 @@ public struct AnyReducer<State, Action, Environment> {
   }
 
   /// This API has been soft-deprecated in favor of
-  /// ``ReducerProtocol/forEach(_:action:_:file:fileID:line:)``. Read
+  /// ``ReducerProtocol/forEach(_:action:element:fileID:line:)``. Read
   /// <doc:MigratingToTheReducerProtocol> for more information.
   ///
   /// A version of ``pullback(state:action:environment:)`` that transforms a reducer that works on
@@ -965,7 +961,7 @@ public struct AnyReducer<State, Action, Environment> {
   ///     environment: { _ in TodoEnvironment() }
   ///   ),
   ///   Reducer { state, action, environment in
-  ///     ...
+  ///     // ...
   ///   }
   /// )
   /// ```
@@ -981,7 +977,7 @@ public struct AnyReducer<State, Action, Environment> {
   /// - Returns: A reducer that works on `ParentState`, `ParentAction`, `ParentEnvironment`.
   @available(
     iOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol.forEach'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -989,7 +985,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     macOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol.forEach'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -997,7 +993,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     tvOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol.forEach'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -1005,7 +1001,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     watchOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol.forEach'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -1052,9 +1048,7 @@ public struct AnyReducer<State, Action, Environment> {
           To fix this make sure that actions for this reducer can only be sent to a view store \
           when its state contains an element at this id. In SwiftUI applications, use \
           "ForEachStore".
-          """,
-          file: file,
-          line: line
+          """
         )
         return .none
       }
@@ -1120,9 +1114,7 @@ public struct AnyReducer<State, Action, Environment> {
           • This action was sent to the store while its state contained no element at this \
           key. To fix this make sure that actions for this reducer can only be sent to a view \
           store when its state contains an element at this key.
-          """,
-          file: file,
-          line: line
+          """
         )
         return .none
       }
@@ -1147,7 +1139,7 @@ public struct AnyReducer<State, Action, Environment> {
   /// - Returns: An effect that can emit zero or more actions.
   @available(
     iOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol.reduce(into:action:)'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -1155,7 +1147,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     macOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol.reduce(into:action:)'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -1163,7 +1155,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     tvOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol.reduce(into:action:)'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -1171,7 +1163,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     watchOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol.reduce(into:action:)'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -1189,7 +1181,7 @@ public struct AnyReducer<State, Action, Environment> {
   /// Read <doc:MigratingToTheReducerProtocol> for more information.
   @available(
     iOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol.reduce(into:action:)'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -1197,7 +1189,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     macOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol.reduce(into:action:)'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -1205,7 +1197,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     tvOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol.reduce(into:action:)'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
@@ -1213,7 +1205,7 @@ public struct AnyReducer<State, Action, Environment> {
   )
   @available(
     watchOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       This API has been soft-deprecated in favor of 'ReducerProtocol.reduce(into:action:)'. Read the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol

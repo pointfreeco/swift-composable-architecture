@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1240"
+   LastUpgradeVersion = "1430"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -36,16 +36,6 @@
                BlueprintIdentifier = "ComposableArchitectureTests"
                BuildableName = "ComposableArchitectureTests"
                BlueprintName = "ComposableArchitectureTests"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "DependenciesTests"
-               BuildableName = "DependenciesTests"
-               BlueprintName = "DependenciesTests"
                ReferencedContainer = "container:">
             </BuildableReference>
          </TestableReference>

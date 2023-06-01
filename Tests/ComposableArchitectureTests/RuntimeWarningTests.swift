@@ -3,7 +3,7 @@
   import ComposableArchitecture
   import XCTest
 
-  final class RuntimeWarningTests: XCTestCase {
+  final class RuntimeWarningTests: BaseTCATestCase {
     func testStoreCreationMainThread() {
       XCTExpectFailure {
         $0.compactDescription == """
@@ -15,7 +15,7 @@
       }
 
       Task {
-        _ = Store<Int, Void>(initialState: 0, reducer: EmptyReducer())
+        _ = Store<Int, Void>(initialState: 0) {}
       }
       _ = XCTWaiter.wait(for: [.init()], timeout: 0.5)
     }
@@ -37,9 +37,8 @@
       }
 
       enum Action { case tap, response }
-      let store = Store(
-        initialState: 0,
-        reducer: Reduce<Int, Action> { state, action in
+      let store = Store(initialState: 0) {
+        Reduce<Int, Action> { state, action in
           switch action {
           case .tap:
             return Empty()
@@ -49,8 +48,8 @@
             return .none
           }
         }
-      )
-      ViewStore(store).send(.tap)
+      }
+      ViewStore(store, observe: { $0 }).send(.tap)
       _ = XCTWaiter.wait(for: [.init()], timeout: 0.5)
     }
 
@@ -73,9 +72,9 @@
         ].contains($0.compactDescription)
       }
 
-      let store = Store<Int, Void>(initialState: 0, reducer: EmptyReducer())
+      let store = Store<Int, Void>(initialState: 0) {}
       Task {
-        _ = store.scope(state: { $0 })
+        _ = store.scope(state: { $0 }, action: { $0 })
       }
       _ = XCTWaiter.wait(for: [.init()], timeout: 0.5)
     }
@@ -105,9 +104,9 @@
         ].contains($0.compactDescription)
       }
 
-      let store = Store<Int, Void>(initialState: 0, reducer: EmptyReducer())
+      let store = Store<Int, Void>(initialState: 0) {}
       Task {
-        ViewStore(store).send(())
+        ViewStore(store, observe: { $0 }).send(())
       }
       _ = XCTWaiter.wait(for: [.init()], timeout: 0.5)
     }
@@ -165,9 +164,8 @@
         }
 
         enum Action { case tap, response }
-        let store = Store(
-          initialState: 0,
-          reducer: Reduce<Int, Action> { state, action in
+        let store = Store(initialState: 0) {
+          Reduce<Int, Action> { state, action in
             switch action {
             case .tap:
               return .run { subscriber in
@@ -182,8 +180,8 @@
               return .none
             }
           }
-        )
-        await ViewStore(store).send(.tap).finish()
+        }
+        await ViewStore(store, observe: { $0 }).send(.tap).finish()
       }
     #endif
 
@@ -195,18 +193,41 @@
       enum Action: BindableAction, Equatable {
         case binding(BindingAction<State>)
       }
-      let store = Store(
-        initialState: State(),
-        reducer: EmptyReducer<State, Action>()
-      )
+      let store = Store<State, Action>(initialState: State()) {}
 
       var line: UInt = 0
       XCTExpectFailure {
         line = #line
-        ViewStore(store).binding(\.$value).wrappedValue = 42
+        ViewStore(store, observe: { $0 }).binding(\.$value).wrappedValue = 42
       } issueMatcher: {
         $0.compactDescription == """
           A binding action sent from a view store at "\(#fileID):\(line + 1)" was not handled. …
+
+            Action:
+              RuntimeWarningTests.Action.binding(.set(_, 42))
+
+          To fix this, invoke "BindingReducer()" from your feature reducer's "body".
+          """
+      }
+    }
+
+    @MainActor
+    func testBindingUnhandledAction_BindingState() {
+      struct State: Equatable {
+        @BindingState var value = 0
+      }
+      let line = #line - 2
+      enum Action: BindableAction, Equatable {
+        case binding(BindingAction<State>)
+      }
+      let store = Store<State, Action>(initialState: State()) {}
+
+      XCTExpectFailure {
+        ViewStore(store, observe: { $0 }).$value.wrappedValue = 42
+      } issueMatcher: {
+        $0.compactDescription == """
+          A binding action sent from a view store for binding state defined at \
+          "\(#fileID):\(line)" was not handled. …
 
             Action:
               RuntimeWarningTests.Action.binding(.set(_, 42))

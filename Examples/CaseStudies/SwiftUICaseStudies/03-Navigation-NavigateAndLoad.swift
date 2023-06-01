@@ -23,23 +23,23 @@ struct NavigateAndLoad: ReducerProtocol {
   }
 
   @Dependency(\.continuousClock) var clock
-  private enum CancelID {}
+  private enum CancelID { case load }
 
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
       case .setNavigation(isActive: true):
         state.isNavigationActive = true
-        return .task {
+        return .run { send in
           try await self.clock.sleep(for: .seconds(1))
-          return .setNavigationIsActiveDelayCompleted
+          await send(.setNavigationIsActiveDelayCompleted)
         }
-        .cancellable(id: CancelID.self)
+        .cancellable(id: CancelID.load)
 
       case .setNavigation(isActive: false):
         state.isNavigationActive = false
         state.optionalCounter = nil
-        return .cancel(id: CancelID.self)
+        return .cancel(id: CancelID.load)
 
       case .setNavigationIsActiveDelayCompleted:
         state.optionalCounter = Counter.State()
@@ -96,10 +96,9 @@ struct NavigateAndLoadView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       NavigateAndLoadView(
-        store: Store(
-          initialState: NavigateAndLoad.State(),
-          reducer: NavigateAndLoad()
-        )
+        store: Store(initialState: NavigateAndLoad.State()) {
+          NavigateAndLoad()
+        }
       )
     }
     .navigationViewStyle(.stack)

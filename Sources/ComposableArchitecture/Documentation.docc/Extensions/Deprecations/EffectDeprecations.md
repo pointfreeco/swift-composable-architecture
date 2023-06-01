@@ -8,9 +8,16 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 ## Topics
 
+### Type names and aliases
+
+- ``Effect``
+- ``EffectPublisher``
+
 ### Creating an effect
 
+- ``EffectPublisher/task(priority:operation:catch:fileID:line:)``
 - ``EffectPublisher/task(priority:operation:)``
+- ``EffectPublisher/fireAndForget(priority:_:)``
 
 ### Cancellation
 

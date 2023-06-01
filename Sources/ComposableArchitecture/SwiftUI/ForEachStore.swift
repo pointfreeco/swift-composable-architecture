@@ -23,7 +23,9 @@ import SwiftUI
 ///     case descriptionChanged(String)
 ///   }
 ///
-///   func reduce(into state: inout State, action: Action) -> EffectTask<Action> { ... }
+///   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+///     // ...
+///   }
 /// }
 /// ```
 ///
@@ -32,7 +34,7 @@ import SwiftUI
 /// ```swift
 /// struct TodoView: View {
 ///   let store: StoreOf<Todo>
-///   var body: some View { ... }
+///   var body: some View { /* ... */ }
 /// }
 /// ```
 ///
@@ -40,28 +42,30 @@ import SwiftUI
 /// state:
 ///
 /// ```swift
-/// struct Todos: ReducerProtocol { {
+/// struct Todos: ReducerProtocol {
 ///   struct State: Equatable {
-///     var todos: IdentifiedArrayOf<TodoState> = []
+///     var todos: IdentifiedArrayOf<Todo.State> = []
 ///   }
+///   // ...
+/// }
 /// ```
 ///
 /// Define a case to handle actions sent to the child domain:
 ///
 /// ```swift
 /// enum Action {
-///   case todo(id: TodoState.ID, action: TodoAction)
+///   case todo(id: Todo.State.ID, action: Todo.Action)
 /// }
 /// ```
 ///
-/// Enhance its core reducer using ``ReducerProtocol/forEach(_:action:_:file:fileID:line:)``:
+/// Enhance its core reducer using ``ReducerProtocol/forEach(_:action:element:fileID:line:)``:
 ///
 /// ```swift
 /// var body: some ReducerProtocol<State, Action> {
 ///   Reduce { state, action in
-///     ...
+///     // ...
 ///   }
-///   .forEach(state: \.todos, action: /Action.todo(id:action:)) {
+///   .forEach(\.todos, action: /Action.todo(id:action:)) {
 ///     Todo()
 ///   }
 /// }
@@ -71,7 +75,7 @@ import SwiftUI
 ///
 /// ```swift
 /// ForEachStore(
-///   self.store.scope(state: \.todos, AppAction.todo(id:action:))
+///   self.store.scope(state: \.todos, action: AppAction.todo(id:action:))
 /// ) { todoStore in
 ///   TodoView(store: todoStore)
 /// }
@@ -127,15 +131,4 @@ public struct ForEachStore<
   public var body: some View {
     self.content
   }
-}
-
-private func areOrderedSetsDuplicates<ID: Hashable>(lhs: OrderedSet<ID>, rhs: OrderedSet<ID>)
-  -> Bool
-{
-  var lhs = lhs
-  var rhs = rhs
-  if memcmp(&lhs, &rhs, MemoryLayout<OrderedSet<ID>>.size) == 0 {
-    return true
-  }
-  return lhs == rhs
 }

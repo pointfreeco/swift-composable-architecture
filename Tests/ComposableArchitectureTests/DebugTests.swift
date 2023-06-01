@@ -5,7 +5,7 @@
 
   @testable import ComposableArchitecture
 
-  final class DebugTests: XCTestCase {
+  final class DebugTests: BaseTCATestCase {
     func testDebugCaseOutput() {
       enum Action {
         case action1(Bool, label: String)
@@ -50,11 +50,12 @@
       let action = BindingAction.set(\State.$width, 50)
       var dump = ""
       customDump(action, to: &dump)
+
       XCTAssertEqual(
         dump,
         #"""
         BindingAction.set(
-          WritableKeyPath<State, BindingState<Int>>,
+          WritableKeyPath<DebugTests.State, BindingState<Int>>,
           50
         )
         """#
@@ -72,22 +73,7 @@
         }
       }
 
-      let store = TestStore(initialState: 0, reducer: DebuggedReducer()._printChanges())
-      await store.send(true) { $0 = 1 }
-    }
-
-    @MainActor
-    func testDebugReducerInPreview() async {
-      struct DebuggedReducer: ReducerProtocol {
-        typealias State = Int
-        typealias Action = Bool
-        func reduce(into state: inout Int, action: Bool) -> EffectTask<Bool> {
-          state += action ? 1 : -1
-          return .none
-        }
-      }
-      let store = TestStore(initialState: 0, reducer: DebuggedReducer()._printChanges())
-      store.dependencies.context = .preview
+      let store = TestStore(initialState: 0) { DebuggedReducer()._printChanges() }
       await store.send(true) { $0 = 1 }
     }
   }

@@ -9,13 +9,12 @@ import XCTest
 @MainActor
 final class AppCoreTests: XCTestCase {
   func testIntegration() async {
-    let store = TestStore(
-      initialState: TicTacToe.State(),
-      reducer: TicTacToe()
-    )
-
-    store.dependencies.authenticationClient.login = { _ in
-      AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
+    let store = TestStore(initialState: TicTacToe.State()) {
+      TicTacToe()
+    } withDependencies: {
+      $0.authenticationClient.login = { _ in
+        AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
+      }
     }
 
     await store.send(.login(.emailChanged("blob@pointfree.co"))) {
@@ -54,16 +53,15 @@ final class AppCoreTests: XCTestCase {
   }
 
   func testIntegration_TwoFactor() async {
-    let store = TestStore(
-      initialState: TicTacToe.State(),
-      reducer: TicTacToe()
-    )
-
-    store.dependencies.authenticationClient.login = { _ in
-      AuthenticationResponse(token: "deadbeef", twoFactorRequired: true)
-    }
-    store.dependencies.authenticationClient.twoFactor = { _ in
-      AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
+    let store = TestStore(initialState: TicTacToe.State()) {
+      TicTacToe()
+    } withDependencies: {
+      $0.authenticationClient.login = { _ in
+        AuthenticationResponse(token: "deadbeef", twoFactorRequired: true)
+      }
+      $0.authenticationClient.twoFactor = { _ in
+        AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
+      }
     }
 
     await store.send(.login(.emailChanged("blob@pointfree.co"))) {
@@ -95,14 +93,14 @@ final class AppCoreTests: XCTestCase {
       }
     }
 
-    await store.send(.login(.twoFactor(.codeChanged("1234")))) {
+    await store.send(.login(.twoFactor(.presented(.codeChanged("1234"))))) {
       try (/TicTacToe.State.login).modify(&$0) {
         $0.twoFactor?.code = "1234"
         $0.twoFactor?.isFormValid = true
       }
     }
 
-    await store.send(.login(.twoFactor(.submitButtonTapped))) {
+    await store.send(.login(.twoFactor(.presented(.submitButtonTapped)))) {
       try (/TicTacToe.State.login).modify(&$0) {
         $0.twoFactor?.isTwoFactorRequestInFlight = true
       }
@@ -110,8 +108,10 @@ final class AppCoreTests: XCTestCase {
     await store.receive(
       .login(
         .twoFactor(
-          .twoFactorResponse(
-            .success(AuthenticationResponse(token: "deadbeef", twoFactorRequired: false))
+          .presented(
+            .twoFactorResponse(
+              .success(AuthenticationResponse(token: "deadbeef", twoFactorRequired: false))
+            )
           )
         )
       )

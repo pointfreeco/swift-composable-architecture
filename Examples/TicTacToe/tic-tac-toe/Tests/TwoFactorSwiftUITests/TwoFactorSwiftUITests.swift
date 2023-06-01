@@ -8,14 +8,16 @@ import XCTest
 @MainActor
 final class TwoFactorSwiftUITests: XCTestCase {
   func testFlow_Success() async {
-    let store = TestStore(
-      initialState: TwoFactor.State(token: "deadbeefdeadbeef"),
-      reducer: TwoFactor()
-    )
-    .scope(state: TwoFactorView.ViewState.init, action: TwoFactor.Action.init)
-
-    store.dependencies.authenticationClient.twoFactor = { _ in
-      AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
+    let store = TestStore(initialState: TwoFactor.State(token: "deadbeefdeadbeef")) {
+      TwoFactor()
+    } observe: {
+      TwoFactorView.ViewState(state: $0)
+    } send: {
+      TwoFactor.Action(action: $0)
+    } withDependencies: {
+      $0.authenticationClient.twoFactor = { _ in
+        AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
+      }
     }
 
     await store.send(.codeChanged("1")) {
@@ -48,14 +50,16 @@ final class TwoFactorSwiftUITests: XCTestCase {
   }
 
   func testFlow_Failure() async {
-    let store = TestStore(
-      initialState: TwoFactor.State(token: "deadbeefdeadbeef"),
-      reducer: TwoFactor()
-    )
-    .scope(state: TwoFactorView.ViewState.init, action: TwoFactor.Action.init)
-
-    store.dependencies.authenticationClient.twoFactor = { _ in
-      throw AuthenticationError.invalidTwoFactor
+    let store = TestStore(initialState: TwoFactor.State(token: "deadbeefdeadbeef")) {
+      TwoFactor()
+    } observe: {
+      TwoFactorView.ViewState(state: $0)
+    } send: {
+      TwoFactor.Action(action: $0)
+    } withDependencies: {
+      $0.authenticationClient.twoFactor = { _ in
+        throw AuthenticationError.invalidTwoFactor
+      }
     }
 
     await store.send(.codeChanged("1234")) {

@@ -26,7 +26,7 @@ where State == ViewAction.State {
   public func reduce(
     into state: inout State, action: Action
   ) -> EffectTask<Action> {
-    guard let bindingAction = toViewAction(action).flatMap(/ViewAction.binding)
+    guard let bindingAction = self.toViewAction(action).flatMap(/ViewAction.binding)
     else { return .none }
 
     bindingAction.set(&state)

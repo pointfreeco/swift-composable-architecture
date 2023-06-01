@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 53;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -49,6 +49,7 @@
 		DC25DC612450F2B000082E81 /* LoadThenNavigate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC25DC602450F2B000082E81 /* LoadThenNavigate.swift */; };
 		DC25DC642450F2DF00082E81 /* ActivityIndicatorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC25DC632450F2DF00082E81 /* ActivityIndicatorViewController.swift */; };
 		DC27215625BF84FC00D9C8DB /* 01-GettingStarted-BindingBasicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC27215525BF84FC00D9C8DB /* 01-GettingStarted-BindingBasicsTests.swift */; };
+		DC3C87B029A48C4D004D9104 /* 03-NavigationStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3C87AF29A48C4D004D9104 /* 03-NavigationStack.swift */; };
 		DC4C6EAC2450DD380066A05D /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4C6EAB2450DD380066A05D /* SceneDelegate.swift */; };
 		DC4C6EAE2450DD380066A05D /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4C6EAD2450DD380066A05D /* RootViewController.swift */; };
 		DC4C6EB02450DD380066A05D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC4C6EAF2450DD380066A05D /* Assets.xcassets */; };
@@ -193,6 +194,7 @@
 		DC25DC602450F2B000082E81 /* LoadThenNavigate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadThenNavigate.swift; sourceTree = "<group>"; };
 		DC25DC632450F2DF00082E81 /* ActivityIndicatorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityIndicatorViewController.swift; sourceTree = "<group>"; };
 		DC27215525BF84FC00D9C8DB /* 01-GettingStarted-BindingBasicsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-BindingBasicsTests.swift"; sourceTree = "<group>"; };
+		DC3C87AF29A48C4D004D9104 /* 03-NavigationStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-NavigationStack.swift"; sourceTree = "<group>"; };
 		DC4C6EA72450DD380066A05D /* UIKitCaseStudies.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UIKitCaseStudies.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC4C6EAB2450DD380066A05D /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		DC4C6EAD2450DD380066A05D /* RootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
@@ -416,6 +418,7 @@
 				DC89C44C244621A5006900B9 /* 03-Navigation-NavigateAndLoad.swift */,
 				DC072321244663B1003A8B65 /* 03-Navigation-Sheet-LoadThenPresent.swift */,
 				DCC68EAA244666AF0037F998 /* 03-Navigation-Sheet-PresentAndLoad.swift */,
+				DC3C87AF29A48C4D004D9104 /* 03-NavigationStack.swift */,
 				DCAC2A4E2452352E0094DEF5 /* 04-HigherOrderReducers-ElmLikeSubscriptions.swift */,
 				CA3E4C5A24B4FA0E00447C0B /* 04-HigherOrderReducers-Lifecycle.swift */,
 				DCE63B70245CC0B90080A23D /* 04-HigherOrderReducers-Recursion.swift */,
@@ -593,8 +596,9 @@
 		DC89C40B24460F95006900B9 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				BuildIndependentTargetsInParallel = YES;
 				LastSwiftUpdateCheck = 1150;
-				LastUpgradeCheck = 1240;
+				LastUpgradeCheck = 1430;
 				ORGANIZATIONNAME = "Point-Free";
 				TargetAttributes = {
 					CAF88E6F24B8E26D00539345 = {
@@ -742,6 +746,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DC89C449244618D5006900B9 /* 03-Navigation-LoadThenNavigate.swift in Sources */,
+				DC3C87B029A48C4D004D9104 /* 03-NavigationStack.swift in Sources */,
 				DCC68EE12447C4630037F998 /* 01-GettingStarted-Composition-TwoCounters.swift in Sources */,
 				DC072322244663B1003A8B65 /* 03-Navigation-Sheet-LoadThenPresent.swift in Sources */,
 				DC89C45324465452006900B9 /* 03-Navigation-Lists-NavigateAndLoad.swift in Sources */,

@@ -5,7 +5,7 @@ import XCTest
 
 @MainActor
 final class ReusableComponentsDownloadComponentTests: XCTestCase {
-  let download = AsyncThrowingStream<DownloadClient.Event, Error>.streamWithContinuation()
+  let download = AsyncThrowingStream.makeStream(of: DownloadClient.Event.self)
 
   func testDownloadFlow() async {
     let store = TestStore(
@@ -13,11 +13,12 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
         id: 1,
         mode: .notDownloaded,
         url: URL(string: "https://www.pointfree.co")!
-      ),
-      reducer: DownloadComponent()
-    )
-
-    store.dependencies.downloadClient.download = { _ in self.download.stream }
+      )
+    ) {
+      DownloadComponent()
+    } withDependencies: {
+      $0.downloadClient.download = { _ in self.download.stream }
+    }
 
     await store.send(.buttonTapped) {
       $0.mode = .startingToDownload
@@ -41,11 +42,12 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
         id: 1,
         mode: .notDownloaded,
         url: URL(string: "https://www.pointfree.co")!
-      ),
-      reducer: DownloadComponent()
-    )
-
-    store.dependencies.downloadClient.download = { _ in self.download.stream }
+      )
+    ) {
+      DownloadComponent()
+    } withDependencies: {
+      $0.downloadClient.download = { _ in self.download.stream }
+    }
 
     await store.send(.buttonTapped) {
       $0.mode = .startingToDownload
@@ -81,11 +83,12 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
         id: 1,
         mode: .notDownloaded,
         url: URL(string: "https://www.pointfree.co")!
-      ),
-      reducer: DownloadComponent()
-    )
-
-    store.dependencies.downloadClient.download = { _ in self.download.stream }
+      )
+    ) {
+      DownloadComponent()
+    } withDependencies: {
+      $0.downloadClient.download = { _ in self.download.stream }
+    }
 
     let task = await store.send(.buttonTapped) {
       $0.mode = .startingToDownload
@@ -120,11 +123,12 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
         id: 1,
         mode: .downloaded,
         url: URL(string: "https://www.pointfree.co")!
-      ),
-      reducer: DownloadComponent()
-    )
-
-    store.dependencies.downloadClient.download = { _ in self.download.stream }
+      )
+    ) {
+      DownloadComponent()
+    } withDependencies: {
+      $0.downloadClient.download = { _ in self.download.stream }
+    }
 
     await store.send(.buttonTapped) {
       $0.alert = AlertState {

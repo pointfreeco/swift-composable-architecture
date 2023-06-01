@@ -50,8 +50,8 @@ struct Favoriting<ID: Hashable & Sendable>: ReducerProtocol {
     case .buttonTapped:
       state.isFavorite.toggle()
 
-      return .task { [id = state.id, isFavorite = state.isFavorite, favorite] in
-        await .response(TaskResult { try await favorite(id, isFavorite) })
+      return .run { [id = state.id, isFavorite = state.isFavorite, favorite] send in
+        await send(.response(TaskResult { try await favorite(id, isFavorite) }))
       }
       .cancellable(id: CancelID(id: state.id), cancelInFlight: true)
 
@@ -77,7 +77,7 @@ struct FavoriteButton<ID: Hashable & Sendable>: View {
         Image(systemName: "heart")
           .symbolVariant(viewStore.isFavorite ? .fill : .none)
       }
-      .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
+      .alert(self.store.scope(state: \.alert, action: { $0 }), dismiss: .alertDismissed)
     }
   }
 }
@@ -181,9 +181,10 @@ struct EpisodesView_Previews: PreviewProvider {
         store: Store(
           initialState: Episodes.State(
             episodes: .mocks
-          ),
-          reducer: Episodes(favorite: favorite(id:isFavorite:))
-        )
+          )
+        ) {
+          Episodes(favorite: favorite(id:isFavorite:))
+        }
       )
     }
   }

@@ -55,10 +55,9 @@ struct FocusDemoView: View {
         AboutView(readMe: readMe)
 
         VStack {
-          TextField("Username", text: viewStore.binding(\.$username))
+          TextField("Username", text: viewStore.$username)
             .focused($focusedField, equals: .username)
-
-          SecureField("Password", text: viewStore.binding(\.$password))
+          SecureField("Password", text: viewStore.$password)
             .focused($focusedField, equals: .password)
           Button("Sign In") {
             viewStore.send(.signInButtonTapped)
@@ -67,7 +66,7 @@ struct FocusDemoView: View {
         }
         .textFieldStyle(.roundedBorder)
       }
-      .synchronize(viewStore.binding(\.$focusedField), self.$focusedField)
+      .synchronize(viewStore.$focusedField, self.$focusedField)
     }
     .navigationTitle("Focus demo")
   }
@@ -90,10 +89,9 @@ struct FocusDemo_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       FocusDemoView(
-        store: Store(
-          initialState: FocusDemo.State(),
-          reducer: FocusDemo()
-        )
+        store: Store(initialState: FocusDemo.State()) {
+          FocusDemo()
+        }
       )
     }
   }

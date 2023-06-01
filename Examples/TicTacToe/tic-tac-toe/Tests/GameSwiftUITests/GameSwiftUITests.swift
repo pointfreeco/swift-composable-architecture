@@ -10,10 +10,12 @@ final class GameSwiftUITests: XCTestCase {
     initialState: Game.State(
       oPlayerName: "Blob Jr.",
       xPlayerName: "Blob Sr."
-    ),
-    reducer: Game()
-  )
-  .scope(state: GameView.ViewState.init)
+    )
+  ) {
+    Game()
+  } observe: {
+    GameView.ViewState(state: $0)
+  }
 
   func testFlow_Winner_Quit() async {
     await self.store.send(.cellTapped(row: 0, column: 0)) {
@@ -38,7 +40,6 @@ final class GameSwiftUITests: XCTestCase {
       $0.isPlayAgainButtonVisible = true
       $0.title = "Winner! Congrats Blob Sr.!"
     }
-    await self.store.send(.quitButtonTapped)
   }
 
   func testFlow_Tie() async {

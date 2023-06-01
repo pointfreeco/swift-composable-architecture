@@ -9,7 +9,7 @@ public final class TwoFactorViewController: UIViewController {
   private var cancellables: Set<AnyCancellable> = []
 
   struct ViewState: Equatable {
-    let alert: AlertState<TwoFactor.Action>?
+    let alert: AlertState<Never>?
     let code: String?
     let isActivityIndicatorHidden: Bool
     let isLoginButtonEnabled: Bool
@@ -30,7 +30,7 @@ public final class TwoFactorViewController: UIViewController {
 
   public init(store: StoreOf<TwoFactor>) {
     self.store = store
-    self.viewStore = ViewStore(store.scope(state: ViewState.init, action: TwoFactor.Action.init))
+    self.viewStore = ViewStore(store, observe: ViewState.init, send: TwoFactor.Action.init)
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -122,7 +122,7 @@ extension TwoFactor.Action {
   init(action: TwoFactorViewController.ViewAction) {
     switch action {
     case .alertDismissed:
-      self = .alertDismissed
+      self = .alert(.dismiss)
     case let .codeChanged(code):
       self = .set(\.$code, code ?? "")
     case .loginButtonTapped:

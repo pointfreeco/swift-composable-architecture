@@ -28,15 +28,14 @@ enum GameType: Identifiable {
 }
 
 struct RootView: View {
-  let store = Store(
-    initialState: TicTacToe.State(),
-    reducer: TicTacToe()._printChanges()
-  )
+  let store = Store(initialState: TicTacToe.State()) {
+    TicTacToe()._printChanges()
+  }
 
   @State var showGame: GameType?
 
   var body: some View {
-    NavigationView {
+    NavigationStack {
       Form {
         Text(readMe)
 
@@ -54,7 +53,6 @@ struct RootView: View {
       }
       .navigationTitle("Tic-Tac-Toe")
     }
-    .navigationViewStyle(.stack)
   }
 }
 

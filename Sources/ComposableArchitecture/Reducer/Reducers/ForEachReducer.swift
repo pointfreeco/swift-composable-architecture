@@ -1,3 +1,5 @@
+import OrderedCollections
+
 extension ReducerProtocol {
   /// Embeds a child reducer in a parent domain that works on elements of a collection in parent
   /// state.
@@ -50,20 +52,20 @@ extension ReducerProtocol {
   ///     state.
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @inlinable
-  public func forEach<ID: Hashable, Element: ReducerProtocol>(
-    _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, Element.State>>,
-    action toElementAction: CasePath<Action, (ID, Element.Action)>,
-    @ReducerBuilderOf<Element> _ element: () -> Element,
-    file: StaticString = #file,
+  @warn_unqualified_access
+  public func forEach<ElementState, ElementAction, ID: Hashable, Element: ReducerProtocol>(
+    _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
+    action toElementAction: CasePath<Action, (ID, ElementAction)>,
+    @ReducerBuilder<ElementState, ElementAction> element: () -> Element,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _ForEachReducer<Self, ID, Element> {
+  ) -> _ForEachReducer<Self, ID, Element>
+  where ElementState == Element.State, ElementAction == Element.Action {
     _ForEachReducer(
       parent: self,
       toElementsState: toElementsState,
       toElementAction: toElementAction,
       element: element(),
-      file: file,
       fileID: fileID,
       line: line
     )
@@ -86,13 +88,13 @@ public struct _ForEachReducer<
   let element: Element
 
   @usableFromInline
-  let file: StaticString
-
-  @usableFromInline
   let fileID: StaticString
 
   @usableFromInline
   let line: UInt
+
+  @usableFromInline
+  @Dependency(\.navigationIDPath) var navigationIDPath
 
   @usableFromInline
   init(
@@ -100,7 +102,6 @@ public struct _ForEachReducer<
     toElementsState: WritableKeyPath<Parent.State, IdentifiedArray<ID, Element.State>>,
     toElementAction: CasePath<Parent.Action, (ID, Element.Action)>,
     element: Element,
-    file: StaticString,
     fileID: StaticString,
     line: UInt
   ) {
@@ -108,7 +109,6 @@ public struct _ForEachReducer<
     self.toElementsState = toElementsState
     self.toElementAction = toElementAction
     self.element = element
-    self.file = file
     self.fileID = fileID
     self.line = line
   }
@@ -117,8 +117,29 @@ public struct _ForEachReducer<
   public func reduce(
     into state: inout Parent.State, action: Parent.Action
   ) -> EffectTask<Parent.Action> {
-    self.reduceForEach(into: &state, action: action)
-      .merge(with: self.parent.reduce(into: &state, action: action))
+    let elementEffects = self.reduceForEach(into: &state, action: action)
+
+    let idsBefore = state[keyPath: self.toElementsState].ids
+    let parentEffects = self.parent.reduce(into: &state, action: action)
+    let idsAfter = state[keyPath: self.toElementsState].ids
+
+    let elementCancelEffects: EffectTask<Parent.Action> =
+      areOrderedSetsDuplicates(idsBefore, idsAfter)
+      ? .none
+      : .merge(
+        idsBefore.subtracting(idsAfter).map {
+          ._cancel(
+            id: NavigationID(id: $0, keyPath: self.toElementsState),
+            navigationID: self.navigationIDPath
+          )
+        }
+      )
+
+    return .merge(
+      elementEffects,
+      parentEffects,
+      elementCancelEffects
+    )
   }
 
   @inlinable
@@ -129,7 +150,7 @@ public struct _ForEachReducer<
     if state[keyPath: self.toElementsState][id: id] == nil {
       runtimeWarn(
         """
-        A "forEach" at "\(self.fileID):\(self.line)" received an action for a missing element.
+        A "forEach" at "\(self.fileID):\(self.line)" received an action for a missing element. …
 
           Action:
             \(debugCaseOutput(action))
@@ -147,14 +168,16 @@ public struct _ForEachReducer<
         • This action was sent to the store while its state contained no element at this ID. To \
         fix this make sure that actions for this reducer can only be sent from a view store when \
         its state contains an element at this id. In SwiftUI applications, use "ForEachStore".
-        """,
-        file: self.file,
-        line: self.line
+        """
       )
       return .none
     }
+    let navigationID = NavigationID(id: id, keyPath: self.toElementsState)
+    let elementNavigationID = self.navigationIDPath.appending(navigationID)
     return self.element
+      .dependency(\.navigationIDPath, elementNavigationID)
       .reduce(into: &state[keyPath: self.toElementsState][id: id]!, action: elementAction)
       .map { self.toElementAction.embed((id, $0)) }
+      ._cancellable(id: navigationID, navigationIDPath: self.navigationIDPath)
   }
 }

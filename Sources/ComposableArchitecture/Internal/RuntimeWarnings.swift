@@ -1,21 +1,26 @@
+import Foundation
+
+extension Notification.Name {
+  public static let runtimeWarning = Self("ComposableArchitecture.runtimeWarning")
+}
+
 @_transparent
 @usableFromInline
 @inline(__always)
 func runtimeWarn(
   _ message: @autoclosure () -> String,
-  category: String? = "ComposableArchitecture",
-  file: StaticString? = nil,
-  line: UInt? = nil
+  category: String? = "ComposableArchitecture"
 ) {
   #if DEBUG
     let message = message()
+    NotificationCenter.default.post(
+      name: .runtimeWarning,
+      object: nil,
+      userInfo: ["message": message]
+    )
     let category = category ?? "Runtime Warning"
     if _XCTIsTesting {
-      if let file = file, let line = line {
-        XCTFail(message, file: file, line: line)
-      } else {
-        XCTFail(message)
-      }
+      XCTFail(message)
     } else {
       #if canImport(os)
         os_log(

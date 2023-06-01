@@ -29,28 +29,28 @@ struct EffectsCancellation: ReducerProtocol {
   }
 
   @Dependency(\.factClient) var factClient
-  private enum NumberFactRequestID {}
+  private enum CancelID { case factRequest }
 
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .cancelButtonTapped:
       state.isFactRequestInFlight = false
-      return .cancel(id: NumberFactRequestID.self)
+      return .cancel(id: CancelID.factRequest)
 
     case let .stepperChanged(value):
       state.count = value
       state.currentFact = nil
       state.isFactRequestInFlight = false
-      return .cancel(id: NumberFactRequestID.self)
+      return .cancel(id: CancelID.factRequest)
 
     case .factButtonTapped:
       state.currentFact = nil
       state.isFactRequestInFlight = true
 
-      return .task { [count = state.count] in
-        await .factResponse(TaskResult { try await self.factClient.fetch(count) })
+      return .run { [count = state.count] send in
+        await send(.factResponse(TaskResult { try await self.factClient.fetch(count) }))
       }
-      .cancellable(id: NumberFactRequestID.self)
+      .cancellable(id: CancelID.factRequest)
 
     case let .factResponse(.success(response)):
       state.isFactRequestInFlight = false
@@ -122,10 +122,9 @@ struct EffectsCancellation_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       EffectsCancellationView(
-        store: Store(
-          initialState: EffectsCancellation.State(),
-          reducer: EffectsCancellation()
-        )
+        store: Store(initialState: EffectsCancellation.State()) {
+          EffectsCancellation()
+        }
       )
     }
   }

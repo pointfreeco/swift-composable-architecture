@@ -35,7 +35,7 @@ struct LoadThenNavigateList: ReducerProtocol {
   }
 
   @Dependency(\.continuousClock) var clock
-  private enum CancelID {}
+  private enum CancelID { case load }
 
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
@@ -44,24 +44,24 @@ struct LoadThenNavigateList: ReducerProtocol {
         return .none
 
       case .onDisappear:
-        return .cancel(id: CancelID.self)
+        return .cancel(id: CancelID.load)
 
       case let .setNavigation(selection: .some(navigatedId)):
         for row in state.rows {
           state.rows[id: row.id]?.isActivityIndicatorVisible = row.id == navigatedId
         }
-        return .task {
+        return .run { send in
           try await self.clock.sleep(for: .seconds(1))
-          return .setNavigationSelectionDelayCompleted(navigatedId)
+          await send(.setNavigationSelectionDelayCompleted(navigatedId))
         }
-        .cancellable(id: CancelID.self, cancelInFlight: true)
+        .cancellable(id: CancelID.load, cancelInFlight: true)
 
       case .setNavigation(selection: .none):
         if let selection = state.selection {
           state.rows[id: selection.id]?.count = selection.count
         }
         state.selection = nil
-        return .cancel(id: CancelID.self)
+        return .cancel(id: CancelID.load)
 
       case let .setNavigationSelectionDelayCompleted(id):
         state.rows[id: id]?.isActivityIndicatorVisible = false
@@ -136,9 +136,10 @@ struct LoadThenNavigateListView_Previews: PreviewProvider {
               LoadThenNavigateList.State.Row(count: 42, id: UUID()),
               LoadThenNavigateList.State.Row(count: 100, id: UUID()),
             ]
-          ),
-          reducer: LoadThenNavigateList()
-        )
+          )
+        ) {
+          LoadThenNavigateList()
+        }
       )
     }
     .navigationViewStyle(.stack)

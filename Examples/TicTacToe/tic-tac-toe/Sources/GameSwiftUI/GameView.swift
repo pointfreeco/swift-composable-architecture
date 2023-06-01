@@ -78,9 +78,9 @@ public struct GameView: View {
     proxy: GeometryProxy,
     viewStore: ViewStore<ViewState, Game.Action>
   ) -> some View {
-    Button(action: {
+    Button {
       viewStore.send(.cellTapped(row: row, column: column))
-    }) {
+    } label: {
       Text(viewStore.board[row][column])
         .frame(width: proxy.size.width / 3, height: proxy.size.width / 3)
         .background(
@@ -94,12 +94,11 @@ public struct GameView: View {
 
 struct Game_Previews: PreviewProvider {
   static var previews: some View {
-    NavigationView {
+    NavigationStack {
       GameView(
-        store: Store(
-          initialState: Game.State(oPlayerName: "Blob Jr.", xPlayerName: "Blob Sr."),
-          reducer: Game()
-        )
+        store: Store(initialState: Game.State(oPlayerName: "Blob Jr.", xPlayerName: "Blob Sr.")) {
+          Game()
+        }
       )
     }
   }

@@ -23,7 +23,9 @@ struct TodoView: View {
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       HStack {
-        Button(action: { viewStore.$isComplete.wrappedValue.toggle() }) {
+        Button {
+          viewStore.$isComplete.wrappedValue.toggle()
+        } label: {
           Image(systemName: viewStore.isComplete ? "checkmark.square" : "square")
         }
         .buttonStyle(.plain)

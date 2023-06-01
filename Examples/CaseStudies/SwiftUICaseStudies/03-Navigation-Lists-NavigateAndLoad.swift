@@ -32,7 +32,7 @@ struct NavigateAndLoadList: ReducerProtocol {
   }
 
   @Dependency(\.continuousClock) var clock
-  private enum CancelID {}
+  private enum CancelID { case load }
 
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
@@ -42,18 +42,18 @@ struct NavigateAndLoadList: ReducerProtocol {
 
       case let .setNavigation(selection: .some(id)):
         state.selection = Identified(nil, id: id)
-        return .task {
+        return .run { send in
           try await self.clock.sleep(for: .seconds(1))
-          return .setNavigationSelectionDelayCompleted
+          await send(.setNavigationSelectionDelayCompleted)
         }
-        .cancellable(id: CancelID.self, cancelInFlight: true)
+        .cancellable(id: CancelID.load, cancelInFlight: true)
 
       case .setNavigation(selection: .none):
         if let selection = state.selection, let count = selection.value?.count {
           state.rows[id: selection.id]?.count = count
         }
         state.selection = nil
-        return .cancel(id: CancelID.self)
+        return .cancel(id: CancelID.load)
 
       case .setNavigationSelectionDelayCompleted:
         guard let id = state.selection?.id else { return .none }
@@ -121,9 +121,10 @@ struct NavigateAndLoadListView_Previews: PreviewProvider {
               NavigateAndLoadList.State.Row(count: 42, id: UUID()),
               NavigateAndLoadList.State.Row(count: 100, id: UUID()),
             ]
-          ),
-          reducer: NavigateAndLoadList()
-        )
+          )
+        ) {
+          NavigateAndLoadList()
+        }
       )
     }
     .navigationViewStyle(.stack)

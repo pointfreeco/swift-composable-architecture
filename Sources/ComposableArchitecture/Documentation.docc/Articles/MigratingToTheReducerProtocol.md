@@ -251,10 +251,10 @@ struct AppReducer: ReducerProtocol {
     Scope(state: \.tabA, action: /Action.tabA) {
       TabA()
     }
-    Scope(state: \.tabB, action: /Action.tabC) {
+    Scope(state: \.tabB, action: /Action.tabB) {
       TabB()
     }
-    Scope(state: \.tabB, action: /Action.tabC) {
+    Scope(state: \.tabC, action: /Action.tabC) {
       TabC()
     }
   }
@@ -274,7 +274,7 @@ like so:
 struct FeatureState { 
   // ...
 }
-struct FeatureAction { 
+enum FeatureAction { 
   // ...
 }
 struct FeatureEnvironment { 
@@ -368,17 +368,17 @@ Now the question is, how do we migrate `parentReducer` to a protocol conformance
 
 This gives us an opportunity to improve the correctness of this code. It turns out there is a gotcha 
 with the `optional` operator: it must be run _before_ the parent logic runs. If it is not, then it 
-is possible for a child action to come into the system, the parent observes the action and decides to 
-`nil` out the child state, and then the child reducer will not get a chance to react to the action.
-This can cause subtle bugs, and so we have documentation advising you to order things the correct 
-way, and if we detect a child action while state is `nil` we display a runtime warning.
+is possible for a child action to come into the system, the parent observes the action and decides
+to  `nil` out the child state, and then the child reducer will not get a chance to react to the
+action. This can cause subtle bugs, and so we have documentation advising you to order things the
+correct  way, and if we detect a child action while state is `nil` we display a runtime warning.
 
 A `Parent` reducer conformances can be made by implementing the 
 ``ReducerProtocol/body-swift.property-7foai`` property of the ``ReducerProtocol``, which allows you
 to express the parent's logic as a composition of multiple reducers. In particular, you can use
 the ``Reduce`` entry point to implement the core parent logic, and then chain on the 
-``ReducerProtocol/ifLet(_:action:then:file:fileID:line:)`` operator to identify the optional child
-state that you want to run the `Feature` reducer on when non-`nil`:
+``ReducerProtocol/ifLet(_:action:then:fileID:line:)`` operator to identify the optional child state
+that you want to run the `Feature` reducer on when non-`nil`:
 
 ```swift
 struct Parent: ReducerProtocol {
@@ -408,7 +408,7 @@ Because the `ifLet` operator has knowledge of both the parent and child reducers
 order to add an additional layer of correctness.
 
 If you are using an enum to model your state, then there is a corresponding 
-``ReducerProtocol/ifCaseLet(_:action:then:file:fileID:line:)`` operator that can help you run a
+``ReducerProtocol/ifCaseLet(_:action:then:fileID:line:)`` operator that can help you run a
 reducer on just one case of the enum.
 
 ## For-each reducers
@@ -417,7 +417,7 @@ Similar to `optional` reducers, another common pattern in applications is the us
 ``AnyReducer/forEach(state:action:environment:file:fileID:line:)-2ypoa`` to allow running a reducer
 on each element of a collection. Converting such child and parent reducers will look nearly
 identical to what we did above for optional reducers, but it will make use of the new
-``ReducerProtocol/forEach(_:action:_:file:fileID:line:)`` operator instead.
+``ReducerProtocol/forEach(_:action:element:fileID:line:)`` operator instead.
 
 In particular, the new `forEach` method operates on the parent reducer by specifying the collection
 sub-state you want to work on, and providing the element reducer you want to be able to run on
@@ -460,18 +460,18 @@ Reducer { state, action, environment in
 ```
 
 In reducer builders, use the new top-level ``BindingReducer`` type to specify when to apply
-mutations to bindable state:
+mutations to binding state:
 
 ```swift
 var body: some ReducerProtocol<State, Action> {
   Reduce { state, action in
-    // Logic to run before bindable state mutations are applied
+    // Logic to run before binding state mutations are applied
   }
 
-  BindingReducer()  // Apply bindable state mutations
+  BindingReducer()  // Apply binding state mutations
 
   Reduce { state, action in
-    // Logic to run after bindable state mutations are applied
+    // Logic to run after binding state mutations are applied
   }
 }
 ```
@@ -492,10 +492,11 @@ But this means that you must explicitly thread all dependencies from the root of
 through to every child feature. This can be arduous and make it difficult to add, remove or change
 dependencies.
 
-The library comes with a tool for managing dependencies in a more ergonomic manner, and even comes
-with some common dependencies pre-integrated allowing you to access them with no additional work.
-For example, the `date` dependency ships with the library so that you can declare your feature's
-dependence on that functionality in the following way:
+The Composable Architecture now uses the [Dependencies][swift-dependencies] library to manage
+dependencies in a more ergonomic manner, and even comes with some common dependencies pre-integrated
+allowing you to access them with no additional work. For example, the `date` dependency ships with
+the library so that you can declare your feature's dependence on that functionality in the following
+way:
 
 ```swift
 struct Feature: ReducerProtocol {
@@ -507,6 +508,17 @@ struct Feature: ReducerProtocol {
 
 With that one declaration you can stop explicitly passing the date dependency through every layer
 of your application. A date function will be automatically provided to your feature's reducer.
+
+> Important: [Dependencies][swift-dependencies] is powered by Swift task locals and is intended to
+> be used in structured contexts. If your reducer's effects make use of escaping closures, then
+> you must do additional work to propagate the dependencies to that context. For example, using
+> a dependency from within a Combine operator such as `.map`, `.flatMap` and even `.filter` will
+> use the default dependency value.
+>
+> See the [Dependencies documentation][swift-dependencies-docs] on
+> [Dependency lifetimes][swift-dependencies-docs-lifetimes] for more information, and how to
+> integrate the `@Dependency` property wrapper into pre-structured concurrency using the
+> `withEscapedDependencies` function.
 
 For domain-specific dependencies you can perform a little bit of upfront work to register your
 dependency with the system, and then it will be automatically available to every layer in your 
@@ -538,6 +550,10 @@ struct Feature: ReducerProtocol {
 For more information on designing your dependencies and providing live and test dependencies, see
 our <doc:Testing> article.
 
+[swift-dependencies]: https://github.com/pointfreeco/swift-dependencies
+[swift-dependencies-docs]: https://pointfreeco.github.io/swift-dependencies/main/documentation/dependencies/
+[swift-dependencies-docs-lifetimes]: https://pointfreeco.github.io/swift-dependencies/main/documentation/dependencies/lifetimes
+
 ## Stores
 
 Stores can be initialized from an initial state and an instance of a type conforming to
@@ -545,10 +561,9 @@ Stores can be initialized from an initial state and an instance of a type confor
 
 ```swift
 FeatureView(
-  store: Store(
-    initialState: Feature.State(),
-    reducer: Feature()
-  )
+  store: Store(initialState: Feature.State()) {
+    Feature()
+  }
 )
 ```
 
@@ -567,20 +582,32 @@ Test stores can be initialized from an initial state and an instance of a type c
 ``ReducerProtocol``.
 
 ```swift
-let store = TestStore(
-  initialState: Feature.State(),
-  reducer: Feature()
-)
+let store = TestStore(initialState: Feature.State()) {
+  Feature()
+}
 ```
 
 By default test stores will employ "test" dependencies wherever a dependency is accessed from a
 reducer via the `@Dependency` property wrapper.
 
 Instead of passing an environment of test dependencies to the store, or mutating the store's
-``TestStore/environment``, you will instead mutate the test store's ``TestStore/dependencies`` to
+``TestStore/environment``, you can either provide a trailing closure when initializing ``TestStore``
+or you can directly mutate the test store's ``TestStore/dependencies`` to
 override dependencies driving a feature.
 
 For example, to install a test clock as the continuous clock dependency you can do the following:
+
+```swift
+let clock = TestClock()
+
+let store = TestStore(initialState: Feature.State()) {
+  Feature()
+} withDependencies: {
+  $0.continuousClock = .clock 
+}
+```
+
+…or you can do:
 
 ```swift
 let clock = TestClock()

@@ -67,6 +67,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
   public private(set) lazy var objectWillChange = ObservableObjectPublisher()
 
+  let _isInvalidated: () -> Bool
   private let _send: (ViewAction) -> Task<Void, Never>?
   fileprivate let _state: CurrentValueRelay<ViewState>
   private var viewCancellable: AnyCancellable?
@@ -92,6 +93,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ) {
     self._send = { store.send($0) }
     self._state = CurrentValueRelay(toViewState(store.state.value))
+    self._isInvalidated = store._isInvalidated
     self.viewCancellable = store.state
       .map(toViewState)
       .removeDuplicates(by: isDuplicate)
@@ -125,6 +127,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ) {
     self._send = { store.send(fromViewAction($0)) }
     self._state = CurrentValueRelay(toViewState(store.state.value))
+    self._isInvalidated = store._isInvalidated
     self.viewCancellable = store.state
       .map(toViewState)
       .removeDuplicates(by: isDuplicate)
@@ -150,7 +153,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///     equal, repeat view computations are removed.
   @available(
     iOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       Use 'init(_:observe:removeDuplicates:)' to make state observation explicit.
@@ -162,7 +165,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   )
   @available(
     macOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       Use 'init(_:observe:removeDuplicates:)' to make state observation explicit.
@@ -174,7 +177,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   )
   @available(
     tvOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       Use 'init(_:observe:removeDuplicates:)' to make state observation explicit.
@@ -186,7 +189,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   )
   @available(
     watchOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       Use 'init(_:observe:removeDuplicates:)' to make state observation explicit.
@@ -202,6 +205,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ) {
     self._send = { store.send($0) }
     self._state = CurrentValueRelay(store.state.value)
+    self._isInvalidated = store._isInvalidated
     self.viewCancellable = store.state
       .removeDuplicates(by: isDuplicate)
       .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
@@ -214,6 +218,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   init(_ viewStore: ViewStore<ViewState, ViewAction>) {
     self._send = viewStore._send
     self._state = viewStore._state
+    self._isInvalidated = viewStore._isInvalidated
     self.objectWillChange = viewStore.objectWillChange
     self.viewCancellable = viewStore.viewCancellable
   }
@@ -290,7 +295,19 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - animation: An animation.
   @discardableResult
   public func send(_ action: ViewAction, animation: Animation?) -> ViewStoreTask {
-    withAnimation(animation) {
+    send(action, transaction: Transaction(animation: animation))
+  }
+
+  /// Sends an action to the store with a given transaction.
+  ///
+  /// See ``ViewStore/send(_:)`` for more info.
+  ///
+  /// - Parameters:
+  ///   - action: An action.
+  ///   - transaction: A transaction.
+  @discardableResult
+  public func send(_ action: ViewAction, transaction: Transaction) -> ViewStoreTask {
+    withTransaction(transaction) {
       self.send(action)
     }
   }
@@ -320,8 +337,8 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///     switch action {
   ///     case .pulledToRefresh:
   ///       state.isLoading = true
-  ///       return .task {
-  ///         await .receivedResponse(TaskResult { try await self.fetch() })
+  ///       return .run { send in
+  ///         await send(.receivedResponse(TaskResult { try await self.fetch() }))
   ///       }
   ///
   ///     case let .receivedResponse(result):
@@ -365,7 +382,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   /// - Parameters:
   ///   - action: An action.
   ///   - predicate: A predicate on `ViewState` that determines for how long this method should
-  ///                suspend.
+  ///     suspend.
   @MainActor
   public func send(_ action: ViewAction, while predicate: @escaping (ViewState) -> Bool) async {
     let task = self.send(action)
@@ -384,7 +401,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - action: An action.
   ///   - animation: The animation to perform when the action is sent.
   ///   - predicate: A predicate on `ViewState` that determines for how long this method should
-  ///                suspend.
+  ///     suspend.
   @MainActor
   public func send(
     _ action: ViewAction,
@@ -405,7 +422,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   /// ``send(_:while:)``.
   ///
   /// - Parameter predicate: A predicate on `ViewState` that determines for how long this method
-  ///                        should suspend.
+  ///   should suspend.
   @MainActor
   public func yield(while predicate: @escaping (ViewState) -> Bool) async {
     if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
@@ -435,6 +452,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       }
     }
   }
+
   /// Derives a binding from the store that prevents direct writes to state and instead sends
   /// actions to the store.
   ///
@@ -466,14 +484,17 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     get: @escaping (ViewState) -> Value,
     send valueToAction: @escaping (Value) -> ViewAction
   ) -> Binding<Value> {
-    ObservedObject(
-      wrappedValue: ObservedState(
-        initialValue: get(self.state),
-        send: { self.send(valueToAction($0)) }
-      )
-    )
-    .projectedValue
-    .wrappedValue
+    ObservedObject(wrappedValue: self)
+      .projectedValue[get: .init(rawValue: get), send: .init(rawValue: valueToAction)]
+  }
+
+  @_disfavoredOverload
+  func binding<Value>(
+    get: @escaping (ViewState) -> Value,
+    compactSend valueToAction: @escaping (Value) -> ViewAction?
+  ) -> Binding<Value> {
+    ObservedObject(wrappedValue: self)
+      .projectedValue[get: .init(rawValue: get), send: .init(rawValue: valueToAction)]
   }
 
   /// Derives a binding from the store that prevents direct writes to state and instead sends
@@ -565,6 +586,20 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   public func binding(send action: ViewAction) -> Binding<ViewState> {
     self.binding(send: { _ in action })
   }
+
+  private subscript<Value>(
+    get fromState: HashableWrapper<(ViewState) -> Value>,
+    send toAction: HashableWrapper<(Value) -> ViewAction?>
+  ) -> Value {
+    get { fromState.rawValue(self.state) }
+    set {
+      BindingLocal.$isActive.withValue(true) {
+        if let action = toAction.rawValue(newValue) {
+          self.send(action)
+        }
+      }
+    }
+  }
 }
 
 /// A convenience type alias for referring to a view store of a given reducer's domain.
@@ -583,6 +618,18 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
 public typealias ViewStoreOf<R: ReducerProtocol> = ViewStore<R.State, R.Action>
 
 extension ViewStore where ViewState: Equatable {
+  /// Initializes a view store from a store which observes changes to state.
+  ///
+  /// It is recommended that the `observe` argument transform the store's state into the bare
+  /// minimum of data needed for the feature to do its job in order to not hinder performance.
+  /// This is especially true for root level features, and less important for leaf features.
+  ///
+  /// To read more about this performance technique, read the <doc:Performance> article.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - toViewState: A transformation of `ViewState` to the state that will be observed for
+  ///   changes.
   public convenience init<State>(
     _ store: Store<State, ViewAction>,
     observe toViewState: @escaping (State) -> ViewState
@@ -590,6 +637,18 @@ extension ViewStore where ViewState: Equatable {
     self.init(store, observe: toViewState, removeDuplicates: ==)
   }
 
+  /// Initializes a view store from a store which observes changes to state.
+  ///
+  /// It is recommended that the `observe` argument transform the store's state into the bare
+  /// minimum of data needed for the feature to do its job in order to not hinder performance.
+  /// This is especially true for root level features, and less important for leaf features.
+  ///
+  /// To read more about this performance technique, read the <doc:Performance> article.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - toViewState: A transformation of `ViewState` to the state that will be observed for
+  ///   changes.
   public convenience init<State, Action>(
     _ store: Store<State, Action>,
     observe toViewState: @escaping (State) -> ViewState,
@@ -611,7 +670,7 @@ extension ViewStore where ViewState: Equatable {
   ///   - store: A store.
   @available(
     iOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       Use 'init(_:observe:)' to make state observation explicit.
@@ -623,7 +682,7 @@ extension ViewStore where ViewState: Equatable {
   )
   @available(
     macOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       Use 'init(_:observe:)' to make state observation explicit.
@@ -635,7 +694,7 @@ extension ViewStore where ViewState: Equatable {
   )
   @available(
     tvOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       Use 'init(_:observe:)' to make state observation explicit.
@@ -647,7 +706,7 @@ extension ViewStore where ViewState: Equatable {
   )
   @available(
     watchOS,
-    deprecated: 9999.0,
+    deprecated: 9999,
     message:
       """
       Use 'init(_:observe:)' to make state observation explicit.
@@ -748,12 +807,12 @@ public struct StorePublisher<State>: Publisher {
   }
 }
 
-private final class ObservedState<Value>: ObservableObject {
-  @Published var wrappedValue: Value
-  var cancellable: AnyCancellable?
+private struct HashableWrapper<Value>: Hashable {
+  let rawValue: Value
+  static func == (lhs: Self, rhs: Self) -> Bool { false }
+  func hash(into hasher: inout Hasher) {}
+}
 
-  init(initialValue: Value, send: @escaping (Value) -> Void) {
-    self.wrappedValue = initialValue
-    self.cancellable = self.$wrappedValue.dropFirst().sink(receiveValue: send)
-  }
+enum BindingLocal {
+  @TaskLocal static var isActive = false
 }

@@ -5,7 +5,7 @@ import Dispatch
 
 public struct TwoFactor: ReducerProtocol, Sendable {
   public struct State: Equatable {
-    public var alert: AlertState<Action>?
+    @PresentationState public var alert: AlertState<Never>?
     @BindingState public var code = ""
     public var isFormValid = false
     public var isTwoFactorRequestInFlight = false
@@ -17,13 +17,11 @@ public struct TwoFactor: ReducerProtocol, Sendable {
   }
 
   public enum Action: BindableAction, Equatable {
-    case alertDismissed
+    case alert(PresentationAction<Never>)
     case binding(BindingAction<State>)
     case submitButtonTapped
     case twoFactorResponse(TaskResult<AuthenticationResponse>)
   }
-
-  public enum TearDownToken {}
 
   @Dependency(\.authenticationClient) var authenticationClient
 
@@ -33,8 +31,7 @@ public struct TwoFactor: ReducerProtocol, Sendable {
     BindingReducer()
     Reduce { state, action in
       switch action {
-      case .alertDismissed:
-        state.alert = nil
+      case .alert:
         return .none
 
       case .binding:
@@ -50,7 +47,6 @@ public struct TwoFactor: ReducerProtocol, Sendable {
             }
           )
         }
-        .cancellable(id: TearDownToken.self)
 
       case let .twoFactorResponse(.failure(error)):
         state.alert = AlertState { TextState(error.localizedDescription) }
@@ -62,5 +58,6 @@ public struct TwoFactor: ReducerProtocol, Sendable {
         return .none
       }
     }
+    .ifLet(\.$alert, action: /Action.alert)
   }
 }

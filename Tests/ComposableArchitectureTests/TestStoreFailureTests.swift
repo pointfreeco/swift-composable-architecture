@@ -3,18 +3,17 @@
   import XCTest
 
   @MainActor
-  final class TestStoreFailureTests: XCTestCase {
+  final class TestStoreFailureTests: BaseTCATestCase {
     func testNoStateChangeFailure() {
       enum Action { case first, second }
-      let store = TestStore(
-        initialState: 0,
-        reducer: Reduce<Int, Action> { state, action in
+      let store = TestStore(initialState: 0) {
+        Reduce<Int, Action> { state, action in
           switch action {
           case .first: return .init(value: .second)
           case .second: return .none
           }
         }
-      )
+      }
 
       XCTExpectFailure {
         _ = store.send(.first) { _ = $0 }
@@ -41,13 +40,12 @@
 
     func testStateChangeFailure() {
       struct State: Equatable { var count = 0 }
-      let store = TestStore(
-        initialState: .init(),
-        reducer: Reduce<State, Void> { state, action in
+      let store = TestStore(initialState: State()) {
+        Reduce<State, Void> { state, action in
           state.count += 1
           return .none
         }
-      )
+      }
 
       XCTExpectFailure {
         _ = store.send(()) { $0.count = 0 }
@@ -65,12 +63,12 @@
 
     func testUnexpectedStateChangeOnSendFailure() {
       struct State: Equatable { var count = 0 }
-      let store = TestStore(
-        initialState: .init(),
-        reducer: Reduce<State, Void> { state, action in state.count += 1
+      let store = TestStore(initialState: State()) {
+        Reduce<State, Void> { state, action in
+          state.count += 1
           return .none
         }
-      )
+      }
 
       _ = XCTExpectFailure {
         store.send(())
@@ -89,9 +87,8 @@
     func testUnexpectedStateChangeOnReceiveFailure() {
       struct State: Equatable { var count = 0 }
       enum Action { case first, second }
-      let store = TestStore(
-        initialState: .init(),
-        reducer: Reduce<State, Action> { state, action in
+      let store = TestStore(initialState: State()) {
+        Reduce<State, Action> { state, action in
           switch action {
           case .first: return .init(value: .second)
           case .second:
@@ -99,7 +96,7 @@
             return .none
           }
         }
-      )
+      }
 
       store.send(.first)
       XCTExpectFailure {
@@ -120,15 +117,14 @@
       XCTExpectFailure {
         do {
           enum Action { case first, second }
-          let store = TestStore(
-            initialState: 0,
-            reducer: Reduce<Int, Action> { state, action in
+          let store = TestStore(initialState: 0) {
+            Reduce<Int, Action> { state, action in
               switch action {
               case .first: return .init(value: .second)
               case .second: return .none
               }
             }
-          )
+          }
           store.send(.first)
         }
       } issueMatcher: {
@@ -136,7 +132,7 @@
           The store received 1 unexpected action after this one: …
 
           Unhandled actions: [
-            [0]: TestStoreFailureTests.Action.second
+            [0]: .second
           ]
           """
       }
@@ -145,12 +141,11 @@
     func testEffectInFlightAfterDeinit() {
       XCTExpectFailure {
         do {
-          let store = TestStore(
-            initialState: 0,
-            reducer: Reduce<Int, Void> { state, action in
+          let store = TestStore(initialState: 0) {
+            Reduce<Int, Void> { state, action in
               .task { try await Task.sleep(nanoseconds: NSEC_PER_SEC) }
             }
-          )
+          }
           store.send(())
         }
       } issueMatcher: {
@@ -180,15 +175,14 @@
 
     func testSendActionBeforeReceivingFailure() {
       enum Action { case first, second }
-      let store = TestStore(
-        initialState: 0,
-        reducer: Reduce<Int, Action> { state, action in
+      let store = TestStore(initialState: 0) {
+        Reduce<Int, Action> { state, action in
           switch action {
           case .first: return .init(value: .second)
           case .second: return .none
           }
         }
-      )
+      }
 
       XCTExpectFailure {
         store.send(.first)
@@ -200,7 +194,7 @@
           Must handle 1 received action before sending an action: …
 
           Unhandled actions: [
-            [0]: TestStoreFailureTests.Action.second
+            [0]: .second
           ]
           """
       }
@@ -208,29 +202,31 @@
 
     func testReceiveNonExistentActionFailure() {
       enum Action { case action }
-      let store = TestStore(
-        initialState: 0,
-        reducer: Reduce<Int, Action> { _, _ in .none }
-      )
+      let store = TestStore(initialState: 0) {
+        Reduce<Int, Action> { _, _ in .none }
+      }
 
       XCTExpectFailure {
         store.receive(.action)
       } issueMatcher: { issue in
-        issue.compactDescription == "Expected to receive an action, but received none."
+        issue.compactDescription == """
+          Expected to receive the following action, but didn't: …
+
+            TestStoreFailureTests.Action.action
+          """
       }
     }
 
     func testReceiveUnexpectedActionFailure() {
       enum Action { case first, second }
-      let store = TestStore(
-        initialState: 0,
-        reducer: Reduce<Int, Action> { state, action in
+      let store = TestStore(initialState: 0) {
+        Reduce<Int, Action> { state, action in
           switch action {
           case .first: return .init(value: .second)
           case .second: return .none
           }
         }
-      )
+      }
 
       XCTExpectFailure {
         store.send(.first)
@@ -248,10 +244,9 @@
     }
 
     func testModifyClosureThrowsErrorFailure() {
-      let store = TestStore(
-        initialState: 0,
-        reducer: Reduce<Int, Void> { _, _ in .none }
-      )
+      let store = TestStore(initialState: 0) {
+        Reduce<Int, Void> { _, _ in .none }
+      }
 
       XCTExpectFailure {
         _ = store.send(()) { _ in
@@ -264,13 +259,14 @@
     }
 
     func testExpectedStateEqualityMustModify() async {
-      let reducer = Reduce<Int, Bool> { state, action in
-        switch action {
-        case true: return EffectTask(value: false)
-        case false: return .none
+      let store = TestStore(initialState: 0) {
+        Reduce<Int, Bool> { state, action in
+          switch action {
+          case true: return .send(false)
+          case false: return .none
+          }
         }
       }
-      let store = TestStore(initialState: 0, reducer: reducer)
 
       await store.send(true)
       await store.receive(false)

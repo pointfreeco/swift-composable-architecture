@@ -6,14 +6,13 @@ import XCTest
 @MainActor
 final class LongLivingEffectsTests: XCTestCase {
   func testReducer() async {
-    let (screenshots, takeScreenshot) = AsyncStream<Void>.streamWithContinuation()
+    let (screenshots, takeScreenshot) = AsyncStream.makeStream(of: Void.self)
 
-    let store = TestStore(
-      initialState: LongLivingEffects.State(),
-      reducer: LongLivingEffects()
-    )
-
-    store.dependencies.screenshots = { screenshots }
+    let store = TestStore(initialState: LongLivingEffects.State()) {
+      LongLivingEffects()
+    } withDependencies: {
+      $0.screenshots = { screenshots }
+    }
 
     let task = await store.send(.task)
 
