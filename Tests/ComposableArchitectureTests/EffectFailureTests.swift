@@ -1,6 +1,6 @@
 #if DEBUG
   import Combine
-  import ComposableArchitecture
+  @_spi(Internals) import ComposableArchitecture
   import XCTest
 
   @MainActor

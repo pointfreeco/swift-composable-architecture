@@ -1,5 +1,5 @@
 import Combine
-import ComposableArchitecture
+@_spi(Internals) import ComposableArchitecture
 import CustomDump
 @_spi(Concurrency) import Dependencies
 import XCTest

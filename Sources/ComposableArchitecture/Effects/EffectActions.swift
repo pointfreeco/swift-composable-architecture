@@ -1,4 +1,5 @@
 extension Effect where Failure == Never {
+  @_spi(Internals)
   public var actions: AsyncStream<Action> {
     switch self.operation {
     case .none:
