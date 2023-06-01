@@ -511,7 +511,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   /// enum Action { case alertDismissed }
   ///
   /// .alert(
-  ///   item: self.store.binding(
+  ///   item: viewStore.binding(
   ///     get: { $0.alert },
   ///     send: .alertDismissed
   ///   )
