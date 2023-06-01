@@ -88,126 +88,157 @@ final class EffectCancellationTests: BaseTCATestCase {
     await task2.value
   }
 
-  func testCancellationAfterDelay() {
-    var value: Int?
+  func testCancellationAfterDelay() async {
+    let result = LockIsolated<Int?>(nil)
 
-    Just(1)
-      .delay(for: 0.15, scheduler: DispatchQueue.main)
-      .eraseToEffect()
-      .cancellable(id: CancelID())
-      .sink { value = $0 }
-      .store(in: &self.cancellables)
+    let effect = Effect.publisher {
+      Just(1)
+        .delay(for: 0.15, scheduler: DispatchQueue.main)
+    }
+    .cancellable(id: CancelID())
 
-    XCTAssertEqual(value, nil)
-
-    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-      Effect<Never>.cancel(id: CancelID())
-        .sink { _ in }
-        .store(in: &self.cancellables)
+    let task = Task {
+      for await n in effect.actions {
+        result.setValue(n)
+      }
     }
 
-    _ = XCTWaiter.wait(for: [self.expectation(description: "")], timeout: 1)
-    XCTAssertEqual(value, nil)
+    XCTAssertEqual(result.value, nil)
+
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+      Task.cancel(id: CancelID())
+    }
+
+    await task.value
+    XCTAssertEqual(result.value, nil)
   }
 
-  func testCancellationAfterDelay_WithTestScheduler() {
+  func testCancellationAfterDelay_WithTestScheduler() async {
     let mainQueue = DispatchQueue.test
-    var value: Int?
+    let result = LockIsolated<Int?>(nil)
 
-    Effect.publisher {
+    let effect = Effect.publisher {
       Just(1)
         .delay(for: 2, scheduler: mainQueue)
     }
     .cancellable(id: CancelID())
-    .sink { value = $0 }
-    .store(in: &self.cancellables)
 
-    XCTAssertEqual(value, nil)
+    let task = Task {
+      for await value in effect.actions {
+        result.setValue(value)
+      }
+    }
+    await Task.megaYield()
 
-    mainQueue.advance(by: 1)
-    Effect<Never>.cancel(id: CancelID())
-      .sink { _ in }
-      .store(in: &self.cancellables)
+    XCTAssertEqual(result.value, nil)
 
-    mainQueue.run()
+    await mainQueue.advance(by: 1)
 
-    XCTAssertEqual(value, nil)
+    Task.cancel(id: CancelID())
+
+    await mainQueue.run()
+
+    XCTAssertEqual(result.value, nil)
+
+    await task.value
   }
 
-  func testDoubleCancellation() {
-    var values: [Int] = []
+  func testDoubleCancellation() async {
+    let values = LockIsolated<[Int]>([])
 
     let subject = PassthroughSubject<Int, Never>()
     let effect = Effect.publisher { subject }
       .cancellable(id: CancelID())
       .cancellable(id: CancelID())
 
-    effect
-      .sink { values.append($0) }
-      .store(in: &self.cancellables)
+    let task = Task {
+      for await n in effect.actions {
+        values.withValue { $0.append(n) }
+      }
+    }
+    await Task.megaYield()
 
-    XCTAssertEqual(values, [])
+    XCTAssertEqual(values.value, [])
+
     subject.send(1)
-    XCTAssertEqual(values, [1])
+    await Task.megaYield()
+    XCTAssertEqual(values.value, [1])
 
-    Effect<Never>.cancel(id: CancelID())
-      .sink { _ in }
-      .store(in: &self.cancellables)
+    Task.cancel(id: CancelID())
 
     subject.send(2)
-    XCTAssertEqual(values, [1])
+    await Task.megaYield()
+    XCTAssertEqual(values.value, [1])
+
+    await task.value
+
+    XCTAssertEqual(values.value, [1])
   }
 
-  func testCompleteBeforeCancellation() {
-    var values: [Int] = []
+  func testCompleteBeforeCancellation() async {
+    let values = LockIsolated<[Int]>([])
 
     let subject = PassthroughSubject<Int, Never>()
     let effect = Effect.publisher { subject }
       .cancellable(id: CancelID())
 
-    effect
-      .sink { values.append($0) }
-      .store(in: &self.cancellables)
+    let task = Task {
+      for await n in effect.actions {
+        values.withValue { $0.append(n) }
+      }
+    }
+    await Task.megaYield()
 
     subject.send(1)
-    XCTAssertEqual(values, [1])
+    await Task.megaYield()
+    XCTAssertEqual(values.value, [1])
 
     subject.send(completion: .finished)
-    XCTAssertEqual(values, [1])
+    await Task.megaYield()
+    XCTAssertEqual(values.value, [1])
 
-    Effect<Never>.cancel(id: CancelID())
-      .sink { _ in }
-      .store(in: &self.cancellables)
+    Task.cancel(id: CancelID())
 
-    XCTAssertEqual(values, [1])
+    await task.value
+    XCTAssertEqual(values.value, [1])
   }
 
-  func testSharedId() {
+  func testSharedId() async {
     let mainQueue = DispatchQueue.test
 
-    let effect1 = Just(1)
-      .delay(for: 1, scheduler: mainQueue)
-      .eraseToEffect()
-      .cancellable(id: "id")
+    let effect1 = Effect.publisher {
+      Just(1)
+        .delay(for: 1, scheduler: mainQueue)
+    }
+    .cancellable(id: "id")
 
-    let effect2 = Just(2)
-      .delay(for: 2, scheduler: mainQueue)
-      .eraseToEffect()
-      .cancellable(id: "id")
+    let effect2 = Effect.publisher {
+      Just(2)
+        .delay(for: 2, scheduler: mainQueue)
+    }
+    .cancellable(id: "id")
 
-    var expectedOutput: [Int] = []
-    effect1
-      .sink { expectedOutput.append($0) }
-      .store(in: &cancellables)
-    effect2
-      .sink { expectedOutput.append($0) }
-      .store(in: &cancellables)
+    let expectedOutput = LockIsolated<[Int]>([])
+    let task1 = Task {
+      for await n in effect1.actions {
+        expectedOutput.withValue { $0.append(n) }
+      }
+    }
+    let task2 = Task {
+      for await n in effect2.actions {
+        expectedOutput.withValue { $0.append(n) }
+      }
+    }
+    await Task.megaYield()
 
-    XCTAssertEqual(expectedOutput, [])
-    mainQueue.advance(by: 1)
-    XCTAssertEqual(expectedOutput, [1])
-    mainQueue.advance(by: 1)
-    XCTAssertEqual(expectedOutput, [1, 2])
+    XCTAssertEqual(expectedOutput.value, [])
+    await mainQueue.advance(by: 1)
+    XCTAssertEqual(expectedOutput.value, [1])
+    await mainQueue.advance(by: 1)
+    XCTAssertEqual(expectedOutput.value, [1, 2])
+
+    await task1.value
+    await task2.value
   }
 
   func testImmediateCancellation() async {
@@ -231,9 +262,11 @@ final class EffectCancellationTests: BaseTCATestCase {
 
     await mainQueue.advance(by: 1)
     XCTAssertEqual(expectedOutput.value, [])
+
+    await task.value
   }
 
-  func testNestedMergeCancellation() {
+  func testNestedMergeCancellation() async {
     let effect = EffectPublisher<Int, Never>.merge(
       .publisher { (1...2).publisher }
         .cancellable(id: 1)
@@ -241,10 +274,9 @@ final class EffectCancellationTests: BaseTCATestCase {
     .cancellable(id: 2)
 
     var output: [Int] = []
-    effect
-      .sink { output.append($0) }
-      .store(in: &cancellables)
-
+    for await n in effect.actions {
+      output.append(n)
+    }
     XCTAssertEqual(output, [1, 2])
   }
 

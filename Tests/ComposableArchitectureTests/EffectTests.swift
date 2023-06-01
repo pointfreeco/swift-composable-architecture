@@ -273,14 +273,16 @@ final class EffectTests: BaseTCATestCase {
     }
   #endif
 
+  @available(*, deprecated)
   func testTask() async {
     guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
     let effect = Effect<Int>.task { 42 }
-    for await result in effect.values {
+    for await result in effect.actions {
       XCTAssertEqual(result, 42)
     }
   }
 
+  @available(*, deprecated)
   func testCancellingTask_Infallible() {
     @Sendable func work() async -> Int {
       do {
@@ -373,9 +375,10 @@ final class EffectTests: BaseTCATestCase {
       Effect.send(()).map { date() }
     }
     var output: Date?
-    effect
-      .sink { output = $0 }
-      .store(in: &self.cancellables)
+    for await date in effect.actions {
+      XCTAssertNil(output)
+      output = date
+    }
     XCTAssertEqual(output, Date(timeIntervalSince1970: 1_234_567_890))
 
     if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
@@ -384,7 +387,11 @@ final class EffectTests: BaseTCATestCase {
       } operation: {
         Effect<Void>.task {}.map { date() }
       }
-      output = await effect.values.first(where: { _ in true })
+      output = nil
+      for await date in effect.actions {
+        XCTAssertNil(output)
+        output = date
+      }
       XCTAssertEqual(output, Date(timeIntervalSince1970: 1_234_567_890))
     }
   }
