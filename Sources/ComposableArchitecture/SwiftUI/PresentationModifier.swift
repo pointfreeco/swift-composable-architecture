@@ -217,8 +217,8 @@ public struct PresentationStore<
       self.viewStore.binding(
         get: {
           $0.wrappedValue.flatMap(toDestinationState) != nil
-            ? toID($0).map { AnyIdentifiable(Identified($0) { $0 }) }
-            : nil
+          ? toID($0).map { AnyIdentifiable(Identified($0) { $0 }) }
+          : nil
         },
         compactSend: {
           $0 == nil && self.toID(self.viewStore.state) == id ? .dismiss : nil

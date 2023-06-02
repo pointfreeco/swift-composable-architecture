@@ -11,16 +11,22 @@ private let readMe = """
 
 // MARK: - Feature domain
 
+enum Empty: Equatable, _EphemeralState {
+  case presented
+}
+
 struct LoadThenPresent: ReducerProtocol {
   struct State: Equatable {
-    @PresentationState var counter: Counter.State?
+    @PresentationState var counter: Empty?
     var isActivityIndicatorVisible = false
+    var count = 0
   }
 
   enum Action {
-    case counter(PresentationAction<Counter.Action>)
+    case counter(PresentationAction<Never>)
     case counterButtonTapped
     case counterPresentationDelayCompleted
+    case setCount(Int)
   }
 
   @Dependency(\.continuousClock) var clock
@@ -28,6 +34,9 @@ struct LoadThenPresent: ReducerProtocol {
   var body: some ReducerProtocol<State, Action> {
     Reduce { state, action in
       switch action {
+      case let .setCount(x):
+        state.count = x
+        return .none
       case .counter:
         return .none
 
@@ -40,14 +49,12 @@ struct LoadThenPresent: ReducerProtocol {
 
       case .counterPresentationDelayCompleted:
         state.isActivityIndicatorVisible = false
-        state.counter = Counter.State()
+        state.counter = .presented
         return .none
 
       }
     }
-    .ifLet(\.$counter, action: /Action.counter) {
-      Counter()
-    }
+    .ifLet(\.$counter, action: /Action.counter)
   }
 }
 
@@ -62,6 +69,7 @@ struct LoadThenPresentView: View {
         Section {
           AboutView(readMe: readMe)
         }
+        Text("Count: \(viewStore.count)")
         Button {
           viewStore.send(.counterButtonTapped)
         } label: {
@@ -75,9 +83,19 @@ struct LoadThenPresentView: View {
         }
       }
       .sheet(
-        store: store.scope(state: \.$counter, action: LoadThenPresent.Action.counter),
-        content: CounterView.init(store:)
-      )
+        store: store.scope(state: \.$counter, action: LoadThenPresent.Action.counter)
+      ) { _ in
+        CounterView(
+          store: Store(initialState: Counter.State(count: 0)) {
+            Counter()
+            Reduce { state, action in
+              .run { @MainActor [count = state.count] _ in
+                viewStore.send(.setCount(count))
+              }
+            }
+          }
+        )
+      }
       .navigationTitle("Load and present")
     }
   }

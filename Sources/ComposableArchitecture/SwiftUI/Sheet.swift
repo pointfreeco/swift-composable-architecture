@@ -20,7 +20,13 @@ extension View {
   ) -> some View {
     self.presentation(store: store) { `self`, $item, destination in
       self.sheet(item: $item, onDismiss: onDismiss) { _ in
-        destination(content)
+        destination { s in
+          withDependencies {
+            $0.dismiss = DismissEffect { _ = store.send(.dismiss) }
+          } operation: {
+            content(s)
+          }
+        }
       }
     }
   }

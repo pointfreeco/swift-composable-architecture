@@ -21,6 +21,8 @@ struct Counter: ReducerProtocol {
     case incrementButtonTapped
   }
 
+  @Dependency(\.dismiss) var dismiss
+
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .decrementButtonTapped:
@@ -28,7 +30,9 @@ struct Counter: ReducerProtocol {
       return .none
     case .incrementButtonTapped:
       state.count += 1
-      return .none
+      return state.count == 3
+      ? .run { _ in await self.dismiss() }
+      : .none
     }
   }
 }
@@ -36,7 +40,7 @@ struct Counter: ReducerProtocol {
 // MARK: - Feature view
 
 struct CounterView: View {
-  let store: StoreOf<Counter>
+  @State var store: StoreOf<Counter>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
