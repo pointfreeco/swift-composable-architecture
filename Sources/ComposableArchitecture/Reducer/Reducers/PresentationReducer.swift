@@ -162,7 +162,7 @@ extension PresentationState: CustomReflectable {
 /// ```swift
 /// struct ParentFeature: ReducerProtocol {
 ///   // ...
-///   struct Action {
+///   enum Action {
 ///     case child(PresentationAction<Child.Action>)
 ///      // ...
 ///   }
