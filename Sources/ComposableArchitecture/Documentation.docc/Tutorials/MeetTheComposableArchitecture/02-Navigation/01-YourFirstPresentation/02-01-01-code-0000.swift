@@ -1,3 +1,4 @@
+import Foundation
 import ComposableArchitecture
 
 struct Contact: Equatable, Identifiable {
