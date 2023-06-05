@@ -12,7 +12,7 @@
     
     @Steps {
       @Step {
-        Create a new file called ContactDetail.swift, import the Composable Architecture, and start
+        Create a new file called ContactDetailFeature.swift, import the Composable Architecture, and start
         a stub of a reducer conformance.
         
         @Code(name: "ContactDetailFeature.swift", file: 02-04-01-code-0000)
