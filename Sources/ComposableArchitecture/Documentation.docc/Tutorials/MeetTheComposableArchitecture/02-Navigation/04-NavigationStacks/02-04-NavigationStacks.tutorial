@@ -176,7 +176,7 @@
       }
       
       @Step {
-        Add cases to `ContactDetailFeature.State` for all the things the user can do in the UI,
+        Add cases to `ContactDetailFeature.Action` for all the things the user can do in the UI,
         such as tapping the "Delete" button, as well as any actions inside the alert and the 
         delegate actions for when we need to tell the parent feature to delete the contact.
         
