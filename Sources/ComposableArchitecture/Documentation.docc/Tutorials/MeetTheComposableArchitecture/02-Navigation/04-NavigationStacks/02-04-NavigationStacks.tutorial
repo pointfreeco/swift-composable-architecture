@@ -122,7 +122,7 @@
       
       @Step {
         Go to the `ContentView` that holds the view for the contacts list. Swap out the
-        `NavigationStore` for a ``ComposableArchitecture/NavigationStackStore``. This is a type
+        `NavigationStack` for a ``ComposableArchitecture/NavigationStackStore``. This is a type
         specifically tuned for driving stacks from a ``ComposableArchitecture/Store``. 
         You hand it a store that is scoped down to ``ComposableArchitecture/StackState`` and
         ``ComposableArchitecture/StackAction``, and it handles the rest.
