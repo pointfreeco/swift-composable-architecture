@@ -22,6 +22,9 @@
         data type, and a simple reducer with a collection of contacts, and a single action for when
         the "+" button is tapped. Currently that action is not yet implemented.
         
+        > Note: We want our `State` and `Action` to conform to `Equatable` in order to assert on
+        > receiving an action as well as how state changes after receiving it later during testing.
+
         @Code(name: "ContactsFeature.swift", file: "02-01-01-code-0000")
       }
       
