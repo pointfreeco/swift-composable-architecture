@@ -9,7 +9,7 @@ struct ContactsFeature: ReducerProtocol {
   struct State: Equatable {
     var contacts: IdentifiedArrayOf<Contact> = []
   }
-  enum Action {
+  enum Action: Equatable {
     case addButtonTapped
   }
   var body: some ReducerProtocolOf<Self> {

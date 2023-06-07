@@ -5,7 +5,7 @@ struct ContactDetailFeature: ReducerProtocol {
     @PresentationState var alert: AlertState<Action.Alert>?
     let contact: Contact
   }
-  enum Action {
+  enum Action: Equatable {
     case alert(PresentationAction<Alert>)
     case deleteButtonTapped
     enum Alert {
