@@ -7,7 +7,7 @@ model your domains, how to integrate features, how to test your features, and mo
 
 Stack-based navigation is the process of modeling navigation using collections of state. This style
 of navigation allows you to deep-link into any state of your application by simply constructing a
-flat collection of data, handing, handing it off to SwiftUI, and letting it take care of the rest.
+flat collection of data, handing it off to SwiftUI, and letting it take care of the rest.
 It also allows for complex and recursive navigation paths in your application.
 
   * [Basics](#Basics)
