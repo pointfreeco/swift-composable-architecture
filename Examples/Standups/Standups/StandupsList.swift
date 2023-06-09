@@ -1,7 +1,6 @@
 import ComposableArchitecture
 import SwiftUI
 
-
 struct StandupsList: ReducerProtocol {
   struct State: Equatable {
     @PresentationState var destination: Destination.State?
