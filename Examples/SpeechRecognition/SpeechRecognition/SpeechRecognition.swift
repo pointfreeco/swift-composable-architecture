@@ -13,12 +13,14 @@ struct SpeechRecognition: ReducerProtocol {
     @PresentationState var alert: AlertState<Action.Alert>?
     var isRecording = false
     var transcribedText = ""
+    var speechIsProcessing = false
+    var transcribedSegments: [String] = []
   }
 
   enum Action: Equatable {
     case alert(PresentationAction<Alert>)
     case recordButtonTapped
-    case speech(TaskResult<String>)
+    case speech(TaskResult<SpeechRecognitionResult>)
     case speechRecognizerAuthorizationStatusResponse(SFSpeechRecognizerAuthorizationStatus)
 
     enum Alert: Equatable {}
@@ -50,9 +52,13 @@ struct SpeechRecognition: ReducerProtocol {
           else { return }
 
           let request = SFSpeechAudioBufferRecognitionRequest()
+          // Get these from the .recordButtonTapped or from recordSettings
+          request.requiresOnDeviceRecognition = true
+          request.addsPunctuation = true
+          
           for try await result in await self.speechClient.startTask(request) {
             await send(
-              .speech(.success(result.bestTranscription.formattedString)), animation: .linear)
+              .speech(.success(result)), animation: .linear)
           }
         } catch: { error, send in
           await send(.speech(.failure(error)))
@@ -69,8 +75,29 @@ struct SpeechRecognition: ReducerProtocol {
         }
         return .none
 
-      case let .speech(.success(transcribedText)):
-        state.transcribedText = transcribedText
+      case let .speech(.success(result)):
+        /// This logic works, but I am sure it can be made more pretty
+        let transcribedText = result.bestTranscription.formattedString
+        
+        let speechWasBeingProcessed = state.speechIsProcessing
+        let speechIsProcessingSegment = result.bestTranscription.segments.allSatisfy { segment in
+          segment.confidence == 0.0
+        }
+        state.speechIsProcessing = speechIsProcessingSegment
+        
+        if state.transcribedSegments.isEmpty {
+          state.transcribedSegments.insert(transcribedText, at: 0)
+        } else {
+          let segmentCount = state.transcribedSegments.count
+          state.transcribedSegments[segmentCount - 1] = transcribedText
+          
+          let speechFinishedProcessing = speechWasBeingProcessed && !speechIsProcessingSegment
+          
+          if speechFinishedProcessing {
+            state.transcribedSegments.append("")
+          }
+        }
+        
         return .none
 
       case let .speechRecognizerAuthorizationStatusResponse(status):
@@ -120,9 +147,11 @@ struct SpeechRecognitionView: View {
 
         ScrollView {
           ScrollViewReader { proxy in
-            Text(viewStore.transcribedText)
-              .font(.largeTitle)
-              .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            ForEach(viewStore.transcribedSegments, id: \.self) { segment in
+              Text(segment)
+                .font(.largeTitle)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+             }
           }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -147,6 +176,10 @@ struct SpeechRecognitionView: View {
         }
       }
       .padding()
+      .onAppear {
+        // Start recording on app open, remove for PR
+        viewStore.send(.recordButtonTapped)
+      }
       .alert(store: self.store.scope(state: \.$alert, action: SpeechRecognition.Action.alert))
     }
   }

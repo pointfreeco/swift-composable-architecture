@@ -7,7 +7,8 @@ struct SpeechRecognitionApp: App {
     WindowGroup {
       SpeechRecognitionView(
         store: Store(initialState: SpeechRecognition.State()) {
-          SpeechRecognition()._printChanges()
+          SpeechRecognition()
+//            ._printChanges()
         }
       )
     }
