@@ -7,8 +7,12 @@ struct ContactDetailFeature: ReducerProtocol {
   }
   enum Action {
     case alert(PresentationAction<Alert>)
+    case delegate(Delegate)
     case deleteButtonTapped
     enum Alert {
+      case confirmDeletion
+    }
+    enum Delegate {
       case confirmDeletion
     }
   }
