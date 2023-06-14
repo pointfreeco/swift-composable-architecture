@@ -126,7 +126,6 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
     self.line = line
   }
 
-  //@inlinable
   public func reduce(
     into state: inout Parent.State, action: Parent.Action
   ) -> EffectTask<Parent.Action> {
@@ -162,7 +161,6 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
     )
   }
 
-  //@inlinable
   func reduceChild(
     into state: inout Parent.State, action: Parent.Action
   ) -> EffectTask<Parent.Action> {

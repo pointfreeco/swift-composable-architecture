@@ -322,7 +322,6 @@ public struct _PresentationReducer<
     self.line = line
   }
 
-  //@inlinable
   public func reduce(
     into state: inout Base.State, action: Base.Action
   ) -> EffectTask<Base.Action> {

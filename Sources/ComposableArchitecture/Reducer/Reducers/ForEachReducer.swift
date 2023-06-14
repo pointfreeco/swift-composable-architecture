@@ -112,7 +112,6 @@ public struct _ForEachReducer<
     self.line = line
   }
 
-  //@inlinable
   public func reduce(
     into state: inout Parent.State, action: Parent.Action
   ) -> EffectTask<Parent.Action> {
@@ -141,7 +140,6 @@ public struct _ForEachReducer<
     )
   }
 
-  //@inlinable
   func reduceForEach(
     into state: inout Parent.State, action: Parent.Action
   ) -> EffectTask<Parent.Action> {
