@@ -107,7 +107,7 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
   @usableFromInline
   let line: UInt
 
-  @usableFromInline
+  ////@usableFromInline
   @Dependency(\.navigationIDPath) var navigationIDPath
 
   @usableFromInline
@@ -127,7 +127,7 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
     self.line = line
   }
 
-  @inlinable
+  //@inlinable
   public func reduce(
     into state: inout Parent.State, action: Parent.Action
   ) -> EffectTask<Parent.Action> {
@@ -163,7 +163,7 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
     )
   }
 
-  @inlinable
+  //@inlinable
   func reduceChild(
     into state: inout Parent.State, action: Parent.Action
   ) -> EffectTask<Parent.Action> {

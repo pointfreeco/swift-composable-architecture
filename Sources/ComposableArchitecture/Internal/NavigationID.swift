@@ -1,7 +1,7 @@
 @_spi(Reflection) import CasePaths
 
 extension DependencyValues {
-  @usableFromInline
+  //@usableFromInline
   var navigationIDPath: NavigationIDPath {
     get { self[NavigationIDPathKey.self] }
     set { self[NavigationIDPathKey.self] = newValue }
@@ -13,11 +13,11 @@ private enum NavigationIDPathKey: DependencyKey {
   static let testValue = NavigationIDPath()
 }
 
-@usableFromInline
+//@usableFromInline
 struct NavigationIDPath: Hashable, Sendable {
   fileprivate var path: [NavigationID]
 
-  @usableFromInline
+  //@usableFromInline
   init(path: [NavigationID] = []) {
     self.path = path
   }
@@ -28,7 +28,7 @@ struct NavigationIDPath: Hashable, Sendable {
     }
   }
 
-  @usableFromInline
+  //@usableFromInline
   func appending(_ element: NavigationID) -> Self {
     .init(path: self.path + [element])
   }
@@ -36,7 +36,7 @@ struct NavigationIDPath: Hashable, Sendable {
   public var id: Self { self }
 }
 
-@usableFromInline
+//@usableFromInline
 struct NavigationID: Hashable, @unchecked Sendable {
   private let kind: Kind
   private let identifier: AnyHashableSendable?
@@ -70,7 +70,7 @@ struct NavigationID: Hashable, @unchecked Sendable {
     }
   }
 
-  @usableFromInline
+  //@usableFromInline
   init<Value, Root>(
     base: Value,
     keyPath: KeyPath<Root, Value?>
@@ -84,7 +84,7 @@ struct NavigationID: Hashable, @unchecked Sendable {
     }
   }
 
-  @usableFromInline
+  //@usableFromInline
   init<Value, Root>(
     id: StackElementID,
     keyPath: KeyPath<Root, StackState<Value>>
@@ -94,7 +94,7 @@ struct NavigationID: Hashable, @unchecked Sendable {
     self.identifier = AnyHashableSendable(id)
   }
 
-  @usableFromInline
+  //@usableFromInline
   init<Value, Root, ID: Hashable>(
     id: ID,
     keyPath: KeyPath<Root, IdentifiedArray<ID, Value>>
@@ -104,7 +104,7 @@ struct NavigationID: Hashable, @unchecked Sendable {
     self.identifier = AnyHashableSendable(id)
   }
 
-  @usableFromInline
+  //@usableFromInline
   init<Value, Root>(
     root: Root,
     value: Value,
@@ -119,14 +119,14 @@ struct NavigationID: Hashable, @unchecked Sendable {
     }
   }
 
-  @usableFromInline
+  //@usableFromInline
   static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.kind == rhs.kind
       && lhs.identifier == rhs.identifier
       && lhs.tag == rhs.tag
   }
 
-  @usableFromInline
+  //@usableFromInline
   func hash(into hasher: inout Hasher) {
     hasher.combine(self.kind)
     hasher.combine(self.identifier)
