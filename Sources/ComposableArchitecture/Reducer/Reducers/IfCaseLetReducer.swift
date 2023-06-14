@@ -89,7 +89,6 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
   @usableFromInline
   let line: UInt
 
-  //@usableFromInline
   @Dependency(\.navigationIDPath) var navigationIDPath
 
   @usableFromInline
