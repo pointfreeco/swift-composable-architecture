@@ -649,6 +649,7 @@ extension ViewStore where ViewState: Equatable {
   ///   - store: A store.
   ///   - toViewState: A transformation of `ViewState` to the state that will be observed for
   ///   changes.
+  ///   - fromViewAction: A transformation of `ViewAction` that describes what actions can be sent.
   public convenience init<State, Action>(
     _ store: Store<State, Action>,
     observe toViewState: @escaping (State) -> ViewState,
