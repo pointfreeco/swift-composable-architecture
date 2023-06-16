@@ -42,8 +42,8 @@ extension DataManager {
   }
 
   static let failToWrite = Self(
-    load: { url in Data() },
-    save: { data, url in
+    load: { _ in Data() },
+    save: { _, _ in
       struct SaveError: Error {}
       throw SaveError()
     }
@@ -54,6 +54,6 @@ extension DataManager {
       struct LoadError: Error {}
       throw LoadError()
     },
-    save: { newData, url in }
+    save: { _, _ in }
   )
 }
