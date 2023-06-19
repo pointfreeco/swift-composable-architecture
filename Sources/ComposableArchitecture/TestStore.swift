@@ -674,7 +674,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     self.store = Store(initialState: reducer.state, reducer: reducer)
     self.timeout = 100 * NSEC_PER_MSEC
     self.toScopedState = toScopedState
-    self.useMainSerialExecutor = false
+    self.useMainSerialExecutor = true
   }
 
   public var useMainSerialExecutor: Bool {
