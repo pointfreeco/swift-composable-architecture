@@ -6,7 +6,7 @@ import XCTestDynamicOverlay
 /// This type is deprecated in favor of ``EffectTask``. See its documentation for more information.
 @available(
   iOS,
-  deprecated: 9999.0,
+  deprecated: 9999,
   message:
     """
     'EffectPublisher' has been deprecated in favor of 'EffectTask'.
@@ -18,7 +18,7 @@ import XCTestDynamicOverlay
 )
 @available(
   macOS,
-  deprecated: 9999.0,
+  deprecated: 9999,
   message:
     """
     'EffectPublisher' has been deprecated in favor of 'EffectTask'.
@@ -30,7 +30,7 @@ import XCTestDynamicOverlay
 )
 @available(
   tvOS,
-  deprecated: 9999.0,
+  deprecated: 9999,
   message:
     """
     'EffectPublisher' has been deprecated in favor of 'EffectTask'.
@@ -42,7 +42,7 @@ import XCTestDynamicOverlay
 )
 @available(
   watchOS,
-  deprecated: 9999.0,
+  deprecated: 9999,
   message:
     """
     'EffectPublisher' has been deprecated in favor of 'EffectTask'.
@@ -290,7 +290,7 @@ extension EffectPublisher {
   /// Merges a variadic list of effects together into a single effect, which runs the effects at the
   /// same time.
   ///
-  /// - Parameter effects: A list of effects.
+  /// - Parameter effects: A variadic list of effects.
   /// - Returns: A new effect
   @inlinable
   public static func merge(_ effects: Self...) -> Self {
@@ -545,16 +545,16 @@ extension EffectPublisher {
   ///   messages.
   /// - Returns: An effect that causes a test to fail if it runs.
   @available(
-    iOS, deprecated: 9999.0, message: "Call 'unimplemented' from your dependencies, instead."
+    iOS, deprecated: 9999, message: "Call 'unimplemented' from your dependencies, instead."
   )
   @available(
-    macOS, deprecated: 9999.0, message: "Call 'unimplemented' from your dependencies, instead."
+    macOS, deprecated: 9999, message: "Call 'unimplemented' from your dependencies, instead."
   )
   @available(
-    tvOS, deprecated: 9999.0, message: "Call 'unimplemented' from your dependencies, instead."
+    tvOS, deprecated: 9999, message: "Call 'unimplemented' from your dependencies, instead."
   )
   @available(
-    watchOS, deprecated: 9999.0, message: "Call 'unimplemented' from your dependencies, instead."
+    watchOS, deprecated: 9999, message: "Call 'unimplemented' from your dependencies, instead."
   )
   public static func unimplemented(_ prefix: String) -> Self {
     .fireAndForget {

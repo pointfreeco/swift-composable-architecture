@@ -29,10 +29,15 @@ struct VoiceMemo: ReducerProtocol {
 
   enum Action: Equatable {
     case audioPlayerClient(TaskResult<Bool>)
-    case delete
+    case delegate(Delegate)
     case playButtonTapped
     case timerUpdated(TimeInterval)
     case titleTextFieldChanged(String)
+
+    enum Delegate {
+      case playbackStarted
+      case playbackFailed
+    }
   }
 
   @Dependency(\.audioPlayer) var audioPlayer
@@ -41,12 +46,19 @@ struct VoiceMemo: ReducerProtocol {
 
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
+    case .audioPlayerClient(.failure):
+      state.mode = .notPlaying
+      return .merge(
+        .cancel(id: CancelID.play),
+        .send(.delegate(.playbackFailed))
+      )
+
     case .audioPlayerClient:
       state.mode = .notPlaying
       return .cancel(id: CancelID.play)
 
-    case .delete:
-      return .cancel(id: CancelID.play)
+    case .delegate:
+      return .none
 
     case .playButtonTapped:
       switch state.mode {
@@ -54,6 +66,8 @@ struct VoiceMemo: ReducerProtocol {
         state.mode = .playing(progress: 0)
 
         return .run { [url = state.url] send in
+          await send(.delegate(.playbackStarted))
+
           async let playAudio: Void = send(
             .audioPlayerClient(TaskResult { try await self.audioPlayer.play(url) })
           )
@@ -110,7 +124,9 @@ struct VoiceMemoView: View {
             .foregroundColor(Color(.systemGray))
         }
 
-        Button(action: { viewStore.send(.playButtonTapped) }) {
+        Button {
+          viewStore.send(.playButtonTapped)
+        } label: {
           Image(systemName: viewStore.mode.isPlaying ? "stop.circle" : "play.circle")
             .font(.system(size: 22))
         }

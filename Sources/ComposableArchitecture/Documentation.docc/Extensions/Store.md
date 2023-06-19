@@ -9,7 +9,7 @@
 
 ### Scoping stores
 
-- ``scope(state:action:)``
+- ``scope(state:action:)-9iai9``
 
 ### Combine integration
 

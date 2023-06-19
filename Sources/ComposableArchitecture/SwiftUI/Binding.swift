@@ -135,10 +135,14 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
   ) -> Binding<Value> {
     self.binding(
       get: { $0[keyPath: keyPath].wrappedValue },
-      send: { value in
+      send: { [isInvalidated = self._isInvalidated] value in
         #if DEBUG
           let debugger = BindableActionViewStoreDebugger(
-            value: value, bindableActionType: ViewAction.self, fileID: fileID, line: line
+            value: value,
+            bindableActionType: ViewAction.self,
+            isInvalidated: isInvalidated,
+            fileID: fileID,
+            line: line
           )
           let set: (inout ViewState) -> Void = {
             $0[keyPath: keyPath].wrappedValue = value
@@ -264,14 +268,14 @@ extension BindingAction {
   ///   struct State: Equatable {
   ///     @BindingState var count = 0
   ///     var fact: String?
-  ///     ...
+  ///     // ...
   ///   }
   ///
   ///   enum Action: BindableAction {
   ///     case binding(BindingAction<State>)
   ///     case factButtonTapped
   ///     case factResponse(String?)
-  ///     ...
+  ///     // ...
   ///   }
   ///
   ///   @Dependency(\.numberFact) var numberFact
@@ -351,7 +355,7 @@ extension BindingAction {
   /// }
   /// ```
   ///
-  /// Finally, in the view we can invoke ``Store/scope(state:action:)`` with these domain
+  /// Finally, in the view we can invoke ``Store/scope(state:action:)-9iai9`` with these domain
   /// transformations to leverage the view store's binding helpers:
   ///
   /// ```swift
@@ -396,6 +400,7 @@ extension BindingAction: CustomDumpReflectable {
   private final class BindableActionViewStoreDebugger<Value> {
     let value: Value
     let bindableActionType: Any.Type
+    let isInvalidated: () -> Bool
     let fileID: StaticString
     let line: UInt
     var wasCalled = false
@@ -403,16 +408,19 @@ extension BindingAction: CustomDumpReflectable {
     init(
       value: Value,
       bindableActionType: Any.Type,
+      isInvalidated: @escaping () -> Bool,
       fileID: StaticString,
       line: UInt
     ) {
       self.value = value
       self.bindableActionType = bindableActionType
+      self.isInvalidated = isInvalidated
       self.fileID = fileID
       self.line = line
     }
 
     deinit {
+      guard !self.isInvalidated() else { return }
       guard self.wasCalled else {
         runtimeWarn(
           """

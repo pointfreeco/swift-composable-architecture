@@ -102,7 +102,7 @@
       await withMainSerialExecutor {
         let store = TestStore(initialState: 0) {
           Reduce<Int, Bool> { _, action in
-            .run { _ in try await Task.sleep(nanoseconds: NSEC_PER_SEC / 4) }
+            .run { _ in }
           }
         }
 
@@ -283,7 +283,7 @@
             return .none
           case .increment:
             state.count += 1
-            return EffectTask(value: .loggedInResponse(true))
+            return .send(.loggedInResponse(true))
           case let .loggedInResponse(response):
             state.isLoggedIn = response
             return .none
@@ -321,7 +321,7 @@
           switch action {
           case .increment:
             state.count += 1
-            return EffectTask(value: .loggedInResponse(true))
+            return .send(.loggedInResponse(true))
           case let .loggedInResponse(response):
             state.isLoggedIn = response
             return .none
@@ -571,7 +571,7 @@
         Reduce<Int, Action> { state, action in
           switch action {
           case .tap:
-            return EffectTask(value: .response(NonEquatable()))
+            return .send(.response(NonEquatable()))
           case .response:
             return .none
           }
@@ -593,7 +593,7 @@
         Reduce<Int, Action> { state, action in
           switch action {
           case .tap:
-            return EffectTask(value: .response(NonEquatable()))
+            return .send(.response(NonEquatable()))
           case .response:
             return .none
           }

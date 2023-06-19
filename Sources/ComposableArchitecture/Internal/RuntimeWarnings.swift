@@ -1,5 +1,9 @@
 import Foundation
 
+extension Notification.Name {
+  public static let runtimeWarning = Self("ComposableArchitecture.runtimeWarning")
+}
+
 @_transparent
 @usableFromInline
 @inline(__always)
@@ -9,6 +13,11 @@ func runtimeWarn(
 ) {
   #if DEBUG
     let message = message()
+    NotificationCenter.default.post(
+      name: .runtimeWarning,
+      object: nil,
+      userInfo: ["message": message]
+    )
     let category = category ?? "Runtime Warning"
     if _XCTIsTesting {
       XCTFail(message)

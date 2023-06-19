@@ -1,4 +1,4 @@
-// swift-tools-version:5.6
+// swift-tools-version:5.7
 
 import PackageDescription
 
@@ -17,28 +17,28 @@ let package = Package(
     )
   ],
   dependencies: [
+    .package(url: "https://github.com/apple/swift-collections", from: "1.0.2"),
     .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"),
     .package(url: "https://github.com/google/swift-benchmark", from: "0.1.0"),
     .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.9.2"),
-    .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "0.14.0"),
-    .package(url: "https://github.com/apple/swift-collections", from: "1.0.2"),
-    .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "0.10.0"),
-    .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "0.5.0"),
+    .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "0.14.1"),
+    .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "0.10.3"),
+    .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "0.5.1"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "0.7.0"),
-    .package(url: "https://github.com/pointfreeco/swiftui-navigation", from: "0.7.1"),
+    .package(url: "https://github.com/pointfreeco/swiftui-navigation", from: "0.7.2"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "0.8.4"),
   ],
   targets: [
     .target(
       name: "ComposableArchitecture",
       dependencies: [
+        .product(name: "_SwiftUINavigationState", package: "swiftui-navigation"),
         .product(name: "CasePaths", package: "swift-case-paths"),
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
         .product(name: "CustomDump", package: "swift-custom-dump"),
         .product(name: "Dependencies", package: "swift-dependencies"),
         .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
         .product(name: "OrderedCollections", package: "swift-collections"),
-        .product(name: "_SwiftUINavigationState", package: "swiftui-navigation"),
         .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
       ]
     ),

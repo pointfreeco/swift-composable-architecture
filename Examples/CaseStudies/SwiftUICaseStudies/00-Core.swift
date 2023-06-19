@@ -20,6 +20,7 @@ struct Root: ReducerProtocol {
     var map = MapApp.State(cityMaps: .mocks)
     var navigateAndLoad = NavigateAndLoad.State()
     var navigateAndLoadList = NavigateAndLoadList.State()
+    var navigationStack = NavigationDemo.State()
     var nested = Nested.State.mock
     var optionalBasics = OptionalBasics.State()
     var presentAndLoad = PresentAndLoad.State()
@@ -49,6 +50,7 @@ struct Root: ReducerProtocol {
     case map(MapApp.Action)
     case navigateAndLoad(NavigateAndLoad.Action)
     case navigateAndLoadList(NavigateAndLoadList.Action)
+    case navigationStack(NavigationDemo.Action)
     case nested(Nested.Action)
     case optionalBasics(OptionalBasics.Action)
     case onAppear
@@ -127,6 +129,9 @@ struct Root: ReducerProtocol {
     }
     Scope(state: \.navigateAndLoadList, action: /Action.navigateAndLoadList) {
       NavigateAndLoadList()
+    }
+    Scope(state: \.navigationStack, action: /Action.navigationStack) {
+      NavigationDemo()
     }
     Scope(state: \.nested, action: /Action.nested) {
       Nested()

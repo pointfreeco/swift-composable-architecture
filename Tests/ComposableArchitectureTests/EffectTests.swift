@@ -51,7 +51,7 @@ final class EffectTests: BaseTCATestCase {
       .store(in: &self.cancellables)
   }
 
-  #if swift(>=5.7) && (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
+  #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     func testConcatenate() async {
       await withMainSerialExecutor {
         if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
@@ -91,7 +91,7 @@ final class EffectTests: BaseTCATestCase {
     var values: [Int] = []
 
     let effect = EffectTask<Int>.concatenate(
-      EffectTask(value: 1).delay(for: 1, scheduler: mainQueue).eraseToEffect()
+      .send(1).delay(for: 1, scheduler: mainQueue).eraseToEffect()
     )
 
     effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
@@ -105,7 +105,7 @@ final class EffectTests: BaseTCATestCase {
     XCTAssertEqual(values, [1])
   }
 
-  #if swift(>=5.7) && (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
+  #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     func testMerge() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
         await withMainSerialExecutor {

@@ -23,7 +23,9 @@ import SwiftUI
 ///     case descriptionChanged(String)
 ///   }
 ///
-///   func reduce(into state: inout State, action: Action) -> EffectTask<Action> { ... }
+///   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+///     // ...
+///   }
 /// }
 /// ```
 ///
@@ -32,7 +34,7 @@ import SwiftUI
 /// ```swift
 /// struct TodoView: View {
 ///   let store: StoreOf<Todo>
-///   var body: some View { ... }
+///   var body: some View { /* ... */ }
 /// }
 /// ```
 ///
@@ -44,7 +46,7 @@ import SwiftUI
 ///   struct State: Equatable {
 ///     var todos: IdentifiedArrayOf<Todo.State> = []
 ///   }
-///   ...
+///   // ...
 /// }
 /// ```
 ///
@@ -61,7 +63,7 @@ import SwiftUI
 /// ```swift
 /// var body: some ReducerProtocol<State, Action> {
 ///   Reduce { state, action in
-///     ...
+///     // ...
 ///   }
 ///   .forEach(\.todos, action: /Action.todo(id:action:)) {
 ///     Todo()
@@ -129,16 +131,4 @@ public struct ForEachStore<
   public var body: some View {
     self.content
   }
-}
-
-private func areOrderedSetsDuplicates<ID: Hashable>(lhs: OrderedSet<ID>, rhs: OrderedSet<ID>)
-  -> Bool
-{
-  guard lhs.count == rhs.count else { return false }
-  var lhs = lhs
-  var rhs = rhs
-  if memcmp(&lhs, &rhs, MemoryLayout<OrderedSet<ID>>.size) == 0 {
-    return true
-  }
-  return lhs == rhs
 }

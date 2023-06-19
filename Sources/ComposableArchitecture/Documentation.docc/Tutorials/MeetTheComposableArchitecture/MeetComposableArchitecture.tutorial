@@ -1,0 +1,67 @@
+@Tutorials(name: "The Composable Architecture") {
+  @Intro(title: "Meet the Composable Architecture") {
+    The Composable Architecture (TCA, for short) is a library for building applications in a 
+    consistent and understandable way, with composition, testing, and ergonomics in mind. It can be 
+    used in SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, tvOS, and watchOS).  
+  }
+  
+  @Chapter(name: "Essentials") {
+    Explore the basics of creating a new feature in the Composable Architecture, layering on
+    side effects, and writing a complete test suite for the feature.
+    
+    @TutorialReference(tutorial: "doc:01-01-YourFirstFeature")
+    @TutorialReference(tutorial: "doc:01-02-AddingSideEffects")
+    @TutorialReference(tutorial: "doc:01-03-TestingYourFeature")
+  }
+  
+  @Chapter(name: "Navigation") {
+    Learn how to model your domains for navigation from parent feature to child feature, and how to
+    do so in a concise manner using optionals, enums and collections.
+    
+    @TutorialReference(tutorial: "doc:02-01-YourFirstPresentation")
+    @TutorialReference(tutorial: "doc:02-02-MultipleDestinations")
+    @TutorialReference(tutorial: "doc:02-03-TestingPresentation")
+    @TutorialReference(tutorial: "doc:02-04-NavigationStacks")
+  }
+  
+  @Resources {
+    Additional resources for exploring how to build applications using the Composable Architecture.
+    
+    @Videos(destination: "https://www.pointfree.co") {
+      Point-Free is a video series that explores advanced topics in the Swift programming language.
+      We built nearly every part of the Composable Architecture from first principles in a [long
+      series of episodes](https://www.pointfree.co/collections/composable-architecture).
+    }
+      
+    @Forums(
+      destination: "https://github.com/pointfreeco/swift-composable-architecture/discussions"
+    ) {
+      There are multiple places online to discuss the Composable Architecture with others that
+      are also using the library.
+      
+      - [Discuss on GitHub](https://github.com/pointfreeco/swift-composable-architecture/discussions)
+      - [Discuss on Swift Forums](https://forums.swift.org/c/related-projects/swift-composable-architecture/61)
+      - [Join the community Slack](http://pointfree.co/slack-invite)
+      - [Message us on Twitter](http://twitter.com/pointfreeco)
+      - [Message us on Mastodon](http://hachyderm.io/@pointfreeco)
+    }
+      
+    @SampleCode(destination: "https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples") {
+      The library comes with lots of demo applications and case studies built in the 
+      Composable Architecture.
+      
+      - [Case studies](https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/CaseStudies)
+      - [Search](https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/Search)
+      - [Speech Recognition](https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/SpeechRecognition)
+      - [TicTacToe](https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/TicTacToe)
+      - [Todos](https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/Todos)
+      - [Voice memos](https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/VoiceMemos)
+    }
+    
+    @Documentation(destination: "https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/") {
+      Browse the full documentation online.
+      
+      - [GitHub](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture)
+    }
+  }
+}

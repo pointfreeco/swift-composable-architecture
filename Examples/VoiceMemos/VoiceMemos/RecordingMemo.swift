@@ -18,7 +18,7 @@ struct RecordingMemo: ReducerProtocol {
     case audioRecorderDidFinish(TaskResult<Bool>)
     case delegate(DelegateAction)
     case finalRecordingTime(TimeInterval)
-    case task
+    case onTask
     case timerUpdated
     case stopButtonTapped
   }
@@ -59,7 +59,7 @@ struct RecordingMemo: ReducerProtocol {
         await self.audioRecorder.stopRecording()
       }
 
-    case .task:
+    case .onTask:
       return .run { [url = state.url] send in
         async let startRecording: Void = send(
           .audioRecorderDidFinish(
@@ -101,7 +101,9 @@ struct RecordingMemoView: View {
             .foregroundColor(Color(.label))
             .frame(width: 74, height: 74)
 
-          Button(action: { viewStore.send(.stopButtonTapped, animation: .default) }) {
+          Button {
+            viewStore.send(.stopButtonTapped, animation: .default)
+          } label: {
             RoundedRectangle(cornerRadius: 4)
               .foregroundColor(Color(.systemRed))
               .padding(17)
@@ -110,7 +112,7 @@ struct RecordingMemoView: View {
         }
       }
       .task {
-        await viewStore.send(.task).finish()
+        await viewStore.send(.onTask).finish()
       }
     }
   }

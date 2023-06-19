@@ -96,7 +96,7 @@ final class TestStoreTests: BaseTCATestCase {
           switch action {
           case .increment:
             state.isChanging = true
-            return EffectTask(value: .changed(from: state.count, to: state.count + 1))
+            return .send(.changed(from: state.count, to: state.count + 1))
           case .changed(let from, let to):
             state.isChanging = false
             if state.count == from {
@@ -141,7 +141,7 @@ final class TestStoreTests: BaseTCATestCase {
         Reduce<State, Action> { state, action in
           switch action {
           case .noop:
-            return EffectTask(value: .finished)
+            return .send(.finished)
           case .finished:
             return .none
           }
@@ -172,7 +172,7 @@ final class TestStoreTests: BaseTCATestCase {
         Reduce<Int, Action> { state, action in
           switch action {
           case .noop:
-            return EffectTask(value: .finished)
+            return .send(.finished)
           case .finished:
             return .none
           }
@@ -431,6 +431,62 @@ final class TestStoreTests: BaseTCATestCase {
       $0 = 42
     }
   }
+
+  #if DEBUG
+    func testAssert_ExhaustiveTestStore() async {
+      let store = TestStore(initialState: 0) {
+        EmptyReducer<Int, Void>()
+      }
+
+      XCTExpectFailure {
+        store.assert {
+          $0 = 0
+        }
+      } issueMatcher: {
+        $0.compactDescription == """
+          Expected state to change, but no change occurred.
+
+          The trailing closure made no observable modifications to state. If no change to state is \
+          expected, omit the trailing closure.
+          """
+      }
+    }
+  #endif
+
+  func testAssert_NonExhaustiveTestStore() async {
+    let store = TestStore(initialState: 0) {
+      EmptyReducer<Int, Void>()
+    }
+    store.exhaustivity = .off
+
+    store.assert {
+      $0 = 0
+    }
+  }
+
+  #if DEBUG
+    func testAssert_NonExhaustiveTestStore_Failure() async {
+      let store = TestStore(initialState: 0) {
+        EmptyReducer<Int, Void>()
+      }
+      store.exhaustivity = .off
+
+      XCTExpectFailure {
+        store.assert {
+          $0 = 1
+        }
+      } issueMatcher: {
+        $0.compactDescription == """
+          A state change does not match expectation: …
+
+              − 1
+              + 0
+
+          (Expected: −, Actual: +)
+          """
+      }
+    }
+  #endif
 }
 
 private struct Client: DependencyKey {

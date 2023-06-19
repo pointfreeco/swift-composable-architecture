@@ -76,6 +76,7 @@ the Composable Architecture. Check out [this](./Examples) directory to see them 
 * [Motion manager](https://github.com/pointfreeco/composable-core-motion/tree/main/Examples/MotionManager)
 * [Search](./Examples/Search)
 * [Speech Recognition](./Examples/SpeechRecognition)
+* [Standups app](./Examples/Standups)
 * [Tic-Tac-Toe](./Examples/TicTacToe)
 * [Todos](./Examples/Todos)
 * [Voice memos](./Examples/VoiceMemos)
@@ -141,13 +142,13 @@ when we receive a response from the fact API request:
 
 ```swift
 struct Feature: ReducerProtocol {
-  struct State: Equatable { … }
+  struct State: Equatable { /* ... */ }
   enum Action: Equatable {
     case factAlertDismissed
     case decrementButtonTapped
     case incrementButtonTapped
     case numberFactButtonTapped
-    case numberFactResponse(TaskResult<String>)
+    case numberFactResponse(String)
   }
 }
 ```
@@ -159,45 +160,36 @@ can return `.none` to represent that:
 
 ```swift
 struct Feature: ReducerProtocol {
-  struct State: Equatable { … }
-  enum Action: Equatable { … }
+  struct State: Equatable { /* ... */ }
+  enum Action: Equatable { /* ... */ }
   
   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
-      case .factAlertDismissed:
-        state.numberFactAlert = nil
-        return .none
+    case .factAlertDismissed:
+      state.numberFactAlert = nil
+      return .none
 
-      case .decrementButtonTapped:
-        state.count -= 1
-        return .none
+    case .decrementButtonTapped:
+      state.count -= 1
+      return .none
 
-      case .incrementButtonTapped:
-        state.count += 1
-        return .none
+    case .incrementButtonTapped:
+      state.count += 1
+      return .none
 
-      case .numberFactButtonTapped:
-        return .run { [count = state.count] send in
-          await send(
-            .numberFactResponse(
-              TaskResult {
-                String(
-                  decoding: try await URLSession.shared
-                    .data(from: URL(string: "http://numbersapi.com/\(count)/trivia")!).0,
-                  as: UTF8.self
-                )
-              }
-            )
-          )
-        }
+    case .numberFactButtonTapped:
+      return .run { [count = state.count] send in
+        let (data, _) = try await URLSession.shared.data(
+          from: URL(string: "http://numbersapi.com/\(count)/trivia")!
+        )
+        await send(
+          .numberFactResponse(String(decoding: data, as: UTF8.self))
+        )
+      }
 
-      case let .numberFactResponse(.success(fact)):
-        state.numberFactAlert = fact
-        return .none
-
-      case .numberFactResponse(.failure):
-        state.numberFactAlert = "Could not load a number fact :("
-        return .none
+    case let .numberFactResponse(fact):
+      state.numberFactAlert = fact
+      return .none
     }
   }
 }
@@ -371,7 +363,7 @@ receive a fact response back with the fact, which then causes the alert to show:
 ```swift
 await store.send(.numberFactButtonTapped)
 
-await store.receive(.numberFactResponse(.success(???))) {
+await store.receive(.numberFactResponse(???)) {
   $0.numberFactAlert = ???
 }
 ```
@@ -389,7 +381,7 @@ do this by adding a property to the `Feature` reducer:
 ```swift
 struct Feature: ReducerProtocol {
   let numberFact: (Int) async throws -> String
-  …
+  // ...
 }
 ```
 
@@ -398,9 +390,8 @@ Then we can use it in the `reduce` implementation:
 ```swift
 case .numberFactButtonTapped:
   return .run { [count = state.count] send in 
-    await send(
-      .numberFactResponse(TaskResult { try await self.numberFact(count) })
-    )
+    let fact = try await self.numberFact(count)
+    await send(.numberFactResponse(fact))
   }
 ```
 
@@ -412,16 +403,16 @@ interacts with the real world API server:
 struct MyApp: App {
   var body: some Scene {
     FeatureView(
-      store: Store(
-        initialState: Feature.State(),
-        reducer: Feature(
+      store: Store(initialState: Feature.State()) {
+        Feature(
           numberFact: { number in
-            let (data, _) = try await URLSession.shared
-              .data(from: .init(string: "http://numbersapi.com/\(number)")!)
+            let (data, _) = try await URLSession.shared.data(
+              from: URL(string: "http://numbersapi.com/\(number)")!
+            )
             return String(decoding: data, as: UTF8.self)
           }
         )
-      )
+      }
     )
   }
 }
@@ -446,7 +437,7 @@ the alert:
 ```swift
 await store.send(.numberFactButtonTapped)
 
-await store.receive(.numberFactResponse(.success("0 is a good number Brent"))) {
+await store.receive(.numberFactResponse("0 is a good number Brent")) {
   $0.numberFactAlert = "0 is a good number Brent"
 }
 
@@ -480,7 +471,8 @@ extension NumberFactClient: DependencyKey {
   static let liveValue = Self(
     fetch: { number in
       let (data, _) = try await URLSession.shared
-        .data(from: .init(string: "http://numbersapi.com/\(number)")!)
+        .data(from: URL(string: "http://numbersapi.com/\(number)")!
+      )
       return String(decoding: data, as: UTF8.self)
     }
   )
@@ -539,7 +531,7 @@ let store = TestStore(initialState: Feature.State()) {
   $0.numberFact.fetch = { "\($0) is a good number Brent" }
 }
 
-…
+// ...
 ```
 
 That is the basics of building and testing a feature in the Composable Architecture. There are 
@@ -552,13 +544,14 @@ advanced usages.
 The documentation for releases and `main` are available here:
 
 * [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture)
-* [0.53.0](https://pointfreeco.github.io/swift-composable-architecture/0.53.0/documentation/composablearchitecture/)
+* [0.54.0](https://pointfreeco.github.io/swift-composable-architecture/0.54.0/documentation/composablearchitecture/)
 
 <details>
   <summary>
   Other versions
   </summary>
 
+  * [0.53.0](https://pointfreeco.github.io/swift-composable-architecture/0.53.0/documentation/composablearchitecture/)
   * [0.52.0](https://pointfreeco.github.io/swift-composable-architecture/0.52.0/documentation/composablearchitecture/)
   * [0.50.0](https://pointfreeco.github.io/swift-composable-architecture/0.50.0/documentation/composablearchitecture/)
   * [0.49.0](https://pointfreeco.github.io/swift-composable-architecture/0.49.0/documentation/composablearchitecture/)
@@ -620,6 +613,7 @@ The following translations of this README have been contributed by members of th
 
 * [Arabic](https://gist.github.com/NorhanBoghdadi/1b98d55c02b683ddef7e05c2ebcccd47)
 * [French](https://gist.github.com/nikitamounier/0e93eb832cf389db12f9a69da030a2dc)
+* [Hindi](https://gist.github.com/akashsoni01/b358ee0b3b747167964ef6946123c88d)
 * [Indonesian](https://gist.github.com/wendyliga/792ea9ac5cc887f59de70a9e39cc7343)
 * [Italian](https://gist.github.com/Bellaposa/5114e6d4d55fdb1388e8186886d48958)
 * [Japanese](https://gist.github.com/kalupas226/bdf577e4a7066377ea0a8aaeebcad428)

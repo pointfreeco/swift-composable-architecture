@@ -59,7 +59,7 @@ variable name for the capture:
 ```swift
 return .run { [count = state.count] send in
   try await Task.sleep(for: .seconds(1))
-  return .delayed(count) // ✅
+  return .delayed(count)  // ✅
 }
 ```
 

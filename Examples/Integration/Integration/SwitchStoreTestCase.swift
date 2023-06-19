@@ -55,7 +55,9 @@ struct SwitchStoreTestCase: ReducerProtocol {
 }
 
 struct SwitchStoreTestCaseView: View {
-  let store: StoreOf<SwitchStoreTestCase>
+  let store = Store(initialState: .screenA()) {
+    SwitchStoreTestCase()
+  }
 
   var body: some View {
     WithViewStore(store.stateless) { viewStore in

@@ -25,7 +25,7 @@ final class LoginCoreTests: XCTestCase {
       $0.password = "password"
       $0.isFormValid = true
     }
-    await store.send(.loginButtonTapped) {
+    let twoFactorPresentationTask = await store.send(.loginButtonTapped) {
       $0.isLoginRequestInFlight = true
     }
     await store.receive(
@@ -36,22 +36,25 @@ final class LoginCoreTests: XCTestCase {
       $0.isLoginRequestInFlight = false
       $0.twoFactor = TwoFactor.State(token: "deadbeefdeadbeef")
     }
-    await store.send(.twoFactor(.codeChanged("1234"))) {
+    await store.send(.twoFactor(.presented(.codeChanged("1234")))) {
       $0.twoFactor?.code = "1234"
       $0.twoFactor?.isFormValid = true
     }
-    await store.send(.twoFactor(.submitButtonTapped)) {
+    await store.send(.twoFactor(.presented(.submitButtonTapped))) {
       $0.twoFactor?.isTwoFactorRequestInFlight = true
     }
     await store.receive(
       .twoFactor(
-        .twoFactorResponse(
-          .success(AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false))
+        .presented(
+          .twoFactorResponse(
+            .success(AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false))
+          )
         )
       )
     ) {
       $0.twoFactor?.isTwoFactorRequestInFlight = false
     }
+    await twoFactorPresentationTask.cancel()
   }
 
   func testFlow_DismissEarly_TwoFactor_Integration() async {
@@ -85,14 +88,14 @@ final class LoginCoreTests: XCTestCase {
       $0.isLoginRequestInFlight = false
       $0.twoFactor = TwoFactor.State(token: "deadbeefdeadbeef")
     }
-    await store.send(.twoFactor(.codeChanged("1234"))) {
+    await store.send(.twoFactor(.presented(.codeChanged("1234")))) {
       $0.twoFactor?.code = "1234"
       $0.twoFactor?.isFormValid = true
     }
-    await store.send(.twoFactor(.submitButtonTapped)) {
+    await store.send(.twoFactor(.presented(.submitButtonTapped))) {
       $0.twoFactor?.isTwoFactorRequestInFlight = true
     }
-    await store.send(.twoFactorDismissed) {
+    await store.send(.twoFactor(.dismiss)) {
       $0.twoFactor = nil
     }
     await store.finish()

@@ -108,36 +108,6 @@ final class EffectCancellationTests: BaseTCATestCase {
     XCTAssertEqual(value, nil)
   }
 
-  func testCancellablesCleanUp_OnComplete() {
-    let id = UUID()
-
-    Just(1)
-      .eraseToEffect()
-      .cancellable(id: id)
-      .sink(receiveValue: { _ in })
-      .store(in: &self.cancellables)
-
-    XCTAssertEqual(_cancellationCancellables.exists(at: id), false)
-  }
-
-  func testCancellablesCleanUp_OnCancel() {
-    let id = UUID()
-
-    let mainQueue = DispatchQueue.test
-    Just(1)
-      .delay(for: 1, scheduler: mainQueue)
-      .eraseToEffect()
-      .cancellable(id: id)
-      .sink(receiveValue: { _ in })
-      .store(in: &self.cancellables)
-
-    EffectPublisher<Int, Never>.cancel(id: id)
-      .sink(receiveValue: { _ in })
-      .store(in: &self.cancellables)
-
-    XCTAssertEqual(_cancellationCancellables.exists(at: id), false)
-  }
-
   func testDoubleCancellation() {
     var values: [Int] = []
 
@@ -184,75 +154,6 @@ final class EffectCancellationTests: BaseTCATestCase {
       .store(in: &self.cancellables)
 
     XCTAssertEqual(values, [1])
-  }
-
-  func testConcurrentCancels() {
-    let queues = [
-      DispatchQueue.main,
-      DispatchQueue.global(qos: .background),
-      DispatchQueue.global(qos: .default),
-      DispatchQueue.global(qos: .unspecified),
-      DispatchQueue.global(qos: .userInitiated),
-      DispatchQueue.global(qos: .userInteractive),
-      DispatchQueue.global(qos: .utility),
-    ]
-    let ids = (1...10).map { _ in UUID() }
-
-    let effect = EffectPublisher.merge(
-      (1...1_000).map { idx -> EffectPublisher<Int, Never> in
-        let id = ids[idx % 10]
-
-        return EffectPublisher.merge(
-          Just(idx)
-            .delay(
-              for: .milliseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
-            )
-            .eraseToEffect()
-            .cancellable(id: id),
-
-          Just(())
-            .delay(
-              for: .milliseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
-            )
-            .flatMap { EffectPublisher.cancel(id: id) }
-            .eraseToEffect()
-        )
-      }
-    )
-
-    let expectation = self.expectation(description: "wait")
-    effect
-      .sink(receiveCompletion: { _ in expectation.fulfill() }, receiveValue: { _ in })
-      .store(in: &self.cancellables)
-    self.wait(for: [expectation], timeout: 999)
-
-    for id in ids {
-      XCTAssertEqual(
-        _cancellationCancellables.exists(at: id),
-        false,
-        "cancellationCancellables should not contain id \(id)"
-      )
-    }
-  }
-
-  func testNestedCancels() {
-    let id = UUID()
-
-    var effect = Empty<Void, Never>(completeImmediately: false)
-      .eraseToEffect()
-      .cancellable(id: id)
-
-    for _ in 1...1_000 {
-      effect = effect.cancellable(id: id)
-    }
-
-    effect
-      .sink(receiveValue: { _ in })
-      .store(in: &cancellables)
-
-    cancellables.removeAll()
-
-    XCTAssertEqual(_cancellationCancellables.exists(at: id), false)
   }
 
   func testSharedId() {
@@ -343,15 +244,153 @@ final class EffectCancellationTests: BaseTCATestCase {
     mainQueue.advance(by: 1)
     XCTAssertEqual(output, [B()])
   }
-
-  func testCancelIDHash() {
-    struct CancelID1: Hashable {}
-    struct CancelID2: Hashable {}
-    let id1 = _CancelID(id: CancelID1())
-    let id2 = _CancelID(id: CancelID2())
-    XCTAssertNotEqual(id1, id2)
-    // NB: We hash the type of the cancel ID to give more variance in the hash since all empty
-    //     structs in Swift have the same hash value.
-    XCTAssertNotEqual(id1.hashValue, id2.hashValue)
-  }
 }
+
+#if DEBUG
+  @testable import ComposableArchitecture
+
+  final class Internal_EffectCancellationTests: BaseTCATestCase {
+    var cancellables: Set<AnyCancellable> = []
+
+    func testCancellablesCleanUp_OnComplete() {
+      let id = UUID()
+
+      Just(1)
+        .eraseToEffect()
+        .cancellable(id: id)
+        .sink(receiveValue: { _ in })
+        .store(in: &self.cancellables)
+
+      XCTAssertEqual(_cancellationCancellables.exists(at: id, path: NavigationIDPath()), false)
+    }
+
+    func testCancellablesCleanUp_OnCancel() {
+      let id = UUID()
+
+      let mainQueue = DispatchQueue.test
+      Just(1)
+        .delay(for: 1, scheduler: mainQueue)
+        .eraseToEffect()
+        .cancellable(id: id)
+        .sink(receiveValue: { _ in })
+        .store(in: &self.cancellables)
+
+      EffectPublisher<Int, Never>.cancel(id: id)
+        .sink(receiveValue: { _ in })
+        .store(in: &self.cancellables)
+
+      XCTAssertEqual(_cancellationCancellables.exists(at: id, path: NavigationIDPath()), false)
+    }
+
+    func testConcurrentCancels() {
+      let queues = [
+        DispatchQueue.main,
+        DispatchQueue.global(qos: .background),
+        DispatchQueue.global(qos: .default),
+        DispatchQueue.global(qos: .unspecified),
+        DispatchQueue.global(qos: .userInitiated),
+        DispatchQueue.global(qos: .userInteractive),
+        DispatchQueue.global(qos: .utility),
+      ]
+      let ids = (1...10).map { _ in UUID() }
+
+      let effect = EffectPublisher.merge(
+        (1...1_000).map { idx -> EffectPublisher<Int, Never> in
+          let id = ids[idx % 10]
+
+          return EffectPublisher.merge(
+            Just(idx)
+              .delay(
+                for: .milliseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
+              )
+              .eraseToEffect()
+              .cancellable(id: id),
+
+            Just(())
+              .delay(
+                for: .milliseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
+              )
+              .flatMap { EffectPublisher.cancel(id: id) }
+              .eraseToEffect()
+          )
+        }
+      )
+
+      let expectation = self.expectation(description: "wait")
+      effect
+        .sink(receiveCompletion: { _ in expectation.fulfill() }, receiveValue: { _ in })
+        .store(in: &self.cancellables)
+      self.wait(for: [expectation], timeout: 999)
+
+      for id in ids {
+        XCTAssertEqual(
+          _cancellationCancellables.exists(at: id, path: NavigationIDPath()),
+          false,
+          "cancellationCancellables should not contain id \(id)"
+        )
+      }
+    }
+
+    func testAsyncConcurrentCancels() async {
+      XCTAssertTrue(!Thread.isMainThread)
+      let ids = (1...100).map { _ in UUID() }
+
+      let areCancelled = await withTaskGroup(of: Bool.self, returning: [Bool].self) { group in
+        (1...10_000).forEach { index in
+          let id = ids[index.quotientAndRemainder(dividingBy: ids.count).remainder]
+          group.addTask {
+            await withTaskCancellation(id: id) {
+              nil == (try? await Task.sleep(nanoseconds: 2_000_000_000))
+            }
+          }
+          Task {
+            try? await Task.sleep(nanoseconds: .random(in: 1_000_000...2_000_000))
+            Task.cancel(id: id)
+          }
+        }
+        return await group.reduce(into: [Bool]()) { $0.append($1) }
+      }
+
+      XCTAssertTrue(areCancelled.allSatisfy({ isCancelled in isCancelled }))
+
+      for id in ids {
+        XCTAssertEqual(
+          _cancellationCancellables.exists(at: id, path: NavigationIDPath()),
+          false,
+          "cancellationCancellables should not contain id \(id)"
+        )
+      }
+    }
+
+    func testNestedCancels() {
+      let id = UUID()
+
+      var effect = Empty<Void, Never>(completeImmediately: false)
+        .eraseToEffect()
+        .cancellable(id: id)
+
+      for _ in 1...1_000 {
+        effect = effect.cancellable(id: id)
+      }
+
+      effect
+        .sink(receiveValue: { _ in })
+        .store(in: &cancellables)
+
+      cancellables.removeAll()
+
+      XCTAssertEqual(_cancellationCancellables.exists(at: id, path: NavigationIDPath()), false)
+    }
+
+    func testCancelIDHash() {
+      struct CancelID1: Hashable {}
+      struct CancelID2: Hashable {}
+      let id1 = _CancelID(id: CancelID1(), navigationIDPath: NavigationIDPath())
+      let id2 = _CancelID(id: CancelID2(), navigationIDPath: NavigationIDPath())
+      XCTAssertNotEqual(id1, id2)
+      // NB: We hash the type of the cancel ID to give more variance in the hash since all empty
+      //     structs in Swift have the same hash value.
+      XCTAssertNotEqual(id1.hashValue, id2.hashValue)
+    }
+  }
+#endif

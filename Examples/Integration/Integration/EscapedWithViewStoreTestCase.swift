@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct EscapedWithViewStoreTestCase: ReducerProtocol {
+private struct EscapedWithViewStoreTestCase: ReducerProtocol {
   enum Action: Equatable, Sendable {
     case incr
     case decr
@@ -20,7 +20,9 @@ struct EscapedWithViewStoreTestCase: ReducerProtocol {
 }
 
 struct EscapedWithViewStoreTestCaseView: View {
-  let store: StoreOf<EscapedWithViewStoreTestCase>
+  private let store = Store(initialState: 10) {
+    EscapedWithViewStoreTestCase()
+  }
 
   var body: some View {
     VStack {

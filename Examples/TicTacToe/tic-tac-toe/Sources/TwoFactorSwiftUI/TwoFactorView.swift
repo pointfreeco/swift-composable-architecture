@@ -7,7 +7,7 @@ public struct TwoFactorView: View {
   let store: StoreOf<TwoFactor>
 
   struct ViewState: Equatable {
-    var alert: AlertState<TwoFactor.Action>?
+    var alert: AlertState<Never>?
     var code: String
     var isActivityIndicatorVisible: Bool
     var isFormDisabled: Bool
@@ -66,7 +66,7 @@ public struct TwoFactorView: View {
           }
         }
       }
-      .alert(self.store.scope(state: \.alert, action: { $0 }), dismiss: .alertDismissed)
+      .alert(store: self.store.scope(state: \.$alert, action: TwoFactor.Action.alert))
       .disabled(viewStore.isFormDisabled)
       .navigationTitle("Confirmation Code")
     }
@@ -77,7 +77,7 @@ extension TwoFactor.Action {
   init(action: TwoFactorView.ViewAction) {
     switch action {
     case .alertDismissed:
-      self = .alertDismissed
+      self = .alert(.dismiss)
     case let .codeChanged(code):
       self = .codeChanged(code)
     case .submitButtonTapped:
@@ -88,7 +88,7 @@ extension TwoFactor.Action {
 
 struct TwoFactorView_Previews: PreviewProvider {
   static var previews: some View {
-    NavigationView {
+    NavigationStack {
       TwoFactorView(
         store: Store(initialState: TwoFactor.State(token: "deadbeef")) {
           TwoFactor()

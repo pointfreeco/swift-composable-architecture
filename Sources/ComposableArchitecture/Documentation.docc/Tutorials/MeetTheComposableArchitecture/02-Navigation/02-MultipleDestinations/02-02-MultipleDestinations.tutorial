@@ -1,0 +1,266 @@
+@Tutorial(time: 30) {
+  @Intro(title: "Multiple presentation destinations") {
+    In the previous section you learned how model your domains so that a parent feature can 
+    present a child feature. Now let's learn what has to be done if a parent feature wants to be
+    able to present _many_ features.
+  }
+  
+  @Section(title: "Delete contacts") {
+    @ContentAndMedia {
+      Let's add a new feature to the contacts list that allows you to delete a contact, but first
+      you must confirm deletion. We will implement the confirmation step using an alert. The tools
+      that we used last section, such as ``ComposableArchitecture/PresentationState``,
+      ``ComposableArchitecture/PresentationAction`` and `ifLet`, all work for presenting alerts 
+      from optional state too.
+    }
+    
+    @Steps {
+      @Step {
+        Go back to ContactsFeature.swift that we worked in from the last section. Add a new action
+        that will be sent when the delete button is tapped on a row in the contacts list.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0000, previousFile: 02-02-01-code-0000-previous)
+      }
+      
+      When the delete button is tapped we want to show an alert asking the user to confirm deletion
+      of the contact.
+      
+      @Step {
+        Add a piece of optional ``ComposableArchitecture/PresentationState`` state to the 
+        `ContactsFeature` state. We will further use `AlertState` as it allows us to describe all
+        of the details of the alert in a manner that is test friendly since it is `Equatable`.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0001)
+      }
+      
+      @Step {
+        Add a new case to the `ContactsFeature`'s action that represents the actions that can 
+        happen in the alert. We will use ``ComposableArchitecture/PresentationAction`` for this.
+        
+        > Note: The only choices in the alert are to cancel or confirm deletion, but we do not need 
+        to model the cancel action. That will be handled automatically for us.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0002)
+      }
+      
+      Now that we have new state modeled in our domain for the presentation of the alert, we can
+      properly implement the `deleteButtonTapped` action.
+      
+      @Step {
+        When the delete button is tapped we can populate the `alert` state in order to ask the user
+        to confirm deletion of the contact.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0003)
+      }
+      
+      @Step {
+        Integrate the alert's logic into the `ContactsFeature` by making another use of the 
+        ``ComposableArchitecture/ReducerProtocol/ifLet(_:action:destination:fileID:line:)``
+        operator.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0004)
+      }
+      
+      @Step {
+        Listen for when the confirmation action is sent in the alert, and at that time we can
+        actually remove the element from the array.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0005)
+      }
+      
+      That's all it takes to integrate the alert it the `ContactsFeature` and implement all of its 
+      logic. Next we need to integrate the alert into the view. Just as the library ships a special
+      `sheet(store:)` view modifier that is tuned specifically for 
+      ``ComposableArchitecture/Store``s, it also comes with a `alert(store:)` that serves a similar
+      purpose.
+      
+      @Step {
+        Add the `alert(store:)` view modifier to the `ContactsView`, and hand it a store that is
+        scoped to the alert domain.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0006, previousFile: 02-02-01-code-0006-previous)
+      }
+      
+      @Step {
+        Add a button to each row of the contacts list in order to send the `deleteButtonTapped`
+        action to the view store.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0007)
+      }
+      
+      @Step {
+        Run the app in the preview to see that deletion works as expected. After tapping the trash
+        icon, an alert shows, and if you confirm deletion the item is removed from the list.
+        
+        @Video(source: "ch02-sub02-sec01-0000")
+      }
+      
+      We've now added a new feature, that of deleting a contact, but unfortunately our domain
+      is not modeled as concisely as it could be.
+    }
+  }
+  
+  @Section(title: "Improve domain modeling") {
+    @ContentAndMedia {
+      Currently the `ContactsFeature` can navigate to two possible destinations: either the "Add
+      Contact" sheet or the delete alert. Importantly, it is not possible to be navigated to both
+      destinations at once. However, that currently is possible since we are representing each of
+      those destinations as optional pieces of ``ComposableArchitecture/PresentationState``.
+      
+      The number of invalid states explodes exponentially when you use optionals to represent
+      features you can navigate to. For example, 2 optionals has 1 invalid state, but 3 optionals
+      has 4 invalid states, and 4 optionals has 11 invalid states. This imprecise domain modeling
+      leaks complexity into your application since you can never truly know which feature is being
+      presented.
+      
+      Let's see how to more concisely model our domains for navigating to multiple destinations.
+    }
+    
+    @Steps {
+      @Step {
+        Define a new reducer, called `Destination`, nested inside the `ContactsFeature`. This 
+        reducer will hold the domain and logic for every feature that can be navigated to from
+        the contacts feature.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0000)
+      }
+      
+      @Step {
+        Implement the `State` requirement as an enum because we want to express the fact that only
+        one single destination can be active at a time, and enums are perfect for that.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0001)
+      }
+      
+      @Step {
+        Add a case to the `State` enum for each destination feature that can be navigated to, and
+        hold onto that feature's state. Right now this includes the `AddContactFeature` and the 
+        alert.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0002)
+      }
+      
+      @Step {
+        Implement the `Action` requirement as an enum. 
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0003)
+      }
+      
+      @Step {
+        Add a case to the `Action` enum for each destination feature that can be navigated to, and
+        hold onto that feature's action.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0004)
+      }
+      
+      @Step {
+        Implement the ``ComposableArchitecture/ReducerProtocol/body-swift.property-97ymy`` of
+        the reducer.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0005)
+      }
+      
+      @Step {
+        Compose all of the destination features together by using the 
+        ``ComposableArchitecture/Scope`` reducer to focus on the domain of a reducer. Typically
+        you will need one ``ComposableArchitecture/Scope`` reducer for each destination except for
+        alerts and confirmation dialogs since they do not have a reducer of their own.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0006)
+      }
+      
+      @Step {
+        Replace the two pieces of optional ``ComposableArchitecture/PresentationState`` with a 
+        single option pointed at `Destination.State`.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0007, previousFile: 02-02-02-code-0007-previous)
+      }
+      
+      @Step {
+        Replace the two action cases that held onto ``ComposableArchitecture/PresentationAction``
+        with a single case that holds onto `Destination.Action`.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0008)
+      }
+      
+      Now our model is more concisely defined, and we have compile time guarantees that only 
+      one destination can be active at a time. But, also now have a lot of compiler errors we need
+      to fix.
+      
+      @Step {
+        Instead of populating a piece of `addContact` optional state in order to drive navigation
+        to that feature, we will now mutate `destination` to point it to the `addContact` case.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0009)
+      }
+      
+      @Step {
+        And when listening for actions happening in child domains we now need to destructure the
+        `.destination(.presented(_))` case, such as when the "Add Contact" feature tells us to 
+        save the contact.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0010)
+      }
+      
+      @Step {
+        And when the alert confirms deletion of the contact.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0011)
+      }
+      
+      @Step {
+        Update the state mutation for showing an alert to instead point the `destination` to the
+        `alert` case.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0012)
+      }
+      
+      @Step {
+        Replace the two `ifLet`s that were used at the bottom of the reducer with a single one that
+        runs the `Destination` reducer whenever the `destination` state is non-`nil`.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0013)
+      }
+      
+      That's all it takes to convert two independent, imprecisely modeled optional values into a 
+      single optional enum, and we can now prove that only one destination can be active at a time.
+      All that is left is to update the view so that we can specify which case of the destination
+      enum drives the sheet and alert.
+      
+      @Step {
+        There is an additional overload of `sheet(store:)` and `alert(store:)` that takes two extra
+        arguments: a state transformation for extracting a particular case from the 
+        `Destination.State` enum, and an action transformation for embedding a child action into
+        a particular case of the `Destination.Action` enum.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0014, previousFile: 02-02-02-code-0014-previous)
+      }
+      
+      @Step {
+        The state transformation is responsible for taking a piece of `Destination.State`, which
+        is an enum, and extracting a particular case from it. We can do this by using a case path
+        derived from the `addContact` case.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0015)
+      }
+      
+      @Step {
+        The action transformation is responsible for taking a child action in the 
+        `AddContactFeature` domain and embedding it into the `Destination.Action` enum. This can
+        be done by using the case of the enum as a function.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0016)
+      }
+      
+      @Step {
+        The same can be done for the `alert(store:)` view modifier.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0017)
+      }
+      
+      That completes the refactor of the reducer and view to use a single piece of optional enum
+      state instead using multiple optional values. The application works exactly as it did before,
+      but now its domain is more concisely modeled.
+    }
+  }
+}

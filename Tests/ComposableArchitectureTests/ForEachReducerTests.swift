@@ -1,4 +1,5 @@
 import ComposableArchitecture
+@_spi(Concurrency) import Dependencies
 import XCTest
 
 @MainActor
@@ -44,7 +45,7 @@ final class ForEachReducerTests: BaseTCATestCase {
 
       XCTExpectFailure {
         $0.compactDescription == """
-          A "forEach" at "\(#fileID):\(#line - 5)" received an action for a missing element.
+          A "forEach" at "\(#fileID):\(#line - 5)" received an action for a missing element. …
 
             Action:
               Elements.Action.row(id:, action:)
@@ -68,6 +69,157 @@ final class ForEachReducerTests: BaseTCATestCase {
       await store.send(.row(id: 1, action: "Blob Esq."))
     }
   #endif
+
+  func testAutomaticEffectCancellation() async {
+    if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
+      await withMainSerialExecutor {
+        struct Timer: ReducerProtocol {
+          struct State: Equatable, Identifiable {
+            let id: UUID
+            var elapsed = 0
+          }
+          enum Action: Equatable {
+            case startButtonTapped
+            case tick
+          }
+          @Dependency(\.continuousClock) var clock
+          func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+            switch action {
+            case .startButtonTapped:
+              return .run { send in
+                for await _ in self.clock.timer(interval: .seconds(1)) {
+                  await send(.tick)
+                }
+              }
+            case .tick:
+              state.elapsed += 1
+              return .none
+            }
+          }
+        }
+        struct Timers: ReducerProtocol {
+          struct State: Equatable {
+            var timers: IdentifiedArrayOf<Timer.State> = []
+          }
+          enum Action: Equatable {
+            case addTimerButtonTapped
+            case removeLastTimerButtonTapped
+            case timers(id: Timer.State.ID, action: Timer.Action)
+          }
+          @Dependency(\.uuid) var uuid
+          var body: some ReducerProtocol<State, Action> {
+            Reduce { state, action in
+              switch action {
+              case .addTimerButtonTapped:
+                state.timers.append(Timer.State(id: self.uuid()))
+                return .none
+              case .removeLastTimerButtonTapped:
+                state.timers.removeLast()
+                return .none
+              case .timers:
+                return .none
+              }
+            }
+            .forEach(\.timers, action: /Action.timers) {
+              Timer()
+            }
+          }
+        }
+
+        let clock = TestClock()
+        let store = TestStore(initialState: Timers.State()) {
+          Timers()
+        } withDependencies: {
+          $0.uuid = .incrementing
+          $0.continuousClock = clock
+        }
+        await store.send(.addTimerButtonTapped) {
+          $0.timers = [
+            Timer.State(id: UUID(0))
+          ]
+        }
+        await store.send(
+          .timers(
+            id: UUID(0),
+            action: .startButtonTapped
+          )
+        )
+        await clock.advance(by: .seconds(2))
+        await store.receive(
+          .timers(
+            id: UUID(0),
+            action: .tick
+          )
+        ) {
+          $0.timers[0].elapsed = 1
+        }
+        await store.receive(
+          .timers(
+            id: UUID(0),
+            action: .tick
+          )
+        ) {
+          $0.timers[0].elapsed = 2
+        }
+        await store.send(.addTimerButtonTapped) {
+          $0.timers = [
+            Timer.State(
+              id: UUID(0), elapsed: 2),
+            Timer.State(id: UUID(1)),
+          ]
+        }
+        await clock.advance(by: .seconds(1))
+        await store.receive(
+          .timers(
+            id: UUID(0),
+            action: .tick
+          )
+        ) {
+          $0.timers[0].elapsed = 3
+        }
+        await store.send(
+          .timers(
+            id: UUID(1),
+            action: .startButtonTapped
+          )
+        )
+        await clock.advance(by: .seconds(1))
+        await store.receive(
+          .timers(
+            id: UUID(0),
+            action: .tick
+          )
+        ) {
+          $0.timers[0].elapsed = 4
+        }
+        await store.receive(
+          .timers(
+            id: UUID(1),
+            action: .tick
+          )
+        ) {
+          $0.timers[1].elapsed = 1
+        }
+        await store.send(.removeLastTimerButtonTapped) {
+          $0.timers = [
+            Timer.State(id: UUID(0), elapsed: 4)
+          ]
+        }
+        await clock.advance(by: .seconds(1))
+        await store.receive(
+          .timers(
+            id: UUID(0),
+            action: .tick
+          )
+        ) {
+          $0.timers[0].elapsed = 5
+        }
+        await store.send(.removeLastTimerButtonTapped) {
+          $0.timers = []
+        }
+      }
+    }
+  }
 }
 
 struct Elements: ReducerProtocol {
@@ -82,33 +234,17 @@ struct Elements: ReducerProtocol {
     case buttonTapped
     case row(id: Int, action: String)
   }
-  #if swift(>=5.7)
-    var body: some ReducerProtocol<State, Action> {
+  var body: some ReducerProtocol<State, Action> {
+    Reduce { state, action in
+      .none
+    }
+    .forEach(\.rows, action: /Action.row) {
       Reduce { state, action in
-        .none
-      }
-      .forEach(\.rows, action: /Action.row) {
-        Reduce { state, action in
-          state.value = action
-          return action.isEmpty
-            ? .run { await $0("Empty") }
-            : .none
-        }
+        state.value = action
+        return action.isEmpty
+          ? .run { await $0("Empty") }
+          : .none
       }
     }
-  #else
-    var body: Reduce<State, Action> {
-      Reduce { state, action in
-        .none
-      }
-      .forEach(\.rows, action: /Action.row) {
-        Reduce { state, action in
-          state.value = action
-          return action.isEmpty
-            ? .run { await $0("Empty") }
-            : .none
-        }
-      }
-    }
-  #endif
+  }
 }
