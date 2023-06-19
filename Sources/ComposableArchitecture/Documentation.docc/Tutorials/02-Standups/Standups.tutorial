@@ -1,0 +1,18 @@
+@Tutorials(name: "Standups") {
+  @Intro(title: "Build an application from scratch") {
+    Learn how to build a moderately complex application from scratch using the Composable 
+    Architecture. The application will involve many forms of navigation (sheets, alerts, 
+    drill-downs), side-effects (timers, speech recognizers, data persistence), and it will be built
+    in a way that is concisely modeled, modular, and testable. 
+  }
+  
+  @Chapter(name: "A tour of Standups") {
+    A quick overview of what we will be building in the upcoming chapters. The Standups application
+    is inspired by one of Apple's sample projects known as "Scrumdinger".  
+    
+    <!-- TODO -->
+<!--    @Image(source: <#file#>, alt: "<#accessible description#>")-->
+    
+    @TutorialReference(tutorial: "doc:01-01-Overview")
+  }
+}

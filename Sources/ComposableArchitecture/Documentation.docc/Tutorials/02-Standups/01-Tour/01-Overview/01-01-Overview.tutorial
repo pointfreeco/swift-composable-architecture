@@ -1,0 +1,32 @@
+@Tutorial(time: 0) { <!-- TODO --> 
+  @Intro(title: "Tour of Standups") {
+    A quick overview of what we will be building in the upcoming chapters. The Standups application
+    is inspired by one of Apple's sample projects known as "Scrumdinger".
+  }
+  
+  @Section(title: "Tour") {
+    @ContentAndMedia {
+      The Scrumdinger application from Apple is a wonderful little application that does a good
+      job of showing the kinds of real world problems that one needs to solve 
+      
+      
+      [Scrumdinger]: https://developer.apple.com/tutorials/app-dev-training/getting-started-with-scrumdinger
+      
+      @Image(source: <#file#>, alt: "<#accessible description#>")
+    }
+    
+    @Steps {
+      @Step {
+        <#text#>
+        
+        @Image(source: <#file#>, alt: "<#accessible description#>")
+      }
+      
+      @Step {
+        <#text#>
+        
+        @Code(name: "<#display name#>", file: <#filename.swift#>)
+      }
+    }
+  }
+}
