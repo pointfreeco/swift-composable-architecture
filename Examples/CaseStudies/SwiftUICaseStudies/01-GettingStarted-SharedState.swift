@@ -16,6 +16,13 @@ private let readMe = """
 
 // MARK: - Feature domain
 
+struct CounterData: Equatable {
+  var count = 0
+  var maxCount = 0
+  var minCount = 0
+  var numberOfCounts = 0
+}
+
 struct SharedState: ReducerProtocol {
   enum Tab { case counter, profile }
 
@@ -30,18 +37,12 @@ struct SharedState: ReducerProtocol {
       get {
         Profile.State(
           currentTab: self.currentTab,
-          count: self.counter.count,
-          maxCount: self.counter.maxCount,
-          minCount: self.counter.minCount,
-          numberOfCounts: self.counter.numberOfCounts
+          counter: self.counter.data
         )
       }
       set {
         self.currentTab = newValue.currentTab
-        self.counter.count = newValue.count
-        self.counter.maxCount = newValue.maxCount
-        self.counter.minCount = newValue.minCount
-        self.counter.numberOfCounts = newValue.numberOfCounts
+        self.counter.data = newValue.counter
       }
     }
   }
@@ -75,10 +76,7 @@ struct SharedState: ReducerProtocol {
   struct Counter: ReducerProtocol {
     struct State: Equatable {
       var alert: AlertState<Action>?
-      var count = 0
-      var maxCount = 0
-      var minCount = 0
-      var numberOfCounts = 0
+      var data = CounterData()
     }
 
     enum Action: Equatable {
@@ -95,23 +93,23 @@ struct SharedState: ReducerProtocol {
         return .none
 
       case .decrementButtonTapped:
-        state.count -= 1
-        state.numberOfCounts += 1
-        state.minCount = min(state.minCount, state.count)
+        state.data.count -= 1
+        state.data.numberOfCounts += 1
+        state.data.minCount = min(state.data.minCount, state.data.count)
         return .none
 
       case .incrementButtonTapped:
-        state.count += 1
-        state.numberOfCounts += 1
-        state.maxCount = max(state.maxCount, state.count)
+        state.data.count += 1
+        state.data.numberOfCounts += 1
+        state.data.maxCount = max(state.data.maxCount, state.data.count)
         return .none
 
       case .isPrimeButtonTapped:
         state.alert = AlertState {
           TextState(
-            isPrime(state.count)
-              ? "👍 The number \(state.count) is prime!"
-              : "👎 The number \(state.count) is not prime :("
+            isPrime(state.data.count)
+              ? "👍 The number \(state.data.count) is prime!"
+              : "👎 The number \(state.data.count) is not prime :("
           )
         }
         return .none
@@ -122,17 +120,11 @@ struct SharedState: ReducerProtocol {
   struct Profile: ReducerProtocol {
     struct State: Equatable {
       private(set) var currentTab: Tab
-      private(set) var count = 0
-      private(set) var maxCount: Int
-      private(set) var minCount: Int
-      private(set) var numberOfCounts: Int
+      private(set) var counter: CounterData
 
       fileprivate mutating func resetCount() {
         self.currentTab = .counter
-        self.count = 0
-        self.maxCount = 0
-        self.minCount = 0
-        self.numberOfCounts = 0
+        self.counter = CounterData()
       }
     }
 
@@ -203,7 +195,7 @@ struct SharedStateCounterView: View {
               Image(systemName: "minus")
             }
 
-            Text("\(viewStore.count)")
+            Text("\(viewStore.data.count)")
               .monospacedDigit()
 
             Button {
@@ -242,10 +234,10 @@ struct SharedStateProfileView: View {
         )
 
         VStack(spacing: 16) {
-          Text("Current count: \(viewStore.count)")
-          Text("Max count: \(viewStore.maxCount)")
-          Text("Min count: \(viewStore.minCount)")
-          Text("Total number of count events: \(viewStore.numberOfCounts)")
+          Text("Current count: \(viewStore.counter.count)")
+          Text("Max count: \(viewStore.counter.maxCount)")
+          Text("Min count: \(viewStore.counter.minCount)")
+          Text("Total number of count events: \(viewStore.counter.numberOfCounts)")
           Button("Reset") { viewStore.send(.resetCounterButtonTapped) }
         }
       }
