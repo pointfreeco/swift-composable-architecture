@@ -3,26 +3,17 @@ import SwiftUI
 
 struct Todo: Reducer {
   struct State: Equatable, Identifiable {
-    var description = ""
+    @BindingState var description = ""
     let id: UUID
-    var isComplete = false
+    @BindingState var isComplete = false
   }
 
-  enum Action: Equatable {
-    case checkBoxToggled
-    case textFieldChanged(String)
+  enum Action: BindableAction, Equatable, Sendable {
+    case binding(BindingAction<State>)
   }
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .checkBoxToggled:
-      state.isComplete.toggle()
-      return .none
-
-    case let .textFieldChanged(description):
-      state.description = description
-      return .none
-    }
+  var body: some Reducer<State, Action> {
+    BindingReducer()
   }
 }
 
@@ -33,16 +24,13 @@ struct TodoView: View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       HStack {
         Button {
-          viewStore.send(.checkBoxToggled)
+          viewStore.$isComplete.wrappedValue.toggle()
         } label: {
           Image(systemName: viewStore.isComplete ? "checkmark.square" : "square")
         }
         .buttonStyle(.plain)
 
-        TextField(
-          "Untitled Todo",
-          text: viewStore.binding(get: \.description, send: Todo.Action.textFieldChanged)
-        )
+        TextField("Untitled Todo", text: viewStore.$description)
       }
       .foregroundColor(viewStore.isComplete ? .gray : nil)
     }

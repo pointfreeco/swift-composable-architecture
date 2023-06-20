@@ -417,7 +417,7 @@ private struct ChildView: View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       VStack {
         Text("Count: \(viewStore.count)")
-        TextField("Text field", text: viewStore.binding(\.$text))
+        TextField("Text field", text: viewStore.$text)
         Button("Child dismiss") {
           viewStore.send(.childDismissButtonTapped)
         }

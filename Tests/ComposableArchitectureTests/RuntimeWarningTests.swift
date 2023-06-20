@@ -211,5 +211,31 @@
           """
       }
     }
+
+    @MainActor
+    func testBindingUnhandledAction_BindingState() {
+      struct State: Equatable {
+        @BindingState var value = 0
+      }
+      let line = #line - 2
+      enum Action: BindableAction, Equatable {
+        case binding(BindingAction<State>)
+      }
+      let store = Store<State, Action>(initialState: State()) {}
+
+      XCTExpectFailure {
+        ViewStore(store, observe: { $0 }).$value.wrappedValue = 42
+      } issueMatcher: {
+        $0.compactDescription == """
+          A binding action sent from a view store for binding state defined at \
+          "\(#fileID):\(line)" was not handled. …
+
+            Action:
+              RuntimeWarningTests.Action.binding(.set(_, 42))
+
+          To fix this, invoke "BindingReducer()" from your feature reducer's "body".
+          """
+      }
+    }
   }
 #endif

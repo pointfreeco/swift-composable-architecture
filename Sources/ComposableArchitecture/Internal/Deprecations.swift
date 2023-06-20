@@ -879,28 +879,6 @@ extension Store {
   }
 }
 
-extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
-  @available(
-    *, deprecated,
-    message:
-      """
-      Dynamic member lookup is no longer supported for binding state. Instead of dot-chaining on \
-      the view store, e.g. 'viewStore.$value', invoke the 'binding' method on view store with a \
-      key path to the value, e.g. 'viewStore.binding(\\.$value)'. For more on this change, see: \
-      https://github.com/pointfreeco/swift-composable-architecture/pull/810
-      """
-  )
-  @MainActor
-  public subscript<Value: Equatable>(
-    dynamicMember keyPath: WritableKeyPath<ViewState, BindingState<Value>>
-  ) -> Binding<Value> {
-    self.binding(
-      get: { $0[keyPath: keyPath].wrappedValue },
-      send: { .binding(.set(keyPath, $0)) }
-    )
-  }
-}
-
 // MARK: - Deprecated after 0.25.0:
 
 extension BindingAction {
@@ -912,14 +890,14 @@ extension BindingAction {
       and accessed via key paths to that 'BindingState', like '\\.$value'
       """
   )
-  public static func set<Value: Equatable>(
+  public static func set<Value: Equatable & Sendable>(
     _ keyPath: WritableKeyPath<Root, Value>,
     _ value: Value
   ) -> Self {
     .init(
       keyPath: keyPath,
       set: { $0[keyPath: keyPath] = value },
-      value: value,
+      value: AnySendable(value),
       valueIsEqualTo: { $0 as? Value == value }
     )
   }

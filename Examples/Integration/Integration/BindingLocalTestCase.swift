@@ -135,9 +135,9 @@ private struct ChildView: View {
         Button("Dismiss") {
           self.dismiss()
         }
-        TextField("Text", text: viewStore.binding(\.$text))
+        TextField("Text", text: viewStore.$text)
         Button(viewStore.sendOnDisappear ? "Don't send onDisappear" : "Send onDisappear") {
-          viewStore.binding(\.$sendOnDisappear).wrappedValue.toggle()
+          viewStore.$sendOnDisappear.wrappedValue.toggle()
         }
       }
       .onDisappear {
