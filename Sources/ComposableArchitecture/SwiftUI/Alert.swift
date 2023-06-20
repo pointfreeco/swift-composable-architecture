@@ -70,7 +70,7 @@ extension View {
   ///
   /// - Parameters:
   ///   - store: A store that describes if the alert is shown or dismissed.
-  ///   - dismissal: An action to send when the alert is dismissed through non-user actions, such
+  ///   - dismiss: An action to send when the alert is dismissed through non-user actions, such
   ///     as when an alert is automatically dismissed by the system. Use this action to `nil` out
   ///     the associated alert state.
   @ViewBuilder public func alert<Action>(

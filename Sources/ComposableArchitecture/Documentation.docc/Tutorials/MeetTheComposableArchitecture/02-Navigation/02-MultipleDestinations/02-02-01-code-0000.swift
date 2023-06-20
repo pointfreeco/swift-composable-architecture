@@ -3,7 +3,7 @@ struct ContactsFeature: Reducer {
     @PresentationState var addContact: AddContactFeature.State?
     var contacts: IdentifiedArrayOf<Contact> = []
   }
-  enum Action {
+  enum Action: Equatable {
     case addButtonTapped
     case addContact(PresentationAction<AddContactFeature.Action>)
     case deleteButtonTapped(id: Contact.ID)

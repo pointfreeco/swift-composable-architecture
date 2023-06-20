@@ -187,7 +187,7 @@
       
       @Step {
         Instead of populating a piece of `addContact` optional state in order to drive navigation
-        to that feature, we will now mutation `destination` to point it to the `addContact` case.
+        to that feature, we will now mutate `destination` to point it to the `addContact` case.
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0009)
       }

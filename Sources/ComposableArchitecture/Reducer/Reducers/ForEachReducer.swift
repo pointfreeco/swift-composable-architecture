@@ -93,7 +93,6 @@ public struct _ForEachReducer<
   @usableFromInline
   let line: UInt
 
-  @usableFromInline
   @Dependency(\.navigationIDPath) var navigationIDPath
 
   @usableFromInline
@@ -113,7 +112,6 @@ public struct _ForEachReducer<
     self.line = line
   }
 
-  @inlinable
   public func reduce(
     into state: inout Parent.State, action: Parent.Action
   ) -> Effect<Parent.Action> {
@@ -142,7 +140,6 @@ public struct _ForEachReducer<
     )
   }
 
-  @inlinable
   func reduceForEach(
     into state: inout Parent.State, action: Parent.Action
   ) -> Effect<Parent.Action> {

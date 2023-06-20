@@ -12,7 +12,7 @@ The inspiration for this application comes Apple's [Scrumdinger][scrumdinger] tu
 > that shows the time remaining in the meeting and creates a transcript that users can refer to
 > later.
 
-The Scrumdinger app is one of Apple's most interesting code samples as it deals with many real world
+The Scrumdinger app is one of Apple's most interesting code samples as it deals with many real
 world problems that one faces in application development. It shows off many types of navigation,
 it deals with complex effects such as timers and speech recognition, and it persists application
 data to disk.
@@ -34,10 +34,10 @@ modern, best practices for SwiftUI development. We faithfully recreate the Scrum
 some key additions:
 
  1. Identifiers are made type safe using our [Tagged library][tagged-gh]. This prevents us from
-    writing non-sensical code, such as comparing a `Standup.ID` to a `Attendee.ID`.
+    writing nonsensical code, such as comparing a `Standup.ID` to a `Attendee.ID`.
  2. Instead of using bare arrays in feature logic we use an "identified" array from our
     [IdentifiedCollections][identified-collections-gh] library. This allows you to read and modify
-    elements of the collection via their ID rather than positional index, which can be error prone
+    elements of the collection via their ID rather than positional index, which can be error-prone
     and lead to bugs or crashes.
  3. _All_ navigation is driven off of state, including sheets, drill-downs and alerts. This makes
     it possible to deep link into any screen of the app by just constructing a piece of state and

@@ -89,7 +89,6 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   @usableFromInline
   let line: UInt
 
-  @usableFromInline
   @Dependency(\.navigationIDPath) var navigationIDPath
 
   @usableFromInline
@@ -109,7 +108,6 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     self.line = line
   }
 
-  @inlinable
   public func reduce(
     into state: inout Parent.State, action: Parent.Action
   ) -> Effect<Parent.Action> {
@@ -137,7 +135,6 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     )
   }
 
-  @inlinable
   func reduceChild(
     into state: inout Parent.State, action: Parent.Action
   ) -> Effect<Parent.Action> {
