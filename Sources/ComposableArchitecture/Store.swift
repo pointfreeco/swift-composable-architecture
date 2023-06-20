@@ -653,17 +653,17 @@ extension ReducerProtocol {
 }
 
 private final class ScopedReducer<
-  RootState, RootAction, ScopedState, ScopedAction
+  RootState, RootAction, State, Action
 >: ReducerProtocol {
   let rootStore: Store<RootState, RootAction>
-  let toScopedState: (RootState) -> ScopedState
+  let toScopedState: (RootState) -> State
   private let parentStores: [Any]
-  let fromScopedAction: (ScopedState, ScopedAction) -> RootAction?
+  let fromScopedAction: (State, Action) -> RootAction?
   private(set) var isSending = false
 
   @inlinable
   init(rootStore: Store<RootState, RootAction>)
-  where RootState == ScopedState, RootAction == ScopedAction {
+  where RootState == State, RootAction == Action {
     self.rootStore = rootStore
     self.toScopedState = { $0 }
     self.parentStores = []
@@ -673,8 +673,8 @@ private final class ScopedReducer<
   @inlinable
   init(
     rootStore: Store<RootState, RootAction>,
-    state toScopedState: @escaping (RootState) -> ScopedState,
-    action fromScopedAction: @escaping (ScopedState, ScopedAction) -> RootAction?,
+    state toScopedState: @escaping (RootState) -> State,
+    action fromScopedAction: @escaping (State, Action) -> RootAction?,
     parentStores: [Any]
   ) {
     self.rootStore = rootStore
@@ -685,8 +685,8 @@ private final class ScopedReducer<
 
   @inlinable
   func reduce(
-    into state: inout ScopedState, action: ScopedAction
-  ) -> EffectTask<ScopedAction> {
+    into state: inout State, action: Action
+  ) -> EffectTask<Action> {
     self.isSending = true
     defer {
       state = self.toScopedState(self.rootStore.state.value)
