@@ -684,6 +684,9 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   /// - Parameters:
   ///   - initialState: The state the feature starts in.
   ///   - reducer: The reducer that powers the runtime of the feature.
+  ///   - prepareDependencies: A closure that can be used to override dependencies that will be
+  ///     accessed during the test. These dependencies will be used when producing the initial
+  ///     state.
   @available(*, deprecated, message: "State must be equatable to perform assertions.")
   public init<R: ReducerProtocol>(
     initialState: @autoclosure () -> State,

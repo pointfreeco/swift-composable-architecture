@@ -4,7 +4,7 @@ extension ContactsFeature {
       case addContact(AddContactFeature.State)
       case alert(AlertState<ContactsFeature.Action.Alert>)
     }
-    enum Action {
+    enum Action: Equatable {
     }
   }
 }

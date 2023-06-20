@@ -613,6 +613,7 @@ The following translations of this README have been contributed by members of th
 
 * [Arabic](https://gist.github.com/NorhanBoghdadi/1b98d55c02b683ddef7e05c2ebcccd47)
 * [French](https://gist.github.com/nikitamounier/0e93eb832cf389db12f9a69da030a2dc)
+* [Hindi](https://gist.github.com/akashsoni01/b358ee0b3b747167964ef6946123c88d)
 * [Indonesian](https://gist.github.com/wendyliga/792ea9ac5cc887f59de70a9e39cc7343)
 * [Italian](https://gist.github.com/Bellaposa/5114e6d4d55fdb1388e8186886d48958)
 * [Japanese](https://gist.github.com/kalupas226/bdf577e4a7066377ea0a8aaeebcad428)

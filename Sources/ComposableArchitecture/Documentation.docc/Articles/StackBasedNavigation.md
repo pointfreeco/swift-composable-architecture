@@ -7,7 +7,7 @@ model your domains, how to integrate features, how to test your features, and mo
 
 Stack-based navigation is the process of modeling navigation using collections of state. This style
 of navigation allows you to deep-link into any state of your application by simply constructing a
-flat collection of data, handing, handing it off to SwiftUI, and letting it take care of the rest.
+flat collection of data, handing it off to SwiftUI, and letting it take care of the rest.
 It also allows for complex and recursive navigation paths in your application.
 
   * [Basics](#Basics)
@@ -102,7 +102,7 @@ struct RootFeature: ReducerProtocol {
 
 That completes the steps to integrate the child and parent features together for a navigation stack.
 
-Next we must integrate the child and parent views together. This is done by construct a special
+Next we must integrate the child and parent views together. This is done by constructing a special
 version of SwiftUI's `NavigationStack` view that comes with this library, called 
 ``NavigationStackStore``. This view takes 3 arguments: a store focused in on ``StackState``
 and ``StackAction`` in your domain, a trailing view builder for the root view of the stack, and

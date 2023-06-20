@@ -162,7 +162,7 @@ extension PresentationState: CustomReflectable {
 /// ```swift
 /// struct ParentFeature: ReducerProtocol {
 ///   // ...
-///   struct Action {
+///   enum Action {
 ///     case child(PresentationAction<Child.Action>)
 ///      // ...
 ///   }
@@ -303,7 +303,7 @@ public struct _PresentationReducer<
   @usableFromInline let fileID: StaticString
   @usableFromInline let line: UInt
 
-  @usableFromInline @Dependency(\.navigationIDPath) var navigationIDPath
+  @Dependency(\.navigationIDPath) var navigationIDPath
 
   @usableFromInline
   init(
@@ -322,7 +322,6 @@ public struct _PresentationReducer<
     self.line = line
   }
 
-  @inlinable
   public func reduce(
     into state: inout Base.State, action: Base.Action
   ) -> EffectTask<Base.Action> {
@@ -436,7 +435,6 @@ public struct _PresentationReducer<
     )
   }
 
-  @usableFromInline
   func navigationIDPath(for state: Destination.State) -> NavigationIDPath {
     self.navigationIDPath.appending(
       NavigationID(
@@ -467,7 +465,6 @@ public struct _PresentedID: Hashable {
 }
 
 extension Task where Success == Never, Failure == Never {
-  @usableFromInline
   internal static func _cancel(
     id: AnyHashable,
     navigationID: NavigationIDPath
@@ -480,7 +477,6 @@ extension Task where Success == Never, Failure == Never {
   }
 }
 extension EffectPublisher {
-  @usableFromInline
   internal func _cancellable(
     id: AnyHashable = _PresentedID(),
     navigationIDPath: NavigationIDPath,
@@ -492,7 +488,6 @@ extension EffectPublisher {
       self.cancellable(id: id, cancelInFlight: cancelInFlight)
     }
   }
-  @usableFromInline
   internal static func _cancel(
     id: AnyHashable = _PresentedID(),
     navigationID: NavigationIDPath

@@ -511,7 +511,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   /// enum Action { case alertDismissed }
   ///
   /// .alert(
-  ///   item: self.store.binding(
+  ///   item: viewStore.binding(
   ///     get: { $0.alert },
   ///     send: .alertDismissed
   ///   )
@@ -649,6 +649,7 @@ extension ViewStore where ViewState: Equatable {
   ///   - store: A store.
   ///   - toViewState: A transformation of `ViewState` to the state that will be observed for
   ///   changes.
+  ///   - fromViewAction: A transformation of `ViewAction` that describes what actions can be sent.
   public convenience init<State, Action>(
     _ store: Store<State, Action>,
     observe toViewState: @escaping (State) -> ViewState,
