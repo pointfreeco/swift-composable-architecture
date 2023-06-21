@@ -27,6 +27,18 @@ public typealias ReducerProtocol = Reducer
 
 // MARK: - Deprecated after 0.54.1
 
+extension WithViewStore where ViewState == Void, Content: View {
+  @available(*, deprecated, message: "Use 'store.send(action)' directly on the 'Store' instead.")
+  public init(
+    _ store: Store<ViewState, ViewAction>,
+    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
+    file: StaticString = #fileID,
+    line: UInt = #line
+  ) {
+    self.init(store, removeDuplicates: ==, content: content, file: file, line: line)
+  }
+}
+
 extension EffectPublisher {
   @available(*, deprecated, message: "Use 'Effect.merge([.cancel(id: …), …])' instead.")
   public static func cancel(ids: [AnyHashable]) -> Self {
@@ -851,7 +863,7 @@ extension Store {
         let childStore = Store<ChildState, ChildAction>(
           initialState: childState,
           reducer: .init { childState, childAction, _ in
-            let task = self.send(fromChildAction(childAction))
+            let task = self.send(fromChildAction(childAction), originatingFrom: nil)
             childState = extractChildState(self.state.value) ?? childState
             if let task = task {
               return .run { _ in await task.cancellableValue }

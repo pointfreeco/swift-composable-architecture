@@ -112,7 +112,7 @@ struct NavigationDemoView: View {
 
         Section {
           Button("Go to A → B → C") {
-            ViewStore(self.store.stateless).send(.goToABCButtonTapped)
+            self.store.send(.goToABCButtonTapped)
           }
         }
       }

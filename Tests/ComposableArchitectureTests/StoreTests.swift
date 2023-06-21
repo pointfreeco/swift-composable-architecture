@@ -520,7 +520,7 @@ final class StoreTests: BaseTCATestCase {
     }
     let scopedStore = store.scope(state: { $0 }, action: { $0 })
 
-    let sendTask = scopedStore.send(())
+    let sendTask = scopedStore.send((), originatingFrom: nil)
     await Task.yield()
     neverEndingTask.cancel()
     try await XCTUnwrap(sendTask).value
@@ -632,7 +632,7 @@ final class StoreTests: BaseTCATestCase {
     let store = Store(initialState: Feature.State()) {
       Feature()
     }
-    await store.send(.tap)?.value
+    await store.send(.tap, originatingFrom: nil)?.value
     XCTAssertEqual(store.state.value.count, testStore.state.count)
   }
 
@@ -690,7 +690,7 @@ final class StoreTests: BaseTCATestCase {
     let store = Store(initialState: Feature.State()) {
       Feature()
     }
-    await store.send(.tap)?.value
+    await store.send(.tap, originatingFrom: nil)?.value
     XCTAssertEqual(store.state.value.count, testStore.state.count)
   }
 

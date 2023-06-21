@@ -31,7 +31,7 @@ struct NavigationStackBindingTestCaseView: View {
   }
 
   var body: some View {
-    WithViewStore(store, observe: { $0 }) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       NavigationStack(
         path: viewStore.binding(
           get: \.path,

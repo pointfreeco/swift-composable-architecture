@@ -50,7 +50,7 @@
           }
         }
       }
-      ViewStore(store, observe: { $0 }).send(.tap)
+      store.send(.tap)
       _ = XCTWaiter.wait(for: [.init()], timeout: 0.5)
     }
 
@@ -107,7 +107,7 @@
 
       let store = Store<Int, Void>(initialState: 0) {}
       Task {
-        ViewStore(store, observe: { $0 }).send(())
+        store.send(())
       }
       _ = XCTWaiter.wait(for: [.init()], timeout: 0.5)
     }

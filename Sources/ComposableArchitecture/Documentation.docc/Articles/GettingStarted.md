@@ -183,7 +183,7 @@ class FeatureViewController: UIViewController {
   var cancellables: Set<AnyCancellable> = []
 
   init(store: StoreOf<Feature>) {
-    self.viewStore = ViewStore(store)
+    self.viewStore = ViewStore(store, observe: { $0 })
     super.init(nibName: nil, bundle: nil)
   }
 
