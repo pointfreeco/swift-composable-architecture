@@ -29,6 +29,7 @@ extension EffectPublisher where Failure == Never {
         operation: .run(priority) { send in
           await escaped.yield {
             do {
+              try Task.checkCancellation()
               try await send(operation())
             } catch is CancellationError {
               return
