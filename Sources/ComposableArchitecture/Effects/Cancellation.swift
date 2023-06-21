@@ -119,7 +119,7 @@ extension EffectPublisher {
 /// Execute an operation with a cancellation identifier.
 ///
 /// If the operation is in-flight when `Task.cancel(id:)` is called with the same identifier, the
-/// operation will be cancelled.
+/// operation will be canceled.
 ///
 /// ```
 /// enum CancelID { case timer }

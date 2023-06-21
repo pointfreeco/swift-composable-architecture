@@ -11,7 +11,7 @@ private let readMe = """
   happens.
 
   Then, navigate to another screen and take screenshots there, and observe that this screen does \
-  *not* count those screenshots. The notifications effect is automatically cancelled when leaving \
+  *not* count those screenshots. The notifications effect is automatically canceled when leaving \
   the screen, and restarted when entering the screen.
   """
 

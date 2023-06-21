@@ -1993,7 +1993,7 @@ extension TestStore where ScopedState: Equatable {
         if self.reducer.inFlightEffects.isEmpty {
           suggestion = """
             There are no in-flight effects that could deliver this action. Could the effect you \
-            expected to deliver this action have been cancelled?
+            expected to deliver this action have been canceled?
             """
         } else {
           let timeoutMessage =
@@ -2238,7 +2238,7 @@ extension TestStore {
     XCTFailHelper(
       """
       \(self.reducer.inFlightEffects.count) in-flight effect\
-      \(self.reducer.inFlightEffects.count == 1 ? " was" : "s were") cancelled, originating from:
+      \(self.reducer.inFlightEffects.count == 1 ? " was" : "s were") canceled, originating from:
 
       \(actions)
       """,

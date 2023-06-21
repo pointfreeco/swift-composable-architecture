@@ -102,13 +102,13 @@ final class EffectRunTests: BaseTCATestCase {
     }
     XCTExpectFailure {
       $0.compactDescription == """
-        A cancelled effect tried to send an action at \
+        A canceled effect tried to send an action at \
         "ComposableArchitectureTests/EffectRunTests.swift:\(line!)". …
 
           Action:
             EffectRunTests.Action.response
 
-        Cancelled effects cannot send actions back into the system.
+        Canceled effects cannot send actions back into the system.
 
         Invoke "try Task.checkCancellation()" before sending actions from cancellable effects to \
         participate in cooperative cancellation.

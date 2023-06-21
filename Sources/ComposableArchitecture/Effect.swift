@@ -265,12 +265,12 @@ public struct Send<Action>: Sendable {
     guard !Task.isCancelled else {
       runtimeWarn(
         """
-        A cancelled effect tried to send an action at "\(fileID):\(line)". …
+        A canceled effect tried to send an action at "\(fileID):\(line)". …
 
           Action:
             \(debugCaseOutput(action))
 
-        Cancelled effects cannot send actions back into the system.
+        Canceled effects cannot send actions back into the system.
 
         Invoke "try Task.checkCancellation()" before sending actions from cancellable effects to \
         participate in cooperative cancellation.
@@ -385,10 +385,10 @@ extension EffectPublisher {
   }
 
   /// Concatenates this effect and another into a single effect that first runs this effect, and
-  /// after it completes or is cancelled, runs the other.
+  /// after it completes or is canceled, runs the other.
   ///
   /// - Parameter other: Another effect.
-  /// - Returns: An effect that runs this effect, and after it completes or is cancelled, runs the
+  /// - Returns: An effect that runs this effect, and after it completes or is canceled, runs the
   ///   other.
   @inlinable
   @_disfavoredOverload
