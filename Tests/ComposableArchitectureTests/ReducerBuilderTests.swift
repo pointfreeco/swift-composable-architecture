@@ -11,7 +11,7 @@ private struct Test: Reducer {
     .none
   }
 
-  @available(iOS, introduced: 9999.0)
+  @available(iOS, introduced: 9999)
   struct Unavailable: Reducer {
     func reduce(into state: inout State, action: Action) -> Effect<Action> {
       .none
@@ -22,9 +22,9 @@ private struct Test: Reducer {
 func testLimitedAvailability() {
   _ = CombineReducers {
     Test()
-    if #available(iOS 9999.0, *) {
+    if #available(iOS 9999, *) {
       Test.Unavailable()
-    } else if #available(iOS 8888.0, *) {
+    } else if #available(iOS 8888, *) {
       EmptyReducer()
     }
   }
@@ -45,7 +45,7 @@ private struct Root: Reducer {
     case features(id: Feature.State.ID, feature: Feature.Action)
   }
 
-  @available(iOS, introduced: 9999.0)
+  @available(iOS, introduced: 9999)
   struct Unavailable: Reducer {
     let body = EmptyReducer<State, Action>()
   }
@@ -100,7 +100,7 @@ private struct Root: Reducer {
       Self()
     }
 
-    if #available(iOS 9999.0, *) {
+    if #available(iOS 9999, *) {
       Unavailable()
     }
   }

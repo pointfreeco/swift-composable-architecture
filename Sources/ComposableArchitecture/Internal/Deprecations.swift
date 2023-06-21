@@ -5,23 +5,23 @@ import XCTestDynamicOverlay
 
 // MARK: - Deprecated after 1.0.0:
 
-@available(iOS, deprecated: 9999.0, renamed: "Effect")
-@available(macOS, deprecated: 9999.0, renamed: "Effect")
-@available(tvOS, deprecated: 9999.0, renamed: "Effect")
-@available(watchOS, deprecated: 9999.0, renamed: "Effect")
+@available(iOS, deprecated: 9999, renamed: "Effect")
+@available(macOS, deprecated: 9999, renamed: "Effect")
+@available(tvOS, deprecated: 9999, renamed: "Effect")
+@available(watchOS, deprecated: 9999, renamed: "Effect")
 public typealias EffectTask = Effect
 
-@available(iOS, deprecated: 9999.0, renamed: "Reducer")
-@available(macOS, deprecated: 9999.0, renamed: "Reducer")
-@available(tvOS, deprecated: 9999.0, renamed: "Reducer")
-@available(watchOS, deprecated: 9999.0, renamed: "Reducer")
+@available(iOS, deprecated: 9999, renamed: "Reducer")
+@available(macOS, deprecated: 9999, renamed: "Reducer")
+@available(tvOS, deprecated: 9999, renamed: "Reducer")
+@available(watchOS, deprecated: 9999, renamed: "Reducer")
 public typealias ReducerProtocol = Reducer
 
 #if swift(>=5.7.1)
-  @available(iOS, deprecated: 9999.0, renamed: "ReducerOf")
-  @available(macOS, deprecated: 9999.0, renamed: "ReducerOf")
-  @available(tvOS, deprecated: 9999.0, renamed: "ReducerOf")
-  @available(watchOS, deprecated: 9999.0, renamed: "ReducerOf")
+  @available(iOS, deprecated: 9999, renamed: "ReducerOf")
+  @available(macOS, deprecated: 9999, renamed: "ReducerOf")
+  @available(tvOS, deprecated: 9999, renamed: "ReducerOf")
+  @available(watchOS, deprecated: 9999, renamed: "ReducerOf")
   public typealias ReducerProtocolOf<R: Reducer> = Reducer<R.State, R.Action>
 #endif
 
