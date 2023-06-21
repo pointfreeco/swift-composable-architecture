@@ -264,14 +264,29 @@ final class EffectTests: BaseTCATestCase {
       return 42
     }
 
-    EffectTask<Int>.task { await work() }
+    let line = #line + 1
+    let cancellable = EffectTask<Int>.run { send in await send(work()) }
       .sink(
         receiveCompletion: { _ in XCTFail() },
         receiveValue: { _ in XCTFail() }
       )
-      .store(in: &self.cancellables)
 
-    self.cancellables = []
+    XCTExpectFailure {
+      $0.compactDescription == """
+        A canceled effect tried to send an action at \
+        "ComposableArchitectureTests/EffectTests.swift:\(line)". …
+
+          Action:
+            Int
+
+        Canceled effects cannot send actions back into the system.
+
+        Invoke "try Task.checkCancellation()" before sending actions from cancellable effects to \
+        participate in cooperative cancellation.
+        """
+    }
+
+    cancellable.cancel()
 
     _ = XCTWaiter.wait(for: [.init()], timeout: 1.1)
   }
