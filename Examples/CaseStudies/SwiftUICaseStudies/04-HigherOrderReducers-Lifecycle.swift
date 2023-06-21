@@ -11,58 +11,64 @@ private let readMe = """
   are sent to the store.
   """
 
-extension Reducer {
-  public func lifecycle(
-    onAppear: @escaping (Environment) -> Effect<Action, Never>,
-    onDisappear: @escaping (Environment) -> Effect<Never, Never>
-  ) -> Reducer<State?, LifecycleAction<Action>, Environment> {
+struct LifecycleReducer<Wrapped: ReducerProtocol>: ReducerProtocol {
+  enum Action {
+    case onAppear
+    case onDisappear
+    case wrapped(Wrapped.Action)
+  }
 
-    return .init { state, lifecycleAction, environment in
+  let wrapped: Wrapped
+  let onAppear: EffectTask<Wrapped.Action>
+  let onDisappear: EffectTask<Never>
+
+  var body: some ReducerProtocol<Wrapped.State?, Action> {
+    Reduce { state, lifecycleAction in
       switch lifecycleAction {
       case .onAppear:
-        return onAppear(environment).map(LifecycleAction.action)
+        return onAppear.map(Action.wrapped)
 
       case .onDisappear:
-        return onDisappear(environment).fireAndForget()
+        return onDisappear.fireAndForget()
 
-      case let .action(action):
-        guard state != nil else { return .none }
-        return self.run(&state!, action, environment)
-          .map(LifecycleAction.action)
+      case .wrapped:
+        return .none
       }
+    }
+    .ifLet(\.self, action: /Action.wrapped) {
+      self.wrapped
     }
   }
 }
 
-public enum LifecycleAction<Action> {
-  case onAppear
-  case onDisappear
-  case action(Action)
+extension LifecycleReducer.Action: Equatable where Wrapped.Action: Equatable {}
+
+extension ReducerProtocol {
+  func lifecycle(
+    onAppear: EffectTask<Action>,
+    onDisappear: EffectTask<Never> = .none
+  ) -> LifecycleReducer<Self> {
+    LifecycleReducer(wrapped: self, onAppear: onAppear, onDisappear: onDisappear)
+  }
 }
 
-extension LifecycleAction: Equatable where Action: Equatable {}
+// MARK: - Feature domain
 
-struct LifecycleDemoState: Equatable {
-  var count: Int?
-}
+struct LifecycleDemo: ReducerProtocol {
+  struct State: Equatable {
+    var count: Int?
+  }
 
-enum LifecycleDemoAction: Equatable {
-  case timer(LifecycleAction<TimerAction>)
-  case toggleTimerButtonTapped
-}
+  enum Action: Equatable {
+    case timer(LifecycleReducer<Timer>.Action)
+    case toggleTimerButtonTapped
+  }
 
-struct LifecycleDemoEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
+  @Dependency(\.continuousClock) var clock
+  private enum CancelID { case lifecycle }
 
-let lifecycleDemoReducer:
-  Reducer<LifecycleDemoState, LifecycleDemoAction, LifecycleDemoEnvironment> = .combine(
-    timerReducer.pullback(
-      state: \.count,
-      action: /LifecycleDemoAction.timer,
-      environment: { TimerEnvironment(mainQueue: $0.mainQueue) }
-    ),
-    Reducer { state, action, environment in
+  var body: some ReducerProtocol<State, Action> {
+    Reduce { state, action in
       switch action {
       case .timer:
         return .none
@@ -72,96 +78,101 @@ let lifecycleDemoReducer:
         return .none
       }
     }
-  )
 
-struct LifecycleDemoView: View {
-  let store: Store<LifecycleDemoState, LifecycleDemoAction>
-
-  var body: some View {
-    WithViewStore(self.store) { viewStore in
-      VStack {
-        Button("Toggle Timer") { viewStore.send(.toggleTimerButtonTapped) }
-
-        IfLetStore(
-          self.store.scope(state: \.count, action: LifecycleDemoAction.timer),
-          then: TimerView.init(store:)
+    Scope(state: \.count, action: /Action.timer) {
+      Timer()
+        .lifecycle(
+          onAppear: .run { send in
+            for await _ in self.clock.timer(interval: .seconds(1)) {
+              await send(.tick)
+            }
+          }
+          .cancellable(id: CancelID.lifecycle),
+          onDisappear: .cancel(id: CancelID.lifecycle)
         )
-
-        Spacer()
-      }
-      .navigationBarTitle("Lifecycle")
     }
   }
 }
 
-private struct TimerId: Hashable {}
+// MARK: - Feature view
 
-enum TimerAction {
-  case decrementButtonTapped
-  case incrementButtonTapped
-  case tick
-}
-
-struct TimerEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
-
-private let timerReducer = Reducer<Int, TimerAction, TimerEnvironment> {
-  state, action, TimerEnvironment in
-  switch action {
-  case .decrementButtonTapped:
-    state -= 1
-    return .none
-
-  case .incrementButtonTapped:
-    state += 1
-    return .none
-
-  case .tick:
-    state += 1
-    return .none
-  }
-}
-.lifecycle(
-  onAppear: {
-    Effect.timer(id: TimerId(), every: 1, tolerance: 0, on: $0.mainQueue)
-      .map { _ in TimerAction.tick }
-  },
-  onDisappear: { _ in
-    .cancel(id: TimerId())
-  }
-)
-
-private struct TimerView: View {
-  let store: Store<Int, LifecycleAction<TimerAction>>
+struct LifecycleDemoView: View {
+  let store: StoreOf<LifecycleDemo>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
+      Form {
+        Section {
+          AboutView(readMe: readMe)
+        }
+
+        Button("Toggle Timer") { viewStore.send(.toggleTimerButtonTapped) }
+
+        IfLetStore(self.store.scope(state: \.count, action: LifecycleDemo.Action.timer)) {
+          TimerView(store: $0)
+        }
+      }
+    }
+    .navigationTitle("Lifecycle")
+  }
+}
+
+struct Timer: ReducerProtocol {
+  typealias State = Int
+
+  enum Action {
+    case decrementButtonTapped
+    case incrementButtonTapped
+    case tick
+  }
+
+  var body: some ReducerProtocol<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .decrementButtonTapped:
+        state -= 1
+        return .none
+
+      case .incrementButtonTapped:
+        state += 1
+        return .none
+
+      case .tick:
+        state += 1
+        return .none
+      }
+    }
+  }
+}
+
+private struct TimerView: View {
+  let store: Store<Int, LifecycleReducer<Timer>.Action>
+
+  var body: some View {
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       Section {
         Text("Count: \(viewStore.state)")
           .onAppear { viewStore.send(.onAppear) }
           .onDisappear { viewStore.send(.onDisappear) }
 
-        Button("Decrement") { viewStore.send(.action(.decrementButtonTapped)) }
+        Button("Decrement") { viewStore.send(.wrapped(.decrementButtonTapped)) }
 
-        Button("Increment") { viewStore.send(.action(.incrementButtonTapped)) }
+        Button("Increment") { viewStore.send(.wrapped(.incrementButtonTapped)) }
       }
     }
   }
 }
+
+// MARK: - SwiftUI previews
 
 struct Lifecycle_Previews: PreviewProvider {
   static var previews: some View {
     Group {
       NavigationView {
         LifecycleDemoView(
-          store: .init(
-            initialState: .init(),
-            reducer: lifecycleDemoReducer,
-            environment: .init(
-              mainQueue: .main
-            )
-          )
+          store: Store(initialState: LifecycleDemo.State()) {
+            LifecycleDemo()
+          }
         )
       }
     }

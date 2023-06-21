@@ -1,87 +1,86 @@
 import AuthenticationClient
-import Combine
 import ComposableArchitecture
 import TwoFactorCore
 import XCTest
 
 @testable import TwoFactorSwiftUI
 
-class TwoFactorSwiftUITests: XCTestCase {
-  func testFlow_Success() {
-    var authenticationClient = AuthenticationClient.failing
-    authenticationClient.twoFactor = { _ in
-      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
+@MainActor
+final class TwoFactorSwiftUITests: XCTestCase {
+  func testFlow_Success() async {
+    let store = TestStore(initialState: TwoFactor.State(token: "deadbeefdeadbeef")) {
+      TwoFactor()
+    } observe: {
+      TwoFactorView.ViewState(state: $0)
+    } send: {
+      TwoFactor.Action(action: $0)
+    } withDependencies: {
+      $0.authenticationClient.twoFactor = { _ in
+        AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
+      }
     }
 
-    let store = TestStore(
-      initialState: TwoFactorState(token: "deadbeefdeadbeef"),
-      reducer: twoFactorReducer,
-      environment: TwoFactorEnvironment(
-        authenticationClient: authenticationClient,
-        mainQueue: .immediate
-      )
-    )
-    .scope(state: TwoFactorView.ViewState.init, action: TwoFactorAction.init)
-
-    store.environment.authenticationClient.twoFactor = { _ in
-      Effect(value: .init(token: "deadbeefdeadbeef", twoFactorRequired: false))
-    }
-    store.send(.codeChanged("1")) {
+    await store.send(.codeChanged("1")) {
       $0.code = "1"
     }
-    store.send(.codeChanged("12")) {
+    await store.send(.codeChanged("12")) {
       $0.code = "12"
     }
-    store.send(.codeChanged("123")) {
+    await store.send(.codeChanged("123")) {
       $0.code = "123"
     }
-    store.send(.codeChanged("1234")) {
+    await store.send(.codeChanged("1234")) {
       $0.code = "1234"
       $0.isSubmitButtonDisabled = false
     }
-    store.send(.submitButtonTapped) {
+    await store.send(.submitButtonTapped) {
       $0.isActivityIndicatorVisible = true
       $0.isFormDisabled = true
     }
-    store.receive(
-      .twoFactorResponse(.success(.init(token: "deadbeefdeadbeef", twoFactorRequired: false)))
+    await store.receive(
+      .twoFactorResponse(
+        .success(
+          AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
+        )
+      )
     ) {
       $0.isActivityIndicatorVisible = false
       $0.isFormDisabled = false
     }
   }
 
-  func testFlow_Failure() {
-    var authenticationClient = AuthenticationClient.failing
-    authenticationClient.twoFactor = { _ in Effect(error: .invalidTwoFactor) }
+  func testFlow_Failure() async {
+    let store = TestStore(initialState: TwoFactor.State(token: "deadbeefdeadbeef")) {
+      TwoFactor()
+    } observe: {
+      TwoFactorView.ViewState(state: $0)
+    } send: {
+      TwoFactor.Action(action: $0)
+    } withDependencies: {
+      $0.authenticationClient.twoFactor = { _ in
+        throw AuthenticationError.invalidTwoFactor
+      }
+    }
 
-    let store = TestStore(
-      initialState: TwoFactorState(token: "deadbeefdeadbeef"),
-      reducer: twoFactorReducer,
-      environment: TwoFactorEnvironment(
-        authenticationClient: authenticationClient,
-        mainQueue: .immediate
-      )
-    )
-    .scope(state: TwoFactorView.ViewState.init, action: TwoFactorAction.init)
-
-    store.send(.codeChanged("1234")) {
+    await store.send(.codeChanged("1234")) {
       $0.code = "1234"
       $0.isSubmitButtonDisabled = false
     }
-    store.send(.submitButtonTapped) {
+    await store.send(.submitButtonTapped) {
       $0.isActivityIndicatorVisible = true
       $0.isFormDisabled = true
     }
-    store.receive(.twoFactorResponse(.failure(.invalidTwoFactor))) {
-      $0.alert = .init(
-        title: TextState(AuthenticationError.invalidTwoFactor.localizedDescription)
-      )
+    await store.receive(.twoFactorResponse(.failure(AuthenticationError.invalidTwoFactor))) {
+      $0.alert = AlertState {
+        TextState(AuthenticationError.invalidTwoFactor.localizedDescription)
+      }
       $0.isActivityIndicatorVisible = false
       $0.isFormDisabled = false
     }
-    store.send(.alertDismissed) {
+    await store.send(.alertDismissed) {
       $0.alert = nil
     }
+
+    await store.finish()
   }
 }

@@ -1,206 +1,151 @@
-import Combine
 import ComposableArchitecture
 import XCTest
 
 @testable import SwiftUICaseStudies
 
-class ReusableComponentsDownloadComponentTests: XCTestCase {
-  let downloadSubject = PassthroughSubject<DownloadClient.Action, DownloadClient.Error>()
-  let reducer = Reducer<
-    DownloadComponentState<Int>, DownloadComponentAction, DownloadComponentEnvironment
-  >
-  .empty
-  .downloadable(
-    state: \.self,
-    action: .self,
-    environment: { $0 }
-  )
-  let scheduler = DispatchQueue.test
+@MainActor
+final class ReusableComponentsDownloadComponentTests: XCTestCase {
+  let download = AsyncThrowingStream.makeStream(of: DownloadClient.Event.self)
 
-  func testDownloadFlow() {
-    var downloadClient = DownloadClient.failing
-    downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
-
+  func testDownloadFlow() async {
     let store = TestStore(
-      initialState: DownloadComponentState(
+      initialState: DownloadComponent.State(
         id: 1,
         mode: .notDownloaded,
         url: URL(string: "https://www.pointfree.co")!
-      ),
-      reducer: reducer,
-      environment: DownloadComponentEnvironment(
-        downloadClient: downloadClient,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
       )
-    )
+    ) {
+      DownloadComponent()
+    } withDependencies: {
+      $0.downloadClient.download = { _ in self.download.stream }
+    }
 
-    store.send(.buttonTapped) {
+    await store.send(.buttonTapped) {
       $0.mode = .startingToDownload
     }
 
-    self.downloadSubject.send(.updateProgress(0.2))
-    self.scheduler.advance()
-    store.receive(.downloadClient(.success(.updateProgress(0.2)))) {
+    self.download.continuation.yield(.updateProgress(0.2))
+    await store.receive(.downloadClient(.success(.updateProgress(0.2)))) {
       $0.mode = .downloading(progress: 0.2)
     }
 
-    self.downloadSubject.send(.response(Data()))
-    self.downloadSubject.send(completion: .finished)
-    self.scheduler.advance(by: 1)
-    store.receive(.downloadClient(.success(.response(Data())))) {
+    self.download.continuation.yield(.response(Data()))
+    self.download.continuation.finish()
+    await store.receive(.downloadClient(.success(.response(Data())))) {
       $0.mode = .downloaded
     }
   }
 
-  func testDownloadThrottling() {
-    var downloadClient = DownloadClient.failing
-    downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
-
+  func testCancelDownloadFlow() async {
     let store = TestStore(
-      initialState: DownloadComponentState(
+      initialState: DownloadComponent.State(
         id: 1,
         mode: .notDownloaded,
         url: URL(string: "https://www.pointfree.co")!
-      ),
-      reducer: reducer,
-      environment: DownloadComponentEnvironment(
-        downloadClient: downloadClient,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
       )
-    )
+    ) {
+      DownloadComponent()
+    } withDependencies: {
+      $0.downloadClient.download = { _ in self.download.stream }
+    }
 
-    store.send(.buttonTapped) {
+    await store.send(.buttonTapped) {
       $0.mode = .startingToDownload
     }
 
-    self.downloadSubject.send(.updateProgress(0.5))
-    self.scheduler.advance()
-    store.receive(.downloadClient(.success(.updateProgress(0.5)))) {
-      $0.mode = .downloading(progress: 0.5)
+    self.download.continuation.yield(.updateProgress(0.2))
+    await store.receive(.downloadClient(.success(.updateProgress(0.2)))) {
+      $0.mode = .downloading(progress: 0.2)
     }
 
-    self.downloadSubject.send(.updateProgress(0.6))
-    self.scheduler.advance(by: 0.5)
-
-    self.downloadSubject.send(.updateProgress(0.7))
-    self.scheduler.advance(by: 0.5)
-    store.receive(.downloadClient(.success(.updateProgress(0.7)))) {
-      $0.mode = .downloading(progress: 0.7)
+    await store.send(.buttonTapped) {
+      $0.alert = AlertState {
+        TextState("Do you want to stop downloading this map?")
+      } actions: {
+        ButtonState(role: .destructive, action: .send(.stopButtonTapped, animation: .default)) {
+          TextState("Stop")
+        }
+        ButtonState(role: .cancel, action: .nevermindButtonTapped) {
+          TextState("Nevermind")
+        }
+      }
     }
 
-    self.downloadSubject.send(completion: .finished)
-    self.scheduler.run()
-  }
-
-  func testCancelDownloadFlow() {
-    var downloadClient = DownloadClient.failing
-    downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
-
-    let store = TestStore(
-      initialState: DownloadComponentState(
-        id: 1,
-        mode: .notDownloaded,
-        url: URL(string: "https://www.pointfree.co")!
-      ),
-      reducer: reducer,
-      environment: DownloadComponentEnvironment(
-        downloadClient: downloadClient,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
-      )
-    )
-
-    store.send(.buttonTapped) {
-      $0.mode = .startingToDownload
-    }
-
-    store.send(.buttonTapped) {
-      $0.alert = .init(
-        title: .init("Do you want to cancel downloading this map?"),
-        primaryButton: .destructive(.init("Cancel"), action: .send(.cancelButtonTapped)),
-        secondaryButton: .default(.init("Nevermind"), action: .send(.nevermindButtonTapped))
-      )
-    }
-
-    store.send(.alert(.cancelButtonTapped)) {
+    await store.send(.alert(.stopButtonTapped)) {
       $0.alert = nil
       $0.mode = .notDownloaded
     }
-
-    self.scheduler.run()
   }
 
-  func testDownloadFinishesWhileTryingToCancel() {
-    var downloadClient = DownloadClient.failing
-    downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
-
+  func testDownloadFinishesWhileTryingToCancel() async {
     let store = TestStore(
-      initialState: DownloadComponentState(
+      initialState: DownloadComponent.State(
         id: 1,
         mode: .notDownloaded,
         url: URL(string: "https://www.pointfree.co")!
-      ),
-      reducer: reducer,
-      environment: DownloadComponentEnvironment(
-        downloadClient: downloadClient,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
       )
-    )
+    ) {
+      DownloadComponent()
+    } withDependencies: {
+      $0.downloadClient.download = { _ in self.download.stream }
+    }
 
-    store.send(.buttonTapped) {
+    let task = await store.send(.buttonTapped) {
       $0.mode = .startingToDownload
     }
 
-    store.send(.buttonTapped) {
-      $0.alert = .init(
-        title: .init("Do you want to cancel downloading this map?"),
-        primaryButton: .destructive(.init("Cancel"), action: .send(.cancelButtonTapped)),
-        secondaryButton: .default(.init("Nevermind"), action: .send(.nevermindButtonTapped))
-      )
+    await store.send(.buttonTapped) {
+      $0.alert = AlertState {
+        TextState("Do you want to stop downloading this map?")
+      } actions: {
+        ButtonState(role: .destructive, action: .send(.stopButtonTapped, animation: .default)) {
+          TextState("Stop")
+        }
+        ButtonState(role: .cancel, action: .nevermindButtonTapped) {
+          TextState("Nevermind")
+        }
+      }
     }
 
-    self.downloadSubject.send(.response(Data()))
-    self.downloadSubject.send(completion: .finished)
-    self.scheduler.advance(by: 1)
-    store.receive(.downloadClient(.success(.response(Data())))) {
+    self.download.continuation.yield(.response(Data()))
+    self.download.continuation.finish()
+    await store.receive(.downloadClient(.success(.response(Data())))) {
       $0.alert = nil
       $0.mode = .downloaded
     }
+
+    await task.finish()
   }
 
-  func testDeleteDownloadFlow() {
-    var downloadClient = DownloadClient.failing
-    downloadClient.download = { _ in self.downloadSubject.eraseToEffect() }
-
+  func testDeleteDownloadFlow() async {
     let store = TestStore(
-      initialState: DownloadComponentState(
+      initialState: DownloadComponent.State(
         id: 1,
         mode: .downloaded,
         url: URL(string: "https://www.pointfree.co")!
-      ),
-      reducer: reducer,
-      environment: DownloadComponentEnvironment(
-        downloadClient: downloadClient,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
       )
-    )
-
-    store.send(.buttonTapped) {
-      $0.alert = .init(
-        title: .init("Do you want to delete this map from your offline storage?"),
-        primaryButton: .destructive(.init("Delete"), action: .send(.deleteButtonTapped)),
-        secondaryButton: .default(.init("Nevermind"), action: .send(.nevermindButtonTapped))
-      )
+    ) {
+      DownloadComponent()
+    } withDependencies: {
+      $0.downloadClient.download = { _ in self.download.stream }
     }
 
-    store.send(.alert(.deleteButtonTapped)) {
+    await store.send(.buttonTapped) {
+      $0.alert = AlertState {
+        TextState("Do you want to delete this map from your offline storage?")
+      } actions: {
+        ButtonState(role: .destructive, action: .send(.deleteButtonTapped, animation: .default)) {
+          TextState("Delete")
+        }
+        ButtonState(role: .cancel, action: .nevermindButtonTapped) {
+          TextState("Nevermind")
+        }
+      }
+    }
+
+    await store.send(.alert(.deleteButtonTapped)) {
       $0.alert = nil
       $0.mode = .notDownloaded
     }
   }
-}
-
-extension DownloadClient {
-  static let failing = Self(
-    download: { _ in .failing("DownloadClient.download") }
-  )
 }

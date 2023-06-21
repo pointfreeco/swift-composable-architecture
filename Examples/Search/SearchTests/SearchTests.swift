@@ -1,187 +1,189 @@
-import Combine
 import ComposableArchitecture
 import XCTest
 
 @testable import Search
 
-class SearchTests: XCTestCase {
-  let scheduler = DispatchQueue.test
+@MainActor
+final class SearchTests: XCTestCase {
+  func testSearchAndClearQuery() async {
+    let store = TestStore(initialState: Search.State()) {
+      Search()
+    } withDependencies: {
+      $0.weatherClient.search = { _ in .mock }
+    }
 
-  func testSearchAndClearQuery() {
-    let store = TestStore(
-      initialState: .init(),
-      reducer: searchReducer,
-      environment: SearchEnvironment(
-        weatherClient: .failing,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
-      )
-    )
-
-    store.environment.weatherClient.searchLocation = { _ in Effect(value: mockLocations) }
-    store.send(.searchQueryChanged("S")) {
+    await store.send(.searchQueryChanged("S")) {
       $0.searchQuery = "S"
     }
-    self.scheduler.advance(by: 0.3)
-    store.receive(.locationsResponse(.success(mockLocations))) {
-      $0.locations = mockLocations
+    await store.send(.searchQueryChangeDebounced)
+    await store.receive(.searchResponse(.success(.mock))) {
+      $0.results = GeocodingSearch.mock.results
     }
-    store.send(.searchQueryChanged("")) {
-      $0.locations = []
+    await store.send(.searchQueryChanged("")) {
+      $0.results = []
       $0.searchQuery = ""
     }
   }
 
-  func testSearchFailure() {
-    let store = TestStore(
-      initialState: .init(),
-      reducer: searchReducer,
-      environment: SearchEnvironment(
-        weatherClient: .failing,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
-      )
-    )
+  func testSearchFailure() async {
+    let store = TestStore(initialState: Search.State()) {
+      Search()
+    } withDependencies: {
+      $0.weatherClient.search = { _ in throw SomethingWentWrong() }
+    }
 
-    store.environment.weatherClient.searchLocation = { _ in Effect(error: .init()) }
-    store.send(.searchQueryChanged("S")) {
+    await store.send(.searchQueryChanged("S")) {
       $0.searchQuery = "S"
     }
-    self.scheduler.advance(by: 0.3)
-    store.receive(.locationsResponse(.failure(.init())))
+    await store.send(.searchQueryChangeDebounced)
+    await store.receive(.searchResponse(.failure(SomethingWentWrong())))
   }
 
-  func testClearQueryCancelsInFlightSearchRequest() {
-    var weatherClient = WeatherClient.failing
-    weatherClient.searchLocation = { _ in Effect(value: mockLocations) }
+  func testClearQueryCancelsInFlightSearchRequest() async {
+    let store = TestStore(initialState: Search.State()) {
+      Search()
+    } withDependencies: {
+      $0.weatherClient.search = { _ in .mock }
+    }
 
-    let store = TestStore(
-      initialState: .init(),
-      reducer: searchReducer,
-      environment: SearchEnvironment(
-        weatherClient: weatherClient,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
-      )
-    )
-
-    store.send(.searchQueryChanged("S")) {
+    let searchQueryChanged = await store.send(.searchQueryChanged("S")) {
       $0.searchQuery = "S"
     }
-    self.scheduler.advance(by: 0.2)
-    store.send(.searchQueryChanged("")) {
+    await searchQueryChanged.cancel()
+    await store.send(.searchQueryChanged("")) {
       $0.searchQuery = ""
     }
-    self.scheduler.run()
   }
 
-  func testTapOnLocation() {
-    let specialLocation = Location(id: 42, title: "Special Place")
-    let specialLocationWeather = LocationWeather(
-      consolidatedWeather: mockWeather,
-      id: 42
+  func testTapOnLocation() async {
+    let specialResult = GeocodingSearch.Result(
+      country: "Special Country",
+      latitude: 0,
+      longitude: 0,
+      id: 42,
+      name: "Special Place"
     )
 
-    var weatherClient = WeatherClient.failing
-    weatherClient.weather = { _ in Effect(value: specialLocationWeather) }
+    var results = GeocodingSearch.mock.results
+    results.append(specialResult)
 
-    let store = TestStore(
-      initialState: .init(locations: mockLocations + [specialLocation]),
-      reducer: searchReducer,
-      environment: SearchEnvironment(
-        weatherClient: weatherClient,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
+    let store = TestStore(initialState: Search.State(results: results)) {
+      Search()
+    } withDependencies: {
+      $0.weatherClient.forecast = { _ in .mock }
+    }
+
+    await store.send(.searchResultTapped(specialResult)) {
+      $0.resultForecastRequestInFlight = specialResult
+    }
+    await store.receive(.forecastResponse(42, .success(.mock))) {
+      $0.resultForecastRequestInFlight = nil
+      $0.weather = Search.State.Weather(
+        id: 42,
+        days: [
+          Search.State.Weather.Day(
+            date: Date(timeIntervalSince1970: 0),
+            temperatureMax: 90,
+            temperatureMaxUnit: "°F",
+            temperatureMin: 70,
+            temperatureMinUnit: "°F"
+          ),
+          Search.State.Weather.Day(
+            date: Date(timeIntervalSince1970: 86_400),
+            temperatureMax: 70,
+            temperatureMaxUnit: "°F",
+            temperatureMin: 50,
+            temperatureMinUnit: "°F"
+          ),
+          Search.State.Weather.Day(
+            date: Date(timeIntervalSince1970: 172_800),
+            temperatureMax: 100,
+            temperatureMaxUnit: "°F",
+            temperatureMin: 80,
+            temperatureMinUnit: "°F"
+          ),
+        ]
       )
-    )
-
-    store.send(.locationTapped(specialLocation)) {
-      $0.locationWeatherRequestInFlight = specialLocation
-    }
-    self.scheduler.advance()
-    store.receive(.locationWeatherResponse(.success(specialLocationWeather))) {
-      $0.locationWeatherRequestInFlight = nil
-      $0.locationWeather = specialLocationWeather
-    }
-  }
-
-  func testTapOnLocationCancelsInFlightRequest() {
-    let specialLocation = Location(id: 42, title: "Special Place")
-    let specialLocationWeather = LocationWeather(
-      consolidatedWeather: mockWeather,
-      id: 42
-    )
-
-    var weatherClient = WeatherClient.failing
-    weatherClient.weather = { _ in Effect(value: specialLocationWeather) }
-
-    let store = TestStore(
-      initialState: .init(locations: mockLocations + [specialLocation]),
-      reducer: searchReducer,
-      environment: SearchEnvironment(
-        weatherClient: weatherClient,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
-      )
-    )
-
-    store.send(.locationTapped(mockLocations.first!)) {
-      $0.locationWeatherRequestInFlight = mockLocations.first!
-    }
-    store.send(.locationTapped(specialLocation)) {
-      $0.locationWeatherRequestInFlight = specialLocation
-    }
-    self.scheduler.advance()
-    store.receive(.locationWeatherResponse(.success(specialLocationWeather))) {
-      $0.locationWeatherRequestInFlight = nil
-      $0.locationWeather = specialLocationWeather
     }
   }
 
-  func testTapOnLocationFailure() {
-    var weatherClient = WeatherClient.failing
-    weatherClient.weather = { _ in Effect(error: .init()) }
-
-    let store = TestStore(
-      initialState: .init(locations: mockLocations),
-      reducer: searchReducer,
-      environment: SearchEnvironment(
-        weatherClient: weatherClient,
-        mainQueue: self.scheduler.eraseToAnyScheduler()
-      )
+  func testTapOnLocationCancelsInFlightRequest() async {
+    let specialResult = GeocodingSearch.Result(
+      country: "Special Country",
+      latitude: 0,
+      longitude: 0,
+      id: 42,
+      name: "Special Place"
     )
 
-    store.send(.locationTapped(mockLocations.first!)) {
-      $0.locationWeatherRequestInFlight = mockLocations.first!
+    var results = GeocodingSearch.mock.results
+    results.append(specialResult)
+
+    let clock = TestClock()
+
+    let store = TestStore(initialState: Search.State(results: results)) {
+      Search()
+    } withDependencies: {
+      $0.weatherClient.forecast = { _ in
+        try await clock.sleep(for: .seconds(0))
+        return .mock
+      }
     }
-    self.scheduler.advance()
-    store.receive(.locationWeatherResponse(.failure(.init()))) {
-      $0.locationWeatherRequestInFlight = nil
+
+    await store.send(.searchResultTapped(results.first!)) {
+      $0.resultForecastRequestInFlight = results.first!
+    }
+    await store.send(.searchResultTapped(specialResult)) {
+      $0.resultForecastRequestInFlight = specialResult
+    }
+    await clock.advance()
+    await store.receive(.forecastResponse(42, .success(.mock))) {
+      $0.resultForecastRequestInFlight = nil
+      $0.weather = Search.State.Weather(
+        id: 42,
+        days: [
+          Search.State.Weather.Day(
+            date: Date(timeIntervalSince1970: 0),
+            temperatureMax: 90,
+            temperatureMaxUnit: "°F",
+            temperatureMin: 70,
+            temperatureMinUnit: "°F"
+          ),
+          Search.State.Weather.Day(
+            date: Date(timeIntervalSince1970: 86_400),
+            temperatureMax: 70,
+            temperatureMaxUnit: "°F",
+            temperatureMin: 50,
+            temperatureMinUnit: "°F"
+          ),
+          Search.State.Weather.Day(
+            date: Date(timeIntervalSince1970: 172_800),
+            temperatureMax: 100,
+            temperatureMaxUnit: "°F",
+            temperatureMin: 80,
+            temperatureMinUnit: "°F"
+          ),
+        ]
+      )
+    }
+  }
+
+  func testTapOnLocationFailure() async {
+    let results = GeocodingSearch.mock.results
+
+    let store = TestStore(initialState: Search.State(results: results)) {
+      Search()
+    } withDependencies: {
+      $0.weatherClient.forecast = { _ in throw SomethingWentWrong() }
+    }
+
+    await store.send(.searchResultTapped(results.first!)) {
+      $0.resultForecastRequestInFlight = results.first!
+    }
+    await store.receive(.forecastResponse(1, .failure(SomethingWentWrong()))) {
+      $0.resultForecastRequestInFlight = nil
     }
   }
 }
 
-private let mockWeather: [LocationWeather.ConsolidatedWeather] = [
-  .init(
-    applicableDate: Date(timeIntervalSince1970: 0),
-    maxTemp: 90,
-    minTemp: 70,
-    theTemp: 80,
-    weatherStateName: "Clear"
-  ),
-  .init(
-    applicableDate: Date(timeIntervalSince1970: 86_400),
-    maxTemp: 70,
-    minTemp: 50,
-    theTemp: 60,
-    weatherStateName: "Rain"
-  ),
-  .init(
-    applicableDate: Date(timeIntervalSince1970: 172_800),
-    maxTemp: 100,
-    minTemp: 80,
-    theTemp: 90,
-    weatherStateName: "Cloudy"
-  ),
-]
-
-private let mockLocations = [
-  Location(id: 1, title: "Brooklyn"),
-  Location(id: 2, title: "Los Angeles"),
-  Location(id: 3, title: "San Francisco"),
-]
+private struct SomethingWentWrong: Equatable, Error {}

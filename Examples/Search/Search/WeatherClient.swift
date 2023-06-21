@@ -1,23 +1,35 @@
 import ComposableArchitecture
 import Foundation
+import XCTestDynamicOverlay
 
 // MARK: - API models
 
-struct Location: Decodable, Equatable {
-  var id: Int
-  var title: String
+struct GeocodingSearch: Decodable, Equatable, Sendable {
+  var results: [Result]
+
+  struct Result: Decodable, Equatable, Identifiable, Sendable {
+    var country: String
+    var latitude: Double
+    var longitude: Double
+    var id: Int
+    var name: String
+    var admin1: String?
+  }
 }
 
-struct LocationWeather: Decodable, Equatable {
-  var consolidatedWeather: [ConsolidatedWeather]
-  var id: Int
+struct Forecast: Decodable, Equatable, Sendable {
+  var daily: Daily
+  var dailyUnits: DailyUnits
 
-  struct ConsolidatedWeather: Decodable, Equatable {
-    var applicableDate: Date
-    var maxTemp: Double
-    var minTemp: Double
-    var theTemp: Double
-    var weatherStateName: String?
+  struct Daily: Decodable, Equatable, Sendable {
+    var temperatureMax: [Double]
+    var temperatureMin: [Double]
+    var time: [Date]
+  }
+
+  struct DailyUnits: Decodable, Equatable, Sendable {
+    var temperatureMax: String
+    var temperatureMin: String
   }
 }
 
@@ -27,84 +39,130 @@ struct LocationWeather: Decodable, Equatable {
 // This allows the search feature to compile faster since it only depends on the interface.
 
 struct WeatherClient {
-  var searchLocation: (String) -> Effect<[Location], Failure>
-  var weather: (Int) -> Effect<LocationWeather, Failure>
+  var forecast: @Sendable (GeocodingSearch.Result) async throws -> Forecast
+  var search: @Sendable (String) async throws -> GeocodingSearch
+}
 
-  struct Failure: Error, Equatable {}
+extension WeatherClient: TestDependencyKey {
+  static let previewValue = Self(
+    forecast: { _ in .mock },
+    search: { _ in .mock }
+  )
+
+  static let testValue = Self(
+    forecast: unimplemented("\(Self.self).forecast"),
+    search: unimplemented("\(Self.self).search")
+  )
+}
+
+extension DependencyValues {
+  var weatherClient: WeatherClient {
+    get { self[WeatherClient.self] }
+    set { self[WeatherClient.self] = newValue }
+  }
 }
 
 // MARK: - Live API implementation
 
-// Example endpoints:
-//   https://www.metaweather.com/api/location/search/?query=san
-//   https://www.metaweather.com/api/location/2487956/
+extension WeatherClient: DependencyKey {
+  static let liveValue = WeatherClient(
+    forecast: { result in
+      var components = URLComponents(string: "https://api.open-meteo.com/v1/forecast")!
+      components.queryItems = [
+        URLQueryItem(name: "latitude", value: "\(result.latitude)"),
+        URLQueryItem(name: "longitude", value: "\(result.longitude)"),
+        URLQueryItem(name: "daily", value: "temperature_2m_max,temperature_2m_min"),
+        URLQueryItem(name: "timezone", value: TimeZone.autoupdatingCurrent.identifier),
+      ]
 
-extension WeatherClient {
-  static let live = WeatherClient(
-    searchLocation: { query in
-      var components = URLComponents(string: "https://www.metaweather.com/api/location/search")!
-      components.queryItems = [URLQueryItem(name: "query", value: query)]
-
-      return URLSession.shared.dataTaskPublisher(for: components.url!)
-        .map { data, _ in data }
-        .decode(type: [Location].self, decoder: jsonDecoder)
-        .mapError { _ in Failure() }
-        .eraseToEffect()
+      let (data, _) = try await URLSession.shared.data(from: components.url!)
+      return try jsonDecoder.decode(Forecast.self, from: data)
     },
-    weather: { id in
-      let url = URL(string: "https://www.metaweather.com/api/location/\(id)")!
+    search: { query in
+      var components = URLComponents(string: "https://geocoding-api.open-meteo.com/v1/search")!
+      components.queryItems = [URLQueryItem(name: "name", value: query)]
 
-      return URLSession.shared.dataTaskPublisher(for: url)
-        .map { data, _ in data }
-        .decode(type: LocationWeather.self, decoder: jsonDecoder)
-        .mapError { _ in Failure() }
-        .eraseToEffect()
+      let (data, _) = try await URLSession.shared.data(from: components.url!)
+      return try jsonDecoder.decode(GeocodingSearch.self, from: data)
     }
   )
 }
 
-// MARK: - Mock API implementations
+// MARK: - Mock data
 
-extension WeatherClient {
-  static let failing = Self(
-    searchLocation: { _ in .failing("WeatherClient.searchLocation") },
-    weather: { _ in .failing("WeatherClient.weather") }
+extension Forecast {
+  static let mock = Self(
+    daily: Daily(
+      temperatureMax: [90, 70, 100],
+      temperatureMin: [70, 50, 80],
+      time: [0, 86_400, 172_800].map(Date.init(timeIntervalSince1970:))
+    ),
+    dailyUnits: DailyUnits(temperatureMax: "°F", temperatureMin: "°F")
+  )
+}
+
+extension GeocodingSearch {
+  static let mock = Self(
+    results: [
+      GeocodingSearch.Result(
+        country: "United States",
+        latitude: 40.6782,
+        longitude: -73.9442,
+        id: 1,
+        name: "Brooklyn",
+        admin1: nil
+      ),
+      GeocodingSearch.Result(
+        country: "United States",
+        latitude: 34.0522,
+        longitude: -118.2437,
+        id: 2,
+        name: "Los Angeles",
+        admin1: nil
+      ),
+      GeocodingSearch.Result(
+        country: "United States",
+        latitude: 37.7749,
+        longitude: -122.4194,
+        id: 3,
+        name: "San Francisco",
+        admin1: nil
+      ),
+    ]
   )
 }
 
 // MARK: - Private helpers
 
 private let jsonDecoder: JSONDecoder = {
-  let d = JSONDecoder()
+  let decoder = JSONDecoder()
   let formatter = DateFormatter()
-  formatter.dateFormat = "yyyy-MM-dd"
   formatter.calendar = Calendar(identifier: .iso8601)
+  formatter.dateFormat = "yyyy-MM-dd"
   formatter.timeZone = TimeZone(secondsFromGMT: 0)
   formatter.locale = Locale(identifier: "en_US_POSIX")
-  d.dateDecodingStrategy = .formatted(formatter)
-  return d
+  decoder.dateDecodingStrategy = .formatted(formatter)
+  return decoder
 }()
 
-extension Location {
+extension Forecast {
   private enum CodingKeys: String, CodingKey {
-    case id = "woeid"
-    case title
+    case daily
+    case dailyUnits = "daily_units"
   }
 }
 
-extension LocationWeather {
+extension Forecast.Daily {
   private enum CodingKeys: String, CodingKey {
-    case consolidatedWeather = "consolidated_weather"
-    case id = "woeid"
+    case temperatureMax = "temperature_2m_max"
+    case temperatureMin = "temperature_2m_min"
+    case time
   }
 }
 
-extension LocationWeather.ConsolidatedWeather {
+extension Forecast.DailyUnits {
   private enum CodingKeys: String, CodingKey {
-    case applicableDate = "applicable_date"
-    case maxTemp = "max_temp"
-    case minTemp = "min_temp"
-    case theTemp = "the_temp"
-    case weatherStateName = "weather_state_name"
+    case temperatureMax = "temperature_2m_max"
+    case temperatureMin = "temperature_2m_min"
   }
 }

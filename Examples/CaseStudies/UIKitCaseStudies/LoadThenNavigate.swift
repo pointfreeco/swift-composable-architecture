@@ -3,63 +3,61 @@ import ComposableArchitecture
 import SwiftUI
 import UIKit
 
-struct LazyNavigationState: Equatable {
-  var optionalCounter: CounterState?
-  var isActivityIndicatorHidden = true
-}
+struct LazyNavigation: ReducerProtocol {
+  struct State: Equatable {
+    var optionalCounter: Counter.State?
+    var isActivityIndicatorHidden = true
+  }
 
-enum LazyNavigationAction: Equatable {
-  case onDisappear
-  case optionalCounter(CounterAction)
-  case setNavigation(isActive: Bool)
-  case setNavigationIsActiveDelayCompleted
-}
+  enum Action: Equatable {
+    case onDisappear
+    case optionalCounter(Counter.Action)
+    case setNavigation(isActive: Bool)
+    case setNavigationIsActiveDelayCompleted
+  }
 
-struct LazyNavigationEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
+  private enum CancelID { case load }
+  @Dependency(\.continuousClock) var clock
 
-let lazyNavigationReducer =
-  counterReducer
-  .optional()
-  .pullback(
-    state: \.optionalCounter,
-    action: /LazyNavigationAction.optionalCounter,
-    environment: { _ in CounterEnvironment() }
-  )
-  .combined(
-    with: Reducer<
-      LazyNavigationState, LazyNavigationAction, LazyNavigationEnvironment
-    > { state, action, environment in
-      struct CancelId: Hashable {}
+  var body: some ReducerProtocol<State, Action> {
+    Reduce { state, action in
       switch action {
       case .onDisappear:
-        return .cancel(id: CancelId())
+        return .cancel(id: CancelID.load)
+
       case .setNavigation(isActive: true):
         state.isActivityIndicatorHidden = false
-        return Effect(value: .setNavigationIsActiveDelayCompleted)
-          .delay(for: 1, scheduler: environment.mainQueue)
-          .eraseToEffect()
-          .cancellable(id: CancelId())
+        return .run { send in
+          try await self.clock.sleep(for: .seconds(1))
+          await send(.setNavigationIsActiveDelayCompleted)
+        }
+        .cancellable(id: CancelID.load)
+
       case .setNavigation(isActive: false):
         state.optionalCounter = nil
         return .none
+
       case .setNavigationIsActiveDelayCompleted:
         state.isActivityIndicatorHidden = true
-        state.optionalCounter = CounterState()
+        state.optionalCounter = Counter.State()
         return .none
+
       case .optionalCounter:
         return .none
       }
     }
-  )
+    .ifLet(\.optionalCounter, action: /Action.optionalCounter) {
+      Counter()
+    }
+  }
+}
 
 class LazyNavigationViewController: UIViewController {
   var cancellables: [AnyCancellable] = []
-  let store: Store<LazyNavigationState, LazyNavigationAction>
-  let viewStore: ViewStore<LazyNavigationState, LazyNavigationAction>
+  let store: StoreOf<LazyNavigation>
+  let viewStore: ViewStoreOf<LazyNavigation>
 
-  init(store: Store<LazyNavigationState, LazyNavigationAction>) {
+  init(store: StoreOf<LazyNavigation>) {
     self.store = store
     self.viewStore = ViewStore(store)
     super.init(nibName: nil, bundle: nil)
@@ -100,7 +98,7 @@ class LazyNavigationViewController: UIViewController {
       .store(in: &self.cancellables)
 
     self.store
-      .scope(state: \.optionalCounter, action: LazyNavigationAction.optionalCounter)
+      .scope(state: \.optionalCounter, action: LazyNavigation.Action.optionalCounter)
       .ifLet(
         then: { [weak self] store in
           self?.navigationController?.pushViewController(
@@ -108,7 +106,7 @@ class LazyNavigationViewController: UIViewController {
         },
         else: { [weak self] in
           guard let self = self else { return }
-          self.navigationController?.popToViewController(self, animated: true)
+          _ = self.navigationController?.popToViewController(self, animated: true)
         }
       )
       .store(in: &self.cancellables)
@@ -136,13 +134,9 @@ struct LazyNavigationViewController_Previews: PreviewProvider {
   static var previews: some View {
     let vc = UINavigationController(
       rootViewController: LazyNavigationViewController(
-        store: Store(
-          initialState: LazyNavigationState(),
-          reducer: lazyNavigationReducer,
-          environment: LazyNavigationEnvironment(
-            mainQueue: .main
-          )
-        )
+        store: Store(initialState: LazyNavigation.State()) {
+          LazyNavigation()
+        }
       )
     )
     return UIViewRepresented(makeUIView: { _ in vc.view })

@@ -1,7 +1,7 @@
 import ComposableArchitecture
-import SwiftUI
+@preconcurrency import SwiftUI
 
-private var readMe = """
+private let readMe = """
   This application demonstrates how to make use of SwiftUI's `refreshable` API in the Composable \
   Architecture. Use the "-" and "+" buttons to count up and down, and then pull down to request \
   a fact about that number.
@@ -11,111 +11,118 @@ private var readMe = """
   currently fetching data so that it knows to continue showing the loading indicator.
   """
 
-struct RefreshableState: Equatable {
-  var count = 0
-  var fact: String?
-  var isLoading = false
-}
+// MARK: - Feature domain
 
-enum RefreshableAction: Equatable {
-  case cancelButtonTapped
-  case decrementButtonTapped
-  case factResponse(Result<String, FactClient.Error>)
-  case incrementButtonTapped
-  case refresh
-}
+struct Refreshable: ReducerProtocol {
+  struct State: Equatable {
+    var count = 0
+    var fact: String?
+  }
 
-struct RefreshableEnvironment {
-  var fact: FactClient
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
+  enum Action: Equatable {
+    case cancelButtonTapped
+    case decrementButtonTapped
+    case factResponse(TaskResult<String>)
+    case incrementButtonTapped
+    case refresh
+  }
 
-let refreshableReducer = Reducer<
-  RefreshableState,
-  RefreshableAction,
-  RefreshableEnvironment
-> { state, action, environment in
+  @Dependency(\.factClient) var factClient
+  private enum CancelID { case factRequest }
 
-  struct CancelId: Hashable {}
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+    switch action {
+    case .cancelButtonTapped:
+      return .cancel(id: CancelID.factRequest)
 
-  switch action {
-  case .cancelButtonTapped:
-    state.isLoading = false
-    return .cancel(id: CancelId())
+    case .decrementButtonTapped:
+      state.count -= 1
+      return .none
 
-  case .decrementButtonTapped:
-    state.count -= 1
-    return .none
+    case let .factResponse(.success(fact)):
+      state.fact = fact
+      return .none
 
-  case let .factResponse(.success(fact)):
-    state.isLoading = false
-    state.fact = fact
-    return .none
+    case .factResponse(.failure):
+      // NB: This is where you could do some error handling.
+      return .none
 
-  case .factResponse(.failure):
-    state.isLoading = false
-    // TODO: do some error handling
-    return .none
+    case .incrementButtonTapped:
+      state.count += 1
+      return .none
 
-  case .incrementButtonTapped:
-    state.count += 1
-    return .none
-
-  case .refresh:
-    state.fact = nil
-    state.isLoading = true
-    return environment.fact.fetch(state.count)
-      .delay(for: .seconds(2), scheduler: environment.mainQueue.animation())
-      .catchToEffect(RefreshableAction.factResponse)
-      .cancellable(id: CancelId())
+    case .refresh:
+      state.fact = nil
+      return .run { [count = state.count] send in
+        await send(
+          .factResponse(TaskResult { try await self.factClient.fetch(count) }),
+          animation: .default
+        )
+      }
+      .cancellable(id: CancelID.factRequest)
+    }
   }
 }
 
-#if compiler(>=5.5)
-  struct RefreshableView: View {
-    let store: Store<RefreshableState, RefreshableAction>
+// MARK: - Feature view
 
-    var body: some View {
-      WithViewStore(self.store) { viewStore in
-        List {
-          Text(template: readMe, .body)
+struct RefreshableView: View {
+  @State var isLoading = false
+  let store: StoreOf<Refreshable>
 
-          HStack {
-            Button("-") { viewStore.send(.decrementButtonTapped) }
-            Text("\(viewStore.count)")
-            Button("+") { viewStore.send(.incrementButtonTapped) }
+  var body: some View {
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
+      List {
+        Section {
+          AboutView(readMe: readMe)
+        }
+
+        HStack {
+          Button {
+            viewStore.send(.decrementButtonTapped)
+          } label: {
+            Image(systemName: "minus")
           }
-          .buttonStyle(.plain)
 
-          if let fact = viewStore.fact {
-            Text(fact)
-              .bold()
-          }
-          if viewStore.isLoading {
-            Button("Cancel") {
-              viewStore.send(.cancelButtonTapped, animation: .default)
-            }
+          Text("\(viewStore.count)")
+            .monospacedDigit()
+
+          Button {
+            viewStore.send(.incrementButtonTapped)
+          } label: {
+            Image(systemName: "plus")
           }
         }
-        .refreshable {
-          await viewStore.send(.refresh, while: \.isLoading)
+        .frame(maxWidth: .infinity)
+        .buttonStyle(.borderless)
+
+        if let fact = viewStore.fact {
+          Text(fact)
+            .bold()
         }
+        if self.isLoading {
+          Button("Cancel") {
+            viewStore.send(.cancelButtonTapped, animation: .default)
+          }
+        }
+      }
+      .refreshable {
+        self.isLoading = true
+        defer { self.isLoading = false }
+        await viewStore.send(.refresh).finish()
       }
     }
   }
+}
 
-  struct Refreshable_Previews: PreviewProvider {
-    static var previews: some View {
-      RefreshableView(
-        store: .init(
-          initialState: .init(),
-          reducer: refreshableReducer,
-          environment: .init(
-            fact: .live,
-            mainQueue: .main
-          )
-        )
-      )
-    }
+// MARK: - SwiftUI previews
+
+struct Refreshable_Previews: PreviewProvider {
+  static var previews: some View {
+    RefreshableView(
+      store: Store(initialState: Refreshable.State()) {
+        Refreshable()
+      }
+    )
   }
-#endif
+}

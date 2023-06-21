@@ -1,11 +1,11 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.7
 
 import PackageDescription
 
 let package = Package(
   name: "tic-tac-toe",
   platforms: [
-    .iOS(.v14)
+    .iOS(.v16)
   ],
   products: [
     .library(name: "AppCore", targets: ["AppCore"]),
@@ -27,7 +27,8 @@ let package = Package(
     .library(name: "TwoFactorUIKit", targets: ["TwoFactorUIKit"]),
   ],
   dependencies: [
-    .package(name: "swift-composable-architecture", path: "../../..")
+    .package(name: "swift-composable-architecture", path: "../../.."),
+    .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "0.1.0"),
   ],
   targets: [
     .target(
@@ -63,7 +64,7 @@ let package = Package(
     .target(
       name: "AuthenticationClient",
       dependencies: [
-        .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
+        .product(name: "Dependencies", package: "swift-dependencies")
       ]
     ),
     .target(
@@ -180,3 +181,12 @@ let package = Package(
     ),
   ]
 )
+
+for target in package.targets {
+  target.swiftSettings = [
+    .unsafeFlags([
+      "-Xfrontend", "-enable-actor-data-race-checks",
+      "-Xfrontend", "-warn-concurrency",
+    ])
+  ]
+}

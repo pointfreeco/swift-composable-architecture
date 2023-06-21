@@ -1,4 +1,3 @@
-import Combine
 import ComposableArchitecture
 import SwiftUI
 
@@ -13,104 +12,107 @@ private let readMe = """
   request is in-flight will also cancel it.
   """
 
-// MARK: - Demo app domain
+// MARK: - Feature domain
 
-struct EffectsCancellationState: Equatable {
-  var count = 0
-  var currentTrivia: String?
-  var isTriviaRequestInFlight = false
-}
+struct EffectsCancellation: ReducerProtocol {
+  struct State: Equatable {
+    var count = 0
+    var currentFact: String?
+    var isFactRequestInFlight = false
+  }
 
-enum EffectsCancellationAction: Equatable {
-  case cancelButtonTapped
-  case stepperChanged(Int)
-  case triviaButtonTapped
-  case triviaResponse(Result<String, FactClient.Error>)
-}
+  enum Action: Equatable {
+    case cancelButtonTapped
+    case stepperChanged(Int)
+    case factButtonTapped
+    case factResponse(TaskResult<String>)
+  }
 
-struct EffectsCancellationEnvironment {
-  var fact: FactClient
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
+  @Dependency(\.factClient) var factClient
+  private enum CancelID { case factRequest }
 
-// MARK: - Business logic
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+    switch action {
+    case .cancelButtonTapped:
+      state.isFactRequestInFlight = false
+      return .cancel(id: CancelID.factRequest)
 
-let effectsCancellationReducer = Reducer<
-  EffectsCancellationState, EffectsCancellationAction, EffectsCancellationEnvironment
-> { state, action, environment in
+    case let .stepperChanged(value):
+      state.count = value
+      state.currentFact = nil
+      state.isFactRequestInFlight = false
+      return .cancel(id: CancelID.factRequest)
 
-  struct TriviaRequestId: Hashable {}
+    case .factButtonTapped:
+      state.currentFact = nil
+      state.isFactRequestInFlight = true
 
-  switch action {
-  case .cancelButtonTapped:
-    state.isTriviaRequestInFlight = false
-    return .cancel(id: TriviaRequestId())
+      return .run { [count = state.count] send in
+        await send(.factResponse(TaskResult { try await self.factClient.fetch(count) }))
+      }
+      .cancellable(id: CancelID.factRequest)
 
-  case let .stepperChanged(value):
-    state.count = value
-    state.currentTrivia = nil
-    state.isTriviaRequestInFlight = false
-    return .cancel(id: TriviaRequestId())
+    case let .factResponse(.success(response)):
+      state.isFactRequestInFlight = false
+      state.currentFact = response
+      return .none
 
-  case .triviaButtonTapped:
-    state.currentTrivia = nil
-    state.isTriviaRequestInFlight = true
-
-    return environment.fact.fetch(state.count)
-      .receive(on: environment.mainQueue)
-      .catchToEffect(EffectsCancellationAction.triviaResponse)
-      .cancellable(id: TriviaRequestId())
-
-  case let .triviaResponse(.success(response)):
-    state.isTriviaRequestInFlight = false
-    state.currentTrivia = response
-    return .none
-
-  case .triviaResponse(.failure):
-    state.isTriviaRequestInFlight = false
-    return .none
+    case .factResponse(.failure):
+      state.isFactRequestInFlight = false
+      return .none
+    }
   }
 }
 
-// MARK: - Application view
+// MARK: - Feature view
 
 struct EffectsCancellationView: View {
-  let store: Store<EffectsCancellationState, EffectsCancellationAction>
+  let store: StoreOf<EffectsCancellation>
+  @Environment(\.openURL) var openURL
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
-        Section(
-          header: Text(readMe),
-          footer: Button("Number facts provided by numbersapi.com") {
-            UIApplication.shared.open(URL(string: "http://numbersapi.com")!)
-          }
-        ) {
-          Stepper(
-            value: viewStore.binding(
-              get: \.count, send: EffectsCancellationAction.stepperChanged)
-          ) {
-            Text("\(viewStore.count)")
-          }
+        Section {
+          AboutView(readMe: readMe)
+        }
 
-          if viewStore.isTriviaRequestInFlight {
+        Section {
+          Stepper(
+            "\(viewStore.count)",
+            value: viewStore.binding(get: \.count, send: EffectsCancellation.Action.stepperChanged)
+          )
+
+          if viewStore.isFactRequestInFlight {
             HStack {
               Button("Cancel") { viewStore.send(.cancelButtonTapped) }
               Spacer()
               ProgressView()
+                // NB: There seems to be a bug in SwiftUI where the progress view does not show
+                // a second time unless it is given a new identity.
+                .id(UUID())
             }
           } else {
-            Button("Number fact") { viewStore.send(.triviaButtonTapped) }
-              .disabled(viewStore.isTriviaRequestInFlight)
+            Button("Number fact") { viewStore.send(.factButtonTapped) }
+              .disabled(viewStore.isFactRequestInFlight)
           }
 
-          viewStore.currentTrivia.map {
+          viewStore.currentFact.map {
             Text($0).padding(.vertical, 8)
           }
         }
+
+        Section {
+          Button("Number facts provided by numbersapi.com") {
+            self.openURL(URL(string: "http://numbersapi.com")!)
+          }
+          .foregroundStyle(.secondary)
+          .frame(maxWidth: .infinity)
+        }
       }
+      .buttonStyle(.borderless)
     }
-    .navigationBarTitle("Effect cancellation")
+    .navigationTitle("Effect cancellation")
   }
 }
 
@@ -120,14 +122,9 @@ struct EffectsCancellation_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       EffectsCancellationView(
-        store: Store(
-          initialState: EffectsCancellationState(),
-          reducer: effectsCancellationReducer,
-          environment: EffectsCancellationEnvironment(
-            fact: .live,
-            mainQueue: .main
-          )
-        )
+        store: Store(initialState: EffectsCancellation.State()) {
+          EffectsCancellation()
+        }
       )
     }
   }

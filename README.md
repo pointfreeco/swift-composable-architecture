@@ -1,59 +1,70 @@
 # The Composable Architecture
 
 [![CI](https://github.com/pointfreeco/swift-composable-architecture/workflows/CI/badge.svg)](https://github.com/pointfreeco/swift-composable-architecture/actions?query=workflow%3ACI)
+[![Slack](https://img.shields.io/badge/slack-chat-informational.svg?label=Slack&logo=slack)](https://www.pointfree.co/slack-invite)
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fpointfreeco%2Fswift-composable-architecture%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/pointfreeco/swift-composable-architecture)
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fpointfreeco%2Fswift-composable-architecture%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/pointfreeco/swift-composable-architecture)
 
-The Composable Architecture (TCA, for short) is a library for building applications in a consistent and understandable way, with composition, testing, and ergonomics in mind. It can be used in SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, tvOS, and watchOS).
+The Composable Architecture (TCA, for short) is a library for building applications in a consistent 
+and understandable way, with composition, testing, and ergonomics in mind. It can be used in 
+SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, tvOS, and watchOS).
 
 * [What is the Composable Architecture?](#what-is-the-composable-architecture)
 * [Learn more](#learn-more)
 * [Examples](#examples)
 * [Basic usage](#basic-usage)
-* [Supplemental libraries](#supplementary-libraries)
-* [FAQ](#faq)
-* [Requirements](#requirements)
-* [Installation](#installation)
 * [Documentation](#documentation)
-* [Help](#help)
+* [Community](#community)
+* [Installation](#installation)
 * [Translations](#translations)
-* [Credits and thanks](#credits-and-thanks)
-* [Other libraries](#other-libraries)
 
 ## What is the Composable Architecture?
 
-This library provides a few core tools that can be used to build applications of varying purpose and complexity. It provides compelling stories that you can follow to solve many problems you encounter day-to-day when building applications, such as:
+This library provides a few core tools that can be used to build applications of varying purpose and 
+complexity. It provides compelling stories that you can follow to solve many problems you encounter 
+day-to-day when building applications, such as:
 
 * **State management**
-  <br> How to manage the state of your application using simple value types, and share state across many screens so that mutations in one screen can be immediately observed in another screen.
+  <br> How to manage the state of your application using simple value types, and share state across 
+  many screens so that mutations in one screen can be immediately observed in another screen.
 
 * **Composition**
-  <br> How to break down large features into smaller components that can be extracted to their own, isolated modules and be easily glued back together to form the feature.
+  <br> How to break down large features into smaller components that can be extracted to their own, 
+  isolated modules and be easily glued back together to form the feature.
 
 * **Side effects**
-  <br> How to let certain parts of the application talk to the outside world in the most testable and understandable way possible.
+  <br> How to let certain parts of the application talk to the outside world in the most testable 
+  and understandable way possible.
 
 * **Testing**
-  <br> How to not only test a feature built in the architecture, but also write integration tests for features that have been composed of many parts, and write end-to-end tests to understand how side effects influence your application. This allows you to make strong guarantees that your business logic is running in the way you expect.
+  <br> How to not only test a feature built in the architecture, but also write integration tests 
+  for features that have been composed of many parts, and write end-to-end tests to understand how 
+  side effects influence your application. This allows you to make strong guarantees that your 
+  business logic is running in the way you expect.
 
 * **Ergonomics**
-  <br> How to accomplish all of the above in a simple API with as few concepts and moving parts as possible.
+  <br> How to accomplish all of the above in a simple API with as few concepts and moving parts as 
+  possible.
 
 ## Learn More
 
-The Composable Architecture was designed over the course of many episodes on [Point-Free](https://www.pointfree.co), a video series exploring functional programming and the Swift language, hosted by [Brandon Williams](https://twitter.com/mbrandonw) and [Stephen Celis](https://twitter.com/stephencelis).
+The Composable Architecture was designed over the course of many episodes on 
+[Point-Free][pointfreeco], a video series exploring functional programming and the Swift language, 
+hosted by [Brandon Williams][mbrandonw] and [Stephen Celis][stephencelis].
 
-You can watch all of the episodes [here](https://www.pointfree.co/collections/composable-architecture), as well as a dedicated, multipart tour of the architecture from scratch: [part 1](https://www.pointfree.co/collections/composable-architecture/a-tour-of-the-composable-architecture/ep100-a-tour-of-the-composable-architecture-part-1), [part 2](https://www.pointfree.co/collections/composable-architecture/a-tour-of-the-composable-architecture/ep101-a-tour-of-the-composable-architecture-part-2), [part 3](https://www.pointfree.co/collections/composable-architecture/a-tour-of-the-composable-architecture/ep102-a-tour-of-the-composable-architecture-part-3) and [part 4](https://www.pointfree.co/collections/composable-architecture/a-tour-of-the-composable-architecture/ep103-a-tour-of-the-composable-architecture-part-4).
+You can watch all of the episodes [here][tca-episode-collection], as well as a dedicated, [multipart
+tour][tca-tour] of the architecture from scratch.
 
 <a href="https://www.pointfree.co/collections/composable-architecture">
-  <img alt="video poster image" src="https://d3rccdn33rt8ze.cloudfront.net/episodes/0069.jpeg" width="600">
+  <img alt="video poster image" src="https://i.vimeocdn.com/video/1492464398-1f5189a415136097aabf5b0b4845928bbb5d425a149069e4e0a848b67618a6f3-d?mw=1900&mh=1069&q=70" width="600">
 </a>
 
 ## Examples
 
 [![Screen shots of example applications](https://d3rccdn33rt8ze.cloudfront.net/composable-architecture/demos.png)](./Examples)
 
-This repo comes with _lots_ of examples to demonstrate how to solve common and complex problems with the Composable Architecture. Check out [this](./Examples) directory to see them all, including:
+This repo comes with _lots_ of examples to demonstrate how to solve common and complex problems with 
+the Composable Architecture. Check out [this](./Examples) directory to see them all, including:
 
 * [Case Studies](./Examples/CaseStudies)
   * Getting started
@@ -65,99 +76,136 @@ This repo comes with _lots_ of examples to demonstrate how to solve common and c
 * [Motion manager](https://github.com/pointfreeco/composable-core-motion/tree/main/Examples/MotionManager)
 * [Search](./Examples/Search)
 * [Speech Recognition](./Examples/SpeechRecognition)
+* [Standups app](./Examples/Standups)
 * [Tic-Tac-Toe](./Examples/TicTacToe)
 * [Todos](./Examples/Todos)
 * [Voice memos](./Examples/VoiceMemos)
 
-Looking for something more substantial? Check out the source code for [isowords](https://github.com/pointfreeco/isowords), an iOS word search game built in SwiftUI and the Composable Architecture.
+Looking for something more substantial? Check out the source code for [isowords][gh-isowords], an 
+iOS word search game built in SwiftUI and the Composable Architecture.
 
 ## Basic Usage
 
-To build a feature using the Composable Architecture you define some types and values that model your domain:
+> **Note**
+> For a step-by-step interactive tutorial, be sure to check out [Meet the Composable
+> Architecture][meet-tca].
 
-* **State**: A type that describes the data your feature needs to perform its logic and render its UI.
-* **Action**: A type that represents all of the actions that can happen in your feature, such as user actions, notifications, event sources and more.
-* **Environment**: A type that holds any dependencies the feature needs, such as API clients, analytics clients, etc.
-* **Reducer**: A function that describes how to evolve the current state of the app to the next state given an action. The reducer is also responsible for returning any effects that should be run, such as API requests, which can be done by returning an `Effect` value.
-* **Store**: The runtime that actually drives your feature. You send all user actions to the store so that the store can run the reducer and effects, and you can observe state changes in the store so that you can update UI.
+To build a feature using the Composable Architecture you define some types and values that model 
+your domain:
 
-The benefits of doing this is that you will instantly unlock testability of your feature, and you will be able to break large, complex features into smaller domains that can be glued together.
+* **State**: A type that describes the data your feature needs to perform its logic and render its 
+UI.
+* **Action**: A type that represents all of the actions that can happen in your feature, such as 
+user actions, notifications, event sources and more.
+* **Reducer**: A function that describes how to evolve the current state of the app to the next 
+state given an action. The reducer is also responsible for returning any effects that should be 
+run, such as API requests, which can be done by returning an `Effect` value.
+* **Store**: The runtime that actually drives your feature. You send all user actions to the store 
+so that the store can run the reducer and effects, and you can observe state changes in the store 
+so that you can update UI.
 
-As a basic example, consider a UI that shows a number along with "+" and "−" buttons that increment and decrement the number. To make things interesting, suppose there is also a button that when tapped makes an API request to fetch a random fact about that number and then displays the fact in an alert.
+The benefits of doing this are that you will instantly unlock testability of your feature, and you 
+will be able to break large, complex features into smaller domains that can be glued together.
 
-The state of this feature would consist of an integer for the current count, as well as an optional string that represents the title of the alert we want to show (optional because `nil` represents not showing an alert):
+As a basic example, consider a UI that shows a number along with "+" and "−" buttons that increment 
+and decrement the number. To make things interesting, suppose there is also a button that when 
+tapped makes an API request to fetch a random fact about that number and then displays the fact in 
+an alert.
+
+To implement this feature we create a new type that will house the domain and behavior of the 
+feature by conforming to `ReducerProtocol`:
 
 ```swift
-struct AppState: Equatable {
-  var count = 0
-  var numberFactAlert: String?
+import ComposableArchitecture
+
+struct Feature: ReducerProtocol {
 }
 ```
 
-Next we have the actions in the feature. There are the obvious actions, such as tapping the decrement button, increment button, or fact button. But there are also some slightly non-obvious ones, such as the action of the user dismissing the alert, and the action that occurs when we receive a response from the fact API request:
+In here we need to define a type for the feature's state, which consists of an integer for the 
+current count, as well as an optional string that represents the title of the alert we want to show
+(optional because `nil` represents not showing an alert):
 
 ```swift
-enum AppAction: Equatable {
-  case factAlertDismissed
-  case decrementButtonTapped
-  case incrementButtonTapped
-  case numberFactButtonTapped
-  case numberFactResponse(Result<String, ApiError>)
-}
-
-struct ApiError: Error, Equatable {}
-```
-
-Next we model the environment of dependencies this feature needs to do its job. In particular, to fetch a number fact we need to construct an `Effect` value that encapsulates the network request. So that dependency is a function from `Int` to `Effect<String, ApiError>`, where `String` represents the response from the request. Further, the effect will typically do its work on a background thread (as is the case with `URLSession`), and so we need a way to receive the effect's values on the main queue. We do this via a main queue scheduler, which is a dependency that is important to control so that we can write tests. We must use an `AnyScheduler` so that we can use a live `DispatchQueue` in production and a test scheduler in tests.
-
-```swift
-struct AppEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-  var numberFact: (Int) -> Effect<String, ApiError>
-}
-```
-
-Next, we implement a reducer that implements the logic for this domain. It describes how to change the current state to the next state, and describes what effects need to be executed. Some actions don't need to execute effects, and they can return `.none` to represent that:
-
-```swift
-let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, environment in
-  switch action {
-  case .factAlertDismissed:
-    state.numberFactAlert = nil
-    return .none
-
-  case .decrementButtonTapped:
-    state.count -= 1
-    return .none
-
-  case .incrementButtonTapped:
-    state.count += 1
-    return .none
-
-  case .numberFactButtonTapped:
-    return environment.numberFact(state.count)
-      .receive(on: environment.mainQueue)
-      .catchToEffect(AppAction.numberFactResponse)
-
-  case let .numberFactResponse(.success(fact)):
-    state.numberFactAlert = fact
-    return .none
-
-  case .numberFactResponse(.failure):
-    state.numberFactAlert = "Could not load a number fact :("
-    return .none
+struct Feature: ReducerProtocol {
+  struct State: Equatable {
+    var count = 0
+    var numberFactAlert: String?
   }
 }
 ```
 
-And then finally we define the view that displays the feature. It holds onto a `Store<AppState, AppAction>` so that it can observe all changes to the state and re-render, and we can send all user actions to the store so that state changes. We must also introduce a struct wrapper around the fact alert to make it `Identifiable`, which the `.alert` view modifier requires:
+We also need to define a type for the feature's actions. There are the obvious actions, such as 
+tapping the decrement button, increment button, or fact button. But there are also some slightly 
+non-obvious ones, such as the action of the user dismissing the alert, and the action that occurs 
+when we receive a response from the fact API request:
 
 ```swift
-struct AppView: View {
-  let store: Store<AppState, AppAction>
+struct Feature: ReducerProtocol {
+  struct State: Equatable { /* ... */ }
+  enum Action: Equatable {
+    case factAlertDismissed
+    case decrementButtonTapped
+    case incrementButtonTapped
+    case numberFactButtonTapped
+    case numberFactResponse(String)
+  }
+}
+```
+
+And then we implement the `reduce` method which is responsible for handling the actual logic and 
+behavior for the feature. It describes how to change the current state to the next state, and 
+describes what effects need to be executed. Some actions don't need to execute effects, and they 
+can return `.none` to represent that:
+
+```swift
+struct Feature: ReducerProtocol {
+  struct State: Equatable { /* ... */ }
+  enum Action: Equatable { /* ... */ }
+  
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+    switch action {
+    case .factAlertDismissed:
+      state.numberFactAlert = nil
+      return .none
+
+    case .decrementButtonTapped:
+      state.count -= 1
+      return .none
+
+    case .incrementButtonTapped:
+      state.count += 1
+      return .none
+
+    case .numberFactButtonTapped:
+      return .run { [count = state.count] send in
+        let (data, _) = try await URLSession.shared.data(
+          from: URL(string: "http://numbersapi.com/\(count)/trivia")!
+        )
+        await send(
+          .numberFactResponse(String(decoding: data, as: UTF8.self))
+        )
+      }
+
+    case let .numberFactResponse(fact):
+      state.numberFactAlert = fact
+      return .none
+    }
+  }
+}
+```
+
+And then finally we define the view that displays the feature. It holds onto a `StoreOf<Feature>` 
+so that it can observe all changes to the state and re-render, and we can send all user actions to 
+the store so that state changes. We must also introduce a struct wrapper around the fact alert to 
+make it `Identifiable`, which the `.alert` view modifier requires:
+
+```swift
+struct FeatureView: View {
+  let store: StoreOf<Feature>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       VStack {
         HStack {
           Button("−") { viewStore.send(.decrementButtonTapped) }
@@ -184,19 +232,19 @@ struct FactAlert: Identifiable {
 }
 ```
 
-It's important to note that we were able to implement this entire feature without having a real, live effect at hand. This is important because it means features can be built in isolation without building their dependencies, which can help compile times.
-
-It is also straightforward to have a UIKit controller driven off of this store. You subscribe to the store in `viewDidLoad` in order to update the UI and show alerts. The code is a bit longer than the SwiftUI version, so we have collapsed it here:
+It is also straightforward to have a UIKit controller driven off of this store. You subscribe to the 
+store in `viewDidLoad` in order to update the UI and show alerts. The code is a bit longer than the 
+SwiftUI version, so we have collapsed it here:
 
 <details>
   <summary>Click to expand!</summary>
 
   ```swift
-  class AppViewController: UIViewController {
-    let viewStore: ViewStore<AppState, AppAction>
+  class FeatureViewController: UIViewController {
+    let viewStore: ViewStoreOf<Feature>
     var cancellables: Set<AnyCancellable> = []
 
-    init(store: Store<AppState, AppAction>) {
+    init(store: StoreOf<Feature>) {
       self.viewStore = ViewStore(store)
       super.init(nibName: nil, bundle: nil)
     }
@@ -250,176 +298,314 @@ It is also straightforward to have a UIKit controller driven off of this store. 
   ```
 </details>
 
-Once we are ready to display this view, for example in the scene delegate, we can construct a store. This is the moment where we need to supply the dependencies, and for now we can just use an effect that immediately returns a mocked string:
+Once we are ready to display this view, for example in the app's entry point, we can construct a 
+store. This can be done by specifying the initial state to start the application in, as well as 
+the reducer that will power the application:
 
 ```swift
-let appView = AppView(
-  store: Store(
-    initialState: AppState(),
-    reducer: appReducer,
-    environment: AppEnvironment(
-      mainQueue: .main,
-      numberFact: { number in Effect(value: "\(number) is a good number Brent") }
-    )
-  )
-)
+import ComposableArchitecture
+
+@main
+struct MyApp: App {
+  var body: some Scene {
+    WindowGroup {
+      FeatureView(
+        store: Store(initialState: Feature.State()) {
+          Feature()
+        }
+      )
+    }
+  }
+}
 ```
 
-And that is enough to get something on the screen to play around with. It's definitely a few more steps than if you were to do this in a vanilla SwiftUI way, but there are a few benefits. It gives us a consistent manner to apply state mutations, instead of scattering logic in some observable objects and in various action closures of UI components. It also gives us a concise way of expressing side effects. And we can immediately test this logic, including the effects, without doing much additional work.
+And that is enough to get something on the screen to play around with. It's definitely a few more 
+steps than if you were to do this in a vanilla SwiftUI way, but there are a few benefits. It gives 
+us a consistent manner to apply state mutations, instead of scattering logic in some observable 
+objects and in various action closures of UI components. It also gives us a concise way of 
+expressing side effects. And we can immediately test this logic, including the effects, without 
+doing much additional work.
 
 ### Testing
 
-To test, you first create a `TestStore` with the same information that you would to create a regular `Store`, except this time we can supply test-friendly dependencies. In particular, we use a test scheduler instead of the live `DispatchQueue.main` scheduler because that allows us to control when work is executed, and we don't have to artificially wait for queues to catch up.
+> For more in-depth information on testing, see the dedicated [testing][testing-article] article. 
+
+To test use a `TestStore`, which can be created with the same information as the `Store`, but it 
+does extra work to allow you to assert how your feature evolves as actions are sent:
 
 ```swift
-let scheduler = DispatchQueue.test
-
-let store = TestStore(
-  initialState: AppState(),
-  reducer: appReducer,
-  environment: AppEnvironment(
-    mainQueue: scheduler.eraseToAnyScheduler(),
-    numberFact: { number in Effect(value: "\(number) is a good number Brent") }
-  )
-)
+@MainActor
+func testFeature() async {
+  let store = TestStore(initialState: Feature.State()) {
+    Feature()
+  }
+}
 ```
 
-Once the test store is created we can use it to make an assertion of an entire user flow of steps. Each step of the way we need to prove that state changed how we expect. Further, if a step causes an effect to be executed, which feeds data back into the store, we must assert that those actions were received properly.
-
-The test below has the user increment and decrement the count, then they ask for a number fact, and the response of that effect triggers an alert to be shown, and then dismissing the alert causes the alert to go away.
+Once the test store is created we can use it to make an assertion of an entire user flow of steps. 
+Each step of the way we need to prove that state changed how we expect. For example, we can 
+simulate the user flow of tapping on the increment and decrement buttons:
 
 ```swift
 // Test that tapping on the increment/decrement buttons changes the count
-store.send(.incrementButtonTapped) {
+await store.send(.incrementButtonTapped) {
   $0.count = 1
 }
-store.send(.decrementButtonTapped) {
+await store.send(.decrementButtonTapped) {
   $0.count = 0
 }
+```
 
-// Test that tapping the fact button causes us to receive a response from the effect. Note
-// that we have to advance the scheduler because we used `.receive(on:)` in the reducer.
-store.send(.numberFactButtonTapped)
+Further, if a step causes an effect to be executed, which feeds data back into the store, we must 
+assert on that. For example, if we simulate the user tapping on the fact button we expect to 
+receive a fact response back with the fact, which then causes the alert to show:
 
-scheduler.advance()
-store.receive(.numberFactResponse(.success("0 is a good number Brent"))) {
+```swift
+await store.send(.numberFactButtonTapped)
+
+await store.receive(.numberFactResponse(???)) {
+  $0.numberFactAlert = ???
+}
+```
+
+However, how do we know what fact is going to be sent back to us?
+
+Currently our reducer is using an effect that reaches out into the real world to hit an API server, 
+and that means we have no way to control its behavior. We are at the whims of our internet 
+connectivity and the availability of the API server in order to write this test.
+
+It would be better for this dependency to be passed to the reducer so that we can use a live 
+dependency when running the application on a device, but use a mocked dependency for tests. We can 
+do this by adding a property to the `Feature` reducer:
+
+```swift
+struct Feature: ReducerProtocol {
+  let numberFact: (Int) async throws -> String
+  // ...
+}
+```
+
+Then we can use it in the `reduce` implementation:
+
+```swift
+case .numberFactButtonTapped:
+  return .run { [count = state.count] send in 
+    let fact = try await self.numberFact(count)
+    await send(.numberFactResponse(fact))
+  }
+```
+
+And in the entry point of the application we can provide a version of the dependency that actually 
+interacts with the real world API server:
+
+```swift
+@main
+struct MyApp: App {
+  var body: some Scene {
+    FeatureView(
+      store: Store(initialState: Feature.State()) {
+        Feature(
+          numberFact: { number in
+            let (data, _) = try await URLSession.shared.data(
+              from: URL(string: "http://numbersapi.com/\(number)")!
+            )
+            return String(decoding: data, as: UTF8.self)
+          }
+        )
+      }
+    )
+  }
+}
+```
+
+But in tests we can use a mock dependency that immediately returns a deterministic, predictable 
+fact: 
+
+```swift
+@MainActor
+func testFeature() async {
+  let store = TestStore(initialState: Feature.State()) {
+    Feature(numberFact: { "\($0) is a good number Brent" })
+  }
+}
+```
+
+With that little bit of upfront work we can finish the test by simulating the user tapping on the 
+fact button, receiving the response from the dependency to trigger the alert, and then dismissing 
+the alert:
+
+```swift
+await store.send(.numberFactButtonTapped)
+
+await store.receive(.numberFactResponse("0 is a good number Brent")) {
   $0.numberFactAlert = "0 is a good number Brent"
 }
 
-// And finally dismiss the alert
-store.send(.factAlertDismissed) {
+await store.send(.factAlertDismissed) {
   $0.numberFactAlert = nil
 }
 ```
 
-That is the basics of building and testing a feature in the Composable Architecture. There are _a lot_ more things to be explored, such as composition, modularity, adaptability, and complex effects. The [Examples](./Examples) directory has a bunch of projects to explore to see more advanced usages.
+We can also improve the ergonomics of using the `numberFact` dependency in our application. Over 
+time the application may evolve into many features, and some of those features may also want access 
+to `numberFact`, and explicitly passing it through all layers can get annoying. There is a process 
+you can follow to “register” dependencies with the library, making them instantly available to any 
+layer in the application.
 
-### Debugging
+> For more in-depth information on dependency management, see the dedicated [dependencies][dependencies-article] article. 
 
-The Composable Architecture comes with a number of tools to aid in debugging.
+We can start by wrapping the number fact functionality in a new type:
 
-* `reducer.debug()` enhances a reducer with debug-printing that describes every action the reducer receives and every mutation it makes to state.
+```swift
+struct NumberFactClient {
+  var fetch: (Int) async throws -> String
+}
+```
 
-    ``` diff
-    received action:
-      AppAction.todoCheckboxTapped(id: UUID(5834811A-83B4-4E5E-BCD3-8A38F6BDCA90))
-      AppState(
-        todos: [
-          Todo(
-    -       isComplete: false,
-    +       isComplete: true,
-            description: "Milk",
-            id: 5834811A-83B4-4E5E-BCD3-8A38F6BDCA90
-          ),
-          … (2 unchanged)
-        ]
-      )
-    ```
+And then registering that type with the dependency management system by conforming the client to
+the `DependencyKey` protocol, which requires you to specify the live value to use when running the
+application in simulators or devices:
 
-* `reducer.signpost()` instruments a reducer with signposts so that you can gain insight into how long actions take to execute, and when effects are running.
-
-    <img src="https://s3.amazonaws.com/pointfreeco-production/point-free-pointers/0044-signposts-cover.jpg" width="600">
-
-## Supplementary libraries
-
-One of the most important principles of the Composable Architecture is that side effects are never performed directly, but instead are wrapped in the `Effect` type, returned from reducers, and then the `Store` later performs the effect. This is crucial for simplifying how data flows through an application, and for gaining testability on the full end-to-end cycle of user action to effect execution.
-
-However, this also means that many libraries and SDKs you interact with on a daily basis need to be retrofitted to be a little more friendly to the Composable Architecture style. That's why we'd like to ease the pain of using some of Apple's most popular frameworks by providing wrapper libraries that expose their functionality in a way that plays nicely with our library. So far we support:
-
-* [`ComposableCoreLocation`](https://github.com/pointfreeco/composable-core-location): A wrapper around `CLLocationManager` that makes it easy to use from a reducer, and easy to write tests for how your logic interacts with `CLLocationManager`'s functionality.
-* [`ComposableCoreMotion`](https://github.com/pointfreeco/composable-core-motion): A wrapper around `CMMotionManager` that makes it easy to use from a reducer, and easy to write tests for how your logic interacts with `CMMotionManager`'s functionality.
-* More to come soon. Keep an eye out 😉
-
-If you are interested in contributing a wrapper library for a framework that we have not yet covered, feel free to open an issue expressing your interest so that we can discuss a path forward.
-
-## FAQ
-
-* How does the Composable Architecture compare to Elm, Redux, and others?
-  <details>
-    <summary>Expand to see answer</summary>
-    The Composable Architecture (TCA) is built on a foundation of ideas popularized by the Elm Architecture (TEA) and Redux, but made to feel at home in the Swift language and on Apple's platforms.
-
-    In some ways TCA is a little more opinionated than the other libraries. For example, Redux is not prescriptive with how one executes side effects, but TCA requires all side effects to be modeled in the `Effect` type and returned from the reducer.
-
-    In other ways TCA is a little more lax than the other libraries. For example, Elm controls what kinds of effects can be created via the `Cmd` type, but TCA allows an escape hatch to any kind of effect since `Effect` conforms to the Combine `Publisher` protocol.
-
-    And then there are certain things that TCA prioritizes highly that are not points of focus for Redux, Elm, or most other libraries. For example, composition is very important aspect of TCA, which is the process of breaking down large features into smaller units that can be glued together. This is accomplished with the `pullback` and `combine` operators on reducers, and it aids in handling complex features as well as modularization for a better-isolated code base and improved compile times.
-  </details>
-
-* Why isn't `Store` thread-safe? <br> Why isn't `send` queued? <br> Why isn't `send` run on the main thread?
-  <details>
-    <summary>Expand to see answer</summary>
-
-    All interactions with an instance of `Store` (including all of its scopes and derived `ViewStore`s) must be done on the same thread. If the store is powering a SwiftUI or UIKit view then, all interactions must be done on the _main_ thread.
-
-    When an action is sent to the `Store`, a reducer is run on the current state, and this process cannot be done from multiple threads. A possible work around is to use a queue in `send`s implementation, but this introduces a few new complications:
-
-    1. If done simply with `DispatchQueue.main.async` you will incur a thread hop even when you are already on the main thread. This can lead to unexpected behavior in UIKit and SwiftUI, where sometimes you are required to do work synchronously, such as in animation blocks.
-
-    2. It is possible to create a scheduler that performs its work immediately when on the main thread and otherwise uses `DispatchQueue.main.async` (_e.g._ see [CombineScheduler](https://github.com/pointfreeco/combine-schedulers)'s [`UIScheduler`](https://github.com/pointfreeco/combine-schedulers/blob/main/Sources/CombineSchedulers/UIScheduler.swift)). This introduces a lot more complexity, and should probably not be adopted without having a very good reason.
-
-    This is why we require all actions be sent from the same thread. This requirement is in the same spirit of how `URLSession` and other Apple APIs are designed. Those APIs tend to deliver their outputs on whatever thread is most convenient for them, and then it is your responsibility to dispatch back to the main queue if that's what you need. The Composable Architecture makes you responsible for making sure to send actions on the main thread. If you are using an effect that may deliver its output on a non-main thread, you must explicitly perform `.receive(on:)` in order to force it back on the main thread.
-
-    This approach makes the fewest number of assumptions about how effects are created and transformed, and prevents unnecessary thread hops and re-dispatching. It also provides some testing benefits. If your effects are not responsible for their own scheduling, then in tests all of the effects would run synchronously and immediately. You would not be able to test how multiple in-flight effects interleave with each other and affect the state of your application. However, by leaving scheduling out of the `Store` we get to test these aspects of our effects if we so desire, or we can ignore if we prefer. We have that flexibility.
-
-    However, if you are still not a fan of our choice, then never fear! The Composable Architecture is flexible enough to allow you to introduce this functionality yourself if you so desire. It is possible to create a higher-order reducer that can force all effects to deliver their output on the main thread, regardless of where the effect does its work:
-
-    ```swift
-    extension Reducer {
-      func receive<S: Scheduler>(on scheduler: S) -> Self {
-        Self { state, action, environment in
-          self(&state, action, environment)
-            .receive(on: scheduler)
-            .eraseToEffect()
-        }
-      }
+```swift
+extension NumberFactClient: DependencyKey {
+  static let liveValue = Self(
+    fetch: { number in
+      let (data, _) = try await URLSession.shared
+        .data(from: URL(string: "http://numbersapi.com/\(number)")!
+      )
+      return String(decoding: data, as: UTF8.self)
     }
-    ```
+  )
+}
 
-    You would probably still want something like a `UIScheduler` so that you don't needlessly perform thread hops.
-  </details>
+extension DependencyValues {
+  var numberFact: NumberFactClient {
+    get { self[NumberFactClient.self] }
+    set { self[NumberFactClient.self] = newValue }
+  }
+}
+```
 
-## Requirements
+With that little bit of upfront work done you can instantly start making use of the dependency in 
+any feature by using the `@Dependency` property wrapper:
 
-The Composable Architecture depends on the Combine framework, so it requires minimum deployment targets of iOS 13, macOS 10.15, Mac Catalyst 13, tvOS 13, and watchOS 6. If your application must support older OSes, there are forks for [ReactiveSwift](https://github.com/trading-point/reactiveswift-composable-architecture) and [RxSwift](https://github.com/dannyhertz/rxswift-composable-architecture) that you can adopt!
+```diff
+ struct Feature: ReducerProtocol {
+-  let numberFact: (Int) async throws -> String
++  @Dependency(\.numberFact) var numberFact
+   
+   …
+
+-  try await self.numberFact(count)
++  try await self.numberFact.fetch(count)
+ }
+```
+
+This code works exactly as it did before, but you no longer have to explicitly pass the dependency 
+when constructing the feature's reducer. When running the app in previews, the simulator or on a 
+device, the live dependency will be provided to the reducer, and in tests the test dependency will 
+be provided.
+
+This means the entry point to the application no longer needs to construct dependencies:
+
+```swift
+@main
+struct MyApp: App {
+  var body: some Scene {
+    FeatureView(
+      store: Store(initialState: Feature.State()) {
+        Feature()
+      }
+    )
+  }
+}
+```
+
+And the test store can be constructed without specifying any dependencies, but you can still 
+override any dependency you need to for the purpose of the test:
+
+```swift
+let store = TestStore(initialState: Feature.State()) {
+  Feature()
+} withDependencies: {
+  $0.numberFact.fetch = { "\($0) is a good number Brent" }
+}
+
+// ...
+```
+
+That is the basics of building and testing a feature in the Composable Architecture. There are 
+_a lot_ more things to be explored, such as composition, modularity, adaptability, and complex 
+effects. The [Examples](./Examples) directory has a bunch of projects to explore to see more 
+advanced usages.
+
+## Documentation
+
+The documentation for releases and `main` are available here:
+
+* [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture)
+* [0.54.0](https://pointfreeco.github.io/swift-composable-architecture/0.54.0/documentation/composablearchitecture/)
+
+<details>
+  <summary>
+  Other versions
+  </summary>
+
+  * [0.53.0](https://pointfreeco.github.io/swift-composable-architecture/0.53.0/documentation/composablearchitecture/)
+  * [0.52.0](https://pointfreeco.github.io/swift-composable-architecture/0.52.0/documentation/composablearchitecture/)
+  * [0.50.0](https://pointfreeco.github.io/swift-composable-architecture/0.50.0/documentation/composablearchitecture/)
+  * [0.49.0](https://pointfreeco.github.io/swift-composable-architecture/0.49.0/documentation/composablearchitecture/)
+  * [0.48.0](https://pointfreeco.github.io/swift-composable-architecture/0.48.0/documentation/composablearchitecture/)
+  * [0.47.0](https://pointfreeco.github.io/swift-composable-architecture/0.47.0/documentation/composablearchitecture/)
+  * [0.46.0](https://pointfreeco.github.io/swift-composable-architecture/0.46.0/documentation/composablearchitecture/)
+  * [0.45.0](https://pointfreeco.github.io/swift-composable-architecture/0.45.0/documentation/composablearchitecture/)
+  * [0.44.0](https://pointfreeco.github.io/swift-composable-architecture/0.44.0/documentation/composablearchitecture/)
+  * [0.43.0](https://pointfreeco.github.io/swift-composable-architecture/0.43.0/documentation/composablearchitecture/)
+  * [0.42.0](https://pointfreeco.github.io/swift-composable-architecture/0.42.0/documentation/composablearchitecture/)
+  * [0.41.0](https://pointfreeco.github.io/swift-composable-architecture/0.41.0/documentation/composablearchitecture/)
+  * [0.40.0](https://pointfreeco.github.io/swift-composable-architecture/0.40.0/documentation/composablearchitecture/)
+  * [0.39.0](https://pointfreeco.github.io/swift-composable-architecture/0.39.0/documentation/composablearchitecture/)
+  * [0.38.0](https://pointfreeco.github.io/swift-composable-architecture/0.38.0/documentation/composablearchitecture/)
+</details>
+
+<br>
+
+There are a number of articles in the documentation that you may find helpful as you become more 
+comfortable with the library:
+
+* [Getting started][getting-started-article]
+* [Dependency management][dependencies-article]
+* [Testing][testing-article]
+* [Performance][performance-article]
+* [Concurrency][concurrency-article]
+* [Bindings][bindings-article]
+* [Migrating to the reducer protocol][migrating-article]
+
+## Community
+
+If you want to discuss the Composable Architecture or have a question about how to use it to solve 
+a particular problem, there are a number of places you can discuss with fellow 
+[Point-Free](http://www.pointfree.co) enthusiasts:
+
+* For long-form discussions, we recommend the [discussions][gh-discussions] tab of this repo.
+* For casual chat, we recommend the [Point-Free Community slack](http://pointfree.co/slack-invite).
 
 ## Installation
 
 You can add ComposableArchitecture to an Xcode project by adding it as a package dependency.
 
   1. From the **File** menu, select **Add Packages...**
-  2. Enter "https://github.com/pointfreeco/swift-composable-architecture" into the package repository URL text field
+  2. Enter "https://github.com/pointfreeco/swift-composable-architecture" into the package 
+     repository URL text field
   3. Depending on how your project is structured:
-      - If you have a single application target that needs access to the library, then add **ComposableArchitecture** directly to your application.
-      - If you want to use this library from multiple Xcode targets, or mixing Xcode targets and SPM targets, you must create a shared framework that depends on **ComposableArchitecture** and then depend on that framework in all of your targets. For an example of this, check out the [Tic-Tac-Toe](./Examples/TicTacToe) demo application, which splits lots of features into modules and consumes the static library in this fashion using the **tic-tac-toe** Swift package.
-
-## Documentation
-
-The latest documentation for the Composable Architecture APIs is available [here](https://pointfreeco.github.io/swift-composable-architecture/).
-
-## Help
-
-If you want to discuss the Composable Architecture or have a question about how to use it to solve a particular problem, you can start a topic in the [discussions](https://github.com/pointfreeco/swift-composable-architecture/discussions) tab of this repo, or ask around on [its Swift forum](https://forums.swift.org/c/related-projects/swift-composable-architecture).
+      - If you have a single application target that needs access to the library, then add 
+        **ComposableArchitecture** directly to your application.
+      - If you want to use this library from multiple Xcode targets, or mix Xcode targets and SPM 
+        targets, you must create a shared framework that depends on **ComposableArchitecture** and 
+        then depend on that framework in all of your targets. For an example of this, check out the 
+        [Tic-Tac-Toe](./Examples/TicTacToe) demo application, which splits lots of features into 
+        modules and consumes the static library in this fashion using the **tic-tac-toe** Swift 
+        package.
 
 ## Translations
 
@@ -427,28 +613,73 @@ The following translations of this README have been contributed by members of th
 
 * [Arabic](https://gist.github.com/NorhanBoghdadi/1b98d55c02b683ddef7e05c2ebcccd47)
 * [French](https://gist.github.com/nikitamounier/0e93eb832cf389db12f9a69da030a2dc)
+* [Hindi](https://gist.github.com/akashsoni01/b358ee0b3b747167964ef6946123c88d)
 * [Indonesian](https://gist.github.com/wendyliga/792ea9ac5cc887f59de70a9e39cc7343)
 * [Italian](https://gist.github.com/Bellaposa/5114e6d4d55fdb1388e8186886d48958)
+* [Japanese](https://gist.github.com/kalupas226/bdf577e4a7066377ea0a8aaeebcad428)
 * [Korean](https://gist.github.com/pilgwon/ea05e2207ab68bdd1f49dff97b293b17)
+* [Polish](https://gist.github.com/MarcelStarczyk/6b6153051f46912a665c32199f0d1d54)
+* [Portuguese](https://gist.github.com/SevioCorrea/2bbf337cd084a58c89f2f7f370626dc8)
+* [Russian](https://gist.github.com/artyom-ivanov/ed0417fd1f008f0492d3431c033175df)
 * [Simplified Chinese](https://gist.github.com/sh3l6orrr/10c8f7c634a892a9c37214f3211242ad)
+* [Spanish](https://gist.github.com/pitt500/f5e32fccb575ce112ffea2827c7bf942)
+* [Ukrainian](https://gist.github.com/barabashd/33b64676195ce41f4bb73c327ea512a8)
 
-If you'd like to contribute a translation, please [open a PR](https://github.com/pointfreeco/swift-composable-architecture/edit/main/README.md) with a link to a [Gist](https://gist.github.com)!
+If you'd like to contribute a translation, please [open a
+PR](https://github.com/pointfreeco/swift-composable-architecture/edit/main/README.md) with a link 
+to a [Gist](https://gist.github.com)!
+
+## FAQ
+
+* How does the Composable Architecture compare to Elm, Redux, and others?
+  <details>
+    <summary>Expand to see answer</summary>
+    The Composable Architecture (TCA) is built on a foundation of ideas popularized by the Elm 
+    Architecture (TEA) and Redux, but made to feel at home in the Swift language and on Apple's 
+    platforms.
+
+    In some ways TCA is a little more opinionated than the other libraries. For example, Redux is 
+    not prescriptive with how one executes side effects, but TCA requires all side effects to be 
+    modeled in the `Effect` type and returned from the reducer.
+
+    In other ways TCA is a little more lax than the other libraries. For example, Elm controls what 
+    kinds of effects can be created via the `Cmd` type, but TCA allows an escape hatch to any kind 
+    of effect since `Effect` conforms to the Combine `Publisher` protocol.
+
+    And then there are certain things that TCA prioritizes highly that are not points of focus for 
+    Redux, Elm, or most other libraries. For example, composition is very important aspect of TCA, 
+    which is the process of breaking down large features into smaller units that can be glued 
+    together. This is accomplished with reducer builders and operators like `Scope`, and it aids in 
+    handling complex features as well as modularization for a better-isolated code base and improved 
+    compile times.
+  </details>
 
 ## Credits and thanks
 
-The following people gave feedback on the library at its early stages and helped make the library what it is today:
+The following people gave feedback on the library at its early stages and helped make the library 
+what it is today:
 
-Paul Colton, Kaan Dedeoglu, Matt Diephouse, Josef Doležal, Eimantas, Matthew Johnson, George Kaimakas, Nikita Leonov, Christopher Liscio, Jeffrey Macko, Alejandro Martinez, Shai Mishali, Willis Plummer, Simon-Pierre Roy, Justin Price, Sven A. Schmidt, Kyle Sherman, Petr Šíma, Jasdev Singh, Maxim Smirnov, Ryan Stone, Daniel Hollis Tavares, and all of the [Point-Free](https://www.pointfree.co) subscribers 😁.
+Paul Colton, Kaan Dedeoglu, Matt Diephouse, Josef Doležal, Eimantas, Matthew Johnson, George 
+Kaimakas, Nikita Leonov, Christopher Liscio, Jeffrey Macko, Alejandro Martinez, Shai Mishali, Willis 
+Plummer, Simon-Pierre Roy, Justin Price, Sven A. Schmidt, Kyle Sherman, Petr Šíma, Jasdev Singh, 
+Maxim Smirnov, Ryan Stone, Daniel Hollis Tavares, and all of the [Point-Free][pointfreeco] 
+subscribers 😁.
 
-Special thanks to [Chris Liscio](https://twitter.com/liscio) who helped us work through many strange SwiftUI quirks and helped refine the final API.
+Special thanks to [Chris Liscio](https://twitter.com/liscio) who helped us work through many strange 
+SwiftUI quirks and helped refine the final API.
 
-And thanks to [Shai Mishali](https://github.com/freak4pc) and the [CombineCommunity](https://github.com/CombineCommunity/CombineExt/) project, from which we took their implementation of `Publishers.Create`, which we use in `Effect` to help bridge delegate and callback-based APIs, making it much easier to interface with 3rd party frameworks.
+And thanks to [Shai Mishali](https://github.com/freak4pc) and the
+[CombineCommunity](https://github.com/CombineCommunity/CombineExt/) project, from which we took 
+their implementation of `Publishers.Create`, which we use in `Effect` to help bridge delegate and 
+callback-based APIs, making it much easier to interface with 3rd party frameworks.
 
 ## Other libraries
 
-The Composable Architecture was built on a foundation of ideas started by other libraries, in particular [Elm](https://elm-lang.org) and [Redux](https://redux.js.org/).
+The Composable Architecture was built on a foundation of ideas started by other libraries, in 
+particular [Elm](https://elm-lang.org) and [Redux](https://redux.js.org/).
 
-There are also many architecture libraries in the Swift and iOS community. Each one of these has their own set of priorities and trade-offs that differ from the Composable Architecture.
+There are also many architecture libraries in the Swift and iOS community. Each one of these has 
+their own set of priorities and trade-offs that differ from the Composable Architecture.
 
 * [RIBs](https://github.com/uber/RIBs)
 * [Loop](https://github.com/ReactiveCocoa/Loop)
@@ -467,3 +698,20 @@ There are also many architecture libraries in the Swift and iOS community. Each 
 ## License
 
 This library is released under the MIT license. See [LICENSE](LICENSE) for details.
+
+[pointfreeco]: https://www.pointfree.co
+[mbrandonw]: https://twitter.com/mbrandonw
+[stephencelis]: https://twitter.com/stephencelis
+[tca-episode-collection]: https://www.pointfree.co/collections/composable-architecture
+[tca-tour]: https://www.pointfree.co/collections/tours/composable-architecture
+[gh-isowords]: https://github.com/pointfreeco/isowords
+[gh-discussions]: https://github.com/pointfreeco/swift-composable-architecture/discussions
+[swift-forum]: https://forums.swift.org/c/related-projects/swift-composable-architecture
+[testing-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/testing
+[dependencies-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/dependencymanagement
+[getting-started-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/gettingstarted
+[performance-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance
+[concurrency-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/swiftconcurrency
+[bindings-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/bindings
+[migrating-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingtothereducerprotocol
+[meet-tca]: https://pointfreeco.github.io/swift-composable-architecture/main/tutorials/meetcomposablearchitecture

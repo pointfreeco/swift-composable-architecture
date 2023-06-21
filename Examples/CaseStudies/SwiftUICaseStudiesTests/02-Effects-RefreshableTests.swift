@@ -3,70 +3,57 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
-class RefreshableTests: XCTestCase {
-  func testHappyPath() {
-    let store = TestStore(
-      initialState: .init(),
-      reducer: refreshableReducer,
-      environment: .init(
-        fact: .init { .init(value: "\($0) is a good number.") },
-        mainQueue: .immediate
-      )
-    )
+@MainActor
+final class RefreshableTests: XCTestCase {
+  func testHappyPath() async {
+    let store = TestStore(initialState: Refreshable.State()) {
+      Refreshable()
+    } withDependencies: {
+      $0.factClient.fetch = { "\($0) is a good number." }
+      $0.continuousClock = ImmediateClock()
+    }
 
-    store.send(.incrementButtonTapped) {
+    await store.send(.incrementButtonTapped) {
       $0.count = 1
     }
-    store.send(.refresh) {
-      $0.isLoading = true
-    }
-    store.receive(.factResponse(.success("1 is a good number."))) {
-      $0.isLoading = false
+    await store.send(.refresh)
+    await store.receive(.factResponse(.success("1 is a good number."))) {
       $0.fact = "1 is a good number."
     }
   }
 
-  func testUnhappyPath() {
-    let store = TestStore(
-      initialState: .init(),
-      reducer: refreshableReducer,
-      environment: .init(
-        fact: .init { _ in .init(error: .init()) },
-        mainQueue: .immediate
-      )
-    )
+  func testUnhappyPath() async {
+    struct FactError: Equatable, Error {}
 
-    store.send(.incrementButtonTapped) {
+    let store = TestStore(initialState: Refreshable.State()) {
+      Refreshable()
+    } withDependencies: {
+      $0.factClient.fetch = { _ in throw FactError() }
+      $0.continuousClock = ImmediateClock()
+    }
+
+    await store.send(.incrementButtonTapped) {
       $0.count = 1
     }
-    store.send(.refresh) {
-      $0.isLoading = true
-    }
-    store.receive(.factResponse(.failure(.init()))) {
-      $0.isLoading = false
-    }
+    await store.send(.refresh)
+    await store.receive(.factResponse(.failure(FactError())))
   }
 
-  func testCancellation() {
-    let mainQueue = DispatchQueue.test
+  func testCancellation() async {
+    let store = TestStore(initialState: Refreshable.State()) {
+      Refreshable()
+    } withDependencies: {
+      $0.factClient.fetch = {
+        try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+        return "\($0) is a good number."
+      }
+      $0.continuousClock = ImmediateClock()
+    }
 
-    let store = TestStore(
-      initialState: .init(),
-      reducer: refreshableReducer,
-      environment: .init(
-        fact: .init { .init(value: "\($0) is a good number.") },
-        mainQueue: mainQueue.eraseToAnyScheduler()
-      )
-    )
-
-    store.send(.incrementButtonTapped) {
+    await store.send(.incrementButtonTapped) {
       $0.count = 1
     }
-    store.send(.refresh) {
-      $0.isLoading = true
-    }
-    store.send(.cancelButtonTapped) {
-      $0.isLoading = false
-    }
+    await store.send(.refresh)
+    await store.send(.cancelButtonTapped)
   }
 }

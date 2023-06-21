@@ -4,28 +4,23 @@ import XCTest
 
 @testable import NewGameSwiftUI
 
-class NewGameSwiftUITests: XCTestCase {
-  let store = TestStore(
-    initialState: NewGameState(),
-    reducer: newGameReducer,
-    environment: NewGameEnvironment()
-  )
-  .scope(state: NewGameView.ViewState.init, action: NewGameAction.init)
+@MainActor
+final class NewGameSwiftUITests: XCTestCase {
+  let store = TestStore(initialState: NewGame.State()) {
+    NewGame()
+  } observe: {
+    NewGameView.ViewState(state: $0)
+  } send: {
+    NewGame.Action(action: $0)
+  }
 
-  func testNewGame() {
-    self.store.send(.xPlayerNameChanged("Blob Sr.")) {
+  func testNewGame() async {
+    await self.store.send(.xPlayerNameChanged("Blob Sr.")) {
       $0.xPlayerName = "Blob Sr."
     }
-    self.store.send(.oPlayerNameChanged("Blob Jr.")) {
+    await self.store.send(.oPlayerNameChanged("Blob Jr.")) {
       $0.oPlayerName = "Blob Jr."
       $0.isLetsPlayButtonDisabled = false
     }
-    self.store.send(.letsPlayButtonTapped) {
-      $0.isGameActive = true
-    }
-    self.store.send(.gameDismissed) {
-      $0.isGameActive = false
-    }
-    self.store.send(.logoutButtonTapped)
   }
 }

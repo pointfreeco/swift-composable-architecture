@@ -7,9 +7,9 @@ import SwiftUI
 import UIKit
 
 public struct UIKitAppView: UIViewControllerRepresentable {
-  let store: Store<AppState, AppAction>
+  let store: StoreOf<TicTacToe>
 
-  public init(store: Store<AppState, AppAction>) {
+  public init(store: StoreOf<TicTacToe>) {
     self.store = store
   }
 
@@ -26,10 +26,10 @@ public struct UIKitAppView: UIViewControllerRepresentable {
 }
 
 class AppViewController: UINavigationController {
-  let store: Store<AppState, AppAction>
+  let store: StoreOf<TicTacToe>
   private var cancellables: Set<AnyCancellable> = []
 
-  init(store: Store<AppState, AppAction>) {
+  init(store: StoreOf<TicTacToe>) {
     self.store = store
     super.init(nibName: nil, bundle: nil)
   }
@@ -42,14 +42,14 @@ class AppViewController: UINavigationController {
     super.viewDidLoad()
 
     self.store
-      .scope(state: /AppState.login, action: AppAction.login)
+      .scope(state: /TicTacToe.State.login, action: TicTacToe.Action.login)
       .ifLet { [weak self] loginStore in
         self?.setViewControllers([LoginViewController(store: loginStore)], animated: false)
       }
       .store(in: &self.cancellables)
 
     self.store
-      .scope(state: /AppState.newGame, action: AppAction.newGame)
+      .scope(state: /TicTacToe.State.newGame, action: TicTacToe.Action.newGame)
       .ifLet { [weak self] newGameStore in
         self?.setViewControllers([NewGameViewController(store: newGameStore)], animated: false)
       }

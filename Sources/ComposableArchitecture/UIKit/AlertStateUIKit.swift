@@ -15,9 +15,9 @@
     ///   let viewStore: ViewStore<ViewState, ViewAction>
     ///   private var cancellables: Set<AnyCancellable> = []
     ///   private weak var alertController: UIAlertController?
-    ///   ...
+    ///   // ...
     ///   func viewDidLoad() {
-    ///     ...
+    ///     // ...
     ///     viewStore.publisher
     ///       .settingsAlert
     ///       .sink { [weak self] alert in
@@ -43,7 +43,7 @@
     ///   - send: A function that wraps an alert action in the view store's action type.
     public convenience init<Action>(
       state: AlertState<Action>,
-      send: @escaping (Action) -> Void
+      send: @escaping (Action?) -> Void
     ) {
       self.init(
         title: String(state: state.title),
@@ -51,7 +51,7 @@
         preferredStyle: .alert
       )
       for button in state.buttons {
-        self.addAction(button.toUIAlertAction(send: send))
+        self.addAction(.init(button, action: send))
       }
     }
 
@@ -61,15 +61,15 @@
     ///   - state: The state of dialog that can be shown to the user.
     ///   - send: A function that wraps a dialog action in the view store's action type.
     public convenience init<Action>(
-      state: ConfirmationDialogState<Action>, send: @escaping (Action) -> Void
+      state: ConfirmationDialogState<Action>, send: @escaping (Action?) -> Void
     ) {
       self.init(
         title: String(state: state.title),
         message: state.message.map { String(state: $0) },
         preferredStyle: .actionSheet
       )
-      state.buttons.forEach { button in
-        self.addAction(button.toUIAlertAction(send: send))
+      for button in state.buttons {
+        self.addAction(.init(button, action: send))
       }
     }
   }
@@ -79,13 +79,13 @@
   @available(macOS, unavailable)
   @available(tvOS 13, *)
   @available(watchOS, unavailable)
-  extension AlertState.ButtonRole {
-    var toUIKit: UIAlertAction.Style {
-      switch self {
+  extension UIAlertAction.Style {
+    init(_ role: ButtonStateRole) {
+      switch role {
       case .cancel:
-        return .cancel
+        self = .cancel
       case .destructive:
-        return .destructive
+        self = .destructive
       }
     }
   }
@@ -95,14 +95,17 @@
   @available(macOS, unavailable)
   @available(tvOS 13, *)
   @available(watchOS, unavailable)
-  extension AlertState.Button {
-    func toUIAlertAction(send: @escaping (Action) -> Void) -> UIAlertAction {
-      let action = self.toSwiftUIAction(send: send)
-      return UIAlertAction(
-        title: String(state: self.label),
-        style: self.role?.toUIKit ?? .default,
-        handler: { _ in action() }
-      )
+  extension UIAlertAction {
+    convenience init<Action>(
+      _ button: ButtonState<Action>,
+      action handler: @escaping (Action?) -> Void
+    ) {
+      self.init(
+        title: String(state: button.label),
+        style: button.role.map(UIAlertAction.Style.init) ?? .default
+      ) { _ in
+        button.withAction(handler)
+      }
     }
   }
 #endif

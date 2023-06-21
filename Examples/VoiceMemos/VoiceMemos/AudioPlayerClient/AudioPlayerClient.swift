@@ -1,16 +1,27 @@
-import ComposableArchitecture
+import Dependencies
 import Foundation
+import XCTestDynamicOverlay
 
 struct AudioPlayerClient {
-  var play: (URL) -> Effect<Action, Failure>
-  var stop: () -> Effect<Never, Never>
+  var play: @Sendable (URL) async throws -> Bool
+}
 
-  enum Action: Equatable {
-    case didFinishPlaying(successfully: Bool)
-  }
+extension AudioPlayerClient: TestDependencyKey {
+  static let previewValue = Self(
+    play: { _ in
+      try await Task.sleep(nanoseconds: NSEC_PER_SEC * 5)
+      return true
+    }
+  )
 
-  enum Failure: Equatable, Error {
-    case couldntCreateAudioPlayer
-    case decodeErrorDidOccur
+  static let testValue = Self(
+    play: unimplemented("\(Self.self).play")
+  )
+}
+
+extension DependencyValues {
+  var audioPlayer: AudioPlayerClient {
+    get { self[AudioPlayerClient.self] }
+    set { self[AudioPlayerClient.self] = newValue }
   }
 }

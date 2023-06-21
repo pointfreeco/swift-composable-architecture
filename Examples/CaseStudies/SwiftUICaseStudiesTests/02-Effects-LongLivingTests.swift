@@ -1,34 +1,32 @@
-import Combine
 import ComposableArchitecture
 import XCTest
 
 @testable import SwiftUICaseStudies
 
-class LongLivingEffectsTests: XCTestCase {
-  func testReducer() {
-    // A passthrough subject to simulate the screenshot notification
-    let screenshotTaken = PassthroughSubject<Void, Never>()
+@MainActor
+final class LongLivingEffectsTests: XCTestCase {
+  func testReducer() async {
+    let (screenshots, takeScreenshot) = AsyncStream.makeStream(of: Void.self)
 
-    let store = TestStore(
-      initialState: .init(),
-      reducer: longLivingEffectsReducer,
-      environment: .init(
-        userDidTakeScreenshot: Effect(screenshotTaken)
-      )
-    )
+    let store = TestStore(initialState: LongLivingEffects.State()) {
+      LongLivingEffects()
+    } withDependencies: {
+      $0.screenshots = { screenshots }
+    }
 
-    store.send(.onAppear)
+    let task = await store.send(.task)
 
     // Simulate a screenshot being taken
-    screenshotTaken.send()
-    store.receive(.userDidTakeScreenshotNotification) {
+    takeScreenshot.yield()
+
+    await store.receive(.userDidTakeScreenshotNotification) {
       $0.screenshotCount = 1
     }
 
-    store.send(.onDisappear)
+    // Simulate screen going away
+    await task.cancel()
 
-    // Simulate a screenshot being taken to show no effects
-    // are executed.
-    screenshotTaken.send()
+    // Simulate a screenshot being taken to show no effects are executed.
+    takeScreenshot.yield()
   }
 }

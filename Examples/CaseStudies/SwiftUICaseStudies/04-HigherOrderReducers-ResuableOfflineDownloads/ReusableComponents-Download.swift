@@ -1,4 +1,3 @@
-import Combine
 import ComposableArchitecture
 import SwiftUI
 
@@ -15,92 +14,88 @@ private let readMe = """
   screen to see that the state is carried over.
   """
 
-struct CityMap: Equatable, Identifiable {
-  var blurb: String
-  var downloadVideoUrl: URL
-  let id: UUID
-  var title: String
-}
+struct CityMap: ReducerProtocol {
+  struct State: Equatable, Identifiable {
+    var download: Download
+    var downloadAlert: AlertState<DownloadComponent.AlertAction>?
+    var downloadMode: Mode
 
-struct CityMapState: Equatable, Identifiable {
-  var downloadAlert: AlertState<DownloadComponentAction.AlertAction>?
-  var downloadMode: Mode
-  var cityMap: CityMap
+    var id: UUID { self.download.id }
 
-  var id: UUID { self.cityMap.id }
-
-  var downloadComponent: DownloadComponentState<UUID> {
-    get {
-      DownloadComponentState(
-        alert: self.downloadAlert,
-        id: self.cityMap.id,
-        mode: self.downloadMode,
-        url: self.cityMap.downloadVideoUrl
-      )
+    var downloadComponent: DownloadComponent.State {
+      get {
+        DownloadComponent.State(
+          alert: self.downloadAlert,
+          id: self.download.id,
+          mode: self.downloadMode,
+          url: self.download.downloadVideoUrl
+        )
+      }
+      set {
+        self.downloadAlert = newValue.alert
+        self.downloadMode = newValue.mode
+      }
     }
-    set {
-      self.downloadAlert = newValue.alert
-      self.downloadMode = newValue.mode
+
+    struct Download: Equatable, Identifiable {
+      var blurb: String
+      var downloadVideoUrl: URL
+      let id: UUID
+      var title: String
+    }
+  }
+
+  enum Action {
+    case downloadComponent(DownloadComponent.Action)
+  }
+
+  struct CityMapEnvironment {
+    var downloadClient: DownloadClient
+  }
+
+  var body: some ReducerProtocol<State, Action> {
+    Scope(state: \.downloadComponent, action: /Action.downloadComponent) {
+      DownloadComponent()
+    }
+
+    Reduce { state, action in
+      switch action {
+      case .downloadComponent(.downloadClient(.success(.response))):
+        // NB: This is where you could perform the effect to save the data to a file on disk.
+        return .none
+
+      case .downloadComponent(.alert(.deleteButtonTapped)):
+        // NB: This is where you could perform the effect to delete the data from disk.
+        return .none
+
+      case .downloadComponent:
+        return .none
+      }
     }
   }
 }
-
-enum CityMapAction {
-  case downloadComponent(DownloadComponentAction)
-}
-
-struct CityMapEnvironment {
-  var downloadClient: DownloadClient
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
-
-let cityMapReducer = Reducer<CityMapState, CityMapAction, CityMapEnvironment> {
-  state, action, environment in
-  switch action {
-  case let .downloadComponent(.downloadClient(.success(.response(data)))):
-    // TODO: save to disk
-    return .none
-
-  case .downloadComponent(.alert(.deleteButtonTapped)):
-    // TODO: delete file from disk
-    return .none
-
-  case .downloadComponent:
-    return .none
-  }
-}
-.downloadable(
-  state: \.downloadComponent,
-  action: /CityMapAction.downloadComponent,
-  environment: {
-    DownloadComponentEnvironment(
-      downloadClient: $0.downloadClient,
-      mainQueue: $0.mainQueue
-    )
-  }
-)
 
 struct CityMapRowView: View {
-  let store: Store<CityMapState, CityMapAction>
+  let store: StoreOf<CityMap>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       HStack {
         NavigationLink(
           destination: CityMapDetailView(store: self.store)
         ) {
           HStack {
             Image(systemName: "map")
-            Text(viewStore.cityMap.title)
+            Text(viewStore.download.title)
           }
           .layoutPriority(1)
 
           Spacer()
 
-          DownloadComponent(
+          DownloadComponentView(
             store: self.store.scope(
               state: \.downloadComponent,
-              action: CityMapAction.downloadComponent
+              action: CityMap.Action.downloadComponent
             )
           )
           .padding(.trailing, 8)
@@ -111,12 +106,12 @@ struct CityMapRowView: View {
 }
 
 struct CityMapDetailView: View {
-  let store: Store<CityMapState, CityMapAction>
+  let store: StoreOf<CityMap>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       VStack(spacing: 32) {
-        Text(viewStore.cityMap.blurb)
+        Text(viewStore.download.blurb)
 
         HStack {
           if viewStore.downloadMode == .notDownloaded {
@@ -129,63 +124,54 @@ struct CityMapDetailView: View {
 
           Spacer()
 
-          DownloadComponent(
+          DownloadComponentView(
             store: self.store.scope(
               state: \.downloadComponent,
-              action: CityMapAction.downloadComponent
+              action: CityMap.Action.downloadComponent
             )
           )
         }
 
         Spacer()
       }
-      .navigationBarTitle(viewStore.cityMap.title)
+      .navigationTitle(viewStore.download.title)
       .padding()
     }
   }
 }
 
-struct MapAppState {
-  var cityMaps: IdentifiedArrayOf<CityMapState>
-}
-
-enum MapAppAction {
-  case cityMaps(id: CityMapState.ID, action: CityMapAction)
-}
-
-struct MapAppEnvironment {
-  var downloadClient: DownloadClient
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
-
-let mapAppReducer: Reducer<MapAppState, MapAppAction, MapAppEnvironment> = cityMapReducer.forEach(
-  state: \MapAppState.cityMaps,
-  action: /MapAppAction.cityMaps(id:action:),
-  environment: {
-    CityMapEnvironment(
-      downloadClient: $0.downloadClient,
-      mainQueue: $0.mainQueue
-    )
+struct MapApp: ReducerProtocol {
+  struct State: Equatable {
+    var cityMaps: IdentifiedArrayOf<CityMap.State>
   }
-)
+
+  enum Action {
+    case cityMaps(id: CityMap.State.ID, action: CityMap.Action)
+  }
+
+  var body: some ReducerProtocol<State, Action> {
+    EmptyReducer().forEach(\.cityMaps, action: /Action.cityMaps(id:action:)) {
+      CityMap()
+    }
+  }
+}
 
 struct CitiesView: View {
-  let store: Store<MapAppState, MapAppAction>
+  let store: StoreOf<MapApp>
 
   var body: some View {
     Form {
-      Section(
-        header: Text(readMe)
-      ) {
-        ForEachStore(
-          self.store.scope(state: \.cityMaps, action: MapAppAction.cityMaps(id:action:))
-        ) { cityMapStore in
-          CityMapRowView(store: cityMapStore)
-            .buttonStyle(.borderless)
-        }
+      Section {
+        AboutView(readMe: readMe)
+      }
+      ForEachStore(
+        self.store.scope(state: \.cityMaps, action: MapApp.Action.cityMaps(id:action:))
+      ) { cityMapStore in
+        CityMapRowView(store: cityMapStore)
+          .buttonStyle(.borderless)
       }
     }
-    .navigationBarTitle("Offline Downloads")
+    .navigationTitle("Offline Downloads")
   }
 }
 
@@ -194,35 +180,25 @@ struct DownloadList_Previews: PreviewProvider {
     Group {
       NavigationView {
         CitiesView(
-          store: Store(
-            initialState: .init(cityMaps: .mocks),
-            reducer: mapAppReducer,
-            environment: .init(
-              downloadClient: .live,
-              mainQueue: .main
-            )
-          )
+          store: Store(initialState: MapApp.State(cityMaps: .mocks)) {
+            MapApp()
+          }
         )
       }
 
       NavigationView {
         CityMapDetailView(
-          store: Store(
-            initialState: IdentifiedArray.mocks.first!,
-            reducer: .empty,
-            environment: ()
-          )
+          store: Store(initialState: IdentifiedArrayOf<CityMap.State>.mocks.first!) {}
         )
       }
     }
   }
 }
 
-extension IdentifiedArray where ID == CityMapState.ID, Element == CityMapState {
+extension IdentifiedArray where ID == CityMap.State.ID, Element == CityMap.State {
   static let mocks: Self = [
-    .init(
-      downloadMode: .notDownloaded,
-      cityMap: .init(
+    CityMap.State(
+      download: CityMap.State.Download(
         blurb: """
           New York City (NYC), known colloquially as New York (NY) and officially as the City of \
           New York, is the most populous city in the United States. With an estimated 2018 \
@@ -232,11 +208,11 @@ extension IdentifiedArray where ID == CityMapState.ID, Element == CityMapState {
         downloadVideoUrl: URL(string: "http://ipv4.download.thinkbroadband.com/50MB.zip")!,
         id: UUID(),
         title: "New York, NY"
-      )
+      ),
+      downloadMode: .notDownloaded
     ),
-    .init(
-      downloadMode: .notDownloaded,
-      cityMap: .init(
+    CityMap.State(
+      download: CityMap.State.Download(
         blurb: """
           Los Angeles, officially the City of Los Angeles and often known by its initials L.A., \
           is the largest city in the U.S. state of California. With an estimated population of \
@@ -248,11 +224,11 @@ extension IdentifiedArray where ID == CityMapState.ID, Element == CityMapState {
         downloadVideoUrl: URL(string: "http://ipv4.download.thinkbroadband.com/50MB.zip")!,
         id: UUID(),
         title: "Los Angeles, LA"
-      )
+      ),
+      downloadMode: .notDownloaded
     ),
-    .init(
-      downloadMode: .notDownloaded,
-      cityMap: .init(
+    CityMap.State(
+      download: CityMap.State.Download(
         blurb: """
           Paris is the capital and most populous city of France, with a population of 2,148,271 \
           residents (official estimate, 1 January 2020) in an area of 105 square kilometres (41 \
@@ -262,11 +238,11 @@ extension IdentifiedArray where ID == CityMapState.ID, Element == CityMapState {
         downloadVideoUrl: URL(string: "http://ipv4.download.thinkbroadband.com/50MB.zip")!,
         id: UUID(),
         title: "Paris, France"
-      )
+      ),
+      downloadMode: .notDownloaded
     ),
-    .init(
-      downloadMode: .notDownloaded,
-      cityMap: .init(
+    CityMap.State(
+      download: CityMap.State.Download(
         blurb: """
           Tokyo, officially Tokyo Metropolis (東京都, Tōkyō-to), is the capital of Japan and the \
           most populous of the country's 47 prefectures. Located at the head of Tokyo Bay, the \
@@ -277,11 +253,11 @@ extension IdentifiedArray where ID == CityMapState.ID, Element == CityMapState {
         downloadVideoUrl: URL(string: "http://ipv4.download.thinkbroadband.com/50MB.zip")!,
         id: UUID(),
         title: "Tokyo, Japan"
-      )
+      ),
+      downloadMode: .notDownloaded
     ),
-    .init(
-      downloadMode: .notDownloaded,
-      cityMap: .init(
+    CityMap.State(
+      download: CityMap.State.Download(
         blurb: """
           Buenos Aires is the capital and largest city of Argentina. The city is located on the \
           western shore of the estuary of the Río de la Plata, on the South American continent's \
@@ -293,7 +269,8 @@ extension IdentifiedArray where ID == CityMapState.ID, Element == CityMapState {
         downloadVideoUrl: URL(string: "http://ipv4.download.thinkbroadband.com/50MB.zip")!,
         id: UUID(),
         title: "Buenos Aires, Argentina"
-      )
+      ),
+      downloadMode: .notDownloaded
     ),
   ]
 }

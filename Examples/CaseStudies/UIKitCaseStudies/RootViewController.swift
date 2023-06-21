@@ -12,55 +12,46 @@ struct CaseStudy {
   }
 }
 
+@MainActor
 let dataSource: [CaseStudy] = [
   CaseStudy(
     title: "Basics",
     viewController: CounterViewController(
-      store: Store(
-        initialState: CounterState(),
-        reducer: counterReducer,
-        environment: CounterEnvironment()
-      )
+      store: Store(initialState: Counter.State()) {
+        Counter()
+      }
     )
   ),
   CaseStudy(
     title: "Lists",
     viewController: CountersTableViewController(
       store: Store(
-        initialState: CounterListState(
+        initialState: CounterList.State(
           counters: [
-            CounterState(),
-            CounterState(),
-            CounterState(),
+            Counter.State(),
+            Counter.State(),
+            Counter.State(),
           ]
-        ),
-        reducer: counterListReducer,
-        environment: CounterListEnvironment()
-      )
+        )
+      ) {
+        CounterList()
+      }
     )
   ),
   CaseStudy(
     title: "Navigate and load",
     viewController: EagerNavigationViewController(
-      store: Store(
-        initialState: EagerNavigationState(),
-        reducer: eagerNavigationReducer,
-        environment: EagerNavigationEnvironment(
-          mainQueue: .main
-        )
-      )
+      store: Store(initialState: EagerNavigation.State()) {
+        EagerNavigation()
+      }
     )
   ),
   CaseStudy(
     title: "Load then navigate",
     viewController: LazyNavigationViewController(
-      store: Store(
-        initialState: LazyNavigationState(),
-        reducer: lazyNavigationReducer,
-        environment: LazyNavigationEnvironment(
-          mainQueue: .main
-        )
-      )
+      store: Store(initialState: LazyNavigation.State()) {
+        LazyNavigation()
+      }
     )
   ),
 ]

@@ -1,0 +1,15 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: Project Discussion
+    url: https://github.com/pointfreeco/swift-composable-architecture/discussions
+    about: Composable Architecture Q&A, ideas, and more
+  - name: Documentation
+    url: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/
+    about: Read the Composable Architecture's documentation
+  - name: Videos
+    url: https://www.pointfree.co/collections/composable-architecture
+    about: Watch videos to get a behind-the-scenes look at how the Composable Architecture was motivated and built
+  - name: Slack
+    url: https://www.pointfree.co/slack-invite
+    about: Community chat

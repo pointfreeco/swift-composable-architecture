@@ -2,18 +2,19 @@ import Combine
 import ComposableArchitecture
 import XCTest
 
-final class EffectDebounceTests: XCTestCase {
+@MainActor
+final class EffectDebounceTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
 
-  func testDebounce() {
-    let scheduler = DispatchQueue.test
+  func testDebounce() async {
+    let mainQueue = DispatchQueue.test
     var values: [Int] = []
 
     func runDebouncedEffect(value: Int) {
       struct CancelToken: Hashable {}
       Just(value)
         .eraseToEffect()
-        .debounce(id: CancelToken(), for: 1, scheduler: scheduler)
+        .debounce(id: CancelToken(), for: 1, scheduler: mainQueue)
         .sink { values.append($0) }
         .store(in: &self.cancellables)
     }
@@ -21,37 +22,37 @@ final class EffectDebounceTests: XCTestCase {
     runDebouncedEffect(value: 1)
 
     // Nothing emits right away.
-    XCTAssertNoDifference(values, [])
+    XCTAssertEqual(values, [])
 
     // Waiting half the time also emits nothing
-    scheduler.advance(by: 0.5)
-    XCTAssertNoDifference(values, [])
+    await mainQueue.advance(by: 0.5)
+    XCTAssertEqual(values, [])
 
     // Run another debounced effect.
     runDebouncedEffect(value: 2)
 
     // Waiting half the time emits nothing because the first debounced effect has been canceled.
-    scheduler.advance(by: 0.5)
-    XCTAssertNoDifference(values, [])
+    await mainQueue.advance(by: 0.5)
+    XCTAssertEqual(values, [])
 
     // Run another debounced effect.
     runDebouncedEffect(value: 3)
 
     // Waiting half the time emits nothing because the second debounced effect has been canceled.
-    scheduler.advance(by: 0.5)
-    XCTAssertNoDifference(values, [])
+    await mainQueue.advance(by: 0.5)
+    XCTAssertEqual(values, [])
 
     // Waiting the rest of the time emits the final effect value.
-    scheduler.advance(by: 0.5)
-    XCTAssertNoDifference(values, [3])
+    await mainQueue.advance(by: 0.5)
+    XCTAssertEqual(values, [3])
 
     // Running out the scheduler
-    scheduler.run()
-    XCTAssertNoDifference(values, [3])
+    await mainQueue.run()
+    XCTAssertEqual(values, [3])
   }
 
-  func testDebounceIsLazy() {
-    let scheduler = DispatchQueue.test
+  func testDebounceIsLazy() async {
+    let mainQueue = DispatchQueue.test
     var values: [Int] = []
     var effectRuns = 0
 
@@ -63,24 +64,24 @@ final class EffectDebounceTests: XCTestCase {
         return Just(value)
       }
       .eraseToEffect()
-      .debounce(id: CancelToken(), for: 1, scheduler: scheduler)
+      .debounce(id: CancelToken(), for: 1, scheduler: mainQueue)
       .sink { values.append($0) }
       .store(in: &self.cancellables)
     }
 
     runDebouncedEffect(value: 1)
 
-    XCTAssertNoDifference(values, [])
-    XCTAssertNoDifference(effectRuns, 0)
+    XCTAssertEqual(values, [])
+    XCTAssertEqual(effectRuns, 0)
 
-    scheduler.advance(by: 0.5)
+    await mainQueue.advance(by: 0.5)
 
-    XCTAssertNoDifference(values, [])
-    XCTAssertNoDifference(effectRuns, 0)
+    XCTAssertEqual(values, [])
+    XCTAssertEqual(effectRuns, 0)
 
-    scheduler.advance(by: 0.5)
+    await mainQueue.advance(by: 0.5)
 
-    XCTAssertNoDifference(values, [1])
-    XCTAssertNoDifference(effectRuns, 1)
+    XCTAssertEqual(values, [1])
+    XCTAssertEqual(effectRuns, 1)
   }
 }

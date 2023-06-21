@@ -1,62 +1,105 @@
-import Combine
+import Clocks
 import ComposableArchitecture
+@_spi(Concurrency) import Dependencies
 import XCTest
 
 @testable import SwiftUICaseStudies
 
-class AnimationTests: XCTestCase {
-  let scheduler = DispatchQueue.test
+@MainActor
+final class AnimationTests: XCTestCase {
+  func testRainbow() async {
+    await withMainSerialExecutor {
+      let clock = TestClock()
 
-  func testRainbow() {
-    let store = TestStore(
-      initialState: AnimationsState(),
-      reducer: animationsReducer,
-      environment: AnimationsEnvironment(
-        mainQueue: self.scheduler.eraseToAnyScheduler()
-      )
-    )
+      let store = TestStore(initialState: Animations.State()) {
+        Animations()
+      } withDependencies: {
+        $0.continuousClock = clock
+      }
 
-    store.send(.rainbowButtonTapped)
+      await store.send(.rainbowButtonTapped)
+      await store.receive(.setColor(.red)) {
+        $0.circleColor = .red
+      }
 
-    store.receive(.setColor(.red)) {
+      await clock.advance(by: .seconds(1))
+      await store.receive(.setColor(.blue)) {
+        $0.circleColor = .blue
+      }
+
+      await clock.advance(by: .seconds(1))
+      await store.receive(.setColor(.green)) {
+        $0.circleColor = .green
+      }
+
+      await clock.advance(by: .seconds(1))
+      await store.receive(.setColor(.orange)) {
+        $0.circleColor = .orange
+      }
+
+      await clock.advance(by: .seconds(1))
+      await store.receive(.setColor(.pink)) {
+        $0.circleColor = .pink
+      }
+
+      await clock.advance(by: .seconds(1))
+      await store.receive(.setColor(.purple)) {
+        $0.circleColor = .purple
+      }
+
+      await clock.advance(by: .seconds(1))
+      await store.receive(.setColor(.yellow)) {
+        $0.circleColor = .yellow
+      }
+
+      await clock.advance(by: .seconds(1))
+      await store.receive(.setColor(.black)) {
+        $0.circleColor = .black
+      }
+
+      await clock.run()
+    }
+  }
+
+  func testReset() async {
+    let clock = TestClock()
+
+    let store = TestStore(initialState: Animations.State()) {
+      Animations()
+    } withDependencies: {
+      $0.continuousClock = clock
+    }
+
+    await store.send(.rainbowButtonTapped)
+    await store.receive(.setColor(.red)) {
       $0.circleColor = .red
     }
 
-    self.scheduler.advance(by: .seconds(1))
-    store.receive(.setColor(.blue)) {
+    await clock.advance(by: .seconds(1))
+    await store.receive(.setColor(.blue)) {
       $0.circleColor = .blue
     }
 
-    self.scheduler.advance(by: .seconds(1))
-    store.receive(.setColor(.green)) {
-      $0.circleColor = .green
+    await store.send(.resetButtonTapped) {
+      $0.alert = AlertState {
+        TextState("Reset state?")
+      } actions: {
+        ButtonState(
+          role: .destructive,
+          action: .send(.resetConfirmationButtonTapped, animation: .default)
+        ) {
+          TextState("Reset")
+        }
+        ButtonState(role: .cancel) {
+          TextState("Cancel")
+        }
+      }
     }
 
-    self.scheduler.advance(by: .seconds(1))
-    store.receive(.setColor(.orange)) {
-      $0.circleColor = .orange
+    await store.send(.resetConfirmationButtonTapped) {
+      $0 = Animations.State()
     }
 
-    self.scheduler.advance(by: .seconds(1))
-    store.receive(.setColor(.pink)) {
-      $0.circleColor = .pink
-    }
-
-    self.scheduler.advance(by: .seconds(1))
-    store.receive(.setColor(.purple)) {
-      $0.circleColor = .purple
-    }
-
-    self.scheduler.advance(by: .seconds(1))
-    store.receive(.setColor(.yellow)) {
-      $0.circleColor = .yellow
-    }
-
-    self.scheduler.advance(by: .seconds(1))
-    store.receive(.setColor(.white)) {
-      $0.circleColor = .white
-    }
-
-    self.scheduler.run()
+    await store.finish()
   }
 }

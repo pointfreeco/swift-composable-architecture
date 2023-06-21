@@ -4,8 +4,8 @@ import GameCore
 import UIKit
 
 public final class GameViewController: UIViewController {
-  let store: Store<GameState, GameAction>
-  let viewStore: ViewStore<ViewState, GameAction>
+  let store: StoreOf<Game>
+  let viewStore: ViewStore<ViewState, Game.Action>
   private var cancellables: Set<AnyCancellable> = []
 
   struct ViewState: Equatable {
@@ -14,7 +14,7 @@ public final class GameViewController: UIViewController {
     let isPlayAgainButtonHidden: Bool
     let title: String?
 
-    init(state: GameState) {
+    init(state: Game.State) {
       self.board = state.board.map { $0.map { $0?.label ?? "" } }
       self.isGameEnabled = !state.board.hasWinner && !state.board.isFilled
       self.isPlayAgainButtonHidden = !state.board.hasWinner && !state.board.isFilled
@@ -27,9 +27,9 @@ public final class GameViewController: UIViewController {
     }
   }
 
-  public init(store: Store<GameState, GameAction>) {
+  public init(store: StoreOf<Game>) {
     self.store = store
-    self.viewStore = ViewStore(store.scope(state: ViewState.init))
+    self.viewStore = ViewStore(store, observe: ViewState.init)
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -106,7 +106,7 @@ public final class GameViewController: UIViewController {
       gameStackView,
     ])
     rootStackView.isLayoutMarginsRelativeArrangement = true
-    rootStackView.layoutMargins = .init(top: 0, left: 32, bottom: 0, right: 32)
+    rootStackView.layoutMargins = UIEdgeInsets(top: 0, left: 32, bottom: 0, right: 32)
     rootStackView.translatesAutoresizingMaskIntoConstraints = false
     rootStackView.axis = .vertical
     rootStackView.spacing = 100

@@ -1,75 +1,83 @@
-import Combine
 import ComposableArchitecture
 import XCTest
 
 @testable import SwiftUICaseStudies
 
-class ReusableComponentsFavoritingTests: XCTestCase {
-  let scheduler = DispatchQueue.test
+@MainActor
+final class ReusableComponentsFavoritingTests: XCTestCase {
+  func testHappyPath() async {
+    let clock = TestClock()
 
-  func testFavoriteButton() {
-    let episodes: IdentifiedArrayOf<EpisodeState> = [
-      .init(
-        id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!,
+    let episodes: IdentifiedArrayOf<Episode.State> = [
+      Episode.State(
+        id: UUID(0),
         isFavorite: false,
         title: "Functions"
       ),
-      .init(
-        id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+      Episode.State(
+        id: UUID(1),
         isFavorite: false,
         title: "Functions"
       ),
-      .init(
-        id: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!,
+      Episode.State(
+        id: UUID(2),
         isFavorite: false,
         title: "Functions"
       ),
     ]
-    let store = TestStore(
-      initialState: EpisodesState(episodes: episodes),
-      reducer: episodesReducer,
-      environment: EpisodesEnvironment(
-        favorite: { _, isFavorite in Effect.future { $0(.success(isFavorite)) } },
-        mainQueue: self.scheduler.eraseToAnyScheduler()
+    let store = TestStore(initialState: Episodes.State(episodes: episodes)) {
+      Episodes(
+        favorite: { _, isFavorite in
+          try await clock.sleep(for: .seconds(1))
+          return isFavorite
+        }
       )
-    )
+    }
 
-    let error = NSError(domain: "co.pointfree", code: -1, userInfo: nil)
-    store.send(.episode(id: episodes[0].id, action: .favorite(.buttonTapped))) {
+    await store.send(.episode(id: episodes[0].id, action: .favorite(.buttonTapped))) {
+      $0.episodes[id: episodes[0].id]?.isFavorite = true
+    }
+    await clock.advance(by: .seconds(1))
+    await store.receive(.episode(id: episodes[0].id, action: .favorite(.response(.success(true)))))
+
+    await store.send(.episode(id: episodes[1].id, action: .favorite(.buttonTapped))) {
+      $0.episodes[id: episodes[1].id]?.isFavorite = true
+    }
+    await store.send(.episode(id: episodes[1].id, action: .favorite(.buttonTapped))) {
+      $0.episodes[id: episodes[1].id]?.isFavorite = false
+    }
+    await clock.advance(by: .seconds(1))
+    await store.receive(.episode(id: episodes[1].id, action: .favorite(.response(.success(false)))))
+  }
+
+  func testUnhappyPath() async {
+    let episodes: IdentifiedArrayOf<Episode.State> = [
+      Episode.State(
+        id: UUID(0),
+        isFavorite: false,
+        title: "Functions"
+      )
+    ]
+    let store = TestStore(initialState: Episodes.State(episodes: episodes)) {
+      Episodes(favorite: { _, _ in throw FavoriteError() })
+    }
+
+    await store.send(.episode(id: episodes[0].id, action: .favorite(.buttonTapped))) {
       $0.episodes[id: episodes[0].id]?.isFavorite = true
     }
 
-    self.scheduler.advance()
-    store.receive(.episode(id: episodes[0].id, action: .favorite(.response(.success(true)))))
-
-    store.send(.episode(id: episodes[1].id, action: .favorite(.buttonTapped))) {
-      $0.episodes[id: episodes[1].id]?.isFavorite = true
-    }
-    store.send(.episode(id: episodes[1].id, action: .favorite(.buttonTapped))) {
-      $0.episodes[id: episodes[1].id]?.isFavorite = false
-    }
-
-    self.scheduler.advance()
-    store.receive(.episode(id: episodes[1].id, action: .favorite(.response(.success(false)))))
-
-    store.environment.favorite = { _, _ in .future { $0(.failure(error)) } }
-    store.send(.episode(id: episodes[2].id, action: .favorite(.buttonTapped))) {
-      $0.episodes[id: episodes[2].id]?.isFavorite = true
-    }
-
-    self.scheduler.advance()
-    store.receive(
+    await store.receive(
       .episode(
-        id: episodes[2].id, action: .favorite(.response(.failure(FavoriteError(error: error)))))
+        id: episodes[0].id, action: .favorite(.response(.failure(FavoriteError()))))
     ) {
-      $0.episodes[id: episodes[2].id]?.alert = .init(
-        title: .init("The operation couldn’t be completed. (co.pointfree error -1.)")
-      )
+      $0.episodes[id: episodes[0].id]?.alert = AlertState {
+        TextState("Favoriting failed.")
+      }
     }
 
-    store.send(.episode(id: episodes[2].id, action: .favorite(.alertDismissed))) {
-      $0.episodes[id: episodes[2].id]?.alert = nil
-      $0.episodes[id: episodes[2].id]?.isFavorite = false
+    await store.send(.episode(id: episodes[0].id, action: .favorite(.alertDismissed))) {
+      $0.episodes[id: episodes[0].id]?.alert = nil
+      $0.episodes[id: episodes[0].id]?.isFavorite = false
     }
   }
 }

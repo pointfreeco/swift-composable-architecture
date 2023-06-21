@@ -1,181 +1,187 @@
-import Combine
 import ComposableArchitecture
 import SwiftUI
+import XCTestDynamicOverlay
 
 private let readMe = """
   This application demonstrates how to work with a web socket in the Composable Architecture.
 
   A lightweight wrapper is made for `URLSession`'s API for web sockets so that we can send, \
   receive and ping a socket endpoint. To test, connect to the socket server, and then send a \
-  message. The socket server should immediately reply with the exact message you send it.
+  message. The socket server should immediately reply with the exact message you sent in.
   """
 
-struct WebSocketState: Equatable {
-  var alert: AlertState<WebSocketAction>?
-  var connectivityState = ConnectivityState.disconnected
-  var messageToSend = ""
-  var receivedMessages: [String] = []
+// MARK: - Feature domain
 
-  enum ConnectivityState: String {
-    case connected
-    case connecting
-    case disconnected
-  }
-}
+struct WebSocket: ReducerProtocol {
+  struct State: Equatable {
+    var alert: AlertState<Action>?
+    var connectivityState = ConnectivityState.disconnected
+    var messageToSend = ""
+    var receivedMessages: [String] = []
 
-enum WebSocketAction: Equatable {
-  case alertDismissed
-  case connectButtonTapped
-  case messageToSendChanged(String)
-  case pingResponse(NSError?)
-  case receivedSocketMessage(Result<WebSocketClient.Message, NSError>)
-  case sendButtonTapped
-  case sendResponse(NSError?)
-  case webSocket(WebSocketClient.Action)
-}
-
-struct WebSocketEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-  var webSocket: WebSocketClient
-}
-
-let webSocketReducer = Reducer<WebSocketState, WebSocketAction, WebSocketEnvironment> {
-  state, action, environment in
-  struct WebSocketId: Hashable {}
-
-  var receiveSocketMessageEffect: Effect<WebSocketAction, Never> {
-    return environment.webSocket.receive(WebSocketId())
-      .receive(on: environment.mainQueue)
-      .catchToEffect(WebSocketAction.receivedSocketMessage)
-      .cancellable(id: WebSocketId())
-  }
-  var sendPingEffect: Effect<WebSocketAction, Never> {
-    return environment.webSocket.sendPing(WebSocketId())
-      .delay(for: 10, scheduler: environment.mainQueue)
-      .map(WebSocketAction.pingResponse)
-      .eraseToEffect()
-      .cancellable(id: WebSocketId())
+    enum ConnectivityState: String {
+      case connected
+      case connecting
+      case disconnected
+    }
   }
 
-  switch action {
-  case .alertDismissed:
-    state.alert = nil
-    return .none
+  enum Action: Equatable {
+    case alertDismissed
+    case connectButtonTapped
+    case messageToSendChanged(String)
+    case receivedSocketMessage(TaskResult<WebSocketClient.Message>)
+    case sendButtonTapped
+    case sendResponse(didSucceed: Bool)
+    case webSocket(WebSocketClient.Action)
+  }
 
-  case .connectButtonTapped:
-    switch state.connectivityState {
-    case .connected, .connecting:
+  @Dependency(\.continuousClock) var clock
+  @Dependency(\.webSocket) var webSocket
+
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+    switch action {
+    case .alertDismissed:
+      state.alert = nil
+      return .none
+
+    case .connectButtonTapped:
+      switch state.connectivityState {
+      case .connected, .connecting:
+        state.connectivityState = .disconnected
+        return .cancel(id: WebSocketClient.ID())
+
+      case .disconnected:
+        state.connectivityState = .connecting
+        return .run { send in
+          let actions = await self.webSocket
+            .open(WebSocketClient.ID(), URL(string: "wss://echo.websocket.events")!, [])
+          await withThrowingTaskGroup(of: Void.self) { group in
+            for await action in actions {
+              // NB: Can't call `await send` here outside of `group.addTask` due to task local
+              //     dependency mutation in `Effect.{task,run}`. Can maybe remove that explicit task
+              //     local mutation (and this `addTask`?) in a world with
+              //     `Effect(operation: .run { ... })`?
+              group.addTask { await send(.webSocket(action)) }
+              switch action {
+              case .didOpen:
+                group.addTask {
+                  while !Task.isCancelled {
+                    try await self.clock.sleep(for: .seconds(10))
+                    try? await self.webSocket.sendPing(WebSocketClient.ID())
+                  }
+                }
+                group.addTask {
+                  for await result in try await self.webSocket.receive(WebSocketClient.ID()) {
+                    await send(.receivedSocketMessage(result))
+                  }
+                }
+              case .didClose:
+                return
+              }
+            }
+          }
+        }
+        .cancellable(id: WebSocketClient.ID())
+      }
+
+    case let .messageToSendChanged(message):
+      state.messageToSend = message
+      return .none
+
+    case let .receivedSocketMessage(.success(message)):
+      if case let .string(string) = message {
+        state.receivedMessages.append(string)
+      }
+      return .none
+
+    case .receivedSocketMessage(.failure):
+      return .none
+
+    case .sendButtonTapped:
+      let messageToSend = state.messageToSend
+      state.messageToSend = ""
+      return .run { send in
+        try await self.webSocket.send(WebSocketClient.ID(), .string(messageToSend))
+        await send(.sendResponse(didSucceed: true))
+      } catch: { _, send in
+        await send(.sendResponse(didSucceed: false))
+      }
+      .cancellable(id: WebSocketClient.ID())
+
+    case .sendResponse(didSucceed: false):
+      state.alert = AlertState {
+        TextState("Could not send socket message. Connect to the server first, and try again.")
+      }
+      return .none
+
+    case .sendResponse(didSucceed: true):
+      return .none
+
+    case .webSocket(.didClose):
       state.connectivityState = .disconnected
-      return .cancel(id: WebSocketId())
+      return .cancel(id: WebSocketClient.ID())
 
-    case .disconnected:
-      state.connectivityState = .connecting
-      return environment.webSocket.open(WebSocketId(), URL(string: "wss://echo.websocket.org")!, [])
-        .receive(on: environment.mainQueue)
-        .map(WebSocketAction.webSocket)
-        .eraseToEffect()
-        .cancellable(id: WebSocketId())
+    case .webSocket(.didOpen):
+      state.connectivityState = .connected
+      state.receivedMessages.removeAll()
+      return .none
     }
-
-  case let .messageToSendChanged(message):
-    state.messageToSend = message
-    return .none
-
-  case .pingResponse:
-    // Ping the socket again in 10 seconds
-    return sendPingEffect
-
-  case let .receivedSocketMessage(.success(.string(string))):
-    state.receivedMessages.append(string)
-
-    // Immediately ask for the next socket message
-    return receiveSocketMessageEffect
-
-  case .receivedSocketMessage(.success):
-    // Immediately ask for the next socket message
-    return receiveSocketMessageEffect
-
-  case .receivedSocketMessage(.failure):
-    return .none
-
-  case .sendButtonTapped:
-    let messageToSend = state.messageToSend
-    state.messageToSend = ""
-
-    return environment.webSocket.send(WebSocketId(), .string(messageToSend))
-      .receive(on: environment.mainQueue)
-      .eraseToEffect()
-      .map(WebSocketAction.sendResponse)
-
-  case let .sendResponse(error):
-    if error != nil {
-      state.alert = .init(title: .init("Could not send socket message. Try again."))
-    }
-    return .none
-
-  case let .webSocket(.didClose(code, _)):
-    state.connectivityState = .disconnected
-    return .cancel(id: WebSocketId())
-
-  case let .webSocket(.didBecomeInvalidWithError(error)),
-    let .webSocket(.didCompleteWithError(error)):
-    state.connectivityState = .disconnected
-    if error != nil {
-      state.alert = .init(title: .init("Disconnected from socket for some reason. Try again."))
-    }
-    return .cancel(id: WebSocketId())
-
-  case .webSocket(.didOpenWithProtocol):
-    state.connectivityState = .connected
-    return .merge(
-      receiveSocketMessageEffect,
-      sendPingEffect
-    )
   }
 }
+
+// MARK: - Feature view
 
 struct WebSocketView: View {
-  let store: Store<WebSocketState, WebSocketAction>
+  let store: StoreOf<WebSocket>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
-      VStack(alignment: .leading) {
-        Text(template: readMe, .body)
-          .padding(.bottom)
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
+      Form {
+        Section {
+          AboutView(readMe: readMe)
+        }
 
-        HStack {
-          TextField(
-            "Message to send",
-            text: viewStore.binding(
-              get: \.messageToSend, send: WebSocketAction.messageToSendChanged)
-          )
+        Section {
+          VStack(alignment: .leading) {
+            Button(
+              viewStore.connectivityState == .connected
+                ? "Disconnect"
+                : viewStore.connectivityState == .disconnected
+                  ? "Connect"
+                  : "Connecting..."
+            ) {
+              viewStore.send(.connectButtonTapped)
+            }
+            .buttonStyle(.bordered)
+            .tint(viewStore.connectivityState == .connected ? .red : .green)
 
-          Button(
-            viewStore.connectivityState == .connected
-              ? "Disconnect"
-              : viewStore.connectivityState == .disconnected
-                ? "Connect"
-                : "Connecting..."
-          ) {
-            viewStore.send(.connectButtonTapped)
+            HStack {
+              TextField(
+                "Type message here",
+                text: viewStore.binding(
+                  get: \.messageToSend, send: WebSocket.Action.messageToSendChanged)
+              )
+              .textFieldStyle(.roundedBorder)
+
+              Button("Send") {
+                viewStore.send(.sendButtonTapped)
+              }
+              .buttonStyle(.borderless)
+            }
           }
         }
 
-        Button("Send message") {
-          viewStore.send(.sendButtonTapped)
+        Section {
+          Text("Status: \(viewStore.connectivityState.rawValue)")
+            .foregroundStyle(.secondary)
+          Text(viewStore.receivedMessages.reversed().joined(separator: "\n"))
+        } header: {
+          Text("Received messages")
         }
-
-        Spacer()
-
-        Text("Status: \(viewStore.connectivityState.rawValue)")
-          .foregroundColor(.secondary)
-        Text("Received messages:")
-          .foregroundColor(.secondary)
-        Text(viewStore.receivedMessages.joined(separator: "\n"))
       }
-      .padding()
-      .alert(self.store.scope(state: \.alert), dismiss: .alertDismissed)
-      .navigationBarTitle("Web Socket")
+      .alert(self.store.scope(state: \.alert, action: { $0 }), dismiss: .alertDismissed)
+      .navigationTitle("Web Socket")
     }
   }
 }
@@ -183,162 +189,164 @@ struct WebSocketView: View {
 // MARK: - WebSocketClient
 
 struct WebSocketClient {
+  struct ID: Hashable, @unchecked Sendable {
+    let rawValue: AnyHashable
+
+    init<RawValue: Hashable & Sendable>(_ rawValue: RawValue) {
+      self.rawValue = rawValue
+    }
+
+    init() {
+      struct RawValue: Hashable, Sendable {}
+      self.rawValue = RawValue()
+    }
+  }
+
   enum Action: Equatable {
-    case didBecomeInvalidWithError(NSError?)
+    case didOpen(protocol: String?)
     case didClose(code: URLSessionWebSocketTask.CloseCode, reason: Data?)
-    case didCompleteWithError(NSError?)
-    case didOpenWithProtocol(String?)
   }
 
   enum Message: Equatable {
+    struct Unknown: Error {}
+
     case data(Data)
     case string(String)
 
-    init?(_ message: URLSessionWebSocketTask.Message) {
+    init(_ message: URLSessionWebSocketTask.Message) throws {
       switch message {
-      case let .data(data):
-        self = .data(data)
-      case let .string(string):
-        self = .string(string)
-      @unknown default:
-        return nil
-      }
-    }
-
-    static func == (lhs: Self, rhs: Self) -> Bool {
-      switch (lhs, rhs) {
-      case let (.data(lhs), .data(rhs)):
-        return lhs == rhs
-      case let (.string(lhs), .string(rhs)):
-        return lhs == rhs
-      case (.data, _), (.string, _):
-        return false
+      case let .data(data): self = .data(data)
+      case let .string(string): self = .string(string)
+      @unknown default: throw Unknown()
       }
     }
   }
 
-  var cancel: (AnyHashable, URLSessionWebSocketTask.CloseCode, Data?) -> Effect<Never, Never>
-  var open: (AnyHashable, URL, [String]) -> Effect<Action, Never>
-  var receive: (AnyHashable) -> Effect<Message, NSError>
-  var send: (AnyHashable, URLSessionWebSocketTask.Message) -> Effect<NSError?, Never>
-  var sendPing: (AnyHashable) -> Effect<NSError?, Never>
+  var open: @Sendable (ID, URL, [String]) async -> AsyncStream<Action>
+  var receive: @Sendable (ID) async throws -> AsyncStream<TaskResult<Message>>
+  var send: @Sendable (ID, URLSessionWebSocketTask.Message) async throws -> Void
+  var sendPing: @Sendable (ID) async throws -> Void
 }
 
-extension WebSocketClient {
-  static let live = WebSocketClient(
-    cancel: { id, closeCode, reason in
-      .fireAndForget {
-        dependencies[id]?.task.cancel(with: closeCode, reason: reason)
-        dependencies[id]?.subscriber.send(completion: .finished)
-        dependencies[id] = nil
+extension WebSocketClient: DependencyKey {
+  static var liveValue: Self {
+    return Self(
+      open: { await WebSocketActor.shared.open(id: $0, url: $1, protocols: $2) },
+      receive: { try await WebSocketActor.shared.receive(id: $0) },
+      send: { try await WebSocketActor.shared.send(id: $0, message: $1) },
+      sendPing: { try await WebSocketActor.shared.sendPing(id: $0) }
+    )
+
+    final actor WebSocketActor: GlobalActor {
+      final class Delegate: NSObject, URLSessionWebSocketDelegate {
+        var continuation: AsyncStream<Action>.Continuation?
+
+        func urlSession(
+          _: URLSession,
+          webSocketTask _: URLSessionWebSocketTask,
+          didOpenWithProtocol protocol: String?
+        ) {
+          self.continuation?.yield(.didOpen(protocol: `protocol`))
+        }
+
+        func urlSession(
+          _: URLSession,
+          webSocketTask _: URLSessionWebSocketTask,
+          didCloseWith closeCode: URLSessionWebSocketTask.CloseCode,
+          reason: Data?
+        ) {
+          self.continuation?.yield(.didClose(code: closeCode, reason: reason))
+          self.continuation?.finish()
+        }
       }
-    },
-    open: { id, url, protocols in
-      Effect.run { subscriber in
-        let delegate = WebSocketDelegate(
-          didBecomeInvalidWithError: {
-            subscriber.send(.didBecomeInvalidWithError($0 as NSError?))
-          },
-          didClose: {
-            subscriber.send(.didClose(code: $0, reason: $1))
-          },
-          didCompleteWithError: {
-            subscriber.send(.didCompleteWithError($0 as NSError?))
-          },
-          didOpenWithProtocol: {
-            subscriber.send(.didOpenWithProtocol($0))
-          }
-        )
+
+      typealias Dependencies = (socket: URLSessionWebSocketTask, delegate: Delegate)
+
+      static let shared = WebSocketActor()
+
+      var dependencies: [ID: Dependencies] = [:]
+
+      func open(id: ID, url: URL, protocols: [String]) -> AsyncStream<Action> {
+        let delegate = Delegate()
         let session = URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
-        let task = session.webSocketTask(with: url, protocols: protocols)
-        task.resume()
-        dependencies[id] = Dependencies(delegate: delegate, subscriber: subscriber, task: task)
-        return AnyCancellable {
-          task.cancel(with: .normalClosure, reason: nil)
-          dependencies[id]?.subscriber.send(completion: .finished)
-          dependencies[id] = nil
+        let socket = session.webSocketTask(with: url, protocols: protocols)
+        defer { socket.resume() }
+        var continuation: AsyncStream<Action>.Continuation!
+        let stream = AsyncStream<Action> {
+          $0.onTermination = { _ in
+            socket.cancel()
+            Task { await self.removeDependencies(id: id) }
+          }
+          continuation = $0
+        }
+        delegate.continuation = continuation
+        self.dependencies[id] = (socket, delegate)
+        return stream
+      }
+
+      func close(
+        id: ID, with closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?
+      ) async throws {
+        defer { self.dependencies[id] = nil }
+        try self.socket(id: id).cancel(with: closeCode, reason: reason)
+      }
+
+      func receive(id: ID) throws -> AsyncStream<TaskResult<Message>> {
+        let socket = try self.socket(id: id)
+        return AsyncStream { continuation in
+          let task = Task {
+            while !Task.isCancelled {
+              continuation.yield(await TaskResult { try await Message(socket.receive()) })
+            }
+            continuation.finish()
+          }
+          continuation.onTermination = { _ in task.cancel() }
         }
       }
-    },
-    receive: { id in
-      .future { callback in
-        dependencies[id]?.task.receive { result in
-          switch result.map(Message.init) {
-          case let .success(.some(message)):
-            callback(.success(message))
-          case .success(.none):
-            callback(.failure(NSError.init(domain: "co.pointfree", code: 1)))
-          case let .failure(error):
-            callback(.failure(error as NSError))
+
+      func send(id: ID, message: URLSessionWebSocketTask.Message) async throws {
+        try await self.socket(id: id).send(message)
+      }
+
+      func sendPing(id: ID) async throws {
+        let socket = try self.socket(id: id)
+        return try await withCheckedThrowingContinuation { continuation in
+          socket.sendPing { error in
+            if let error = error {
+              continuation.resume(throwing: error)
+            } else {
+              continuation.resume()
+            }
           }
         }
       }
-    },
-    send: { id, message in
-      .future { callback in
-        dependencies[id]?.task.send(message) { error in
-          callback(.success(error as NSError?))
+
+      private func socket(id: ID) throws -> URLSessionWebSocketTask {
+        guard let dependencies = self.dependencies[id]?.socket else {
+          struct Closed: Error {}
+          throw Closed()
         }
+        return dependencies
       }
-    },
-    sendPing: { id in
-      .future { callback in
-        dependencies[id]?.task.sendPing { error in
-          callback(.success(error as NSError?))
-        }
+
+      private func removeDependencies(id: ID) {
+        self.dependencies[id] = nil
       }
     }
+  }
+
+  static let testValue = Self(
+    open: unimplemented("\(Self.self).open", placeholder: AsyncStream.never),
+    receive: unimplemented("\(Self.self).receive"),
+    send: unimplemented("\(Self.self).send"),
+    sendPing: unimplemented("\(Self.self).sendPing")
   )
 }
 
-private var dependencies: [AnyHashable: Dependencies] = [:]
-private struct Dependencies {
-  let delegate: URLSessionWebSocketDelegate
-  let subscriber: Effect<WebSocketClient.Action, Never>.Subscriber
-  let task: URLSessionWebSocketTask
-}
-
-private class WebSocketDelegate: NSObject, URLSessionWebSocketDelegate {
-  let didBecomeInvalidWithError: (Error?) -> Void
-  let didClose: (URLSessionWebSocketTask.CloseCode, Data?) -> Void
-  let didCompleteWithError: (Error?) -> Void
-  let didOpenWithProtocol: (String?) -> Void
-
-  init(
-    didBecomeInvalidWithError: @escaping (Error?) -> Void,
-    didClose: @escaping (URLSessionWebSocketTask.CloseCode, Data?) -> Void,
-    didCompleteWithError: @escaping (Error?) -> Void,
-    didOpenWithProtocol: @escaping (String?) -> Void
-  ) {
-    self.didBecomeInvalidWithError = didBecomeInvalidWithError
-    self.didOpenWithProtocol = didOpenWithProtocol
-    self.didCompleteWithError = didCompleteWithError
-    self.didClose = didClose
-  }
-
-  func urlSession(
-    _ session: URLSession,
-    webSocketTask: URLSessionWebSocketTask,
-    didOpenWithProtocol protocol: String?
-  ) {
-    self.didOpenWithProtocol(`protocol`)
-  }
-
-  func urlSession(
-    _ session: URLSession,
-    webSocketTask: URLSessionWebSocketTask,
-    didCloseWith closeCode: URLSessionWebSocketTask.CloseCode,
-    reason: Data?
-  ) {
-    self.didClose(closeCode, reason)
-  }
-
-  func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-    self.didCompleteWithError(error)
-  }
-
-  func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
-    self.didBecomeInvalidWithError(error)
+extension DependencyValues {
+  var webSocket: WebSocketClient {
+    get { self[WebSocketClient.self] }
+    set { self[WebSocketClient.self] = newValue }
   }
 }
 
@@ -348,14 +356,9 @@ struct WebSocketView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       WebSocketView(
-        store: Store(
-          initialState: .init(receivedMessages: ["Echo"]),
-          reducer: webSocketReducer,
-          environment: WebSocketEnvironment(
-            mainQueue: .main,
-            webSocket: .live
-          )
-        )
+        store: Store(initialState: WebSocket.State(receivedMessages: ["Hi"])) {
+          WebSocket()
+        }
       )
     }
   }

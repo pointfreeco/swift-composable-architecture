@@ -1,21 +1,21 @@
 import ComposableArchitecture
-import SwiftUI
+@preconcurrency import SwiftUI  // NB: SwiftUI.Animation is not Sendable yet.
 
 private let readMe = """
-  This screen demonstrates how the `Reducer` struct can be extended to enhance reducers with \
+  This screen demonstrates how the `AnyReducer` struct can be extended to enhance reducers with \
   extra functionality.
 
   In this example we introduce a declarative interface for describing long-running effects, \
   inspired by Elm's `subscriptions` API.
   """
 
-extension Reducer {
+extension AnyReducer {
   static func subscriptions(
-    _ subscriptions: @escaping (State, Environment) -> [AnyHashable: Effect<Action, Never>]
-  ) -> Reducer {
-    var activeSubscriptions: [AnyHashable: Effect<Action, Never>] = [:]
+    _ subscriptions: @escaping (State, Environment) -> [AnyHashable: EffectTask<Action>]
+  ) -> Self {
+    var activeSubscriptions: [AnyHashable: EffectTask<Action>] = [:]
 
-    return Reducer { state, _, environment in
+    return AnyReducer { state, _, environment in
       let currentSubscriptions = subscriptions(state, environment)
       defer { activeSubscriptions = currentSubscriptions }
       return .merge(
@@ -34,6 +34,8 @@ extension Reducer {
   }
 }
 
+// MARK: - Feature domain
+
 struct ClockState: Equatable {
   var isTimerActive = false
   var secondsElapsed = 0
@@ -45,11 +47,11 @@ enum ClockAction: Equatable {
 }
 
 struct ClockEnvironment {
-  var mainQueue: AnySchedulerOf<DispatchQueue>
+  var clock: any Clock<Duration>
 }
 
-let clockReducer = Reducer<ClockState, ClockAction, ClockEnvironment>.combine(
-  Reducer { state, action, environment in
+let clockReducer = AnyReducer<ClockState, ClockAction, ClockEnvironment>.combine(
+  AnyReducer { state, action, environment in
     switch action {
     case .timerTicked:
       state.secondsElapsed += 1
@@ -60,29 +62,27 @@ let clockReducer = Reducer<ClockState, ClockAction, ClockEnvironment>.combine(
     }
   },
   .subscriptions { state, environment in
-    struct TimerId: Hashable {}
     guard state.isTimerActive else { return [:] }
+    struct TimerID: Hashable {}
     return [
-      TimerId():
-        Effect
-        .timer(
-          id: TimerId(),
-          every: 1,
-          tolerance: .zero,
-          on: environment.mainQueue.animation(.interpolatingSpring(stiffness: 3000, damping: 40))
-        )
-        .map { _ in .timerTicked }
+      TimerID(): .run { send in
+        for await _ in environment.clock.timer(interval: .seconds(1)) {
+          await send(.timerTicked, animation: .interpolatingSpring(stiffness: 3000, damping: 40))
+        }
+      }
     ]
   }
 )
+
+// MARK: - Feature view
 
 struct ClockView: View {
   let store: Store<ClockState, ClockAction>
 
   var body: some View {
-    WithViewStore(store) { viewStore in
-      VStack {
-        Text(template: readMe, .body)
+    WithViewStore(self.store) { viewStore in
+      Form {
+        AboutView(readMe: readMe)
 
         ZStack {
           Circle()
@@ -108,36 +108,36 @@ struct ClockView: View {
               )
             )
             .rotationEffect(.degrees(-90))
-
           GeometryReader { proxy in
             Path { path in
               path.move(to: CGPoint(x: proxy.size.width / 2, y: proxy.size.height / 2))
               path.addLine(to: CGPoint(x: proxy.size.width / 2, y: 0))
             }
-            .stroke(Color.black, lineWidth: 3)
+            .stroke(.primary, lineWidth: 3)
             .rotationEffect(.degrees(Double(viewStore.secondsElapsed) * 360 / 60))
           }
         }
-        .frame(width: 280, height: 280)
-        .padding(.bottom, 64)
+        .aspectRatio(1, contentMode: .fit)
+        .frame(maxWidth: 280)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 16)
 
-        Button(action: { viewStore.send(.toggleTimerButtonTapped) }) {
-          HStack {
-            Text(viewStore.isTimerActive ? "Stop" : "Start")
-          }
-          .foregroundColor(.white)
-          .padding()
-          .background(viewStore.isTimerActive ? Color.red : .blue)
-          .cornerRadius(16)
+        Button {
+          viewStore.send(.toggleTimerButtonTapped)
+        } label: {
+          Text(viewStore.isTimerActive ? "Stop" : "Start")
+            .padding(8)
         }
-
-        Spacer()
+        .frame(maxWidth: .infinity)
+        .tint(viewStore.isTimerActive ? Color.red : .accentColor)
+        .buttonStyle(.borderedProminent)
       }
-      .padding()
-      .navigationBarTitle("Elm-like subscriptions")
+      .navigationTitle("Elm-like subscriptions")
     }
   }
 }
+
+// MARK: - SwiftUI previews
 
 struct Subscriptions_Previews: PreviewProvider {
   static var previews: some View {
@@ -147,7 +147,7 @@ struct Subscriptions_Previews: PreviewProvider {
           initialState: ClockState(),
           reducer: clockReducer,
           environment: ClockEnvironment(
-            mainQueue: .main
+            clock: ContinuousClock()
           )
         )
       )

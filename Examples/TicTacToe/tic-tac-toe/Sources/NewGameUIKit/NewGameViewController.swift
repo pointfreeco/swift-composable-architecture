@@ -5,18 +5,16 @@ import NewGameCore
 import UIKit
 
 public class NewGameViewController: UIViewController {
-  let store: Store<NewGameState, NewGameAction>
+  let store: StoreOf<NewGame>
   let viewStore: ViewStore<ViewState, ViewAction>
   private var cancellables: Set<AnyCancellable> = []
 
   struct ViewState: Equatable {
-    let isGameActive: Bool
     let isLetsPlayButtonEnabled: Bool
     let oPlayerName: String?
     let xPlayerName: String?
 
-    public init(state: NewGameState) {
-      self.isGameActive = state.game != nil
+    public init(state: NewGame.State) {
       self.isLetsPlayButtonEnabled = !state.oPlayerName.isEmpty && !state.xPlayerName.isEmpty
       self.oPlayerName = state.oPlayerName
       self.xPlayerName = state.xPlayerName
@@ -24,16 +22,15 @@ public class NewGameViewController: UIViewController {
   }
 
   enum ViewAction {
-    case gameDismissed
     case letsPlayButtonTapped
     case logoutButtonTapped
     case oPlayerNameChanged(String?)
     case xPlayerNameChanged(String?)
   }
 
-  public init(store: Store<NewGameState, NewGameAction>) {
+  public init(store: StoreOf<NewGame>) {
     self.store = store
-    self.viewStore = ViewStore(store.scope(state: ViewState.init, action: NewGameAction.init))
+    self.viewStore = ViewStore(store, observe: ViewState.init, send: NewGame.Action.init)
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -97,7 +94,7 @@ public class NewGameViewController: UIViewController {
       letsPlayButton,
     ])
     rootStackView.isLayoutMarginsRelativeArrangement = true
-    rootStackView.layoutMargins = .init(top: 0, left: 32, bottom: 0, right: 32)
+    rootStackView.layoutMargins = UIEdgeInsets(top: 0, left: 32, bottom: 0, right: 32)
     rootStackView.translatesAutoresizingMaskIntoConstraints = false
     rootStackView.axis = .vertical
     rootStackView.spacing = 24
@@ -123,7 +120,7 @@ public class NewGameViewController: UIViewController {
       .store(in: &self.cancellables)
 
     self.store
-      .scope(state: \.game, action: NewGameAction.game)
+      .scope(state: \.game, action: { .game(.presented($0)) })
       .ifLet(
         then: { [weak self] gameStore in
           self?.navigationController?.pushViewController(
@@ -137,14 +134,6 @@ public class NewGameViewController: UIViewController {
         }
       )
       .store(in: &self.cancellables)
-  }
-
-  public override func viewDidAppear(_ animated: Bool) {
-    super.viewDidAppear(animated)
-
-    if !self.isMovingToParent {
-      self.viewStore.send(.gameDismissed)
-    }
   }
 
   @objc private func logoutButtonTapped() {
@@ -164,11 +153,9 @@ public class NewGameViewController: UIViewController {
   }
 }
 
-extension NewGameAction {
+extension NewGame.Action {
   init(action: NewGameViewController.ViewAction) {
     switch action {
-    case .gameDismissed:
-      self = .gameDismissed
     case .letsPlayButtonTapped:
       self = .letsPlayButtonTapped
     case .logoutButtonTapped:

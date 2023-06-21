@@ -1,7 +1,8 @@
-import ComposableArchitecture
+import Dependencies
 import Foundation
+import XCTestDynamicOverlay
 
-public struct LoginRequest {
+public struct LoginRequest: Sendable {
   public var email: String
   public var password: String
 
@@ -27,7 +28,7 @@ public struct TwoFactorRequest {
   }
 }
 
-public struct AuthenticationResponse: Equatable {
+public struct AuthenticationResponse: Equatable, Sendable {
   public var token: String
   public var twoFactorRequired: Bool
 
@@ -40,7 +41,7 @@ public struct AuthenticationResponse: Equatable {
   }
 }
 
-public enum AuthenticationError: Equatable, LocalizedError {
+public enum AuthenticationError: Equatable, LocalizedError, Sendable {
   case invalidUserPassword
   case invalidTwoFactor
   case invalidIntermediateToken
@@ -57,24 +58,29 @@ public enum AuthenticationError: Equatable, LocalizedError {
   }
 }
 
-public struct AuthenticationClient {
-  public var login: (LoginRequest) -> Effect<AuthenticationResponse, AuthenticationError>
-  public var twoFactor: (TwoFactorRequest) -> Effect<AuthenticationResponse, AuthenticationError>
+public struct AuthenticationClient: Sendable {
+  public var login: @Sendable (LoginRequest) async throws -> AuthenticationResponse
+  public var twoFactor: @Sendable (TwoFactorRequest) async throws -> AuthenticationResponse
 
   public init(
-    login: @escaping (LoginRequest) -> Effect<AuthenticationResponse, AuthenticationError>,
-    twoFactor: @escaping (TwoFactorRequest) -> Effect<AuthenticationResponse, AuthenticationError>
+    login: @escaping @Sendable (LoginRequest) async throws -> AuthenticationResponse,
+    twoFactor: @escaping @Sendable (TwoFactorRequest) async throws -> AuthenticationResponse
   ) {
     self.login = login
     self.twoFactor = twoFactor
   }
 }
 
-#if DEBUG
-  extension AuthenticationClient {
-    public static let failing = Self(
-      login: { _ in .failing("AuthenticationClient.login") },
-      twoFactor: { _ in .failing("AuthenticationClient.twoFactor") }
-    )
+extension AuthenticationClient: TestDependencyKey {
+  public static let testValue = Self(
+    login: unimplemented("\(Self.self).login"),
+    twoFactor: unimplemented("\(Self.self).twoFactor")
+  )
+}
+
+extension DependencyValues {
+  public var authenticationClient: AuthenticationClient {
+    get { self[AuthenticationClient.self] }
+    set { self[AuthenticationClient.self] = newValue }
   }
-#endif
+}

@@ -23,7 +23,7 @@
 import Combine
 import Darwin
 
-final class DemandBuffer<S: Subscriber> {
+final class DemandBuffer<S: Subscriber>: @unchecked Sendable {
   private var buffer = [S.Input]()
   private let subscriber: S
   private var completion: Subscribers.Completion<S.Failure>?
@@ -104,12 +104,14 @@ final class DemandBuffer<S: Subscriber> {
 }
 
 extension AnyPublisher {
-  private init(_ callback: @escaping (Effect<Output, Failure>.Subscriber) -> Cancellable) {
+  private init(
+    _ callback: @escaping (EffectPublisher<Output, Failure>.Subscriber) -> Cancellable
+  ) {
     self = Publishers.Create(callback: callback).eraseToAnyPublisher()
   }
 
   static func create(
-    _ factory: @escaping (Effect<Output, Failure>.Subscriber) -> Cancellable
+    _ factory: @escaping (EffectPublisher<Output, Failure>.Subscriber) -> Cancellable
   ) -> AnyPublisher<Output, Failure> {
     AnyPublisher(factory)
   }
@@ -117,26 +119,26 @@ extension AnyPublisher {
 
 extension Publishers {
   fileprivate class Create<Output, Failure: Swift.Error>: Publisher {
-    private let callback: (Effect<Output, Failure>.Subscriber) -> Cancellable
+    private let callback: (EffectPublisher<Output, Failure>.Subscriber) -> Cancellable
 
-    init(callback: @escaping (Effect<Output, Failure>.Subscriber) -> Cancellable) {
+    init(callback: @escaping (EffectPublisher<Output, Failure>.Subscriber) -> Cancellable) {
       self.callback = callback
     }
 
-    func receive<S: Subscriber>(subscriber: S) where Failure == S.Failure, Output == S.Input {
+    func receive<S: Subscriber>(subscriber: S) where S.Input == Output, S.Failure == Failure {
       subscriber.receive(subscription: Subscription(callback: callback, downstream: subscriber))
     }
   }
 }
 
 extension Publishers.Create {
-  fileprivate class Subscription<Downstream: Subscriber>: Combine.Subscription
-  where Output == Downstream.Input, Failure == Downstream.Failure {
+  fileprivate final class Subscription<Downstream: Subscriber>: Combine.Subscription
+  where Downstream.Input == Output, Downstream.Failure == Failure {
     private let buffer: DemandBuffer<Downstream>
     private var cancellable: Cancellable?
 
     init(
-      callback: @escaping (Effect<Output, Failure>.Subscriber) -> Cancellable,
+      callback: @escaping (EffectPublisher<Output, Failure>.Subscriber) -> Cancellable,
       downstream: Downstream
     ) {
       self.buffer = DemandBuffer(subscriber: downstream)
@@ -167,20 +169,20 @@ extension Publishers.Create.Subscription: CustomStringConvertible {
   }
 }
 
-extension Effect {
+extension EffectPublisher {
   public struct Subscriber {
-    private let _send: (Output) -> Void
+    private let _send: (Action) -> Void
     private let _complete: (Subscribers.Completion<Failure>) -> Void
 
     init(
-      send: @escaping (Output) -> Void,
+      send: @escaping (Action) -> Void,
       complete: @escaping (Subscribers.Completion<Failure>) -> Void
     ) {
       self._send = send
       self._complete = complete
     }
 
-    public func send(_ value: Output) {
+    public func send(_ value: Action) {
       self._send(value)
     }
 

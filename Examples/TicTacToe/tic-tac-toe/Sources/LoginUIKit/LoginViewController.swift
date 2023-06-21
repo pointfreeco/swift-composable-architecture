@@ -6,12 +6,12 @@ import TwoFactorUIKit
 import UIKit
 
 public class LoginViewController: UIViewController {
-  let store: Store<LoginState, LoginAction>
+  let store: StoreOf<Login>
   let viewStore: ViewStore<ViewState, ViewAction>
   private var cancellables: Set<AnyCancellable> = []
 
   struct ViewState: Equatable {
-    let alert: AlertState<LoginAction>?
+    let alert: AlertState<Login.AlertAction>?
     let email: String?
     let isActivityIndicatorHidden: Bool
     let isEmailTextFieldEnabled: Bool
@@ -19,7 +19,7 @@ public class LoginViewController: UIViewController {
     let isPasswordTextFieldEnabled: Bool
     let password: String?
 
-    init(state: LoginState) {
+    init(state: Login.State) {
       self.alert = state.alert
       self.email = state.email
       self.isActivityIndicatorHidden = !state.isLoginRequestInFlight
@@ -38,9 +38,9 @@ public class LoginViewController: UIViewController {
     case twoFactorDismissed
   }
 
-  public init(store: Store<LoginState, LoginAction>) {
+  public init(store: StoreOf<Login>) {
     self.store = store
-    self.viewStore = ViewStore(store.scope(state: ViewState.init, action: LoginAction.init))
+    self.viewStore = ViewStore(store, observe: ViewState.init, send: Login.Action.init)
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -102,7 +102,7 @@ public class LoginViewController: UIViewController {
       activityIndicator,
     ])
     rootStackView.isLayoutMarginsRelativeArrangement = true
-    rootStackView.layoutMargins = .init(top: 0, left: 32, bottom: 0, right: 32)
+    rootStackView.layoutMargins = UIEdgeInsets(top: 0, left: 32, bottom: 0, right: 32)
     rootStackView.translatesAutoresizingMaskIntoConstraints = false
     rootStackView.axis = .vertical
     rootStackView.spacing = 24
@@ -157,7 +157,7 @@ public class LoginViewController: UIViewController {
       .store(in: &self.cancellables)
 
     self.store
-      .scope(state: \.twoFactor, action: LoginAction.twoFactor)
+      .scope(state: \.twoFactor, action: { .twoFactor(.presented($0)) })
       .ifLet(
         then: { [weak self] twoFactorStore in
           self?.navigationController?.pushViewController(
@@ -194,11 +194,11 @@ public class LoginViewController: UIViewController {
   }
 }
 
-extension LoginAction {
+extension Login.Action {
   init(action: LoginViewController.ViewAction) {
     switch action {
     case .alertDismissed:
-      self = .alertDismissed
+      self = .alert(.dismiss)
     case let .emailChanged(email):
       self = .emailChanged(email ?? "")
     case .loginButtonTapped:
@@ -206,7 +206,7 @@ extension LoginAction {
     case let .passwordChanged(password):
       self = .passwordChanged(password ?? "")
     case .twoFactorDismissed:
-      self = .twoFactorDismissed
+      self = .twoFactor(.dismiss)
     }
   }
 }

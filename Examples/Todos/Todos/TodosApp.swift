@@ -6,14 +6,9 @@ struct TodosApp: App {
   var body: some Scene {
     WindowGroup {
       AppView(
-        store: Store(
-          initialState: AppState(),
-          reducer: appReducer,
-          environment: AppEnvironment(
-            mainQueue: .main,
-            uuid: UUID.init
-          )
-        )
+        store: Store(initialState: Todos.State()) {
+          Todos()._printChanges()
+        }
       )
     }
   }

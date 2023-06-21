@@ -5,16 +5,14 @@ import NewGameCore
 import SwiftUI
 
 public struct NewGameView: View {
-  let store: Store<NewGameState, NewGameAction>
+  let store: StoreOf<NewGame>
 
   struct ViewState: Equatable {
-    var isGameActive: Bool
     var isLetsPlayButtonDisabled: Bool
     var oPlayerName: String
     var xPlayerName: String
 
-    init(state: NewGameState) {
-      self.isGameActive = state.game != nil
+    init(state: NewGame.State) {
       self.isLetsPlayButtonDisabled = state.oPlayerName.isEmpty || state.xPlayerName.isEmpty
       self.oPlayerName = state.oPlayerName
       self.xPlayerName = state.xPlayerName
@@ -22,73 +20,61 @@ public struct NewGameView: View {
   }
 
   enum ViewAction {
-    case gameDismissed
     case letsPlayButtonTapped
     case logoutButtonTapped
     case oPlayerNameChanged(String)
     case xPlayerNameChanged(String)
   }
 
-  public init(store: Store<NewGameState, NewGameAction>) {
+  public init(store: StoreOf<NewGame>) {
     self.store = store
   }
 
   public var body: some View {
-    WithViewStore(self.store.scope(state: ViewState.init, action: NewGameAction.init)) {
-      viewStore in
-      ScrollView {
-        VStack(spacing: 16) {
-          VStack(alignment: .leading) {
-            Text("X Player Name")
-            TextField(
-              "Blob Sr.",
-              text: viewStore.binding(get: \.xPlayerName, send: ViewAction.xPlayerNameChanged)
-            )
-            .autocapitalization(.words)
-            .disableAutocorrection(true)
-            .textContentType(.name)
-            .textFieldStyle(.roundedBorder)
-          }
-
-          VStack(alignment: .leading) {
-            Text("O Player Name")
-            TextField(
-              "Blob Jr.",
-              text: viewStore.binding(get: \.oPlayerName, send: ViewAction.oPlayerNameChanged)
-            )
-            .autocapitalization(.words)
-            .disableAutocorrection(true)
-            .textContentType(.name)
-            .textFieldStyle(.roundedBorder)
-          }
-
-          NavigationLink(
-            destination: IfLetStore(
-              self.store.scope(state: \.game, action: NewGameAction.game),
-              then: GameView.init(store:)
-            ),
-            isActive: viewStore.binding(
-              get: \.isGameActive,
-              send: { $0 ? .letsPlayButtonTapped : .gameDismissed }
-            )
-          ) {
-            Text("Let's play!")
-          }
-          .disabled(viewStore.isLetsPlayButtonDisabled)
+    WithViewStore(self.store, observe: ViewState.init, send: NewGame.Action.init) { viewStore in
+      Form {
+        Section {
+          TextField(
+            "Blob Sr.",
+            text: viewStore.binding(get: \.xPlayerName, send: ViewAction.xPlayerNameChanged)
+          )
+          .autocapitalization(.words)
+          .disableAutocorrection(true)
+          .textContentType(.name)
+        } header: {
+          Text("X Player Name")
         }
-        .padding(.horizontal)
+
+        Section {
+          TextField(
+            "Blob Jr.",
+            text: viewStore.binding(get: \.oPlayerName, send: ViewAction.oPlayerNameChanged)
+          )
+          .autocapitalization(.words)
+          .disableAutocorrection(true)
+          .textContentType(.name)
+        } header: {
+          Text("O Player Name")
+        }
+
+        Button("Let's play!") {
+          viewStore.send(.letsPlayButtonTapped)
+        }
+        .disabled(viewStore.isLetsPlayButtonDisabled)
       }
-      .navigationBarTitle("New Game")
+      .navigationTitle("New Game")
       .navigationBarItems(trailing: Button("Logout") { viewStore.send(.logoutButtonTapped) })
+      .navigationDestination(
+        store: self.store.scope(state: \.$game, action: NewGame.Action.game),
+        destination: GameView.init
+      )
     }
   }
 }
 
-extension NewGameAction {
+extension NewGame.Action {
   init(action: NewGameView.ViewAction) {
     switch action {
-    case .gameDismissed:
-      self = .gameDismissed
     case .letsPlayButtonTapped:
       self = .letsPlayButtonTapped
     case .logoutButtonTapped:
@@ -103,13 +89,11 @@ extension NewGameAction {
 
 struct NewGame_Previews: PreviewProvider {
   static var previews: some View {
-    NavigationView {
+    NavigationStack {
       NewGameView(
-        store: Store(
-          initialState: NewGameState(),
-          reducer: newGameReducer,
-          environment: NewGameEnvironment()
-        )
+        store: Store(initialState: NewGame.State()) {
+          NewGame()
+        }
       )
     }
   }

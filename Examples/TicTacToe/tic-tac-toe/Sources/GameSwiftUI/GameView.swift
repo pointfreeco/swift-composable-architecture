@@ -3,15 +3,15 @@ import GameCore
 import SwiftUI
 
 public struct GameView: View {
-  let store: Store<GameState, GameAction>
+  let store: StoreOf<Game>
 
-  struct ViewState: Equatable {
+  struct ViewState: Equatable, Sendable {
     var board: [[String]]
     var isGameDisabled: Bool
     var isPlayAgainButtonVisible: Bool
     var title: String
 
-    init(state: GameState) {
+    init(state: Game.State) {
       self.board = state.board.map { $0.map { $0?.label ?? "" } }
       self.isGameDisabled = state.board.hasWinner || state.board.isFilled
       self.isPlayAgainButtonVisible = state.board.hasWinner || state.board.isFilled
@@ -24,12 +24,12 @@ public struct GameView: View {
     }
   }
 
-  public init(store: Store<GameState, GameAction>) {
+  public init(store: StoreOf<Game>) {
     self.store = store
   }
 
   public var body: some View {
-    WithViewStore(self.store.scope(state: ViewState.init)) { viewStore in
+    WithViewStore(self.store, observe: ViewState.init) { viewStore in
       GeometryReader { proxy in
         VStack(spacing: 0.0) {
           VStack {
@@ -53,7 +53,7 @@ public struct GameView: View {
           }
           .disabled(viewStore.isGameDisabled)
         }
-        .navigationBarTitle("Tic-tac-toe")
+        .navigationTitle("Tic-tac-toe")
         .navigationBarItems(leading: Button("Quit") { viewStore.send(.quitButtonTapped) })
         .navigationBarBackButtonHidden(true)
       }
@@ -63,7 +63,7 @@ public struct GameView: View {
   func rowView(
     row: Int,
     proxy: GeometryProxy,
-    viewStore: ViewStore<ViewState, GameAction>
+    viewStore: ViewStore<ViewState, Game.Action>
   ) -> some View {
     HStack(spacing: 0.0) {
       self.cellView(row: row, column: 0, proxy: proxy, viewStore: viewStore)
@@ -76,11 +76,11 @@ public struct GameView: View {
     row: Int,
     column: Int,
     proxy: GeometryProxy,
-    viewStore: ViewStore<ViewState, GameAction>
+    viewStore: ViewStore<ViewState, Game.Action>
   ) -> some View {
-    Button(action: {
+    Button {
       viewStore.send(.cellTapped(row: row, column: column))
-    }) {
+    } label: {
       Text(viewStore.board[row][column])
         .frame(width: proxy.size.width / 3, height: proxy.size.width / 3)
         .background(
@@ -94,13 +94,11 @@ public struct GameView: View {
 
 struct Game_Previews: PreviewProvider {
   static var previews: some View {
-    NavigationView {
+    NavigationStack {
       GameView(
-        store: Store(
-          initialState: GameState(oPlayerName: "Blob Jr.", xPlayerName: "Blob Sr."),
-          reducer: gameReducer,
-          environment: GameEnvironment()
-        )
+        store: Store(initialState: Game.State(oPlayerName: "Blob Jr.", xPlayerName: "Blob Sr.")) {
+          Game()
+        }
       )
     }
   }

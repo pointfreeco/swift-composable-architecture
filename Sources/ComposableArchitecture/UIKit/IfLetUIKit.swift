@@ -16,9 +16,9 @@ extension Store {
   /// class ParentViewController: UIViewController {
   ///   let store: Store<ParentState, ParentAction>
   ///   var cancellables: Set<AnyCancellable> = []
-  ///   ...
+  ///   // ...
   ///   func viewDidLoad() {
-  ///     ...
+  ///     // ...
   ///     self.store
   ///       .scope(state: \.optionalChild, action: ParentAction.child)
   ///       .ifLet(
@@ -54,10 +54,13 @@ extension Store {
       .sink { state in
         if var state = state {
           unwrap(
-            self.scope {
-              state = $0 ?? state
-              return state
-            }
+            self.scope(
+              state: {
+                state = $0 ?? state
+                return state
+              },
+              action: { $0 }
+            )
           )
         } else {
           `else`()

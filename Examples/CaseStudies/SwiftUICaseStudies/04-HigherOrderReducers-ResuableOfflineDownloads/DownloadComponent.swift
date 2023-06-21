@@ -1,11 +1,116 @@
 import ComposableArchitecture
-import SwiftUI
+@preconcurrency import SwiftUI  // NB: SwiftUI.Animation is not Sendable yet.
 
-struct DownloadComponentState<ID: Equatable>: Equatable {
-  var alert: AlertState<DownloadComponentAction.AlertAction>?
-  let id: ID
-  var mode: Mode
-  let url: URL
+struct DownloadComponent: ReducerProtocol {
+  struct State: Equatable {
+    var alert: AlertState<AlertAction>?
+    let id: AnyHashable
+    var mode: Mode
+    let url: URL
+  }
+
+  enum Action: Equatable {
+    case alert(AlertAction)
+    case buttonTapped
+    case downloadClient(TaskResult<DownloadClient.Event>)
+  }
+
+  enum AlertAction: Equatable {
+    case deleteButtonTapped
+    case dismissed
+    case nevermindButtonTapped
+    case stopButtonTapped
+  }
+
+  @Dependency(\.downloadClient) var downloadClient
+
+  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+    switch action {
+    case .alert(.deleteButtonTapped):
+      state.alert = nil
+      state.mode = .notDownloaded
+      return .none
+
+    case .alert(.nevermindButtonTapped),
+      .alert(.dismissed):
+      state.alert = nil
+      return .none
+
+    case .alert(.stopButtonTapped):
+      state.mode = .notDownloaded
+      state.alert = nil
+      return .cancel(id: state.id)
+
+    case .buttonTapped:
+      switch state.mode {
+      case .downloaded:
+        state.alert = deleteAlert
+        return .none
+
+      case .downloading:
+        state.alert = stopAlert
+        return .none
+
+      case .notDownloaded:
+        state.mode = .startingToDownload
+
+        return .run { [url = state.url] send in
+          for try await event in self.downloadClient.download(url) {
+            await send(.downloadClient(.success(event)), animation: .default)
+          }
+        } catch: { error, send in
+          await send(.downloadClient(.failure(error)), animation: .default)
+        }
+        .cancellable(id: state.id)
+
+      case .startingToDownload:
+        state.alert = stopAlert
+        return .none
+      }
+
+    case .downloadClient(.success(.response)):
+      state.mode = .downloaded
+      state.alert = nil
+      return .none
+
+    case let .downloadClient(.success(.updateProgress(progress))):
+      state.mode = .downloading(progress: progress)
+      return .none
+
+    case .downloadClient(.failure):
+      state.mode = .notDownloaded
+      state.alert = nil
+      return .none
+    }
+  }
+
+  private var deleteAlert: AlertState<AlertAction> {
+    AlertState {
+      TextState("Do you want to delete this map from your offline storage?")
+    } actions: {
+      ButtonState(role: .destructive, action: .send(.deleteButtonTapped, animation: .default)) {
+        TextState("Delete")
+      }
+      self.nevermindButton
+    }
+  }
+
+  private var stopAlert: AlertState<AlertAction> {
+    AlertState {
+      TextState("Do you want to stop downloading this map?")
+    } actions: {
+      ButtonState(role: .destructive, action: .send(.stopButtonTapped, animation: .default)) {
+        TextState("Stop")
+      }
+      self.nevermindButton
+    }
+  }
+
+  private var nevermindButton: ButtonState<AlertAction> {
+    ButtonState(role: .cancel, action: .nevermindButtonTapped) {
+      TextState("Nevermind")
+    }
+  }
 }
 
 enum Mode: Equatable {
@@ -29,142 +134,38 @@ enum Mode: Equatable {
   }
 }
 
-enum DownloadComponentAction: Equatable {
-  case alert(AlertAction)
-  case buttonTapped
-  case downloadClient(Result<DownloadClient.Action, DownloadClient.Error>)
-
-  enum AlertAction: Equatable {
-    case cancelButtonTapped
-    case deleteButtonTapped
-    case dismiss
-    case nevermindButtonTapped
-  }
-}
-
-struct DownloadComponentEnvironment {
-  var downloadClient: DownloadClient
-  var mainQueue: AnySchedulerOf<DispatchQueue>
-}
-
-extension Reducer {
-  func downloadable<ID: Hashable>(
-    state: WritableKeyPath<State, DownloadComponentState<ID>>,
-    action: CasePath<Action, DownloadComponentAction>,
-    environment: @escaping (Environment) -> DownloadComponentEnvironment
-  ) -> Reducer {
-    .combine(
-      Reducer<DownloadComponentState<ID>, DownloadComponentAction, DownloadComponentEnvironment> {
-        state, action, environment in
-        switch action {
-        case .alert(.cancelButtonTapped):
-          state.mode = .notDownloaded
-          state.alert = nil
-          return .cancel(id: state.id)
-
-        case .alert(.deleteButtonTapped):
-          state.alert = nil
-          state.mode = .notDownloaded
-          return .none
-
-        case .alert(.nevermindButtonTapped),
-          .alert(.dismiss):
-          state.alert = nil
-          return .none
-
-        case .buttonTapped:
-          switch state.mode {
-          case .downloaded:
-            state.alert = deleteAlert
-            return .none
-
-          case .downloading:
-            state.alert = cancelAlert
-            return .none
-
-          case .notDownloaded:
-            state.mode = .startingToDownload
-            return environment.downloadClient
-              .download(state.url)
-              .throttle(for: 1, scheduler: environment.mainQueue, latest: true)
-              .catchToEffect(DownloadComponentAction.downloadClient)
-              .cancellable(id: state.id)
-
-          case .startingToDownload:
-            state.alert = cancelAlert
-            return .none
-          }
-
-        case .downloadClient(.success(.response)):
-          state.mode = .downloaded
-          state.alert = nil
-          return .none
-
-        case let .downloadClient(.success(.updateProgress(progress))):
-          state.mode = .downloading(progress: progress)
-          return .none
-
-        case .downloadClient(.failure):
-          state.mode = .notDownloaded
-          state.alert = nil
-          return .none
-        }
-      }
-      .pullback(state: state, action: action, environment: environment),
-      self
-    )
-  }
-}
-
-private let deleteAlert = AlertState(
-  title: .init("Do you want to delete this map from your offline storage?"),
-  primaryButton: .destructive(.init("Delete"), action: .send(.deleteButtonTapped)),
-  secondaryButton: nevermindButton
-)
-
-private let cancelAlert = AlertState(
-  title: .init("Do you want to cancel downloading this map?"),
-  primaryButton: .destructive(.init("Cancel"), action: .send(.cancelButtonTapped)),
-  secondaryButton: nevermindButton
-)
-
-let nevermindButton = AlertState<DownloadComponentAction.AlertAction>.Button
-  .default(.init("Nevermind"), action: .send(.nevermindButtonTapped))
-
-struct DownloadComponent<ID: Equatable>: View {
-  let store: Store<DownloadComponentState<ID>, DownloadComponentAction>
+struct DownloadComponentView: View {
+  let store: StoreOf<DownloadComponent>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
-      Button(action: { viewStore.send(.buttonTapped) }) {
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
+      Button {
+        viewStore.send(.buttonTapped)
+      } label: {
         if viewStore.mode == .downloaded {
           Image(systemName: "checkmark.circle")
-            .accentColor(.blue)
+            .tint(.accentColor)
         } else if viewStore.mode.progress > 0 {
           ZStack {
             CircularProgressView(value: viewStore.mode.progress)
               .frame(width: 16, height: 16)
-
             Rectangle()
               .frame(width: 6, height: 6)
-              .foregroundColor(.black)
           }
         } else if viewStore.mode == .notDownloaded {
           Image(systemName: "icloud.and.arrow.down")
-            .accentColor(.black)
         } else if viewStore.mode == .startingToDownload {
           ZStack {
             ProgressView()
-
             Rectangle()
               .frame(width: 6, height: 6)
-              .foregroundColor(.black)
           }
         }
       }
+      .foregroundStyle(.primary)
       .alert(
-        self.store.scope(state: \.alert, action: DownloadComponentAction.alert),
-        dismiss: .dismiss
+        self.store.scope(state: \.alert, action: DownloadComponent.Action.alert),
+        dismiss: .dismissed
       )
     }
   }
