@@ -97,7 +97,7 @@ final class ComposableArchitectureTests: BaseTCATestCase {
         case .start:
           return .run { send in
             for await _ in effect.stream {
-              await send(.incr)
+              try await send(.incr)
             }
           }
         }
@@ -133,7 +133,7 @@ final class ComposableArchitectureTests: BaseTCATestCase {
             state += 1
             return .run { [state] send in
               try await mainQueue.sleep(for: .seconds(1))
-              await send(.response(state * state))
+              try await send(.response(state * state))
             }
             .cancellable(id: CancelID.sleep)
 

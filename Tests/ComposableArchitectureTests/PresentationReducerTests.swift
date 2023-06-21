@@ -275,7 +275,7 @@ final class PresentationReducerTests: BaseTCATestCase {
             case .startButtonTapped:
               return .run { send in
                 for try await _ in clock.timer(interval: .seconds(1)) {
-                  await send(.tick)
+                  try await send(.tick)
                 }
               }
             case .tick:
@@ -362,7 +362,7 @@ final class PresentationReducerTests: BaseTCATestCase {
             case .startButtonTapped:
               return .run { send in
                 for try await _ in clock.timer(interval: .seconds(1)) {
-                  await send(.tick)
+                  try await send(.tick)
                 }
               }
             case .tick:
@@ -444,7 +444,7 @@ final class PresentationReducerTests: BaseTCATestCase {
             case .startButtonTapped:
               return .run { send in
                 for try await _ in clock.timer(interval: .seconds(1)) {
-                  await send(.tick)
+                  try await send(.tick)
                 }
               }
             case .tick:
@@ -822,7 +822,7 @@ final class PresentationReducerTests: BaseTCATestCase {
             case .startButtonTapped:
               return .run { send in
                 for try await _ in clock.timer(interval: .seconds(1)) {
-                  await send(.tick)
+                  try await send(.tick)
                 }
               }
             case .tick:
@@ -1152,7 +1152,7 @@ final class PresentationReducerTests: BaseTCATestCase {
           case .startButtonTapped:
             return .run { send in
               for await _ in self.clock.timer(interval: .seconds(1)) {
-                await send(.response(42))
+                try await send(.response(42))
               }
             }
             .cancellable(id: CancelID.effect)
@@ -1248,7 +1248,7 @@ final class PresentationReducerTests: BaseTCATestCase {
           case .startButtonTapped:
             return .run { send in
               for await _ in self.clock.timer(interval: .seconds(1)) {
-                await send(.response(42))
+                try await send(.response(42))
               }
             }
             .cancellable(id: CancelID.effect)
@@ -1351,7 +1351,7 @@ final class PresentationReducerTests: BaseTCATestCase {
           case .startButtonTapped:
             return .run { send in
               for await _ in self.clock.timer(interval: .seconds(1)) {
-                await send(.response(42))
+                try await send(.response(42))
               }
             }
             .cancellable(id: CancelID.effect)
@@ -1917,7 +1917,7 @@ final class PresentationReducerTests: BaseTCATestCase {
           state.count += 1
           return .run { send in
             try await self.mainQueue.sleep(for: .seconds(1))
-            await send(.response)
+            try await send(.response)
           }
         }
       }
@@ -2223,7 +2223,7 @@ final class PresentationReducerTests: BaseTCATestCase {
         case .tap:
           return .run { send in
             try await mainQueue.sleep(for: .seconds(1))
-            await send(.response(42))
+            try await send(.response(42))
           }
           .cancellable(id: CancelID(), cancelInFlight: true)
         }
@@ -2250,7 +2250,7 @@ final class PresentationReducerTests: BaseTCATestCase {
             state.child = Child.State()
             return .run { send in
               try await self.mainQueue.sleep(for: .seconds(2))
-              await send(.response(42))
+              try await send(.response(42))
             }
             .cancellable(id: Child.CancelID())
           case let .response(value):

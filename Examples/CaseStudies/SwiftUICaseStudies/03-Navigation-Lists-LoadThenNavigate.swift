@@ -52,7 +52,7 @@ struct LoadThenNavigateList: ReducerProtocol {
         }
         return .run { send in
           try await self.clock.sleep(for: .seconds(1))
-          await send(.setNavigationSelectionDelayCompleted(navigatedId))
+          try await send(.setNavigationSelectionDelayCompleted(navigatedId))
         }
         .cancellable(id: CancelID.load, cancelInFlight: true)
 

@@ -415,7 +415,7 @@ final class TestStoreTests: BaseTCATestCase {
         case .tap:
           return .run { send in
             try await mainQueue.sleep(for: .seconds(1))
-            await send(.response)
+            try await send(.response)
           }
         case .response:
           state = 42

@@ -40,7 +40,7 @@ struct Timers: ReducerProtocol {
       return .run { [isTimerActive = state.isTimerActive] send in
         guard isTimerActive else { return }
         for await _ in self.clock.timer(interval: .seconds(1)) {
-          await send(.timerTicked, animation: .interpolatingSpring(stiffness: 3000, damping: 40))
+          try await send(.timerTicked, animation: .interpolatingSpring(stiffness: 3000, damping: 40))
         }
       }
       .cancellable(id: CancelID.timer, cancelInFlight: true)

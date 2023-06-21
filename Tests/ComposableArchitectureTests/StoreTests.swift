@@ -694,7 +694,7 @@ final class StoreTests: BaseTCATestCase {
       func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
         switch action {
         case .task:
-          return .run { send in await send(.didFinish) }
+          return .run { send in try await send(.didFinish) }
         case .didFinish:
           return .none
         }

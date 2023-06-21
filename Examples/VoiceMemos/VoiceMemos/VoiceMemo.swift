@@ -66,7 +66,7 @@ struct VoiceMemo: ReducerProtocol {
         state.mode = .playing(progress: 0)
 
         return .run { [url = state.url] send in
-          await send(.delegate(.playbackStarted))
+          try await send(.delegate(.playbackStarted))
 
           async let playAudio: Void = send(
             .audioPlayerClient(TaskResult { try await self.audioPlayer.play(url) })
@@ -75,10 +75,10 @@ struct VoiceMemo: ReducerProtocol {
           var start: TimeInterval = 0
           for await _ in self.clock.timer(interval: .milliseconds(500)) {
             start += 0.5
-            await send(.timerUpdated(start))
+            try await send(.timerUpdated(start))
           }
 
-          await playAudio
+          try await playAudio
         }
         .cancellable(id: CancelID.play, cancelInFlight: true)
 

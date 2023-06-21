@@ -55,7 +55,7 @@ struct Animations: ReducerProtocol {
     case .rainbowButtonTapped:
       return .run { send in
         for color in [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .black] {
-          await send(.setColor(color), animation: .linear)
+          try await send(.setColor(color), animation: .linear)
           try await self.clock.sleep(for: .seconds(1))
         }
       }

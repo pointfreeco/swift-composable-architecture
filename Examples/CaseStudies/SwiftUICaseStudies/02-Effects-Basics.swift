@@ -49,7 +49,7 @@ struct EffectsBasics: ReducerProtocol {
         ? .none
         : .run { send in
           try await self.clock.sleep(for: .seconds(1))
-          await send(.decrementDelayResponse)
+          try await send(.decrementDelayResponse)
         }
         .cancellable(id: CancelID.delay)
 
@@ -72,7 +72,7 @@ struct EffectsBasics: ReducerProtocol {
       // Return an effect that fetches a number fact from the API and returns the
       // value back to the reducer's `numberFactResponse` action.
       return .run { [count = state.count] send in
-        await send(.numberFactResponse(TaskResult { try await self.factClient.fetch(count) }))
+        try await send(.numberFactResponse(TaskResult { try await self.factClient.fetch(count) }))
       }
 
     case let .numberFactResponse(.success(response)):

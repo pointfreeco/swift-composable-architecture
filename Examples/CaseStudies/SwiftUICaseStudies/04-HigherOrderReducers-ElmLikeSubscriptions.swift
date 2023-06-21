@@ -67,7 +67,7 @@ let clockReducer = AnyReducer<ClockState, ClockAction, ClockEnvironment>.combine
     return [
       TimerID(): .run { send in
         for await _ in environment.clock.timer(interval: .seconds(1)) {
-          await send(.timerTicked, animation: .interpolatingSpring(stiffness: 3000, damping: 40))
+          try await send(.timerTicked, animation: .interpolatingSpring(stiffness: 3000, damping: 40))
         }
       }
     ]

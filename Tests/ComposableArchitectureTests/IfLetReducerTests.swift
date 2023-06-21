@@ -56,7 +56,7 @@ final class IfLetReducerTests: BaseTCATestCase {
           case .timerButtonTapped:
             return .run { send in
               for await _ in self.clock.timer(interval: .seconds(1)) {
-                await send(.timerTick)
+                try await send(.timerTick)
               }
             }
           case .timerTick:
@@ -133,7 +133,7 @@ final class IfLetReducerTests: BaseTCATestCase {
           case .timerButtonTapped:
             return .run { send in
               for await _ in self.clock.timer(interval: .seconds(1)) {
-                await send(.timerTick)
+                try await send(.timerTick)
               }
             }
           case .timerTick:
@@ -288,7 +288,7 @@ final class IfLetReducerTests: BaseTCATestCase {
         case .tap:
           return .run { [id = state.id] send in
             try await mainQueue.sleep(for: .seconds(0))
-            await send(.response(id))
+            try await send(.response(id))
           }
         case let .response(value):
           state.value = value

@@ -56,7 +56,7 @@ struct DownloadComponent: ReducerProtocol {
 
         return .run { [url = state.url] send in
           for try await event in self.downloadClient.download(url) {
-            await send(.downloadClient(.success(event)), animation: .default)
+            try await send(.downloadClient(.success(event)), animation: .default)
           }
         } catch: { error, send in
           await send(.downloadClient(.failure(error)), animation: .default)

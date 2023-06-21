@@ -318,7 +318,7 @@ final class EffectTests: BaseTCATestCase {
           switch action {
           case .tap:
             return .run { send in
-              await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
+              try await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
             }
           case let .response(value):
             state = value

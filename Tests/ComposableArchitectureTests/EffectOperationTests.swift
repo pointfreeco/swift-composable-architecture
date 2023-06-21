@@ -33,7 +33,7 @@
         XCTFail()
       }
 
-      effect = EffectTask<Int>.run { await $0(42) }
+      effect = EffectTask<Int>.run { try await $0(42) }
         .merge(with: .none)
       switch effect.operation {
       case let .run(_, send):
@@ -43,7 +43,7 @@
       }
 
       effect = EffectTask<Int>.none
-        .merge(with: .run { await $0(42) })
+        .merge(with: .run { try await $0(42) })
       switch effect.operation {
       case let .run(_, send):
         await send(.init(send: { XCTAssertEqual($0, 42) }))
@@ -80,7 +80,7 @@
         XCTFail()
       }
 
-      effect = EffectTask<Int>.run { await $0(42) }
+      effect = EffectTask<Int>.run { try await $0(42) }
         .concatenate(with: .none)
       switch effect.operation {
       case let .run(_, send):
@@ -90,7 +90,7 @@
       }
 
       effect = EffectTask<Int>.none
-        .concatenate(with: .run { await $0(42) })
+        .concatenate(with: .run { try await $0(42) })
       switch effect.operation {
       case let .run(_, send):
         await send(.init(send: { XCTAssertEqual($0, 42) }))

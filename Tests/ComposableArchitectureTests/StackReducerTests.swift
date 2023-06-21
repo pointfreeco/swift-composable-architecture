@@ -887,7 +887,7 @@ final class StackReducerTests: BaseTCATestCase {
         case .tap:
           return .run { [count = state.count] send in
             try await self.mainQueue.sleep(for: .seconds(count))
-            await send(.response(42))
+            try await send(.response(42))
           }
         case let .response(value):
           state.count = value

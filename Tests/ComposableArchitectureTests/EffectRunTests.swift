@@ -12,7 +12,7 @@ final class EffectRunTests: BaseTCATestCase {
       Reduce<State, Action> { state, action in
         switch action {
         case .tapped:
-          return .run { send in await send(.response) }
+          return .run { send in try await send(.response) }
         case .response:
           return .none
         }
@@ -90,8 +90,7 @@ final class EffectRunTests: BaseTCATestCase {
         case .tapped:
           return .run { send in
             Task.cancel(id: CancelID.response)
-            try Task.checkCancellation()
-            await send(.response)
+            try await send(.response)
           }
           .cancellable(id: CancelID.response)
         case .response:
@@ -113,7 +112,7 @@ final class EffectRunTests: BaseTCATestCase {
           return .run { send in
             Task.cancel(id: CancelID.responseA)
             try Task.checkCancellation()
-            await send(.responseA)
+            try await send(.responseA)
           } catch: { _, send in
             await send(.responseB)
           }
@@ -158,7 +157,7 @@ final class EffectRunTests: BaseTCATestCase {
               return .run { send in
                 Task(priority: .userInitiated) {
                   try await queue.sleep(for: .seconds(1))
-                  await send(.response)
+                  try await send(.response)
                 }
               }
             case .response:
@@ -200,7 +199,7 @@ final class EffectRunTests: BaseTCATestCase {
             return .run { send in
               Task(priority: .userInitiated) {
                 try await queue.sleep(for: .seconds(1))
-                await send(.response)
+                try await send(.response)
               }
             }
             .eraseToEffect()

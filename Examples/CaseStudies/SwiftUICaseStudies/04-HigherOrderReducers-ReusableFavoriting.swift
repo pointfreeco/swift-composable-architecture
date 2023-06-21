@@ -51,7 +51,7 @@ struct Favoriting<ID: Hashable & Sendable>: ReducerProtocol {
       state.isFavorite.toggle()
 
       return .run { [id = state.id, isFavorite = state.isFavorite, favorite] send in
-        await send(.response(TaskResult { try await favorite(id, isFavorite) }))
+        try await send(.response(TaskResult { try await favorite(id, isFavorite) }))
       }
       .cancellable(id: CancelID(id: state.id), cancelInFlight: true)
 

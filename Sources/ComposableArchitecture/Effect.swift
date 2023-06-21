@@ -150,7 +150,7 @@ extension EffectPublisher where Failure == Never {
   /// - Returns: An effect wrapping the given asynchronous work.
   public static func run(
     priority: TaskPriority? = nil,
-    operation: @escaping @Sendable (Send<Action>) async throws -> Void,
+    operation: @escaping @Sendable (ThrowingSend<Action>) async throws -> Void,
     catch handler: (@Sendable (Error, Send<Action>) async -> Void)? = nil,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -160,7 +160,7 @@ extension EffectPublisher where Failure == Never {
         operation: .run(priority) { send in
           await escaped.yield {
             do {
-              try await operation(send)
+              try await operation(ThrowingSend(send))
             } catch is CancellationError {
               return
             } catch {
@@ -283,6 +283,44 @@ public struct Send<Action>: Sendable {
     }
   }
 }
+
+@MainActor
+public struct ThrowingSend<Action>: Sendable {
+  let send: @MainActor @Sendable (Action) -> Void
+
+  init(_ send: Send<Action>) {
+    self.send = send.send
+  }
+
+  /// Sends an action back into the system from an effect.
+  ///
+  /// - Parameter action: An action.
+  public func callAsFunction(_ action: Action) throws {
+    try Task.checkCancellation()
+    self.send(action)
+  }
+
+  /// Sends an action back into the system from an effect with animation.
+  ///
+  /// - Parameters:
+  ///   - action: An action.
+  ///   - animation: An animation.
+  public func callAsFunction(_ action: Action, animation: Animation?) throws {
+    try self(action, transaction: Transaction(animation: animation))
+  }
+
+  /// Sends an action back into the system from an effect with transaction.
+  ///
+  /// - Parameters:
+  ///   - action: An action.
+  ///   - transaction: A transaction.
+  public func callAsFunction(_ action: Action, transaction: Transaction) throws {
+    try withTransaction(transaction) {
+      try self(action)
+    }
+  }
+}
+
 
 // MARK: - Composing Effects
 

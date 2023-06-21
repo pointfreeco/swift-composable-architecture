@@ -91,11 +91,11 @@ final class DependencyKeyWritingReducerTests: BaseTCATestCase {
         switch action {
         case .tap:
           state.count += 1
-          return .run { send in await send(.response(self.myValue)) }
+          return .run { send in try await send(.response(self.myValue)) }
 
         case let .response(value):
           state.count = value
-          return .run { send in await send(.otherResponse(self.myValue)) }
+          return .run { send in try await send(.otherResponse(self.myValue)) }
 
         case let .otherResponse(value):
           state.count = value

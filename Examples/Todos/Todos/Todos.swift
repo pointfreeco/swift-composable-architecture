@@ -91,7 +91,7 @@ struct Todos: ReducerProtocol {
       case .todo(id: _, action: .checkBoxToggled):
         return .run { send in
           try await self.clock.sleep(for: .seconds(1))
-          await send(.sortCompletedTodos, animation: .default)
+          try await send(.sortCompletedTodos, animation: .default)
         }
         .cancellable(id: CancelID.todoCompletion, cancelInFlight: true)
 

@@ -53,7 +53,7 @@ struct VoiceMemos: ReducerProtocol {
         switch state.audioRecorderPermission {
         case .undetermined:
           return .run { send in
-            await send(.recordPermissionResponse(self.requestRecordPermission()))
+            try await send(.recordPermissionResponse(self.requestRecordPermission()))
           }
 
         case .denied:

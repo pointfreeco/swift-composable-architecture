@@ -32,7 +32,7 @@ struct NavigateAndLoad: ReducerProtocol {
         state.isNavigationActive = true
         return .run { send in
           try await self.clock.sleep(for: .seconds(1))
-          await send(.setNavigationIsActiveDelayCompleted)
+          try await send(.setNavigationIsActiveDelayCompleted)
         }
         .cancellable(id: CancelID.load)
 

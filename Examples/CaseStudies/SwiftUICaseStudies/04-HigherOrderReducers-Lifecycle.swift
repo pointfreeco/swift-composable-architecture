@@ -84,7 +84,7 @@ struct LifecycleDemo: ReducerProtocol {
         .lifecycle(
           onAppear: .run { send in
             for await _ in self.clock.timer(interval: .seconds(1)) {
-              await send(.tick)
+              try await send(.tick)
             }
           }
           .cancellable(id: CancelID.lifecycle),

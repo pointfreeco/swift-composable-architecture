@@ -48,7 +48,7 @@ struct EffectsCancellation: ReducerProtocol {
       state.isFactRequestInFlight = true
 
       return .run { [count = state.count] send in
-        await send(.factResponse(TaskResult { try await self.factClient.fetch(count) }))
+        try await send(.factResponse(TaskResult { try await self.factClient.fetch(count) }))
       }
       .cancellable(id: CancelID.factRequest)
 

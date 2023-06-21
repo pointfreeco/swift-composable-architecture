@@ -78,14 +78,14 @@ struct RecordMeeting: ReducerProtocol {
             ? self.speechClient.requestAuthorization()
             : self.speechClient.authorizationStatus()
 
-          await withTaskGroup(of: Void.self) { group in
+          await withThrowingTaskGroup(of: Void.self) { group in
             if authorization == .authorized {
               group.addTask {
-                await self.startSpeechRecognition(send: send)
+                try await self.startSpeechRecognition(send: send)
               }
             }
             group.addTask {
-              await self.startTimer(send: send)
+              try await self.startTimer(send: send)
             }
           }
         }
@@ -122,20 +122,20 @@ struct RecordMeeting: ReducerProtocol {
     .ifLet(\.$alert, action: /Action.alert)
   }
 
-  private func startSpeechRecognition(send: Send<Action>) async {
+  private func startSpeechRecognition(send: ThrowingSend<Action>) async throws {
     do {
       let speechTask = await self.speechClient.startTask(SFSpeechAudioBufferRecognitionRequest())
       for try await result in speechTask {
-        await send(.speechResult(result))
+        try await send(.speechResult(result))
       }
     } catch {
-      await send(.speechFailure)
+      try await send(.speechFailure)
     }
   }
 
-  private func startTimer(send: Send<Action>) async {
+  private func startTimer(send: ThrowingSend<Action>) async throws {
     for await _ in self.clock.timer(interval: .seconds(1)) {
-      await send(.timerTick)
+      try await send(.timerTick)
     }
   }
 

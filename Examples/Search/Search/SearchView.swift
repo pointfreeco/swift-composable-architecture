@@ -81,7 +81,7 @@ struct Search: ReducerProtocol {
         return .none
       }
       return .run { [query = state.searchQuery] send in
-        await send(.searchResponse(TaskResult { try await self.weatherClient.search(query) }))
+        try await send(.searchResponse(TaskResult { try await self.weatherClient.search(query) }))
       }
       .cancellable(id: CancelID.location)
 
@@ -97,7 +97,7 @@ struct Search: ReducerProtocol {
       state.resultForecastRequestInFlight = location
 
       return .run { send in
-        await send(
+        try await send(
           .forecastResponse(
             location.id,
             TaskResult { try await self.weatherClient.forecast(location) }

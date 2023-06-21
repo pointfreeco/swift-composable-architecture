@@ -44,14 +44,14 @@ struct SpeechRecognition: ReducerProtocol {
 
         return .run { send in
           let status = await self.speechClient.requestAuthorization()
-          await send(.speechRecognizerAuthorizationStatusResponse(status))
+          try await send(.speechRecognizerAuthorizationStatusResponse(status))
 
           guard status == .authorized
           else { return }
 
           let request = SFSpeechAudioBufferRecognitionRequest()
           for try await result in await self.speechClient.startTask(request) {
-            await send(
+            try await send(
               .speech(.success(result.bestTranscription.formattedString)), animation: .linear)
           }
         } catch: { error, send in

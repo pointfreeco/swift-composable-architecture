@@ -70,7 +70,7 @@ struct StandupDetail: ReducerProtocol {
         switch alertAction {
         case .confirmDeletion:
           return .run { send in
-            await send(.delegate(.deleteStandup), animation: .default)
+            try await send(.delegate(.deleteStandup), animation: .default)
             await self.dismiss()
           }
         case .continueWithoutRecording:

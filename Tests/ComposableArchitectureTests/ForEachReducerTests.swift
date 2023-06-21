@@ -88,7 +88,7 @@ final class ForEachReducerTests: BaseTCATestCase {
             case .startButtonTapped:
               return .run { send in
                 for await _ in self.clock.timer(interval: .seconds(1)) {
-                  await send(.tick)
+                  try await send(.tick)
                 }
               }
             case .tick:
@@ -242,7 +242,7 @@ struct Elements: ReducerProtocol {
       Reduce { state, action in
         state.value = action
         return action.isEmpty
-          ? .run { await $0("Empty") }
+          ? .run { try await $0("Empty") }
           : .none
       }
     }

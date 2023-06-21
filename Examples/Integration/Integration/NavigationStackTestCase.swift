@@ -49,7 +49,7 @@ private struct ChildFeature: ReducerProtocol {
       case .runButtonTapped:
         return .run { [count = state.count] send in
           try await Task.sleep(for: .seconds(2))
-          await send(.response(count + 1))
+          try await send(.response(count + 1))
         }
       case .showAlertButtonTapped:
         state.alert = AlertState {

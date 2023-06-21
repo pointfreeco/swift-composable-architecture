@@ -54,7 +54,7 @@ struct RecordingMemo: ReducerProtocol {
       state.mode = .encoding
       return .run { send in
         if let currentTime = await self.audioRecorder.currentTime() {
-          await send(.finalRecordingTime(currentTime))
+          try await send(.finalRecordingTime(currentTime))
         }
         await self.audioRecorder.stopRecording()
       }
@@ -67,9 +67,9 @@ struct RecordingMemo: ReducerProtocol {
           )
         )
         for await _ in self.clock.timer(interval: .seconds(1)) {
-          await send(.timerUpdated)
+          try await send(.timerUpdated)
         }
-        await startRecording
+        try await startRecording
       }
 
     case .timerUpdated:

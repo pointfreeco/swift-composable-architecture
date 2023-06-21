@@ -486,9 +486,9 @@
           case .buttonTapped:
             state += 1
             return .run { send in
-              await send(.response(42))
+              try await send(.response(42))
               try await testScheduler.sleep(for: .seconds(1))
-              await send(.response(1729))
+              try await send(.response(1729))
             }
           case let .response(number):
             state = number
@@ -726,9 +726,9 @@
           case .tap:
             return .run { send in
               try await Task.sleep(nanoseconds: 10_000_000)
-              await send(.response1)
+              try await send(.response1)
               try await Task.sleep(nanoseconds: 10_000_000)
-              await send(.response2)
+              try await send(.response2)
             }
           case .response1, .response2:
             return .none
@@ -753,9 +753,9 @@
           case .tap:
             return .run { send in
               try await Task.sleep(nanoseconds: 10_000_000)
-              await send(.response1)
+              try await send(.response1)
               try await Task.sleep(nanoseconds: 10_000_000)
-              await send(.response1)
+              try await send(.response1)
             }
           case .response1:
             return .none
@@ -791,9 +791,9 @@
           case .tap:
             return .run { send in
               try await Task.sleep(nanoseconds: 10_000_000)
-              await send(.response2)
+              try await send(.response2)
               try await Task.sleep(nanoseconds: 10_000_000)
-              await send(.response2)
+              try await send(.response2)
             }
           case .response1, .response2:
             return .none

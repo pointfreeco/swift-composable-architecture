@@ -62,7 +62,7 @@ struct WebSocket: ReducerProtocol {
               //     dependency mutation in `Effect.{task,run}`. Can maybe remove that explicit task
               //     local mutation (and this `addTask`?) in a world with
               //     `Effect(operation: .run { ... })`?
-              group.addTask { await send(.webSocket(action)) }
+              group.addTask { try await send(.webSocket(action)) }
               switch action {
               case .didOpen:
                 group.addTask {
@@ -73,7 +73,7 @@ struct WebSocket: ReducerProtocol {
                 }
                 group.addTask {
                   for await result in try await self.webSocket.receive(WebSocketClient.ID()) {
-                    await send(.receivedSocketMessage(result))
+                    try await send(.receivedSocketMessage(result))
                   }
                 }
               case .didClose:
@@ -103,7 +103,7 @@ struct WebSocket: ReducerProtocol {
       state.messageToSend = ""
       return .run { send in
         try await self.webSocket.send(WebSocketClient.ID(), .string(messageToSend))
-        await send(.sendResponse(didSucceed: true))
+        try await send(.sendResponse(didSucceed: true))
       } catch: { _, send in
         await send(.sendResponse(didSucceed: false))
       }

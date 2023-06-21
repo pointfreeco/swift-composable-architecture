@@ -109,7 +109,7 @@ private struct Child1: ReducerProtocol {
     case .decrementButtonTapped:
       state.count -= 1
       return state.count < 0
-        ? .run { await $0(.incrementButtonTapped) }
+        ? .run { try await $0(.incrementButtonTapped) }
         : .none
     case .incrementButtonTapped:
       state.count += 1
@@ -132,7 +132,7 @@ private struct Child2: ReducerProtocol {
       Reduce { state, action in
         state = action
         return state < 0
-          ? .run { await $0(0) }
+          ? .run { try await $0(0) }
           : .none
       }
     }
@@ -140,7 +140,7 @@ private struct Child2: ReducerProtocol {
       Reduce { state, action in
         state = action
         return state.isEmpty
-          ? .run { await $0("Empty") }
+          ? .run { try await $0("Empty") }
           : .none
       }
     }

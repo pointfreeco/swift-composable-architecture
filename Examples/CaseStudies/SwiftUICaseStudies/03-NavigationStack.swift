@@ -413,7 +413,7 @@ struct ScreenC: ReducerProtocol {
       state.isTimerRunning = true
       return .run { send in
         for await _ in self.mainQueue.timer(interval: 1) {
-          await send(.timerTick)
+          try await send(.timerTick)
         }
       }
       .cancellable(id: CancelID.timer)

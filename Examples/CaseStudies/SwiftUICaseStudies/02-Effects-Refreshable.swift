@@ -54,7 +54,7 @@ struct Refreshable: ReducerProtocol {
     case .refresh:
       state.fact = nil
       return .run { [count = state.count] send in
-        await send(
+        try await send(
           .factResponse(TaskResult { try await self.factClient.fetch(count) }),
           animation: .default
         )

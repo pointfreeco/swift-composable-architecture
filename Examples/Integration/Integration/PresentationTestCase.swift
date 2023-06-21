@@ -276,7 +276,7 @@ private struct ChildFeature: ReducerProtocol {
         state.count += 1
         return .run { send in
           try await Task.sleep(for: .seconds(2))
-          await send(.response)
+          try await send(.response)
         }
       }
     }

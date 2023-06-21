@@ -35,7 +35,7 @@ struct LongLivingEffects: ReducerProtocol {
       // When the view appears, start the effect that emits when screenshots are taken.
       return .run { send in
         for await _ in await self.screenshots() {
-          await send(.userDidTakeScreenshotNotification)
+          try await send(.userDidTakeScreenshotNotification)
         }
       }
 

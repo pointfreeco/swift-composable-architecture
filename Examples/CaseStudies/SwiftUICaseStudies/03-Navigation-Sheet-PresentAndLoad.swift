@@ -32,7 +32,7 @@ struct PresentAndLoad: ReducerProtocol {
         state.isSheetPresented = true
         return .run { send in
           try await self.clock.sleep(for: .seconds(1))
-          await send(.setSheetIsPresentedDelayCompleted)
+          try await send(.setSheetIsPresentedDelayCompleted)
         }
         .cancellable(id: CancelID.load)
 
