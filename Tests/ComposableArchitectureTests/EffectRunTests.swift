@@ -100,20 +100,22 @@ final class EffectRunTests: BaseTCATestCase {
         }
       }
     }
-    XCTExpectFailure {
-      $0.compactDescription == """
-        A canceled effect tried to send an action at \
-        "ComposableArchitectureTests/EffectRunTests.swift:\(line!)". …
+    #if DEBUG
+      XCTExpectFailure {
+        $0.compactDescription == """
+          A canceled effect tried to send an action at \
+          "ComposableArchitectureTests/EffectRunTests.swift:\(line!)". …
 
-          Action:
-            EffectRunTests.Action.response
+            Action:
+              EffectRunTests.Action.response
 
-        Canceled effects cannot send actions back into the system.
+          Canceled effects cannot send actions back into the system.
 
-        Invoke "try Task.checkCancellation()" before sending actions from cancellable effects to \
-        participate in cooperative cancellation.
-        """
-    }
+          Invoke "try Task.checkCancellation()" before sending actions from cancellable effects to \
+          participate in cooperative cancellation.
+          """
+      }
+    #endif
     await store.send(.tapped).finish()
   }
 
