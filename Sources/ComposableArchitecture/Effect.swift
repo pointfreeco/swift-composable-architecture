@@ -257,8 +257,27 @@ public struct Send<Action>: Sendable {
   /// Sends an action back into the system from an effect.
   ///
   /// - Parameter action: An action.
-  public func callAsFunction(_ action: Action) {
-    guard !Task.isCancelled else { return }
+  public func callAsFunction(
+    _ action: Action,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) {
+    guard !Task.isCancelled else {
+      runtimeWarn(
+        """
+        A cancelled effect tried to send an action at "\(fileID):\(line)". …
+
+          Action:
+            \(debugCaseOutput(action))
+
+        Cancelled effects cannot send actions back into the system.
+
+        Invoke "try Task.checkCancellation()" before sending actions from cancellable effects to \
+        participate in cooperative cancellation.
+        """
+      )
+      return
+    }
     self.send(action)
   }
 
@@ -267,8 +286,13 @@ public struct Send<Action>: Sendable {
   /// - Parameters:
   ///   - action: An action.
   ///   - animation: An animation.
-  public func callAsFunction(_ action: Action, animation: Animation?) {
-    callAsFunction(action, transaction: Transaction(animation: animation))
+  public func callAsFunction(
+    _ action: Action,
+    animation: Animation?,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) {
+    self(action, transaction: Transaction(animation: animation), fileID: fileID, line: line)
   }
 
   /// Sends an action back into the system from an effect with transaction.
@@ -276,10 +300,14 @@ public struct Send<Action>: Sendable {
   /// - Parameters:
   ///   - action: An action.
   ///   - transaction: A transaction.
-  public func callAsFunction(_ action: Action, transaction: Transaction) {
-    guard !Task.isCancelled else { return }
+  public func callAsFunction(
+    _ action: Action,
+    transaction: Transaction,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) {
     withTransaction(transaction) {
-      self(action)
+      self(action, fileID: fileID, line: line)
     }
   }
 }

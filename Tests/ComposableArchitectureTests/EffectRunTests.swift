@@ -84,13 +84,14 @@ final class EffectRunTests: BaseTCATestCase {
     enum CancelID { case response }
     struct State: Equatable {}
     enum Action: Equatable { case tapped, response }
+    var line: UInt! = nil
     let store = TestStore(initialState: State()) {
       Reduce<State, Action> { state, action in
         switch action {
         case .tapped:
+          line = #line + 3
           return .run { send in
             Task.cancel(id: CancelID.response)
-            try Task.checkCancellation()
             await send(.response)
           }
           .cancellable(id: CancelID.response)
@@ -98,6 +99,20 @@ final class EffectRunTests: BaseTCATestCase {
           return .none
         }
       }
+    }
+    XCTExpectFailure {
+      $0.compactDescription == """
+        A cancelled effect tried to send an action at \
+        "ComposableArchitectureTests/EffectRunTests.swift:\(line!)". …
+
+          Action:
+            EffectRunTests.Action.response
+
+        Cancelled effects cannot send actions back into the system.
+
+        Invoke "try Task.checkCancellation()" before sending actions from cancellable effects to \
+        participate in cooperative cancellation.
+        """
     }
     await store.send(.tapped).finish()
   }
