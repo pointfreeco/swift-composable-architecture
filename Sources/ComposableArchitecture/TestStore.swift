@@ -1395,7 +1395,10 @@ extension TestStore where ScopedState: Equatable {
     }
 
     func tryUnnecessaryModifyFailure() {
-      guard expected == current && updateStateToExpectedResult != nil
+      guard
+        self.exhaustivity == .on,
+        expected == current,
+        updateStateToExpectedResult != nil
       else { return }
 
       XCTFailHelper(

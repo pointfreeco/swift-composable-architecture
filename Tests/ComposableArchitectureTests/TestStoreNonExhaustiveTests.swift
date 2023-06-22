@@ -809,6 +809,17 @@
       await store.receive(.response2, timeout: 1_000_000_000)
     }
 
+    func testNonExhaustive_ShowSkippedAssertions_ExpectedStateToChange() async {
+      let store = TestStore(initialState: 0) {
+        Reduce<Int, Void> { _, _ in .none }
+      }
+      store.exhaustivity = .off(showSkippedAssertions: true)
+
+      await store.send(()) {
+        $0 = 0
+      }
+    }
+
     // This example comes from Krzysztof Zabłocki's blog post:
     // https://www.merowing.info/exhaustive-testing-in-tca/
     func testKrzysztofExample1() {
