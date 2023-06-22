@@ -64,7 +64,7 @@ where Base.State == Body.State, Base.Action == Body.Action {
   @usableFromInline
   let reducer: (Value, Value) -> Body
 
-  @inlinable
+  @usableFromInline
   init(
     base: Base,
     toValue: @escaping (Base.State) -> Value,
