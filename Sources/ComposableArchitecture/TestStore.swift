@@ -1944,27 +1944,30 @@ extension TestStore where ScopedState: Equatable {
 
     let (receivedAction, state) = self.reducer.receivedActions.removeFirst()
     if !predicate(receivedAction) {
+      let receivedActionLater = self.reducer.receivedActions
+        .contains(where: { action, _ in predicate(receivedAction) })
       XCTFailHelper(
         """
-        Received unexpected action: …
+        Received unexpected action\(receivedActionLater ? " before this one" : ""): …
 
         \(unexpectedActionDescription(receivedAction))
         """,
         file: file,
         line: line
       )
-    }
-    let expectedState = self.toScopedState(self.state)
-    do {
-      try self.expectedStateShouldMatch(
-        expected: expectedState,
-        actual: self.toScopedState(state),
-        updateStateToExpectedResult: updateStateToExpectedResult,
-        file: file,
-        line: line
-      )
-    } catch {
-      XCTFail("Threw error: \(error)", file: file, line: line)
+    } else {
+      let expectedState = self.toScopedState(self.state)
+      do {
+        try self.expectedStateShouldMatch(
+          expected: expectedState,
+          actual: self.toScopedState(state),
+          updateStateToExpectedResult: updateStateToExpectedResult,
+          file: file,
+          line: line
+        )
+      } catch {
+        XCTFail("Threw error: \(error)", file: file, line: line)
+      }
     }
     self.reducer.state = state
     if "\(self.file)" == "\(file)" {
