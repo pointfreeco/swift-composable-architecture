@@ -100,27 +100,26 @@ public struct ForEachStore<
   where
     Data == IdentifiedArray<ID, EachState>,
     Content == WithViewStore<
-      IdentifiedArray<ID, EachState>, (ID, EachAction), ForEach<IdentifiedArray<ID, EachState>, ID, EachContent>
+      IdentifiedArray<ID, EachState>, (ID, EachAction),
+      ForEach<IdentifiedArray<ID, EachState>, ID, EachContent>
     >
   {
     self.data = store.state.value
-    self.content = {
-      WithViewStore(
-        store,
-        observe: { $0 },
-        removeDuplicates: { areOrderedSetsDuplicates($0.ids, $1.ids) }
-      ) { viewStore in
-        ForEach(viewStore.state, id: viewStore.state.id) { element in
-          var element = element
-          let id = element[keyPath: viewStore.state.id]
-          content(
-            store.scope(
-              state: {
-                element = $0[id: id] ?? element
-                return element
-              },
-              action: { (id, $0) }
-            )
+    self.content = WithViewStore(
+      store,
+      observe: { $0 },
+      removeDuplicates: { areOrderedSetsDuplicates($0.ids, $1.ids) }
+    ) { viewStore in
+      ForEach(viewStore.state, id: viewStore.state.id) { element in
+        var element = element
+        let id = element[keyPath: viewStore.state.id]
+        content(
+          store.scope(
+            state: {
+              element = $0[id: id] ?? element
+              return element
+            },
+            action: { (id, $0) }
           )
         )
       }
