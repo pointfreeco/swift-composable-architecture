@@ -814,10 +814,8 @@
         Reduce<Int, Void> { _, _ in .none }
       }
       store.exhaustivity = .off(showSkippedAssertions: true)
-
-      await store.send(()) {
-        $0 = 0
-      }
+      await store.send(()) { $0 = 0 }
+      store.assert { $0 = 0 }
     }
 
     // This example comes from Krzysztof Zabłocki's blog post:
