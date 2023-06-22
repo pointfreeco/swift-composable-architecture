@@ -280,6 +280,7 @@ final class EffectCancellationTests: BaseTCATestCase {
     XCTAssertEqual(output, [1, 2])
   }
 
+  @available(*, deprecated)
   func testMultipleCancellations() async {
     let mainQueue = DispatchQueue.test
     let output = LockIsolated<[AnyHashable]>([])

@@ -25,6 +25,15 @@ public typealias ReducerProtocol = Reducer
   public typealias ReducerProtocolOf<R: Reducer> = Reducer<R.State, R.Action>
 #endif
 
+// MARK: - Deprecated after 0.54.1
+
+extension EffectPublisher {
+  @available(*, deprecated, message: "Use 'Effect.merge([.cancel(id: …), …])' instead.")
+  public static func cancel(ids: [AnyHashable]) -> Self {
+    .merge(ids.map(EffectPublisher.cancel(id:)))
+  }
+}
+
 // MARK: - Deprecated after 0.52.0
 
 extension WithViewStore {
