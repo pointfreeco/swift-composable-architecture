@@ -43,6 +43,7 @@ extension ReducerProtocol {
   ///   - oldValue: The old value that failed the comparison check.
   ///   - newValue: The new value that failed the comparison check.
   /// - Returns: A reducer that performs the
+  @inlinable
   public func onChange<V: Equatable, R: ReducerProtocol>(
     of toValue: @escaping (State) -> V,
     @ReducerBuilder<State, Action> _ reducer: @escaping (_ oldValue: V, _ newValue: V) -> R
@@ -54,10 +55,27 @@ extension ReducerProtocol {
 public struct _OnChangeReducer<Base: ReducerProtocol, Value: Equatable, Body: ReducerProtocol>:
   ReducerProtocol
 where Base.State == Body.State, Base.Action == Body.Action {
+  @usableFromInline
   let base: Base
+
+  @usableFromInline
   let toValue: (Base.State) -> Value
+
+  @usableFromInline
   let reducer: (Value, Value) -> Body
 
+  @inlinable
+  init(
+    base: Base,
+    toValue: @escaping (Base.State) -> Value,
+    reducer: @escaping (Value, Value) -> Body
+  ) {
+    self.base = base
+    self.toValue = toValue
+    self.reducer = reducer
+  }
+
+  @inlinable
   public func reduce(into state: inout Base.State, action: Base.Action) -> EffectTask<Base.Action> {
     let oldValue = toValue(state)
     let baseEffects = self.base.reduce(into: &state, action: action)
