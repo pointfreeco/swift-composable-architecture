@@ -28,7 +28,7 @@
         > Note: Before importing the library you will need to depend on it by adding it to your 
         Xcode project settings or SPM package:
         > 
-        > http://github.com/pointfreeco/swift-composable-architecture
+        > http://github.com/pointfreeco/swift-composable-architecture#Installation
       }
       
       @Step {
