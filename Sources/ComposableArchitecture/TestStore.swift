@@ -879,14 +879,17 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
 
   func completed() {
     if !self.reducer.receivedActions.isEmpty {
-      var actions = ""
-      customDump(self.reducer.receivedActions.map(\.action), to: &actions)
+      let actions = self.reducer.receivedActions
+        .map(\.action)
+        .map { "    • " + debugCaseOutput($0, abbreviated: true) }
+        .joined(separator: "\n")
       XCTFailHelper(
         """
         The store received \(self.reducer.receivedActions.count) unexpected \
         action\(self.reducer.receivedActions.count == 1 ? "" : "s") after this one: …
 
-        Unhandled actions: \(actions)
+          Unhandled actions:
+        \(actions)
         """,
         file: self.file,
         line: self.line
@@ -1163,7 +1166,7 @@ extension TestStore where ScopedState: Equatable {
   ///   store.
   @MainActor
   public func assert(
-    _ updateStateToExpectedResult: ((inout ScopedState) throws -> Void)?,
+    _ updateStateToExpectedResult: @escaping (inout ScopedState) throws -> Void,
     file: StaticString = #file,
     line: UInt = #line
   ) {
@@ -1174,6 +1177,7 @@ extension TestStore where ScopedState: Equatable {
         expected: expectedState,
         actual: self.toScopedState(currentState),
         updateStateToExpectedResult: updateStateToExpectedResult,
+        skipUnnecessaryModifyFailure: true,
         file: file,
         line: line
       )
@@ -1278,6 +1282,7 @@ extension TestStore where ScopedState: Equatable {
     expected: ScopedState,
     actual: ScopedState,
     updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    skipUnnecessaryModifyFailure: Bool = false,
     file: StaticString,
     line: UInt
   ) throws {
@@ -1395,7 +1400,10 @@ extension TestStore where ScopedState: Equatable {
     }
 
     func tryUnnecessaryModifyFailure() {
-      guard expected == current && updateStateToExpectedResult != nil
+      guard
+        !skipUnnecessaryModifyFailure,
+        expected == current,
+        updateStateToExpectedResult != nil
       else { return }
 
       XCTFailHelper(
