@@ -230,6 +230,16 @@ struct RootView: View {
               )
             )
           )
+            
+          NavigationLink(
+            "Multiple destinations",
+            destination: MultipleDestinationsView(
+              store: self.store.scope(
+                state: \.multipleDestinations,
+                action: Root.Action.multipleDestinations
+              )
+            )
+          )
         }
 
         Section(header: Text("Higher-order reducers")) {
