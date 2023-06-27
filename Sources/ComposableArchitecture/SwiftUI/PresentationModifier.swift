@@ -10,7 +10,12 @@ extension View {
       _ destination: DestinationContent<State, Action>
     ) -> Content
   ) -> some View {
-    self.presentation(store: store) { `self`, $item, destination in
+    self.presentation(
+      store: store,
+      state: { $0 },
+      id: { _ in ObjectIdentifier(State.self) },
+      action: { $0 }
+    ) { `self`, $item, destination in
       body(self, $item.isPresent(), destination)
     }
   }
@@ -52,7 +57,10 @@ extension View {
     ) -> Content
   ) -> some View {
     self.presentation(
-      store: store, state: toDestinationState, action: fromDestinationAction
+      store: store,
+      state: toDestinationState,
+      id: { _ in ObjectIdentifier(State.self) },
+      action: fromDestinationAction
     ) { `self`, $item, destination in
       body(self, $item.isPresent(), destination)
     }
