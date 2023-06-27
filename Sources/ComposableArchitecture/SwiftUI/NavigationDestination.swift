@@ -19,11 +19,12 @@ extension View {
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination
   ) -> some View {
-    self.presentation(store: store) { `self`, $isPresented, destinationContent in
-      self.navigationDestination(isPresented: $isPresented) {
-        destinationContent(destination)
-      }
-    }
+    self.navigationDestination(
+      store: store,
+      state: { $0 },
+      action: { $0 },
+      destination: destination
+    )
   }
 
   /// Associates a destination view with a store that can be used to push the view onto a
@@ -54,9 +55,12 @@ extension View {
       Destination
   ) -> some View {
     self.presentation(
-      store: store, state: toDestinationState, action: fromDestinationAction
-    ) { `self`, $isPresented, destinationContent in
-      self.navigationDestination(isPresented: $isPresented) {
+      store: store,
+      state: toDestinationState,
+      id: { _ in ObjectIdentifier(State.self) },
+      action: fromDestinationAction
+    ) { `self`, $item, destinationContent in
+      self.navigationDestination(isPresented: $item.isPresent()) {
         destinationContent(destination)
       }
     }
