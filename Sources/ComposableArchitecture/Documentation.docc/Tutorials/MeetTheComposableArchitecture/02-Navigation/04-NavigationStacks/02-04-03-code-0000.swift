@@ -5,7 +5,7 @@ struct ContactDetailFeature: ReducerProtocol {
     @PresentationState var alert: AlertState<Action.Alert>?
     let contact: Contact
   }
-  enum Action {
+  enum Action: Equatable {
   }
   var body: some ReducerProtocolOf<Self> {
     Reduce { state, action in

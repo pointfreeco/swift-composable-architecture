@@ -131,9 +131,8 @@
         $0.compactDescription == """
           The store received 1 unexpected action after this one: …
 
-          Unhandled actions: [
-            [0]: .second
-          ]
+            Unhandled actions:
+              • .second
           """
       }
     }

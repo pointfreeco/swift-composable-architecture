@@ -4,7 +4,7 @@ struct ContactsFeature: ReducerProtocol {
     @PresentationState var alert: AlertState<Action.Alert>?
     var contacts: IdentifiedArrayOf<Contact> = []
   }
-  enum Action {
+  enum Action: Equatable {
     case addButtonTapped
     case addContact(PresentationAction<AddContactFeature.Action>)
     case alert(PresentationAction<Alert>)

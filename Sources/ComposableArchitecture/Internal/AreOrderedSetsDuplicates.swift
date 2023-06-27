@@ -3,7 +3,9 @@ import OrderedCollections
 
 @inlinable
 func areOrderedSetsDuplicates<T>(_ lhs: OrderedSet<T>, _ rhs: OrderedSet<T>) -> Bool {
-  var lhs = lhs
-  var rhs = rhs
-  return memcmp(&lhs, &rhs, MemoryLayout<OrderedSet<T>>.size) == 0 || lhs == rhs
+  withUnsafePointer(to: lhs) { lhsPointer in
+    withUnsafePointer(to: rhs) { rhsPointer in
+      memcmp(lhsPointer, rhsPointer, MemoryLayout<OrderedSet<T>>.size) == 0 || lhs == rhs
+    }
+  }
 }
