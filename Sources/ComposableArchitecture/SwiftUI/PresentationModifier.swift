@@ -231,7 +231,6 @@ public struct PresentationStore<
         )
       )
     )
-    .id(id)
   }
 }
 
