@@ -257,7 +257,7 @@ public struct BindingViewStore<State> {
   ) -> BindingViewState<Value> {
     BindingViewState(
       // OPTIMIZE: Can we derive bindings directly from `Store` and avoid the work of creating a `ViewStore`?
-      binding: ViewStore(self.store, removeDuplicates: { _, _ in false }).binding(
+      binding: ViewStore(self.store, observe: { $0 }, removeDuplicates: { _, _ in false }).binding(
         get: { $0[keyPath: keyPath].wrappedValue },
         send: { value in
           #if DEBUG

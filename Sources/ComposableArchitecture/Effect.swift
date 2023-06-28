@@ -82,7 +82,7 @@ public struct EffectPublisher<Action, Failure: Error> {
 /// ```swift
 /// let effect: EffectOf<Feature>
 /// ```
-public typealias EffectOf<R: ReducerProtocol> = EffectPublisher<R.Action, Never>
+public typealias EffectOf<R: Reducer> = EffectPublisher<R.Action, Never>
 
 // MARK: - Creating Effects
 

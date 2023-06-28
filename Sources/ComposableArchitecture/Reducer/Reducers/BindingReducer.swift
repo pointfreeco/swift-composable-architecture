@@ -41,7 +41,7 @@ import SwiftUI
 /// If you forget to compose the ``BindingReducer`` into your feature's reducer, then when a binding
 /// is written to it will cause a runtime purple Xcode warning letting you know what needs to be
 /// fixed.
-public struct BindingReducer<State, Action, ViewAction: BindableAction>: ReducerProtocol
+public struct BindingReducer<State, Action, ViewAction: BindableAction>: Reducer
 where State == ViewAction.State {
   @usableFromInline
   let toViewAction: (Action) -> ViewAction?

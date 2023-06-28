@@ -277,16 +277,16 @@ store.send(.set(\.$protectMyPosts, true)) {
 ```
 
 > Tip: If you use `@BindingState` on a larger struct and would like to observe changes to smaller
-> fields, apply the ``ReducerProtocol/onChange(of:_:)`` modifier to the ``BindingReducer``:
+> fields, apply the ``Reducer/onChange(of:_:)`` modifier to the ``BindingReducer``:
 >
 > ```swift
-> struct Settings: ReducerProtocol {
+> struct Settings: Reducer {
 >   struct State {
 >     @BindingState var developerSettings: DeveloperSettings
 >     // ...
 >   }
 >   // ...
->   var body: some ReducerProtocol<State, Action> {
+>   var body: some Reducer<State, Action> {
 >     BindingReducer()
 >       .onChange(of: \.developerSettings.showDiagnostics) { oldValue, newValue in
 >         // Logic for when `showDiagnostics` changes...
