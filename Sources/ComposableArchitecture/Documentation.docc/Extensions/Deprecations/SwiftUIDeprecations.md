@@ -12,9 +12,10 @@ Avoid using deprecated APIs in your app. Select a method to see the replacement 
 
 - ``ActionSheetState``
 
-### BindableState
+### Bindings
 
 - ``BindableState``
+- ``ViewStore/binding(_:fileID:line:)``
 
 ### ForEachStore
 

@@ -151,6 +151,10 @@ extension BindableAction {
   }
 }
 
+/// A property wrapper type that can designate properties of view state that can be directly
+/// bindable in SwiftUI views.
+///
+/// Read <doc:Bindings> for more information.
 @propertyWrapper
 public struct BindingViewState<Value> {
   let binding: Binding<Value>
@@ -196,6 +200,9 @@ where Value: CustomDebugStringConvertible {
   }
 }
 
+/// A property wrapper type that can derive ``BindingViewState`` values for a ``ViewStore``.
+///
+/// Read <doc:Bindings> for more information.
 @dynamicMemberLookup
 @propertyWrapper
 public struct BindingViewStore<State> {
@@ -271,6 +278,19 @@ public struct BindingViewStore<State> {
 }
 
 extension WithViewStore where Content: View {
+  /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
+  /// to compute bindings and views from state.
+  ///
+  /// Read <doc:Bindings> for more information.
+  /// 
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - toViewState: A function that transforms binding store state into observable view state.
+  ///     All changes to the view state will cause the `WithViewStore` to re-compute its view.
+  ///   - fromViewAction: A function that transforms view actions into store action.
+  ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
+  ///     are equal, repeat view computations are removed,
+  ///   - content: A function that can generate content from a view store.
   public init<State, Action>(
     _ store: Store<State, Action>,
     observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
@@ -298,6 +318,18 @@ extension WithViewStore where Content: View {
     )
   }
 
+  /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
+  /// to compute bindings and views from state.
+  ///
+  /// Read <doc:Bindings> for more information.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - toViewState: A function that transforms binding store state into observable view state.
+  ///     All changes to the view state will cause the `WithViewStore` to re-compute its view.
+  ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
+  ///     are equal, repeat view computations are removed,
+  ///   - content: A function that can generate content from a view store.
   public init<State>(
     _ store: Store<State, ViewAction>,
     observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
@@ -319,6 +351,17 @@ extension WithViewStore where Content: View {
 }
 
 extension WithViewStore where ViewState: Equatable, Content: View {
+  /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
+  /// to compute bindings and views from state.
+  ///
+  /// Read <doc:Bindings> for more information.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - toViewState: A function that transforms binding store state into observable view state.
+  ///     All changes to the view state will cause the `WithViewStore` to re-compute its view.
+  ///   - fromViewAction: A function that transforms view actions into store action.
+  ///   - content: A function that can generate content from a view store.
   public init<State, Action>(
     _ store: Store<State, Action>,
     observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
@@ -338,6 +381,16 @@ extension WithViewStore where ViewState: Equatable, Content: View {
     )
   }
 
+  /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
+  /// to compute bindings and views from state.
+  ///
+  /// Read <doc:Bindings> for more information.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - toViewState: A function that transforms binding store state into observable view state.
+  ///     All changes to the view state will cause the `WithViewStore` to re-compute its view.
+  ///   - content: A function that can generate content from a view store.
   public init<State>(
     _ store: Store<State, ViewAction>,
     observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
@@ -388,11 +441,26 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
     )
   }
 
-  // TODO: Deprecate?
-  /// Returns a binding to the resulting binding state of a given key path.
-  ///
-  /// - Parameter keyPath: A key path to a specific binding state.
-  /// - Returns: A new binding.
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use 'viewStore.$value' instead."
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use 'viewStore.$value' instead."
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use 'viewStore.$value' instead."
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use 'viewStore.$value' instead."
+  )
   public func binding<Value: Equatable>(
     _ keyPath: WritableKeyPath<ViewState, BindingState<Value>>,
     fileID: StaticString = #fileID,
