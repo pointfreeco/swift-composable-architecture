@@ -2024,7 +2024,8 @@ extension TestStore where ScopedState: Equatable {
         }
         XCTFail(
           """
-          Expected to receive \(self.exhaustivity == .on ? "an action" : "a matching action"), but received none\
+          Expected to receive \(self.exhaustivity == .on ? "an action" : "a matching action"), but \
+          received none\
           \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds" : "").
 
           \(suggestion)
