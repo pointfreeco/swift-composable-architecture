@@ -9,7 +9,7 @@ public final class TwoFactorViewController: UIViewController {
   private var cancellables: Set<AnyCancellable> = []
 
   struct ViewState: Equatable {
-    let alert: AlertState<Never>?
+    let alert: AlertState<TwoFactor.Action.Alert>?
     let code: String?
     let isActivityIndicatorHidden: Bool
     let isLoginButtonEnabled: Bool
@@ -124,9 +124,9 @@ extension TwoFactor.Action {
     case .alertDismissed:
       self = .alert(.dismiss)
     case let .codeChanged(code):
-      self = .codeChanged(code ?? "")
+      self = .view(.set(\.$code, code ?? ""))
     case .loginButtonTapped:
-      self = .submitButtonTapped
+      self = .view(.submitButtonTapped)
     }
   }
 }

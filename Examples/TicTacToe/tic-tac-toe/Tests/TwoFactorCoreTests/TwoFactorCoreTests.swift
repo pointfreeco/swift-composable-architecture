@@ -14,20 +14,20 @@ final class TwoFactorCoreTests: XCTestCase {
       }
     }
 
-    await store.send(.codeChanged("1")) {
+    await store.send(.view(.set(\.$code, "1"))) {
       $0.code = "1"
     }
-    await store.send(.codeChanged("12")) {
+    await store.send(.view(.set(\.$code, "12"))) {
       $0.code = "12"
     }
-    await store.send(.codeChanged("123")) {
+    await store.send(.view(.set(\.$code, "123"))) {
       $0.code = "123"
     }
-    await store.send(.codeChanged("1234")) {
+    await store.send(.view(.set(\.$code, "1234"))) {
       $0.code = "1234"
       $0.isFormValid = true
     }
-    await store.send(.submitButtonTapped) {
+    await store.send(.view(.submitButtonTapped)) {
       $0.isTwoFactorRequestInFlight = true
     }
     await store.receive(
@@ -48,11 +48,11 @@ final class TwoFactorCoreTests: XCTestCase {
       }
     }
 
-    await store.send(.codeChanged("1234")) {
+    await store.send(.view(.set(\.$code, "1234"))) {
       $0.code = "1234"
       $0.isFormValid = true
     }
-    await store.send(.submitButtonTapped) {
+    await store.send(.view(.submitButtonTapped)) {
       $0.isTwoFactorRequestInFlight = true
     }
     await store.receive(.twoFactorResponse(.failure(AuthenticationError.invalidTwoFactor))) {

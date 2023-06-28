@@ -9,27 +9,11 @@ public struct LoginView: View {
   let store: StoreOf<Login>
 
   struct ViewState: Equatable {
-    var alert: AlertState<Login.AlertAction>?
-    var email: String
+    @BindingViewState var email: String
     var isActivityIndicatorVisible: Bool
     var isFormDisabled: Bool
     var isLoginButtonDisabled: Bool
-    var password: String
-
-    init(state: Login.State) {
-      self.alert = state.alert
-      self.email = state.email
-      self.isActivityIndicatorVisible = state.isLoginRequestInFlight
-      self.isFormDisabled = state.isLoginRequestInFlight
-      self.isLoginButtonDisabled = !state.isFormValid
-      self.password = state.password
-    }
-  }
-
-  enum ViewAction {
-    case emailChanged(String)
-    case loginButtonTapped
-    case passwordChanged(String)
+    @BindingViewState var password: String
   }
 
   public init(store: StoreOf<Login>) {
@@ -37,7 +21,7 @@ public struct LoginView: View {
   }
 
   public var body: some View {
-    WithViewStore(self.store, observe: ViewState.init, send: Login.Action.init) { viewStore in
+    WithViewStore(self.store, observe: \.view, send: { .view($0) }) { viewStore in
       Form {
         Text(
           """
@@ -48,18 +32,12 @@ public struct LoginView: View {
         )
 
         Section {
-          TextField(
-            "blob@pointfree.co",
-            text: viewStore.binding(get: \.email, send: ViewAction.emailChanged)
-          )
-          .autocapitalization(.none)
-          .keyboardType(.emailAddress)
-          .textContentType(.emailAddress)
+          TextField("blob@pointfree.co", text: viewStore.$email)
+            .autocapitalization(.none)
+            .keyboardType(.emailAddress)
+            .textContentType(.emailAddress)
 
-          SecureField(
-            "••••••••",
-            text: viewStore.binding(get: \.password, send: ViewAction.passwordChanged)
-          )
+          SecureField("••••••••", text: viewStore.$password)
         }
 
         Button {
@@ -93,16 +71,15 @@ public struct LoginView: View {
   }
 }
 
-extension Login.Action {
-  init(action: LoginView.ViewAction) {
-    switch action {
-    case let .emailChanged(email):
-      self = .emailChanged(email)
-    case .loginButtonTapped:
-      self = .loginButtonTapped
-    case let .passwordChanged(password):
-      self = .passwordChanged(password)
-    }
+extension BindingViewStore<Login.State> {
+  var view: LoginView.ViewState {
+    LoginView.ViewState(
+      email: self.$email,
+      isActivityIndicatorVisible: self.isLoginRequestInFlight,
+      isFormDisabled: self.isLoginRequestInFlight,
+      isLoginButtonDisabled: !self.isFormValid,
+      password: self.$password
+    )
   }
 }
 
