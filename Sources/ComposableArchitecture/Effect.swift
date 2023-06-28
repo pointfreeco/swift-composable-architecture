@@ -150,8 +150,8 @@ extension EffectPublisher where Failure == Never {
   /// - Returns: An effect wrapping the given asynchronous work.
   public static func run(
     priority: TaskPriority? = nil,
-    operation: @escaping @Sendable (Send<Action>) async throws -> Void,
-    catch handler: (@Sendable (Error, Send<Action>) async -> Void)? = nil,
+    operation: @escaping @Sendable (_ send: Send<Action>) async throws -> Void,
+    catch handler: (@Sendable (_ error: Error, _ send: Send<Action>) async -> Void)? = nil,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Self {

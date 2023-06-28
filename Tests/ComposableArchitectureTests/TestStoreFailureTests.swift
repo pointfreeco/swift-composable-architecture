@@ -221,8 +221,11 @@
       let store = TestStore(initialState: 0) {
         Reduce<Int, Action> { state, action in
           switch action {
-          case .first: return .init(value: .second)
-          case .second: return .none
+          case .first:
+            return .init(value: .second)
+          case .second:
+            state += 1
+            return .none
           }
         }
       }
