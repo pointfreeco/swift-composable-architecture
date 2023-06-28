@@ -1,3 +1,4 @@
+import _SwiftUINavigationState
 import ComposableArchitecture
 @_spi(Concurrency) import Dependencies
 import XCTest

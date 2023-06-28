@@ -1,3 +1,4 @@
+import _SwiftUINavigationState
 import CasePaths
 import Combine
 import SwiftUI

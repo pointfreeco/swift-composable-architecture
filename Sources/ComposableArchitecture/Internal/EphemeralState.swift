@@ -1,3 +1,4 @@
+import _SwiftUINavigationState
 @_spi(Reflection) import CasePaths
 
 /// Loosely represents features that are only briefly shown and the first time they are interacted

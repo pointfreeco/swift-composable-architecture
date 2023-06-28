@@ -1,3 +1,4 @@
+import _SwiftUINavigationState
 #if canImport(UIKit) && !os(watchOS)
   import UIKit
 
