@@ -316,7 +316,7 @@ struct NotificationSettingsView: View {
 ```
 
 And then, when the view store is constructed, we can invoke the
-``WithViewStore/init(_:observe:content:file:line:)`` initializer, which is handed a
+``WithViewStore/init(_:observe:content:file:line:)-4gpoj`` initializer, which is handed a
 ``BindingViewStore`` that can produce ``BindingViewState`` values from a store:
 
 ```swift
