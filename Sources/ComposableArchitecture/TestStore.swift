@@ -817,14 +817,17 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
 
   func completed() {
     if !self.reducer.receivedActions.isEmpty {
-      var actions = ""
-      customDump(self.reducer.receivedActions.map(\.action), to: &actions)
+      let actions = self.reducer.receivedActions
+        .map(\.action)
+        .map { "    • " + debugCaseOutput($0, abbreviated: true) }
+        .joined(separator: "\n")
       XCTFailHelper(
         """
         The store received \(self.reducer.receivedActions.count) unexpected \
         action\(self.reducer.receivedActions.count == 1 ? "" : "s") after this one: …
 
-        Unhandled actions: \(actions)
+          Unhandled actions:
+        \(actions)
         """,
         file: self.file,
         line: self.line
@@ -1036,8 +1039,10 @@ extension TestStore where ScopedState: Equatable {
     let expectedState = self.toScopedState(self.state)
     let previousState = self.reducer.state
     let previousStackElementID = self.reducer.dependencies.stackElementID.incrementingCopy()
-    let task = self.store
-      .send(.init(origin: .send(self.fromScopedAction(action)), file: file, line: line))
+    let task = self.store.send(
+      .init(origin: .send(self.fromScopedAction(action)), file: file, line: line),
+      originatingFrom: nil
+    )
     for await _ in self.reducer.effectDidSubscribe.stream {
       break
     }
@@ -1101,7 +1106,7 @@ extension TestStore where ScopedState: Equatable {
   ///   store.
   @MainActor
   public func assert(
-    _ updateStateToExpectedResult: ((inout ScopedState) throws -> Void)?,
+    _ updateStateToExpectedResult: @escaping (inout ScopedState) throws -> Void,
     file: StaticString = #file,
     line: UInt = #line
   ) {
@@ -1112,6 +1117,7 @@ extension TestStore where ScopedState: Equatable {
         expected: expectedState,
         actual: self.toScopedState(currentState),
         updateStateToExpectedResult: updateStateToExpectedResult,
+        skipUnnecessaryModifyFailure: true,
         file: file,
         line: line
       )
@@ -1185,8 +1191,10 @@ extension TestStore where ScopedState: Equatable {
 
     let expectedState = self.toScopedState(self.state)
     let previousState = self.state
-    let task = self.store
-      .send(.init(origin: .send(self.fromScopedAction(action)), file: file, line: line))
+    let task = self.store.send(
+      .init(origin: .send(self.fromScopedAction(action)), file: file, line: line),
+      originatingFrom: nil
+    )
     do {
       let currentState = self.state
       self.reducer.state = previousState
@@ -1213,6 +1221,7 @@ extension TestStore where ScopedState: Equatable {
     expected: ScopedState,
     actual: ScopedState,
     updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    skipUnnecessaryModifyFailure: Bool = false,
     file: StaticString,
     line: UInt
   ) throws {
@@ -1330,7 +1339,10 @@ extension TestStore where ScopedState: Equatable {
     }
 
     func tryUnnecessaryModifyFailure() {
-      guard expected == current && updateStateToExpectedResult != nil
+      guard
+        !skipUnnecessaryModifyFailure,
+        expected == current,
+        updateStateToExpectedResult != nil
       else { return }
 
       XCTFailHelper(
@@ -1889,27 +1901,30 @@ extension TestStore where ScopedState: Equatable {
 
     let (receivedAction, state) = self.reducer.receivedActions.removeFirst()
     if !predicate(receivedAction) {
+      let receivedActionLater = self.reducer.receivedActions
+        .contains(where: { action, _ in predicate(receivedAction) })
       XCTFailHelper(
         """
-        Received unexpected action: …
+        Received unexpected action\(receivedActionLater ? " before this one" : ""): …
 
         \(unexpectedActionDescription(receivedAction))
         """,
         file: file,
         line: line
       )
-    }
-    let expectedState = self.toScopedState(self.state)
-    do {
-      try self.expectedStateShouldMatch(
-        expected: expectedState,
-        actual: self.toScopedState(state),
-        updateStateToExpectedResult: updateStateToExpectedResult,
-        file: file,
-        line: line
-      )
-    } catch {
-      XCTFail("Threw error: \(error)", file: file, line: line)
+    } else {
+      let expectedState = self.toScopedState(self.state)
+      do {
+        try self.expectedStateShouldMatch(
+          expected: expectedState,
+          actual: self.toScopedState(state),
+          updateStateToExpectedResult: updateStateToExpectedResult,
+          file: file,
+          line: line
+        )
+      } catch {
+        XCTFail("Threw error: \(error)", file: file, line: line)
+      }
     }
     self.reducer.state = state
     if "\(self.file)" == "\(file)" {
@@ -1966,7 +1981,8 @@ extension TestStore where ScopedState: Equatable {
         }
         XCTFail(
           """
-          Expected to receive \(self.exhaustivity == .on ? "an action" : "a matching action"), but received none\
+          Expected to receive \(self.exhaustivity == .on ? "an action" : "a matching action"), but \
+          received none\
           \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds" : "").
 
           \(suggestion)

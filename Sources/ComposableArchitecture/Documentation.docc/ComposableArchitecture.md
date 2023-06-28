@@ -63,7 +63,7 @@ day-to-day when building applications, such as:
 
 ### Integrations
 
-- <doc:SwiftUI>
+- <doc:SwiftUIIntegration>
 - <doc:UIKit>
 
 ### Testing

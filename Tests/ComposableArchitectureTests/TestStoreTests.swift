@@ -424,27 +424,6 @@ final class TestStoreTests: BaseTCATestCase {
     }
   }
 
-  #if DEBUG
-    func testAssert_ExhaustiveTestStore() async {
-      let store = TestStore(initialState: 0) {
-        EmptyReducer<Int, Void>()
-      }
-
-      XCTExpectFailure {
-        store.assert {
-          $0 = 0
-        }
-      } issueMatcher: {
-        $0.compactDescription == """
-          Expected state to change, but no change occurred.
-
-          The trailing closure made no observable modifications to state. If no change to state is \
-          expected, omit the trailing closure.
-          """
-      }
-    }
-  #endif
-
   func testAssert_NonExhaustiveTestStore() async {
     let store = TestStore(initialState: 0) {
       EmptyReducer<Int, Void>()

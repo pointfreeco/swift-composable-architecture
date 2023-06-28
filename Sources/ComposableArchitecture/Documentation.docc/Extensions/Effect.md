@@ -7,6 +7,7 @@
 - ``EffectPublisher/none``
 - ``EffectPublisher/run(priority:operation:catch:fileID:line:)``
 - ``EffectPublisher/send(_:)``
+- ``EffectOf``
 - ``TaskResult``
 
 ### Cancellation

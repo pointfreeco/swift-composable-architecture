@@ -72,10 +72,10 @@ struct PresentationItemTestCaseView: View {
   @ViewBuilder
   var core: some View {
     Button("Child A") {
-      ViewStore(self.store.stateless).send(.childAButtonTapped)
+      self.store.send(.childAButtonTapped)
     }
     Button("Child B") {
-      ViewStore(self.store.stateless).send(.childBButtonTapped)
+      self.store.send(.childBButtonTapped)
     }
   }
 
@@ -97,7 +97,7 @@ struct PresentationItemTestCaseView: View {
             ) { store in
               Text("Child A")
               Button("Swap") {
-                ViewStore(store.stateless).send(.swapButtonTapped)
+                store.send(.swapButtonTapped)
               }
             }
           case .childB:
@@ -107,7 +107,7 @@ struct PresentationItemTestCaseView: View {
             ) { store in
               Text("Child B")
               Button("Swap") {
-                ViewStore(store.stateless).send(.swapButtonTapped)
+                store.send(.swapButtonTapped)
               }
             }
           }
@@ -125,7 +125,7 @@ struct PresentationItemTestCaseView: View {
         ) { store in
           Text("Child A")
           Button("Swap") {
-            ViewStore(store.stateless).send(.swapButtonTapped)
+            store.send(.swapButtonTapped)
           }
         }
         .sheet(
@@ -135,7 +135,7 @@ struct PresentationItemTestCaseView: View {
         ) { store in
           Text("Child B")
           Button("Swap") {
-            ViewStore(store.stateless).send(.swapButtonTapped)
+            store.send(.swapButtonTapped)
           }
         }
     }

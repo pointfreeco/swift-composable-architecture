@@ -42,11 +42,11 @@ extension View {
               switch button.action.type {
               case let .send(action):
                 if let action = action {
-                  _ = store.send(.presented(fromDestinationAction(action)))
+                  store.send(.presented(fromDestinationAction(action)))
                 }
               case let .animatedSend(action, animation):
                 if let action = action {
-                  _ = withAnimation(animation) {
+                  withAnimation(animation) {
                     store.send(.presented(fromDestinationAction(action)))
                   }
                 }

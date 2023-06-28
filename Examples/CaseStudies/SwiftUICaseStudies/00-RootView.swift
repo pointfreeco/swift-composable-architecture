@@ -285,7 +285,7 @@ struct RootView: View {
         }
       }
       .navigationTitle("Case Studies")
-      .onAppear { ViewStore(self.store.stateless).send(.onAppear) }
+      .onAppear { self.store.send(.onAppear) }
     }
   }
 }

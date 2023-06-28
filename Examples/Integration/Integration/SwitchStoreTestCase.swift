@@ -60,7 +60,7 @@ struct SwitchStoreTestCaseView: View {
   }
 
   var body: some View {
-    Button("Swap") { ViewStore(store.stateless).send(.swap) }
+    Button("Swap") { self.store.send(.swap) }
     SwitchStore(self.store) {
       switch $0 {
       case .screenA:

@@ -167,6 +167,32 @@ public final class Store<State, Action> {
     }
   }
 
+  /// Calls the given closure with the current state of the store.
+  ///
+  /// A lightweight way of accessing store state when no view store is available and state does not
+  /// need to be observed, _e.g._ by a SwiftUI view. If a view store is available, prefer
+  /// ``ViewStore/state-swift.property``.
+  ///
+  /// - Parameter body: A closure that takes the current state of the store as its sole argument. If
+  ///   the closure has a return value, that value is also used as the return value of the
+  ///   `withState` method. The state argument reflects the current state of the store only for the
+  ///   duration of the closure's execution, and is not observable over time, _e.g._ by SwiftUI. If
+  ///   you want to observe store state in a view, use a ``ViewStore`` instead.
+  /// - Returns: The return value, if any, of the `body` closure.
+  public func withState<R>(_ body: (State) -> R) -> R {
+    body(self.state.value)
+  }
+
+  /// Sends an action to the store.
+  ///
+  /// A lightweight way to send actions to the store when no view store is available. If a view
+  /// store is available, prefer ``ViewStore/send(_:)``.
+  ///
+  /// - Parameter action: An action.
+  public func send(_ action: Action) {
+    _ = self.send(action, originatingFrom: nil)
+  }
+
   /// Scopes the store to one that exposes child state and actions.
   ///
   /// This can be useful for deriving new stores to hand to child views in an application. For
@@ -369,9 +395,10 @@ public final class Store<State, Action> {
     return store
   }
 
-  @_spi(Internals) public func send(
+  @_spi(Internals)
+  public func send(
     _ action: Action,
-    originatingFrom originatingAction: Action? = nil
+    originatingFrom originatingAction: Action?
   ) -> Task<Void, Never>? {
     self.threadCheck(status: .send(action, originatingAction: originatingAction))
 
@@ -686,7 +713,9 @@ private final class ScopedReducer<RootState, RootAction, State, Action>: Reducer
       state = self.toScopedState(self.rootStore.state.value)
       self.isSending = false
     }
-    if let action = self.fromScopedAction(state, action), let task = self.rootStore.send(action) {
+    if let action = self.fromScopedAction(state, action),
+      let task = self.rootStore.send(action, originatingFrom: nil)
+    {
       return .run { _ in await task.cancellableValue }
     } else {
       return .none

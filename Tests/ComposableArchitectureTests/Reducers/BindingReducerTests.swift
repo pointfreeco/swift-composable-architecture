@@ -21,7 +21,7 @@ final class BindingTests: BaseTCATestCase {
         BindingReducer()
         Reduce { state, action in
           switch action {
-          case .binding(\.$nested.field):
+          case .binding(\.$nested):
             state.nested.field += "!"
             return .none
           default:
@@ -35,7 +35,7 @@ final class BindingTests: BaseTCATestCase {
 
     let viewStore = ViewStore(store, observe: { $0 })
 
-    viewStore.binding(\.$nested.field).wrappedValue = "Hello"
+    viewStore.$nested.field.wrappedValue = "Hello"
 
     XCTAssertEqual(viewStore.state, .init(nested: .init(field: "Hello!")))
   }

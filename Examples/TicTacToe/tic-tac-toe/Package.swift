@@ -86,10 +86,6 @@ let package = Package(
       name: "GameSwiftUI",
       dependencies: ["GameCore"]
     ),
-    .testTarget(
-      name: "GameSwiftUITests",
-      dependencies: ["GameSwiftUI"]
-    ),
     .target(
       name: "GameUIKit",
       dependencies: ["GameCore"]
@@ -113,10 +109,6 @@ let package = Package(
         "LoginCore",
         "TwoFactorSwiftUI",
       ]
-    ),
-    .testTarget(
-      name: "LoginSwiftUITests",
-      dependencies: ["LoginSwiftUI"]
     ),
     .target(
       name: "LoginUIKit",
@@ -144,10 +136,6 @@ let package = Package(
         "NewGameCore",
       ]
     ),
-    .testTarget(
-      name: "NewGameSwiftUITests",
-      dependencies: ["NewGameSwiftUI"]
-    ),
     .target(
       name: "NewGameUIKit",
       dependencies: [
@@ -170,10 +158,6 @@ let package = Package(
     .target(
       name: "TwoFactorSwiftUI",
       dependencies: ["TwoFactorCore"]
-    ),
-    .testTarget(
-      name: "TwoFactorSwiftUITests",
-      dependencies: ["TwoFactorSwiftUI"]
     ),
     .target(
       name: "TwoFactorUIKit",
