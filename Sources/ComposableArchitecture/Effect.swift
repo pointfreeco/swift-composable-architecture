@@ -69,6 +69,21 @@ public struct EffectPublisher<Action, Failure: Error> {
   }
 }
 
+/// A convenience type alias for referring to an effect of a given reducer's domain.
+///
+/// Instead of specifying the action:
+///
+/// ```swift
+/// let effect: EffectTask<Feature.Action>
+/// ```
+///
+/// You can specify the reducer:
+///
+/// ```swift
+/// let effect: EffectOf<Feature>
+/// ```
+public typealias EffectOf<R: ReducerProtocol> = EffectPublisher<R.Action, Never>
+
 // MARK: - Creating Effects
 
 extension EffectPublisher {
