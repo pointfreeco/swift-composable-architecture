@@ -17,7 +17,7 @@ import SwiftUI
 ///
 ///   init(store: StoreOf<Profile>) {
 ///     self.store = store
-///     self.viewStore = ViewStore(store)
+///     self.viewStore = ViewStore(store, observe: { $0 })
 ///   }
 ///
 ///   var body: some View {
@@ -672,43 +672,6 @@ extension WithViewStore where ViewState: Equatable, Content: View {
 
       https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
       """
-  )
-  public init(
-    _ store: Store<ViewState, ViewAction>,
-    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  ) {
-    self.init(store, removeDuplicates: ==, content: content, file: file, line: line)
-  }
-}
-
-extension WithViewStore where ViewState == Void, Content: View {
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute views from void store state.
-  ///
-  /// - Parameters:
-  ///   - store: A store of equatable state.
-  ///   - content: A function that can generate content from a view store.
-  @available(
-    iOS,
-    deprecated: 9999,
-    message: "Use 'ViewStore(store).send(action)' instead of observing stateless stores."
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message: "Use 'ViewStore(store).send(action)' instead of observing stateless stores."
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message: "Use 'ViewStore(store).send(action)' instead of observing stateless stores."
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message: "Use 'ViewStore(store).send(action)' instead of observing stateless stores."
   )
   public init(
     _ store: Store<ViewState, ViewAction>,

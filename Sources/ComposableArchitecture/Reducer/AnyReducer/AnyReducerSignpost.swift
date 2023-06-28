@@ -149,14 +149,17 @@ extension EffectPublisher where Failure == Never {
 }
 
 @usableFromInline
-func debugCaseOutput(_ value: Any) -> String {
+func debugCaseOutput(
+  _ value: Any,
+  abbreviated: Bool = false
+) -> String {
   func debugCaseOutputHelp(_ value: Any) -> String {
     let mirror = Mirror(reflecting: value)
     switch mirror.displayStyle {
     case .enum:
       guard let child = mirror.children.first else {
         let childOutput = "\(value)"
-        return childOutput == "\(type(of: value))" ? "" : ".\(childOutput)"
+        return childOutput == "\(typeName(type(of: value)))" ? "" : ".\(childOutput)"
       }
       let childOutput = debugCaseOutputHelp(child.value)
       return ".\(child.label ?? "")\(childOutput.isEmpty ? "" : "(\(childOutput))")"
@@ -173,7 +176,7 @@ func debugCaseOutput(_ value: Any) -> String {
   }
 
   return (value as? CustomDebugStringConvertible)?.debugDescription
-    ?? "\(typeName(type(of: value)))\(debugCaseOutputHelp(value))"
+    ?? "\(abbreviated ? "" : typeName(type(of: value)))\(debugCaseOutputHelp(value))"
 }
 
 private func isUnlabeledArgument(_ label: String) -> Bool {

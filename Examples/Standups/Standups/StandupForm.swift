@@ -65,21 +65,21 @@ struct StandupFormView: View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
         Section {
-          TextField("Title", text: viewStore.binding(\.$standup.title))
+          TextField("Title", text: viewStore.$standup.title)
             .focused(self.$focus, equals: .title)
           HStack {
-            Slider(value: viewStore.binding(\.$standup.duration).seconds, in: 5...30, step: 1) {
+            Slider(value: viewStore.$standup.duration.seconds, in: 5...30, step: 1) {
               Text("Length")
             }
             Spacer()
             Text(viewStore.standup.duration.formatted(.units()))
           }
-          ThemePicker(selection: viewStore.binding(\.$standup.theme))
+          ThemePicker(selection: viewStore.$standup.theme)
         } header: {
           Text("Standup Info")
         }
         Section {
-          ForEach(viewStore.binding(\.$standup.attendees)) { $attendee in
+          ForEach(viewStore.$standup.attendees) { $attendee in
             TextField("Name", text: $attendee.name)
               .focused(self.$focus, equals: .attendee(attendee.id))
           }
@@ -94,7 +94,7 @@ struct StandupFormView: View {
           Text("Attendees")
         }
       }
-      .bind(viewStore.binding(\.$focus), to: self.$focus)
+      .bind(viewStore.$focus, to: self.$focus)
     }
   }
 }
