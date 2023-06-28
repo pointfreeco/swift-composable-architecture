@@ -88,17 +88,17 @@ struct BindingLocalTestCaseView: View {
     NavigationStackStore(self.store.scope(state: \.path, action: { .path($0) })) {
       VStack {
         Button("Full-screen-cover") {
-          ViewStore(self.store.stateless).send(.fullScreenCoverButtonTapped)
+          self.store.send(.fullScreenCoverButtonTapped)
         }
         Button("Navigation destination") {
-          ViewStore(self.store.stateless).send(.navigationDestinationButtonTapped)
+          self.store.send(.navigationDestinationButtonTapped)
         }
         NavigationLink("Path", state: Child.State())
         Button("Popover") {
-          ViewStore(self.store.stateless).send(.popoverButtonTapped)
+          self.store.send(.popoverButtonTapped)
         }
         Button("Sheet") {
-          ViewStore(self.store.stateless).send(.sheetButtonTapped)
+          self.store.send(.sheetButtonTapped)
         }
       }
       .fullScreenCover(

@@ -1101,8 +1101,10 @@ extension TestStore where ScopedState: Equatable {
     let expectedState = self.toScopedState(self.state)
     let previousState = self.reducer.state
     let previousStackElementID = self.reducer.dependencies.stackElementID.incrementingCopy()
-    let task = self.store
-      .send(.init(origin: .send(self.fromScopedAction(action)), file: file, line: line))
+    let task = self.store.send(
+      .init(origin: .send(self.fromScopedAction(action)), file: file, line: line),
+      originatingFrom: nil
+    )
     for await _ in self.reducer.effectDidSubscribe.stream {
       break
     }
@@ -1254,8 +1256,10 @@ extension TestStore where ScopedState: Equatable {
 
     let expectedState = self.toScopedState(self.state)
     let previousState = self.state
-    let task = self.store
-      .send(.init(origin: .send(self.fromScopedAction(action)), file: file, line: line))
+    let task = self.store.send(
+      .init(origin: .send(self.fromScopedAction(action)), file: file, line: line),
+      originatingFrom: nil
+    )
     do {
       let currentState = self.state
       self.reducer.state = previousState

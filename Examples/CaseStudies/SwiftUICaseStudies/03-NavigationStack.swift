@@ -112,7 +112,7 @@ struct NavigationDemoView: View {
 
         Section {
           Button("Go to A → B → C") {
-            ViewStore(self.store.stateless).send(.goToABCButtonTapped)
+            self.store.send(.goToABCButtonTapped)
           }
         }
       }
@@ -364,7 +364,7 @@ struct ScreenBView: View {
   let store: StoreOf<ScreenB>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
         Section {
           Text(
