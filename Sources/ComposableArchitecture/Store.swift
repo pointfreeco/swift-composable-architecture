@@ -719,8 +719,7 @@ private final class ScopedReducer<
       state = self.toScopedState(self.rootStore.state.value)
       self.isSending = false
     }
-    if
-      let action = self.fromScopedAction(state, action),
+    if let action = self.fromScopedAction(state, action),
       let task = self.rootStore.send(action, originatingFrom: nil)
     {
       return .run { _ in await task.cancellableValue }

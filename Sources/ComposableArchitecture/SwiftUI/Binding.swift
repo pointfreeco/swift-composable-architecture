@@ -54,7 +54,8 @@ public struct BindingState<Value> {
   @available(
     *,
     deprecated,
-    message: """
+    message:
+      """
       Chaining onto properties of bindable state is deprecated. Push '@BindingState' use to the child state, instead.
       """
   )
@@ -378,7 +379,9 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
             debugger.wasCalled = true
           }
         #else
-          let set: @Sendable (inout ViewState) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
+          let set: @Sendable (inout ViewState) -> Void = {
+            $0[keyPath: keyPath].wrappedValue = value
+          }
         #endif
         return .binding(.init(keyPath: keyPath, set: set, value: value))
       }
@@ -412,7 +415,9 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
             debugger.wasCalled = true
           }
         #else
-          let set: @Sendable (inout ViewState) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
+          let set: @Sendable (inout ViewState) -> Void = {
+            $0[keyPath: keyPath].wrappedValue = value
+          }
         #endif
         return .binding(.init(keyPath: keyPath, set: set, value: value))
       }
