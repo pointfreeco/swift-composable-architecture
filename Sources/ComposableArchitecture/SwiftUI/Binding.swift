@@ -282,7 +282,7 @@ extension WithViewStore where Content: View {
   /// to compute bindings and views from state.
   ///
   /// Read <doc:Bindings> for more information.
-  /// 
+  ///
   /// - Parameters:
   ///   - store: A store.
   ///   - toViewState: A function that transforms binding store state into observable view state.
