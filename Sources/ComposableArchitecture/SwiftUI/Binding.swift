@@ -240,9 +240,7 @@ public struct BindingViewStore<State> {
     set { self = newValue }
   }
 
-  public subscript<Value: Equatable>(
-    dynamicMember keyPath: WritableKeyPath<State, Value>
-  ) -> Value {
+  public subscript<Value>(dynamicMember keyPath: KeyPath<State, Value>) -> Value {
     self.wrappedValue[keyPath: keyPath]
   }
 
