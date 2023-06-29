@@ -157,7 +157,7 @@ WithViewStore(
   observe: { (selectedTab: $0.selectedTab, unreadActivityCount: $0.activity.unreadCount) },
   removeDuplicates: ==
 ) { viewStore in 
-  TabView(selection: viewStore.binding(\.selectedTab, send: AppFeature.Action.tabSelected) {
+  TabView(selection: viewStore.binding(get: \.selectedTab, send: AppFeature.Action.tabSelected)) {
     ActivityView(
       store: self.store.scope(state: \.activity, action: AppFeature.Action.activity)
     )
