@@ -745,6 +745,10 @@ extension ViewStore where ViewState == Void {
 public struct ViewStoreTask: Hashable, Sendable {
   fileprivate let rawValue: Task<Void, Never>?
 
+  internal init(rawValue: Task<Void, Never>?) {
+	self.rawValue = rawValue
+  }
+
   /// Cancels the underlying task and waits for it to finish.
   public func cancel() async {
     self.rawValue?.cancel()
