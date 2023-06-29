@@ -47,11 +47,11 @@ extension View {
               switch button.action.type {
               case let .send(action):
                 if let action = action {
-                  _ = store.send(.presented(fromDestinationAction(action)))
+                  store.send(.presented(fromDestinationAction(action)))
                 }
               case let .animatedSend(action, animation):
                 if let action = action {
-                  _ = withAnimation(animation) {
+                  withAnimation(animation) {
                     store.send(.presented(fromDestinationAction(action)))
                   }
                 }
@@ -75,7 +75,7 @@ extension View {
   ///
   /// - Parameters:
   ///   - store: A store that describes if the dialog is shown or dismissed.
-  ///   - dismissal: An action to send when the dialog is dismissed through non-user actions, such
+  ///   - dismiss: An action to send when the dialog is dismissed through non-user actions, such
   ///     as when a dialog is automatically dismissed by the system. Use this action to `nil` out
   ///     the associated dialog state.
   @available(iOS 13, *)

@@ -249,10 +249,10 @@ extension ReducerProtocol where Body: ReducerProtocol, Body.State == State, Body
   }
 }
 
-// NB: This is available only in Swift 5.7.1 due to the following bug:
+// NB: This is available starting from Swift 5.7.1 due to the following bug:
 //     https://github.com/apple/swift/issues/60550
 #if swift(>=5.7.1)
-  /// A convenience for constraining a ``ReducerProtocol`` conformance. Available only in Swift
+  /// A convenience for constraining a ``ReducerProtocol`` conformance. Available starting from Swift
   /// 5.7.1.
   ///
   /// This allows you to specify the `body` of a ``ReducerProtocol`` conformance like so:

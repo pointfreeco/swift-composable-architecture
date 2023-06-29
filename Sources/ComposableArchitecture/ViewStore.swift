@@ -41,7 +41,7 @@ import SwiftUI
 ///
 /// init(store: Store<State, Action>) {
 ///   self.store = store
-///   self.viewStore = ViewStore(store)
+///   self.viewStore = ViewStore(store, observe: { $0 })
 /// }
 ///
 /// func viewDidLoad() {
@@ -91,7 +91,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     observe toViewState: @escaping (State) -> ViewState,
     removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool
   ) {
-    self._send = { store.send($0) }
+    self._send = { store.send($0, originatingFrom: nil) }
     self._state = CurrentValueRelay(toViewState(store.state.value))
     self._isInvalidated = store._isInvalidated
     self.viewCancellable = store.state
@@ -125,7 +125,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     send fromViewAction: @escaping (ViewAction) -> Action,
     removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool
   ) {
-    self._send = { store.send(fromViewAction($0)) }
+    self._send = { store.send(fromViewAction($0), originatingFrom: nil) }
     self._state = CurrentValueRelay(toViewState(store.state.value))
     self._isInvalidated = store._isInvalidated
     self.viewCancellable = store.state
@@ -203,7 +203,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     _ store: Store<ViewState, ViewAction>,
     removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool
   ) {
-    self._send = { store.send($0) }
+    self._send = { store.send($0, originatingFrom: nil) }
     self._state = CurrentValueRelay(store.state.value)
     self._isInvalidated = store._isInvalidated
     self.viewCancellable = store.state
@@ -649,6 +649,7 @@ extension ViewStore where ViewState: Equatable {
   ///   - store: A store.
   ///   - toViewState: A transformation of `ViewState` to the state that will be observed for
   ///   changes.
+  ///   - fromViewAction: A transformation of `ViewAction` that describes what actions can be sent.
   public convenience init<State, Action>(
     _ store: Store<State, Action>,
     observe toViewState: @escaping (State) -> ViewState,

@@ -216,6 +216,7 @@ final class EffectCancellationTests: BaseTCATestCase {
     XCTAssertEqual(output, [1, 2])
   }
 
+  @available(*, deprecated)
   func testMultipleCancellations() {
     let mainQueue = DispatchQueue.test
     var output: [AnyHashable] = []

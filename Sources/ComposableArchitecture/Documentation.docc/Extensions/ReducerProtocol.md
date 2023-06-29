@@ -33,6 +33,7 @@
 
 - ``dependency(_:_:)``
 - ``transformDependency(_:transform:)``
+- ``onChange(of:_:)``
 - ``signpost(_:log:)``
 - ``_printChanges(_:)``
 
