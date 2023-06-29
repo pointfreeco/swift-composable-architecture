@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import SwiftUI
 
 /// A store represents the runtime that powers the application. It is the object that you will pass
 /// around to views that need to interact with the application.
@@ -191,6 +192,32 @@ public final class Store<State, Action> {
   /// - Parameter action: An action.
   public func send(_ action: Action) {
     _ = self.send(action, originatingFrom: nil)
+  }
+
+  /// Sends an action to the store with a given animation.
+  ///
+  /// See ``Store/send(_:)`` for more info.
+  ///
+  /// - Parameters:
+  ///   - action: An action.
+  ///   - animation: An animation.
+  @discardableResult
+  public func send(_ action: Action, animation: Animation?) -> ViewStoreTask {
+    send(action, transaction: Transaction(animation: animation))
+  }
+
+  /// Sends an action to the store with a given transaction.
+  ///
+  /// See ``Store/send(_:)`` for more info.
+  ///
+  /// - Parameters:
+  ///   - action: An action.
+  ///   - transaction: A transaction.
+  @discardableResult
+  public func send(_ action: Action, transaction: Transaction) -> ViewStoreTask {
+    withTransaction(transaction) {
+      .init(rawValue: self.send(action, originatingFrom: nil))
+    }
   }
 
   /// Scopes the store to one that exposes child state and actions.
