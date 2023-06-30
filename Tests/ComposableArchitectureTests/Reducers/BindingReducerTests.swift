@@ -20,19 +20,33 @@ final class BindingTests: BaseTCATestCase {
       BindingReducer()
       Reduce { state, action in
         switch action {
-          case .binding(.set(\.$nested, State.Nested(field: "special"))):
-              state.nested.field += "*"
-              return .none
-          case .binding(\.$nested):
-            state.nested.field += "!"
-            return .none
-          default:
-            return .none
+        case .binding(.set(\.$nested, State.Nested(field: "special"))):
+          state.nested.field += "*"
+          return .none
+        case .binding(\.$nested):
+          state.nested.field += "!"
+          return .none
+        case .binding:
+          return .none
         }
       }
     }
   }
-    
+
+  func testEquality() {
+    struct State {
+      @BindingState var count = 0
+    }
+    XCTAssertEqual(
+      BindingAction<State>.set(\.$count, 1),
+      BindingAction<State>.set(\.$count, 1)
+    )
+    XCTAssertNotEqual(
+      BindingAction<State>.set(\.$count, 1),
+      BindingAction<State>.set(\.$count, 2)
+    )
+  }
+
   func testNestedBindingState() {
     let store = Store(initialState: BindingTest.State()) { BindingTest() }
 
@@ -42,34 +56,21 @@ final class BindingTests: BaseTCATestCase {
 
     XCTAssertEqual(viewStore.state, .init(nested: .init(field: "Hello!")))
   }
-    
+
   func testBindingActionUpdatesRespectsPatternMatching() async {
-    let testStore = TestStore<
-      BindingTest.State,
-      BindingTest.Action,
-      BindingTest.State,
-      BindingTest.Action,
-      Void
-    >(initialState: .init(nested: .init(field: "")), reducer: BindingTest())
+    let testStore = TestStore(
+      initialState: BindingTest.State(nested: BindingTest.State.Nested(field: ""))
+    ) {
+      BindingTest()
+    }
     
-    await testStore.send(.binding(.set(\.$nested, .init(field: "special")))) {
-        $0.nested = BindingTest.State.Nested(field: "special*")
+    await testStore.send(.binding(.set(\.$nested, BindingTest.State.Nested(field: "special")))) {
+      $0.nested = BindingTest.State.Nested(field: "special*")
+    }
+    await testStore.send(.binding(.set(\.$nested, BindingTest.State.Nested(field: "Hello")))) {
+      $0.nested = BindingTest.State.Nested(field: "Hello!")
     }
   }
-    
-  func testBindingActionUpdatesMatchingAnyValue() async {
-    let testStore = TestStore<
-       BindingTest.State,
-       BindingTest.Action,
-       BindingTest.State,
-       BindingTest.Action,
-       Void
-     >(initialState: .init(nested: .init(field: "")), reducer: BindingTest())
-       
-     await testStore.send(.binding(.set(\.$nested, .init(field: "Hello")))) {
-         $0.nested = BindingTest.State.Nested(field: "Hello!")
-     }
-   }
 
   // NB: This crashes in Swift(<5.8) RELEASE when `BindingAction` holds directly onto an unboxed
   //     `value: Any` existential
