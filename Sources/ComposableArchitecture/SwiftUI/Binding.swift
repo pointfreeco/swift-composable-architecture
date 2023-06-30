@@ -592,7 +592,7 @@ extension BindingAction {
       keyPath: keyPath,
       set: set,
       value: AnySendable(value),
-      valueIsEqualTo: { $0 as? Value == value }
+      valueIsEqualTo: { ($0 as? AnySendable)?.base as? Value == value }
     )
   }
 }
