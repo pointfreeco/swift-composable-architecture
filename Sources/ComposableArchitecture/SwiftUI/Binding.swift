@@ -246,9 +246,7 @@ public struct BindingViewStore<State> {
     set { self = newValue }
   }
 
-  public subscript<Value: Equatable>(
-    dynamicMember keyPath: WritableKeyPath<State, Value>
-  ) -> Value {
+  public subscript<Value>(dynamicMember keyPath: KeyPath<State, Value>) -> Value {
     self.wrappedValue[keyPath: keyPath]
   }
 
@@ -598,7 +596,7 @@ extension BindingAction {
       keyPath: keyPath,
       set: set,
       value: AnySendable(value),
-      valueIsEqualTo: { $0 as? Value == value }
+      valueIsEqualTo: { ($0 as? AnySendable)?.base as? Value == value }
     )
   }
 }
