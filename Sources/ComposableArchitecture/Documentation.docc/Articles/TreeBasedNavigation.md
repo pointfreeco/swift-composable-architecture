@@ -265,23 +265,23 @@ struct InventoryView: View {
       // ...
     }
     .sheet(
-      store: self.store.scope(state: \.destination, action: { .destination($0) }),
-      state: /InventoryFeature.State.addItem,
-      action: /InventoryFeature.Action.addItem
+      store: self.store.scope(state: \.$destination, action: { .destination($0) }),
+      state: /InventoryFeature.Destination.State.addItem,
+      action: InventoryFeature.Destination.Action.addItem
     ) { store in 
       AddFeatureView(store: store)
     }
     .popover(
-      store: self.store.scope(state: \.destination, action: { .destination($0) }),
-      state: /InventoryFeature.State.editItem,
-      action: /InventoryFeature.Action.editItem
+      store: self.store.scope(state: \.$destination, action: { .destination($0) }),
+      state: /InventoryFeature.Destination.State.editItem,
+      action: InventoryFeature.Destination.Action.editItem
     ) { store in 
       EditFeatureView(store: store)
     }
     .navigationDestination(
-      store: self.store.scope(state: \.destination, action: { .destination($0) }),
-      state: /InventoryFeature.State.detailItem,
-      action: /InventoryFeature.Action.detailItem
+      store: self.store.scope(state: \.$destination, action: { .destination($0) }),
+      state: /InventoryFeature.Destination.State.detailItem,
+      action: InventoryFeature.Destination.Action.detailItem
     ) { store in 
       DetailFeatureView(store: store)
     }
