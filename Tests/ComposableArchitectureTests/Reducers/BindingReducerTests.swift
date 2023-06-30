@@ -63,7 +63,7 @@ final class BindingTests: BaseTCATestCase {
     ) {
       BindingTest()
     }
-    
+
     await testStore.send(.binding(.set(\.$nested, BindingTest.State.Nested(field: "special")))) {
       $0.nested = BindingTest.State.Nested(field: "special*")
     }
