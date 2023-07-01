@@ -121,376 +121,6 @@ extension BindingState: CustomDebugStringConvertible where Value: CustomDebugStr
 
 extension BindingState: Sendable where Value: Sendable {}
 
-/// An action type that exposes a `binding` case that holds a ``BindingAction``.
-///
-/// Used in conjunction with ``BindingState`` to safely eliminate the boilerplate typically
-/// associated with mutating multiple fields in state.
-///
-/// Read <doc:Bindings> for more information.
-public protocol BindableAction {
-  /// The root state type that contains bindable fields.
-  associatedtype State
-
-  /// Embeds a binding action in this action type.
-  ///
-  /// - Returns: A binding action.
-  static func binding(_ action: BindingAction<State>) -> Self
-}
-
-extension BindableAction {
-  /// Constructs a binding action for the given key path and bindable value.
-  ///
-  /// Shorthand for `.binding(.set(\.$keyPath, value))`.
-  ///
-  /// - Returns: A binding action.
-  public static func set<Value: Equatable>(
-    _ keyPath: WritableKeyPath<State, BindingState<Value>>,
-    _ value: Value
-  ) -> Self {
-    self.binding(.set(keyPath, value))
-  }
-}
-
-/// A property wrapper type that can designate properties of view state that can be directly
-/// bindable in SwiftUI views.
-///
-/// Read <doc:Bindings> for more information.
-@propertyWrapper
-public struct BindingViewState<Value> {
-  let binding: Binding<Value>
-
-  public var wrappedValue: Value {
-    get { self.binding.wrappedValue }
-    set { self.binding.wrappedValue = newValue }
-  }
-
-  public var projectedValue: Binding<Value> {
-    self.binding
-  }
-}
-
-extension BindingViewState: Equatable where Value: Equatable {
-  public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.wrappedValue == rhs.wrappedValue
-  }
-}
-
-extension BindingViewState: Hashable where Value: Hashable {
-  public func hash(into hasher: inout Hasher) {
-    hasher.combine(self.wrappedValue)
-  }
-}
-
-extension BindingViewState: CustomReflectable {
-  public var customMirror: Mirror {
-    Mirror(reflecting: self.wrappedValue)
-  }
-}
-
-extension BindingViewState: CustomDumpRepresentable {
-  public var customDumpValue: Any {
-    self.wrappedValue
-  }
-}
-
-extension BindingViewState: CustomDebugStringConvertible
-where Value: CustomDebugStringConvertible {
-  public var debugDescription: String {
-    self.wrappedValue.debugDescription
-  }
-}
-
-/// A property wrapper type that can derive ``BindingViewState`` values for a ``ViewStore``.
-///
-/// Read <doc:Bindings> for more information.
-@dynamicMemberLookup
-@propertyWrapper
-public struct BindingViewStore<State> {
-  let store: Store<State, BindingAction<State>>
-  #if DEBUG
-    let bindableActionType: Any.Type
-    let fileID: StaticString
-    let line: UInt
-  #endif
-
-  init<Action: BindableAction>(
-    store: Store<State, Action>,
-    fileID: StaticString = #fileID,
-    line: UInt = #line
-  ) where Action.State == State {
-    // TODO: Can we avoid this store scoping?
-    self.store = store.scope(state: { $0 }, action: Action.binding)
-    #if DEBUG
-      self.bindableActionType = type(of: Action.self)
-      self.fileID = fileID
-      self.line = line
-    #endif
-  }
-
-  public init(projectedValue: Self) {
-    self = projectedValue
-  }
-
-  public var wrappedValue: State {
-    self.store.state.value
-  }
-
-  public var projectedValue: Self {
-    get { self }
-    set { self = newValue }
-  }
-
-  public subscript<Value>(dynamicMember keyPath: KeyPath<State, Value>) -> Value {
-    self.wrappedValue[keyPath: keyPath]
-  }
-
-  public subscript<Value: Equatable>(
-    dynamicMember keyPath: WritableKeyPath<State, BindingState<Value>>
-  ) -> BindingViewState<Value> {
-    BindingViewState(
-      // OPTIMIZE: Can we derive bindings directly from `Store` and avoid the work of creating a `ViewStore`?
-      binding: ViewStore(self.store, removeDuplicates: { _, _ in false }).binding(
-        get: { $0[keyPath: keyPath].wrappedValue },
-        send: { value in
-          #if DEBUG
-            let debugger = BindableActionViewStoreDebugger(
-              value: value,
-              bindableActionType: self.bindableActionType,
-              context: .bindingStore,
-              isInvalidated: self.store._isInvalidated,
-              fileID: self.fileID,
-              line: self.line
-            )
-            let set: @Sendable (inout State) -> Void = {
-              $0[keyPath: keyPath].wrappedValue = value
-              debugger.wasCalled = true
-            }
-          #else
-            let set: @Sendable (inout State) -> Void = { $0[keyPath: keyPath].wrappedValue = value }
-          #endif
-          return .init(keyPath: keyPath, set: set, value: value)
-        }
-      )
-    )
-  }
-}
-
-extension WithViewStore where Content: View {
-  /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
-  /// to compute bindings and views from state.
-  ///
-  /// Read <doc:Bindings> for more information.
-  ///
-  /// - Parameters:
-  ///   - store: A store.
-  ///   - toViewState: A function that transforms binding store state into observable view state.
-  ///     All changes to the view state will cause the `WithViewStore` to re-compute its view.
-  ///   - fromViewAction: A function that transforms view actions into store action.
-  ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
-  ///     are equal, repeat view computations are removed,
-  ///   - content: A function that can generate content from a view store.
-  public init<State, Action>(
-    _ store: Store<State, Action>,
-    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
-    send fromViewAction: @escaping (ViewAction) -> Action,
-    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
-    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  ) where ViewAction: BindableAction, ViewAction.State == State {
-    self.init(
-      store,
-      observe: { (_: State) in
-        toViewState(
-          BindingViewStore(
-            // TODO: Can we avoid this store scoping?
-            store: store.scope(state: { $0 }, action: fromViewAction)
-          )
-        )
-      },
-      send: fromViewAction,
-      removeDuplicates: isDuplicate,
-      content: content,
-      file: file,
-      line: line
-    )
-  }
-
-  /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
-  /// to compute bindings and views from state.
-  ///
-  /// Read <doc:Bindings> for more information.
-  ///
-  /// - Parameters:
-  ///   - store: A store.
-  ///   - toViewState: A function that transforms binding store state into observable view state.
-  ///     All changes to the view state will cause the `WithViewStore` to re-compute its view.
-  ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
-  ///     are equal, repeat view computations are removed,
-  ///   - content: A function that can generate content from a view store.
-  public init<State>(
-    _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
-    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
-    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  ) where ViewAction: BindableAction, ViewAction.State == State {
-    self.init(
-      store,
-      observe: toViewState,
-      send: { $0 },
-      removeDuplicates: isDuplicate,
-      content: content,
-      file: file,
-      line: line
-    )
-  }
-}
-
-extension WithViewStore where ViewState: Equatable, Content: View {
-  /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
-  /// to compute bindings and views from state.
-  ///
-  /// Read <doc:Bindings> for more information.
-  ///
-  /// - Parameters:
-  ///   - store: A store.
-  ///   - toViewState: A function that transforms binding store state into observable view state.
-  ///     All changes to the view state will cause the `WithViewStore` to re-compute its view.
-  ///   - fromViewAction: A function that transforms view actions into store action.
-  ///   - content: A function that can generate content from a view store.
-  public init<State, Action>(
-    _ store: Store<State, Action>,
-    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
-    send fromViewAction: @escaping (ViewAction) -> Action,
-    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  ) where ViewAction: BindableAction, ViewAction.State == State {
-    self.init(
-      store,
-      observe: toViewState,
-      send: fromViewAction,
-      removeDuplicates: ==,
-      content: content,
-      file: file,
-      line: line
-    )
-  }
-
-  /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
-  /// to compute bindings and views from state.
-  ///
-  /// Read <doc:Bindings> for more information.
-  ///
-  /// - Parameters:
-  ///   - store: A store.
-  ///   - toViewState: A function that transforms binding store state into observable view state.
-  ///     All changes to the view state will cause the `WithViewStore` to re-compute its view.
-  ///   - content: A function that can generate content from a view store.
-  public init<State>(
-    _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
-    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  ) where ViewAction: BindableAction, ViewAction.State == State {
-    self.init(
-      store,
-      observe: toViewState,
-      removeDuplicates: ==,
-      content: content,
-      file: file,
-      line: line
-    )
-  }
-}
-
-extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
-  @MainActor
-  public subscript<Value: Equatable>(
-    dynamicMember keyPath: WritableKeyPath<ViewState, BindingState<Value>>
-  ) -> Binding<Value> {
-    self.binding(
-      get: { $0[keyPath: keyPath].wrappedValue },
-      send: { value in
-        #if DEBUG
-          let bindingState = self.state[keyPath: keyPath]
-          let debugger = BindableActionViewStoreDebugger(
-            value: value,
-            bindableActionType: ViewAction.self,
-            context: .bindingState,
-            isInvalidated: self._isInvalidated,
-            fileID: bindingState.fileID,
-            line: bindingState.line
-          )
-          let set: @Sendable (inout ViewState) -> Void = {
-            $0[keyPath: keyPath].wrappedValue = value
-            debugger.wasCalled = true
-          }
-        #else
-          let set: @Sendable (inout ViewState) -> Void = {
-            $0[keyPath: keyPath].wrappedValue = value
-          }
-        #endif
-        return .binding(.init(keyPath: keyPath, set: set, value: value))
-      }
-    )
-  }
-
-  @available(
-    iOS,
-    deprecated: 9999,
-    message: "Use 'viewStore.$value' instead."
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message: "Use 'viewStore.$value' instead."
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message: "Use 'viewStore.$value' instead."
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message: "Use 'viewStore.$value' instead."
-  )
-  public func binding<Value: Equatable>(
-    _ keyPath: WritableKeyPath<ViewState, BindingState<Value>>,
-    fileID: StaticString = #fileID,
-    line: UInt = #line
-  ) -> Binding<Value> {
-    self.binding(
-      get: { $0[keyPath: keyPath].wrappedValue },
-      send: { [isInvalidated = self._isInvalidated] value in
-        #if DEBUG
-          let debugger = BindableActionViewStoreDebugger(
-            value: value,
-            bindableActionType: ViewAction.self,
-            context: .viewStore,
-            isInvalidated: isInvalidated,
-            fileID: fileID,
-            line: line
-          )
-          let set: @Sendable (inout ViewState) -> Void = {
-            $0[keyPath: keyPath].wrappedValue = value
-            debugger.wasCalled = true
-          }
-        #else
-          let set: @Sendable (inout ViewState) -> Void = {
-            $0[keyPath: keyPath].wrappedValue = value
-          }
-        #endif
-        return .binding(.init(keyPath: keyPath, set: set, value: value))
-      }
-    )
-  }
-}
-
 /// An action that describes simple mutations to some root state at a writable key path.
 ///
 /// Used in conjunction with ``BindingState`` and ``BindableAction`` to safely eliminate the
@@ -595,126 +225,23 @@ extension BindingAction {
   }
 }
 
+extension BindingAction: CustomDumpReflectable {
+  public var customDumpMirror: Mirror {
+    Mirror(
+      self,
+      children: [
+        "set": (self.keyPath, self.value.base)
+      ],
+      displayStyle: .enum
+    )
+  }
+}
+
 extension BindingAction {
-  /// Transforms a binding action over some root state to some other type of root state given a
-  /// key path.
-  ///
-  /// Useful in transforming binding actions on view state into binding actions on reducer state
-  /// when the domain contains ``BindingState`` and ``BindableAction``.
-  ///
-  /// For example, we can model an feature that can bind an integer count to a stepper and make a
-  /// network request to fetch a fact about that integer with the following domain:
-  ///
-  /// ```swift
-  /// struct MyFeature: ReducerProtocol {
-  ///   struct State: Equatable {
-  ///     @BindingState var count = 0
-  ///     var fact: String?
-  ///     // ...
-  ///   }
-  ///
-  ///   enum Action: BindableAction {
-  ///     case binding(BindingAction<State>)
-  ///     case factButtonTapped
-  ///     case factResponse(String?)
-  ///     // ...
-  ///   }
-  ///
-  ///   @Dependency(\.numberFact) var numberFact
-  ///
-  ///   var body: some ReducerProtocol<State, Action> {
-  ///     BindingReducer()
-  ///     // ...
-  ///   }
-  /// }
-  ///
-  /// struct MyFeatureView: View {
-  ///   let store: StoreOf<MyFeature>
-  ///
-  ///   var view: some View {
-  ///     // ...
-  ///   }
-  /// }
-  /// ```
-  ///
-  /// The view may want to limit the state and actions it has access to by introducing a
-  /// view-specific domain that contains only the state and actions the view needs. Not only will
-  /// this minimize the number of times a view's `body` is computed, it will prevent the view
-  /// from accessing state or sending actions outside its purview. We can define it with its own
-  /// binding state and bindable action:
-  ///
-  /// ```swift
-  /// extension MyFeatureView {
-  ///   struct ViewState: Equatable {
-  ///     @BindingState var count: Int
-  ///     let fact: String?
-  ///     // no access to any other state on `MyFeature.State`, like child domains
-  ///   }
-  ///
-  ///   enum ViewAction: BindableAction {
-  ///     case binding(BindingAction<ViewState>)
-  ///     case factButtonTapped
-  ///     // no access to any other action on `MyFeature.Action`, like `factResponse`
-  ///   }
-  /// }
-  /// ```
-  ///
-  /// In order to transform a `BindingAction<ViewState>` sent from the view domain into a
-  /// `BindingAction<MyFeature.State>`, we need a writable key path from `MyFeature.State` to
-  /// `ViewState`. We can synthesize one by defining a computed property on `MyFeature.State` with a
-  /// getter and a setter. The setter should communicate any mutations to binding state back to the
-  /// parent state:
-  ///
-  /// ```swift
-  /// extension MyFeature.State {
-  ///   var view: MyFeatureView.ViewState {
-  ///     get { .init(count: self.count, fact: self.fact) }
-  ///     set { self.count = newValue.count }
-  ///   }
-  /// }
-  /// ```
-  ///
-  /// With this property defined it is now possible to transform a `BindingAction<ViewState>` into
-  /// a `BindingAction<MyFeature.State>`, which means we can transform a `ViewAction` into an
-  /// `MyFeature.Action`. This is where `pullback` comes into play: we can unwrap the view action's
-  /// binding action on view state and transform it with `pullback` to work with feature state. We
-  /// can define a helper that performs this transformation, as well as route any other view actions
-  /// to their reducer equivalents:
-  ///
-  /// ```swift
-  /// extension MyFeature.Action {
-  ///   static func view(_ viewAction: MyFeatureView.ViewAction) -> Self {
-  ///     switch viewAction {
-  ///     case let .binding(action):
-  ///       // transform view binding actions into feature binding actions
-  ///       return .binding(action.pullback(\.view))
-  ///
-  ///     case let .factButtonTapped
-  ///       // route `ViewAction.factButtonTapped` to `MyFeature.Action.factButtonTapped`
-  ///       return .factButtonTapped
-  ///     }
-  ///   }
-  /// }
-  /// ```
-  ///
-  /// Finally, in the view we can invoke ``Store/scope(state:action:)-9iai9`` with these domain
-  /// transformations to leverage the view store's binding helpers:
-  ///
-  /// ```swift
-  /// WithViewStore(
-  ///   self.store, observe: \.view, send: MyFeature.Action.view
-  /// ) { viewStore in
-  ///   Stepper("\(viewStore.count)", viewStore.binding(\.$count))
-  ///   Button("Get number fact") { viewStore.send(.factButtonTapped) }
-  ///   if let fact = viewStore.fact {
-  ///     Text(fact)
-  ///   }
-  /// }
-  /// ```
-  ///
-  /// - Parameter keyPath: A key path from a new type of root state to the original root state.
-  /// - Returns: A binding action over a new type of root state.
-  // TODO: Deprecate
+  @available(iOS, deprecated: 9999, message: "Use 'BindingViewState' instead.")
+  @available(macOS, deprecated: 9999, message: "Use 'BindingViewState' instead.")
+  @available(tvOS, deprecated: 9999, message: "Use 'BindingViewState' instead.")
+  @available(watchOS, deprecated: 9999, message: "Use 'BindingViewState' instead.")
   public func pullback<NewRoot>(
     _ keyPath: WritableKeyPath<NewRoot, Root>
   ) -> BindingAction<NewRoot> {
@@ -727,14 +254,444 @@ extension BindingAction {
   }
 }
 
-extension BindingAction: CustomDumpReflectable {
-  public var customDumpMirror: Mirror {
-    Mirror(
-      self,
-      children: [
-        "set": (self.keyPath, self.value.base)
-      ],
-      displayStyle: .enum
+/// An action type that exposes a `binding` case that holds a ``BindingAction``.
+///
+/// Used in conjunction with ``BindingState`` to safely eliminate the boilerplate typically
+/// associated with mutating multiple fields in state.
+///
+/// Read <doc:Bindings> for more information.
+public protocol BindableAction {
+  /// The root state type that contains bindable fields.
+  associatedtype State
+
+  /// Embeds a binding action in this action type.
+  ///
+  /// - Returns: A binding action.
+  static func binding(_ action: BindingAction<State>) -> Self
+}
+
+extension BindableAction {
+  /// Constructs a binding action for the given key path and bindable value.
+  ///
+  /// Shorthand for `.binding(.set(\.$keyPath, value))`.
+  ///
+  /// - Returns: A binding action.
+  public static func set<Value: Equatable>(
+    _ keyPath: WritableKeyPath<State, BindingState<Value>>,
+    _ value: Value
+  ) -> Self {
+    self.binding(.set(keyPath, value))
+  }
+}
+
+extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
+  @MainActor
+  public subscript<Value: Equatable>(
+    dynamicMember keyPath: WritableKeyPath<ViewState, BindingState<Value>>
+  ) -> Binding<Value> {
+    self.binding(
+      get: { $0[keyPath: keyPath].wrappedValue },
+      send: { value in
+        #if DEBUG
+          let bindingState = self.state[keyPath: keyPath]
+          let debugger = BindableActionViewStoreDebugger(
+            value: value,
+            bindableActionType: ViewAction.self,
+            context: .bindingState,
+            isInvalidated: self._isInvalidated,
+            fileID: bindingState.fileID,
+            line: bindingState.line
+          )
+          let set: @Sendable (inout ViewState) -> Void = {
+            $0[keyPath: keyPath].wrappedValue = value
+            debugger.wasCalled = true
+          }
+        #else
+          let set: @Sendable (inout ViewState) -> Void = {
+            $0[keyPath: keyPath].wrappedValue = value
+          }
+        #endif
+        return .binding(.init(keyPath: keyPath, set: set, value: value))
+      }
+    )
+  }
+
+  @available(iOS, deprecated: 9999, message: "Use 'viewStore.$value' instead.")
+  @available(macOS, deprecated: 9999, message: "Use 'viewStore.$value' instead.")
+  @available(tvOS, deprecated: 9999, message: "Use 'viewStore.$value' instead.")
+  @available(watchOS, deprecated: 9999, message: "Use 'viewStore.$value' instead.")
+  public func binding<Value: Equatable>(
+    _ keyPath: WritableKeyPath<ViewState, BindingState<Value>>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> Binding<Value> {
+    self.binding(
+      get: { $0[keyPath: keyPath].wrappedValue },
+      send: { [isInvalidated = self._isInvalidated] value in
+        #if DEBUG
+          let debugger = BindableActionViewStoreDebugger(
+            value: value,
+            bindableActionType: ViewAction.self,
+            context: .viewStore,
+            isInvalidated: isInvalidated,
+            fileID: fileID,
+            line: line
+          )
+          let set: @Sendable (inout ViewState) -> Void = {
+            $0[keyPath: keyPath].wrappedValue = value
+            debugger.wasCalled = true
+          }
+        #else
+          let set: @Sendable (inout ViewState) -> Void = {
+            $0[keyPath: keyPath].wrappedValue = value
+          }
+        #endif
+        return .binding(.init(keyPath: keyPath, set: set, value: value))
+      }
+    )
+  }
+}
+
+/// A property wrapper type that can designate properties of view state that can be directly
+/// bindable in SwiftUI views.
+///
+/// Read <doc:Bindings> for more information.
+@propertyWrapper
+public struct BindingViewState<Value> {
+  let binding: Binding<Value>
+
+  public var wrappedValue: Value {
+    get { self.binding.wrappedValue }
+    set { self.binding.wrappedValue = newValue }
+  }
+
+  public var projectedValue: Binding<Value> {
+    self.binding
+  }
+}
+
+extension BindingViewState: Equatable where Value: Equatable {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.wrappedValue == rhs.wrappedValue
+  }
+}
+
+extension BindingViewState: Hashable where Value: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(self.wrappedValue)
+  }
+}
+
+extension BindingViewState: CustomReflectable {
+  public var customMirror: Mirror {
+    Mirror(reflecting: self.wrappedValue)
+  }
+}
+
+extension BindingViewState: CustomDumpRepresentable {
+  public var customDumpValue: Any {
+    self.wrappedValue
+  }
+}
+
+extension BindingViewState: CustomDebugStringConvertible
+where Value: CustomDebugStringConvertible {
+  public var debugDescription: String {
+    self.wrappedValue.debugDescription
+  }
+}
+
+/// A property wrapper type that can derive ``BindingViewState`` values for a ``ViewStore``.
+///
+/// Read <doc:Bindings> for more information.
+@dynamicMemberLookup
+@propertyWrapper
+public struct BindingViewStore<State> {
+  let store: Store<State, BindingAction<State>>
+  #if DEBUG
+    let bindableActionType: Any.Type
+    let fileID: StaticString
+    let line: UInt
+  #endif
+
+  init<Action: BindableAction>(
+    store: Store<State, Action>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) where Action.State == State {
+    self.store = store.scope(state: { $0 }, action: Action.binding)
+    #if DEBUG
+      self.bindableActionType = type(of: Action.self)
+      self.fileID = fileID
+      self.line = line
+    #endif
+  }
+
+  public init(projectedValue: Self) {
+    self = projectedValue
+  }
+
+  public var wrappedValue: State {
+    self.store.state.value
+  }
+
+  public var projectedValue: Self {
+    get { self }
+    set { self = newValue }
+  }
+
+  public subscript<Value>(dynamicMember keyPath: KeyPath<State, Value>) -> Value {
+    self.wrappedValue[keyPath: keyPath]
+  }
+
+  public subscript<Value: Equatable>(
+    dynamicMember keyPath: WritableKeyPath<State, BindingState<Value>>
+  ) -> BindingViewState<Value> {
+    self.store.withState { state in
+      BindingViewState(
+        binding: Binding(
+          get: { state[keyPath: keyPath].wrappedValue },
+          set: { value in
+            #if DEBUG
+              let debugger = BindableActionViewStoreDebugger(
+                value: value,
+                bindableActionType: self.bindableActionType,
+                context: .bindingStore,
+                isInvalidated: self.store._isInvalidated,
+                fileID: self.fileID,
+                line: self.line
+              )
+              let set: @Sendable (inout State) -> Void = {
+                $0[keyPath: keyPath].wrappedValue = value
+                debugger.wasCalled = true
+              }
+            #else
+              let set: @Sendable (inout State) -> Void = {
+                $0[keyPath: keyPath].wrappedValue = value
+              }
+            #endif
+            self.store.send(.init(keyPath: keyPath, set: set, value: value))
+          }
+        )
+      )
+    }
+  }
+}
+
+extension ViewStore {
+  /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
+  /// to compute bindings from state.
+  ///
+  /// Read <doc:Bindings> for more information.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - toViewState: A function that transforms binding store state into observable view state.
+  ///     All changes to the view state will cause the `WithViewStore` to re-compute its view.
+  ///   - fromViewAction: A function that transforms view actions into store action.
+  ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
+  ///     are equal, repeat view computations are removed.
+  public convenience init<State, Action>(
+    _ store: Store<State, Action>,
+    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
+    send fromViewAction: @escaping (ViewAction) -> Action,
+    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
+    file: StaticString = #fileID,
+    line: UInt = #line
+  ) where ViewAction: BindableAction, ViewAction.State == State {
+    self.init(
+      store,
+      observe: { (_: State) in
+        toViewState(BindingViewStore(store: store.scope(state: { $0 }, action: fromViewAction)))
+      },
+      send: fromViewAction,
+      removeDuplicates: isDuplicate
+    )
+  }
+
+  public convenience init<State>(
+    _ store: Store<State, ViewAction>,
+    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
+    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool
+  ) where ViewAction: BindableAction, ViewAction.State == State {
+    self.init(
+      store,
+      observe: toViewState,
+      send: { $0 },
+      removeDuplicates: isDuplicate
+    )
+  }
+}
+
+extension ViewStore where ViewState: Equatable {
+  /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
+  /// to compute bindings from state.
+  ///
+  /// Read <doc:Bindings> for more information.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - toViewState: A function that transforms binding store state into observable view state.
+  ///     All changes to the view state will cause the `WithViewStore` to re-compute its view.
+  ///   - fromViewAction: A function that transforms view actions into store action.
+  public convenience init<State, Action>(
+    _ store: Store<State, Action>,
+    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
+    send fromViewAction: @escaping (ViewAction) -> Action
+  ) where ViewAction: BindableAction, ViewAction.State == State {
+    self.init(
+      store,
+      observe: toViewState,
+      send: fromViewAction,
+      removeDuplicates: ==
+    )
+  }
+
+  /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
+  /// to compute bindings from state.
+  ///
+  /// Read <doc:Bindings> for more information.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - toViewState: A function that transforms binding store state into observable view state.
+  ///     All changes to the view state will cause the `WithViewStore` to re-compute its view.
+  ///   - content: A function that can generate content from a view store.
+  public convenience init<State>(
+    _ store: Store<State, ViewAction>,
+    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState
+  ) where ViewAction: BindableAction, ViewAction.State == State {
+    self.init(
+      store,
+      observe: toViewState,
+      removeDuplicates: ==
+    )
+  }
+}
+
+extension WithViewStore where Content: View {
+  /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
+  /// to compute bindings and views from state.
+  ///
+  /// Read <doc:Bindings> for more information.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - toViewState: A function that transforms binding store state into observable view state.
+  ///     All changes to the view state will cause the `WithViewStore` to re-compute its view.
+  ///   - fromViewAction: A function that transforms view actions into store action.
+  ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
+  ///     are equal, repeat view computations are removed.
+  ///   - content: A function that can generate content from a view store.
+  public init<State, Action>(
+    _ store: Store<State, Action>,
+    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
+    send fromViewAction: @escaping (ViewAction) -> Action,
+    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
+    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
+    file: StaticString = #fileID,
+    line: UInt = #line
+  ) where ViewAction: BindableAction, ViewAction.State == State {
+    self.init(
+      store,
+      observe: { (_: State) in
+        toViewState(BindingViewStore(store: store.scope(state: { $0 }, action: fromViewAction)))
+      },
+      send: fromViewAction,
+      removeDuplicates: isDuplicate,
+      content: content,
+      file: file,
+      line: line
+    )
+  }
+
+  /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
+  /// to compute bindings and views from state.
+  ///
+  /// Read <doc:Bindings> for more information.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - toViewState: A function that transforms binding store state into observable view state.
+  ///     All changes to the view state will cause the `WithViewStore` to re-compute its view.
+  ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
+  ///     are equal, repeat view computations are removed.
+  ///   - content: A function that can generate content from a view store.
+  public init<State>(
+    _ store: Store<State, ViewAction>,
+    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
+    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
+    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
+    file: StaticString = #fileID,
+    line: UInt = #line
+  ) where ViewAction: BindableAction, ViewAction.State == State {
+    self.init(
+      store,
+      observe: toViewState,
+      send: { $0 },
+      removeDuplicates: isDuplicate,
+      content: content,
+      file: file,
+      line: line
+    )
+  }
+}
+
+extension WithViewStore where ViewState: Equatable, Content: View {
+  /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
+  /// to compute bindings and views from state.
+  ///
+  /// Read <doc:Bindings> for more information.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - toViewState: A function that transforms binding store state into observable view state.
+  ///     All changes to the view state will cause the `WithViewStore` to re-compute its view.
+  ///   - fromViewAction: A function that transforms view actions into store action.
+  ///   - content: A function that can generate content from a view store.
+  public init<State, Action>(
+    _ store: Store<State, Action>,
+    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
+    send fromViewAction: @escaping (ViewAction) -> Action,
+    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
+    file: StaticString = #fileID,
+    line: UInt = #line
+  ) where ViewAction: BindableAction, ViewAction.State == State {
+    self.init(
+      store,
+      observe: toViewState,
+      send: fromViewAction,
+      removeDuplicates: ==,
+      content: content,
+      file: file,
+      line: line
+    )
+  }
+
+  /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
+  /// to compute bindings and views from state.
+  ///
+  /// Read <doc:Bindings> for more information.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - toViewState: A function that transforms binding store state into observable view state.
+  ///     All changes to the view state will cause the `WithViewStore` to re-compute its view.
+  ///   - content: A function that can generate content from a view store.
+  public init<State>(
+    _ store: Store<State, ViewAction>,
+    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
+    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
+    file: StaticString = #fileID,
+    line: UInt = #line
+  ) where ViewAction: BindableAction, ViewAction.State == State {
+    self.init(
+      store,
+      observe: toViewState,
+      removeDuplicates: ==,
+      content: content,
+      file: file,
+      line: line
     )
   }
 }
