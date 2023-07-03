@@ -359,6 +359,12 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
 @propertyWrapper
 public struct BindingViewState<Value> {
   let binding: Binding<Value>
+  let initialValue: Value
+
+  init(binding: Binding<Value>) {
+    self.binding = binding
+    self.initialValue = binding.wrappedValue
+  }
 
   public var wrappedValue: Value {
     get { self.binding.wrappedValue }
@@ -372,12 +378,13 @@ public struct BindingViewState<Value> {
 
 extension BindingViewState: Equatable where Value: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.wrappedValue == rhs.wrappedValue
+    lhs.initialValue == rhs.initialValue && lhs.wrappedValue == rhs.wrappedValue
   }
 }
 
 extension BindingViewState: Hashable where Value: Hashable {
   public func hash(into hasher: inout Hasher) {
+    hasher.combine(self.initialValue)
     hasher.combine(self.wrappedValue)
   }
 }
@@ -447,11 +454,10 @@ public struct BindingViewStore<State> {
   public subscript<Value: Equatable>(
     dynamicMember keyPath: WritableKeyPath<State, BindingState<Value>>
   ) -> BindingViewState<Value> {
-    self.store.withState { state in
-      BindingViewState(
-        binding: Binding(
-          get: { state[keyPath: keyPath].wrappedValue },
-          set: { value in
+    BindingViewState(
+      binding: ViewStore(self.store, observe: { $0[keyPath: keyPath].wrappedValue })
+        .binding(
+          send: { value in
             #if DEBUG
               let debugger = BindableActionViewStoreDebugger(
                 value: value,
@@ -470,11 +476,10 @@ public struct BindingViewStore<State> {
                 $0[keyPath: keyPath].wrappedValue = value
               }
             #endif
-            self.store.send(.init(keyPath: keyPath, set: set, value: value))
+            return .init(keyPath: keyPath, set: set, value: value)
           }
         )
-      )
-    }
+    )
   }
 }
 

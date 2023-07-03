@@ -67,8 +67,11 @@ final class BindingTests: BaseTCATestCase {
     }
     let viewStore = ViewStore(store, observe: { ViewState(count: $0.$count) })
     let initialState = viewStore.state
-    viewStore.$count.wrappedValue += 1
+    let count = viewStore.$count
+    count.wrappedValue += 1
     XCTAssertNotEqual(initialState, viewStore.state)
+
+    XCTAssertEqual(count.wrappedValue, 1)
   }
 
 
