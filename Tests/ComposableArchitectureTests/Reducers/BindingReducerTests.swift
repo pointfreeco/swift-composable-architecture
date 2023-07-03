@@ -74,7 +74,6 @@ final class BindingTests: BaseTCATestCase {
     XCTAssertEqual(count.wrappedValue, 1)
   }
 
-
   func testNestedBindingState() {
     let store = Store(initialState: BindingTest.State()) { BindingTest() }
 
