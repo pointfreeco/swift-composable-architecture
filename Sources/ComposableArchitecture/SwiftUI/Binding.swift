@@ -56,7 +56,7 @@ public struct BindingState<Value> {
     deprecated,
     message:
       """
-      Chaining onto properties of bindable state is deprecated. Push '@BindingState' use to the child state, instead.
+      Chaining onto properties of binding state is deprecated. Instead of pattern matching into a deeper property of binding state, use 'ReducerProtocol.onChange(of:)' to detect changes to nested properties of binding state. Instead of using 'viewStore.binding(\\.$nested.property)', use dynamic member lookup ('viewStore.$nested.property').
       """
   )
   public subscript<Subject>(
