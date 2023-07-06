@@ -357,7 +357,7 @@ struct NotificationSettingsView: View {
   }
 
   var body: some View {
-    WithViewStore(self.store, ViewStore.init) { viewStore in
+    WithViewStore(self.store, observe: ViewState.init) { viewStore in
       // ...
     }
   }
