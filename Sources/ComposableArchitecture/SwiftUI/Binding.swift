@@ -407,6 +407,106 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   }
 }
 
+extension ViewStore {
+  /// Initializes a view store from a store in order to compute bindings from state.
+  ///
+  /// Read <doc:Bindings> for more information.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - toViewState: A function that transforms binding store state into observable view state.
+  ///     All changes to the view state will cause the `ViewStore` to publish the changes.
+  ///   - fromViewAction: A function that transforms a view action into a store action.
+  ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
+  ///     are equal, repeat changes are not published.
+  public convenience init<State, Action>(
+    _ store: Store<State, Action>,
+    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
+    send fromViewAction: @escaping (ViewAction) -> Action,
+    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool
+  ) where ViewAction: BindableAction, ViewAction.State == State {
+    self.init(
+      store,
+      observe: { (_: State) in
+        toViewState(
+          BindingViewStore(
+            // TODO: Can we avoid this store scoping?
+            store: store.scope(state: { $0 }, action: fromViewAction)
+          )
+        )
+      },
+      send: fromViewAction,
+      removeDuplicates: isDuplicate
+    )
+  }
+
+  /// Initializes a view store from a store in order to compute bindings from state.
+  ///
+  /// Read <doc:Bindings> for more information.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - toViewState: A function that transforms binding store state into observable view state.
+  ///     All changes to the view state will cause the `ViewStore` to publish the changes.
+  ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
+  ///     are equal, repeat changes are not published.
+  public convenience init<State>(
+    _ store: Store<State, ViewAction>,
+    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
+    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool
+  ) where ViewAction: BindableAction, ViewAction.State == State {
+    self.init(
+      store,
+      observe: toViewState,
+      send: { $0 },
+      removeDuplicates: isDuplicate
+    )
+  }
+}
+
+extension ViewStore where ViewState: Equatable {
+  /// Initializes a view store from a store in order to compute bindings from state.
+  ///
+  /// Read <doc:Bindings> for more information.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - toViewState: A function that transforms binding store state into observable view state.
+  ///     All changes to the view state will cause the `ViewStore` to publish the changes.
+  ///   - fromViewAction: A function that transforms a view action into a store action.
+  public convenience init<State, Action>(
+    _ store: Store<State, Action>,
+    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
+    send fromViewAction: @escaping (ViewAction) -> Action
+  ) where ViewAction: BindableAction, ViewAction.State == State {
+    self.init(
+      store,
+      observe: toViewState,
+      send: fromViewAction,
+      removeDuplicates: ==
+    )
+  }
+
+  /// Initializes a view store from a store in order to compute bindings from state.
+  ///
+  /// Read <doc:Bindings> for more information.
+  ///
+  /// - Parameters:
+  ///   - store: A store.
+  ///   - toViewState: A function that transforms binding store state into observable view state.
+  ///     All changes to the view state will cause the `ViewStore` to publish the changes.
+  public convenience init<State>(
+    _ store: Store<State, ViewAction>,
+    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState
+  ) where ViewAction: BindableAction, ViewAction.State == State {
+    self.init(
+      store,
+      observe: toViewState,
+      removeDuplicates: ==
+    )
+  }
+}
+
 extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
   @MainActor
   public subscript<Value: Equatable>(
