@@ -5,31 +5,28 @@ import SwiftUI
 
 @MainActor
 final class BindableStoreTests: XCTestCase {
-
   func testBindableStore() {
-    struct BindableReducer: Reducer {
+    struct BindableReducer: ReducerProtocol {
       struct State: Equatable {
         @BindingState var something: Int
       }
-      
+
       enum Action: BindableAction {
         case binding(BindingAction<State>)
       }
-      
-      var body: some Reducer<State, Action> {
+
+      var body: some ReducerProtocol<State, Action> {
         BindingReducer()
       }
     }
-    
+
     struct SomeView: View {
       let store: StoreOf<BindableReducer>
-      
-      struct ViewState: Equatable {
-        
-      }
-      
+
+      struct ViewState: Equatable {}
+
       var body: some View {
-        WithViewStore(store, observe: { _ in ViewState() }) { viewstore in // Ambiguous use of 'init(_:observe:content:file:line:)'
+        WithViewStore(store, observe: { _ in ViewState() }) { viewStore in
           EmptyView()
         }
       }
