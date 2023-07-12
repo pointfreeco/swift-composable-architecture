@@ -20,7 +20,39 @@ final class BindableStoreTests: XCTestCase {
       }
     }
 
-    struct SomeView: View {
+    struct SomeView_BindableViewState: View {
+      let store: StoreOf<BindableReducer>
+
+      struct ViewState: Equatable {
+        @BindingViewState var something: Int
+      }
+
+      var body: some View {
+        WithViewStore(store, observe: { ViewState(something: $0.$something) }) { viewStore in
+          EmptyView()
+        }
+      }
+    }
+
+    struct SomeView_BindableViewState_Observed: View {
+      let store: StoreOf<BindableReducer>
+      @ObservedObject var viewStore: ViewStore<ViewState, BindableReducer.Action>
+
+      struct ViewState: Equatable {
+        @BindingViewState var something: Int
+      }
+
+      init(store: StoreOf<BindableReducer>) {
+        self.store = store
+        self.viewStore = ViewStore(store, observe: { ViewState(something: $0.$something) })
+      }
+
+      var body: some View {
+        EmptyView()
+      }
+    }
+
+    struct SomeView_NoBindableViewState: View {
       let store: StoreOf<BindableReducer>
 
       struct ViewState: Equatable {}
@@ -29,6 +61,22 @@ final class BindableStoreTests: XCTestCase {
         WithViewStore(store, observe: { _ in ViewState() }) { viewStore in
           EmptyView()
         }
+      }
+    }
+
+    struct SomeView_NoBindableViewState_Observed: View {
+      let store: StoreOf<BindableReducer>
+      @ObservedObject var viewStore: ViewStore<ViewState, BindableReducer.Action>
+
+      struct ViewState: Equatable {}
+
+      init(store: StoreOf<BindableReducer>) {
+        self.store = store
+        self.viewStore = ViewStore(store, observe: { _ in ViewState() })
+      }
+
+      var body: some View {
+        EmptyView()
       }
     }
   }

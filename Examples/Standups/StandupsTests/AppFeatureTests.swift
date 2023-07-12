@@ -94,7 +94,10 @@ final class AppFeatureTests: XCTestCase {
 
     var savedStandup = standup
     savedStandup.title = "Blob"
-    XCTAssertEqual(savedData.value, try! JSONEncoder().encode([savedStandup]))
+    XCTAssertNoDifference(
+      try JSONDecoder().decode([Standup].self, from: savedData.value!),
+      [savedStandup]
+    )
   }
 
   func testRecording() async {
