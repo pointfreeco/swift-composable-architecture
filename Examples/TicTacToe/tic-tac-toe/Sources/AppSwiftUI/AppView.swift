@@ -16,18 +16,17 @@ public struct AppView: View {
       switch state {
       case .login:
         CaseLet(/TicTacToe.State.login, action: TicTacToe.Action.login) { store in
-          NavigationView {
+          NavigationStack {
             LoginView(store: store)
           }
         }
       case .newGame:
         CaseLet(/TicTacToe.State.newGame, action: TicTacToe.Action.newGame) { store in
-          NavigationView {
+          NavigationStack {
             NewGameView(store: store)
           }
         }
       }
     }
-    .navigationViewStyle(.stack)
   }
 }
