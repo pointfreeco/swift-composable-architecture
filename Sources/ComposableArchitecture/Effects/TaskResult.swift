@@ -124,6 +124,21 @@ public enum TaskResult<Success: Sendable>: Sendable {
       self = .failure(error)
     }
   }
+  
+  /// Throwing variant of `init(catching:)` that only throws `CancellationError`s if the task this is run within is cancelled.
+  /// This is useful if you don't want cancellation errors to be processed by a reducer like other errors.
+  ///
+  /// - Parameter body: An async, throwing closure.
+  @inlinable
+  public static func cancellable(catching body: @Sendable () async throws -> Success) async throws -> Self {
+    do {
+      return .success(try await body())
+    } catch let error as CancellationError {
+      throw error
+    } catch {
+      return .failure(error)
+    }
+  }
 
   /// Transforms a `Result` into a `TaskResult`, erasing its `Failure` to `Error`.
   ///

@@ -118,4 +118,33 @@ final class TaskResultTests: BaseTCATestCase {
     XCTAssertEqual(Set(statusByError.values), [1, 2, 3])
     XCTAssertNotEqual(error1.hashValue, error2.hashValue)
   }
+  
+  @MainActor
+  func testCancellable_CancellationErrorsAreThrown() async {
+    do {
+      _ = try await TaskResult<Int>.cancellable {
+        throw CancellationError()
+      }
+      XCTFail("A cancellation error should have been thrown.")
+    } catch {
+      XCTAssert(error is CancellationError)
+    }
+  }
+  
+  @MainActor
+  func testCancellable_NonCancellationErrorsBecomeResultValues() async {
+    enum Failure: Error, Hashable {
+      case something
+    }
+    
+    do {
+      let result = try await TaskResult<Int>.cancellable {
+        throw Failure.something
+      }
+      XCTAssertEqual(result, TaskResult<Int>.failure(Failure.something))
+    } catch {
+      XCTFail("An error should not have been thrown.")
+    }
+    
+  }
 }
