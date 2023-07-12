@@ -1,7 +1,7 @@
 import Combine
 @_spi(Internals) import ComposableArchitecture
-import XCTest
 import SwiftUI
+import XCTest
 
 @MainActor
 final class BindableStoreTests: XCTestCase {
