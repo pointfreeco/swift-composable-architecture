@@ -131,9 +131,8 @@
         $0.compactDescription == """
           The store received 1 unexpected action after this one: …
 
-          Unhandled actions: [
-            [0]: .second
-          ]
+            Unhandled actions:
+              • .second
           """
       }
     }
@@ -222,8 +221,11 @@
       let store = TestStore(initialState: 0) {
         Reduce<Int, Action> { state, action in
           switch action {
-          case .first: return .init(value: .second)
-          case .second: return .none
+          case .first:
+            return .init(value: .second)
+          case .second:
+            state += 1
+            return .none
           }
         }
       }

@@ -200,11 +200,11 @@ extension Login.Action {
     case .alertDismissed:
       self = .alert(.dismiss)
     case let .emailChanged(email):
-      self = .emailChanged(email ?? "")
+      self = .view(.set(\.$email, email ?? ""))
     case .loginButtonTapped:
-      self = .loginButtonTapped
+      self = .view(.loginButtonTapped)
     case let .passwordChanged(password):
-      self = .passwordChanged(password ?? "")
+      self = .view(.set(\.$password, password ?? ""))
     case .twoFactorDismissed:
       self = .twoFactor(.dismiss)
     }
