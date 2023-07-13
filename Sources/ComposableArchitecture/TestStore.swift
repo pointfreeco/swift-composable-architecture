@@ -1,5 +1,6 @@
 @_spi(Internals) import CasePaths
 import Combine
+import ConcurrencyExtras
 import CustomDump
 import Foundation
 import XCTestDynamicOverlay
@@ -1105,8 +1106,12 @@ extension TestStore where ScopedState: Equatable {
       .init(origin: .send(self.fromScopedAction(action)), file: file, line: line),
       originatingFrom: nil
     )
-    for await _ in self.reducer.effectDidSubscribe.stream {
-      break
+    if uncheckedUseMainSerialExecutor {
+      await Task.megaYield()
+    } else {
+      for await _ in self.reducer.effectDidSubscribe.stream {
+        break
+      }
     }
     do {
       let currentState = self.state

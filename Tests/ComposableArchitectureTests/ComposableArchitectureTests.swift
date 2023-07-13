@@ -1,7 +1,7 @@
 import Combine
 import CombineSchedulers
 import ComposableArchitecture
-@_spi(Concurrency) import Dependencies
+import ConcurrencyExtras
 import XCTest
 
 @MainActor

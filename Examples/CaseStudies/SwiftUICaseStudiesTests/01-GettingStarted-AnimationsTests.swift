@@ -1,6 +1,6 @@
 import Clocks
 import ComposableArchitecture
-@_spi(Concurrency) import Dependencies
+import ConcurrencyExtras
 import XCTest
 
 @testable import SwiftUICaseStudies

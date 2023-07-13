@@ -1,6 +1,6 @@
 #if DEBUG
   import ComposableArchitecture
-  @_spi(Concurrency) import Dependencies
+  import ConcurrencyExtras
   import XCTest
 
   @MainActor
