@@ -9,7 +9,7 @@ let storeSuite = BenchmarkSuite(name: "Store") {
 
   for level in 1...levels {
     $0.benchmark("Nested send tap: \(level)") {
-      _ = store.send(tap(level: level))
+      store.send(tap(level: level))
     } setUp: {
       store = Store(initialState: state(level: level)) {
         Feature()
@@ -21,7 +21,7 @@ let storeSuite = BenchmarkSuite(name: "Store") {
   }
   for level in 1...levels {
     $0.benchmark("Nested send none: \(level)") {
-      _ = store.send(none(level: level))
+      store.send(none(level: level))
     } setUp: {
       store = Store(initialState: state(level: level)) {
         Feature()

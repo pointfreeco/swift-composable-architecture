@@ -116,7 +116,7 @@ struct SearchView: View {
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
-      NavigationView {
+      NavigationStack {
         VStack(alignment: .leading) {
           Text(readMe)
             .padding()
@@ -165,7 +165,6 @@ struct SearchView: View {
         }
         .navigationTitle("Search")
       }
-      .navigationViewStyle(.stack)
       .task(id: viewStore.searchQuery) {
         do {
           try await Task.sleep(nanoseconds: NSEC_PER_SEC / 3)

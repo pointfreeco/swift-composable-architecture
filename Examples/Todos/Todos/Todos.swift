@@ -117,7 +117,7 @@ struct AppView: View {
 
   var body: some View {
     WithViewStore(self.store, observe: ViewState.init) { viewStore in
-      NavigationView {
+      NavigationStack {
         VStack(alignment: .leading) {
           Picker("Filter", selection: viewStore.$filter.animation()) {
             ForEach(Filter.allCases, id: \.self) { filter in
@@ -150,7 +150,6 @@ struct AppView: View {
         )
         .environment(\.editMode, viewStore.$editMode)
       }
-      .navigationViewStyle(.stack)
     }
   }
 }
