@@ -41,7 +41,7 @@ final class AppFeatureTests: XCTestCase {
   }
 
   func testDetailEdit() async throws {
-    let standup = Standup.mock
+    var standup = Standup.mock
     let savedData = LockIsolated(Data?.none)
 
     let store = TestStore(initialState: AppFeature.State()) {
@@ -67,11 +67,12 @@ final class AppFeatureTests: XCTestCase {
       )
     }
 
+    standup.title = "Blob"
     await store.send(
       .path(
         .element(
           id: 0,
-          action: .detail(.destination(.presented(.edit(.binding(.set(\.$standup.title, "Blob"))))))
+          action: .detail(.destination(.presented(.edit(.binding(.set(\.$standup, standup))))))
         )
       )
     ) {
