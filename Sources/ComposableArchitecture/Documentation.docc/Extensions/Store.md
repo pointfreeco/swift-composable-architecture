@@ -11,6 +11,14 @@
 
 - ``scope(state:action:)-9iai9``
 
+### Accessing state
+
+- ``withState(_:)``
+
+### Sending actions
+
+- ``send(_:)``
+
 ### Combine integration
 
 - ``StorePublisher``

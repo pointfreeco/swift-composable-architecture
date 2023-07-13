@@ -28,20 +28,20 @@ let package = Package(
     .package(path: "../swift-dependencies"),
 //    .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "0.5.1"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "0.7.0"),
-    .package(url: "https://github.com/pointfreeco/swiftui-navigation", from: "0.7.2"),
+    .package(url: "https://github.com/pointfreeco/swiftui-navigation", from: "0.8.0"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "0.8.4"),
   ],
   targets: [
     .target(
       name: "ComposableArchitecture",
       dependencies: [
-        .product(name: "_SwiftUINavigationState", package: "swiftui-navigation"),
         .product(name: "CasePaths", package: "swift-case-paths"),
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
         .product(name: "CustomDump", package: "swift-custom-dump"),
         .product(name: "Dependencies", package: "swift-dependencies"),
         .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
         .product(name: "OrderedCollections", package: "swift-collections"),
+        .product(name: "SwiftUINavigationCore", package: "swiftui-navigation"),
         .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
       ]
     ),

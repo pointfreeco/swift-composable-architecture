@@ -9,7 +9,7 @@ struct AddContactFeature: ReducerProtocol {
     case delegate(Delegate)
     case saveButtonTapped
     case setName(String)
-    enum Delegate {
+    enum Delegate: Equatable {
       case cancel
       case saveContact(Contact)
     }
