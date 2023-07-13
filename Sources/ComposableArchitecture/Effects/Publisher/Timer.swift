@@ -94,8 +94,8 @@ extension EffectPublisher where Failure == Never {
   @available(
     watchOS, deprecated: 9999, message: "Use 'clock.timer' in an 'Effect.run', instead."
   )
-  public static func timer<S: Scheduler>(
-    id: AnyHashable,
+  public static func timer<ID: Hashable, S: Scheduler>(
+    id: ID,
     every interval: S.SchedulerTimeType.Stride,
     tolerance: S.SchedulerTimeType.Stride? = nil,
     on scheduler: S,

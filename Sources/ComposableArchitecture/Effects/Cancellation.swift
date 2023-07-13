@@ -28,7 +28,7 @@ extension EffectPublisher {
   ///   - cancelInFlight: Determines if any in-flight effect with the same identifier should be
   ///     canceled before starting this new one.
   /// - Returns: A new effect that is capable of being canceled by an identifier.
-  public func cancellable<ID: Hashable & Sendable>(id: ID, cancelInFlight: Bool = false) -> Self {
+  public func cancellable<ID: Hashable>(id: ID, cancelInFlight: Bool = false) -> Self {
     @Dependency(\.navigationIDPath) var navigationIDPath
 
     switch self.operation {
@@ -96,7 +96,7 @@ extension EffectPublisher {
   /// - Parameter id: An effect identifier.
   /// - Returns: A new effect that will cancel any currently in-flight effect with the given
   ///   identifier.
-  public static func cancel<ID: Hashable & Sendable>(id: ID) -> Self {
+  public static func cancel<ID: Hashable>(id: ID) -> Self {
     @Dependency(\.navigationIDPath) var navigationIDPath
 
     return .fireAndForget {
@@ -150,7 +150,7 @@ extension EffectPublisher {
 /// - Throws: An error thrown by the operation.
 /// - Returns: A value produced by operation.
 @_unsafeInheritExecutor
-public func withTaskCancellation<ID: Hashable & Sendable, T: Sendable>(
+public func withTaskCancellation<ID: Hashable, T: Sendable>(
   id: ID,
   cancelInFlight: Bool = false,
   operation: @Sendable @escaping () async throws -> T
@@ -182,7 +182,7 @@ extension Task where Success == Never, Failure == Never {
   /// Cancel any currently in-flight operation with the given identifier.
   ///
   /// - Parameter id: An identifier.
-  public static func cancel<ID: Hashable & Sendable>(id: ID) {
+  public static func cancel<ID: Hashable>(id: ID) {
     @Dependency(\.navigationIDPath) var navigationIDPath
 
     return _cancellablesLock.sync {
@@ -191,14 +191,14 @@ extension Task where Success == Never, Failure == Never {
   }
 }
 
-@_spi(Internals) public struct _CancelID: Hashable, Sendable {
+@_spi(Internals) public struct _CancelID: Hashable {
   let discriminator: ObjectIdentifier
-  let id: AnyHashableSendable
+  let id: AnyHashable
   let navigationIDPath: NavigationIDPath
 
-  init<ID: Hashable & Sendable>(id: ID, navigationIDPath: NavigationIDPath) {
+  init<ID: Hashable>(id: ID, navigationIDPath: NavigationIDPath) {
     self.discriminator = ObjectIdentifier(type(of: id))
-    self.id = AnyHashableSendable(id)
+    self.id = id
     self.navigationIDPath = navigationIDPath
   }
 }
@@ -229,7 +229,7 @@ extension Result: _ErrorMechanism {}
 public class CancellablesCollection {
   var storage: [_CancelID: Set<AnyCancellable>] = [:]
 
-  func insert<ID: Hashable & Sendable>(
+  func insert<ID: Hashable>(
     _ cancellable: AnyCancellable,
     at id: ID,
     path: NavigationIDPath
@@ -240,7 +240,7 @@ public class CancellablesCollection {
     }
   }
 
-  func remove<ID: Hashable & Sendable>(
+  func remove<ID: Hashable>(
     _ cancellable: AnyCancellable,
     at id: ID,
     path: NavigationIDPath
@@ -254,7 +254,7 @@ public class CancellablesCollection {
     }
   }
 
-  func cancel<ID: Hashable & Sendable>(
+  func cancel<ID: Hashable>(
     id: ID,
     path: NavigationIDPath
   ) {
@@ -263,7 +263,7 @@ public class CancellablesCollection {
     self.storage[cancelID] = nil
   }
 
-  func exists<ID: Hashable & Sendable>(
+  func exists<ID: Hashable>(
     at id: ID,
     path: NavigationIDPath
   ) -> Bool {
