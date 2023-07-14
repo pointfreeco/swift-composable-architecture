@@ -264,7 +264,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
 
   /// Sends an action to the store.
   ///
-  /// This method returns a ``ViewStoreTask``, which represents the lifecycle of the effect started
+  /// This method returns a ``StoreTask``, which represents the lifecycle of the effect started
   /// from sending an action. You can use this value to tie the effect's lifecycle _and_
   /// cancellation to an asynchronous context, such as SwiftUI's `task` view modifier:
   ///
@@ -279,10 +279,10 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   /// > result can be fed back into the store.
   ///
   /// - Parameter action: An action.
-  /// - Returns: A ``ViewStoreTask`` that represents the lifecycle of the effect executed when
+  /// - Returns: A ``StoreTask`` that represents the lifecycle of the effect executed when
   ///   sending the action.
   @discardableResult
-  public func send(_ action: ViewAction) -> ViewStoreTask {
+  public func send(_ action: ViewAction) -> StoreTask {
     .init(rawValue: self._send(action))
   }
 
@@ -294,7 +294,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - action: An action.
   ///   - animation: An animation.
   @discardableResult
-  public func send(_ action: ViewAction, animation: Animation?) -> ViewStoreTask {
+  public func send(_ action: ViewAction, animation: Animation?) -> StoreTask {
     send(action, transaction: Transaction(animation: animation))
   }
 
@@ -306,7 +306,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - action: An action.
   ///   - transaction: A transaction.
   @discardableResult
-  public func send(_ action: ViewAction, transaction: Transaction) -> ViewStoreTask {
+  public func send(_ action: ViewAction, transaction: Transaction) -> StoreTask {
     withTransaction(transaction) {
       self.send(action)
     }
@@ -728,23 +728,7 @@ extension ViewStore where ViewState == Void {
   }
 }
 
-/// The type returned from ``ViewStore/send(_:)`` that represents the lifecycle of the effect
-/// started from sending an action.
-///
-/// You can use this value to tie the effect's lifecycle _and_ cancellation to an asynchronous
-/// context, such as the `task` view modifier.
-///
-/// ```swift
-/// .task { await viewStore.send(.task).finish() }
-/// ```
-///
-/// > Note: Unlike Swift's `Task` type, ``ViewStoreTask`` automatically sets up a cancellation
-/// > handler between the current async context and the task.
-///
-/// See ``TestStoreTask`` for the analog returned from ``TestStore``.
-
-/// > Warning: ViewStoreTask is deprecated. Use ``store.send(_:)`` directly on the ``Store`` instead."
-@available(*, deprecated, message: "Use 'store.send(action)' directly on the 'Store' instead.")
+@available(*, deprecated, renamed: "StoreTask")
 public typealias ViewStoreTask = StoreTask
 
 /// A publisher of store state.
