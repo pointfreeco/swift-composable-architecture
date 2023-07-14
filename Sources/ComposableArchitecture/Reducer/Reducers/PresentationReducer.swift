@@ -465,8 +465,8 @@ public struct _PresentedID: Hashable {
 }
 
 extension Task where Success == Never, Failure == Never {
-  internal static func _cancel(
-    id: AnyHashable,
+  internal static func _cancel<ID: Hashable>(
+    id: ID,
     navigationID: NavigationIDPath
   ) {
     withDependencies {
@@ -477,8 +477,8 @@ extension Task where Success == Never, Failure == Never {
   }
 }
 extension EffectPublisher {
-  internal func _cancellable(
-    id: AnyHashable = _PresentedID(),
+  internal func _cancellable<ID: Hashable>(
+    id: ID = _PresentedID(),
     navigationIDPath: NavigationIDPath,
     cancelInFlight: Bool = false
   ) -> Self {
@@ -488,8 +488,8 @@ extension EffectPublisher {
       self.cancellable(id: id, cancelInFlight: cancelInFlight)
     }
   }
-  internal static func _cancel(
-    id: AnyHashable = _PresentedID(),
+  internal static func _cancel<ID: Hashable>(
+    id: ID = _PresentedID(),
     navigationID: NavigationIDPath
   ) -> Self {
     withDependencies {
