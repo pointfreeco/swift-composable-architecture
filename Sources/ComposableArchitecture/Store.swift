@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import SwiftUI
 
 /// A store represents the runtime that powers the application. It is the object that you will pass
 /// around to views that need to interact with the application.
@@ -191,6 +192,32 @@ public final class Store<State, Action> {
   /// - Parameter action: An action.
   public func send(_ action: Action) {
     _ = self.send(action, originatingFrom: nil)
+  }
+
+  /// Sends an action to the store with a given animation.
+  ///
+  /// See ``Store/send(_:)`` for more info.
+  ///
+  /// - Parameters:
+  ///   - action: An action.
+  ///   - animation: An animation.
+  @discardableResult
+  public func send(_ action: Action, animation: Animation?) -> StoreTask {
+    send(action, transaction: Transaction(animation: animation))
+  }
+
+  /// Sends an action to the store with a given transaction.
+  ///
+  /// See ``Store/send(_:)`` for more info.
+  ///
+  /// - Parameters:
+  ///   - action: An action.
+  ///   - transaction: A transaction.
+  @discardableResult
+  public func send(_ action: Action, transaction: Transaction) -> StoreTask {
+    withTransaction(transaction) {
+      .init(rawValue: self.send(action, originatingFrom: nil))
+    }
   }
 
   /// Scopes the store to one that exposes child state and actions.
@@ -770,4 +797,44 @@ extension ScopedReducer: AnyScopedReducer {
       }
     return childStore
   }
+}
+
+/// The type returned from ``Store/send(_:)`` that represents the lifecycle of the effect
+/// started from sending an action.
+///
+/// You can use this value to tie the effect's lifecycle _and_ cancellation to an asynchronous
+/// context, such as the `task` view modifier.
+///
+/// ```swift
+/// .task { await store.send(.task).finish() }
+/// ```
+///
+/// > Note: Unlike Swift's `Task` type, ``StoreTask`` automatically sets up a cancellation
+/// > handler between the current async context and the task.
+///
+/// See ``TestStoreTask`` for the analog returned from ``TestStore``.
+public struct StoreTask: Hashable, Sendable {
+	internal let rawValue: Task<Void, Never>?
+	
+	internal init(rawValue: Task<Void, Never>?) {
+		self.rawValue = rawValue
+	}
+	
+	/// Cancels the underlying task.
+	public func cancel() {
+		self.rawValue?.cancel()
+	}
+	
+	/// Waits for the task to finish.
+	public func finish() async {
+		await self.rawValue?.cancellableValue
+	}
+	
+	/// A Boolean value that indicates whether the task should stop executing.
+	///
+	/// After the value of this property becomes `true`, it remains `true` indefinitely. There is no
+	/// way to uncancel a task.
+	public var isCancelled: Bool {
+		self.rawValue?.isCancelled ?? true
+	}
 }
