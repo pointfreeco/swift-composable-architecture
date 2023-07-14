@@ -814,27 +814,27 @@ extension ScopedReducer: AnyScopedReducer {
 ///
 /// See ``TestStoreTask`` for the analog returned from ``TestStore``.
 public struct StoreTask: Hashable, Sendable {
-	internal let rawValue: Task<Void, Never>?
-	
-	internal init(rawValue: Task<Void, Never>?) {
-		self.rawValue = rawValue
-	}
-	
-	/// Cancels the underlying task.
-	public func cancel() {
-		self.rawValue?.cancel()
-	}
-	
-	/// Waits for the task to finish.
-	public func finish() async {
-		await self.rawValue?.cancellableValue
-	}
-	
-	/// A Boolean value that indicates whether the task should stop executing.
-	///
-	/// After the value of this property becomes `true`, it remains `true` indefinitely. There is no
-	/// way to uncancel a task.
-	public var isCancelled: Bool {
-		self.rawValue?.isCancelled ?? true
-	}
+  internal let rawValue: Task<Void, Never>?
+
+  internal init(rawValue: Task<Void, Never>?) {
+    self.rawValue = rawValue
+  }
+
+  /// Cancels the underlying task.
+  public func cancel() {
+    self.rawValue?.cancel()
+  }
+
+  /// Waits for the task to finish.
+  public func finish() async {
+    await self.rawValue?.cancellableValue
+  }
+
+  /// A Boolean value that indicates whether the task should stop executing.
+  ///
+  /// After the value of this property becomes `true`, it remains `true` indefinitely. There is no
+  /// way to uncancel a task.
+  public var isCancelled: Bool {
+    self.rawValue?.isCancelled ?? true
+  }
 }
