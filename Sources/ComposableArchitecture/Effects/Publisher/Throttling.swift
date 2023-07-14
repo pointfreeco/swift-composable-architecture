@@ -15,8 +15,8 @@ extension EffectPublisher {
   ///     `false`, the publisher emits the first element received during the interval.
   /// - Returns: An effect that emits either the most-recent or first element received during the
   ///   specified interval.
-  public func throttle<S: Scheduler>(
-    id: AnyHashable,
+  public func throttle<ID: Hashable, S: Scheduler>(
+    id: ID,
     for interval: S.SchedulerTimeType.Stride,
     scheduler: S,
     latest: Bool

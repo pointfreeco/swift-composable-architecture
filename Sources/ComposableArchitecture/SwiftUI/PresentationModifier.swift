@@ -221,7 +221,12 @@ public struct PresentationStore<
             : nil
         },
         compactSend: {
-          $0 == nil && self.toID(self.viewStore.state) == id ? .dismiss : nil
+          guard
+            $0 == nil,
+            self.viewStore.wrappedValue != nil,
+            id == nil || self.toID(self.viewStore.state) == id
+          else { return nil }
+          return .dismiss
         }
       ),
       DestinationContent(
