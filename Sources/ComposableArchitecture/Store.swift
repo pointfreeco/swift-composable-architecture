@@ -820,10 +820,9 @@ public struct StoreTask: Hashable, Sendable {
 		self.rawValue = rawValue
 	}
 	
-	/// Cancels the underlying task and waits for it to finish.
-	public func cancel() async {
+	/// Cancels the underlying task.
+	public func cancel() {
 		self.rawValue?.cancel()
-		await self.finish()
 	}
 	
 	/// Waits for the task to finish.
