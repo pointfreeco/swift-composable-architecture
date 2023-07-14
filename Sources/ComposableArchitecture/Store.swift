@@ -814,7 +814,7 @@ extension ScopedReducer: AnyScopedReducer {
 ///
 /// See ``TestStoreTask`` for the analog returned from ``TestStore``.
 public struct StoreTask: Hashable, Sendable {
-	fileprivate let rawValue: Task<Void, Never>?
+	internal let rawValue: Task<Void, Never>?
 	
 	internal init(rawValue: Task<Void, Never>?) {
 		self.rawValue = rawValue
