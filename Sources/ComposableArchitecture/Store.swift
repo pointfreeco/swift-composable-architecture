@@ -202,7 +202,7 @@ public final class Store<State, Action> {
   ///   - action: An action.
   ///   - animation: An animation.
   @discardableResult
-  public func send(_ action: Action, animation: Animation?) -> ViewStoreTask {
+  public func send(_ action: Action, animation: Animation?) -> StoreTask {
     send(action, transaction: Transaction(animation: animation))
   }
 
@@ -214,7 +214,7 @@ public final class Store<State, Action> {
   ///   - action: An action.
   ///   - transaction: A transaction.
   @discardableResult
-  public func send(_ action: Action, transaction: Transaction) -> ViewStoreTask {
+  public func send(_ action: Action, transaction: Transaction) -> StoreTask {
     withTransaction(transaction) {
       .init(rawValue: self.send(action, originatingFrom: nil))
     }
