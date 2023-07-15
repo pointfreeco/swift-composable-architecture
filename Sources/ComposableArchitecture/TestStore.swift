@@ -2622,7 +2622,7 @@ extension TestStore {
   )
   public func receive(
     _ expectedAction: Action,
-    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) async {
@@ -2635,7 +2635,7 @@ extension TestStore {
   )
   public func send(
     _ action: ScopedAction,
-    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) async -> TestStoreTask {
