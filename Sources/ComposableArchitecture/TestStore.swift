@@ -2618,7 +2618,7 @@ extension TestStore {
   @available(
     *,
     unavailable,
-    message: "'State' and 'Action' must conform to Equatable to assert against received actions."
+    message: "'State' and 'Action' must conform to 'Equatable' to assert against received actions."
   )
   public func receive(
     _ expectedAction: Action,
@@ -2631,7 +2631,7 @@ extension TestStore {
   @MainActor
   @discardableResult
   @available(
-    *, unavailable, message: "'State' must conform to Equatable to assert against sent actions."
+    *, unavailable, message: "'State' must conform to 'Equatable' to assert against sent actions."
   )
   public func send(
     _ action: ScopedAction,
