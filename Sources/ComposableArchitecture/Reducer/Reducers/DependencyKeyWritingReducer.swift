@@ -121,7 +121,7 @@ extension ReducerProtocol {
   @warn_unqualified_access
   public func transformDependency<V>(
     _ keyPath: WritableKeyPath<DependencyValues, V>,
-    transform: @escaping (inout V) -> Void
+    transform: @escaping (_ dependency: inout V) -> Void
   )
     // NB: We should not return `some ReducerProtocol<State, Action>` here. That would prevent the
     //     specialization defined below from being called, which fuses chained calls.

@@ -58,7 +58,7 @@ public struct SwitchStore<State, Action, Content: View>: View {
 
   public init(
     _ store: Store<State, Action>,
-    @ViewBuilder content: @escaping (State) -> Content
+    @ViewBuilder content: @escaping (_ initialState: State) -> Content
   ) {
     self.store = store
     self.content = content
@@ -97,7 +97,7 @@ public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: Vie
   public init(
     _ toCaseState: @escaping (EnumState) -> CaseState?,
     action fromCaseAction: @escaping (CaseAction) -> EnumAction,
-    @ViewBuilder then content: @escaping (Store<CaseState, CaseAction>) -> Content,
+    @ViewBuilder then content: @escaping (_ store: Store<CaseState, CaseAction>) -> Content,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) {
@@ -115,7 +115,7 @@ public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: Vie
   public init(
     state toCaseState: @escaping (EnumState) -> CaseState?,
     action fromCaseAction: @escaping (CaseAction) -> EnumAction,
-    @ViewBuilder then content: @escaping (Store<CaseState, CaseAction>) -> Content,
+    @ViewBuilder then content: @escaping (_ store: Store<CaseState, CaseAction>) -> Content,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) {
@@ -154,7 +154,7 @@ extension CaseLet where EnumAction == CaseAction {
   ///     that is visible only when the switch store's state matches.
   public init(
     state toCaseState: @escaping (EnumState) -> CaseState?,
-    @ViewBuilder then content: @escaping (Store<CaseState, CaseAction>) -> Content
+    @ViewBuilder then content: @escaping (_ store: Store<CaseState, CaseAction>) -> Content
   ) {
     self.init(
       toCaseState,

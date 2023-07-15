@@ -25,7 +25,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
   public init(
     _ store: Store<StackState<State>, StackAction<State, Action>>,
     @ViewBuilder root: () -> Root,
-    @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination
+    @ViewBuilder destination: @escaping (_ store: Store<State, Action>) -> Destination
   ) {
     self.root = root()
     self.destination = { component in
@@ -62,7 +62,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
   public init<D: View>(
     _ store: Store<StackState<State>, StackAction<State, Action>>,
     @ViewBuilder root: () -> Root,
-    @ViewBuilder destination: @escaping (State) -> D
+    @ViewBuilder destination: @escaping (_ state: State) -> D
   ) where Destination == SwitchStore<State, Action, D> {
     self.root = root()
     self.destination = { component in
