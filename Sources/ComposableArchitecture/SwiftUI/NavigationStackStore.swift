@@ -219,9 +219,9 @@ private struct NavigationDestinationView<State, Destination: View>: View {
   let component: Component<State>
   let destination: (Component<State>) -> Destination
   var body: some View {
-    self.destination(component)
+    self.destination(self.component)
       .environment(\.navigationDestinationType, State.self)
-      .id(component.id)
+      .id(self.component.id)
   }
 }
 

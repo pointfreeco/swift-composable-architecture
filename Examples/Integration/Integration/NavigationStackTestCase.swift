@@ -1,18 +1,8 @@
 import ComposableArchitecture
 import SwiftUI
 
-private struct DestinationFeature: ReducerProtocol {
-  struct State: Hashable {
-  }
-  enum Action {
-  }
-  var body: some ReducerProtocolOf<Self> {
-    EmptyReducer()
-  }
-}
-
 private struct DestinationView: View {
-  let store: StoreOf<DestinationFeature>
+  let store: StoreOf<EmptyReducer<Int, Never>>
   var body: some View {
     Text("Destination")
   }
@@ -21,13 +11,13 @@ private struct DestinationView: View {
 private struct ChildFeature: ReducerProtocol {
   struct State: Hashable {
     @PresentationState var alert: AlertState<Action.Alert>?
-    @PresentationState var navigationDestination: DestinationFeature.State?
+    @PresentationState var navigationDestination: Int?
     var count = 0
     var hasAppeared = false
   }
   enum Action {
     case alert(PresentationAction<Alert>)
-    case navigationDestination(PresentationAction<DestinationFeature.Action>)
+    case navigationDestination(PresentationAction<Never>)
     case decrementButtonTapped
     case dismissButtonTapped
     case incrementButtonTapped
@@ -74,7 +64,7 @@ private struct ChildFeature: ReducerProtocol {
           await send(.response(count + 1))
         }
       case .navigationDestinationButtonTapped:
-        state.navigationDestination = .init()
+        state.navigationDestination = 1
         return .none
       case .showAlertButtonTapped:
         state.alert = AlertState {
@@ -89,7 +79,7 @@ private struct ChildFeature: ReducerProtocol {
     }
     .ifLet(\.$alert, action: /Action.alert)
     .ifLet(\.$navigationDestination, action: /Action.navigationDestination) {
-      DestinationFeature()
+      EmptyReducer()
     }
   }
 }
