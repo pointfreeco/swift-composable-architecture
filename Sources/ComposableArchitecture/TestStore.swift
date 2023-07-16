@@ -568,7 +568,8 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   public init<R: ReducerProtocol>(
     initialState: @autoclosure () -> State,
     @ReducerBuilder<State, Action> reducer: () -> R,
-    withDependencies prepareDependencies: (_ dependencies: inout DependencyValues) -> Void = { _ in },
+    withDependencies prepareDependencies: (_ dependencies: inout DependencyValues) -> Void = { _ in
+    },
     file: StaticString = #file,
     line: UInt = #line
   )
@@ -596,7 +597,8 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   @available(
     *,
     deprecated,
-    message: """
+    message:
+      """
       Test the reducer domain directly. To test view state and actions, write a unit test.
       """
   )
@@ -629,7 +631,8 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   @available(
     *,
     deprecated,
-    message: """
+    message:
+      """
       Test the reducer domain directly. To test view state and actions, write a unit test.
       """
   )
@@ -676,7 +679,8 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   public init<R: ReducerProtocol>(
     initialState: @autoclosure () -> State,
     @ReducerBuilder<State, Action> reducer: () -> R,
-    withDependencies prepareDependencies: (_ dependencies: inout DependencyValues) -> Void = { _ in },
+    withDependencies prepareDependencies: (_ dependencies: inout DependencyValues) -> Void = { _ in
+    },
     file: StaticString = #file,
     line: UInt = #line
   )

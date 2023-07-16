@@ -125,7 +125,10 @@ private struct ChildView: View {
         viewStore.send(.onAppear)
       }
       .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
-      .navigationDestination(store: self.store.scope(state: \.$navigationDestination, action: { .navigationDestination($0) })) {
+      .navigationDestination(
+        store: self.store.scope(
+          state: \.$navigationDestination, action: { .navigationDestination($0) })
+      ) {
         DestinationView(store: $0)
       }
     }
