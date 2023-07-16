@@ -57,7 +57,7 @@ public struct EffectPublisher<Action, Failure: Error> {
   enum Operation {
     case none
     case publisher(AnyPublisher<Action, Failure>)
-    case run(TaskPriority? = nil, @Sendable (Send<Action>) async -> Void)
+    case run(TaskPriority? = nil, @Sendable (_ send: Send<Action>) async -> Void)
   }
 
   @usableFromInline

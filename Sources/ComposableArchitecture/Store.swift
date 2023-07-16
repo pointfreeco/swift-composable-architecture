@@ -148,7 +148,7 @@ public final class Store<State, Action> {
   public convenience init<R: ReducerProtocol>(
     initialState: @autoclosure () -> R.State,
     @ReducerBuilder<State, Action> reducer: () -> R,
-    withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
+    withDependencies prepareDependencies: ((_ dependencies: inout DependencyValues) -> Void)? = nil
   ) where R.State == State, R.Action == Action {
     if let prepareDependencies = prepareDependencies {
       let (initialState, reducer) = withDependencies(prepareDependencies) {
@@ -180,7 +180,7 @@ public final class Store<State, Action> {
   ///   duration of the closure's execution, and is not observable over time, _e.g._ by SwiftUI. If
   ///   you want to observe store state in a view, use a ``ViewStore`` instead.
   /// - Returns: The return value, if any, of the `body` closure.
-  public func withState<R>(_ body: (State) -> R) -> R {
+  public func withState<R>(_ body: (_ state: State) -> R) -> R {
     body(self.state.value)
   }
 
@@ -370,8 +370,8 @@ public final class Store<State, Action> {
   ///   - fromChildAction: A function that transforms `ChildAction` into `Action`.
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<ChildState, ChildAction>(
-    state toChildState: @escaping (State) -> ChildState,
-    action fromChildAction: @escaping (ChildAction) -> Action
+    state toChildState: @escaping (_ state: State) -> ChildState,
+    action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction> {
     self.scope(state: toChildState, action: fromChildAction, removeDuplicates: nil)
   }
@@ -386,8 +386,9 @@ public final class Store<State, Action> {
   ///   - fromChildAction: A function that transforms ``PresentationAction`` into `Action`.
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<ChildState, ChildAction>(
-    state toChildState: @escaping (State) -> PresentationState<ChildState>,
-    action fromChildAction: @escaping (PresentationAction<ChildAction>) -> Action
+    state toChildState: @escaping (_ state: State) -> PresentationState<ChildState>,
+    action fromChildAction: @escaping (_ presentationAction: PresentationAction<ChildAction>) ->
+      Action
   ) -> Store<PresentationState<ChildState>, PresentationAction<ChildAction>> {
     self.scope(
       state: toChildState,

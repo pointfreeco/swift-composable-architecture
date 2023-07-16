@@ -213,7 +213,7 @@ extension BindingAction {
 
   init<Value: Equatable & Sendable>(
     keyPath: WritableKeyPath<Root, BindingState<Value>>,
-    set: @escaping @Sendable (inout Root) -> Void,
+    set: @escaping @Sendable (_ state: inout Root) -> Void,
     value: Value
   ) {
     self.init(
@@ -498,9 +498,9 @@ extension ViewStore {
   ///     are equal, repeat view computations are removed.
   public convenience init<State, Action>(
     _ store: Store<State, Action>,
-    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
-    send fromViewAction: @escaping (ViewAction) -> Action,
-    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
+    observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
+    send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action,
+    removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool,
     file: StaticString = #fileID,
     line: UInt = #line
   ) where ViewAction: BindableAction, ViewAction.State == State {
@@ -528,8 +528,8 @@ extension ViewStore {
   @_disfavoredOverload
   public convenience init<State>(
     _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
-    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool
+    observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
+    removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) where ViewAction: BindableAction, ViewAction.State == State {
     self.init(
       store,
@@ -554,8 +554,8 @@ extension ViewStore where ViewState: Equatable {
   @_disfavoredOverload
   public convenience init<State, Action>(
     _ store: Store<State, Action>,
-    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
-    send fromViewAction: @escaping (ViewAction) -> Action
+    observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
+    send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action
   ) where ViewAction: BindableAction, ViewAction.State == State {
     self.init(
       store,
@@ -578,7 +578,7 @@ extension ViewStore where ViewState: Equatable {
   @_disfavoredOverload
   public convenience init<State>(
     _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState
+    observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState
   ) where ViewAction: BindableAction, ViewAction.State == State {
     self.init(
       store,
@@ -605,10 +605,10 @@ extension WithViewStore where Content: View {
   @_disfavoredOverload
   public init<State, Action>(
     _ store: Store<State, Action>,
-    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
-    send fromViewAction: @escaping (ViewAction) -> Action,
-    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
-    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
+    observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
+    send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action,
+    removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool,
+    @ViewBuilder content: @escaping (_ viewStore: ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
     line: UInt = #line
   ) where ViewAction: BindableAction, ViewAction.State == State {
@@ -640,9 +640,9 @@ extension WithViewStore where Content: View {
   @_disfavoredOverload
   public init<State>(
     _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
-    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
-    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
+    observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
+    removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool,
+    @ViewBuilder content: @escaping (_ viewStore: ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
     line: UInt = #line
   ) where ViewAction: BindableAction, ViewAction.State == State {
@@ -673,9 +673,9 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   @_disfavoredOverload
   public init<State, Action>(
     _ store: Store<State, Action>,
-    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
-    send fromViewAction: @escaping (ViewAction) -> Action,
-    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
+    observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
+    send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action,
+    @ViewBuilder content: @escaping (_ viewStore: ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
     line: UInt = #line
   ) where ViewAction: BindableAction, ViewAction.State == State {
@@ -703,8 +703,8 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   @_disfavoredOverload
   public init<State>(
     _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (BindingViewStore<State>) -> ViewState,
-    @ViewBuilder content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
+    observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
+    @ViewBuilder content: @escaping (_ viewStore: ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
     line: UInt = #line
   ) where ViewAction: BindableAction, ViewAction.State == State {

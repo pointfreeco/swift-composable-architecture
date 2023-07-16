@@ -43,7 +43,7 @@
     ///   - send: A function that wraps an alert action in the view store's action type.
     public convenience init<Action>(
       state: AlertState<Action>,
-      send: @escaping (Action?) -> Void
+      send: @escaping (_ action: Action?) -> Void
     ) {
       self.init(
         title: String(state: state.title),
@@ -61,7 +61,7 @@
     ///   - state: The state of dialog that can be shown to the user.
     ///   - send: A function that wraps a dialog action in the view store's action type.
     public convenience init<Action>(
-      state: ConfirmationDialogState<Action>, send: @escaping (Action?) -> Void
+      state: ConfirmationDialogState<Action>, send: @escaping (_ action: Action?) -> Void
     ) {
       self.init(
         title: String(state: state.title),
@@ -98,7 +98,7 @@
   extension UIAlertAction {
     convenience init<Action>(
       _ button: ButtonState<Action>,
-      action handler: @escaping (Action?) -> Void
+      action handler: @escaping (_ action: Action?) -> Void
     ) {
       self.init(
         title: String(state: button.label),
