@@ -87,30 +87,30 @@ final class IfLetReducerTests: BaseTCATestCase {
           }
         }
       }
-        let clock = TestClock()
-        let store = TestStore(initialState: Parent.State()) {
-          Parent()
-        } withDependencies: {
-          $0.continuousClock = clock
+      let clock = TestClock()
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      } withDependencies: {
+        $0.continuousClock = clock
+      }
+      await store.send(.childButtonTapped) {
+        $0.child = Child.State()
+      }
+      await store.send(.child(.timerButtonTapped))
+      await clock.advance(by: .seconds(2))
+      await store.receive(.child(.timerTick)) {
+        try (/.some).modify(&$0.child) {
+          $0.count = 1
         }
-        await store.send(.childButtonTapped) {
-          $0.child = Child.State()
+      }
+      await store.receive(.child(.timerTick)) {
+        try (/.some).modify(&$0.child) {
+          $0.count = 2
         }
-        await store.send(.child(.timerButtonTapped))
-        await clock.advance(by: .seconds(2))
-        await store.receive(.child(.timerTick)) {
-          try (/.some).modify(&$0.child) {
-            $0.count = 1
-          }
-        }
-        await store.receive(.child(.timerTick)) {
-          try (/.some).modify(&$0.child) {
-            $0.count = 2
-          }
-        }
-        await store.send(.childButtonTapped) {
-          $0.child = nil
-        }
+      }
+      await store.send(.childButtonTapped) {
+        $0.child = nil
+      }
     }
   }
 
@@ -180,27 +180,27 @@ final class IfLetReducerTests: BaseTCATestCase {
           }
         }
       }
-        let clock = TestClock()
-        let store = TestStore(initialState: Parent.State()) {
-          Parent()
-        } withDependencies: {
-          $0.continuousClock = clock
-        }
-        await store.send(.startButtonTapped) {
-          $0.child = Child.State(grandChild: GrandChild.State())
-        }
-        await store.send(.child(.grandChild(.timerButtonTapped)))
-        await clock.advance(by: .seconds(1))
-        await store.receive(.child(.grandChild(.timerTick))) {
-          try (/.some).modify(&$0.child) {
-            try (/.some).modify(&$0.grandChild) {
-              $0.count = 1
-            }
+      let clock = TestClock()
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      } withDependencies: {
+        $0.continuousClock = clock
+      }
+      await store.send(.startButtonTapped) {
+        $0.child = Child.State(grandChild: GrandChild.State())
+      }
+      await store.send(.child(.grandChild(.timerButtonTapped)))
+      await clock.advance(by: .seconds(1))
+      await store.receive(.child(.grandChild(.timerTick))) {
+        try (/.some).modify(&$0.child) {
+          try (/.some).modify(&$0.grandChild) {
+            $0.count = 1
           }
         }
-        await store.send(.exitButtonTapped) {
-          $0.child = nil
-        }
+      }
+      await store.send(.exitButtonTapped) {
+        $0.child = nil
+      }
     }
   }
 
@@ -229,15 +229,15 @@ final class IfLetReducerTests: BaseTCATestCase {
           }
         }
       }
-        let store = TestStore(initialState: Parent.State()) {
-          Parent()
-        }
-        await store.send(.tap) {
-          $0.alert = AlertState { TextState("Hi!") }
-        }
-        await store.send(.alert(.ok)) {
-          $0.alert = nil
-        }
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      }
+      await store.send(.tap) {
+        $0.alert = AlertState { TextState("Hi!") }
+      }
+      await store.send(.alert(.ok)) {
+        $0.alert = nil
+      }
     }
   }
 

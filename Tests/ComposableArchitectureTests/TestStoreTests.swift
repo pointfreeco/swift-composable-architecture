@@ -484,7 +484,8 @@ final class TestStoreTests: BaseTCATestCase {
       Reduce<State, Action> { state, action in
         switch action {
         case .start:
-          return subject
+          return
+            subject
             .subscribe(on: scheduler)
             .receive(on: scheduler)
             .map { .increment }
