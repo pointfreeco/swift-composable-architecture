@@ -85,8 +85,9 @@ extension View {
     )
   }
 
+  @_spi(Presentation)
   @ViewBuilder
-  private func presentation<
+  public func presentation<
     State,
     Action,
     DestinationState,
