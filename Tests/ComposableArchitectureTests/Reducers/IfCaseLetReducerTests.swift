@@ -1,11 +1,9 @@
 import ComposableArchitecture
-@_spi(Concurrency) import Dependencies
 import XCTest
 
 @MainActor
 final class IfCaseLetReducerTests: BaseTCATestCase {
   func testChildAction() async {
-    await withMainSerialExecutor {
       struct SomeError: Error, Equatable {}
 
       let store = TestStore(initialState: Result.success(0)) {
@@ -30,7 +28,6 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
       await store.receive(.success(0)) {
         $0 = .success(0)
       }
-    }
   }
 
   #if DEBUG
@@ -131,7 +128,6 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
           }
         }
       }
-      await withMainSerialExecutor {
         let clock = TestClock()
         let store = TestStore(initialState: Parent.State.child1(Child.State())) {
           Parent()
@@ -148,7 +144,6 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
         await store.send(.child2ButtonTapped) {
           $0 = .child2(Child.State())
         }
-      }
     }
   }
 

@@ -1,5 +1,4 @@
 import ComposableArchitecture
-@_spi(Concurrency) import Dependencies
 import XCTest
 
 @MainActor
@@ -88,7 +87,6 @@ final class IfLetReducerTests: BaseTCATestCase {
           }
         }
       }
-      await withMainSerialExecutor {
         let clock = TestClock()
         let store = TestStore(initialState: Parent.State()) {
           Parent()
@@ -113,7 +111,6 @@ final class IfLetReducerTests: BaseTCATestCase {
         await store.send(.childButtonTapped) {
           $0.child = nil
         }
-      }
     }
   }
 
@@ -183,7 +180,6 @@ final class IfLetReducerTests: BaseTCATestCase {
           }
         }
       }
-      await withMainSerialExecutor {
         let clock = TestClock()
         let store = TestStore(initialState: Parent.State()) {
           Parent()
@@ -205,7 +201,6 @@ final class IfLetReducerTests: BaseTCATestCase {
         await store.send(.exitButtonTapped) {
           $0.child = nil
         }
-      }
     }
   }
 
@@ -234,7 +229,6 @@ final class IfLetReducerTests: BaseTCATestCase {
           }
         }
       }
-      await withMainSerialExecutor {
         let store = TestStore(initialState: Parent.State()) {
           Parent()
         }
@@ -244,7 +238,6 @@ final class IfLetReducerTests: BaseTCATestCase {
         await store.send(.alert(.ok)) {
           $0.alert = nil
         }
-      }
     }
   }
 
