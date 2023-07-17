@@ -47,6 +47,33 @@ final class BindingTests: BaseTCATestCase {
     )
   }
 
+  func testViewEquality() {
+    struct Feature: ReducerProtocol {
+      struct State: Equatable {
+        @BindingState var count = 0
+      }
+      enum Action: BindableAction, Equatable {
+        case binding(BindingAction<State>)
+      }
+      var body: some ReducerProtocolOf<Self> {
+        BindingReducer()
+      }
+    }
+    struct ViewState: Equatable {
+      @BindingViewState var count: Int
+    }
+    let store = Store(initialState: Feature.State()) {
+      Feature()
+    }
+    let viewStore = ViewStore(store, observe: { ViewState(count: $0.$count) })
+    let initialState = viewStore.state
+    let count = viewStore.$count
+    count.wrappedValue += 1
+    XCTAssertNotEqual(initialState, viewStore.state)
+
+    XCTAssertEqual(count.wrappedValue, 1)
+  }
+
   func testNestedBindingState() {
     let store = Store(initialState: BindingTest.State()) { BindingTest() }
 

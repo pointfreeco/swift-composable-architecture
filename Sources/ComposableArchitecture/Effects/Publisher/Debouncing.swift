@@ -44,8 +44,8 @@ extension EffectPublisher {
     deprecated: 9999,
     message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'EffectTask.run', instead."
   )
-  public func debounce<S: Scheduler>(
-    id: AnyHashable,
+  public func debounce<ID: Hashable, S: Scheduler>(
+    id: ID,
     for dueTime: S.SchedulerTimeType.Stride,
     scheduler: S,
     options: S.SchedulerOptions? = nil

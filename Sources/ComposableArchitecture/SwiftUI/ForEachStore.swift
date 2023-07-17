@@ -95,7 +95,7 @@ public struct ForEachStore<
   ///   - content: A function that can generate content given a store of an element.
   public init<EachContent>(
     _ store: Store<IdentifiedArray<ID, EachState>, (ID, EachAction)>,
-    @ViewBuilder content: @escaping (Store<EachState, EachAction>) -> EachContent
+    @ViewBuilder content: @escaping (_ store: Store<EachState, EachAction>) -> EachContent
   )
   where
     Data == IdentifiedArray<ID, EachState>,

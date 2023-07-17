@@ -13,12 +13,12 @@ where State == ViewAction.State {
   }
 
   @inlinable
-  public init(action toViewAction: @escaping (Action) -> ViewAction?) {
+  public init(action toViewAction: @escaping (_ action: Action) -> ViewAction?) {
     self.init(internal: toViewAction)
   }
 
   @usableFromInline
-  init(internal toViewAction: @escaping (Action) -> ViewAction?) {
+  init(internal toViewAction: @escaping (_ action: Action) -> ViewAction?) {
     self.toViewAction = toViewAction
   }
 

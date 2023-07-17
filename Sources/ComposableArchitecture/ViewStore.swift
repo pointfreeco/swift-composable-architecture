@@ -88,8 +88,8 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   equal, repeat view computations are removed.
   public init<State>(
     _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (State) -> ViewState,
-    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool
+    observe toViewState: @escaping (_ state: State) -> ViewState,
+    removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) {
     self._send = { store.send($0, originatingFrom: nil) }
     self._state = CurrentValueRelay(toViewState(store.state.value))
@@ -121,9 +121,9 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   equal, repeat view computations are removed.
   public init<State, Action>(
     _ store: Store<State, Action>,
-    observe toViewState: @escaping (State) -> ViewState,
-    send fromViewAction: @escaping (ViewAction) -> Action,
-    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool
+    observe toViewState: @escaping (_ state: State) -> ViewState,
+    send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action,
+    removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) {
     self._send = { store.send(fromViewAction($0), originatingFrom: nil) }
     self._state = CurrentValueRelay(toViewState(store.state.value))
@@ -201,7 +201,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   )
   public init(
     _ store: Store<ViewState, ViewAction>,
-    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool
+    removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) {
     self._send = { store.send($0, originatingFrom: nil) }
     self._state = CurrentValueRelay(store.state.value)
@@ -264,7 +264,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
 
   /// Sends an action to the store.
   ///
-  /// This method returns a ``ViewStoreTask``, which represents the lifecycle of the effect started
+  /// This method returns a ``StoreTask``, which represents the lifecycle of the effect started
   /// from sending an action. You can use this value to tie the effect's lifecycle _and_
   /// cancellation to an asynchronous context, such as SwiftUI's `task` view modifier:
   ///
@@ -279,10 +279,10 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   /// > result can be fed back into the store.
   ///
   /// - Parameter action: An action.
-  /// - Returns: A ``ViewStoreTask`` that represents the lifecycle of the effect executed when
+  /// - Returns: A ``StoreTask`` that represents the lifecycle of the effect executed when
   ///   sending the action.
   @discardableResult
-  public func send(_ action: ViewAction) -> ViewStoreTask {
+  public func send(_ action: ViewAction) -> StoreTask {
     .init(rawValue: self._send(action))
   }
 
@@ -294,7 +294,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - action: An action.
   ///   - animation: An animation.
   @discardableResult
-  public func send(_ action: ViewAction, animation: Animation?) -> ViewStoreTask {
+  public func send(_ action: ViewAction, animation: Animation?) -> StoreTask {
     send(action, transaction: Transaction(animation: animation))
   }
 
@@ -306,7 +306,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - action: An action.
   ///   - transaction: A transaction.
   @discardableResult
-  public func send(_ action: ViewAction, transaction: Transaction) -> ViewStoreTask {
+  public func send(_ action: ViewAction, transaction: Transaction) -> StoreTask {
     withTransaction(transaction) {
       self.send(action)
     }
@@ -384,7 +384,10 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - predicate: A predicate on `ViewState` that determines for how long this method should
   ///     suspend.
   @MainActor
-  public func send(_ action: ViewAction, while predicate: @escaping (ViewState) -> Bool) async {
+  public func send(
+    _ action: ViewAction,
+    while predicate: @escaping (_ state: ViewState) -> Bool
+  ) async {
     let task = self.send(action)
     await withTaskCancellationHandler {
       await self.yield(while: predicate)
@@ -406,7 +409,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   public func send(
     _ action: ViewAction,
     animation: Animation?,
-    while predicate: @escaping (ViewState) -> Bool
+    while predicate: @escaping (_ state: ViewState) -> Bool
   ) async {
     let task = withAnimation(animation) { self.send(action) }
     await withTaskCancellationHandler {
@@ -424,7 +427,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   /// - Parameter predicate: A predicate on `ViewState` that determines for how long this method
   ///   should suspend.
   @MainActor
-  public func yield(while predicate: @escaping (ViewState) -> Bool) async {
+  public func yield(while predicate: @escaping (_ state: ViewState) -> Bool) async {
     if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
       _ = await self.publisher
         .values
@@ -481,8 +484,8 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///     sent to the store.
   /// - Returns: A binding.
   public func binding<Value>(
-    get: @escaping (ViewState) -> Value,
-    send valueToAction: @escaping (Value) -> ViewAction
+    get: @escaping (_ state: ViewState) -> Value,
+    send valueToAction: @escaping (_ value: Value) -> ViewAction
   ) -> Binding<Value> {
     ObservedObject(wrappedValue: self)
       .projectedValue[get: .init(rawValue: get), send: .init(rawValue: valueToAction)]
@@ -490,8 +493,8 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
 
   @_disfavoredOverload
   func binding<Value>(
-    get: @escaping (ViewState) -> Value,
-    compactSend valueToAction: @escaping (Value) -> ViewAction?
+    get: @escaping (_ state: ViewState) -> Value,
+    compactSend valueToAction: @escaping (_ value: Value) -> ViewAction?
   ) -> Binding<Value> {
     ObservedObject(wrappedValue: self)
       .projectedValue[get: .init(rawValue: get), send: .init(rawValue: valueToAction)]
@@ -523,7 +526,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - action: The action to send when the binding is written to.
   /// - Returns: A binding.
   public func binding<Value>(
-    get: @escaping (ViewState) -> Value,
+    get: @escaping (_ state: ViewState) -> Value,
     send action: ViewAction
   ) -> Binding<Value> {
     self.binding(get: get, send: { _ in action })
@@ -555,7 +558,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///     sent to the store.
   /// - Returns: A binding.
   public func binding(
-    send valueToAction: @escaping (ViewState) -> ViewAction
+    send valueToAction: @escaping (_ state: ViewState) -> ViewAction
   ) -> Binding<ViewState> {
     self.binding(get: { $0 }, send: valueToAction)
   }
@@ -632,7 +635,7 @@ extension ViewStore where ViewState: Equatable {
   ///   changes.
   public convenience init<State>(
     _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (State) -> ViewState
+    observe toViewState: @escaping (_ state: State) -> ViewState
   ) {
     self.init(store, observe: toViewState, removeDuplicates: ==)
   }
@@ -652,8 +655,8 @@ extension ViewStore where ViewState: Equatable {
   ///   - fromViewAction: A transformation of `ViewAction` that describes what actions can be sent.
   public convenience init<State, Action>(
     _ store: Store<State, Action>,
-    observe toViewState: @escaping (State) -> ViewState,
-    send fromViewAction: @escaping (ViewAction) -> Action
+    observe toViewState: @escaping (_ state: State) -> ViewState,
+    send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action
   ) {
     self.init(store, observe: toViewState, send: fromViewAction, removeDuplicates: ==)
   }
@@ -728,42 +731,8 @@ extension ViewStore where ViewState == Void {
   }
 }
 
-/// The type returned from ``ViewStore/send(_:)`` that represents the lifecycle of the effect
-/// started from sending an action.
-///
-/// You can use this value to tie the effect's lifecycle _and_ cancellation to an asynchronous
-/// context, such as the `task` view modifier.
-///
-/// ```swift
-/// .task { await viewStore.send(.task).finish() }
-/// ```
-///
-/// > Note: Unlike Swift's `Task` type, ``ViewStoreTask`` automatically sets up a cancellation
-/// > handler between the current async context and the task.
-///
-/// See ``TestStoreTask`` for the analog returned from ``TestStore``.
-public struct ViewStoreTask: Hashable, Sendable {
-  fileprivate let rawValue: Task<Void, Never>?
-
-  /// Cancels the underlying task and waits for it to finish.
-  public func cancel() async {
-    self.rawValue?.cancel()
-    await self.finish()
-  }
-
-  /// Waits for the task to finish.
-  public func finish() async {
-    await self.rawValue?.cancellableValue
-  }
-
-  /// A Boolean value that indicates whether the task should stop executing.
-  ///
-  /// After the value of this property becomes `true`, it remains `true` indefinitely. There is no
-  /// way to uncancel a task.
-  public var isCancelled: Bool {
-    self.rawValue?.isCancelled ?? true
-  }
-}
+@available(*, deprecated, renamed: "StoreTask")
+public typealias ViewStoreTask = StoreTask
 
 /// A publisher of store state.
 @dynamicMemberLookup

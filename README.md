@@ -544,13 +544,14 @@ advanced usages.
 The documentation for releases and `main` are available here:
 
 * [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture)
-* [0.54.0](https://pointfreeco.github.io/swift-composable-architecture/0.54.0/documentation/composablearchitecture/)
+* [0.55.0](https://pointfreeco.github.io/swift-composable-architecture/0.55.0/documentation/composablearchitecture/)
 
 <details>
   <summary>
   Other versions
   </summary>
 
+  * [0.54.0](https://pointfreeco.github.io/swift-composable-architecture/0.54.0/documentation/composablearchitecture/)
   * [0.53.0](https://pointfreeco.github.io/swift-composable-architecture/0.53.0/documentation/composablearchitecture/)
   * [0.52.0](https://pointfreeco.github.io/swift-composable-architecture/0.52.0/documentation/composablearchitecture/)
   * [0.50.0](https://pointfreeco.github.io/swift-composable-architecture/0.50.0/documentation/composablearchitecture/)
@@ -574,12 +575,12 @@ There are a number of articles in the documentation that you may find helpful as
 comfortable with the library:
 
 * [Getting started][getting-started-article]
-* [Dependency management][dependencies-article]
+* [Dependencies][dependencies-article]
 * [Testing][testing-article]
+* [Navigation][navigation-article]
 * [Performance][performance-article]
 * [Concurrency][concurrency-article]
 * [Bindings][bindings-article]
-* [Migrating to the reducer protocol][migrating-article]
 
 ## Community
 
@@ -710,8 +711,8 @@ This library is released under the MIT license. See [LICENSE](LICENSE) for detai
 [testing-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/testing
 [dependencies-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/dependencymanagement
 [getting-started-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/gettingstarted
+[navigation-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/navigation
 [performance-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance
 [concurrency-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/swiftconcurrency
 [bindings-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/bindings
-[migrating-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingtothereducerprotocol
 [meet-tca]: https://pointfreeco.github.io/swift-composable-architecture/main/tutorials/meetcomposablearchitecture

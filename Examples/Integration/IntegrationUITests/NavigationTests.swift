@@ -81,4 +81,10 @@ final class NavigationTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["What do you want to do?"].exists, false)
     try await Task.sleep(for: .seconds(1))
   }
+
+  func testNavigationDestination() async throws {
+    self.app.buttons["Go to counter"].tap()
+    self.app.buttons["Open navigation destination"].tap()
+    XCTAssert(self.app.staticTexts["Destination"].exists)
+  }
 }

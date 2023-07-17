@@ -1,14 +1,23 @@
 import ComposableArchitecture
 import SwiftUI
 
+private struct DestinationView: View {
+  let store: StoreOf<EmptyReducer<Int, Never>>
+  var body: some View {
+    Text("Destination")
+  }
+}
+
 private struct ChildFeature: ReducerProtocol {
   struct State: Hashable {
     @PresentationState var alert: AlertState<Action.Alert>?
+    @PresentationState var navigationDestination: Int?
     var count = 0
     var hasAppeared = false
   }
   enum Action {
     case alert(PresentationAction<Alert>)
+    case navigationDestination(PresentationAction<Never>)
     case decrementButtonTapped
     case dismissButtonTapped
     case incrementButtonTapped
@@ -17,6 +26,7 @@ private struct ChildFeature: ReducerProtocol {
     case recreateStack
     case response(Int)
     case runButtonTapped
+    case navigationDestinationButtonTapped
     case showAlertButtonTapped
     enum Alert {
       case pop
@@ -27,6 +37,8 @@ private struct ChildFeature: ReducerProtocol {
     Reduce { state, action in
       switch action {
       case .alert:
+        return .none
+      case .navigationDestination:
         return .none
       case .decrementButtonTapped:
         state.count -= 1
@@ -51,6 +63,9 @@ private struct ChildFeature: ReducerProtocol {
           try await Task.sleep(for: .seconds(2))
           await send(.response(count + 1))
         }
+      case .navigationDestinationButtonTapped:
+        state.navigationDestination = 1
+        return .none
       case .showAlertButtonTapped:
         state.alert = AlertState {
           TextState("What do you want to do?")
@@ -63,6 +78,9 @@ private struct ChildFeature: ReducerProtocol {
       }
     }
     .ifLet(\.$alert, action: /Action.alert)
+    .ifLet(\.$navigationDestination, action: /Action.navigationDestination) {
+      EmptyReducer()
+    }
   }
 }
 
@@ -95,6 +113,9 @@ private struct ChildView: View {
         Button("Show alert") {
           viewStore.send(.showAlertButtonTapped)
         }
+        Button("Open navigation destination") {
+          viewStore.send(.navigationDestinationButtonTapped)
+        }
         NavigationLink(state: ChildFeature.State(count: viewStore.count)) {
           Text("Go to counter: \(viewStore.count)")
         }
@@ -104,6 +125,12 @@ private struct ChildView: View {
         viewStore.send(.onAppear)
       }
       .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
+      .navigationDestination(
+        store: self.store.scope(
+          state: \.$navigationDestination, action: { .navigationDestination($0) })
+      ) {
+        DestinationView(store: $0)
+      }
     }
   }
 }
