@@ -7,7 +7,6 @@ private let readMe = """
   """
 
 struct MultipleDestinations: ReducerProtocol {
-
   public struct Destination: ReducerProtocol {
     public enum State: Equatable {
       case drillDown(Counter.State)
