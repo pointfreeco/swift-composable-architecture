@@ -54,10 +54,11 @@ final class EffectsCancellationTests: XCTestCase {
       EffectsCancellation()
     } withDependencies: {
       $0.factClient.fetch = {
-        try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+        try await Task.never()
         return "\($0) is a good number Brent"
       }
     }
+    store.useMainSerialExecutor = true
 
     await store.send(.factButtonTapped) {
       $0.isFactRequestInFlight = true
