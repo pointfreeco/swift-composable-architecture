@@ -8,92 +8,106 @@ private let readMe = """
   """
 
 struct MultipleDestinations: ReducerProtocol {
-    
-    public struct Destination: ReducerProtocol {
-        public enum State: Equatable {
-            case sheet(PresentAndLoad.State)
-            case popover(Counter.State)
-        }
 
-        public enum Action {
-            case sheet(PresentAndLoad.Action)
-            case popover(Counter.Action)
-        }
+  public struct Destination: ReducerProtocol {
+    public enum State: Equatable {
+      case drillDown(Counter.State)
+      case popover(Counter.State)
+      case sheet(Counter.State)
+    }
 
-        public var body: some ReducerProtocol<State, Action> {
-            Scope(state: /State.sheet, action: /Action.sheet) {
-                PresentAndLoad()
-            }
-            Scope(state: /State.popover, action: /Action.popover) {
-                Counter()
-            }
-        }
+    public enum Action {
+      case drillDown(Counter.Action)
+      case popover(Counter.Action)
+      case sheet(Counter.Action)
     }
-    
-    struct State: Equatable {
-        @PresentationState var destination: Destination.State?
+
+    public var body: some ReducerProtocol<State, Action> {
+      Scope(state: /State.drillDown, action: /Action.drillDown) {
+        Counter()
+      }
+      Scope(state: /State.sheet, action: /Action.sheet) {
+        Counter()
+      }
+      Scope(state: /State.popover, action: /Action.popover) {
+        Counter()
+      }
     }
-    
-    enum Action {
-        case destination(PresentationAction<Destination.Action>)
-        case showSheet
-        case showPopover
+  }
+
+  struct State: Equatable {
+    @PresentationState var destination: Destination.State?
+  }
+
+  enum Action {
+    case destination(PresentationAction<Destination.Action>)
+    case showDrillDown
+    case showPopover
+    case showSheet
+  }
+
+  var body: some ReducerProtocol<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .showDrillDown:
+        state.destination = .drillDown(Counter.State())
+        return .none
+      case .showPopover:
+        state.destination = .popover(Counter.State())
+        return .none
+      case .showSheet:
+        state.destination = .sheet(Counter.State())
+        return .none
+      case .destination:
+        return .none
+      }
     }
-    
-    var body: some ReducerProtocol<State, Action> {
-        Reduce { state, action in
-            switch action {
-                case .showSheet:
-                    state.destination = .sheet(.init())
-                    return .none
-                case .showPopover:
-                    state.destination = .popover(.init())
-                    return .none
-                case .destination(.presented):
-                    print("Presenting a destination")
-                    return .none
-                case .destination(.dismiss):
-                    print("Dismissing a destination")
-                    return .none
-            }
-        }
-        .ifLet(\.$destination, action: /Action.destination) {
-            Destination()
-        }
+    .ifLet(\.$destination, action: /Action.destination) {
+      Destination()
     }
+  }
 }
 
 struct MultipleDestinationsView: View {
-    
-    let store: StoreOf<MultipleDestinations>
-    
-    var body: some View {
-        WithViewStore(self.store, observe: { $0 }) { viewStore in
-            Form {
-                Section {
-                    AboutView(readMe: readMe)
-                }
-                Button("Show sheet") {
-                    viewStore.send(.showSheet)
-                }
-                Button("Show popover") {
-                    viewStore.send(.showPopover)
-                }
-            }
-            .sheet(
-              store: store.scope(state: \.$destination, action: { .destination($0) }),
-              state: /MultipleDestinations.Destination.State.sheet,
-              action: MultipleDestinations.Destination.Action.sheet
-            ) {
-                PresentAndLoadView(store: $0)
-            }
-            .popover(
-              store: store.scope(state: \.$destination, action: { .destination($0) }),
-              state: /MultipleDestinations.Destination.State.popover,
-              action: MultipleDestinations.Destination.Action.popover
-            ) {
-                CounterView(store: $0)
-            }
+  let store: StoreOf<MultipleDestinations>
+
+  var body: some View {
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
+      Form {
+        Section {
+          AboutView(readMe: readMe)
         }
+        Button("Show drill-down") {
+          viewStore.send(.showDrillDown)
+        }
+        Button("Show popover") {
+          viewStore.send(.showPopover)
+        }
+        Button("Show sheet") {
+          viewStore.send(.showSheet)
+        }
+      }
+      .navigationDestination(
+        store: store.scope(state: \.$destination, action: { .destination($0) }),
+        state: /MultipleDestinations.Destination.State.popover,
+        action: MultipleDestinations.Destination.Action.popover
+      ) {
+        CounterView(store: $0)
+      }
+      .popover(
+        store: store.scope(state: \.$destination, action: { .destination($0) }),
+        state: /MultipleDestinations.Destination.State.popover,
+        action: MultipleDestinations.Destination.Action.popover
+      ) {
+        CounterView(store: $0)
+      }
+      .sheet(
+        store: store.scope(state: \.$destination, action: { .destination($0) }),
+        state: /MultipleDestinations.Destination.State.sheet,
+        action: MultipleDestinations.Destination.Action.sheet
+      ) {
+        CounterView(store: $0)
+      }
     }
+  }
 }
