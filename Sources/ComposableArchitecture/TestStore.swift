@@ -992,7 +992,9 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
 /// ```swift
 /// let testStore: TestStoreOf<Feature>
 /// ```
-public typealias TestStoreOf<R: ReducerProtocol> = TestStore<R.State, R.Action, R.State, R.Action, Void>
+public typealias TestStoreOf<R: ReducerProtocol> = TestStore<
+  R.State, R.Action, R.State, R.Action, Void
+>
 
 extension TestStore where ScopedState: Equatable {
   /// Sends an action to the store and asserts when state changes.
