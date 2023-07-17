@@ -16,6 +16,7 @@ final class AppFeatureTests: XCTestCase {
         initialData: try! JSONEncoder().encode([standup])
       )
     }
+    store.useMainSerialExecutor = true
 
     await store.send(.path(.push(id: 0, state: .detail(StandupDetail.State(standup: standup))))) {
       $0.path[id: 0] = .detail(StandupDetail.State(standup: standup))
@@ -71,7 +72,7 @@ final class AppFeatureTests: XCTestCase {
       .path(
         .element(
           id: 0,
-          action: .detail(.destination(.presented(.edit(.binding(.set(\.$standup, standup))))))
+          action: .detail(.destination(.presented(.edit(.set(\.$standup, standup)))))
         )
       )
     ) {
