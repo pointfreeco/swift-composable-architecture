@@ -53,10 +53,7 @@ final class EffectsCancellationTests: XCTestCase {
     let store = TestStore(initialState: EffectsCancellation.State()) {
       EffectsCancellation()
     } withDependencies: {
-      $0.factClient.fetch = {
-        try await Task.never()
-        return "\($0) is a good number Brent"
-      }
+      $0.factClient.fetch = { _ in try await Task.never() }
     }
     store.useMainSerialExecutor = true
 
