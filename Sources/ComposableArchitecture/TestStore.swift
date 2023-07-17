@@ -566,10 +566,11 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   ///   - prepareDependencies: A closure that can be used to override dependencies that will be
   ///     accessed during the test. These dependencies will be used when producing the initial
   ///     state.
-  public convenience init<R: ReducerProtocol>(
+  public init<R: ReducerProtocol>(
     initialState: @autoclosure () -> State,
     @ReducerBuilder<State, Action> reducer: () -> R,
-    withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in },
+    withDependencies prepareDependencies: (_ dependencies: inout DependencyValues) -> Void = { _ in
+    },
     file: StaticString = #file,
     line: UInt = #line
   )
@@ -581,31 +582,27 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     Action == ScopedAction,
     Environment == Void
   {
-    self.init(
-      initialState: initialState(),
-      reducer: reducer,
-      observe: { $0 },
-      send: { $0 },
-      withDependencies: prepareDependencies,
-      file: file,
-      line: line
-    )
+    let reducer = Dependencies.withDependencies(prepareDependencies) {
+      TestReducer(Reduce(reducer()), initialState: initialState())
+    }
+    self._environment = .init(wrappedValue: ())
+    self.file = file
+    self.fromScopedAction = { $0 }
+    self.line = line
+    self.reducer = reducer
+    self.store = Store(initialState: reducer.state, reducer: reducer)
+    self.timeout = 100 * NSEC_PER_MSEC
+    self.toScopedState = { $0 }
   }
 
-  /// Creates a scoped test store with an initial state and a reducer powering its runtime.
-  ///
-  /// See <doc:Testing> and the documentation of ``TestStore`` for more information on how to best
-  /// use a test store.
-  ///
-  /// - Parameters:
-  ///   - initialState: The state the feature starts in.
-  ///   - reducer: The reducer that powers the runtime of the feature.
-  ///   - toScopedState: A function that transforms the reducer's state into scoped state. This
-  ///     state will be asserted against as it is mutated by the reducer. Useful for testing view
-  ///     store state transformations.
-  ///   - prepareDependencies: A closure that can be used to override dependencies that will be
-  ///     accessed during the test. These dependencies will be used when producing the initial
-  ///     state.
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      Test the reducer domain directly. To test view state and actions, write a unit test.
+      """
+  )
   public convenience init<R: ReducerProtocol>(
     initialState: @autoclosure () -> State,
     @ReducerBuilder<State, Action> reducer: () -> R,
@@ -632,23 +629,14 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     )
   }
 
-  /// Creates a scoped test store with an initial state and a reducer powering its runtime.
-  ///
-  /// See <doc:Testing> and the documentation of ``TestStore`` for more information on how to best
-  /// use a test store.
-  ///
-  /// - Parameters:
-  ///   - initialState: The state the feature starts in.
-  ///   - reducer: The reducer that powers the runtime of the feature.
-  ///   - toScopedState: A function that transforms the reducer's state into scoped state. This
-  ///     state will be asserted against as it is mutated by the reducer. Useful for testing view
-  ///     store state transformations.
-  ///   - fromScopedAction: A function that wraps a more scoped action in the reducer's action.
-  ///     Scoped actions can be "sent" to the store, while any reducer action may be received.
-  ///     Useful for testing view store action transformations.
-  ///   - prepareDependencies: A closure that can be used to override dependencies that will be
-  ///     accessed during the test. These dependencies will be used when producing the initial
-  ///     state.
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      Test the reducer domain directly. To test view state and actions, write a unit test.
+      """
+  )
   public init<R: ReducerProtocol>(
     initialState: @autoclosure () -> State,
     @ReducerBuilder<State, Action> reducer: () -> R,
@@ -692,7 +680,8 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   public init<R: ReducerProtocol>(
     initialState: @autoclosure () -> State,
     @ReducerBuilder<State, Action> reducer: () -> R,
-    withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in },
+    withDependencies prepareDependencies: (_ dependencies: inout DependencyValues) -> Void = { _ in
+    },
     file: StaticString = #file,
     line: UInt = #line
   )
@@ -933,7 +922,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   ///     duration of the operation.
   ///   - operation: The operation.
   public func withDependencies<R>(
-    _ updateValuesForOperation: (inout DependencyValues) throws -> Void,
+    _ updateValuesForOperation: (_ dependencies: inout DependencyValues) throws -> Void,
     operation: () throws -> R
   ) rethrows -> R {
     let previous = self.dependencies
@@ -950,7 +939,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   ///   - operation: The operation.
   @MainActor
   public func withDependencies<R>(
-    _ updateValuesForOperation: (inout DependencyValues) async throws -> Void,
+    _ updateValuesForOperation: (_ dependencies: inout DependencyValues) async throws -> Void,
     operation: @MainActor () async throws -> R
   ) async rethrows -> R {
     let previous = self.dependencies
@@ -1071,7 +1060,7 @@ extension TestStore where ScopedState: Equatable {
   @discardableResult
   public func send(
     _ action: ScopedAction,
-    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) async -> TestStoreTask {
@@ -1173,7 +1162,7 @@ extension TestStore where ScopedState: Equatable {
   ///   store.
   @MainActor
   public func assert(
-    _ updateStateToExpectedResult: @escaping (inout ScopedState) throws -> Void,
+    _ updateStateToExpectedResult: @escaping (_ state: inout ScopedState) throws -> Void,
     file: StaticString = #file,
     line: UInt = #line
   ) {
@@ -1231,7 +1220,7 @@ extension TestStore where ScopedState: Equatable {
   @discardableResult
   public func send(
     _ action: ScopedAction,
-    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) -> TestStoreTask {
@@ -1447,7 +1436,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   @available(watchOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
   public func receive(
     _ expectedAction: Action,
-    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) {
@@ -1516,7 +1505,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     public func receive(
       _ expectedAction: Action,
       timeout duration: Duration,
-      assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+      assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
@@ -1564,7 +1553,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   public func receive(
     _ expectedAction: Action,
     timeout nanoseconds: UInt64? = nil,
-    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) async {
@@ -1606,8 +1595,8 @@ extension TestStore where ScopedState: Equatable {
   @available(tvOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
   @available(watchOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
   public func receive(
-    _ isMatching: (Action) -> Bool,
-    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    _ isMatching: (_ action: Action) -> Bool,
+    assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) {
@@ -1642,7 +1631,7 @@ extension TestStore where ScopedState: Equatable {
   @available(watchOS, deprecated: 9999, message: "Call the async-friendly 'receive' instead.")
   public func receive<Value>(
     _ actionCase: CasePath<Action, Value>,
-    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) {
@@ -1699,9 +1688,9 @@ extension TestStore where ScopedState: Equatable {
     @MainActor
     @_disfavoredOverload
     public func receive(
-      _ isMatching: (Action) -> Bool,
+      _ isMatching: (_ action: Action) -> Bool,
       timeout duration: Duration,
-      assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+      assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
@@ -1750,9 +1739,9 @@ extension TestStore where ScopedState: Equatable {
   @MainActor
   @_disfavoredOverload
   public func receive(
-    _ isMatching: (Action) -> Bool,
+    _ isMatching: (_ action: Action) -> Bool,
     timeout nanoseconds: UInt64? = nil,
-    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) async {
@@ -1806,7 +1795,7 @@ extension TestStore where ScopedState: Equatable {
   public func receive<Value>(
     _ actionCase: CasePath<Action, Value>,
     timeout nanoseconds: UInt64? = nil,
-    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) async {
@@ -1867,7 +1856,7 @@ extension TestStore where ScopedState: Equatable {
     public func receive<Value>(
       _ actionCase: CasePath<Action, Value>,
       timeout duration: Duration,
-      assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+      assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
@@ -2605,11 +2594,11 @@ extension TestStore {
   @available(
     *,
     unavailable,
-    message: "State and Action must conform to Equatable to receive actions."
+    message: "'State' and 'Action' must conform to 'Equatable' to assert against received actions."
   )
   public func receive(
     _ expectedAction: Action,
-    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) async {
@@ -2617,10 +2606,12 @@ extension TestStore {
 
   @MainActor
   @discardableResult
-  @available(*, unavailable, message: "State must conform to Equatable to send actions.")
+  @available(
+    *, unavailable, message: "'State' must conform to 'Equatable' to assert against sent actions."
+  )
   public func send(
     _ action: ScopedAction,
-    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) async -> TestStoreTask {

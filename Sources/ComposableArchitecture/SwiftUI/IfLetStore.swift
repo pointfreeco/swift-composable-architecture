@@ -31,7 +31,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
   ///   - elseContent: A view that is only visible when the optional state is `nil`.
   public init<IfContent, ElseContent>(
     _ store: Store<State?, Action>,
-    @ViewBuilder then ifContent: @escaping (Store<State, Action>) -> IfContent,
+    @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent,
     @ViewBuilder else elseContent: () -> ElseContent
   ) where Content == _ConditionalContent<IfContent, ElseContent> {
     let store = store.invalidate { $0 == nil }
@@ -67,7 +67,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
   ///     is visible only when the optional state is non-`nil`.
   public init<IfContent>(
     _ store: Store<State?, Action>,
-    @ViewBuilder then ifContent: @escaping (Store<State, Action>) -> IfContent
+    @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent
   ) where Content == IfContent? {
     let store = store.invalidate { $0 == nil }
     self.store = store
@@ -100,7 +100,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
   ///   - elseContent: A view that is only visible when the optional state is `nil`.
   public init<IfContent, ElseContent>(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
-    @ViewBuilder then ifContent: @escaping (Store<State, Action>) -> IfContent,
+    @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent,
     @ViewBuilder else elseContent: @escaping () -> ElseContent
   ) where Content == _ConditionalContent<IfContent, ElseContent> {
     self.init(
@@ -119,7 +119,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
   ///     is visible only when the optional state is non-`nil`.
   public init<IfContent>(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
-    @ViewBuilder then ifContent: @escaping (Store<State, Action>) -> IfContent
+    @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent
   ) where Content == IfContent? {
     self.init(
       store.scope(state: { $0.wrappedValue }, action: PresentationAction.presented),
@@ -143,9 +143,9 @@ public struct IfLetStore<State, Action, Content: View>: View {
   ///     destination.
   public init<DestinationState, DestinationAction, IfContent, ElseContent>(
     _ store: Store<PresentationState<DestinationState>, PresentationAction<DestinationAction>>,
-    state toState: @escaping (DestinationState) -> State?,
-    action fromAction: @escaping (Action) -> DestinationAction,
-    @ViewBuilder then ifContent: @escaping (Store<State, Action>) -> IfContent,
+    state toState: @escaping (_ destinationState: DestinationState) -> State?,
+    action fromAction: @escaping (_ action: Action) -> DestinationAction,
+    @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent,
     @ViewBuilder else elseContent: @escaping () -> ElseContent
   ) where Content == _ConditionalContent<IfContent, ElseContent> {
     self.init(
@@ -172,9 +172,9 @@ public struct IfLetStore<State, Action, Content: View>: View {
   ///     destination state.
   public init<DestinationState, DestinationAction, IfContent>(
     _ store: Store<PresentationState<DestinationState>, PresentationAction<DestinationAction>>,
-    state toState: @escaping (DestinationState) -> State?,
-    action fromAction: @escaping (Action) -> DestinationAction,
-    @ViewBuilder then ifContent: @escaping (Store<State, Action>) -> IfContent
+    state toState: @escaping (_ destinationState: DestinationState) -> State?,
+    action fromAction: @escaping (_ action: Action) -> DestinationAction,
+    @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent
   ) where Content == IfContent? {
     self.init(
       store.scope(
