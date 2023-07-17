@@ -182,31 +182,11 @@ struct RootView: View {
           )
 
           NavigationLink(
-            "Load data then navigate",
-            destination: LoadThenNavigateView(
-              store: self.store.scope(
-                state: \.loadThenNavigate,
-                action: Root.Action.loadThenNavigate
-              )
-            )
-          )
-
-          NavigationLink(
             "Lists: Navigate and load data",
             destination: NavigateAndLoadListView(
               store: self.store.scope(
                 state: \.navigateAndLoadList,
                 action: Root.Action.navigateAndLoadList
-              )
-            )
-          )
-
-          NavigationLink(
-            "Lists: Load data then navigate",
-            destination: LoadThenNavigateListView(
-              store: self.store.scope(
-                state: \.loadThenNavigateList,
-                action: Root.Action.loadThenNavigateList
               )
             )
           )
