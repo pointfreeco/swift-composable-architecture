@@ -1,7 +1,6 @@
 import Combine
 import CombineSchedulers
 import ComposableArchitecture
-import ConcurrencyExtras
 import XCTest
 
 @MainActor
@@ -112,45 +111,43 @@ final class ComposableArchitectureTests: BaseTCATestCase {
   }
 
   func testCancellation() async {
-    await withMainSerialExecutor {
-      let mainQueue = DispatchQueue.test
+    let mainQueue = DispatchQueue.test
 
-      enum Action: Equatable {
-        case cancel
-        case incr
-        case response(Int)
-      }
+    enum Action: Equatable {
+      case cancel
+      case incr
+      case response(Int)
+    }
 
-      let store = TestStore(initialState: 0) {
-        Reduce<Int, Action> { state, action in
-          enum CancelID { case sleep }
+    let store = TestStore(initialState: 0) {
+      Reduce<Int, Action> { state, action in
+        enum CancelID { case sleep }
 
-          switch action {
-          case .cancel:
-            return .cancel(id: CancelID.sleep)
+        switch action {
+        case .cancel:
+          return .cancel(id: CancelID.sleep)
 
-          case .incr:
-            state += 1
-            return .run { [state] send in
-              try await mainQueue.sleep(for: .seconds(1))
-              await send(.response(state * state))
-            }
-            .cancellable(id: CancelID.sleep)
-
-          case let .response(value):
-            state = value
-            return .none
+        case .incr:
+          state += 1
+          return .run { [state] send in
+            try await mainQueue.sleep(for: .seconds(1))
+            await send(.response(state * state))
           }
+          .cancellable(id: CancelID.sleep)
+
+        case let .response(value):
+          state = value
+          return .none
         }
       }
-
-      await store.send(.incr) { $0 = 1 }
-      await mainQueue.advance(by: .seconds(1))
-      await store.receive(.response(1))
-
-      await store.send(.incr) { $0 = 2 }
-      await store.send(.cancel)
-      await store.finish()
     }
+
+    await store.send(.incr) { $0 = 1 }
+    await mainQueue.advance(by: .seconds(1))
+    await store.receive(.response(1))
+
+    await store.send(.incr) { $0 = 2 }
+    await store.send(.cancel)
+    await store.finish()
   }
 }

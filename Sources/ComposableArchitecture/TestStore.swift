@@ -466,6 +466,13 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   /// The current exhaustivity level of the test store.
   public var exhaustivity: Exhaustivity = .on
 
+  /// Serializes all async work to the main thread for the lifetime of the test store.
+  public var useMainSerialExecutor: Bool {
+    get { uncheckedUseMainSerialExecutor }
+    set { uncheckedUseMainSerialExecutor = newValue }
+  }
+  private let originalUseMainSerialExecutor = uncheckedUseMainSerialExecutor
+
   /// The current environment.
   ///
   /// The environment can be modified throughout a test store's lifecycle in order to influence how
@@ -865,6 +872,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
 
   deinit {
     self.completed()
+    uncheckedUseMainSerialExecutor = self.originalUseMainSerialExecutor
   }
 
   func completed() {

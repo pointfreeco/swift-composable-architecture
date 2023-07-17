@@ -1,5 +1,4 @@
 import ComposableArchitecture
-import ConcurrencyExtras
 import XCTest
 
 @testable import Standups
@@ -231,72 +230,71 @@ final class RecordMeetingTests: XCTestCase {
   }
 
   func testSpeechRecognitionFailure_Continue() async throws {
-    await withMainSerialExecutor {
-      let clock = TestClock()
+    let clock = TestClock()
 
-      let store = TestStore(
-        initialState: RecordMeeting.State(
-          standup: Standup(
-            id: Standup.ID(),
-            attendees: [
-              Attendee(id: Attendee.ID()),
-              Attendee(id: Attendee.ID()),
-              Attendee(id: Attendee.ID()),
-            ],
-            duration: .seconds(6)
-          )
+    let store = TestStore(
+      initialState: RecordMeeting.State(
+        standup: Standup(
+          id: Standup.ID(),
+          attendees: [
+            Attendee(id: Attendee.ID()),
+            Attendee(id: Attendee.ID()),
+            Attendee(id: Attendee.ID()),
+          ],
+          duration: .seconds(6)
         )
-      ) {
-        RecordMeeting()
-      } withDependencies: {
-        $0.continuousClock = clock
-        $0.speechClient.authorizationStatus = { .authorized }
-        $0.speechClient.startTask = { _ in
-          AsyncThrowingStream {
-            $0.yield(
-              SpeechRecognitionResult(
-                bestTranscription: Transcription(formattedString: "I completed the project"),
-                isFinal: true
-              )
+      )
+    ) {
+      RecordMeeting()
+    } withDependencies: {
+      $0.continuousClock = clock
+      $0.speechClient.authorizationStatus = { .authorized }
+      $0.speechClient.startTask = { _ in
+        AsyncThrowingStream {
+          $0.yield(
+            SpeechRecognitionResult(
+              bestTranscription: Transcription(formattedString: "I completed the project"),
+              isFinal: true
             )
-            struct SpeechRecognitionFailure: Error {}
-            $0.finish(throwing: SpeechRecognitionFailure())
-          }
+          )
+          struct SpeechRecognitionFailure: Error {}
+          $0.finish(throwing: SpeechRecognitionFailure())
         }
       }
-
-      await store.send(.onTask)
-
-      await store.receive(
-        .speechResult(
-          .init(bestTranscription: .init(formattedString: "I completed the project"), isFinal: true)
-        )
-      ) {
-        $0.transcript = "I completed the project"
-      }
-
-      await store.receive(.speechFailure) {
-        $0.alert = .speechRecognizerFailed
-        $0.transcript = "I completed the project ❌"
-      }
-
-      await store.send(.alert(.dismiss)) {
-        $0.alert = nil
-      }
-
-      await clock.run()
-
-      store.exhaustivity = .off(showSkippedAssertions: true)
-      await store.receive(.timerTick)
-      await store.receive(.timerTick)
-      await store.receive(.timerTick)
-      await store.receive(.timerTick)
-      await store.receive(.timerTick)
-      await store.receive(.timerTick)
-      store.exhaustivity = .on
-
-      await store.receive(.delegate(.save(transcript: "I completed the project ❌")))
     }
+    store.useMainSerialExecutor = true
+
+    await store.send(.onTask)
+
+    await store.receive(
+      .speechResult(
+        .init(bestTranscription: .init(formattedString: "I completed the project"), isFinal: true)
+      )
+    ) {
+      $0.transcript = "I completed the project"
+    }
+
+    await store.receive(.speechFailure) {
+      $0.alert = .speechRecognizerFailed
+      $0.transcript = "I completed the project ❌"
+    }
+
+    await store.send(.alert(.dismiss)) {
+      $0.alert = nil
+    }
+
+    await clock.run()
+
+    store.exhaustivity = .off(showSkippedAssertions: true)
+    await store.receive(.timerTick)
+    await store.receive(.timerTick)
+    await store.receive(.timerTick)
+    await store.receive(.timerTick)
+    await store.receive(.timerTick)
+    await store.receive(.timerTick)
+    store.exhaustivity = .on
+
+    await store.receive(.delegate(.save(transcript: "I completed the project ❌")))
   }
 
   func testSpeechRecognitionFailure_Discard() async throws {

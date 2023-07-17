@@ -1,5 +1,4 @@
 import ComposableArchitecture
-import ConcurrencyExtras
 import XCTest
 
 @testable import VoiceMemos
@@ -12,86 +11,83 @@ final class VoiceMemosTests: XCTestCase {
   let clock = TestClock()
 
   func testRecordAndPlayback() async throws {
-    try await withMainSerialExecutor {
-
-      let didFinish = AsyncThrowingStream.makeStream(of: Bool.self)
-      let store = TestStore(initialState: VoiceMemos.State()) {
-        VoiceMemos()
-      } withDependencies: {
-        $0.audioPlayer.play = { _ in
-          try await self.clock.sleep(for: .milliseconds(2_500))
-          return true
-        }
-        $0.audioRecorder.currentTime = { 2.5 }
-        $0.audioRecorder.requestRecordPermission = { true }
-        $0.audioRecorder.startRecording = { _ in
-          try await didFinish.stream.first { _ in true }!
-        }
-        $0.audioRecorder.stopRecording = {
-          didFinish.continuation.yield(true)
-          didFinish.continuation.finish()
-        }
-        $0.date = .constant(Date(timeIntervalSinceReferenceDate: 0))
-        $0.continuousClock = self.clock
-        $0.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
-        $0.uuid = .constant(deadbeefID)
+    let didFinish = AsyncThrowingStream.makeStream(of: Bool.self)
+    let store = TestStore(initialState: VoiceMemos.State()) {
+      VoiceMemos()
+    } withDependencies: {
+      $0.audioPlayer.play = { _ in
+        try await self.clock.sleep(for: .milliseconds(2_500))
+        return true
       }
+      $0.audioRecorder.currentTime = { 2.5 }
+      $0.audioRecorder.requestRecordPermission = { true }
+      $0.audioRecorder.startRecording = { _ in
+        try await didFinish.stream.first { _ in true }!
+      }
+      $0.audioRecorder.stopRecording = {
+        didFinish.continuation.yield(true)
+        didFinish.continuation.finish()
+      }
+      $0.date = .constant(Date(timeIntervalSinceReferenceDate: 0))
+      $0.continuousClock = self.clock
+      $0.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
+      $0.uuid = .constant(deadbeefID)
+    }
+    store.useMainSerialExecutor = true
 
-      await store.send(.recordButtonTapped)
-      await store.receive(.recordPermissionResponse(true)) {
-        $0.audioRecorderPermission = .allowed
-        $0.recordingMemo = RecordingMemo.State(
+    await store.send(.recordButtonTapped)
+    await store.receive(.recordPermissionResponse(true)) {
+      $0.audioRecorderPermission = .allowed
+      $0.recordingMemo = RecordingMemo.State(
+        date: Date(timeIntervalSinceReferenceDate: 0),
+        mode: .recording,
+        url: deadbeefURL
+      )
+    }
+    await store.send(.recordingMemo(.presented(.onTask)))
+    await store.send(.recordingMemo(.presented(.stopButtonTapped))) {
+      $0.recordingMemo?.mode = .encoding
+    }
+    await store.receive(.recordingMemo(.presented(.finalRecordingTime(2.5)))) {
+      $0.recordingMemo?.duration = 2.5
+    }
+    await store.receive(.recordingMemo(.presented(.audioRecorderDidFinish(.success(true)))))
+    try await store.receive(
+      .recordingMemo(
+        .presented(.delegate(.didFinish(.success(XCTUnwrap(store.state.recordingMemo)))))
+      )
+    ) {
+      $0.recordingMemo = nil
+      $0.voiceMemos = [
+        VoiceMemo.State(
           date: Date(timeIntervalSinceReferenceDate: 0),
-          mode: .recording,
+          duration: 2.5,
+          mode: .notPlaying,
+          title: "",
           url: deadbeefURL
         )
-      }
-      await store.send(.recordingMemo(.presented(.onTask)))
-      await store.send(.recordingMemo(.presented(.stopButtonTapped))) {
-        $0.recordingMemo?.mode = .encoding
-      }
-      await store.receive(.recordingMemo(.presented(.finalRecordingTime(2.5)))) {
-        $0.recordingMemo?.duration = 2.5
-      }
-      await store.receive(.recordingMemo(.presented(.audioRecorderDidFinish(.success(true)))))
-      try await store.receive(
-        .recordingMemo(
-          .presented(.delegate(.didFinish(.success(XCTUnwrap(store.state.recordingMemo)))))
-        )
-      ) {
-        $0.recordingMemo = nil
-        $0.voiceMemos = [
-          VoiceMemo.State(
-            date: Date(timeIntervalSinceReferenceDate: 0),
-            duration: 2.5,
-            mode: .notPlaying,
-            title: "",
-            url: deadbeefURL
-          )
-        ]
-      }
-      await store.send(.voiceMemos(id: deadbeefURL, action: .playButtonTapped)) {
-        $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0)
-      }
-      await store.receive(.voiceMemos(id: deadbeefURL, action: .delegate(.playbackStarted)))
-      await self.clock.run()
+      ]
+    }
+    await store.send(.voiceMemos(id: deadbeefURL, action: .playButtonTapped)) {
+      $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0)
+    }
+    await store.receive(.voiceMemos(id: deadbeefURL, action: .delegate(.playbackStarted)))
+    await self.clock.run()
 
-      await store.receive(.voiceMemos(id: deadbeefURL, action: .timerUpdated(0.5))) {
-        $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0.2)
-      }
-      await store.receive(.voiceMemos(id: deadbeefURL, action: .timerUpdated(1))) {
-        $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0.4)
-      }
-      await store.receive(.voiceMemos(id: deadbeefURL, action: .timerUpdated(1.5))) {
-        $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0.6)
-      }
-      await store.receive(.voiceMemos(id: deadbeefURL, action: .timerUpdated(2))) {
-        $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0.8)
-      }
-      await store.receive(.voiceMemos(id: deadbeefURL, action: .audioPlayerClient(.success(true))))
-      {
-        $0.voiceMemos[id: deadbeefURL]?.mode = .notPlaying
-      }
+    await store.receive(.voiceMemos(id: deadbeefURL, action: .timerUpdated(0.5))) {
+      $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0.2)
+    }
+    await store.receive(.voiceMemos(id: deadbeefURL, action: .timerUpdated(1))) {
+      $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0.4)
+    }
+    await store.receive(.voiceMemos(id: deadbeefURL, action: .timerUpdated(1.5))) {
+      $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0.6)
+    }
+    await store.receive(.voiceMemos(id: deadbeefURL, action: .timerUpdated(2))) {
+      $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0.8)
+    }
+    await store.receive(.voiceMemos(id: deadbeefURL, action: .audioPlayerClient(.success(true)))) {
+      $0.voiceMemos[id: deadbeefURL]?.mode = .notPlaying
     }
   }
 
@@ -222,34 +218,33 @@ final class VoiceMemosTests: XCTestCase {
   // Demonstration of how to write a non-exhaustive test for recording a memo and it failing to
   // record.
   func testRecordMemoFailure_NonExhaustive() async {
-    await withMainSerialExecutor {
-      struct SomeError: Error, Equatable {}
-      let didFinish = AsyncThrowingStream.makeStream(of: Bool.self)
+    struct SomeError: Error, Equatable {}
+    let didFinish = AsyncThrowingStream.makeStream(of: Bool.self)
 
-      let store = TestStore(initialState: VoiceMemos.State()) {
-        VoiceMemos()
-      } withDependencies: {
-        $0.audioRecorder.currentTime = { 2.5 }
-        $0.audioRecorder.requestRecordPermission = { true }
-        $0.audioRecorder.startRecording = { _ in
-          try await didFinish.stream.first { _ in true }!
-        }
-        $0.continuousClock = self.clock
-        $0.date = .constant(Date(timeIntervalSinceReferenceDate: 0))
-        $0.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
-        $0.uuid = .constant(deadbeefID)
+    let store = TestStore(initialState: VoiceMemos.State()) {
+      VoiceMemos()
+    } withDependencies: {
+      $0.audioRecorder.currentTime = { 2.5 }
+      $0.audioRecorder.requestRecordPermission = { true }
+      $0.audioRecorder.startRecording = { _ in
+        try await didFinish.stream.first { _ in true }!
       }
-      store.exhaustivity = .off(showSkippedAssertions: true)
+      $0.continuousClock = self.clock
+      $0.date = .constant(Date(timeIntervalSinceReferenceDate: 0))
+      $0.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
+      $0.uuid = .constant(deadbeefID)
+    }
+    store.exhaustivity = .off(showSkippedAssertions: true)
+    store.useMainSerialExecutor = true
 
-      await store.send(.recordButtonTapped)
-      await store.send(.recordingMemo(.presented(.onTask)))
-      didFinish.continuation.finish(throwing: SomeError())
-      await store.receive(
-        .recordingMemo(.presented(.delegate(.didFinish(.failure(SomeError())))))
-      ) {
-        $0.alert = AlertState { TextState("Voice memo recording failed.") }
-        $0.recordingMemo = nil
-      }
+    await store.send(.recordButtonTapped)
+    await store.send(.recordingMemo(.presented(.onTask)))
+    didFinish.continuation.finish(throwing: SomeError())
+    await store.receive(
+      .recordingMemo(.presented(.delegate(.didFinish(.failure(SomeError())))))
+    ) {
+      $0.alert = AlertState { TextState("Voice memo recording failed.") }
+      $0.recordingMemo = nil
     }
   }
 

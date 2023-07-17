@@ -1,6 +1,5 @@
 import Combine
 @_spi(Canary)@_spi(Internals) import ComposableArchitecture
-import ConcurrencyExtras
 import XCTest
 
 @MainActor
@@ -53,36 +52,34 @@ final class EffectTests: BaseTCATestCase {
 
   #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     func testConcatenate() async {
-      await withMainSerialExecutor {
-        if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-          let clock = TestClock()
-          var values: [Int] = []
+      if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
+        let clock = TestClock()
+        var values: [Int] = []
 
-          let effect = EffectPublisher<Int, Never>.concatenate(
-            (1...3).map { count in
-              .task {
-                try await clock.sleep(for: .seconds(count))
-                return count
-              }
+        let effect = EffectPublisher<Int, Never>.concatenate(
+          (1...3).map { count in
+            .task {
+              try await clock.sleep(for: .seconds(count))
+              return count
             }
-          )
+          }
+        )
 
-          effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+        effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
 
-          XCTAssertEqual(values, [])
+        XCTAssertEqual(values, [])
 
-          await clock.advance(by: .seconds(1))
-          XCTAssertEqual(values, [1])
+        await clock.advance(by: .seconds(1))
+        XCTAssertEqual(values, [1])
 
-          await clock.advance(by: .seconds(2))
-          XCTAssertEqual(values, [1, 2])
+        await clock.advance(by: .seconds(2))
+        XCTAssertEqual(values, [1, 2])
 
-          await clock.advance(by: .seconds(3))
-          XCTAssertEqual(values, [1, 2, 3])
+        await clock.advance(by: .seconds(3))
+        XCTAssertEqual(values, [1, 2, 3])
 
-          await clock.run()
-          XCTAssertEqual(values, [1, 2, 3])
-        }
+        await clock.run()
+        XCTAssertEqual(values, [1, 2, 3])
       }
     }
   #endif
@@ -108,32 +105,30 @@ final class EffectTests: BaseTCATestCase {
   #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     func testMerge() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        await withMainSerialExecutor {
-          let clock = TestClock()
+        let clock = TestClock()
 
-          let effect = EffectPublisher<Int, Never>.merge(
-            (1...3).map { count in
-              .task {
-                try await clock.sleep(for: .seconds(count))
-                return count
-              }
+        let effect = EffectPublisher<Int, Never>.merge(
+          (1...3).map { count in
+            .task {
+              try await clock.sleep(for: .seconds(count))
+              return count
             }
-          )
+          }
+        )
 
-          var values: [Int] = []
-          effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
+        var values: [Int] = []
+        effect.sink(receiveValue: { values.append($0) }).store(in: &self.cancellables)
 
-          XCTAssertEqual(values, [])
+        XCTAssertEqual(values, [])
 
-          await clock.advance(by: .seconds(1))
-          XCTAssertEqual(values, [1])
+        await clock.advance(by: .seconds(1))
+        XCTAssertEqual(values, [1])
 
-          await clock.advance(by: .seconds(1))
-          XCTAssertEqual(values, [1, 2])
+        await clock.advance(by: .seconds(1))
+        XCTAssertEqual(values, [1, 2])
 
-          await clock.advance(by: .seconds(1))
-          XCTAssertEqual(values, [1, 2, 3])
-        }
+        await clock.advance(by: .seconds(1))
+        XCTAssertEqual(values, [1, 2, 3])
       }
     }
   #endif
@@ -307,34 +302,32 @@ final class EffectTests: BaseTCATestCase {
   }
 
   func testDependenciesTransferredToEffects_Run() async {
-    await withMainSerialExecutor {
-      struct Feature: ReducerProtocol {
-        enum Action: Equatable {
-          case tap
-          case response(Int)
-        }
-        @Dependency(\.date) var date
-        func reduce(into state: inout Int, action: Action) -> EffectTask<Action> {
-          switch action {
-          case .tap:
-            return .run { send in
-              await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
-            }
-          case let .response(value):
-            state = value
-            return .none
+    struct Feature: ReducerProtocol {
+      enum Action: Equatable {
+        case tap
+        case response(Int)
+      }
+      @Dependency(\.date) var date
+      func reduce(into state: inout Int, action: Action) -> EffectTask<Action> {
+        switch action {
+        case .tap:
+          return .run { send in
+            await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
           }
+        case let .response(value):
+          state = value
+          return .none
         }
       }
-      let store = TestStore(initialState: 0) {
-        Feature()
-          .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1_234_567_890)))
-      }
+    }
+    let store = TestStore(initialState: 0) {
+      Feature()
+        .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1_234_567_890)))
+    }
 
-      await store.send(.tap).finish(timeout: NSEC_PER_SEC)
-      await store.receive(.response(1_234_567_890)) {
-        $0 = 1_234_567_890
-      }
+    await store.send(.tap).finish(timeout: NSEC_PER_SEC)
+    await store.receive(.response(1_234_567_890)) {
+      $0 = 1_234_567_890
     }
   }
 
