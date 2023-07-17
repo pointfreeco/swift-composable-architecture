@@ -2,9 +2,8 @@ import ComposableArchitecture
 import SwiftUI
 
 private let readMe = """
-  This screen demonstrates handling multiple destinations
-
-  Tapping "Show sheet" or "Show popover" shows a sheet or a popover with a composable feature.
+  This screen demonstrates driving 3 kinds of navigation (drill down, sheet, popover) from a single
+  piece of enum state.
   """
 
 struct MultipleDestinations: ReducerProtocol {
@@ -89,8 +88,8 @@ struct MultipleDestinationsView: View {
       }
       .navigationDestination(
         store: store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /MultipleDestinations.Destination.State.popover,
-        action: MultipleDestinations.Destination.Action.popover
+        state: /MultipleDestinations.Destination.State.drillDown,
+        action: MultipleDestinations.Destination.Action.drillDown
       ) {
         CounterView(store: $0)
       }

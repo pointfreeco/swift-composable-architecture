@@ -5,7 +5,7 @@ struct RootView: View {
   let store: StoreOf<Root>
 
   var body: some View {
-    NavigationView {
+    NavigationStack {
       Form {
         Section(header: Text("Getting started")) {
           NavigationLink(
