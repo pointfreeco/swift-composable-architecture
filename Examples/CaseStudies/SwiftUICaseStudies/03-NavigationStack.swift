@@ -112,7 +112,7 @@ struct NavigationDemoView: View {
 
         Section {
           Button("Go to A → B → C") {
-            ViewStore(self.store.stateless).send(.goToABCButtonTapped)
+            self.store.send(.goToABCButtonTapped)
           }
         }
       }
@@ -121,19 +121,19 @@ struct NavigationDemoView: View {
       switch $0 {
       case .screenA:
         CaseLet(
-          state: /NavigationDemo.Path.State.screenA,
+          /NavigationDemo.Path.State.screenA,
           action: NavigationDemo.Path.Action.screenA,
           then: ScreenAView.init(store:)
         )
       case .screenB:
         CaseLet(
-          state: /NavigationDemo.Path.State.screenB,
+          /NavigationDemo.Path.State.screenB,
           action: NavigationDemo.Path.Action.screenB,
           then: ScreenBView.init(store:)
         )
       case .screenC:
         CaseLet(
-          state: /NavigationDemo.Path.State.screenC,
+          /NavigationDemo.Path.State.screenC,
           action: NavigationDemo.Path.Action.screenC,
           then: ScreenCView.init(store:)
         )
@@ -364,7 +364,7 @@ struct ScreenBView: View {
   let store: StoreOf<ScreenB>
 
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
         Section {
           Text(

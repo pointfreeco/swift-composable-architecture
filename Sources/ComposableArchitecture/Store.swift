@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import SwiftUI
 
 /// A store represents the runtime that powers the application. It is the object that you will pass
 /// around to views that need to interact with the application.
@@ -147,7 +148,7 @@ public final class Store<State, Action> {
   public convenience init<R: ReducerProtocol>(
     initialState: @autoclosure () -> R.State,
     @ReducerBuilder<State, Action> reducer: () -> R,
-    withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
+    withDependencies prepareDependencies: ((_ dependencies: inout DependencyValues) -> Void)? = nil
   ) where R.State == State, R.Action == Action {
     if let prepareDependencies = prepareDependencies {
       let (initialState, reducer) = withDependencies(prepareDependencies) {
@@ -164,6 +165,58 @@ public final class Store<State, Action> {
         reducer: reducer(),
         mainThreadChecksEnabled: true
       )
+    }
+  }
+
+  /// Calls the given closure with the current state of the store.
+  ///
+  /// A lightweight way of accessing store state when no view store is available and state does not
+  /// need to be observed, _e.g._ by a SwiftUI view. If a view store is available, prefer
+  /// ``ViewStore/state-swift.property``.
+  ///
+  /// - Parameter body: A closure that takes the current state of the store as its sole argument. If
+  ///   the closure has a return value, that value is also used as the return value of the
+  ///   `withState` method. The state argument reflects the current state of the store only for the
+  ///   duration of the closure's execution, and is not observable over time, _e.g._ by SwiftUI. If
+  ///   you want to observe store state in a view, use a ``ViewStore`` instead.
+  /// - Returns: The return value, if any, of the `body` closure.
+  public func withState<R>(_ body: (_ state: State) -> R) -> R {
+    body(self.state.value)
+  }
+
+  /// Sends an action to the store.
+  ///
+  /// A lightweight way to send actions to the store when no view store is available. If a view
+  /// store is available, prefer ``ViewStore/send(_:)``.
+  ///
+  /// - Parameter action: An action.
+  public func send(_ action: Action) {
+    _ = self.send(action, originatingFrom: nil)
+  }
+
+  /// Sends an action to the store with a given animation.
+  ///
+  /// See ``Store/send(_:)`` for more info.
+  ///
+  /// - Parameters:
+  ///   - action: An action.
+  ///   - animation: An animation.
+  @discardableResult
+  public func send(_ action: Action, animation: Animation?) -> StoreTask {
+    send(action, transaction: Transaction(animation: animation))
+  }
+
+  /// Sends an action to the store with a given transaction.
+  ///
+  /// See ``Store/send(_:)`` for more info.
+  ///
+  /// - Parameters:
+  ///   - action: An action.
+  ///   - transaction: A transaction.
+  @discardableResult
+  public func send(_ action: Action, transaction: Transaction) -> StoreTask {
+    withTransaction(transaction) {
+      .init(rawValue: self.send(action, originatingFrom: nil))
     }
   }
 
@@ -317,8 +370,8 @@ public final class Store<State, Action> {
   ///   - fromChildAction: A function that transforms `ChildAction` into `Action`.
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<ChildState, ChildAction>(
-    state toChildState: @escaping (State) -> ChildState,
-    action fromChildAction: @escaping (ChildAction) -> Action
+    state toChildState: @escaping (_ state: State) -> ChildState,
+    action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction> {
     self.scope(state: toChildState, action: fromChildAction, removeDuplicates: nil)
   }
@@ -333,8 +386,9 @@ public final class Store<State, Action> {
   ///   - fromChildAction: A function that transforms ``PresentationAction`` into `Action`.
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<ChildState, ChildAction>(
-    state toChildState: @escaping (State) -> PresentationState<ChildState>,
-    action fromChildAction: @escaping (PresentationAction<ChildAction>) -> Action
+    state toChildState: @escaping (_ state: State) -> PresentationState<ChildState>,
+    action fromChildAction: @escaping (_ presentationAction: PresentationAction<ChildAction>) ->
+      Action
   ) -> Store<PresentationState<ChildState>, PresentationAction<ChildAction>> {
     self.scope(
       state: toChildState,
@@ -371,9 +425,10 @@ public final class Store<State, Action> {
     return store
   }
 
-  @_spi(Internals) public func send(
+  @_spi(Internals)
+  public func send(
     _ action: Action,
-    originatingFrom originatingAction: Action? = nil
+    originatingFrom originatingAction: Action?
   ) -> Task<Void, Never>? {
     self.threadCheck(status: .send(action, originatingAction: originatingAction))
 
@@ -692,7 +747,9 @@ private final class ScopedReducer<
       state = self.toScopedState(self.rootStore.state.value)
       self.isSending = false
     }
-    if let action = self.fromScopedAction(state, action), let task = self.rootStore.send(action) {
+    if let action = self.fromScopedAction(state, action),
+      let task = self.rootStore.send(action, originatingFrom: nil)
+    {
       return .run { _ in await task.cancellableValue }
     } else {
       return .none
@@ -740,5 +797,45 @@ extension ScopedReducer: AnyScopedReducer {
         childStore.state.value = newValue
       }
     return childStore
+  }
+}
+
+/// The type returned from ``Store/send(_:)`` that represents the lifecycle of the effect
+/// started from sending an action.
+///
+/// You can use this value to tie the effect's lifecycle _and_ cancellation to an asynchronous
+/// context, such as the `task` view modifier.
+///
+/// ```swift
+/// .task { await store.send(.task).finish() }
+/// ```
+///
+/// > Note: Unlike Swift's `Task` type, ``StoreTask`` automatically sets up a cancellation
+/// > handler between the current async context and the task.
+///
+/// See ``TestStoreTask`` for the analog returned from ``TestStore``.
+public struct StoreTask: Hashable, Sendable {
+  internal let rawValue: Task<Void, Never>?
+
+  internal init(rawValue: Task<Void, Never>?) {
+    self.rawValue = rawValue
+  }
+
+  /// Cancels the underlying task.
+  public func cancel() {
+    self.rawValue?.cancel()
+  }
+
+  /// Waits for the task to finish.
+  public func finish() async {
+    await self.rawValue?.cancellableValue
+  }
+
+  /// A Boolean value that indicates whether the task should stop executing.
+  ///
+  /// After the value of this property becomes `true`, it remains `true` indefinitely. There is no
+  /// way to uncancel a task.
+  public var isCancelled: Bool {
+    self.rawValue?.isCancelled ?? true
   }
 }

@@ -17,7 +17,7 @@ public struct Reduce<State, Action>: ReducerProtocol {
   ///
   /// - Parameter reduce: A function that is called when ``reduce(into:action:)`` is invoked.
   @inlinable
-  public init(_ reduce: @escaping (inout State, Action) -> EffectTask<Action>) {
+  public init(_ reduce: @escaping (_ state: inout State, _ action: Action) -> EffectTask<Action>) {
     self.init(internal: reduce)
   }
 

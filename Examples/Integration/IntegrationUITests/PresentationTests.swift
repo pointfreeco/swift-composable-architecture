@@ -288,6 +288,17 @@ final class PresentationTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, false)
   }
 
+  func testNavigationDestination_BackButtonDismiss() async throws {
+    self.app.buttons["Open navigation destination"].tap()
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
+
+    self.app.navigationBars.buttons.element.tap()
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, false)
+
+    self.app.buttons["Open navigation destination"].tap()
+    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
+  }
+
   func testNavigationDestination_EffectsCancelOnDismiss() async throws {
     self.app.buttons["Open navigation destination"].tap()
     XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)

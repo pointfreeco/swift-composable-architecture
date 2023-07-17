@@ -46,7 +46,7 @@ extension Store {
   /// - Returns: A cancellable that maintains a subscription to updates whenever the store's state
   ///   goes from `nil` to non-`nil` and vice versa, so that the caller can react to these changes.
   public func ifLet<Wrapped>(
-    then unwrap: @escaping (Store<Wrapped, Action>) -> Void,
+    then unwrap: @escaping (_ store: Store<Wrapped, Action>) -> Void,
     else: @escaping () -> Void = {}
   ) -> Cancellable where State == Wrapped? {
     return self.state

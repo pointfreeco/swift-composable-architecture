@@ -57,7 +57,7 @@ public struct EffectPublisher<Action, Failure: Error> {
   enum Operation {
     case none
     case publisher(AnyPublisher<Action, Failure>)
-    case run(TaskPriority? = nil, @Sendable (Send<Action>) async -> Void)
+    case run(TaskPriority? = nil, @Sendable (_ send: Send<Action>) async -> Void)
   }
 
   @usableFromInline
@@ -68,6 +68,21 @@ public struct EffectPublisher<Action, Failure: Error> {
     self.operation = operation
   }
 }
+
+/// A convenience type alias for referring to an effect of a given reducer's domain.
+///
+/// Instead of specifying the action:
+///
+/// ```swift
+/// let effect: EffectTask<Feature.Action>
+/// ```
+///
+/// You can specify the reducer:
+///
+/// ```swift
+/// let effect: EffectOf<Feature>
+/// ```
+public typealias EffectOf<R: ReducerProtocol> = EffectPublisher<R.Action, Never>
 
 // MARK: - Creating Effects
 
@@ -150,8 +165,8 @@ extension EffectPublisher where Failure == Never {
   /// - Returns: An effect wrapping the given asynchronous work.
   public static func run(
     priority: TaskPriority? = nil,
-    operation: @escaping @Sendable (Send<Action>) async throws -> Void,
-    catch handler: (@Sendable (Error, Send<Action>) async -> Void)? = nil,
+    operation: @escaping @Sendable (_ send: Send<Action>) async throws -> Void,
+    catch handler: (@Sendable (_ error: Error, _ send: Send<Action>) async -> Void)? = nil,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> Self {

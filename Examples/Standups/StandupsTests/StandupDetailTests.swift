@@ -84,17 +84,19 @@ final class StandupDetailTests: XCTestCase {
   }
 
   func testEdit() async {
-    let store = TestStore(initialState: StandupDetail.State(standup: .mock)) {
+    var standup = Standup.mock
+    let store = TestStore(initialState: StandupDetail.State(standup: standup)) {
       StandupDetail()
     } withDependencies: {
       $0.uuid = .incrementing
     }
 
     await store.send(.editButtonTapped) {
-      $0.destination = .edit(StandupForm.State(standup: .mock))
+      $0.destination = .edit(StandupForm.State(standup: standup))
     }
 
-    await store.send(.destination(.presented(.edit(.set(\.$standup.title, "Blob's Meeting"))))) {
+    standup.title = "Blob's Meeting"
+    await store.send(.destination(.presented(.edit(.set(\.$standup, standup))))) {
       try (/StandupDetail.Destination.State.edit).modify(&$0.destination) {
         $0.standup.title = "Blob's Meeting"
       }

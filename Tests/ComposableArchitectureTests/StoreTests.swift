@@ -11,7 +11,7 @@ final class StoreTests: BaseTCATestCase {
 
     XCTAssertEqual(store.effectCancellables.count, 0)
 
-    _ = store.send(())
+    store.send(())
 
     XCTAssertEqual(store.effectCancellables.count, 0)
   }
@@ -36,7 +36,7 @@ final class StoreTests: BaseTCATestCase {
 
     XCTAssertEqual(store.effectCancellables.count, 0)
 
-    _ = store.send(.start)
+    store.send(.start)
 
     XCTAssertEqual(store.effectCancellables.count, 1)
 
@@ -506,7 +506,7 @@ final class StoreTests: BaseTCATestCase {
     }
     let scopedStore = store.scope(state: { $0 }, action: { $0 })
 
-    let sendTask = scopedStore.send(())
+    let sendTask = scopedStore.send((), originatingFrom: nil)
     await Task.yield()
     neverEndingTask.cancel()
     try await XCTUnwrap(sendTask).value
@@ -618,7 +618,7 @@ final class StoreTests: BaseTCATestCase {
     let store = Store(initialState: Feature.State()) {
       Feature()
     }
-    await store.send(.tap)?.value
+    await store.send(.tap, originatingFrom: nil)?.value
     XCTAssertEqual(store.state.value.count, testStore.state.count)
   }
 
@@ -679,7 +679,7 @@ final class StoreTests: BaseTCATestCase {
     let store = Store(initialState: Feature.State()) {
       Feature()
     }
-    await store.send(.tap)?.value
+    await store.send(.tap, originatingFrom: nil)?.value
     XCTAssertEqual(store.state.value.count, testStore.state.count)
   }
 
@@ -738,7 +738,7 @@ final class StoreTests: BaseTCATestCase {
     } withDependencies: {
       $0.mainQueue = mainQueue.eraseToAnyScheduler()
     }
-    let viewStore = ViewStore(store)
+    let viewStore = ViewStore(store, observe: { $0 })
 
     let childTask = viewStore.send(.child(.task))
     try await Task.sleep(nanoseconds: 100_000_000)
@@ -795,7 +795,7 @@ final class StoreTests: BaseTCATestCase {
       $0.date = .constant(Date(timeIntervalSinceReferenceDate: 1_234_567_890))
     }
 
-    _ = store.send(.tap)
+    store.send(.tap)
     XCTAssertEqual(store.state.value.date, Date(timeIntervalSinceReferenceDate: 1_234_567_890))
   }
 
@@ -879,7 +879,7 @@ final class StoreTests: BaseTCATestCase {
       .sink { _ in storeStateCount2 += 1 }
       .store(in: &self.cancellables)
 
-    _ = store.send(.tap)
+    store.send(.tap)
     XCTAssertEqual(removeDuplicatesCount1, 0)
     XCTAssertEqual(stateScopeCount1, 2)
     XCTAssertEqual(viewStoreCount1, 0)
@@ -888,7 +888,7 @@ final class StoreTests: BaseTCATestCase {
     XCTAssertEqual(stateScopeCount2, 2)
     XCTAssertEqual(viewStoreCount2, 0)
     XCTAssertEqual(storeStateCount2, 1)
-    _ = store.send(.tap)
+    store.send(.tap)
     XCTAssertEqual(removeDuplicatesCount1, 0)
     XCTAssertEqual(stateScopeCount1, 3)
     XCTAssertEqual(viewStoreCount1, 0)
@@ -898,7 +898,7 @@ final class StoreTests: BaseTCATestCase {
     XCTAssertEqual(viewStoreCount2, 0)
     XCTAssertEqual(storeStateCount2, 1)
 
-    _ = store.send(.child(.dismiss))
+    store.send(.child(.dismiss))
     _ = (childViewStore1, childViewStore2, childStore1, childStore2)
   }
 }

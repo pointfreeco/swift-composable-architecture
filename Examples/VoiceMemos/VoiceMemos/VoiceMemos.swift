@@ -135,7 +135,7 @@ struct VoiceMemosView: View {
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
-      NavigationView {
+      NavigationStack {
         VStack {
           List {
             ForEachStore(
@@ -164,7 +164,6 @@ struct VoiceMemosView: View {
         .alert(store: self.store.scope(state: \.$alert, action: VoiceMemos.Action.alert))
         .navigationTitle("Voice memos")
       }
-      .navigationViewStyle(.stack)
     }
   }
 }

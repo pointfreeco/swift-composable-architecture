@@ -20,7 +20,7 @@ extension View {
   public func fullScreenCover<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     onDismiss: (() -> Void)? = nil,
-    @ViewBuilder content: @escaping (Store<State, Action>) -> Content
+    @ViewBuilder content: @escaping (_ store: Store<State, Action>) -> Content
   ) -> some View {
     self.presentation(store: store) { `self`, $item, destination in
       self.fullScreenCover(item: $item, onDismiss: onDismiss) { _ in
@@ -50,10 +50,10 @@ extension View {
   @available(macOS, unavailable)
   public func fullScreenCover<State, Action, DestinationState, DestinationAction, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping (State) -> DestinationState?,
-    action fromDestinationAction: @escaping (DestinationAction) -> Action,
+    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
+    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     onDismiss: (() -> Void)? = nil,
-    @ViewBuilder content: @escaping (Store<DestinationState, DestinationAction>) -> Content
+    @ViewBuilder content: @escaping (_ store: Store<DestinationState, DestinationAction>) -> Content
   ) -> some View {
     self.presentation(
       store: store, state: toDestinationState, action: fromDestinationAction

@@ -231,11 +231,10 @@ struct Settings: ReducerProtocol {
 }
 ```
 
-Binding actions are constructed and sent to the store by calling
-``ViewStore/binding(_:fileID:line:)`` with a key path to the binding state:
+Binding actions are constructed and sent to the store by invoking dynamic member lookup on the view:
 
 ```swift
-TextField("Display name", text: viewStore.binding(\.$displayName))
+TextField("Display name", text: viewStore.$displayName)
 ```
 
 Should you need to layer additional functionality over these bindings, your reducer can pattern
@@ -273,4 +272,104 @@ store.send(.set(\.$displayName, "Blob")) {
 store.send(.set(\.$protectMyPosts, true)) {
   $0.protectMyPosts = true
 )
+```
+
+> Tip: If you use `@BindingState` on a larger struct and would like to observe changes to smaller
+> fields, apply the ``ReducerProtocol/onChange(of:_:)`` modifier to the ``BindingReducer``:
+>
+> ```swift
+> struct Settings: ReducerProtocol {
+>   struct State {
+>     @BindingState var developerSettings: DeveloperSettings
+>     // ...
+>   }
+>   // ...
+>   var body: some ReducerProtocol<State, Action> {
+>     BindingReducer()
+>       .onChange(of: \.developerSettings.showDiagnostics) { oldValue, newValue in
+>         // Logic for when `showDiagnostics` changes...
+>       }
+> 
+>     // ...
+>   }
+> }
+> ```
+
+### Binding view state and binding view stores
+
+When a view store observes state bundled up in a "view state" struct (as described in
+<doc:Performance#View-stores>), a couple additional tools are required. First, the `ViewState`
+struct must annotate the fields it will hold onto with the ``BindingViewState`` property wrapper:
+
+```swift
+struct NotificationSettingsView: View {
+  let store: StoreOf<Settings>
+
+  struct ViewState: Equatable {
+    @BindingViewState var enableNotifications: Bool
+    @BindingViewState var sendEmailNotifications: Bool
+    @BindingViewState var sendMobileNotifications: Bool
+  }
+
+  // ...
+}
+```
+
+And then, when the view store is constructed, we can invoke the
+``WithViewStore/init(_:observe:content:file:line:)-4gpoj`` initializer, which is handed a
+``BindingViewStore`` that can produce ``BindingViewState`` values from a store:
+
+```swift
+struct NotificationSettingsView: View {
+  // ...
+
+  var body: some View {
+    WithViewStore(
+      self.store,
+      observe: { bindingViewStore in
+        ViewState(
+          enableNotifications: bindingViewStore.$enableNotifications,
+          sendEmailNotifications: bindingViewStore.$sendEmailNotifications,
+          sendMobileNotifications: bindingViewStore.$sendMobileNotifications
+        )
+      }
+    ) {
+      // ...
+    }
+  }
+}
+```
+
+We recommend extracting this work to simplify the call site, _e.g._ with an initializer on your
+`ViewState` struct:
+
+```swift
+struct NotificationSettingsView: View {
+  // ...
+  struct ViewState: Equatable {
+    // ...
+
+    init(bindingViewStore: BindingViewStore<Settings.State>) {
+      self._enableNotifications = bindingViewStore.$enableNotifications
+      self._sendEmailNotifications = bindingViewStore.$sendEmailNotifications
+      self._sendMobileNotifications = bindingViewStore.$sendMobileNotifications
+    }
+  }
+
+  var body: some View {
+    WithViewStore(self.store, observe: ViewState.init) { viewStore in
+      // ...
+    }
+  }
+}
+```
+
+Finally, you can use dynamic member lookup on the view store to pluck out any view state bindings:
+
+```swift
+Form {
+  Toggle("Enable notifications", isOn: viewStore.$enableNotifications)
+
+  // ...
+}
 ```

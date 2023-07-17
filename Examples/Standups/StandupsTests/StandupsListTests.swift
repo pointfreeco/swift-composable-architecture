@@ -14,36 +14,26 @@ final class StandupsListTests: XCTestCase {
       $0.uuid = .incrementing
     }
 
+    var standup = Standup(
+      id: Standup.ID(UUID(0)),
+      attendees: [
+        Attendee(id: Attendee.ID(UUID(1)))
+      ]
+    )
     await store.send(.addStandupButtonTapped) {
-      $0.destination = .add(
-        StandupForm.State(
-          standup: Standup(
-            id: Standup.ID(UUID(0)),
-            attendees: [
-              Attendee(id: Attendee.ID(UUID(1)))
-            ]
-          )
-        )
-      )
+      $0.destination = .add(StandupForm.State(standup: standup))
     }
 
+    standup.title = "Engineering"
     await store.send(
-      .destination(.presented(.add(.binding(.set(\.$standup.title, "Engineering")))))
+      .destination(.presented(.add(.binding(.set(\.$standup, standup)))))
     ) {
       $0.$destination[case: /StandupsList.Destination.State.add]?.standup.title = "Engineering"
     }
 
     await store.send(.confirmAddStandupButtonTapped) {
       $0.destination = nil
-      $0.standups = [
-        Standup(
-          id: Standup.ID(UUID(0)),
-          attendees: [
-            Attendee(id: Attendee.ID(UUID(1)))
-          ],
-          title: "Engineering"
-        )
-      ]
+      $0.standups = [standup]
     }
   }
 
