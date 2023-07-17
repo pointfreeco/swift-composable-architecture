@@ -979,6 +979,21 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   }
 }
 
+/// A convenience type alias for referring to a test store of a given reducer's domain.
+///
+/// Instead of specifying five generics:
+///
+/// ```swift
+/// let testStore: TestStore<Feature.State, Feature.Action, Feature.State, Feature.Action, Void>
+/// ```
+///
+/// You can specify a single generic:
+///
+/// ```swift
+/// let testStore: TestStoreOf<Feature>
+/// ```
+public typealias TestStoreOf<R: ReducerProtocol> = TestStore<R.State, R.Action, R.State, R.Action, Void>
+
 extension TestStore where ScopedState: Equatable {
   /// Sends an action to the store and asserts when state changes.
   ///
