@@ -1104,7 +1104,7 @@ extension TestStore where ScopedState: Equatable {
       originatingFrom: nil
     )
     if uncheckedUseMainSerialExecutor {
-      await Task.megaYield()
+      await Task.yield()
     } else {
       for await _ in self.reducer.effectDidSubscribe.stream {
         break
