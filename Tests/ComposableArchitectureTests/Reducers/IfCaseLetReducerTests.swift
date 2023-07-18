@@ -1,35 +1,32 @@
 import ComposableArchitecture
-@_spi(Concurrency) import Dependencies
 import XCTest
 
 @MainActor
 final class IfCaseLetReducerTests: BaseTCATestCase {
   func testChildAction() async {
-    await withMainSerialExecutor {
-      struct SomeError: Error, Equatable {}
+    struct SomeError: Error, Equatable {}
 
-      let store = TestStore(initialState: Result.success(0)) {
-        Reduce<Result<Int, SomeError>, Result<Int, SomeError>> { state, action in
-          .none
-        }
-        .ifCaseLet(/Result.success, action: /Result.success) {
-          Reduce { state, action in
-            state = action
-            return state < 0 ? .run { await $0(0) } : .none
-          }
+    let store = TestStore(initialState: Result.success(0)) {
+      Reduce<Result<Int, SomeError>, Result<Int, SomeError>> { state, action in
+        .none
+      }
+      .ifCaseLet(/Result.success, action: /Result.success) {
+        Reduce { state, action in
+          state = action
+          return state < 0 ? .run { await $0(0) } : .none
         }
       }
+    }
 
-      await store.send(.success(1)) {
-        $0 = .success(1)
-      }
-      await store.send(.failure(SomeError()))
-      await store.send(.success(-1)) {
-        $0 = .success(-1)
-      }
-      await store.receive(.success(0)) {
-        $0 = .success(0)
-      }
+    await store.send(.success(1)) {
+      $0 = .success(1)
+    }
+    await store.send(.failure(SomeError()))
+    await store.send(.success(-1)) {
+      $0 = .success(-1)
+    }
+    await store.receive(.success(0)) {
+      $0 = .success(0)
     }
   }
 
@@ -131,23 +128,21 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
           }
         }
       }
-      await withMainSerialExecutor {
-        let clock = TestClock()
-        let store = TestStore(initialState: Parent.State.child1(Child.State())) {
-          Parent()
-        } withDependencies: {
-          $0.continuousClock = clock
+      let clock = TestClock()
+      let store = TestStore(initialState: Parent.State.child1(Child.State())) {
+        Parent()
+      } withDependencies: {
+        $0.continuousClock = clock
+      }
+      await store.send(.child1(.timerButtonTapped))
+      await clock.advance(by: .seconds(1))
+      await store.receive(.child1(.timerTick)) {
+        try (/Parent.State.child1).modify(&$0) {
+          $0.count = 1
         }
-        await store.send(.child1(.timerButtonTapped))
-        await clock.advance(by: .seconds(1))
-        await store.receive(.child1(.timerTick)) {
-          try (/Parent.State.child1).modify(&$0) {
-            $0.count = 1
-          }
-        }
-        await store.send(.child2ButtonTapped) {
-          $0 = .child2(Child.State())
-        }
+      }
+      await store.send(.child2ButtonTapped) {
+        $0 = .child2(Child.State())
       }
     }
   }

@@ -1,5 +1,6 @@
 @_spi(Internals) import CasePaths
 import Combine
+import ConcurrencyExtras
 import CustomDump
 import Foundation
 import XCTestDynamicOverlay
@@ -465,6 +466,13 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   /// The current exhaustivity level of the test store.
   public var exhaustivity: Exhaustivity = .on
 
+  /// Serializes all async work to the main thread for the lifetime of the test store.
+  public var useMainSerialExecutor: Bool {
+    get { uncheckedUseMainSerialExecutor }
+    set { uncheckedUseMainSerialExecutor = newValue }
+  }
+  private let originalUseMainSerialExecutor = uncheckedUseMainSerialExecutor
+
   /// The current environment.
   ///
   /// The environment can be modified throughout a test store's lifecycle in order to influence how
@@ -864,6 +872,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
 
   deinit {
     self.completed()
+    uncheckedUseMainSerialExecutor = self.originalUseMainSerialExecutor
   }
 
   func completed() {
@@ -1111,8 +1120,12 @@ extension TestStore where ScopedState: Equatable {
       .init(origin: .send(self.fromScopedAction(action)), file: file, line: line),
       originatingFrom: nil
     )
-    for await _ in self.reducer.effectDidSubscribe.stream {
-      break
+    if uncheckedUseMainSerialExecutor {
+      await Task.yield()
+    } else {
+      for await _ in self.reducer.effectDidSubscribe.stream {
+        break
+      }
     }
     do {
       let currentState = self.state
@@ -2525,24 +2538,6 @@ class TestReducer<State, Action>: ReducerProtocol {
     }
   }
 }
-
-extension Task where Success == Failure, Failure == Never {
-  // NB: We would love if this was not necessary. See this forum post for more information:
-  //     https://forums.swift.org/t/reliably-testing-code-that-adopts-swift-concurrency/57304
-  @_spi(Internals) public static func megaYield(count: Int = defaultMegaYieldCount) async {
-    for _ in 0..<count {
-      await Task<Void, Never>.detached(priority: .background) { await Task.yield() }.value
-    }
-  }
-}
-
-@_spi(Internals) public let defaultMegaYieldCount = max(
-  0,
-  min(
-    ProcessInfo.processInfo.environment["TASK_MEGA_YIELD_COUNT"].flatMap(Int.init) ?? 20,
-    10_000
-  )
-)
 
 // NB: Only needed until Xcode ships a macOS SDK that uses the 5.7 standard library.
 // See: https://forums.swift.org/t/xcode-14-rc-cannot-specialize-protocol-type/60171/15

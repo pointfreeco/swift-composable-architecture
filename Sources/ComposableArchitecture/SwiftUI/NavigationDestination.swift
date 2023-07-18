@@ -1,3 +1,4 @@
+@_spi(Reflection) import CasePaths
 import SwiftUI
 
 extension View {
@@ -57,12 +58,22 @@ extension View {
     self.presentation(
       store: store,
       state: toDestinationState,
-      id: { _ in ObjectIdentifier(State.self) },
+      id: { $0.wrappedValue.map(NavigationDestinationID.init) },
       action: fromDestinationAction
     ) { `self`, $item, destinationContent in
       self.navigationDestination(isPresented: $item.isPresent()) {
         destinationContent(destination)
       }
     }
+  }
+}
+
+private struct NavigationDestinationID: Hashable {
+  let objectIdentifier: ObjectIdentifier
+  let enumTag: UInt32?
+
+  init<Value>(_ value: Value) {
+    self.objectIdentifier = ObjectIdentifier(Value.self)
+    self.enumTag = EnumMetadata(Value.self)?.tag(of: value)
   }
 }
