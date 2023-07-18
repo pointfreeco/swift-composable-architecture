@@ -44,7 +44,7 @@ public struct BindingState<Value> {
   /// `@BindingState`. To get the `projectedValue`, prefix the property with `$`:
   ///
   /// ```swift
-  /// TextField("Display name", text: viewStore.binding(\.$displayName))
+  /// TextField("Display name", text: viewStore.$displayName)
   /// ```
   ///
   /// See ``BindingState`` for more details.
