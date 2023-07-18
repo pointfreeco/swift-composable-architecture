@@ -55,7 +55,6 @@ final class EffectsCancellationTests: XCTestCase {
     } withDependencies: {
       $0.factClient.fetch = { _ in try await Task.never() }
     }
-    store.useMainSerialExecutor = true
 
     await store.send(.factButtonTapped) {
       $0.isFactRequestInFlight = true
@@ -71,7 +70,6 @@ final class EffectsCancellationTests: XCTestCase {
     } withDependencies: {
       $0.factClient.fetch = { _ in try await Task.never() }
     }
-    store.useMainSerialExecutor = true
 
     await store.send(.factButtonTapped) {
       $0.isFactRequestInFlight = true
