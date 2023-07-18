@@ -567,7 +567,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     self.line = line
     self.reducer = reducer
     self.store = Store(initialState: reducer.state, reducer: reducer)
-    self.timeout = 100 * NSEC_PER_MSEC
+    self.timeout = 1 * NSEC_PER_SEC
     self.toScopedState = { $0 }
     self.useMainSerialExecutor = true
   }
@@ -638,7 +638,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     self.line = line
     self.reducer = reducer
     self.store = Store(initialState: reducer.state, reducer: reducer)
-    self.timeout = 100 * NSEC_PER_MSEC
+    self.timeout = 1 * NSEC_PER_SEC
     self.toScopedState = toScopedState
     self.useMainSerialExecutor = true
   }
@@ -679,7 +679,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     self.line = line
     self.reducer = reducer
     self.store = Store(initialState: reducer.state, reducer: reducer)
-    self.timeout = 100 * NSEC_PER_MSEC
+    self.timeout = 1 * NSEC_PER_SEC
     self.toScopedState = { $0 }
     self.useMainSerialExecutor = true
   }
@@ -715,7 +715,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     self.line = line
     self.reducer = reducer
     self.store = Store(initialState: initialState, reducer: reducer)
-    self.timeout = 100 * NSEC_PER_MSEC
+    self.timeout = 1 * NSEC_PER_SEC
     self.toScopedState = { $0 }
   }
 
@@ -726,7 +726,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     line: UInt,
     reducer: TestReducer<State, Action>,
     store: Store<State, TestReducer<State, Action>.Action>,
-    timeout: UInt64 = 100 * NSEC_PER_MSEC,
+    timeout: UInt64 = 1 * NSEC_PER_SEC,
     toScopedState: @escaping (State) -> ScopedState
   ) {
     self._environment = _environment
