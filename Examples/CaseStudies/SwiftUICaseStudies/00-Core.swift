@@ -16,6 +16,7 @@ struct Root: ReducerProtocol {
     var loadThenPresent = LoadThenPresent.State()
     var longLivingEffects = LongLivingEffects.State()
     var map = MapApp.State(cityMaps: .mocks)
+    var multipleDestinations = MultipleDestinations.State()
     var navigateAndLoad = NavigateAndLoad.State()
     var navigateAndLoadList = NavigateAndLoadList.State()
     var navigationStack = NavigationDemo.State()
@@ -44,6 +45,7 @@ struct Root: ReducerProtocol {
     case loadThenPresent(LoadThenPresent.Action)
     case longLivingEffects(LongLivingEffects.Action)
     case map(MapApp.Action)
+    case multipleDestinations(MultipleDestinations.Action)
     case navigateAndLoad(NavigateAndLoad.Action)
     case navigateAndLoadList(NavigateAndLoadList.Action)
     case navigationStack(NavigationDemo.Action)
@@ -113,6 +115,9 @@ struct Root: ReducerProtocol {
     }
     Scope(state: \.map, action: /Action.map) {
       MapApp()
+    }
+    Scope(state: \.multipleDestinations, action: /Action.multipleDestinations) {
+      MultipleDestinations()
     }
     Scope(state: \.navigateAndLoad, action: /Action.navigateAndLoad) {
       NavigateAndLoad()

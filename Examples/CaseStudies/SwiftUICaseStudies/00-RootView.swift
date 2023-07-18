@@ -5,7 +5,7 @@ struct RootView: View {
   let store: StoreOf<Root>
 
   var body: some View {
-    NavigationView {
+    NavigationStack {
       Form {
         Section(header: Text("Getting started")) {
           NavigationLink(
@@ -207,6 +207,16 @@ struct RootView: View {
               store: self.store.scope(
                 state: \.loadThenPresent,
                 action: Root.Action.loadThenPresent
+              )
+            )
+          )
+            
+          NavigationLink(
+            "Multiple destinations",
+            destination: MultipleDestinationsView(
+              store: self.store.scope(
+                state: \.multipleDestinations,
+                action: Root.Action.multipleDestinations
               )
             )
           )
