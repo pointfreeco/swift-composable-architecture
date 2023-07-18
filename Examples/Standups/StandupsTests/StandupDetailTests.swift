@@ -48,8 +48,8 @@ final class StandupDetailTests: XCTestCase {
 
     await store.send(.destination(.presented(.alert(.openSettings)))) {
       $0.destination = nil
-      XCTAssertEqual(settingsOpened.value, true)
     }
+    XCTAssertEqual(settingsOpened.value, true)
   }
 
   func testContinueWithoutRecording() async throws {
