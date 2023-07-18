@@ -81,7 +81,7 @@ final class ForEachReducerTests: BaseTCATestCase {
           case tick
         }
         @Dependency(\.continuousClock) var clock
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
+        func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
           switch action {
           case .startButtonTapped:
             return .run { send in
@@ -118,33 +118,8 @@ final class ForEachReducerTests: BaseTCATestCase {
               return .none
             }
           }
-        }
-        struct Timers: Reducer {
-          struct State: Equatable {
-            var timers: IdentifiedArrayOf<Timer.State> = []
-          }
-          enum Action: Equatable {
-            case addTimerButtonTapped
-            case removeLastTimerButtonTapped
-            case timers(id: Timer.State.ID, action: Timer.Action)
-          }
-          @Dependency(\.uuid) var uuid
-          var body: some ReducerOf<Self> {
-            Reduce { state, action in
-              switch action {
-              case .addTimerButtonTapped:
-                state.timers.append(Timer.State(id: self.uuid()))
-                return .none
-              case .removeLastTimerButtonTapped:
-                state.timers.removeLast()
-                return .none
-              case .timers:
-                return .none
-              }
-            }
-            .forEach(\.timers, action: /Action.timers) {
-              Timer()
-            }
+          .forEach(\.timers, action: /Action.timers) {
+            Timer()
           }
         }
       }
@@ -256,7 +231,7 @@ struct Elements: Reducer {
     case buttonTapped
     case row(id: Int, action: String)
   }
-  var body: some Reducer<State, Action> {
+  var body: some ReducerOf<Self> {
     Reduce { state, action in
       .none
     }

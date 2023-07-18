@@ -23,7 +23,7 @@ final class TestStoreTests: BaseTCATestCase {
               await send(.c1)
             },
             .run { _ in try await Task.never() }
-            .cancellable(id: 1)
+              .cancellable(id: 1)
           )
         case .b1:
           return .concatenate(.send(.b2), .send(.b3))
@@ -476,12 +476,12 @@ final class TestStoreTests: BaseTCATestCase {
       Reduce<State, Action> { state, action in
         switch action {
         case .start:
-          return
+          return .publisher {
             subject
-            .subscribe(on: scheduler)
-            .receive(on: scheduler)
-            .map { .increment }
-            .eraseToEffect()
+              .subscribe(on: scheduler)
+              .receive(on: scheduler)
+              .map { .increment }
+          }
         case .increment:
           state.count += 1
           return .none
@@ -495,6 +495,30 @@ final class TestStoreTests: BaseTCATestCase {
     await scheduler.advance()
     await store.receive(.increment) { $0.count = 1 }
     await task.cancel()
+  }
+
+  func testMainSerialExecutor_AutoAssignsAndResets_False() async {
+    uncheckedUseMainSerialExecutor = false
+    XCTAssertFalse(uncheckedUseMainSerialExecutor)
+    var store: TestStore? = TestStore(initialState: 0) {
+      EmptyReducer<Int, Void>()
+    }
+    XCTAssertTrue(uncheckedUseMainSerialExecutor)
+    store = nil
+    XCTAssertFalse(uncheckedUseMainSerialExecutor)
+    _ = store
+  }
+
+  func testMainSerialExecutor_AutoAssignsAndResets_True() async {
+    uncheckedUseMainSerialExecutor = true
+    XCTAssertTrue(uncheckedUseMainSerialExecutor)
+    var store: TestStore? = TestStore(initialState: 0) {
+      EmptyReducer<Int, Void>()
+    }
+    XCTAssertTrue(uncheckedUseMainSerialExecutor)
+    store = nil
+    XCTAssertTrue(uncheckedUseMainSerialExecutor)
+    _ = store
   }
 }
 

@@ -569,6 +569,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     self.store = Store(initialState: reducer.state, reducer: reducer)
     self.timeout = 100 * NSEC_PER_MSEC
     self.toScopedState = { $0 }
+    self.useMainSerialExecutor = true
   }
 
   @available(
@@ -639,6 +640,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     self.store = Store(initialState: reducer.state, reducer: reducer)
     self.timeout = 100 * NSEC_PER_MSEC
     self.toScopedState = toScopedState
+    self.useMainSerialExecutor = true
   }
 
   /// Creates a test store with an initial state and a reducer powering its runtime.
@@ -679,6 +681,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     self.store = Store(initialState: reducer.state, reducer: reducer)
     self.timeout = 100 * NSEC_PER_MSEC
     self.toScopedState = { $0 }
+    self.useMainSerialExecutor = true
   }
 
   @available(
