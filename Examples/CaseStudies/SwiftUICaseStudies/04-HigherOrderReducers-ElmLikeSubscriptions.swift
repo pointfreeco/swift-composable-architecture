@@ -1,5 +1,5 @@
 import ComposableArchitecture
-@preconcurrency import SwiftUI  // NB: SwiftUI.Animation is not Sendable yet.
+import SwiftUI
 
 private let readMe = """
   This screen demonstrates how the `AnyReducer` struct can be extended to enhance reducers with \

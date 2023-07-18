@@ -1,5 +1,5 @@
 import ComposableArchitecture
-@preconcurrency import SwiftUI  // NB: SwiftUI.Animation is not Sendable yet.
+import SwiftUI
 
 struct DownloadComponent: ReducerProtocol {
   struct State: Equatable {

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 53;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -68,9 +68,7 @@
 		DC89C41B24460F95006900B9 /* 00-RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C41A24460F95006900B9 /* 00-RootView.swift */; };
 		DC89C41D24460F96006900B9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC89C41C24460F96006900B9 /* Assets.xcassets */; };
 		DC89C4442446111B006900B9 /* 01-GettingStarted-Counter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C4432446111B006900B9 /* 01-GettingStarted-Counter.swift */; };
-		DC89C449244618D5006900B9 /* 03-Navigation-LoadThenNavigate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C448244618D5006900B9 /* 03-Navigation-LoadThenNavigate.swift */; };
 		DC89C44D244621A5006900B9 /* 03-Navigation-NavigateAndLoad.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C44C244621A5006900B9 /* 03-Navigation-NavigateAndLoad.swift */; };
-		DC89C45124462DE7006900B9 /* 03-Navigation-Lists-LoadThenNavigate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C45024462DE7006900B9 /* 03-Navigation-Lists-LoadThenNavigate.swift */; };
 		DC89C45324465452006900B9 /* 03-Navigation-Lists-NavigateAndLoad.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C45224465451006900B9 /* 03-Navigation-Lists-NavigateAndLoad.swift */; };
 		DC89C45524465C44006900B9 /* 02-Effects-Timers.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C45424465C44006900B9 /* 02-Effects-Timers.swift */; };
 		DC9EB4172450CBD2005F413B /* UIViewRepresented.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC9EB4162450CBD2005F413B /* UIViewRepresented.swift */; };
@@ -223,9 +221,7 @@
 		DC89C43824460FC7006900B9 /* swift-composable-architecture */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "swift-composable-architecture"; path = ../..; sourceTree = "<group>"; };
 		DC89C43924460FFF006900B9 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		DC89C4432446111B006900B9 /* 01-GettingStarted-Counter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-Counter.swift"; sourceTree = "<group>"; };
-		DC89C448244618D5006900B9 /* 03-Navigation-LoadThenNavigate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Navigation-LoadThenNavigate.swift"; sourceTree = "<group>"; };
 		DC89C44C244621A5006900B9 /* 03-Navigation-NavigateAndLoad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Navigation-NavigateAndLoad.swift"; sourceTree = "<group>"; };
-		DC89C45024462DE7006900B9 /* 03-Navigation-Lists-LoadThenNavigate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Navigation-Lists-LoadThenNavigate.swift"; sourceTree = "<group>"; };
 		DC89C45224465451006900B9 /* 03-Navigation-Lists-NavigateAndLoad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Navigation-Lists-NavigateAndLoad.swift"; sourceTree = "<group>"; };
 		DC89C45424465C44006900B9 /* 02-Effects-Timers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-Timers.swift"; sourceTree = "<group>"; };
 		DC9EB4162450CBD2005F413B /* UIViewRepresented.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIViewRepresented.swift; sourceTree = "<group>"; };
@@ -414,9 +410,7 @@
 				CABC4F3826AEE00C00D5FA2C /* 02-Effects-Refreshable.swift */,
 				DC89C45424465C44006900B9 /* 02-Effects-Timers.swift */,
 				CA410EDF247A15FE00E41798 /* 02-Effects-WebSocket.swift */,
-				DC89C45024462DE7006900B9 /* 03-Navigation-Lists-LoadThenNavigate.swift */,
 				DC89C45224465451006900B9 /* 03-Navigation-Lists-NavigateAndLoad.swift */,
-				DC89C448244618D5006900B9 /* 03-Navigation-LoadThenNavigate.swift */,
 				DC89C44C244621A5006900B9 /* 03-Navigation-NavigateAndLoad.swift */,
 				DC072321244663B1003A8B65 /* 03-Navigation-Sheet-LoadThenPresent.swift */,
 				DCC68EAA244666AF0037F998 /* 03-Navigation-Sheet-PresentAndLoad.swift */,
@@ -748,7 +742,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DC89C449244618D5006900B9 /* 03-Navigation-LoadThenNavigate.swift in Sources */,
 				DC3C87B029A48C4D004D9104 /* 03-NavigationStack.swift in Sources */,
 				DCC68EE12447C4630037F998 /* 01-GettingStarted-Composition-TwoCounters.swift in Sources */,
 				DC072322244663B1003A8B65 /* 03-Navigation-Sheet-LoadThenPresent.swift in Sources */,
@@ -783,7 +776,6 @@
 				DC89C4442446111B006900B9 /* 01-GettingStarted-Counter.swift in Sources */,
 				DCE63B71245CC0B90080A23D /* 04-HigherOrderReducers-Recursion.swift in Sources */,
 				CAA9ADCA2446605B0003A984 /* 02-Effects-LongLiving.swift in Sources */,
-				DC89C45124462DE7006900B9 /* 03-Navigation-Lists-LoadThenNavigate.swift in Sources */,
 				DC89C45524465C44006900B9 /* 02-Effects-Timers.swift in Sources */,
 				CA410EE0247A15FE00E41798 /* 02-Effects-WebSocket.swift in Sources */,
 				CA7BC8EE245CCFE4001FB69F /* 01-GettingStarted-SharedState.swift in Sources */,
