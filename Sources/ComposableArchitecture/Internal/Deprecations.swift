@@ -140,10 +140,10 @@ extension Store {
 }
 
 extension TestStore {
-  @available(iOS, deprecated: 9999, message: "Pass a closure as the reducer.")
-  @available(macOS, deprecated: 9999, message: "Pass a closure as the reducer.")
-  @available(tvOS, deprecated: 9999, message: "Pass a closure as the reducer.")
-  @available(watchOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(
+    *, deprecated,
+    message: "Test the reducer domain directly. To test view state and actions, write a unit test."
+  )
   public convenience init<R: Reducer>(
     initialState: @autoclosure () -> State,
     reducer: R,
@@ -170,10 +170,7 @@ extension TestStore {
     )
   }
 
-  @available(iOS, deprecated: 9999, message: "Pass a closure as the reducer.")
-  @available(macOS, deprecated: 9999, message: "Pass a closure as the reducer.")
-  @available(tvOS, deprecated: 9999, message: "Pass a closure as the reducer.")
-  @available(watchOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(*, deprecated, message: "Pass a closure as the reducer.")
   public convenience init<R: Reducer>(
     initialState: @autoclosure () -> State,
     reducer: R,
@@ -200,10 +197,10 @@ extension TestStore {
     )
   }
 
-  @available(iOS, deprecated: 9999, message: "Pass a closure as the reducer.")
-  @available(macOS, deprecated: 9999, message: "Pass a closure as the reducer.")
-  @available(tvOS, deprecated: 9999, message: "Pass a closure as the reducer.")
-  @available(watchOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(
+    *, deprecated,
+    message: "Test the reducer domain directly. To test view state and actions, write a unit test."
+  )
   public convenience init<R: Reducer>(
     initialState: @autoclosure () -> State,
     reducer: R,

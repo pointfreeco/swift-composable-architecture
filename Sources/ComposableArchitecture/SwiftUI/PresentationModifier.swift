@@ -43,8 +43,8 @@ extension View {
     Content: View
   >(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping (State) -> DestinationState?,
-    action fromDestinationAction: @escaping (DestinationAction) -> Action,
+    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
+    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     @ViewBuilder body: @escaping (
       _ content: Self,
       _ isPresented: Binding<Bool>,
@@ -68,8 +68,8 @@ extension View {
     Content: View
   >(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping (State) -> DestinationState?,
-    action fromDestinationAction: @escaping (DestinationAction) -> Action,
+    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
+    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     @ViewBuilder body: @escaping (
       _ content: Self,
       _ item: Binding<AnyIdentifiable?>,
@@ -85,8 +85,9 @@ extension View {
     )
   }
 
+  @_spi(Presentation)
   @ViewBuilder
-  private func presentation<
+  public func presentation<
     State,
     Action,
     DestinationState,
@@ -157,8 +158,8 @@ public struct PresentationStore<
 
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping (State) -> DestinationState?,
-    action fromDestinationAction: @escaping (DestinationAction) -> Action,
+    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
+    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     @ViewBuilder content: @escaping (
       _ isPresented: Binding<Bool>,
       _ destination: DestinationContent<DestinationState, DestinationAction>
@@ -174,8 +175,8 @@ public struct PresentationStore<
   @_disfavoredOverload
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping (State) -> DestinationState?,
-    action fromDestinationAction: @escaping (DestinationAction) -> Action,
+    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
+    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     @ViewBuilder content: @escaping (
       _ item: Binding<AnyIdentifiable?>,
       _ destination: DestinationContent<DestinationState, DestinationAction>
@@ -253,7 +254,7 @@ public struct DestinationContent<State, Action> {
   let store: Store<State?, Action>
 
   public func callAsFunction<Content: View>(
-    @ViewBuilder _ body: @escaping (Store<State, Action>) -> Content
+    @ViewBuilder _ body: @escaping (_ store: Store<State, Action>) -> Content
   ) -> some View {
     IfLetStore(
       self.store.scope(state: returningLastNonNilValue { $0 }, action: { $0 }), then: body

@@ -1,3 +1,4 @@
+@_spi(Reflection) import CasePaths
 import SwiftUI
 
 extension View {
@@ -17,13 +18,14 @@ extension View {
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func navigationDestination<State, Action, Destination: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
-    @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination
+    @ViewBuilder destination: @escaping (_ store: Store<State, Action>) -> Destination
   ) -> some View {
-    self.presentation(store: store) { `self`, $isPresented, destinationContent in
-      self.navigationDestination(isPresented: $isPresented) {
-        destinationContent(destination)
-      }
-    }
+    self.navigationDestination(
+      store: store,
+      state: { $0 },
+      action: { $0 },
+      destination: destination
+    )
   }
 
   /// Associates a destination view with a store that can be used to push the view onto a
@@ -48,17 +50,30 @@ extension View {
     State, Action, DestinationState, DestinationAction, Destination: View
   >(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping (State) -> DestinationState?,
-    action fromDestinationAction: @escaping (DestinationAction) -> Action,
-    @ViewBuilder destination: @escaping (Store<DestinationState, DestinationAction>) ->
+    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
+    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
+    @ViewBuilder destination: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
       Destination
   ) -> some View {
     self.presentation(
-      store: store, state: toDestinationState, action: fromDestinationAction
-    ) { `self`, $isPresented, destinationContent in
-      self.navigationDestination(isPresented: $isPresented) {
+      store: store,
+      state: toDestinationState,
+      id: { $0.wrappedValue.map(NavigationDestinationID.init) },
+      action: fromDestinationAction
+    ) { `self`, $item, destinationContent in
+      self.navigationDestination(isPresented: $item.isPresent()) {
         destinationContent(destination)
       }
     }
+  }
+}
+
+private struct NavigationDestinationID: Hashable {
+  let objectIdentifier: ObjectIdentifier
+  let enumTag: UInt32?
+
+  init<Value>(_ value: Value) {
+    self.objectIdentifier = ObjectIdentifier(Value.self)
+    self.enumTag = EnumMetadata(Value.self)?.tag(of: value)
   }
 }

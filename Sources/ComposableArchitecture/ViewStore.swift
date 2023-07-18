@@ -88,8 +88,8 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   equal, repeat view computations are removed.
   public init<State>(
     _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (State) -> ViewState,
-    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool
+    observe toViewState: @escaping (_ state: State) -> ViewState,
+    removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) {
     self._send = { store.send($0, originatingFrom: nil) }
     self._state = CurrentValueRelay(toViewState(store.state.value))
@@ -121,9 +121,9 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   equal, repeat view computations are removed.
   public init<State, Action>(
     _ store: Store<State, Action>,
-    observe toViewState: @escaping (State) -> ViewState,
-    send fromViewAction: @escaping (ViewAction) -> Action,
-    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool
+    observe toViewState: @escaping (_ state: State) -> ViewState,
+    send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action,
+    removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) {
     self._send = { store.send(fromViewAction($0), originatingFrom: nil) }
     self._state = CurrentValueRelay(toViewState(store.state.value))
@@ -164,7 +164,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   )
   public init(
     _ store: Store<ViewState, ViewAction>,
-    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool
+    removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) {
     self._send = { store.send($0, originatingFrom: nil) }
     self._state = CurrentValueRelay(store.state.value)
@@ -347,7 +347,10 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - predicate: A predicate on `ViewState` that determines for how long this method should
   ///     suspend.
   @MainActor
-  public func send(_ action: ViewAction, while predicate: @escaping (ViewState) -> Bool) async {
+  public func send(
+    _ action: ViewAction,
+    while predicate: @escaping (_ state: ViewState) -> Bool
+  ) async {
     let task = self.send(action)
     await withTaskCancellationHandler {
       await self.yield(while: predicate)
@@ -369,7 +372,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   public func send(
     _ action: ViewAction,
     animation: Animation?,
-    while predicate: @escaping (ViewState) -> Bool
+    while predicate: @escaping (_ state: ViewState) -> Bool
   ) async {
     let task = withAnimation(animation) { self.send(action) }
     await withTaskCancellationHandler {
@@ -387,7 +390,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   /// - Parameter predicate: A predicate on `ViewState` that determines for how long this method
   ///   should suspend.
   @MainActor
-  public func yield(while predicate: @escaping (ViewState) -> Bool) async {
+  public func yield(while predicate: @escaping (_ state: ViewState) -> Bool) async {
     if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
       _ = await self.publisher
         .values
@@ -444,8 +447,8 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///     sent to the store.
   /// - Returns: A binding.
   public func binding<Value>(
-    get: @escaping (ViewState) -> Value,
-    send valueToAction: @escaping (Value) -> ViewAction
+    get: @escaping (_ state: ViewState) -> Value,
+    send valueToAction: @escaping (_ value: Value) -> ViewAction
   ) -> Binding<Value> {
     ObservedObject(wrappedValue: self)
       .projectedValue[get: .init(rawValue: get), send: .init(rawValue: valueToAction)]
@@ -453,8 +456,8 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
 
   @_disfavoredOverload
   func binding<Value>(
-    get: @escaping (ViewState) -> Value,
-    compactSend valueToAction: @escaping (Value) -> ViewAction?
+    get: @escaping (_ state: ViewState) -> Value,
+    compactSend valueToAction: @escaping (_ value: Value) -> ViewAction?
   ) -> Binding<Value> {
     ObservedObject(wrappedValue: self)
       .projectedValue[get: .init(rawValue: get), send: .init(rawValue: valueToAction)]
@@ -486,7 +489,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - action: The action to send when the binding is written to.
   /// - Returns: A binding.
   public func binding<Value>(
-    get: @escaping (ViewState) -> Value,
+    get: @escaping (_ state: ViewState) -> Value,
     send action: ViewAction
   ) -> Binding<Value> {
     self.binding(get: get, send: { _ in action })
@@ -518,7 +521,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///     sent to the store.
   /// - Returns: A binding.
   public func binding(
-    send valueToAction: @escaping (ViewState) -> ViewAction
+    send valueToAction: @escaping (_ state: ViewState) -> ViewAction
   ) -> Binding<ViewState> {
     self.binding(get: { $0 }, send: valueToAction)
   }
@@ -595,7 +598,7 @@ extension ViewStore where ViewState: Equatable {
   ///   changes.
   public convenience init<State>(
     _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (State) -> ViewState
+    observe toViewState: @escaping (_ state: State) -> ViewState
   ) {
     self.init(store, observe: toViewState, removeDuplicates: ==)
   }
@@ -615,8 +618,8 @@ extension ViewStore where ViewState: Equatable {
   ///   - fromViewAction: A transformation of `ViewAction` that describes what actions can be sent.
   public convenience init<State, Action>(
     _ store: Store<State, Action>,
-    observe toViewState: @escaping (State) -> ViewState,
-    send fromViewAction: @escaping (ViewAction) -> Action
+    observe toViewState: @escaping (_ state: State) -> ViewState,
+    send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action
   ) {
     self.init(store, observe: toViewState, send: fromViewAction, removeDuplicates: ==)
   }

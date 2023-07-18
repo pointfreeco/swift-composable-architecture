@@ -49,7 +49,7 @@ public struct NavigationLinkStore<
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     onTap: @escaping () -> Void,
-    @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
+    @ViewBuilder destination: @escaping (_ store: Store<State, Action>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where State == DestinationState, Action == DestinationAction {
     self.init(
@@ -64,10 +64,11 @@ public struct NavigationLinkStore<
 
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping (State) -> DestinationState?,
-    action fromDestinationAction: @escaping (DestinationAction) -> Action,
+    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
+    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     onTap: @escaping () -> Void,
-    @ViewBuilder destination: @escaping (Store<DestinationState, DestinationAction>) -> Destination,
+    @ViewBuilder destination: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
+      Destination,
     @ViewBuilder label: () -> Label
   ) {
     let store = store.invalidate { $0.wrappedValue.flatMap(toDestinationState) == nil }
@@ -90,7 +91,7 @@ public struct NavigationLinkStore<
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     id: State.ID,
     onTap: @escaping () -> Void,
-    @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
+    @ViewBuilder destination: @escaping (_ store: Store<State, Action>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where State == DestinationState, Action == DestinationAction, State: Identifiable {
     self.init(
@@ -106,11 +107,12 @@ public struct NavigationLinkStore<
 
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping (State) -> DestinationState?,
-    action fromDestinationAction: @escaping (DestinationAction) -> Action,
+    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
+    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     id: DestinationState.ID,
     onTap: @escaping () -> Void,
-    @ViewBuilder destination: @escaping (Store<DestinationState, DestinationAction>) -> Destination,
+    @ViewBuilder destination: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
+      Destination,
     @ViewBuilder label: () -> Label
   ) where DestinationState: Identifiable {
     let store = store.invalidate { $0.wrappedValue.flatMap(toDestinationState)?.id != id }

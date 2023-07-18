@@ -28,8 +28,8 @@ extension View {
   ///     action.
   public func confirmationDialog<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping (State) -> ConfirmationDialogState<ButtonAction>?,
-    action fromDestinationAction: @escaping (ButtonAction) -> Action
+    state toDestinationState: @escaping (_ state: State) -> ConfirmationDialogState<ButtonAction>?,
+    action fromDestinationAction: @escaping (_ confirmationDialogAction: ButtonAction) -> Action
   ) -> some View {
     self.presentation(
       store: store, state: toDestinationState, action: fromDestinationAction

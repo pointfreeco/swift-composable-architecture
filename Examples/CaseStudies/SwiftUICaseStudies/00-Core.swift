@@ -13,11 +13,10 @@ struct Root: Reducer {
     var episodes = Episodes.State(episodes: .mocks)
     var focusDemo = FocusDemo.State()
     var lifecycle = LifecycleDemo.State()
-    var loadThenNavigate = LoadThenNavigate.State()
-    var loadThenNavigateList = LoadThenNavigateList.State()
     var loadThenPresent = LoadThenPresent.State()
     var longLivingEffects = LongLivingEffects.State()
     var map = MapApp.State(cityMaps: .mocks)
+    var multipleDestinations = MultipleDestinations.State()
     var navigateAndLoad = NavigateAndLoad.State()
     var navigateAndLoadList = NavigateAndLoadList.State()
     var navigationStack = NavigationDemo.State()
@@ -43,11 +42,10 @@ struct Root: Reducer {
     case episodes(Episodes.Action)
     case focusDemo(FocusDemo.Action)
     case lifecycle(LifecycleDemo.Action)
-    case loadThenNavigate(LoadThenNavigate.Action)
-    case loadThenNavigateList(LoadThenNavigateList.Action)
     case loadThenPresent(LoadThenPresent.Action)
     case longLivingEffects(LongLivingEffects.Action)
     case map(MapApp.Action)
+    case multipleDestinations(MultipleDestinations.Action)
     case navigateAndLoad(NavigateAndLoad.Action)
     case navigateAndLoadList(NavigateAndLoadList.Action)
     case navigationStack(NavigationDemo.Action)
@@ -109,12 +107,6 @@ struct Root: Reducer {
     Scope(state: \.lifecycle, action: /Action.lifecycle) {
       LifecycleDemo()
     }
-    Scope(state: \.loadThenNavigate, action: /Action.loadThenNavigate) {
-      LoadThenNavigate()
-    }
-    Scope(state: \.loadThenNavigateList, action: /Action.loadThenNavigateList) {
-      LoadThenNavigateList()
-    }
     Scope(state: \.loadThenPresent, action: /Action.loadThenPresent) {
       LoadThenPresent()
     }
@@ -123,6 +115,9 @@ struct Root: Reducer {
     }
     Scope(state: \.map, action: /Action.map) {
       MapApp()
+    }
+    Scope(state: \.multipleDestinations, action: /Action.multipleDestinations) {
+      MultipleDestinations()
     }
     Scope(state: \.navigateAndLoad, action: /Action.navigateAndLoad) {
       NavigateAndLoad()

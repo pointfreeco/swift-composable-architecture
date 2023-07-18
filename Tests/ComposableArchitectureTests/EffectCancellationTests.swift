@@ -407,6 +407,8 @@ final class EffectCancellationTests: BaseTCATestCase {
     }
 
     func testAsyncConcurrentCancels() async {
+      uncheckedUseMainSerialExecutor = false
+      await Task.yield()
       XCTAssertTrue(!Thread.isMainThread)
       let ids = (1...100).map { _ in UUID() }
 

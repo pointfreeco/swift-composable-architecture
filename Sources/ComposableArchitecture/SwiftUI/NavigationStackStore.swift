@@ -25,7 +25,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
   public init(
     _ store: Store<StackState<State>, StackAction<State, Action>>,
     @ViewBuilder root: () -> Root,
-    @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination
+    @ViewBuilder destination: @escaping (_ store: Store<State, Action>) -> Destination
   ) {
     self.root = root()
     self.destination = { component in
@@ -63,7 +63,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
   public init<D: View>(
     _ store: Store<StackState<State>, StackAction<State, Action>>,
     @ViewBuilder root: () -> Root,
-    @ViewBuilder destination: @escaping (State) -> D
+    @ViewBuilder destination: @escaping (_ initialState: State) -> D
   ) where Destination == SwitchStore<State, Action, D> {
     self.root = root()
     self.destination = { component in
@@ -107,9 +107,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
       self.root
         .environment(\.navigationDestinationType, State.self)
         .navigationDestination(for: Component<State>.self) { component in
-          self.destination(component)
-            .environment(\.navigationDestinationType, State.self)
-            .id(component.id)
+          NavigationDestinationView(component: component, destination: self.destination)
         }
     }
   }
@@ -216,6 +214,16 @@ extension NavigationLink where Destination == Never {
   )
   where Label == _NavigationLinkStoreContent<P, Text> {
     self.init(state: state, label: { Text(title) }, fileID: fileID, line: line)
+  }
+}
+
+private struct NavigationDestinationView<State, Destination: View>: View {
+  let component: Component<State>
+  let destination: (Component<State>) -> Destination
+  var body: some View {
+    self.destination(self.component)
+      .environment(\.navigationDestinationType, State.self)
+      .id(self.component.id)
   }
 }
 

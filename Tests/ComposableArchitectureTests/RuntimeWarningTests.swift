@@ -5,6 +5,7 @@
 
   final class RuntimeWarningTests: BaseTCATestCase {
     func testStoreCreationMainThread() {
+      uncheckedUseMainSerialExecutor = false
       XCTExpectFailure {
         $0.compactDescription == """
           A store initialized on a non-main thread. …
@@ -55,6 +56,7 @@
     }
 
     func testStoreScopeMainThread() {
+      uncheckedUseMainSerialExecutor = false
       XCTExpectFailure {
         [
           """
@@ -81,6 +83,7 @@
     }
 
     func testViewStoreSendMainThread() {
+      uncheckedUseMainSerialExecutor = false
       XCTExpectFailure {
         [
           """

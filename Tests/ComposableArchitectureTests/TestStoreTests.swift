@@ -458,6 +458,44 @@ final class TestStoreTests: BaseTCATestCase {
       }
     }
   #endif
+
+  func testSubscribeReceiveCombineScheduler() async {
+    let subject = PassthroughSubject<Void, Never>()
+    let scheduler = DispatchQueue.test
+
+    struct State: Equatable {
+      var count: Int = 0
+    }
+
+    enum Action: Equatable {
+      case increment
+      case start
+    }
+
+    let store = TestStore(initialState: State()) {
+      Reduce<State, Action> { state, action in
+        switch action {
+        case .start:
+          return
+            subject
+            .subscribe(on: scheduler)
+            .receive(on: scheduler)
+            .map { .increment }
+            .eraseToEffect()
+        case .increment:
+          state.count += 1
+          return .none
+        }
+      }
+    }
+
+    let task = await store.send(.start)
+    await scheduler.advance()
+    subject.send()
+    await scheduler.advance()
+    await store.receive(.increment) { $0.count = 1 }
+    await task.cancel()
+  }
 }
 
 private struct Client: DependencyKey {

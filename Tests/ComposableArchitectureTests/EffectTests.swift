@@ -1,6 +1,5 @@
 import Combine
 @_spi(Canary)@_spi(Internals) import ComposableArchitecture
-@_spi(Concurrency) import Dependencies
 import XCTest
 
 @MainActor
@@ -54,42 +53,40 @@ final class EffectTests: BaseTCATestCase {
 
   #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     func testConcatenate() async {
-      await withMainSerialExecutor {
-        if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-          let clock = TestClock()
-          let values = LockIsolated<[Int]>([])
+      if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
+        let clock = TestClock()
+        let values = LockIsolated<[Int]>([])
 
-          let effect = EffectTask<Int>.concatenate(
-            (1...3).map { count in
-              .task {
-                try await clock.sleep(for: .seconds(count))
-                return count
-              }
-            }
-          )
-
-          let task = Task {
-            for await n in effect.actions {
-              values.withValue { $0.append(n) }
+        let effect = EffectTask<Int>.concatenate(
+          (1...3).map { count in
+            .task {
+              try await clock.sleep(for: .seconds(count))
+              return count
             }
           }
+        )
 
-          XCTAssertEqual(values.value, [])
-
-          await clock.advance(by: .seconds(1))
-          XCTAssertEqual(values.value, [1])
-
-          await clock.advance(by: .seconds(2))
-          XCTAssertEqual(values.value, [1, 2])
-
-          await clock.advance(by: .seconds(3))
-          XCTAssertEqual(values.value, [1, 2, 3])
-
-          await clock.run()
-          XCTAssertEqual(values.value, [1, 2, 3])
-
-          await task.value
+        let task = Task {
+          for await n in effect.actions {
+            values.withValue { $0.append(n) }
+          }
         }
+
+        XCTAssertEqual(values.value, [])
+
+        await clock.advance(by: .seconds(1))
+        XCTAssertEqual(values.value, [1])
+
+        await clock.advance(by: .seconds(2))
+        XCTAssertEqual(values.value, [1, 2])
+
+        await clock.advance(by: .seconds(3))
+        XCTAssertEqual(values.value, [1, 2, 3])
+
+        await clock.run()
+        XCTAssertEqual(values.value, [1, 2, 3])
+
+        await task.value
       }
     }
   #endif
@@ -121,39 +118,37 @@ final class EffectTests: BaseTCATestCase {
   #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     func testMerge() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        await withMainSerialExecutor {
-          let clock = TestClock()
+        let clock = TestClock()
 
-          let effect = EffectPublisher<Int, Never>.merge(
-            (1...3).map { count in
-              .task {
-                try await clock.sleep(for: .seconds(count))
-                return count
-              }
-            }
-          )
-
-          let values = LockIsolated<[Int]>([])
-
-          let task = Task {
-            for await n in effect.actions {
-              values.withValue { $0.append(n) }
+        let effect = EffectPublisher<Int, Never>.merge(
+          (1...3).map { count in
+            .task {
+              try await clock.sleep(for: .seconds(count))
+              return count
             }
           }
+        )
 
-          XCTAssertEqual(values.value, [])
+        let values = LockIsolated<[Int]>([])
 
-          await clock.advance(by: .seconds(1))
-          XCTAssertEqual(values.value, [1])
-
-          await clock.advance(by: .seconds(1))
-          XCTAssertEqual(values.value, [1, 2])
-
-          await clock.advance(by: .seconds(1))
-          XCTAssertEqual(values.value, [1, 2, 3])
-
-          await task.value
+        let task = Task {
+          for await n in effect.actions {
+            values.withValue { $0.append(n) }
+          }
         }
+
+        XCTAssertEqual(values.value, [])
+
+        await clock.advance(by: .seconds(1))
+        XCTAssertEqual(values.value, [1])
+
+        await clock.advance(by: .seconds(1))
+        XCTAssertEqual(values.value, [1, 2])
+
+        await clock.advance(by: .seconds(1))
+        XCTAssertEqual(values.value, [1, 2, 3])
+
+        await task.value
       }
     }
   #endif
@@ -336,34 +331,32 @@ final class EffectTests: BaseTCATestCase {
   }
 
   func testDependenciesTransferredToEffects_Run() async {
-    await withMainSerialExecutor {
-      struct Feature: Reducer {
-        enum Action: Equatable {
-          case tap
-          case response(Int)
-        }
-        @Dependency(\.date) var date
-        func reduce(into state: inout Int, action: Action) -> Effect<Action> {
-          switch action {
-          case .tap:
-            return .run { send in
-              await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
-            }
-          case let .response(value):
-            state = value
-            return .none
+    struct Feature: Reducer {
+      enum Action: Equatable {
+        case tap
+        case response(Int)
+      }
+      @Dependency(\.date) var date
+      func reduce(into state: inout Int, action: Action) -> Effect<Action> {
+        switch action {
+        case .tap:
+          return .run { send in
+            await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
           }
+        case let .response(value):
+          state = value
+          return .none
         }
       }
-      let store = TestStore(initialState: 0) {
-        Feature()
-          .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1_234_567_890)))
-      }
+    }
+    let store = TestStore(initialState: 0) {
+      Feature()
+        .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1_234_567_890)))
+    }
 
-      await store.send(.tap).finish(timeout: NSEC_PER_SEC)
-      await store.receive(.response(1_234_567_890)) {
-        $0 = 1_234_567_890
-      }
+    await store.send(.tap).finish(timeout: NSEC_PER_SEC)
+    await store.receive(.response(1_234_567_890)) {
+      $0 = 1_234_567_890
     }
   }
 

@@ -1,5 +1,4 @@
 import ComposableArchitecture
-@_spi(Concurrency) import Dependencies
 import XCTest
 
 @testable import VoiceMemos
@@ -12,7 +11,6 @@ final class VoiceMemosTests: XCTestCase {
   let clock = TestClock()
 
   func testRecordAndPlayback() async throws {
-    try await withMainSerialExecutor {
       let didFinish = AsyncThrowingStream.makeStream(of: Bool.self)
       let store = TestStore(initialState: VoiceMemos.State()) {
         VoiceMemos()
@@ -91,7 +89,6 @@ final class VoiceMemosTests: XCTestCase {
       {
         $0.voiceMemos[id: deadbeefURL]?.mode = .notPlaying
       }
-    }
   }
 
   func testRecordMemoHappyPath() async throws {
@@ -221,7 +218,6 @@ final class VoiceMemosTests: XCTestCase {
   // Demonstration of how to write a non-exhaustive test for recording a memo and it failing to
   // record.
   func testRecordMemoFailure_NonExhaustive() async {
-    await withMainSerialExecutor {
       struct SomeError: Error, Equatable {}
       let didFinish = AsyncThrowingStream.makeStream(of: Bool.self)
 
@@ -249,7 +245,6 @@ final class VoiceMemosTests: XCTestCase {
         $0.alert = AlertState { TextState("Voice memo recording failed.") }
         $0.recordingMemo = nil
       }
-    }
   }
 
   func testPlayMemoHappyPath() async {

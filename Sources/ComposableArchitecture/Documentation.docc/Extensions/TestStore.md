@@ -13,6 +13,7 @@
 - ``dependencies``
 - ``exhaustivity``
 - ``timeout``
+- ``useMainSerialExecutor``
 
 ### Testing a reducer
 
