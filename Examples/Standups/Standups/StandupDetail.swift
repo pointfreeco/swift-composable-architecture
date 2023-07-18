@@ -1,5 +1,5 @@
 import ComposableArchitecture
-@preconcurrency import SwiftUI
+import SwiftUI
 
 struct StandupDetail: Reducer {
   struct State: Equatable {
