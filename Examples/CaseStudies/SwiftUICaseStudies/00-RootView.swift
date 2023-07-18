@@ -210,7 +210,7 @@ struct RootView: View {
               )
             )
           )
-            
+
           NavigationLink(
             "Multiple destinations",
             destination: MultipleDestinationsView(
