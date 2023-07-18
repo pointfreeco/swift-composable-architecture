@@ -262,6 +262,14 @@ extension EffectPublisher {
     self.cancellable(id: ObjectIdentifier(id), cancelInFlight: cancelInFlight)
   }
 
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case timer }' and call 'Effect.cancellable(id: CancelID.timer)'.
+      """
+  )
   public static func cancel(id: Any.Type) -> Self {
     .cancel(id: ObjectIdentifier(id))
   }
