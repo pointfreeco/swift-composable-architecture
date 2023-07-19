@@ -23,7 +23,7 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.11.0"),
     .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "0.14.1"),
     .package(url: "https://github.com/pointfreeco/swift-concurrency-extras", from: "0.1.1"),
-    .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "0.10.3"),
+    .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "0.11.0"),
     .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "0.6.0"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "0.7.0"),
     .package(url: "https://github.com/pointfreeco/swiftui-navigation", from: "0.8.0"),
