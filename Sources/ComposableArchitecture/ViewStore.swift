@@ -652,6 +652,7 @@ extension ViewStore where ViewState: Equatable {
 }
 
 extension ViewStore where ViewState == Void {
+  @available(*, deprecated, message: "Send actions directly to 'store' instead.")
   public convenience init(_ store: Store<Void, ViewAction>) {
     self.init(store, observe: {}, removeDuplicates: ==)
   }

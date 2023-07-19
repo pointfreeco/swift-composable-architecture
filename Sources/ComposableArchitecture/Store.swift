@@ -562,12 +562,12 @@ public final class Store<State, Action> {
     }
   }
 
-  /// Returns a "stateless" store by erasing state to `Void`.
+  @available(*, deprecated, message: "Send actions directly to 'store' instead.")
   public var stateless: Store<Void, Action> {
     self.scope(state: { _ in () }, action: { $0 })
   }
 
-  /// Returns an "actionless" store by erasing action to `Never`.
+  @available(*, deprecated, message: "Define a domain-specific, empty 'Action' enum instead.")
   public var actionless: Store<State, Never> {
     func absurd<A>(_ never: Never) -> A {}
     return self.scope(state: { $0 }, action: absurd)
