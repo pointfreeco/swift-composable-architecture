@@ -68,8 +68,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-custom-dump",
       "state" : {
-        "revision" : "505aa98716275fbd045d8f934fee3337c82ffbd3",
-        "version" : "0.10.3"
+        "revision" : "3a35f7892e7cf6ba28a78cd46a703c0be4e0c6dc",
+        "version" : "0.11.0"
       }
     },
     {
@@ -86,8 +86,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-docc-plugin",
       "state" : {
-        "revision" : "9b1258905c21fc1b97bf03d1b4ca12c4ec4e5fda",
-        "version" : "1.2.0"
+        "revision" : "26ac5758409154cc448d7ab82389c520fa8a8247",
+        "version" : "1.3.0"
       }
     },
     {
@@ -104,8 +104,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-identified-collections",
       "state" : {
-        "revision" : "f52eee28bdc6065aa2f8424067e6f04c74bda6e6",
-        "version" : "0.7.1"
+        "revision" : "d01446a78fb768adc9a78cbb6df07767c8ccfc29",
+        "version" : "0.8.0"
       }
     },
     {
@@ -131,8 +131,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/xctest-dynamic-overlay",
       "state" : {
-        "revision" : "4af50b38daf0037cfbab15514a241224c3f62f98",
-        "version" : "0.8.5"
+        "revision" : "245d527002f29c5a616c5b7131f6a50ac7f41cbf",
+        "version" : "0.8.6"
       }
     }
   ],
