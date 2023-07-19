@@ -970,97 +970,6 @@ extension TestStore where State: Equatable {
     }
   }
 
-  /// Sends an action to the store and asserts when state changes.
-  ///
-  /// This method returns a ``TestStoreTask``, which represents the lifecycle of the effect started
-  /// from sending an action. You can use this value to force the cancellation of the effect, which
-  /// is helpful for effects that are tied to a view's lifecycle and not torn down when an action is
-  /// sent, such as actions sent in SwiftUI's `task` view modifier.
-  ///
-  /// For example, if your feature kicks off a long-living effect when the view appears by using
-  /// SwiftUI's `task` view modifier, then you can write a test for such a feature by explicitly
-  /// canceling the effect's task after you make all assertions:
-  ///
-  /// ```swift
-  /// let store = TestStore(/* ... */)
-  ///
-  /// // emulate the view appearing
-  /// let task = await store.send(.task)
-  ///
-  /// // assertions
-  ///
-  /// // emulate the view disappearing
-  /// await task.cancel()
-  /// ```
-  ///
-  /// - Parameters:
-  ///   - action: An action.
-  ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
-  ///     the store. The mutable state sent to this closure must be modified to match the state of
-  ///     the store after processing the given action. Do not provide a closure if no change is
-  ///     expected.
-  /// - Returns: A ``TestStoreTask`` that represents the lifecycle of the effect executed when
-  ///   sending the action.
-  @available(*, deprecated, message: "Call the async-friendly 'send' instead.")
-  @discardableResult
-  public func send(
-    _ action: Action,
-    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-    file: StaticString = #file,
-    line: UInt = #line
-  ) -> TestStoreTask {
-    if !self.reducer.receivedActions.isEmpty {
-      var actions = ""
-      customDump(self.reducer.receivedActions.map(\.action), to: &actions)
-      XCTFailHelper(
-        """
-        Must handle \(self.reducer.receivedActions.count) received \
-        action\(self.reducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
-
-        Unhandled actions: \(actions)
-        """,
-        file: file,
-        line: line
-      )
-    }
-
-    switch self.exhaustivity {
-    case .on:
-      break
-    case .off(showSkippedAssertions: true):
-      self.skipReceivedActions(strict: false)
-    case .off(showSkippedAssertions: false):
-      self.reducer.receivedActions = []
-    }
-
-    let expectedState = self.state
-    let previousState = self.state
-    let task = self.store.send(
-      .init(origin: .send(action), file: file, line: line),
-      originatingFrom: nil
-    )
-    do {
-      let currentState = self.state
-      self.reducer.state = previousState
-      defer { self.reducer.state = currentState }
-
-      try self.expectedStateShouldMatch(
-        expected: expectedState,
-        actual: currentState,
-        updateStateToExpectedResult: updateStateToExpectedResult,
-        file: file,
-        line: line
-      )
-    } catch {
-      XCTFail("Threw error: \(error)", file: file, line: line)
-    }
-    if "\(self.file)" == "\(file)" {
-      self.line = line
-    }
-
-    return .init(rawValue: task, timeout: self.timeout)
-  }
-
   private func expectedStateShouldMatch(
     expected: State,
     actual: State,
@@ -1348,28 +1257,6 @@ extension TestStore where State: Equatable, Action: Equatable {
 }
 
 extension TestStore where State: Equatable {
-  /// Asserts a matching action was received from an effect and asserts how the state changes.
-  ///
-  /// See ``receive(_:timeout:assert:file:line:)-2ju31`` for more information of how to use this
-  /// method.
-  ///
-  /// - Parameters:
-  ///   - isMatching: A closure that attempts to match an action. If it returns `false`, a test
-  ///     failure is reported.
-  ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
-  ///     the store. The mutable state sent to this closure must be modified to match the state of
-  ///     the store after processing the given action. Do not provide a closure if no change is
-  ///     expected.
-  @available(*, deprecated, message: "Call the async-friendly 'receive' instead.")
-  public func receive(
-    _ isMatching: (_ action: Action) -> Bool,
-    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-    file: StaticString = #file,
-    line: UInt = #line
-  ) {
-    self._receive(isMatching, assert: updateStateToExpectedResult, file: file, line: line)
-  }
-
   private func _receive(
     _ isMatching: (Action) -> Bool,
     assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
@@ -1830,21 +1717,6 @@ extension TestStore {
     _ = { self._skipReceivedActions(strict: strict, file: file, line: line) }()
   }
 
-  /// Clears the queue of received actions from effects.
-  ///
-  /// The synchronous version of ``skipReceivedActions(strict:file:line:)-a4ri``.
-  ///
-  /// - Parameter strict: When `true` and there are no in-flight actions to cancel, a test failure
-  ///   will be reported.
-  @available(*, deprecated, message: "Call the async-friendly 'skipReceivedActions' instead.")
-  public func skipReceivedActions(
-    strict: Bool = true,
-    file: StaticString = #file,
-    line: UInt = #line
-  ) {
-    self._skipReceivedActions(strict: strict, file: file, line: line)
-  }
-
   private func _skipReceivedActions(
     strict: Bool = true,
     file: StaticString = #file,
@@ -1908,21 +1780,6 @@ extension TestStore {
   ) async {
     await Task.megaYield()
     _ = { self._skipInFlightEffects(strict: strict, file: file, line: line) }()
-  }
-
-  /// Cancels any currently in-flight effects.
-  ///
-  /// The synchronous version of ``skipInFlightEffects(strict:file:line:)-5hbsk``.
-  ///
-  /// - Parameter strict: When `true` and there are no in-flight actions to cancel, a test failure
-  ///   will be reported.
-  @available(*, deprecated, message: "Call the async-friendly 'skipInFlightEffects' instead.")
-  public func skipInFlightEffects(
-    strict: Bool = true,
-    file: StaticString = #file,
-    line: UInt = #line
-  ) {
-    self._skipInFlightEffects(strict: strict, file: file, line: line)
   }
 
   private func _skipInFlightEffects(

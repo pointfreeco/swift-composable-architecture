@@ -318,7 +318,6 @@ final class EffectCancellationTests: BaseTCATestCase {
       XCTAssertEqual(_cancellationCancellables.exists(at: id, path: NavigationIDPath()), false)
     }
 
-    @available(*, deprecated)
     func testConcurrentCancels() {
       let queues = [
         DispatchQueue.main,
