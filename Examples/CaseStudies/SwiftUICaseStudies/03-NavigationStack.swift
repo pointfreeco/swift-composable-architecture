@@ -235,7 +235,7 @@ struct ScreenA: Reducer {
       return .none
 
     case .dismissButtonTapped:
-      return .fireAndForget {
+      return .run { _ in
         await self.dismiss()
       }
 
@@ -245,8 +245,8 @@ struct ScreenA: Reducer {
 
     case .factButtonTapped:
       state.isLoading = true
-      return .task { [count = state.count] in
-        await .factResponse(.init { try await self.factClient.fetch(count) })
+      return .run { [count = state.count] send in
+        await send(.factResponse(.init { try await self.factClient.fetch(count) }))
       }
 
     case let .factResponse(.success(fact)):
