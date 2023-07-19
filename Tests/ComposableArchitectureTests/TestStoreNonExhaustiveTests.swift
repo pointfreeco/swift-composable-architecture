@@ -731,7 +731,9 @@
         }
       }
 
-      let store = TestStore(initialState: Feature.State(), reducer: Feature())
+      let store = TestStore(initialState: Feature.State()) {
+        Feature()
+      }
       store.exhaustivity = .off
 
       await store.send(.tap)
@@ -760,7 +762,9 @@
         }
       }
 
-      let store = TestStore(initialState: Feature.State(), reducer: Feature())
+      let store = TestStore(initialState: Feature.State()) {
+        Feature()
+      }
       store.exhaustivity = .off
 
       await store.send(.tap)
@@ -796,7 +800,9 @@
         }
       }
 
-      let store = TestStore(initialState: Feature.State(), reducer: Feature())
+      let store = TestStore(initialState: Feature.State()) {
+        Feature()
+      }
       store.exhaustivity = .off
 
       await store.send(.tap)
