@@ -352,49 +352,6 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
       line: line
     )
   }
-
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute views from store state.
-  ///
-  /// > Warning: This initializer is deprecated. Use
-  /// ``WithViewStore/init(_:observe:removeDuplicates:content:file:line:)`` to make state
-  /// observation explicit.
-  /// >
-  /// > When using ``WithViewStore`` you should take care to observe only the pieces of state that
-  /// your view needs to do its job, especially towards the root of the application. See
-  /// <doc:Performance> for more details.
-  ///
-  /// - Parameters:
-  ///   - store: A store.
-  ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
-  ///     are equal, repeat view computations are removed.
-  ///   - content: A function that can generate content from a view store.
-  @available(
-    *, deprecated,
-    message:
-      """
-      Use 'init(_:observe:removeDuplicates:content:)' to make state observation explicit.
-
-      When using WithViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
-
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
-      """
-  )
-  public init(
-    _ store: Store<ViewState, ViewAction>,
-    removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool,
-    @ViewBuilder content: @escaping (_ viewStore: ViewStore<ViewState, ViewAction>) -> Content,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  ) {
-    self.init(
-      store: store,
-      removeDuplicates: isDuplicate,
-      content: content,
-      file: file,
-      line: line
-    )
-  }
 }
 
 extension WithViewStore where ViewState: Equatable, Content: View {
@@ -572,40 +529,6 @@ extension WithViewStore where ViewState: Equatable, Content: View {
       file: file,
       line: line
     )
-  }
-
-  /// Initializes a structure that transforms a store into an observable view store in order to
-  /// compute views from equatable store state.
-  ///
-  /// > Warning: This initializer is deprecated. Use
-  /// ``WithViewStore/init(_:observe:content:file:line:)`` to make state
-  /// observation explicit.
-  /// >
-  /// > When using ``WithViewStore`` you should take care to observe only the pieces of state that
-  /// your view needs to do its job, especially towards the root of the application. See
-  /// <doc:Performance> for more details.
-  ///
-  /// - Parameters:
-  ///   - store: A store of equatable state.
-  ///   - content: A function that can generate content from a view store.
-  @available(
-    *, deprecated,
-    message:
-      """
-      Use 'init(_:observe:content:)' to make state observation explicit.
-
-      When using WithViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
-
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
-      """
-  )
-  public init(
-    _ store: Store<ViewState, ViewAction>,
-    @ViewBuilder content: @escaping (_ viewStore: ViewStore<ViewState, ViewAction>) -> Content,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  ) {
-    self.init(store, removeDuplicates: ==, content: content, file: file, line: line)
   }
 }
 
