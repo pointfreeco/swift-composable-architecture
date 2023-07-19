@@ -255,8 +255,8 @@ extension Effect {
       return Self(
         operation: .publisher(
           Publishers.Merge(
-            EffectPublisherWrapper(self),
-            EffectPublisherWrapper(other)
+            _EffectPublisherWrapper(self),
+            _EffectPublisherWrapper(other)
           )
           .eraseToAnyPublisher()
         )
@@ -315,8 +315,8 @@ extension Effect {
       return Self(
         operation: .publisher(
           Publishers.Concatenate(
-            prefix: EffectPublisherWrapper(self),
-            suffix: EffectPublisherWrapper(other)
+            prefix: _EffectPublisherWrapper(self),
+            suffix: _EffectPublisherWrapper(other)
           )
           .eraseToAnyPublisher()
         )

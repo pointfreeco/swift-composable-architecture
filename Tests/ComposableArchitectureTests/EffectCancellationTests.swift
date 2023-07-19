@@ -356,7 +356,7 @@ final class EffectCancellationTests: BaseTCATestCase {
 
       let expectation = self.expectation(description: "wait")
       // NB: `for await _ in effect.actions` blows the stack with 1,000 merged publishers
-      EffectPublisherWrapper(effect)
+      _EffectPublisherWrapper(effect)
         .sink(receiveCompletion: { _ in expectation.fulfill() }, receiveValue: { _ in })
         .store(in: &self.cancellables)
       self.wait(for: [expectation], timeout: 999)

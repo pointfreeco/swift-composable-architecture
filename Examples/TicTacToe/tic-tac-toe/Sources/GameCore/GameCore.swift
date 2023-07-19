@@ -52,7 +52,7 @@ public struct Game: Reducer, Sendable {
       return .none
 
     case .quitButtonTapped:
-      return .fireAndForget {
+      return .run { _ in
         await self.dismiss()
       }
     }

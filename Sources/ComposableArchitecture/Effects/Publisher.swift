@@ -22,21 +22,17 @@ extension Effect {
   }
 }
 
-// TODO: Rename `EffectPublisher`
-@usableFromInline
-internal struct EffectPublisherWrapper<Action>: Publisher {
-  @usableFromInline typealias Output = Action
-  @usableFromInline typealias Failure = Never
+public struct _EffectPublisherWrapper<Action>: Publisher {
+  public typealias Output = Action
+  public typealias Failure = Never
 
   let effect: Effect<Action>
 
-  @usableFromInline
-  init(_ effect: Effect<Action>) {
+  public init(_ effect: Effect<Action>) {
     self.effect = effect
   }
 
-  @usableFromInline
-  func receive<S: Combine.Subscriber>(
+  public func receive<S: Combine.Subscriber>(
     subscriber: S
   ) where S.Input == Action, S.Failure == Failure {
     self.publisher.subscribe(subscriber)

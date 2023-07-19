@@ -2018,7 +2018,7 @@ class TestReducer<State, Action>: Reducer {
     case .publisher, .run:
       let effect = LongLivingEffect(action: action)
       return .publisher { [effectDidSubscribe, weak self] in
-        EffectPublisherWrapper(effects)
+        _EffectPublisherWrapper(effects)
           .handleEvents(
             receiveSubscription: { _ in
               self?.inFlightEffects.insert(effect)
