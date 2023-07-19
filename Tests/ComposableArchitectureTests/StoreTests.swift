@@ -744,7 +744,7 @@ final class StoreTests: BaseTCATestCase {
     try await Task.sleep(nanoseconds: 100_000_000)
     XCTAssertEqual(viewStore.child, nil)
 
-    await childTask.cancel()
+    childTask.cancel()
     await mainQueue.advance(by: 1)
     try await Task.sleep(nanoseconds: 100_000_000)
     XCTTODO(

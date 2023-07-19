@@ -265,7 +265,7 @@ final class ViewStoreTests: BaseTCATestCase {
 
     XCTAssertEqual(viewStore.state, 0)
     let task = viewStore.send(.tap)
-    await task.cancel()
+    task.cancel()
     try await Task.sleep(nanoseconds: NSEC_PER_MSEC)
     XCTAssertEqual(viewStore.state, 0)
   }
