@@ -22,7 +22,7 @@ extension Effect {
   }
 }
 
-public struct _EffectPublisherWrapper<Action>: Publisher {
+public struct _EffectPublisher<Action>: Publisher {
   public typealias Output = Action
   public typealias Failure = Never
 

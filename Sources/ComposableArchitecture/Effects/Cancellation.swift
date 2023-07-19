@@ -5,7 +5,7 @@ extension Effect {
   /// Turns an effect into one that is capable of being canceled.
   ///
   /// To turn an effect into a cancellable one you must provide an identifier, which is used in
-  /// ``EffectPublisher/cancel(id:)-6hzsl`` to identify which in-flight effect should be canceled.
+  /// ``Effect/cancel(id:)`` to identify which in-flight effect should be canceled.
   /// Any hashable value can be used for the identifier, such as a string, but you can add a bit of
   /// protection against typos by defining a new type for the identifier:
   ///

@@ -5,10 +5,9 @@
 ### Creating a view store
 
 - ``init(_:observe:send:removeDuplicates:)``
-- ``init(_:observe:removeDuplicates:)``
-- ``init(_:observe:send:)``
-- ``init(_:observe:)``
-- ``init(_:)-4il0f``
+- ``init(_:observe:removeDuplicates:)-4f9j5``
+- ``init(_:observe:send:)-1m32f``
+- ``init(_:observe:)-3ak1y``
 - ``ViewStoreOf``
 
 ### Accessing state
@@ -21,7 +20,6 @@
 - ``send(_:)``
 - ``send(_:while:)``
 - ``yield(while:)``
-- ``ViewStoreTask``
 
 ### SwiftUI integration
 
@@ -30,7 +28,7 @@
 - ``send(_:transaction:)``
 - <doc:Bindings>
 - ``objectWillChange-5oies``
-
-### Deprecations
-
-- <doc:ViewStoreDeprecations>
+- ``init(_:observe:send:removeDuplicates:)``
+- ``init(_:observe:removeDuplicates:)-81c6d``
+- ``init(_:observe:send:)-4hzhi``
+- ``init(_:observe:)-96hm5``

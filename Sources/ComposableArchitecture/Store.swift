@@ -122,7 +122,7 @@ import SwiftUI
 /// #### Thread safety checks
 ///
 /// The store performs some basic thread safety checks in order to help catch mistakes. Stores
-/// constructed via the initializer ``init(initialState:reducer:prepareDependencies:)`` are assumed
+/// constructed via the initializer ``init(initialState:reducer:withDependencies:)`` are assumed
 /// to run only on the main thread, and so a check is executed immediately to make sure that is the
 /// case. Further, all actions sent to the store and all scopes (see ``scope(state:action:)-9iai9``) of
 /// the store are also checked to make sure that work is performed on the main thread.
@@ -560,17 +560,6 @@ public final class Store<State, Action> {
         }
       }
     }
-  }
-
-  /// Returns a "stateless" store by erasing state to `Void`.
-  public var stateless: Store<Void, Action> {
-    self.scope(state: { _ in () }, action: { $0 })
-  }
-
-  /// Returns an "actionless" store by erasing action to `Never`.
-  public var actionless: Store<State, Never> {
-    func absurd<A>(_ never: Never) -> A {}
-    return self.scope(state: { $0 }, action: absurd)
   }
 
   private enum ThreadCheckStatus {

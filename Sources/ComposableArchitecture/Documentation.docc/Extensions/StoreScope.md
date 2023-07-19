@@ -5,5 +5,3 @@
 ### Overloads
 
 - ``scope(state:action:)-hei8``
-- ``stateless``
-- ``actionless``

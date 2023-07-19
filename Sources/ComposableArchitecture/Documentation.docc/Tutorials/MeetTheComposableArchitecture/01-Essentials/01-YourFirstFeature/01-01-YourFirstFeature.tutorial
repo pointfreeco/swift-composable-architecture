@@ -60,7 +60,7 @@
       
       @Step {
         And finally, to finish conforming to ``ComposableArchitecture/Reducer``, you must implement
-        a ``ComposableArchitecture/Reducer/reduce(into:action:)-4zl56`` method
+        a ``ComposableArchitecture/Reducer/reduce(into:action:)-1t2ri`` method
         that evolves the state from its current value to the next value given a user action, and
         returns any effects that the feature wants to execute in the outside world. This almost
         always begins by switching on the incoming action to determine what logic you need to 
@@ -78,7 +78,7 @@
         to the state's count. We must also return a value of ``ComposableArchitecture/Effect`` 
         that represents the effect to be executed in the outside world, but in this case we do not 
         need to execute anything. So we can return a special
-        ``ComposableArchitecture/EffectPublisher/none`` value to represent we have no effects to
+        ``ComposableArchitecture/Effect/none`` value to represent we have no effects to
         execute.
         
         @Code(name: "CounterFeature.swift", file: 01-01-01-code-0006.swift)

@@ -263,11 +263,11 @@ import XCTestDynamicOverlay
 /// complete before the test is finished. To turn off exhaustivity you can set ``exhaustivity``
 /// to ``Exhaustivity/off``. When that is done the ``TestStore``'s behavior changes:
 ///
-///   * The trailing closures of ``send(_:assert:file:line:)-1ax61`` and
-///     ``receive(_:timeout:assert:file:line:)-1rwdd`` no longer need to assert on all state
+///   * The trailing closures of ``send(_:assert:file:line:)`` and
+///     ``receive(_:timeout:assert:file:line:)-5awso`` no longer need to assert on all state
 ///     changes. They can assert on any subset of changes, and only if they make an incorrect
 ///     mutation will a test failure be reported.
-///   * The ``send(_:assert:file:line:)-1ax61`` and ``receive(_:timeout:assert:file:line:)-1rwdd``
+///   * The ``send(_:assert:file:line:)`` and ``receive(_:timeout:assert:file:line:)-5awso``
 ///     methods are allowed to be called even when actions have been received from effects that have
 ///     not been asserted on yet. Any pending actions will be cleared.
 ///   * Tests are allowed to finish with unasserted, received actions and in-flight effects. No test
@@ -475,8 +475,8 @@ public final class TestStore<State, Action> {
 
   /// The current state of the test store.
   ///
-  /// When read from a trailing closure assertion in ``send(_:assert:file:line:)-1ax61`` or
-  /// ``receive(_:timeout:assert:file:line:)-1rwdd``, it will equal the `inout` state passed to the
+  /// When read from a trailing closure assertion in ``send(_:assert:file:line:)`` or
+  /// ``receive(_:timeout:assert:file:line:)-5awso``, it will equal the `inout` state passed to the
   /// closure.
   public var state: State {
     self.reducer.state
@@ -485,7 +485,7 @@ public final class TestStore<State, Action> {
   /// The default timeout used in all methods that take an optional timeout.
   ///
   /// This is the default timeout used in all methods that take an optional timeout, such as
-  /// ``receive(_:timeout:assert:file:line:)-1rwdd`` and ``finish(timeout:file:line:)-53gi5``.
+  /// ``receive(_:timeout:assert:file:line:)-5awso`` and ``finish(timeout:file:line:)-53gi5``.
   public var timeout: UInt64
 
   private let file: StaticString
@@ -1303,7 +1303,7 @@ extension TestStore where State: Equatable {
     /// Asserts an action was received from an effect that matches a predicate, and asserts how the
     /// state changes.
     ///
-    /// This method is similar to ``receive(_:timeout:assert:file:line:)-4he05``, except it allows
+    /// This method is similar to ``receive(_:timeout:assert:file:line:)-5awso``, except it allows
     /// you to assert that an action was received that matches a predicate without asserting on all
     /// the data in the action:
     ///
@@ -1322,7 +1322,7 @@ extension TestStore where State: Equatable {
     /// data was in the effect that you chose not to assert on.
     ///
     /// If you only want to check that a particular action case was received, then you might find
-    /// the ``receive(_:timeout:assert:file:line:)-4he05`` overload of this method more useful.
+    /// the ``receive(_:timeout:assert:file:line:)-5awso`` overload of this method more useful.
     ///
     /// - Parameters:
     ///   - isMatching: A closure that attempts to match an action. If it returns `false`, a test
@@ -1355,7 +1355,7 @@ extension TestStore where State: Equatable {
   /// Asserts an action was received from an effect that matches a predicate, and asserts how the
   /// state changes.
   ///
-  /// This method is similar to ``receive(_:timeout:assert:file:line:)-1rwdd``, except it allows you
+  /// This method is similar to ``receive(_:timeout:assert:file:line:)-5awso``, except it allows you
   /// to assert that an action was received that matches a predicate without asserting on all the
   /// data in the action:
   ///
@@ -1374,7 +1374,7 @@ extension TestStore where State: Equatable {
   /// was in the effect that you chose not to assert on.
   ///
   /// If you only want to check that a particular action case was received, then you might find the
-  /// ``receive(_:timeout:assert:file:line:)-8xkqt`` overload of this method more useful.
+  /// ``receive(_:timeout:assert:file:line:)-6m8t6`` overload of this method more useful.
   ///
   /// - Parameters:
   ///   - isMatching: A closure that attempts to match an action. If it returns `false`, a test
@@ -1409,7 +1409,7 @@ extension TestStore where State: Equatable {
 
   /// Asserts an action was received matching a case path and asserts how the state changes.
   ///
-  /// This method is similar to ``receive(_:timeout:assert:file:line:)-1rwdd``, except it allows you
+  /// This method is similar to ``receive(_:timeout:assert:file:line:)-5awso``, except it allows you
   /// to assert that an action was received that matches a particular case of the action enum
   /// without asserting on all the data in the action.
   ///
@@ -1469,7 +1469,7 @@ extension TestStore where State: Equatable {
   #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     /// Asserts an action was received matching a case path and asserts how the state changes.
     ///
-    /// This method is similar to ``receive(_:timeout:assert:file:line:)-4he05``, except it allows
+    /// This method is similar to ``receive(_:timeout:assert:file:line:)-5awso``, except it allows
     /// you to assert that an action was received that matches a particular case of the action enum
     /// without asserting on all the data in the action.
     ///
@@ -1845,8 +1845,8 @@ extension TestStore {
   }
 }
 
-/// The type returned from ``TestStore/send(_:assert:file:line:)-1ax61`` that represents the
-/// lifecycle of the effect started from sending an action.
+/// The type returned from ``TestStore/send(_:assert:file:line:)`` that represents the lifecycle of
+/// the effect started from sending an action.
 ///
 /// You can use this value in tests to cancel the effect started from sending an action:
 ///
@@ -1873,7 +1873,7 @@ extension TestStore {
 /// See ``TestStore/finish(timeout:file:line:)-53gi5`` for the ability to await all in-flight
 /// effects in the test store.
 ///
-/// See ``ViewStoreTask`` for the analog provided to ``ViewStore``.
+/// See ``StoreTask`` for the analog provided to ``Store``.
 public struct TestStoreTask: Hashable, Sendable {
   fileprivate let rawValue: Task<Void, Never>?
   fileprivate let timeout: UInt64
@@ -2018,7 +2018,7 @@ class TestReducer<State, Action>: Reducer {
     case .publisher, .run:
       let effect = LongLivingEffect(action: action)
       return .publisher { [effectDidSubscribe, weak self] in
-        _EffectPublisherWrapper(effects)
+        _EffectPublisher(effects)
           .handleEvents(
             receiveSubscription: { _ in
               self?.inFlightEffects.insert(effect)
@@ -2095,8 +2095,8 @@ public enum Exhaustivity: Equatable, Sendable {
   /// ``TestStore/skipInFlightEffects(strict:file:line:)-5hbsk``.
   ///
   /// To partially match an action received from an effect, use
-  /// ``TestStore/receive(_:timeout:assert:file:line:)-8xkqt`` or
-  /// ``TestStore/receive(_:timeout:assert:file:line:)-2ju31``.
+  /// ``TestStore/receive(_:timeout:assert:file:line:)-6m8t6`` or
+  /// ``TestStore/receive(_:timeout:assert:file:line:)-7md3m``.
 
   case on
 

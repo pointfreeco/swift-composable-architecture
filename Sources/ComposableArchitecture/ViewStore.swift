@@ -585,12 +585,6 @@ extension ViewStore where ViewState: Equatable {
   }
 }
 
-extension ViewStore where ViewState == Void {
-  public convenience init(_ store: Store<Void, ViewAction>) {
-    self.init(store, observe: {}, removeDuplicates: ==)
-  }
-}
-
 /// A publisher of store state.
 @dynamicMemberLookup
 public struct StorePublisher<State>: Publisher {

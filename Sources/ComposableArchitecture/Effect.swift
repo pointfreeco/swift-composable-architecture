@@ -152,7 +152,7 @@ extension Effect {
 }
 
 /// A type that can send actions back into the system when used from
-/// ``EffectPublisher/run(priority:operation:catch:fileID:line:)``.
+/// ``Effect/run(priority:operation:catch:fileID:line:)``.
 ///
 /// This type implements [`callAsFunction`][callAsFunction] so that you invoke it as a function
 /// rather than calling methods on it:
@@ -174,7 +174,7 @@ extension Effect {
 /// defer { send(.finished, animation: .default) }
 /// ```
 ///
-/// See ``EffectPublisher/run(priority:operation:catch:fileID:line:)`` for more information on how to
+/// See ``Effect/run(priority:operation:catch:fileID:line:)`` for more information on how to
 /// use this value to construct effects that can emit any number of times in an asynchronous
 /// context.
 ///
@@ -255,8 +255,8 @@ extension Effect {
       return Self(
         operation: .publisher(
           Publishers.Merge(
-            _EffectPublisherWrapper(self),
-            _EffectPublisherWrapper(other)
+            _EffectPublisher(self),
+            _EffectPublisher(other)
           )
           .eraseToAnyPublisher()
         )
@@ -315,8 +315,8 @@ extension Effect {
       return Self(
         operation: .publisher(
           Publishers.Concatenate(
-            prefix: _EffectPublisherWrapper(self),
-            suffix: _EffectPublisherWrapper(other)
+            prefix: _EffectPublisher(self),
+            suffix: _EffectPublisher(other)
           )
           .eraseToAnyPublisher()
         )

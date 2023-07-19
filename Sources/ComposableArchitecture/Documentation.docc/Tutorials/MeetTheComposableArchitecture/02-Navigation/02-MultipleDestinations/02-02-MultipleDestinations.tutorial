@@ -153,7 +153,7 @@
       }
       
       @Step {
-        Implement the ``ComposableArchitecture/Reducer/body-swift.property-8lumc`` of the reducer.
+        Implement the ``ComposableArchitecture/Reducer/body-swift.property`` of the reducer.
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0005)
       }
