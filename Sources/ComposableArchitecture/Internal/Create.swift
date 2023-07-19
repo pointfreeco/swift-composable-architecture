@@ -172,7 +172,7 @@ extension Publishers.Create.Subscription: CustomStringConvertible {
 }
 
 extension Effect {
-  public struct Subscriber {
+  struct Subscriber {
     private let _send: (Action) -> Void
     private let _complete: (Subscribers.Completion<Never>) -> Void
 

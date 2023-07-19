@@ -19,13 +19,18 @@
 ### Composition
 
 - ``map(_:)``
+- ``merge(_:)-5ai73``
 - ``merge(_:)-8ckqn``
 - ``merge(with:)``
-
-### Combine integration
-
-- ``publisher(_:)``
+- ``concatenate(_:)-3iza9``
+- ``concatenate(_:)-4gba2``
+- ``concatenate(with:)``
 
 ### SwiftUI integration
 
 - ``animation(_:)``
+- ``transaction(_:)``
+
+### Combine integration
+
+- ``publisher(_:)``

@@ -434,9 +434,7 @@ extension ViewStore {
     _ store: Store<State, Action>,
     observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
     send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action,
-    removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool,
-    file: StaticString = #fileID,
-    line: UInt = #line
+    removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) where ViewAction: BindableAction, ViewAction.State == State {
     self.init(
       store,
