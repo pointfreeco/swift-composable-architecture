@@ -423,7 +423,7 @@ import XCTestDynamicOverlay
 /// [merowing.info]: https://www.merowing.info
 /// [exhaustive-testing-in-tca]: https://www.merowing.info/exhaustive-testing-in-tca/
 /// [Composable-Architecture-at-Scale]: https://vimeo.com/751173570
-public final class TestStore<State, Action, ScopedState, ScopedAction, Environment> {
+public final class TestStore<State, Action> {
 
   /// The current dependencies of the test store.
   ///
@@ -473,41 +473,6 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   }
   private let originalUseMainSerialExecutor = uncheckedUseMainSerialExecutor
 
-  /// The current environment.
-  ///
-  /// The environment can be modified throughout a test store's lifecycle in order to influence how
-  /// it produces effects. This can be handy for testing flows that require a dependency to start in
-  /// a failing state and then later change into a succeeding state:
-  ///
-  /// ```swift
-  /// // Start dependency endpoint in a failing state
-  /// store.environment.client.fetch = { _ in throw FetchError() }
-  /// await store.send(.buttonTapped)
-  /// await store.receive(.response(.failure(FetchError())) {
-  ///   // ...
-  /// }
-  ///
-  /// // Change dependency endpoint into a succeeding state
-  /// await store.environment.client.fetch = { "Hello \($0)!" }
-  /// await store.send(.buttonTapped)
-  /// await store.receive(.response(.success("Hello Blob!"))) {
-  ///   // ...
-  /// }
-  /// ```
-  @available(
-    *, deprecated,
-    message:
-      """
-      'AnyReducer' and 'Environment' have been deprecated in favor of 'Reducer' and 'DependencyValues'.
-
-      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
-      """
-  )
-  public var environment: Environment {
-    _read { yield self._environment.wrappedValue }
-    _modify { yield &self._environment.wrappedValue }
-  }
-
   /// The current state of the test store.
   ///
   /// When read from a trailing closure assertion in ``send(_:assert:file:line:)-1ax61`` or
@@ -523,13 +488,10 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   /// ``receive(_:timeout:assert:file:line:)-1rwdd`` and ``finish(timeout:file:line:)-53gi5``.
   public var timeout: UInt64
 
-  private var _environment: Box<Environment>
   private let file: StaticString
-  private let fromScopedAction: (ScopedAction) -> Action
   private var line: UInt
   let reducer: TestReducer<State, Action>
   private let store: Store<State, TestReducer<State, Action>.TestAction>
-  private let toScopedState: (State) -> ScopedState
 
   /// Creates a test store with an initial state and a reducer powering its runtime.
   ///
@@ -553,93 +515,16 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   where
     R.State == State,
     R.Action == Action,
-    State == ScopedState,
-    State: Equatable,
-    Action == ScopedAction,
-    Environment == Void
+    State: Equatable
   {
     let reducer = Dependencies.withDependencies(prepareDependencies) {
       TestReducer(Reduce(reducer()), initialState: initialState())
     }
-    self._environment = .init(wrappedValue: ())
     self.file = file
-    self.fromScopedAction = { $0 }
     self.line = line
     self.reducer = reducer
-    self.store = Store(initialState: reducer.state, reducer: reducer)
+    self.store = Store(initialState: reducer.state) { reducer }
     self.timeout = 1 * NSEC_PER_SEC
-    self.toScopedState = { $0 }
-    self.useMainSerialExecutor = true
-  }
-
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      Test the reducer domain directly. To test view state and actions, write a unit test.
-      """
-  )
-  public convenience init<R: Reducer>(
-    initialState: @autoclosure () -> State,
-    @ReducerBuilder<State, Action> reducer: () -> R,
-    observe toScopedState: @escaping (State) -> ScopedState,
-    withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in },
-    file: StaticString = #file,
-    line: UInt = #line
-  )
-  where
-    R.State == State,
-    R.Action == Action,
-    ScopedState: Equatable,
-    Action == ScopedAction,
-    Environment == Void
-  {
-    self.init(
-      initialState: initialState(),
-      reducer: reducer,
-      observe: toScopedState,
-      send: { $0 },
-      withDependencies: prepareDependencies,
-      file: file,
-      line: line
-    )
-  }
-
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      Test the reducer domain directly. To test view state and actions, write a unit test.
-      """
-  )
-  public init<R: Reducer>(
-    initialState: @autoclosure () -> State,
-    @ReducerBuilder<State, Action> reducer: () -> R,
-    observe toScopedState: @escaping (State) -> ScopedState,
-    send fromScopedAction: @escaping (ScopedAction) -> Action,
-    withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in },
-    file: StaticString = #file,
-    line: UInt = #line
-  )
-  where
-    R.State == State,
-    R.Action == Action,
-    ScopedState: Equatable,
-    Environment == Void
-  {
-    let reducer = Dependencies.withDependencies(prepareDependencies) {
-      TestReducer(Reduce(reducer()), initialState: initialState())
-    }
-    self._environment = .init(wrappedValue: ())
-    self.file = file
-    self.fromScopedAction = fromScopedAction
-    self.line = line
-    self.reducer = reducer
-    self.store = Store(initialState: reducer.state, reducer: reducer)
-    self.timeout = 1 * NSEC_PER_SEC
-    self.toScopedState = toScopedState
     self.useMainSerialExecutor = true
   }
 
@@ -665,78 +550,17 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   )
   where
     R.State == State,
-    R.Action == Action,
-    State == ScopedState,
-    Action == ScopedAction,
-    Environment == Void
+    R.Action == Action
   {
     let reducer = Dependencies.withDependencies(prepareDependencies) {
       TestReducer(Reduce(reducer()), initialState: initialState())
     }
-    self._environment = .init(wrappedValue: ())
     self.file = file
-    self.fromScopedAction = { $0 }
     self.line = line
     self.reducer = reducer
-    self.store = Store(initialState: reducer.state, reducer: reducer)
+    self.store = Store(initialState: reducer.state) { reducer }
     self.timeout = 1 * NSEC_PER_SEC
-    self.toScopedState = { $0 }
     self.useMainSerialExecutor = true
-  }
-
-  @available(
-    *, deprecated,
-    message:
-      """
-      'AnyReducer' has been deprecated in favor of 'Reducer'.
-
-      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Reducer
-      """
-  )
-  public init(
-    initialState: ScopedState,
-    reducer: AnyReducer<ScopedState, ScopedAction, Environment>,
-    environment: Environment,
-    file: StaticString = #file,
-    line: UInt = #line
-  )
-  where State == ScopedState, Action == ScopedAction {
-    let environment = Box(wrappedValue: environment)
-    let reducer = TestReducer(
-      Reduce(
-        reducer.pullback(state: \.self, action: .self, environment: { $0.wrappedValue }),
-        environment: environment
-      ),
-      initialState: initialState
-    )
-    self._environment = environment
-    self.file = file
-    self.fromScopedAction = { $0 }
-    self.line = line
-    self.reducer = reducer
-    self.store = Store(initialState: initialState, reducer: reducer)
-    self.timeout = 1 * NSEC_PER_SEC
-    self.toScopedState = { $0 }
-  }
-
-  init(
-    _environment: Box<Environment>,
-    file: StaticString,
-    fromScopedAction: @escaping (ScopedAction) -> Action,
-    line: UInt,
-    reducer: TestReducer<State, Action>,
-    store: Store<State, TestReducer<State, Action>.Action>,
-    timeout: UInt64 = 1 * NSEC_PER_SEC,
-    toScopedState: @escaping (State) -> ScopedState
-  ) {
-    self._environment = _environment
-    self.file = file
-    self.fromScopedAction = fromScopedAction
-    self.line = line
-    self.reducer = reducer
-    self.store = store
-    self.timeout = timeout
-    self.toScopedState = toScopedState
   }
 
   // NB: Only needed until Xcode ships a macOS SDK that uses the 5.7 standard library.
@@ -931,10 +755,10 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
 
 /// A convenience type alias for referring to a test store of a given reducer's domain.
 ///
-/// Instead of specifying five generics:
+/// Instead of specifying two generics:
 ///
 /// ```swift
-/// let testStore: TestStore<Feature.State, Feature.Action, Feature.State, Feature.Action, Void>
+/// let testStore: TestStore<Feature.State, Feature.Action>
 /// ```
 ///
 /// You can specify a single generic:
@@ -942,9 +766,9 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
 /// ```swift
 /// let testStore: TestStoreOf<Feature>
 /// ```
-public typealias TestStoreOf<R: Reducer> = TestStore<R.State, R.Action, R.State, R.Action, Void>
+public typealias TestStoreOf<R: Reducer> = TestStore<R.State, R.Action>
 
-extension TestStore where ScopedState: Equatable {
+extension TestStore where State: Equatable {
   /// Sends an action to the store and asserts when state changes.
   ///
   /// To assert on how state changes you can provide a trailing closure, and that closure is handed
@@ -1023,8 +847,8 @@ extension TestStore where ScopedState: Equatable {
   @MainActor
   @discardableResult
   public func send(
-    _ action: ScopedAction,
-    assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
+    _ action: Action,
+    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) async -> TestStoreTask {
@@ -1052,11 +876,11 @@ extension TestStore where ScopedState: Equatable {
       self.reducer.receivedActions = []
     }
 
-    let expectedState = self.toScopedState(self.state)
+    let expectedState = self.state
     let previousState = self.reducer.state
     let previousStackElementID = self.reducer.dependencies.stackElementID.incrementingCopy()
     let task = self.store.send(
-      .init(origin: .send(self.fromScopedAction(action)), file: file, line: line),
+      .init(origin: .send(action), file: file, line: line),
       originatingFrom: nil
     )
     if uncheckedUseMainSerialExecutor {
@@ -1078,7 +902,7 @@ extension TestStore where ScopedState: Equatable {
 
       try self.expectedStateShouldMatch(
         expected: expectedState,
-        actual: self.toScopedState(currentState),
+        actual: currentState,
         updateStateToExpectedResult: updateStateToExpectedResult,
         file: file,
         line: line
@@ -1126,16 +950,16 @@ extension TestStore where ScopedState: Equatable {
   ///   store.
   @MainActor
   public func assert(
-    _ updateStateToExpectedResult: @escaping (_ state: inout ScopedState) throws -> Void,
+    _ updateStateToExpectedResult: @escaping (_ state: inout State) throws -> Void,
     file: StaticString = #file,
     line: UInt = #line
   ) {
-    let expectedState = self.toScopedState(self.state)
+    let expectedState = self.state
     let currentState = self.reducer.state
     do {
       try self.expectedStateShouldMatch(
         expected: expectedState,
-        actual: self.toScopedState(currentState),
+        actual: currentState,
         updateStateToExpectedResult: updateStateToExpectedResult,
         skipUnnecessaryModifyFailure: true,
         file: file,
@@ -1180,8 +1004,8 @@ extension TestStore where ScopedState: Equatable {
   @available(*, deprecated, message: "Call the async-friendly 'send' instead.")
   @discardableResult
   public func send(
-    _ action: ScopedAction,
-    assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
+    _ action: Action,
+    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) -> TestStoreTask {
@@ -1209,10 +1033,10 @@ extension TestStore where ScopedState: Equatable {
       self.reducer.receivedActions = []
     }
 
-    let expectedState = self.toScopedState(self.state)
+    let expectedState = self.state
     let previousState = self.state
     let task = self.store.send(
-      .init(origin: .send(self.fromScopedAction(action)), file: file, line: line),
+      .init(origin: .send(action), file: file, line: line),
       originatingFrom: nil
     )
     do {
@@ -1222,7 +1046,7 @@ extension TestStore where ScopedState: Equatable {
 
       try self.expectedStateShouldMatch(
         expected: expectedState,
-        actual: self.toScopedState(currentState),
+        actual: currentState,
         updateStateToExpectedResult: updateStateToExpectedResult,
         file: file,
         line: line
@@ -1238,9 +1062,9 @@ extension TestStore where ScopedState: Equatable {
   }
 
   private func expectedStateShouldMatch(
-    expected: ScopedState,
-    actual: ScopedState,
-    updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    expected: State,
+    actual: State,
+    updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
     skipUnnecessaryModifyFailure: Bool = false,
     file: StaticString,
     line: UInt
@@ -1256,7 +1080,7 @@ extension TestStore where ScopedState: Equatable {
     }
 
     let updateStateToExpectedResult = updateStateToExpectedResult.map { original in
-      { (state: inout ScopedState) in
+      { (state: inout State) in
         try XCTModifyLocals.$isExhaustive.withValue(self.exhaustivity == .on) {
           try original(&state)
         }
@@ -1332,7 +1156,7 @@ extension TestStore where ScopedState: Equatable {
       }
     }
 
-    func expectationFailure(expected: ScopedState) {
+    func expectationFailure(expected: State) {
       let difference =
         diff(expected, actual, format: .proportional)
         .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
@@ -1379,31 +1203,10 @@ extension TestStore where ScopedState: Equatable {
   }
 }
 
-extension TestStore where ScopedState: Equatable, Action: Equatable {
-  /// Asserts an action was received from an effect and asserts when state changes.
-  ///
-  /// See ``receive(_:timeout:assert:file:line:)-1rwdd`` for more information of how to use this
-  /// method.
-  ///
-  /// - Parameters:
-  ///   - expectedAction: An action expected from an effect.
-  ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
-  ///     the store. The mutable state sent to this closure must be modified to match the state of
-  ///     the store after processing the given action. Do not provide a closure if no change is
-  ///     expected.
-  @available(*, deprecated, message: "Call the async-friendly 'receive' instead.")
-  public func receive(
-    _ expectedAction: Action,
-    assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
-    file: StaticString = #file,
-    line: UInt = #line
-  ) {
-    self._receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
-  }
-
+extension TestStore where State: Equatable, Action: Equatable {
   private func _receive(
     _ expectedAction: Action,
-    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) {
@@ -1472,7 +1275,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
     public func receive(
       _ expectedAction: Action,
       timeout duration: Duration,
-      assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
+      assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
@@ -1520,7 +1323,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   public func receive(
     _ expectedAction: Action,
     timeout nanoseconds: UInt64? = nil,
-    assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
+    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) async {
@@ -1544,7 +1347,7 @@ extension TestStore where ScopedState: Equatable, Action: Equatable {
   }
 }
 
-extension TestStore where ScopedState: Equatable {
+extension TestStore where State: Equatable {
   /// Asserts a matching action was received from an effect and asserts how the state changes.
   ///
   /// See ``receive(_:timeout:assert:file:line:)-2ju31`` for more information of how to use this
@@ -1560,7 +1363,7 @@ extension TestStore where ScopedState: Equatable {
   @available(*, deprecated, message: "Call the async-friendly 'receive' instead.")
   public func receive(
     _ isMatching: (_ action: Action) -> Bool,
-    assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
+    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) {
@@ -1569,7 +1372,7 @@ extension TestStore where ScopedState: Equatable {
 
   private func _receive(
     _ isMatching: (Action) -> Bool,
-    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) {
@@ -1587,30 +1390,9 @@ extension TestStore where ScopedState: Equatable {
     )
   }
 
-  /// Asserts an action was received matching a case path and asserts how the state changes.
-  ///
-  /// See ``receive(_:timeout:assert:file:line:)-8xkqt`` for more information of how to use this
-  /// method.
-  ///
-  /// - Parameters:
-  ///   - actionCase: A case path identifying the case of an action enum to receive.
-  ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
-  ///     the store. The mutable state sent to this closure must be modified to match the state of
-  ///     the store after processing the given action. Do not provide a closure if no change is
-  ///     expected.
-  @available(*, deprecated, message: "Call the async-friendly 'receive' instead.")
-  public func receive<Value>(
-    _ actionCase: CasePath<Action, Value>,
-    assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
-    file: StaticString = #file,
-    line: UInt = #line
-  ) {
-    self._receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
-  }
-
   private func _receive<Value>(
     _ actionCase: CasePath<Action, Value>,
-    assert updateStateToExpectedResult: ((inout ScopedState) throws -> Void)? = nil,
+    assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) {
@@ -1669,7 +1451,7 @@ extension TestStore where ScopedState: Equatable {
     public func receive(
       _ isMatching: (_ action: Action) -> Bool,
       timeout duration: Duration,
-      assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
+      assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
@@ -1720,7 +1502,7 @@ extension TestStore where ScopedState: Equatable {
   public func receive(
     _ isMatching: (_ action: Action) -> Bool,
     timeout nanoseconds: UInt64? = nil,
-    assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
+    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) async {
@@ -1774,7 +1556,7 @@ extension TestStore where ScopedState: Equatable {
   public func receive<Value>(
     _ actionCase: CasePath<Action, Value>,
     timeout nanoseconds: UInt64? = nil,
-    assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
+    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) async {
@@ -1835,7 +1617,7 @@ extension TestStore where ScopedState: Equatable {
     public func receive<Value>(
       _ actionCase: CasePath<Action, Value>,
       timeout duration: Duration,
-      assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
+      assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
       file: StaticString = #file,
       line: UInt = #line
     ) async {
@@ -1863,12 +1645,12 @@ extension TestStore where ScopedState: Equatable {
     matching predicate: (Action) -> Bool,
     failureMessage: @autoclosure () -> String,
     unexpectedActionDescription: (Action) -> String,
-    _ updateStateToExpectedResult: ((inout ScopedState) throws -> Void)?,
+    _ updateStateToExpectedResult: ((inout State) throws -> Void)?,
     file: StaticString,
     line: UInt
   ) {
     let updateStateToExpectedResult = updateStateToExpectedResult.map { original in
-      { (state: inout ScopedState) in
+      { (state: inout State) in
         try XCTModifyLocals.$isExhaustive.withValue(self.exhaustivity == .on) {
           try original(&state)
         }
@@ -1933,11 +1715,11 @@ extension TestStore where ScopedState: Equatable {
         line: line
       )
     } else {
-      let expectedState = self.toScopedState(self.state)
+      let expectedState = self.state
       do {
         try self.expectedStateShouldMatch(
           expected: expectedState,
-          actual: self.toScopedState(state),
+          actual: state,
           updateStateToExpectedResult: updateStateToExpectedResult,
           file: file,
           line: line
@@ -2017,62 +1799,6 @@ extension TestStore where ScopedState: Equatable {
 }
 
 extension TestStore {
-  /// Scopes a store to assert against scoped state and actions.
-  ///
-  /// Useful for testing view store-specific state and actions.
-  ///
-  /// - Parameters:
-  ///   - toScopedState: A function that transforms the reducer's state into scoped state. This
-  ///     state will be asserted against as it is mutated by the reducer. Useful for testing view
-  ///     store state transformations.
-  ///   - fromScopedAction: A function that wraps a more scoped action in the reducer's action.
-  ///     Scoped actions can be "sent" to the store, while any reducer action may be received.
-  ///     Useful for testing view store action transformations.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      Use 'TestStore.init(initialState:reducer:observe:send:)' to scope a test store's state and actions.
-      """
-  )
-  public func scope<S, A>(
-    state toScopedState: @escaping (ScopedState) -> S,
-    action fromScopedAction: @escaping (A) -> ScopedAction
-  ) -> TestStore<State, Action, S, A, Environment> {
-    .init(
-      _environment: self._environment,
-      file: self.file,
-      fromScopedAction: { self.fromScopedAction(fromScopedAction($0)) },
-      line: self.line,
-      reducer: self.reducer,
-      store: self.store,
-      timeout: self.timeout,
-      toScopedState: { toScopedState(self.toScopedState($0)) }
-    )
-  }
-
-  /// Scopes a store to assert against scoped state.
-  ///
-  /// Useful for testing view store-specific state.
-  ///
-  /// - Parameter toScopedState: A function that transforms the reducer's state into scoped state.
-  ///   This state will be asserted against as it is mutated by the reducer. Useful for testing view
-  ///   store state transformations.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      Use 'TestStore.init(initialState:reducer:observe:)' to scope a test store's state.
-      """
-  )
-  public func scope<S>(
-    state toScopedState: @escaping (ScopedState) -> S
-  ) -> TestStore<State, Action, S, ScopedAction, Environment> {
-    self.scope(state: toScopedState, action: { $0 })
-  }
-
   /// Clears the queue of received actions from effects.
   ///
   /// Can be handy if you are writing an exhaustive test for a particular part of your feature, but
@@ -2571,7 +2297,7 @@ extension TestStore {
   )
   public func receive(
     _ expectedAction: Action,
-    assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
+    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) async {
@@ -2583,8 +2309,8 @@ extension TestStore {
     *, unavailable, message: "'State' must conform to 'Equatable' to assert against sent actions."
   )
   public func send(
-    _ action: ScopedAction,
-    assert updateStateToExpectedResult: ((_ state: inout ScopedState) throws -> Void)? = nil,
+    _ action: Action,
+    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) async -> TestStoreTask {
