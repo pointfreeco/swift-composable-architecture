@@ -202,7 +202,7 @@
       var line: UInt = 0
       XCTExpectFailure {
         line = #line
-        ViewStore(store, observe: { $0 }).binding(\.$value).wrappedValue = 42
+        ViewStore(store, observe: { $0 }).$value.wrappedValue = 42
       } issueMatcher: {
         $0.compactDescription == """
           A binding action sent from a view store at "\(#fileID):\(line + 1)" was not handled. …
