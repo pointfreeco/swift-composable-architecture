@@ -443,7 +443,7 @@
           switch action {
           case .tap:
             state += 1
-            return .task { [state] in .response(state + 42) }
+            return .run { [state] send in await send(.response(state + 42)) }
           case let .response(number):
             state = number
             return .none
@@ -709,7 +709,7 @@
       }
     }
 
-    func testReceiveNonExhuastiveWithTimeout() async {
+    func testReceiveNonExhaustiveWithTimeout() async {
       struct Feature: Reducer {
         struct State: Equatable {}
         enum Action: Equatable { case tap, response1, response2 }
@@ -729,14 +729,14 @@
         }
       }
 
-      let store = TestStore(initialState: Feature.State(), reducer: Feature())
+      let store = TestStore(initialState: Feature.State()) { Feature() }
       store.exhaustivity = .off
 
       await store.send(.tap)
       await store.receive(.response2, timeout: 1_000_000_000)
     }
 
-    func testReceiveNonExhuastiveWithTimeoutMultipleNonMatching() async {
+    func testReceiveNonExhaustiveWithTimeoutMultipleNonMatching() async {
       struct Feature: Reducer {
         struct State: Equatable {}
         enum Action: Equatable { case tap, response1, response2 }
@@ -758,7 +758,7 @@
         }
       }
 
-      let store = TestStore(initialState: Feature.State(), reducer: Feature())
+      let store = TestStore(initialState: Feature.State()) { Feature() }
       store.exhaustivity = .off
 
       await store.send(.tap)
@@ -774,7 +774,7 @@
       await store.receive(.response2, timeout: 1_000_000_000)
     }
 
-    func testReceiveNonExhuastiveWithTimeoutMultipleMatching() async {
+    func testReceiveNonExhaustiveWithTimeoutMultipleMatching() async {
       struct Feature: Reducer {
         struct State: Equatable {}
         enum Action: Equatable { case tap, response1, response2 }
@@ -794,7 +794,7 @@
         }
       }
 
-      let store = TestStore(initialState: Feature.State(), reducer: Feature())
+      let store = TestStore(initialState: Feature.State()) { Feature() }
       store.exhaustivity = .off
 
       await store.send(.tap)

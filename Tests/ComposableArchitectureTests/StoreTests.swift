@@ -309,7 +309,7 @@ final class StoreTests: BaseTCATestCase {
           state? += 1
           return .none
         } else {
-          return .task { true }
+          return .run { send in await send(true) }
         }
       }
     }
@@ -469,16 +469,16 @@ final class StoreTests: BaseTCATestCase {
       Reduce<Int, Action> { state, action in
         switch action {
         case .task:
-          return .task { .response }
+          return .run { send in await send(.response) }
         case .response:
           return .merge(
             .run { _ in try await Task.never() },
-            .run { await $0(.response1) }
+            .run { send in await send(.response1) }
           )
         case .response1:
           return .merge(
             .run { _ in try await Task.never() },
-            .run { await $0(.response2) }
+            .run { send in await send(.response2) }
           )
         case .response2:
           return .run { _ in try await Task.never() }
@@ -500,7 +500,7 @@ final class StoreTests: BaseTCATestCase {
       Reduce<Int, Action> { state, action in
         switch action {
         case .task:
-          return .fireAndForget { try await Task.never() }
+          return .run { _ in try await Task.never() }
         }
       }
     }
@@ -513,7 +513,7 @@ final class StoreTests: BaseTCATestCase {
 
     let store = Store(initialState: ()) {
       Reduce<Void, Void> { _, _ in
-        .fireAndForget {
+        .run { _ in
           try await neverEndingTask.value
         }
       }
@@ -596,21 +596,21 @@ final class StoreTests: BaseTCATestCase {
           return withDependencies {
             $0.count.value += 1
           } operation: {
-            .task { .response1(self.count.value) }
+            .run { send in await send(.response1(self.count.value)) }
           }
         case let .response1(count):
           state.count = count
           return withDependencies {
             $0.count.value += 1
           } operation: {
-            .task { .response2(self.count.value) }
+            .run { send in await send(.response2(self.count.value)) }
           }
         case let .response2(count):
           state.count = count
           return withDependencies {
             $0.count.value += 1
           } operation: {
-            .task { .response3(self.count.value) }
+            .run { send in await send(.response3(self.count.value)) }
           }
         case let .response3(count):
           state.count = count
@@ -654,21 +654,21 @@ final class StoreTests: BaseTCATestCase {
           return withDependencies {
             $0.count.value += 1
           } operation: {
-            Effect.task { .response1(self.count.value) }
+            .run { send in await send(.response1(self.count.value)) }
           }
         case let .response1(count):
           state.count = count
           return withDependencies {
             $0.count.value += 1
           } operation: {
-            Effect.task { .response2(self.count.value) }
+            .run { send in await send(.response2(self.count.value)) }
           }
         case let .response2(count):
           state.count = count
           return withDependencies {
             $0.count.value += 1
           } operation: {
-            Effect.task { .response3(self.count.value) }
+            .run { send in await send(.response3(self.count.value)) }
           }
         case let .response3(count):
           state.count = count
@@ -702,7 +702,7 @@ final class StoreTests: BaseTCATestCase {
         case didFinish
       }
 
-      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+      func reduce(into state: inout State, action: Action) -> Effect<Action> {
         switch action {
         case .task:
           return .run { send in await send(.didFinish) }
@@ -726,9 +726,9 @@ final class StoreTests: BaseTCATestCase {
           switch action {
           case .child(.didFinish):
             state.child = nil
-            return .task {
+            return .run { send in
               try await self.mainQueue.sleep(for: .seconds(1))
-              return .delay
+              await send(.delay)
             }
           case .child:
             return .none
@@ -755,7 +755,7 @@ final class StoreTests: BaseTCATestCase {
     try await Task.sleep(nanoseconds: 100_000_000)
     XCTAssertEqual(viewStore.child, nil)
 
-    await childTask.cancel()
+    childTask.cancel()
     await mainQueue.advance(by: 1)
     try await Task.sleep(nanoseconds: 100_000_000)
     XCTTODO(

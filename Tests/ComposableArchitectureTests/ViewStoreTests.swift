@@ -172,7 +172,7 @@ final class ViewStoreTests: BaseTCATestCase {
         return .none
       case .tapped:
         state = true
-        return .task { .response }
+        return .run { send in await send(.response) }
       }
     }
 
@@ -198,7 +198,7 @@ final class ViewStoreTests: BaseTCATestCase {
           return .none
         case .tapped:
           state = true
-          return .task { .response }
+          return .run { send in await send(.response) }
         }
       }
 
@@ -224,8 +224,8 @@ final class ViewStoreTests: BaseTCATestCase {
       Reduce<Int, Action> { state, action in
         switch action {
         case .tap:
-          return .task {
-            return .response(42)
+          return .run { send in
+            await send(.response(42))
           }
         case let .response(value):
           state = value
@@ -250,9 +250,9 @@ final class ViewStoreTests: BaseTCATestCase {
       Reduce<Int, Action> { state, action in
         switch action {
         case .tap:
-          return .task {
+          return .run { send in
             try await Task.sleep(nanoseconds: NSEC_PER_SEC)
-            return .response(42)
+            await send(.response(42))
           }
         case let .response(value):
           state = value
@@ -265,7 +265,7 @@ final class ViewStoreTests: BaseTCATestCase {
 
     XCTAssertEqual(viewStore.state, 0)
     let task = viewStore.send(.tap)
-    await task.cancel()
+    task.cancel()
     try await Task.sleep(nanoseconds: NSEC_PER_MSEC)
     XCTAssertEqual(viewStore.state, 0)
   }

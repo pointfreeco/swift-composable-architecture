@@ -279,41 +279,6 @@ final class EffectCancellationTests: BaseTCATestCase {
     }
     XCTAssertEqual(output, [1, 2])
   }
-
-  @available(*, deprecated)
-  func testMultipleCancellations() async {
-    let mainQueue = DispatchQueue.test
-    let output = LockIsolated<[AnyHashable]>([])
-
-    struct A: Hashable {}
-    struct B: Hashable {}
-    struct C: Hashable {}
-
-    let ids: [AnyHashable] = [A(), B(), C()]
-    let effects = Effect.merge(
-      ids.map { id in
-        .publisher {
-          Just(id)
-            .delay(for: 1, scheduler: mainQueue)
-        }
-        .cancellable(id: id)
-      }
-    )
-
-    let task = Task {
-      for await n in effects.actions {
-        output.withValue { $0.append(n) }
-      }
-    }
-    await Task.megaYield()  // TODO: Does a yield have to be necessary here for cancellation?
-
-    for await _ in Effect<AnyHashable>.cancel(ids: [A(), C()]).actions {}
-
-    await mainQueue.advance(by: 1)
-
-    await task.value
-    XCTAssertEqual(output.value, [B()])
-  }
 }
 
 #if DEBUG
