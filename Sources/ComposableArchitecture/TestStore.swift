@@ -2160,25 +2160,25 @@ class TestReducer<State, Action>: Reducer {
 
     case .publisher, .run:
       let effect = LongLivingEffect(action: action)
-      return
+      return .publisher { [effectDidSubscribe, weak self] in
         EffectPublisherWrapper(effects)
-        .handleEvents(
-          receiveSubscription: { [effectDidSubscribe, weak self] _ in
-            self?.inFlightEffects.insert(effect)
-            Task {
-              await Task.megaYield()
-              effectDidSubscribe.continuation.yield()
+          .handleEvents(
+            receiveSubscription: { _ in
+              self?.inFlightEffects.insert(effect)
+              Task {
+                await Task.megaYield()
+                effectDidSubscribe.continuation.yield()
+              }
+            },
+            receiveCompletion: { [weak self] _ in
+              self?.inFlightEffects.remove(effect)
+            },
+            receiveCancel: { [weak self] in
+              self?.inFlightEffects.remove(effect)
             }
-          },
-          receiveCompletion: { [weak self] _ in
-            self?.inFlightEffects.remove(effect)
-          },
-          receiveCancel: { [weak self] in
-            self?.inFlightEffects.remove(effect)
-          }
-        )
-        .map { .init(origin: .receive($0), file: action.file, line: action.line) }
-        .eraseToEffectPublisher()
+          )
+          .map { .init(origin: .receive($0), file: action.file, line: action.line) }
+      }
     }
   }
 

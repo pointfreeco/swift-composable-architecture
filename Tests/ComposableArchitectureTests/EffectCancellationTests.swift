@@ -267,7 +267,7 @@ final class EffectCancellationTests: BaseTCATestCase {
   }
 
   func testNestedMergeCancellation() async {
-    let effect = EffectPublisher<Int, Never>.merge(
+    let effect = Effect<Int>.merge(
       .publisher { (1...2).publisher }
         .cancellable(id: 1)
     )
@@ -331,11 +331,11 @@ final class EffectCancellationTests: BaseTCATestCase {
       ]
       let ids = (1...10).map { _ in UUID() }
 
-      let effect = EffectPublisher.merge(
-        (1...1_000).map { idx -> EffectPublisher<Int, Never> in
+      let effect = Effect.merge(
+        (1...1_000).map { idx -> Effect<Int> in
           let id = ids[idx % 10]
 
-          return EffectPublisher.merge(
+          return .merge(
             .publisher {
               Just(idx)
                 .delay(
@@ -357,7 +357,7 @@ final class EffectCancellationTests: BaseTCATestCase {
 
       let expectation = self.expectation(description: "wait")
       // NB: `for await _ in effect.actions` blows the stack with 1,000 merged publishers
-      effect
+      EffectPublisherWrapper(effect)
         .sink(receiveCompletion: { _ in expectation.fulfill() }, receiveValue: { _ in })
         .store(in: &self.cancellables)
       self.wait(for: [expectation], timeout: 999)
@@ -402,29 +402,6 @@ final class EffectCancellationTests: BaseTCATestCase {
           "cancellationCancellables should not contain id \(id)"
         )
       }
-    }
-
-    @available(*, deprecated)
-    func testNestedCancels() {
-      let id = UUID()
-
-      var effect = Effect.publisher {
-        Empty<Void, Never>(completeImmediately: false)
-      }
-      .cancellable(id: id)
-
-      for _ in 1...1_000 {
-        effect = effect.cancellable(id: id)
-      }
-
-      // NB: `for await _ in effect.actions` blows the stack with 1,000 chained publishers
-      effect
-        .sink(receiveValue: { _ in })
-        .store(in: &cancellables)
-
-      cancellables.removeAll()
-
-      XCTAssertEqual(_cancellationCancellables.exists(at: id, path: NavigationIDPath()), false)
     }
 
     func testCancelIDHash() {

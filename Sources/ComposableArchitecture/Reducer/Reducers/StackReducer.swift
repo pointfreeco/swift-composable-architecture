@@ -443,14 +443,12 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
           let navigationDestinationID = self.navigationIDPath(for: elementID)
           state[keyPath: self.toStackState]._mounted.insert(elementID)
           return .concatenate(
-            Empty(completeImmediately: false)
-              .eraseToEffectPublisher()
+            .publisher { Empty(completeImmediately: false) }
               ._cancellable(
                 id: NavigationDismissID(elementID: elementID),
                 navigationIDPath: navigationDestinationID
               ),
-            Just(self.toStackAction.embed(.popFrom(id: elementID)))
-              .eraseToEffectPublisher()
+            .publisher { Just(self.toStackAction.embed(.popFrom(id: elementID))) }
           )
           ._cancellable(navigationIDPath: navigationDestinationID)
           ._cancellable(id: OnFirstAppearID(), navigationIDPath: .init())

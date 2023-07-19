@@ -412,11 +412,9 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
       let presentationDestinationID = self.navigationIDPath(for: presentationState)
       state[keyPath: self.toPresentationState].isPresented = true
       presentEffects = .concatenate(
-        Empty(completeImmediately: false)
-          .eraseToEffectPublisher()
-          ._cancellable(id: PresentationDismissID(), navigationIDPath: presentationDestinationID),
-        Just(self.toPresentationAction.embed(.dismiss))
-          .eraseToEffectPublisher()
+        .publisher { Empty(completeImmediately: false) }
+        ._cancellable(id: PresentationDismissID(), navigationIDPath: presentationDestinationID),
+        .publisher { Just(self.toPresentationAction.embed(.dismiss)) }
       )
       ._cancellable(navigationIDPath: presentationDestinationID)
       ._cancellable(id: OnFirstAppearID(), navigationIDPath: .init())
@@ -473,7 +471,8 @@ extension Task where Success == Never, Failure == Never {
     }
   }
 }
-extension EffectPublisher {
+
+extension Effect {
   internal func _cancellable<ID: Hashable>(
     id: ID = _PresentedID(),
     navigationIDPath: NavigationIDPath,

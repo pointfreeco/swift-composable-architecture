@@ -76,7 +76,7 @@ final class EffectTests: BaseTCATestCase {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
         let clock = TestClock()
 
-        let effect = EffectPublisher<Int, Never>.merge(
+        let effect = Effect<Int>.merge(
           (1...3).map { count in
             .run { send in
               try await clock.sleep(for: .seconds(count))

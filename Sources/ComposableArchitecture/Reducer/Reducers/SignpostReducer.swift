@@ -76,7 +76,7 @@ public struct _SignpostReducer<Base: Reducer>: Reducer {
   }
 }
 
-extension EffectPublisher where Failure == Never {
+extension Effect {
   @usableFromInline
   func effectSignpost(
     _ prefix: String,
