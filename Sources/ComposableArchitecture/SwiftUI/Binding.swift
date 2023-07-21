@@ -225,15 +225,14 @@ extension BindingAction {
   }
 }
 
-extension BindingAction: CustomDumpReflectable {
-  public var customDumpMirror: Mirror {
-    Mirror(
-      self,
-      children: [
-        "set": (self.keyPath, self.value.base)
-      ],
-      displayStyle: .enum
-    )
+extension BindingAction: CustomDumpStringConvertible {
+  public var customDumpDescription: String {
+    var description = ".set("
+    customDump(self.keyPath, to: &description, maxDepth: 0)
+    description.append(", ")
+    customDump(self.value.base, to: &description, maxDepth: 0)
+    description.append(")")
+    return description
   }
 }
 

@@ -51,15 +51,50 @@
       var dump = ""
       customDump(action, to: &dump)
 
-      XCTAssertEqual(
-        dump,
-        #"""
-        BindingAction.set(
-          WritableKeyPath<DebugTests.State, BindingState<Int>>,
-          50
+      #if swift(>=5.9)
+        XCTAssertEqual(
+          dump,
+          #"""
+          .set(\State.$width, 50)
+          """#
         )
-        """#
-      )
+      #else
+        XCTAssertEqual(
+          dump,
+          #"""
+          .set(WritableKeyPath<DebugTests.State, BindingState<Int>>, 50)
+          """#
+        )
+      #endif
+    }
+
+    func testBindingAction_Nested() {
+      struct Settings: Equatable {
+        var isEnabled = false
+        var description = ""
+      }
+      struct State {
+        @BindingState var settings = Settings()
+      }
+      let action = BindingAction.set(\State.$settings, Settings(isEnabled: true))
+      var dump = ""
+      customDump(action, to: &dump)
+
+      #if swift(>=5.9)
+        XCTAssertEqual(
+          dump,
+          #"""
+          .set(\State.$settings, DebugTests.Settings(…))
+          """#
+        )
+      #else
+        XCTAssertEqual(
+          dump,
+          #"""
+          .set(WritableKeyPath<DebugTests.State, BindingState<DebugTests.Settings>>, Settings(…))
+          """#
+        )
+      #endif
     }
 
     @MainActor
