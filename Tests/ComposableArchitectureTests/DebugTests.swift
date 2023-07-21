@@ -91,7 +91,7 @@
         XCTAssertEqual(
           dump,
           #"""
-          .set(WritableKeyPath<DebugTests.State, BindingState<DebugTests.Settings>>, Settings(…))
+          .set(WritableKeyPath<DebugTests.State, BindingState<DebugTests.Settings>>, DebugTests.Settings(…))
           """#
         )
       #endif
