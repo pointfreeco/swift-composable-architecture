@@ -121,7 +121,7 @@ extension Store {
 extension TestStore {
   @available(
     *, deprecated,
-    message: "Test the reducer domain directly. To test view state and actions, write a unit test."
+    message: "Pass a closure as the reducer."
   )
   public convenience init<R: ReducerProtocol>(
     initialState: @autoclosure () -> State,
