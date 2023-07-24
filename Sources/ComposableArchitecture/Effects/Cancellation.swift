@@ -133,9 +133,9 @@ extension EffectPublisher {
 /// // ...
 ///
 /// return .run { send in
-///   await withTaskCancellation(id: CancelID.response, cancelInFlight: true) {
+///   try await withTaskCancellation(id: CancelID.response, cancelInFlight: true) {
 ///     try await self.clock.sleep(for: .seconds(0.3))
-///     await .send(
+///     await send(
 ///       .debouncedResponse(TaskResult { try await environment.request() })
 ///     )
 ///   }
