@@ -190,8 +190,9 @@ public final class Store<State, Action> {
   /// store is available, prefer ``ViewStore/send(_:)``.
   ///
   /// - Parameter action: An action.
-  public func send(_ action: Action) {
-    _ = self.send(action, originatingFrom: nil)
+  @discardableResult
+  public func send(_ action: Action) -> StoreTask {
+    .init(rawValue: self.send(action, originatingFrom: nil))
   }
 
   /// Sends an action to the store with a given animation.
