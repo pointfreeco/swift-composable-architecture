@@ -51,9 +51,7 @@ extension View {
                 }
               case let .animatedSend(action, animation):
                 if let action = action {
-                  withAnimation(animation) {
-                    store.send(.presented(fromDestinationAction(action)))
-                  }
+                  store.send(.presented(fromDestinationAction(action)), animation: animation)
                 }
               }
             } label: {
