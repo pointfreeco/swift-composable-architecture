@@ -1,48 +1,53 @@
-struct ContentView: View {
-  let store: StoreOf<ContactsFeature>
+struct ContactsFeature: Reducer {
+  struct State: Equatable {
+    var contacts: IdentifiedArrayOf<Contact> = []
+    @PresentationState var destination: Destination.State?
+  }
+  enum Action: Equatable {
+    case addButtonTapped
+    case deleteButtonTapped(id: Contact.ID)
+    case destination(PresentationAction<Destination.Action>)
+    enum Alert: Equatable {
+      case confirmDeletion(id: Contact.ID)
+    }
+  }
+  var body: some ReducerOf<Self> {
+    Reduce { state, action in
+      switch action {
+      case .addButtonTapped:
+        state.destination = .addContact(
+          AddContactFeature.State(
+            contact: Contact(id: UUID(), name: "")
+          )
+        )
+        return .none
 
-  var body: some View {
-    NavigationStack {
-      WithViewStore(self.store, observe: \.contacts) { viewStore in
-        List {
-          ForEach(viewStore.state) { contact in
-            HStack {
-              Text(contact.name)
-              Spacer()
-              Button {
-                viewStore.send(.deleteButtonTapped(id: contact.id))
-              } label: {
-                Image(systemName: "trash")
-                  .foregroundColor(.red)
-              }
+      case let .destination(.presented(.addContact(.delegate(.saveContact(contact))))):
+        state.contacts.append(contact)
+        return .none
+
+      case let .destination(.presented(.alert(.confirmDeletion(id: id)))):
+        state.contacts.remove(id: id)
+        return .none
+
+      case .destination:
+        return .none
+
+      case let .deleteButtonTapped(id: id):
+        state.destination = .alert(
+          AlertState {
+            TextState("Are you sure?")
+          } actions: {
+            ButtonState(role: .destructive, action: .confirmDeletion(id: id)) {
+              TextState("Delete")
             }
           }
-        }
-        .navigationTitle("Contacts")
-        .toolbar {
-          ToolbarItem {
-            Button {
-              viewStore.send(.addButtonTapped)
-            } label: {
-              Image(systemName: "plus")
-            }
-          }
-        }
+        )
+        return .none
       }
     }
-    .sheet(
-      store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-      state: ,
-      action:
-    ) { addContactStore in
-      NavigationStack {
-        AddContactView(store: addContactStore)
-      }
+    .ifLet(\.$destination, action: /Action.destination) {
+      Destination()
     }
-    .alert(
-      store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-      state: ,
-      action:
-    )
   }
 }
