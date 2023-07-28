@@ -41,8 +41,8 @@ struct ContentView: View {
     }
     .alert(
       store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-      state: ,
-      action:
+      state: /ContactsFeature.Destination.State.alert,
+      action: ContactsFeature.Destination.Action.alert
     )
   }
 }
