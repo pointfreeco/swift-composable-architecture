@@ -14,4 +14,5 @@ While the Composable Architecture was designed with SwiftUI in mind, it comes wi
 
 ### Subscribing to state changes
 
+- ``Store/publisher``
 - ``ViewStore/publisher``

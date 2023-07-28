@@ -662,6 +662,19 @@ public final class Store<State, Action> {
     #endif
     self.threadCheck(status: .`init`)
   }
+
+  /// A publisher that emits when state changes.
+  ///
+  /// This publisher supports dynamic member lookup so that you can pluck out a specific field in
+  /// the state:
+  ///
+  /// ```swift
+  /// store.publisher.alert
+  ///   .sink { ... }
+  /// ```
+  public var publisher: StorePublisher<State> {
+    StorePublisher(store: self, upstream: self.state)
+  }
 }
 
 /// A convenience type alias for referring to a store of a given reducer's domain.
@@ -782,6 +795,44 @@ extension ScopedReducer: AnyScopedReducer {
         childStore.state.value = newValue
       }
     return childStore
+  }
+}
+
+/// A publisher of store state.
+@dynamicMemberLookup
+public struct StorePublisher<State>: Publisher {
+  public typealias Output = State
+  public typealias Failure = Never
+
+  let store: Any
+  let upstream: AnyPublisher<State, Never>
+
+  init<P: Publisher>(
+    store: Any,
+    upstream: P
+  ) where P.Output == Output, P.Failure == Failure {
+    self.store = store
+    self.upstream = upstream.eraseToAnyPublisher()
+  }
+
+  public func receive<S: Subscriber>(subscriber: S) where S.Input == Output, S.Failure == Failure {
+    self.upstream.subscribe(
+      AnySubscriber(
+        receiveSubscription: subscriber.receive(subscription:),
+        receiveValue: subscriber.receive(_:),
+        receiveCompletion: { [store = self.store] in
+          subscriber.receive(completion: $0)
+          _ = store
+        }
+      )
+    )
+  }
+
+  /// Returns the resulting publisher of a given key path.
+  public subscript<Value: Equatable>(
+    dynamicMember keyPath: KeyPath<State, Value>
+  ) -> StorePublisher<Value> {
+    .init(store: self.store, upstream: self.upstream.map(keyPath).removeDuplicates())
   }
 }
 

@@ -172,7 +172,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   `viewStore.publisher.sink` closures should be completely independent of each other. Later
   ///   closures cannot assume that earlier ones have already run.
   public var publisher: StorePublisher<ViewState> {
-    StorePublisher(viewStore: self)
+    StorePublisher(store: self, upstream: self._state)
   }
 
   /// The current state.
@@ -582,49 +582,6 @@ extension ViewStore where ViewState: Equatable {
     send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action
   ) {
     self.init(store, observe: toViewState, send: fromViewAction, removeDuplicates: ==)
-  }
-}
-
-/// A publisher of store state.
-@dynamicMemberLookup
-public struct StorePublisher<State>: Publisher {
-  public typealias Output = State
-  public typealias Failure = Never
-
-  public let upstream: AnyPublisher<State, Never>
-  public let viewStore: Any
-
-  fileprivate init<Action>(viewStore: ViewStore<State, Action>) {
-    self.viewStore = viewStore
-    self.upstream = viewStore._state.eraseToAnyPublisher()
-  }
-
-  public func receive<S: Subscriber>(subscriber: S) where S.Input == Output, S.Failure == Failure {
-    self.upstream.subscribe(
-      AnySubscriber(
-        receiveSubscription: subscriber.receive(subscription:),
-        receiveValue: subscriber.receive(_:),
-        receiveCompletion: { [viewStore = self.viewStore] in
-          subscriber.receive(completion: $0)
-          _ = viewStore
-        }
-      )
-    )
-  }
-
-  private init<P: Publisher>(
-    upstream: P,
-    viewStore: Any
-  ) where P.Output == Output, P.Failure == Failure {
-    self.upstream = upstream.eraseToAnyPublisher()
-    self.viewStore = viewStore
-  }
-
-  /// Returns the resulting publisher of a given key path.
-  public subscript<Value: Equatable>(
-    dynamicMember keyPath: KeyPath<State, Value>
-  ) -> StorePublisher<Value> {
-    .init(upstream: self.upstream.map(keyPath).removeDuplicates(), viewStore: self.viewStore)
   }
 }
 
