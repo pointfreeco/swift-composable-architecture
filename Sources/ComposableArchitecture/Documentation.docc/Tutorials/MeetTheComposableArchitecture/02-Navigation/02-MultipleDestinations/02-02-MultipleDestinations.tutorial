@@ -207,7 +207,8 @@
       }
       
       @Step {
-        We can handle all other destination actions by simply returning a `.none` effect to represent there is no other work to perform.
+        We can handle all other destination actions by simply returning a `.none` effect to 
+        represent there is no other work to perform.
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0012)
       }
