@@ -41,10 +41,7 @@ final class CompatibilityTests: BaseTCATestCase {
 
       switch action {
       case .start:
-        return
-          passThroughSubject
-          .eraseToEffect()
-          .cancellable(id: cancelID)
+        return .publisher { passThroughSubject }.cancellable(id: cancelID)
 
       case .kickOffAction:
         return .send(.actionSender(OnDeinit { passThroughSubject.send(.stop) }))

@@ -5,7 +5,7 @@ import Dependencies
 import Foundation
 
 let dependenciesSuite = BenchmarkSuite(name: "Dependencies") { suite in
-  let reducer: some ReducerProtocol<Int, Void> = BenchmarkReducer()
+  let reducer: some Reducer<Int, Void> = BenchmarkReducer()
     .dependency(\.calendar, .autoupdatingCurrent)
     .dependency(\.date, .init { Date() })
     .dependency(\.locale, .autoupdatingCurrent)
@@ -21,9 +21,9 @@ let dependenciesSuite = BenchmarkSuite(name: "Dependencies") { suite in
   }
 }
 
-private struct BenchmarkReducer: ReducerProtocol {
+private struct BenchmarkReducer: Reducer {
   @Dependency(\.someValue) var someValue
-  func reduce(into state: inout Int, action: Void) -> EffectTask<Void> {
+  func reduce(into state: inout Int, action: Void) -> Effect<Void> {
     state = self.someValue
     return .none
   }

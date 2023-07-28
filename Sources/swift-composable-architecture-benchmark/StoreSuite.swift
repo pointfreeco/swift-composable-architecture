@@ -33,7 +33,7 @@ let storeSuite = BenchmarkSuite(name: "Store") {
   }
 }
 
-private struct Feature: ReducerProtocol {
+private struct Feature: Reducer {
   struct State {
     @PresentationState var child: State?
     var count = 0
@@ -43,16 +43,14 @@ private struct Feature: ReducerProtocol {
     case tap
     case none
   }
-  var body: some ReducerProtocol<State, Action> {
+  var body: some ReducerOf<Self> {
     Reduce<State, Action> { state, action in
       switch action {
       case .child:
         return .none
       case .tap:
         state.count = 1
-        return Empty(completeImmediately: true)
-          .eraseToEffect()
-          .cancellable(id: UUID())
+        return .publisher { Empty() }.cancellable(id: UUID())
       case .none:
         return .none
       }

@@ -1,4 +1,4 @@
-extension ReducerProtocol {
+extension Reducer {
   /// Sets the dependency value of the specified key path to the given value.
   ///
   /// This overrides the dependency specified by `keyPath` for the execution of the receiving
@@ -11,7 +11,7 @@ extension ReducerProtocol {
   /// feature's domain and layers on additional logic:
   ///
   /// ```swift
-  /// struct Onboarding: ReducerProtocol {
+  /// struct Onboarding: Reducer {
   ///   struct State {
   ///     var feature: Feature.State
   ///     // Additional onboarding state
@@ -21,7 +21,7 @@ extension ReducerProtocol {
   ///     // Additional onboarding actions
   ///   }
   ///
-  ///   var body: some ReducerProtocol<State, Action> {
+  ///   var body: some Reducer<State, Action> {
   ///     Scope(state: \.feature, action: /Action.feature) {
   ///       Feature()
   ///     }
@@ -44,7 +44,7 @@ extension ReducerProtocol {
   /// just for the `Feature` reducer and its effects:
   ///
   /// ```swift
-  /// var body: some ReducerProtocol<State, Action> {
+  /// var body: some Reducer<State, Action> {
   ///   Scope(state: \.feature, action: /Action.feature) {
   ///     Feature()
   ///       .dependency(\.apiClient, .mock)
@@ -71,7 +71,7 @@ extension ReducerProtocol {
     _ keyPath: WritableKeyPath<DependencyValues, Value>,
     _ value: Value
   )
-    // NB: We should not return `some ReducerProtocol<State, Action>` here. That would prevent the
+    // NB: We should not return `some Reducer<State, Action>` here. That would prevent the
     //     specialization defined below from being called, which fuses chained calls.
     -> _DependencyKeyWritingReducer<Self>
   {
@@ -123,7 +123,7 @@ extension ReducerProtocol {
     _ keyPath: WritableKeyPath<DependencyValues, V>,
     transform: @escaping (_ dependency: inout V) -> Void
   )
-    // NB: We should not return `some ReducerProtocol<State, Action>` here. That would prevent the
+    // NB: We should not return `some Reducer<State, Action>` here. That would prevent the
     //     specialization defined below from being called, which fuses chained calls.
     -> _DependencyKeyWritingReducer<Self>
   {
@@ -131,7 +131,7 @@ extension ReducerProtocol {
   }
 }
 
-public struct _DependencyKeyWritingReducer<Base: ReducerProtocol>: ReducerProtocol {
+public struct _DependencyKeyWritingReducer<Base: Reducer>: Reducer {
   @usableFromInline
   let base: Base
 
@@ -147,7 +147,7 @@ public struct _DependencyKeyWritingReducer<Base: ReducerProtocol>: ReducerProtoc
   @inlinable
   public func reduce(
     into state: inout Base.State, action: Base.Action
-  ) -> EffectTask<Base.Action> {
+  ) -> Effect<Base.Action> {
     withDependencies {
       self.update(&$0)
     } operation: {

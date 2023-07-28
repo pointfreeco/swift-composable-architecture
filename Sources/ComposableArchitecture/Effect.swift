@@ -3,15 +3,15 @@ import Foundation
 import SwiftUI
 import XCTestDynamicOverlay
 
-/// This type is deprecated in favor of ``EffectTask``. See its documentation for more information.
+/// This type is deprecated in favor of ``Effect``. See its documentation for more information.
 @available(
   iOS,
   deprecated: 9999,
   message:
     """
-    'EffectPublisher' has been deprecated in favor of 'EffectTask'.
+    'EffectPublisher' has been deprecated in favor of 'Effect'.
 
-     You are encouraged to use `EffectTask<Action>` to model the output of your reducers, and to use Swift concurrency to model asynchrony in dependencies.
+     You are encouraged to use `Effect<Action>` to model the output of your reducers, and to use Swift concurrency to model asynchrony in dependencies.
 
      See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
     """
@@ -21,9 +21,9 @@ import XCTestDynamicOverlay
   deprecated: 9999,
   message:
     """
-    'EffectPublisher' has been deprecated in favor of 'EffectTask'.
+    'EffectPublisher' has been deprecated in favor of 'Effect'.
 
-     You are encouraged to use `EffectTask<Action>` to model the output of your reducers, and to use Swift concurrency to model asynchrony in dependencies.
+     You are encouraged to use `Effect<Action>` to model the output of your reducers, and to use Swift concurrency to model asynchrony in dependencies.
 
      See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
     """
@@ -33,9 +33,9 @@ import XCTestDynamicOverlay
   deprecated: 9999,
   message:
     """
-    'EffectPublisher' has been deprecated in favor of 'EffectTask'.
+    'EffectPublisher' has been deprecated in favor of 'Effect'.
 
-     You are encouraged to use `EffectTask<Action>` to model the output of your reducers, and to use Swift concurrency to model asynchrony in dependencies.
+     You are encouraged to use `Effect<Action>` to model the output of your reducers, and to use Swift concurrency to model asynchrony in dependencies.
 
      See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
     """
@@ -45,9 +45,9 @@ import XCTestDynamicOverlay
   deprecated: 9999,
   message:
     """
-    'EffectPublisher' has been deprecated in favor of 'EffectTask'.
+    'EffectPublisher' has been deprecated in favor of 'Effect'.
 
-     You are encouraged to use `EffectTask<Action>` to model the output of your reducers, and to use Swift concurrency to model asynchrony in dependencies.
+     You are encouraged to use `Effect<Action>` to model the output of your reducers, and to use Swift concurrency to model asynchrony in dependencies.
 
      See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
     """
@@ -82,7 +82,7 @@ public struct EffectPublisher<Action, Failure: Error> {
 /// ```swift
 /// let effect: EffectOf<Feature>
 /// ```
-public typealias EffectOf<R: ReducerProtocol> = EffectPublisher<R.Action, Never>
+public typealias EffectOf<R: Reducer> = EffectPublisher<R.Action, Never>
 
 // MARK: - Creating Effects
 
@@ -114,17 +114,17 @@ extension EffectPublisher {
 /// the Combine interface to ``EffectPublisher`` is considered soft deprecated, and you should
 /// eventually port to Swift's native concurrency tools.
 ///
-/// > Important: The publisher interface to ``EffectTask`` is considered deprecated, and you should
-/// > try converting any uses of that interface to Swift's native concurrency tools.
+/// > Important: The publisher interface to ``Effect`` is considered deprecated, and you should try
+/// > converting any uses of that interface to Swift's native concurrency tools.
 /// >
 /// > Also, ``Store`` is not thread safe, and so all effects must receive values on the same
 /// > thread. This is typically the main thread,  **and** if the store is being used to drive UI
 /// > then it must receive values on the main thread.
 /// >
 /// > This is only an issue if using the Combine interface of ``EffectPublisher`` as mentioned
-/// > above. If you are using Swift's concurrency tools and the `.run` function on ``EffectTask``,
+/// > above. If you are using Swift's concurrency tools and the `.run` function on ``Effect``,
 /// > then threading is automatically handled for you.
-public typealias EffectTask<Action> = EffectPublisher<Action, Never>
+public typealias Effect<Action> = EffectPublisher<Action, Never>
 
 extension EffectPublisher where Failure == Never {
   /// Wraps an asynchronous unit of work that can emit actions any number of times in an effect.
@@ -185,12 +185,12 @@ extension EffectPublisher where Failure == Never {
                   customDump(error, to: &errorDump, indent: 4)
                   runtimeWarn(
                     """
-                    An "EffectTask.run" returned from "\(fileID):\(line)" threw an unhandled error. …
+                    An "Effect.run" returned from "\(fileID):\(line)" threw an unhandled error. …
 
                     \(errorDump)
 
                     All non-cancellation errors must be explicitly handled via the "catch" parameter \
-                    on "EffectTask.run", or via a "do" block.
+                    on "Effect.run", or via a "do" block.
                     """
                   )
                 #endif
@@ -214,7 +214,7 @@ extension EffectPublisher where Failure == Never {
   ///
   /// - Parameter action: The action that is immediately emitted by the effect.
   public static func send(_ action: Action) -> Self {
-    Self(value: action)
+    Self(operation: .publisher(Just(action).eraseToAnyPublisher()))
   }
 
   /// Initializes an effect that immediately emits the action passed in.
@@ -229,7 +229,7 @@ extension EffectPublisher where Failure == Never {
   ///   - action: The action that is immediately emitted by the effect.
   ///   - animation: An animation.
   public static func send(_ action: Action, animation: Animation? = nil) -> Self {
-    Self(value: action).animation(animation)
+    .send(action).animation(animation)
   }
 }
 
@@ -334,7 +334,15 @@ extension EffectPublisher {
     case (.none, _):
       return other
     case (.publisher, .publisher), (.run, .publisher), (.publisher, .run):
-      return Self(operation: .publisher(Publishers.Merge(self, other).eraseToAnyPublisher()))
+      return Self(
+        operation: .publisher(
+          Publishers.Merge(
+            EffectPublisherWrapper(self),
+            EffectPublisherWrapper(other)
+          )
+          .eraseToAnyPublisher()
+        )
+      )
     case let (.run(lhsPriority, lhsOperation), .run(rhsPriority, rhsOperation)):
       return Self(
         operation: .run { send in
@@ -388,7 +396,11 @@ extension EffectPublisher {
     case (.publisher, .publisher), (.run, .publisher), (.publisher, .run):
       return Self(
         operation: .publisher(
-          Publishers.Concatenate(prefix: self, suffix: other).eraseToAnyPublisher()
+          Publishers.Concatenate(
+            prefix: EffectPublisherWrapper(self),
+            suffix: EffectPublisherWrapper(other)
+          )
+          .eraseToAnyPublisher()
         )
       )
     case let (.run(lhsPriority, lhsOperation), .run(rhsPriority, rhsOperation)):
@@ -441,7 +453,7 @@ extension EffectPublisher {
           operation: .run(priority) { send in
             await escaped.yield {
               await operation(
-                Send<Action> { action in
+                Send { action in
                   send(transform(action))
                 }
               )
@@ -559,43 +571,10 @@ extension EffectPublisher {
   /// - Parameter prefix: A string that identifies this effect and will prefix all failure
   ///   messages.
   /// - Returns: An effect that causes a test to fail if it runs.
-  @available(
-    iOS, deprecated: 9999, message: "Call 'unimplemented' from your dependencies, instead."
-  )
-  @available(
-    macOS, deprecated: 9999, message: "Call 'unimplemented' from your dependencies, instead."
-  )
-  @available(
-    tvOS, deprecated: 9999, message: "Call 'unimplemented' from your dependencies, instead."
-  )
-  @available(
-    watchOS, deprecated: 9999, message: "Call 'unimplemented' from your dependencies, instead."
-  )
+  @available(*, deprecated, message: "Call 'unimplemented' from your dependencies, instead.")
   public static func unimplemented(_ prefix: String) -> Self {
     .fireAndForget {
       XCTFail("\(prefix.isEmpty ? "" : "\(prefix) - ")An unimplemented effect ran.")
     }
   }
 }
-
-@available(
-  *,
-  deprecated,
-  message:
-    """
-    'Effect' has been deprecated in favor of 'EffectTask' when 'Failure == Never', or 'EffectPublisher<Output, Failure>' in general.
-
-    You are encouraged to use 'EffectTask<Action>' to model the output of your reducers, and to use Swift concurrency to model failable streams of values.
-
-    To find and replace instances of 'Effect<Action, Never>' to 'EffectTask<Action>' in your codebase, use the following regular expression:
-
-      Find:
-        Effect<([^,]+), Never>
-
-      Replace:
-        EffectTask<$1>
-
-    See the migration roadmap for more information: https://github.com/pointfreeco/swift-composable-architecture/discussions/1477
-    """
-)
-public typealias Effect = EffectPublisher

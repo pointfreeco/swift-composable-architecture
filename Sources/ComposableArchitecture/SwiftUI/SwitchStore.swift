@@ -8,7 +8,7 @@ import SwiftUI
 /// user is logged-in or not:
 ///
 /// ```swift
-/// struct AppFeature: ReducerProtocol {
+/// struct AppFeature: Reducer {
 ///   enum State {
 ///     case loggedIn(LoggedInState)
 ///     case loggedOut(LoggedOutState)
@@ -49,9 +49,9 @@ import SwiftUI
 /// > it changes. As such, you should not rely on this value for anything other than checking the
 /// > current case, _e.g._ by switching on it and routing to an appropriate `CaseLet`.
 ///
-/// See ``ReducerProtocol/ifCaseLet(_:action:then:fileID:line:)`` and
-/// ``Scope/init(state:action:child:fileID:line:)`` for embedding reducers that operate on each
-/// case of an enum in reducers that operate on the entire enum.
+/// See ``Reducer/ifCaseLet(_:action:then:fileID:line:)`` and
+/// ``Scope/init(state:action:child:fileID:line:)`` for embedding reducers that operate on each case
+/// of an enum in reducers that operate on the entire enum.
 public struct SwitchStore<State, Action, Content: View>: View {
   public let store: Store<State, Action>
   public let content: (State) -> Content
@@ -108,24 +108,6 @@ public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: Vie
     self.line = line
   }
 
-  @available(iOS, deprecated: 9999, message: "Use 'CaseLet.init(_:action:…)' instead.")
-  @available(macOS, deprecated: 9999, message: "Use 'CaseLet.init(_:action:…)' instead.")
-  @available(tvOS, deprecated: 9999, message: "Use 'CaseLet.init(_:action:…)' instead.")
-  @available(watchOS, deprecated: 9999, message: "Use 'CaseLet.init(_:action:…)' instead.")
-  public init(
-    state toCaseState: @escaping (EnumState) -> CaseState?,
-    action fromCaseAction: @escaping (CaseAction) -> EnumAction,
-    @ViewBuilder then content: @escaping (_ store: Store<CaseState, CaseAction>) -> Content,
-    fileID: StaticString = #fileID,
-    line: UInt = #line
-  ) {
-    self.toCaseState = toCaseState
-    self.fromCaseAction = fromCaseAction
-    self.content = content
-    self.fileID = fileID
-    self.line = line
-  }
-
   public var body: some View {
     IfLetStore(
       self.store.wrappedValue.scope(
@@ -170,28 +152,10 @@ extension CaseLet where EnumAction == CaseAction {
 /// a ``CaseLet`` for each case of the enum), then you must insert a ``Default`` view at the end of
 /// the ``SwitchStore``'s body.
 @available(
-  iOS,
-  deprecated: 9999,
+  *,
+  deprecated,
   message:
-    "Use the 'SwitchStore.init' that can 'switch' over a given 'state' and use 'default' instead."
-)
-@available(
-  macOS,
-  deprecated: 9999,
-  message:
-    "Use the 'SwitchStore.init' that can 'switch' over a given 'state' and use 'default' instead."
-)
-@available(
-  tvOS,
-  deprecated: 9999,
-  message:
-    "Use the 'SwitchStore.init' that can 'switch' over a given 'state' and use 'default' instead."
-)
-@available(
-  watchOS,
-  deprecated: 9999,
-  message:
-    "Use the 'SwitchStore.init' that can 'switch' over a given 'state' and use 'default' instead."
+    "Use the 'SwitchStore.init' that is passed state to 'switch' over, and use 'default' instead."
 )
 public struct Default<Content: View>: View {
   private let content: Content
@@ -212,24 +176,9 @@ public struct Default<Content: View>: View {
 
 extension SwitchStore {
   @available(
-    iOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+    *,
+    deprecated,
+    message: "Use the 'SwitchStore.init' that is passed state to explicitly 'switch' over instead."
   )
   public init<State1, Action1, Content1, DefaultContent>(
     _ store: Store<State, Action>,
@@ -257,24 +206,9 @@ extension SwitchStore {
   }
 
   @available(
-    iOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+    *,
+    deprecated,
+    message: "Use the 'SwitchStore.init' that is passed state to explicitly 'switch' over instead."
   )
   public init<State1, Action1, Content1>(
     _ store: Store<State, Action>,
@@ -295,24 +229,9 @@ extension SwitchStore {
   }
 
   @available(
-    iOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+    *,
+    deprecated,
+    message: "Use the 'SwitchStore.init' that is passed state to explicitly 'switch' over instead."
   )
   public init<State1, Action1, Content1, State2, Action2, Content2, DefaultContent>(
     _ store: Store<State, Action>,
@@ -346,24 +265,9 @@ extension SwitchStore {
   }
 
   @available(
-    iOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+    *,
+    deprecated,
+    message: "Use the 'SwitchStore.init' that is passed state to explicitly 'switch' over instead."
   )
   public init<State1, Action1, Content1, State2, Action2, Content2>(
     _ store: Store<State, Action>,
@@ -394,24 +298,9 @@ extension SwitchStore {
   }
 
   @available(
-    iOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+    *,
+    deprecated,
+    message: "Use the 'SwitchStore.init' that is passed state to explicitly 'switch' over instead."
   )
   public init<
     State1, Action1, Content1,
@@ -456,24 +345,9 @@ extension SwitchStore {
   }
 
   @available(
-    iOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+    *,
+    deprecated,
+    message: "Use the 'SwitchStore.init' that is passed state to explicitly 'switch' over instead."
   )
   public init<State1, Action1, Content1, State2, Action2, Content2, State3, Action3, Content3>(
     _ store: Store<State, Action>,
@@ -509,24 +383,9 @@ extension SwitchStore {
   }
 
   @available(
-    iOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+    *,
+    deprecated,
+    message: "Use the 'SwitchStore.init' that is passed state to explicitly 'switch' over instead."
   )
   public init<
     State1, Action1, Content1,
@@ -578,24 +437,9 @@ extension SwitchStore {
   }
 
   @available(
-    iOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+    *,
+    deprecated,
+    message: "Use the 'SwitchStore.init' that is passed state to explicitly 'switch' over instead."
   )
   public init<
     State1, Action1, Content1,
@@ -641,24 +485,9 @@ extension SwitchStore {
   }
 
   @available(
-    iOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+    *,
+    deprecated,
+    message: "Use the 'SwitchStore.init' that is passed state to explicitly 'switch' over instead."
   )
   public init<
     State1, Action1, Content1,
@@ -717,24 +546,9 @@ extension SwitchStore {
   }
 
   @available(
-    iOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+    *,
+    deprecated,
+    message: "Use the 'SwitchStore.init' that is passed state to explicitly 'switch' over instead."
   )
   public init<
     State1, Action1, Content1,
@@ -786,24 +600,9 @@ extension SwitchStore {
   }
 
   @available(
-    iOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+    *,
+    deprecated,
+    message: "Use the 'SwitchStore.init' that is passed state to explicitly 'switch' over instead."
   )
   public init<
     State1, Action1, Content1,
@@ -869,24 +668,9 @@ extension SwitchStore {
   }
 
   @available(
-    iOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+    *,
+    deprecated,
+    message: "Use the 'SwitchStore.init' that is passed state to explicitly 'switch' over instead."
   )
   public init<
     State1, Action1, Content1,
@@ -944,24 +728,9 @@ extension SwitchStore {
   }
 
   @available(
-    iOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+    *,
+    deprecated,
+    message: "Use the 'SwitchStore.init' that is passed state to explicitly 'switch' over instead."
   )
   public init<
     State1, Action1, Content1,
@@ -1034,24 +803,9 @@ extension SwitchStore {
   }
 
   @available(
-    iOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+    *,
+    deprecated,
+    message: "Use the 'SwitchStore.init' that is passed state to explicitly 'switch' over instead."
   )
   public init<
     State1, Action1, Content1,
@@ -1115,24 +869,9 @@ extension SwitchStore {
   }
 
   @available(
-    iOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+    *,
+    deprecated,
+    message: "Use the 'SwitchStore.init' that is passed state to explicitly 'switch' over instead."
   )
   public init<
     State1, Action1, Content1,
@@ -1212,24 +951,9 @@ extension SwitchStore {
   }
 
   @available(
-    iOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+    *,
+    deprecated,
+    message: "Use the 'SwitchStore.init' that is passed state to explicitly 'switch' over instead."
   )
   public init<
     State1, Action1, Content1,
@@ -1299,24 +1023,9 @@ extension SwitchStore {
   }
 
   @available(
-    iOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+    *,
+    deprecated,
+    message: "Use the 'SwitchStore.init' that is passed state to explicitly 'switch' over instead."
   )
   public init<
     State1, Action1, Content1,
@@ -1403,24 +1112,9 @@ extension SwitchStore {
   }
 
   @available(
-    iOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
+    *,
+    deprecated,
+    message: "Use the 'SwitchStore.init' that is passed state to explicitly 'switch' over instead."
   )
   public init<
     State1, Action1, Content1,

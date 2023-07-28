@@ -8,7 +8,7 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct FocusDemo: ReducerProtocol {
+struct FocusDemo: Reducer {
   struct State: Equatable {
     @BindingState var focusedField: Field?
     @BindingState var password: String = ""
@@ -24,7 +24,7 @@ struct FocusDemo: ReducerProtocol {
     case signInButtonTapped
   }
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some Reducer<State, Action> {
     BindingReducer()
     Reduce { state, action in
       switch action {

@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct AppFeature: ReducerProtocol {
+struct AppFeature: Reducer {
   struct State: Equatable {
     var path = StackState<Path.State>()
     var standupsList = StandupsList.State()
@@ -21,7 +21,7 @@ struct AppFeature: ReducerProtocol {
     case saveDebounce
   }
 
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Scope(state: \.standupsList, action: /Action.standupsList) {
       StandupsList()
     }
@@ -88,7 +88,7 @@ struct AppFeature: ReducerProtocol {
     }
   }
 
-  struct Path: ReducerProtocol {
+  struct Path: Reducer {
     enum State: Equatable {
       case detail(StandupDetail.State)
       case meeting(MeetingReducer.State)
@@ -101,7 +101,7 @@ struct AppFeature: ReducerProtocol {
       case record(RecordMeeting.Action)
     }
 
-    var body: some ReducerProtocol<State, Action> {
+    var body: some Reducer<State, Action> {
       Scope(state: /State.detail, action: /Action.detail) {
         StandupDetail()
       }
@@ -127,19 +127,19 @@ struct AppView: View {
       switch $0 {
       case .detail:
         CaseLet(
-          state: /AppFeature.Path.State.detail,
+          /AppFeature.Path.State.detail,
           action: AppFeature.Path.Action.detail,
           then: StandupDetailView.init(store:)
         )
       case .meeting:
         CaseLet(
-          state: /AppFeature.Path.State.meeting,
+          /AppFeature.Path.State.meeting,
           action: AppFeature.Path.Action.meeting,
           then: MeetingView.init(store:)
         )
       case .record:
         CaseLet(
-          state: /AppFeature.Path.State.record,
+          /AppFeature.Path.State.record,
           action: AppFeature.Path.Action.record,
           then: RecordMeetingView.init(store:)
         )

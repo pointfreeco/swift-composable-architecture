@@ -2,8 +2,8 @@ import ComposableArchitecture
 import SwiftUI
 import SwiftUINavigation
 
-struct StandupForm: ReducerProtocol {
-  struct State: Equatable {
+struct StandupForm: Reducer {
+  struct State: Equatable, Sendable {
     @BindingState var focus: Field? = .title
     @BindingState var standup: Standup
 
@@ -21,7 +21,7 @@ struct StandupForm: ReducerProtocol {
       case title
     }
   }
-  enum Action: BindableAction, Equatable {
+  enum Action: BindableAction, Equatable, Sendable {
     case addAttendeeButtonTapped
     case binding(BindingAction<State>)
     case deleteAttendees(atOffsets: IndexSet)
@@ -29,7 +29,7 @@ struct StandupForm: ReducerProtocol {
 
   @Dependency(\.uuid) var uuid
 
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     BindingReducer()
     Reduce<State, Action> { state, action in
       switch action {

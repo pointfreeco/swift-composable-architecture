@@ -1,6 +1,6 @@
 #if DEBUG
   import Combine
-  import ComposableArchitecture
+  @_spi(Internals) import ComposableArchitecture
   import XCTest
 
   @MainActor
@@ -13,22 +13,22 @@
       var line: UInt!
       XCTExpectFailure {
         $0.compactDescription == """
-          An "EffectTask.task" returned from "\(#fileID):\(line+1)" threw an unhandled error. …
+          An "Effect.task" returned from "\(#fileID):\(line+1)" threw an unhandled error. …
 
               EffectFailureTests.Unexpected()
 
           All non-cancellation errors must be explicitly handled via the "catch" parameter on \
-          "EffectTask.task", or via a "do" block.
+          "Effect.task", or via a "do" block.
           """
       }
 
       line = #line
-      let effect = EffectTask<Void>.task {
+      let effect = Effect<Void>.task {
         struct Unexpected: Error {}
         throw Unexpected()
       }
 
-      for await _ in effect.values {}
+      for await _ in effect.actions {}
     }
 
     func testRunUnexpectedThrows() async {
@@ -37,22 +37,22 @@
       var line: UInt!
       XCTExpectFailure {
         $0.compactDescription == """
-          An "EffectTask.run" returned from "\(#fileID):\(line+1)" threw an unhandled error. …
+          An "Effect.run" returned from "\(#fileID):\(line+1)" threw an unhandled error. …
 
               EffectFailureTests.Unexpected()
 
           All non-cancellation errors must be explicitly handled via the "catch" parameter on \
-          "EffectTask.run", or via a "do" block.
+          "Effect.run", or via a "do" block.
           """
       }
 
       line = #line
-      let effect = EffectTask<Void>.run { _ in
+      let effect = Effect<Void>.run { _ in
         struct Unexpected: Error {}
         throw Unexpected()
       }
 
-      for await _ in effect.values {}
+      for await _ in effect.actions {}
     }
   }
 #endif

@@ -1,5 +1,10 @@
 import Combine
 
+@available(
+  *,
+  deprecated,
+  message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'Effect.run', instead."
+)
 extension EffectPublisher {
   /// Turns an effect into one that can be debounced.
   ///
@@ -24,26 +29,6 @@ extension EffectPublisher {
   ///   - scheduler: The scheduler you want to deliver the debounced output to.
   ///   - options: Scheduler options that customize the effect's delivery of elements.
   /// - Returns: An effect that publishes events only after a specified time elapses.
-  @available(
-    iOS,
-    deprecated: 9999,
-    message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'EffectTask.run', instead."
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'EffectTask.run', instead."
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'EffectTask.run', instead."
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'EffectTask.run', instead."
-  )
   public func debounce<ID: Hashable, S: Scheduler>(
     id: ID,
     for dueTime: S.SchedulerTimeType.Stride,

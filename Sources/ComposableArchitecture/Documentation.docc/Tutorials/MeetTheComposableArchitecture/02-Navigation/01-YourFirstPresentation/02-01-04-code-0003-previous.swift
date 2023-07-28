@@ -1,4 +1,4 @@
-struct ContactsFeature: ReducerProtocol {
+struct ContactsFeature: Reducer {
   struct State: Equatable {
     @PresentationState var addContact: AddContactFeature.State?
     var contacts: IdentifiedArrayOf<Contact> = []
@@ -7,7 +7,7 @@ struct ContactsFeature: ReducerProtocol {
     case addButtonTapped
     case addContact(PresentationAction<AddContactFeature.Action>)
   }
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       case .addButtonTapped:

@@ -1,11 +1,11 @@
-extension ReducerProtocol {
+extension Reducer {
   /// Adds a reducer to run when this reducer changes the given value in state.
   ///
   /// Use this operator to trigger additional logic when a value changes, like when a
   /// ``BindingReducer`` makes a deeper change to a struct held in ``BindingState``.
   ///
   /// ```swift
-  /// struct Settings: ReducerProtocol {
+  /// struct Settings: Reducer {
   ///   struct State {
   ///     @BindingState var userSettings: UserSettings
   ///     // ...
@@ -16,7 +16,7 @@ extension ReducerProtocol {
   ///     // ...
   ///   }
   ///
-  ///   var body: some ReducerProtocol<State, Action> {
+  ///   var body: some Reducer<State, Action> {
   ///     BindingReducer()
   ///       .onChange(of: \.userSettings.isHapticFeedbackEnabled) { oldValue, newValue in
   ///         Reduce { state, action in
@@ -44,7 +44,7 @@ extension ReducerProtocol {
   ///   - newValue: The new value that failed the comparison check.
   /// - Returns: A reducer that performs the
   @inlinable
-  public func onChange<V: Equatable, R: ReducerProtocol>(
+  public func onChange<V: Equatable, R: Reducer>(
     of toValue: @escaping (State) -> V,
     @ReducerBuilder<State, Action> _ reducer: @escaping (_ oldValue: V, _ newValue: V) -> R
   ) -> _OnChangeReducer<Self, V, R> {
@@ -52,8 +52,7 @@ extension ReducerProtocol {
   }
 }
 
-public struct _OnChangeReducer<Base: ReducerProtocol, Value: Equatable, Body: ReducerProtocol>:
-  ReducerProtocol
+public struct _OnChangeReducer<Base: Reducer, Value: Equatable, Body: Reducer>: Reducer
 where Base.State == Body.State, Base.Action == Body.Action {
   @usableFromInline
   let base: Base

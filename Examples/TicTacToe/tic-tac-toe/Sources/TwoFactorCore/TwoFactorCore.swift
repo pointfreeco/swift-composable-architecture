@@ -3,7 +3,7 @@ import Combine
 import ComposableArchitecture
 import Dispatch
 
-public struct TwoFactor: ReducerProtocol, Sendable {
+public struct TwoFactor: Reducer, Sendable {
   public struct State: Equatable {
     @PresentationState public var alert: AlertState<Action.Alert>?
     @BindingState public var code = ""
@@ -33,7 +33,7 @@ public struct TwoFactor: ReducerProtocol, Sendable {
 
   public init() {}
 
-  public var body: some ReducerProtocol<State, Action> {
+  public var body: some ReducerOf<Self> {
     BindingReducer(action: /Action.view)
     Reduce { state, action in
       switch action {

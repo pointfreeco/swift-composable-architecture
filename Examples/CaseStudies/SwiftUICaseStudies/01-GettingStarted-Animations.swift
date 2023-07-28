@@ -20,7 +20,7 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct Animations: ReducerProtocol {
+struct Animations: Reducer {
   struct State: Equatable {
     var alert: AlertState<Action>?
     var circleCenter: CGPoint?
@@ -40,7 +40,7 @@ struct Animations: ReducerProtocol {
 
   @Dependency(\.continuousClock) var clock
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     enum CancelID { case rainbow }
 
     switch action {

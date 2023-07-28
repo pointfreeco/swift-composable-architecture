@@ -1,5 +1,5 @@
 import Combine
-import ComposableArchitecture
+@_spi(Internals) import ComposableArchitecture
 import CustomDump
 import XCTest
 import os.signpost
@@ -26,7 +26,7 @@ final class ReducerTests: BaseTCATestCase {
           case increment
         }
 
-        struct Delayed: ReducerProtocol {
+        struct Delayed: Reducer {
           typealias State = Int
 
           @Dependency(\.continuousClock) var clock
@@ -34,7 +34,7 @@ final class ReducerTests: BaseTCATestCase {
           let delay: Duration
           let setValue: @Sendable () async -> Void
 
-          func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+          func reduce(into state: inout State, action: Action) -> Effect<Action> {
             state += 1
             return .fireAndForget {
               try await self.clock.sleep(for: self.delay)
@@ -78,10 +78,10 @@ final class ReducerTests: BaseTCATestCase {
       case increment
     }
 
-    struct One: ReducerProtocol {
+    struct One: Reducer {
       typealias State = Int
       let effect: @Sendable () async -> Void
-      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+      func reduce(into state: inout State, action: Action) -> Effect<Action> {
         state += 1
         return .fireAndForget {
           await self.effect()
@@ -105,25 +105,15 @@ final class ReducerTests: BaseTCATestCase {
     XCTAssertTrue(second)
   }
 
-  func testDefaultSignpost() {
+  func testDefaultSignpost() async {
     let reducer = EmptyReducer<Int, Void>().signpost(log: .default)
     var n = 0
-    let effect = reducer.reduce(into: &n, action: ())
-    let expectation = self.expectation(description: "effect")
-    effect
-      .sink(receiveCompletion: { _ in expectation.fulfill() }, receiveValue: { _ in })
-      .store(in: &self.cancellables)
-    self.wait(for: [expectation], timeout: 0.1)
+    for await _ in reducer.reduce(into: &n, action: ()).actions {}
   }
 
-  func testDisabledSignpost() {
+  func testDisabledSignpost() async {
     let reducer = EmptyReducer<Int, Void>().signpost(log: .disabled)
     var n = 0
-    let effect = reducer.reduce(into: &n, action: ())
-    let expectation = self.expectation(description: "effect")
-    effect
-      .sink(receiveCompletion: { _ in expectation.fulfill() }, receiveValue: { _ in })
-      .store(in: &self.cancellables)
-    self.wait(for: [expectation], timeout: 0.1)
+    for await _ in reducer.reduce(into: &n, action: ()).actions {}
   }
 }

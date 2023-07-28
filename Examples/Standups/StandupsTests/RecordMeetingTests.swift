@@ -262,7 +262,6 @@ final class RecordMeetingTests: XCTestCase {
         }
       }
     }
-    store.useMainSerialExecutor = true
 
     await store.send(.onTask)
 

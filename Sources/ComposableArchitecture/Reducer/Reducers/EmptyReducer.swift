@@ -2,7 +2,7 @@
 ///
 /// While not very useful on its own, `EmptyReducer` can be used as a placeholder in APIs that hold
 /// reducers.
-public struct EmptyReducer<State, Action>: ReducerProtocol {
+public struct EmptyReducer<State, Action>: Reducer {
   /// Initializes a reducer that does nothing.
   @inlinable
   public init() {
@@ -13,7 +13,7 @@ public struct EmptyReducer<State, Action>: ReducerProtocol {
   init(internal: Void) {}
 
   @inlinable
-  public func reduce(into _: inout State, action _: Action) -> EffectTask<Action> {
+  public func reduce(into _: inout State, action _: Action) -> Effect<Action> {
     .none
   }
 }

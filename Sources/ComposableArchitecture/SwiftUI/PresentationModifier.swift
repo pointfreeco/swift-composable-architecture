@@ -202,7 +202,7 @@ public struct PresentationStore<
     ) -> Content
   ) {
     let store = store.invalidate { $0.wrappedValue.flatMap(toDestinationState) == nil }
-    let viewStore = ViewStore(store, removeDuplicates: { toID($0) == toID($1) })
+    let viewStore = ViewStore(store, observe: { $0 }, removeDuplicates: { toID($0) == toID($1) })
 
     self.store = store
     self.toDestinationState = toDestinationState

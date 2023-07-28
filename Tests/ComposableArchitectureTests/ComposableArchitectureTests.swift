@@ -8,7 +8,7 @@ final class ComposableArchitectureTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
 
   func testScheduling() async {
-    struct Counter: ReducerProtocol {
+    struct Counter: Reducer {
       typealias State = Int
       enum Action: Equatable {
         case incrAndSquareLater
@@ -16,20 +16,25 @@ final class ComposableArchitectureTests: BaseTCATestCase {
         case squareNow
       }
       @Dependency(\.mainQueue) var mainQueue
-      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+      func reduce(into state: inout State, action: Action) -> Effect<Action> {
         switch action {
         case .incrAndSquareLater:
-          return .merge(
-            .send(.incrNow)
-              .delay(for: 2, scheduler: self.mainQueue)
-              .eraseToEffect(),
-            .send(.squareNow)
-              .delay(for: 1, scheduler: self.mainQueue)
-              .eraseToEffect(),
-            .send(.squareNow)
-              .delay(for: 2, scheduler: self.mainQueue)
-              .eraseToEffect()
-          )
+          return .run { send in
+            await withThrowingTaskGroup(of: Void.self) { group in
+              group.addTask {
+                try await self.mainQueue.sleep(for: .seconds(2))
+                await send(.incrNow)
+              }
+              group.addTask {
+                try await self.mainQueue.sleep(for: .seconds(1))
+                await send(.squareNow)
+              }
+              group.addTask {
+                try await self.mainQueue.sleep(for: .seconds(2))
+                await send(.squareNow)
+              }
+            }
+          }
         case .incrNow:
           state += 1
           return .none
@@ -87,7 +92,7 @@ final class ComposableArchitectureTests: BaseTCATestCase {
       Reduce<Int, Action> { state, action in
         switch action {
         case .end:
-          return .fireAndForget {
+          return .run { _ in
             effect.continuation.finish()
           }
         case .incr:

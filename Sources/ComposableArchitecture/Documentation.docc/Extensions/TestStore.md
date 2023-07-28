@@ -4,7 +4,7 @@
 
 ### Creating a test store
 
-- ``init(initialState:reducer:withDependencies:file:line:)-6s32h``
+- ``init(initialState:reducer:withDependencies:file:line:)-t6cu``
 - ``init(initialState:reducer:observe:withDependencies:file:line:)``
 - ``init(initialState:reducer:observe:send:withDependencies:file:line:)``
 

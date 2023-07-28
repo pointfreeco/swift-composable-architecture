@@ -1,4 +1,4 @@
 extension ContactsFeature {
-  struct Destination: ReducerProtocol {
+  struct Destination: Reducer {
   }
 }

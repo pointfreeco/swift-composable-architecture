@@ -2,7 +2,7 @@ import AVFoundation
 import ComposableArchitecture
 import SwiftUI
 
-struct VoiceMemos: ReducerProtocol {
+struct VoiceMemos: Reducer {
   struct State: Equatable {
     @PresentationState var alert: AlertState<AlertAction>?
     var audioRecorderPermission = RecorderPermission.undetermined
@@ -34,7 +34,7 @@ struct VoiceMemos: ReducerProtocol {
   @Dependency(\.temporaryDirectory) var temporaryDirectory
   @Dependency(\.uuid) var uuid
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
       case .alert:

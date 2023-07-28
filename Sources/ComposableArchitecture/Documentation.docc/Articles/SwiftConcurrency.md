@@ -7,7 +7,7 @@ and functions that are not thread-safe in concurrent contexts. Many of these war
 for the time being, but in Swift 6 most (if not all) of these warnings will become errors, and so
 you will need to know how to prove to the compiler that your types are safe to use concurrently.
 
-There primary way to create an ``EffectTask`` in the library is via
+There primary way to create an ``Effect`` in the library is via
 ``EffectPublisher/run(priority:operation:catch:fileID:line:)``. It takes a `@Sendable`,
 asynchronous closure, which restricts the types of closures you can use for your effects. In
 particular, the closure can only capture `Sendable` variables that are bound with `let`. Mutable
@@ -23,11 +23,11 @@ Reducers are executed with a mutable, `inout` state variable, and such variables
 from within `@Sendable` closures:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   struct State { /* ... */ }
   enum Action { /* ... */ }
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .buttonTapped:
       return .run { send in

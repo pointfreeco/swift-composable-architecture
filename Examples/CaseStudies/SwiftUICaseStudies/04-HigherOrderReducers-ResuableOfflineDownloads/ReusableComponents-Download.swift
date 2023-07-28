@@ -14,7 +14,7 @@ private let readMe = """
   screen to see that the state is carried over.
   """
 
-struct CityMap: ReducerProtocol {
+struct CityMap: Reducer {
   struct State: Equatable, Identifiable {
     var download: Download
     var downloadAlert: AlertState<DownloadComponent.AlertAction>?
@@ -53,7 +53,7 @@ struct CityMap: ReducerProtocol {
     var downloadClient: DownloadClient
   }
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some Reducer<State, Action> {
     Scope(state: \.downloadComponent, action: /Action.downloadComponent) {
       DownloadComponent()
     }
@@ -140,7 +140,7 @@ struct CityMapDetailView: View {
   }
 }
 
-struct MapApp: ReducerProtocol {
+struct MapApp: Reducer {
   struct State: Equatable {
     var cityMaps: IdentifiedArrayOf<CityMap.State>
   }
@@ -149,7 +149,7 @@ struct MapApp: ReducerProtocol {
     case cityMaps(id: CityMap.State.ID, action: CityMap.Action)
   }
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some Reducer<State, Action> {
     EmptyReducer().forEach(\.cityMaps, action: /Action.cityMaps(id:action:)) {
       CityMap()
     }

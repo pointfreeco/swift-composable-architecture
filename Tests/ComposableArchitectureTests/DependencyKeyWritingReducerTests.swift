@@ -78,7 +78,7 @@ final class DependencyKeyWritingReducerTests: BaseTCATestCase {
   }
 
   func testDependency_EffectOfEffect() async {
-    struct Feature: ReducerProtocol {
+    struct Feature: Reducer {
       struct State: Equatable { var count = 0 }
       enum Action: Equatable {
         case tap
@@ -87,7 +87,7 @@ final class DependencyKeyWritingReducerTests: BaseTCATestCase {
       }
       @Dependency(\.myValue) var myValue
 
-      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+      func reduce(into state: inout State, action: Action) -> Effect<Action> {
         switch action {
         case .tap:
           state.count += 1
@@ -119,11 +119,11 @@ final class DependencyKeyWritingReducerTests: BaseTCATestCase {
   }
 }
 
-private struct Feature: ReducerProtocol {
+private struct Feature: Reducer {
   @Dependency(\.myValue) var myValue
   struct State: Equatable { var value = 0 }
   enum Action { case tap }
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .tap:
       state.value = self.myValue

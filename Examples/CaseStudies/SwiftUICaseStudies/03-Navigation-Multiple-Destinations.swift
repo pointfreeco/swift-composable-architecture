@@ -6,8 +6,8 @@ private let readMe = """
   piece of enum state.
   """
 
-struct MultipleDestinations: ReducerProtocol {
-  public struct Destination: ReducerProtocol {
+struct MultipleDestinations: Reducer {
+  public struct Destination: Reducer {
     public enum State: Equatable {
       case drillDown(Counter.State)
       case popover(Counter.State)
@@ -20,7 +20,7 @@ struct MultipleDestinations: ReducerProtocol {
       case sheet(Counter.Action)
     }
 
-    public var body: some ReducerProtocol<State, Action> {
+    public var body: some Reducer<State, Action> {
       Scope(state: /State.drillDown, action: /Action.drillDown) {
         Counter()
       }
@@ -44,7 +44,7 @@ struct MultipleDestinations: ReducerProtocol {
     case showSheet
   }
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
       case .showDrillDown:

@@ -1,17 +1,17 @@
-# ``ComposableArchitecture/ReducerProtocol``
+# ``ComposableArchitecture/Reducer``
 
 ## Topics
 
 ### Implementing a reducer
 
-- ``reduce(into:action:)-8yinq``
+- ``reduce(into:action:)-4zl56``
 - ``State``
 - ``Action``
-- ``EffectTask``
+- ``Effect``
 
 ### Reducer composition
 
-- ``body-swift.property-97ymy``
+- ``body-swift.property-8lumc``
 - ``Body-swift.typealias``
 - ``ReducerBuilder``
 
@@ -39,7 +39,7 @@
 
 ### Supporting types
 
-- ``ReducerProtocolOf``
+- ``ReducerOf``
 
 ### Deprecations
 

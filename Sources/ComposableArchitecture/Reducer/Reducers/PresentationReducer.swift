@@ -4,14 +4,14 @@ import Combine
 /// A property wrapper for state that can be presented.
 ///
 /// Use this property wrapper for modeling a feature's domain that needs to present a child feature
-/// using ``ReducerProtocol/ifLet(_:action:destination:fileID:line:)``.
+/// using ``Reducer/ifLet(_:action:destination:fileID:line:)``.
 ///
-/// For example, if you have a `ChildFeature` reducer that encapsulates the logic and behavior
-/// for a feature, then any feature that wants to present that feature will hold onto
-/// `ChildFeature.State` like so:
+/// For example, if you have a `ChildFeature` reducer that encapsulates the logic and behavior for a
+/// feature, then any feature that wants to present that feature will hold onto `ChildFeature.State`
+/// like so:
 ///
 /// ```swift
-/// struct ParentFeature: ReducerProtocol {
+/// struct ParentFeature: Reducer {
 ///   struct State {
 ///     @PresentationState var child: Child.State?
 ///      // ...
@@ -22,14 +22,14 @@ import Combine
 ///
 /// For the most part your feature's logic can deal with `child` as a plain optional value, but
 /// there are times you need to know that you are secretly dealing with `PresentationState`. For
-/// example, when using the ``ReducerProtocol/ifLet(_:action:destination:fileID:line:)`` reducer
-/// operator to integrate the parent and child features together, you will construct a key path
-/// to the projected value `\.$child`:
+/// example, when using the ``Reducer/ifLet(_:action:destination:fileID:line:)`` reducer operator to
+/// integrate the parent and child features together, you will construct a key path to the projected
+/// value `\.$child`:
 ///
 /// ```swift
-/// struct ParentFeature: ReducerProtocol {
+/// struct ParentFeature: Reducer {
 ///   // ...
-///   var body: some ReducerProtocolOf<Self> {
+///   var body: some ReducerOf<Self> {
 ///     Reduce { state, action in
 ///       // Core logic for parent feature
 ///     }
@@ -153,14 +153,14 @@ extension PresentationState: CustomReflectable {
 /// A wrapper type for actions that can be presented.
 ///
 /// Use this wrapper type for modeling a feature's domain that needs to present a child
-/// feature using ``ReducerProtocol/ifLet(_:action:destination:fileID:line:)``.
+/// feature using ``Reducer/ifLet(_:action:destination:fileID:line:)``.
 ///
 /// For example, if you have a `ChildFeature` reducer that encapsulates the logic and behavior
 /// for a feature, then any feature that wants to present that feature will hold onto
 /// `ChildFeature.Action` like so:
 ///
 /// ```swift
-/// struct ParentFeature: ReducerProtocol {
+/// struct ParentFeature: Reducer {
 ///   // ...
 ///   enum Action {
 ///     case child(PresentationAction<Child.Action>)
@@ -192,7 +192,7 @@ extension PresentationAction: Sendable where Action: Sendable {}
 extension PresentationAction: Decodable where Action: Decodable {}
 extension PresentationAction: Encodable where Action: Encodable {}
 
-extension ReducerProtocol {
+extension Reducer {
   /// Embeds a child reducer in a parent domain that works on an optional property of parent state.
   ///
   /// This version of `ifLet` requires the usage of ``PresentationState`` and ``PresentationAction``
@@ -202,7 +202,7 @@ extension ReducerProtocol {
   /// perform its core logic _and_ the child's logic by using the `ifLet` operator:
   ///
   /// ```swift
-  /// struct Parent: ReducerProtocol {
+  /// struct Parent: Reducer {
   ///   struct State {
   ///     @PresentationState var child: Child.State?
   ///     // ...
@@ -212,7 +212,7 @@ extension ReducerProtocol {
   ///     // ...
   ///   }
   ///
-  ///   var body: some ReducerProtocol<State, Action> {
+  ///   var body: some Reducer<State, Action> {
   ///     Reduce { state, action in
   ///       // Core logic for parent feature
   ///     }
@@ -253,7 +253,7 @@ extension ReducerProtocol {
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @warn_unqualified_access
   @inlinable
-  public func ifLet<DestinationState, DestinationAction, Destination: ReducerProtocol>(
+  public func ifLet<DestinationState, DestinationAction, Destination: Reducer>(
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
     action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
     @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
@@ -271,8 +271,8 @@ extension ReducerProtocol {
     )
   }
 
-  /// A special overload of ``ReducerProtocol/ifLet(_:action:destination:fileID:line:)`` for alerts
-  /// and confirmation dialogs that does not require a child reducer.
+  /// A special overload of ``Reducer/ifLet(_:action:destination:fileID:line:)`` for alerts and
+  /// confirmation dialogs that does not require a child reducer.
   @warn_unqualified_access
   @inlinable
   public func ifLet<DestinationState: _EphemeralState, DestinationAction>(
@@ -291,9 +291,7 @@ extension ReducerProtocol {
   }
 }
 
-public struct _PresentationReducer<
-  Base: ReducerProtocol, Destination: ReducerProtocol
->: ReducerProtocol {
+public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer {
   @usableFromInline let base: Base
   @usableFromInline let toPresentationState:
     WritableKeyPath<Base.State, PresentationState<Destination.State>>
@@ -322,15 +320,12 @@ public struct _PresentationReducer<
     self.line = line
   }
 
-  public func reduce(
-    into state: inout Base.State, action: Base.Action
-  ) -> EffectTask<Base.Action> {
-
+  public func reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action> {
     let initialPresentationState = state[keyPath: self.toPresentationState]
     let presentationAction = self.toPresentationAction.extract(from: action)
 
-    let destinationEffects: EffectTask<Base.Action>
-    let baseEffects: EffectTask<Base.Action>
+    let destinationEffects: Effect<Base.Action>
+    let baseEffects: Effect<Base.Action>
 
     switch (initialPresentationState.wrappedValue, presentationAction) {
     case let (.some(destinationState), .some(.dismiss)):
@@ -399,7 +394,7 @@ public struct _PresentationReducer<
       initialPresentationState.wrappedValue.map(self.navigationIDPath(for:))
       != state[keyPath: self.toPresentationState].wrappedValue.map(self.navigationIDPath(for:))
 
-    let dismissEffects: EffectTask<Base.Action>
+    let dismissEffects: Effect<Base.Action>
     if presentationIdentityChanged,
       let presentationState = initialPresentationState.wrappedValue,
       !isEphemeral(presentationState)
@@ -409,20 +404,22 @@ public struct _PresentationReducer<
       dismissEffects = .none
     }
 
-    let presentEffects: EffectTask<Base.Action>
+    let presentEffects: Effect<Base.Action>
     if presentationIdentityChanged || !state[keyPath: self.toPresentationState].isPresented,
       let presentationState = state[keyPath: self.toPresentationState].wrappedValue,
       !isEphemeral(presentationState)
     {
       let presentationDestinationID = self.navigationIDPath(for: presentationState)
       state[keyPath: self.toPresentationState].isPresented = true
-      presentEffects = Empty(completeImmediately: false)
-        .eraseToEffect()
-        ._cancellable(id: PresentationDismissID(), navigationIDPath: presentationDestinationID)
-        .append(Just(self.toPresentationAction.embed(.dismiss)))
-        .eraseToEffect()
-        ._cancellable(navigationIDPath: presentationDestinationID)
-        ._cancellable(id: OnFirstAppearID(), navigationIDPath: .init())
+      presentEffects = .concatenate(
+        Empty(completeImmediately: false)
+          .eraseToEffectPublisher()
+          ._cancellable(id: PresentationDismissID(), navigationIDPath: presentationDestinationID),
+        Just(self.toPresentationAction.embed(.dismiss))
+          .eraseToEffectPublisher()
+      )
+      ._cancellable(navigationIDPath: presentationDestinationID)
+      ._cancellable(id: OnFirstAppearID(), navigationIDPath: .init())
     } else {
       presentEffects = .none
     }

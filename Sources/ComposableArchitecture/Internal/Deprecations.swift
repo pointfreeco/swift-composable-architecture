@@ -3,6 +3,28 @@ import Combine
 import SwiftUI
 import XCTestDynamicOverlay
 
+// MARK: - Deprecated after 1.0.0:
+
+@available(iOS, deprecated: 9999, renamed: "Effect")
+@available(macOS, deprecated: 9999, renamed: "Effect")
+@available(tvOS, deprecated: 9999, renamed: "Effect")
+@available(watchOS, deprecated: 9999, renamed: "Effect")
+public typealias EffectTask = Effect
+
+@available(iOS, deprecated: 9999, renamed: "Reducer")
+@available(macOS, deprecated: 9999, renamed: "Reducer")
+@available(tvOS, deprecated: 9999, renamed: "Reducer")
+@available(watchOS, deprecated: 9999, renamed: "Reducer")
+public typealias ReducerProtocol = Reducer
+
+#if swift(>=5.7.1)
+  @available(iOS, deprecated: 9999, renamed: "ReducerOf")
+  @available(macOS, deprecated: 9999, renamed: "ReducerOf")
+  @available(tvOS, deprecated: 9999, renamed: "ReducerOf")
+  @available(watchOS, deprecated: 9999, renamed: "ReducerOf")
+  public typealias ReducerProtocolOf<R: Reducer> = Reducer<R.State, R.Action>
+#endif
+
 // MARK: - Deprecated after 0.54.1
 
 extension WithViewStore where ViewState == Void, Content: View {
@@ -60,13 +82,12 @@ extension EffectPublisher where Failure == Never {
                   customDump(error, to: &errorDump, indent: 4)
                   runtimeWarn(
                     """
-                    An "EffectTask.task" returned from "\(fileID):\(line)" threw an unhandled \
-                    error. …
+                    An "Effect.task" returned from "\(fileID):\(line)" threw an unhandled error. …
 
                     \(errorDump)
 
                     All non-cancellation errors must be explicitly handled via the "catch" \
-                    parameter on "EffectTask.task", or via a "do" block.
+                    parameter on "Effect.task", or via a "do" block.
                     """
                   )
                 #endif
@@ -97,7 +118,7 @@ extension Store {
   @available(macOS, deprecated: 9999, message: "Pass a closure as the reducer.")
   @available(tvOS, deprecated: 9999, message: "Pass a closure as the reducer.")
   @available(watchOS, deprecated: 9999, message: "Pass a closure as the reducer.")
-  public convenience init<R: ReducerProtocol>(
+  public convenience init<R: Reducer>(
     initialState: @autoclosure () -> R.State,
     reducer: R,
     prepareDependencies: ((inout DependencyValues) -> Void)? = nil
@@ -123,7 +144,7 @@ extension TestStore {
     *, deprecated,
     message: "Pass a closure as the reducer."
   )
-  public convenience init<R: ReducerProtocol>(
+  public convenience init<R: Reducer>(
     initialState: @autoclosure () -> State,
     reducer: R,
     prepareDependencies: (inout DependencyValues) -> Void = { _ in },
@@ -150,7 +171,7 @@ extension TestStore {
   }
 
   @available(*, deprecated, message: "Pass a closure as the reducer.")
-  public convenience init<R: ReducerProtocol>(
+  public convenience init<R: Reducer>(
     initialState: @autoclosure () -> State,
     reducer: R,
     observe toScopedState: @escaping (State) -> ScopedState,
@@ -180,7 +201,7 @@ extension TestStore {
     *, deprecated,
     message: "Test the reducer domain directly. To test view state and actions, write a unit test."
   )
-  public convenience init<R: ReducerProtocol>(
+  public convenience init<R: Reducer>(
     initialState: @autoclosure () -> State,
     reducer: R,
     observe toScopedState: @escaping (State) -> ScopedState,
@@ -207,7 +228,7 @@ extension TestStore {
   }
 
   @available(*, deprecated, message: "State must be equatable to perform assertions.")
-  public convenience init<R: ReducerProtocol>(
+  public convenience init<R: Reducer>(
     initialState: @autoclosure () -> State,
     reducer: R,
     prepareDependencies: (inout DependencyValues) -> Void = { _ in },
@@ -328,7 +349,7 @@ extension Task where Success == Never, Failure == Never {
   deprecated,
   message: "Use 'ReducerBuilder<_, _>' with explicit 'State' and 'Action' generics, instead."
 )
-public typealias ReducerBuilderOf<R: ReducerProtocol> = ReducerBuilder<R.State, R.Action>
+public typealias ReducerBuilderOf<R: Reducer> = ReducerBuilder<R.State, R.Action>
 
 // NB: As of Swift 5.7, property wrapper deprecations are not diagnosed, so we may want to keep this
 //     deprecation around for now:
@@ -336,7 +357,7 @@ public typealias ReducerBuilderOf<R: ReducerProtocol> = ReducerBuilder<R.State, 
 @available(*, deprecated, renamed: "BindingState")
 public typealias BindableState = BindingState
 
-// MARK: - Deprecated after 0.47.2
+// MARK: - Deprecated after 0.47.2:
 
 extension ActorIsolated {
   @available(
@@ -366,25 +387,6 @@ extension TextState: View {
   }
 }
 
-// MARK: - Deprecated after 0.42.0:
-
-/// This API has been deprecated in favor of ``ReducerProtocol``.
-/// Read <doc:MigratingToTheReducerProtocol> for more information.
-///
-/// A type alias to ``AnyReducer`` for source compatibility. This alias will be removed.
-@available(
-  *,
-  deprecated,
-  renamed: "AnyReducer",
-  message:
-    """
-    'Reducer' has been deprecated in favor of 'ReducerProtocol'.
-
-    See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
-    """
-)
-public typealias Reducer = AnyReducer
-
 // MARK: - Deprecated after 0.41.0:
 
 extension ViewStore {
@@ -395,7 +397,7 @@ extension ViewStore {
   public typealias Action = ViewAction
 }
 
-extension ReducerProtocol {
+extension Reducer {
   @available(*, deprecated, renamed: "_printChanges")
   @warn_unqualified_access
   public func debug() -> _PrintChangesReducer<Self> {
@@ -410,11 +412,11 @@ extension ReducerBuilder {
     deprecated,
     message:
       """
-      Reducer bodies should return 'some ReducerProtocol<State, Action>' instead of 'Reduce<State, Action>'.
+      Reducer bodies should return 'some Reducer<State, Action>' instead of 'Reduce<State, Action>'.
       """
   )
   @inlinable
-  public static func buildFinalResult<R: ReducerProtocol>(_ reducer: R) -> Reduce<State, Action>
+  public static func buildFinalResult<R: Reducer>(_ reducer: R) -> Reduce<State, Action>
   where R.State == State, R.Action == Action {
     Reduce(reducer)
   }
@@ -474,7 +476,7 @@ extension EffectPublisher where Failure == Error {
   @available(
     *,
     deprecated,
-    message: "Use the non-failing version of 'EffectTask.task'"
+    message: "Use the non-failing version of 'Effect.task'"
   )
   public static func task(
     priority: TaskPriority? = nil,
@@ -532,10 +534,7 @@ extension Store {
 // MARK: - Deprecated after 0.38.0:
 
 extension EffectPublisher {
-  @available(iOS, deprecated: 9999, renamed: "unimplemented")
-  @available(macOS, deprecated: 9999, renamed: "unimplemented")
-  @available(tvOS, deprecated: 9999, renamed: "unimplemented")
-  @available(watchOS, deprecated: 9999, renamed: "unimplemented")
+  @available(*, deprecated, renamed: "unimplemented")
   public static func failing(_ prefix: String) -> Self {
     self.unimplemented(prefix)
   }
@@ -571,6 +570,7 @@ extension EffectPublisher {
 
 // MARK: - Deprecated after 0.31.0:
 
+@available(*, deprecated)
 extension AnyReducer {
   @available(
     *,
@@ -944,6 +944,7 @@ extension BindingAction {
   }
 }
 
+@available(*, deprecated)
 extension AnyReducer {
   @available(
     *, deprecated,
@@ -986,6 +987,7 @@ extension ViewStore {
 
 // MARK: - Deprecated after 0.20.0:
 
+@available(*, deprecated)
 extension AnyReducer {
   @available(*, deprecated, message: "Use the 'IdentifiedArray'-based version, instead.")
   public func forEach<ParentState, ParentAction, ParentEnvironment>(

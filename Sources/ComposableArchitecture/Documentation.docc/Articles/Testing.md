@@ -4,8 +4,8 @@ Learn how to write comprehensive and exhaustive tests for your features built in
 Architecture.
 
 The testability of features built in the Composable Architecture is the #1 priority of the library.
-It should be possible to test not only how state changes when actions are sent into the store,
-but also how effects are executed and feed data back into the system.
+It should be possible to test not only how state changes when actions are sent into the store, but
+also how effects are executed and feed data back into the system.
 
 * [Testing state changes][Testing-state-changes]
 * [Testing effects][Testing-effects]
@@ -15,18 +15,16 @@ but also how effects are executed and feed data back into the system.
 ## Testing state changes
 
 State changes are by far the simplest thing to test in features built with the library. A
-``ReducerProtocol``'s first responsibility is to mutate the current state based on the action 
-received into the system. To test this we can technically run a piece of mutable state through the 
-reducer and then assert on how it changed after, like this:
+``Reducer``'s first responsibility is to mutate the current state based on the action received into
+the system. To test this we can technically run a piece of mutable state through the reducer and
+then assert on how it changed after, like this:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   struct State: Equatable { var count = 0 }
   enum Action { case incrementButtonTapped, decrementButtonTapped }
 
-  func reduce(
-    into state: inout State, action: Action
-  ) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .incrementButtonTapped:
       state.count += 1
@@ -179,8 +177,8 @@ store.send(.incrementButtonTapped) {
 
 Testing state mutations as shown in the previous section is powerful, but is only half the story
 when it comes to testing features built in the Composable Architecture. The second responsibility of
-``Reducer``s, after mutating state from an action, is to return an ``EffectTask`` that encapsulates
-a unit of work that runs in the outside world and feeds data back into the system.
+``Reducer``s, after mutating state from an action, is to return an ``Effect`` that encapsulates a
+unit of work that runs in the outside world and feeds data back into the system.
 
 Effects form a major part of a feature's logic. They can perform network requests to external
 services, load and save data to disk, start and stop timers, interact with Apple frameworks (Core
@@ -188,18 +186,15 @@ Location, Core Motion, Speech Recognition, etc.), and more.
 
 As a simple example, suppose we have a feature with a button such that when you tap it, it starts
 a timer that counts up until you reach 5, and then stops. This can be accomplished using the
-``EffectPublisher/run(priority:operation:catch:fileID:line:)`` helper on ``EffectTask``, which
-provides you with an asynchronous context to operate in and can send multiple actions back into the
-system:
+``EffectPublisher/run(priority:operation:catch:fileID:line:)`` helper on ``Effect``, which provides
+you with an asynchronous context to operate in and can send multiple actions back into the system:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   struct State: Equatable { var count = 0 }
   enum Action { case startTimerButtonTapped, timerTick }
 
-  func reduce(
-    into state: inout State, action: Action
-  ) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .startTimerButtonTapped:
       state.count = 0
@@ -331,7 +326,7 @@ asynchrony, but in a way that is controllable. One way to do this is to add a cl
 ```swift
 import Clocks
 
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   struct State { /* ... */ }
   enum Action { /* ... */ }
   @Dependency(\.continuousClock) var clock
@@ -669,12 +664,10 @@ trouble when using non-exhaustive test stores and showing skipped assertions. To
 the following simple reducer that appends a new model to an array when an action is sent:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   struct State: Equatable { var values: [Model] = [] }
   enum Action { case addButtonTapped }
-  func reduce(
-    into state: inout State, action: Action
-  ) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .addButtonTapped:
       state.values.append(Model())
@@ -744,12 +737,10 @@ struct Model: Equatable {
 And then move the responsibility of generating new IDs to the reducer:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   // ...
   @Dependency(\.uuid) var uuid
-  func reduce(
-    into state: inout State, action: Action
-  ) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .addButtonTapped:
       state.values.append(Model(id: self.uuid()))

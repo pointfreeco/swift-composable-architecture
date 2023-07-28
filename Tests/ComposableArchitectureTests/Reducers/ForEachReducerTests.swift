@@ -71,7 +71,7 @@ final class ForEachReducerTests: BaseTCATestCase {
 
   func testAutomaticEffectCancellation() async {
     if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-      struct Timer: ReducerProtocol {
+      struct Timer: Reducer {
         struct State: Equatable, Identifiable {
           let id: UUID
           var elapsed = 0
@@ -95,7 +95,7 @@ final class ForEachReducerTests: BaseTCATestCase {
           }
         }
       }
-      struct Timers: ReducerProtocol {
+      struct Timers: Reducer {
         struct State: Equatable {
           var timers: IdentifiedArrayOf<Timer.State> = []
         }
@@ -105,7 +105,7 @@ final class ForEachReducerTests: BaseTCATestCase {
           case timers(id: Timer.State.ID, action: Timer.Action)
         }
         @Dependency(\.uuid) var uuid
-        var body: some ReducerProtocol<State, Action> {
+        var body: some ReducerOf<Self> {
           Reduce { state, action in
             switch action {
             case .addTimerButtonTapped:
@@ -219,7 +219,7 @@ final class ForEachReducerTests: BaseTCATestCase {
   }
 }
 
-struct Elements: ReducerProtocol {
+struct Elements: Reducer {
   struct State: Equatable {
     struct Row: Equatable, Identifiable {
       var id: Int
@@ -231,7 +231,7 @@ struct Elements: ReducerProtocol {
     case buttonTapped
     case row(id: Int, action: String)
   }
-  var body: some ReducerProtocol<State, Action> {
+  var body: some ReducerOf<Self> {
     Reduce { state, action in
       .none
     }

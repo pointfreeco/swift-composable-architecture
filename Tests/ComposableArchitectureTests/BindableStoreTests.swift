@@ -6,7 +6,7 @@ import XCTest
 @MainActor
 final class BindableStoreTests: XCTestCase {
   func testBindableStore() {
-    struct BindableReducer: ReducerProtocol {
+    struct BindableReducer: Reducer {
       struct State: Equatable {
         @BindingState var something: Int
       }
@@ -15,7 +15,7 @@ final class BindableStoreTests: XCTestCase {
         case binding(BindingAction<State>)
       }
 
-      var body: some ReducerProtocol<State, Action> {
+      var body: some ReducerOf<Self> {
         BindingReducer()
       }
     }

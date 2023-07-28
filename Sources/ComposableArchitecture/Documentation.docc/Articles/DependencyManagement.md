@@ -32,12 +32,12 @@ data to be written to disk, or user defaults to be written, or any number of thi
 better to use mock versions of those dependencies so that the user can interact with your feature
 in a fully controlled environment.
 
-To do this you can use the ``ReducerProtocol/dependency(_:_:)`` method to override a reducer's
+To do this you can use the ``Reducer/dependency(_:_:)`` method to override a reducer's
 dependency with another value:
 
 ```swift
-struct Onboarding: ReducerProtocol {
-  var body: some ReducerProtocol<State, Action> {
+struct Onboarding: Reducer {
+  var body: some Reducer<State, Action> {
     Reduce { state, action in 
       // Additional onboarding logic
     }

@@ -33,7 +33,6 @@ final class VoiceMemosTests: XCTestCase {
       $0.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
       $0.uuid = .constant(deadbeefID)
     }
-    store.useMainSerialExecutor = true
 
     await store.send(.recordButtonTapped)
     await store.receive(.recordPermissionResponse(true)) {
@@ -235,7 +234,6 @@ final class VoiceMemosTests: XCTestCase {
       $0.uuid = .constant(deadbeefID)
     }
     store.exhaustivity = .off(showSkippedAssertions: true)
-    store.useMainSerialExecutor = true
 
     await store.send(.recordButtonTapped)
     await store.send(.recordingMemo(.presented(.onTask)))

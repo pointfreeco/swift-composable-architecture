@@ -19,7 +19,7 @@ It also allows for complex and recursive navigation paths in your application.
 ## Basics
 
 The tools for this style of navigation include ``StackState``, ``StackAction`` and the
-``ReducerProtocol/forEach(_:action:destination:fileID:line:)`` operator, as well as a new 
+``Reducer/forEach(_:action:destination:fileID:line:)`` operator, as well as a new 
 ``NavigationStackStore`` view that behaves like `NavigationStack` but is tuned specifically for the 
 Composable Architecture.
 
@@ -30,10 +30,10 @@ together. This consists of defining a new reducer, typically called `Path`, that
 of all the features that can be pushed onto the stack:
 
 ```swift
-struct RootFeature: ReducerProtocol {
+struct RootFeature: Reducer {
   // ...
 
-  struct Path: ReducerProtocol {
+  struct Path: Reducer {
     enum State {
       case addItem(AddFeature.State)
       case detailItem(DetailFeature.State)
@@ -44,7 +44,7 @@ struct RootFeature: ReducerProtocol {
       case detailItem(DetailFeature.Action)
       case editItem(EditFeature.Action)
     }
-    var body: some ReducerProtocolOf<Self> {
+    var body: some ReducerOf<Self> {
       Scope(state: /State.addItem, action: /Action.addItem) { 
         AddFeature()
       }
@@ -66,7 +66,7 @@ Once the `Path` reducer is defined we can then hold onto ``StackState`` and ``St
 feature that manages the navigation stack:
 
 ```swift
-struct RootFeature: ReducerProtocol {
+struct RootFeature: Reducer {
   struct State {
     var path = StackState<Path.State>()
     // ...
@@ -81,15 +81,15 @@ struct RootFeature: ReducerProtocol {
 > Note: ``StackAction`` is generic over both state and action of the `Path` domain. This is 
 > different from ``PresentationAction``, which only has a single generic.
 
-And then we must make use of the ``ReducerProtocol/forEach(_:action:destination:fileID:line:)``
+And then we must make use of the ``Reducer/forEach(_:action:destination:fileID:line:)``
 method to integrate the domains of all the features that can be navigated to with the domain of the
 parent feature:
 
 ```swift
-struct RootFeature: ReducerProtocol {
+struct RootFeature: Reducer {
   // ...
 
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce { state, action in 
       // Core logic for root feature
     }
@@ -267,14 +267,14 @@ where the rest of your feature's logic and behavior resides. It is accessed via 
 dependency management system (see <doc:DependencyManagement>) using ``DismissEffect``:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   struct State { /* ... */ }
   enum Action { 
     case closeButtonTapped
     // ...
   }
   @Dependency(\.dismiss) var dismiss
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .closeButtonTapped:
       return .run { _ in await self.dismiss() }
@@ -324,7 +324,7 @@ As an example, consider the following simple counter feature that wants to dismi
 count is greater than or equal to 5:
 
 ```swift
-struct CounterFeature: ReducerProtocol {
+struct CounterFeature: Reducer {
   struct State: Equatable {
     var count = 0
   }
@@ -335,7 +335,7 @@ struct CounterFeature: ReducerProtocol {
 
   @Dependency(\.dismiss) var dismiss
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .decrementButtonTapped:
       state.count += 1
@@ -354,7 +354,7 @@ struct CounterFeature: ReducerProtocol {
 And then let's embed that feature into a parent feature:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   struct State: Equatable {
     var path = StackState<Path.State>()
   }
@@ -362,16 +362,16 @@ struct Feature: ReducerProtocol {
     case path(StackAction<Path.State, Path.Action>)
   }
 
-  struct Path: ReducerProtocol {
+  struct Path: Reducer {
     enum State: Equatable { case counter(Counter.State) }
     enum Action: Equatable { case counter(Counter.Action) }
-    var body: some ReducerProtocolOf<Self> {
+    var body: some ReducerOf<Self> {
       Scope(state: /State.counter, action: /Action.counter) { Counter() }
     }
   }
 
-  var body: some ReducerProtocolOf<Self> {
-    Reduce { state, action in 
+  var body: some ReducerOf<Self> {
+    Reduce { state, action in
       // Logic and behavior for core feature.
     }
     .forEach(\.path, action: /Action.path) { Path() }

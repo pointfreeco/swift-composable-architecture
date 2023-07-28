@@ -1,11 +1,11 @@
-extension ReducerProtocol {
+extension Reducer {
   /// Embeds a child reducer in a parent domain that works on an optional property of parent state.
   ///
   /// For example, if a parent feature holds onto a piece of optional child state, then it can
   /// perform its core logic _and_ the child's logic by using the `ifLet` operator:
   ///
   /// ```swift
-  /// struct Parent: ReducerProtocol {
+  /// struct Parent: Reducer {
   ///   struct State {
   ///     var child: Child.State?
   ///     // ...
@@ -15,7 +15,7 @@ extension ReducerProtocol {
   ///     // ...
   ///   }
   ///
-  ///   var body: some ReducerProtocol<State, Action> {
+  ///   var body: some Reducer<State, Action> {
   ///     Reduce { state, action in
   ///       // Core logic for parent feature
   ///     }
@@ -39,8 +39,8 @@ extension ReducerProtocol {
   ///   * Automatically `nil`s out child state when an action is sent for alerts and confirmation
   ///     dialogs.
   ///
-  /// See ``ReducerProtocol/ifLet(_:action:destination:fileID:line:)`` for a more advanced operator
-  /// suited to navigation.
+  /// See ``Reducer/ifLet(_:action:destination:fileID:line:)`` for a more advanced operator suited
+  /// to navigation.
   ///
   /// - Parameters:
   ///   - toWrappedState: A writable key path from parent state to a property containing optional
@@ -51,7 +51,7 @@ extension ReducerProtocol {
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @inlinable
   @warn_unqualified_access
-  public func ifLet<WrappedState, WrappedAction, Wrapped: ReducerProtocol>(
+  public func ifLet<WrappedState, WrappedAction, Wrapped: Reducer>(
     _ toWrappedState: WritableKeyPath<State, WrappedState?>,
     action toWrappedAction: CasePath<Action, WrappedAction>,
     @ReducerBuilder<WrappedState, WrappedAction> then wrapped: () -> Wrapped,
@@ -88,7 +88,7 @@ extension ReducerProtocol {
   }
 }
 
-public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: ReducerProtocol {
+public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   @usableFromInline
   let parent: Parent
 
@@ -128,7 +128,7 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
 
   public func reduce(
     into state: inout Parent.State, action: Parent.Action
-  ) -> EffectTask<Parent.Action> {
+  ) -> Effect<Parent.Action> {
     let childEffects = self.reduceChild(into: &state, action: action)
 
     let childIDBefore = state[keyPath: self.toChildState].map {
@@ -147,7 +147,7 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
       state[keyPath: toChildState] = nil
     }
 
-    let childCancelEffects: EffectTask<Parent.Action>
+    let childCancelEffects: Effect<Parent.Action>
     if let childID = childIDBefore, childID != childIDAfter {
       childCancelEffects = ._cancel(id: childID, navigationID: self.navigationIDPath)
     } else {
@@ -163,7 +163,7 @@ public struct _IfLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: Re
 
   func reduceChild(
     into state: inout Parent.State, action: Parent.Action
-  ) -> EffectTask<Parent.Action> {
+  ) -> Effect<Parent.Action> {
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     guard state[keyPath: self.toChildState] != nil else {

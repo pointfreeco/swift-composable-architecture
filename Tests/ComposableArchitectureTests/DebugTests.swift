@@ -99,10 +99,10 @@
 
     @MainActor
     func testDebugReducer() async {
-      struct DebuggedReducer: ReducerProtocol {
+      struct DebuggedReducer: Reducer {
         typealias State = Int
         typealias Action = Bool
-        func reduce(into state: inout Int, action: Bool) -> EffectTask<Bool> {
+        func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
           state += action ? 1 : -1
           return .none
         }

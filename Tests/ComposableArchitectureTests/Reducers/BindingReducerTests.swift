@@ -3,7 +3,7 @@ import XCTest
 
 @MainActor
 final class BindingTests: BaseTCATestCase {
-  struct BindingTest: ReducerProtocol {
+  struct BindingTest: Reducer {
     struct State: Equatable {
       @BindingState var nested = Nested()
 
@@ -16,7 +16,7 @@ final class BindingTests: BaseTCATestCase {
       case binding(BindingAction<State>)
     }
 
-    var body: some ReducerProtocol<State, Action> {
+    var body: some ReducerOf<Self> {
       BindingReducer()
       Reduce { state, action in
         switch action {
@@ -48,14 +48,14 @@ final class BindingTests: BaseTCATestCase {
   }
 
   func testViewEquality() {
-    struct Feature: ReducerProtocol {
+    struct Feature: Reducer {
       struct State: Equatable {
         @BindingState var count = 0
       }
       enum Action: BindableAction, Equatable {
         case binding(BindingAction<State>)
       }
-      var body: some ReducerProtocolOf<Self> {
+      var body: some ReducerOf<Self> {
         BindingReducer()
       }
     }

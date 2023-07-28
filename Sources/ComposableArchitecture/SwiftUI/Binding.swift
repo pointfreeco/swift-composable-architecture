@@ -8,6 +8,12 @@ import SwiftUI
 /// used to safely eliminate the boilerplate that is typically incurred when working with multiple
 /// mutable fields on state.
 ///
+/// > Note: It is not necessary to annotate _every_ field with `@BindingState`, and in fact it is
+/// > not recommended. Marking a field with the property wrapper makes it instantly mutable from the
+/// > outside, which may hurt the encapsulation of your feature. It is best to limit the usage of
+/// > the property wrapper to only those fields that need to have bindings derived for handing to
+/// > SwiftUI components.
+///
 /// Read <doc:Bindings> for more information.
 @dynamicMemberLookup
 @propertyWrapper
@@ -38,7 +44,7 @@ public struct BindingState<Value> {
   /// `@BindingState`. To get the `projectedValue`, prefix the property with `$`:
   ///
   /// ```swift
-  /// TextField("Display name", text: viewStore.binding(\.$displayName))
+  /// TextField("Display name", text: viewStore.$displayName)
   /// ```
   ///
   /// See ``BindingState`` for more details.
@@ -56,7 +62,7 @@ public struct BindingState<Value> {
     deprecated,
     message:
       """
-      Chaining onto properties of binding state is deprecated. Instead of pattern matching into a deeper property of binding state, use 'ReducerProtocol.onChange(of:)' to detect changes to nested properties of binding state. Instead of using 'viewStore.binding(\\.$nested.property)', use dynamic member lookup ('viewStore.$nested.property').
+      Chaining onto properties of binding state is deprecated. Instead of pattern matching into a deeper property of binding state, use 'Reducer.onChange(of:)' to detect changes to nested properties of binding state. Instead of using 'viewStore.binding(\\.$nested.property)', use dynamic member lookup ('viewStore.$nested.property').
       """
   )
   public subscript<Subject>(
@@ -237,10 +243,7 @@ extension BindingAction: CustomDumpStringConvertible {
 }
 
 extension BindingAction {
-  @available(iOS, deprecated: 9999, message: "Use 'BindingViewState' instead.")
-  @available(macOS, deprecated: 9999, message: "Use 'BindingViewState' instead.")
-  @available(tvOS, deprecated: 9999, message: "Use 'BindingViewState' instead.")
-  @available(watchOS, deprecated: 9999, message: "Use 'BindingViewState' instead.")
+  @available(*, deprecated, message: "Use 'BindingViewState' instead.")
   public func pullback<NewRoot>(
     _ keyPath: WritableKeyPath<NewRoot, Root>
   ) -> BindingAction<NewRoot> {

@@ -87,7 +87,7 @@ extension View {
     if #available(iOS 15, tvOS 15, watchOS 8, *) {
       self.modifier(
         NewConfirmationDialogModifier(
-          viewStore: ViewStore(store, removeDuplicates: { $0?.id == $1?.id }),
+          viewStore: ViewStore(store, observe: { $0 }, removeDuplicates: { $0?.id == $1?.id }),
           dismiss: dismiss
         )
       )
@@ -95,7 +95,7 @@ extension View {
       #if !os(macOS)
         self.modifier(
           OldConfirmationDialogModifier(
-            viewStore: ViewStore(store, removeDuplicates: { $0?.id == $1?.id }),
+            viewStore: ViewStore(store, observe: { $0 }, removeDuplicates: { $0?.id == $1?.id }),
             dismiss: dismiss
           )
         )

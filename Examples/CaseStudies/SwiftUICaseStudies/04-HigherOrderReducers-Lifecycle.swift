@@ -11,7 +11,7 @@ private let readMe = """
   are sent to the store.
   """
 
-struct LifecycleReducer<Wrapped: ReducerProtocol>: ReducerProtocol {
+struct LifecycleReducer<Wrapped: Reducer>: Reducer {
   enum Action {
     case onAppear
     case onDisappear
@@ -19,10 +19,10 @@ struct LifecycleReducer<Wrapped: ReducerProtocol>: ReducerProtocol {
   }
 
   let wrapped: Wrapped
-  let onAppear: EffectTask<Wrapped.Action>
-  let onDisappear: EffectTask<Never>
+  let onAppear: Effect<Wrapped.Action>
+  let onDisappear: Effect<Never>
 
-  var body: some ReducerProtocol<Wrapped.State?, Action> {
+  var body: some Reducer<Wrapped.State?, Action> {
     Reduce { state, lifecycleAction in
       switch lifecycleAction {
       case .onAppear:
@@ -43,10 +43,10 @@ struct LifecycleReducer<Wrapped: ReducerProtocol>: ReducerProtocol {
 
 extension LifecycleReducer.Action: Equatable where Wrapped.Action: Equatable {}
 
-extension ReducerProtocol {
+extension Reducer {
   func lifecycle(
-    onAppear: EffectTask<Action>,
-    onDisappear: EffectTask<Never> = .none
+    onAppear: Effect<Action>,
+    onDisappear: Effect<Never> = .none
   ) -> LifecycleReducer<Self> {
     LifecycleReducer(wrapped: self, onAppear: onAppear, onDisappear: onDisappear)
   }
@@ -54,7 +54,7 @@ extension ReducerProtocol {
 
 // MARK: - Feature domain
 
-struct LifecycleDemo: ReducerProtocol {
+struct LifecycleDemo: Reducer {
   struct State: Equatable {
     var count: Int?
   }
@@ -67,7 +67,7 @@ struct LifecycleDemo: ReducerProtocol {
   @Dependency(\.continuousClock) var clock
   private enum CancelID { case lifecycle }
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
       case .timer:
@@ -117,7 +117,7 @@ struct LifecycleDemoView: View {
   }
 }
 
-struct Timer: ReducerProtocol {
+struct Timer: Reducer {
   typealias State = Int
 
   enum Action {
@@ -126,7 +126,7 @@ struct Timer: ReducerProtocol {
     case tick
   }
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
       case .decrementButtonTapped:

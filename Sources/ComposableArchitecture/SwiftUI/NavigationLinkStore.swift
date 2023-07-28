@@ -7,8 +7,8 @@ import SwiftUI
 ///
 /// Typically you use this view by first modeling your features as having a parent feature that
 /// holds onto an optional piece of child state using the ``PresentationState``,
-/// ``PresentationAction`` and ``ReducerProtocol/ifLet(_:action:destination:fileID:line:)`` tools
-/// (see <doc:TreeBasedNavigation> for more information). Then in the view you can construct a
+/// ``PresentationAction`` and ``Reducer/ifLet(_:action:destination:fileID:line:)`` tools (see
+/// <doc:TreeBasedNavigation> for more information). Then in the view you can construct a
 /// `NavigationLinkStore` by passing a ``Store`` that is focused on the presentation domain:
 ///
 /// ```swift
@@ -23,8 +23,8 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// Then when the `child` state flips from `nil` to non-`nil` a drill-down animation will occur
-/// to the child domain.
+/// Then when the `child` state flips from `nil` to non-`nil` a drill-down animation will occur to
+/// the child domain.
 @available(iOS, introduced: 13, deprecated: 16)
 @available(macOS, introduced: 10.15, deprecated: 13)
 @available(tvOS, introduced: 13, deprecated: 16)
@@ -77,7 +77,8 @@ public struct NavigationLinkStore<
       store.scope(
         state: { $0.wrappedValue.flatMap(toDestinationState) != nil },
         action: { $0 }
-      )
+      ),
+      observe: { $0 }
     )
     self.toDestinationState = toDestinationState
     self.fromDestinationAction = fromDestinationAction
@@ -120,7 +121,8 @@ public struct NavigationLinkStore<
       store.scope(
         state: { $0.wrappedValue.flatMap(toDestinationState)?.id == id },
         action: { $0 }
-      )
+      ),
+      observe: { $0 }
     )
     self.toDestinationState = toDestinationState
     self.fromDestinationAction = fromDestinationAction

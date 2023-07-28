@@ -2,7 +2,7 @@ import ComposableArchitecture
 import Speech
 import SwiftUI
 
-struct RecordMeeting: ReducerProtocol {
+struct RecordMeeting: Reducer {
   struct State: Equatable {
     @PresentationState var alert: AlertState<Action.Alert>?
     var secondsElapsed = 0
@@ -39,7 +39,7 @@ struct RecordMeeting: ReducerProtocol {
 
   private enum CancelID { case timer }
 
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce<State, Action> { state, action in
       switch action {
       case .alert(.presented(.confirmDiscard)):
@@ -139,7 +139,7 @@ struct RecordMeeting: ReducerProtocol {
     }
   }
 
-  private func meetingFinished(transcript: String) -> EffectTask<Action> {
+  private func meetingFinished(transcript: String) -> Effect<Action> {
     .merge(
       .cancel(id: CancelID.timer),
       .send(.delegate(.save(transcript: transcript)))

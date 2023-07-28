@@ -5,7 +5,7 @@ to integrate features in the reducer and view layers, and how to write tests.
 
 ## Overview
 
-State-driven navigation is a powerful concept in application development, but can be tricky to 
+State-driven navigation is a powerful concept in application development, but can be tricky to
 master. The Composable Architecture provides the tools necessary to model your domains as concisely
 as possible and drive navigation from state, but there are a few concepts to learn in order to best
 use these tools.
@@ -13,6 +13,7 @@ use these tools.
 ## Topics
 
 ### Essentials
+
 - <doc:WhatIsNavigation>
 
 ### Tree-based navigation
@@ -20,7 +21,7 @@ use these tools.
 - <doc:TreeBasedNavigation>
 - ``PresentationState``
 - ``PresentationAction``
-- ``ReducerProtocol/ifLet(_:action:destination:fileID:line:)``
+- ``Reducer/ifLet(_:action:destination:fileID:line:)``
 - ``DismissEffect``
 
 ### Stack-based navigation
@@ -29,5 +30,5 @@ use these tools.
 - ``StackState``
 - ``StackAction``
 - ``StackElementID``
-- ``ReducerProtocol/forEach(_:action:destination:fileID:line:)``
+- ``Reducer/forEach(_:action:destination:fileID:line:)``
 - ``DismissEffect``

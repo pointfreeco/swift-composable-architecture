@@ -12,9 +12,10 @@ instead.
 ### Reducer structure
 
 - ``AnyReducer``
-- ``Reducer``
+- ``ReducerProtocol``
+- ``ReducerProtocolOf``
 - ``DebugEnvironment``
 
 ### Reducer modifiers
 
-- ``ReducerProtocol/debug()``
+- ``Reducer/debug()``

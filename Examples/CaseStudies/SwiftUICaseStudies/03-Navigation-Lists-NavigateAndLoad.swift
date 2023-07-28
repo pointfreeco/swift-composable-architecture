@@ -10,7 +10,7 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct NavigateAndLoadList: ReducerProtocol {
+struct NavigateAndLoadList: Reducer {
   struct State: Equatable {
     var rows: IdentifiedArrayOf<Row> = [
       Row(count: 1, id: UUID()),
@@ -34,7 +34,7 @@ struct NavigateAndLoadList: ReducerProtocol {
   @Dependency(\.continuousClock) var clock
   private enum CancelID { case load }
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
       case .counter:

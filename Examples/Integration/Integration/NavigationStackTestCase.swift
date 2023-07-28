@@ -8,7 +8,7 @@ private struct DestinationView: View {
   }
 }
 
-private struct ChildFeature: ReducerProtocol {
+private struct ChildFeature: Reducer {
   struct State: Hashable {
     @PresentationState var alert: AlertState<Action.Alert>?
     @PresentationState var navigationDestination: Int?
@@ -33,7 +33,7 @@ private struct ChildFeature: ReducerProtocol {
     }
   }
   @Dependency(\.dismiss) var dismiss
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       case .alert:
@@ -135,7 +135,7 @@ private struct ChildView: View {
   }
 }
 
-private struct NavigationStackTestCase: ReducerProtocol {
+private struct NavigationStackTestCase: Reducer {
   struct State: Equatable {
     var children = StackState<ChildFeature.State>()
     var childResponse: Int?
@@ -143,7 +143,7 @@ private struct NavigationStackTestCase: ReducerProtocol {
   enum Action {
     case child(StackAction<ChildFeature.State, ChildFeature.Action>)
   }
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       case let .child(.element(id: _, action: .response(value))):

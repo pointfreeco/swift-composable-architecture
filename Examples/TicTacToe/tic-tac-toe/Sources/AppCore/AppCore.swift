@@ -4,7 +4,7 @@ import Dispatch
 import LoginCore
 import NewGameCore
 
-public struct TicTacToe: ReducerProtocol {
+public struct TicTacToe: Reducer {
   public enum State: Equatable {
     case login(Login.State)
     case newGame(NewGame.State)
@@ -19,7 +19,7 @@ public struct TicTacToe: ReducerProtocol {
 
   public init() {}
 
-  public var body: some ReducerProtocol<State, Action> {
+  public var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
       case .login(.twoFactor(.presented(.twoFactorResponse(.success)))):

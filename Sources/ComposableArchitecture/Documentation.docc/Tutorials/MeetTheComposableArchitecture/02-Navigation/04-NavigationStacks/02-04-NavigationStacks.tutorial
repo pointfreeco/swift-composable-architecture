@@ -20,15 +20,15 @@
       
       @Step {
         Add a `State` struct to fulfill that requirement for the 
-        ``ComposableArchitecture/ReducerProtocol``. The only state we currently need is the contact,
-        and it can be `let` since we do not plan on mutating it from this screen.
+        ``ComposableArchitecture/Reducer`` protocol. The only state we currently need is the
+        contact, and it can be `let` since we do not plan on mutating it from this screen.
         
         @Code(name: "ContactDetailFeature.swift", file: 02-04-01-code-0001)
       }
       
       @Step {
         Add an `Action` enum to fulfill that requirement for the
-        ``ComposableArchitecture/ReducerProtocol``. There are not currently any actions that can
+        ``ComposableArchitecture/Reducer`` protocol. There are not currently any actions that can
         be performed in this feature, so we will leave it empty.
         
         @Code(name: "ContactDetailFeature.swift", file: 02-04-01-code-0002)
@@ -36,7 +36,7 @@
       
       @Step {
         Implement a basic `body` property to fulfill that requirement of
-        ``ComposableArchitecture/ReducerProtocol``. Since there are no actions in this feature
+        ``ComposableArchitecture/Reducer`` protocol. Since there are no actions in this feature
         there is nothing we can do in the reducer. More will be added to this later.
         
         @Code(name: "ContactDetailFeature.swift", file: 02-04-01-code-0003)
@@ -111,8 +111,8 @@
       
       @Step {
         At the very end of the reducer use the
-        ``ComposableArchitecture/ReducerProtocol/forEach(_:action:destination:fileID:line:)``
-        operator to integrate the `ContactDetailFeature` into the stack of the `ContactsFeature`.
+        ``ComposableArchitecture/Reducer/forEach(_:action:destination:fileID:line:)`` operator to
+        integrate the `ContactDetailFeature` into the stack of the `ContactsFeature`.
         
         > Tip: Scroll down to the bottom of the code snippet to see the application of the
         > `forEach` operator.

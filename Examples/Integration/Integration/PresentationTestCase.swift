@@ -2,7 +2,7 @@
 import SwiftUI
 import SwiftUINavigation
 
-private struct PresentationTestCase: ReducerProtocol {
+private struct PresentationTestCase: Reducer {
   struct State: Equatable {
     var message = ""
     @PresentationState var destination: Destination.State?
@@ -19,7 +19,7 @@ private struct PresentationTestCase: ReducerProtocol {
     case sheetButtonTapped
   }
 
-  struct Destination: ReducerProtocol {
+  struct Destination: Reducer {
     enum State: Equatable {
       case alert(AlertState<AlertAction>)
       case customAlert
@@ -52,7 +52,7 @@ private struct PresentationTestCase: ReducerProtocol {
       case showDialog
       case showSheet
     }
-    var body: some ReducerProtocolOf<Self> {
+    var body: some ReducerOf<Self> {
       Scope(state: /State.fullScreenCover, action: /Action.fullScreenCover) {
         ChildFeature()
       }
@@ -71,7 +71,7 @@ private struct PresentationTestCase: ReducerProtocol {
     }
   }
 
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce<State, Action> { state, action in
       switch action {
       case .destination(.presented) where state.destination == nil:
@@ -231,7 +231,7 @@ private struct PresentationTestCase: ReducerProtocol {
   }
 }
 
-private struct ChildFeature: ReducerProtocol {
+private struct ChildFeature: Reducer {
   struct State: Equatable, Identifiable {
     var id = UUID()
     var count = 0
@@ -249,7 +249,7 @@ private struct ChildFeature: ReducerProtocol {
     case startButtonTapped
   }
   @Dependency(\.dismiss) var dismiss
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     BindingReducer()
     Reduce<State, Action> { state, action in
       switch action {
@@ -444,7 +444,7 @@ private struct ChildView: View {
   }
 }
 
-private struct NavigationLinkDemoFeature: ReducerProtocol {
+private struct NavigationLinkDemoFeature: Reducer {
   struct State: Equatable {
     var message = ""
     @PresentationState var child: ChildFeature.State?
@@ -457,7 +457,7 @@ private struct NavigationLinkDemoFeature: ReducerProtocol {
     case navigationLinkButtonTapped
     case nonDeadbeefIdentifiedNavigationLinkButtonTapped
   }
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce<State, Action> { state, action in
       switch action {
       case .child(.presented) where state.child == nil:

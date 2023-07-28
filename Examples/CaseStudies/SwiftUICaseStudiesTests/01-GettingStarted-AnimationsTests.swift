@@ -14,7 +14,6 @@ final class AnimationTests: XCTestCase {
     } withDependencies: {
       $0.continuousClock = clock
     }
-    store.useMainSerialExecutor = true
 
     await store.send(.rainbowButtonTapped)
     await store.receive(.setColor(.red)) {

@@ -37,7 +37,7 @@ For example, if the root of our application was a tab view, then we could model 
 struct that holds each tab's state as a property:
 
 ```swift
-struct AppFeature: ReducerProtocol {
+struct AppFeature: Reducer {
   struct State {
     var activity: Activity.State
     var search: Search.State
@@ -85,7 +85,7 @@ only the bare essentials of state necessary for the view to do its job. For exam
 we need access to the currently selected tab in state:
 
 ```swift
-struct AppFeature: ReducerProtocol {
+struct AppFeature: Reducer {
   enum Tab { case activity, search, profile }
   struct State {
     var activity: Activity.State
@@ -220,9 +220,9 @@ This is an inefficient way to share logic. Sending actions is not as lightweight
 as, say, calling a method on a class. Actions travel through multiple layers of an application, and 
 at each layer a reducer can intercept and reinterpret the action.
 
-It is far better to share logic via simple methods on your ``ReducerProtocol`` conformance.
+It is far better to share logic via simple methods on your ``Reducer`` conformance.
 The helper methods can take `inout State` as an argument if it needs to make mutations, and it
-can return an `EffectTask<Action>`. This allows you to share logic without incurring the cost
+can return an `Effect<Action>`. This allows you to share logic without incurring the cost
 of sending needless actions.
 
 For example, suppose that there are 3 UI components in your feature such that when any is changed
@@ -231,7 +231,7 @@ and execute an effect. That common mutation and effect could be put into its own
 each user action can return an effect that immediately emits that shared action:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   struct State {
     // ...
   }
@@ -239,7 +239,7 @@ struct Feature: ReducerProtocol {
     // ...
   }
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .buttonTapped:
       state.count += 1
@@ -307,12 +307,12 @@ and executing synchronous effects.
 
 Instead, we recommend sharing logic with methods defined in your feature's reducer. The method has
 full access to all dependencies, it can take an `inout State` if it needs to make mutations to 
-state, and it can return an `EffectTask<Action>` if it needs to execute effects.
+state, and it can return an `Effect<Action>` if it needs to execute effects.
 
 The above example can be refactored like so:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   struct State {
     // ...
   }
@@ -320,7 +320,7 @@ struct Feature: ReducerProtocol {
     // ...
   }
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .buttonTapped:
       state.count += 1
@@ -336,7 +336,7 @@ struct Feature: ReducerProtocol {
     }
   }
 
-  func sharedComputation(state: inout State) -> EffectTask<Action> {
+  func sharedComputation(state: inout State) -> Effect<Action> {
     // Some shared work to compute something.
     return .run { send in
       // A shared effect to compute something
@@ -386,7 +386,7 @@ store.send(.textFieldChanged("Hello") {
 
 Reducers are run on the main thread and so they are not appropriate for performing intense CPU
 work. If you need to perform lots of CPU-bound work, then it is more appropriate to use an
-``EffectTask``, which will operate in the cooperative thread pool, and then send actions back into 
+``Effect``, which will operate in the cooperative thread pool, and then send actions back into 
 the system. You should also make sure to perform your CPU intensive work in a cooperative manner by
 periodically suspending with `Task.yield()` so that you do not block a thread in the cooperative
 pool for too long.

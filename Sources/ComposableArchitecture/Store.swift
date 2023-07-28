@@ -132,7 +132,7 @@ public final class Store<State, Action> {
   var _isInvalidated = { false }
   private var isSending = false
   var parentCancellable: AnyCancellable?
-  private let reducer: any ReducerProtocol<State, Action>
+  private let reducer: any Reducer<State, Action>
   @_spi(Internals) public var state: CurrentValueSubject<State, Never>
   #if DEBUG
     private let mainThreadChecksEnabled: Bool
@@ -145,10 +145,10 @@ public final class Store<State, Action> {
   ///   - reducer: The reducer that powers the business logic of the application.
   ///   - prepareDependencies: A closure that can be used to override dependencies that will be accessed
   ///     by the reducer.
-  public convenience init<R: ReducerProtocol>(
+  public convenience init<R: Reducer>(
     initialState: @autoclosure () -> R.State,
     @ReducerBuilder<State, Action> reducer: () -> R,
-    withDependencies prepareDependencies: ((_ dependencies: inout DependencyValues) -> Void)? = nil
+    withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
   ) where R.State == State, R.Action == Action {
     if let prepareDependencies = prepareDependencies {
       let (initialState, reducer) = withDependencies(prepareDependencies) {
@@ -228,7 +228,7 @@ public final class Store<State, Action> {
   ///
   /// ```swift
   /// // Application state made from child states.
-  /// struct AppFeature: ReducerProtocol {
+  /// struct AppFeature: Reducer {
   ///   struct State {
   ///     var login: Login.State
   ///     // ...
@@ -265,7 +265,7 @@ public final class Store<State, Action> {
   /// first:
   ///
   /// ```swift
-  /// struct Login: ReducerProtocol {
+  /// struct Login: Reducer {
   ///   struct State: Equatable {
   ///     var email = ""
   ///     var password = ""
@@ -394,9 +394,7 @@ public final class Store<State, Action> {
     self.scope(
       state: toChildState,
       action: fromChildAction,
-      removeDuplicates: {
-        $0.sharesStorage(with: $1)
-      }
+      removeDuplicates: { $0.sharesStorage(with: $1) }
     )
   }
 
@@ -524,12 +522,12 @@ public final class Store<State, Action> {
                           Effect returned from:
                             \(debugCaseOutput(action))
 
-                        Avoid sending actions using the 'send' argument from 'EffectTask.run' after \
-                        the effect has completed. This can happen if you escape the 'send' argument in \
-                        an unstructured context.
+                        Avoid sending actions using the 'send' argument from 'Effect.run' after \
+                        the effect has completed. This can happen if you escape the 'send' \
+                        argument in an unstructured context.
 
-                        To fix this, make sure that your 'run' closure does not return until you're \
-                        done calling 'send'.
+                        To fix this, make sure that your 'run' closure does not return until \
+                        you're done calling 'send'.
                         """
                       )
                     }
@@ -565,12 +563,12 @@ public final class Store<State, Action> {
     }
   }
 
-  /// Returns a "stateless" store by erasing state to `Void`.
+  @available(*, deprecated, message: "Send actions directly to 'store' instead.")
   public var stateless: Store<Void, Action> {
     self.scope(state: { _ in () }, action: { $0 })
   }
 
-  /// Returns an "actionless" store by erasing action to `Never`.
+  @available(*, deprecated, message: "Define a domain-specific, empty 'Action' enum instead.")
   public var actionless: Store<State, Never> {
     func absurd<A>(_ never: Never) -> A {}
     return self.scope(state: { $0 }, action: absurd)
@@ -663,7 +661,7 @@ public final class Store<State, Action> {
     #endif
   }
 
-  init<R: ReducerProtocol>(
+  init<R: Reducer>(
     initialState: R.State,
     reducer: R,
     mainThreadChecksEnabled: Bool
@@ -690,9 +688,9 @@ public final class Store<State, Action> {
 /// ```swift
 /// let store: StoreOf<Feature>
 /// ```
-public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
+public typealias StoreOf<R: Reducer> = Store<R.State, R.Action>
 
-extension ReducerProtocol {
+extension Reducer {
   fileprivate func rescope<ChildState, ChildAction>(
     _ store: Store<State, Action>,
     state toChildState: @escaping (State) -> ChildState,
@@ -708,9 +706,7 @@ extension ReducerProtocol {
   }
 }
 
-private final class ScopedReducer<
-  RootState, RootAction, State, Action
->: ReducerProtocol {
+private final class ScopedReducer<RootState, RootAction, State, Action>: Reducer {
   let rootStore: Store<RootState, RootAction>
   let toScopedState: (RootState) -> State
   private let parentStores: [Any]
@@ -740,9 +736,7 @@ private final class ScopedReducer<
   }
 
   @inlinable
-  func reduce(
-    into state: inout State, action: Action
-  ) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     self.isSending = true
     defer {
       state = self.toScopedState(self.rootStore.state.value)

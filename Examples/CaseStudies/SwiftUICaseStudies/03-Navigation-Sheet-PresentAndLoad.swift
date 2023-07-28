@@ -10,7 +10,7 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct PresentAndLoad: ReducerProtocol {
+struct PresentAndLoad: Reducer {
   struct State: Equatable {
     var optionalCounter: Counter.State?
     var isSheetPresented = false
@@ -25,7 +25,7 @@ struct PresentAndLoad: ReducerProtocol {
   @Dependency(\.continuousClock) var clock
   private enum CancelID { case load }
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
       case .setSheet(isPresented: true):

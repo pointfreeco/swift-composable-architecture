@@ -1,6 +1,6 @@
 import ComposableArchitecture
 
-struct AddContactFeature: ReducerProtocol {
+struct AddContactFeature: Reducer {
   struct State: Equatable {
     var contact: Contact
   }
@@ -15,7 +15,7 @@ struct AddContactFeature: ReducerProtocol {
     }
   }
   @Dependency(\.dismiss) var dismiss
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .cancelButtonTapped:
       return .run { _ in await self.dismiss() }

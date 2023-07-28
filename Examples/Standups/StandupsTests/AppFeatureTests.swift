@@ -16,7 +16,6 @@ final class AppFeatureTests: XCTestCase {
         initialData: try! JSONEncoder().encode([standup])
       )
     }
-    store.useMainSerialExecutor = true
 
     await store.send(.path(.push(id: 0, state: .detail(StandupDetail.State(standup: standup))))) {
       $0.path[id: 0] = .detail(StandupDetail.State(standup: standup))
@@ -139,7 +138,6 @@ final class AppFeatureTests: XCTestCase {
       $0.uuid = .incrementing
     }
     store.exhaustivity = .off
-    store.useMainSerialExecutor = true
 
     await store.send(.path(.element(id: 1, action: .record(.onTask))))
     await store.receive(

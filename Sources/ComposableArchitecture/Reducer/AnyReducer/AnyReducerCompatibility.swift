@@ -1,40 +1,9 @@
 extension Reduce {
   @available(
-    iOS,
-    deprecated: 9999,
+    *, deprecated,
     message:
       """
-      'Reducer' has been deprecated in favor of 'ReducerProtocol'.
-
-      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
-      """
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message:
-      """
-      'Reducer' has been deprecated in favor of 'ReducerProtocol'.
-
-      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
-      """
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message:
-      """
-      'Reducer' has been deprecated in favor of 'ReducerProtocol'.
-
-      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
-      """
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message:
-      """
-      'Reducer' has been deprecated in favor of 'ReducerProtocol'.
+      'AnyReducer' has been deprecated in favor of 'Reducer'.
 
       See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """
@@ -50,47 +19,16 @@ extension Reduce {
 }
 
 @available(
-  iOS,
-  deprecated: 9999,
+  *, deprecated,
   message:
     """
-    'Reducer' has been deprecated in favor of 'ReducerProtocol'.
-
-    See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
-    """
-)
-@available(
-  macOS,
-  deprecated: 9999,
-  message:
-    """
-    'Reducer' has been deprecated in favor of 'ReducerProtocol'.
-
-    See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
-    """
-)
-@available(
-  tvOS,
-  deprecated: 9999,
-  message:
-    """
-    'Reducer' has been deprecated in favor of 'ReducerProtocol'.
-
-    See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
-    """
-)
-@available(
-  watchOS,
-  deprecated: 9999,
-  message:
-    """
-    'Reducer' has been deprecated in favor of 'ReducerProtocol'.
+    'AnyReducer' has been deprecated in favor of 'Reducer'.
 
     See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
     """
 )
 extension AnyReducer {
-  public init<R: ReducerProtocol>(
+  public init<R: Reducer>(
     @ReducerBuilder<State, Action> _ build: @escaping (Environment) -> R
   ) where R.State == State, R.Action == Action {
     self.init { state, action, environment in
@@ -98,7 +36,7 @@ extension AnyReducer {
     }
   }
 
-  public init<R: ReducerProtocol>(_ reducer: R) where R.State == State, R.Action == Action {
+  public init<R: Reducer>(_ reducer: R) where R.State == State, R.Action == Action {
     self.init { _ in reducer }
   }
 }
@@ -111,41 +49,10 @@ extension Store {
   ///   - reducer: The reducer that powers the business logic of the application.
   ///   - environment: The environment of dependencies for the application.
   @available(
-    iOS,
-    deprecated: 9999,
+    *, deprecated,
     message:
       """
-      'Reducer' has been deprecated in favor of 'ReducerProtocol'.
-
-      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
-      """
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message:
-      """
-      'Reducer' has been deprecated in favor of 'ReducerProtocol'.
-
-      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
-      """
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message:
-      """
-      'Reducer' has been deprecated in favor of 'ReducerProtocol'.
-
-      See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
-      """
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message:
-      """
-      'Reducer' has been deprecated in favor of 'ReducerProtocol'.
+      'AnyReducer' has been deprecated in favor of 'Reducer'.
 
       See the migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/reducerprotocol
       """

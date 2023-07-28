@@ -1,13 +1,12 @@
 /// A protocol that describes how to evolve the current state of an application to the next state,
-/// given an action, and describes what ``EffectTask``s should be executed later by the store, if
-/// any.
+/// given an action, and describes what ``Effect``s should be executed later by the store, if any.
 ///
 /// Conform types to this protocol to represent the domain, logic and behavior for your feature.
 /// The domain is specified by the "state" and "actions", which can be nested types inside the
 /// conformance:
 ///
 /// ```swift
-/// struct Feature: ReducerProtocol {
+/// struct Feature: Reducer {
 ///   struct State {
 ///     var count = 0
 ///   }
@@ -22,13 +21,13 @@
 ///
 /// The logic of your feature is implemented by mutating the feature's current state when an action
 /// comes into the system. This is most easily done by implementing the
-/// ``ReducerProtocol/reduce(into:action:)-8yinq`` method of the protocol.
+/// ``Reducer/reduce(into:action:)-4zl56`` method of the protocol.
 ///
 /// ```swift
-/// struct Feature: ReducerProtocol {
+/// struct Feature: Reducer {
 ///   // ...
 ///
-///   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+///   func reduce(into state: inout State, action: Action) -> Effect<Action> {
 ///     switch action {
 ///     case .decrementButtonTapped:
 ///       state.count -= 1
@@ -52,7 +51,7 @@
 /// the `count` will be incremented. That could be done like so:
 ///
 /// ```swift
-/// struct Feature: ReducerProtocol {
+/// struct Feature: Reducer {
 ///   struct State {
 ///     var count = 0
 ///   }
@@ -65,7 +64,7 @@
 ///   }
 ///   enum CancelID { case timer }
 ///
-///   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+///   func reduce(into state: inout State, action: Action) -> Effect<Action> {
 ///     switch action {
 ///     case .decrementButtonTapped:
 ///       state.count -= 1
@@ -101,24 +100,24 @@
 /// method. Read the <doc:DependencyManagement> and <doc:Testing> articles for more
 /// information.
 ///
-/// That is the basics of implementing a feature as a conformance to ``ReducerProtocol``. There are
+/// That is the basics of implementing a feature as a conformance to ``Reducer``. There are
 /// actually two ways to define a reducer:
 ///
-///   1. You can either implement the ``reduce(into:action:)-8yinq`` method, as shown above, which
+///   1. You can either implement the ``reduce(into:action:)-4zl56`` method, as shown above, which
 ///   is given direct mutable access to application ``State`` whenever an ``Action`` is fed into
-///   the system, and returns an ``EffectTask`` that can communicate with the outside world and
+///   the system, and returns an ``Effect`` that can communicate with the outside world and
 ///   feed additional ``Action``s back into the system.
 ///
-///   2. Or you can implement the ``body-swift.property-7foai`` property, which combines one or
+///   2. Or you can implement the ``body-swift.property-8lumc`` property, which combines one or
 ///   more reducers together.
 ///
 /// At most one of these requirements should be implemented. If a conformance implements both
-/// requirements, only ``reduce(into:action:)-8yinq`` will be called by the ``Store``. If your
+/// requirements, only ``reduce(into:action:)-4zl56`` will be called by the ``Store``. If your
 /// reducer assembles a body from other reducers _and_ has additional business logic it needs to
 /// layer onto the feature, introduce this logic into the body instead, either with ``Reduce``:
 ///
 /// ```swift
-/// var body: some ReducerProtocol<State, Action> {
+/// var body: some Reducer<State, Action> {
 ///   Reduce { state, action in
 ///     // extra logic
 ///   }
@@ -131,26 +130,26 @@
 /// …or moving the extra logic to a method that is wrapped in ``Reduce``:
 ///
 /// ```swift
-/// var body: some ReducerProtocol<State, Action> {
+/// var body: some Reducer<State, Action> {
 ///   Reduce(self.core)
 ///   Activity()
 ///   Profile()
 ///   Settings()
 /// }
 ///
-/// func core(state: inout State, action: Action) -> EffectTask<Action> {
+/// func core(state: inout State, action: Action) -> Effect<Action> {
 ///   // extra logic
 /// }
 /// ```
 ///
 /// If you are implementing a custom reducer operator that transforms an existing reducer,
-/// _always_ invoke the ``reduce(into:action:)-8yinq`` method, never the
-/// ``body-swift.property-7foai``. For example, this operator that logs all actions sent to the
+/// _always_ invoke the ``reduce(into:action:)-4zl56`` method, never the
+/// ``body-swift.property-8lumc``. For example, this operator that logs all actions sent to the
 /// reducer:
 ///
 /// ```swift
-/// extension ReducerProtocol {
-///   func logActions() -> some ReducerProtocol<State, Action> {
+/// extension Reducer {
+///   func logActions() -> some Reducer<State, Action> {
 ///     Reduce { state, action in
 ///       print("Received action: \(action)")
 ///       return self.reduce(into: &state, action: action)
@@ -159,12 +158,12 @@
 /// }
 /// ```
 ///
-public protocol ReducerProtocol<State, Action> {
+public protocol Reducer<State, Action> {
   /// A type that holds the current state of the reducer.
   associatedtype State
 
   /// A type that holds all possible actions that cause the ``State`` of the reducer to change
-  /// and/or kick off a side ``EffectTask`` that can communicate with the outside world.
+  /// and/or kick off a side ``Effect`` that can communicate with the outside world.
   associatedtype Action
 
   // NB: For Xcode to favor autocompleting `var body: Body` over `var body: Never` we must use a
@@ -173,21 +172,21 @@ public protocol ReducerProtocol<State, Action> {
   #if DEBUG
     associatedtype _Body
 
-    /// A type representing the body of this reducer.
+    /// A type representing the body of this reducer. // 6f25w
     ///
-    /// When you create a custom reducer by implementing the ``body-swift.property-7foai``, Swift
+    /// When you create a custom reducer by implementing the ``body-swift.property-8lumc``, Swift
     /// infers this type from the value returned.
     ///
-    /// If you create a custom reducer by implementing the ``reduce(into:action:)-8yinq``, Swift
+    /// If you create a custom reducer by implementing the ``reduce(into:action:)-4zl56``, Swift
     /// infers this type to be `Never`.
     typealias Body = _Body
   #else
     /// A type representing the body of this reducer.
     ///
-    /// When you create a custom reducer by implementing the ``body-swift.property-7foai``, Swift
+    /// When you create a custom reducer by implementing the ``body-swift.property-8lumc``, Swift
     /// infers this type from the value returned.
     ///
-    /// If you create a custom reducer by implementing the ``reduce(into:action:)-8yinq``, Swift
+    /// If you create a custom reducer by implementing the ``reduce(into:action:)-4zl56``, Swift
     /// infers this type to be `Never`.
     associatedtype Body
   #endif
@@ -196,7 +195,7 @@ public protocol ReducerProtocol<State, Action> {
   ///
   /// Implement this requirement for "primitive" reducers, or reducers that work on leaf node
   /// features. To define a reducer by combining the logic of other reducers together, implement
-  /// the ``body-swift.property-97ymy`` requirement instead.
+  /// the ``body-swift.property-8lumc`` requirement instead.
   ///
   /// - Parameters:
   ///   - state: The current state of the reducer.
@@ -204,7 +203,7 @@ public protocol ReducerProtocol<State, Action> {
   ///     side effect that can communicate with the outside world.
   /// - Returns: An effect that can communicate with the outside world and feed actions back into
   ///   the system.
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action>
+  func reduce(into state: inout State, action: Action) -> Effect<Action>
 
   /// The content and behavior of a reducer that is composed from other reducers.
   ///
@@ -213,8 +212,8 @@ public protocol ReducerProtocol<State, Action> {
   ///
   /// Do not invoke this property directly.
   ///
-  /// > Important: if your reducer implements the ``reduce(into:action:)-8yinq`` method, it will
-  /// > take precedence over this property, and only ``reduce(into:action:)-8yinq`` will be called
+  /// > Important: if your reducer implements the ``reduce(into:action:)-4zl56`` method, it will
+  /// > take precedence over this property, and only ``reduce(into:action:)-4zl56`` will be called
   /// > by the ``Store``. If your reducer assembles a body from other reducers and has additional
   /// > business logic it needs to layer into the system, introduce this logic into the body
   /// > instead, either with ``Reduce``, or with a separate, dedicated conformance.
@@ -222,7 +221,7 @@ public protocol ReducerProtocol<State, Action> {
   var body: Body { get }
 }
 
-extension ReducerProtocol where Body == Never {
+extension Reducer where Body == Never {
   /// A non-existent body.
   ///
   /// > Warning: Do not invoke this property directly. It will trigger a fatal error at runtime.
@@ -239,12 +238,12 @@ extension ReducerProtocol where Body == Never {
   }
 }
 
-extension ReducerProtocol where Body: ReducerProtocol, Body.State == State, Body.Action == Action {
-  /// Invokes the ``Body-40qdd``'s implementation of ``reduce(into:action:)-8yinq``.
+extension Reducer where Body: Reducer, Body.State == State, Body.Action == Action {
+  /// Invokes the ``Body-40qdd``'s implementation of ``reduce(into:action:)-4zl56``.
   @inlinable
   public func reduce(
     into state: inout Body.State, action: Body.Action
-  ) -> EffectTask<Body.Action> {
+  ) -> Effect<Body.Action> {
     self.body.reduce(into: &state, action: action)
   }
 }
@@ -252,13 +251,12 @@ extension ReducerProtocol where Body: ReducerProtocol, Body.State == State, Body
 // NB: This is available starting from Swift 5.7.1 due to the following bug:
 //     https://github.com/apple/swift/issues/60550
 #if swift(>=5.7.1)
-  /// A convenience for constraining a ``ReducerProtocol`` conformance. Available starting from Swift
-  /// 5.7.1.
+  /// A convenience for constraining a ``Reducer`` conformance.
   ///
-  /// This allows you to specify the `body` of a ``ReducerProtocol`` conformance like so:
+  /// This allows you to specify the `body` of a ``Reducer`` conformance like so:
   ///
   /// ```swift
-  /// var body: some ReducerProtocolOf<Self> {
+  /// var body: some ReducerOf<Self> {
   ///   // ...
   /// }
   /// ```
@@ -266,9 +264,9 @@ extension ReducerProtocol where Body: ReducerProtocol, Body.State == State, Body
   /// …instead of the more verbose:
   ///
   /// ```swift
-  /// var body: some ReducerProtocol<State, Action> {
+  /// var body: some Reducer<State, Action> {
   ///   // ...
   /// }
   /// ```
-  public typealias ReducerProtocolOf<R: ReducerProtocol> = ReducerProtocol<R.State, R.Action>
+  public typealias ReducerOf<R: Reducer> = Reducer<R.State, R.Action>
 #endif

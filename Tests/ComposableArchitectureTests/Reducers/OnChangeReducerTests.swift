@@ -4,7 +4,7 @@ import XCTest
 @MainActor
 final class OnChangeReducerTests: BaseTCATestCase {
   func testOnChange() async {
-    struct Feature: ReducerProtocol {
+    struct Feature: Reducer {
       struct State: Equatable {
         var count = 0
         var description = ""
@@ -13,7 +13,7 @@ final class OnChangeReducerTests: BaseTCATestCase {
         case incrementButtonTapped
         case decrementButtonTapped
       }
-      var body: some ReducerProtocolOf<Self> {
+      var body: some ReducerOf<Self> {
         Reduce { state, action in
           switch action {
           case .decrementButtonTapped:

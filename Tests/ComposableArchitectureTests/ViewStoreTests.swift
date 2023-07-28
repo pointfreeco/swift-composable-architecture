@@ -38,10 +38,10 @@ final class ViewStoreTests: BaseTCATestCase {
     let store3 = store2.scope(state: { $0 }, action: { $0 })
     let store4 = store3.scope(state: { $0 }, action: { $0 })
 
-    let viewStore1 = ViewStore(store1)
-    let viewStore2 = ViewStore(store2)
-    let viewStore3 = ViewStore(store3)
-    let viewStore4 = ViewStore(store4)
+    let viewStore1 = ViewStore(store1, observe: { $0 })
+    let viewStore2 = ViewStore(store2, observe: { $0 })
+    let viewStore3 = ViewStore(store3, observe: { $0 })
+    let viewStore4 = ViewStore(store4, observe: { $0 })
 
     viewStore1.publisher.sink { _ in }.store(in: &self.cancellables)
     viewStore2.publisher.sink { _ in }.store(in: &self.cancellables)

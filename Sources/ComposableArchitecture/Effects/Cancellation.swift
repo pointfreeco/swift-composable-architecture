@@ -97,13 +97,19 @@ extension EffectPublisher {
   /// - Returns: A new effect that will cancel any currently in-flight effect with the given
   ///   identifier.
   public static func cancel<ID: Hashable>(id: ID) -> Self {
+    let dependencies = DependencyValues._current
     @Dependency(\.navigationIDPath) var navigationIDPath
-
-    return .fireAndForget {
-      _cancellablesLock.sync {
-        _cancellationCancellables.cancel(id: id, path: navigationIDPath)
+    return Deferred { () -> Publishers.CompactMap<Result<Action?, Failure>.Publisher, Action> in
+      DependencyValues.$_current.withValue(dependencies) {
+        _cancellablesLock.sync {
+          _cancellationCancellables.cancel(id: id, path: navigationIDPath)
+        }
       }
+      return Just<Action?>(nil)
+        .setFailureType(to: Failure.self)
+        .compactMap { $0 }
     }
+    .eraseToEffectPublisher()
   }
 }
 

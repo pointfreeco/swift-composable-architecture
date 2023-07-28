@@ -17,24 +17,20 @@ final class TestStoreTests: BaseTCATestCase {
         switch action {
         case .a:
           return .merge(
-            EffectTask.concatenate(.init(value: .b1), .init(value: .c1))
-              .delay(for: 1, scheduler: mainQueue)
-              .eraseToEffect(),
-            Empty(completeImmediately: false)
-              .eraseToEffect()
+            .run { send in
+              try await mainQueue.sleep(for: .seconds(1))
+              await send(.b1)
+              await send(.c1)
+            },
+            .run { _ in try await Task.never() }
               .cancellable(id: 1)
           )
         case .b1:
-          return
-            EffectTask
-            .concatenate(.init(value: .b2), .init(value: .b3))
+          return .concatenate(.send(.b2), .send(.b3))
         case .c1:
-          return
-            EffectTask
-            .concatenate(.init(value: .c2), .init(value: .c3))
+          return .concatenate(.send(.c2), .send(.c3))
         case .b2, .b3, .c2, .c3:
           return .none
-
         case .d:
           return .cancel(id: 1)
         }
@@ -115,16 +111,15 @@ final class TestStoreTests: BaseTCATestCase {
         $0.count = 1
       }
 
-      XCTExpectFailure {
-        _ = store.send(.increment) {
-          $0.isChanging = false
-        }
+      XCTExpectFailure()
+      await store.send(.increment) {
+        $0.isChanging = false
       }
-      XCTExpectFailure {
-        store.receive(.changed(from: 1, to: 2)) {
-          $0.isChanging = true
-          $0.count = 1100
-        }
+
+      XCTExpectFailure()
+      await store.receive(.changed(from: 1, to: 2)) {
+        $0.isChanging = true
+        $0.count = 1100
       }
     }
 
@@ -151,15 +146,14 @@ final class TestStoreTests: BaseTCATestCase {
       await store.send(.noop)
       await store.receive(.finished)
 
-      XCTExpectFailure {
-        _ = store.send(.noop) {
-          $0.count = 0
-        }
+      XCTExpectFailure()
+      await store.send(.noop) {
+        $0.count = 0
       }
-      XCTExpectFailure {
-        store.receive(.finished) {
-          $0.count = 0
-        }
+
+      XCTExpectFailure()
+      await store.receive(.finished) {
+        $0.count = 0
       }
     }
 
@@ -188,15 +182,13 @@ final class TestStoreTests: BaseTCATestCase {
       }
       _ = { wait(for: [predicateShouldBeCalledExpectation], timeout: 0) }()
 
-      XCTExpectFailure {
-        store.send(.noop)
-        store.receive(.noop)
-      }
+      await store.send(.noop)
+      XCTExpectFailure()
+      await store.receive(.noop)
 
-      XCTExpectFailure {
-        store.send(.noop)
-        store.receive { $0 == .noop }
-      }
+      await store.send(.noop)
+      XCTExpectFailure()
+      await store.receive { $0 == .noop }
     }
   #endif
 
@@ -207,7 +199,7 @@ final class TestStoreTests: BaseTCATestCase {
         switch action {
         case .a:
           count += 1
-          return .merge(.init(value: .b), .init(value: .c), .init(value: .d))
+          return .merge(.send(.b), .send(.c), .send(.d))
         case .b, .c, .d:
           count += 1
           return .none
@@ -237,14 +229,14 @@ final class TestStoreTests: BaseTCATestCase {
     XCTAssertEqual(store.state, 4)
   }
 
-  func testOverrideDependenciesDirectlyOnReducer() {
-    struct Counter: ReducerProtocol {
+  func testOverrideDependenciesDirectlyOnReducer() async {
+    struct Counter: Reducer {
       @Dependency(\.calendar) var calendar
       @Dependency(\.locale) var locale
       @Dependency(\.timeZone) var timeZone
       @Dependency(\.urlSession) var urlSession
 
-      func reduce(into state: inout Int, action: Bool) -> EffectTask<Bool> {
+      func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
         _ = self.calendar
         _ = self.locale
         _ = self.timeZone
@@ -262,17 +254,17 @@ final class TestStoreTests: BaseTCATestCase {
         .dependency(\.urlSession, URLSession(configuration: .ephemeral))
     }
 
-    store.send(true) { $0 = 1 }
+    await store.send(true) { $0 = 1 }
   }
 
-  func testOverrideDependenciesOnTestStore() {
-    struct Counter: ReducerProtocol {
+  func testOverrideDependenciesOnTestStore() async {
+    struct Counter: Reducer {
       @Dependency(\.calendar) var calendar
       @Dependency(\.locale) var locale
       @Dependency(\.timeZone) var timeZone
       @Dependency(\.urlSession) var urlSession
 
-      func reduce(into state: inout Int, action: Bool) -> EffectTask<Bool> {
+      func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
         _ = self.calendar
         _ = self.locale
         _ = self.timeZone
@@ -290,14 +282,14 @@ final class TestStoreTests: BaseTCATestCase {
     store.dependencies.timeZone = TimeZone(secondsFromGMT: 0)!
     store.dependencies.urlSession = URLSession(configuration: .ephemeral)
 
-    store.send(true) { $0 = 1 }
+    await store.send(true) { $0 = 1 }
   }
 
-  func testOverrideDependenciesOnTestStore_MidwayChange() {
-    struct Counter: ReducerProtocol {
+  func testOverrideDependenciesOnTestStore_MidwayChange() async {
+    struct Counter: Reducer {
       @Dependency(\.date.now) var now
 
-      func reduce(into state: inout Int, action: ()) -> EffectTask<Void> {
+      func reduce(into state: inout Int, action: ()) -> Effect<Void> {
         state = Int(self.now.timeIntervalSince1970)
         return .none
       }
@@ -309,22 +301,22 @@ final class TestStoreTests: BaseTCATestCase {
       $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
     }
 
-    store.send(()) { $0 = 1_234_567_890 }
+    await store.send(()) { $0 = 1_234_567_890 }
 
     store.dependencies.date.now = Date(timeIntervalSince1970: 987_654_321)
 
-    store.send(()) { $0 = 987_654_321 }
+    await store.send(()) { $0 = 987_654_321 }
   }
 
-  func testOverrideDependenciesOnTestStore_Init() {
-    struct Counter: ReducerProtocol {
+  func testOverrideDependenciesOnTestStore_Init() async {
+    struct Counter: Reducer {
       @Dependency(\.calendar) var calendar
       @Dependency(\.client.fetch) var fetch
       @Dependency(\.locale) var locale
       @Dependency(\.timeZone) var timeZone
       @Dependency(\.urlSession) var urlSession
 
-      func reduce(into state: inout Int, action: Bool) -> EffectTask<Bool> {
+      func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
         _ = self.calendar
         _ = self.fetch()
         _ = self.locale
@@ -345,11 +337,11 @@ final class TestStoreTests: BaseTCATestCase {
       $0.urlSession = URLSession(configuration: .ephemeral)
     }
 
-    store.send(true) { $0 = 1 }
+    await store.send(true) { $0 = 1 }
   }
 
   func testDependenciesEarlyBinding() async {
-    struct Feature: ReducerProtocol {
+    struct Feature: Reducer {
       struct State: Equatable {
         var count = 0
         var date: Date
@@ -363,7 +355,7 @@ final class TestStoreTests: BaseTCATestCase {
         case response(Int)
       }
       @Dependency(\.date.now) var now: Date
-      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+      func reduce(into state: inout State, action: Action) -> Effect<Action> {
         switch action {
         case .tap:
           state.count += 1
@@ -484,12 +476,12 @@ final class TestStoreTests: BaseTCATestCase {
       Reduce<State, Action> { state, action in
         switch action {
         case .start:
-          return
+          return .publisher {
             subject
-            .subscribe(on: scheduler)
-            .receive(on: scheduler)
-            .map { .increment }
-            .eraseToEffect()
+              .subscribe(on: scheduler)
+              .receive(on: scheduler)
+              .map { .increment }
+          }
         case .increment:
           state.count += 1
           return .none
@@ -503,6 +495,30 @@ final class TestStoreTests: BaseTCATestCase {
     await scheduler.advance()
     await store.receive(.increment) { $0.count = 1 }
     await task.cancel()
+  }
+
+  func testMainSerialExecutor_AutoAssignsAndResets_False() async {
+    uncheckedUseMainSerialExecutor = false
+    XCTAssertFalse(uncheckedUseMainSerialExecutor)
+    var store: TestStore? = TestStore(initialState: 0) {
+      EmptyReducer<Int, Void>()
+    }
+    XCTAssertTrue(uncheckedUseMainSerialExecutor)
+    store = nil
+    XCTAssertFalse(uncheckedUseMainSerialExecutor)
+    _ = store
+  }
+
+  func testMainSerialExecutor_AutoAssignsAndResets_True() async {
+    uncheckedUseMainSerialExecutor = true
+    XCTAssertTrue(uncheckedUseMainSerialExecutor)
+    var store: TestStore? = TestStore(initialState: 0) {
+      EmptyReducer<Int, Void>()
+    }
+    XCTAssertTrue(uncheckedUseMainSerialExecutor)
+    store = nil
+    XCTAssertTrue(uncheckedUseMainSerialExecutor)
+    _ = store
   }
 }
 

@@ -2,6 +2,7 @@ import Combine
 import ComposableArchitecture
 import XCTest
 
+@available(*, deprecated)
 final class EffectDeferredTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
 
