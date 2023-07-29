@@ -207,17 +207,24 @@
       }
       
       @Step {
+        We can handle all other destination actions by simply returning a `.none` effect to 
+        represent there is no other work to perform.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0012)
+      }
+      
+      @Step {
         Update the state mutation for showing an alert to instead point the `destination` to the
         `alert` case.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0012)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0013)
       }
       
       @Step {
         Replace the two `ifLet`s that were used at the bottom of the reducer with a single one that
         runs the `Destination` reducer whenever the `destination` state is non-`nil`.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0013)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0014)
       }
       
       That's all it takes to convert two independent, imprecisely modeled optional values into a 
@@ -231,7 +238,7 @@
         `Destination.State` enum, and an action transformation for embedding a child action into
         a particular case of the `Destination.Action` enum.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0014, previousFile: 02-02-02-code-0014-previous)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0015, previousFile: 02-02-02-code-0015-previous)
       }
       
       @Step {
@@ -239,7 +246,7 @@
         is an enum, and extracting a particular case from it. We can do this by using a case path
         derived from the `addContact` case.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0015)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0016)
       }
       
       @Step {
@@ -247,13 +254,13 @@
         `AddContactFeature` domain and embedding it into the `Destination.Action` enum. This can
         be done by using the case of the enum as a function.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0016)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0017)
       }
       
       @Step {
         The same can be done for the `alert(store:)` view modifier.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0017)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0018)
       }
       
       That completes the refactor of the reducer and view to use a single piece of optional enum

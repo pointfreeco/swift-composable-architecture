@@ -30,6 +30,9 @@ struct ContactsFeature: Reducer {
         state.contacts.remove(id: id)
         return .none
 
+      case .destination:
+        return .none
+
       case let .deleteButtonTapped(id: id):
         state.destination = .alert(
           AlertState {
@@ -43,8 +46,9 @@ struct ContactsFeature: Reducer {
         return .none
       }
     }
-    .ifLet(\.$destination, action: /Action.destination) {
-      Destination()
+    .ifLet(\.$addContact, action: /Action.addContact) {
+      AddContactFeature()
     }
+    .ifLet(\.$alert, action: /Action.alert)
   }
 }
