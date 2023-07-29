@@ -18,8 +18,8 @@ struct StandupDetail: Reducer {
 
     enum Delegate: Equatable {
       case deleteStandup
-      case startMeeting
       case standupUpdated(Standup)
+      case startMeeting
     }
   }
 

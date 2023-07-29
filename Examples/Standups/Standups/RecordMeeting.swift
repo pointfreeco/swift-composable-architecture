@@ -46,7 +46,10 @@ struct RecordMeeting: Reducer {
         }
 
       case .alert(.presented(.confirmSave)):
-        return self.meetingFinished(transcript: state.transcript)
+        return .run { [transcript = state.transcript] send in
+          await send(.delegate(.save(transcript: transcript)))
+          await self.dismiss()
+        }
 
       case .alert:
         return .none
@@ -97,7 +100,10 @@ struct RecordMeeting: Reducer {
         let secondsPerAttendee = Int(state.standup.durationPerAttendee.components.seconds)
         if state.secondsElapsed.isMultiple(of: secondsPerAttendee) {
           if state.speakerIndex == state.standup.attendees.count - 1 {
-            return self.meetingFinished(transcript: state.transcript)
+            return .run { [transcript = state.transcript] send in
+              await send(.delegate(.save(transcript: transcript)))
+              await self.dismiss()
+            }
           }
           state.speakerIndex += 1
         }
@@ -133,13 +139,6 @@ struct RecordMeeting: Reducer {
   private func startTimer(send: Send<Action>) async {
     for await _ in self.clock.timer(interval: .seconds(1)) {
       await send(.timerTick)
-    }
-  }
-
-  private func meetingFinished(transcript: String) -> Effect<Action> {
-    .run { send in
-      await send(.delegate(.save(transcript: transcript)))
-      await self.dismiss()
     }
   }
 }

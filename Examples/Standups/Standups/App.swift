@@ -12,7 +12,7 @@ struct StandupsApp: App {
       if ProcessInfo.processInfo.environment["UITesting"] == "true" {
         UITestingView()
       } else if _XCTIsTesting {
-        // NB: Don't run application when testing so that it doesn't interfer with tests.
+        // NB: Don't run application when testing so that it doesn't interfere with tests.
         EmptyView()
       } else {
         AppView(

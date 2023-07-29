@@ -2266,23 +2266,4 @@ final class PresentationReducerTests: BaseTCATestCase {
       $0.child = nil
     }
   }
-
-  func testOverrideDismissEffect() async {
-    struct Feature: Reducer {
-      struct State: Equatable {}
-      enum Action: Equatable { case dismiss }
-      @Dependency(\.dismiss) var dismiss
-      var body: some ReducerOf<Self> {
-        Reduce { _, _ in .run { _ in await self.dismiss() } }
-      }
-    }
-
-    let store = TestStore(initialState: Feature.State()) {
-      Feature()
-    } withDependencies: {
-      $0.dismiss = DismissEffect { }
-    }
-
-    await store.send(.dismiss)
-  }
 }
