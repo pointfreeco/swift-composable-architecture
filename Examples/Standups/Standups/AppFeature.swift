@@ -50,9 +50,11 @@ struct AppFeature: Reducer {
         case let .save(transcript: transcript):
           guard let id = state.path.ids.dropLast().last
           else {
-            XCTFail("""
-              Record meeting is the only element in the stack. A detail feature should proceed it.
-              """)
+            XCTFail(
+              """
+              Record meeting is the only element in the stack. A detail feature should precede it.
+              """
+            )
             return .none
           }
 
