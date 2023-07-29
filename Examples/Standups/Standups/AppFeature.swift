@@ -27,12 +27,6 @@ struct AppFeature: Reducer {
     }
     Reduce<State, Action> { state, action in
       switch action {
-      case let .path(.popFrom(id)):
-        guard case let .some(.detail(detailState)) = state.path[id: id]
-        else { return .none }
-        state.standupsList.standups[id: detailState.standup.id]? = detailState.standup
-        return .none
-
       case let .path(.element(id, .detail(.delegate(delegateAction)))):
         guard case let .some(.detail(detailState)) = state.path[id: id]
         else { return .none }
@@ -42,18 +36,25 @@ struct AppFeature: Reducer {
           state.standupsList.standups.remove(id: detailState.standup.id)
           return .none
 
+        case let .standupUpdated(standup):
+          state.standupsList.standups[id: standup.id] = standup
+          return .none
+
         case .startMeeting:
           state.path.append(.record(RecordMeeting.State(standup: detailState.standup)))
           return .none
         }
 
-      case let .path(.element(id, .record(.delegate(delegateAction)))):
+      case let .path(.element(_, .record(.delegate(delegateAction)))):
         switch delegateAction {
         case let .save(transcript: transcript):
-          state.path.pop(from: id)
-
-          guard let id = state.path.ids.last
-          else { return .none }
+          guard let id = state.path.ids.dropLast().last
+          else {
+            XCTFail("""
+              Record meeting is the only element in the stack. A detail feature should proceed it.
+              """)
+            return .none
+          }
 
           state.path[id: id, case: /Path.State.detail]?.standup.meetings.insert(
             Meeting(
@@ -63,6 +64,9 @@ struct AppFeature: Reducer {
             ),
             at: 0
           )
+          guard let standup = state.path[id: id, case: /Path.State.detail]?.standup
+          else { return .none }
+          state.standupsList.standups[id: standup.id] = standup
           return .none
         }
 

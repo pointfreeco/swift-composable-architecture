@@ -86,11 +86,9 @@ final class AppFeatureTests: XCTestCase {
       }
     }
 
-    await store.send(.path(.popFrom(id: 0))) {
-      $0.path = StackState()
+    await store.receive(.path(.element(id: 0, action: .detail(.delegate(.standupUpdated(standup)))))) {
       $0.standupsList.standups[0].title = "Blob"
     }
-    .finish()
 
     var savedStandup = standup
     savedStandup.title = "Blob"
@@ -145,7 +143,6 @@ final class AppFeatureTests: XCTestCase {
         .element(id: 1, action: .record(.delegate(.save(transcript: "I completed the project"))))
       )
     ) {
-      $0.path.pop(to: 0)
       $0.path[id: 0, case: /AppFeature.Path.State.detail]?.standup.meetings = [
         Meeting(
           id: Meeting.ID(UUID(0)),
@@ -153,6 +150,9 @@ final class AppFeatureTests: XCTestCase {
           transcript: "I completed the project"
         )
       ]
+    }
+    await store.receive(.path(.popFrom(id: 1))) {
+      XCTAssertEqual($0.path.count, 1)
     }
   }
 }
