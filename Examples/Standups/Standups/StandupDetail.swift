@@ -18,6 +18,7 @@ struct StandupDetail: Reducer {
 
     enum Delegate: Equatable {
       case deleteStandup
+      case standupUpdated(Standup)
       case startMeeting
     }
   }
@@ -115,6 +116,11 @@ struct StandupDetail: Reducer {
     }
     .ifLet(\.$destination, action: /Action.destination) {
       Destination()
+    }
+    .onChange(of: \.standup) { oldValue, newValue in
+      Reduce { state, action in
+        .send(.delegate(.standupUpdated(newValue)))
+      }
     }
   }
 }
