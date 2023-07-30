@@ -65,7 +65,8 @@ extension View {
 @available(
   *,
   deprecated,
-  message: """
+  message:
+    """
     Use 'View.alert(store:)' with 'PresentationState' and 'PresentationAction' instead, or use 'Alert.init(state:)' to create an alert in iOS 13.
     """
 )
