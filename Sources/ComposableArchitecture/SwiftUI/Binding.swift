@@ -358,6 +358,7 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
 /// bindable in SwiftUI views.
 ///
 /// Read <doc:Bindings> for more information.
+@dynamicMemberLookup
 @propertyWrapper
 public struct BindingViewState<Value> {
   let binding: Binding<Value>
@@ -375,6 +376,12 @@ public struct BindingViewState<Value> {
 
   public var projectedValue: Binding<Value> {
     self.binding
+  }
+
+  public subscript<Subject>(
+    dynamicMember keyPath: WritableKeyPath<Value, Subject>
+  ) -> BindingViewState<Subject> {
+    BindingViewState<Subject>(binding: self.binding[dynamicMember: keyPath])
   }
 }
 
