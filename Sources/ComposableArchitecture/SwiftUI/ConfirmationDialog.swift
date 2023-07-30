@@ -67,6 +67,13 @@ extension View {
   }
 }
 
+@available(
+  *,
+  deprecated,
+  message: """
+    Use 'View.confirmationDialog(store:)' with 'PresentationState' and 'PresentationAction' instead.
+    """
+)
 extension View {
   /// Displays a dialog when the store's state becomes non-`nil`, and dismisses it when it becomes
   /// `nil`.

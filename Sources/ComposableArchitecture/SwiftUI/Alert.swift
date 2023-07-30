@@ -62,6 +62,13 @@ extension View {
   }
 }
 
+@available(
+  *,
+  deprecated,
+  message: """
+    Use 'View.alert(store:)' with 'PresentationState' and 'PresentationAction' instead.
+    """
+)
 extension View {
   /// Displays an alert when then store's state becomes non-`nil`, and dismisses it when it becomes
   /// `nil`.
