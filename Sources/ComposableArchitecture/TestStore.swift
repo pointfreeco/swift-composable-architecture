@@ -857,14 +857,14 @@ extension TestStore where State: Equatable {
         var actions = ""
         customDump(self.reducer.receivedActions.map(\.action), to: &actions)
         XCTFailHelper(
-        """
-        Must handle \(self.reducer.receivedActions.count) received \
-        action\(self.reducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
+          """
+          Must handle \(self.reducer.receivedActions.count) received \
+          action\(self.reducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
 
-        Unhandled actions: \(actions)
-        """,
-        file: file,
-        line: line
+          Unhandled actions: \(actions)
+          """,
+          file: file,
+          line: line
         )
       }
 

@@ -413,7 +413,7 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
       state[keyPath: self.toPresentationState].isPresented = true
       presentEffects = .concatenate(
         .publisher { Empty(completeImmediately: false) }
-        ._cancellable(id: PresentationDismissID(), navigationIDPath: presentationDestinationID),
+          ._cancellable(id: PresentationDismissID(), navigationIDPath: presentationDestinationID),
         .publisher { Just(self.toPresentationAction.embed(.dismiss)) }
       )
       ._cancellable(navigationIDPath: presentationDestinationID)

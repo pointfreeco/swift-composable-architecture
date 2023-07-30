@@ -17,7 +17,7 @@ private let readMe = """
 struct CityMap: Reducer {
   struct State: Equatable, Identifiable {
     var download: Download
-    var downloadAlert: AlertState<DownloadComponent.AlertAction>?
+    var downloadAlert: AlertState<DownloadComponent.Action.Alert>?
     var downloadMode: Mode
 
     var id: UUID { self.download.id }
@@ -64,7 +64,7 @@ struct CityMap: Reducer {
         // NB: This is where you could perform the effect to save the data to a file on disk.
         return .none
 
-      case .downloadComponent(.alert(.deleteButtonTapped)):
+      case .downloadComponent(.alert(.presented(.deleteButtonTapped))):
         // NB: This is where you could perform the effect to delete the data from disk.
         return .none
 
