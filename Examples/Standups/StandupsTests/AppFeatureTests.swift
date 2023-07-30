@@ -86,7 +86,9 @@ final class AppFeatureTests: XCTestCase {
       }
     }
 
-    await store.receive(.path(.element(id: 0, action: .detail(.delegate(.standupUpdated(standup)))))) {
+    await store.receive(
+      .path(.element(id: 0, action: .detail(.delegate(.standupUpdated(standup)))))
+    ) {
       $0.standupsList.standups[0].title = "Blob"
     }
 

@@ -62,6 +62,13 @@ extension View {
   }
 }
 
+@available(
+  *,
+  deprecated,
+  message: """
+    Use 'View.alert(store:)' with 'PresentationState' and 'PresentationAction' instead, or use 'Alert.init(state:)' to create an alert in iOS 13.
+    """
+)
 extension View {
   /// Displays an alert when then store's state becomes non-`nil`, and dismisses it when it becomes
   /// `nil`.
