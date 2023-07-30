@@ -1,17 +1,21 @@
 import UIKit
 import Combine
 
-open class PresentationViewController: UIViewController {
+public protocol ViewControllerPresentable: UIViewController {
 	typealias DismissAction = () -> Void
-	private var dismissActions: Dictionary<UIViewController, DismissAction> = .init()
-	
+
+	var onDismiss: (() -> Void)? { get set }
+	var dismissActions: Dictionary<UIViewController, DismissAction> { get set }
+}
+
+extension ViewControllerPresentable {
 	func presentation<State, Action, DestinationState: Equatable, DestinationAction, ID: Hashable>(
 		_ store: Store<PresentationState<State>, PresentationAction<Action>>,
 		state toDestinationState: @escaping (State) -> DestinationState?,
 		id toID: @escaping (PresentationState<State>) -> ID?,
 		action fromDestinationAction: @escaping (DestinationAction) -> Action,
 		style presentationStyle: UIModalPresentationStyle,
-		_ toDestinationController: @escaping (Store<DestinationState, DestinationAction>) -> UIViewController
+		_ toDestinationController: @escaping (Store<DestinationState, DestinationAction>) -> any ViewControllerPresentable
 	) -> AnyCancellable {
 		var targetViewController: UIViewController?
 		return store
@@ -21,15 +25,14 @@ open class PresentationViewController: UIViewController {
 			.sink { [weak self] in
 				guard let self else { return }
 				if $0.wrappedValue.flatMap(toDestinationState) != nil {
-					let viewController = toDestinationController(store.scope(
-						state: { $0.wrappedValue.flatMap(toDestinationState)! },	// force wrap because checked before
+					let viewController: UIViewController = store.scope(
+						state: { $0.wrappedValue.flatMap(toDestinationState) },
 						action: { .presented(fromDestinationAction($0)) }
-					))
+					).map(toDestinationController) ?? UIViewController()
 					defer { targetViewController = viewController }
-					viewController.presentationController?.delegate = self
-					viewController.transitioningDelegate = self
 					self.dismissActions[viewController] = { store.send(.dismiss) }
 					viewController.modalPresentationStyle = presentationStyle
+					(viewController as? ViewControllerPresentable)?.onDismiss = { [weak store] in store?.send(.dismiss) }
 					self.present(viewController, animated: self.viewIfLoaded?.window != nil)
 				} else {
 					guard let _presentedViewController = targetViewController else { return }
@@ -42,12 +45,12 @@ open class PresentationViewController: UIViewController {
 }
 
 // Some handy tools for modal presentation
-extension PresentationViewController {
+extension ViewControllerPresentable {
 	public func presentSheet<State, Action, DestinationState: Equatable, DestinationAction>(
 		_ store: Store<PresentationState<State>, PresentationAction<Action>>,
 		state toDestinationState: @escaping (State) -> DestinationState?,
 		action fromDestinationAction: @escaping (DestinationAction) -> Action,
-		_ destination: @escaping (Store<DestinationState, DestinationAction>) -> UIViewController
+		_ destination: @escaping (Store<DestinationState, DestinationAction>) -> any ViewControllerPresentable
 	) -> AnyCancellable {
 		return self.presentation(
 			store,
@@ -63,7 +66,7 @@ extension PresentationViewController {
 		_ store: Store<PresentationState<State>, PresentationAction<Action>>,
 		state toDestinationState: @escaping (State) -> DestinationState?,
 		action fromDestinationAction: @escaping (DestinationAction) -> Action,
-		_ destination: @escaping (Store<DestinationState, DestinationAction>) -> UIViewController
+		_ destination: @escaping (Store<DestinationState, DestinationAction>) -> any ViewControllerPresentable
 	) -> AnyCancellable {
 		return self.presentation(
 			store,
@@ -79,7 +82,7 @@ extension PresentationViewController {
 		_ store: Store<PresentationState<State>, PresentationAction<Action>>,
 		state toDestinationState: @escaping (State) -> DestinationState?,
 		action fromDestinationAction: @escaping (DestinationAction) -> Action,
-		_ destination: @escaping (Store<DestinationState, DestinationAction>) -> UIViewController
+		_ destination: @escaping (Store<DestinationState, DestinationAction>) -> any ViewControllerPresentable
 	) -> AnyCancellable {
 		return self.presentation(
 			store,
@@ -92,35 +95,31 @@ extension PresentationViewController {
 	}
 }
 
-extension PresentationViewController: UIViewControllerTransitioningDelegate {
-	/// This is required for dismissed programatically
-	/// this will called everytime when you dismiss a presented view controller
-	public func animationController(
-		forDismissed dismissed: UIViewController
-	) -> UIViewControllerAnimatedTransitioning? {
-		guard let dismiss = dismissActions[dismissed] else { return nil }
-		defer { dismissActions.removeValue(forKey: dismissed) }
-		dismiss()
-		return nil
-	}
-}
-
-extension PresentationViewController: UIAdaptivePresentationControllerDelegate {
-	/// This is required for interactively pull down dismiss
-	/// this will not get called if you just call `dismiss(animated:, completion:)` from the presentedViewController
-	public func presentationControllerWillDismiss(_ presentationController: UIPresentationController) {
-		let targetViewController = presentationController.presentedViewController
-		guard let dismiss = dismissActions[targetViewController] else { return }
-		defer { dismissActions.removeValue(forKey: targetViewController) }
-		dismiss()
-	}
-}
-
 extension Store where State: Equatable {
-	fileprivate func map<TargetState, Target>(
+	public func map<TargetState, Target>(
 		_ transform: (Store<TargetState, Action>) -> Target
 	) -> Target? where State == Optional<TargetState> {
 		guard let state = ViewStore(self, observe: { $0 }).state else { return nil }
 		return transform(self.scope(state: { $0 ?? state }, action: { $0 }))
+	}
+}
+
+open class PresentationViewController: UIViewController, ViewControllerPresentable {
+	public var onDismiss: (() -> Void)? = nil
+	public var dismissActions: Dictionary<UIViewController, DismissAction> = .init()
+	
+	open override func viewDidDisappear(_ animated: Bool) {
+		super.viewDidDisappear(animated)
+		if isBeingDismissed { self.onDismiss?() }
+	}
+}
+
+open class NavigationPresentationViewController: UINavigationController, ViewControllerPresentable {
+	public var onDismiss: (() -> Void)? = nil
+	public var dismissActions: Dictionary<UIViewController, DismissAction> = .init()
+	
+	open override func viewDidDisappear(_ animated: Bool) {
+		super.viewDidDisappear(animated)
+		if isBeingDismissed { self.onDismiss?() }
 	}
 }
