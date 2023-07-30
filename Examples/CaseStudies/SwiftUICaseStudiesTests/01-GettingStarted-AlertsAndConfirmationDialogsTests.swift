@@ -57,10 +57,8 @@ final class AlertsAndConfirmationDialogsTests: XCTestCase {
     }
     await store.send(.confirmationDialog(.presented(.incrementButtonTapped))) {
       $0.alert = AlertState { TextState("Incremented!") }
-      $0.count = 1
-    }
-    await store.send(.confirmationDialog(.dismiss)) {
       $0.confirmationDialog = nil
+      $0.count = 1
     }
   }
 }
