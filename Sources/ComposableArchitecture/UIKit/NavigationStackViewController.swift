@@ -12,22 +12,8 @@ open class NavigationStackViewController<
 	private let rootDestination: UIViewController
 	private var destinations: Destinations = .init()
 	private var destinationSubscription: AnyCancellable?
-	
-	public struct StackCaseLet<EnumState, EnumAction, CaseState, CaseAction> {
-		public let toCaseState: (EnumState) -> CaseState?
-		public let fromCaseAction: (CaseAction) -> EnumAction
-		public let content: (Store<CaseState, CaseAction>) -> UIViewController
-		
-		public init(
-			_ toCaseState: @escaping (EnumState) -> CaseState?,
-			action fromCaseAction: @escaping (CaseAction) -> EnumAction,
-			then content: @escaping (Store<CaseState, CaseAction>) -> UIViewController
-		) {
-			self.toCaseState = toCaseState
-			self.fromCaseAction = fromCaseAction
-			self.content = content
-		}
-	}
+
+	public var onDismiss: (() -> Void)? = nil
 	
 	public init(
 		_ store: Store<StackState<State>, StackAction<State, Action>>,
@@ -64,16 +50,6 @@ open class NavigationStackViewController<
 	
 	required public init?(coder aDecoder: NSCoder) {
 		fatalError("init(coder:) has not been implemented")
-	}
-	
-	public var onDismiss: (() -> Void)? = nil
-	public var dismissActions: Dictionary<UIViewController, DismissAction> = .init()
-	
-	open override func viewWillDisappear(_ animated: Bool) {
-		super.viewWillDisappear(animated)
-		debugPrint(self.isBeingDismissed)
-		debugPrint(self.isMovingFromParent)
-		debugPrint(self.isMovingToParent)
 	}
 	
 	open override func viewDidDisappear(_ animated: Bool) {

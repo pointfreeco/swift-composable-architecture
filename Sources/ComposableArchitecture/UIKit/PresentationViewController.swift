@@ -2,10 +2,7 @@ import UIKit
 import Combine
 
 public protocol ViewControllerPresentable: UIViewController {
-	typealias DismissAction = () -> Void
-
 	var onDismiss: (() -> Void)? { get set }
-	var dismissActions: Dictionary<UIViewController, DismissAction> { get set }
 }
 
 extension ViewControllerPresentable {
@@ -18,26 +15,36 @@ extension ViewControllerPresentable {
 		_ toDestinationController: @escaping (Store<DestinationState, DestinationAction>) -> any ViewControllerPresentable
 	) -> AnyCancellable {
 		var targetViewController: UIViewController?
-		return store
-			.invalidate { $0.wrappedValue.flatMap(toDestinationState) == nil }
-			.publisher
+		let store = store.invalidate { $0.wrappedValue.flatMap(toDestinationState) == nil }
+		let viewStore = ViewStore(store, observe: { $0 }, removeDuplicates: { toID($0) == toID($1) })
+		return viewStore.publisher
 			.receive(on: RunLoop.main)
 			.sink { [weak self] in
 				guard let self else { return }
 				if $0.wrappedValue.flatMap(toDestinationState) != nil {
 					let viewController: UIViewController = store.scope(
-						state: { $0.wrappedValue.flatMap(toDestinationState) },
+						state: returningLastNonNilValue { $0.wrappedValue.flatMap(toDestinationState) },
 						action: { .presented(fromDestinationAction($0)) }
 					).map(toDestinationController) ?? UIViewController()
 					defer { targetViewController = viewController }
-					self.dismissActions[viewController] = { store.send(.dismiss) }
 					viewController.modalPresentationStyle = presentationStyle
-					(viewController as? ViewControllerPresentable)?.onDismiss = { [weak store] in store?.send(.dismiss) }
-					self.present(viewController, animated: self.viewIfLoaded?.window != nil)
+					(viewController as? ViewControllerPresentable)?.onDismiss = { [weak store] in
+						guard let _store = store,
+									let _state = _store.state.value.wrappedValue,
+									toDestinationState(_state) != nil
+						else { return }
+						_store.send(.dismiss)
+					}
+					if self.presentedViewController != nil {
+						self.dismiss(animated: self.viewIfLoaded?.window != nil) {
+							self.present(viewController, animated: self.viewIfLoaded?.window != nil)
+						}
+					} else {
+						self.present(viewController, animated: self.viewIfLoaded?.window != nil)
+					}
 				} else {
 					guard let _presentedViewController = targetViewController else { return }
 					defer { targetViewController = nil }	// remove capture
-					self.dismissActions.removeValue(forKey: _presentedViewController)
 					_presentedViewController.dismiss(animated: self.viewIfLoaded?.window != nil)
 				}
 			}
@@ -106,7 +113,6 @@ extension Store where State: Equatable {
 
 open class PresentationViewController: UIViewController, ViewControllerPresentable {
 	public var onDismiss: (() -> Void)? = nil
-	public var dismissActions: Dictionary<UIViewController, DismissAction> = .init()
 	
 	open override func viewDidDisappear(_ animated: Bool) {
 		super.viewDidDisappear(animated)
@@ -116,7 +122,6 @@ open class PresentationViewController: UIViewController, ViewControllerPresentab
 
 open class NavigationPresentationViewController: UINavigationController, ViewControllerPresentable {
 	public var onDismiss: (() -> Void)? = nil
-	public var dismissActions: Dictionary<UIViewController, DismissAction> = .init()
 	
 	open override func viewDidDisappear(_ animated: Bool) {
 		super.viewDidDisappear(animated)
