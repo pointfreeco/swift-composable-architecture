@@ -106,5 +106,7 @@ final class StandupDetailTests: XCTestCase {
       $0.destination = nil
       $0.standup.title = "Blob's Meeting"
     }
+
+    await store.receive(.delegate(.standupUpdated(standup)))
   }
 }

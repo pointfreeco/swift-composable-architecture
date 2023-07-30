@@ -84,6 +84,20 @@ final class BindingTests: BaseTCATestCase {
     XCTAssertEqual(viewStore.state, .init(nested: .init(field: "Hello!")))
   }
 
+  func testNestedBindingViewState() {
+    struct ViewState: Equatable {
+      @BindingViewState var field: String
+    }
+
+    let store = Store(initialState: BindingTest.State()) { BindingTest() }
+
+    let viewStore = ViewStore(store, observe: { ViewState(field: $0.$nested.field) })
+
+    viewStore.$field.wrappedValue = "Hello"
+
+    XCTAssertEqual(store.withState { $0.nested.field }, "Hello!")
+  }
+
   func testBindingActionUpdatesRespectsPatternMatching() async {
     let testStore = TestStore(
       initialState: BindingTest.State(nested: BindingTest.State.Nested(field: ""))
