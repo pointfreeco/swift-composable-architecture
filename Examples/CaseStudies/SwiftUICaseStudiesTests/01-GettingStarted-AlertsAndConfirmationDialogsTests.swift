@@ -24,11 +24,11 @@ final class AlertsAndConfirmationDialogsTests: XCTestCase {
         TextState("This is an alert")
       }
     }
-    await store.send(.incrementButtonTapped) {
+    await store.send(.alert(.presented(.incrementButtonTapped))) {
       $0.alert = AlertState { TextState("Incremented!") }
       $0.count = 1
     }
-    await store.send(.alertDismissed) {
+    await store.send(.alert(.dismiss)) {
       $0.alert = nil
     }
   }
@@ -55,12 +55,10 @@ final class AlertsAndConfirmationDialogsTests: XCTestCase {
         TextState("This is a confirmation dialog.")
       }
     }
-    await store.send(.incrementButtonTapped) {
+    await store.send(.confirmationDialog(.presented(.incrementButtonTapped))) {
       $0.alert = AlertState { TextState("Incremented!") }
-      $0.count = 1
-    }
-    await store.send(.confirmationDialogDismissed) {
       $0.confirmationDialog = nil
+      $0.count = 1
     }
   }
 }
