@@ -4,7 +4,6 @@
 
 ### Building reducers
 
-- ``ReducerBuilderOf``
 - ``buildExpression(_:)``
 - ``buildBlock(_:)``
 - ``buildPartialBlock(first:)``

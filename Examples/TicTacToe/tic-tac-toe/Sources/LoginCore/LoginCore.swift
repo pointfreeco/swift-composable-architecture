@@ -15,13 +15,13 @@ public struct Login: Reducer, Sendable {
     public init() {}
   }
 
-  public enum Action: Equatable {
+  public enum Action: Equatable, Sendable {
     case alert(PresentationAction<AlertAction>)
     case loginResponse(TaskResult<AuthenticationResponse>)
     case twoFactor(PresentationAction<TwoFactor.Action>)
     case view(View)
 
-    public enum View: BindableAction, Equatable {
+    public enum View: BindableAction, Equatable, Sendable {
       case binding(BindingAction<State>)
       case loginButtonTapped
     }

@@ -1,7 +1,7 @@
-# ``ComposableArchitecture/EffectPublisher/send(_:)``
+# ``ComposableArchitecture/Effect/send(_:)``
 
 ## Topics
 
 ### Animating actions
 
-- ``EffectPublisher/send(_:animation:)``
+- ``Effect/send(_:animation:)``

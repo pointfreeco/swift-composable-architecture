@@ -5,4 +5,3 @@
 ### Building Content
 
 - ``CaseLet``
-- ``Default``

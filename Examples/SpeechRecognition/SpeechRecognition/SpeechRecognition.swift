@@ -1,6 +1,6 @@
 import ComposableArchitecture
 import Speech
-@preconcurrency import SwiftUI
+import SwiftUI
 
 private let readMe = """
   This application demonstrates how to work with a complex dependency in the Composable \

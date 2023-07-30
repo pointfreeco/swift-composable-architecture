@@ -93,7 +93,7 @@ final class AnimationTests: XCTestCase {
       }
     }
 
-    await store.send(.resetConfirmationButtonTapped) {
+    await store.send(.alert(.presented(.resetConfirmationButtonTapped))) {
       $0 = Animations.State()
     }
 

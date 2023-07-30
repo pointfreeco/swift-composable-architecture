@@ -6,13 +6,11 @@ struct Root: Reducer {
     var animation = Animations.State()
     var bindingBasics = BindingBasics.State()
     var bindingForm = BindingForm.State()
-    var clock = ClockState()
     var counter = Counter.State()
     var effectsBasics = EffectsBasics.State()
     var effectsCancellation = EffectsCancellation.State()
     var episodes = Episodes.State(episodes: .mocks)
     var focusDemo = FocusDemo.State()
-    var lifecycle = LifecycleDemo.State()
     var loadThenPresent = LoadThenPresent.State()
     var longLivingEffects = LongLivingEffects.State()
     var map = MapApp.State(cityMaps: .mocks)
@@ -35,13 +33,11 @@ struct Root: Reducer {
     case animation(Animations.Action)
     case bindingBasics(BindingBasics.Action)
     case bindingForm(BindingForm.Action)
-    case clock(ClockAction)
     case counter(Counter.Action)
     case effectsBasics(EffectsBasics.Action)
     case effectsCancellation(EffectsCancellation.Action)
     case episodes(Episodes.Action)
     case focusDemo(FocusDemo.Action)
-    case lifecycle(LifecycleDemo.Action)
     case loadThenPresent(LoadThenPresent.Action)
     case longLivingEffects(LongLivingEffects.Action)
     case map(MapApp.Action)
@@ -86,9 +82,6 @@ struct Root: Reducer {
     Scope(state: \.bindingForm, action: /Action.bindingForm) {
       BindingForm()
     }
-    Scope(state: \.clock, action: /Action.clock) {
-      Reduce(clockReducer, environment: ClockEnvironment(clock: self.clock))
-    }
     Scope(state: \.counter, action: /Action.counter) {
       Counter()
     }
@@ -103,9 +96,6 @@ struct Root: Reducer {
     }
     Scope(state: \.focusDemo, action: /Action.focusDemo) {
       FocusDemo()
-    }
-    Scope(state: \.lifecycle, action: /Action.lifecycle) {
-      LifecycleDemo()
     }
     Scope(state: \.loadThenPresent, action: /Action.loadThenPresent) {
       LoadThenPresent()

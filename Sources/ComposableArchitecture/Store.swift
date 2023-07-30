@@ -122,7 +122,7 @@ import SwiftUI
 /// #### Thread safety checks
 ///
 /// The store performs some basic thread safety checks in order to help catch mistakes. Stores
-/// constructed via the initializer ``init(initialState:reducer:prepareDependencies:)`` are assumed
+/// constructed via the initializer ``init(initialState:reducer:withDependencies:)`` are assumed
 /// to run only on the main thread, and so a check is executed immediately to make sure that is the
 /// case. Further, all actions sent to the store and all scopes (see ``scope(state:action:)-9iai9``) of
 /// the store are also checked to make sure that work is performed on the main thread.
@@ -563,17 +563,6 @@ public final class Store<State, Action> {
     }
   }
 
-  @available(*, deprecated, message: "Send actions directly to 'store' instead.")
-  public var stateless: Store<Void, Action> {
-    self.scope(state: { _ in () }, action: { $0 })
-  }
-
-  @available(*, deprecated, message: "Define a domain-specific, empty 'Action' enum instead.")
-  public var actionless: Store<State, Never> {
-    func absurd<A>(_ never: Never) -> A {}
-    return self.scope(state: { $0 }, action: absurd)
-  }
-
   private enum ThreadCheckStatus {
     case effectCompletion(Action)
     case `init`
@@ -790,9 +779,10 @@ extension ScopedReducer: AnyScopedReducer {
       parentStores: self.parentStores + [store]
     )
     let childStore = Store<RescopedState, RescopedAction>(
-      initialState: toRescopedState(store.state.value),
-      reducer: reducer
-    )
+      initialState: toRescopedState(store.state.value)
+    ) {
+      reducer
+    }
     childStore._isInvalidated = store._isInvalidated
     childStore.parentCancellable = store.state
       .dropFirst()

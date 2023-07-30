@@ -4,14 +4,14 @@
 
 ### Implementing a reducer
 
-- ``reduce(into:action:)-4zl56``
+- ``reduce(into:action:)-1t2ri``
 - ``State``
 - ``Action``
 - ``Effect``
 
 ### Reducer composition
 
-- ``body-swift.property-8lumc``
+- ``body-swift.property``
 - ``Body-swift.typealias``
 - ``ReducerBuilder``
 
@@ -40,7 +40,3 @@
 ### Supporting types
 
 - ``ReducerOf``
-
-### Deprecations
-
-- <doc:ReducerDeprecations>

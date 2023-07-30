@@ -17,8 +17,8 @@ them.
 
 A common performance pitfall when using the library comes from constructing ``ViewStore``s, which
 is the object that observes changes to your feature's state. When constructed naively, using either 
-view store's initializer ``ViewStore/init(_:)-1pfeq`` or the SwiftUI helper ``WithViewStore``, it 
-will observe every change to state in the store:
+view store's initializer ``ViewStore/init(_:observe:)-3ak1y`` or the SwiftUI helper
+``WithViewStore``, it  will observe every change to state in the store:
 
 ```swift
 WithViewStore(self.store, observe: { $0 }) { viewStore in 

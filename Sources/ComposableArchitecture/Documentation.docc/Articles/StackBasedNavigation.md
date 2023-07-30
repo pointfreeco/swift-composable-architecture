@@ -285,9 +285,7 @@ struct Feature: Reducer {
 ```
 
 > Note: The ``DismissEffect`` function is async which means it cannot be invoked directly inside a 
-> reducer. Instead it must be called from either 
-> ``EffectPublisher/run(priority:operation:catch:fileID:line:)`` or
-> ``EffectPublisher/fireAndForget(priority:_:)``.
+> reducer. Instead it must be called from ``Effect/run(priority:operation:catch:fileID:line:)``
 
 When `self.dismiss()` is invoked it will remove the corresponding value from the ``StackState``
 powering the navigation stack. It does this by sending a ``StackAction/popFrom(id:)`` action back
@@ -468,7 +466,7 @@ await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) {
 
 And then we finally expect that the child dismisses itself, which manifests itself as the 
 ``StackAction/popFrom(id:)`` action being sent to pop the counter feature off the stack, which we 
-can assert using the ``TestStore/receive(_:timeout:assert:file:line:)-1rwdd`` method on 
+can assert using the ``TestStore/receive(_:timeout:assert:file:line:)-5awso`` method on 
 ``TestStore``:
 
 ```swift

@@ -244,26 +244,6 @@ struct RootView: View {
           )
 
           NavigationLink(
-            "Lifecycle",
-            destination: LifecycleDemoView(
-              store: self.store.scope(
-                state: \.lifecycle,
-                action: Root.Action.lifecycle
-              )
-            )
-          )
-
-          NavigationLink(
-            "Elm-like subscriptions",
-            destination: ClockView(
-              store: self.store.scope(
-                state: \.clock,
-                action: Root.Action.clock
-              )
-            )
-          )
-
-          NavigationLink(
             "Recursive state and actions",
             destination: NestedView(
               store: self.store.scope(

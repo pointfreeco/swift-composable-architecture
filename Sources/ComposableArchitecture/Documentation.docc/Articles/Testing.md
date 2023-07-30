@@ -73,8 +73,8 @@ class CounterTests: XCTestCase {
 > Tip: Test cases that use ``TestStore`` should be annotated as `@MainActor` and test methods should
 be marked as `async` since most assertion helpers on ``TestStore`` can suspend.
 
-Test stores have a ``TestStore/send(_:assert:file:line:)-1ax61`` method, but it behaves differently
-from stores and view stores. You provide an action to send into the system, but then you must also
+Test stores have a ``TestStore/send(_:assert:file:line:)`` method, but it behaves differently from
+stores and view stores. You provide an action to send into the system, but then you must also
 provide a trailing closure to describe how the state of the feature changed after sending the
 action:
 
@@ -94,8 +94,8 @@ await store.send(.incrementButtonTapped) {
 }
 ```
 
-> The ``TestStore/send(_:assert:file:line:)-1ax61`` method is `async` for technical reasons that we
-> do not have to worry about right now.
+> The ``TestStore/send(_:assert:file:line:)`` method is `async` for technical reasons that we do not
+> have to worry about right now.
 
 If your mutation is incorrect, meaning you perform a mutation that is different from what happened
 in the ``Reducer``, then you will get a test failure with a nicely formatted message showing exactly
@@ -148,7 +148,7 @@ await store.send(.decrementButtonTapped) {
 > by one, but we haven't proven we know the precise value of `count` at each step of the way.
 >
 > In general, the less logic you have in the trailing closure of
-> ``TestStore/send(_:assert:file:line:)-1ax61``, the stronger your assertion will be. It is best to
+> ``TestStore/send(_:assert:file:line:)``, the stronger your assertion will be. It is best to
 > use simple, hard-coded data for the mutation.
 
 Test stores do expose a ``TestStore/state`` property, which can be useful for performing assertions
@@ -162,7 +162,7 @@ store.send(.incrementButtonTapped) {
 XCTAssertTrue(store.state.isPrime)
 ```
 
-However, when inside the trailing closure of ``TestStore/send(_:assert:file:line:)-1ax61``, the
+However, when inside the trailing closure of ``TestStore/send(_:assert:file:line:)``, the
 ``TestStore/state`` property is equal to the state _before_ sending the action, not after. That
 prevents you from being able to use an escape hatch to get around needing to actually describe the
 state mutation, like so:
@@ -186,8 +186,8 @@ Location, Core Motion, Speech Recognition, etc.), and more.
 
 As a simple example, suppose we have a feature with a button such that when you tap it, it starts
 a timer that counts up until you reach 5, and then stops. This can be accomplished using the
-``EffectPublisher/run(priority:operation:catch:fileID:line:)`` helper on ``Effect``, which provides
-you with an asynchronous context to operate in and can send multiple actions back into the system:
+``Effect/run(priority:operation:catch:fileID:line:)`` helper on ``Effect``, which provides you with
+an asynchronous context to operate in and can send multiple actions back into the system:
 
 ```swift
 struct Feature: Reducer {
@@ -249,7 +249,7 @@ supposed to be running, or perhaps the data it feeds into the system later is wr
 requires all effects to finish.
 
 To get this test passing we need to assert on the actions that are sent back into the system
-by the effect. We do this by using the ``TestStore/receive(_:timeout:assert:file:line:)-1rwdd``
+by the effect. We do this by using the ``TestStore/receive(_:timeout:assert:file:line:)-5awso``
 method, which allows you to assert which action you expect to receive from an effect, as well as how
 the state changes after receiving that effect:
 
@@ -265,7 +265,7 @@ going to be received, but after waiting around for a small amount of time no act
 > ❌ Failure: Expected to receive an action, but received none after 0.1 seconds.
 
 This is because our timer is on a 1 second interval, and by default
-``TestStore/receive(_:timeout:assert:file:line:)-1rwdd`` only waits for a fraction of a second. This
+``TestStore/receive(_:timeout:assert:file:line:)-5awso`` only waits for a fraction of a second. This
 is because typically you should not be performing real time-based asynchrony in effects, and instead
 using a controlled entity, such as a clock, that can be sped up in tests. We will demonstrate this
 in a moment, so for now let's increase the timeout:
@@ -363,7 +363,7 @@ let store = TestStore(initialState: Feature.State(count: 0)) {
 ```
 
 With that small change we can drop the `timeout` arguments from the
-``TestStore/receive(_:timeout:assert:file:line:)-1rwdd`` invocations:
+``TestStore/receive(_:timeout:assert:file:line:)-5awso`` invocations:
 
 ```swift
 await store.receive(.timerTick) {
@@ -548,7 +548,7 @@ It can be important to understand how non-exhaustive testing works under the hoo
 limit the ways in which you can assert on state changes.
 
 When you construct an _exhaustive_ test store, which is the default, the `$0` used inside the
-trailing closure of ``TestStore/send(_:assert:file:line:)-1ax61`` represents the state _before_ the 
+trailing closure of ``TestStore/send(_:assert:file:line:)`` represents the state _before_ the 
 action is sent:
 
 ```swift
@@ -640,10 +640,10 @@ await store.send(.removeButtonTapped) {
 
 Further, when using non-exhaustive test stores that also show skipped assertions (via
 ``Exhaustivity/off(showSkippedAssertions:)``), then there is another caveat to keep in mind. In
-such test stores, the trailing closure of ``TestStore/send(_:assert:file:line:)-1ax61`` is invoked
-_twice_ by the test store. First with `$0` representing the state after the action is sent to see if
-it does not match the true state, and then again with `$0` representing the state before the action
-is sent so that we can show what state assertions were skipped.
+such test stores, the trailing closure of ``TestStore/send(_:assert:file:line:)`` is invoked _twice_
+by the test store. First with `$0` representing the state after the action is sent to see if it does
+not match the true state, and then again with `$0` representing the state before the action is sent
+so that we can show what state assertions were skipped.
 
 Because the test store can invoke your trailing assertion closure twice you must be careful if your
 closure performs any side effects, because those effects will be executed twice. For example,

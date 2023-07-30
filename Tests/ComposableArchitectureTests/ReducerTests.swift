@@ -36,7 +36,7 @@ final class ReducerTests: BaseTCATestCase {
 
           func reduce(into state: inout State, action: Action) -> Effect<Action> {
             state += 1
-            return .fireAndForget {
+            return .run { _ in
               try await self.clock.sleep(for: self.delay)
               await self.setValue()
             }
@@ -83,7 +83,7 @@ final class ReducerTests: BaseTCATestCase {
       let effect: @Sendable () async -> Void
       func reduce(into state: inout State, action: Action) -> Effect<Action> {
         state += 1
-        return .fireAndForget {
+        return .run { _ in
           await self.effect()
         }
       }

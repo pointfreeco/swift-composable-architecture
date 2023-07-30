@@ -138,46 +138,6 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       }
   }
 
-  /// Initializes a view store from a store.
-  ///
-  /// > Warning: This initializer is deprecated. Use
-  /// ``ViewStore/init(_:observe:removeDuplicates:)`` to make state observation explicit.
-  /// >
-  /// > When using ``ViewStore`` you should take care to observe only the pieces of state that
-  /// your view needs to do its job, especially towards the root of the application. See
-  /// <doc:Performance> for more details.
-  ///
-  /// - Parameters:
-  ///   - store: A store.
-  ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
-  ///     equal, repeat view computations are removed.
-  @available(
-    *, deprecated,
-    message:
-      """
-      Use 'init(_:observe:removeDuplicates:)' to make state observation explicit.
-
-      When using ViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
-
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
-      """
-  )
-  public init(
-    _ store: Store<ViewState, ViewAction>,
-    removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
-  ) {
-    self._send = { store.send($0, originatingFrom: nil) }
-    self._state = CurrentValueRelay(store.state.value)
-    self._isInvalidated = store._isInvalidated
-    self.viewCancellable = store.state
-      .removeDuplicates(by: isDuplicate)
-      .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
-        guard let objectWillChange = objectWillChange, let _state = _state else { return }
-        objectWillChange.send()
-        _state.value = $0
-      }
-  }
-
   init(_ viewStore: ViewStore<ViewState, ViewAction>) {
     self._send = viewStore._send
     self._state = viewStore._state
@@ -623,43 +583,7 @@ extension ViewStore where ViewState: Equatable {
   ) {
     self.init(store, observe: toViewState, send: fromViewAction, removeDuplicates: ==)
   }
-
-  /// Initializes a view store from a store.
-  ///
-  /// > Warning: This initializer is deprecated. Use
-  /// ``ViewStore/init(_:observe:)`` to make state observation explicit.
-  /// >
-  /// > When using ``ViewStore`` you should take care to observe only the pieces of state that
-  /// your view needs to do its job, especially towards the root of the application. See
-  /// <doc:Performance> for more details.
-  ///
-  /// - Parameters:
-  ///   - store: A store.
-  @available(
-    *, deprecated,
-    message:
-      """
-      Use 'init(_:observe:)' to make state observation explicit.
-
-      When using ViewStore you should take care to observe only the pieces of state that your view needs to do its job, especially towards the root of the application. See the performance article for more details:
-
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
-      """
-  )
-  public convenience init(_ store: Store<ViewState, ViewAction>) {
-    self.init(store, removeDuplicates: ==)
-  }
 }
-
-extension ViewStore where ViewState == Void {
-  @available(*, deprecated, message: "Send actions directly to 'store' instead.")
-  public convenience init(_ store: Store<Void, ViewAction>) {
-    self.init(store, observe: {}, removeDuplicates: ==)
-  }
-}
-
-@available(*, deprecated, renamed: "StoreTask")
-public typealias ViewStoreTask = StoreTask
 
 private struct HashableWrapper<Value>: Hashable {
   let rawValue: Value

@@ -61,7 +61,7 @@ final class TestStoreTests: BaseTCATestCase {
       Reduce<Int, Action> { state, action in
         switch action {
         case .tap:
-          return .task { .response(42) }
+          return .run { send in await send(.response(42)) }
         case let .response(number):
           state = number
           return .none
@@ -359,7 +359,7 @@ final class TestStoreTests: BaseTCATestCase {
         switch action {
         case .tap:
           state.count += 1
-          return .task { .response(42) }
+          return .run { send in await send(.response(42)) }
         case let .response(number):
           state.count = number
           state.date = now

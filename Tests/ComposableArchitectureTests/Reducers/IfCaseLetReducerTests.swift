@@ -181,7 +181,7 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
         case response(Int)
       }
       @Dependency(\.mainQueue) var mainQueue
-      func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+      func reduce(into state: inout State, action: Action) -> Effect<Action> {
         switch action {
 
         case .tap:
