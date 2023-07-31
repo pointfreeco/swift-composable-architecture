@@ -328,6 +328,7 @@ doing much additional work.
 
 ### Testing
 
+> **Note**
 > For more in-depth information on testing, see the dedicated [testing][testing-article] article. 
 
 To test use a `TestStore`, which can be created with the same information as the `Store`, but it 
@@ -452,7 +453,9 @@ to `numberFact`, and explicitly passing it through all layers can get annoying. 
 you can follow to “register” dependencies with the library, making them instantly available to any 
 layer in the application.
 
-> For more in-depth information on dependency management, see the dedicated [dependencies][dependencies-article] article. 
+> **Note**
+> For more in-depth information on dependency management, see the dedicated
+> [dependencies][dependencies-article] article. 
 
 We can start by wrapping the number fact functionality in a new type:
 
