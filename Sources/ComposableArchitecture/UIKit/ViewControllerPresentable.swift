@@ -36,37 +36,40 @@ extension ViewControllerPresentable {
 			.sink { [weak self] (prevState, presentationState) in
 				guard let self else { return }
 				Task { @MainActor in
+					var shouldDismiss: Bool = false
+					var wrappedState: State? = nil
+					
 					switch (prevState?.wrappedValue, presentationState.wrappedValue) {
-					case (.none, .none): return
+					case (.none, .none):
+						return
+					
+					case let (.none, .some(_state)):
+						shouldDismiss = false
+						wrappedState = _state
+					
+					case let (.some, .some(_state)):
+						shouldDismiss = true
+						wrappedState = _state
+						
 					case (.some, .none):
 						guard self.presentedViewController != nil else { return }
 						await self.dismissAsync(animated: self.canAnimate)
-						
-					case let (.none, .some(wrappedState)):
-						let originalId = toID(presentationState)
-						let freshViewController = store.scope(
-							state: returningLastNonNilValue { originalId == toID(store.state.value) ? $0.wrappedValue : nil },
-							action: { .presented($0) }
-						).map { toDestinationController(wrappedState, $0) } ?? PresentationViewController(nibName: nil, bundle: nil)
-						freshViewController.onDismiss = { @MainActor [weak store] in
-							guard let _store = store, toID(_store.state.value) == originalId else { return }
-							_store.send(.dismiss)
-						}
-						await self.presentAsync(freshViewController, animated: self.canAnimate)
-						
-					case let (.some, .some(wrappedState)):
-						let originalId = toID(presentationState)
-						let freshViewController = store.scope(
-							state: returningLastNonNilValue { originalId == toID(store.state.value) ? $0.wrappedValue : nil },
-							action: { .presented($0) }
-						).map { toDestinationController(wrappedState, $0) } ?? PresentationViewController(nibName: nil, bundle: nil)
-						freshViewController.onDismiss = { @MainActor [weak store] in
-							guard let _store = store, toID(_store.state.value) == originalId else { return }
-							_store.send(.dismiss)
-						}
-						await self.dismissAsync(animated: self.canAnimate)
-						await self.presentAsync(freshViewController, animated: self.canAnimate)
+						return
 					}
+					guard let wrappedState else { return }
+					let originalId = toID(presentationState)
+					let freshViewController = store.scope(
+						state: returningLastNonNilValue { originalId == toID(store.state.value) ? $0.wrappedValue : nil },
+						action: { .presented($0) }
+					).map { toDestinationController(wrappedState, $0) } ?? PresentationViewController(nibName: nil, bundle: nil)
+					freshViewController.onDismiss = { @MainActor [weak store] in
+						guard let _store = store, toID(_store.state.value) == originalId else { return }
+						_store.send(.dismiss)
+					}
+					if shouldDismiss {
+						await self.dismissAsync(animated: self.canAnimate)
+					}
+					await self.presentAsync(freshViewController, animated: self.canAnimate)
 				}
 			}
 	}

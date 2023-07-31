@@ -153,6 +153,14 @@ final class PresentationCounterViewController: HostingPresentationViewController
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
+		
+		navigationItem.rightBarButtonItem = UIBarButtonItem(
+			systemItem: .close,
+			primaryAction: .init(handler: { [weak self] _ in
+				self?.dismiss(animated: self?.viewIfLoaded?.window != nil)
+			})
+		)
+		
 		store.publisher
 			.map({ "\($0.count)" })
 			.sink { [weak self] in self?.title = $0 }
