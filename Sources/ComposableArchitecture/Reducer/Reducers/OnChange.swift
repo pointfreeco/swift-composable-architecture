@@ -18,7 +18,7 @@ extension Reducer {
   ///
   ///   var body: some Reducer<State, Action> {
   ///     BindingReducer()
-  ///       .onChange(of: \.userSettings.isHapticFeedbackEnabled, didChange: ==) { oldValue, newValue in
+  ///       .onChange(of: \.userSettings.isHapticFeedbackEnabled, isEqual: ==) { oldValue, newValue in
   ///         Reduce { state, action in
   ///           .run { send in
   ///             // Persist new value...
@@ -39,18 +39,18 @@ extension Reducer {
   ///
   /// - Parameters:
   ///   - toValue: A closure that returns a value from the given state.
-  ///   - didChange: A closue that indicates that the value has changed.
+  ///   - isEqual: A closue that indicates that the value has changed.
   ///   - reducer: A reducer builder closure to run when the value changes.
   ///   - oldValue: The old value that failed the comparison check.
   ///   - newValue: The new value that failed the comparison check.
-  /// - Returns: A reducer that performs
+  /// - Returns: A reducer that performs the logic when the state changes.
   @inlinable
   public func onChange<V, R: Reducer>(
     of toValue: @escaping (State) -> V,
-    didChange: @escaping (V, V) -> Bool,
+    isEqual: @escaping (V, V) -> Bool,
     @ReducerBuilder<State, Action> _ reducer: @escaping (_ oldValue: V, _ newValue: V) -> R
   ) -> _OnChangeReducer<Self, V, R> {
-    _OnChangeReducer(base: self, toValue: toValue, didChange: didChange, reducer: reducer)
+    _OnChangeReducer(base: self, toValue: toValue, isEqual: isEqual, reducer: reducer)
   }
   
   /// Adds a reducer to run when this reducer changes the given value in state.
@@ -96,13 +96,13 @@ extension Reducer {
   ///   - reducer: A reducer builder closure to run when the value changes.
   ///   - oldValue: The old value that failed the comparison check.
   ///   - newValue: The new value that failed the comparison check.
-  /// - Returns: A reducer that performs
+  /// - Returns: A reducer that performs the logic when the state changes.
   @inlinable
   public func onChange<V: Equatable, R: Reducer>(
     of toValue: @escaping (State) -> V,
     @ReducerBuilder<State, Action> _ reducer: @escaping (_ oldValue: V, _ newValue: V) -> R
   ) -> _OnChangeReducer<Self, V, R> {
-    _OnChangeReducer(base: self, toValue: toValue, didChange: ==, reducer: reducer)
+    _OnChangeReducer(base: self, toValue: toValue, isEqual: ==, reducer: reducer)
   }
 }
 
@@ -115,7 +115,7 @@ where Base.State == Body.State, Base.Action == Body.Action {
   let toValue: (Base.State) -> Value
   
   @usableFromInline
-  let didChange: (Value, Value) -> Bool
+  let isEqual: (Value, Value) -> Bool
 
   @usableFromInline
   let reducer: (Value, Value) -> Body
@@ -124,12 +124,12 @@ where Base.State == Body.State, Base.Action == Body.Action {
   init(
     base: Base,
     toValue: @escaping (Base.State) -> Value,
-    didChange: @escaping (Value, Value) -> Bool,
+    isEqual: @escaping (Value, Value) -> Bool,
     reducer: @escaping (Value, Value) -> Body
   ) {
     self.base = base
     self.toValue = toValue
-    self.didChange = didChange
+    self.isEqual = isEqual
     self.reducer = reducer
   }
 
@@ -138,7 +138,7 @@ where Base.State == Body.State, Base.Action == Body.Action {
     let oldValue = toValue(state)
     let baseEffects = self.base.reduce(into: &state, action: action)
     let newValue = toValue(state)
-    return didChange(oldValue, newValue)
+    return isEqual(oldValue, newValue)
       ? baseEffects
       : .merge(baseEffects, self.reducer(oldValue, newValue).reduce(into: &state, action: action))
   }
