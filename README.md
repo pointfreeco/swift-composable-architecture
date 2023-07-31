@@ -56,7 +56,7 @@ You can watch all of the episodes [here][tca-episode-collection], as well as a d
 tour][tca-tour] of the architecture from scratch.
 
 <a href="https://www.pointfree.co/collections/composable-architecture">
-  <img alt="video poster image" src="https://i.vimeocdn.com/video/1492464398-1f5189a415136097aabf5b0b4845928bbb5d425a149069e4e0a848b67618a6f3-d?mw=1900&mh=1069&q=70" width="600">
+  <img alt="video poster image" src="https://d3rccdn33rt8ze.cloudfront.net/episodes/0243.jpeg" width="600">
 </a>
 
 ## Examples
@@ -544,29 +544,22 @@ advanced usages.
 The documentation for releases and `main` are available here:
 
 * [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture)
-* [0.55.0](https://pointfreeco.github.io/swift-composable-architecture/0.55.0/documentation/composablearchitecture/)
+* [1.0.0](https://pointfreeco.github.io/swift-composable-architecture/1.0.0/documentation/composablearchitecture/)
 
 <details>
   <summary>
   Other versions
   </summary>
 
+  * [0.58.0](https://pointfreeco.github.io/swift-composable-architecture/0.58.0/documentation/composablearchitecture/)
+  * [0.57.0](https://pointfreeco.github.io/swift-composable-architecture/0.57.0/documentation/composablearchitecture/)
+  * [0.56.0](https://pointfreeco.github.io/swift-composable-architecture/0.56.0/documentation/composablearchitecture/)
+  * [0.55.0](https://pointfreeco.github.io/swift-composable-architecture/0.55.0/documentation/composablearchitecture/)
   * [0.54.0](https://pointfreeco.github.io/swift-composable-architecture/0.54.0/documentation/composablearchitecture/)
   * [0.53.0](https://pointfreeco.github.io/swift-composable-architecture/0.53.0/documentation/composablearchitecture/)
   * [0.52.0](https://pointfreeco.github.io/swift-composable-architecture/0.52.0/documentation/composablearchitecture/)
   * [0.50.0](https://pointfreeco.github.io/swift-composable-architecture/0.50.0/documentation/composablearchitecture/)
   * [0.49.0](https://pointfreeco.github.io/swift-composable-architecture/0.49.0/documentation/composablearchitecture/)
-  * [0.48.0](https://pointfreeco.github.io/swift-composable-architecture/0.48.0/documentation/composablearchitecture/)
-  * [0.47.0](https://pointfreeco.github.io/swift-composable-architecture/0.47.0/documentation/composablearchitecture/)
-  * [0.46.0](https://pointfreeco.github.io/swift-composable-architecture/0.46.0/documentation/composablearchitecture/)
-  * [0.45.0](https://pointfreeco.github.io/swift-composable-architecture/0.45.0/documentation/composablearchitecture/)
-  * [0.44.0](https://pointfreeco.github.io/swift-composable-architecture/0.44.0/documentation/composablearchitecture/)
-  * [0.43.0](https://pointfreeco.github.io/swift-composable-architecture/0.43.0/documentation/composablearchitecture/)
-  * [0.42.0](https://pointfreeco.github.io/swift-composable-architecture/0.42.0/documentation/composablearchitecture/)
-  * [0.41.0](https://pointfreeco.github.io/swift-composable-architecture/0.41.0/documentation/composablearchitecture/)
-  * [0.40.0](https://pointfreeco.github.io/swift-composable-architecture/0.40.0/documentation/composablearchitecture/)
-  * [0.39.0](https://pointfreeco.github.io/swift-composable-architecture/0.39.0/documentation/composablearchitecture/)
-  * [0.38.0](https://pointfreeco.github.io/swift-composable-architecture/0.38.0/documentation/composablearchitecture/)
 </details>
 
 <br>
@@ -704,7 +697,7 @@ This library is released under the MIT license. See [LICENSE](LICENSE) for detai
 [mbrandonw]: https://twitter.com/mbrandonw
 [stephencelis]: https://twitter.com/stephencelis
 [tca-episode-collection]: https://www.pointfree.co/collections/composable-architecture
-[tca-tour]: https://www.pointfree.co/collections/tours/composable-architecture
+[tca-tour]: https://www.pointfree.co/collections/tours/composable-architecture-1-0
 [gh-isowords]: https://github.com/pointfreeco/isowords
 [gh-discussions]: https://github.com/pointfreeco/swift-composable-architecture/discussions
 [swift-forum]: https://forums.swift.org/c/related-projects/swift-composable-architecture
