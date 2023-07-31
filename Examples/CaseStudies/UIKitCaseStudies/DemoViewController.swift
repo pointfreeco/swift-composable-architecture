@@ -164,36 +164,32 @@ final class PresentationCounterViewController: HostingPresentationViewController
 		)) { state, childStore in
 			switch state {
 			case .sheetCounter:
-				let viewController: (any ViewControllerPresentable)? = childStore.scope(
+				guard let viewController = childStore.scope(
 					state: /PresentationCounter.Presentation.State.sheetCounter,
 					action: PresentationCounter.Presentation.Action.sheetCounter
-				).map(PresentationCounterViewController.init(store:))
-				viewController?.modalPresentationStyle = .pageSheet
-				return viewController ?? PresentationViewController(nibName: nil, bundle: nil)
+				).map(PresentationCounterViewController.init(store:)) else {
+					return PresentationViewController(nibName: nil, bundle: nil)
+				}
+				let _viewController = NavigationPresentationViewController(
+					rootViewController: viewController
+				)
+				_viewController.modalPresentationStyle = .pageSheet
+				return _viewController
 			case .fullScreenCounter:
-				let viewController: (any ViewControllerPresentable)? = childStore.scope(
+				guard let viewController = childStore.scope(
 					state: /PresentationCounter.Presentation.State.fullScreenCounter,
 					action: PresentationCounter.Presentation.Action.fullScreenCounter
-				).map(PresentationCounterViewController.init(store:))
-				viewController?.modalPresentationStyle = .overFullScreen
-				return viewController ?? PresentationViewController(nibName: nil, bundle: nil)
+				).map(PresentationCounterViewController.init(store:)) else {
+					return PresentationViewController(nibName: nil, bundle: nil)
+				}
+				let _viewController = NavigationPresentationViewController(
+					rootViewController: viewController
+				)
+				_viewController.modalPresentationStyle = .overFullScreen
+				return _viewController
 			}
 		}
 		.store(in: &subscriptions)
-		
-//		self.presentOverFullScreen(
-//			store.scope(state: \.$presentation, action: PresentationCounter.Action.presentation),
-//			state: /PresentationCounter.Presentation.State.fullScreenCounter,
-//			action: PresentationCounter.Presentation.Action.fullScreenCounter,
-//			PresentationCounterViewController.init(store:)
-//		).store(in: &subscriptions)
-//		
-//		self.presentSheet(
-//			store.scope(state: \.$presentation, action: PresentationCounter.Action.presentation),
-//			state: /PresentationCounter.Presentation.State.sheetCounter,
-//			action: PresentationCounter.Presentation.Action.sheetCounter,
-//			PresentationCounterViewController.init(store:)
-//		).store(in: &subscriptions)
 	}
 }
 
@@ -304,7 +300,7 @@ struct PresentationStack: Reducer {
 				
 			case .rootPath(.delegate(.shouldPopMultiple)),
 					.stackPath(.element(id: _, action: .counter(.delegate(.shouldPopMultiple)))):
-				state.stackPath.removeLast(max(state.stackPath.count, Int.random(in: 1...10)))
+				state.stackPath.removeLast(min(state.stackPath.count, Int.random(in: 1...10)))
 				return .none
 				
 			case .rootPath(.delegate(.shouldPopToRoot)),
@@ -388,19 +384,29 @@ final class PresentationStackViewController: NavigationStackViewController<
 		)) { state, childStore in
 			switch state {
 			case .sheetCounter:
-				let viewController: (any ViewControllerPresentable)? = childStore.scope(
+				guard let viewController = childStore.scope(
 					state: /PresentationStack.Presentation.State.sheetCounter,
 					action: PresentationStack.Presentation.Action.sheetCounter
-				).map(PresentationCounterViewController.init(store:))
-				viewController?.modalPresentationStyle = .pageSheet
-				return viewController ?? PresentationViewController(nibName: nil, bundle: nil)
+				).map(PresentationCounterViewController.init(store:)) else {
+					return PresentationViewController(nibName: nil, bundle: nil)
+				}
+				let _viewController = NavigationPresentationViewController(
+					rootViewController: viewController
+				)
+				_viewController.modalPresentationStyle = .pageSheet
+				return _viewController
 			case .fullScreenCounter:
-				let viewController: (any ViewControllerPresentable)? = childStore.scope(
+				guard let viewController = childStore.scope(
 					state: /PresentationStack.Presentation.State.fullScreenCounter,
 					action: PresentationStack.Presentation.Action.fullScreenCounter
-				).map(PresentationCounterViewController.init(store:))
-				viewController?.modalPresentationStyle = .overFullScreen
-				return viewController ?? PresentationViewController(nibName: nil, bundle: nil)
+				).map(PresentationCounterViewController.init(store:)) else {
+					return PresentationViewController(nibName: nil, bundle: nil)
+				}
+				let _viewController = NavigationPresentationViewController(
+					rootViewController: viewController
+				)
+				_viewController.modalPresentationStyle = .overFullScreen
+				return _viewController
 			}
 		}
 		.store(in: &subscriptions)
