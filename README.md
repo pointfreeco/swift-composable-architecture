@@ -56,7 +56,7 @@ You can watch all of the episodes [here][tca-episode-collection], as well as a d
 tour][tca-tour] of the architecture from scratch.
 
 <a href="https://www.pointfree.co/collections/composable-architecture">
-  <img alt="video poster image" src="https://i.vimeocdn.com/video/1492464398-1f5189a415136097aabf5b0b4845928bbb5d425a149069e4e0a848b67618a6f3-d?mw=1900&mh=1069&q=70" width="600">
+  <img alt="video poster image" src="https://d3rccdn33rt8ze.cloudfront.net/episodes/0243.jpeg" width="600">
 </a>
 
 ## Examples
@@ -697,7 +697,7 @@ This library is released under the MIT license. See [LICENSE](LICENSE) for detai
 [mbrandonw]: https://twitter.com/mbrandonw
 [stephencelis]: https://twitter.com/stephencelis
 [tca-episode-collection]: https://www.pointfree.co/collections/composable-architecture
-[tca-tour]: https://www.pointfree.co/collections/tours/composable-architecture
+[tca-tour]: https://www.pointfree.co/collections/tours/composable-architecture-1-0
 [gh-isowords]: https://github.com/pointfreeco/isowords
 [gh-discussions]: https://github.com/pointfreeco/swift-composable-architecture/discussions
 [swift-forum]: https://forums.swift.org/c/related-projects/swift-composable-architecture
