@@ -29,8 +29,7 @@
 /// ```
 ///
 /// A parent reducer with a domain that holds onto the child domain can use
-/// ``init(state:action:child:)`` to embed the child reducer in its
-/// ``Reducer/body-swift.property-8lumc``:
+/// ``init(state:action:child:)`` to embed the child reducer in its ``Reducer/body-swift.property``:
 ///
 /// ```swift
 /// struct Parent: Reducer {

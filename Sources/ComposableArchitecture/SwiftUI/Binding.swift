@@ -15,7 +15,6 @@ import SwiftUI
 /// > SwiftUI components.
 ///
 /// Read <doc:Bindings> for more information.
-@dynamicMemberLookup
 @propertyWrapper
 public struct BindingState<Value> {
   /// The underlying value wrapped by the binding state.
@@ -51,25 +50,6 @@ public struct BindingState<Value> {
   public var projectedValue: Self {
     get { self }
     set { self = newValue }
-  }
-
-  /// Returns binding state to the resulting value of a given key path.
-  ///
-  /// - Parameter keyPath: A key path to a specific resulting value.
-  /// - Returns: A new bindable state.
-  @available(
-    *,
-    deprecated,
-    message:
-      """
-      Chaining onto properties of binding state is deprecated. Instead of pattern matching into a deeper property of binding state, use 'Reducer.onChange(of:)' to detect changes to nested properties of binding state. Instead of using 'viewStore.binding(\\.$nested.property)', use dynamic member lookup ('viewStore.$nested.property').
-      """
-  )
-  public subscript<Subject>(
-    dynamicMember keyPath: WritableKeyPath<Value, Subject>
-  ) -> BindingState<Subject> {
-    get { .init(wrappedValue: self.wrappedValue[keyPath: keyPath]) }
-    set { self.wrappedValue[keyPath: keyPath] = newValue.wrappedValue }
   }
 }
 
@@ -242,20 +222,6 @@ extension BindingAction: CustomDumpStringConvertible {
   }
 }
 
-extension BindingAction {
-  @available(*, deprecated, message: "Use 'BindingViewState' instead.")
-  public func pullback<NewRoot>(
-    _ keyPath: WritableKeyPath<NewRoot, Root>
-  ) -> BindingAction<NewRoot> {
-    .init(
-      keyPath: (keyPath as AnyKeyPath).appending(path: self.keyPath) as! PartialKeyPath<NewRoot>,
-      set: { self.set(&$0[keyPath: keyPath]) },
-      value: self.value,
-      valueIsEqualTo: self.valueIsEqualTo
-    )
-  }
-}
-
 /// An action type that exposes a `binding` case that holds a ``BindingAction``.
 ///
 /// Used in conjunction with ``BindingState`` to safely eliminate the boilerplate typically
@@ -317,47 +283,13 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
       }
     )
   }
-
-  @available(iOS, deprecated: 9999, message: "Use 'viewStore.$value' instead.")
-  @available(macOS, deprecated: 9999, message: "Use 'viewStore.$value' instead.")
-  @available(tvOS, deprecated: 9999, message: "Use 'viewStore.$value' instead.")
-  @available(watchOS, deprecated: 9999, message: "Use 'viewStore.$value' instead.")
-  public func binding<Value: Equatable>(
-    _ keyPath: WritableKeyPath<ViewState, BindingState<Value>>,
-    fileID: StaticString = #fileID,
-    line: UInt = #line
-  ) -> Binding<Value> {
-    self.binding(
-      get: { $0[keyPath: keyPath].wrappedValue },
-      send: { [isInvalidated = self._isInvalidated] value in
-        #if DEBUG
-          let debugger = BindableActionViewStoreDebugger(
-            value: value,
-            bindableActionType: ViewAction.self,
-            context: .viewStore,
-            isInvalidated: isInvalidated,
-            fileID: fileID,
-            line: line
-          )
-          let set: @Sendable (inout ViewState) -> Void = {
-            $0[keyPath: keyPath].wrappedValue = value
-            debugger.wasCalled = true
-          }
-        #else
-          let set: @Sendable (inout ViewState) -> Void = {
-            $0[keyPath: keyPath].wrappedValue = value
-          }
-        #endif
-        return .binding(.init(keyPath: keyPath, set: set, value: value))
-      }
-    )
-  }
 }
 
 /// A property wrapper type that can designate properties of view state that can be directly
 /// bindable in SwiftUI views.
 ///
 /// Read <doc:Bindings> for more information.
+@dynamicMemberLookup
 @propertyWrapper
 public struct BindingViewState<Value> {
   let binding: Binding<Value>
@@ -375,6 +307,12 @@ public struct BindingViewState<Value> {
 
   public var projectedValue: Binding<Value> {
     self.binding
+  }
+
+  public subscript<Subject>(
+    dynamicMember keyPath: WritableKeyPath<Value, Subject>
+  ) -> BindingViewState<Subject> {
+    BindingViewState<Subject>(binding: self.binding[dynamicMember: keyPath])
   }
 }
 
@@ -502,9 +440,7 @@ extension ViewStore {
     _ store: Store<State, Action>,
     observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
     send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action,
-    removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool,
-    file: StaticString = #fileID,
-    line: UInt = #line
+    removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) where ViewAction: BindableAction, ViewAction.State == State {
     self.init(
       store,
@@ -756,6 +692,8 @@ extension WithViewStore where ViewState: Equatable, Content: View {
     deinit {
       guard !self.isInvalidated() else { return }
       guard self.wasCalled else {
+        var value = ""
+        customDump(self.value, to: &value, maxDepth: 0)
         runtimeWarn(
           """
           A binding action sent from a view store \
@@ -763,7 +701,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
           "\(self.fileID):\(self.line)" was not handled. …
 
             Action:
-              \(typeName(self.bindableActionType)).binding(.set(_, \(self.value)))
+              \(typeName(self.bindableActionType)).binding(.set(_, \(value)))
 
           To fix this, invoke "BindingReducer()" from your feature reducer's "body".
           """

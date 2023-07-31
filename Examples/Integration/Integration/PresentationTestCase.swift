@@ -257,7 +257,7 @@ private struct ChildFeature: Reducer {
         return .none
       case .childDismissButtonTapped:
         state.isDismissed = true
-        return .fireAndForget { await self.dismiss() }
+        return .run { _ in await self.dismiss() }
       case .dismissAndAlert:
         return .none
       case .incrementButtonTapped:

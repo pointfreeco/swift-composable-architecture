@@ -44,7 +44,7 @@ private struct ChildFeature: Reducer {
         state.count -= 1
         return .none
       case .dismissButtonTapped:
-        return .fireAndForget { await self.dismiss() }
+        return .run { _ in await self.dismiss() }
       case .incrementButtonTapped:
         state.count += 1
         return .none

@@ -75,7 +75,7 @@ where Base.State == Body.State, Base.Action == Body.Action {
   }
 
   @inlinable
-  public func reduce(into state: inout Base.State, action: Base.Action) -> EffectTask<Base.Action> {
+  public func reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action> {
     let oldValue = toValue(state)
     let baseEffects = self.base.reduce(into: &state, action: action)
     let newValue = toValue(state)

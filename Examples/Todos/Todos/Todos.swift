@@ -74,9 +74,9 @@ struct Todos: Reducer {
 
         state.todos.move(fromOffsets: source, toOffset: destination)
 
-        return .task {
+        return .run { send in
           try await self.clock.sleep(for: .milliseconds(100))
-          return .sortCompletedTodos
+          await send(.sortCompletedTodos)
         }
 
       case .sortCompletedTodos:

@@ -7,30 +7,6 @@
   final class EffectFailureTests: BaseTCATestCase {
     var cancellables: Set<AnyCancellable> = []
 
-    func testTaskUnexpectedThrows() async {
-      guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
-
-      var line: UInt!
-      XCTExpectFailure {
-        $0.compactDescription == """
-          An "Effect.task" returned from "\(#fileID):\(line+1)" threw an unhandled error. …
-
-              EffectFailureTests.Unexpected()
-
-          All non-cancellation errors must be explicitly handled via the "catch" parameter on \
-          "Effect.task", or via a "do" block.
-          """
-      }
-
-      line = #line
-      let effect = Effect<Void>.task {
-        struct Unexpected: Error {}
-        throw Unexpected()
-      }
-
-      for await _ in effect.actions {}
-    }
-
     func testRunUnexpectedThrows() async {
       guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
 

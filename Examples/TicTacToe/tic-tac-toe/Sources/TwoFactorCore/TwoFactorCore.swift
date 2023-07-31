@@ -16,14 +16,14 @@ public struct TwoFactor: Reducer, Sendable {
     }
   }
 
-  public enum Action: Equatable {
+  public enum Action: Equatable, Sendable {
     case alert(PresentationAction<Alert>)
     case twoFactorResponse(TaskResult<AuthenticationResponse>)
     case view(View)
 
-    public enum Alert: Equatable {}
+    public enum Alert: Equatable, Sendable {}
 
-    public enum View: BindableAction, Equatable {
+    public enum View: BindableAction, Equatable, Sendable {
       case binding(BindingAction<State>)
       case submitButtonTapped
     }
@@ -55,11 +55,13 @@ public struct TwoFactor: Reducer, Sendable {
 
       case .view(.submitButtonTapped):
         state.isTwoFactorRequestInFlight = true
-        return .task { [code = state.code, token = state.token] in
-          .twoFactorResponse(
-            await TaskResult {
-              try await self.authenticationClient.twoFactor(.init(code: code, token: token))
-            }
+        return .run { [code = state.code, token = state.token] send in
+          await send(
+            .twoFactorResponse(
+              await TaskResult {
+                try await self.authenticationClient.twoFactor(.init(code: code, token: token))
+              }
+            )
           )
         }
       }

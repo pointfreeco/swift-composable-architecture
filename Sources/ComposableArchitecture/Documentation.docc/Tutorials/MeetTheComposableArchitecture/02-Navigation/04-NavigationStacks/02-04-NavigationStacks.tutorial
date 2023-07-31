@@ -104,7 +104,7 @@
         stack.
         
         We will also handle the `.path` case in the reducer and return 
-        ``ComposableArchitecture/EffectPublisher/none`` for now.
+        ``ComposableArchitecture/Effect/none`` for now.
         
         @Code(name: "ContactsFeature.swift", file: 02-04-02-code-0001) 
       }

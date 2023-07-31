@@ -48,7 +48,7 @@
         doing. For example, we can emulate tapping the increment button and then the decrement 
         button.
         
-        > Note: The ``ComposableArchitecture/TestStore/send(_:assert:file:line:)-1ax61`` method on
+        > Note: The ``ComposableArchitecture/TestStore/send(_:assert:file:line:)`` method on
         the test store is async because most features involve asynchronous side effects, and the
         test store using the async context to track those effects.
         
@@ -146,7 +146,7 @@
       While this test does pass, it also isn't asserting on any of the timer behavior. We would
       like to assert that after some time a `timerTick` action is sent into the system and causes
       the `count` to increment. This can be done by using the 
-      ``ComposableArchitecture/TestStore/receive(_:timeout:assert:file:line:)-1rwdd`` method on
+      ``ComposableArchitecture/TestStore/receive(_:timeout:assert:file:line:)-5awso`` method on
       test store to assert that you expect to receive an action, and describe how state mutates
       upon receiving that action.
       

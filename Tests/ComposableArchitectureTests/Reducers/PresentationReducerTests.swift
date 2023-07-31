@@ -197,7 +197,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       func reduce(into state: inout State, action: Action) -> Effect<Action> {
         switch action {
         case .closeButtonTapped:
-          return .fireAndForget {
+          return .run { _ in
             await self.dismiss()
           }
         case .decrementButtonTapped:
@@ -351,7 +351,7 @@ final class PresentationReducerTests: BaseTCATestCase {
         func reduce(into state: inout State, action: Action) -> Effect<Action> {
           switch action {
           case .closeButtonTapped:
-            return .fireAndForget {
+            return .run { _ in
               await self.dismiss()
             }
 
@@ -742,7 +742,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       func reduce(into state: inout State, action: Action) -> Effect<Action> {
         switch action {
         case .closeButtonTapped:
-          return .fireAndForget {
+          return .run { _ in
             await self.dismiss()
           }
         case .decrementButtonTapped:
@@ -806,7 +806,7 @@ final class PresentationReducerTests: BaseTCATestCase {
         func reduce(into state: inout State, action: Action) -> Effect<Action> {
           switch action {
           case .closeButtonTapped:
-            return .fireAndForget {
+            return .run { _ in
               await self.dismiss()
             }
           case .startButtonTapped:
@@ -976,7 +976,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       func reduce(into state: inout State, action: Action) -> Effect<Action> {
         switch action {
         case .startButtonTapped:
-          return .fireAndForget {
+          return .run { _ in
             try await Task.never()
           }
           .cancellable(id: 42)
@@ -1032,7 +1032,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       func reduce(into state: inout State, action: Action) -> Effect<Action> {
         switch action {
         case .startButtonTapped:
-          return .fireAndForget {
+          return .run { _ in
             try await Task.never()
           }
           .cancellable(id: CancelID.effect)
@@ -1059,7 +1059,7 @@ final class PresentationReducerTests: BaseTCATestCase {
             state.grandchild = Grandchild.State()
             return .none
           case .startButtonTapped:
-            return .fireAndForget {
+            return .run { _ in
               try await Task.never()
             }
             .cancellable(id: CancelID.effect)
@@ -1454,9 +1454,9 @@ final class PresentationReducerTests: BaseTCATestCase {
               state.count = value
               return .none
             case .startButtonTapped:
-              return .task {
+              return .run { send in
                 try await self.clock.sleep(for: .seconds(1))
-                return .response(42)
+                await send(.response(42))
               }
               .cancellable(id: CancelID.effect)
             case .stopButtonTapped:
@@ -1506,9 +1506,9 @@ final class PresentationReducerTests: BaseTCATestCase {
           case .response:
             return .none
           case .startButtonTapped:
-            return .task {
+            return .run { send in
               try await clock.sleep(for: .seconds(0))
-              return .response(42)
+              await send(.response(42))
             }
             .cancellable(id: CancelID.effect)
           }
@@ -1820,7 +1820,7 @@ final class PresentationReducerTests: BaseTCATestCase {
         case .dismissMe:
           return .none
         case .task:
-          return .fireAndForget {
+          return .run { _ in
             try await Task.never()
           }
         }

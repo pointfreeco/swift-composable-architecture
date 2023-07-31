@@ -20,15 +20,17 @@ private let readMe = """
 // MARK: - Reusable favorite component
 
 struct FavoritingState<ID: Hashable & Sendable>: Equatable {
-  var alert: AlertState<FavoritingAction>?
+  @PresentationState var alert: AlertState<FavoritingAction.Alert>?
   let id: ID
   var isFavorite: Bool
 }
 
 enum FavoritingAction: Equatable {
-  case alertDismissed
+  case alert(PresentationAction<Alert>)
   case buttonTapped
   case response(TaskResult<Bool>)
+
+  enum Alert: Equatable {}
 }
 
 struct Favoriting<ID: Hashable & Sendable>: Reducer {
@@ -42,7 +44,7 @@ struct Favoriting<ID: Hashable & Sendable>: Reducer {
     into state: inout FavoritingState<ID>, action: FavoritingAction
   ) -> Effect<FavoritingAction> {
     switch action {
-    case .alertDismissed:
+    case .alert(.dismiss):
       state.alert = nil
       state.isFavorite.toggle()
       return .none
@@ -77,7 +79,7 @@ struct FavoriteButton<ID: Hashable & Sendable>: View {
         Image(systemName: "heart")
           .symbolVariant(viewStore.isFavorite ? .fill : .none)
       }
-      .alert(self.store.scope(state: \.alert, action: { $0 }), dismiss: .alertDismissed)
+      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
     }
   }
 }
@@ -86,7 +88,7 @@ struct FavoriteButton<ID: Hashable & Sendable>: View {
 
 struct Episode: Reducer {
   struct State: Equatable, Identifiable {
-    var alert: AlertState<FavoritingAction>?
+    var alert: AlertState<FavoritingAction.Alert>?
     let id: UUID
     var isFavorite: Bool
     let title: String

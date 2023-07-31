@@ -1,4 +1,4 @@
-extension Effect where Failure == Never {
+extension Effect {
   @_spi(Internals)
   public var actions: AsyncStream<Action> {
     switch self.operation {

@@ -4,9 +4,7 @@
 
 ### Creating a test store
 
-- ``init(initialState:reducer:withDependencies:file:line:)-t6cu``
-- ``init(initialState:reducer:observe:withDependencies:file:line:)``
-- ``init(initialState:reducer:observe:send:withDependencies:file:line:)``
+- ``init(initialState:reducer:withDependencies:file:line:)-3zio1``
 
 ### Configuring a test store
 
@@ -17,11 +15,11 @@
 
 ### Testing a reducer
 
-- ``send(_:assert:file:line:)-1ax61``
-- ``receive(_:timeout:assert:file:line:)-1rwdd``
-- ``receive(_:timeout:assert:file:line:)-8xkqt``
-- ``receive(_:timeout:assert:file:line:)-2ju31``
-- ``assert(_:file:line:)-21bdg``
+- ``send(_:assert:file:line:)``
+- ``receive(_:timeout:assert:file:line:)-5awso``
+- ``receive(_:timeout:assert:file:line:)-6m8t6``
+- ``receive(_:timeout:assert:file:line:)-7md3m``
+- ``assert(_:file:line:)``
 - ``finish(timeout:file:line:)-53gi5``
 - ``TestStoreTask``
 
@@ -32,7 +30,9 @@
 
 ### Accessing state
 
-While the most common way of interacting with a test store's state is via its ``send(_:assert:file:line:)-1ax61`` and ``receive(_:timeout:assert:file:line:)-1rwdd`` methods, you may also access it directly throughout a test.
+While the most common way of interacting with a test store's state is via its
+``send(_:assert:file:line:)`` and ``receive(_:timeout:assert:file:line:)-5awso`` methods, you may
+also access it directly throughout a test.
 
 - ``state``
 

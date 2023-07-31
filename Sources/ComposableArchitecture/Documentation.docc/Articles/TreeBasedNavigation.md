@@ -424,9 +424,7 @@ struct Feature: Reducer {
 ```
 
 > Note: The ``DismissEffect`` function is async which means it cannot be invoked directly inside a 
-> reducer. Instead it must be called from either 
-> ``EffectPublisher/run(priority:operation:catch:fileID:line:)`` or
-> ``EffectPublisher/fireAndForget(priority:_:)``.
+> reducer. Instead it must be called from ``Effect/run(priority:operation:catch:fileID:line:)``.
 
 When `self.dismiss()` is invoked it will `nil` out the state responsible for presenting the feature
 by sending a ``PresentationAction/dismiss`` action back into the system, causing the feature to be
@@ -546,7 +544,7 @@ await store.send(.counter(.presented(.incrementButtonTapped))) {
 
 And then we finally expect that the child dismisses itself, which manifests itself as the 
 ``PresentationAction/dismiss`` action being sent to `nil` out the `counter` state, which we can
-assert using the ``TestStore/receive(_:timeout:assert:file:line:)-1rwdd`` method on ``TestStore``:
+assert using the ``TestStore/receive(_:timeout:assert:file:line:)-5awso`` method on ``TestStore``:
 
 ```swift
 await store.receive(.counter(.dismiss)) {

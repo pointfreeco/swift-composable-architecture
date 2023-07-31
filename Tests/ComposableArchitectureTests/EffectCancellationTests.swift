@@ -267,7 +267,7 @@ final class EffectCancellationTests: BaseTCATestCase {
   }
 
   func testNestedMergeCancellation() async {
-    let effect = EffectPublisher<Int, Never>.merge(
+    let effect = Effect<Int>.merge(
       .publisher { (1...2).publisher }
         .cancellable(id: 1)
     )
@@ -278,41 +278,6 @@ final class EffectCancellationTests: BaseTCATestCase {
       output.append(n)
     }
     XCTAssertEqual(output, [1, 2])
-  }
-
-  @available(*, deprecated)
-  func testMultipleCancellations() async {
-    let mainQueue = DispatchQueue.test
-    let output = LockIsolated<[AnyHashable]>([])
-
-    struct A: Hashable {}
-    struct B: Hashable {}
-    struct C: Hashable {}
-
-    let ids: [AnyHashable] = [A(), B(), C()]
-    let effects = Effect.merge(
-      ids.map { id in
-        .publisher {
-          Just(id)
-            .delay(for: 1, scheduler: mainQueue)
-        }
-        .cancellable(id: id)
-      }
-    )
-
-    let task = Task {
-      for await n in effects.actions {
-        output.withValue { $0.append(n) }
-      }
-    }
-    await Task.megaYield()  // TODO: Does a yield have to be necessary here for cancellation?
-
-    for await _ in Effect<AnyHashable>.cancel(ids: [A(), C()]).actions {}
-
-    await mainQueue.advance(by: 1)
-
-    await task.value
-    XCTAssertEqual(output.value, [B()])
   }
 }
 
@@ -353,7 +318,6 @@ final class EffectCancellationTests: BaseTCATestCase {
       XCTAssertEqual(_cancellationCancellables.exists(at: id, path: NavigationIDPath()), false)
     }
 
-    @available(*, deprecated)
     func testConcurrentCancels() {
       let queues = [
         DispatchQueue.main,
@@ -366,11 +330,11 @@ final class EffectCancellationTests: BaseTCATestCase {
       ]
       let ids = (1...10).map { _ in UUID() }
 
-      let effect = EffectPublisher.merge(
-        (1...1_000).map { idx -> EffectPublisher<Int, Never> in
+      let effect = Effect.merge(
+        (1...1_000).map { idx -> Effect<Int> in
           let id = ids[idx % 10]
 
-          return EffectPublisher.merge(
+          return .merge(
             .publisher {
               Just(idx)
                 .delay(
@@ -392,7 +356,7 @@ final class EffectCancellationTests: BaseTCATestCase {
 
       let expectation = self.expectation(description: "wait")
       // NB: `for await _ in effect.actions` blows the stack with 1,000 merged publishers
-      effect
+      _EffectPublisher(effect)
         .sink(receiveCompletion: { _ in expectation.fulfill() }, receiveValue: { _ in })
         .store(in: &self.cancellables)
       self.wait(for: [expectation], timeout: 999)
@@ -437,29 +401,6 @@ final class EffectCancellationTests: BaseTCATestCase {
           "cancellationCancellables should not contain id \(id)"
         )
       }
-    }
-
-    @available(*, deprecated)
-    func testNestedCancels() {
-      let id = UUID()
-
-      var effect = Effect.publisher {
-        Empty<Void, Never>(completeImmediately: false)
-      }
-      .cancellable(id: id)
-
-      for _ in 1...1_000 {
-        effect = effect.cancellable(id: id)
-      }
-
-      // NB: `for await _ in effect.actions` blows the stack with 1,000 chained publishers
-      effect
-        .sink(receiveValue: { _ in })
-        .store(in: &cancellables)
-
-      cancellables.removeAll()
-
-      XCTAssertEqual(_cancellationCancellables.exists(at: id, path: NavigationIDPath()), false)
     }
 
     func testCancelIDHash() {
