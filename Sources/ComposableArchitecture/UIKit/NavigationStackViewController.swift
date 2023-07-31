@@ -15,10 +15,11 @@ open class NavigationStackViewController<
 
 	public var onDismiss: (() -> Void)? = nil
 	
+	@MainActor
 	public init(
 		_ store: Store<StackState<State>, StackAction<State, Action>>,
 		rootViewController: UIViewController,
-		destination: @escaping (_ initialState: State, _ destinationStore: Store<State, Action>) -> UIViewController
+		destination: @MainActor @escaping (_ initialState: State, _ destinationStore: Store<State, Action>) -> UIViewController
 	) {
 		self.store = store
 		self.rootDestination = rootViewController

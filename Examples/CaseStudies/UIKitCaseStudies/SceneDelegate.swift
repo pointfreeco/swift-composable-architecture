@@ -10,8 +10,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     options connectionOptions: UIScene.ConnectionOptions
   ) {
     self.window = (scene as? UIWindowScene).map { UIWindow(windowScene: $0) }
-    self.window?.rootViewController = UINavigationController(
-      rootViewController: RootViewController())
+		self.window?.rootViewController = PresentationStackViewController(
+			store: .init(
+				initialState: .init(),
+				reducer: { PresentationStack()._printChanges() }
+			)
+		)
     self.window?.makeKeyAndVisible()
   }
 }

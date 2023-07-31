@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		433B8B762A49C9AF0035DEE4 /* 03-Navigation-Multiple-Destinations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 433B8B752A49C9AF0035DEE4 /* 03-Navigation-Multiple-Destinations.swift */; };
 		4F5AC11F24ECC7E4009DC50B /* 01-GettingStarted-SharedStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5AC11E24ECC7E4009DC50B /* 01-GettingStarted-SharedStateTests.swift */; };
+		8BC1CE1A2A77CDE90072C61C /* DemoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BC1CE192A77CDE90072C61C /* DemoViewController.swift */; };
 		CA0C51FB245389CC00A04EAB /* 04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0C51FA245389CC00A04EAB /* 04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift */; };
 		CA25E5D224463AD700DA666A /* 01-GettingStarted-Bindings-Basics.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA25E5D124463AD700DA666A /* 01-GettingStarted-Bindings-Basics.swift */; };
 		CA34170824A4E89500FAF950 /* 01-GettingStarted-AnimationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA34170724A4E89500FAF950 /* 01-GettingStarted-AnimationsTests.swift */; };
@@ -150,6 +151,7 @@
 /* Begin PBXFileReference section */
 		433B8B752A49C9AF0035DEE4 /* 03-Navigation-Multiple-Destinations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Navigation-Multiple-Destinations.swift"; sourceTree = "<group>"; };
 		4F5AC11E24ECC7E4009DC50B /* 01-GettingStarted-SharedStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-SharedStateTests.swift"; sourceTree = "<group>"; };
+		8BC1CE192A77CDE90072C61C /* DemoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoViewController.swift; sourceTree = "<group>"; };
 		CA0C51FA245389CC00A04EAB /* 04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-ReusableOfflineDownloadsTests.swift"; sourceTree = "<group>"; };
 		CA25E5D124463AD700DA666A /* 01-GettingStarted-Bindings-Basics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-Bindings-Basics.swift"; sourceTree = "<group>"; };
 		CA34170724A4E89500FAF950 /* 01-GettingStarted-AnimationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-AnimationsTests.swift"; sourceTree = "<group>"; };
@@ -323,17 +325,18 @@
 		DC4C6EA82450DD380066A05D /* UIKitCaseStudies */ = {
 			isa = PBXGroup;
 			children = (
-				DC4C6EAB2450DD380066A05D /* SceneDelegate.swift */,
-				DC4C6EAD2450DD380066A05D /* RootViewController.swift */,
-				DC4C6ED52450E1050066A05D /* CounterViewController.swift */,
-				DC630FD92451016B00BAECBA /* ListsOfState.swift */,
-				DC4C6ED92450E6050066A05D /* NavigateAndLoad.swift */,
-				DC25DC602450F2B000082E81 /* LoadThenNavigate.swift */,
-				DC25DC622450F2D100082E81 /* Internal */,
 				DC4C6EAF2450DD380066A05D /* Assets.xcassets */,
-				DC4C6EB42450DD380066A05D /* LaunchScreen.storyboard */,
+				DC4C6ED52450E1050066A05D /* CounterViewController.swift */,
+				8BC1CE192A77CDE90072C61C /* DemoViewController.swift */,
 				DC4C6EB72450DD380066A05D /* Info.plist */,
+				DC25DC622450F2D100082E81 /* Internal */,
+				DC4C6EB42450DD380066A05D /* LaunchScreen.storyboard */,
+				DC630FD92451016B00BAECBA /* ListsOfState.swift */,
+				DC25DC602450F2B000082E81 /* LoadThenNavigate.swift */,
+				DC4C6ED92450E6050066A05D /* NavigateAndLoad.swift */,
 				DC4C6EB12450DD380066A05D /* Preview Content */,
+				DC4C6EAD2450DD380066A05D /* RootViewController.swift */,
+				DC4C6EAB2450DD380066A05D /* SceneDelegate.swift */,
 			);
 			path = UIKitCaseStudies;
 			sourceTree = "<group>";
@@ -713,6 +716,7 @@
 				DC25DC642450F2DF00082E81 /* ActivityIndicatorViewController.swift in Sources */,
 				DC4C6ED62450E1050066A05D /* CounterViewController.swift in Sources */,
 				DC4C6EDA2450E6050066A05D /* NavigateAndLoad.swift in Sources */,
+				8BC1CE1A2A77CDE90072C61C /* DemoViewController.swift in Sources */,
 				DC4C6EAC2450DD380066A05D /* SceneDelegate.swift in Sources */,
 				DC25DC612450F2B000082E81 /* LoadThenNavigate.swift in Sources */,
 				DC25DC5F2450F13200082E81 /* IfLetStoreController.swift in Sources */,
