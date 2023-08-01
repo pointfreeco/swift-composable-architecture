@@ -18,7 +18,7 @@ extension Reducer {
   ///
   ///   var body: some Reducer<State, Action> {
   ///     BindingReducer()
-  ///       .onChange(of: \.userSettings.isHapticFeedbackEnabled, isEqual: ==) { oldValue, newValue in
+  ///       .onChange(of: \.userSettings.isHapticFeedbackEnabled, removeDuplicates: ==) { oldValue, newValue in
   ///         Reduce { state, action in
   ///           .run { send in
   ///             // Persist new value...
@@ -39,7 +39,8 @@ extension Reducer {
   ///
   /// - Parameters:
   ///   - toValue: A closure that returns a value from the given state.
-  ///   - isEqual: A closue that indicates that the value has changed.
+  ///   - removeDuplicates: A closure to evaluate whether two elements are equivalent, for purposes of filtering.
+  ///     Return `true` from this closure to indicate that the second element is a duplicate of the first.
   ///   - reducer: A reducer builder closure to run when the value changes.
   ///   - oldValue: The old value that failed the comparison check.
   ///   - newValue: The new value that failed the comparison check.
@@ -47,10 +48,10 @@ extension Reducer {
   @inlinable
   public func onChange<V, R: Reducer>(
     of toValue: @escaping (State) -> V,
-    isEqual: @escaping (V, V) -> Bool,
+    removeDuplicates predicate: @escaping (V, V) -> Bool,
     @ReducerBuilder<State, Action> _ reducer: @escaping (_ oldValue: V, _ newValue: V) -> R
   ) -> _OnChangeReducer<Self, V, R> {
-    _OnChangeReducer(base: self, toValue: toValue, isEqual: isEqual, reducer: reducer)
+    _OnChangeReducer(base: self, toValue: toValue, predicate: predicate, reducer: reducer)
   }
   
   /// Adds a reducer to run when this reducer changes the given value in state.
@@ -102,7 +103,7 @@ extension Reducer {
     of toValue: @escaping (State) -> V,
     @ReducerBuilder<State, Action> _ reducer: @escaping (_ oldValue: V, _ newValue: V) -> R
   ) -> _OnChangeReducer<Self, V, R> {
-    _OnChangeReducer(base: self, toValue: toValue, isEqual: ==, reducer: reducer)
+    _OnChangeReducer(base: self, toValue: toValue, predicate: ==, reducer: reducer)
   }
 }
 
@@ -115,7 +116,7 @@ where Base.State == Body.State, Base.Action == Body.Action {
   let toValue: (Base.State) -> Value
   
   @usableFromInline
-  let isEqual: (Value, Value) -> Bool
+  let predicate: (Value, Value) -> Bool
 
   @usableFromInline
   let reducer: (Value, Value) -> Body
@@ -124,12 +125,12 @@ where Base.State == Body.State, Base.Action == Body.Action {
   init(
     base: Base,
     toValue: @escaping (Base.State) -> Value,
-    isEqual: @escaping (Value, Value) -> Bool,
+    predicate: @escaping (Value, Value) -> Bool,
     reducer: @escaping (Value, Value) -> Body
   ) {
     self.base = base
     self.toValue = toValue
-    self.isEqual = isEqual
+    self.predicate = predicate
     self.reducer = reducer
   }
 
@@ -138,7 +139,7 @@ where Base.State == Body.State, Base.Action == Body.Action {
     let oldValue = toValue(state)
     let baseEffects = self.base.reduce(into: &state, action: action)
     let newValue = toValue(state)
-    return isEqual(oldValue, newValue)
+    return predicate(oldValue, newValue)
       ? baseEffects
       : .merge(baseEffects, self.reducer(oldValue, newValue).reduce(into: &state, action: action))
   }
