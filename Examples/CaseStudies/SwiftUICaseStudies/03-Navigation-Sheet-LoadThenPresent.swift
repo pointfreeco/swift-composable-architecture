@@ -11,7 +11,7 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct LoadThenPresent: ReducerProtocol {
+struct LoadThenPresent: Reducer {
   struct State: Equatable {
     @PresentationState var counter: Counter.State?
     var isActivityIndicatorVisible = false
@@ -25,7 +25,7 @@ struct LoadThenPresent: ReducerProtocol {
 
   @Dependency(\.continuousClock) var clock
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
       case .counter:

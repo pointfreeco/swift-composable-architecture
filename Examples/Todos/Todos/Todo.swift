@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct Todo: ReducerProtocol {
+struct Todo: Reducer {
   struct State: Equatable, Identifiable {
     @BindingState var description = ""
     let id: UUID
@@ -12,7 +12,7 @@ struct Todo: ReducerProtocol {
     case binding(BindingAction<State>)
   }
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some Reducer<State, Action> {
     BindingReducer()
   }
 }

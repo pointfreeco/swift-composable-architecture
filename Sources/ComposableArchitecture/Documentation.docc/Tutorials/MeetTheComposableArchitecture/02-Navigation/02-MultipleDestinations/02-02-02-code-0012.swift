@@ -1,4 +1,4 @@
-struct ContactsFeature: ReducerProtocol {
+struct ContactsFeature: Reducer {
   struct State: Equatable {
     var contacts: IdentifiedArrayOf<Contact> = []
     @PresentationState var destination: Destination.State?
@@ -11,7 +11,7 @@ struct ContactsFeature: ReducerProtocol {
       case confirmDeletion(id: Contact.ID)
     }
   }
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       case .addButtonTapped:
@@ -30,16 +30,17 @@ struct ContactsFeature: ReducerProtocol {
         state.contacts.remove(id: id)
         return .none
 
+      case .destination:
+        return .none
+
       case let .deleteButtonTapped(id: id):
-        state.destination = .alert(
-          AlertState {
-            TextState("Are you sure?")
-          } actions: {
-            ButtonState(role: .destructive, action: .confirmDeletion(id: id)) {
-              TextState("Delete")
-            }
+        state.alert = AlertState {
+          TextState("Are you sure?")
+        } actions: {
+          ButtonState(role: .destructive, action: .confirmDeletion(id: id)) {
+            TextState("Delete")
           }
-        )
+        }
         return .none
       }
     }

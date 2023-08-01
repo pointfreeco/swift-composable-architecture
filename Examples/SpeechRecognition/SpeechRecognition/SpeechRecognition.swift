@@ -1,6 +1,6 @@
 import ComposableArchitecture
 import Speech
-@preconcurrency import SwiftUI
+import SwiftUI
 
 private let readMe = """
   This application demonstrates how to work with a complex dependency in the Composable \
@@ -8,7 +8,7 @@ private let readMe = """
   on the device and live-transcribe it to the UI.
   """
 
-struct SpeechRecognition: ReducerProtocol {
+struct SpeechRecognition: Reducer {
   struct State: Equatable {
     @PresentationState var alert: AlertState<Action.Alert>?
     var isRecording = false
@@ -26,7 +26,7 @@ struct SpeechRecognition: ReducerProtocol {
 
   @Dependency(\.speechClient) var speechClient
 
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       case .alert:

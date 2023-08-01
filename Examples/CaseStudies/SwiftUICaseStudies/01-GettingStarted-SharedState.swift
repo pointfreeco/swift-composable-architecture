@@ -16,7 +16,7 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct SharedState: ReducerProtocol {
+struct SharedState: Reducer {
   enum Tab { case counter, profile }
 
   struct State: Equatable {
@@ -52,7 +52,7 @@ struct SharedState: ReducerProtocol {
     case selectTab(Tab)
   }
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some Reducer<State, Action> {
     Scope(state: \.counter, action: /Action.counter) {
       Counter()
     }
@@ -72,9 +72,9 @@ struct SharedState: ReducerProtocol {
     }
   }
 
-  struct Counter: ReducerProtocol {
+  struct Counter: Reducer {
     struct State: Equatable {
-      var alert: AlertState<Action>?
+      @PresentationState var alert: AlertState<Action.Alert>?
       var count = 0
       var maxCount = 0
       var minCount = 0
@@ -82,44 +82,48 @@ struct SharedState: ReducerProtocol {
     }
 
     enum Action: Equatable {
-      case alertDismissed
+      case alert(PresentationAction<Alert>)
       case decrementButtonTapped
       case incrementButtonTapped
       case isPrimeButtonTapped
+
+      enum Alert: Equatable {}
     }
 
-    func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
-      switch action {
-      case .alertDismissed:
-        state.alert = nil
-        return .none
+    var body: some Reducer<State, Action> {
+      Reduce { state, action in
+        switch action {
+        case .alert:
+          return .none
 
-      case .decrementButtonTapped:
-        state.count -= 1
-        state.numberOfCounts += 1
-        state.minCount = min(state.minCount, state.count)
-        return .none
+        case .decrementButtonTapped:
+          state.count -= 1
+          state.numberOfCounts += 1
+          state.minCount = min(state.minCount, state.count)
+          return .none
 
-      case .incrementButtonTapped:
-        state.count += 1
-        state.numberOfCounts += 1
-        state.maxCount = max(state.maxCount, state.count)
-        return .none
+        case .incrementButtonTapped:
+          state.count += 1
+          state.numberOfCounts += 1
+          state.maxCount = max(state.maxCount, state.count)
+          return .none
 
-      case .isPrimeButtonTapped:
-        state.alert = AlertState {
-          TextState(
-            isPrime(state.count)
-              ? "👍 The number \(state.count) is prime!"
-              : "👎 The number \(state.count) is not prime :("
-          )
+        case .isPrimeButtonTapped:
+          state.alert = AlertState {
+            TextState(
+              isPrime(state.count)
+                ? "👍 The number \(state.count) is prime!"
+                : "👎 The number \(state.count) is not prime :("
+            )
+          }
+          return .none
         }
-        return .none
       }
+      .ifLet(\.$alert, action: /Action.alert)
     }
   }
 
-  struct Profile: ReducerProtocol {
+  struct Profile: Reducer {
     struct State: Equatable {
       private(set) var currentTab: Tab
       private(set) var count = 0
@@ -140,7 +144,7 @@ struct SharedState: ReducerProtocol {
       case resetCounterButtonTapped
     }
 
-    func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+    func reduce(into state: inout State, action: Action) -> Effect<Action> {
       switch action {
       case .resetCounterButtonTapped:
         state.resetCount()
@@ -218,7 +222,7 @@ struct SharedStateCounterView: View {
       }
       .padding(.top)
       .navigationTitle("Shared State Demo")
-      .alert(self.store.scope(state: \.alert, action: { $0 }), dismiss: .alertDismissed)
+      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
     }
   }
 }

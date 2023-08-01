@@ -7,8 +7,8 @@ import SwiftUI
 ///
 /// Typically you use this view by first modeling your features as having a parent feature that
 /// holds onto an optional piece of child state using the ``PresentationState``,
-/// ``PresentationAction`` and ``ReducerProtocol/ifLet(_:action:destination:fileID:line:)`` tools
-/// (see <doc:TreeBasedNavigation> for more information). Then in the view you can construct a
+/// ``PresentationAction`` and ``Reducer/ifLet(_:action:destination:fileID:line:)`` tools (see
+/// <doc:TreeBasedNavigation> for more information). Then in the view you can construct a
 /// `NavigationLinkStore` by passing a ``Store`` that is focused on the presentation domain:
 ///
 /// ```swift
@@ -23,8 +23,8 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// Then when the `child` state flips from `nil` to non-`nil` a drill-down animation will occur
-/// to the child domain.
+/// Then when the `child` state flips from `nil` to non-`nil` a drill-down animation will occur to
+/// the child domain.
 @available(iOS, introduced: 13, deprecated: 16)
 @available(macOS, introduced: 10.15, deprecated: 13)
 @available(tvOS, introduced: 13, deprecated: 16)
@@ -49,7 +49,7 @@ public struct NavigationLinkStore<
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     onTap: @escaping () -> Void,
-    @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
+    @ViewBuilder destination: @escaping (_ store: Store<State, Action>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where State == DestinationState, Action == DestinationAction {
     self.init(
@@ -64,10 +64,11 @@ public struct NavigationLinkStore<
 
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping (State) -> DestinationState?,
-    action fromDestinationAction: @escaping (DestinationAction) -> Action,
+    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
+    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     onTap: @escaping () -> Void,
-    @ViewBuilder destination: @escaping (Store<DestinationState, DestinationAction>) -> Destination,
+    @ViewBuilder destination: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
+      Destination,
     @ViewBuilder label: () -> Label
   ) {
     let store = store.invalidate { $0.wrappedValue.flatMap(toDestinationState) == nil }
@@ -76,7 +77,8 @@ public struct NavigationLinkStore<
       store.scope(
         state: { $0.wrappedValue.flatMap(toDestinationState) != nil },
         action: { $0 }
-      )
+      ),
+      observe: { $0 }
     )
     self.toDestinationState = toDestinationState
     self.fromDestinationAction = fromDestinationAction
@@ -89,7 +91,7 @@ public struct NavigationLinkStore<
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     id: State.ID,
     onTap: @escaping () -> Void,
-    @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
+    @ViewBuilder destination: @escaping (_ store: Store<State, Action>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where State == DestinationState, Action == DestinationAction, State: Identifiable {
     self.init(
@@ -105,11 +107,12 @@ public struct NavigationLinkStore<
 
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping (State) -> DestinationState?,
-    action fromDestinationAction: @escaping (DestinationAction) -> Action,
+    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
+    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     id: DestinationState.ID,
     onTap: @escaping () -> Void,
-    @ViewBuilder destination: @escaping (Store<DestinationState, DestinationAction>) -> Destination,
+    @ViewBuilder destination: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
+      Destination,
     @ViewBuilder label: () -> Label
   ) where DestinationState: Identifiable {
     let store = store.invalidate { $0.wrappedValue.flatMap(toDestinationState)?.id != id }
@@ -118,7 +121,8 @@ public struct NavigationLinkStore<
       store.scope(
         state: { $0.wrappedValue.flatMap(toDestinationState)?.id == id },
         action: { $0 }
-      )
+      ),
+      observe: { $0 }
     )
     self.toDestinationState = toDestinationState
     self.fromDestinationAction = fromDestinationAction

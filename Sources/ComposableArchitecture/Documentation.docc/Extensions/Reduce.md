@@ -4,12 +4,8 @@
 
 ### Creating a reducer
 
-- ``init(_:)-17fld``
+- ``init(_:)-6xl6k``
 
 ### Type erased reducers
 
-- ``init(_:)-3rph8``
-
-### Deprecations
-
-- <doc:ReduceDeprecations>
+- ``init(_:)-9kwa6``

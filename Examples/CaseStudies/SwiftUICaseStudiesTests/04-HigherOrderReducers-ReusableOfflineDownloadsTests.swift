@@ -65,13 +65,13 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
         ButtonState(role: .destructive, action: .send(.stopButtonTapped, animation: .default)) {
           TextState("Stop")
         }
-        ButtonState(role: .cancel, action: .nevermindButtonTapped) {
+        ButtonState(role: .cancel) {
           TextState("Nevermind")
         }
       }
     }
 
-    await store.send(.alert(.stopButtonTapped)) {
+    await store.send(.alert(.presented(.stopButtonTapped))) {
       $0.alert = nil
       $0.mode = .notDownloaded
     }
@@ -101,7 +101,7 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
         ButtonState(role: .destructive, action: .send(.stopButtonTapped, animation: .default)) {
           TextState("Stop")
         }
-        ButtonState(role: .cancel, action: .nevermindButtonTapped) {
+        ButtonState(role: .cancel) {
           TextState("Nevermind")
         }
       }
@@ -137,13 +137,13 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
         ButtonState(role: .destructive, action: .send(.deleteButtonTapped, animation: .default)) {
           TextState("Delete")
         }
-        ButtonState(role: .cancel, action: .nevermindButtonTapped) {
+        ButtonState(role: .cancel) {
           TextState("Nevermind")
         }
       }
     }
 
-    await store.send(.alert(.deleteButtonTapped)) {
+    await store.send(.alert(.presented(.deleteButtonTapped))) {
       $0.alert = nil
       $0.mode = .notDownloaded
     }

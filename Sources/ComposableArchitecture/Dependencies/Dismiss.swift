@@ -15,29 +15,28 @@ extension DependencyValues {
 /// Execute this in the effect returned from a reducer in order to dismiss the feature:
 ///
 /// ```swift
-/// struct ChildFeature: ReducerProtocol {
+/// struct ChildFeature: Reducer {
 ///   struct State { /* ... */ }
 ///   enum Action {
 ///     case exitButtonTapped
 ///     // ...
 ///   }
 ///   @Dependency(\.dismiss) var dismiss
-///   func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+///   func reduce(into state: inout State, action: Action) -> Effect<Action> {
 ///     switch action {
-///       case .exitButtonTapped:
-///         return .fireAndForget { await self.dismiss() }
-///       // ...
+///     case .exitButtonTapped:
+///       return .fireAndForget { await self.dismiss() }
+///     // ...
 ///     }
 ///   }
 /// }
 /// ```
 ///
 /// This operation works by finding the nearest parent feature that was presented using either the
-/// ``ReducerProtocol/ifLet(_:action:destination:fileID:line:)`` or the
-/// ``ReducerProtocol/forEach(_:action:destination:fileID:line:)`` operator, and then
-/// dismisses _that_ feature. It performs the dismissal by either sending the
-/// ``PresentationAction/dismiss`` in the case of `ifLet` or sending ``StackAction/popFrom(id:)``
-/// in the case of `forEach`.
+/// ``Reducer/ifLet(_:action:destination:fileID:line:)`` or the
+/// ``Reducer/forEach(_:action:destination:fileID:line:)`` operator, and then dismisses _that_
+/// feature. It performs the dismissal by either sending the ``PresentationAction/dismiss`` in the
+/// case of `ifLet` or sending ``StackAction/popFrom(id:)`` in the case of `forEach`.
 ///
 /// It is also possible to dismiss the feature using an animation by providing an argument to the
 /// `dismiss` function:

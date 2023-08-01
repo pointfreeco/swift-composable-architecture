@@ -56,7 +56,7 @@ You can watch all of the episodes [here][tca-episode-collection], as well as a d
 tour][tca-tour] of the architecture from scratch.
 
 <a href="https://www.pointfree.co/collections/composable-architecture">
-  <img alt="video poster image" src="https://i.vimeocdn.com/video/1492464398-1f5189a415136097aabf5b0b4845928bbb5d425a149069e4e0a848b67618a6f3-d?mw=1900&mh=1069&q=70" width="600">
+  <img alt="video poster image" src="https://d3rccdn33rt8ze.cloudfront.net/episodes/0243.jpeg" width="600">
 </a>
 
 ## Examples
@@ -113,12 +113,12 @@ tapped makes an API request to fetch a random fact about that number and then di
 an alert.
 
 To implement this feature we create a new type that will house the domain and behavior of the 
-feature by conforming to `ReducerProtocol`:
+feature by conforming to `Reducer`:
 
 ```swift
 import ComposableArchitecture
 
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
 }
 ```
 
@@ -127,7 +127,7 @@ current count, as well as an optional string that represents the title of the al
 (optional because `nil` represents not showing an alert):
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   struct State: Equatable {
     var count = 0
     var numberFactAlert: String?
@@ -141,7 +141,7 @@ non-obvious ones, such as the action of the user dismissing the alert, and the a
 when we receive a response from the fact API request:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   struct State: Equatable { /* ... */ }
   enum Action: Equatable {
     case factAlertDismissed
@@ -159,11 +159,11 @@ describes what effects need to be executed. Some actions don't need to execute e
 can return `.none` to represent that:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   struct State: Equatable { /* ... */ }
   enum Action: Equatable { /* ... */ }
   
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .factAlertDismissed:
       state.numberFactAlert = nil
@@ -328,6 +328,7 @@ doing much additional work.
 
 ### Testing
 
+> **Note**
 > For more in-depth information on testing, see the dedicated [testing][testing-article] article. 
 
 To test use a `TestStore`, which can be created with the same information as the `Store`, but it 
@@ -379,7 +380,7 @@ dependency when running the application on a device, but use a mocked dependency
 do this by adding a property to the `Feature` reducer:
 
 ```swift
-struct Feature: ReducerProtocol {
+struct Feature: Reducer {
   let numberFact: (Int) async throws -> String
   // ...
 }
@@ -452,7 +453,9 @@ to `numberFact`, and explicitly passing it through all layers can get annoying. 
 you can follow to “register” dependencies with the library, making them instantly available to any 
 layer in the application.
 
-> For more in-depth information on dependency management, see the dedicated [dependencies][dependencies-article] article. 
+> **Note**
+> For more in-depth information on dependency management, see the dedicated
+> [dependencies][dependencies-article] article. 
 
 We can start by wrapping the number fact functionality in a new type:
 
@@ -490,7 +493,7 @@ With that little bit of upfront work done you can instantly start making use of 
 any feature by using the `@Dependency` property wrapper:
 
 ```diff
- struct Feature: ReducerProtocol {
+ struct Feature: Reducer {
 -  let numberFact: (Int) async throws -> String
 +  @Dependency(\.numberFact) var numberFact
    
@@ -544,28 +547,22 @@ advanced usages.
 The documentation for releases and `main` are available here:
 
 * [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture)
-* [0.54.0](https://pointfreeco.github.io/swift-composable-architecture/0.54.0/documentation/composablearchitecture/)
+* [1.0.0](https://pointfreeco.github.io/swift-composable-architecture/1.0.0/documentation/composablearchitecture/)
 
 <details>
   <summary>
   Other versions
   </summary>
 
+  * [0.58.0](https://pointfreeco.github.io/swift-composable-architecture/0.58.0/documentation/composablearchitecture/)
+  * [0.57.0](https://pointfreeco.github.io/swift-composable-architecture/0.57.0/documentation/composablearchitecture/)
+  * [0.56.0](https://pointfreeco.github.io/swift-composable-architecture/0.56.0/documentation/composablearchitecture/)
+  * [0.55.0](https://pointfreeco.github.io/swift-composable-architecture/0.55.0/documentation/composablearchitecture/)
+  * [0.54.0](https://pointfreeco.github.io/swift-composable-architecture/0.54.0/documentation/composablearchitecture/)
   * [0.53.0](https://pointfreeco.github.io/swift-composable-architecture/0.53.0/documentation/composablearchitecture/)
   * [0.52.0](https://pointfreeco.github.io/swift-composable-architecture/0.52.0/documentation/composablearchitecture/)
   * [0.50.0](https://pointfreeco.github.io/swift-composable-architecture/0.50.0/documentation/composablearchitecture/)
   * [0.49.0](https://pointfreeco.github.io/swift-composable-architecture/0.49.0/documentation/composablearchitecture/)
-  * [0.48.0](https://pointfreeco.github.io/swift-composable-architecture/0.48.0/documentation/composablearchitecture/)
-  * [0.47.0](https://pointfreeco.github.io/swift-composable-architecture/0.47.0/documentation/composablearchitecture/)
-  * [0.46.0](https://pointfreeco.github.io/swift-composable-architecture/0.46.0/documentation/composablearchitecture/)
-  * [0.45.0](https://pointfreeco.github.io/swift-composable-architecture/0.45.0/documentation/composablearchitecture/)
-  * [0.44.0](https://pointfreeco.github.io/swift-composable-architecture/0.44.0/documentation/composablearchitecture/)
-  * [0.43.0](https://pointfreeco.github.io/swift-composable-architecture/0.43.0/documentation/composablearchitecture/)
-  * [0.42.0](https://pointfreeco.github.io/swift-composable-architecture/0.42.0/documentation/composablearchitecture/)
-  * [0.41.0](https://pointfreeco.github.io/swift-composable-architecture/0.41.0/documentation/composablearchitecture/)
-  * [0.40.0](https://pointfreeco.github.io/swift-composable-architecture/0.40.0/documentation/composablearchitecture/)
-  * [0.39.0](https://pointfreeco.github.io/swift-composable-architecture/0.39.0/documentation/composablearchitecture/)
-  * [0.38.0](https://pointfreeco.github.io/swift-composable-architecture/0.38.0/documentation/composablearchitecture/)
 </details>
 
 <br>
@@ -574,12 +571,12 @@ There are a number of articles in the documentation that you may find helpful as
 comfortable with the library:
 
 * [Getting started][getting-started-article]
-* [Dependency management][dependencies-article]
+* [Dependencies][dependencies-article]
 * [Testing][testing-article]
+* [Navigation][navigation-article]
 * [Performance][performance-article]
 * [Concurrency][concurrency-article]
 * [Bindings][bindings-article]
-* [Migrating to the reducer protocol][migrating-article]
 
 ## Community
 
@@ -703,15 +700,15 @@ This library is released under the MIT license. See [LICENSE](LICENSE) for detai
 [mbrandonw]: https://twitter.com/mbrandonw
 [stephencelis]: https://twitter.com/stephencelis
 [tca-episode-collection]: https://www.pointfree.co/collections/composable-architecture
-[tca-tour]: https://www.pointfree.co/collections/tours/composable-architecture
+[tca-tour]: https://www.pointfree.co/collections/tours/composable-architecture-1-0
 [gh-isowords]: https://github.com/pointfreeco/isowords
 [gh-discussions]: https://github.com/pointfreeco/swift-composable-architecture/discussions
 [swift-forum]: https://forums.swift.org/c/related-projects/swift-composable-architecture
 [testing-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/testing
 [dependencies-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/dependencymanagement
 [getting-started-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/gettingstarted
+[navigation-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/navigation
 [performance-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance
 [concurrency-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/swiftconcurrency
 [bindings-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/bindings
-[migrating-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingtothereducerprotocol
 [meet-tca]: https://pointfreeco.github.io/swift-composable-architecture/main/tutorials/meetcomposablearchitecture

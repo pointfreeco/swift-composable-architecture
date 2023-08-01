@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import SwiftUI
 
-private struct ForEachBindingTestCase: ReducerProtocol {
+private struct ForEachBindingTestCase: Reducer {
   struct State: Equatable {
     var values = ["A", "B", "C"]
   }
@@ -10,7 +10,7 @@ private struct ForEachBindingTestCase: ReducerProtocol {
     case removeLast
   }
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case let .change(offset: offset, value: value):
       state.values[offset] = value

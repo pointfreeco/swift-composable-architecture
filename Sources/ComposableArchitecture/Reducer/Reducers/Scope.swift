@@ -17,7 +17,7 @@
 /// For example, given the basic scaffolding of child reducer:
 ///
 /// ```swift
-/// struct Child: ReducerProtocol {
+/// struct Child: Reducer {
 ///   struct State {
 ///     // ...
 ///   }
@@ -29,11 +29,10 @@
 /// ```
 ///
 /// A parent reducer with a domain that holds onto the child domain can use
-/// ``init(state:action:child:)`` to embed the child reducer in its
-/// ``ReducerProtocol/body-swift.property-7foai``:
+/// ``init(state:action:child:)`` to embed the child reducer in its ``Reducer/body-swift.property``:
 ///
 /// ```swift
-/// struct Parent: ReducerProtocol {
+/// struct Parent: Reducer {
 ///   struct State {
 ///     var child: Child.State
 ///     // ...
@@ -44,7 +43,7 @@
 ///     // ...
 ///   }
 ///
-///   var body: some ReducerProtocol<State, Action> {
+///   var body: some Reducer<State, Action> {
 ///     Scope(state: \.child, action: /Action.child) {
 ///       Child()
 ///     }
@@ -65,7 +64,7 @@
 /// scope to the loaded case to run a reduce on only that case:
 ///
 /// ```swift
-/// struct Feature: ReducerProtocol {
+/// struct Feature: Reducer {
 ///   enum State {
 ///     case unloaded
 ///     case loading
@@ -76,7 +75,7 @@
 ///     // ...
 ///   }
 ///
-///   var body: some ReducerProtocol<State, Action> {
+///   var body: some Reducer<State, Action> {
 ///     Scope(state: /State.loaded, action: /Action.child) {
 ///       Child()
 ///     }
@@ -95,7 +94,7 @@
 ///
 /// For an alternative to using ``Scope`` with state case paths that enforces the order, check out
 /// the ``ifCaseLet(_:action:then:fileID:line:)`` operator.
-public struct Scope<ParentState, ParentAction, Child: ReducerProtocol>: ReducerProtocol {
+public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   @usableFromInline
   enum StatePath {
     case casePath(
@@ -132,7 +131,7 @@ public struct Scope<ParentState, ParentAction, Child: ReducerProtocol>: ReducerP
   /// Useful for combining child reducers into a parent.
   ///
   /// ```swift
-  /// var body: some ReducerProtocol<State, Action> {
+  /// var body: some Reducer<State, Action> {
   ///   Scope(state: \.profile, action: /Action.profile) {
   ///     Profile()
   ///   }
@@ -166,7 +165,7 @@ public struct Scope<ParentState, ParentAction, Child: ReducerProtocol>: ReducerP
   /// Useful for combining reducers of mutually-exclusive enum state.
   ///
   /// ```swift
-  /// var body: some ReducerProtocol<State, Action> {
+  /// var body: some Reducer<State, Action> {
   ///   Scope(state: /State.loggedIn, action: /Action.loggedIn) {
   ///     LoggedIn()
   ///   }
@@ -199,8 +198,8 @@ public struct Scope<ParentState, ParentAction, Child: ReducerProtocol>: ReducerP
   /// > ```
   /// >
   /// > If the parent domain contains additional logic for switching between cases of child state,
-  /// > prefer ``ReducerProtocol/ifCaseLet(_:action:then:fileID:line:)``, which better ensures that
-  /// > child logic runs _before_ any parent logic can replace child state:
+  /// > prefer ``Reducer/ifCaseLet(_:action:then:fileID:line:)``, which better ensures that child
+  /// > logic runs _before_ any parent logic can replace child state:
   /// >
   /// > ```swift
   /// > Reduce { state, action in
@@ -237,7 +236,7 @@ public struct Scope<ParentState, ParentAction, Child: ReducerProtocol>: ReducerP
   @inlinable
   public func reduce(
     into state: inout ParentState, action: ParentAction
-  ) -> EffectTask<ParentAction> {
+  ) -> Effect<ParentAction> {
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     switch self.toChildState {
@@ -259,7 +258,7 @@ public struct Scope<ParentState, ParentAction, Child: ReducerProtocol>: ReducerP
           • A parent reducer set "\(typeName(ParentState.self))" to a different case before the \
           scoped reducer ran. Child reducers must run before any parent reducer sets child state \
           to a different case. This ensures that child reducers can handle their actions while \
-          their state is still available. Consider using "ReducerProtocol.ifCaseLet" to embed this \
+          their state is still available. Consider using "Reducer.ifCaseLet" to embed this \
           child reducer in the parent reducer that change its state to ensure the child reducer \
           runs first.
 

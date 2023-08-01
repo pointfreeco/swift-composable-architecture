@@ -1,8 +1,8 @@
-extension Optional: ReducerProtocol where Wrapped: ReducerProtocol {
+extension Optional: Reducer where Wrapped: Reducer {
   @inlinable
   public func reduce(
     into state: inout Wrapped.State, action: Wrapped.Action
-  ) -> EffectTask<Wrapped.Action> {
+  ) -> Effect<Wrapped.Action> {
     switch self {
     case let .some(wrapped):
       return wrapped.reduce(into: &state, action: action)

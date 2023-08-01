@@ -56,24 +56,19 @@ day-to-day when building applications, such as:
 
 ### State management
 
-- ``ReducerProtocol``
-- ``EffectTask``
+- ``Reducer``
+- ``Effect``
 - ``Store``
 - ``ViewStore``
-
-### Integrations
-
-- <doc:SwiftUIIntegration>
-- <doc:UIKit>
-
 ### Testing
 
 - ``TestStore``
 
-### Upgrade guides
+### Integrations
 
 - <doc:SwiftConcurrency>
-- <doc:MigratingToTheReducerProtocol>
+- <doc:SwiftUIIntegration>
+- <doc:UIKit>
 
 ## See Also
 

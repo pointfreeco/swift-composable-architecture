@@ -1,12 +1,12 @@
 import ComposableArchitecture
 
-struct ContactDetailFeature: ReducerProtocol {
+struct ContactDetailFeature: Reducer {
   struct State: Equatable {
     let contact: Contact
   }
   enum Action: Equatable {
   }
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       }

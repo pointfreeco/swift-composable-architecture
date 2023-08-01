@@ -17,7 +17,7 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct LongLivingEffects: ReducerProtocol {
+struct LongLivingEffects: Reducer {
   struct State: Equatable {
     var screenshotCount = 0
   }
@@ -29,7 +29,7 @@ struct LongLivingEffects: ReducerProtocol {
 
   @Dependency(\.screenshots) var screenshots
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .task:
       // When the view appears, start the effect that emits when screenshots are taken.

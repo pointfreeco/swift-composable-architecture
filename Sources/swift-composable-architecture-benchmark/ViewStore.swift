@@ -14,7 +14,7 @@ let viewStoreSuite = BenchmarkSuite(name: "ViewStore") {
     doNotOptimizeAway(ViewStore(store, observe: { $0 }).send(()))
   }
 
-  let viewStore = ViewStore(store)
+  let viewStore = ViewStore(store, observe: { $0 })
 
   $0.benchmark("Send action to pre-created view store") {
     doNotOptimizeAway(viewStore.send(()))

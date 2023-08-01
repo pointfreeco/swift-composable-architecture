@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import SwiftUI
 
 /// A store represents the runtime that powers the application. It is the object that you will pass
 /// around to views that need to interact with the application.
@@ -121,7 +122,7 @@ import Foundation
 /// #### Thread safety checks
 ///
 /// The store performs some basic thread safety checks in order to help catch mistakes. Stores
-/// constructed via the initializer ``init(initialState:reducer:prepareDependencies:)`` are assumed
+/// constructed via the initializer ``init(initialState:reducer:withDependencies:)`` are assumed
 /// to run only on the main thread, and so a check is executed immediately to make sure that is the
 /// case. Further, all actions sent to the store and all scopes (see ``scope(state:action:)-9iai9``) of
 /// the store are also checked to make sure that work is performed on the main thread.
@@ -131,7 +132,7 @@ public final class Store<State, Action> {
   var _isInvalidated = { false }
   private var isSending = false
   var parentCancellable: AnyCancellable?
-  private let reducer: any ReducerProtocol<State, Action>
+  private let reducer: any Reducer<State, Action>
   @_spi(Internals) public var state: CurrentValueSubject<State, Never>
   #if DEBUG
     private let mainThreadChecksEnabled: Bool
@@ -144,7 +145,7 @@ public final class Store<State, Action> {
   ///   - reducer: The reducer that powers the business logic of the application.
   ///   - prepareDependencies: A closure that can be used to override dependencies that will be accessed
   ///     by the reducer.
-  public convenience init<R: ReducerProtocol>(
+  public convenience init<R: Reducer>(
     initialState: @autoclosure () -> R.State,
     @ReducerBuilder<State, Action> reducer: () -> R,
     withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
@@ -179,7 +180,7 @@ public final class Store<State, Action> {
   ///   duration of the closure's execution, and is not observable over time, _e.g._ by SwiftUI. If
   ///   you want to observe store state in a view, use a ``ViewStore`` instead.
   /// - Returns: The return value, if any, of the `body` closure.
-  public func withState<R>(_ body: (State) -> R) -> R {
+  public func withState<R>(_ body: (_ state: State) -> R) -> R {
     body(self.state.value)
   }
 
@@ -189,8 +190,35 @@ public final class Store<State, Action> {
   /// store is available, prefer ``ViewStore/send(_:)``.
   ///
   /// - Parameter action: An action.
-  public func send(_ action: Action) {
-    _ = self.send(action, originatingFrom: nil)
+  @discardableResult
+  public func send(_ action: Action) -> StoreTask {
+    .init(rawValue: self.send(action, originatingFrom: nil))
+  }
+
+  /// Sends an action to the store with a given animation.
+  ///
+  /// See ``Store/send(_:)`` for more info.
+  ///
+  /// - Parameters:
+  ///   - action: An action.
+  ///   - animation: An animation.
+  @discardableResult
+  public func send(_ action: Action, animation: Animation?) -> StoreTask {
+    send(action, transaction: Transaction(animation: animation))
+  }
+
+  /// Sends an action to the store with a given transaction.
+  ///
+  /// See ``Store/send(_:)`` for more info.
+  ///
+  /// - Parameters:
+  ///   - action: An action.
+  ///   - transaction: A transaction.
+  @discardableResult
+  public func send(_ action: Action, transaction: Transaction) -> StoreTask {
+    withTransaction(transaction) {
+      .init(rawValue: self.send(action, originatingFrom: nil))
+    }
   }
 
   /// Scopes the store to one that exposes child state and actions.
@@ -200,7 +228,7 @@ public final class Store<State, Action> {
   ///
   /// ```swift
   /// // Application state made from child states.
-  /// struct AppFeature: ReducerProtocol {
+  /// struct AppFeature: Reducer {
   ///   struct State {
   ///     var login: Login.State
   ///     // ...
@@ -237,7 +265,7 @@ public final class Store<State, Action> {
   /// first:
   ///
   /// ```swift
-  /// struct Login: ReducerProtocol {
+  /// struct Login: Reducer {
   ///   struct State: Equatable {
   ///     var email = ""
   ///     var password = ""
@@ -343,8 +371,8 @@ public final class Store<State, Action> {
   ///   - fromChildAction: A function that transforms `ChildAction` into `Action`.
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<ChildState, ChildAction>(
-    state toChildState: @escaping (State) -> ChildState,
-    action fromChildAction: @escaping (ChildAction) -> Action
+    state toChildState: @escaping (_ state: State) -> ChildState,
+    action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction> {
     self.scope(state: toChildState, action: fromChildAction, removeDuplicates: nil)
   }
@@ -359,15 +387,14 @@ public final class Store<State, Action> {
   ///   - fromChildAction: A function that transforms ``PresentationAction`` into `Action`.
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<ChildState, ChildAction>(
-    state toChildState: @escaping (State) -> PresentationState<ChildState>,
-    action fromChildAction: @escaping (PresentationAction<ChildAction>) -> Action
+    state toChildState: @escaping (_ state: State) -> PresentationState<ChildState>,
+    action fromChildAction: @escaping (_ presentationAction: PresentationAction<ChildAction>) ->
+      Action
   ) -> Store<PresentationState<ChildState>, PresentationAction<ChildAction>> {
     self.scope(
       state: toChildState,
       action: fromChildAction,
-      removeDuplicates: {
-        $0.sharesStorage(with: $1)
-      }
+      removeDuplicates: { $0.sharesStorage(with: $1) }
     )
   }
 
@@ -495,12 +522,12 @@ public final class Store<State, Action> {
                           Effect returned from:
                             \(debugCaseOutput(action))
 
-                        Avoid sending actions using the 'send' argument from 'EffectTask.run' after \
-                        the effect has completed. This can happen if you escape the 'send' argument in \
-                        an unstructured context.
+                        Avoid sending actions using the 'send' argument from 'Effect.run' after \
+                        the effect has completed. This can happen if you escape the 'send' \
+                        argument in an unstructured context.
 
-                        To fix this, make sure that your 'run' closure does not return until you're \
-                        done calling 'send'.
+                        To fix this, make sure that your 'run' closure does not return until \
+                        you're done calling 'send'.
                         """
                       )
                     }
@@ -534,17 +561,6 @@ public final class Store<State, Action> {
         }
       }
     }
-  }
-
-  /// Returns a "stateless" store by erasing state to `Void`.
-  public var stateless: Store<Void, Action> {
-    self.scope(state: { _ in () }, action: { $0 })
-  }
-
-  /// Returns an "actionless" store by erasing action to `Never`.
-  public var actionless: Store<State, Never> {
-    func absurd<A>(_ never: Never) -> A {}
-    return self.scope(state: { $0 }, action: absurd)
   }
 
   private enum ThreadCheckStatus {
@@ -634,7 +650,7 @@ public final class Store<State, Action> {
     #endif
   }
 
-  init<R: ReducerProtocol>(
+  init<R: Reducer>(
     initialState: R.State,
     reducer: R,
     mainThreadChecksEnabled: Bool
@@ -645,6 +661,19 @@ public final class Store<State, Action> {
       self.mainThreadChecksEnabled = mainThreadChecksEnabled
     #endif
     self.threadCheck(status: .`init`)
+  }
+
+  /// A publisher that emits when state changes.
+  ///
+  /// This publisher supports dynamic member lookup so that you can pluck out a specific field in
+  /// the state:
+  ///
+  /// ```swift
+  /// store.publisher.alert
+  ///   .sink { ... }
+  /// ```
+  public var publisher: StorePublisher<State> {
+    StorePublisher(store: self, upstream: self.state)
   }
 }
 
@@ -661,9 +690,9 @@ public final class Store<State, Action> {
 /// ```swift
 /// let store: StoreOf<Feature>
 /// ```
-public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
+public typealias StoreOf<R: Reducer> = Store<R.State, R.Action>
 
-extension ReducerProtocol {
+extension Reducer {
   fileprivate func rescope<ChildState, ChildAction>(
     _ store: Store<State, Action>,
     state toChildState: @escaping (State) -> ChildState,
@@ -679,9 +708,7 @@ extension ReducerProtocol {
   }
 }
 
-private final class ScopedReducer<
-  RootState, RootAction, State, Action
->: ReducerProtocol {
+private final class ScopedReducer<RootState, RootAction, State, Action>: Reducer {
   let rootStore: Store<RootState, RootAction>
   let toScopedState: (RootState) -> State
   private let parentStores: [Any]
@@ -711,9 +738,7 @@ private final class ScopedReducer<
   }
 
   @inlinable
-  func reduce(
-    into state: inout State, action: Action
-  ) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     self.isSending = true
     defer {
       state = self.toScopedState(self.rootStore.state.value)
@@ -754,9 +779,10 @@ extension ScopedReducer: AnyScopedReducer {
       parentStores: self.parentStores + [store]
     )
     let childStore = Store<RescopedState, RescopedAction>(
-      initialState: toRescopedState(store.state.value),
-      reducer: reducer
-    )
+      initialState: toRescopedState(store.state.value)
+    ) {
+      reducer
+    }
     childStore._isInvalidated = store._isInvalidated
     childStore.parentCancellable = store.state
       .dropFirst()
@@ -769,5 +795,83 @@ extension ScopedReducer: AnyScopedReducer {
         childStore.state.value = newValue
       }
     return childStore
+  }
+}
+
+/// A publisher of store state.
+@dynamicMemberLookup
+public struct StorePublisher<State>: Publisher {
+  public typealias Output = State
+  public typealias Failure = Never
+
+  let store: Any
+  let upstream: AnyPublisher<State, Never>
+
+  init<P: Publisher>(
+    store: Any,
+    upstream: P
+  ) where P.Output == Output, P.Failure == Failure {
+    self.store = store
+    self.upstream = upstream.eraseToAnyPublisher()
+  }
+
+  public func receive<S: Subscriber>(subscriber: S) where S.Input == Output, S.Failure == Failure {
+    self.upstream.subscribe(
+      AnySubscriber(
+        receiveSubscription: subscriber.receive(subscription:),
+        receiveValue: subscriber.receive(_:),
+        receiveCompletion: { [store = self.store] in
+          subscriber.receive(completion: $0)
+          _ = store
+        }
+      )
+    )
+  }
+
+  /// Returns the resulting publisher of a given key path.
+  public subscript<Value: Equatable>(
+    dynamicMember keyPath: KeyPath<State, Value>
+  ) -> StorePublisher<Value> {
+    .init(store: self.store, upstream: self.upstream.map(keyPath).removeDuplicates())
+  }
+}
+
+/// The type returned from ``Store/send(_:)`` that represents the lifecycle of the effect
+/// started from sending an action.
+///
+/// You can use this value to tie the effect's lifecycle _and_ cancellation to an asynchronous
+/// context, such as the `task` view modifier.
+///
+/// ```swift
+/// .task { await store.send(.task).finish() }
+/// ```
+///
+/// > Note: Unlike Swift's `Task` type, ``StoreTask`` automatically sets up a cancellation
+/// > handler between the current async context and the task.
+///
+/// See ``TestStoreTask`` for the analog returned from ``TestStore``.
+public struct StoreTask: Hashable, Sendable {
+  internal let rawValue: Task<Void, Never>?
+
+  internal init(rawValue: Task<Void, Never>?) {
+    self.rawValue = rawValue
+  }
+
+  /// Cancels the underlying task.
+  public func cancel() {
+    self.rawValue?.cancel()
+  }
+
+  /// Waits for the task to finish.
+  public func finish() async {
+    await self.rawValue?.cancellableValue
+  }
+
+  /// A Boolean value that indicates whether the task should stop executing.
+  ///
+  /// After the value of this property becomes `true`, it remains `true` indefinitely. There is no
+  /// way to uncancel a task.
+  public var isCancelled: Bool {
+    self.rawValue?.isCancelled ?? true
   }
 }

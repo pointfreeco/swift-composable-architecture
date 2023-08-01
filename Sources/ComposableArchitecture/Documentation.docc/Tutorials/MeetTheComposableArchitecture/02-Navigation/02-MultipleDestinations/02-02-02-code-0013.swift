@@ -1,4 +1,4 @@
-struct ContactsFeature: ReducerProtocol {
+struct ContactsFeature: Reducer {
   struct State: Equatable {
     var contacts: IdentifiedArrayOf<Contact> = []
     @PresentationState var destination: Destination.State?
@@ -11,7 +11,7 @@ struct ContactsFeature: ReducerProtocol {
       case confirmDeletion(id: Contact.ID)
     }
   }
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       case .addButtonTapped:
@@ -30,6 +30,9 @@ struct ContactsFeature: ReducerProtocol {
         state.contacts.remove(id: id)
         return .none
 
+      case .destination:
+        return .none
+
       case let .deleteButtonTapped(id: id):
         state.destination = .alert(
           AlertState {
@@ -43,8 +46,9 @@ struct ContactsFeature: ReducerProtocol {
         return .none
       }
     }
-    .ifLet(\.$destination, action: /Action.destination) {
-      Destination()
+    .ifLet(\.$addContact, action: /Action.addContact) {
+      AddContactFeature()
     }
+    .ifLet(\.$alert, action: /Action.alert)
   }
 }

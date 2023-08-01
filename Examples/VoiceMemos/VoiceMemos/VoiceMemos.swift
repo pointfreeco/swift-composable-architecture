@@ -2,7 +2,7 @@ import AVFoundation
 import ComposableArchitecture
 import SwiftUI
 
-struct VoiceMemos: ReducerProtocol {
+struct VoiceMemos: Reducer {
   struct State: Equatable {
     @PresentationState var alert: AlertState<AlertAction>?
     var audioRecorderPermission = RecorderPermission.undetermined
@@ -34,7 +34,7 @@ struct VoiceMemos: ReducerProtocol {
   @Dependency(\.temporaryDirectory) var temporaryDirectory
   @Dependency(\.uuid) var uuid
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
       case .alert:
@@ -135,7 +135,7 @@ struct VoiceMemosView: View {
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
-      NavigationView {
+      NavigationStack {
         VStack {
           List {
             ForEachStore(
@@ -164,7 +164,6 @@ struct VoiceMemosView: View {
         .alert(store: self.store.scope(state: \.$alert, action: VoiceMemos.Action.alert))
         .navigationTitle("Voice memos")
       }
-      .navigationViewStyle(.stack)
     }
   }
 }

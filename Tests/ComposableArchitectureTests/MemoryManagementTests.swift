@@ -47,10 +47,10 @@ final class MemoryManagementTests: BaseTCATestCase {
         switch action {
         case .tap:
           state = false
-          return .task { .response }
+          return .send(.response)
         case .response:
           state = true
-          return .fireAndForget {
+          return .run { _ in
             expectation.fulfill()
           }
         }

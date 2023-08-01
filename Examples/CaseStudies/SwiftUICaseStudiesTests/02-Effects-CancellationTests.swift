@@ -1,5 +1,4 @@
 import ComposableArchitecture
-@_spi(Concurrency) import Dependencies
 import XCTest
 
 @testable import SwiftUICaseStudies
@@ -54,10 +53,7 @@ final class EffectsCancellationTests: XCTestCase {
     let store = TestStore(initialState: EffectsCancellation.State()) {
       EffectsCancellation()
     } withDependencies: {
-      $0.factClient.fetch = {
-        try await Task.sleep(nanoseconds: NSEC_PER_SEC)
-        return "\($0) is a good number Brent"
-      }
+      $0.factClient.fetch = { _ in try await Task.never() }
     }
 
     await store.send(.factButtonTapped) {
@@ -69,20 +65,18 @@ final class EffectsCancellationTests: XCTestCase {
   }
 
   func testTrivia_PlusMinusButtonsCancelsRequest() async {
-    await withMainSerialExecutor {
-      let store = TestStore(initialState: EffectsCancellation.State()) {
-        EffectsCancellation()
-      } withDependencies: {
-        $0.factClient.fetch = { _ in try await Task.never() }
-      }
+    let store = TestStore(initialState: EffectsCancellation.State()) {
+      EffectsCancellation()
+    } withDependencies: {
+      $0.factClient.fetch = { _ in try await Task.never() }
+    }
 
-      await store.send(.factButtonTapped) {
-        $0.isFactRequestInFlight = true
-      }
-      await store.send(.stepperChanged(1)) {
-        $0.count = 1
-        $0.isFactRequestInFlight = false
-      }
+    await store.send(.factButtonTapped) {
+      $0.isFactRequestInFlight = true
+    }
+    await store.send(.stepperChanged(1)) {
+      $0.count = 1
+      $0.isFactRequestInFlight = false
     }
   }
 }

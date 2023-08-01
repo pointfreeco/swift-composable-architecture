@@ -3,17 +3,17 @@
 import ComposableArchitecture
 import XCTest
 
-private struct Test: ReducerProtocol {
+private struct Test: Reducer {
   struct State {}
   enum Action { case tap }
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     .none
   }
 
-  @available(iOS, introduced: 9999.0)
-  struct Unavailable: ReducerProtocol {
-    func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  @available(iOS, introduced: 9999)
+  struct Unavailable: Reducer {
+    func reduce(into state: inout State, action: Action) -> Effect<Action> {
       .none
     }
   }
@@ -22,15 +22,15 @@ private struct Test: ReducerProtocol {
 func testLimitedAvailability() {
   _ = CombineReducers {
     Test()
-    if #available(iOS 9999.0, *) {
+    if #available(iOS 9999, *) {
       Test.Unavailable()
-    } else if #available(iOS 8888.0, *) {
+    } else if #available(iOS 8888, *) {
       EmptyReducer()
     }
   }
 }
 
-private struct Root: ReducerProtocol {
+private struct Root: Reducer {
   struct State {
     var feature: Feature.State
     var optionalFeature: Feature.State?
@@ -45,12 +45,12 @@ private struct Root: ReducerProtocol {
     case features(id: Feature.State.ID, feature: Feature.Action)
   }
 
-  @available(iOS, introduced: 9999.0)
-  struct Unavailable: ReducerProtocol {
+  @available(iOS, introduced: 9999)
+  struct Unavailable: Reducer {
     let body = EmptyReducer<State, Action>()
   }
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some ReducerOf<Self> {
     CombineReducers {
       Scope(state: \.feature, action: /Action.feature) {
         Feature()
@@ -85,7 +85,7 @@ private struct Root: ReducerProtocol {
   }
 
   @ReducerBuilder<State, Action>
-  var testFlowControl: some ReducerProtocol<State, Action> {
+  var testFlowControl: some ReducerOf<Self> {
     if true {
       Self()
     }
@@ -100,12 +100,12 @@ private struct Root: ReducerProtocol {
       Self()
     }
 
-    if #available(iOS 9999.0, *) {
+    if #available(iOS 9999, *) {
       Unavailable()
     }
   }
 
-  struct Feature: ReducerProtocol {
+  struct Feature: Reducer {
     struct State: Identifiable {
       let id: Int
     }
@@ -113,12 +113,12 @@ private struct Root: ReducerProtocol {
       case action
     }
 
-    func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+    func reduce(into state: inout State, action: Action) -> Effect<Action> {
       .none
     }
   }
 
-  struct Features: ReducerProtocol {
+  struct Features: Reducer {
     enum State {
       case featureA(Feature.State)
       case featureB(Feature.State)
@@ -129,7 +129,7 @@ private struct Root: ReducerProtocol {
       case featureB(Feature.Action)
     }
 
-    var body: some ReducerProtocol<State, Action> {
+    var body: some ReducerOf<Self> {
       Scope(state: /State.featureA, action: /Action.featureA) {
         Feature()
       }
@@ -140,31 +140,31 @@ private struct Root: ReducerProtocol {
   }
 }
 
-private struct IfLetExample: ReducerProtocol {
+private struct IfLetExample: Reducer {
   struct State {
     var optional: Int?
   }
 
   enum Action {}
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some ReducerOf<Self> {
     EmptyReducer().ifLet(\.optional, action: .self) { EmptyReducer() }
   }
 }
 
-private struct IfCaseLetExample: ReducerProtocol {
+private struct IfCaseLetExample: Reducer {
   enum State {
     case value(Int)
   }
 
   enum Action {}
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some ReducerOf<Self> {
     EmptyReducer().ifCaseLet(/State.value, action: .self) { EmptyReducer() }
   }
 }
 
-private struct ForEachExample: ReducerProtocol {
+private struct ForEachExample: Reducer {
   struct Element: Identifiable { let id: Int }
 
   struct State {
@@ -175,12 +175,12 @@ private struct ForEachExample: ReducerProtocol {
     case value(id: Element.ID, action: Never)
   }
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some ReducerOf<Self> {
     EmptyReducer().forEach(\.values, action: /Action.value) { EmptyReducer() }
   }
 }
 
-private struct ScopeIfLetExample: ReducerProtocol {
+private struct ScopeIfLetExample: Reducer {
   struct State {
     var optionalSelf: Self? {
       get { self }
@@ -190,7 +190,7 @@ private struct ScopeIfLetExample: ReducerProtocol {
 
   enum Action {}
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some ReducerOf<Self> {
     Scope(state: \.self, action: .self) {
       EmptyReducer()
         .ifLet(\.optionalSelf, action: .self) {

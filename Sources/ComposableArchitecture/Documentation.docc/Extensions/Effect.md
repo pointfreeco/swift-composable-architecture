@@ -1,40 +1,36 @@
-# ``ComposableArchitecture/EffectTask``
+# ``ComposableArchitecture/Effect``
 
 ## Topics
 
 ### Creating an effect
 
-- ``EffectPublisher/none``
-- ``EffectPublisher/run(priority:operation:catch:fileID:line:)``
-- ``EffectPublisher/send(_:)``
+- ``none``
+- ``run(priority:operation:catch:fileID:line:)``
+- ``send(_:)``
 - ``EffectOf``
 - ``TaskResult``
 
 ### Cancellation
 
-- ``EffectPublisher/cancellable(id:cancelInFlight:)-29q60``
-- ``EffectPublisher/cancel(id:)-6hzsl``
-- ``EffectPublisher/cancel(ids:)-1cqqx``
-- ``withTaskCancellation(id:cancelInFlight:operation:)-4dtr6``
+- ``cancellable(id:cancelInFlight:)``
+- ``cancel(id:)``
+- ``withTaskCancellation(id:cancelInFlight:operation:)``
 
 ### Composition
 
-- ``EffectPublisher/map(_:)-yn70``
-- ``EffectPublisher/merge(_:)-45guh``
-- ``EffectPublisher/merge(_:)-3d54p``
-
-### Testing
-
-- ``EffectPublisher/unimplemented(_:)``
-
-### Combine integration
-
-- ``EffectPublisher/publisher(_:)``
+- ``map(_:)``
+- ``merge(_:)-5ai73``
+- ``merge(_:)-8ckqn``
+- ``merge(with:)``
+- ``concatenate(_:)-3iza9``
+- ``concatenate(_:)-4gba2``
+- ``concatenate(with:)``
 
 ### SwiftUI integration
 
-- ``EffectPublisher/animation(_:)``
+- ``animation(_:)``
+- ``transaction(_:)``
 
-### Deprecations
+### Combine integration
 
-- <doc:EffectDeprecations>
+- ``publisher(_:)``

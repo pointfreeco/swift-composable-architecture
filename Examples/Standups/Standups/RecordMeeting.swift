@@ -2,7 +2,7 @@ import ComposableArchitecture
 import Speech
 import SwiftUI
 
-struct RecordMeeting: ReducerProtocol {
+struct RecordMeeting: Reducer {
   struct State: Equatable {
     @PresentationState var alert: AlertState<Action.Alert>?
     var secondsElapsed = 0
@@ -37,9 +37,7 @@ struct RecordMeeting: ReducerProtocol {
   @Dependency(\.dismiss) var dismiss
   @Dependency(\.speechClient) var speechClient
 
-  private enum CancelID { case timer }
-
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce<State, Action> { state, action in
       switch action {
       case .alert(.presented(.confirmDiscard)):
@@ -48,7 +46,10 @@ struct RecordMeeting: ReducerProtocol {
         }
 
       case .alert(.presented(.confirmSave)):
-        return self.meetingFinished(transcript: state.transcript)
+        return .run { [transcript = state.transcript] send in
+          await send(.delegate(.save(transcript: transcript)))
+          await self.dismiss()
+        }
 
       case .alert:
         return .none
@@ -89,7 +90,6 @@ struct RecordMeeting: ReducerProtocol {
             }
           }
         }
-        .cancellable(id: CancelID.timer)
 
       case .timerTick:
         guard state.alert == nil
@@ -100,7 +100,10 @@ struct RecordMeeting: ReducerProtocol {
         let secondsPerAttendee = Int(state.standup.durationPerAttendee.components.seconds)
         if state.secondsElapsed.isMultiple(of: secondsPerAttendee) {
           if state.speakerIndex == state.standup.attendees.count - 1 {
-            return self.meetingFinished(transcript: state.transcript)
+            return .run { [transcript = state.transcript] send in
+              await send(.delegate(.save(transcript: transcript)))
+              await self.dismiss()
+            }
           }
           state.speakerIndex += 1
         }
@@ -137,13 +140,6 @@ struct RecordMeeting: ReducerProtocol {
     for await _ in self.clock.timer(interval: .seconds(1)) {
       await send(.timerTick)
     }
-  }
-
-  private func meetingFinished(transcript: String) -> EffectTask<Action> {
-    .merge(
-      .cancel(id: CancelID.timer),
-      .send(.delegate(.save(transcript: transcript)))
-    )
   }
 }
 

@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct RecordingMemo: ReducerProtocol {
+struct RecordingMemo: Reducer {
   struct State: Equatable {
     var date: Date
     var duration: TimeInterval = 0
@@ -32,7 +32,7 @@ struct RecordingMemo: ReducerProtocol {
   @Dependency(\.audioRecorder) var audioRecorder
   @Dependency(\.continuousClock) var clock
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .audioRecorderDidFinish(.success(true)):
       return .send(.delegate(.didFinish(.success(state))))

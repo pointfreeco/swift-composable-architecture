@@ -1,6 +1,6 @@
 import ComposableArchitecture
 
-struct ContactDetailFeature: ReducerProtocol {
+struct ContactDetailFeature: Reducer {
   struct State: Equatable {
     let contact: Contact
   }

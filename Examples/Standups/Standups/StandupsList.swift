@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct StandupsList: ReducerProtocol {
+struct StandupsList: Reducer {
   struct State: Equatable {
     @PresentationState var destination: Destination.State?
     var standups: IdentifiedArrayOf<Standup> = []
@@ -26,7 +26,7 @@ struct StandupsList: ReducerProtocol {
     case destination(PresentationAction<Destination.Action>)
     case dismissAddStandupButtonTapped
   }
-  struct Destination: ReducerProtocol {
+  struct Destination: Reducer {
     enum State: Equatable {
       case add(StandupForm.State)
       case alert(AlertState<Action.Alert>)
@@ -41,7 +41,7 @@ struct StandupsList: ReducerProtocol {
       }
     }
 
-    var body: some ReducerProtocol<State, Action> {
+    var body: some ReducerOf<Self> {
       Scope(state: /State.add, action: /Action.add) {
         StandupForm()
       }
@@ -51,7 +51,7 @@ struct StandupsList: ReducerProtocol {
   @Dependency(\.continuousClock) var clock
   @Dependency(\.uuid) var uuid
 
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce<State, Action> { state, action in
       switch action {
       case .addStandupButtonTapped:

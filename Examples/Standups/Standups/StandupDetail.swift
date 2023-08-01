@@ -1,12 +1,12 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct StandupDetail: ReducerProtocol {
+struct StandupDetail: Reducer {
   struct State: Equatable {
     @PresentationState var destination: Destination.State?
     var standup: Standup
   }
-  enum Action: Equatable {
+  enum Action: Equatable, Sendable {
     case cancelEditButtonTapped
     case delegate(Delegate)
     case deleteButtonTapped
@@ -18,6 +18,7 @@ struct StandupDetail: ReducerProtocol {
 
     enum Delegate: Equatable {
       case deleteStandup
+      case standupUpdated(Standup)
       case startMeeting
     }
   }
@@ -26,12 +27,12 @@ struct StandupDetail: ReducerProtocol {
   @Dependency(\.openSettings) var openSettings
   @Dependency(\.speechClient.authorizationStatus) var authorizationStatus
 
-  struct Destination: ReducerProtocol {
+  struct Destination: Reducer {
     enum State: Equatable {
       case alert(AlertState<Action.Alert>)
       case edit(StandupForm.State)
     }
-    enum Action: Equatable {
+    enum Action: Equatable, Sendable {
       case alert(Alert)
       case edit(StandupForm.Action)
 
@@ -41,14 +42,14 @@ struct StandupDetail: ReducerProtocol {
         case openSettings
       }
     }
-    var body: some ReducerProtocolOf<Self> {
+    var body: some ReducerOf<Self> {
       Scope(state: /State.edit, action: /Action.edit) {
         StandupForm()
       }
     }
   }
 
-  var body: some ReducerProtocolOf<Self> {
+  var body: some ReducerOf<Self> {
     Reduce<State, Action> { state, action in
       switch action {
       case .cancelEditButtonTapped:
@@ -115,6 +116,11 @@ struct StandupDetail: ReducerProtocol {
     }
     .ifLet(\.$destination, action: /Action.destination) {
       Destination()
+    }
+    .onChange(of: \.standup) { oldValue, newValue in
+      Reduce { state, action in
+        .send(.delegate(.standupUpdated(newValue)))
+      }
     }
   }
 }

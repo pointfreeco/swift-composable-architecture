@@ -1,13 +1,13 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct MeetingReducer: ReducerProtocol {
+struct MeetingReducer: Reducer {
   struct State: Equatable {
     let meeting: Meeting
     let standup: Standup
   }
   enum Action: Equatable {}
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
   }
 }
 

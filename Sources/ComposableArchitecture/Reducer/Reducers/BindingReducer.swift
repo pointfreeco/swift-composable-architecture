@@ -1,7 +1,47 @@
 import SwiftUI
 
 /// A reducer that updates bindable state when it receives binding actions.
-public struct BindingReducer<State, Action, ViewAction: BindableAction>: ReducerProtocol
+///
+/// This reducer should typically be composed into the ``Reducer/body-swift.property`` of your
+/// feature's reducer:
+///
+/// ```swift
+/// struct Feature: Reducer {
+///   struct State {
+///     @BindingState var isOn = false
+///     // More properties...
+///   }
+///   enum Action: BindableAction {
+///     case binding(BindingAction<State>)
+///     // More actions
+///   }
+///
+///   var body: some ReducerOf<Self> {
+///     BindingReducer()
+///     Reduce { state, action in
+///       // Your feature's logic...
+///     }
+///   }
+/// }
+/// ```
+///
+/// This makes it so that the binding's logic is run before the feature's logic, i.e. you will only
+/// see the state after the binding was written. If you want to react to the state _before_ the
+/// binding was written, you can flip the order of the composition:
+///
+/// ```swift
+/// var body: some ReducerOf<Self> {
+///   Reduce { state, action in
+///     // Your feature's logic...
+///   }
+///   BindingReducer()
+/// }
+/// ```
+///
+/// If you forget to compose the ``BindingReducer`` into your feature's reducer, then when a binding
+/// is written to it will cause a runtime purple Xcode warning letting you know what needs to be
+/// fixed.
+public struct BindingReducer<State, Action, ViewAction: BindableAction>: Reducer
 where State == ViewAction.State {
   @usableFromInline
   let toViewAction: (Action) -> ViewAction?
@@ -13,19 +53,17 @@ where State == ViewAction.State {
   }
 
   @inlinable
-  public init(action toViewAction: @escaping (Action) -> ViewAction?) {
+  public init(action toViewAction: @escaping (_ action: Action) -> ViewAction?) {
     self.init(internal: toViewAction)
   }
 
   @usableFromInline
-  init(internal toViewAction: @escaping (Action) -> ViewAction?) {
+  init(internal toViewAction: @escaping (_ action: Action) -> ViewAction?) {
     self.toViewAction = toViewAction
   }
 
   @inlinable
-  public func reduce(
-    into state: inout State, action: Action
-  ) -> EffectTask<Action> {
+  public func reduce(into state: inout State, action: Action) -> Effect<Action> {
     guard let bindingAction = self.toViewAction(action).flatMap(/ViewAction.binding)
     else { return .none }
 

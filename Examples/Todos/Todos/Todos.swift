@@ -7,7 +7,7 @@ enum Filter: LocalizedStringKey, CaseIterable, Hashable {
   case completed = "Completed"
 }
 
-struct Todos: ReducerProtocol {
+struct Todos: Reducer {
   struct State: Equatable {
     @BindingState var editMode: EditMode = .inactive
     @BindingState var filter: Filter = .all
@@ -36,7 +36,7 @@ struct Todos: ReducerProtocol {
   @Dependency(\.uuid) var uuid
   private enum CancelID { case todoCompletion }
 
-  var body: some ReducerProtocol<State, Action> {
+  var body: some Reducer<State, Action> {
     BindingReducer()
     Reduce { state, action in
       switch action {
@@ -74,9 +74,9 @@ struct Todos: ReducerProtocol {
 
         state.todos.move(fromOffsets: source, toOffset: destination)
 
-        return .task {
+        return .run { send in
           try await self.clock.sleep(for: .milliseconds(100))
-          return .sortCompletedTodos
+          await send(.sortCompletedTodos)
         }
 
       case .sortCompletedTodos:
@@ -117,7 +117,7 @@ struct AppView: View {
 
   var body: some View {
     WithViewStore(self.store, observe: ViewState.init) { viewStore in
-      NavigationView {
+      NavigationStack {
         VStack(alignment: .leading) {
           Picker("Filter", selection: viewStore.$filter.animation()) {
             ForEach(Filter.allCases, id: \.self) { filter in
@@ -150,7 +150,6 @@ struct AppView: View {
         )
         .environment(\.editMode, viewStore.$editMode)
       }
-      .navigationViewStyle(.stack)
     }
   }
 }

@@ -5,7 +5,7 @@ struct RootView: View {
   let store: StoreOf<Root>
 
   var body: some View {
-    NavigationView {
+    NavigationStack {
       Form {
         Section(header: Text("Getting started")) {
           NavigationLink(
@@ -182,31 +182,11 @@ struct RootView: View {
           )
 
           NavigationLink(
-            "Load data then navigate",
-            destination: LoadThenNavigateView(
-              store: self.store.scope(
-                state: \.loadThenNavigate,
-                action: Root.Action.loadThenNavigate
-              )
-            )
-          )
-
-          NavigationLink(
             "Lists: Navigate and load data",
             destination: NavigateAndLoadListView(
               store: self.store.scope(
                 state: \.navigateAndLoadList,
                 action: Root.Action.navigateAndLoadList
-              )
-            )
-          )
-
-          NavigationLink(
-            "Lists: Load data then navigate",
-            destination: LoadThenNavigateListView(
-              store: self.store.scope(
-                state: \.loadThenNavigateList,
-                action: Root.Action.loadThenNavigateList
               )
             )
           )
@@ -230,6 +210,16 @@ struct RootView: View {
               )
             )
           )
+
+          NavigationLink(
+            "Multiple destinations",
+            destination: MultipleDestinationsView(
+              store: self.store.scope(
+                state: \.multipleDestinations,
+                action: Root.Action.multipleDestinations
+              )
+            )
+          )
         }
 
         Section(header: Text("Higher-order reducers")) {
@@ -249,26 +239,6 @@ struct RootView: View {
               store: self.store.scope(
                 state: \.map,
                 action: Root.Action.map
-              )
-            )
-          )
-
-          NavigationLink(
-            "Lifecycle",
-            destination: LifecycleDemoView(
-              store: self.store.scope(
-                state: \.lifecycle,
-                action: Root.Action.lifecycle
-              )
-            )
-          )
-
-          NavigationLink(
-            "Elm-like subscriptions",
-            destination: ClockView(
-              store: self.store.scope(
-                state: \.clock,
-                action: Root.Action.clock
               )
             )
           )

@@ -12,9 +12,9 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct WebSocket: ReducerProtocol {
+struct WebSocket: Reducer {
   struct State: Equatable {
-    var alert: AlertState<Action>?
+    @PresentationState var alert: AlertState<Action.Alert>?
     var connectivityState = ConnectivityState.disconnected
     var messageToSend = ""
     var receivedMessages: [String] = []
@@ -27,106 +27,110 @@ struct WebSocket: ReducerProtocol {
   }
 
   enum Action: Equatable {
-    case alertDismissed
+    case alert(PresentationAction<Alert>)
     case connectButtonTapped
     case messageToSendChanged(String)
     case receivedSocketMessage(TaskResult<WebSocketClient.Message>)
     case sendButtonTapped
     case sendResponse(didSucceed: Bool)
     case webSocket(WebSocketClient.Action)
+
+    enum Alert: Equatable {}
   }
 
   @Dependency(\.continuousClock) var clock
   @Dependency(\.webSocket) var webSocket
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
-    switch action {
-    case .alertDismissed:
-      state.alert = nil
-      return .none
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .alert:
+        return .none
 
-    case .connectButtonTapped:
-      switch state.connectivityState {
-      case .connected, .connecting:
-        state.connectivityState = .disconnected
-        return .cancel(id: WebSocketClient.ID())
+      case .connectButtonTapped:
+        switch state.connectivityState {
+        case .connected, .connecting:
+          state.connectivityState = .disconnected
+          return .cancel(id: WebSocketClient.ID())
 
-      case .disconnected:
-        state.connectivityState = .connecting
-        return .run { send in
-          let actions = await self.webSocket
-            .open(WebSocketClient.ID(), URL(string: "wss://echo.websocket.events")!, [])
-          await withThrowingTaskGroup(of: Void.self) { group in
-            for await action in actions {
-              // NB: Can't call `await send` here outside of `group.addTask` due to task local
-              //     dependency mutation in `Effect.{task,run}`. Can maybe remove that explicit task
-              //     local mutation (and this `addTask`?) in a world with
-              //     `Effect(operation: .run { ... })`?
-              group.addTask { await send(.webSocket(action)) }
-              switch action {
-              case .didOpen:
-                group.addTask {
-                  while !Task.isCancelled {
-                    try await self.clock.sleep(for: .seconds(10))
-                    try? await self.webSocket.sendPing(WebSocketClient.ID())
+        case .disconnected:
+          state.connectivityState = .connecting
+          return .run { send in
+            let actions = await self.webSocket
+              .open(WebSocketClient.ID(), URL(string: "wss://echo.websocket.events")!, [])
+            await withThrowingTaskGroup(of: Void.self) { group in
+              for await action in actions {
+                // NB: Can't call `await send` here outside of `group.addTask` due to task local
+                //     dependency mutation in `Effect.{task,run}`. Can maybe remove that explicit task
+                //     local mutation (and this `addTask`?) in a world with
+                //     `Effect(operation: .run { ... })`?
+                group.addTask { await send(.webSocket(action)) }
+                switch action {
+                case .didOpen:
+                  group.addTask {
+                    while !Task.isCancelled {
+                      try await self.clock.sleep(for: .seconds(10))
+                      try? await self.webSocket.sendPing(WebSocketClient.ID())
+                    }
                   }
-                }
-                group.addTask {
-                  for await result in try await self.webSocket.receive(WebSocketClient.ID()) {
-                    await send(.receivedSocketMessage(result))
+                  group.addTask {
+                    for await result in try await self.webSocket.receive(WebSocketClient.ID()) {
+                      await send(.receivedSocketMessage(result))
+                    }
                   }
+                case .didClose:
+                  return
                 }
-              case .didClose:
-                return
               }
             }
           }
+          .cancellable(id: WebSocketClient.ID())
+        }
+
+      case let .messageToSendChanged(message):
+        state.messageToSend = message
+        return .none
+
+      case let .receivedSocketMessage(.success(message)):
+        if case let .string(string) = message {
+          state.receivedMessages.append(string)
+        }
+        return .none
+
+      case .receivedSocketMessage(.failure):
+        return .none
+
+      case .sendButtonTapped:
+        let messageToSend = state.messageToSend
+        state.messageToSend = ""
+        return .run { send in
+          try await self.webSocket.send(WebSocketClient.ID(), .string(messageToSend))
+          await send(.sendResponse(didSucceed: true))
+        } catch: { _, send in
+          await send(.sendResponse(didSucceed: false))
         }
         .cancellable(id: WebSocketClient.ID())
+
+      case .sendResponse(didSucceed: false):
+        state.alert = AlertState {
+          TextState("Could not send socket message. Connect to the server first, and try again.")
+        }
+        return .none
+
+      case .sendResponse(didSucceed: true):
+        return .none
+
+      case .webSocket(.didClose):
+        state.connectivityState = .disconnected
+        return .cancel(id: WebSocketClient.ID())
+
+      case .webSocket(.didOpen):
+        state.connectivityState = .connected
+        state.receivedMessages.removeAll()
+        return .none
       }
-
-    case let .messageToSendChanged(message):
-      state.messageToSend = message
-      return .none
-
-    case let .receivedSocketMessage(.success(message)):
-      if case let .string(string) = message {
-        state.receivedMessages.append(string)
-      }
-      return .none
-
-    case .receivedSocketMessage(.failure):
-      return .none
-
-    case .sendButtonTapped:
-      let messageToSend = state.messageToSend
-      state.messageToSend = ""
-      return .run { send in
-        try await self.webSocket.send(WebSocketClient.ID(), .string(messageToSend))
-        await send(.sendResponse(didSucceed: true))
-      } catch: { _, send in
-        await send(.sendResponse(didSucceed: false))
-      }
-      .cancellable(id: WebSocketClient.ID())
-
-    case .sendResponse(didSucceed: false):
-      state.alert = AlertState {
-        TextState("Could not send socket message. Connect to the server first, and try again.")
-      }
-      return .none
-
-    case .sendResponse(didSucceed: true):
-      return .none
-
-    case .webSocket(.didClose):
-      state.connectivityState = .disconnected
-      return .cancel(id: WebSocketClient.ID())
-
-    case .webSocket(.didOpen):
-      state.connectivityState = .connected
-      state.receivedMessages.removeAll()
-      return .none
     }
+    .ifLet(\.$alert, action: /Action.alert)
   }
 }
 
@@ -180,7 +184,7 @@ struct WebSocketView: View {
           Text("Received messages")
         }
       }
-      .alert(self.store.scope(state: \.alert, action: { $0 }), dismiss: .alertDismissed)
+      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
       .navigationTitle("Web Socket")
     }
   }

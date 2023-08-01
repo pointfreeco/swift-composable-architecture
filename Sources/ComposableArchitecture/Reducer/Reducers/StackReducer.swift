@@ -6,7 +6,7 @@ import OrderedCollections
 /// A list of data representing the content of a navigation stack.
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
-/// ``ReducerProtocol/forEach(_:action:destination:fileID:line:)``.
+/// ``Reducer/forEach(_:action:destination:fileID:line:)``.
 ///
 /// See the dedicated article on <doc:Navigation> for more information on the library's navigation
 /// tools, and in particular see <doc:StackBasedNavigation> for information on modeling navigation
@@ -179,7 +179,7 @@ extension StackState: CustomDumpReflectable {
 /// A wrapper type for actions that can be presented in a navigation stack.
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
-/// ``ReducerProtocol/forEach(_:action:destination:fileID:line:)``.
+/// ``Reducer/forEach(_:action:destination:fileID:line:)``.
 ///
 /// See the dedicated article on <doc:Navigation> for more information on the library's navigation
 /// tools, and in particular see <doc:StackBasedNavigation> for information on modeling navigation
@@ -200,7 +200,7 @@ extension StackAction: Equatable where State: Equatable, Action: Equatable {}
 extension StackAction: Hashable where State: Hashable, Action: Hashable {}
 extension StackAction: Sendable where State: Sendable, Action: Sendable {}
 
-extension ReducerProtocol {
+extension Reducer {
   /// Embeds a child reducer in a parent domain that works on elements of a navigation stack in
   /// parent state.
   ///
@@ -212,7 +212,7 @@ extension ReducerProtocol {
   /// of each child feature using the `forEach` operator:
   ///
   /// ```swift
-  /// struct ParentFeature: ReducerProtocol {
+  /// struct ParentFeature: Reducer {
   ///   struct State {
   ///     var path = StackState<Path.State>()
   ///     // ...
@@ -221,7 +221,7 @@ extension ReducerProtocol {
   ///     case path(StackAction<Path.State, Path.Action>)
   ///     // ...
   ///   }
-  ///   var body: some ReducerProtocolOf<Self> {
+  ///   var body: some ReducerOf<Self> {
   ///     Reduce { state, action in
   ///       // Core parent logic
   ///     }
@@ -261,7 +261,7 @@ extension ReducerProtocol {
   /// - Returns: A reducer that combines the destination reducer with the parent reducer.
   @inlinable
   @warn_unqualified_access
-  public func forEach<DestinationState, DestinationAction, Destination: ReducerProtocol>(
+  public func forEach<DestinationState, DestinationAction, Destination: Reducer>(
     _ toStackState: WritableKeyPath<State, StackState<DestinationState>>,
     action toStackAction: CasePath<Action, StackAction<DestinationState, DestinationAction>>,
     @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
@@ -280,9 +280,7 @@ extension ReducerProtocol {
   }
 }
 
-public struct _StackReducer<
-  Base: ReducerProtocol, Destination: ReducerProtocol
->: ReducerProtocol {
+public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
   let base: Base
   let toStackState: WritableKeyPath<Base.State, StackState<Destination.State>>
   let toStackAction: CasePath<Base.Action, StackAction<Destination.State, Destination.Action>>
@@ -309,10 +307,10 @@ public struct _StackReducer<
     self.line = line
   }
 
-  public func reduce(into state: inout Base.State, action: Base.Action) -> EffectTask<Base.Action> {
+  public func reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action> {
     let idsBefore = state[keyPath: self.toStackState].ids
-    let destinationEffects: EffectTask<Base.Action>
-    let baseEffects: EffectTask<Base.Action>
+    let destinationEffects: Effect<Base.Action>
+    let baseEffects: Effect<Base.Action>
 
     switch self.toStackAction.extract(from: action) {
     case let .element(elementID, destinationAction):
@@ -429,7 +427,7 @@ public struct _StackReducer<
     let idsAfter = state[keyPath: self.toStackState].ids
     let idsMounted = state[keyPath: self.toStackState]._mounted
 
-    let cancelEffects: EffectTask<Base.Action> =
+    let cancelEffects: Effect<Base.Action> =
       areOrderedSetsDuplicates(idsBefore, idsAfter)
       ? .none
       : .merge(
@@ -437,23 +435,23 @@ public struct _StackReducer<
           ._cancel(navigationID: self.navigationIDPath(for: $0))
         }
       )
-    let presentEffects: EffectTask<Base.Action> =
+    let presentEffects: Effect<Base.Action> =
       idsAfter.count == idsMounted.count
       ? .none
       : .merge(
         idsAfter.subtracting(idsMounted).map { elementID in
           let navigationDestinationID = self.navigationIDPath(for: elementID)
           state[keyPath: self.toStackState]._mounted.insert(elementID)
-          return Empty(completeImmediately: false)
-            .eraseToEffect()
-            ._cancellable(
-              id: NavigationDismissID(elementID: elementID),
-              navigationIDPath: navigationDestinationID
-            )
-            .append(Just(self.toStackAction.embed(.popFrom(id: elementID))))
-            .eraseToEffect()
-            ._cancellable(navigationIDPath: navigationDestinationID)
-            ._cancellable(id: OnFirstAppearID(), navigationIDPath: .init())
+          return .concatenate(
+            .publisher { Empty(completeImmediately: false) }
+              ._cancellable(
+                id: NavigationDismissID(elementID: elementID),
+                navigationIDPath: navigationDestinationID
+              ),
+            .publisher { Just(self.toStackAction.embed(.popFrom(id: elementID))) }
+          )
+          ._cancellable(navigationIDPath: navigationDestinationID)
+          ._cancellable(id: OnFirstAppearID(), navigationIDPath: .init())
         }
       )
 

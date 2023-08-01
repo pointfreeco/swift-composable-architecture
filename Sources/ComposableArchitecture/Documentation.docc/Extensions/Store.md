@@ -18,6 +18,9 @@
 ### Sending actions
 
 - ``send(_:)``
+- ``send(_:animation:)``
+- ``send(_:transaction:)``
+- ``StoreTask``
 
 ### Combine integration
 
@@ -26,7 +29,3 @@
 ### UIKit integration
 
 - ``ifLet(then:else:)``
-
-### Deprecations
-
-- <doc:StoreDeprecations>

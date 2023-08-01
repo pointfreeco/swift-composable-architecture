@@ -6,8 +6,8 @@
 
 ### Creating a view
 
-- ``init(_:observe:content:file:line:)``
+- ``init(_:observe:content:file:line:)-8g15l``
 
 ### Debugging view updates
 
-- ``debug(_:)``
+- ``_printChanges(_:)``

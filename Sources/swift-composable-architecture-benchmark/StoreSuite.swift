@@ -9,7 +9,7 @@ let storeSuite = BenchmarkSuite(name: "Store") {
 
   for level in 1...levels {
     $0.benchmark("Nested send tap: \(level)") {
-      _ = store.send(tap(level: level))
+      store.send(tap(level: level))
     } setUp: {
       store = Store(initialState: state(level: level)) {
         Feature()
@@ -21,7 +21,7 @@ let storeSuite = BenchmarkSuite(name: "Store") {
   }
   for level in 1...levels {
     $0.benchmark("Nested send none: \(level)") {
-      _ = store.send(none(level: level))
+      store.send(none(level: level))
     } setUp: {
       store = Store(initialState: state(level: level)) {
         Feature()
@@ -33,7 +33,7 @@ let storeSuite = BenchmarkSuite(name: "Store") {
   }
 }
 
-private struct Feature: ReducerProtocol {
+private struct Feature: Reducer {
   struct State {
     @PresentationState var child: State?
     var count = 0
@@ -43,16 +43,14 @@ private struct Feature: ReducerProtocol {
     case tap
     case none
   }
-  var body: some ReducerProtocol<State, Action> {
+  var body: some ReducerOf<Self> {
     Reduce<State, Action> { state, action in
       switch action {
       case .child:
         return .none
       case .tap:
         state.count = 1
-        return Empty(completeImmediately: true)
-          .eraseToEffect()
-          .cancellable(id: UUID())
+        return .publisher { Empty() }.cancellable(id: UUID())
       case .none:
         return .none
       }

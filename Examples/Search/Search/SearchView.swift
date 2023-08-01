@@ -9,7 +9,7 @@ private let readMe = """
 
 // MARK: - Search feature domain
 
-struct Search: ReducerProtocol {
+struct Search: Reducer {
   struct State: Equatable {
     var results: [GeocodingSearch.Result] = []
     var resultForecastRequestInFlight: GeocodingSearch.Result?
@@ -41,7 +41,7 @@ struct Search: ReducerProtocol {
   @Dependency(\.weatherClient) var weatherClient
   private enum CancelID { case location, weather }
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .forecastResponse(_, .failure):
       state.weather = nil
@@ -116,7 +116,7 @@ struct SearchView: View {
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
-      NavigationView {
+      NavigationStack {
         VStack(alignment: .leading) {
           Text(readMe)
             .padding()
@@ -165,7 +165,6 @@ struct SearchView: View {
         }
         .navigationTitle("Search")
       }
-      .navigationViewStyle(.stack)
       .task(id: viewStore.searchQuery) {
         do {
           try await Task.sleep(nanoseconds: NSEC_PER_SEC / 3)

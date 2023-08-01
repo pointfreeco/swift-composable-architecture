@@ -1,11 +1,11 @@
-extension ReducerProtocol {
+extension Reducer {
   /// Embeds a child reducer in a parent domain that works on a case of parent enum state.
   ///
   /// For example, if a parent feature's state is expressed as an enum of multiple children
   /// states, then `ifCaseLet` can run a child reducer on a particular case of the enum:
   ///
   /// ```swift
-  /// struct Parent: ReducerProtocol {
+  /// struct Parent: Reducer {
   ///   enum State {
   ///     case loggedIn(Authenticated.State)
   ///     case loggedOut(Unauthenticated.State)
@@ -16,7 +16,7 @@ extension ReducerProtocol {
   ///     // ...
   ///   }
   ///
-  ///   var body: some ReducerProtocol<State, Action> {
+  ///   var body: some Reducer<State, Action> {
   ///     Reduce { state, action in
   ///       // Core logic for parent feature
   ///     }
@@ -51,7 +51,7 @@ extension ReducerProtocol {
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @inlinable
   @warn_unqualified_access
-  public func ifCaseLet<CaseState, CaseAction, Case: ReducerProtocol>(
+  public func ifCaseLet<CaseState, CaseAction, Case: Reducer>(
     _ toCaseState: CasePath<State, CaseState>,
     action toCaseAction: CasePath<Action, CaseAction>,
     @ReducerBuilder<CaseState, CaseAction> then case: () -> Case,
@@ -70,7 +70,7 @@ extension ReducerProtocol {
   }
 }
 
-public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>: ReducerProtocol {
+public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   @usableFromInline
   let parent: Parent
 
@@ -110,7 +110,7 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
 
   public func reduce(
     into state: inout Parent.State, action: Parent.Action
-  ) -> EffectTask<Parent.Action> {
+  ) -> Effect<Parent.Action> {
     let childEffects = self.reduceChild(into: &state, action: action)
 
     let childIDBefore = self.toChildState.extract(from: state).map {
@@ -121,7 +121,7 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
       NavigationID(root: state, value: $0, casePath: self.toChildState)
     }
 
-    let childCancelEffects: EffectTask<Parent.Action>
+    let childCancelEffects: Effect<Parent.Action>
     if let childElement = childIDBefore, childElement != childIDAfter {
       childCancelEffects = .cancel(id: childElement)
     } else {
@@ -137,7 +137,7 @@ public struct _IfCaseLetReducer<Parent: ReducerProtocol, Child: ReducerProtocol>
 
   func reduceChild(
     into state: inout Parent.State, action: Parent.Action
-  ) -> EffectTask<Parent.Action> {
+  ) -> Effect<Parent.Action> {
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     guard var childState = self.toChildState.extract(from: state) else {

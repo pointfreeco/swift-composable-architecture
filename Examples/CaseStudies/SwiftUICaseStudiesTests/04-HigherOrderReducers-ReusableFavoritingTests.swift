@@ -75,7 +75,7 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
       }
     }
 
-    await store.send(.episode(id: episodes[0].id, action: .favorite(.alertDismissed))) {
+    await store.send(.episode(id: episodes[0].id, action: .favorite(.alert(.dismiss)))) {
       $0.episodes[id: episodes[0].id]?.alert = nil
       $0.episodes[id: episodes[0].id]?.isFavorite = false
     }

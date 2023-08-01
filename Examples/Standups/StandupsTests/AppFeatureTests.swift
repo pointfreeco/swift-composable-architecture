@@ -1,5 +1,4 @@
 import ComposableArchitecture
-@_spi(Concurrency) import Dependencies
 import XCTest
 
 @testable import Standups
@@ -41,7 +40,7 @@ final class AppFeatureTests: XCTestCase {
   }
 
   func testDetailEdit() async throws {
-    let standup = Standup.mock
+    var standup = Standup.mock
     let savedData = LockIsolated(Data?.none)
 
     let store = TestStore(initialState: AppFeature.State()) {
@@ -67,11 +66,12 @@ final class AppFeatureTests: XCTestCase {
       )
     }
 
+    standup.title = "Blob"
     await store.send(
       .path(
         .element(
           id: 0,
-          action: .detail(.destination(.presented(.edit(.binding(.set(\.$standup.title, "Blob"))))))
+          action: .detail(.destination(.presented(.edit(.set(\.$standup, standup)))))
         )
       )
     ) {
@@ -86,72 +86,75 @@ final class AppFeatureTests: XCTestCase {
       }
     }
 
-    await store.send(.path(.popFrom(id: 0))) {
-      $0.path = StackState()
+    await store.receive(
+      .path(.element(id: 0, action: .detail(.delegate(.standupUpdated(standup)))))
+    ) {
       $0.standupsList.standups[0].title = "Blob"
     }
-    .finish()
 
     var savedStandup = standup
     savedStandup.title = "Blob"
-    XCTAssertEqual(savedData.value, try! JSONEncoder().encode([savedStandup]))
+    XCTAssertNoDifference(
+      try JSONDecoder().decode([Standup].self, from: savedData.value!),
+      [savedStandup]
+    )
   }
 
   func testRecording() async {
-    await withMainSerialExecutor {
-      let speechResult = SpeechRecognitionResult(
-        bestTranscription: Transcription(formattedString: "I completed the project"),
-        isFinal: true
-      )
-      let standup = Standup(
-        id: Standup.ID(),
-        attendees: [
-          Attendee(id: Attendee.ID()),
-          Attendee(id: Attendee.ID()),
-          Attendee(id: Attendee.ID()),
-        ],
-        duration: .seconds(6)
-      )
+    let speechResult = SpeechRecognitionResult(
+      bestTranscription: Transcription(formattedString: "I completed the project"),
+      isFinal: true
+    )
+    let standup = Standup(
+      id: Standup.ID(),
+      attendees: [
+        Attendee(id: Attendee.ID()),
+        Attendee(id: Attendee.ID()),
+        Attendee(id: Attendee.ID()),
+      ],
+      duration: .seconds(6)
+    )
 
-      let store = TestStore(
-        initialState: AppFeature.State(
-          path: StackState([
-            .detail(StandupDetail.State(standup: standup)),
-            .record(RecordMeeting.State(standup: standup)),
-          ])
-        )
-      ) {
-        AppFeature()
-      } withDependencies: {
-        $0.dataManager = .mock(initialData: try! JSONEncoder().encode([standup]))
-        $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
-        $0.continuousClock = ImmediateClock()
-        $0.speechClient.authorizationStatus = { .authorized }
-        $0.speechClient.startTask = { _ in
-          AsyncThrowingStream { continuation in
-            continuation.yield(speechResult)
-            continuation.finish()
-          }
+    let store = TestStore(
+      initialState: AppFeature.State(
+        path: StackState([
+          .detail(StandupDetail.State(standup: standup)),
+          .record(RecordMeeting.State(standup: standup)),
+        ])
+      )
+    ) {
+      AppFeature()
+    } withDependencies: {
+      $0.dataManager = .mock(initialData: try! JSONEncoder().encode([standup]))
+      $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
+      $0.continuousClock = ImmediateClock()
+      $0.speechClient.authorizationStatus = { .authorized }
+      $0.speechClient.startTask = { _ in
+        AsyncThrowingStream { continuation in
+          continuation.yield(speechResult)
+          continuation.finish()
         }
-        $0.uuid = .incrementing
       }
-      store.exhaustivity = .off
+      $0.uuid = .incrementing
+    }
+    store.exhaustivity = .off
 
-      await store.send(.path(.element(id: 1, action: .record(.onTask))))
-      await store.receive(
-        .path(
-          .element(id: 1, action: .record(.delegate(.save(transcript: "I completed the project"))))
+    await store.send(.path(.element(id: 1, action: .record(.onTask))))
+    await store.receive(
+      .path(
+        .element(id: 1, action: .record(.delegate(.save(transcript: "I completed the project"))))
+      )
+    ) {
+      $0.path[id: 0, case: /AppFeature.Path.State.detail]?.standup.meetings = [
+        Meeting(
+          id: Meeting.ID(UUID(0)),
+          date: Date(timeIntervalSince1970: 1_234_567_890),
+          transcript: "I completed the project"
         )
-      ) {
-        $0.path.pop(to: 0)
-        $0.path[id: 0, case: /AppFeature.Path.State.detail]?.standup.meetings = [
-          Meeting(
-            id: Meeting.ID(UUID(0)),
-            date: Date(timeIntervalSince1970: 1_234_567_890),
-            transcript: "I completed the project"
-          )
-        ]
-      }
+      ]
+    }
+    await store.receive(.path(.popFrom(id: 1))) {
+      XCTAssertEqual($0.path.count, 1)
     }
   }
 }

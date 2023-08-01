@@ -1,5 +1,5 @@
 import ComposableArchitecture
-@preconcurrency import SwiftUI  // NB: SwiftUI.Color and SwiftUI.Animation are not Sendable yet.
+import SwiftUI
 
 private let readMe = """
   This screen demonstrates how changes to application state can drive animations. Because the \
@@ -20,75 +20,80 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct Animations: ReducerProtocol {
+struct Animations: Reducer {
   struct State: Equatable {
-    var alert: AlertState<Action>?
+    @PresentationState var alert: AlertState<Action.Alert>?
     var circleCenter: CGPoint?
     var circleColor = Color.black
     var isCircleScaled = false
   }
 
   enum Action: Equatable, Sendable {
-    case alertDismissed
+    case alert(PresentationAction<Alert>)
     case circleScaleToggleChanged(Bool)
     case rainbowButtonTapped
     case resetButtonTapped
-    case resetConfirmationButtonTapped
     case setColor(Color)
     case tapped(CGPoint)
+
+    enum Alert: Equatable, Sendable {
+      case resetConfirmationButtonTapped
+    }
   }
 
   @Dependency(\.continuousClock) var clock
 
-  func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
-    enum CancelID { case rainbow }
+  private enum CancelID { case rainbow }
 
-    switch action {
-    case .alertDismissed:
-      state.alert = nil
-      return .none
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .alert(.presented(.resetConfirmationButtonTapped)):
+        state = State()
+        return .cancel(id: CancelID.rainbow)
 
-    case let .circleScaleToggleChanged(isScaled):
-      state.isCircleScaled = isScaled
-      return .none
+      case .alert:
+        return .none
 
-    case .rainbowButtonTapped:
-      return .run { send in
-        for color in [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .black] {
-          await send(.setColor(color), animation: .linear)
-          try await self.clock.sleep(for: .seconds(1))
+      case let .circleScaleToggleChanged(isScaled):
+        state.isCircleScaled = isScaled
+        return .none
+
+      case .rainbowButtonTapped:
+        return .run { send in
+          for color in [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .black] {
+            await send(.setColor(color), animation: .linear)
+            try await self.clock.sleep(for: .seconds(1))
+          }
         }
+        .cancellable(id: CancelID.rainbow)
+
+      case .resetButtonTapped:
+        state.alert = AlertState {
+          TextState("Reset state?")
+        } actions: {
+          ButtonState(
+            role: .destructive,
+            action: .send(.resetConfirmationButtonTapped, animation: .default)
+          ) {
+            TextState("Reset")
+          }
+          ButtonState(role: .cancel) {
+            TextState("Cancel")
+          }
+        }
+        return .none
+
+      case let .setColor(color):
+        state.circleColor = color
+        return .none
+
+      case let .tapped(point):
+        state.circleCenter = point
+        return .none
       }
-      .cancellable(id: CancelID.rainbow)
-
-    case .resetButtonTapped:
-      state.alert = AlertState {
-        TextState("Reset state?")
-      } actions: {
-        ButtonState(
-          role: .destructive,
-          action: .send(.resetConfirmationButtonTapped, animation: .default)
-        ) {
-          TextState("Reset")
-        }
-        ButtonState(role: .cancel) {
-          TextState("Cancel")
-        }
-      }
-      return .none
-
-    case .resetConfirmationButtonTapped:
-      state = State()
-      return .cancel(id: CancelID.rainbow)
-
-    case let .setColor(color):
-      state.circleColor = color
-      return .none
-
-    case let .tapped(point):
-      state.circleCenter = point
-      return .none
     }
+    .ifLet(\.$alert, action: /Action.alert)
   }
 }
 
@@ -139,7 +144,7 @@ struct AnimationsView: View {
         Button("Reset") { viewStore.send(.resetButtonTapped) }
           .padding([.horizontal, .bottom])
       }
-      .alert(self.store.scope(state: \.alert, action: { $0 }), dismiss: .alertDismissed)
+      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
       .navigationBarTitleDisplayMode(.inline)
     }
   }
