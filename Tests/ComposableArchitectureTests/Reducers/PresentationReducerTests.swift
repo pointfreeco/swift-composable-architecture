@@ -2240,7 +2240,7 @@ final class PresentationReducerTests: BaseTCATestCase {
         }
       }
     }
-    
+
     let mainQueue = DispatchQueue.test
     let store = TestStore(initialState: .init()) {
       Parent()
