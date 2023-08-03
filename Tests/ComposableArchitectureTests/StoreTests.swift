@@ -912,6 +912,67 @@ final class StoreTests: BaseTCATestCase {
     store.send(.child(.dismiss))
     _ = (childViewStore1, childViewStore2, childStore1, childStore2)
   }
+
+  func testIfLetThenClauseSent() {
+    struct Feature: Reducer {
+      struct State: Equatable {
+        var toggle: Bool?
+      }
+      enum Action {
+        case triggerToNonNil, toggle
+      }
+      var body: some ReducerOf<Self> {
+        Reduce { state, action in
+          switch action {
+          case .triggerToNonNil:
+            state.toggle = false
+            return .none
+          case .toggle:
+            state.toggle?.toggle()
+            return .none
+          }
+        }
+      }
+    }
+
+    let parentStore = Store(initialState: Feature.State()) {
+      Feature()
+    }
+    let parentViewStore = ViewStore(parentStore, observe: \.toggle)
+
+    // NB: This test needs to hold a strong reference to the emitted stores
+    var outputs: [Bool?] = []
+    var stores: [Any] = []
+
+    parentStore
+      .scope(state: \.toggle, action: { $0 })
+      .ifLet(
+        then: { store in
+          stores.append(store)
+          outputs.append(ViewStore(store, observe: { $0 }).state)
+          ViewStore(store, observe: { $0 }).send(.toggle) // We’d hope the processing of `Action.toggle`, here, would flip the `Bool` but looks like it isn’t.
+          // Breakpointing shows that the action makes it to the reducer.
+          outputs.append(ViewStore(store, observe: { $0 }).state)
+        },
+        else: {
+          outputs.append(nil)
+        }
+      )
+      .store(in: &self.cancellables)
+
+    XCTAssertEqual(outputs, [nil])
+
+    _ = parentViewStore.send(.triggerToNonNil)
+    XCTAssertEqual( // ❌: XCTAssertEqual failed: (“[nil, Optional(false), Optional(false)]") is not equal to ("[nil, Optional(false), Optional(true)]”).
+      outputs,
+      [
+        nil,
+        false, // From sending `.triggerToNonNil`.
+        true   // From sending `.toggle`.
+      ]
+    )
+  }
+
 }
 
 private struct Count: TestDependencyKey {
