@@ -2240,9 +2240,9 @@ final class PresentationReducerTests: BaseTCATestCase {
         }
       }
     }
-
+    
     let mainQueue = DispatchQueue.test
-    let store = TestStore(initialState: Parent.State()) {
+    let store = TestStore(initialState: .init()) {
       Parent()
     } withDependencies: {
       $0.mainQueue = mainQueue.eraseToAnyScheduler()

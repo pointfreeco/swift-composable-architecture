@@ -505,7 +505,7 @@ public final class TestStore<State, Action> {
   ///     accessed during the test. These dependencies will be used when producing the initial
   ///     state.
   public init<R: Reducer>(
-    initialState: @autoclosure () -> State,
+    initialState: @autoclosure () -> R.State,
     @ReducerBuilder<State, Action> reducer: () -> R,
     withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in
     },
@@ -541,7 +541,7 @@ public final class TestStore<State, Action> {
   ///     state.
   @available(*, deprecated, message: "State must be equatable to perform assertions.")
   public init<R: Reducer>(
-    initialState: @autoclosure () -> State,
+    initialState: @autoclosure () -> R.State,
     @ReducerBuilder<State, Action> reducer: () -> R,
     withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in
     },
