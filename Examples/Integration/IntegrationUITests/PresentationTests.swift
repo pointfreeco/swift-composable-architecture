@@ -47,17 +47,21 @@ final class PresentationTests: BaseIntegrationTests {
   }
 
   func testSheet_IdentityChange() async throws {
-    self.app.buttons["Open sheet"].tap()
-    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
+    if #available(iOS 17, *) {
+      throw XCTSkip("Changing identity of sheet in iOS 17 causes a crash.")
+    } else {
+      self.app.buttons["Open sheet"].tap()
+      XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
 
-    self.app.buttons["Start effect"].tap()
-    XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
+      self.app.buttons["Start effect"].tap()
+      XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
 
-    self.app.buttons["Reset identity"].tap()
-    XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
+      self.app.buttons["Reset identity"].tap()
+      XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
 
-    try await Task.sleep(for: .seconds(3))
-    XCTAssertEqual(self.app.staticTexts["Count: 999"].exists, false)
+      try await Task.sleep(for: .seconds(3))
+      XCTAssertEqual(self.app.staticTexts["Count: 999"].exists, false)
+    }
   }
 
   func testPopover_ChildDismiss() {
