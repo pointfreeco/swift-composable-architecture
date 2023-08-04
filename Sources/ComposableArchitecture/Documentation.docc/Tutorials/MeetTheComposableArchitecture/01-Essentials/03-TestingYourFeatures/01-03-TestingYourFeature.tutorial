@@ -170,7 +170,7 @@
       This is happening because the timer takes a full second to 
       emit, but the test store will only wait around for a certain amount of time to receive an
       action, and if it doesn't, it creates a test failure. This is because the test store doesn't
-      want your tests to be slow, and so it rather you take control over your dependency on time to
+      want your tests to be slow, and so it would rather you take control over your dependency on time to
       write a faster, more deterministic test.
       
       @Step {
