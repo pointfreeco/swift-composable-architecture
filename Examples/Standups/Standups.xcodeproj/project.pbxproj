@@ -114,7 +114,6 @@
 			isa = PBXGroup;
 			children = (
 				DC808D9C29E9C3C10072B4A9 /* swift-composable-architecture */,
-				DC808D9E29E9C4040072B4A9 /* Dependencies */,
 				DC808D7029E9C3AC0072B4A9 /* Products */,
 				DC808D7129E9C3AC0072B4A9 /* Standups */,
 				DC808D8229E9C3AD0072B4A9 /* StandupsTests */,
@@ -136,6 +135,7 @@
 		DC808D7129E9C3AC0072B4A9 /* Standups */ = {
 			isa = PBXGroup;
 			children = (
+				DC808D9E29E9C4040072B4A9 /* Dependencies */,
 				DC808D7229E9C3AC0072B4A9 /* App.swift */,
 				DC80B1E829EDE5D1001CC0CC /* AppFeature.swift */,
 				DC808DAA29E9C51D0072B4A9 /* Meeting.swift */,

@@ -25,7 +25,7 @@ extension DependencyValues {
 ///   func reduce(into state: inout State, action: Action) -> Effect<Action> {
 ///     switch action {
 ///     case .exitButtonTapped:
-///       return .fireAndForget { await self.dismiss() }
+///       return .run { _ in await self.dismiss() }
 ///     // ...
 ///     }
 ///   }
@@ -43,7 +43,7 @@ extension DependencyValues {
 ///
 /// ```swift
 /// case .exitButtonTapped:
-///   return .fireAndForget { await self.dismiss(animation: .default) }
+///   return .run { _ in await self.dismiss(animation: .default) }
 /// ```
 ///
 /// This will cause the `dismiss` or `popFrom(id:)` action to be sent with the particular animation.
@@ -60,17 +60,17 @@ extension DependencyValues {
 /// > some shared mutable state inside the `dismiss` closure to confirm that it is indeed invoked:
 /// >
 /// > ```swift
-/// > let isDismissInvoked = LockIsolated(false)
-/// > let store = Store(initialState: Child.State()) {
+/// > let isDismissInvoked: LockIsolated<[Bool]> = .init([])
+/// > let store = TestStore(initialState: Child.State()) {
 /// >   Child()
 /// > } withDependencies: {
-/// >   $0.dismiss = { isDismissInvoked.setValue(true) }
+/// >   $0.dismiss = DismissEffect { isDismissInvoked.withValue { $0.append(true) } }
 /// > }
 /// >
 /// > await store.send(.exitButtonTapped) {
 /// >   // ...
 /// > }
-/// > XCTAssertEqual(isDismissInvoked.value, true)
+/// > XCTAssertEqual(isDismissInvoked.value, [true])
 /// > ```
 public struct DismissEffect: Sendable {
   var dismiss: (@MainActor @Sendable () -> Void)?

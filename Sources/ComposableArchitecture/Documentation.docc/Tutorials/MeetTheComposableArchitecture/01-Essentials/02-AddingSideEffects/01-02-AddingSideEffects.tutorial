@@ -129,7 +129,7 @@
       }
       
       @Step {
-        However, it is not possible to then mutate the `state.count` in the effect after fetching
+        However, it is not possible to then mutate the `state.fact` in the effect after fetching
         the data from the network. This is strictly enforced by the compiler since sendable closures
         cannot capture `inout` state. This is showing how the library chooses to separate the nice, 
         simple and pure state mutations that reducers perform from the messy, complex effects. 

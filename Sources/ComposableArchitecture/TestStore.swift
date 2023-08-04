@@ -505,7 +505,7 @@ public final class TestStore<State, Action> {
   ///     accessed during the test. These dependencies will be used when producing the initial
   ///     state.
   public init<R: Reducer>(
-    initialState: @autoclosure () -> State,
+    initialState: @autoclosure () -> R.State,
     @ReducerBuilder<State, Action> reducer: () -> R,
     withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in
     },
@@ -517,8 +517,10 @@ public final class TestStore<State, Action> {
     R.Action == Action,
     State: Equatable
   {
-    let reducer = Dependencies.withDependencies(prepareDependencies) {
-      TestReducer(Reduce(reducer()), initialState: initialState())
+    let reducer = XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
+      Dependencies.withDependencies(prepareDependencies) {
+        TestReducer(Reduce(reducer()), initialState: initialState())
+      }
     }
     self.file = file
     self.line = line
@@ -541,7 +543,7 @@ public final class TestStore<State, Action> {
   ///     state.
   @available(*, deprecated, message: "State must be equatable to perform assertions.")
   public init<R: Reducer>(
-    initialState: @autoclosure () -> State,
+    initialState: @autoclosure () -> R.State,
     @ReducerBuilder<State, Action> reducer: () -> R,
     withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in
     },
@@ -552,8 +554,10 @@ public final class TestStore<State, Action> {
     R.State == State,
     R.Action == Action
   {
-    let reducer = Dependencies.withDependencies(prepareDependencies) {
-      TestReducer(Reduce(reducer()), initialState: initialState())
+    let reducer = XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
+      Dependencies.withDependencies(prepareDependencies) {
+        TestReducer(Reduce(reducer()), initialState: initialState())
+      }
     }
     self.file = file
     self.line = line
