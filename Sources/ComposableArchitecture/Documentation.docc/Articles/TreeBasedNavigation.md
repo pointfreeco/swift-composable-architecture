@@ -363,7 +363,7 @@ case .destination(.presented(.editItem(.saveButtonTapped))):
   else { return .none }
 
   state.destination = nil
-  return .fireAndForget {
+  return .run { _ in
     self.database.save(editItemState.item)
   }
 ```
@@ -417,7 +417,7 @@ struct Feature: Reducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .closeButtonTapped:
-      return .fireAndForget { await self.dismiss() }
+      return .run { _ in await self.dismiss() }
     } 
   }
 }
@@ -480,7 +480,7 @@ struct CounterFeature: Reducer {
     case .incrementButtonTapped:
       state.count += 1
       return state.count >= 5
-        ? .fireAndForget { await self.dismiss() }
+        ? .run { _ in await self.dismiss() }
         : .none
     }
   }
