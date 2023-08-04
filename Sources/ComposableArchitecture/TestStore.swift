@@ -517,8 +517,10 @@ public final class TestStore<State, Action> {
     R.Action == Action,
     State: Equatable
   {
-    let reducer = Dependencies.withDependencies(prepareDependencies) {
-      TestReducer(Reduce(reducer()), initialState: initialState())
+    let reducer = XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
+      Dependencies.withDependencies(prepareDependencies) {
+        TestReducer(Reduce(reducer()), initialState: initialState())
+      }
     }
     self.file = file
     self.line = line
@@ -552,8 +554,10 @@ public final class TestStore<State, Action> {
     R.State == State,
     R.Action == Action
   {
-    let reducer = Dependencies.withDependencies(prepareDependencies) {
-      TestReducer(Reduce(reducer()), initialState: initialState())
+    let reducer = XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
+      Dependencies.withDependencies(prepareDependencies) {
+        TestReducer(Reduce(reducer()), initialState: initialState())
+      }
     }
     self.file = file
     self.line = line
