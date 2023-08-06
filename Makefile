@@ -5,7 +5,7 @@ PLATFORM_MAC_CATALYST = macOS,variant=Mac Catalyst
 PLATFORM_TVOS = tvOS Simulator,id=$(call udid_for,TV,tvOS-16)
 PLATFORM_WATCHOS = watchOS Simulator,id=$(call udid_for,Watch,watchOS-9)
 
-# default: test-all
+default: test-all
 
 test-all: test-examples
 	$(MAKE) CONFIG=debug test-library
