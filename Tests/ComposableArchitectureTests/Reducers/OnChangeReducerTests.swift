@@ -99,7 +99,7 @@ final class OnChangeReducerTests: BaseTCATestCase {
         )
         .onChange(
           of: \.childStates,
-          isEqual: { previousStates, newStates in
+          removeDuplicates: { previousStates, newStates in
             // Only trigger onChange reducer when the childStates ids change
             previousStates.ids == newStates.ids
           }
