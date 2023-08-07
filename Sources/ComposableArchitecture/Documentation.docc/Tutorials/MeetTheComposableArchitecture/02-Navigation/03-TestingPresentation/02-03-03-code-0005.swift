@@ -22,7 +22,7 @@ final class ContactsFeatureTests: XCTestCase {
         AlertState {
           TextState("Are you sure?")
         } actions: {
-          ButtonState(role: .destructive, action: .confirmDeletion(id: id)) {
+          ButtonState(role: .destructive, action: .confirmDeletion(id: UUID(1))) {
             TextState("Delete")
           }
         }
