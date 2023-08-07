@@ -74,7 +74,7 @@ struct SettingsView: View {
   let store: StoreOf<Settings>
   
   var body: some View {
-    WithViewStore(self.store) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
         Toggle(
           "Haptic feedback",
