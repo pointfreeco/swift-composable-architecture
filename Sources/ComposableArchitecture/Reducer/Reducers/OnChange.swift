@@ -53,7 +53,7 @@ extension Reducer {
   ) -> _OnChangeReducer<Self, V, R> {
     _OnChangeReducer(base: self, toValue: toValue, predicate: predicate, reducer: reducer)
   }
-  
+
   /// Adds a reducer to run when this reducer changes the given value in state.
   ///
   /// Use this operator to trigger additional logic when a value changes, like when a
@@ -114,7 +114,7 @@ where Base.State == Body.State, Base.Action == Body.Action {
 
   @usableFromInline
   let toValue: (Base.State) -> Value
-  
+
   @usableFromInline
   let predicate: (Value, Value) -> Bool
 

@@ -46,7 +46,7 @@ final class OnChangeReducerTests: BaseTCATestCase {
       $0.description = "!"
     }
   }
-  
+
   func testOnChangeChildStates() async {
     struct Feature: Reducer {
       struct ChildFeature: Reducer {
@@ -54,11 +54,11 @@ final class OnChangeReducerTests: BaseTCATestCase {
           let id: Int
           var counter = 0
         }
-        
+
         enum Action: Equatable {
           case incrementButtonTapped
         }
-        
+
         var body: some ReducerOf<Self> {
           Reduce { state, action in
             switch action {
@@ -69,19 +69,19 @@ final class OnChangeReducerTests: BaseTCATestCase {
           }
         }
       }
-      
+
       struct State: Equatable {
         var childStates: IdentifiedArrayOf<ChildFeature.State>
-        
+
         var onChangeUpdateCounter = 0
       }
-      
+
       enum Action: Equatable {
         case addChildState(ChildFeature.State)
-        
+
         case child(ChildFeature.State.ID, ChildFeature.Action)
       }
-      
+
       var body: some ReducerOf<Self> {
         Reduce { state, action in
           switch action {
@@ -94,8 +94,8 @@ final class OnChangeReducerTests: BaseTCATestCase {
         }
         .forEach(
           \.childStates,
-           action: /Action.child,
-           element: ChildFeature.init
+          action: /Action.child,
+          element: ChildFeature.init
         )
         .onChange(
           of: \.childStates,
@@ -118,21 +118,21 @@ final class OnChangeReducerTests: BaseTCATestCase {
         ]
       )
     ) { Feature() }
-    
+
     await store.send(.child(0, .incrementButtonTapped)) {
       // onChangeUpdateCounter should not increase as the child state changes
       // but from a parent reducer perspective nothing changes due to the passed
       // did change function.
       $0.childStates[id: 0]?.counter = 1
     }
-    
+
     await store.send(.addChildState(.init(id: 1))) {
       $0.childStates.append(.init(id: 1))
       // onChangeUpdateCounter is increased here as a new screen is added
       // and the ids sets of `childStates` change.
       $0.onChangeUpdateCounter = 1
     }
-    
+
     await store.send(.child(1, .incrementButtonTapped)) {
       $0.childStates[id: 1]?.counter = 1
     }
