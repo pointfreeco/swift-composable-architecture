@@ -167,19 +167,19 @@ make use of the library's ``CaseLet`` view in order to scope down to a specific 
   switch state {
   case .addItem:
     CaseLet(
-      state: /RootFeature.Path.State.addItem,
+      /RootFeature.Path.State.addItem,
       action: RootFeature.Path.Action.addItem,
       then: AddView.init(store:)
     )
   case .detailItem:
     CaseLet(
-      state: /RootFeature.Path.State.detailItem,
+      /RootFeature.Path.State.detailItem,
       action: RootFeature.Path.Action.detailItem,
       then: DetailView.init(store:)
     )
   case .editItem:
     CaseLet(
-      state: /RootFeature.Path.State.editItem,
+      /RootFeature.Path.State.editItem,
       action: RootFeature.Path.Action.editItem,
       then: EditView.init(store:)
     )
