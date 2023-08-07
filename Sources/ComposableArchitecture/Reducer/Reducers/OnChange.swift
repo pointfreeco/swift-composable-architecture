@@ -18,7 +18,10 @@ extension Reducer {
   ///
   ///   var body: some Reducer<State, Action> {
   ///     BindingReducer()
-  ///       .onChange(of: \.userSettings.isHapticFeedbackEnabled, removeDuplicates: ==) { oldValue, newValue in
+  ///       .onChange(
+  ///         of: {  ($0.userSettings.isHapticFeedbackEnabled, $0.userSettings.isPushEnabled) },
+  ///         removeDuplicates: ==
+  ///       ) { oldValue, newValue in
   ///         Reduce { state, action in
   ///           .run { send in
   ///             // Persist new value...
@@ -39,8 +42,9 @@ extension Reducer {
   ///
   /// - Parameters:
   ///   - toValue: A closure that returns a value from the given state.
-  ///   - removeDuplicates: A closure to evaluate whether two elements are equivalent, for purposes of filtering.
-  ///     Return `true` from this closure to indicate that the second element is a duplicate of the first.
+  ///   - predicate: A closure to evaluate whether two elements are equivalent, for purposes
+  ///     of filtering. Return `true` from this closure to indicate that the second element is a
+  ///     duplicate of the first.
   ///   - reducer: A reducer builder closure to run when the value changes.
   ///   - oldValue: The old value that failed the comparison check.
   ///   - newValue: The new value that failed the comparison check.
