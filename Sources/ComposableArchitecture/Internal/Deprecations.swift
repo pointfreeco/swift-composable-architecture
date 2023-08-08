@@ -101,10 +101,10 @@ extension EffectPublisher where Failure == Never {
     }
   }
 
-  @available(iOS, deprecated: 9999, message: "Use 'Effect.run' and ignore 'send' instead.")
-  @available(macOS, deprecated: 9999, message: "Use 'Effect.run' and ignore 'send' instead.")
-  @available(tvOS, deprecated: 9999, message: "Use 'Effect.run' and ignore 'send' instead.")
-  @available(watchOS, deprecated: 9999, message: "Use 'Effect.run' and ignore 'send' instead.")
+  @available(iOS, deprecated, message: "Use 'Effect.run' and ignore 'send' instead.")
+  @available(macOS, deprecated, message: "Use 'Effect.run' and ignore 'send' instead.")
+  @available(tvOS, deprecated, message: "Use 'Effect.run' and ignore 'send' instead.")
+  @available(watchOS, deprecated, message: "Use 'Effect.run' and ignore 'send' instead.")
   public static func fireAndForget(
     priority: TaskPriority? = nil,
     _ work: @escaping @Sendable () async throws -> Void
