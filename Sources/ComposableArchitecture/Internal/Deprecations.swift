@@ -56,10 +56,10 @@ extension WithViewStore {
 }
 
 extension EffectPublisher where Failure == Never {
-  @available(iOS, deprecated: 9999, message: "Use 'Effect.run' and pass the action to 'send'.")
-  @available(macOS, deprecated: 9999, message: "Use 'Effect.run' and pass the action to 'send'.")
-  @available(tvOS, deprecated: 9999, message: "Use 'Effect.run' and pass the action to 'send'.")
-  @available(watchOS, deprecated: 9999, message: "Use 'Effect.run' and pass the action to 'send'.")
+  @available(iOS, deprecated, message: "Use 'Effect.run' and pass the action to 'send'.")
+  @available(macOS, deprecated, message: "Use 'Effect.run' and pass the action to 'send'.")
+  @available(tvOS, deprecated, message: "Use 'Effect.run' and pass the action to 'send'.")
+  @available(watchOS, deprecated, message: "Use 'Effect.run' and pass the action to 'send'.")
   public static func task(
     priority: TaskPriority? = nil,
     operation: @escaping @Sendable () async throws -> Action,
