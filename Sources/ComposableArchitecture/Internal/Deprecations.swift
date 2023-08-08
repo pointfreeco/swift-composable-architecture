@@ -56,10 +56,7 @@ extension WithViewStore {
 }
 
 extension EffectPublisher where Failure == Never {
-  @available(iOS, deprecated: 9999, message: "Use 'Effect.run' and pass the action to 'send'.")
-  @available(macOS, deprecated: 9999, message: "Use 'Effect.run' and pass the action to 'send'.")
-  @available(tvOS, deprecated: 9999, message: "Use 'Effect.run' and pass the action to 'send'.")
-  @available(watchOS, deprecated: 9999, message: "Use 'Effect.run' and pass the action to 'send'.")
+  @available(*, deprecated, message: "Use 'Effect.run' and pass the action to 'send'.")
   public static func task(
     priority: TaskPriority? = nil,
     operation: @escaping @Sendable () async throws -> Action,
@@ -101,10 +98,7 @@ extension EffectPublisher where Failure == Never {
     }
   }
 
-  @available(iOS, deprecated: 9999, message: "Use 'Effect.run' and ignore 'send' instead.")
-  @available(macOS, deprecated: 9999, message: "Use 'Effect.run' and ignore 'send' instead.")
-  @available(tvOS, deprecated: 9999, message: "Use 'Effect.run' and ignore 'send' instead.")
-  @available(watchOS, deprecated: 9999, message: "Use 'Effect.run' and ignore 'send' instead.")
+  @available(*, deprecated, message: "Use 'Effect.run' and ignore 'send' instead.")
   public static func fireAndForget(
     priority: TaskPriority? = nil,
     _ work: @escaping @Sendable () async throws -> Void
@@ -114,10 +108,7 @@ extension EffectPublisher where Failure == Never {
 }
 
 extension Store {
-  @available(iOS, deprecated: 9999, message: "Pass a closure as the reducer.")
-  @available(macOS, deprecated: 9999, message: "Pass a closure as the reducer.")
-  @available(tvOS, deprecated: 9999, message: "Pass a closure as the reducer.")
-  @available(watchOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(*, deprecated, message: "Pass a closure as the reducer.")
   public convenience init<R: Reducer>(
     initialState: @autoclosure () -> R.State,
     reducer: R,
