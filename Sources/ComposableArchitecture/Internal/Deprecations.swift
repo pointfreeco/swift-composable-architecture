@@ -114,10 +114,10 @@ extension EffectPublisher where Failure == Never {
 }
 
 extension Store {
-  @available(iOS, deprecated: 9999, message: "Pass a closure as the reducer.")
-  @available(macOS, deprecated: 9999, message: "Pass a closure as the reducer.")
-  @available(tvOS, deprecated: 9999, message: "Pass a closure as the reducer.")
-  @available(watchOS, deprecated: 9999, message: "Pass a closure as the reducer.")
+  @available(iOS, deprecated, message: "Pass a closure as the reducer.")
+  @available(macOS, deprecated, message: "Pass a closure as the reducer.")
+  @available(tvOS, deprecated, message: "Pass a closure as the reducer.")
+  @available(watchOS, deprecated, message: "Pass a closure as the reducer.")
   public convenience init<R: Reducer>(
     initialState: @autoclosure () -> R.State,
     reducer: R,
