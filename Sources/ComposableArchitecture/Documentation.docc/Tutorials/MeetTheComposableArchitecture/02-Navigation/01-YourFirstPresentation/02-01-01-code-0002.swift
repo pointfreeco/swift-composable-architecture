@@ -8,9 +8,10 @@ struct ContentView_Previews: PreviewProvider {
             Contact(id: UUID(), name: "Blob Jr"),
             Contact(id: UUID(), name: "Blob Sr"),
           ]
-        ),
-        reducer: ContactsFeature()
-      )
+        )
+      ) {
+        ContactsFeature()
+      }
     )
   }
 }

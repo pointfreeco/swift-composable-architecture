@@ -55,7 +55,7 @@ hosted by [Brandon Williams][mbrandonw] and [Stephen Celis][stephencelis].
 You can watch all of the episodes [here][tca-episode-collection], as well as a dedicated, [multipart
 tour][tca-tour] of the architecture from scratch.
 
-<a href="https://www.pointfree.co/collections/composable-architecture">
+<a href="https://www.pointfree.co/collections/tours/composable-architecture-1-0">
   <img alt="video poster image" src="https://d3rccdn33rt8ze.cloudfront.net/episodes/0243.jpeg" width="600">
 </a>
 

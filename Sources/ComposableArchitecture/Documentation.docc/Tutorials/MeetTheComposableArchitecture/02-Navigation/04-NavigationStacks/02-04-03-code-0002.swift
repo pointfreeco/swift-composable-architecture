@@ -34,6 +34,7 @@ struct ContactDetailFeature: Reducer {
         return .none
       }
     }
+    .ifLet(\.$alert, action: /Action.alert)
   }
 }
 
