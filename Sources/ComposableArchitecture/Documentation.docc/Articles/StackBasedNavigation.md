@@ -129,7 +129,7 @@ struct RootView: View {
 
   var body: some View {
     NavigationStackStore(
-      path: self.store.scope(state: \.path, action: { .path($0) })
+      self.store.scope(state: \.path, action: { .path($0) })
     ) {
       // Root view of the navigation stack
     } destination: { state in
