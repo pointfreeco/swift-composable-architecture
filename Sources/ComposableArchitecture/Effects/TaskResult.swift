@@ -45,7 +45,7 @@ import XCTestDynamicOverlay
 ///     )
 ///   }
 ///
-/// case .factResponse(.success(fact)):
+/// case let .factResponse(.success(fact)):
 ///   // do something with fact
 ///
 /// case .factResponse(.failure):
