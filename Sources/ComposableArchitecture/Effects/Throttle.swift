@@ -29,7 +29,6 @@ extension Effect {
     scheduler: S,
     latest: Bool
   ) -> Self {
-    print(id)
     switch self.operation {
     case .none:
       return .none
