@@ -11,7 +11,7 @@ extension Effect {
   ///
   /// > Note: It is usually better to perform throttling logic in the _view_ in order to limit
   /// the number of actions sent into the system. Only use this operator if your reducer needs to
-  /// layer on specialized logic for throttling. See <docs:Performance> for more information of why
+  /// layer on specialized logic for throttling. See <doc:Performance> for more information of why
   /// sending high-frequency actions into a store is typically not what you want to do.
   ///
   /// - Parameters:
