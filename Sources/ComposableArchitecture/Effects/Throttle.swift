@@ -5,6 +5,15 @@ import Foundation
 extension Effect {
   /// Throttles an effect so that it only publishes one output per given interval.
   ///
+  /// The throttling of an effect is with respect to actions being sent into the store. So, if
+  /// you return a throttled effect from an action that is sent with high frequency, the effect
+  /// will be executed at most once per interval specified.
+  ///
+  /// > Note: It is usually better to perform throttling logic in the _view_ in order to limit
+  /// the number of actions sent into the system. Only use this operator if your reducer needs to
+  /// layer on specialized logic for throttling. See <docs:Performance> for more information of why
+  /// sending high-frequency actions into a store is typically not what you want to do.
+  ///
   /// - Parameters:
   ///   - id: The effect's identifier.
   ///   - interval: The interval at which to find and emit the most recent element, expressed in
@@ -98,5 +107,4 @@ extension Effect {
 
 var throttleTimes: [AnyHashable: Any] = [:]
 var throttleValues: [AnyHashable: Any] = [:]
-var throttleTasks: [AnyHashable: Task<Void, Error>] = [:]
 let throttleLock = NSRecursiveLock()
