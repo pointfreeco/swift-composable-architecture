@@ -4,233 +4,187 @@ import XCTest
 
 @MainActor
 final class EffectThrottleTests: BaseTCATestCase {
-  var cancellables: Set<AnyCancellable> = []
   let mainQueue = DispatchQueue.test
 
-  func testThrottleLatest() async {
-    struct Feature: Reducer {
-      struct 
+  func testThrottleLatest_Publisher() async {
+    let store = TestStore(initialState: ThrottleFeature.State()) {
+      ThrottleFeature(id: #function, latest: true)
+    } withDependencies: {
+      $0.mainQueue = mainQueue.eraseToAnyScheduler()
+    }
+
+    await store.send(.tap(1))
+    await self.mainQueue.advance()
+    await store.receive(.throttledResponse(1)) {
+      $0.count = 1
+    }
+
+    await store.send(.tap(2))
+    await self.mainQueue.advance()
+    await store.skipReceivedActions(strict: false)
+    XCTAssertEqual(store.state.count, 1)
+
+    await self.mainQueue.advance(by: .seconds(0.25))
+    await store.skipReceivedActions(strict: false)
+    XCTAssertEqual(store.state.count, 1)
+
+    await store.send(.tap(3))
+    await self.mainQueue.advance(by: .seconds(0.25))
+    await store.skipReceivedActions(strict: false)
+    XCTAssertEqual(store.state.count, 1)
+
+    await store.send(.tap(4))
+    await self.mainQueue.advance(by: .seconds(0.25))
+    await store.skipReceivedActions(strict: false)
+    XCTAssertEqual(store.state.count, 1)
+
+    await store.send(.tap(5))
+    await self.mainQueue.advance(by: .seconds(0.25))
+    await store.receive(.throttledResponse(5)) {
+      $0.count = 5
     }
   }
 
-//  func testThrottleLatest() async {
-//    struct CancelID: Hashable {}
-//    defer { Task.cancel(id: CancelID()) }
-//
-//    var values: [Int] = []
-//    var effectRuns = 0
-//
-//    func runThrottledEffect(value: Int) async {
-//      Effect.publisher {
-//        Deferred { () -> Just<Int> in
-//          effectRuns += 1
-//          return Just(value)
-//        }
-//      }
-//      .throttle(
-//        id: CancelID(), for: 1, scheduler: mainQueue.eraseToAnyScheduler(), latest: true
-//      )
-//
-//    }
-//
-//    func runThrottledEffect(value: Int) {
-//      Deferred { () -> Just<Int> in
-//        effectRuns += 1
-//        return Just(value)
-//      }
-//      .eraseToEffect()
-//      .throttle(
-//        id: CancelID(), for: 1, scheduler: mainQueue.eraseToAnyScheduler(), latest: true
-//      )
-//      .sink { values.append($0) }
-//      .store(in: &self.cancellables)
-//    }
-//
-//    runThrottledEffect(value: 1)
-//
-//    await mainQueue.advance()
-//
-//    // A value emits right away.
-//    XCTAssertEqual(values, [1])
-//
-//    runThrottledEffect(value: 2)
-//
-//    await mainQueue.advance()
-//
-//    // A second value is throttled.
-//    XCTAssertEqual(values, [1])
-//
-//    await mainQueue.advance(by: 0.25)
-//
-//    runThrottledEffect(value: 3)
-//
-//    await mainQueue.advance(by: 0.25)
-//
-//    runThrottledEffect(value: 4)
-//
-//    await mainQueue.advance(by: 0.25)
-//
-//    runThrottledEffect(value: 5)
-//
-//    // A third value is throttled.
-//    XCTAssertEqual(values, [1])
-//
-//    await mainQueue.advance(by: 0.25)
-//
-//    // The latest value emits.
-//    XCTAssertEqual(values, [1, 5])
-//  }
-//
-//  func testThrottleFirst() async {
-//    struct CancelID: Hashable {}
-//    defer { Task.cancel(id: CancelID()) }
-//
-//    var values: [Int] = []
-//    var effectRuns = 0
-//
-//    func runThrottledEffect(value: Int) {
-//      Deferred { () -> Just<Int> in
-//        effectRuns += 1
-//        return Just(value)
-//      }
-//      .eraseToEffect()
-//      .throttle(
-//        id: CancelID(), for: 1, scheduler: mainQueue.eraseToAnyScheduler(), latest: false
-//      )
-//      .sink { values.append($0) }
-//      .store(in: &self.cancellables)
-//    }
-//
-//    runThrottledEffect(value: 1)
-//
-//    await mainQueue.advance()
-//
-//    // A value emits right away.
-//    XCTAssertEqual(values, [1])
-//
-//    runThrottledEffect(value: 2)
-//
-//    await mainQueue.advance()
-//
-//    // A second value is throttled.
-//    XCTAssertEqual(values, [1])
-//
-//    await mainQueue.advance(by: 0.25)
-//
-//    runThrottledEffect(value: 3)
-//
-//    await mainQueue.advance(by: 0.25)
-//
-//    runThrottledEffect(value: 4)
-//
-//    await mainQueue.advance(by: 0.25)
-//
-//    runThrottledEffect(value: 5)
-//
-//    await mainQueue.advance(by: 0.25)
-//
-//    // The second (throttled) value emits.
-//    XCTAssertEqual(values, [1, 2])
-//
-//    await mainQueue.advance(by: 0.25)
-//
-//    runThrottledEffect(value: 6)
-//
-//    await mainQueue.advance(by: 0.50)
-//
-//    // A third value is throttled.
-//    XCTAssertEqual(values, [1, 2])
-//
-//    runThrottledEffect(value: 7)
-//
-//    await mainQueue.advance(by: 0.25)
-//
-//    // The third (throttled) value emits.
-//    XCTAssertEqual(values, [1, 2, 6])
-//  }
-//
-//  func testThrottleAfterInterval() async {
-//    struct CancelID: Hashable {}
-//
-//    var values: [Int] = []
-//    var effectRuns = 0
-//
-//    func runThrottledEffect(value: Int) {
-//
-//      Deferred { () -> Just<Int> in
-//        effectRuns += 1
-//        return Just(value)
-//      }
-//      .eraseToEffect()
-//      .throttle(
-//        id: CancelID(), for: 1, scheduler: mainQueue.eraseToAnyScheduler(), latest: true
-//      )
-//      .sink { values.append($0) }
-//      .store(in: &self.cancellables)
-//    }
-//
-//    runThrottledEffect(value: 1)
-//
-//    await mainQueue.advance()
-//
-//    // A value emits right away.
-//    XCTAssertEqual(values, [1])
-//
-//    await mainQueue.advance(by: 2)
-//
-//    runThrottledEffect(value: 2)
-//
-//    await mainQueue.advance()
-//
-//    // A second value is emitted right away.
-//    XCTAssertEqual(values, [1, 2])
-//
-//    await mainQueue.advance(by: 2)
-//
-//    runThrottledEffect(value: 3)
-//
-//    await mainQueue.advance()
-//
-//    // A third value is emitted right away.
-//    XCTAssertEqual(values, [1, 2, 3])
-//  }
-//
-//  func testThrottleEmitsFirstValueOnce() async {
-//    struct CancelID: Hashable {}
-//    defer { Task.cancel(id: CancelID()) }
-//
-//    var values: [Int] = []
-//    var effectRuns = 0
-//
-//    func runThrottledEffect(value: Int) {
-//      Deferred { () -> Just<Int> in
-//        effectRuns += 1
-//        return Just(value)
-//      }
-//      .eraseToEffect()
-//      .throttle(
-//        id: CancelID(), for: 1, scheduler: mainQueue.eraseToAnyScheduler(), latest: false
-//      )
-//      .sink { values.append($0) }
-//      .store(in: &self.cancellables)
-//    }
-//
-//    runThrottledEffect(value: 1)
-//
-//    await mainQueue.advance()
-//
-//    // A value emits right away.
-//    XCTAssertEqual(values, [1])
-//
-//    await mainQueue.advance(by: 0.5)
-//
-//    runThrottledEffect(value: 2)
-//
-//    await mainQueue.advance(by: 0.5)
-//
-//    runThrottledEffect(value: 3)
-//
-//    // A second value is emitted right away.
-//    XCTAssertEqual(values, [1, 2])
-//  }
+  func testThrottleLatest_Async() async {
+    let store = TestStore(initialState: ThrottleFeature.State()) {
+      ThrottleFeature(id: #function, latest: true)
+    } withDependencies: {
+      $0.mainQueue = mainQueue.eraseToAnyScheduler()
+    }
+
+    await store.send(.tap(1))
+    await self.mainQueue.advance()
+    await store.receive(.throttledResponse(1)) {
+      $0.count = 1
+    }
+
+    await store.send(.tap(2))
+    await self.mainQueue.advance()
+    await store.skipReceivedActions(strict: false)
+    XCTAssertEqual(store.state.count, 1)
+
+    await self.mainQueue.advance(by: .seconds(0.25))
+    await store.skipReceivedActions(strict: false)
+    XCTAssertEqual(store.state.count, 1)
+
+    await store.send(.tap(3))
+    await self.mainQueue.advance(by: .seconds(0.25))
+    await store.skipReceivedActions(strict: false)
+    XCTAssertEqual(store.state.count, 1)
+
+    await store.send(.tap(4))
+    await self.mainQueue.advance(by: .seconds(0.25))
+    await store.skipReceivedActions(strict: false)
+    XCTAssertEqual(store.state.count, 1)
+
+    await store.send(.tap(5))
+    await self.mainQueue.advance(by: .seconds(1))
+    await store.receive(.throttledResponse(5)) {
+      $0.count = 5
+    }
+  }
+
+  func testThrottleFirst_Publisher() async {
+    let store = TestStore(initialState: ThrottleFeature.State()) {
+      ThrottleFeature(id: #function, latest: false)
+    } withDependencies: {
+      $0.mainQueue = mainQueue.eraseToAnyScheduler()
+    }
+
+    await store.send(.tap(1))
+    await self.mainQueue.advance()
+    await store.receive(.throttledResponse(1)) {
+      $0.count = 1
+    }
+
+    await store.send(.tap(2))
+    await self.mainQueue.advance()
+    await store.skipReceivedActions(strict: false)
+    XCTAssertEqual(store.state.count, 1)
+
+    await self.mainQueue.advance(by: .seconds(0.25))
+    await store.skipReceivedActions(strict: false)
+    XCTAssertEqual(store.state.count, 1)
+
+    await store.send(.tap(3))
+    await self.mainQueue.advance(by: .seconds(0.25))
+    await store.skipReceivedActions(strict: false)
+    XCTAssertEqual(store.state.count, 1)
+
+    await store.send(.tap(4))
+    await self.mainQueue.advance(by: .seconds(0.25))
+    await store.skipReceivedActions(strict: false)
+    XCTAssertEqual(store.state.count, 1)
+
+    await store.send(.tap(5))
+    await self.mainQueue.advance(by: .seconds(0.25))
+    await store.receive(.throttledResponse(2)) {
+      $0.count = 2
+    }
+  }
+
+  func testThrottleAfterInterval_Publisher() async {
+    let store = TestStore(initialState: ThrottleFeature.State()) {
+      ThrottleFeature(id: #function, latest: true)
+    } withDependencies: {
+      $0.mainQueue = mainQueue.eraseToAnyScheduler()
+    }
+
+    await store.send(.tap(1))
+    await self.mainQueue.advance()
+    await store.receive(.throttledResponse(1)) {
+      $0.count = 1
+    }
+
+    await self.mainQueue.advance(by: .seconds(1))
+    await store.send(.tap(2))
+    await self.mainQueue.advance()
+    await store.receive(.throttledResponse(2)) {
+      $0.count = 2
+    }
+  }
+
+  func testThrottleEmitsFirstValueOnce_Publisher() async {
+    let store = TestStore(initialState: ThrottleFeature.State()) {
+      ThrottleFeature(id: #function, latest: true)
+    } withDependencies: {
+      $0.mainQueue = mainQueue.eraseToAnyScheduler()
+    }
+
+    await store.send(.tap(1))
+    await self.mainQueue.advance()
+    await store.receive(.throttledResponse(1)) {
+      $0.count = 1
+    }
+
+    await self.mainQueue.advance(by: .seconds(1))
+    await store.send(.tap(2))
+    await self.mainQueue.advance()
+    await store.receive(.throttledResponse(2)) {
+      $0.count = 2
+    }
+  }
+}
+
+struct ThrottleFeature: Reducer {
+  struct State: Equatable {
+    var count = 0
+  }
+  enum Action: Equatable {
+    case tap(Int)
+    case throttledResponse(Int)
+  }
+  let id: String
+  let latest: Bool
+  @Dependency(\.mainQueue) var mainQueue
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
+    switch action {
+    case let .tap(value):
+      return .send(.throttledResponse(value))
+        .throttle(id: self.id, for: .seconds(1), scheduler: self.mainQueue, latest: self.latest)
+    case let .throttledResponse(value):
+      state.count = value
+      return .none
+    }
+  }
 }

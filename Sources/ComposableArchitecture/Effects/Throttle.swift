@@ -20,46 +20,14 @@ extension Effect {
     scheduler: S,
     latest: Bool
   ) -> Self {
+    print(id)
     switch self.operation {
     case .none:
       return .none
 
-    case let .run(_, operation):
-      return .run { send in
-        await operation(Send<Action>.init(send: { action in
-          throttleLock.lock()
-          defer { throttleLock.unlock() }
-          guard let throttleTime = throttleTimes[id] as! S.SchedulerTimeType? else {
-            throttleTimes[id] = scheduler.now
-            throttleValues[id] = nil
-            throttleTasks[id] = nil
-            send(action)
-            return
-          }
-
-          let value = latest ? action : (throttleValues[id] as! Action? ?? action)
-          throttleValues[id] = value
-
-          guard throttleTime.distance(to: scheduler.now) < interval else {
-            throttleTimes[id] = scheduler.now
-            throttleValues[id] = nil
-            throttleTasks[id] = nil
-            send(action)
-            return
-          }
-
-          throttleTasks[id]?.cancel()
-          throttleTasks[id] = Task {
-            try await scheduler.sleep(for: scheduler.now.distance(to: throttleTime.advanced(by: interval)))
-            _ = { throttleLock.lock() }()
-            defer { _ = { throttleLock.unlock() }() }
-            send(action)
-            throttleTimes[id] = scheduler.now
-            throttleValues[id] = nil
-            throttleTasks[id] = nil
-          }
-        }))
-      }
+    case .run:
+      return .publisher { _EffectPublisher(self) }
+      .throttle(id: id, for: interval, scheduler: scheduler, latest: latest)
 
     case let .publisher(publisher):
       return .publisher {
