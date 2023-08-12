@@ -17,7 +17,7 @@ import XCTestDynamicOverlay
 /// effect:
 ///
 /// ```swift
-/// enum FeatureAction: Equatable {
+/// enum Action: Equatable {
 ///   case factButtonTapped
 ///   case factResponse(TaskResult<String>)
 /// }
