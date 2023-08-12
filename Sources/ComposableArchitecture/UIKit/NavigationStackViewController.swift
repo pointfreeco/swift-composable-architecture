@@ -63,7 +63,20 @@ open class NavigationStackViewController<
 		willShow viewController: UIViewController,
 		animated: Bool
 	) {
-		
+		// if current pop/push isn't intractively, just check directively
+		guard self.transitionCoordinator?.isInteractive ?? false else {
+			self.checkPath()
+			return
+		}
+
+		// NOTE: monitor transition status or the path will change if user cancelled the pop back intraction
+		self.transitionCoordinator?.notifyWhenInteractionChanges({ [weak self] context in
+			guard !context.isCancelled else { return }
+			self?.checkPath()
+		})
+	}
+	
+	fileprivate func checkPath() {
 		// only handle pop, push always triggerred programatically
 		// which means the number always same
 		let viewControllersFromNavigation = self.viewControllers
@@ -85,6 +98,6 @@ open class NavigationStackViewController<
 		guard let id = self.destinations.filter({ popped.contains($0.value) }).keys.first
 		else { return }
 		
-		store.send(.popFrom(id: id))
+		self.store.send(.popFrom(id: id))
 	}
 }
