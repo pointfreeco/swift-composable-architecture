@@ -789,6 +789,92 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
+  func testPresentation_rehydratedDestination_childDismissal() async {
+    struct ChildFeature: Reducer {
+      struct State: Equatable {}
+      enum Action: Equatable {
+        case cancel
+        case save
+      }
+      @Dependency(\.dismiss) var dismiss
+      var body: some Reducer<State, Action> {
+        Reduce { _, action in
+          .run { _ in
+            await dismiss()
+          }
+        }
+      }
+    }
+    struct ChildContainerFeature: Reducer {
+      struct State: Equatable {
+        @PresentationState var child: ChildFeature.State?
+      }
+      enum Action: Equatable {
+        case openChild
+        case child(PresentationAction<ChildFeature.Action>)
+      }
+      var body: some Reducer<State, Action> {
+        EmptyReducer()
+          .ifLet(\.$child, action: /Action.child) {
+            ChildFeature()
+          }
+      }
+    }
+    struct ParentFeature: Reducer {
+      struct State: Equatable {
+        var childContainer = ChildContainerFeature.State()
+      }
+      enum Action: Equatable {
+        case childContainer(ChildContainerFeature.Action)
+      }
+      var body: some Reducer<State, Action> {
+        Scope(state: \.childContainer, action: /Action.childContainer) {
+          ChildContainerFeature()
+        }
+        Reduce { state, action in
+          switch action {
+          case .childContainer(.openChild):
+            state.childContainer.child = ChildFeature.State()
+            return .none
+          default:
+            return .none
+          }
+        }
+      }
+    }
+    let store = TestStore(initialState: ParentFeature.State()) { ParentFeature() }
+
+    _ = await store.send(.childContainer(.openChild)) { state in
+      state.childContainer.child = ChildFeature.State()
+    }
+
+    _ = await store.send(.childContainer(.child(.presented(.cancel))))
+
+    await store.receive(.childContainer(.child(.dismiss))) { state in
+      state.childContainer.child = nil
+    }
+
+    _ = await store.send(.childContainer(.openChild)) { state in
+      state.childContainer.child = ChildFeature.State()
+    }
+
+    _ = await store.send(.childContainer(.child(.presented(.cancel))))
+
+    await store.receive(.childContainer(.child(.dismiss))) { state in
+      state.childContainer.child = nil
+    }
+
+    _ = await store.send(.childContainer(.openChild)) { state in
+      state.childContainer.child = ChildFeature.State()
+    }
+
+    _ = await store.send(.childContainer(.child(.presented(.cancel))))
+
+    await store.receive(.childContainer(.child(.dismiss))) { state in
+      state.childContainer.child = nil
+    }
+  }
+
   func testEnumPresentation() async {
     if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
       struct Child: Reducer {

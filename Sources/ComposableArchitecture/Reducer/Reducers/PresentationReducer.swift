@@ -404,6 +404,10 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
       dismissEffects = .none
     }
 
+    if presentationIdentityChanged, state[keyPath: self.toPresentationState].wrappedValue == nil {
+      state[keyPath: self.toPresentationState].isPresented = false
+    }
+
     let presentEffects: Effect<Base.Action>
     if presentationIdentityChanged || !state[keyPath: self.toPresentationState].isPresented,
       let presentationState = state[keyPath: self.toPresentationState].wrappedValue,
