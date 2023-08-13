@@ -27,7 +27,8 @@ open class NavigationStackViewController<
 		super.init(rootViewController: rootViewController)
 		self.delegate = self
 		self.destinationSubscription = store.publisher
-			.removeDuplicates(by: { $0.ids == $1.ids })
+			.removeDuplicates(by: { areOrderedSetsDuplicates($0.ids, $1.ids) })
+			.receive(on: RunLoop.main)
 			.sink { [weak self] stackState in
 				guard let self else { return }
 				let newDestinations = stackState.ids
@@ -36,8 +37,8 @@ open class NavigationStackViewController<
 							partialResult[id] = originalViewController
 						} else if let state = store.state.value[id: id] {
 							partialResult[id] = destination(state, store.scope(
-								state: { return $0[id: id] ?? state },
-								action: { action in .element(id: id, action: action) }
+								state: returningLastNonNilValue({ _ in store.state.value[id: id] }, defaultValue: state),
+								action: { .element(id: id, action: $0) }
 							))
 						}
 					})
@@ -99,5 +100,13 @@ open class NavigationStackViewController<
 		else { return }
 		
 		self.store.send(.popFrom(id: id))
+	}
+}
+
+fileprivate func returningLastNonNilValue<A, B>(_ f: @escaping (A) -> B?, defaultValue: B) -> (A) -> B {
+	var lastWrapped: B = defaultValue
+	return { wrapped in
+		lastWrapped = f(wrapped) ?? lastWrapped
+		return lastWrapped
 	}
 }
