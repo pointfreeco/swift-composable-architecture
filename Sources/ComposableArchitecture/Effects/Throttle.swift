@@ -79,29 +79,6 @@ extension Effect {
       .cancellable(id: id, cancelInFlight: true)
     }
   }
-
-  /// Throttles an effect so that it only publishes one output per given interval.
-  ///
-  /// A convenience for calling ``EffectPublisher/throttle(id:for:scheduler:latest:)-3gibe`` with a
-  /// static type as the effect's unique identifier.
-  ///
-  /// - Parameters:
-  ///   - id: The effect's identifier.
-  ///   - interval: The interval at which to find and emit the most recent element, expressed in
-  ///     the time system of the scheduler.
-  ///   - scheduler: The scheduler you want to deliver the throttled output to.
-  ///   - latest: A boolean value that indicates whether to publish the most recent element. If
-  ///     `false`, the publisher emits the first element received during the interval.
-  /// - Returns: An effect that emits either the most-recent or first element received during the
-  ///   specified interval.
-  public func throttle<S: Scheduler>(
-    id: Any.Type,
-    for interval: S.SchedulerTimeType.Stride,
-    scheduler: S,
-    latest: Bool
-  ) -> Self {
-    self.throttle(id: ObjectIdentifier(id), for: interval, scheduler: scheduler, latest: latest)
-  }
 }
 
 var throttleTimes: [AnyHashable: Any] = [:]
