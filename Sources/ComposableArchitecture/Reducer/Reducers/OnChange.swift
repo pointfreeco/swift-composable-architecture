@@ -55,7 +55,7 @@ extension Reducer {
     removeDuplicates isDuplicate: @escaping (V, V) -> Bool,
     @ReducerBuilder<State, Action> _ reducer: @escaping (_ oldValue: V, _ newValue: V) -> R
   ) -> _OnChangeReducer<Self, V, R> {
-    _OnChangeReducer(base: self, toValue: toValue, predicate: predicate, reducer: reducer)
+    _OnChangeReducer(base: self, toValue: toValue, isDuplicate: isDuplicate, reducer: reducer)
   }
 
   /// Adds a reducer to run when this reducer changes the given value in state.
@@ -107,7 +107,7 @@ extension Reducer {
     of toValue: @escaping (State) -> V,
     @ReducerBuilder<State, Action> _ reducer: @escaping (_ oldValue: V, _ newValue: V) -> R
   ) -> _OnChangeReducer<Self, V, R> {
-    _OnChangeReducer(base: self, toValue: toValue, predicate: ==, reducer: reducer)
+    _OnChangeReducer(base: self, toValue: toValue, isDuplicate: ==, reducer: reducer)
   }
 }
 
@@ -120,7 +120,7 @@ where Base.State == Body.State, Base.Action == Body.Action {
   let toValue: (Base.State) -> Value
 
   @usableFromInline
-  let predicate: (Value, Value) -> Bool
+  let isDuplicate: (Value, Value) -> Bool
 
   @usableFromInline
   let reducer: (Value, Value) -> Body
@@ -129,12 +129,12 @@ where Base.State == Body.State, Base.Action == Body.Action {
   init(
     base: Base,
     toValue: @escaping (Base.State) -> Value,
-    predicate: @escaping (Value, Value) -> Bool,
+    isDuplicate: @escaping (Value, Value) -> Bool,
     reducer: @escaping (Value, Value) -> Body
   ) {
     self.base = base
     self.toValue = toValue
-    self.predicate = predicate
+    self.isDuplicate = isDuplicate
     self.reducer = reducer
   }
 
@@ -143,7 +143,7 @@ where Base.State == Body.State, Base.Action == Body.Action {
     let oldValue = toValue(state)
     let baseEffects = self.base.reduce(into: &state, action: action)
     let newValue = toValue(state)
-    return predicate(oldValue, newValue)
+    return isDuplicate(oldValue, newValue)
       ? baseEffects
       : .merge(baseEffects, self.reducer(oldValue, newValue).reduce(into: &state, action: action))
   }
