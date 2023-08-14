@@ -19,7 +19,7 @@ extension Reducer {
   ///   var body: some Reducer<State, Action> {
   ///     BindingReducer()
   ///       .onChange(
-  ///         of: {  ($0.userSettings.isHapticFeedbackEnabled, $0.userSettings.isPushEnabled) },
+  ///         of: { ($0.userSettings.isHapticFeedbackEnabled, $0.userSettings.isPushEnabled) },
   ///         removeDuplicates: ==
   ///       ) { oldValue, newValue in
   ///         Reduce { state, action in
@@ -42,8 +42,8 @@ extension Reducer {
   ///
   /// - Parameters:
   ///   - toValue: A closure that returns a value from the given state.
-  ///   - predicate: A closure to evaluate whether two elements are equivalent, for purposes
-  ///     of filtering. Return `true` from this closure to indicate that the second element is a
+  ///   - isDuplicate: A closure to evaluate whether two elements are equivalent, for purposes of
+  ///     filtering. Return `true` from this closure to indicate that the second element is a
   ///     duplicate of the first.
   ///   - reducer: A reducer builder closure to run when the value changes.
   ///   - oldValue: The old value that failed the comparison check.
@@ -52,7 +52,7 @@ extension Reducer {
   @inlinable
   public func onChange<V, R: Reducer>(
     of toValue: @escaping (State) -> V,
-    removeDuplicates predicate: @escaping (V, V) -> Bool,
+    removeDuplicates isDuplicate: @escaping (V, V) -> Bool,
     @ReducerBuilder<State, Action> _ reducer: @escaping (_ oldValue: V, _ newValue: V) -> R
   ) -> _OnChangeReducer<Self, V, R> {
     _OnChangeReducer(base: self, toValue: toValue, predicate: predicate, reducer: reducer)
