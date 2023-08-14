@@ -35,7 +35,7 @@ extension Effect {
 
     case .run:
       return .publisher { _EffectPublisher(self) }
-      .throttle(id: id, for: interval, scheduler: scheduler, latest: latest)
+        .throttle(id: id, for: interval, scheduler: scheduler, latest: latest)
 
     case let .publisher(publisher):
       return .publisher {
