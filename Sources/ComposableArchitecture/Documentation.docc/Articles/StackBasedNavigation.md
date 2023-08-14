@@ -481,7 +481,7 @@ other in a navigation stack.
 However, the more complex the features become, the more cumbersome testing their integration can be.
 By default, ``TestStore`` requires us to be exhaustive in our assertions. We must assert on how
 every piece of state changes, how every effect feeds data back into the system, and we must make
-sure that all effects finish by the end of the test (see <docs:Testing> for more info).
+sure that all effects finish by the end of the test (see <doc:Testing> for more info).
 
 But ``TestStore`` also supports a form of testing known as "non-exhaustive testing" that allows you
 to assert on only the parts of the features that you actually care about (see 
