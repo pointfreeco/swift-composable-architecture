@@ -1,9 +1,9 @@
 CONFIG = debug
-PLATFORM_IOS = iOS Simulator,id=$(call udid_for,iPhone)
+PLATFORM_IOS = iOS Simulator,id=$(call udid_for,iPhone,iOS-16)
 PLATFORM_MACOS = macOS
 PLATFORM_MAC_CATALYST = macOS,variant=Mac Catalyst
-PLATFORM_TVOS = tvOS Simulator,id=$(call udid_for,TV)
-PLATFORM_WATCHOS = watchOS Simulator,id=$(call udid_for,Watch)
+PLATFORM_TVOS = tvOS Simulator,id=$(call udid_for,TV,tvOS-16)
+PLATFORM_WATCHOS = watchOS Simulator,id=$(call udid_for,Watch,watchOS-9)
 
 default: test-all
 
@@ -27,7 +27,7 @@ build-for-library-evolution:
 		-Xswiftc -emit-module-interface \
 		-Xswiftc -enable-library-evolution
 
-DOC_WARNINGS := $(shell xcodebuild clean docbuild \
+DOC_WARNINGS = $(shell xcodebuild clean docbuild \
 	-scheme ComposableArchitecture \
 	-destination platform="$(PLATFORM_MACOS)" \
 	-quiet \
@@ -61,5 +61,5 @@ format:
 .PHONY: format test-all test-swift test-workspace
 
 define udid_for
-$(shell xcrun simctl list --json devices available $(1) | jq -r '.devices | to_entries | map(select(.value | add)) | sort_by(.key) | last.value | last.udid')
+$(shell xcrun simctl list --json devices available $(1) | jq -r '.devices | to_entries | map(select(.value | add)) | sort_by(.key) | .[] | select(.key | contains("$(2)")) | .value | last.udid')
 endef

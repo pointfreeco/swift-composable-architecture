@@ -129,7 +129,7 @@ struct RootView: View {
 
   var body: some View {
     NavigationStackStore(
-      path: self.store.scope(state: \.path, action: { .path($0) })
+      self.store.scope(state: \.path, action: { .path($0) })
     ) {
       // Root view of the navigation stack
     } destination: { state in
@@ -167,19 +167,19 @@ make use of the library's ``CaseLet`` view in order to scope down to a specific 
   switch state {
   case .addItem:
     CaseLet(
-      state: /RootFeature.Path.State.addItem,
+      /RootFeature.Path.State.addItem,
       action: RootFeature.Path.Action.addItem,
       then: AddView.init(store:)
     )
   case .detailItem:
     CaseLet(
-      state: /RootFeature.Path.State.detailItem,
+      /RootFeature.Path.State.detailItem,
       action: RootFeature.Path.Action.detailItem,
       then: DetailView.init(store:)
     )
   case .editItem:
     CaseLet(
-      state: /RootFeature.Path.State.editItem,
+      /RootFeature.Path.State.editItem,
       action: RootFeature.Path.Action.editItem,
       then: EditView.init(store:)
     )
@@ -481,7 +481,7 @@ other in a navigation stack.
 However, the more complex the features become, the more cumbersome testing their integration can be.
 By default, ``TestStore`` requires us to be exhaustive in our assertions. We must assert on how
 every piece of state changes, how every effect feeds data back into the system, and we must make
-sure that all effects finish by the end of the test (see <docs:Testing> for more info).
+sure that all effects finish by the end of the test (see <doc:Testing> for more info).
 
 But ``TestStore`` also supports a form of testing known as "non-exhaustive testing" that allows you
 to assert on only the parts of the features that you actually care about (see 

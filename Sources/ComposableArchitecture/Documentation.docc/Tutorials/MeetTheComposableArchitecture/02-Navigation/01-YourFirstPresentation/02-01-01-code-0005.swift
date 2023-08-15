@@ -8,9 +8,10 @@ struct AddContactPreviews: PreviewProvider {
               id: UUID(),
               name: "Blob"
             )
-          ),
-          reducer: AddContactFeature()
-        )
+          )
+        ) {
+          AddContactFeature()
+        }
       )
     }
   }
