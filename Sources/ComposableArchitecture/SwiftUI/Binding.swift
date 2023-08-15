@@ -318,10 +318,7 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
     )
   }
 
-  @available(iOS, deprecated: 9999, message: "Use 'viewStore.$value' instead.")
-  @available(macOS, deprecated: 9999, message: "Use 'viewStore.$value' instead.")
-  @available(tvOS, deprecated: 9999, message: "Use 'viewStore.$value' instead.")
-  @available(watchOS, deprecated: 9999, message: "Use 'viewStore.$value' instead.")
+  @available(*, deprecated, message: "Use 'viewStore.$value' instead.")
   public func binding<Value: Equatable>(
     _ keyPath: WritableKeyPath<ViewState, BindingState<Value>>,
     fileID: StaticString = #fileID,
