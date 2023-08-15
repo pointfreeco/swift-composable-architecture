@@ -1191,23 +1191,8 @@ extension SwitchStore {
 }
 
 @available(
-  iOS,
-  deprecated: 9999,
-  message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-)
-@available(
-  macOS,
-  deprecated: 9999,
-  message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-)
-@available(
-  tvOS,
-  deprecated: 9999,
-  message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
-)
-@available(
-  watchOS,
-  deprecated: 9999,
+  *,
+  deprecated,
   message: "Use the 'SwitchStore.init' that can 'switch' over a given 'state' instead."
 )
 public struct _ExhaustivityCheckView<State, Action>: View {
