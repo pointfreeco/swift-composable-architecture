@@ -1,37 +1,34 @@
 import SwiftUI
 
-@available(
-  iOS,
-  introduced: 13,
-  deprecated: 100000,
-  message:
-    """
-    use `View.confirmationDialog(title:isPresented:titleVisibility:presenting::actions:)`instead.
-    """
-)
-@available(
-  macOS,
-  unavailable
-)
-@available(
-  tvOS,
-  introduced: 13,
-  deprecated: 100000,
-  message:
-    """
-    use `View.confirmationDialog(title:isPresented:titleVisibility:presenting::actions:)`instead.
-    """
-)
-@available(
-  watchOS,
-  introduced: 6,
-  deprecated: 100000,
-  message:
-    """
-    use `View.confirmationDialog(title:isPresented:titleVisibility:presenting::actions:)`instead.
-    """
-)
 extension View {
+  /// Displays an action sheet when then store's state becomes non-`nil`, and dismisses it when it
+  /// becomes `nil`.
+  ///
+  /// - Parameters:
+  ///   - store: A store that is focused on ``PresentationState`` and ``PresentationAction`` for an
+  ///     alert.
+  ///   - toDestinationState: A transformation to extract alert state from the presentation state.
+  ///   - fromDestinationAction: A transformation to embed alert actions into the presentation
+  ///     action.
+  @available(
+    iOS,
+    introduced: 13,
+    deprecated: 100000,
+    message: "use 'View.confirmationDialog(store:)' instead."
+  )
+  @available(macOS, unavailable)
+  @available(
+    tvOS,
+    introduced: 13,
+    deprecated: 100000,
+    message: "use 'View.confirmationDialog(store:)' instead."
+  )
+  @available(
+    watchOS,
+    introduced: 6,
+    deprecated: 100000,
+    message: "use 'View.confirmationDialog(store:)' instead."
+  )
   public func actionSheet<ButtonAction>(
     store: Store<
       PresentationState<ConfirmationDialogState<ButtonAction>>, PresentationAction<ButtonAction>
@@ -40,6 +37,34 @@ extension View {
     self.actionSheet(store: store, state: { $0 }, action: { $0 })
   }
 
+  /// Displays an alert when then store's state becomes non-`nil`, and dismisses it when it becomes
+  /// `nil`.
+  ///
+  /// - Parameters:
+  ///   - store: A store that is focused on ``PresentationState`` and ``PresentationAction`` for an
+  ///     alert.
+  ///   - toDestinationState: A transformation to extract alert state from the presentation state.
+  ///   - fromDestinationAction: A transformation to embed alert actions into the presentation
+  ///     action.
+  @available(
+    iOS,
+    introduced: 13,
+    deprecated: 100000,
+    message: "use 'View.confirmationDialog(store:state:action:)' instead."
+  )
+  @available(macOS, unavailable)
+  @available(
+    tvOS,
+    introduced: 13,
+    deprecated: 100000,
+    message: "use 'View.confirmationDialog(store:state:action:)' instead."
+  )
+  @available(
+    watchOS,
+    introduced: 6,
+    deprecated: 100000,
+    message: "use 'View.confirmationDialog(store:state:action:)' instead."
+  )
   public func actionSheet<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> ConfirmationDialogState<ButtonAction>?,
