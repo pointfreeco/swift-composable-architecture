@@ -543,7 +543,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   ///     accessed during the test. These dependencies will be used when producing the initial
   ///     state.
   public init<R: Reducer>(
-    initialState: @autoclosure () -> State,
+    initialState: @autoclosure () -> R.State,
     @ReducerBuilder<State, Action> reducer: () -> R,
     withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in
     },
@@ -581,7 +581,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
       """
   )
   public convenience init<R: Reducer>(
-    initialState: @autoclosure () -> State,
+    initialState: @autoclosure () -> R.State,
     @ReducerBuilder<State, Action> reducer: () -> R,
     observe toScopedState: @escaping (State) -> ScopedState,
     withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in },
@@ -615,7 +615,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
       """
   )
   public init<R: Reducer>(
-    initialState: @autoclosure () -> State,
+    initialState: @autoclosure () -> R.State,
     @ReducerBuilder<State, Action> reducer: () -> R,
     observe toScopedState: @escaping (State) -> ScopedState,
     send fromScopedAction: @escaping (ScopedAction) -> Action,
@@ -656,7 +656,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
   ///     state.
   @available(*, deprecated, message: "State must be equatable to perform assertions.")
   public init<R: Reducer>(
-    initialState: @autoclosure () -> State,
+    initialState: @autoclosure () -> R.State,
     @ReducerBuilder<State, Action> reducer: () -> R,
     withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in
     },
