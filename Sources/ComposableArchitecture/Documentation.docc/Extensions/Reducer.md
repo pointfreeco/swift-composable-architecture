@@ -4,15 +4,14 @@
 
 ### Implementing a reducer
 
-- ``reduce(into:action:)-1t2ri``
 - ``State``
 - ``Action``
+- ``body-swift.property``
+- ``Reduce``
 - ``Effect``
 
 ### Reducer composition
 
-- ``body-swift.property``
-- ``Body-swift.typealias``
 - ``ReducerBuilder``
 
 ### Embedding child features
@@ -24,7 +23,6 @@
 
 ### Supporting reducers
 
-- ``Reduce``
 - ``CombineReducers``
 - ``EmptyReducer``
 - ``BindingReducer``

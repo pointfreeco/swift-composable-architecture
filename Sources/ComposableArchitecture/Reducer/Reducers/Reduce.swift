@@ -1,7 +1,9 @@
-/// A type-erased reducer that invokes the given `reduce` function.
+/// A reducer that invokes the given `reduce` function.
 ///
-/// ``Reduce`` is useful for injecting logic into a reducer tree without the overhead of introducing
-/// a new type that conforms to ``Reducer``.
+/// ``Reduce`` is the primary unit of a reducer composition. It is given direct mutable access to
+/// application ``Reducer/State`` whenever an ``Reducer/Action`` is fed into the system, and returns
+/// an ``Effect`` that can communicate with the outside world and feed additional
+/// ``Reducer/Action``s back into the system.
 public struct Reduce<State, Action>: Reducer {
   @usableFromInline
   let reduce: (inout State, Action) -> Effect<Action>

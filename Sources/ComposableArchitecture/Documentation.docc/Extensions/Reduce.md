@@ -9,3 +9,7 @@
 ### Type erased reducers
 
 - ``init(_:)-9kwa6``
+
+### Reduce conformances
+
+- ``Reducer/reduce(into:action:)-1t2ri``
