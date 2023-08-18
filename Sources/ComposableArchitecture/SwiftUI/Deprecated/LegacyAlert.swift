@@ -12,7 +12,9 @@ extension View {
     macOS, introduced: 10.15, deprecated: 100000, message: "use `View.alert(store:) instead."
   )
   @available(tvOS, introduced: 13, deprecated: 100000, message: "use `View.alert(store:) instead.")
-  @available(watchOS, introduced: 6, deprecated: 100000, message: "use `View.alert(store:) instead.")
+  @available(
+    watchOS, introduced: 6, deprecated: 100000, message: "use `View.alert(store:) instead."
+  )
   public func legacyAlert<ButtonAction>(
     store: Store<PresentationState<AlertState<ButtonAction>>, PresentationAction<ButtonAction>>
   ) -> some View {
