@@ -32,49 +32,51 @@ struct RecordingMemo: Reducer {
   @Dependency(\.audioRecorder) var audioRecorder
   @Dependency(\.continuousClock) var clock
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .audioRecorderDidFinish(.success(true)):
-      return .send(.delegate(.didFinish(.success(state))))
-
-    case .audioRecorderDidFinish(.success(false)):
-      return .send(.delegate(.didFinish(.failure(Failed()))))
-
-    case let .audioRecorderDidFinish(.failure(error)):
-      return .send(.delegate(.didFinish(.failure(error))))
-
-    case .delegate:
-      return .none
-
-    case let .finalRecordingTime(duration):
-      state.duration = duration
-      return .none
-
-    case .stopButtonTapped:
-      state.mode = .encoding
-      return .run { send in
-        if let currentTime = await self.audioRecorder.currentTime() {
-          await send(.finalRecordingTime(currentTime))
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .audioRecorderDidFinish(.success(true)):
+        return .send(.delegate(.didFinish(.success(state))))
+        
+      case .audioRecorderDidFinish(.success(false)):
+        return .send(.delegate(.didFinish(.failure(Failed()))))
+        
+      case let .audioRecorderDidFinish(.failure(error)):
+        return .send(.delegate(.didFinish(.failure(error))))
+        
+      case .delegate:
+        return .none
+        
+      case let .finalRecordingTime(duration):
+        state.duration = duration
+        return .none
+        
+      case .stopButtonTapped:
+        state.mode = .encoding
+        return .run { send in
+          if let currentTime = await self.audioRecorder.currentTime() {
+            await send(.finalRecordingTime(currentTime))
+          }
+          await self.audioRecorder.stopRecording()
         }
-        await self.audioRecorder.stopRecording()
-      }
-
-    case .onTask:
-      return .run { [url = state.url] send in
-        async let startRecording: Void = send(
-          .audioRecorderDidFinish(
-            TaskResult { try await self.audioRecorder.startRecording(url) }
+        
+      case .onTask:
+        return .run { [url = state.url] send in
+          async let startRecording: Void = send(
+            .audioRecorderDidFinish(
+              TaskResult { try await self.audioRecorder.startRecording(url) }
+            )
           )
-        )
-        for await _ in self.clock.timer(interval: .seconds(1)) {
-          await send(.timerUpdated)
+          for await _ in self.clock.timer(interval: .seconds(1)) {
+            await send(.timerUpdated)
+          }
+          await startRecording
         }
-        await startRecording
+        
+      case .timerUpdated:
+        state.duration += 1
+        return .none
       }
-
-    case .timerUpdated:
-      state.duration += 1
-      return .none
     }
   }
 }

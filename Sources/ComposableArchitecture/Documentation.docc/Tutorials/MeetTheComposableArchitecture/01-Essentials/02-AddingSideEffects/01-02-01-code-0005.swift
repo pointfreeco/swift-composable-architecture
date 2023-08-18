@@ -13,31 +13,33 @@ struct CounterFeature: Reducer {
     case incrementButtonTapped
   }
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .decrementButtonTapped:
-      state.count -= 1
-      state.fact = nil
-      return .none
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .decrementButtonTapped:
+        state.count -= 1
+        state.fact = nil
+        return .none
 
-    case .factButtonTapped:
-      state.fact = nil
-      state.isLoading = true
+      case .factButtonTapped:
+        state.fact = nil
+        state.isLoading = true
 
-      let (data, _) = try await URLSession.shared
-        .data(from: URL(string: "http://numbersapi.com/\(state.count)")!)
-      // 🛑 'async' call in a function that does not support concurrency
-      // 🛑 Errors thrown from here are not handled
+        let (data, _) = try await URLSession.shared
+          .data(from: URL(string: "http://numbersapi.com/\(state.count)")!)
+        // 🛑 'async' call in a function that does not support concurrency
+        // 🛑 Errors thrown from here are not handled
 
-      state.fact = String(decoding: data, as: UTF8.self)
-      state.isLoading = false
+        state.fact = String(decoding: data, as: UTF8.self)
+        state.isLoading = false
 
-      return .none
+        return .none
 
-    case .incrementButtonTapped:
-      state.count += 1
-      state.fact = nil
-      return .none
+      case .incrementButtonTapped:
+        state.count += 1
+        state.fact = nil
+        return .none
+      }
     }
   }
 }

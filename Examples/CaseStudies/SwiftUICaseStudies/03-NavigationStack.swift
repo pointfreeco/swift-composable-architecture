@@ -228,36 +228,38 @@ struct ScreenA: Reducer {
   @Dependency(\.dismiss) var dismiss
   @Dependency(\.factClient) var factClient
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .decrementButtonTapped:
-      state.count -= 1
-      return .none
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .decrementButtonTapped:
+        state.count -= 1
+        return .none
 
-    case .dismissButtonTapped:
-      return .run { _ in
-        await self.dismiss()
+      case .dismissButtonTapped:
+        return .run { _ in
+          await self.dismiss()
+        }
+
+      case .incrementButtonTapped:
+        state.count += 1
+        return .none
+
+      case .factButtonTapped:
+        state.isLoading = true
+        return .run { [count = state.count] send in
+          await send(.factResponse(.init { try await self.factClient.fetch(count) }))
+        }
+
+      case let .factResponse(.success(fact)):
+        state.isLoading = false
+        state.fact = fact
+        return .none
+
+      case .factResponse(.failure):
+        state.isLoading = false
+        state.fact = nil
+        return .none
       }
-
-    case .incrementButtonTapped:
-      state.count += 1
-      return .none
-
-    case .factButtonTapped:
-      state.isLoading = true
-      return .run { [count = state.count] send in
-        await send(.factResponse(.init { try await self.factClient.fetch(count) }))
-      }
-
-    case let .factResponse(.success(fact)):
-      state.isLoading = false
-      state.fact = fact
-      return .none
-
-    case .factResponse(.failure):
-      state.isLoading = false
-      state.fact = nil
-      return .none
     }
   }
 }
@@ -348,14 +350,16 @@ struct ScreenB: Reducer {
     case screenCButtonTapped
   }
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .screenAButtonTapped:
-      return .none
-    case .screenBButtonTapped:
-      return .none
-    case .screenCButtonTapped:
-      return .none
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .screenAButtonTapped:
+        return .none
+      case .screenBButtonTapped:
+        return .none
+      case .screenCButtonTapped:
+        return .none
+      }
     }
   }
 }
@@ -407,25 +411,27 @@ struct ScreenC: Reducer {
   @Dependency(\.mainQueue) var mainQueue
   enum CancelID { case timer }
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .startButtonTapped:
-      state.isTimerRunning = true
-      return .run { send in
-        for await _ in self.mainQueue.timer(interval: 1) {
-          await send(.timerTick)
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .startButtonTapped:
+        state.isTimerRunning = true
+        return .run { send in
+          for await _ in self.mainQueue.timer(interval: 1) {
+            await send(.timerTick)
+          }
         }
+        .cancellable(id: CancelID.timer)
+        .concatenate(with: .send(.stopButtonTapped))
+        
+      case .stopButtonTapped:
+        state.isTimerRunning = false
+        return .cancel(id: CancelID.timer)
+        
+      case .timerTick:
+        state.count += 1
+        return .none
       }
-      .cancellable(id: CancelID.timer)
-      .concatenate(with: .send(.stopButtonTapped))
-
-    case .stopButtonTapped:
-      state.isTimerRunning = false
-      return .cancel(id: CancelID.timer)
-
-    case .timerTick:
-      state.count += 1
-      return .none
     }
   }
 }

@@ -144,11 +144,13 @@ struct SharedState: Reducer {
       case resetCounterButtonTapped
     }
 
-    func reduce(into state: inout State, action: Action) -> Effect<Action> {
-      switch action {
-      case .resetCounterButtonTapped:
-        state.resetCount()
-        return .none
+    var body: some Reducer<State, Action> {
+      Reduce { state, action in
+        switch action {
+        case .resetCounterButtonTapped:
+          state.resetCount()
+          return .none
+        }
       }
     }
   }

@@ -239,24 +239,26 @@ struct Feature: Reducer {
     // ...
   }
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .buttonTapped:
-      state.count += 1
-      return .send(.sharedComputation)
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .buttonTapped:
+        state.count += 1
+        return .send(.sharedComputation)
 
-    case .toggleChanged:
-      state.isEnabled.toggle()
-      return .send(.sharedComputation)
+      case .toggleChanged:
+        state.isEnabled.toggle()
+        return .send(.sharedComputation)
 
-    case let .textFieldChanged(text):
-      state.description = text
-      return .send(.sharedComputation)
+      case let .textFieldChanged(text):
+        state.description = text
+        return .send(.sharedComputation)
 
-    case .sharedComputation:
-      // Some shared work to compute something.
-      return .run { send in
-        // A shared effect to compute something
+      case .sharedComputation:
+        // Some shared work to compute something.
+        return .run { send in
+          // A shared effect to compute something
+        }
       }
     }
   }
@@ -320,19 +322,21 @@ struct Feature: Reducer {
     // ...
   }
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .buttonTapped:
-      state.count += 1
-      return self.sharedComputation(state: &state)
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .buttonTapped:
+        state.count += 1
+        return self.sharedComputation(state: &state)
 
-    case .toggleChanged:
-      state.isEnabled.toggle()
-      return self.sharedComputation(state: &state)
+      case .toggleChanged:
+        state.isEnabled.toggle()
+        return self.sharedComputation(state: &state)
 
-    case let .textFieldChanged(text):
-      state.description = text
-      return self.sharedComputation(state: &state)
+      case let .textFieldChanged(text):
+        state.description = text
+        return self.sharedComputation(state: &state)
+      }
     }
   }
 

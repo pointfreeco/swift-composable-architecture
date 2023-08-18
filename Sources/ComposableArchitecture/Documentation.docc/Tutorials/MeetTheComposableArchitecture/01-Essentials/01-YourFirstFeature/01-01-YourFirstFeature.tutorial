@@ -60,10 +60,10 @@
       
       @Step {
         And finally, to finish conforming to ``ComposableArchitecture/Reducer``, you must implement
-        a ``ComposableArchitecture/Reducer/reduce(into:action:)-1t2ri`` method
-        that evolves the state from its current value to the next value given a user action, and
-        returns any effects that the feature wants to execute in the outside world. This almost
-        always begins by switching on the incoming action to determine what logic you need to 
+        a ``ComposableArchitecture/Reducer/body-swift.property`` property and introduce a ``Reduce``
+        reducer that evolves the state from its current value to the next value given a user action,
+        and returns any effects that the feature wants to execute in the outside world. This almost
+        always begins by switching on the incoming action to determine what logic you need to
         perform.
         
         > Note: The `reduce` method takes `State` as an argument and it is marked as `inout`. This

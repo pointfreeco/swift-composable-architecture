@@ -10,12 +10,14 @@ struct CounterFeature: Reducer {
     case incrementButtonTapped
   }
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .decrementButtonTapped:
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .decrementButtonTapped:
 
-    case .incrementButtonTapped:
+      case .incrementButtonTapped:
 
+      }
     }
   }
 }

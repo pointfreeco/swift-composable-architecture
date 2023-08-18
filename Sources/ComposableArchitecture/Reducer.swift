@@ -20,22 +20,24 @@
 /// ```
 ///
 /// The logic of your feature is implemented by mutating the feature's current state when an action
-/// comes into the system. This is most easily done by implementing the
-/// ``Reducer/reduce(into:action:)-1t2ri`` method of the protocol.
+/// comes into the system. This is done by introducing a ``Reduce`` to the
+/// ``Reducer/body-swift.property`` property of the protocol.
 ///
 /// ```swift
 /// struct Feature: Reducer {
 ///   // ...
 ///
-///   func reduce(into state: inout State, action: Action) -> Effect<Action> {
-///     switch action {
-///     case .decrementButtonTapped:
-///       state.count -= 1
-///       return .none
+///   var body: some Reducer<State, Action> {
+///     Reduce { state, action in
+///       switch action {
+///       case .decrementButtonTapped:
+///         state.count -= 1
+///         return .none
 ///
-///     case .incrementButtonTapped:
-///       state.count += 1
-///       return .none
+///       case .incrementButtonTapped:
+///         state.count += 1
+///         return .none
+///       }
 ///     }
 ///   }
 /// }
@@ -64,31 +66,33 @@
 ///   }
 ///   enum CancelID { case timer }
 ///
-///   func reduce(into state: inout State, action: Action) -> Effect<Action> {
-///     switch action {
-///     case .decrementButtonTapped:
-///       state.count -= 1
-///       return .none
+///   var body: some Reducer<State, Action> {
+///     Reduce { state, action in
+///       switch action {
+///       case .decrementButtonTapped:
+///         state.count -= 1
+///         return .none
 ///
-///     case .incrementButtonTapped:
-///       state.count += 1
-///       return .none
+///       case .incrementButtonTapped:
+///         state.count += 1
+///         return .none
 ///
-///     case .startTimerButtonTapped:
-///       return .run { send in
-///         while true {
-///           try await Task.sleep(for: .seconds(1))
-///           await send(.timerTick)
+///       case .startTimerButtonTapped:
+///         return .run { send in
+///           while true {
+///             try await Task.sleep(for: .seconds(1))
+///             await send(.timerTick)
+///           }
 ///         }
+///         .cancellable(CancelID.timer)
+///
+///       case .stopTimerButtonTapped:
+///         return .cancel(CancelID.timer)
+///
+///       case .timerTick:
+///         state.count += 1
+///         return .none
 ///       }
-///       .cancellable(CancelID.timer)
-///
-///     case .stopTimerButtonTapped:
-///       return .cancel(CancelID.timer)
-///
-///     case .timerTick:
-///       state.count += 1
-///       return .none
 ///     }
 ///   }
 /// }
@@ -100,21 +104,20 @@
 /// method. Read the <doc:DependencyManagement> and <doc:Testing> articles for more
 /// information.
 ///
-/// That is the basics of implementing a feature as a conformance to ``Reducer``. There are
-/// actually two ways to define a reducer:
+/// That is the basics of implementing a feature as a conformance to ``Reducer``.
 ///
-///   1. You can either implement the ``reduce(into:action:)-1t2ri`` method, as shown above, which
-///   is given direct mutable access to application ``State`` whenever an ``Action`` is fed into
-///   the system, and returns an ``Effect`` that can communicate with the outside world and
-///   feed additional ``Action``s back into the system.
-///
-///   2. Or you can implement the ``body-swift.property`` property, which combines one or
-///   more reducers together.
+/// There is technically one other way to define a reducer: instead of implementing the
+/// ``body-swift.property`` property, you can implement the lower-level
+/// ``reduce(into:action:)-1t2ri`` method, which has the same signature as the ``Reduce`` reducer.
+/// It is given direct mutable access to application ``State`` whenever an ``Action`` is fed into
+/// the system, and returns an ``Effect`` that can communicate with the outside world and feed
+/// additional ``Action``s back into the system.
 ///
 /// At most one of these requirements should be implemented. If a conformance implements both
-/// requirements, only ``reduce(into:action:)-1t2ri`` will be called by the ``Store``. If your
-/// reducer assembles a body from other reducers _and_ has additional business logic it needs to
-/// layer onto the feature, introduce this logic into the body instead, either with ``Reduce``:
+/// ``body-swift.property`` and ``reduce(into:action:)-1t2ri``, only `reduce` will be called by the
+/// ``Store``. If your reducer assembles a body from other reducers _and_ has additional business
+/// logic it needs to layer onto the feature, introduce this logic into the body instead, either
+/// with ``Reduce``:
 ///
 /// ```swift
 /// var body: some Reducer<State, Action> {
@@ -127,7 +130,7 @@
 /// }
 /// ```
 ///
-/// …or moving the extra logic to a method that is wrapped in ``Reduce``:
+/// …or by moving the extra logic to a method that is wrapped in ``Reduce``:
 ///
 /// ```swift
 /// var body: some Reducer<State, Action> {

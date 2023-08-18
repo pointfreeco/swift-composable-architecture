@@ -55,17 +55,17 @@ import XCTestDynamicOverlay
 ///     case incrementButtonTapped
 ///   }
 ///
-///   func reduce(
-///     into state: inout State, action: Action
-///   ) -> Effect<Action> {
-///     switch action {
-///     case .decrementButtonTapped:
-///       state.count -= 1
-///       return .none
+///   var body: some Reducer<State, Action> {
+///     Reduce { state, action in
+///       switch action {
+///       case .decrementButtonTapped:
+///         state.count -= 1
+///         return .none
 ///
-///     case .incrementButtonTapped:
-///       state.count += 1
-///       return .none
+///       case .incrementButtonTapped:
+///         state.count += 1
+///         return .none
+///       }
 ///     }
 ///   }
 /// }
@@ -137,29 +137,29 @@ import XCTestDynamicOverlay
 ///   @Dependency(\.continuousClock) var clock
 ///   private enum CancelID { case search }
 ///
-///   func reduce(
-///     into state: inout State, action: Action
-///   ) -> Effect<Action> {
-///     switch action {
-///     case let .queryChanged(query):
-///       state.query = query
-///       return .run { send in
-///         try await self.clock.sleep(for: 0.5)
+///   var body: some Reducer<State, Action> {
+///     Reduce { state, action in
+///       switch action {
+///       case let .queryChanged(query):
+///         state.query = query
+///         return .run { send in
+///           try await self.clock.sleep(for: 0.5)
 ///
-///         guard let results = try? await self.apiClient.search(query)
-///         else { return }
+///           guard let results = try? await self.apiClient.search(query)
+///           else { return }
 ///
-///         await send(.response(results))
+///           await send(.response(results))
+///         }
+///         .cancellable(id: CancelID.search, cancelInFlight: true)
+///
+///       case let .searchResponse(.success(results)):
+///         state.results = results
+///         return .none
+///
+///       case .searchResponse(.failure):
+///         // Do error handling here.
+///         return .none
 ///       }
-///       .cancellable(id: CancelID.search, cancelInFlight: true)
-///
-///     case let .searchResponse(.success(results)):
-///       state.results = results
-///       return .none
-///
-///     case .searchResponse(.failure):
-///       // Do error handling here.
-///       return .none
 ///     }
 ///   }
 /// }
