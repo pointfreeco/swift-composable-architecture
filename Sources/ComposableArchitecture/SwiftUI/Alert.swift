@@ -67,7 +67,7 @@ extension View {
   deprecated,
   message:
     """
-    Use 'View.alert(store:)' with 'PresentationState' and 'PresentationAction' instead, or use 'Alert.init(state:)' to create an alert in iOS 13.
+    Use 'View.alert(store:)' (or 'View.legacyAlert(store:)' for iOS 13) with 'PresentationState' and 'PresentationAction' instead.
     """
 )
 extension View {

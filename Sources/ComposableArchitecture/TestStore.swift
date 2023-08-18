@@ -566,7 +566,7 @@ public final class TestStore<State, Action, ScopedState, ScopedAction, Environme
     self.fromScopedAction = { $0 }
     self.line = line
     self.reducer = reducer
-    self.store = Store(initialState: reducer.state, reducer: reducer)
+    self.store = Store(initialState: reducer.state) { reducer }
     self.timeout = 1 * NSEC_PER_SEC
     self.toScopedState = { $0 }
     self.useMainSerialExecutor = true

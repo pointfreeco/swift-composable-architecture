@@ -790,9 +790,10 @@ extension ScopedReducer: AnyScopedReducer {
       parentStores: self.parentStores + [store]
     )
     let childStore = Store<RescopedState, RescopedAction>(
-      initialState: toRescopedState(store.state.value),
-      reducer: reducer
-    )
+      initialState: toRescopedState(store.state.value)
+    ) {
+      reducer
+    }
     childStore._isInvalidated = store._isInvalidated
     childStore.parentCancellable = store.state
       .dropFirst()
