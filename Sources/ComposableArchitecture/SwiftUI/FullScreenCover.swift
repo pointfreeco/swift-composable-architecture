@@ -29,7 +29,7 @@ import SwiftUI
         }
       }
     }
-  
+
     /// Presents a modal view that covers as much of the screen as possible using the store you
     /// provide as a data source for the sheet's content.
     ///
@@ -54,7 +54,8 @@ import SwiftUI
       state toDestinationState: @escaping (_ state: State) -> DestinationState?,
       action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
       onDismiss: (() -> Void)? = nil,
-      @ViewBuilder content: @escaping (_ store: Store<DestinationState, DestinationAction>) -> Content
+      @ViewBuilder content: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
+        Content
     ) -> some View {
       self.presentation(
         store: store, state: toDestinationState, action: fromDestinationAction
