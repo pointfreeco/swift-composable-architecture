@@ -546,7 +546,7 @@ public final class Store<State, Action> {
     }
 
     guard !tasks.wrappedValue.isEmpty else { return nil }
-    return Task {
+    return Task { @MainActor in
       await withTaskCancellationHandler {
         var index = tasks.wrappedValue.startIndex
         while index < tasks.wrappedValue.endIndex {
@@ -790,9 +790,10 @@ extension ScopedReducer: AnyScopedReducer {
       parentStores: self.parentStores + [store]
     )
     let childStore = Store<RescopedState, RescopedAction>(
-      initialState: toRescopedState(store.state.value),
-      reducer: reducer
-    )
+      initialState: toRescopedState(store.state.value)
+    ) {
+      reducer
+    }
     childStore._isInvalidated = store._isInvalidated
     childStore.parentCancellable = store.state
       .dropFirst()

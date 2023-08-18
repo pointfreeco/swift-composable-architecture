@@ -72,7 +72,7 @@ extension View {
   deprecated,
   message:
     """
-    Use 'View.confirmationDialog(store:)' with 'PresentationState' and 'PresentationAction' instead, or use 'ActionSheet.init(state:)' to create a confirmation dialog in iOS 13.
+    Use 'View.confirmationDialog(store:)' (or 'View.actionSheet(store:)' for iOS 13) with 'PresentationState' and 'PresentationAction' instead.
     """
 )
 extension View {
