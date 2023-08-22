@@ -102,7 +102,7 @@ final class BindableStoreTests: XCTestCase {
             return .none
           case .loginButtonTapped:
             state.isRequestInFlight = true
-            return .none  // TODO: Login request
+            return .none  // NB: Login request
           }
         }
       }
