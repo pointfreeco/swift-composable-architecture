@@ -20,7 +20,6 @@ let package = Package(
     .package(url: "https://github.com/apple/swift-collections", from: "1.0.2"),
     .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"),
     .package(url: "https://github.com/google/swift-benchmark", from: "0.1.0"),
-    .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "1.0.0"),
     .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "1.0.0"),
     .package(url: "https://github.com/pointfreeco/swift-concurrency-extras", from: "1.0.0"),
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.0.0"),
@@ -34,7 +33,6 @@ let package = Package(
       name: "ComposableArchitecture",
       dependencies: [
         .product(name: "CasePaths", package: "swift-case-paths"),
-        .product(name: "CombineSchedulers", package: "combine-schedulers"),
         .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
         .product(name: "CustomDump", package: "swift-custom-dump"),
         .product(name: "Dependencies", package: "swift-dependencies"),
