@@ -79,7 +79,14 @@ extension EffectPublisher {
   ///     `false`, the publisher emits the first element received during the interval.
   /// - Returns: An effect that emits either the most-recent or first element received during the
   ///   specified interval.
-  @available(*, deprecated)
+  @available(
+    *,
+    deprecated,
+    message:
+      """
+      Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case throttle }' and call 'effect.throttle(id: CancelID.throttle, …)'.
+      """
+  )
   public func throttle<S: Scheduler>(
     id: Any.Type,
     for interval: S.SchedulerTimeType.Stride,

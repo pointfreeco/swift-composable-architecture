@@ -61,7 +61,10 @@ extension EffectPublisher {
   @available(
     *,
     deprecated,
-    message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'Effect.run', instead."
+    message:
+      """
+      Types defined for cancellation may be compiled out of release builds in Swift and are unsafe to use. Use a hashable value, instead, e.g. define a timer cancel identifier as 'enum CancelID { case debounce }' and call 'effect.debounce(id: CancelID.debounce, …)'.
+      """
   )
   public func debounce<S: Scheduler>(
     id: Any.Type,
