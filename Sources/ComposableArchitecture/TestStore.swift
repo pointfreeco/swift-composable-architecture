@@ -1873,13 +1873,19 @@ extension TestStore {
   /// await store.send(.view(.set(\.$email, "blob@pointfree.co"))) {
   ///   $0.email = "blob@pointfree.co"
   /// }
-  /// XCTAssertTrue(LoginView.ViewState(store.bindings).isFormDisabled)
+  /// XCTAssertTrue(
+  ///   LoginView.ViewState(store.bindings(action: /LoginFeature.Action.view))
+  ///     .isLoginButtonDisabled
+  /// )
   ///
   /// await store.send(.view(.set(\.$password, "whats-the-point?"))) {
   ///   $0.password = "blob@pointfree.co"
-  ///   $0.isFormValid
+  ///   $0.isFormValid = true
   /// }
-  /// XCTAssertFalse(LoginView.ViewState(store.bindings).isFormDisabled)
+  /// XCTAssertFalse(
+  ///   LoginView.ViewState(store.bindings(action: /LoginFeature.Action.view))
+  ///     .isLoginButtonDisabled
+  /// )
   /// ```
   ///
   /// - Parameter toViewAction: A case path from action to a bindable view action.
@@ -1908,13 +1914,13 @@ extension TestStore where Action: BindableAction, State == Action.State {
   /// await store.send(.set(\.$email, "blob@pointfree.co")) {
   ///   $0.email = "blob@pointfree.co"
   /// }
-  /// XCTAssertTrue(LoginView.ViewState(store.bindings).isFormDisabled)
+  /// XCTAssertTrue(LoginView.ViewState(store.bindings).isLoginButtonDisabled)
   ///
   /// await store.send(.set(\.$password, "whats-the-point?")) {
   ///   $0.password = "blob@pointfree.co"
-  ///   $0.isFormValid
+  ///   $0.isFormValid = true
   /// }
-  /// XCTAssertFalse(LoginView.ViewState(store.bindings).isFormDisabled)
+  /// XCTAssertFalse(LoginView.ViewState(store.bindings).isLoginButtonDisabled)
   /// ```
   ///
   /// - Returns: A binding view store.
