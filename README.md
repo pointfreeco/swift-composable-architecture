@@ -610,7 +610,7 @@ The Composable Architecture is built with extensibility in mind, and there are a
 community-supported libraries available to enhance your applications:
 
 * [Composable Architecture Extras](https://github.com/Ryu0118/swift-composable-architecture-extras):
-  A companion library to Point-Free's swift-composable-architecture.
+  A companion library to the Composable Architecture.
 * [TCACoordinators](https://github.com/johnpatrickmorgan/TCACoordinators): The coordinator pattern
   in the Composable Architecture
 
