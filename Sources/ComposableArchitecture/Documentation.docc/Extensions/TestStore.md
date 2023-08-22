@@ -35,6 +35,8 @@ While the most common way of interacting with a test store's state is via its
 also access it directly throughout a test.
 
 - ``state``
+- ``bindings``
+- ``bindings(action:)``
 
 ### Deprecations
 
