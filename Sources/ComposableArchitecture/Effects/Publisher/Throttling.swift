@@ -2,7 +2,6 @@ import Combine
 import Dispatch
 import Foundation
 
-@available(*, deprecated)
 extension EffectPublisher {
   /// Throttles an effect so that it only publishes one output per given interval.
   ///
@@ -80,6 +79,7 @@ extension EffectPublisher {
   ///     `false`, the publisher emits the first element received during the interval.
   /// - Returns: An effect that emits either the most-recent or first element received during the
   ///   specified interval.
+  @available(*, deprecated)
   public func throttle<S: Scheduler>(
     id: Any.Type,
     for interval: S.SchedulerTimeType.Stride,

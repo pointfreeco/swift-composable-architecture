@@ -1,10 +1,5 @@
 import Combine
 
-@available(
-  *,
-  deprecated,
-  message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'Effect.run', instead."
-)
 extension EffectPublisher {
   /// Turns an effect into one that can be debounced.
   ///
@@ -63,6 +58,11 @@ extension EffectPublisher {
   ///   - scheduler: The scheduler you want to deliver the debounced output to.
   ///   - options: Scheduler options that customize the effect's delivery of elements.
   /// - Returns: An effect that publishes events only after a specified time elapses.
+  @available(
+    *,
+    deprecated,
+    message: "Use 'withTaskCancellation(id: _, cancelInFlight: true)' in 'Effect.run', instead."
+  )
   public func debounce<S: Scheduler>(
     id: Any.Type,
     for dueTime: S.SchedulerTimeType.Stride,
