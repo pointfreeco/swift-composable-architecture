@@ -53,7 +53,7 @@ public struct PresentationState<State> {
   }
 
   private var storage: Storage
-  @usableFromInline var isPresented = false
+  @usableFromInline var presentedID: NavigationIDPath?
 
   public init(wrappedValue: State?) {
     self.storage = Storage(state: wrappedValue)
@@ -391,30 +391,33 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
     }
 
     let presentationIdentityChanged =
-      initialPresentationState.wrappedValue.map(self.navigationIDPath(for:))
+      initialPresentationState.presentedID
       != state[keyPath: self.toPresentationState].wrappedValue.map(self.navigationIDPath(for:))
 
     let dismissEffects: Effect<Base.Action>
     if presentationIdentityChanged,
-      let presentationState = initialPresentationState.wrappedValue,
-      !isEphemeral(presentationState)
+      let presentedPath = initialPresentationState.presentedID,
+      initialPresentationState.wrappedValue.map({
+        self.navigationIDPath(for: $0) == presentedPath && !isEphemeral($0)
+      })
+      ?? true
     {
-      dismissEffects = ._cancel(navigationID: self.navigationIDPath(for: presentationState))
+      dismissEffects = ._cancel(navigationID: presentedPath)
     } else {
       dismissEffects = .none
     }
 
     if presentationIdentityChanged, state[keyPath: self.toPresentationState].wrappedValue == nil {
-      state[keyPath: self.toPresentationState].isPresented = false
+      state[keyPath: self.toPresentationState].presentedID = nil
     }
 
     let presentEffects: Effect<Base.Action>
-    if presentationIdentityChanged || !state[keyPath: self.toPresentationState].isPresented,
+    if presentationIdentityChanged || state[keyPath: self.toPresentationState].presentedID == nil,
       let presentationState = state[keyPath: self.toPresentationState].wrappedValue,
       !isEphemeral(presentationState)
     {
       let presentationDestinationID = self.navigationIDPath(for: presentationState)
-      state[keyPath: self.toPresentationState].isPresented = true
+      state[keyPath: self.toPresentationState].presentedID = presentationDestinationID
       presentEffects = .concatenate(
         .publisher { Empty(completeImmediately: false) }
           ._cancellable(id: PresentationDismissID(), navigationIDPath: presentationDestinationID),

@@ -12,6 +12,7 @@ private enum NavigationIDPathKey: DependencyKey {
   static let testValue = NavigationIDPath()
 }
 
+@usableFromInline
 struct NavigationIDPath: Hashable, Sendable {
   fileprivate var path: [NavigationID]
 

@@ -2334,7 +2334,7 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  func testCancellation1() async {
+  func testOuterCancellation() async {
     struct Child: Reducer {
       struct State: Equatable {}
       enum Action: Equatable { case onAppear }
@@ -2360,12 +2360,12 @@ final class PresentationReducerTests: BaseTCATestCase {
       var body: some ReducerOf<Self> {
         Reduce { state, action in
           switch action {
+          case .child:
+            return .none
           case .tapAfter:
             return .none
           case .tapBefore:
             state.child = nil
-            return .none
-          case .child:
             return .none
           case .tapChild:
             return .none
@@ -2391,12 +2391,12 @@ final class PresentationReducerTests: BaseTCATestCase {
 
         Reduce { state, action in
           switch action {
+          case .child:
+            return .none
           case .tapAfter:
             state.child = nil
             return .none
           case .tapBefore:
-            return .none
-          case .child:
             return .none
           case .tapChild:
             return .none
@@ -2424,5 +2424,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     await store.send(.tapAfter) {
       $0.child = nil
     }
+    await store.send(.tapAfter)
   }
 }
