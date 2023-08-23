@@ -8,16 +8,21 @@
     /// - Returns: An effect wrapping a Combine publisher.
     public static func publisher<P: Publisher>(_ createPublisher: @escaping () -> P) -> Self
     where P.Output == Action, P.Failure == Never {
-      Self(
-        operation: .publisher(
-          withEscapedDependencies { continuation in
-            Deferred {
-              continuation.yield {
-                createPublisher()
-              }
+      return .init(
+        operation: .init(
+          sync: { continuation in
+            let cancellable = createPublisher().sink(
+              receiveCompletion: { _ in
+                continuation.finish()
+              },
+              receiveValue: { continuation($0) }
+            )
+            continuation.onTermination { _ in
+              _ = cancellable
+              //cancellable.cancel()
             }
-          }
-          .eraseToAnyPublisher()
+          },
+          async: nil
         )
       )
     }
@@ -40,22 +45,25 @@
     }
 
     private var publisher: AnyPublisher<Action, Failure> {
-      switch self.effect.operation {
-      case .none:
-        return Empty().eraseToAnyPublisher()
-      case let .publisher(publisher):
-        return publisher
-      case let .run(priority, operation):
-        return .create { subscriber in
-          let task = Task(priority: priority) { @MainActor in
-            defer { subscriber.send(completion: .finished) }
-            await operation(Send { subscriber.send($0) })
-          }
-          return AnyCancellable {
-            task.cancel()
-          }
-        }
-      }
+      return Empty(completeImmediately: true).eraseToAnyPublisher()
+      fatalError("TODO")
+
+//      switch self.effect.operation {
+//      case .none:
+//        return Empty().eraseToAnyPublisher()
+//      case let .publisher(publisher):
+//        return publisher
+//      case let .run(priority, operation):
+//        return .create { subscriber in
+//          let task = Task(priority: priority) { @MainActor in
+//            defer { subscriber.send(completion: .finished) }
+//            await operation(Send { subscriber.send($0) })
+//          }
+//          return AnyCancellable {
+//            task.cancel()
+//          }
+//        }
+//      }
     }
   }
 #endif

@@ -71,6 +71,7 @@ final class EffectTests: BaseTCATestCase {
     XCTAssertEqual(values.value, [1])
 
     await task.value
+    print("!!!")
   }
 
   #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
@@ -226,5 +227,70 @@ final class EffectTests: BaseTCATestCase {
       let task = TestStoreTask(rawValue: nil, timeout: NSEC_PER_SEC)
       await task.finish()
     }
+  }
+
+  func testPublisher() async {
+    let values = LockIsolated<[Int]>([])
+
+    let subject = PassthroughSubject<Int, Never>()
+    let effect = Effect.publisher { subject }
+
+    let task = Task {
+      for await n in effect.actions {
+        values.withValue { $0.append(n) }
+      }
+    }
+
+    await Task.megaYield()
+
+    subject.send(1)
+    await Task.megaYield()
+    XCTAssertEqual(values.value, [1])
+
+    subject.send(2)
+    await Task.megaYield()
+    XCTAssertEqual(values.value, [1, 2])
+
+    subject.send(3)
+    await Task.megaYield()
+    XCTAssertEqual(values.value, [1, 2, 3])
+
+    subject.send(completion: .finished)
+    await task.value
+  }
+
+  func testConcatenateNewStyle() async {
+    let values = LockIsolated<[Int]>([])
+
+    let effect = Effect<Int>.concatenate(
+      .send(1),
+      .send(2)
+    )
+
+    let task = Task {
+      for await n in effect.actions {
+        values.withValue { $0.append(n) }
+      }
+    }
+
+    XCTAssertEqual(values.value, [])
+    await task.value
+    XCTAssertEqual(values.value, [1, 2])
+  }
+
+  func testSend() async {
+    let values = LockIsolated<[Int]>([])
+
+    let effect = Effect<Int>.send(1)
+
+    let task = Task {
+      for await n in effect.actions {
+        values.withValue { $0.append(n) }
+      }
+    }
+
+    XCTAssertEqual(values.value, [])
+    await task.value
+    XCTAssertEqual(values.value, [1])
   }
 }

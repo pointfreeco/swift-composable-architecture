@@ -34,29 +34,30 @@
     /// - Parameter transaction: A transaction.
     /// - Returns: A publisher.
     public func transaction(_ transaction: Transaction) -> Self {
-      switch self.operation {
-      case .none:
-        return .none
-      case let .publisher(publisher):
-        return Self(
-          operation: .publisher(
-            TransactionPublisher(upstream: publisher, transaction: transaction)
-              .eraseToAnyPublisher()
-          )
-        )
-      case let .run(priority, operation):
-        return Self(
-          operation: .run(priority) { send in
-            await operation(
-              Send { value in
+      .init(
+        operation: .init(
+          sync: self.operation.sync.map { sync in
+            { send in
+              sync(Send<Action>.Continuation { action in
                 withTransaction(transaction) {
-                  send(value)
+                  send(action)
                 }
-              }
-            )
+              })
+            }
+          },
+          async: self.operation.async.map { priority, operation in
+            (priority, { send in
+              await operation(
+                Send { value in
+                  withTransaction(transaction) {
+                    send(value)
+                  }
+                }
+              )
+            })
           }
         )
-      }
+      )
     }
   }
 

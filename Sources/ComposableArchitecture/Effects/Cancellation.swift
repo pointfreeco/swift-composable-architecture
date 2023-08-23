@@ -31,64 +31,51 @@ extension Effect {
   public func cancellable<ID: Hashable>(id: ID, cancelInFlight: Bool = false) -> Self {
     @Dependency(\.navigationIDPath) var navigationIDPath
 
-    switch self.operation {
-    case .none:
-      return .none
-    case let .publisher(publisher):
-      return Self(
-        operation: .publisher(
-          Deferred {
-            ()
-              -> Publishers.HandleEvents<
-                Publishers.PrefixUntilOutput<
-                  AnyPublisher<Action, Never>, PassthroughSubject<Void, Never>
-                >
-              > in
-            _cancellablesLock.lock()
-            defer { _cancellablesLock.unlock() }
+    return .init(
+      operation: .init(
+        sync: { continuation in
+          // TODO: should all of the below be moved into a non-async version of withTaskCancellation(id:) ?
 
-            if cancelInFlight {
-              _cancellationCancellables.cancel(id: id, path: navigationIDPath)
-            }
+          _cancellablesLock.lock()
+          defer { _cancellablesLock.unlock() }
 
-            let cancellationSubject = PassthroughSubject<Void, Never>()
-
-            var cancellable: AnyCancellable!
-            cancellable = AnyCancellable {
-              _cancellablesLock.sync {
-                cancellationSubject.send(())
-                cancellationSubject.send(completion: .finished)
-                _cancellationCancellables.remove(cancellable, at: id, path: navigationIDPath)
-              }
-            }
-
-            return publisher.prefix(untilOutputFrom: cancellationSubject)
-              .handleEvents(
-                receiveSubscription: { _ in
-                  _cancellablesLock.sync {
-                    _cancellationCancellables.insert(cancellable, at: id, path: navigationIDPath)
-                  }
-                },
-                receiveCompletion: { _ in cancellable.cancel() },
-                receiveCancel: cancellable.cancel
-              )
+          if cancelInFlight {
+            _cancellationCancellables.cancel(id: id, path: navigationIDPath)
           }
-          .eraseToAnyPublisher()
-        )
+
+          let cancellable = LockIsolated<AnyCancellable?>(nil)
+          cancellable.setValue(AnyCancellable {
+            _cancellablesLock.sync {
+              continuation.finish()  // TODO: or cancel()?
+              _cancellationCancellables.remove(cancellable.value!, at: id, path: navigationIDPath)
+            }
+          })
+          _cancellationCancellables.insert(cancellable.value!, at: id, path: navigationIDPath)
+
+          if self.operation.async == nil {
+            continuation.onTermination { _ in
+              cancellable.value!.cancel()
+            }
+          }
+
+          // TODO: "copy" continuation so that sync can override onTermination
+          // TODO: escaped dependencies??
+          self.operation.sync?(continuation)
+        },
+        async: self.operation.async.map { priority, operation in
+          withEscapedDependencies { continuation in
+            (priority, { send in
+              await continuation.yield {
+                // TODO: if `sync` returned `async` work maybe we could fix the race condition of cancelling work before it starts.
+                await withTaskCancellation(id: id, cancelInFlight: false) {
+                  await operation(send)
+                }
+              }
+            })
+          }
+        }
       )
-    case let .run(priority, operation):
-      return withEscapedDependencies { continuation in
-        return Self(
-          operation: .run(priority) { send in
-            await continuation.yield {
-              await withTaskCancellation(id: id, cancelInFlight: cancelInFlight) {
-                await operation(send)
-              }
-            }
-          }
-        )
-      }
-    }
+    )
   }
 
   /// An effect that will cancel any currently in-flight effect with the given identifier.
@@ -103,14 +90,23 @@ extension Effect {
     //     due to a bug in iOS 13.2 that publisher will never complete. The bug was fixed in
     //     iOS 13.3, but to remain compatible with iOS 13.2 and higher we need to do a little
     //     trickery to make sure the deferred publisher completes.
-    return .publisher { () -> Publishers.CompactMap<Just<Action?>, Action> in
-      DependencyValues.$_current.withValue(dependencies) {
-        _cancellablesLock.sync {
-          _cancellationCancellables.cancel(id: id, path: navigationIDPath)
+//    return .publisher { () -> Publishers.CompactMap<Just<Action?>, Action> in
+//      DependencyValues.$_current.withValue(dependencies) {
+//        _cancellablesLock.sync {
+//          _cancellationCancellables.cancel(id: id, path: navigationIDPath)
+//        }
+//      }
+//      return Just<Action?>(nil).compactMap { $0 }
+//    }
+    return .init(
+      operation: .init(
+        sync: { _ in
+          _cancellablesLock.sync {
+            _cancellationCancellables.cancel(id: id, path: navigationIDPath)
+          }
         }
-      }
-      return Just<Action?>(nil).compactMap { $0 }
-    }
+      )
+    )
   }
 }
 

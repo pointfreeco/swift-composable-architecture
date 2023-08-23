@@ -1,26 +1,27 @@
 extension Effect {
   @_spi(Internals)
   public var actions: AsyncStream<Action> {
-    switch self.operation {
-    case .none:
-      return .finished
-    case let .publisher(publisher):
-      return AsyncStream { continuation in
-        let cancellable = publisher.sink(
-          receiveCompletion: { _ in continuation.finish() },
-          receiveValue: { continuation.yield($0) }
-        )
-        continuation.onTermination = { _ in
-          cancellable.cancel()
+    AsyncStream { streamContinuation in
+      let continuation = Send<Action>.Continuation { action in
+        streamContinuation.yield(action)
+      }
+      continuation.onTermination { _ in
+        if let async = self.operation.async {
+          Task(priority: async.priority) {
+            await async.operation(Send<Action> { action in
+              streamContinuation.yield(action)
+            })
+            streamContinuation.finish()
+          }
+        } else {
+          streamContinuation.finish()
         }
       }
-    case let .run(priority, operation):
-      return AsyncStream { continuation in
-        let task = Task(priority: priority) {
-          await operation(Send { action in continuation.yield(action) })
-          continuation.finish()
-        }
-        continuation.onTermination = { _ in task.cancel() }
+
+      if let sync = self.operation.sync {
+        sync(continuation)
+      } else {
+        continuation.finish()
       }
     }
   }

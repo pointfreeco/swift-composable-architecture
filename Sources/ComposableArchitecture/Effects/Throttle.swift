@@ -29,55 +29,57 @@
       scheduler: S,
       latest: Bool
     ) -> Self {
-      switch self.operation {
-      case .none:
-        return .none
-
-      case .run:
-        return .publisher { _EffectPublisher(self) }
-          .throttle(id: id, for: interval, scheduler: scheduler, latest: latest)
-
-      case let .publisher(publisher):
-        return .publisher {
-          publisher
-            .receive(on: scheduler)
-            .flatMap { value -> AnyPublisher<Action, Never> in
-              throttleLock.lock()
-              defer { throttleLock.unlock() }
-
-              guard let throttleTime = throttleTimes[id] as! S.SchedulerTimeType? else {
-                throttleTimes[id] = scheduler.now
-                throttleValues[id] = nil
-                return Just(value).eraseToAnyPublisher()
-              }
-
-              let value = latest ? value : (throttleValues[id] as! Action? ?? value)
-              throttleValues[id] = value
-
-              guard throttleTime.distance(to: scheduler.now) < interval else {
-                throttleTimes[id] = scheduler.now
-                throttleValues[id] = nil
-                return Just(value).eraseToAnyPublisher()
-              }
-
-              return Just(value)
-                .delay(
-                  for: scheduler.now.distance(to: throttleTime.advanced(by: interval)),
-                  scheduler: scheduler
-                )
-                .handleEvents(
-                  receiveOutput: { _ in
-                    throttleLock.sync {
-                      throttleTimes[id] = scheduler.now
-                      throttleValues[id] = nil
-                    }
-                  }
-                )
-                .eraseToAnyPublisher()
-            }
-        }
-        .cancellable(id: id, cancelInFlight: true)
-      }
+      return .init(operation: .init())
+      fatalError("TODO")
+//      switch self.operation {
+//      case .none:
+//        return .none
+//
+//      case .run:
+//        return .publisher { _EffectPublisher(self) }
+//          .throttle(id: id, for: interval, scheduler: scheduler, latest: latest)
+//
+//      case let .publisher(publisher):
+//        return .publisher {
+//          publisher
+//            .receive(on: scheduler)
+//            .flatMap { value -> AnyPublisher<Action, Never> in
+//              throttleLock.lock()
+//              defer { throttleLock.unlock() }
+//
+//              guard let throttleTime = throttleTimes[id] as! S.SchedulerTimeType? else {
+//                throttleTimes[id] = scheduler.now
+//                throttleValues[id] = nil
+//                return Just(value).eraseToAnyPublisher()
+//              }
+//
+//              let value = latest ? value : (throttleValues[id] as! Action? ?? value)
+//              throttleValues[id] = value
+//
+//              guard throttleTime.distance(to: scheduler.now) < interval else {
+//                throttleTimes[id] = scheduler.now
+//                throttleValues[id] = nil
+//                return Just(value).eraseToAnyPublisher()
+//              }
+//
+//              return Just(value)
+//                .delay(
+//                  for: scheduler.now.distance(to: throttleTime.advanced(by: interval)),
+//                  scheduler: scheduler
+//                )
+//                .handleEvents(
+//                  receiveOutput: { _ in
+//                    throttleLock.sync {
+//                      throttleTimes[id] = scheduler.now
+//                      throttleValues[id] = nil
+//                    }
+//                  }
+//                )
+//                .eraseToAnyPublisher()
+//            }
+//        }
+//        .cancellable(id: id, cancelInFlight: true)
+//      }
     }
   }
 
