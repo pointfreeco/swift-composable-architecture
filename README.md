@@ -604,6 +604,20 @@ You can add ComposableArchitecture to an Xcode project by adding it as a package
         modules and consumes the static library in this fashion using the **tic-tac-toe** Swift 
         package.
 
+## Companion libraries
+
+The Composable Architecture is built with extensibility in mind, and there are a number of
+community-supported libraries available to enhance your applications:
+
+* [Composable Architecture Extras](https://github.com/Ryu0118/swift-composable-architecture-extras):
+  A companion library to the Composable Architecture.
+* [TCACoordinators](https://github.com/johnpatrickmorgan/TCACoordinators): The coordinator pattern
+  in the Composable Architecture
+
+If you'd like to contribute a library, please [open a
+PR](https://github.com/pointfreeco/swift-composable-architecture/edit/main/README.md) with a link
+to it!
+
 ## Translations
 
 The following translations of this README have been contributed by members of the community:
