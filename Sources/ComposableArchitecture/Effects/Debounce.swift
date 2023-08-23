@@ -32,7 +32,7 @@
       options: S.SchedulerOptions? = nil
     ) -> Self {
 
-      return .init(operation: .init())
+      return .init(operations: [])
       fatalError("TODO")
 
 //      .init(

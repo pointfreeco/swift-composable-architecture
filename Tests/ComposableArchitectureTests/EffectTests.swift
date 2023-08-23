@@ -278,6 +278,25 @@ final class EffectTests: BaseTCATestCase {
     XCTAssertEqual(values.value, [1, 2])
   }
 
+  func testMergeNewStyle() async {
+    let values = LockIsolated<[Int]>([])
+
+    let effect = Effect<Int>.merge(
+      .send(1),
+      .send(2)
+    )
+
+    let task = Task {
+      for await n in effect.actions {
+        values.withValue { $0.append(n) }
+      }
+    }
+
+    XCTAssertEqual(values.value, [])
+    await task.value
+    XCTAssertEqual(values.value, [1, 2])
+  }
+
   func testSend() async {
     let values = LockIsolated<[Int]>([])
 

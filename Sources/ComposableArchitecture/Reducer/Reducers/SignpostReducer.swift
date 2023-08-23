@@ -85,7 +85,7 @@ extension Effect {
   ) -> Self {
     let sid = OSSignpostID(log: log)
 
-    return .init(operation: .init())
+    return .init(operations: [])
     fatalError("TODO")
 
 //    switch self.operation {

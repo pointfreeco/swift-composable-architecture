@@ -9,6 +9,7 @@ public struct Effect<Action> {
 
   @usableFromInline
   struct _Operation {
+    // TODO: This should be non-optional?
     @usableFromInline
     let sync: ((Send<Action>.Continuation) -> Void)?
     @usableFromInline
@@ -30,6 +31,34 @@ public struct Effect<Action> {
       self.sync = sync
       self.async = async
     }
+
+    @usableFromInline
+    func map<T>(_ transform: @escaping (Action) -> T) -> Effect<T>._Operation {
+      .init(
+        // TODO: pass along termination
+        // TODO: pass along dependencies
+        sync: self.sync.map { (sync: @escaping (Send<Action>.Continuation) -> Void) -> ((Send<T>.Continuation) -> Void) in
+          { (sendT: Send<T>.Continuation) -> Void in
+            sync(Send<Action>.Continuation(send: { action in
+              sendT(transform(action))
+            }))
+          }
+        },
+        async: self.async.map { priority, operation in
+          withEscapedDependencies { escaped in
+            (priority, { send in
+              await escaped.yield {
+                await operation(
+                  Send { action in
+                    send(transform(action))
+                  }
+                )
+              }
+            })
+          }
+        }
+      )
+    }
   }
 
 
@@ -41,11 +70,11 @@ public struct Effect<Action> {
 //  }
 
   @usableFromInline
-  let operation: _Operation
+  let operations: [_Operation]
 
   @usableFromInline
-  init(operation: _Operation) {
-    self.operation = operation
+  init(operations: [_Operation]) {
+    self.operations = operations
   }
 }
 
@@ -71,7 +100,7 @@ extension Effect {
   /// return an effect, but you don't need to do anything.
   @inlinable
   public static var none: Self {
-    Self(operation: _Operation())
+    Self(operations: [])
   }
 
   /// Wraps an asynchronous unit of work that can emit actions any number of times in an effect.
@@ -119,7 +148,7 @@ extension Effect {
   ) -> Self {
     withEscapedDependencies { escaped in
       Self(
-        operation: _Operation(async: (priority, { send in
+        operations: [_Operation(async: (priority, { send in
           await escaped.yield {
             do {
               try await operation(send)
@@ -146,7 +175,7 @@ extension Effect {
               await handler(error, send)
             }
           }
-        }))
+        }))]
       )
     }
   }
@@ -163,12 +192,12 @@ extension Effect {
   public static func send(_ action: Action) -> Self {
 //    Self(operation: .publisher(Just(action).eraseToAnyPublisher()))
     .init(
-      operation: .init(
+      operations: [.init(
         sync: { send in
           send(action)
           send.finish()
         }
-      )
+      )]
     )
   }
 
@@ -239,7 +268,7 @@ public struct Send<Action>: Sendable {
         }
       }
     }
-    @available(*, unavailable)
+//    @available(*, unavailable)
     public func onTermination(_ newTermination: @Sendable @escaping (Termination) -> Void) {
       let current = self.storage.onTermination
       self.onTermination = { @Sendable action in
@@ -337,27 +366,7 @@ extension Effect {
   /// - Returns: An effect that runs this effect and the other at the same time.
   @inlinable
   public func merge(with other: Self) -> Self {
-    .init(
-      operation: .init(
-        // TODO: Make this more efficient if both sync's are nil
-        sync: { continuation in
-          // TODO: are both of these overriding onTermination?
-          self.operation.sync?(continuation)
-          other.operation.sync?(continuation)
-        },
-        // TODO: Make this more efficient if both async's are nil
-        async: (nil /* TODO: is this correct priority? this is what previous implementation did */, { send in
-          await withTaskGroup(of: Void.self) { group in
-            group.addTask(priority: self.operation.async?.priority) {
-              await self.operation.async?.operation(send)
-            }
-            group.addTask(priority: other.operation.async?.priority) {
-              await other.operation.async?.operation(send)
-            }
-          }
-        })
-      )
-    )
+    .init(operations: self.operations + other.operations)
   }
 
   /// Concatenates a variadic list of effects together into a single effect, which runs the effects
@@ -389,43 +398,73 @@ extension Effect {
   @inlinable
   @_disfavoredOverload
   public func concatenate(with other: Self) -> Self {
-    .init(
-      operation: .init(
-        sync: { continuation in
-          if let selfSync = self.operation.sync {
-            print(#line)
-            continuation.onTermination { _ in
-              if let otherSync = other.operation.sync {
-                print(#line)
-                otherSync(continuation)
-              } else {
-                print(#line)
-                continuation.finish()
-              }
-            }
-            selfSync(continuation)
-          } else if let otherSync = other.operation.sync {
-            print(#line)
-            otherSync(continuation)
-          } else {
-            print(#line)
-            continuation.finish()
-          }
-        },
-        async: (nil, { send in
-          if let lhsPriority = self.operation.async?.priority {
-            await Task(priority: lhsPriority) { await self.operation.async?.operation(send) }.cancellableValue
-          } else {
-            await self.operation.async?.operation(send)
-          }
-          if let rhsPriority = other.operation.async?.priority {
-            await Task(priority: rhsPriority) { await other.operation.async?.operation(send) }.cancellableValue
-          } else {
-            await other.operation.async?.operation(send)
-          }
-        })
-      )
-    )
+//    .init(
+//      operations: [.init(
+//        sync: { continuation in
+//          if let selfSync = self.operations.sync {
+//            print(#line)
+//            let c = Send<Action>.Continuation { action in continuation(action) }
+//            c.onTermination { _ in
+//              if let otherSync = other.operation.sync {
+//                print(#line)
+//                let c1 = Send<Action>.Continuation { action in continuation(action) }
+//                c1.onTermination { _ in
+//                  continuation.finish()
+//                }
+//                otherSync(c1)
+//              } else {
+//                print(#line)
+//                continuation.finish()
+//              }
+//            }
+//            selfSync(c)
+//          } else if let otherSync = other.operation.sync {
+//            print(#line)
+//            let c1 = Send<Action>.Continuation { action in continuation(action) }
+//            c1.onTermination { _ in
+//              continuation.finish()
+//            }
+//            otherSync(c1)
+//          } else {
+//            print(#line)
+//            continuation.finish()
+//          }
+//
+////          if let selfSync = self.operation.sync {
+////            print(#line)
+////            continuation.onTermination { _ in
+////              if let otherSync = other.operation.sync {
+////                print(#line)
+////                otherSync(continuation)
+////              } else {
+////                print(#line)
+////                continuation.finish()
+////              }
+////            }
+////            selfSync(continuation)
+////          } else if let otherSync = other.operation.sync {
+////            print(#line)
+////            otherSync(continuation)
+////          } else {
+////            print(#line)
+////            continuation.finish()
+////          }
+//        }//,
+////        async: (nil, { send in
+////          if let lhsPriority = self.operation.async?.priority {
+////            await Task(priority: lhsPriority) { await self.operation.async?.operation(send) }.cancellableValue
+////          } else {
+////            await self.operation.async?.operation(send)
+////          }
+////          if let rhsPriority = other.operation.async?.priority {
+////            await Task(priority: rhsPriority) { await other.operation.async?.operation(send) }.cancellableValue
+////          } else {
+////            await other.operation.async?.operation(send)
+////          }
+////        })
+//      )]
+//    )
+    fatalError()
   }
 
   /// Transforms all elements from the upstream effect with a provided closure.
@@ -435,32 +474,6 @@ extension Effect {
   ///   to new elements that it then publishes.
   @inlinable
   public func map<T>(_ transform: @escaping (Action) -> T) -> Effect<T> {
-
-    .init(
-      operation: .init(
-        // TODO: pass along termination
-        // TODO: pass along dependencies
-        sync: self.operation.sync.map { (sync: @escaping (Send<Action>.Continuation) -> Void) -> ((Send<T>.Continuation) -> Void) in
-          { (sendT: Send<T>.Continuation) -> Void in
-            sync(Send<Action>.Continuation(send: { action in
-              sendT(transform(action))
-            }))
-          }
-        },
-        async: self.operation.async.map { priority, operation in
-          withEscapedDependencies { escaped in
-            (priority, { send in
-              await escaped.yield {
-                await operation(
-                  Send { action in
-                    send(transform(action))
-                  }
-                )
-              }
-            })
-          }
-        }
-      )
-    )
+    .init(operations: self.operations.map { $0.map(transform) })
   }
 }

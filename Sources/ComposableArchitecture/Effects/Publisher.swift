@@ -9,7 +9,7 @@
     public static func publisher<P: Publisher>(_ createPublisher: @escaping () -> P) -> Self
     where P.Output == Action, P.Failure == Never {
       return .init(
-        operation: .init(
+        operations: [.init(
           sync: { continuation in
             let cancellable = createPublisher().sink(
               receiveCompletion: { _ in
@@ -23,7 +23,7 @@
             }
           },
           async: nil
-        )
+        )]
       )
     }
   }

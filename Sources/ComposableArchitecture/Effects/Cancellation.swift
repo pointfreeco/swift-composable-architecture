@@ -32,49 +32,50 @@ extension Effect {
     @Dependency(\.navigationIDPath) var navigationIDPath
 
     return .init(
-      operation: .init(
-        sync: { continuation in
-          // TODO: should all of the below be moved into a non-async version of withTaskCancellation(id:) ?
+      operations: self.operations.map { operation in
+        .init(
+          sync: { continuation in
+            // TODO: should all of the below be moved into a non-async version of withTaskCancellation(id:) ?
 
-          _cancellablesLock.lock()
-          defer { _cancellablesLock.unlock() }
+            _cancellablesLock.lock()
+            defer { _cancellablesLock.unlock() }
 
-          if cancelInFlight {
-            _cancellationCancellables.cancel(id: id, path: navigationIDPath)
-          }
-
-          let cancellable = LockIsolated<AnyCancellable?>(nil)
-          cancellable.setValue(AnyCancellable {
-            _cancellablesLock.sync {
-              continuation.finish()  // TODO: or cancel()?
-              _cancellationCancellables.remove(cancellable.value!, at: id, path: navigationIDPath)
+            if cancelInFlight {
+              _cancellationCancellables.cancel(id: id, path: navigationIDPath)
             }
-          })
-          _cancellationCancellables.insert(cancellable.value!, at: id, path: navigationIDPath)
 
-          if self.operation.async == nil {
-            continuation.onTermination { _ in
-              cancellable.value!.cancel()
-            }
-          }
-
-          // TODO: "copy" continuation so that sync can override onTermination
-          // TODO: escaped dependencies??
-          self.operation.sync?(continuation)
-        },
-        async: self.operation.async.map { priority, operation in
-          withEscapedDependencies { continuation in
-            (priority, { send in
-              await continuation.yield {
-                // TODO: if `sync` returned `async` work maybe we could fix the race condition of cancelling work before it starts.
-                await withTaskCancellation(id: id, cancelInFlight: false) {
-                  await operation(send)
-                }
+            let cancellable = LockIsolated<AnyCancellable?>(nil)
+            cancellable.setValue(AnyCancellable {
+              _cancellablesLock.sync {
+                continuation.finish()  // TODO: or cancel()?
+                _cancellationCancellables.remove(cancellable.value!, at: id, path: navigationIDPath)
               }
             })
+            _cancellationCancellables.insert(cancellable.value!, at: id, path: navigationIDPath)
+
+            if operation.async == nil {
+              continuation.onTermination { _ in
+                cancellable.value!.cancel()
+              }
+            }
+
+            // TODO: "copy" continuation so that sync can override onTermination
+            // TODO: escaped operation.sync?(continuation)
+          },
+          async: operation.async.map { priority, operation in
+            withEscapedDependencies { continuation in
+              (priority, { send in
+                await continuation.yield {
+                  // TODO: if `sync` returned `async` work maybe we could fix the race condition of cancelling work before it starts.
+                  await withTaskCancellation(id: id, cancelInFlight: false) {
+                    await operation(send)
+                  }
+                }
+              })
+            }
           }
-        }
-      )
+        )
+      }
     )
   }
 
@@ -99,13 +100,13 @@ extension Effect {
 //      return Just<Action?>(nil).compactMap { $0 }
 //    }
     return .init(
-      operation: .init(
+      operations: [.init(
         sync: { _ in
           _cancellablesLock.sync {
             _cancellationCancellables.cancel(id: id, path: navigationIDPath)
           }
         }
-      )
+      )]
     )
   }
 }

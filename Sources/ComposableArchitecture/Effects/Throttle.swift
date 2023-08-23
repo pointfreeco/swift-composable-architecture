@@ -29,7 +29,7 @@
       scheduler: S,
       latest: Bool
     ) -> Self {
-      return .init(operation: .init())
+      return .init(operations: [])
       fatalError("TODO")
 //      switch self.operation {
 //      case .none:

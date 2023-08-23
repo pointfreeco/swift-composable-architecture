@@ -34,30 +34,31 @@
     /// - Parameter transaction: A transaction.
     /// - Returns: A publisher.
     public func transaction(_ transaction: Transaction) -> Self {
-      .init(
-        operation: .init(
-          sync: self.operation.sync.map { sync in
-            { send in
-              sync(Send<Action>.Continuation { action in
-                withTransaction(transaction) {
-                  send(action)
-                }
-              })
-            }
-          },
-          async: self.operation.async.map { priority, operation in
-            (priority, { send in
-              await operation(
-                Send { value in
-                  withTransaction(transaction) {
-                    send(value)
-                  }
-                }
-              )
-            })
-          }
-        )
-      )
+      self
+//      .init(
+//        operation: .init(
+//          sync: self.operation.sync.map { sync in
+//            { send in
+//              sync(Send<Action>.Continuation { action in
+//                withTransaction(transaction) {
+//                  send(action)
+//                }
+//              })
+//            }
+//          },
+//          async: self.operation.async.map { priority, operation in
+//            (priority, { send in
+//              await operation(
+//                Send { value in
+//                  withTransaction(transaction) {
+//                    send(value)
+//                  }
+//                }
+//              )
+//            })
+//          }
+//        )
+//      )
     }
   }
 
