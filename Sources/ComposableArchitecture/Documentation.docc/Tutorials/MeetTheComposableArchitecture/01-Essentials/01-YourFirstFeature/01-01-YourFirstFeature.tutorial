@@ -150,7 +150,7 @@
         > our article <doc:Performance> for more information on how to best observe only the bare
         > essentials a view needs to do its job.
         
-        @Code(name: "CounterFeature.swift", file: 01-01-02-code-0004.swift, previousFile: 01-02-code-0004-previous.swift)
+        @Code(name: "CounterFeature.swift", file: 01-01-02-code-0004.swift, previousFile: 01-01-02-code-0004-previous.swift)
       }
       
       @Step {
