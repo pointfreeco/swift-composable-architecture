@@ -2424,6 +2424,7 @@ final class PresentationReducerTests: BaseTCATestCase {
     await store.send(.tapAfter) {
       $0.child = nil
     }
+    // NB: Another action needs to come into the `ifLet` to cancel the child action
     await store.send(.tapAfter)
   }
 }
