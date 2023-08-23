@@ -5,7 +5,7 @@ struct CounterFeature: Reducer {
     var count = 0
   }
 
-  enum Action {
+  enum Action: Equatable {
     case decrementButtonTapped
     case incrementButtonTapped
   }

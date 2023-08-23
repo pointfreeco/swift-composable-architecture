@@ -1,11 +1,11 @@
 import ComposableArchitecture
 
 struct CounterFeature: Reducer {
-  struct State {
+  struct State: Equatable {
 
   }
 
-  enum Action {
+  enum Action: Equatable {
 
   }
 }
