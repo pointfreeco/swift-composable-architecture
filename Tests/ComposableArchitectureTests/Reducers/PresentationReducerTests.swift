@@ -2416,5 +2416,13 @@ final class PresentationReducerTests: BaseTCATestCase {
     await store.send(.tapBefore) {
       $0.child = nil
     }
+
+    await store.send(.tapChild) {
+      $0.child = Child.State()
+    }
+    await store.send(.child(.presented(.onAppear)))
+    await store.send(.tapAfter) {
+      $0.child = nil
+    }
   }
 }
