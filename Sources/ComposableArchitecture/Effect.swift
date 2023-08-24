@@ -3,21 +3,24 @@ import Foundation
 import SwiftUI
 import XCTestDynamicOverlay
 
-// TODO: explore flattening Effect to just an array of operations
 
-/*
- enum Operation {
-   case escaping((EscapingSend<Action>) -> Void)
-   case async(priority: TaskPriority?, (Send<Action>) async -> Void)
+enum Operation<Action> {
+  case escaping((EscapingSend<Action>) -> Void)
+  case async(priority: TaskPriority?, (Send<Action>) async -> Void)
 
-   static func publisher(_: some Publisher) -> Self
-   static func sync(_ work: (EscapingSend<Action>) -> Void) -> Self {
-     .escaping { send in
-       work(send)
-       send.finish()
-     }
-   }
- */
+  static func publisher(_: some Publisher<Action, Never>) -> Self {
+    fatalError()
+  }
+  static func sync(_ work: (EscapingSend<Action>) -> Void) -> Self {
+    .escaping { send in
+      //work(send)
+      //send.finish()
+    }
+  }
+}
+
+struct EscapingSend<Action> {
+}
 
 public struct Effect<Action> {
 
