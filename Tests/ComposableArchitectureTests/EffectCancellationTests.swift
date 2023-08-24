@@ -143,65 +143,65 @@ final class EffectCancellationTests: BaseTCATestCase {
     await task.value
   }
 
-//  func testDoubleCancellation() async {
-//    let values = LockIsolated<[Int]>([])
-//
-//    let subject = PassthroughSubject<Int, Never>()
-//    let effect = Effect.publisher { subject }
-//      .cancellable(id: CancelID())
-//      .cancellable(id: CancelID())
-//
-//    let task = Task {
-//      for await n in effect.actions {
-//        values.withValue { $0.append(n) }
-//      }
-//    }
-//    await Task.megaYield()
-//
-//    XCTAssertEqual(values.value, [])
-//
-//    subject.send(1)
-//    await Task.megaYield()
-//    XCTAssertEqual(values.value, [1])
-//
-//    Task.cancel(id: CancelID())
-//
-//    subject.send(2)
-//    await Task.megaYield()
-//    XCTAssertEqual(values.value, [1])
-//
-//    await task.value
-//
-//    XCTAssertEqual(values.value, [1])
-//  }
+  func testDoubleCancellation() async {
+    let values = LockIsolated<[Int]>([])
 
-//  func testCompleteBeforeCancellation() async {
-//    let values = LockIsolated<[Int]>([])
-//
-//    let subject = PassthroughSubject<Int, Never>()
-//    let effect = Effect.publisher { subject }
-//      .cancellable(id: CancelID())
-//
-//    let task = Task {
-//      for await n in effect.actions {
-//        values.withValue { $0.append(n) }
-//      }
-//    }
-//    await Task.megaYield()
-//
-//    subject.send(1)
-//    await Task.megaYield()
-//    XCTAssertEqual(values.value, [1])
-//
-//    subject.send(completion: .finished)
-//    await Task.megaYield()
-//    XCTAssertEqual(values.value, [1])
-//
-//    Task.cancel(id: CancelID())
-//
-//    await task.value
-//    XCTAssertEqual(values.value, [1])
-//  }
+    let subject = PassthroughSubject<Int, Never>()
+    let effect = Effect.publisher { subject }
+      .cancellable(id: CancelID())
+      .cancellable(id: CancelID())
+
+    let task = Task {
+      for await n in effect.actions {
+        values.withValue { $0.append(n) }
+      }
+    }
+    await Task.megaYield()
+
+    XCTAssertEqual(values.value, [])
+
+    subject.send(1)
+    await Task.megaYield()
+    XCTAssertEqual(values.value, [1])
+
+    Task.cancel(id: CancelID())
+
+    subject.send(2)
+    await Task.megaYield()
+    XCTAssertEqual(values.value, [1])
+
+    await task.value
+
+    XCTAssertEqual(values.value, [1])
+  }
+
+  func testCompleteBeforeCancellation() async {
+    let values = LockIsolated<[Int]>([])
+
+    let subject = PassthroughSubject<Int, Never>()
+    let effect = Effect.publisher { subject }
+      .cancellable(id: CancelID())
+
+    let task = Task {
+      for await n in effect.actions {
+        values.withValue { $0.append(n) }
+      }
+    }
+    await Task.megaYield()
+
+    subject.send(1)
+    await Task.megaYield()
+    XCTAssertEqual(values.value, [1])
+
+    subject.send(completion: .finished)
+    await Task.megaYield()
+    XCTAssertEqual(values.value, [1])
+
+    Task.cancel(id: CancelID())
+
+    await task.value
+    XCTAssertEqual(values.value, [1])
+  }
 
   func testSharedId() async {
     let mainQueue = DispatchQueue.test

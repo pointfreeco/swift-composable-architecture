@@ -9,70 +9,70 @@ final class CompatibilityTests: BaseTCATestCase {
   // Actions can be re-entrantly sent into the store if an action is sent that holds an object
   // which sends an action on deinit. In order to prevent a simultaneous access exception for this
   // case we need to use `withExtendedLifetime` on the buffered actions when clearing them out.
-//  func testCaseStudy_ActionReentranceFromClearedBufferCausingDeinitAction() {
-//    let cancelID = UUID()
-//
-//    struct State: Equatable {}
-//    enum Action: Equatable {
-//      case start
-//      case kickOffAction
-//      case actionSender(OnDeinit)
-//      case stop
-//
-//      var description: String {
-//        switch self {
-//        case .start:
-//          return "start"
-//        case .kickOffAction:
-//          return "kickOffAction"
-//        case .actionSender:
-//          return "actionSender"
-//        case .stop:
-//          return "stop"
-//        }
-//      }
-//    }
-//    let passThroughSubject = PassthroughSubject<Action, Never>()
-//
-//    var handledActions: [String] = []
-//
-//    let reducer = Reduce<State, Action> { state, action in
-//      handledActions.append(action.description)
-//
-//      switch action {
-//      case .start:
-//        return .publisher { passThroughSubject }.cancellable(id: cancelID)
-//
-//      case .kickOffAction:
-//        return .send(.actionSender(OnDeinit { passThroughSubject.send(.stop) }))
-//
-//      case .actionSender:
-//        return .none
-//
-//      case .stop:
-//        return .cancel(id: cancelID)
-//      }
-//    }
-//
-//    let store = Store(initialState: .init()) {
-//      reducer
-//    }
-//
-//    let viewStore = ViewStore(store, observe: { $0 })
-//
-//    viewStore.send(.start)
-//    viewStore.send(.kickOffAction)
-//
-//    XCTAssertEqual(
-//      handledActions,
-//      [
-//        "start",
-//        "kickOffAction",
-//        "actionSender",
-//        "stop",
-//      ]
-//    )
-//  }
+  func testCaseStudy_ActionReentranceFromClearedBufferCausingDeinitAction() {
+    let cancelID = UUID()
+
+    struct State: Equatable {}
+    enum Action: Equatable {
+      case start
+      case kickOffAction
+      case actionSender(OnDeinit)
+      case stop
+
+      var description: String {
+        switch self {
+        case .start:
+          return "start"
+        case .kickOffAction:
+          return "kickOffAction"
+        case .actionSender:
+          return "actionSender"
+        case .stop:
+          return "stop"
+        }
+      }
+    }
+    let passThroughSubject = PassthroughSubject<Action, Never>()
+
+    var handledActions: [String] = []
+
+    let reducer = Reduce<State, Action> { state, action in
+      handledActions.append(action.description)
+
+      switch action {
+      case .start:
+        return .publisher { passThroughSubject }.cancellable(id: cancelID)
+
+      case .kickOffAction:
+        return .send(.actionSender(OnDeinit { passThroughSubject.send(.stop) }))
+
+      case .actionSender:
+        return .none
+
+      case .stop:
+        return .cancel(id: cancelID)
+      }
+    }
+
+    let store = Store(initialState: .init()) {
+      reducer
+    }
+
+    let viewStore = ViewStore(store, observe: { $0 })
+
+    viewStore.send(.start)
+    viewStore.send(.kickOffAction)
+
+    XCTAssertEqual(
+      handledActions,
+      [
+        "start",
+        "kickOffAction",
+        "actionSender",
+        "stop",
+      ]
+    )
+  }
 
   // Actions can be re-entrantly sent into the store while observing changes to the store's state.
   // In such cases we need to take special care that those re-entrant actions are handled _after_
