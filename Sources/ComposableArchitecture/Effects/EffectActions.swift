@@ -7,7 +7,7 @@ extension Effect {
       let syncCompleteCount = LockIsolated(0)
       for operation in self.operations {
         if let sync = operation.sync {
-          var continuation = Send<Action>.Continuation { streamContinuation.yield($0) }
+          let continuation = Send<Action>.Continuation { streamContinuation.yield($0) }
           continuation.onTermination { _ in
             syncCompleteCount.withValue {
               $0 += 1

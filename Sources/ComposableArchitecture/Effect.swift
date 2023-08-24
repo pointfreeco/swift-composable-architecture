@@ -38,10 +38,19 @@ public struct Effect<Action> {
         // TODO: pass along termination
         // TODO: pass along dependencies
         sync: self.sync.map { (sync: @escaping (Send<Action>.Continuation) -> Void) -> ((Send<T>.Continuation) -> Void) in
-          { (sendT: Send<T>.Continuation) -> Void in
-            sync(Send<Action>.Continuation(send: { action in
-              sendT(transform(action))
-            }))
+          withEscapedDependencies { escaped in
+            { (sendT: Send<T>.Continuation) -> Void in
+              sync(
+                Send<Action>.Continuation(
+                  send: { action in
+                    escaped.yield {
+                      sendT(transform(action))
+                    }
+                  },
+                  storage: sendT.storage
+                )
+              )
+            }
           }
         },
         async: self.async.map { priority, operation in
@@ -190,7 +199,6 @@ extension Effect {
   ///
   /// - Parameter action: The action that is immediately emitted by the effect.
   public static func send(_ action: Action) -> Self {
-//    Self(operation: .publisher(Just(action).eraseToAnyPublisher()))
     .init(
       operations: [.init(
         sync: { send in
@@ -253,8 +261,12 @@ public struct Send<Action>: Sendable {
 
   public struct Continuation: Sendable {
     let send: @Sendable (Action) -> Void
-    public init(send: @Sendable @escaping (Action) -> Void) {
+    public init(
+      send: @Sendable @escaping (Action) -> Void,
+      storage: Storage = Storage()
+    ) {
       self.send = send
+      self.storage = storage
     }
     public var onTermination: @Sendable (Termination) -> Void {
       get {
@@ -268,7 +280,6 @@ public struct Send<Action>: Sendable {
         }
       }
     }
-//    @available(*, unavailable)
     public func onTermination(_ newTermination: @Sendable @escaping (Termination) -> Void) {
       let current = self.storage.onTermination
       self.onTermination = { @Sendable action in
@@ -276,7 +287,7 @@ public struct Send<Action>: Sendable {
         newTermination(action)
       }
     }
-    let storage = Storage()
+    public let storage: Storage
     public func finish() {
       self.onTermination(.finished)
     }
@@ -291,16 +302,7 @@ public struct Send<Action>: Sendable {
         self(action)
       }
     }
-    public enum Termination {
-      case finished
-      case cancelled
-    }
-    // TODO: fix sendable
-    final class Storage: @unchecked Sendable {
-      var onTermination: @Sendable (Termination) -> Void = { _ in }
-    }
   }
-
   
 
   public init(send: @escaping @MainActor @Sendable (Action) -> Void) {
@@ -335,6 +337,19 @@ public struct Send<Action>: Sendable {
       self(action)
     }
   }
+}
+
+
+// TODO: fix sendable
+public final class Storage: @unchecked Sendable {
+  var onTermination: @Sendable (Termination) -> Void
+  public init(onTermination: @Sendable @escaping (Termination) -> Void = { _ in }) {
+    self.onTermination = onTermination
+  }
+}
+public enum Termination {
+  case finished
+  case cancelled
 }
 
 // MARK: - Composing Effects
@@ -398,6 +413,62 @@ extension Effect {
   @inlinable
   @_disfavoredOverload
   public func concatenate(with other: Self) -> Self {
+    let operations = self.operations + other.operations
+
+    // [a, b, c, d]
+
+    return .init(
+      operations: [
+        .init(
+          sync: { continuation in
+            let syncCount = operations.filter { $0.sync != nil }.count
+            let syncCompleteCount = LockIsolated(0)
+            for operation in operations {
+              if let sync = operation.sync {
+                let childContinuation = Send<Action>.Continuation { continuation($0) }
+                childContinuation.onTermination { _ in
+                  syncCompleteCount.withValue {
+                    $0 += 1
+                    if syncCount == $0 {
+                      continuation.finish()
+                    }
+                  }
+                }
+                sync(childContinuation)
+              }
+            }
+            if syncCount == 0 {
+              continuation.finish()
+            }
+          },
+          async: (nil, { send in
+            //await selfSyncFinished()
+            await withTaskGroup(of: Void.self) { group in
+              for operation in self.operations {
+                if let async = operation.async {
+                  group.addTask {
+                    await async.operation(send)
+                  }
+                }
+              }
+            }
+            //await otherSyncFinished()
+            await withTaskGroup(of: Void.self) { group in
+              for operation in other.operations {
+                if let async = operation.async {
+                  group.addTask {
+                    await async.operation(send)
+                  }
+                }
+              }
+            }
+          })
+        )
+      ]
+    )
+
+
+
 //    .init(
 //      operations: [.init(
 //        sync: { continuation in
@@ -464,7 +535,6 @@ extension Effect {
 ////        })
 //      )]
 //    )
-    fatalError()
   }
 
   /// Transforms all elements from the upstream effect with a provided closure.

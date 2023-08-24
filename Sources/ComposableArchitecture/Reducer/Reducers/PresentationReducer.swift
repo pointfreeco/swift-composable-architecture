@@ -416,12 +416,29 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
       let presentationDestinationID = self.navigationIDPath(for: presentationState)
       state[keyPath: self.toPresentationState].isPresented = true
       presentEffects = .concatenate(
-        .publisher { Empty(completeImmediately: false) }
+        .init(operations: [.init(sync: { _ in })])
           ._cancellable(id: PresentationDismissID(), navigationIDPath: presentationDestinationID),
-        .publisher { Just(self.toPresentationAction.embed(.dismiss)) }
+        .send((self.toPresentationAction.embed(.dismiss)))
       )
       ._cancellable(navigationIDPath: presentationDestinationID)
       ._cancellable(id: OnFirstAppearID(), navigationIDPath: .init())
+
+//        .init(
+//        operations: [
+//          .init(sync: { _ in }), // cancellable
+//          .init(sync: { c in
+//            c(self.toPresentationAction.embed(.dismiss))
+//          })
+//        ]
+//      )
+
+//        .concatenate(
+//        .publisher { Empty(completeImmediately: false) }
+//          ._cancellable(id: PresentationDismissID(), navigationIDPath: presentationDestinationID),
+//        .publisher { Just(self.toPresentationAction.embed(.dismiss)) }
+//      )
+//      ._cancellable(navigationIDPath: presentationDestinationID)
+//      ._cancellable(id: OnFirstAppearID(), navigationIDPath: .init())
     } else {
       presentEffects = .none
     }

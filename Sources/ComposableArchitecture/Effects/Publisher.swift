@@ -11,11 +11,15 @@
       return .init(
         operations: [.init(
           sync: { continuation in
-            let cancellable = createPublisher().sink(
+            let cancellable = createPublisher()
+              //.handleEvents(receiveSubscription: <#T##((Subscription) -> Void)?##((Subscription) -> Void)?##(Subscription) -> Void#>, receiveCancel: <#T##(() -> Void)?##(() -> Void)?##() -> Void#>)
+              .sink(
               receiveCompletion: { _ in
                 continuation.finish()
               },
-              receiveValue: { continuation($0) }
+              receiveValue: {
+                continuation($0)
+              }
             )
             continuation.onTermination { _ in
               _ = cancellable

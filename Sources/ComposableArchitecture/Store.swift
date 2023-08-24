@@ -458,43 +458,50 @@ public final class Store<State, Action> {
       let action = self.bufferedActions[index]
       let effect = self.reducer.reduce(into: &currentState, action: action)
 
+      @Sendable
+      func startAsyncWork() {
+        tasks.wrappedValue.append(
+          withEscapedDependencies { escaped in
+            Task {
+              await withTaskGroup(of: Void.self) { group in
+                for operation in effect.operations {
+                  guard let async = operation.async
+                  else { continue }
+                  group.addTask(priority: async.priority) {
+                    await async.operation(Send<Action> { @MainActor action in
+                      if let _ = escaped.yield({
+                        self.send(action, originatingFrom: action)
+                      }) {
+                        //tasks.wrappedValue.append(task)
+                      }
+                    })
+                  }
+                }
+              }
+            }
+          }
+        )
+      }
+
+
+      let syncCount = effect.operations.filter { $0.sync != nil }.count
+      let syncCompleteCount = LockIsolated(0)
       for operation in effect.operations {
-        let continuation = Send<Action>.Continuation { action in
-          self.send(action)
-        }
-        continuation.onTermination = { _ in
-          withEscapedDependencies { escaped in
-            tasks.wrappedValue.append(
-              Task<Void, Never>(priority: operation.async?.priority) {
-                await operation.async?.operation(Send<Action> { @MainActor action in
-                  if let task = escaped.yield({
-                    self.send(action, originatingFrom: action)
-                  }) {
-                    tasks.wrappedValue.append(task)
-                  }
-                })
-              }
-            )
-          }
-        }
         if let sync = operation.sync {
-          sync(continuation)
-        } else if let `async` = operation.async {
-          // TODO: de-dupe
-          withEscapedDependencies { escaped in
-            tasks.wrappedValue.append(
-              Task<Void, Never>(priority: async.priority) {
-                await async.operation(Send<Action> { @MainActor action in
-                  if let task = escaped.yield({
-                    self.send(action, originatingFrom: action)
-                  }) {
-                    tasks.wrappedValue.append(task)
-                  }
-                })
+          let childContinuation = Send<Action>.Continuation { self.send($0) }
+          childContinuation.onTermination { _ in
+            syncCompleteCount.withValue {
+              $0 += 1
+              if syncCount == $0 {
+                startAsyncWork()
               }
-            )
+            }
           }
+          sync(childContinuation)
         }
+      }
+      if syncCount == 0 {
+        startAsyncWork()
       }
 
 

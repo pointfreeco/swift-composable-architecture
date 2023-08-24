@@ -71,7 +71,6 @@ final class EffectTests: BaseTCATestCase {
     XCTAssertEqual(values.value, [1])
 
     await task.value
-    print("!!!")
   }
 
   #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))

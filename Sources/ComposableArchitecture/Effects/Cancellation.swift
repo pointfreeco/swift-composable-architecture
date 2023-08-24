@@ -31,52 +31,65 @@ extension Effect {
   public func cancellable<ID: Hashable>(id: ID, cancelInFlight: Bool = false) -> Self {
     @Dependency(\.navigationIDPath) var navigationIDPath
 
-    return .init(
-      operations: self.operations.map { operation in
-        .init(
-          sync: { continuation in
-            // TODO: should all of the below be moved into a non-async version of withTaskCancellation(id:) ?
+    return withEscapedDependencies { escaped in
+      .init(
+        operations: self.operations.map { operation in
+            .init(
+              sync: { continuation in
+                // TODO: should all of the below be moved into a non-async version of withTaskCancellation(id:) ?
 
-            _cancellablesLock.lock()
-            defer { _cancellablesLock.unlock() }
+                _cancellablesLock.lock()
+                defer { _cancellablesLock.unlock() }
 
-            if cancelInFlight {
-              _cancellationCancellables.cancel(id: id, path: navigationIDPath)
-            }
+                if cancelInFlight {
+                  _cancellationCancellables.cancel(id: id, path: navigationIDPath)
+                }
 
-            let cancellable = LockIsolated<AnyCancellable?>(nil)
-            cancellable.setValue(AnyCancellable {
-              _cancellablesLock.sync {
-                continuation.finish()  // TODO: or cancel()?
-                _cancellationCancellables.remove(cancellable.value!, at: id, path: navigationIDPath)
-              }
-            })
-            _cancellationCancellables.insert(cancellable.value!, at: id, path: navigationIDPath)
+                let cancellable = LockIsolated<AnyCancellable?>(nil)
+                cancellable.setValue(AnyCancellable {
+                  _cancellablesLock.sync {
+                    continuation.finish()  // TODO: or cancel()?
+                    _cancellationCancellables.remove(cancellable.value!, at: id, path: navigationIDPath)
+                  }
+                })
 
-            if operation.async == nil {
-              continuation.onTermination { _ in
-                cancellable.value!.cancel()
-              }
-            }
 
-            // TODO: "copy" continuation so that sync can override onTermination
-            // TODO: escaped operation.sync?(continuation)
-          },
-          async: operation.async.map { priority, operation in
-            withEscapedDependencies { continuation in
-              (priority, { send in
-                await continuation.yield {
-                  // TODO: if `sync` returned `async` work maybe we could fix the race condition of cancelling work before it starts.
-                  await withTaskCancellation(id: id, cancelInFlight: false) {
-                    await operation(send)
+                if operation.async == nil {
+                  continuation.onTermination { _ in
+                    cancellable.value!.cancel()
                   }
                 }
-              })
-            }
-          }
-        )
-      }
-    )
+
+                if let sync = operation.sync {
+                  // TODO: This needs to be in an onSubscribe
+                  _cancellationCancellables.insert(cancellable.value!, at: id, path: navigationIDPath)
+                  sync(.init(send: { action in
+                    escaped.yield {
+                      continuation(action)
+                    }
+                  }, storage: continuation.storage))
+                } else {
+                  continuation.finish()
+                }
+
+                // TODO: "copy" continuation so that sync can override onTermination
+                // TODO: escaped operation.sync?(continuation)
+
+              },
+              async: operation.async.map { priority, operation in
+                (priority, { send in
+                  await escaped.yield {
+                    // TODO: if `sync` returned `async` work maybe we could fix the race condition of cancelling work before it starts.
+                    await withTaskCancellation(id: id, cancelInFlight: false) {
+                      await operation(send)
+                    }
+                  }
+                })
+              }
+            )
+        }
+      )
+    }
   }
 
   /// An effect that will cancel any currently in-flight effect with the given identifier.
@@ -85,29 +98,22 @@ extension Effect {
   /// - Returns: A new effect that will cancel any currently in-flight effect with the given
   ///   identifier.
   public static func cancel<ID: Hashable>(id: ID) -> Self {
-    let dependencies = DependencyValues._current
-    @Dependency(\.navigationIDPath) var navigationIDPath
-    // NB: Ideally we'd return a `Deferred` wrapping an `Empty(completeImmediately: true)`, but
-    //     due to a bug in iOS 13.2 that publisher will never complete. The bug was fixed in
-    //     iOS 13.3, but to remain compatible with iOS 13.2 and higher we need to do a little
-    //     trickery to make sure the deferred publisher completes.
-//    return .publisher { () -> Publishers.CompactMap<Just<Action?>, Action> in
-//      DependencyValues.$_current.withValue(dependencies) {
-//        _cancellablesLock.sync {
-//          _cancellationCancellables.cancel(id: id, path: navigationIDPath)
-//        }
-//      }
-//      return Just<Action?>(nil).compactMap { $0 }
-//    }
-    return .init(
-      operations: [.init(
-        sync: { _ in
-          _cancellablesLock.sync {
-            _cancellationCancellables.cancel(id: id, path: navigationIDPath)
-          }
-        }
-      )]
-    )
+    withEscapedDependencies { escaped in
+        .init(
+          operations: [.init(
+            sync: { continuation in
+              escaped.yield {
+                _cancellablesLock.sync {
+                  @Dependency(\.navigationIDPath) var navigationIDPath
+                  print(_cancellationCancellables.exists(at: id, path: navigationIDPath))
+                  _cancellationCancellables.cancel(id: id, path: navigationIDPath)
+                }
+                continuation.finish()
+              }
+            }
+          )]
+        )
+    }
   }
 }
 
@@ -166,7 +172,9 @@ public func withTaskCancellation<ID: Hashable, T: Sendable>(
       _cancellationCancellables.cancel(id: id, path: navigationIDPath)
     }
     let task = Task { try await operation() }
-    let cancellable = AnyCancellable { task.cancel() }
+    let cancellable = AnyCancellable {
+      task.cancel()
+    }
     _cancellationCancellables.insert(cancellable, at: id, path: navigationIDPath)
     return (cancellable, task)
   }
@@ -263,7 +271,10 @@ public class CancellablesCollection {
     path: NavigationIDPath
   ) {
     let cancelID = _CancelID(id: id, navigationIDPath: path)
-    self.storage[cancelID]?.forEach { $0.cancel() }
+    print(self.storage[cancelID])
+    self.storage[cancelID]?.forEach {
+      $0.cancel()
+    }
     self.storage[cancelID] = nil
   }
 

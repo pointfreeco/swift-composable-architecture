@@ -2100,7 +2100,9 @@ class TestReducer<State, Action>: Reducer {
 
     return .run { send in
       self.inFlightEffects.insert(effect)
-      defer { self.inFlightEffects.remove(effect) }
+      defer {
+        self.inFlightEffects.remove(effect)
+      }
       for await a in effects.actions {
         await send(.init(origin: .receive(a), file: action.file, line: action.line))
       }

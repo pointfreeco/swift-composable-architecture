@@ -298,10 +298,9 @@ final class EffectCancellationTests: BaseTCATestCase {
     func testCancellablesCleanUp_OnCancel() async {
       let id = UUID()
 
-      let mainQueue = DispatchQueue.test
       let effect = Effect.publisher {
         Just(1)
-          .delay(for: 1, scheduler: mainQueue)
+          .delay(for: 1, scheduler: DispatchQueue.test)
       }
       .cancellable(id: id)
 

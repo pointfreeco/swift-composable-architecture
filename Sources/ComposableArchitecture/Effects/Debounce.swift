@@ -32,35 +32,24 @@
       options: S.SchedulerOptions? = nil
     ) -> Self {
 
-      return .init(operations: [])
-      fatalError("TODO")
-
-//      .init(
-//        operation: .init(
-//          sync: { continuation in
-//            // Insert cancellation ID
-//            scheduler.schedule(after: scheduler.now.advanced(by: dueTime)) {
-//              self.operation.sync(continuation)
-//            }
-//          },
-//          async: self.operation.async
-//        )
-//      )
-
-//      switch self.operation {
-//      case .none:
-//        return .none
-//      case .publisher, .run:
-//        return Self(
-//          operation: .publisher(
-//            Just(())
-//              .delay(for: dueTime, scheduler: scheduler, options: options)
-//              .flatMap { _EffectPublisher(self).receive(on: scheduler) }
-//              .eraseToAnyPublisher()
-//          )
-//        )
-//        .cancellable(id: id, cancelInFlight: true)
-//      }
+      return .init(
+        operations: self.operations.map { operation in
+          .init(
+            sync: { continuation in
+              // TODO: options?
+              scheduler.schedule(after: scheduler.now.advanced(by: dueTime)) {
+                if let sync = operation.sync {
+                  sync(continuation)
+                } else {
+                  continuation.finish()
+                }
+              }
+            },
+            async: operation.async
+          )
+        }
+      )
+      .cancellable(id: id, cancelInFlight: true)
     }
   }
 #endif
