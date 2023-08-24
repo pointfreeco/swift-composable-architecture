@@ -15,7 +15,7 @@ import OrderedCollections
 /// compares to SwiftUI's `NavigationPath` type.
 public struct StackState<Element> {
   var _dictionary: OrderedDictionary<StackElementID, Element>
-  fileprivate var _mounted: Set<StackElementID> = []
+  fileprivate var _mounted: OrderedSet<StackElementID> = []
 
   @Dependency(\.stackElementID) private var stackElementID
 
