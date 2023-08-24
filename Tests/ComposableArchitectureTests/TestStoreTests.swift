@@ -19,8 +19,12 @@ final class TestStoreTests: BaseTCATestCase {
           return .merge(
             .run { send in
               try await mainQueue.sleep(for: .seconds(1))
+              print(#fileID, #line)
+              // TODO: why doesn't this invoke the reducer with b1 IMMEDIATELY
               await send(.b1)
+              print(#fileID, #line)
               await send(.c1)
+              print(#fileID, #line)
             },
             .run { _ in try await Task.never() }
               .cancellable(id: 1)

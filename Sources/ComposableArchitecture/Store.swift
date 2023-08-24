@@ -469,6 +469,7 @@ public final class Store<State, Action> {
                   else { continue }
                   group.addTask(priority: async.priority) {
                     await async.operation(Send<Action> { @MainActor action in
+                      print(#fileID, #line)
                       if let _ = escaped.yield({
                         self.send(action, originatingFrom: action)
                       }) {
