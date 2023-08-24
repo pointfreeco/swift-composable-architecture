@@ -5,10 +5,23 @@ import XCTestDynamicOverlay
 
 // TODO: explore flattening Effect to just an array of operations
 
+/*
+ enum Operation {
+   case escaping((EscapingSend<Action>) -> Void)
+   case async(priority: TaskPriority?, (Send<Action>) async -> Void)
+
+   static func publisher(_: some Publisher) -> Self
+   static func sync(_ work: (EscapingSend<Action>) -> Void) -> Self {
+     .escaping { send in
+       work(send)
+       send.finish()
+     }
+   }
+ */
+
 public struct Effect<Action> {
 
-  @usableFromInline
-  struct _Operation {
+  public struct _Operation {
     // TODO: This should be non-optional?
     @usableFromInline
     let sync: ((Send<Action>.Continuation) -> Void)?
@@ -23,8 +36,7 @@ public struct Effect<Action> {
      let sync: ((Send<Action>.Continuation) -> ((Task) -> Void))?
      */
 
-    @usableFromInline
-    init(
+    public init(
       sync: ((Send<Action>.Continuation) -> Void)? = nil,
       async: (priority: TaskPriority?, operation: ((Send<Action>) async -> Void))? = nil
     ) {
@@ -81,9 +93,42 @@ public struct Effect<Action> {
   @usableFromInline
   let operations: [_Operation]
 
-  @usableFromInline
-  init(operations: [_Operation]) {
+  public init(operations: [_Operation]) {
     self.operations = operations
+  }
+
+  public func onComplete(_ completion: @Sendable @escaping () -> Void) -> Self {
+    let completedCount = LockIsolated(0)
+    return .init(operations: self.operations.map { operation in
+        .init(
+          sync: operation.sync.map { sync in
+            { continuation in
+              if operation.async == nil {
+                continuation.onTermination { _ in
+                  completedCount.withValue {
+                    $0 += 1
+                    if $0 == self.operations.count {
+                      completion()
+                    }
+                  }
+                }
+              }
+              sync(continuation)
+            }
+          },
+          async: operation.async.map { priority, async in
+            (priority, { send in
+              await async(send)
+              completedCount.withValue {
+                $0 += 1
+                if $0 == self.operations.count {
+                  completion()
+                }
+              }
+            })
+          }
+        )
+    })
   }
 }
 
@@ -287,8 +332,10 @@ public struct Send<Action>: Sendable {
         newTermination(action)
       }
     }
+    public var isFinished: Bool { self.storage.isFinished }
     public let storage: Storage
     public func finish() {
+      self.storage.isFinished = true
       self.onTermination(.finished)
     }
     public func callAsFunction(_ action: Action) {
@@ -343,6 +390,7 @@ public struct Send<Action>: Sendable {
 // TODO: fix sendable
 public final class Storage: @unchecked Sendable {
   var onTermination: @Sendable (Termination) -> Void
+  var isFinished = false
   public init(onTermination: @Sendable @escaping (Termination) -> Void = { _ in }) {
     self.onTermination = onTermination
   }
@@ -413,46 +461,76 @@ extension Effect {
   @inlinable
   @_disfavoredOverload
   public func concatenate(with other: Self) -> Self {
-    let operations = self.operations + other.operations
+    let totalAsyncCount = (self.operations + other.operations).filter { $0.async != nil }.count
+    let totalSelfAsyncCount = self.operations.filter({ $0.async != nil }).count
+    let totalOtherSyncCount = other.operations.filter { $0.sync != nil }.count
 
-    // [a, b, c, d]
+    func runSyncs(
+      operations: [Effect<Action>._Operation],
+      continuation: @escaping (Action) -> Void,
+      onCompletion: @escaping () -> Void
+    ) {
+      let syncCount = operations.filter { $0.sync != nil }.count
+      let syncCompleteCount = LockIsolated(0)
+      for operation in operations {
+        guard let sync = operation.sync else { continue }
+
+        let childContinuation = Send<Action>.Continuation { continuation($0) }
+        childContinuation.onTermination { _ in
+          syncCompleteCount.withValue {
+            $0 += 1
+            if $0 == syncCount {
+              onCompletion()
+            }
+          }
+        }
+        sync(childContinuation)
+      }
+      if syncCount == 0 {
+        onCompletion()
+      }
+    }
 
     return .init(
       operations: [
         .init(
           sync: { continuation in
-            let syncCount = operations.filter { $0.sync != nil }.count
-            let syncCompleteCount = LockIsolated(0)
-            for operation in operations {
-              if let sync = operation.sync {
-                let childContinuation = Send<Action>.Continuation { continuation($0) }
-                childContinuation.onTermination { _ in
-                  syncCompleteCount.withValue {
-                    $0 += 1
-                    if syncCount == $0 {
-                      continuation.finish()
+            runSyncs(operations: self.operations, continuation: { continuation($0) }) {
+              if totalSelfAsyncCount > 0 {
+                continuation.finish()
+              } else {
+                runSyncs(operations: other.operations, continuation: { continuation($0) }) {
+                  continuation.finish()
+                }
+              }
+            }
+          },
+          async: totalAsyncCount == 0 ? nil : (nil, { send in
+            if totalSelfAsyncCount > 0 {
+              await withTaskGroup(of: Void.self) { group in
+                for operation in self.operations {
+                  if let async = operation.async {
+                    group.addTask {
+                      await async.operation(send)
                     }
                   }
                 }
-                sync(childContinuation)
               }
-            }
-            if syncCount == 0 {
-              continuation.finish()
-            }
-          },
-          async: (nil, { send in
-            //await selfSyncFinished()
-            await withTaskGroup(of: Void.self) { group in
-              for operation in self.operations {
-                if let async = operation.async {
-                  group.addTask {
-                    await async.operation(send)
-                  }
+
+              let channel = AsyncStream<Action>.makeStream()
+              runSyncs(operations: other.operations, continuation: {
+                channel.continuation.yield($0)
+              }) {
+                channel.continuation.finish()
+              }
+
+              if totalOtherSyncCount != 0 {
+                for await action in channel.stream {
+                  await send(action)
                 }
               }
             }
-            //await otherSyncFinished()
+
             await withTaskGroup(of: Void.self) { group in
               for operation in other.operations {
                 if let async = operation.async {

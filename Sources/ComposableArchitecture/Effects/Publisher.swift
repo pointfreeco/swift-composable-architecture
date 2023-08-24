@@ -12,7 +12,6 @@
         operations: [.init(
           sync: { continuation in
             let cancellable = createPublisher()
-              //.handleEvents(receiveSubscription: <#T##((Subscription) -> Void)?##((Subscription) -> Void)?##(Subscription) -> Void#>, receiveCancel: <#T##(() -> Void)?##(() -> Void)?##() -> Void#>)
               .sink(
               receiveCompletion: { _ in
                 continuation.finish()
@@ -23,7 +22,7 @@
             )
             continuation.onTermination { _ in
               _ = cancellable
-              //cancellable.cancel()
+              cancellable.cancel()
             }
           },
           async: nil

@@ -5,6 +5,9 @@ extension Effect {
       let asyncs = LockIsolated<[() async -> Void]>([])
       let syncCount = self.operations.filter { $0.sync != nil }.count
       let syncCompleteCount = LockIsolated(0)
+
+      // TODO: rewrite because sync can finish before all asycns have been catalogued
+
       for operation in self.operations {
         if let sync = operation.sync {
           let continuation = Send<Action>.Continuation { streamContinuation.yield($0) }
@@ -14,9 +17,10 @@ extension Effect {
               if syncCount == $0 {
                 Task {
                   await withTaskGroup(of: Void.self) { group in
-                    for async in asyncs.value {
+                    for operation in self.operations {
+                      guard let async = operation.async else { continue }
                       group.addTask {
-                        await async()
+                        await async.operation(Send<Action> { streamContinuation.yield($0) })
                       }
                     }
                   }
@@ -27,22 +31,14 @@ extension Effect {
           }
           sync(continuation)
         }
-        if let async = operation.async {
-          asyncs.withValue {
-            $0.append {
-              await async.operation(Send<Action> { action in
-                streamContinuation.yield(action)
-              })
-            }
-          }
-        }
       }
       if syncCount == 0 {
         Task {
           await withTaskGroup(of: Void.self) { group in
-            for async in asyncs.value {
+            for operation in self.operations {
+              guard let async = operation.async else { continue }
               group.addTask {
-                await async()
+                await async.operation(Send<Action> { streamContinuation.yield($0) })
               }
             }
           }

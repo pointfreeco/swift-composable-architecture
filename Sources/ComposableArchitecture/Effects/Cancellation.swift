@@ -271,7 +271,6 @@ public class CancellablesCollection {
     path: NavigationIDPath
   ) {
     let cancelID = _CancelID(id: id, navigationIDPath: path)
-    print(self.storage[cancelID])
     self.storage[cancelID]?.forEach {
       $0.cancel()
     }

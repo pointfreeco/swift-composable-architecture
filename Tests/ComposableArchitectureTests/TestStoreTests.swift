@@ -17,7 +17,7 @@ final class TestStoreTests: BaseTCATestCase {
         switch action {
         case .a:
           return 
-            //.merge(
+            .merge(
             .run { send in
               try await mainQueue.sleep(for: .seconds(1))
               print(#fileID, #line)
@@ -27,15 +27,21 @@ final class TestStoreTests: BaseTCATestCase {
               await send(.c1)
               print(#fileID, #line)
             }
-//          ,
-//            .run { _ in try await Task.never() }
-//              .cancellable(id: 1)
-//          )
+          ,
+            .run { _ in try await Task.never() }
+              .cancellable(id: 1)
+          )
         case .b1:
           return .concatenate(.send(.b2), .send(.b3))
         case .c1:
           return .concatenate(.send(.c2), .send(.c3))
-        case .b2, .b3, .c2, .c3:
+        case .b2:
+          return .none
+        case .b3:
+          return .none
+        case .c2:
+          return .none
+        case .c3:
           return .none
         case .d:
           return .cancel(id: 1)
@@ -55,7 +61,7 @@ final class TestStoreTests: BaseTCATestCase {
     await store.receive(.c2)
     await store.receive(.c3)
 
-//    await store.send(.d)
+    await store.send(.d)
   }
 
   func testAsync() async {
@@ -500,6 +506,41 @@ final class TestStoreTests: BaseTCATestCase {
     subject.send()
     await scheduler.advance()
     await store.receive(.increment) { $0.count = 1 }
+    await task.cancel()
+  }
+
+  func testSimpleAsyncEffect() async {
+    let didRun = LockIsolated(false)
+    let store = TestStore(initialState: 0) {
+      Reduce<Int, Void> { state, action in
+        .run { _ in
+          didRun.setValue(true)
+        }
+      }
+    }
+
+    await store.send(())
+    XCTAssertEqual(didRun.value, true)
+  }
+
+  func testCancelSyncForverEffect() async {
+    struct State: Equatable {}
+    enum Action: Equatable {
+      case start
+    }
+
+    let store = TestStore(initialState: State()) {
+      Reduce<State, Action> { state, action in
+        switch action {
+        case .start:
+          return Effect(operations: [
+            .init(sync: { _ in })
+          ])
+        }
+      }
+    }
+
+    let task = await store.send(.start)
     await task.cancel()
   }
 

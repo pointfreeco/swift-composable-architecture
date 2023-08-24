@@ -225,8 +225,7 @@ final class StackReducerTests: BaseTCATestCase {
     await store.send(.children(.element(id: 0, action: .onAppear)))
     await store.send(.children(.element(id: 0, action: .closeButtonTapped)))
     await store.receive(.children(.popFrom(id: 0))) {
-      _ = $0
-      //$0.children.removeLast()
+      $0.children.removeLast()
     }
   }
 

@@ -1,5 +1,6 @@
 import Combine
-@_spi(Canary)@_spi(Internals) import ComposableArchitecture
+@testable @_spi(Canary)@_spi(Internals) import ComposableArchitecture
+@testable import ComposableArchitecture
 import XCTest
 
 @MainActor
@@ -310,5 +311,140 @@ final class EffectTests: BaseTCATestCase {
     XCTAssertEqual(values.value, [])
     await task.value
     XCTAssertEqual(values.value, [1])
+  }
+
+  func testSyncAsyncSync() async {
+    let values = LockIsolated([Int]())
+
+    let effect: Effect<Int> = .concatenate(
+      .send(1),
+
+      Effect(operations: [.init(async: (nil, { await $0(2) }))]),
+
+        .send(3)
+    )
+
+    for await int in effect.actions {
+      values.withValue { $0.append(int) }
+    }
+
+    XCTAssertEqual(values.value, [1, 2, 3])
+  }
+
+  func testAsyncSyncSync() async {
+    let values = LockIsolated([Int]())
+
+    let effect: Effect<Int> = .concatenate(
+      Effect(operations: [.init(async: (nil, { $0(1) }))]),
+      .send(2)
+    )
+
+    for await int in effect.actions {
+      values.withValue { $0.append(int) }
+    }
+
+    XCTAssertEqual(values.value, [1, 2])
+  }
+
+  func testAsyncSyncAsync() async {
+    let values = LockIsolated([Int]())
+
+    let effect: Effect<Int> = .concatenate(
+      Effect(operations: [.init(async: (nil, { await $0(1) }))]),
+      .send(2),
+      Effect(operations: [.init(async: (nil, { await $0(3) }))])
+    )
+
+    for await int in effect.actions {
+      values.withValue { $0.append(int) }
+    }
+
+    XCTAssertEqual(values.value, [1, 2, 3])
+  }
+
+  func testCancelForeverSyncEffect() async throws {
+    let effect = Effect<Int>(operations: [
+      Effect<Int>._Operation(sync: { _ in })
+    ])
+      .cancellable(id: "id")
+
+    let task = Task {
+      for await _ in effect.actions {}
+    }
+
+    try await Task.sleep(for: .seconds(0.1))
+    Task.cancel(id: "id")
+
+    await task.value
+  }
+
+  func testForeverSyncCancellable() async throws {
+    let effect = Effect<Int>.concatenate(
+      Effect<Int>(operations: [
+        Effect<Int>._Operation(sync: {
+          $0.onTermination = { _ in 
+            print("!!!")
+          }
+        })
+      ])
+      .cancellable(id: "forever"),
+
+      .send(1)
+    )
+      .cancellable(id: "id1")
+      .cancellable(id: "id2")
+
+    let values = LockIsolated([Int]())
+    let task = Task {
+      for await int in effect.actions {
+        values.withValue { $0.append(int) }
+      }
+    }
+
+    try await Task.sleep(for: .seconds(0.1))
+
+    XCTAssertEqual(values.value, [])
+    Task.cancel(id: "forever")
+    await task.value
+    XCTAssertEqual(values.value, [1])
+  }
+
+  func testSyncForeverSyncSync() async throws {
+    let effect = Effect<Int>.concatenate(
+      .init(operations: [.init(sync: { $0(1); $0.finish() })]),
+      .init(operations: [.init(sync: { send in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+          send(2)
+          send.finish()
+        }
+      })]).map { $0 },
+      .init(operations: [.init(sync: { $0(3); $0.finish() })])
+    )
+
+    let values = LockIsolated([Int]())
+
+      for await int in effect.actions {
+        values.withValue { $0.append(int) }
+      }
+
+    XCTAssertEqual(values.value, [1, 2, 3])
+  }
+
+  func testOnComplete() async {
+    let didComplete = LockIsolated(false)
+    let effect = Effect<Int>.publisher {
+      Just(1)
+    }
+      .onComplete {
+        didComplete.setValue(true)
+      }
+
+    let values = LockIsolated([Int]())
+    for await int in effect.actions {
+      values.withValue { $0.append(int) }
+    }
+
+    XCTAssertEqual(values.value, [1])
+    XCTAssertEqual(didComplete.value, true)
   }
 }

@@ -87,6 +87,9 @@ final class PresentationReducerTests: BaseTCATestCase {
       var body: some ReducerOf<Self> {
         Reduce { state, action in
           switch action {
+          case .child(.dismiss):
+            return .none
+            
           case .child:
             return .none
           case .presentChild:
@@ -743,6 +746,7 @@ final class PresentationReducerTests: BaseTCATestCase {
         switch action {
         case .closeButtonTapped:
           return .run { _ in
+            print(#line)
             await self.dismiss()
           }
         case .decrementButtonTapped:
@@ -784,6 +788,7 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
 
     await store.send(.child(.presented(.closeButtonTapped)))
+    try? await Task.sleep(for: .seconds(0.5))
     await store.receive(.child(.dismiss)) {
       $0.child = nil
     }

@@ -29,8 +29,56 @@
       scheduler: S,
       latest: Bool
     ) -> Self {
-      return .init(operations: [])
-      fatalError("TODO")
+
+      return .init(operations: self.operations.map { operation in
+        .init(
+          sync: operation.sync.map { sync in
+            { continuation in
+              let throttledContinuation = Send<Action>.Continuation { action in
+                throttleLock.lock()
+                defer { throttleLock.unlock() }
+
+                guard let throttleTime = throttleTimes[id] as! S.SchedulerTimeType? else {
+                  throttleTimes[id] = scheduler.now
+                  throttleValues[id] = nil
+                  continuation(action)
+                  continuation.finish()
+                  return
+                }
+
+                let action = latest ? action : (throttleValues[id] as! Action? ?? action)
+                throttleValues[id] = action
+
+                guard throttleTime.distance(to: scheduler.now) < interval else {
+                  throttleTimes[id] = scheduler.now
+                  throttleValues[id] = nil
+                  continuation(action)
+                  continuation.finish()
+                  return
+                }
+                
+                scheduler.schedule(after: throttleTime.advanced(by: interval)) {
+                  guard !continuation.isFinished else { return }
+                  throttleLock.sync {
+                    continuation(action)
+                    throttleTimes[id] = scheduler.now
+                    throttleValues[id] = nil
+                    continuation.finish()
+                  }
+                }
+              }
+              sync(throttledContinuation)
+            }
+          },
+          async: operation.async.map { priority, async in
+            (priority, { send in
+              fatalError()
+            })
+          }
+        )
+      })
+      .cancellable(id: id, cancelInFlight: true)
+
 //      switch self.operation {
 //      case .none:
 //        return .none

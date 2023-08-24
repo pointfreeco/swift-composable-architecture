@@ -2089,6 +2089,7 @@ class TestReducer<State, Action>: Reducer {
       self.state = state
 
     case let .receive(action):
+      print(action)
       effects = reducer.reduce(into: &state, action: action)
       self.receivedActions.append((action, state))
     }
@@ -2098,15 +2099,28 @@ class TestReducer<State, Action>: Reducer {
 
     let effect = LongLivingEffect(action: action)
 
-    return .run { send in
-      self.inFlightEffects.insert(effect)
-      defer {
-        self.inFlightEffects.remove(effect)
-      }
-      for await a in effects.actions {
-        await send(.init(origin: .receive(a), file: action.file, line: action.line))
-      }
+    return .merge(
+      .init(operations: [.init(sync: {
+        self.inFlightEffects.insert(effect)
+        $0.finish()
+      })]),
+      effects
+      //.handleEvents(onComplete: { self.inFlightEffects.remove(effect) })
+        .map { .init(origin: .receive($0), file: action.file, line: action.line) }
+    )
+    .onComplete {
+      self.inFlightEffects.remove(effect)
     }
+
+//    return .run { send in
+//      self.inFlightEffects.insert(effect)
+//      defer {
+//        self.inFlightEffects.remove(effect)
+//      }
+//      for await a in effects.actions {
+//        await send(.init(origin: .receive(a), file: action.file, line: action.line))
+//      }
+//    }
   }
 
   struct LongLivingEffect: Hashable {
