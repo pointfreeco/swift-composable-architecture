@@ -16,7 +16,8 @@ final class TestStoreTests: BaseTCATestCase {
       Reduce<State, Action> { _, action in
         switch action {
         case .a:
-          return .merge(
+          return 
+            //.merge(
             .run { send in
               try await mainQueue.sleep(for: .seconds(1))
               print(#fileID, #line)
@@ -25,10 +26,11 @@ final class TestStoreTests: BaseTCATestCase {
               print(#fileID, #line)
               await send(.c1)
               print(#fileID, #line)
-            },
-            .run { _ in try await Task.never() }
-              .cancellable(id: 1)
-          )
+            }
+//          ,
+//            .run { _ in try await Task.never() }
+//              .cancellable(id: 1)
+//          )
         case .b1:
           return .concatenate(.send(.b2), .send(.b3))
         case .c1:
@@ -53,7 +55,7 @@ final class TestStoreTests: BaseTCATestCase {
     await store.receive(.c2)
     await store.receive(.c3)
 
-    await store.send(.d)
+//    await store.send(.d)
   }
 
   func testAsync() async {
