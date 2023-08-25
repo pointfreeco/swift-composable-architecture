@@ -9,7 +9,8 @@ enum Operation<Action> {
   case async(priority: TaskPriority?, (Send<Action>) async -> Void)
 
   static func publisher(_: some Publisher<Action, Never>) -> Self {
-    fatalError()
+    .escaping { send in
+    }
   }
   static func sync(_ work: (EscapingSend<Action>) -> Void) -> Self {
     .escaping { send in
