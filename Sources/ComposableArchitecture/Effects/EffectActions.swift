@@ -2,7 +2,6 @@ extension Effect {
   @_spi(Internals)
   public var actions: AsyncStream<Action> {
     AsyncStream { streamContinuation in
-      let asyncs = LockIsolated<[() async -> Void]>([])
       let syncCount = self.operations.filter { $0.sync != nil }.count
       let syncCompleteCount = LockIsolated(0)
 

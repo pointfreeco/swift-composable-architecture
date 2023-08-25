@@ -292,3 +292,72 @@ public class CancellablesCollection {
     self.storage.removeAll()
   }
 }
+
+extension NewEffect {
+  public func cancellable<ID: Hashable>(id: ID, cancelInFlight: Bool = false) -> Self {
+    @Dependency(\.navigationIDPath) var navigationIDPath
+
+    func setUp(finish: @escaping () -> Void) {
+      _cancellablesLock.lock()
+      defer { _cancellablesLock.unlock() }
+
+      if cancelInFlight {
+        _cancellationCancellables.cancel(id: id, path: navigationIDPath)
+      }
+
+      let cancellable = LockIsolated<AnyCancellable?>(nil)
+      cancellable.setValue(AnyCancellable {
+        _cancellablesLock.sync {
+          finish()
+          _cancellationCancellables.remove(cancellable.value!, at: id, path: navigationIDPath)
+        }
+      })
+
+      _cancellationCancellables.insert(cancellable.value!, at: id, path: navigationIDPath)
+    }
+
+    return .init(merged: self.merged.flatMap { operation -> [Operation<Action>] in
+      let task = LockIsolated<Task<Void, Never>?>(nil)
+      let isCancelled = LockIsolated<Bool>(false)
+
+      switch operation {
+      case let .async(priority, work):
+        return [
+          .escaping { send in
+            defer { send.finish() }
+            setUp(finish: {
+              isCancelled.withValue {
+                $0 = true
+                task.withValue {
+                  $0?.cancel()
+                }
+              }
+            })
+          },
+          .async(priority: priority) { send in
+            let task: Task<Void, Never>? = isCancelled.withValue { isCancelled in
+              guard !isCancelled else { return nil }
+              return task.withValue {
+                $0 = Task(priority: priority) {
+                  await work(send)
+                }
+                return $0
+              }
+            }
+            await task?.cancellableValue
+          }
+        ]
+
+      case let .escaping(work):
+        return [
+          .escaping { send in
+            setUp(finish: {
+              send.finish()
+            })
+            work(send)
+          }
+        ]
+      }
+    })
+  }
+}
