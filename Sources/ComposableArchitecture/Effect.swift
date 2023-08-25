@@ -3,26 +3,6 @@ import Foundation
 import SwiftUI
 import XCTestDynamicOverlay
 
-
-enum Operation<Action> {
-  case escaping((EscapingSend<Action>) -> Void)
-  case async(priority: TaskPriority?, (Send<Action>) async -> Void)
-
-  static func publisher(_: some Publisher<Action, Never>) -> Self {
-    .escaping { send in
-    }
-  }
-  static func sync(_ work: (EscapingSend<Action>) -> Void) -> Self {
-    .escaping { send in
-      //work(send)
-      //send.finish()
-    }
-  }
-}
-
-struct EscapingSend<Action> {
-}
-
 public struct Effect<Action> {
 
   public struct _Operation {
