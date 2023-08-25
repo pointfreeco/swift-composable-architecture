@@ -97,22 +97,19 @@ struct AppFeature: Reducer {
   struct Path: Reducer {
     enum State: Equatable {
       case detail(StandupDetail.State)
-      case meeting(MeetingReducer.State)
+      case meeting(Meeting, standup: Standup)
       case record(RecordMeeting.State)
     }
 
     enum Action: Equatable {
       case detail(StandupDetail.Action)
-      case meeting(MeetingReducer.Action)
+      case meeting(Never)
       case record(RecordMeeting.Action)
     }
 
     var body: some Reducer<State, Action> {
       Scope(state: /State.detail, action: /Action.detail) {
         StandupDetail()
-      }
-      Scope(state: /State.meeting, action: /Action.meeting) {
-        MeetingReducer()
       }
       Scope(state: /State.record, action: /Action.record) {
         RecordMeeting()
@@ -137,12 +134,8 @@ struct AppView: View {
           action: AppFeature.Path.Action.detail,
           then: StandupDetailView.init(store:)
         )
-      case .meeting:
-        CaseLet(
-          /AppFeature.Path.State.meeting,
-          action: AppFeature.Path.Action.meeting,
-          then: MeetingView.init(store:)
-        )
+      case let .meeting(meeting, standup: standup):
+        MeetingView(meeting: meeting, standup: standup)
       case .record:
         CaseLet(
           /AppFeature.Path.State.record,
