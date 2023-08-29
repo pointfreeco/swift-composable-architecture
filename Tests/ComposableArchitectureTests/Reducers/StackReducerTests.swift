@@ -1203,4 +1203,90 @@ final class StackReducerTests: BaseTCATestCase {
       $0.path[id: 3] = 2
     }
   }
+
+  func testOuterCancellation() async {
+    struct Child: Reducer {
+      struct State: Equatable {}
+      enum Action: Equatable { case onAppear }
+      var body: some ReducerOf<Self> {
+        Reduce { state, action in
+          .run { _ in
+            try await Task.never()
+          }
+        }
+      }
+    }
+
+    struct Parent: Reducer {
+      struct State: Equatable {
+        var children = StackState<Child.State>()
+      }
+      enum Action: Equatable {
+        case children(StackAction<Child.State, Child.Action>)
+        case tapAfter
+        case tapBefore
+      }
+      var body: some ReducerOf<Self> {
+        Reduce { state, action in
+          switch action {
+          case .children:
+            return .none
+          case .tapAfter:
+            return .none
+          case .tapBefore:
+            state.children.removeAll()
+            return .none
+          }
+        }
+
+        Reduce { state, action in
+          switch action {
+          case .children:
+            return .none
+          case .tapAfter:
+            return .none
+          case .tapBefore:
+            return .none
+          }
+        }
+        .forEach(\.children, action: /Action.children) {
+          Child()
+        }
+
+        Reduce { state, action in
+          switch action {
+          case .children:
+            return .none
+          case .tapAfter:
+            state.children.removeAll()
+            return .none
+          case .tapBefore:
+            return .none
+          }
+        }
+      }
+    }
+
+    let store = TestStore(initialState: Parent.State()) {
+      Parent()
+    }
+
+    await store.send(.children(.push(id: 0, state: Child.State()))) {
+      $0.children[id: 0] = Child.State()
+    }
+    await store.send(.children(.element(id: 0, action: .onAppear)))
+    await store.send(.tapBefore) {
+      $0.children.removeAll()
+    }
+
+    await store.send(.children(.push(id: 1, state: Child.State()))) {
+      $0.children[id: 1] = Child.State()
+    }
+    await store.send(.children(.element(id: 1, action: .onAppear)))
+    await store.send(.tapAfter) {
+      $0.children.removeAll()
+    }
+    // NB: Another action needs to come into the `ifLet` to cancel the child action
+    await store.send(.tapAfter)
+  }
 }

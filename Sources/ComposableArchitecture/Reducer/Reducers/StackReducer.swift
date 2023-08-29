@@ -15,7 +15,7 @@ import OrderedCollections
 /// compares to SwiftUI's `NavigationPath` type.
 public struct StackState<Element> {
   var _dictionary: OrderedDictionary<StackElementID, Element>
-  fileprivate var _mounted: Set<StackElementID> = []
+  fileprivate var _mounted: OrderedSet<StackElementID> = []
 
   @Dependency(\.stackElementID) private var stackElementID
 
@@ -38,12 +38,7 @@ public struct StackState<Element> {
   /// Accesses the value associated with the given id for reading and writing.
   public subscript(id id: StackElementID) -> Element? {
     _read { yield self._dictionary[id] }
-    _modify {
-      yield &self._dictionary[id]
-      if !self._dictionary.keys.contains(id) {
-        self._mounted.remove(id)
-      }
-    }
+    _modify { yield &self._dictionary[id] }
     set {
       switch (self.ids.contains(id), newValue, _XCTIsTesting) {
       case (true, _, _), (false, .some, true):
@@ -54,9 +49,6 @@ public struct StackState<Element> {
         }
       case (false, .none, _):
         break
-      }
-      if newValue == nil {
-        self._mounted.remove(id)
       }
     }
   }
@@ -94,7 +86,7 @@ public struct StackState<Element> {
   ///
   /// - Parameter id: The identifier of an element in the stack.
   public mutating func pop(from id: StackElementID) {
-    guard let index = self._dictionary.keys.firstIndex(of: id)
+    guard let index = self.ids.firstIndex(of: id)
     else { return }
     self.removeSubrange(index...)
   }
@@ -103,7 +95,7 @@ public struct StackState<Element> {
   ///
   /// - Parameter id: The identifier of an element in the stack.
   public mutating func pop(to id: StackElementID) {
-    guard let index = self._dictionary.keys.firstIndex(of: id)
+    guard let index = self.ids.firstIndex(of: id)
     else { return }
     self.removeSubrange(index.advanced(by: 1)...)
   }
@@ -118,11 +110,11 @@ extension StackState: RandomAccessCollection, RangeReplaceableCollection {
   public init() {
     self._dictionary = [:]
   }
+  public mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
+    self._dictionary.removeAll(keepingCapacity: keepCapacity)
+  }
   public mutating func replaceSubrange<C: Collection>(_ subrange: Range<Int>, with newElements: C)
   where C.Element == Element {
-    for id in self.ids[subrange] {
-      self._mounted.remove(id)
-    }
     self._dictionary.removeSubrange(subrange)
     for (offset, element) in zip(subrange.lowerBound..., newElements) {
       self._dictionary.updateValue(element, forKey: self.stackElementID.next(), insertingAt: offset)
@@ -308,7 +300,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
   }
 
   public func reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action> {
-    let idsBefore = state[keyPath: self.toStackState].ids
+    let idsBefore = state[keyPath: self.toStackState]._mounted
     let destinationEffects: Effect<Base.Action>
     let baseEffects: Effect<Base.Action>
 
@@ -425,7 +417,6 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
     }
 
     let idsAfter = state[keyPath: self.toStackState].ids
-    let idsMounted = state[keyPath: self.toStackState]._mounted
 
     let cancelEffects: Effect<Base.Action> =
       areOrderedSetsDuplicates(idsBefore, idsAfter)
@@ -436,12 +427,11 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
         }
       )
     let presentEffects: Effect<Base.Action> =
-      idsAfter.count == idsMounted.count
+      areOrderedSetsDuplicates(idsBefore, idsAfter)
       ? .none
       : .merge(
-        idsAfter.subtracting(idsMounted).map { elementID in
+        idsAfter.subtracting(idsBefore).map { elementID in
           let navigationDestinationID = self.navigationIDPath(for: elementID)
-          state[keyPath: self.toStackState]._mounted.insert(elementID)
           return .concatenate(
             .publisher { Empty(completeImmediately: false) }
               ._cancellable(
@@ -454,6 +444,8 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
           ._cancellable(id: OnFirstAppearID(), navigationIDPath: .init())
         }
       )
+
+    state[keyPath: self.toStackState]._mounted = idsAfter
 
     return .merge(
       destinationEffects,
