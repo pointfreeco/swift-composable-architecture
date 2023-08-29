@@ -400,7 +400,7 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
       initialPresentationState.wrappedValue.map({
         self.navigationIDPath(for: $0) == presentedPath && !isEphemeral($0)
       })
-      ?? true
+        ?? true
     {
       dismissEffects = ._cancel(navigationID: presentedPath)
     } else {
