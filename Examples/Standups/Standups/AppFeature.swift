@@ -103,7 +103,6 @@ struct AppFeature: Reducer {
 
     enum Action: Equatable {
       case detail(StandupDetail.Action)
-      case meeting(Never)
       case record(RecordMeeting.Action)
     }
 
