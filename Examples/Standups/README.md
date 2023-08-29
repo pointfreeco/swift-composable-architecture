@@ -4,7 +4,7 @@ This project demonstrates how to build a complex, real world application that de
 of navigation (_e.g._, sheets, drill-downs, alerts), many side effects (timers, speech recognizer,
 data persistence), and do so in a way that is testable and modular.
 
-The inspiration for this application comes Apple's [Scrumdinger][scrumdinger] tutorial:
+The inspiration for this application comes from Apple's [Scrumdinger][scrumdinger] tutorial:
 
 > This module guides you through the development of Scrumdinger, an iOS app that helps users manage
 > their daily scrums. To help keep scrums short and focused, Scrumdinger uses visual and audio cues
