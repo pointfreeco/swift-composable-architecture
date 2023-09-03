@@ -34,7 +34,7 @@
         will send a `factButtonTapped` action, which does not yet exist in the counter domain, but
         will soon.
         
-        @Code(name: "CounterFeature.swift", file: 01-02-01-code-0001.swift, previousFile: 02-01-code-0001-previous.swift) {
+        @Code(name: "CounterFeature.swift", file: 01-02-01-code-0001.swift, previousFile: 01-02-01-code-0001-previous.swift) {
           @Image(source: "02-01-image-0001")
         }
       }
@@ -111,7 +111,7 @@
         you with an asynchronous context to perform any kind of work you want, as well as a handle
         (`send`) for sending actions back into the system.
         
-        @Code(name: "CounterFeature.swift", file: 01-02-02-code-0001.swift, previousFile: 02-01-code-0005.swift)
+        @Code(name: "CounterFeature.swift", file: 01-02-02-code-0001.swift, previousFile: 01-02-01-code-0005.swift)
       }
       
       @Step {
@@ -181,7 +181,7 @@
         > Note: The `isTimerRunning` state and `toggleTimerButtonTapped` actions do not yet exist. 
         > We will add them in the next step.
         
-        @Code(name: "CounterFeature.swift", file: 01-02-03-code-0001.swift, previousFile: 02-01-code-0002.swift)
+        @Code(name: "CounterFeature.swift", file: 01-02-03-code-0001.swift, previousFile: 01-02-01-code-0002.swift)
       }
       
       @Step {
@@ -190,7 +190,7 @@
         action. We know we will want to execute some asynchronous work, in particular a timer, so
         we have gone ahead and opened up a `run` effect.
         
-        @Code(name: "CounterFeature.swift", file: 01-02-03-code-0002.swift, previousFile: 02-02-code-0005.swift)
+        @Code(name: "CounterFeature.swift", file: 01-02-03-code-0002.swift, previousFile: 01-02-02-code-0005.swift)
       }
       
       @Step {
