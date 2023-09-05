@@ -2,7 +2,11 @@
   import Foundation
   import Observation
 
-  public protocol ObservableState {
+  @available(iOS, introduced: 17)
+  @available(macOS, introduced: 14)
+  @available(tvOS, introduced: 17)
+  @available(watchOS, introduced: 10)
+  public protocol ObservableState: Observable {
     var _$id: StateID { get }
   }
 
@@ -65,6 +69,11 @@
   @available(tvOS, introduced: 17)
   @available(watchOS, introduced: 10)
   extension Store: Observable {
+
+    public subscript<Value>(dynamicMember keyPath: KeyPath<State, Value>) -> Value {
+      self.state[keyPath: keyPath]
+    }
+
     internal nonisolated func access<Member>(keyPath: KeyPath<Store, Member>) {
       _$observationRegistrar.rawValue.access(self, keyPath: keyPath)
     }
@@ -93,9 +102,41 @@
     }
   }
 
+
+  @available(iOS, introduced: 17)
+  @available(macOS, introduced: 14)
+  @available(tvOS, introduced: 17)
+  @available(watchOS, introduced: 10)
   func isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
     guard let lhs = lhs as? any ObservableState, let rhs = rhs as? any ObservableState
     else { return true }
     return lhs._$id.id == rhs._$id.id
+  }
+
+  @available(iOS, introduced: 17)
+  @available(macOS, introduced: 14)
+  @available(tvOS, introduced: 17)
+  @available(watchOS, introduced: 10)
+  public struct ObservationStateRegistrar: Equatable, Hashable {
+    public let id = StateID()
+    public let _$observationRegistrar = ObservationRegistrar()
+    public init() {
+    }
+
+    public func access<Subject, Member>(_ subject: Subject, keyPath: KeyPath<Subject, Member>) where Subject: ObservableState {
+      self._$observationRegistrar.access(subject, keyPath: keyPath)
+    }
+
+    public func willSet<Subject, Member>(_ subject: Subject, keyPath: KeyPath<Subject, Member>) where Subject : ObservableState {
+      self._$observationRegistrar.willSet(subject, keyPath: keyPath)
+    }
+
+    public func didSet<Subject, Member>(_ subject: Subject, keyPath: KeyPath<Subject, Member>) where Subject : ObservableState {
+      self._$observationRegistrar.didSet(subject, keyPath: keyPath)
+    }
+
+    public func withMutation<Subject, Member, T>(of subject: Subject, keyPath: KeyPath<Subject, Member>, _ mutation: () throws -> T) rethrows -> T where Subject : ObservableState {
+      try self._$observationRegistrar.withMutation(of: subject, keyPath: keyPath, mutation)
+    }
   }
 #endif

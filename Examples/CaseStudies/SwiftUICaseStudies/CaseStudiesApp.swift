@@ -9,7 +9,7 @@ struct CaseStudiesApp: App {
         store: Store(initialState: Root.State()) {
           Root()
             .signpost()
-            ._printChanges()
+//            ._printChanges()
         }
       )
     }

@@ -15,6 +15,7 @@ private let readMe = """
 // MARK: - Feature domain
 
 struct OptionalBasics: Reducer {
+  @ObservableState
   struct State: Equatable {
     var optionalCounter: Counter.State?
   }
@@ -49,32 +50,31 @@ struct OptionalBasicsView: View {
   let store: StoreOf<OptionalBasics>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
-
-        Button("Toggle counter state") {
-          viewStore.send(.toggleCounterButtonTapped)
-        }
-
-        IfLetStore(
-          self.store.scope(
-            state: \.optionalCounter,
-            action: OptionalBasics.Action.optionalCounter
-          ),
-          then: { store in
-            Text(template: "`CounterState` is non-`nil`")
-            CounterView(store: store)
-              .buttonStyle(.borderless)
-              .frame(maxWidth: .infinity)
-          },
-          else: {
-            Text(template: "`CounterState` is `nil`")
-          }
-        )
+    let _ = Self._printChanges()
+    Form {
+      Section {
+        AboutView(readMe: readMe)
       }
+
+      Button("Toggle counter state") {
+        self.store.send(.toggleCounterButtonTapped)
+      }
+
+      IfLetStore(
+        self.store.scope(
+          state: \.optionalCounter,
+          action: OptionalBasics.Action.optionalCounter
+        ),
+        then: { store in
+          Text(template: "`CounterState` is non-`nil`")
+          CounterView(store: store)
+            .buttonStyle(.borderless)
+            .frame(maxWidth: .infinity)
+        },
+        else: {
+          Text(template: "`CounterState` is `nil`")
+        }
+      )
     }
     .navigationTitle("Optional state")
   }
