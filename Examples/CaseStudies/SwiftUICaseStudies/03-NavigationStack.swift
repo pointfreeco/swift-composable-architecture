@@ -211,6 +211,7 @@ struct FloatingMenuView: View {
 // MARK: - Screen A
 
 struct ScreenA: Reducer {
+  @ObservableState
   struct State: Codable, Equatable, Hashable {
     var count = 0
     var fact: String?
@@ -266,71 +267,70 @@ struct ScreenAView: View {
   let store: StoreOf<ScreenA>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Text(
-          """
-          This screen demonstrates a basic feature hosted in a navigation stack.
+    let _ = Self._printChanges()
+    Form {
+      Text(
+        """
+        This screen demonstrates a basic feature hosted in a navigation stack.
 
-          You can also have the child feature dismiss itself, which will communicate back to the \
-          root stack view to pop the feature off the stack.
-          """
-        )
+        You can also have the child feature dismiss itself, which will communicate back to the \
+        root stack view to pop the feature off the stack.
+        """
+      )
 
-        Section {
-          HStack {
-            Text("\(viewStore.count)")
-            Spacer()
-            Button {
-              viewStore.send(.decrementButtonTapped)
-            } label: {
-              Image(systemName: "minus")
-            }
-            Button {
-              viewStore.send(.incrementButtonTapped)
-            } label: {
-              Image(systemName: "plus")
-            }
-          }
-          .buttonStyle(.borderless)
-
+      Section {
+        HStack {
+          Text("\(self.store.count)")
+          Spacer()
           Button {
-            viewStore.send(.factButtonTapped)
+            self.store.send(.decrementButtonTapped)
           } label: {
-            HStack {
-              Text("Get fact")
-              if viewStore.isLoading {
-                Spacer()
-                ProgressView()
-              }
+            Image(systemName: "minus")
+          }
+          Button {
+            self.store.send(.incrementButtonTapped)
+          } label: {
+            Image(systemName: "plus")
+          }
+        }
+        .buttonStyle(.borderless)
+
+        Button {
+          self.store.send(.factButtonTapped)
+        } label: {
+          HStack {
+            Text("Get fact")
+            if self.store.isLoading {
+              Spacer()
+              ProgressView()
             }
           }
-
-          if let fact = viewStore.fact {
-            Text(fact)
-          }
         }
 
-        Section {
-          Button("Dismiss") {
-            viewStore.send(.dismissButtonTapped)
-          }
+        if let fact = self.store.fact {
+          Text(fact)
         }
+      }
 
-        Section {
-          NavigationLink(
-            "Go to screen A",
-            state: NavigationDemo.Path.State.screenA(.init(count: viewStore.count))
-          )
-          NavigationLink(
-            "Go to screen B",
-            state: NavigationDemo.Path.State.screenB()
-          )
-          NavigationLink(
-            "Go to screen C",
-            state: NavigationDemo.Path.State.screenC(.init(count: viewStore.count))
-          )
+      Section {
+        Button("Dismiss") {
+          self.store.send(.dismissButtonTapped)
         }
+      }
+
+      Section {
+        NavigationLink(
+          "Go to screen A",
+          state: NavigationDemo.Path.State.screenA(.init(count: self.store.count))
+        )
+        NavigationLink(
+          "Go to screen B",
+          state: NavigationDemo.Path.State.screenB()
+        )
+        NavigationLink(
+          "Go to screen C",
+          state: NavigationDemo.Path.State.screenC(.init(count: self.store.count))
+        )
       }
     }
     .navigationTitle("Screen A")
@@ -364,35 +364,35 @@ struct ScreenBView: View {
   let store: StoreOf<ScreenB>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          Text(
-            """
-            This screen demonstrates how to navigate to other screens without needing to compile \
-            any symbols from those screens. You can send an action into the system, and allow the \
-            root feature to intercept that action and push the next feature onto the stack.
-            """
-          )
-        }
-        Button("Decoupled navigation to screen A") {
-          viewStore.send(.screenAButtonTapped)
-        }
-        Button("Decoupled navigation to screen B") {
-          viewStore.send(.screenBButtonTapped)
-        }
-        Button("Decoupled navigation to screen C") {
-          viewStore.send(.screenCButtonTapped)
-        }
+    let _ = Self._printChanges()
+    Form {
+      Section {
+        Text(
+          """
+          This screen demonstrates how to navigate to other screens without needing to compile \
+          any symbols from those screens. You can send an action into the system, and allow the \
+          root feature to intercept that action and push the next feature onto the stack.
+          """
+        )
       }
-      .navigationTitle("Screen B")
+      Button("Decoupled navigation to screen A") {
+        self.store.send(.screenAButtonTapped)
+      }
+      Button("Decoupled navigation to screen B") {
+        self.store.send(.screenBButtonTapped)
+      }
+      Button("Decoupled navigation to screen C") {
+        self.store.send(.screenCButtonTapped)
+      }
     }
+    .navigationTitle("Screen B")
   }
 }
 
 // MARK: - Screen C
 
 struct ScreenC: Reducer {
+  @ObservableState
   struct State: Codable, Equatable, Hashable {
     var count = 0
     var isTimerRunning = false
@@ -434,40 +434,39 @@ struct ScreenCView: View {
   let store: StoreOf<ScreenC>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Text(
-          """
-          This screen demonstrates that if you start a long-living effects in a stack, then it \
-          will automatically be torn down when the screen is dismissed.
-          """
-        )
-        Section {
-          Text("\(viewStore.count)")
-          if viewStore.isTimerRunning {
-            Button("Stop timer") { viewStore.send(.stopButtonTapped) }
-          } else {
-            Button("Start timer") { viewStore.send(.startButtonTapped) }
-          }
-        }
-
-        Section {
-          NavigationLink(
-            "Go to screen A",
-            state: NavigationDemo.Path.State.screenA(.init(count: viewStore.count))
-          )
-          NavigationLink(
-            "Go to screen B",
-            state: NavigationDemo.Path.State.screenB()
-          )
-          NavigationLink(
-            "Go to screen C",
-            state: NavigationDemo.Path.State.screenC()
-          )
+    let _ = Self._printChanges()
+    Form {
+      Text(
+        """
+        This screen demonstrates that if you start a long-living effects in a stack, then it \
+        will automatically be torn down when the screen is dismissed.
+        """
+      )
+      Section {
+        Text("\(self.store.count)")
+        if self.store.isTimerRunning {
+          Button("Stop timer") { self.store.send(.stopButtonTapped) }
+        } else {
+          Button("Start timer") { self.store.send(.startButtonTapped) }
         }
       }
-      .navigationTitle("Screen C")
+
+      Section {
+        NavigationLink(
+          "Go to screen A",
+          state: NavigationDemo.Path.State.screenA(.init(count: self.store.count))
+        )
+        NavigationLink(
+          "Go to screen B",
+          state: NavigationDemo.Path.State.screenB()
+        )
+        NavigationLink(
+          "Go to screen C",
+          state: NavigationDemo.Path.State.screenC()
+        )
+      }
     }
+    .navigationTitle("Screen C")
   }
 }
 
