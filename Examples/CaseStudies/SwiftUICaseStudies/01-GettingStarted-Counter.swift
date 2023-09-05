@@ -11,6 +11,15 @@ private let readMe = """
 
 // MARK: - Feature domain
 
+/*
+
+ set {
+   if newValue is any ObservableState {
+     if identityChanged(newValue, currentValue) {
+       withMutation
+
+ */
+
 struct Counter: Reducer {
   @ObservableState
   struct State: Equatable {

@@ -1,6 +1,10 @@
 @_spi(Reflection) import CasePaths
 import Combine
 
+#if canImport(Observation)
+import Observation
+#endif
+
 /// A property wrapper for state that can be presented.
 ///
 /// Use this property wrapper for modeling a feature's domain that needs to present a child feature
@@ -60,14 +64,45 @@ public struct PresentationState<State> {
   }
 
   public var wrappedValue: State? {
-    _read { yield self.storage.state }
-    _modify {
-      if !isKnownUniquelyReferenced(&self.storage) {
-        self.storage = Storage(state: self.storage.state)
+    get {
+      if #available(iOS 17, *) {
+        self.access(keyPath: \.wrappedValue)
       }
-      yield &self.storage.state
+      return self.storage.state
+    }
+    set {
+      if #available(iOS 17, *), !isIdentityEqual(newValue, self.storage.state) {
+        self.withMutation(keyPath: \.wrappedValue) {
+          if !isKnownUniquelyReferenced(&self.storage) {
+            self.storage = Storage(state: newValue)
+          } else {
+            self.storage.state = newValue
+          }
+        }
+      } else {
+        if !isKnownUniquelyReferenced(&self.storage) {
+          self.storage = Storage(state: newValue)
+        } else {
+          self.storage.state = newValue
+        }
+      }
     }
   }
+
+
+  private let _$observationRegistrar = ObservationRegistrarWrapper() // TODO: make sendable
+  @available(iOS 17, *)
+  internal nonisolated func access<Member>(keyPath: KeyPath<Self, Member>) {
+    _$observationRegistrar.rawValue.access(self, keyPath: keyPath)
+  }
+  @available(iOS 17, *)
+  internal nonisolated func withMutation<Member, T>(
+    keyPath: KeyPath<Self, Member>,
+    _ mutation: () throws -> T
+  ) rethrows -> T {
+    try _$observationRegistrar.rawValue.withMutation(of: self, keyPath: keyPath, mutation)
+  }
+
 
   public var projectedValue: Self {
     get { self }
@@ -108,6 +143,11 @@ public struct PresentationState<State> {
     self.storage === other.storage
   }
 }
+
+#if canImport(Observation)
+extension PresentationState: Observable {
+}
+#endif
 
 extension PresentationState: Equatable where State: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {

@@ -40,11 +40,16 @@
     }
   }
 
+  // TODO: make Sendable
   public struct ObservationRegistrarWrapper {
     private let _rawValue: Any
 
     public init() {
-      self._rawValue = ()
+      if #available(iOS 17, *) {
+        self._rawValue = ObservationRegistrar()
+      } else {
+        self._rawValue = ()
+      }
     }
 
     @available(iOS, introduced: 17)
@@ -107,9 +112,11 @@
   @available(macOS, introduced: 14)
   @available(tvOS, introduced: 17)
   @available(watchOS, introduced: 10)
-  func isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
+  public func isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
     guard let lhs = lhs as? any ObservableState, let rhs = rhs as? any ObservableState
-    else { return true }
+    else {
+      return true
+    }
     return lhs._$id.id == rhs._$id.id
   }
 
@@ -148,5 +155,16 @@
       self?._$id ?? StateID(uuid: [])
     }
   }
+
+
+@available(iOS, introduced: 17)
+@available(macOS, introduced: 14)
+@available(tvOS, introduced: 17)
+@available(watchOS, introduced: 10)
+extension PresentationState: ObservableState where State: ObservableState {
+  public var _$id: ComposableArchitecture.StateID {
+    self.wrappedValue._$id
+  }
+}
 
 #endif

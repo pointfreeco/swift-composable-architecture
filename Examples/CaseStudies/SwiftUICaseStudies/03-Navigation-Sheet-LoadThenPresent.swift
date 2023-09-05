@@ -12,7 +12,9 @@ private let readMe = """
 // MARK: - Feature domain
 
 struct LoadThenPresent: Reducer {
+  @ObservableState
   struct State: Equatable {
+    @ObservationStateIgnored
     @PresentationState var counter: Counter.State?
     var isActivityIndicatorVisible = false
   }
@@ -57,29 +59,40 @@ struct LoadThenPresentView: View {
   let store: StoreOf<LoadThenPresent>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
-        Button {
-          viewStore.send(.counterButtonTapped)
-        } label: {
-          HStack {
-            Text("Load optional counter")
-            if viewStore.isActivityIndicatorVisible {
-              Spacer()
-              ProgressView()
-            }
+    let _ = Self._printChanges()
+    VStack {
+      Section {
+        AboutView(readMe: readMe)
+      }
+      Button {
+        self.store.send(.counterButtonTapped)
+      } label: {
+        HStack {
+          Text("Load optional counter")
+          if self.store.isActivityIndicatorVisible {
+            Spacer()
+            ProgressView()
           }
         }
       }
-      .sheet(
-        store: store.scope(state: \.$counter, action: LoadThenPresent.Action.counter),
-        content: CounterView.init(store:)
-      )
-      .navigationTitle("Load and present")
     }
+    .sheet(
+      store: self.store.scope(state: \.$counter, action: LoadThenPresent.Action.counter),
+      content: CounterView.init(store:)
+    )
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .ignoresSafeArea()
+    .background {
+      Group {
+        if self.store.counter == nil {
+          Color.red
+        } else {
+          Color.yellow
+        }
+      }
+        .ignoresSafeArea()
+    }
+    .navigationTitle("Load then present")
   }
 }
 
