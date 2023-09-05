@@ -20,6 +20,7 @@ final class WithViewStoreTests: MacroBaseTestCase {
             }
           }
         }
+
         func tap() {
           send(.tap)
         }
@@ -38,6 +39,7 @@ final class WithViewStoreTests: MacroBaseTestCase {
             }
           }
         }
+
         func tap() {
           send(.tap)
         }
@@ -86,6 +88,7 @@ final class WithViewStoreTests: MacroBaseTestCase {
             store.send(.incrementButtonTapped)
           }
         }
+
         func tap() {
           self.store.send(.tap)
         }
@@ -104,6 +107,7 @@ final class WithViewStoreTests: MacroBaseTestCase {
             ╰─ ⚠️ Do not use 'store.send' directly when using @WithViewStore. Instead, use 'send'.
           }
         }
+
         func tap() {
           self.store.send(.tap)
           ┬──────────────
