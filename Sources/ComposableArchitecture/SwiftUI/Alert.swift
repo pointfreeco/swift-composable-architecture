@@ -8,6 +8,7 @@ extension View {
   /// - Parameters:
   ///   - store: A store that is focused on ``PresentationState`` and ``PresentationAction`` for an
   ///     alert.
+  @warn_unqualified_access
   public func alert<ButtonAction>(
     store: Store<PresentationState<AlertState<ButtonAction>>, PresentationAction<ButtonAction>>
   ) -> some View {
@@ -23,6 +24,7 @@ extension View {
   ///   - toDestinationState: A transformation to extract alert state from the presentation state.
   ///   - fromDestinationAction: A transformation to embed alert actions into the presentation
   ///     action.
+  @warn_unqualified_access
   public func alert<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> AlertState<ButtonAction>?,

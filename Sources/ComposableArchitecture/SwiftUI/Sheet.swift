@@ -13,6 +13,7 @@ extension View {
   ///     system dismisses the currently displayed sheet.
   ///   - onDismiss: The closure to execute when dismissing the modal view.
   ///   - content: A closure returning the content of the modal view.
+  @warn_unqualified_access
   public func sheet<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     onDismiss: (() -> Void)? = nil,
@@ -40,6 +41,7 @@ extension View {
   ///     action.
   ///   - onDismiss: The closure to execute when dismissing the modal view.
   ///   - content: A closure returning the content of the modal view.
+  @warn_unqualified_access
   public func sheet<State, Action, DestinationState, DestinationAction, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> DestinationState?,

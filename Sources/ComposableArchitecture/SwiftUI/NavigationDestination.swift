@@ -16,6 +16,7 @@ extension View {
   ///     `nil`-ed out, the system pops the view from the stack.
   ///   - destination: A closure returning the content of the destination view.
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+  @warn_unqualified_access
   public func navigationDestination<State, Action, Destination: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder destination: @escaping (_ store: Store<State, Action>) -> Destination
@@ -46,6 +47,7 @@ extension View {
   ///     action.
   ///   - destination: A closure returning the content of the destination view.
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+  @warn_unqualified_access
   public func navigationDestination<
     State, Action, DestinationState, DestinationAction, Destination: View
   >(

@@ -18,6 +18,7 @@ import SwiftUI
     ///   - content: A closure returning the content of the modal view.
     @available(iOS 14, tvOS 14, watchOS 7, *)
     @available(macOS, unavailable)
+    @warn_unqualified_access
     public func fullScreenCover<State, Action, Content: View>(
       store: Store<PresentationState<State>, PresentationAction<Action>>,
       onDismiss: (() -> Void)? = nil,
@@ -49,6 +50,7 @@ import SwiftUI
     ///   - content: A closure returning the content of the modal view.
     @available(iOS 14, tvOS 14, watchOS 7, *)
     @available(macOS, unavailable)
+    @warn_unqualified_access
     public func fullScreenCover<State, Action, DestinationState, DestinationAction, Content: View>(
       store: Store<PresentationState<State>, PresentationAction<Action>>,
       state toDestinationState: @escaping (_ state: State) -> DestinationState?,

@@ -17,6 +17,7 @@ extension View {
   ///   - content: A closure returning the content of the popover.
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
+  @warn_unqualified_access
   public func popover<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     attachmentAnchor: PopoverAttachmentAnchor = .rect(.bounds),
@@ -49,6 +50,7 @@ extension View {
   ///   - content: A closure returning the content of the popover.
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
+  @warn_unqualified_access
   public func popover<State, Action, DestinationState, DestinationAction, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> DestinationState?,

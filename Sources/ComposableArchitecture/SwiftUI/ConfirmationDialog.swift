@@ -8,6 +8,7 @@ extension View {
   /// - Parameters:
   ///   - store: A store that is focused on ``PresentationState`` and ``PresentationAction`` for a
   ///     dialog.
+  @warn_unqualified_access
   public func confirmationDialog<ButtonAction>(
     store: Store<
       PresentationState<ConfirmationDialogState<ButtonAction>>,
@@ -26,6 +27,7 @@ extension View {
   ///   - toDestinationState: A transformation to extract dialog state from the presentation state.
   ///   - fromDestinationAction: A transformation to embed dialog actions into the presentation
   ///     action.
+  @warn_unqualified_access
   public func confirmationDialog<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> ConfirmationDialogState<ButtonAction>?,
