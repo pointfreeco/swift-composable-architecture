@@ -91,7 +91,7 @@ public struct DismissEffect: Sendable {
   ) async {
     await callAsFunction(transaction: Transaction(animation: animation))
   }
-  
+
   @MainActor
   public func callAsFunction(
     transaction: Transaction,
