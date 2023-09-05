@@ -34,7 +34,7 @@ public struct WithViewStoreMacro: MemberMacro {
     return [
       """
       func send(_ action: \(raw: rawType).Action.View) {
-        self.store.send(.view(action))
+      self.store.send(.view(action))
       }
       """
     ]
@@ -66,8 +66,7 @@ extension SyntaxProtocol {
         context.diagnose(
           Diagnostic(
             node: Syntax(decl),
-            message: WithViewStoreDiagnostic.hasDirectStoreDotSend,
-            highlights: [decl]
+            message: WithViewStoreDiagnostic.hasDirectStoreDotSend
           )
         )
       }

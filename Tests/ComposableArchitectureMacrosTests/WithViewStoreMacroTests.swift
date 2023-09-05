@@ -100,11 +100,13 @@ final class WithViewStoreTests: MacroBaseTestCase {
         var body: some View {
           Button("+") {
             store.send(.incrementButtonTapped)
+            ┬─────────
             ╰─ ⚠️ Do not use 'store.send' directly when using @WithViewStore. Instead, use 'send'.
           }
         }
         func tap() {
           self.store.send(.tap)
+          ┬──────────────
           ╰─ ⚠️ Do not use 'store.send' directly when using @WithViewStore. Instead, use 'send'.
         }
       }
