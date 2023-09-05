@@ -65,44 +65,50 @@ public struct PresentationState<State> {
 
   public var wrappedValue: State? {
     get {
-      if #available(iOS 17, *) {
-        self.access(keyPath: \.wrappedValue)
-      }
+      #if canImport(Observation)
+        if #available(iOS 17, *) {
+          self.access(keyPath: \.wrappedValue)
+        }
+      #endif
       return self.storage.state
     }
     set {
-      if #available(iOS 17, *), !isIdentityEqual(newValue, self.storage.state) {
-        self.withMutation(keyPath: \.wrappedValue) {
-          if !isKnownUniquelyReferenced(&self.storage) {
-            self.storage = Storage(state: newValue)
-          } else {
-            self.storage.state = newValue
+      #if canImport(Observation)
+        if #available(iOS 17, *), !isIdentityEqual(newValue, self.storage.state) {
+          self.withMutation(keyPath: \.wrappedValue) {
+            if !isKnownUniquelyReferenced(&self.storage) {
+              self.storage = Storage(state: newValue)
+            } else {
+              self.storage.state = newValue
+            }
           }
+          return
         }
+      #endif
+      if !isKnownUniquelyReferenced(&self.storage) {
+        self.storage = Storage(state: newValue)
       } else {
-        if !isKnownUniquelyReferenced(&self.storage) {
-          self.storage = Storage(state: newValue)
-        } else {
-          self.storage.state = newValue
-        }
+        self.storage.state = newValue
       }
     }
   }
 
+  #if canImport(Observation)
+    private let _$observationRegistrar = ObservationRegistrarWrapper() // TODO: make sendable
 
-  private let _$observationRegistrar = ObservationRegistrarWrapper() // TODO: make sendable
-  @available(iOS 17, *)
-  internal nonisolated func access<Member>(keyPath: KeyPath<Self, Member>) {
-    _$observationRegistrar.rawValue.access(self, keyPath: keyPath)
-  }
-  @available(iOS 17, *)
-  internal nonisolated func withMutation<Member, T>(
-    keyPath: KeyPath<Self, Member>,
-    _ mutation: () throws -> T
-  ) rethrows -> T {
-    try _$observationRegistrar.rawValue.withMutation(of: self, keyPath: keyPath, mutation)
-  }
-
+    @available(iOS 17, *)
+    internal nonisolated func access<Member>(keyPath: KeyPath<Self, Member>) {
+      _$observationRegistrar.rawValue.access(self, keyPath: keyPath)
+    }
+  
+    @available(iOS 17, *)
+    internal nonisolated func withMutation<Member, T>(
+      keyPath: KeyPath<Self, Member>,
+      _ mutation: () throws -> T
+    ) rethrows -> T {
+      try _$observationRegistrar.rawValue.withMutation(of: self, keyPath: keyPath, mutation)
+    }
+  #endif
 
   public var projectedValue: Self {
     get { self }
