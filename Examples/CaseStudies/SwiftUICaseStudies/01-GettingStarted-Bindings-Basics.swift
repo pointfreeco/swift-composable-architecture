@@ -21,6 +21,7 @@ private let readMe = """
 // MARK: - Feature domain
 
 struct BindingBasics: Reducer {
+  @ObservableState
   struct State: Equatable {
     var sliderValue = 5.0
     var stepCount = 10
@@ -63,49 +64,44 @@ struct BindingBasicsView: View {
   let store: StoreOf<BindingBasics>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
-
-        HStack {
-          TextField(
-            "Type here",
-            text: viewStore.binding(get: \.text, send: BindingBasics.Action.textChanged)
-          )
-          .disableAutocorrection(true)
-          .foregroundStyle(viewStore.toggleIsOn ? Color.secondary : .primary)
-          Text(alternate(viewStore.text))
-        }
-        .disabled(viewStore.toggleIsOn)
-
-        Toggle(
-          "Disable other controls",
-          isOn: viewStore.binding(get: \.toggleIsOn, send: BindingBasics.Action.toggleChanged)
-            .resignFirstResponder()
-        )
-
-        Stepper(
-          "Max slider value: \(viewStore.stepCount)",
-          value: viewStore.binding(get: \.stepCount, send: BindingBasics.Action.stepCountChanged),
-          in: 0...100
-        )
-        .disabled(viewStore.toggleIsOn)
-
-        HStack {
-          Text("Slider value: \(Int(viewStore.sliderValue))")
-          Slider(
-            value: viewStore.binding(
-              get: \.sliderValue,
-              send: BindingBasics.Action.sliderValueChanged
-            ),
-            in: 0...Double(viewStore.stepCount)
-          )
-          .tint(.accentColor)
-        }
-        .disabled(viewStore.toggleIsOn)
+    Form {
+      Section {
+        AboutView(readMe: readMe)
       }
+
+      HStack {
+        TextField(
+          "Type here",
+          text: self.store.binding(get: \.text, send: { .textChanged($0) })
+        )
+        .disableAutocorrection(true)
+        .foregroundStyle(self.store.toggleIsOn ? Color.secondary : .primary)
+        Text(alternate(self.store.text))
+      }
+      .disabled(self.store.toggleIsOn)
+
+      Toggle(
+        "Disable other controls",
+        isOn: self.store.binding(get: \.toggleIsOn, send: { .toggleChanged(isOn: $0) })
+          .resignFirstResponder()
+      )
+
+      Stepper(
+        "Max slider value: \(self.store.stepCount)",
+        value: self.store.binding(get: \.stepCount, send: { .stepCountChanged($0) }),
+        in: 0...100
+      )
+      .disabled(self.store.toggleIsOn)
+
+      HStack {
+        Text("Slider value: \(Int(self.store.sliderValue))")
+        Slider(
+          value: self.store.binding(get: \.sliderValue, send: { .sliderValueChanged($0) }),
+          in: 0...Double(self.store.stepCount)
+        )
+        .tint(.accentColor)
+      }
+      .disabled(self.store.toggleIsOn)
     }
     .monospacedDigit()
     .navigationTitle("Bindings basics")
