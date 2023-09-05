@@ -1,6 +1,7 @@
 #if swift(>=5.9) && canImport(Observation)
   import Foundation
   import Observation
+  import SwiftUI
 
   @available(iOS, introduced: 17)
   @available(macOS, introduced: 14)
@@ -74,11 +75,6 @@
   @available(tvOS, introduced: 17)
   @available(watchOS, introduced: 10)
   extension Store: Observable {
-
-    public subscript<Value>(dynamicMember keyPath: KeyPath<State, Value>) -> Value {
-      self.state[keyPath: keyPath]
-    }
-
     internal nonisolated func access<Member>(keyPath: KeyPath<Store, Member>) {
       _$observationRegistrar.rawValue.access(self, keyPath: keyPath)
     }
@@ -89,7 +85,13 @@
     ) rethrows -> T {
       try _$observationRegistrar.rawValue.withMutation(of: self, keyPath: keyPath, mutation)
     }
+  }
 
+  @available(iOS, introduced: 17)
+  @available(macOS, introduced: 14)
+  @available(tvOS, introduced: 17)
+  @available(watchOS, introduced: 10)
+  extension Store where State: ObservableState {
     private(set) public var state: State {
       get {
         self.access(keyPath: \.state)
@@ -105,7 +107,45 @@
         }
       }
     }
+
+    public subscript<Value>(dynamicMember keyPath: KeyPath<State, Value>) -> Value {
+      self.state[keyPath: keyPath]
+    }
+
+    public func binding<Value>(
+      get: @escaping (_ state: State) -> Value,
+      send valueToAction: @escaping (_ value: Value) -> Action
+    ) -> Binding<Value> {
+      ObservedObject(wrappedValue: self)
+        .projectedValue[get: .init(rawValue: get), send: .init(rawValue: valueToAction)]
+    }
+
+    private subscript<Value>(
+      get fromState: HashableWrapper<(State) -> Value>,
+      send toAction: HashableWrapper<(Value) -> Action?>
+    ) -> Value {
+      get { fromState.rawValue(self.state) }
+      set {
+        BindingLocal.$isActive.withValue(true) {
+          if let action = toAction.rawValue(newValue) {
+            self.send(action)
+          }
+        }
+      }
+    }
   }
+
+  private struct HashableWrapper<Value>: Hashable {
+    let rawValue: Value
+    static func == (lhs: Self, rhs: Self) -> Bool { false }
+    func hash(into hasher: inout Hasher) {}
+  }
+
+  @available(iOS, introduced: 17)
+  @available(macOS, introduced: 14)
+  @available(tvOS, introduced: 17)
+  @available(watchOS, introduced: 10)
+  extension Store: ObservableObject where State: ObservableState {}
 
   @available(iOS, introduced: 17)
   @available(macOS, introduced: 14)

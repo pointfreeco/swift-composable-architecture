@@ -22,8 +22,11 @@ private let readMe = """
 // MARK: - Feature domain
 
 struct AlertAndConfirmationDialog: Reducer {
+  @ObservableState
   struct State: Equatable {
+    @ObservationStateIgnored
     @PresentationState var alert: AlertState<Action.Alert>?
+    @ObservationStateIgnored
     @PresentationState var confirmationDialog: ConfirmationDialogState<Action.ConfirmationDialog>?
     var count = 0
   }
@@ -105,19 +108,17 @@ struct AlertAndConfirmationDialog: Reducer {
 // MARK: - Feature view
 
 struct AlertAndConfirmationDialogView: View {
-  let store: StoreOf<AlertAndConfirmationDialog>
+  @State var store: StoreOf<AlertAndConfirmationDialog>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
-
-        Text("Count: \(viewStore.count)")
-        Button("Alert") { viewStore.send(.alertButtonTapped) }
-        Button("Confirmation Dialog") { viewStore.send(.confirmationDialogButtonTapped) }
+    Form {
+      Section {
+        AboutView(readMe: readMe)
       }
+
+      Text("Count: \(self.store.count)")
+      Button("Alert") { self.store.send(.alertButtonTapped) }
+      Button("Confirmation Dialog") { self.store.send(.confirmationDialogButtonTapped) }
     }
     .navigationTitle("Alerts & Dialogs")
     .alert(

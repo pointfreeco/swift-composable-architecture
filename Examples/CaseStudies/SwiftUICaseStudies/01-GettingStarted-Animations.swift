@@ -21,7 +21,9 @@ private let readMe = """
 // MARK: - Feature domain
 
 struct Animations: Reducer {
+  @ObservableState
   struct State: Equatable {
+    @ObservationStateIgnored
     @PresentationState var alert: AlertState<Action.Alert>?
     var circleCenter: CGPoint?
     var circleColor = Color.black
@@ -100,53 +102,51 @@ struct Animations: Reducer {
 // MARK: - Feature view
 
 struct AnimationsView: View {
-  let store: StoreOf<Animations>
+  @State var store: StoreOf<Animations>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      VStack(alignment: .leading) {
-        Text(template: readMe, .body)
-          .padding()
-          .gesture(
-            DragGesture(minimumDistance: 0).onChanged { gesture in
-              viewStore.send(
-                .tapped(gesture.location),
-                animation: .interactiveSpring(response: 0.25, dampingFraction: 0.1)
-              )
-            }
-          )
-          .overlay {
-            GeometryReader { proxy in
-              Circle()
-                .fill(viewStore.circleColor)
-                .colorInvert()
-                .blendMode(.difference)
-                .frame(width: 50, height: 50)
-                .scaleEffect(viewStore.isCircleScaled ? 2 : 1)
-                .position(
-                  x: viewStore.circleCenter?.x ?? proxy.size.width / 2,
-                  y: viewStore.circleCenter?.y ?? proxy.size.height / 2
-                )
-                .offset(y: viewStore.circleCenter == nil ? 0 : -44)
-            }
-            .allowsHitTesting(false)
-          }
-        Toggle(
-          "Big mode",
-          isOn:
-            viewStore
-            .binding(get: \.isCircleScaled, send: Animations.Action.circleScaleToggleChanged)
-            .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.1))
-        )
+    VStack(alignment: .leading) {
+      Text(template: readMe, .body)
         .padding()
-        Button("Rainbow") { viewStore.send(.rainbowButtonTapped, animation: .linear) }
-          .padding([.horizontal, .bottom])
-        Button("Reset") { viewStore.send(.resetButtonTapped) }
-          .padding([.horizontal, .bottom])
-      }
-      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
-      .navigationBarTitleDisplayMode(.inline)
+        .gesture(
+          DragGesture(minimumDistance: 0).onChanged { gesture in
+            self.store.send(
+              .tapped(gesture.location),
+              animation: .interactiveSpring(response: 0.25, dampingFraction: 0.1)
+            )
+          }
+        )
+        .overlay {
+          GeometryReader { proxy in
+            Circle()
+              .fill(self.store.circleColor)
+              .colorInvert()
+              .blendMode(.difference)
+              .frame(width: 50, height: 50)
+              .scaleEffect(self.store.isCircleScaled ? 2 : 1)
+              .position(
+                x: self.store.circleCenter?.x ?? proxy.size.width / 2,
+                y: self.store.circleCenter?.y ?? proxy.size.height / 2
+              )
+              .offset(y: self.store.circleCenter == nil ? 0 : -44)
+          }
+          .allowsHitTesting(false)
+        }
+      Toggle(
+        "Big mode",
+        isOn:
+          self.store
+          .binding(get: \.isCircleScaled, send: Animations.Action.circleScaleToggleChanged)
+          .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.1))
+      )
+      .padding()
+      Button("Rainbow") { self.store.send(.rainbowButtonTapped, animation: .linear) }
+        .padding([.horizontal, .bottom])
+      Button("Reset") { self.store.send(.resetButtonTapped) }
+        .padding([.horizontal, .bottom])
     }
+    .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
+    .navigationBarTitleDisplayMode(.inline)
   }
 }
 
