@@ -73,7 +73,7 @@ extension View {
     self.presentation(
       store: store, state: toDestinationState, action: fromDestinationAction
     ) { `self`, $item, _ in
-      let actionSheetState = store.state.value.wrappedValue.flatMap(toDestinationState)
+      let actionSheetState = store.subject.value.wrappedValue.flatMap(toDestinationState)
       self.actionSheet(item: $item) { _ in
         ActionSheet(actionSheetState!) { action in
           if let action = action {

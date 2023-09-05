@@ -379,7 +379,7 @@ public struct BindingViewStore<State> {
   }
 
   public var wrappedValue: State {
-    self.store.state.value
+    self.store.subject.value
   }
 
   public var projectedValue: Self {

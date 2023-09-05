@@ -12,8 +12,41 @@ private let readMe = """
 // MARK: - Feature domain
 
 struct Counter: Reducer {
-  struct State: Equatable {
-    var count = 0
+  struct State: Equatable, Observable, ObservableState {
+    let _$id = StateID()
+    var count: Int {
+      @storageRestrictions(initializes: _count)
+      init(initialValue) {
+        _count = initialValue
+      }
+
+      get {
+        access(keyPath: \.count)
+        return _count
+      }
+
+      set {
+        withMutation(keyPath: \.count) {
+          _count = newValue
+        }
+      }
+    }
+    private var _count = 0
+
+    @ObservationIgnored private let _$observationRegistrar = Observation.ObservationRegistrar()
+
+    internal nonisolated func access<Member>(
+        keyPath: KeyPath<State , Member>
+    ) {
+      _$observationRegistrar.access(self, keyPath: keyPath)
+    }
+
+    internal nonisolated func withMutation<Member, MutationResult>(
+      keyPath: KeyPath<State , Member>,
+      _ mutation: () throws -> MutationResult
+    ) rethrows -> MutationResult {
+      try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
+    }
   }
 
   enum Action: Equatable {
@@ -39,22 +72,21 @@ struct CounterView: View {
   let store: StoreOf<Counter>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      HStack {
-        Button {
-          viewStore.send(.decrementButtonTapped)
-        } label: {
-          Image(systemName: "minus")
-        }
+    let _ = Self._printChanges()
+    HStack {
+      Button {
+        store.send(.decrementButtonTapped)
+      } label: {
+        Image(systemName: "minus")
+      }
 
-        Text("\(viewStore.count)")
-          .monospacedDigit()
+      Text("\(store.state.count)")
+        .monospacedDigit()
 
-        Button {
-          viewStore.send(.incrementButtonTapped)
-        } label: {
-          Image(systemName: "plus")
-        }
+      Button {
+        store.send(.incrementButtonTapped)
+      } label: {
+        Image(systemName: "plus")
       }
     }
   }

@@ -633,7 +633,7 @@ final class StoreTests: BaseTCATestCase {
       Feature()
     }
     await store.send(.tap, originatingFrom: nil)?.value
-    XCTAssertEqual(store.state.value.count, testStore.state.count)
+    XCTAssertEqual(store.subject.value.count, testStore.state.count)
   }
 
   func testStoreVsTestStore_Publisher() async {
@@ -691,7 +691,7 @@ final class StoreTests: BaseTCATestCase {
       Feature()
     }
     await store.send(.tap, originatingFrom: nil)?.value
-    XCTAssertEqual(store.state.value.count, testStore.state.count)
+    XCTAssertEqual(store.subject.value.count, testStore.state.count)
   }
 
   func testChildParentEffectCancellation() async throws {
@@ -785,7 +785,7 @@ final class StoreTests: BaseTCATestCase {
       $0.date = .constant(Date(timeIntervalSinceReferenceDate: 1_234_567_890))
     }
 
-    XCTAssertEqual(store.state.value.date, Date(timeIntervalSinceReferenceDate: 1_234_567_890))
+    XCTAssertEqual(store.subject.value.date, Date(timeIntervalSinceReferenceDate: 1_234_567_890))
   }
 
   func testInit_ReducerBuilder_WithDependencies() async {
@@ -807,7 +807,7 @@ final class StoreTests: BaseTCATestCase {
     }
 
     store.send(.tap)
-    XCTAssertEqual(store.state.value.date, Date(timeIntervalSinceReferenceDate: 1_234_567_890))
+    XCTAssertEqual(store.subject.value.date, Date(timeIntervalSinceReferenceDate: 1_234_567_890))
   }
 
   func testPresentationScope() async {
@@ -865,7 +865,7 @@ final class StoreTests: BaseTCATestCase {
     childViewStore1.objectWillChange
       .sink { _ in viewStoreCount1 += 1 }
       .store(in: &self.cancellables)
-    childStore1.state
+    childStore1.subject
       .sink { _ in storeStateCount1 += 1 }
       .store(in: &self.cancellables)
     let childStore2 = store.scope(
@@ -886,7 +886,7 @@ final class StoreTests: BaseTCATestCase {
     childViewStore2.objectWillChange
       .sink { _ in viewStoreCount2 += 1 }
       .store(in: &self.cancellables)
-    childStore2.state
+    childStore2.subject
       .sink { _ in storeStateCount2 += 1 }
       .store(in: &self.cancellables)
 
