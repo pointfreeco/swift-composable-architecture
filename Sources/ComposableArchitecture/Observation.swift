@@ -6,7 +6,7 @@
   @available(macOS, introduced: 14)
   @available(tvOS, introduced: 17)
   @available(watchOS, introduced: 10)
-  public protocol ObservableState: Observable {
+  public protocol ObservableState {
     var _$id: StateID { get }
   }
 
@@ -120,23 +120,33 @@
   public struct ObservationStateRegistrar: Equatable, Hashable {
     public let id = StateID()
     public let _$observationRegistrar = ObservationRegistrar()
-    public init() {
-    }
+    public init() {}
 
-    public func access<Subject, Member>(_ subject: Subject, keyPath: KeyPath<Subject, Member>) where Subject: ObservableState {
+    public func access<Subject, Member>(_ subject: Subject, keyPath: KeyPath<Subject, Member>) where Subject: Observable {
       self._$observationRegistrar.access(subject, keyPath: keyPath)
     }
 
-    public func willSet<Subject, Member>(_ subject: Subject, keyPath: KeyPath<Subject, Member>) where Subject : ObservableState {
+    public func willSet<Subject, Member>(_ subject: Subject, keyPath: KeyPath<Subject, Member>) where Subject : Observable {
       self._$observationRegistrar.willSet(subject, keyPath: keyPath)
     }
 
-    public func didSet<Subject, Member>(_ subject: Subject, keyPath: KeyPath<Subject, Member>) where Subject : ObservableState {
+    public func didSet<Subject, Member>(_ subject: Subject, keyPath: KeyPath<Subject, Member>) where Subject : Observable {
       self._$observationRegistrar.didSet(subject, keyPath: keyPath)
     }
 
-    public func withMutation<Subject, Member, T>(of subject: Subject, keyPath: KeyPath<Subject, Member>, _ mutation: () throws -> T) rethrows -> T where Subject : ObservableState {
+    public func withMutation<Subject, Member, T>(of subject: Subject, keyPath: KeyPath<Subject, Member>, _ mutation: () throws -> T) rethrows -> T where Subject : Observable {
       try self._$observationRegistrar.withMutation(of: subject, keyPath: keyPath, mutation)
     }
   }
+
+  @available(iOS, introduced: 17)
+  @available(macOS, introduced: 14)
+  @available(tvOS, introduced: 17)
+  @available(watchOS, introduced: 10)
+  extension Optional: ObservableState where Wrapped: ObservableState {
+    public var _$id: ComposableArchitecture.StateID {
+      self?._$id ?? StateID(uuid: [])
+    }
+  }
+
 #endif

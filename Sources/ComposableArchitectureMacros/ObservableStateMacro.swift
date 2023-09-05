@@ -36,8 +36,8 @@ public struct ObservableStateMacro {
     return "\(moduleName).\(registrarTypeName)"
   }
 
-  static let trackedMacroName = "ObservationTracked"
-  static let ignoredMacroName = "ObservationIgnored"
+  static let trackedMacroName = "ObservationStateTracked"
+  static let ignoredMacroName = "ObservationStateIgnored"
 
   static let registrarVariableName = "_$observationRegistrar"
 
@@ -284,7 +284,7 @@ extension ObservableStateMacro: ExtensionMacro {
   }
 }
 
-public struct ObservationTrackedMacro: AccessorMacro {
+public struct ObservationStateTrackedMacro: AccessorMacro {
   public static func expansion<
     Context: MacroExpansionContext,
     Declaration: DeclSyntaxProtocol
@@ -332,7 +332,7 @@ public struct ObservationTrackedMacro: AccessorMacro {
   }
 }
 
-extension ObservationTrackedMacro: PeerMacro {
+extension ObservationStateTrackedMacro: PeerMacro {
   public static func expansion<
     Context: MacroExpansionContext,
     Declaration: DeclSyntaxProtocol
@@ -356,7 +356,7 @@ extension ObservationTrackedMacro: PeerMacro {
   }
 }
 
-public struct ObservationIgnoredMacro: AccessorMacro {
+public struct ObservationStateIgnoredMacro: AccessorMacro {
   public static func expansion<
     Context: MacroExpansionContext,
     Declaration: DeclSyntaxProtocol

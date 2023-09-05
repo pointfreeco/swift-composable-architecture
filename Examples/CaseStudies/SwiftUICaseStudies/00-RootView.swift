@@ -6,6 +6,7 @@ struct RootView: View {
   let store: StoreOf<Root>
 
   var body: some View {
+    let _ = Self._printChanges()
     NavigationStack {
       Form {
         Section(header: Text("Getting started")) {

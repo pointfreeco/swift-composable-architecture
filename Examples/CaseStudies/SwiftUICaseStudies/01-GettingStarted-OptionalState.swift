@@ -60,21 +60,37 @@ struct OptionalBasicsView: View {
         self.store.send(.toggleCounterButtonTapped)
       }
 
-      IfLetStore(
-        self.store.scope(
-          state: \.optionalCounter,
-          action: OptionalBasics.Action.optionalCounter
-        ),
-        then: { store in
-          Text(template: "`CounterState` is non-`nil`")
-          CounterView(store: store)
-            .buttonStyle(.borderless)
-            .frame(maxWidth: .infinity)
-        },
-        else: {
-          Text(template: "`CounterState` is `nil`")
-        }
-      )
+//      if let count = store.optionalCounter?.count {
+//        Text(count.description)
+//      }
+
+      if let store = self.store.scope(
+        state: \.optionalCounter,
+        action: OptionalBasics.Action.optionalCounter
+      ) {
+        Text(template: "`CounterState` is non-`nil`")
+        CounterView(store: { print("!!!!"); return store }() )
+          .buttonStyle(.borderless)
+          .frame(maxWidth: .infinity)
+      } else {
+        Text(template: "`CounterState` is `nil`")
+      }
+
+//      IfLetStore(
+//        self.store.scope(
+//          state: \.optionalCounter,
+//          action: OptionalBasics.Action.optionalCounter
+//        ),
+//        then: { store in
+//          Text(template: "`CounterState` is non-`nil`")
+//          CounterView(store: store)
+//            .buttonStyle(.borderless)
+//            .frame(maxWidth: .infinity)
+//        },
+//        else: {
+//          Text(template: "`CounterState` is `nil`")
+//        }
+//      )
     }
     .navigationTitle("Optional state")
   }

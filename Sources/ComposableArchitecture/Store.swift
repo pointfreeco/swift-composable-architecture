@@ -385,6 +385,21 @@ public final class Store<State, Action> {
     self.scope(state: toChildState, action: fromChildAction, removeDuplicates: nil)
   }
 
+  public func scope<ChildState, ChildAction>(
+    state toChildState: @escaping (_ state: State) -> ChildState?,
+    action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
+  ) -> Store<ChildState, ChildAction>? {
+    if let childState = toChildState(self.subject.value) {
+      return self.scope(
+        state: { toChildState($0) ?? childState },
+        action: fromChildAction,
+        removeDuplicates: nil
+      )
+    } else {
+      return nil
+    }
+  }
+
   /// Scopes the store to one that exposes child state and actions.
   ///
   /// This is a special overload of ``scope(state:action:)-9iai9`` that works specifically for

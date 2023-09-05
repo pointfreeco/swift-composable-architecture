@@ -37,7 +37,7 @@ struct Counter: Reducer {
 // MARK: - Feature view
 
 struct CounterView: View {
-  let store: StoreOf<Counter>
+  @State var store: StoreOf<Counter>
 
   var body: some View {
     let _ = Self._printChanges()

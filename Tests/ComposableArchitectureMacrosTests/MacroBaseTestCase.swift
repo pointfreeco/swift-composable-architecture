@@ -8,6 +8,9 @@ class MacroBaseTestCase: XCTestCase {
   override func invokeTest() {
     withMacroTesting(
       macros: [
+        ObservableStateMacro.self,
+        ObservationStateTrackedMacro.self,
+        ObservationStateIgnoredMacro.self,
         WithViewStoreMacro.self,
       ]
     ) {
