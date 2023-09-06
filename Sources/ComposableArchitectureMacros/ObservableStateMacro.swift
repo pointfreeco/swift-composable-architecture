@@ -222,9 +222,19 @@ extension ObservableStateMacro: MemberMacro {
     declaration.addIfNeeded(ObservableStateMacro.registrarVariable(observableType), to: &declarations)
     declaration.addIfNeeded(ObservableStateMacro.accessFunction(observableType), to: &declarations)
     declaration.addIfNeeded(ObservableStateMacro.withMutationFunction(observableType), to: &declarations)
-    declaration.addIfNeeded("var _$id: StateID { self.\(raw: registrarVariableName).id }", to: &declarations)
+    let access = declaration.modifiers.first { $0.name.tokenKind == .keyword(.public) }
+    declaration.addIfNeeded("\(access)var _$id: StateID { self.\(raw: registrarVariableName).id }" as DeclSyntax, to: &declarations)
 
     return declarations
+  }
+}
+
+extension SyntaxStringInterpolation {
+  // It would be nice for SwiftSyntaxBuilder to provide this out-of-the-box.
+  mutating func appendInterpolation<Node: SyntaxProtocol>(_ node: Node?) {
+    if let node {
+      appendInterpolation(node)
+    }
   }
 }
 

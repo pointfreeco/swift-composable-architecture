@@ -2,6 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 struct VoiceMemo: Reducer {
+  @ObservableState
   struct State: Equatable, Identifiable {
     var date: Date
     var duration: TimeInterval
@@ -10,6 +11,20 @@ struct VoiceMemo: Reducer {
     var url: URL
 
     var id: URL { self.url }
+
+    init(
+      date: Date,
+      duration: TimeInterval,
+      mode: Mode = .notPlaying,
+      title: String = "",
+      url: URL
+    ) {
+      self.date = date
+      self.duration = duration
+      self.mode = mode
+      self.title = title
+      self.url = url
+    }
 
     enum Mode: Equatable {
       case notPlaying
@@ -104,47 +119,45 @@ struct VoiceMemo: Reducer {
 }
 
 struct VoiceMemoView: View {
-  let store: StoreOf<VoiceMemo>
+  @State var store: StoreOf<VoiceMemo>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      let currentTime =
-        viewStore.mode.progress.map { $0 * viewStore.duration } ?? viewStore.duration
-      HStack {
-        TextField(
-          "Untitled, \(viewStore.date.formatted(date: .numeric, time: .shortened))",
-          text: viewStore.binding(get: \.title, send: { .titleTextFieldChanged($0) })
-        )
-
-        Spacer()
-
-        dateComponentsFormatter.string(from: currentTime).map {
-          Text($0)
-            .font(.footnote.monospacedDigit())
-            .foregroundColor(Color(.systemGray))
-        }
-
-        Button {
-          viewStore.send(.playButtonTapped)
-        } label: {
-          Image(systemName: viewStore.mode.isPlaying ? "stop.circle" : "play.circle")
-            .font(.system(size: 22))
-        }
-      }
-      .buttonStyle(.borderless)
-      .frame(maxHeight: .infinity, alignment: .center)
-      .padding(.horizontal)
-      .listRowBackground(viewStore.mode.isPlaying ? Color(.systemGray6) : .clear)
-      .listRowInsets(EdgeInsets())
-      .background(
-        Color(.systemGray5)
-          .frame(maxWidth: viewStore.mode.isPlaying ? .infinity : 0)
-          .animation(
-            viewStore.mode.isPlaying ? .linear(duration: viewStore.duration) : nil,
-            value: viewStore.mode.isPlaying
-          ),
-        alignment: .leading
+    let currentTime =
+      store.mode.progress.map { $0 * store.duration } ?? store.duration
+    HStack {
+      TextField(
+        "Untitled, \(store.date.formatted(date: .numeric, time: .shortened))",
+        text: store.binding(get: \.title, send: { .titleTextFieldChanged($0) })
       )
+
+      Spacer()
+
+      dateComponentsFormatter.string(from: currentTime).map {
+        Text($0)
+          .font(.footnote.monospacedDigit())
+          .foregroundColor(Color(.systemGray))
+      }
+
+      Button {
+        store.send(.playButtonTapped)
+      } label: {
+        Image(systemName: store.mode.isPlaying ? "stop.circle" : "play.circle")
+          .font(.system(size: 22))
+      }
     }
+    .buttonStyle(.borderless)
+    .frame(maxHeight: .infinity, alignment: .center)
+    .padding(.horizontal)
+    .listRowBackground(store.mode.isPlaying ? Color(.systemGray6) : .clear)
+    .listRowInsets(EdgeInsets())
+    .background(
+      Color(.systemGray5)
+        .frame(maxWidth: store.mode.isPlaying ? .infinity : 0)
+        .animation(
+          store.mode.isPlaying ? .linear(duration: store.duration) : nil,
+          value: store.mode.isPlaying
+        ),
+      alignment: .leading
+    )
   }
 }

@@ -5,4 +5,5 @@
 @_exported import CustomDump
 @_exported import Dependencies
 @_exported import IdentifiedCollections
+@_exported import Observation
 @_exported import SwiftUINavigationCore

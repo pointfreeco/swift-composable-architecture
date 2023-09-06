@@ -3,9 +3,12 @@ import ComposableArchitecture
 import SwiftUI
 
 struct VoiceMemos: Reducer {
+  @ObservableState
   struct State: Equatable {
-    @PresentationState var alert: AlertState<AlertAction>?
+    @ObservationStateIgnored
+    @PresentationState var alert: AlertState<Action.Alert>?
     var audioRecorderPermission = RecorderPermission.undetermined
+    @ObservationStateIgnored
     @PresentationState var recordingMemo: RecordingMemo.State?
     var voiceMemos: IdentifiedArrayOf<VoiceMemo.State> = []
 
@@ -17,16 +20,16 @@ struct VoiceMemos: Reducer {
   }
 
   enum Action: Equatable {
-    case alert(PresentationAction<AlertAction>)
+    case alert(PresentationAction<Alert>)
     case onDelete(IndexSet)
     case openSettingsButtonTapped
     case recordButtonTapped
     case recordPermissionResponse(Bool)
     case recordingMemo(PresentationAction<RecordingMemo.Action>)
     case voiceMemos(id: VoiceMemo.State.ID, action: VoiceMemo.Action)
-  }
 
-  enum AlertAction: Equatable {}
+    enum Alert: Equatable {}
+  }
 
   @Dependency(\.audioRecorder.requestRecordPermission) var requestRecordPermission
   @Dependency(\.date) var date
@@ -134,36 +137,34 @@ struct VoiceMemosView: View {
   let store: StoreOf<VoiceMemos>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      NavigationStack {
-        VStack {
-          List {
-            ForEachStore(
-              self.store.scope(state: \.voiceMemos, action: VoiceMemos.Action.voiceMemos)
-            ) {
-              VoiceMemoView(store: $0)
-            }
-            .onDelete { viewStore.send(.onDelete($0)) }
+    NavigationStack {
+      VStack {
+        List {
+          ForEachStore(
+            store.scope(state: \.voiceMemos, action: { .voiceMemos(id: $0, action: $1) })
+          ) {
+            VoiceMemoView(store: $0)
           }
-
-          IfLetStore(
-            self.store.scope(state: \.$recordingMemo, action: VoiceMemos.Action.recordingMemo)
-          ) { store in
-            RecordingMemoView(store: store)
-          } else: {
-            RecordButton(permission: viewStore.audioRecorderPermission) {
-              viewStore.send(.recordButtonTapped, animation: .spring())
-            } settingsAction: {
-              viewStore.send(.openSettingsButtonTapped)
-            }
-          }
-          .padding()
-          .frame(maxWidth: .infinity)
-          .background(Color.init(white: 0.95))
+          .onDelete { store.send(.onDelete($0)) }
         }
-        .alert(store: self.store.scope(state: \.$alert, action: VoiceMemos.Action.alert))
-        .navigationTitle("Voice memos")
+
+        IfLetStore(
+          store.scope(state: \.$recordingMemo, action: VoiceMemos.Action.recordingMemo)
+        ) { store in
+          RecordingMemoView(store: store)
+        } else: {
+          RecordButton(permission: store.audioRecorderPermission) {
+            store.send(.recordButtonTapped, animation: .spring())
+          } settingsAction: {
+            store.send(.openSettingsButtonTapped)
+          }
+        }
+        .padding()
+        .frame(maxWidth: .infinity)
+        .background(Color.init(white: 0.95))
       }
+      .alert(store: store.scope(state: \.$alert, action: { .alert($0) }))
+      .navigationTitle("Voice memos")
     }
   }
 }

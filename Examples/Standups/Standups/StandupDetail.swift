@@ -2,9 +2,16 @@ import ComposableArchitecture
 import SwiftUI
 
 struct StandupDetail: Reducer {
+  @ObservableState
   struct State: Equatable {
+    @ObservationStateIgnored
     @PresentationState var destination: Destination.State?
     var standup: Standup
+
+    init(destination: Destination.State? = nil, standup: Standup) {
+      self.destination = destination
+      self.standup = standup
+    }
   }
   enum Action: Equatable, Sendable {
     case cancelEditButtonTapped
@@ -126,115 +133,106 @@ struct StandupDetail: Reducer {
 }
 
 struct StandupDetailView: View {
-  let store: StoreOf<StandupDetail>
-
-  struct ViewState: Equatable {
-    let standup: Standup
-    init(state: StandupDetail.State) {
-      self.standup = state.standup
-    }
-  }
+  @State var store: StoreOf<StandupDetail>
 
   var body: some View {
-    WithViewStore(self.store, observe: ViewState.init) { viewStore in
-      List {
-        Section {
-          Button {
-            viewStore.send(.startMeetingButtonTapped)
-          } label: {
-            Label("Start Meeting", systemImage: "timer")
-              .font(.headline)
-              .foregroundColor(.accentColor)
-          }
-          HStack {
-            Label("Length", systemImage: "clock")
-            Spacer()
-            Text(viewStore.standup.duration.formatted(.units()))
-          }
+    List {
+      Section {
+        Button {
+          store.send(.startMeetingButtonTapped)
+        } label: {
+          Label("Start Meeting", systemImage: "timer")
+            .font(.headline)
+            .foregroundColor(.accentColor)
+        }
+        HStack {
+          Label("Length", systemImage: "clock")
+          Spacer()
+          Text(store.standup.duration.formatted(.units()))
+        }
 
-          HStack {
-            Label("Theme", systemImage: "paintpalette")
-            Spacer()
-            Text(viewStore.standup.theme.name)
-              .padding(4)
-              .foregroundColor(viewStore.standup.theme.accentColor)
-              .background(viewStore.standup.theme.mainColor)
-              .cornerRadius(4)
+        HStack {
+          Label("Theme", systemImage: "paintpalette")
+          Spacer()
+          Text(store.standup.theme.name)
+            .padding(4)
+            .foregroundColor(store.standup.theme.accentColor)
+            .background(store.standup.theme.mainColor)
+            .cornerRadius(4)
+        }
+      } header: {
+        Text("Standup Info")
+      }
+
+      if !store.standup.meetings.isEmpty {
+        Section {
+          ForEach(store.standup.meetings) { meeting in
+            NavigationLink(
+              state: AppFeature.Path.State.meeting(meeting, standup: store.standup)
+            ) {
+              HStack {
+                Image(systemName: "calendar")
+                Text(meeting.date, style: .date)
+                Text(meeting.date, style: .time)
+              }
+            }
+          }
+          .onDelete { indices in
+            store.send(.deleteMeetings(atOffsets: indices))
           }
         } header: {
-          Text("Standup Info")
-        }
-
-        if !viewStore.standup.meetings.isEmpty {
-          Section {
-            ForEach(viewStore.standup.meetings) { meeting in
-              NavigationLink(
-                state: AppFeature.Path.State.meeting(meeting, standup: viewStore.standup)
-              ) {
-                HStack {
-                  Image(systemName: "calendar")
-                  Text(meeting.date, style: .date)
-                  Text(meeting.date, style: .time)
-                }
-              }
-            }
-            .onDelete { indices in
-              viewStore.send(.deleteMeetings(atOffsets: indices))
-            }
-          } header: {
-            Text("Past meetings")
-          }
-        }
-
-        Section {
-          ForEach(viewStore.standup.attendees) { attendee in
-            Label(attendee.name, systemImage: "person")
-          }
-        } header: {
-          Text("Attendees")
-        }
-
-        Section {
-          Button("Delete") {
-            viewStore.send(.deleteButtonTapped)
-          }
-          .foregroundColor(.red)
-          .frame(maxWidth: .infinity)
+          Text("Past meetings")
         }
       }
-      .navigationTitle(viewStore.standup.title)
-      .toolbar {
-        Button("Edit") {
-          viewStore.send(.editButtonTapped)
+
+      Section {
+        ForEach(store.standup.attendees) { attendee in
+          Label(attendee.name, systemImage: "person")
         }
+      } header: {
+        Text("Attendees")
       }
-      .alert(
-        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /StandupDetail.Destination.State.alert,
-        action: StandupDetail.Destination.Action.alert
-      )
-      .sheet(
-        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /StandupDetail.Destination.State.edit,
-        action: StandupDetail.Destination.Action.edit
-      ) { store in
-        NavigationStack {
-          StandupFormView(store: store)
-            .navigationTitle(viewStore.standup.title)
-            .toolbar {
-              ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") {
-                  viewStore.send(.cancelEditButtonTapped)
-                }
-              }
-              ToolbarItem(placement: .confirmationAction) {
-                Button("Done") {
-                  viewStore.send(.doneEditingButtonTapped)
-                }
-              }
-            }
+
+      Section {
+        Button("Delete") {
+          store.send(.deleteButtonTapped)
         }
+        .foregroundColor(.red)
+        .frame(maxWidth: .infinity)
       }
+    }
+    .navigationTitle(store.standup.title)
+    .toolbar {
+      Button("Edit") {
+        store.send(.editButtonTapped)
+      }
+    }
+    .alert(
+      store: store.scope(state: \.$destination, action: { .destination($0) }),
+      state: /StandupDetail.Destination.State.alert,
+      action: StandupDetail.Destination.Action.alert
+    )
+    .sheet(
+      store: store.scope(state: \.$destination, action: { .destination($0) }),
+      state: /StandupDetail.Destination.State.edit,
+      action: StandupDetail.Destination.Action.edit
+    ) { editStore in
+//      NavigationStack {
+//        StandupFormView(store: editStore)
+//          .navigationTitle(store.standup.title)
+//          .toolbar {
+//            ToolbarItem(placement: .cancellationAction) {
+//              Button("Cancel") {
+//                store.send(.cancelEditButtonTapped)
+//              }
+//            }
+//            ToolbarItem(placement: .confirmationAction) {
+//              Button("Done") {
+//                store.send(.doneEditingButtonTapped)
+//              }
+//            }
+//          }
+//      }
     }
   }
 }

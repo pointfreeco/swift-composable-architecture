@@ -10,6 +10,7 @@ private let readMe = """
 // MARK: - Search feature domain
 
 struct Search: Reducer {
+  @ObservableState
   struct State: Equatable {
     var results: [GeocodingSearch.Result] = []
     var resultForecastRequestInFlight: GeocodingSearch.Result?
@@ -115,62 +116,58 @@ struct SearchView: View {
   let store: StoreOf<Search>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      NavigationStack {
-        VStack(alignment: .leading) {
-          Text(readMe)
-            .padding()
+    NavigationStack {
+      VStack(alignment: .leading) {
+        Text(readMe)
+          .padding()
 
-          HStack {
-            Image(systemName: "magnifyingglass")
-            TextField(
-              "New York, San Francisco, ...",
-              text: viewStore.binding(
-                get: \.searchQuery, send: Search.Action.searchQueryChanged
-              )
-            )
-            .textFieldStyle(.roundedBorder)
-            .autocapitalization(.none)
-            .disableAutocorrection(true)
-          }
-          .padding(.horizontal, 16)
+        HStack {
+          Image(systemName: "magnifyingglass")
+          TextField(
+            "New York, San Francisco, ...",
+            text: store.binding(get: \.searchQuery, send: { .searchQueryChanged($0) })
+          )
+          .textFieldStyle(.roundedBorder)
+          .autocapitalization(.none)
+          .disableAutocorrection(true)
+        }
+        .padding(.horizontal, 16)
 
-          List {
-            ForEach(viewStore.results) { location in
-              VStack(alignment: .leading) {
-                Button {
-                  viewStore.send(.searchResultTapped(location))
-                } label: {
-                  HStack {
-                    Text(location.name)
+        List {
+          ForEach(store.results) { location in
+            VStack(alignment: .leading) {
+              Button {
+                store.send(.searchResultTapped(location))
+              } label: {
+                HStack {
+                  Text(location.name)
 
-                    if viewStore.resultForecastRequestInFlight?.id == location.id {
-                      ProgressView()
-                    }
+                  if store.resultForecastRequestInFlight?.id == location.id {
+                    ProgressView()
                   }
                 }
+              }
 
-                if location.id == viewStore.weather?.id {
-                  self.weatherView(locationWeather: viewStore.weather)
-                }
+              if location.id == store.weather?.id {
+                weatherView(locationWeather: store.weather)
               }
             }
           }
-
-          Button("Weather API provided by Open-Meteo") {
-            UIApplication.shared.open(URL(string: "https://open-meteo.com/en")!)
-          }
-          .foregroundColor(.gray)
-          .padding(.all, 16)
         }
-        .navigationTitle("Search")
+
+        Button("Weather API provided by Open-Meteo") {
+          UIApplication.shared.open(URL(string: "https://open-meteo.com/en")!)
+        }
+        .foregroundColor(.gray)
+        .padding(.all, 16)
       }
-      .task(id: viewStore.searchQuery) {
-        do {
-          try await Task.sleep(nanoseconds: NSEC_PER_SEC / 3)
-          await viewStore.send(.searchQueryChangeDebounced).finish()
-        } catch {}
-      }
+      .navigationTitle("Search")
+    }
+    .task(id: store.searchQuery) {
+      do {
+        try await Task.sleep(nanoseconds: NSEC_PER_SEC / 3)
+        await store.send(.searchQueryChangeDebounced).finish()
+      } catch {}
     }
   }
 

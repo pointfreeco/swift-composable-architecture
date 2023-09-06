@@ -2,6 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 struct AppFeature: Reducer {
+//  @ObservableState
   struct State: Equatable {
     var path = StackState<Path.State>()
     var standupsList = StandupsList.State()
@@ -121,9 +122,9 @@ struct AppView: View {
   let store: StoreOf<AppFeature>
 
   var body: some View {
-    NavigationStackStore(self.store.scope(state: \.path, action: { .path($0) })) {
+    NavigationStackStore(store.scope(state: \.path, action: { .path($0) })) {
       StandupsListView(
-        store: self.store.scope(state: \.standupsList, action: { .standupsList($0) })
+        store: store.scope(state: \.standupsList, action: { .standupsList($0) })
       )
     } destination: {
       switch $0 {

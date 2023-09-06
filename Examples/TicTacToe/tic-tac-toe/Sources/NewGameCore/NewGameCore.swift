@@ -2,7 +2,9 @@ import ComposableArchitecture
 import GameCore
 
 public struct NewGame: Reducer {
+  @ObservableState
   public struct State: Equatable {
+    @ObservationStateIgnored
     @PresentationState public var game: Game.State?
     public var oPlayerName = ""
     public var xPlayerName = ""
@@ -10,12 +12,16 @@ public struct NewGame: Reducer {
     public init() {}
   }
 
-  public enum Action: Equatable {
+  public enum Action: Equatable, ViewAction {
     case game(PresentationAction<Game.Action>)
-    case letsPlayButtonTapped
-    case logoutButtonTapped
-    case oPlayerNameChanged(String)
-    case xPlayerNameChanged(String)
+    case view(View)
+
+    public enum View: Equatable {
+      case letsPlayButtonTapped
+      case logoutButtonTapped
+      case oPlayerNameChanged(String)
+      case xPlayerNameChanged(String)
+    }
   }
 
   public init() {}
@@ -26,21 +32,21 @@ public struct NewGame: Reducer {
       case .game:
         return .none
 
-      case .letsPlayButtonTapped:
+      case .view(.letsPlayButtonTapped):
         state.game = Game.State(
           oPlayerName: state.oPlayerName,
           xPlayerName: state.xPlayerName
         )
         return .none
 
-      case .logoutButtonTapped:
+      case .view(.logoutButtonTapped):
         return .none
 
-      case let .oPlayerNameChanged(name):
+      case let .view(.oPlayerNameChanged(name)):
         state.oPlayerName = name
         return .none
 
-      case let .xPlayerNameChanged(name):
+      case let .view(.xPlayerNameChanged(name)):
         state.xPlayerName = name
         return .none
       }

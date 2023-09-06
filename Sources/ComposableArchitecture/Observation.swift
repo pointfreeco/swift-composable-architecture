@@ -215,4 +215,13 @@
     }
   }
 
+  @available(iOS, introduced: 17)
+  @available(macOS, introduced: 14)
+  @available(tvOS, introduced: 17)
+  @available(watchOS, introduced: 10)
+  extension StackState: ObservableState where Element: ObservableState {
+    public var _$id: ComposableArchitecture.StateID {
+      .init(uuid: self.flatMap { $0._$id.uuid })
+    }
+  }
 #endif

@@ -2,6 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 public struct Game: Reducer, Sendable {
+  @ObservableState
   public struct State: Equatable {
     public var board: Three<Three<Player?>> = .empty
     public var currentPlayer: Player = .x

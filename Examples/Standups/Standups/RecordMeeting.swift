@@ -3,7 +3,9 @@ import Speech
 import SwiftUI
 
 struct RecordMeeting: Reducer {
+  @ObservableState
   struct State: Equatable {
+    @ObservationStateIgnored
     @PresentationState var alert: AlertState<Action.Alert>?
     var secondsElapsed = 0
     var speakerIndex = 0
@@ -12,6 +14,20 @@ struct RecordMeeting: Reducer {
 
     var durationRemaining: Duration {
       self.standup.duration - .seconds(self.secondsElapsed)
+    }
+
+    init(
+      alert: AlertState<Action.Alert>? = nil,
+      secondsElapsed: Int = 0,
+      speakerIndex: Int = 0,
+      standup: Standup,
+      transcript: String = ""
+    ) {
+      self.alert = alert
+      self.secondsElapsed = secondsElapsed
+      self.speakerIndex = speakerIndex
+      self.standup = standup
+      self.transcript = transcript
     }
   }
   enum Action: Equatable {
@@ -146,58 +162,43 @@ struct RecordMeeting: Reducer {
 struct RecordMeetingView: View {
   let store: StoreOf<RecordMeeting>
 
-  struct ViewState: Equatable {
-    let durationRemaining: Duration
-    let secondsElapsed: Int
-    let speakerIndex: Int
-    let standup: Standup
-    init(state: RecordMeeting.State) {
-      self.durationRemaining = state.durationRemaining
-      self.secondsElapsed = state.secondsElapsed
-      self.standup = state.standup
-      self.speakerIndex = state.speakerIndex
-    }
-  }
-
   var body: some View {
-    WithViewStore(self.store, observe: ViewState.init) { viewStore in
-      ZStack {
-        RoundedRectangle(cornerRadius: 16)
-          .fill(viewStore.standup.theme.mainColor)
+    ZStack {
+      RoundedRectangle(cornerRadius: 16)
+        .fill(store.standup.theme.mainColor)
 
-        VStack {
-          MeetingHeaderView(
-            secondsElapsed: viewStore.secondsElapsed,
-            durationRemaining: viewStore.durationRemaining,
-            theme: viewStore.standup.theme
-          )
-          MeetingTimerView(
-            standup: viewStore.standup,
-            speakerIndex: viewStore.speakerIndex
-          )
-          MeetingFooterView(
-            standup: viewStore.standup,
-            nextButtonTapped: {
-              viewStore.send(.nextButtonTapped)
-            },
-            speakerIndex: viewStore.speakerIndex
-          )
-        }
+      VStack {
+        MeetingHeaderView(
+          secondsElapsed: store.secondsElapsed,
+          durationRemaining: store.durationRemaining,
+          theme: store.standup.theme
+        )
+        MeetingTimerView(
+          standup: store.standup,
+          speakerIndex: store.speakerIndex
+        )
+        MeetingFooterView(
+          standup: store.standup,
+          nextButtonTapped: {
+            store.send(.nextButtonTapped)
+          },
+          speakerIndex: store.speakerIndex
+        )
       }
-      .padding()
-      .foregroundColor(viewStore.standup.theme.accentColor)
-      .navigationBarTitleDisplayMode(.inline)
-      .toolbar {
-        ToolbarItem(placement: .cancellationAction) {
-          Button("End meeting") {
-            viewStore.send(.endMeetingButtonTapped)
-          }
-        }
-      }
-      .navigationBarBackButtonHidden(true)
-      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
-      .task { await viewStore.send(.onTask).finish() }
     }
+    .padding()
+    .foregroundColor(store.standup.theme.accentColor)
+    .navigationBarTitleDisplayMode(.inline)
+    .toolbar {
+      ToolbarItem(placement: .cancellationAction) {
+        Button("End meeting") {
+          store.send(.endMeetingButtonTapped)
+        }
+      }
+    }
+    .navigationBarBackButtonHidden(true)
+    .alert(store: store.scope(state: \.$alert, action: { .alert($0) }))
+    .task { await store.send(.onTask).finish() }
   }
 }
 

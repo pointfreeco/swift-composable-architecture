@@ -2,7 +2,9 @@ import ComposableArchitecture
 import SwiftUI
 
 struct StandupsList: Reducer {
+  @ObservableState
   struct State: Equatable {
+    @ObservationStateIgnored
     @PresentationState var destination: Destination.State?
     var standups: IdentifiedArrayOf<Standup> = []
 
@@ -101,51 +103,49 @@ struct StandupsListView: View {
   let store: StoreOf<StandupsList>
 
   var body: some View {
-    WithViewStore(self.store, observe: \.standups) { viewStore in
-      List {
-        ForEach(viewStore.state) { standup in
-          NavigationLink(
-            state: AppFeature.Path.State.detail(StandupDetail.State(standup: standup))
-          ) {
-            CardView(standup: standup)
-          }
-          .listRowBackground(standup.theme.mainColor)
+    List {
+      ForEach(store.standups) { standup in
+        NavigationLink(
+          state: AppFeature.Path.State.detail(StandupDetail.State(standup: standup))
+        ) {
+          CardView(standup: standup)
         }
+        .listRowBackground(standup.theme.mainColor)
       }
-      .toolbar {
-        Button {
-          viewStore.send(.addStandupButtonTapped)
-        } label: {
-          Image(systemName: "plus")
-        }
+    }
+    .toolbar {
+      Button {
+        store.send(.addStandupButtonTapped)
+      } label: {
+        Image(systemName: "plus")
       }
-      .navigationTitle("Daily Standups")
-      .alert(
-        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /StandupsList.Destination.State.alert,
-        action: StandupsList.Destination.Action.alert
-      )
-      .sheet(
-        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /StandupsList.Destination.State.add,
-        action: StandupsList.Destination.Action.add
-      ) { store in
-        NavigationStack {
-          StandupFormView(store: store)
-            .navigationTitle("New standup")
-            .toolbar {
-              ToolbarItem(placement: .cancellationAction) {
-                Button("Dismiss") {
-                  viewStore.send(.dismissAddStandupButtonTapped)
-                }
-              }
-              ToolbarItem(placement: .confirmationAction) {
-                Button("Add") {
-                  viewStore.send(.confirmAddStandupButtonTapped)
-                }
+    }
+    .navigationTitle("Daily Standups")
+    .alert(
+      store: store.scope(state: \.$destination, action: { .destination($0) }),
+      state: /StandupsList.Destination.State.alert,
+      action: StandupsList.Destination.Action.alert
+    )
+    .sheet(
+      store: store.scope(state: \.$destination, action: { .destination($0) }),
+      state: /StandupsList.Destination.State.add,
+      action: StandupsList.Destination.Action.add
+    ) { newStore in
+      NavigationStack {
+        StandupFormView(store: newStore)
+          .navigationTitle("New standup")
+          .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+              Button("Dismiss") {
+                store.send(.dismissAddStandupButtonTapped)
               }
             }
-        }
+            ToolbarItem(placement: .confirmationAction) {
+              Button("Add") {
+                store.send(.confirmAddStandupButtonTapped)
+              }
+            }
+          }
       }
     }
   }
