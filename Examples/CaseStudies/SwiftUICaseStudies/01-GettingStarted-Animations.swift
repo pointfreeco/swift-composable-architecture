@@ -110,7 +110,7 @@ struct AnimationsView: View {
         .padding()
         .gesture(
           DragGesture(minimumDistance: 0).onChanged { gesture in
-            self.store.send(
+            store.send(
               .tapped(gesture.location),
               animation: .interactiveSpring(response: 0.25, dampingFraction: 0.1)
             )
@@ -119,33 +119,33 @@ struct AnimationsView: View {
         .overlay {
           GeometryReader { proxy in
             Circle()
-              .fill(self.store.circleColor)
+              .fill(store.circleColor)
               .colorInvert()
               .blendMode(.difference)
               .frame(width: 50, height: 50)
-              .scaleEffect(self.store.isCircleScaled ? 2 : 1)
+              .scaleEffect(store.isCircleScaled ? 2 : 1)
               .position(
-                x: self.store.circleCenter?.x ?? proxy.size.width / 2,
-                y: self.store.circleCenter?.y ?? proxy.size.height / 2
+                x: store.circleCenter?.x ?? proxy.size.width / 2,
+                y: store.circleCenter?.y ?? proxy.size.height / 2
               )
-              .offset(y: self.store.circleCenter == nil ? 0 : -44)
+              .offset(y: store.circleCenter == nil ? 0 : -44)
           }
           .allowsHitTesting(false)
         }
       Toggle(
         "Big mode",
         isOn:
-          self.store
-          .binding(get: \.isCircleScaled, send: Animations.Action.circleScaleToggleChanged)
+          store
+          .binding(get: \.isCircleScaled, send: { .circleScaleToggleChanged($0) })
           .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.1))
       )
       .padding()
-      Button("Rainbow") { self.store.send(.rainbowButtonTapped, animation: .linear) }
+      Button("Rainbow") { store.send(.rainbowButtonTapped, animation: .linear) }
         .padding([.horizontal, .bottom])
-      Button("Reset") { self.store.send(.resetButtonTapped) }
+      Button("Reset") { store.send(.resetButtonTapped) }
         .padding([.horizontal, .bottom])
     }
-    .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
+    .alert(store: store.scope(state: \.$alert, action: { .alert($0) }))
     .navigationBarTitleDisplayMode(.inline)
   }
 }

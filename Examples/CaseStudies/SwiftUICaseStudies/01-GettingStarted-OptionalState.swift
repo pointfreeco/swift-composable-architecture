@@ -57,11 +57,11 @@ struct OptionalBasicsView: View {
       }
 
       Button("Toggle counter state") {
-        self.store.send(.toggleCounterButtonTapped)
+        store.send(.toggleCounterButtonTapped)
       }
 
       IfLetStore(
-        self.store.scope(
+        store.scope(
           state: \.optionalCounter,
           action: OptionalBasics.Action.optionalCounter
         ),

@@ -14,6 +14,7 @@ private let readMe = """
 // MARK: - Feature domain
 
 struct Refreshable: Reducer {
+  @ObservableState
   struct State: Equatable {
     var count = 0
     var fact: String?
@@ -71,46 +72,44 @@ struct RefreshableView: View {
   let store: StoreOf<Refreshable>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      List {
-        Section {
-          AboutView(readMe: readMe)
+    List {
+      Section {
+        AboutView(readMe: readMe)
+      }
+
+      HStack {
+        Button {
+          store.send(.decrementButtonTapped)
+        } label: {
+          Image(systemName: "minus")
         }
 
-        HStack {
-          Button {
-            viewStore.send(.decrementButtonTapped)
-          } label: {
-            Image(systemName: "minus")
-          }
+        Text("\(store.count)")
+          .monospacedDigit()
 
-          Text("\(viewStore.count)")
-            .monospacedDigit()
-
-          Button {
-            viewStore.send(.incrementButtonTapped)
-          } label: {
-            Image(systemName: "plus")
-          }
-        }
-        .frame(maxWidth: .infinity)
-        .buttonStyle(.borderless)
-
-        if let fact = viewStore.fact {
-          Text(fact)
-            .bold()
-        }
-        if self.isLoading {
-          Button("Cancel") {
-            viewStore.send(.cancelButtonTapped, animation: .default)
-          }
+        Button {
+          store.send(.incrementButtonTapped)
+        } label: {
+          Image(systemName: "plus")
         }
       }
-      .refreshable {
-        self.isLoading = true
-        defer { self.isLoading = false }
-        await viewStore.send(.refresh).finish()
+      .frame(maxWidth: .infinity)
+      .buttonStyle(.borderless)
+
+      if let fact = store.fact {
+        Text(fact)
+          .bold()
       }
+      if self.isLoading {
+        Button("Cancel") {
+          store.send(.cancelButtonTapped, animation: .default)
+        }
+      }
+    }
+    .refreshable {
+      isLoading = true
+      defer { isLoading = false }
+      await store.send(.refresh).finish()
     }
   }
 }

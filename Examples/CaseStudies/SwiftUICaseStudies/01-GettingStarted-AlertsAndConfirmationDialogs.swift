@@ -116,16 +116,14 @@ struct AlertAndConfirmationDialogView: View {
         AboutView(readMe: readMe)
       }
 
-      Text("Count: \(self.store.count)")
-      Button("Alert") { self.store.send(.alertButtonTapped) }
-      Button("Confirmation Dialog") { self.store.send(.confirmationDialogButtonTapped) }
+      Text("Count: \(store.count)")
+      Button("Alert") { store.send(.alertButtonTapped) }
+      Button("Confirmation Dialog") { store.send(.confirmationDialogButtonTapped) }
     }
     .navigationTitle("Alerts & Dialogs")
-    .alert(
-      store: self.store.scope(state: \.$alert, action: { .alert($0) })
-    )
+    .alert(store: store.scope(state: \.$alert, action: { .alert($0) }))
     .confirmationDialog(
-      store: self.store.scope(state: \.$confirmationDialog, action: { .confirmationDialog($0) })
+      store: store.scope(state: \.$confirmationDialog, action: { .confirmationDialog($0) })
     )
   }
 }

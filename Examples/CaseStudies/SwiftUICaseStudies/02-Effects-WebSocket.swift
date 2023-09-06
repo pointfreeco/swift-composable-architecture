@@ -13,7 +13,9 @@ private let readMe = """
 // MARK: - Feature domain
 
 struct WebSocket: Reducer {
+  @ObservableState
   struct State: Equatable {
+    @ObservationStateIgnored
     @PresentationState var alert: AlertState<Action.Alert>?
     var connectivityState = ConnectivityState.disconnected
     var messageToSend = ""
@@ -140,53 +142,50 @@ struct WebSocketView: View {
   let store: StoreOf<WebSocket>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
+    Form {
+      Section {
+        AboutView(readMe: readMe)
+      }
 
-        Section {
-          VStack(alignment: .leading) {
-            Button(
-              viewStore.connectivityState == .connected
-                ? "Disconnect"
-                : viewStore.connectivityState == .disconnected
-                  ? "Connect"
-                  : "Connecting..."
-            ) {
-              viewStore.send(.connectButtonTapped)
+      Section {
+        VStack(alignment: .leading) {
+          Button(
+            store.connectivityState == .connected
+              ? "Disconnect"
+              : store.connectivityState == .disconnected
+                ? "Connect"
+                : "Connecting..."
+          ) {
+            store.send(.connectButtonTapped)
+          }
+          .buttonStyle(.bordered)
+          .tint(store.connectivityState == .connected ? .red : .green)
+
+          HStack {
+            TextField(
+              "Type message here",
+              text: store.binding(get: \.messageToSend, send: { .messageToSendChanged($0) })
+            )
+            .textFieldStyle(.roundedBorder)
+
+            Button("Send") {
+              store.send(.sendButtonTapped)
             }
-            .buttonStyle(.bordered)
-            .tint(viewStore.connectivityState == .connected ? .red : .green)
-
-            HStack {
-              TextField(
-                "Type message here",
-                text: viewStore.binding(
-                  get: \.messageToSend, send: WebSocket.Action.messageToSendChanged)
-              )
-              .textFieldStyle(.roundedBorder)
-
-              Button("Send") {
-                viewStore.send(.sendButtonTapped)
-              }
-              .buttonStyle(.borderless)
-            }
+            .buttonStyle(.borderless)
           }
         }
-
-        Section {
-          Text("Status: \(viewStore.connectivityState.rawValue)")
-            .foregroundStyle(.secondary)
-          Text(viewStore.receivedMessages.reversed().joined(separator: "\n"))
-        } header: {
-          Text("Received messages")
-        }
       }
-      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
-      .navigationTitle("Web Socket")
+
+      Section {
+        Text("Status: \(store.connectivityState.rawValue)")
+          .foregroundStyle(.secondary)
+        Text(store.receivedMessages.reversed().joined(separator: "\n"))
+      } header: {
+        Text("Received messages")
+      }
     }
+    .alert(store: store.scope(state: \.$alert, action: { .alert($0) }))
+    .navigationTitle("Web Socket")
   }
 }
 

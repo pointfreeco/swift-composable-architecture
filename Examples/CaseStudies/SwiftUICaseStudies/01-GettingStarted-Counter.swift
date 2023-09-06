@@ -52,16 +52,16 @@ struct CounterView: View {
     let _ = Self._printChanges()
     HStack {
       Button {
-        self.store.send(.decrementButtonTapped)
+        store.send(.decrementButtonTapped)
       } label: {
         Image(systemName: "minus")
       }
 
-      Text("\(self.store.count)")
+      Text("\(store.count)")
         .monospacedDigit()
 
       Button {
-        self.store.send(.incrementButtonTapped)
+        store.send(.incrementButtonTapped)
       } label: {
         Image(systemName: "plus")
       }
