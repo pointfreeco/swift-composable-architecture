@@ -2,6 +2,7 @@ import SwiftUI
 
 extension View {
   @_spi(Presentation)
+  @warn_unqualified_access
   public func presentation<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder body: @escaping (
@@ -17,6 +18,7 @@ extension View {
 
   @_disfavoredOverload
   @_spi(Presentation)
+  @warn_unqualified_access
   public func presentation<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder body: @escaping (
@@ -35,6 +37,7 @@ extension View {
   }
 
   @_spi(Presentation)
+  @warn_unqualified_access
   public func presentation<
     State,
     Action,
@@ -60,6 +63,7 @@ extension View {
 
   @_disfavoredOverload
   @_spi(Presentation)
+  @warn_unqualified_access
   public func presentation<
     State,
     Action,
@@ -86,6 +90,7 @@ extension View {
   }
 
   @_spi(Presentation)
+  @warn_unqualified_access
   @ViewBuilder
   public func presentation<
     State,
