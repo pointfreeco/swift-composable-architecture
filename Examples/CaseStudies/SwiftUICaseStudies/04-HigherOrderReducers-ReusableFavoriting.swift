@@ -19,7 +19,9 @@ private let readMe = """
 
 // MARK: - Reusable favorite component
 
+@ObservableState
 struct FavoritingState<ID: Hashable & Sendable>: Equatable {
+  @ObservationStateIgnored
   @PresentationState var alert: AlertState<FavoritingAction.Alert>?
   let id: ID
   var isFavorite: Bool
@@ -69,24 +71,23 @@ struct Favoriting<ID: Hashable & Sendable>: Reducer {
 }
 
 struct FavoriteButton<ID: Hashable & Sendable>: View {
-  let store: Store<FavoritingState<ID>, FavoritingAction>
+  @State var store: Store<FavoritingState<ID>, FavoritingAction>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Button {
-        viewStore.send(.buttonTapped)
-      } label: {
-        Image(systemName: "heart")
-          .symbolVariant(viewStore.isFavorite ? .fill : .none)
-      }
-      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
+    Button {
+      store.send(.buttonTapped)
+    } label: {
+      Image(systemName: "heart")
+        .symbolVariant(store.isFavorite ? .fill : .none)
     }
+    .alert(store: store.scope(state: \.$alert, action: { .alert($0) }))
   }
 }
 
 // MARK: - Feature domain
 
 struct Episode: Reducer {
+  @ObservableState
   struct State: Equatable, Identifiable {
     var alert: AlertState<FavoritingAction.Alert>?
     let id: UUID
@@ -113,22 +114,15 @@ struct Episode: Reducer {
 // MARK: - Feature view
 
 struct EpisodeView: View {
-  let store: StoreOf<Episode>
+  @State var store: StoreOf<Episode>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      HStack(alignment: .firstTextBaseline) {
-        Text(viewStore.title)
+    HStack(alignment: .firstTextBaseline) {
+      Text(store.title)
 
-        Spacer()
+      Spacer()
 
-        FavoriteButton(
-          store: self.store.scope(
-            state: \.favorite,
-            action: Episode.Action.favorite
-          )
-        )
-      }
+      FavoriteButton(store: store.scope(state: \.favorite, action: { .favorite($0) }))
     }
   }
 }

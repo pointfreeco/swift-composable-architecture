@@ -67,45 +67,43 @@ struct MultipleDestinations: Reducer {
 }
 
 struct MultipleDestinationsView: View {
-  let store: StoreOf<MultipleDestinations>
+  @State var store: StoreOf<MultipleDestinations>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
-        Button("Show drill-down") {
-          viewStore.send(.showDrillDown)
-        }
-        Button("Show popover") {
-          viewStore.send(.showPopover)
-        }
-        Button("Show sheet") {
-          viewStore.send(.showSheet)
-        }
+    Form {
+      Section {
+        AboutView(readMe: readMe)
       }
-      .navigationDestination(
-        store: store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /MultipleDestinations.Destination.State.drillDown,
-        action: MultipleDestinations.Destination.Action.drillDown
-      ) {
-        CounterView(store: $0)
+      Button("Show drill-down") {
+        store.send(.showDrillDown)
       }
-      .popover(
-        store: store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /MultipleDestinations.Destination.State.popover,
-        action: MultipleDestinations.Destination.Action.popover
-      ) {
-        CounterView(store: $0)
+      Button("Show popover") {
+        store.send(.showPopover)
       }
-      .sheet(
-        store: store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /MultipleDestinations.Destination.State.sheet,
-        action: MultipleDestinations.Destination.Action.sheet
-      ) {
-        CounterView(store: $0)
+      Button("Show sheet") {
+        store.send(.showSheet)
       }
+    }
+    .navigationDestination(
+      store: store.scope(state: \.$destination, action: { .destination($0) }),
+      state: /MultipleDestinations.Destination.State.drillDown,
+      action: MultipleDestinations.Destination.Action.drillDown
+    ) {
+      CounterView(store: $0)
+    }
+    .popover(
+      store: store.scope(state: \.$destination, action: { .destination($0) }),
+      state: /MultipleDestinations.Destination.State.popover,
+      action: MultipleDestinations.Destination.Action.popover
+    ) {
+      CounterView(store: $0)
+    }
+    .sheet(
+      store: store.scope(state: \.$destination, action: { .destination($0) }),
+      state: /MultipleDestinations.Destination.State.sheet,
+      action: MultipleDestinations.Destination.Action.sheet
+    ) {
+      CounterView(store: $0)
     }
   }
 }

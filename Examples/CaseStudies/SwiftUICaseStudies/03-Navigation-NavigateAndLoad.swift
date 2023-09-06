@@ -11,6 +11,7 @@ private let readMe = """
 // MARK: - Feature domain
 
 struct NavigateAndLoad: Reducer {
+  @ObservableState
   struct State: Equatable {
     var isNavigationActive = false
     var optionalCounter: Counter.State?
@@ -58,32 +59,24 @@ struct NavigateAndLoad: Reducer {
 // MARK: - Feature view
 
 struct NavigateAndLoadView: View {
-  let store: StoreOf<NavigateAndLoad>
+  @State var store: StoreOf<NavigateAndLoad>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
-        NavigationLink(
-          destination: IfLetStore(
-            self.store.scope(
-              state: \.optionalCounter,
-              action: NavigateAndLoad.Action.optionalCounter
-            )
-          ) {
-            CounterView(store: $0)
-          } else: {
-            ProgressView()
-          },
-          isActive: viewStore.binding(
-            get: \.isNavigationActive,
-            send: NavigateAndLoad.Action.setNavigation(isActive:)
-          )
+    Form {
+      Section {
+        AboutView(readMe: readMe)
+      }
+      NavigationLink(
+        destination: IfLetStore(
+          store.scope(state: \.optionalCounter, action: { .optionalCounter($0) })
         ) {
-          Text("Load optional counter")
-        }
+          CounterView(store: $0)
+        } else: {
+          ProgressView()
+        },
+        isActive: store.binding(get: \.isNavigationActive, send: { .setNavigation(isActive: $0) })
+      ) {
+        Text("Load optional counter")
       }
     }
     .navigationTitle("Navigate and load")

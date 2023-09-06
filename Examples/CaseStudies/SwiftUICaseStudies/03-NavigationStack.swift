@@ -6,6 +6,7 @@ private let readMe = """
   """
 
 struct NavigationDemo: Reducer {
+  @ObservableState
   struct State: Equatable {
     var path = StackState<Path.State>()
   }
@@ -89,9 +90,7 @@ struct NavigationDemoView: View {
   let store: StoreOf<NavigationDemo>
 
   var body: some View {
-    NavigationStackStore(
-      self.store.scope(state: \.path, action: NavigationDemo.Action.path)
-    ) {
+    NavigationStackStore(store.scope(state: \.path, action: { .path($0) })) {
       Form {
         Section { Text(template: readMe) }
 
@@ -112,7 +111,7 @@ struct NavigationDemoView: View {
 
         Section {
           Button("Go to A → B → C") {
-            self.store.send(.goToABCButtonTapped)
+            store.send(.goToABCButtonTapped)
           }
         }
       }
@@ -140,7 +139,7 @@ struct NavigationDemoView: View {
       }
     }
     .safeAreaInset(edge: .bottom) {
-      FloatingMenuView(store: self.store)
+      FloatingMenuView(store: store)
     }
     .navigationTitle("Navigation Stack")
   }

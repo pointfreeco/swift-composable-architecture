@@ -11,6 +11,7 @@ private let readMe = """
 // MARK: - Feature domain
 
 struct NavigateAndLoadList: Reducer {
+  @ObservableState
   struct State: Equatable {
     var rows: IdentifiedArrayOf<Row> = [
       Row(count: 1, id: UUID()),
@@ -57,7 +58,8 @@ struct NavigateAndLoadList: Reducer {
 
       case .setNavigationSelectionDelayCompleted:
         guard let id = state.selection?.id else { return .none }
-        state.selection?.value = Counter.State(count: state.rows[id: id]?.count ?? 0)
+        let count = state.rows[id: id]?.count ?? 0
+        state.selection?.value = Counter.State(count: count)
         return .none
       }
     }
@@ -73,34 +75,29 @@ struct NavigateAndLoadList: Reducer {
 // MARK: - Feature view
 
 struct NavigateAndLoadListView: View {
-  let store: StoreOf<NavigateAndLoadList>
+  @State var store: StoreOf<NavigateAndLoadList>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
-        ForEach(viewStore.rows) { row in
-          NavigationLink(
-            destination: IfLetStore(
-              self.store.scope(
-                state: \.selection?.value,
-                action: NavigateAndLoadList.Action.counter
-              )
-            ) {
-              CounterView(store: $0)
-            } else: {
-              ProgressView()
-            },
-            tag: row.id,
-            selection: viewStore.binding(
-              get: \.selection?.id,
-              send: NavigateAndLoadList.Action.setNavigation(selection:)
+    Form {
+      Section {
+        AboutView(readMe: readMe)
+      }
+      ForEach(store.rows) { row in
+        NavigationLink(
+          destination: IfLetStore(
+            store.scope(
+              state: \.selection?.value,
+              action: NavigateAndLoadList.Action.counter
             )
           ) {
-            Text("Load optional counter that starts from \(row.count)")
-          }
+            CounterView(store: $0)
+          } else: {
+            ProgressView()
+          },
+          tag: row.id,
+          selection: store.binding(get: \.selection?.id, send: { .setNavigation(selection: $0) })
+        ) {
+          Text("Load optional counter that starts from \(row.count)")
         }
       }
     }

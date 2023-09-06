@@ -56,7 +56,7 @@ struct LoadThenPresent: Reducer {
 // MARK: - Feature view
 
 struct LoadThenPresentView: View {
-  let store: StoreOf<LoadThenPresent>
+  @State var store: StoreOf<LoadThenPresent>
 
   var body: some View {
     let _ = Self._printChanges()
@@ -65,11 +65,11 @@ struct LoadThenPresentView: View {
         AboutView(readMe: readMe)
       }
       Button {
-        self.store.send(.counterButtonTapped)
+        store.send(.counterButtonTapped)
       } label: {
         HStack {
           Text("Load optional counter")
-          if self.store.isActivityIndicatorVisible {
+          if store.isActivityIndicatorVisible {
             Spacer()
             ProgressView()
           }
@@ -77,14 +77,14 @@ struct LoadThenPresentView: View {
       }
     }
     .sheet(
-      store: self.store.scope(state: \.$counter, action: LoadThenPresent.Action.counter),
+      store: store.scope(state: \.$counter, action: { .counter($0) }),
       content: CounterView.init(store:)
     )
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .ignoresSafeArea()
     .background {
       Group {
-        if self.store.counter == nil {
+        if store.counter == nil {
           Color.red
         } else {
           Color.yellow
