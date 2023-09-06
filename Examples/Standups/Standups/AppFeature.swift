@@ -4,6 +4,7 @@ import SwiftUI
 struct AppFeature: Reducer {
   @ObservableState
   struct State: Equatable {
+    @ObservationStateIgnored
     var path = StackState<Path.State>()
     var standupsList = StandupsList.State()
   }
@@ -135,27 +136,35 @@ struct AppView: View {
   let store: StoreOf<AppFeature>
 
   var body: some View {
-    NavigationStackStore(store.scope(state: \.path, action: { .path($0) })) {
-      StandupsListView(
-        store: store.scope(state: \.standupsList, action: { .standupsList($0) })
-      )
-    } destination: {
-      switch $0 {
-      case .detail:
-        CaseLet(
-          /AppFeature.Path.State.detail,
-          action: AppFeature.Path.Action.detail,
-          then: StandupDetailView.init(store:)
+    ZStack(alignment: .bottom) {
+      let _ = Self._printChanges()
+      NavigationStackStore(store.scope(state: \.path, action: { .path($0) })) {
+        StandupsListView(
+          store: store.scope(state: \.standupsList, action: { .standupsList($0) })
         )
-      case let .meeting(meeting, standup: standup):
-        MeetingView(meeting: meeting, standup: standup)
-      case .record:
-        CaseLet(
-          /AppFeature.Path.State.record,
-          action: AppFeature.Path.Action.record,
-          then: RecordMeetingView.init(store:)
-        )
+      } destination: {
+        let _ = Self._printChanges()
+        switch $0 {
+        case .detail:
+          CaseLet(
+            /AppFeature.Path.State.detail,
+             action: AppFeature.Path.Action.detail,
+             then: StandupDetailView.init(store:)
+          )
+        case let .meeting(meeting, standup: standup):
+          MeetingView(meeting: meeting, standup: standup)
+        case .record:
+          CaseLet(
+            /AppFeature.Path.State.record,
+             action: AppFeature.Path.Action.record,
+             then: RecordMeetingView.init(store:)
+          )
+        }
       }
+
+      Text("\(store.path.count)")
+        .padding(30)
+        .background(Color.white)
     }
   }
 }
