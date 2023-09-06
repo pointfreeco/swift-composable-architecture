@@ -14,7 +14,31 @@ import OrderedCollections
 /// <doc:StackBasedNavigation#StackState-vs-NavigationPath> to understand how ``StackState``
 /// compares to SwiftUI's `NavigationPath` type.
 public struct StackState<Element> {
-  var _dictionary: OrderedDictionary<StackElementID, Element>
+  var __dictionary: OrderedDictionary<StackElementID, Element>
+
+  var _dictionary: OrderedDictionary<StackElementID, Element> {
+    get {
+      #if canImport(Observation)
+        if #available(iOS 17, *) {
+          self.access(keyPath: \._dictionary)
+        }
+      #endif
+      return self.__dictionary
+    }
+    set {
+      #if canImport(Observation)
+        print("old", self.__dictionary.keys, "new", newValue.keys)
+        if #available(iOS 17, *), !areOrderedSetsDuplicates(self.__dictionary.keys, newValue.keys) {
+          self.withMutation(keyPath: \._dictionary) {
+            self.__dictionary = newValue
+          }
+          return
+        }
+      #endif
+      self.__dictionary = newValue
+    }
+  }
+
   fileprivate var _mounted: OrderedSet<StackElementID> = []
 
   @Dependency(\.stackElementID) private var stackElementID
@@ -99,7 +123,29 @@ public struct StackState<Element> {
     else { return }
     self.removeSubrange(index.advanced(by: 1)...)
   }
+
+  #if canImport(Observation)
+    private let _$observationRegistrar = ObservationRegistrarWrapper() // TODO: make sendable
+
+    @available(iOS 17, *)
+    internal nonisolated func access<Member>(keyPath: KeyPath<Self, Member>) {
+      _$observationRegistrar.rawValue.access(self, keyPath: keyPath)
+    }
+
+    @available(iOS 17, *)
+    internal nonisolated func withMutation<Member, T>(
+      keyPath: KeyPath<Self, Member>,
+      _ mutation: () throws -> T
+    ) rethrows -> T {
+      try _$observationRegistrar.rawValue.withMutation(of: self, keyPath: keyPath, mutation)
+    }
+  #endif
 }
+
+#if canImport(Observation)
+extension StackState: Observable {
+}
+#endif
 
 extension StackState: RandomAccessCollection, RangeReplaceableCollection {
   public var startIndex: Int { self._dictionary.keys.startIndex }
@@ -108,7 +154,7 @@ extension StackState: RandomAccessCollection, RangeReplaceableCollection {
   public func index(before i: Int) -> Int { self._dictionary.keys.index(before: i) }
   public subscript(position: Int) -> Element { self._dictionary.values[position] }
   public init() {
-    self._dictionary = [:]
+    self.__dictionary = [:]
   }
   public mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
     self._dictionary.removeAll(keepingCapacity: keepCapacity)

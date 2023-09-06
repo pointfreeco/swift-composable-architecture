@@ -151,6 +151,7 @@ public struct PresentationState<State> {
 }
 
 #if canImport(Observation)
+// TODO: Should this be conditional?
 extension PresentationState: Observable {
 }
 #endif

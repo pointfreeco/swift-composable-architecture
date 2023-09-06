@@ -2,7 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 struct AppFeature: Reducer {
-//  @ObservableState
+  @ObservableState
   struct State: Equatable {
     var path = StackState<Path.State>()
     var standupsList = StandupsList.State()
@@ -96,10 +96,23 @@ struct AppFeature: Reducer {
   }
 
   struct Path: Reducer {
-    enum State: Equatable {
+    enum State: Equatable, ObservableState {
       case detail(StandupDetail.State)
       case meeting(Meeting, standup: Standup)
       case record(RecordMeeting.State)
+
+      var _$id: StateID {
+        switch self {
+        case let .detail(detail):
+          return detail._$id
+
+        case .meeting:
+          return StateID() // TODO: StateID.empty
+
+        case let .record(record):
+          return record._$id
+        }
+      }
     }
 
     enum Action: Equatable {

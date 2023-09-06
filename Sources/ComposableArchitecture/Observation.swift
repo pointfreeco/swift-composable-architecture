@@ -1,6 +1,7 @@
 #if swift(>=5.9) && canImport(Observation)
   import Foundation
   import Observation
+  import OrderedCollections
   import SwiftUI
 
   @available(iOS, introduced: 17)
@@ -229,6 +230,16 @@
       .init(uuid: self.flatMap { $0._$id.uuid })
     }
   }
+
+  // @available(iOS, introduced: 17)
+  // @available(macOS, introduced: 14)
+  // @available(tvOS, introduced: 17)
+  // @available(watchOS, introduced: 10)
+  // extension OrderedDictionary: ObservableState where Value: ObservableState {
+  //   public var _$id: ComposableArchitecture.StateID {
+  //     .init(uuid: self.flatMap { $1._$id.uuid })
+  //   }
+  // }
 
   @available(iOS, introduced: 17)
   @available(macOS, introduced: 14)
