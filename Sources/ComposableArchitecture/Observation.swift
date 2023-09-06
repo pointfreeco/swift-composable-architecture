@@ -75,6 +75,22 @@
   @available(tvOS, introduced: 17)
   @available(watchOS, introduced: 10)
   extension Store: Observable {
+    internal var observedState: State {
+      get {
+        self.access(keyPath: \.observedState)
+        return self.subject.value
+      }
+      set {
+        if isIdentityEqual(self.subject.value, newValue) {
+          self.subject.value = newValue
+        } else {
+          self.withMutation(keyPath: \.observedState) {
+            self.subject.value = newValue
+          }
+        }
+      }
+    }
+
     internal nonisolated func access<Member>(keyPath: KeyPath<Store, Member>) {
       _$observationRegistrar.rawValue.access(self, keyPath: keyPath)
     }
@@ -93,19 +109,8 @@
   @available(watchOS, introduced: 10)
   extension Store where State: ObservableState {
     private(set) public var state: State {
-      get {
-        self.access(keyPath: \.state)
-        return self.subject.value
-      }
-      set {
-        if isIdentityEqual(self.subject.value, newValue) {
-          self.subject.value = newValue
-        } else {
-          self.withMutation(keyPath: \.state) {
-            self.subject.value = newValue
-          }
-        }
-      }
+      get { self.observedState }
+      set { self.observedState = newValue }
     }
 
     public subscript<Value>(dynamicMember keyPath: KeyPath<State, Value>) -> Value {
@@ -224,4 +229,31 @@
       .init(uuid: self.flatMap { $0._$id.uuid })
     }
   }
+
+  @available(iOS, introduced: 17)
+  @available(macOS, introduced: 14)
+  @available(tvOS, introduced: 17)
+  @available(watchOS, introduced: 10)
+  extension Binding {
+    public subscript<State: ObservableState, Action: BindableAction, Member: Equatable>(
+      dynamicMember keyPath: WritableKeyPath<State, Member>
+    ) -> Binding<Member>
+    where Value == Store<State, Action>, Action.State == State {
+      Binding<Member>(
+        get: { self.wrappedValue.state[keyPath: keyPath] },
+        set: { self.transaction($1).wrappedValue.send(.binding(.set(keyPath, $0))) }
+      )
+    }
+
+//    public subscript<State, Action: ViewAction, Member>(
+//      dynamicMember keyPath: WritableKeyPath<State, Member>
+//    ) -> Binding<Member>
+//    where Value == Store<State, Action>, Action.ViewAction: BindableAction<State> {
+//      Binding<Member>(
+//        get: { self.wrappedValue.state[keyPath: keyPath] },
+//        set: { self.transaction($1).wrappedValue.send(.view(.binding(.set(keyPath, $0)))) }
+//      )
+//    }
+  }
+
 #endif

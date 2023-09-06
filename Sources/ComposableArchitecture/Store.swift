@@ -451,7 +451,11 @@ public final class Store<State, Action> {
       withExtendedLifetime(self.bufferedActions) {
         self.bufferedActions.removeAll()
       }
-      self.subject.value = currentState
+      if #available(iOS 17, *) {
+        self.observedState = currentState
+      } else {
+        self.subject.value = currentState
+      }
       self.isSending = false
       if !self.bufferedActions.isEmpty {
         if let task = self.send(

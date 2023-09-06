@@ -178,6 +178,22 @@ extension BindingAction {
     )
   }
 
+  @available(iOS, introduced: 17)
+  @available(macOS, introduced: 14)
+  @available(tvOS, introduced: 17)
+  @available(watchOS, introduced: 10)
+  public static func set<Value: Equatable & Sendable>(
+    _ keyPath: WritableKeyPath<Root, Value>,
+    _ value: Value
+  ) -> Self where Root: ObservableState {
+    .init(
+      keyPath: keyPath,
+      set: { $0[keyPath: keyPath] = value },
+      value: AnySendable(value),
+      valueIsEqualTo: { ($0 as? AnySendable)?.base as? Value == value }
+    )
+  }
+
   /// Matches a binding action by its key path.
   ///
   /// Implicitly invoked when switching on a reducer's action and pattern matching on a binding
@@ -194,6 +210,17 @@ extension BindingAction {
     keyPath: WritableKeyPath<Root, BindingState<Value>>,
     bindingAction: Self
   ) -> Bool {
+    keyPath == bindingAction.keyPath
+  }
+
+  @available(iOS, introduced: 17)
+  @available(macOS, introduced: 14)
+  @available(tvOS, introduced: 17)
+  @available(watchOS, introduced: 10)
+  public static func ~= <Value>(
+    keyPath: WritableKeyPath<Root, Value>,
+    bindingAction: Self
+  ) -> Bool where Root: ObservableState {
     keyPath == bindingAction.keyPath
   }
 
