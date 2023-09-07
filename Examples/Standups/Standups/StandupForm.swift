@@ -68,7 +68,7 @@ struct StandupFormView: View {
           TextField("Title", text: viewStore.$standup.title)
             .focused(self.$focus, equals: .title)
           HStack {
-            Slider(value: viewStore.$standup.duration.seconds, in: 5...30, step: 1) {
+            Slider(value: viewStore.$standup.duration.minutes, in: 5...30, step: 1) {
               Text("Length")
             }
             Spacer()
@@ -120,7 +120,7 @@ struct ThemePicker: View {
 }
 
 extension Duration {
-  fileprivate var seconds: Double {
+  fileprivate var minutes: Double {
     get { Double(self.components.seconds / 60) }
     set { self = .seconds(newValue * 60) }
   }
