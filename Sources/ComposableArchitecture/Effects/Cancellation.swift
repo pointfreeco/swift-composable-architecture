@@ -14,7 +14,7 @@ extension Effect {
   ///
   /// case .reloadButtonTapped:
   ///   // Start a new effect to load the user
-  ///   return .run {
+  ///   return .run { send in
   ///     await send(
   ///       .userResponse(
   ///         TaskResult { try await self.apiClient.loadUser() }
