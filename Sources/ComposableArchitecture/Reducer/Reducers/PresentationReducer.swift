@@ -13,7 +13,7 @@ import Combine
 /// ```swift
 /// struct ParentFeature: Reducer {
 ///   struct State {
-///     @PresentationState var child: Child.State?
+///     @PresentationState var child: ChildFeature.State?
 ///      // ...
 ///   }
 ///   // ...
@@ -163,7 +163,7 @@ extension PresentationState: CustomReflectable {
 /// struct ParentFeature: Reducer {
 ///   // ...
 ///   enum Action {
-///     case child(PresentationAction<Child.Action>)
+///     case child(PresentationAction<ChildFeature.Action>)
 ///      // ...
 ///   }
 ///   // ...
@@ -212,7 +212,7 @@ extension Reducer {
   ///     // ...
   ///   }
   ///
-  ///   var body: some Reducer<State, Action> {
+  ///   var body: some ReducerOf<Self> {
   ///     Reduce { state, action in
   ///       // Core logic for parent feature
   ///     }
