@@ -2,10 +2,10 @@ import ComposableArchitecture
 import SwiftUI
 
 private let readMe = """
-  This application demonstrates live-searching with the Composable Architecture. As you type the \
-  events are debounced for 300ms, and when you stop typing an API request is made to load \
-  locations. Then tapping on a location will load weather.
-  """
+This application demonstrates live-searching with the Composable Architecture. As you type the \
+events are debounced for 300ms, and when you stop typing an API request is made to load \
+locations. Then tapping on a location will load weather.
+"""
 
 // MARK: - Search feature domain
 
@@ -41,70 +41,72 @@ struct Search: Reducer {
   @Dependency(\.weatherClient) var weatherClient
   private enum CancelID { case location, weather }
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .forecastResponse(_, .failure):
-      state.weather = nil
-      state.resultForecastRequestInFlight = nil
-      return .none
+  var body: some ReducerOf<Self> {
+    Reduce { state, action in
+      switch action {
+      case .forecastResponse(_, .failure):
+        state.weather = nil
+        state.resultForecastRequestInFlight = nil
+        return .none
 
-    case let .forecastResponse(id, .success(forecast)):
-      state.weather = State.Weather(
-        id: id,
-        days: forecast.daily.time.indices.map {
-          State.Weather.Day(
-            date: forecast.daily.time[$0],
-            temperatureMax: forecast.daily.temperatureMax[$0],
-            temperatureMaxUnit: forecast.dailyUnits.temperatureMax,
-            temperatureMin: forecast.daily.temperatureMin[$0],
-            temperatureMinUnit: forecast.dailyUnits.temperatureMin
+      case let .forecastResponse(id, .success(forecast)):
+        state.weather = State.Weather(
+          id: id,
+          days: forecast.daily.time.indices.map {
+            State.Weather.Day(
+              date: forecast.daily.time[$0],
+              temperatureMax: forecast.daily.temperatureMax[$0],
+              temperatureMaxUnit: forecast.dailyUnits.temperatureMax,
+              temperatureMin: forecast.daily.temperatureMin[$0],
+              temperatureMinUnit: forecast.dailyUnits.temperatureMin
+            )
+          }
+        )
+        state.resultForecastRequestInFlight = nil
+        return .none
+
+      case let .searchQueryChanged(query):
+        state.searchQuery = query
+
+        // When the query is cleared we can clear the search results, but we have to make sure to cancel
+        // any in-flight search requests too, otherwise we may get data coming in later.
+        guard !query.isEmpty else {
+          state.results = []
+          state.weather = nil
+          return .cancel(id: CancelID.location)
+        }
+        return .none
+
+      case .searchQueryChangeDebounced:
+        guard !state.searchQuery.isEmpty else {
+          return .none
+        }
+        return .run { [query = state.searchQuery] send in
+          await send(.searchResponse(TaskResult { try await self.weatherClient.search(query) }))
+        }
+        .cancellable(id: CancelID.location)
+
+      case .searchResponse(.failure):
+        state.results = []
+        return .none
+
+      case let .searchResponse(.success(response)):
+        state.results = response.results
+        return .none
+
+      case let .searchResultTapped(location):
+        state.resultForecastRequestInFlight = location
+
+        return .run { send in
+          await send(
+            .forecastResponse(
+              location.id,
+              TaskResult { try await self.weatherClient.forecast(location) }
+            )
           )
         }
-      )
-      state.resultForecastRequestInFlight = nil
-      return .none
-
-    case let .searchQueryChanged(query):
-      state.searchQuery = query
-
-      // When the query is cleared we can clear the search results, but we have to make sure to cancel
-      // any in-flight search requests too, otherwise we may get data coming in later.
-      guard !query.isEmpty else {
-        state.results = []
-        state.weather = nil
-        return .cancel(id: CancelID.location)
+        .cancellable(id: CancelID.weather, cancelInFlight: true)
       }
-      return .none
-
-    case .searchQueryChangeDebounced:
-      guard !state.searchQuery.isEmpty else {
-        return .none
-      }
-      return .run { [query = state.searchQuery] send in
-        await send(.searchResponse(TaskResult { try await self.weatherClient.search(query) }))
-      }
-      .cancellable(id: CancelID.location)
-
-    case .searchResponse(.failure):
-      state.results = []
-      return .none
-
-    case let .searchResponse(.success(response)):
-      state.results = response.results
-      return .none
-
-    case let .searchResultTapped(location):
-      state.resultForecastRequestInFlight = location
-
-      return .run { send in
-        await send(
-          .forecastResponse(
-            location.id,
-            TaskResult { try await self.weatherClient.forecast(location) }
-          )
-        )
-      }
-      .cancellable(id: CancelID.weather, cancelInFlight: true)
     }
   }
 }
@@ -176,7 +178,7 @@ struct SearchView: View {
 
   @ViewBuilder
   func weatherView(locationWeather: Search.State.Weather?) -> some View {
-    if let locationWeather = locationWeather {
+    if let locationWeather {
       let days = locationWeather.days
         .enumerated()
         .map { idx, weather in formattedWeather(day: weather, isToday: idx == 0) }
@@ -196,8 +198,8 @@ struct SearchView: View {
 private func formattedWeather(day: Search.State.Weather.Day, isToday: Bool) -> String {
   let date =
     isToday
-    ? "Today"
-    : dateFormatter.string(from: day.date).capitalized
+      ? "Today"
+      : dateFormatter.string(from: day.date).capitalized
   let min = "\(day.temperatureMin)\(day.temperatureMinUnit)"
   let max = "\(day.temperatureMax)\(day.temperatureMaxUnit)"
 

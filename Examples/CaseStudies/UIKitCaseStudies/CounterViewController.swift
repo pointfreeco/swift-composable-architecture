@@ -14,14 +14,16 @@ struct Counter: Reducer {
     case incrementButtonTapped
   }
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .decrementButtonTapped:
-      state.count -= 1
-      return .none
-    case .incrementButtonTapped:
-      state.count += 1
-      return .none
+  var body: some ReducerOf<Self> {
+    Reduce { state, action in
+      switch action {
+      case .decrementButtonTapped:
+        state.count -= 1
+        return .none
+      case .incrementButtonTapped:
+        state.count += 1
+        return .none
+      }
     }
   }
 }

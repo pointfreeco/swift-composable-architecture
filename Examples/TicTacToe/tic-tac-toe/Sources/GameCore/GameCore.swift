@@ -31,29 +31,30 @@ public struct Game: Reducer, Sendable {
 
   public init() {}
 
-  public func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case let .cellTapped(row, column):
-      guard
-        state.board[row][column] == nil,
-        !state.board.hasWinner
-      else { return .none }
+  public var body: some ReducerOf<Self> {
+    Reduce { state, action in
+      switch action {
+      case let .cellTapped(row, column):
+        guard
+          state.board[row][column] == nil,
+          !state.board.hasWinner
+        else { return .none }
 
-      state.board[row][column] = state.currentPlayer
+        state.board[row][column] = state.currentPlayer
 
-      if !state.board.hasWinner {
-        state.currentPlayer.toggle()
-      }
+        if !state.board.hasWinner {
+          state.currentPlayer.toggle()
+        }
+        return .none
 
-      return .none
+      case .playAgainButtonTapped:
+        state = Game.State(oPlayerName: state.oPlayerName, xPlayerName: state.xPlayerName)
+        return .none
 
-    case .playAgainButtonTapped:
-      state = Game.State(oPlayerName: state.oPlayerName, xPlayerName: state.xPlayerName)
-      return .none
-
-    case .quitButtonTapped:
-      return .run { _ in
-        await self.dismiss()
+      case .quitButtonTapped:
+        return .run { _ in
+          await self.dismiss()
+        }
       }
     }
   }

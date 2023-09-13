@@ -8,19 +8,22 @@ private struct NavigationStackBindingTestCase: Reducer {
       case child
     }
   }
+
   enum Action: Equatable, Sendable {
     case goToChild
     case navigationPathChanged([State.Destination])
   }
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .goToChild:
-      state.path.append(.child)
-      return .none
-    case let .navigationPathChanged(path):
-      state.path = path
-      return .none
+  var body: some ReducerOf<Self> {
+    Reduce { state, action in
+      switch action {
+      case .goToChild:
+        state.path.append(.child)
+        return .none
+      case let .navigationPathChanged(path):
+        state.path = path
+        return .none
+      }
     }
   }
 }

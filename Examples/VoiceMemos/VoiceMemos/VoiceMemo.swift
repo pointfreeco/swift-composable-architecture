@@ -44,61 +44,63 @@ struct VoiceMemo: Reducer {
   @Dependency(\.continuousClock) var clock
   private enum CancelID { case play }
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .audioPlayerClient(.failure):
-      state.mode = .notPlaying
-      return .merge(
-        .cancel(id: CancelID.play),
-        .send(.delegate(.playbackFailed))
-      )
+  var body: some ReducerOf<Self> {
+    Reduce { state, action in
+      switch action {
+      case .audioPlayerClient(.failure):
+        state.mode = .notPlaying
+        return .merge(
+          .cancel(id: CancelID.play),
+          .send(.delegate(.playbackFailed))
+        )
 
-    case .audioPlayerClient:
-      state.mode = .notPlaying
-      return .cancel(id: CancelID.play)
-
-    case .delegate:
-      return .none
-
-    case .playButtonTapped:
-      switch state.mode {
-      case .notPlaying:
-        state.mode = .playing(progress: 0)
-
-        return .run { [url = state.url] send in
-          await send(.delegate(.playbackStarted))
-
-          async let playAudio: Void = send(
-            .audioPlayerClient(TaskResult { try await self.audioPlayer.play(url) })
-          )
-
-          var start: TimeInterval = 0
-          for await _ in self.clock.timer(interval: .milliseconds(500)) {
-            start += 0.5
-            await send(.timerUpdated(start))
-          }
-
-          await playAudio
-        }
-        .cancellable(id: CancelID.play, cancelInFlight: true)
-
-      case .playing:
+      case .audioPlayerClient:
         state.mode = .notPlaying
         return .cancel(id: CancelID.play)
-      }
 
-    case let .timerUpdated(time):
-      switch state.mode {
-      case .notPlaying:
-        break
-      case .playing:
-        state.mode = .playing(progress: time / state.duration)
-      }
-      return .none
+      case .delegate:
+        return .none
 
-    case let .titleTextFieldChanged(text):
-      state.title = text
-      return .none
+      case .playButtonTapped:
+        switch state.mode {
+        case .notPlaying:
+          state.mode = .playing(progress: 0)
+
+          return .run { [url = state.url] send in
+            await send(.delegate(.playbackStarted))
+
+            async let playAudio: Void = send(
+              .audioPlayerClient(TaskResult { try await self.audioPlayer.play(url) })
+            )
+
+            var start: TimeInterval = 0
+            for await _ in self.clock.timer(interval: .milliseconds(500)) {
+              start += 0.5
+              await send(.timerUpdated(start))
+            }
+
+            await playAudio
+          }
+          .cancellable(id: CancelID.play, cancelInFlight: true)
+
+        case .playing:
+          state.mode = .notPlaying
+          return .cancel(id: CancelID.play)
+        }
+
+      case let .timerUpdated(time):
+        switch state.mode {
+        case .notPlaying:
+          break
+        case .playing:
+          state.mode = .playing(progress: time / state.duration)
+        }
+        return .none
+
+      case let .titleTextFieldChanged(text):
+        state.title = text
+        return .none
+      }
     }
   }
 }
