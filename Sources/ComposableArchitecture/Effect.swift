@@ -25,7 +25,7 @@ public struct Effect<Action> {
 /// Instead of specifying the action:
 ///
 /// ```swift
-/// let effect: EffectTask<Feature.Action>
+/// let effect: Effect<Feature.Action>
 /// ```
 ///
 /// You can specify the reducer:

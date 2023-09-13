@@ -1,6 +1,6 @@
-struct ContentView_Previews: PreviewProvider {
+struct ContactsView_Previews: PreviewProvider {
   static var previews: some View {
-    ContentView(
+    ContactsView(
       store: Store(
         initialState: ContactsFeature.State(
           contacts: [

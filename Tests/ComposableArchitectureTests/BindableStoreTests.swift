@@ -80,4 +80,143 @@ final class BindableStoreTests: XCTestCase {
       }
     }
   }
+
+  func testTestStoreBindings() async {
+    struct LoginFeature: Reducer {
+      struct State: Equatable {
+        @BindingState var email = ""
+        public var isFormValid = false
+        public var isRequestInFlight = false
+        @BindingState var password = ""
+      }
+      enum Action: Equatable, BindableAction {
+        case binding(BindingAction<State>)
+        case loginButtonTapped
+      }
+      var body: some ReducerOf<Self> {
+        BindingReducer()
+        Reduce { state, action in
+          switch action {
+          case .binding:
+            state.isFormValid = !state.email.isEmpty && !state.password.isEmpty
+            return .none
+          case .loginButtonTapped:
+            state.isRequestInFlight = true
+            return .none  // NB: Login request
+          }
+        }
+      }
+    }
+
+    struct LoginViewState: Equatable {
+      @BindingViewState var email: String
+      var isFormDisabled: Bool
+      var isLoginButtonDisabled: Bool
+      @BindingViewState var password: String
+
+      init(_ store: BindingViewStore<LoginFeature.State>) {
+        self._email = store.$email
+        self.isFormDisabled = store.isRequestInFlight
+        self.isLoginButtonDisabled = !store.isFormValid || store.isRequestInFlight
+        self._password = store.$password
+      }
+    }
+
+    let store = TestStore(initialState: LoginFeature.State()) {
+      LoginFeature()
+    }
+    await store.send(.set(\.$email, "blob@pointfree.co")) {
+      $0.email = "blob@pointfree.co"
+    }
+    XCTAssertFalse(LoginViewState(store.bindings).isFormDisabled)
+    XCTAssertTrue(LoginViewState(store.bindings).isLoginButtonDisabled)
+    await store.send(.set(\.$password, "blob123")) {
+      $0.password = "blob123"
+      $0.isFormValid = true
+    }
+    XCTAssertFalse(LoginViewState(store.bindings).isFormDisabled)
+    XCTAssertFalse(LoginViewState(store.bindings).isLoginButtonDisabled)
+    await store.send(.loginButtonTapped) {
+      $0.isRequestInFlight = true
+    }
+    XCTAssertTrue(LoginViewState(store.bindings).isFormDisabled)
+    XCTAssertTrue(LoginViewState(store.bindings).isLoginButtonDisabled)
+  }
+
+  func testTestStoreBindings_ViewAction() async {
+    struct LoginFeature: Reducer {
+      struct State: Equatable {
+        @BindingState var email = ""
+        public var isFormValid = false
+        public var isRequestInFlight = false
+        @BindingState var password = ""
+      }
+      enum Action: Equatable {
+        case view(View)
+        enum View: Equatable, BindableAction {
+          case binding(BindingAction<State>)
+          case loginButtonTapped
+        }
+      }
+      var body: some ReducerOf<Self> {
+        BindingReducer(action: /Action.view)
+        Reduce { state, action in
+          switch action {
+          case .view(.binding):
+            state.isFormValid = !state.email.isEmpty && !state.password.isEmpty
+            return .none
+          case .view(.loginButtonTapped):
+            state.isRequestInFlight = true
+            return .none  // NB: Login request
+          }
+        }
+      }
+    }
+
+    struct LoginViewState: Equatable {
+      @BindingViewState var email: String
+      var isFormDisabled: Bool
+      var isLoginButtonDisabled: Bool
+      @BindingViewState var password: String
+
+      init(_ store: BindingViewStore<LoginFeature.State>) {
+        self._email = store.$email
+        self.isFormDisabled = store.isRequestInFlight
+        self.isLoginButtonDisabled = !store.isFormValid || store.isRequestInFlight
+        self._password = store.$password
+      }
+    }
+
+    let store = TestStore(initialState: LoginFeature.State()) {
+      LoginFeature()
+    }
+    await store.send(.view(.set(\.$email, "blob@pointfree.co"))) {
+      $0.email = "blob@pointfree.co"
+    }
+    XCTAssertFalse(
+      LoginViewState(store.bindings(action: /LoginFeature.Action.view)).isFormDisabled
+    )
+    XCTAssertTrue(
+      LoginViewState(store.bindings(action: /LoginFeature.Action.view)).isLoginButtonDisabled
+    )
+    await store.send(.view(.set(\.$password, "blob123"))) {
+      $0.password = "blob123"
+      $0.isFormValid = true
+    }
+    XCTAssertFalse(
+      LoginViewState(store.bindings(action: /LoginFeature.Action.view)).isFormDisabled
+    )
+    XCTAssertFalse(
+      LoginViewState(store.bindings(action: /LoginFeature.Action.view)).isLoginButtonDisabled
+    )
+    await store.send(.view(.loginButtonTapped)) {
+      $0.isRequestInFlight = true
+    }
+    XCTAssertTrue(
+      LoginViewState(store.bindings(action: /LoginFeature.Action.view)).isFormDisabled
+    )
+    XCTAssertTrue(
+      LoginViewState(store.bindings(action: /LoginFeature.Action.view)).isLoginButtonDisabled
+    )
+  }
 }

@@ -2333,4 +2333,98 @@ final class PresentationReducerTests: BaseTCATestCase {
       $0.child = nil
     }
   }
+
+  func testOuterCancellation() async {
+    struct Child: Reducer {
+      struct State: Equatable {}
+      enum Action: Equatable { case onAppear }
+      var body: some ReducerOf<Self> {
+        Reduce { state, action in
+          .run { _ in
+            try await Task.never()
+          }
+        }
+      }
+    }
+
+    struct Parent: Reducer {
+      struct State: Equatable {
+        @PresentationState var child: Child.State?
+      }
+      enum Action: Equatable {
+        case child(PresentationAction<Child.Action>)
+        case tapAfter
+        case tapBefore
+        case tapChild
+      }
+      var body: some ReducerOf<Self> {
+        Reduce { state, action in
+          switch action {
+          case .child:
+            return .none
+          case .tapAfter:
+            return .none
+          case .tapBefore:
+            state.child = nil
+            return .none
+          case .tapChild:
+            return .none
+          }
+        }
+
+        Reduce { state, action in
+          switch action {
+          case .child:
+            return .none
+          case .tapAfter:
+            return .none
+          case .tapBefore:
+            return .none
+          case .tapChild:
+            state.child = Child.State()
+            return .none
+          }
+        }
+        .ifLet(\.$child, action: /Action.child) {
+          Child()
+        }
+
+        Reduce { state, action in
+          switch action {
+          case .child:
+            return .none
+          case .tapAfter:
+            state.child = nil
+            return .none
+          case .tapBefore:
+            return .none
+          case .tapChild:
+            return .none
+          }
+        }
+      }
+    }
+
+    let store = TestStore(initialState: Parent.State()) {
+      Parent()
+    }
+
+    await store.send(.tapChild) {
+      $0.child = Child.State()
+    }
+    await store.send(.child(.presented(.onAppear)))
+    await store.send(.tapBefore) {
+      $0.child = nil
+    }
+
+    await store.send(.tapChild) {
+      $0.child = Child.State()
+    }
+    await store.send(.child(.presented(.onAppear)))
+    await store.send(.tapAfter) {
+      $0.child = nil
+    }
+    // NB: Another action needs to come into the `ifLet` to cancel the child action
+    await store.send(.tapAfter)
+  }
 }

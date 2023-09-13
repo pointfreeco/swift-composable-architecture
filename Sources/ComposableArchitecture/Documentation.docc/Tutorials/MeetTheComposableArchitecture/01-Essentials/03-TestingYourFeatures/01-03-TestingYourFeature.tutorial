@@ -107,7 +107,7 @@
         Let's get the scaffolding of a new test into place by creating a new async test method
         and constructing a ``ComposableArchitecture/TestStore``.
         
-        @Code(name: "CounterFeatureTests.swift", file: 01-03-02-code-0001.swift, previousFile: 03-02-code-0001-previous.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-02-code-0001.swift, previousFile: 01-03-02-code-0001-previous.swift)
       }
       
       @Step {
@@ -202,7 +202,7 @@
         And then, in the implementation of `reduce`, do not reach out to `Task.sleep` and instead 
         use the `clock` the feature depends on.
         
-        @Code(name: "CounterFeature.swift", file: 01-03-02-code-0008.swift, previousFile: 02-03-code-0006.swift)
+        @Code(name: "CounterFeature.swift", file: 01-03-02-code-0008.swift, previousFile: 01-02-03-code-0006.swift)
       }
       
       With that little bit of upfront work to control the dependency on time-based asynchrony
@@ -258,7 +258,7 @@
         Also go ahead and get some scaffolding into place for the 
         ``ComposableArchitecture/TestStore``.
         
-        @Code(name: "CounterFeatureTests.swift", file: 01-03-03-code-0001.swift, previousFile: 03-03-code-0001-previous.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-03-code-0001.swift, previousFile: 01-03-03-code-0001-previous.swift)
       }
       
       For the test we want to emulate the flow of the user tapping the fact button, seeing the 
@@ -378,7 +378,7 @@
         `factButtonTapped`, use the `numberFact` dependency to load the fact rather than reaching
         out to `URLSession` to make a live network request.
         
-        @Code(name: "CounterFeature.swift", file: 01-03-04-code-0005.swift, previousFile: 03-02-code-0008.swift)
+        @Code(name: "CounterFeature.swift", file: 01-03-04-code-0005.swift, previousFile: 01-03-02-code-0008.swift)
       }
       
       With that little bit of work done in the feature you can now instantly and easily write a
@@ -389,7 +389,7 @@
       @Step {
         Without making any changes to the test, run the test in Xcode again.
         
-        @Code(name: "CounterFeatureTests.swift", file: 01-03-04-code-0006.swift, previousFile: 03-04-code-0006-previous.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-04-code-0006.swift, previousFile: 01-03-04-code-0006-previous.swift)
       }
       
       The test fails with the same messages, but there is a new one. It tells us that we are using
