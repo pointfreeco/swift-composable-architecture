@@ -2510,6 +2510,7 @@ final class PresentationReducerTests: BaseTCATestCase {
           }
         }
       }
+      let line = #line - 6
 
       let store = TestStore(initialState: Parent.State()) {
         Parent()
@@ -2527,10 +2528,15 @@ final class PresentationReducerTests: BaseTCATestCase {
         )
       }
 
-      await store.send(.destination(.presented(.child(.decrementButtonTapped)))) { _ in
-        // nothing should happen, but sending a child state action whilst the alert
-        // is presented causes the alert to dismiss
+      XCTExpectFailure {
+        $0.compactDescription.hasPrefix(
+          """
+          A "Scope" at "\(#fileID):\(line)" received a child action when child state was set to a \
+          different case. …
+          """
+        )
       }
+      await store.send(.destination(.presented(.child(.decrementButtonTapped))))
     }
   }
 }
