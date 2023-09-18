@@ -336,7 +336,7 @@ struct CounterFeature: Reducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .decrementButtonTapped:
-      state.count += 1
+      state.count -= 1
       return .none
 
     case .incrementButtonTapped:
