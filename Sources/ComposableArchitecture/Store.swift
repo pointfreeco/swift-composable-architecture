@@ -1,4 +1,5 @@
 import Combine
+import Observation
 import Foundation
 import SwiftUI
 
@@ -126,6 +127,7 @@ import SwiftUI
 /// to run only on the main thread, and so a check is executed immediately to make sure that is the
 /// case. Further, all actions sent to the store and all scopes (see ``scope(state:action:)-9iai9``) of
 /// the store are also checked to make sure that work is performed on the main thread.
+@dynamicMemberLookup
 public final class Store<State, Action> {
   private var bufferedActions: [Action] = []
   @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] = [:]
@@ -133,10 +135,11 @@ public final class Store<State, Action> {
   private var isSending = false
   var parentCancellable: AnyCancellable?
   private let reducer: any Reducer<State, Action>
-  @_spi(Internals) public var state: CurrentValueSubject<State, Never>
+  @_spi(Internals) public var subject: CurrentValueSubject<State, Never>
   #if DEBUG
     private let mainThreadChecksEnabled: Bool
   #endif
+  let _$observationRegistrar = ObservationRegistrar()
 
   /// Initializes a store from an initial state and a reducer.
   ///
@@ -181,7 +184,7 @@ public final class Store<State, Action> {
   ///   you want to observe store state in a view, use a ``ViewStore`` instead.
   /// - Returns: The return value, if any, of the `body` closure.
   public func withState<R>(_ body: (_ state: State) -> R) -> R {
-    body(self.state.value)
+    body(self.subject.value)
   }
 
   /// Sends an action to the store.
@@ -420,7 +423,7 @@ public final class Store<State, Action> {
       action: { state, action in isInvalid(state) && BindingLocal.isActive ? nil : action },
       removeDuplicates: { isInvalid($0) && isInvalid($1) }
     )
-    store._isInvalidated = { self._isInvalidated() || isInvalid(self.state.value) }
+    store._isInvalidated = { self._isInvalidated() || isInvalid(self.subject.value) }
     return store
   }
 
@@ -435,13 +438,13 @@ public final class Store<State, Action> {
     guard !self.isSending else { return nil }
 
     self.isSending = true
-    var currentState = self.state.value
+    var currentState = self.subject.value
     let tasks = Box<[Task<Void, Never>]>(wrappedValue: [])
     defer {
       withExtendedLifetime(self.bufferedActions) {
         self.bufferedActions.removeAll()
       }
-      self.state.value = currentState
+      self.observedState = currentState
       self.isSending = false
       if !self.bufferedActions.isEmpty {
         if let task = self.send(
@@ -655,7 +658,7 @@ public final class Store<State, Action> {
     reducer: R,
     mainThreadChecksEnabled: Bool
   ) where R.State == State, R.Action == Action {
-    self.state = CurrentValueSubject(initialState)
+    self.subject = CurrentValueSubject(initialState)
     self.reducer = reducer
     #if DEBUG
       self.mainThreadChecksEnabled = mainThreadChecksEnabled
@@ -673,7 +676,7 @@ public final class Store<State, Action> {
   ///   .sink { ... }
   /// ```
   public var publisher: StorePublisher<State> {
-    StorePublisher(store: self, upstream: self.state)
+    StorePublisher(store: self, upstream: self.subject)
   }
 }
 
@@ -741,7 +744,7 @@ private final class ScopedReducer<RootState, RootAction, State, Action>: Reducer
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     self.isSending = true
     defer {
-      state = self.toScopedState(self.rootStore.state.value)
+      state = self.toScopedState(self.rootStore.subject.value)
       self.isSending = false
     }
     if let action = self.fromScopedAction(state, action),
@@ -774,25 +777,25 @@ extension ScopedReducer: AnyScopedReducer {
     let fromScopedAction = self.fromScopedAction as! (ScopedState, ScopedAction) -> RootAction?
     let reducer = ScopedReducer<RootState, RootAction, RescopedState, RescopedAction>(
       rootStore: self.rootStore,
-      state: { _ in toRescopedState(store.state.value) },
-      action: { fromRescopedAction($0, $1).flatMap { fromScopedAction(store.state.value, $0) } },
+      state: { _ in toRescopedState(store.subject.value) },
+      action: { fromRescopedAction($0, $1).flatMap { fromScopedAction(store.subject.value, $0) } },
       parentStores: self.parentStores + [store]
     )
     let childStore = Store<RescopedState, RescopedAction>(
-      initialState: toRescopedState(store.state.value)
+      initialState: toRescopedState(store.subject.value)
     ) {
       reducer
     }
     childStore._isInvalidated = store._isInvalidated
-    childStore.parentCancellable = store.state
+    childStore.parentCancellable = store.subject
       .dropFirst()
       .sink { [weak childStore] newValue in
         guard !reducer.isSending, let childStore = childStore else { return }
         let newValue = toRescopedState(newValue)
-        guard isDuplicate.map({ !$0(childStore.state.value, newValue) }) ?? true else {
+        guard isDuplicate.map({ !$0(childStore.subject.value, newValue) }) ?? true else {
           return
         }
-        childStore.state.value = newValue
+        childStore.subject.value = newValue
       }
     return childStore
   }

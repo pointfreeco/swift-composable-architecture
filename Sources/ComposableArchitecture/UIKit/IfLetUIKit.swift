@@ -49,7 +49,7 @@ extension Store {
     then unwrap: @escaping (_ store: Store<Wrapped, Action>) -> Void,
     else: @escaping () -> Void = {}
   ) -> Cancellable where State == Wrapped? {
-    return self.state
+    return self.subject
       .removeDuplicates(by: { ($0 != nil) == ($1 != nil) })
       .sink { state in
         if var state = state {

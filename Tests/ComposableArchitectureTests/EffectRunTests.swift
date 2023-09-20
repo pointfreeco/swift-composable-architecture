@@ -59,7 +59,7 @@ final class EffectRunTests: BaseTCATestCase {
       struct State: Equatable {}
       enum Action: Equatable { case tapped, response }
       let store = TestStore(initialState: State()) {
-        Reduce<State, Action> { state, action in
+        Reduce<State, Action> { subject, action in
           switch action {
           case .tapped:
             line = #line

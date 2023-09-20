@@ -34,8 +34,8 @@ final class ReducerTests: BaseTCATestCase {
           let delay: Duration
           let setValue: @Sendable () async -> Void
 
-          func reduce(into state: inout State, action: Action) -> Effect<Action> {
-            state += 1
+          func reduce(into subject: inout State, action: Action) -> Effect<Action> {
+            subject += 1
             return .run { _ in
               try await self.clock.sleep(for: self.delay)
               await self.setValue()

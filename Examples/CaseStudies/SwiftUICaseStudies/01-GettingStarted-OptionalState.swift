@@ -15,6 +15,7 @@ private let readMe = """
 // MARK: - Feature domain
 
 struct OptionalBasics: Reducer {
+  @ObservableState
   struct State: Equatable {
     var optionalCounter: Counter.State?
   }
@@ -46,19 +47,34 @@ struct OptionalBasics: Reducer {
 // MARK: - Feature view
 
 struct OptionalBasicsView: View {
+  @State var isObservingCount = false
   let store: StoreOf<OptionalBasics>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
+    let _ = Self._printChanges()
+    Form {
+      Section {
+        AboutView(readMe: readMe)
+      }
 
+      Section {
         Button("Toggle counter state") {
-          viewStore.send(.toggleCounterButtonTapped)
+          self.store.send(.toggleCounterButtonTapped)
         }
+      }
 
+      Section {
+        if self.isObservingCount {
+          if let count = self.store.optionalCounter?.count {
+            Text("From parent: \(count)")
+          }
+        }
+        Toggle(isOn: self.$isObservingCount) {
+          Text("Observe count?")
+        }
+      }
+
+      Section {
         IfLetStore(
           self.store.scope(
             state: \.optionalCounter,

@@ -1,5 +1,6 @@
 @_spi(Reflection) import CasePaths
 import Combine
+import Observation
 
 /// A property wrapper for state that can be presented.
 ///
@@ -44,7 +45,7 @@ import Combine
 /// tools, and in particular see <doc:TreeBasedNavigation> for information on modeling navigation
 /// using optionals and enums.
 @propertyWrapper
-public struct PresentationState<State> {
+public struct PresentationState<State>: Observable {
   private class Storage: @unchecked Sendable {
     var state: State?
     init(state: State?) {
@@ -60,12 +61,22 @@ public struct PresentationState<State> {
   }
 
   public var wrappedValue: State? {
-    _read { yield self.storage.state }
-    _modify {
-      if !isKnownUniquelyReferenced(&self.storage) {
-        self.storage = Storage(state: self.storage.state)
+    _read {
+      self.access(keyPath: \.wrappedValue)
+      yield self.storage.state
+    }
+    set {
+      // TODO: Open enums to check isIdentityEqual to avoid requiring `enum State: ObservableState`
+      if isIdentityEqual(self.storage.state, newValue) == true,
+         // TODO: Is enum tag check necessary? Test it? Should tag be cached in PresentationState?
+         self.storage.state.map(enumTag) == newValue.map(enumTag)
+      {
+        self.storage.state = newValue
+      } else {
+        self.withMutation(keyPath: \.wrappedValue) {
+          self.storage.state = newValue
+        }
       }
-      yield &self.storage.state
     }
   }
 
@@ -106,6 +117,17 @@ public struct PresentationState<State> {
 
   func sharesStorage(with other: Self) -> Bool {
     self.storage === other.storage
+  }
+
+  private let _$observationRegistrar = ObservationRegistrar()
+  internal nonisolated func access<Member>(keyPath: KeyPath<Self, Member>) {
+    _$observationRegistrar.access(self, keyPath: keyPath)
+  }
+  internal nonisolated func withMutation<Member, T>(
+    keyPath: KeyPath<Self, Member>,
+    _ mutation: () throws -> T
+  ) rethrows -> T {
+    try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
   }
 }
 

@@ -1666,7 +1666,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       struct Child: Reducer {
         struct State: Equatable {}
         enum Action: Equatable {}
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
+        func reduce(into subject: inout State, action: Action) -> Effect<Action> {
         }
       }
 
@@ -1678,7 +1678,7 @@ final class PresentationReducerTests: BaseTCATestCase {
           case child(PresentationAction<Child.Action>)
         }
         var body: some Reducer<State, Action> {
-          Reduce { state, action in
+          Reduce { subject, action in
             .none
           }
           .ifLet(\.$child, action: /Action.child) {
@@ -1724,7 +1724,7 @@ final class PresentationReducerTests: BaseTCATestCase {
         enum Action: Equatable {
           case tap
         }
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
+        func reduce(into subject: inout State, action: Action) -> Effect<Action> {
           .none
         }
       }
@@ -1737,7 +1737,7 @@ final class PresentationReducerTests: BaseTCATestCase {
           case child(PresentationAction<Child.Action>)
         }
         var body: some ReducerOf<Self> {
-          Reduce { state, action in
+          Reduce { subject, action in
             .none
           }
           .ifLet(\.$child, action: /Action.child) {

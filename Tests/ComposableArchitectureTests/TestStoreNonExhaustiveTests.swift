@@ -6,40 +6,40 @@
   final class TestStoreNonExhaustiveTests: BaseTCATestCase {
     func testSkipReceivedActions_NonStrict() async {
       let store = TestStore(initialState: 0) {
-        Reduce<Int, Bool> { state, action in
+        Reduce<Int, Bool> { subject, action in
           if action {
-            state += 1
+            subject += 1
             return .send(false)
           } else {
-            state += 1
+            subject += 1
             return .none
           }
         }
       }
 
       await store.send(true) { $0 = 1 }
-      XCTAssertEqual(store.state, 1)
+      XCTAssertEqual(store.subject, 1)
       await store.skipReceivedActions(strict: false)
-      XCTAssertEqual(store.state, 2)
+      XCTAssertEqual(store.subject, 2)
     }
 
     func testSkipReceivedActions_Strict() async {
       let store = TestStore(initialState: 0) {
-        Reduce<Int, Bool> { state, action in
+        Reduce<Int, Bool> { subject, action in
           if action {
-            state += 1
+            subject += 1
             return .send(false)
           } else {
-            state += 1
+            subject += 1
             return .none
           }
         }
       }
 
       await store.send(true) { $0 = 1 }
-      XCTAssertEqual(store.state, 1)
+      XCTAssertEqual(store.subject, 1)
       await store.receive(false) { $0 = 2 }
-      XCTAssertEqual(store.state, 2)
+      XCTAssertEqual(store.subject, 2)
       XCTExpectFailure {
         $0.compactDescription == "There were no received actions to skip."
       }
@@ -48,12 +48,12 @@
 
     func testSkipReceivedActions_NonExhaustive() async {
       let store = TestStore(initialState: 0) {
-        Reduce<Int, Bool> { state, action in
+        Reduce<Int, Bool> { subject, action in
           if action {
-            state += 1
+            subject += 1
             return .send(false)
           } else {
-            state += 1
+            subject += 1
             return .none
           }
         }
@@ -61,19 +61,19 @@
       store.exhaustivity = .off
 
       await store.send(true) { $0 = 1 }
-      XCTAssertEqual(store.state, 1)
+      XCTAssertEqual(store.subject, 1)
       await store.skipReceivedActions(strict: false)
-      XCTAssertEqual(store.state, 2)
+      XCTAssertEqual(store.subject, 2)
     }
 
     func testSkipReceivedActions_PartialExhaustive() async {
       let store = TestStore(initialState: 0) {
-        Reduce<Int, Bool> { state, action in
+        Reduce<Int, Bool> { subject, action in
           if action {
-            state += 1
+            subject += 1
             return .send(false)
           } else {
-            state += 1
+            subject += 1
             return .none
           }
         }
@@ -81,9 +81,9 @@
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(true) { $0 = 1 }
-      XCTAssertEqual(store.state, 1)
+      XCTAssertEqual(store.subject, 1)
       await store.skipReceivedActions(strict: false)
-      XCTAssertEqual(store.state, 2)
+      XCTAssertEqual(store.subject, 2)
     }
 
     func testCancelInFlightEffects_NonStrict() async {
@@ -272,16 +272,16 @@
           case increment
           case loggedInResponse(Bool)
         }
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
+        func reduce(into subject: inout State, action: Action) -> Effect<Action> {
           switch action {
           case .decrement:
-            state.count -= 1
+            subject.count -= 1
             return .none
           case .increment:
-            state.count += 1
+            subject.count += 1
             return .send(.loggedInResponse(true))
           case let .loggedInResponse(response):
-            state.isLoggedIn = response
+            subject.isLoggedIn = response
             return .none
           }
         }
@@ -313,13 +313,13 @@
           case increment
           case loggedInResponse(Bool)
         }
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
+        func reduce(into subject: inout State, action: Action) -> Effect<Action> {
           switch action {
           case .increment:
-            state.count += 1
+            subject.count += 1
             return .send(.loggedInResponse(true))
           case let .loggedInResponse(response):
-            state.isLoggedIn = response
+            subject.isLoggedIn = response
             return .none
           }
         }
@@ -360,15 +360,15 @@
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.increment)
-      XCTAssertEqual(store.state, Counter.State(count: 1, isEven: false))
+      XCTAssertEqual(store.subject, Counter.State(count: 1, isEven: false))
 
       await store.send(.increment)
-      XCTAssertEqual(store.state, Counter.State(count: 2, isEven: true))
+      XCTAssertEqual(store.subject, Counter.State(count: 2, isEven: true))
 
       await store.send(.increment) {
         $0.count = 3
       }
-      XCTAssertEqual(store.state, Counter.State(count: 3, isEven: false))
+      XCTAssertEqual(store.subject, Counter.State(count: 3, isEven: false))
     }
 
     // Confirms that you don't have to assert on all state changes when receiving an action from an
@@ -380,19 +380,19 @@
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.onAppear)
-      XCTAssertEqual(store.state, NonExhaustiveReceive.State(count: 0, int: 0, string: ""))
+      XCTAssertEqual(store.subject, NonExhaustiveReceive.State(count: 0, int: 0, string: ""))
 
       await store.receive(.response1(42)) {
         // Ignored state change: count = 1
         $0.int = 42
       }
-      XCTAssertEqual(store.state, NonExhaustiveReceive.State(count: 1, int: 42, string: ""))
+      XCTAssertEqual(store.subject, NonExhaustiveReceive.State(count: 1, int: 42, string: ""))
 
       await store.receive(.response2("Hello")) {
         // Ignored state change: count = 2
         $0.string = "Hello"
       }
-      XCTAssertEqual(store.state, NonExhaustiveReceive.State(count: 2, int: 42, string: "Hello"))
+      XCTAssertEqual(store.subject, NonExhaustiveReceive.State(count: 2, int: 42, string: "Hello"))
     }
 
     // Confirms that you can skip receiving certain effect actions in a non-exhaustive test store.
@@ -403,7 +403,7 @@
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.onAppear)
-      XCTAssertEqual(store.state, NonExhaustiveReceive.State(count: 0, int: 0, string: ""))
+      XCTAssertEqual(store.subject, NonExhaustiveReceive.State(count: 0, int: 0, string: ""))
 
       // Ignored received action: .response1(42)
 
@@ -411,7 +411,7 @@
         $0.count = 2
         $0.string = "Hello"
       }
-      XCTAssertEqual(store.state, NonExhaustiveReceive.State(count: 2, int: 42, string: "Hello"))
+      XCTAssertEqual(store.subject, NonExhaustiveReceive.State(count: 2, int: 42, string: "Hello"))
     }
 
     // Confirms that you are allowed to send actions without having received all actions queued
@@ -439,13 +439,13 @@
           case tap
           case response(Int)
         }
-        func reduce(into state: inout Int, action: Action) -> Effect<Action> {
+        func reduce(into subject: inout Int, action: Action) -> Effect<Action> {
           switch action {
           case .tap:
-            state += 1
-            return .run { [state] send in await send(.response(state + 42)) }
+            subject += 1
+            return .run { [subject] send in await send(.response(subject + 42)) }
           case let .response(number):
-            state = number
+            subject = number
             return .none
           }
         }
@@ -457,14 +457,14 @@
       store.exhaustivity = .off
 
       await store.send(.tap)
-      XCTAssertEqual(store.state, 1)
+      XCTAssertEqual(store.subject, 1)
 
       // Ignored received action: .response(43)
       await store.send(.tap)
-      XCTAssertEqual(store.state, 44)
+      XCTAssertEqual(store.subject, 44)
 
       await store.skipReceivedActions()
-      XCTAssertEqual(store.state, 86)
+      XCTAssertEqual(store.subject, 86)
     }
 
     func testPartialExhaustivityPrefix() async {
@@ -474,17 +474,17 @@
         case response(Int)
       }
       let store = TestStore(initialState: 0) {
-        Reduce<Int, Action> { state, action in
+        Reduce<Int, Action> { subject, action in
           switch action {
           case .buttonTapped:
-            state += 1
+            subject += 1
             return .run { send in
               await send(.response(42))
               try await testScheduler.sleep(for: .seconds(1))
               await send(.response(1729))
             }
           case let .response(number):
-            state = number
+            subject = number
             return .none
           }
         }
@@ -561,7 +561,7 @@
       }
 
       let store = TestStore(initialState: 0) {
-        Reduce<Int, Action> { state, action in
+        Reduce<Int, Action> { subject, action in
           switch action {
           case .tap:
             return .send(.response(NonEquatable()))
@@ -583,7 +583,7 @@
       }
 
       let store = TestStore(initialState: 0) {
-        Reduce<Int, Action> { state, action in
+        Reduce<Int, Action> { subject, action in
           switch action {
           case .tap:
             return .send(.response(NonEquatable()))
@@ -653,32 +653,32 @@
       }
       enum Action: Equatable { case tap, response }
       let store = TestStore(initialState: State()) {
-        Reduce<State, Action> { state, action in
+        Reduce<State, Action> { subject, action in
           switch action {
           case .tap:
-            state.count += 1
+            subject.count += 1
             return .send(.response)
           case .response:
-            state.count += 1
+            subject.count += 1
             return .none
           }
         }
       }
 
-      await store.send(.tap) { state in
-        state.count = 1
+      await store.send(.tap) { subject in
+        subject.count = 1
         XCTExpectFailure {
-          XCTModify(&state.child, case: /.some) { _ in }
+          XCTModify(&subject.child, case: /.some) { _ in }
         } issueMatcher: {
           $0.compactDescription == """
             XCTModify failed: expected "Int" value to be modified but it was unchanged.
             """
         }
       }
-      await store.receive(.response) { state in
-        state.count = 2
+      await store.receive(.response) { subject in
+        subject.count = 2
         XCTExpectFailure {
-          XCTModify(&state.child, case: /Optional.some) { _ in }
+          XCTModify(&subject.child, case: /Optional.some) { _ in }
         } issueMatcher: {
           $0.compactDescription == """
             XCTModify failed: expected "Int" value to be modified but it was unchanged.
@@ -690,7 +690,7 @@
     func testXCTModifyNonExhaustive() async {
       enum Action { case tap, response }
       let store = TestStore(initialState: Optional(1)) {
-        Reduce<Int?, Action> { state, action in
+        Reduce<Int?, Action> { subject, action in
           switch action {
           case .tap:
             return .send(.response)
@@ -713,7 +713,7 @@
       struct Feature: Reducer {
         struct State: Equatable {}
         enum Action: Equatable { case tap, response1, response2 }
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
+        func reduce(into subject: inout State, action: Action) -> Effect<Action> {
           switch action {
 
           case .tap:
@@ -742,7 +742,7 @@
       struct Feature: Reducer {
         struct State: Equatable {}
         enum Action: Equatable { case tap, response1, response2 }
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
+        func reduce(into subject: inout State, action: Action) -> Effect<Action> {
           switch action {
 
           case .tap:
@@ -782,7 +782,7 @@
       struct Feature: Reducer {
         struct State: Equatable {}
         enum Action: Equatable { case tap, response1, response2 }
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
+        func reduce(into subject: inout State, action: Action) -> Effect<Action> {
           switch action {
 
           case .tap:
@@ -863,7 +863,7 @@
       await store.receive(.changeAge(34)) {
         $0.age = 34
       }
-      XCTAssertEqual(store.state.age, 34)
+      XCTAssertEqual(store.subject.age, 34)
     }
 
     func testEffectfulAssertion_NonExhaustiveTestStore_ShowSkippedAssertions() async {
@@ -881,10 +881,10 @@
         enum Action {
           case addButtonTapped
         }
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
+        func reduce(into subject: inout State, action: Action) -> Effect<Action> {
           switch action {
           case .addButtonTapped:
-            state.values.append(Model())
+            subject.values.append(Model())
             return .none
           }
         }
@@ -921,15 +921,15 @@
       case increment
       case decrement
     }
-    func reduce(into state: inout State, action: Action) -> Effect<Action> {
+    func reduce(into subject: inout State, action: Action) -> Effect<Action> {
       switch action {
       case .increment:
-        state.count += 1
-        state.isEven.toggle()
+        subject.count += 1
+        subject.isEven.toggle()
         return .none
       case .decrement:
-        state.count -= 1
-        state.isEven.toggle()
+        subject.count -= 1
+        subject.isEven.toggle()
         return .none
       }
     }
@@ -946,21 +946,21 @@
       case response1(Int)
       case response2(String)
     }
-    func reduce(into state: inout State, action: Action) -> Effect<Action> {
+    func reduce(into subject: inout State, action: Action) -> Effect<Action> {
       switch action {
       case .onAppear:
-        state = State()
+        subject = State()
         return .merge(
           .send(.response1(42)),
           .send(.response2("Hello"))
         )
       case let .response1(int):
-        state.count += 1
-        state.int = int
+        subject.count += 1
+        subject.int = int
         return .none
       case let .response2(string):
-        state.count += 1
-        state.string = string
+        subject.count += 1
+        subject.string = string
         return .none
       }
     }
@@ -984,26 +984,26 @@
 
     @Dependency(\.mainQueue) var mainQueue
 
-    func reduce(into state: inout State, action: Action) -> Effect<Action> {
+    func reduce(into subject: inout State, action: Action) -> Effect<Action> {
       switch action {
       case let .changeIdentity(name, surname):
-        state.name = name
-        state.surname = surname
+        subject.name = name
+        subject.surname = surname
         return .none
 
       case .advanceAgeAndMoodAfterDelay:
-        return .run { [state] send in
+        return .run { [subject] send in
           try await self.mainQueue.sleep(for: .seconds(1))
-          async let changeAge: () = send(.changeAge(state.age + 1))
-          async let changeMood: () = send(.changeMood(state.mood + 1))
+          async let changeAge: () = send(.changeAge(subject.age + 1))
+          async let changeMood: () = send(.changeMood(subject.mood + 1))
           _ = await (changeAge, changeMood)
         }
 
       case let .changeAge(age):
-        state.age = age
+        subject.age = age
         return .none
       case let .changeMood(mood):
-        state.mood = mood
+        subject.mood = mood
         return .none
       }
     }

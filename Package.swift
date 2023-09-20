@@ -1,11 +1,12 @@
-// swift-tools-version:5.7
+// swift-tools-version:5.9
 
+import CompilerPluginSupport
 import PackageDescription
 
 let package = Package(
   name: "swift-composable-architecture",
   platforms: [
-    .iOS(.v13),
+    .iOS(.v17),
     .macOS(.v10_15),
     .tvOS(.v13),
     .watchOS(.v6),
@@ -19,13 +20,15 @@ let package = Package(
   dependencies: [
     .package(url: "https://github.com/apple/swift-collections", from: "1.0.2"),
     .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"),
+    .package(url: "https://github.com/apple/swift-syntax", from: "509.0.0"),
     .package(url: "https://github.com/google/swift-benchmark", from: "0.1.0"),
     .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "1.0.0"),
-    .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "1.0.0"),
+    .package(url: "https://github.com/pointfreeco/swift-case-paths", branch: "swift-syntax"),
     .package(url: "https://github.com/pointfreeco/swift-concurrency-extras", from: "1.0.0"),
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.0.0"),
     .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.0.0"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "1.0.0"),
+    .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.1.0"),
     .package(url: "https://github.com/pointfreeco/swiftui-navigation", from: "1.0.0"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.0.0"),
   ],
@@ -33,6 +36,7 @@ let package = Package(
     .target(
       name: "ComposableArchitecture",
       dependencies: [
+        "ComposableArchitectureMacros",
         .product(name: "CasePaths", package: "swift-case-paths"),
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
         .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
@@ -55,6 +59,20 @@ let package = Package(
       dependencies: [
         "ComposableArchitecture",
         .product(name: "Benchmark", package: "swift-benchmark"),
+      ]
+    ),
+    .macro(
+      name: "ComposableArchitectureMacros",
+      dependencies: [
+        .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+        .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+      ]
+    ),
+    .testTarget(
+      name: "ComposableArchitectureMacrosTests",
+      dependencies: [
+        "ComposableArchitectureMacros",
+        .product(name: "MacroTesting", package: "swift-macro-testing"),
       ]
     ),
   ]
