@@ -496,7 +496,7 @@ struct Feature: Reducer {
     @PresentationState var counter: CounterFeature.State?
   }
   enum Action: Equatable {
-    case counter(CounterFeature.Action)
+    case counter(PresentationAction<CounterFeature.Action>)
   }
   var body: some ReducerOf<Self> {
     Reduce { state, action in
