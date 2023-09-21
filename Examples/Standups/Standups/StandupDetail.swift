@@ -216,6 +216,28 @@ struct StandupDetailView: View {
       state: /StandupDetail.Destination.State.alert,
       action: StandupDetail.Destination.Action.alert
     )
+//    .sheet(
+//      store: self.store.scope(state: \.$destination, action: { .destination($0) }),
+//      state: /StandupDetail.Destination.State.edit,
+//      action: StandupDetail.Destination.Action.edit
+//    ) { store in
+//      NavigationStack {
+//        StandupFormView(store: store)
+//          .navigationTitle(self.store.standup.title)
+//          .toolbar {
+//            ToolbarItem(placement: .cancellationAction) {
+//              Button("Cancel") {
+//                self.store.send(.cancelEditButtonTapped)
+//              }
+//            }
+//            ToolbarItem(placement: .confirmationAction) {
+//              Button("Done") {
+//                self.store.send(.doneEditingButtonTapped)
+//              }
+//            }
+//          }
+//      }
+//    }
     .sheet(
       item: self.$store.scope(
         state: \.destination?.edit,
@@ -246,6 +268,22 @@ struct StandupDetailView: View {
           }
       }
     }
+  }
+}
+
+
+extension View {
+  @available(*, deprecated)
+  public func sheet<
+    State: ObservableState, Action, DestinationState, DestinationAction, Content: View
+  >(
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
+    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
+    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
+    onDismiss: (() -> Void)? = nil,
+    @ViewBuilder content: @escaping (_ store: Store<DestinationState, DestinationAction>) -> Content
+  ) -> some View {
+    self
   }
 }
 
