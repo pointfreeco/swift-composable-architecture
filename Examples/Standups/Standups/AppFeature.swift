@@ -2,11 +2,13 @@ import ComposableArchitecture
 import SwiftUI
 
 struct AppFeature: Reducer {
+  @ObservableState
   struct State: Equatable {
     var path = StackState<Path.State>()
     var standupsList = StandupsList.State()
   }
 
+  @CasePathable
   enum Action: Equatable {
     case path(StackAction<Path.State, Path.Action>)
     case standupsList(StandupsList.Action)
@@ -22,10 +24,10 @@ struct AppFeature: Reducer {
   }
 
   var body: some ReducerOf<Self> {
-    Scope(state: \.standupsList, action: /Action.standupsList) {
+    Scope(state: \.standupsList, action: #casePath(\.standupsList)) {
       StandupsList()
     }
-    Reduce<State, Action> { state, action in
+    Reduce { state, action in
       switch action {
       case let .path(.element(id, .detail(.delegate(delegateAction)))):
         guard case let .some(.detail(detailState)) = state.path[id: id]
@@ -79,11 +81,11 @@ struct AppFeature: Reducer {
         return .none
       }
     }
-    .forEach(\.path, action: /Action.path) {
+    .forEach(\.path, action: #casePath(\.path)) {
       Path()
     }
 
-    Reduce<State, Action> { state, action in
+    Reduce { state, action in
       return .run { [standups = state.standupsList.standups] _ in
         try await withTaskCancellation(id: CancelID.saveDebounce, cancelInFlight: true) {
           try await self.clock.sleep(for: .seconds(1))
@@ -95,22 +97,25 @@ struct AppFeature: Reducer {
   }
 
   struct Path: Reducer {
+    @CasePathable
+    @ObservableState
     enum State: Equatable {
       case detail(StandupDetail.State)
       case meeting(Meeting, standup: Standup)
       case record(RecordMeeting.State)
     }
 
+    @CasePathable
     enum Action: Equatable {
       case detail(StandupDetail.Action)
       case record(RecordMeeting.Action)
     }
 
     var body: some Reducer<State, Action> {
-      Scope(state: /State.detail, action: /Action.detail) {
+      Scope(state: #casePath(\.detail), action: #casePath(\.detail)) {
         StandupDetail()
       }
-      Scope(state: /State.record, action: /Action.record) {
+      Scope(state: #casePath(\.record), action: #casePath(\.record)) {
         RecordMeeting()
       }
     }
@@ -121,26 +126,22 @@ struct AppView: View {
   let store: StoreOf<AppFeature>
 
   var body: some View {
-    NavigationStackStore(self.store.scope(state: \.path, action: { .path($0) })) {
+    NavigationStack(store: self.store.scope(state: \.path, action: { .path($0) })) {
       StandupsListView(
         store: self.store.scope(state: \.standupsList, action: { .standupsList($0) })
       )
     } destination: {
-      switch $0 {
+      switch $0.state {
       case .detail:
-        CaseLet(
-          /AppFeature.Path.State.detail,
-          action: AppFeature.Path.Action.detail,
-          then: StandupDetailView.init(store:)
-        )
+        if let store = $0.scope(state: \.detail, action: { .detail($0) }) {
+          StandupDetailView(store: store)
+        }
       case let .meeting(meeting, standup: standup):
         MeetingView(meeting: meeting, standup: standup)
       case .record:
-        CaseLet(
-          /AppFeature.Path.State.record,
-          action: AppFeature.Path.Action.record,
-          then: RecordMeetingView.init(store:)
-        )
+        if let store = $0.scope(state: \.record, action: { .record($0) }) {
+          RecordMeetingView(store: store)
+        }
       }
     }
   }

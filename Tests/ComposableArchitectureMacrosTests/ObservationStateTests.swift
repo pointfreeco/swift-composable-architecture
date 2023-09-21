@@ -114,4 +114,28 @@ final class ObservableStateMacroTests: MacroBaseTestCase {
       """
     }
   }
+
+  func testObservableState_Enum_MultipleAssociatedValues() {
+    assertMacro {
+      """
+      @ObservableState
+      public enum Path {
+        case foo(Int, String)
+      }
+      """
+    } matches: {
+      """
+      public enum Path {
+        case foo(Int, String)
+
+        public var _$id: StateID {
+          switch self {
+          case .foo:
+            return .inert.tagged(0)
+          }
+        }
+      }
+      """
+    }
+  }
 }

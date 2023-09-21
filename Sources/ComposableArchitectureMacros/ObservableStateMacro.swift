@@ -245,17 +245,25 @@ extension ObservableStateMacro {
   ) throws -> [DeclSyntax] {
     let access = declaration.modifiers.first { $0.name.tokenKind == .keyword(.public) }
 
-    // TODO: Diagnostic for overloaded case name
-    // TODO: diagnostics for cases with more than one associated value
-    let enumCaseNames = declaration.memberBlock.members
-      .compactMap { $0.decl.as(EnumCaseDeclSyntax.self) }
-      .flatMap { $0.elements }
-      .map { $0.name.text }
-    let cases = enumCaseNames.enumerated().map { tag, name in
-      """
-      case let .\(name)(state):
-        return .stateID(for: state).tagged(\(tag))
-      """
+    let enumCaseDecls = declaration.memberBlock.members
+      .flatMap { $0.decl.as(EnumCaseDeclSyntax.self)?.elements ?? [] }
+    var cases: [String] = []
+    for (tag, enumCaseDecl) in enumCaseDecls.enumerated() {
+      if enumCaseDecl.parameterClause?.parameters.count == 1 {
+        cases.append(
+          """
+          case let .\(enumCaseDecl.name.text)(state):
+            return .stateID(for: state).tagged(\(tag))
+          """
+        )
+      } else {
+        cases.append(
+          """
+          case .\(enumCaseDecl.name.text):
+            return .inert.tagged(\(tag))
+          """
+        )
+      }
     }
 
     return [
