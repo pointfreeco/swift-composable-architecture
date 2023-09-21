@@ -29,6 +29,7 @@ extension StateID: CustomDebugStringConvertible {
   }
 }
 
+@available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
 extension Store: Observable {
   var observedState: State {
     get {
@@ -47,17 +48,18 @@ extension Store: Observable {
   }
 
   internal nonisolated func access<Member>(keyPath: KeyPath<Store, Member>) {
-    _$observationRegistrar.access(self, keyPath: keyPath)
+    _$observationRegistrar.rawValue.access(self, keyPath: keyPath)
   }
 
   internal nonisolated func withMutation<Member, T>(
     keyPath: KeyPath<Store, Member>,
     _ mutation: () throws -> T
   ) rethrows -> T {
-    try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
+    try _$observationRegistrar.rawValue.withMutation(of: self, keyPath: keyPath, mutation)
   }
 }
 
+@available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
 extension Store where State: ObservableState {
   private(set) public var state: State {
     get { self.observedState }
@@ -70,6 +72,7 @@ extension Store where State: ObservableState {
 }
 
 // TODO: optimize, benchmark
+// TODO: Open enums to check isIdentityEqual to avoid requiring `enum State: ObservableState`
 @available(iOS, introduced: 17)
 @available(macOS, introduced: 14)
 @available(tvOS, introduced: 17)
@@ -132,4 +135,33 @@ public struct ObservationStateRegistrar: Codable, Equatable, Hashable, Sendable 
     self.init()
   }
   public func encode(to encoder: Encoder) throws {}
+}
+
+// TODO: make Sendable
+public struct ObservationRegistrarWrapper: Sendable {
+  private let _rawValue: AnySendable
+
+  public init() {
+    if #available(iOS 17, tvOS 17, watchOS 10, macOS 14, *) {
+      self._rawValue = AnySendable(ObservationRegistrar())
+    } else {
+      self._rawValue = AnySendable(())
+    }
+  }
+
+  @available(iOS, introduced: 17)
+  @available(macOS, introduced: 14)
+  @available(tvOS, introduced: 17)
+  @available(watchOS, introduced: 10)
+  public init(rawValue: ObservationRegistrar) {
+    self._rawValue = AnySendable(rawValue)
+  }
+
+  @available(iOS, introduced: 17)
+  @available(macOS, introduced: 14)
+  @available(tvOS, introduced: 17)
+  @available(watchOS, introduced: 10)
+  public var rawValue: ObservationRegistrar {
+    self._rawValue.base as! ObservationRegistrar
+  }
 }

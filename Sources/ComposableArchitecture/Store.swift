@@ -139,7 +139,7 @@ public final class Store<State, Action> {
   #if DEBUG
     private let mainThreadChecksEnabled: Bool
   #endif
-  let _$observationRegistrar = ObservationRegistrar()
+  let _$observationRegistrar = ObservationRegistrarWrapper()
 
   /// Initializes a store from an initial state and a reducer.
   ///
@@ -444,7 +444,11 @@ public final class Store<State, Action> {
       withExtendedLifetime(self.bufferedActions) {
         self.bufferedActions.removeAll()
       }
-      self.observedState = currentState
+      if #available(iOS 17, tvOS 17, watchOS 10, macOS 14, *) {
+        self.observedState = currentState
+      } else {
+        self.subject.value = currentState
+      }
       self.isSending = false
       if !self.bufferedActions.isEmpty {
         if let task = self.send(

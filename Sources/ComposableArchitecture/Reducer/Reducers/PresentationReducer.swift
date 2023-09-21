@@ -62,20 +62,22 @@ public struct PresentationState<State>: Observable {
 
   public var wrappedValue: State? {
     _read {
-      self.access(keyPath: \.wrappedValue)
+      if #available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *) {
+        self.access(keyPath: \.wrappedValue)
+      }
       yield self.storage.state
     }
     set {
-      // TODO: Open enums to check isIdentityEqual to avoid requiring `enum State: ObservableState`
-      if isIdentityEqual(self.storage.state, newValue) == true,
-         // TODO: Is enum tag check necessary? Test it? Should tag be cached in PresentationState?
-         self.storage.state.map(enumTag) == newValue.map(enumTag)
-      {
-        self.storage.state = newValue
-      } else {
-        self.withMutation(keyPath: \.wrappedValue) {
+      if #available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *) {
+        if isIdentityEqual(self.storage.state, newValue) {
           self.storage.state = newValue
+        } else {
+          self.withMutation(keyPath: \.wrappedValue) {
+            self.storage.state = newValue
+          }
         }
+      } else {
+        self.storage.state = newValue
       }
     }
   }
@@ -119,15 +121,17 @@ public struct PresentationState<State>: Observable {
     self.storage === other.storage
   }
 
-  private let _$observationRegistrar = ObservationRegistrar()
+  private let _$observationRegistrar = ObservationRegistrarWrapper()
+  @available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
   internal nonisolated func access<Member>(keyPath: KeyPath<Self, Member>) {
-    _$observationRegistrar.access(self, keyPath: keyPath)
+    _$observationRegistrar.rawValue.access(self, keyPath: keyPath)
   }
+  @available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
   internal nonisolated func withMutation<Member, T>(
     keyPath: KeyPath<Self, Member>,
     _ mutation: () throws -> T
   ) rethrows -> T {
-    try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
+    try _$observationRegistrar.rawValue.withMutation(of: self, keyPath: keyPath, mutation)
   }
 }
 

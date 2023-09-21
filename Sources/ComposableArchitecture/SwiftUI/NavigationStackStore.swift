@@ -341,7 +341,7 @@ extension EnvironmentValues {
 
 
 
-
+@available(iOS 17, tvOS 17, watchOS 10, macOS 14, *)
 extension NavigationStack {
   public init<State: ObservableState, Action, Destination, R>(
     store: Store<StackState<State>, StackAction<State, Action>>,
@@ -371,6 +371,7 @@ extension NavigationStack {
   }
 }
 
+@available(iOS 17, tvOS 17, watchOS 10, macOS 14, *)
 public struct NavigationDestinationViewModifier<State, Action, Destination: View>: ViewModifier {
   fileprivate let store: Store<StackState<State>, StackAction<State, Action>>
   fileprivate let destination: (Store<State, Action>) -> Destination
