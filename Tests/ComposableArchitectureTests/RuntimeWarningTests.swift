@@ -39,7 +39,7 @@
 
       enum Action { case tap, response }
       let store = Store(initialState: 0) {
-        Reduce<Int, Action> { subject, action in
+        Reduce<Int, Action> { state, action in
           switch action {
           case .tap:
             return .publisher {
@@ -77,7 +77,7 @@
 
       let store = Store<Int, Void>(initialState: 0) {}
       Task {
-        _ = store.scope(subject: { $0 }, action: { $0 })
+        _ = store.scope(state: { $0 }, action: { $0 })
       }
       _ = XCTWaiter.wait(for: [.init()], timeout: 0.5)
     }
@@ -169,7 +169,7 @@
 
         enum Action { case tap, response }
         let store = Store(initialState: 0) {
-          Reduce<Int, Action> { subject, action in
+          Reduce<Int, Action> { state, action in
             switch action {
             case .tap:
               return .publisher {

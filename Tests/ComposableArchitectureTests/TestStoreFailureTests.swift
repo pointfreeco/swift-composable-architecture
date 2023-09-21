@@ -7,7 +7,7 @@
     func testNoStateChangeFailure() async {
       enum Action { case first, second }
       let store = TestStore(initialState: 0) {
-        Reduce<Int, Action> { subject, action in
+        Reduce<Int, Action> { state, action in
           switch action {
           case .first: return .send(.second)
           case .second: return .none
@@ -39,8 +39,8 @@
     func testStateChangeFailure() async {
       struct State: Equatable { var count = 0 }
       let store = TestStore(initialState: State()) {
-        Reduce<State, Void> { subject, action in
-          subject.count += 1
+        Reduce<State, Void> { state, action in
+          state.count += 1
           return .none
         }
       }
@@ -61,8 +61,8 @@
     func testUnexpectedStateChangeOnSendFailure() async {
       struct State: Equatable { var count = 0 }
       let store = TestStore(initialState: State()) {
-        Reduce<State, Void> { subject, action in
-          subject.count += 1
+        Reduce<State, Void> { state, action in
+          state.count += 1
           return .none
         }
       }
@@ -84,11 +84,11 @@
       struct State: Equatable { var count = 0 }
       enum Action { case first, second }
       let store = TestStore(initialState: State()) {
-        Reduce<State, Action> { subject, action in
+        Reduce<State, Action> { state, action in
           switch action {
           case .first: return .send(.second)
           case .second:
-            subject.count += 1
+            state.count += 1
             return .none
           }
         }
@@ -111,7 +111,7 @@
     func testReceivedActionAfterDeinit() async {
       enum Action { case first, second }
       let store = TestStore(initialState: 0) {
-        Reduce<Int, Action> { subject, action in
+        Reduce<Int, Action> { state, action in
           switch action {
           case .first: return .send(.second)
           case .second: return .none
@@ -132,7 +132,7 @@
 
     func testEffectInFlightAfterDeinit() async {
       let store = TestStore(initialState: 0) {
-        Reduce<Int, Void> { subject, action in
+        Reduce<Int, Void> { state, action in
           .run { _ in try await Task.never() }
         }
       }
@@ -166,7 +166,7 @@
     func testSendActionBeforeReceivingFailure() async {
       enum Action { case first, second }
       let store = TestStore(initialState: 0) {
-        Reduce<Int, Action> { subject, action in
+        Reduce<Int, Action> { state, action in
           switch action {
           case .first: return .send(.second)
           case .second: return .none
@@ -210,12 +210,12 @@
     func testReceiveUnexpectedActionFailure() async {
       enum Action { case first, second }
       let store = TestStore(initialState: 0) {
-        Reduce<Int, Action> { subject, action in
+        Reduce<Int, Action> { state, action in
           switch action {
           case .first:
             return .send(.second)
           case .second:
-            subject += 1
+            state += 1
             return .none
           }
         }
@@ -252,7 +252,7 @@
 
     func testExpectedStateEqualityMustModify() async {
       let store = TestStore(initialState: 0) {
-        Reduce<Int, Bool> { subject, action in
+        Reduce<Int, Bool> { state, action in
           switch action {
           case true: return .send(false)
           case false: return .none

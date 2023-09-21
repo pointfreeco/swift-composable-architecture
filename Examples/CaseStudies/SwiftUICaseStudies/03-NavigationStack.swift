@@ -60,24 +60,12 @@ struct NavigationDemo: Reducer {
   }
 
   struct Path: Reducer {
-    // TODO: make @ObservableState work with enums
     @CasePathable
-    enum State: Codable, Equatable, Hashable, ObservableState {
+    @ObservableState
+    enum State: Codable, Equatable, Hashable {
       case screenA(ScreenA.State = .init())
       case screenB(ScreenB.State = .init())
       case screenC(ScreenC.State = .init())
-
-      // TODO: somehow mix in tag of enum into state ID
-      var _$id: StateID {
-        switch self {
-        case let .screenA(s):
-          s._$id
-        case let .screenB(s):
-          s._$id
-        case let .screenC(s):
-          s._$id
-        }
-      }
     }
 
     enum Action: Equatable {
@@ -191,37 +179,32 @@ struct FloatingMenuView: View {
 
   var body: some View {
     let _ = Self._printChanges()
-//    Text("")
-//    Text("Total count: \(store.path.count)")
-//    WithViewStore(self.store, observe: ViewState.init) { viewStore in
     let viewState = ViewState(state: store.state)
-
-      if viewState.currentStack.count > 0 {
-        VStack(alignment: .center) {
-          Text("Total count: \(viewState.total)")
-          Button("Pop to root") {
+    if viewState.currentStack.count > 0 {
+      VStack(alignment: .center) {
+        Text("Total count: \(viewState.total)")
+        Button("Pop to root") {
+          store.send(.popToRoot, animation: .default)
+        }
+        Menu("Current stack") {
+          ForEach(viewState.currentStack) { screen in
+            Button("\(String(describing: screen.id))) \(screen.name)") {
+              store.send(.goBackToScreen(id: screen.id))
+            }
+            .disabled(screen == viewState.currentStack.first)
+          }
+          Button("Root") {
             store.send(.popToRoot, animation: .default)
           }
-          Menu("Current stack") {
-            ForEach(viewState.currentStack) { screen in
-              Button("\(String(describing: screen.id))) \(screen.name)") {
-                store.send(.goBackToScreen(id: screen.id))
-              }
-              .disabled(screen == viewState.currentStack.first)
-            }
-            Button("Root") {
-              store.send(.popToRoot, animation: .default)
-            }
-          }
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .padding(.bottom, 1)
-        .transition(.opacity.animation(.default))
-        .clipped()
-        .shadow(color: .black.opacity(0.2), radius: 5, y: 5)
       }
-//    }
+      .padding()
+      .background(Color(.systemBackground))
+      .padding(.bottom, 1)
+      .transition(.opacity.animation(.default))
+      .clipped()
+      .shadow(color: .black.opacity(0.2), radius: 5, y: 5)
+    }
   }
 }
 

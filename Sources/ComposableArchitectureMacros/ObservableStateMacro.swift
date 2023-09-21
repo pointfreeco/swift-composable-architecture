@@ -202,6 +202,11 @@ extension ObservableStateMacro: MemberMacro {
     providingMembersOf declaration: Declaration,
     in context: Context
   ) throws -> [DeclSyntax] {
+    guard !declaration.isEnum
+    else {
+      return try enumExpansion(of: node, providingMembersOf: declaration, in: context)
+    }
+
     guard let identified = declaration.asProtocol(NamedDeclSyntax.self) else {
       return []
     }
@@ -226,6 +231,42 @@ extension ObservableStateMacro: MemberMacro {
     declaration.addIfNeeded("\(access)var _$id: StateID { self.\(raw: registrarVariableName).id }" as DeclSyntax, to: &declarations)
 
     return declarations
+  }
+}
+
+extension ObservableStateMacro {
+  public static func enumExpansion<
+    Declaration: DeclGroupSyntax,
+    Context: MacroExpansionContext
+  >(
+    of node: AttributeSyntax,
+    providingMembersOf declaration: Declaration,
+    in context: Context
+  ) throws -> [DeclSyntax] {
+    let access = declaration.modifiers.first { $0.name.tokenKind == .keyword(.public) }
+
+    // TODO: Diagnostic for overloaded case name
+    // TODO: diagnostics for cases with more than one associated value
+    let enumCaseNames = declaration.memberBlock.members
+      .compactMap { $0.decl.as(EnumCaseDeclSyntax.self) }
+      .flatMap { $0.elements }
+      .map { $0.name.text }
+    let cases = enumCaseNames.enumerated().map { tag, name in
+      """
+      case let .\(name)(state):
+        return .stateID(for: state).tagged(\(tag))
+      """
+    }
+
+    return [
+      """
+      \(access)var _$id: StateID {
+        switch self {
+      \(raw: cases.joined(separator: "\n"))
+        }
+      }
+      """
+    ]
   }
 }
 
@@ -324,9 +365,7 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
     let getAccessor: AccessorDeclSyntax =
       """
       get {
-        //if !IsScoping.isScoping {
         access(keyPath: \\.\(identifier))
-        //}
         return _\(identifier)
       }
       """
@@ -334,9 +373,6 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
     let setAccessor: AccessorDeclSyntax =
       """
       set {
-        //if !IsSending.isSending {
-        //  _\(identifier) = newValue
-        //}
         if isIdentityEqual(newValue, _\(identifier)) == true {
           _\(identifier) = newValue
         } else {

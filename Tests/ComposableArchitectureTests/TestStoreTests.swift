@@ -88,15 +88,15 @@ final class TestStoreTests: BaseTCATestCase {
       }
 
       let store = TestStore(initialState: State()) {
-        Reduce<State, Action> { subject, action in
+        Reduce<State, Action> { state, action in
           switch action {
           case .increment:
-            subject.isChanging = true
-            return .send(.changed(from: subject.count, to: subject.count + 1))
+            state.isChanging = true
+            return .send(.changed(from: state.count, to: state.count + 1))
           case let .changed(from, to):
-            subject.isChanging = false
-            if subject.count == from {
-              subject.count = to
+            state.isChanging = false
+            if state.count == from {
+              state.count = to
             }
             return .none
           }
@@ -133,7 +133,7 @@ final class TestStoreTests: BaseTCATestCase {
       }
 
       let store = TestStore(initialState: State()) {
-        Reduce<State, Action> { subject, action in
+        Reduce<State, Action> { state, action in
           switch action {
           case .noop:
             return .send(.finished)
@@ -163,7 +163,7 @@ final class TestStoreTests: BaseTCATestCase {
       }
 
       let store = TestStore(initialState: 0) {
-        Reduce<Int, Action> { subject, action in
+        Reduce<Int, Action> { state, action in
           switch action {
           case .noop:
             return .send(.finished)

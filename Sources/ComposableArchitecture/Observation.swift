@@ -6,11 +6,21 @@ public protocol ObservableState {
 
 public struct StateID: Equatable, Hashable, Sendable {
   private let uuid: UUID
-  public var id: AnyHashable {
-    self.uuid
-  }
+  private var tag: Int?
   public init() {
     self.uuid = UUID()
+  }
+  public func tagged(_ tag: Int?) -> Self {
+    var copy = self
+    copy.tag = tag
+    return copy
+  }
+  public static let inert = StateID()
+  public static func stateID<T>(for value: T) -> StateID {
+    (value as? any ObservableState)?._$id ?? .inert
+  }
+  public static func stateID(for value: some ObservableState) -> StateID {
+    value._$id
   }
 }
 extension StateID: CustomDebugStringConvertible {
@@ -69,7 +79,7 @@ public func isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
     let oldID = (lhs as? any ObservableState)?._$id,
     let newID = (rhs as? any ObservableState)?._$id
   {
-    return oldID.id == newID.id
+    return oldID == newID
   } else {
 
     func open<C: Collection>(_ lhs: C, _ rhs: Any) -> Bool {

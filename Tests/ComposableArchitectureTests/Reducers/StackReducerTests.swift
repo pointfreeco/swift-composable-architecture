@@ -235,7 +235,7 @@ final class StackReducerTests: BaseTCATestCase {
         struct State: Equatable {}
         enum Action: Equatable { case tap }
         @Dependency(\.dismiss) var dismiss
-        func reduce(into subject: inout State, action: Action) -> Effect<Action> {
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
           .run { _ in await self.dismiss() }
         }
       }
@@ -1028,7 +1028,7 @@ final class StackReducerTests: BaseTCATestCase {
       struct Child: Reducer {
         struct State: Equatable {}
         enum Action: Equatable {}
-        func reduce(into subject: inout State, action: Action) -> Effect<Action> {}
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {}
       }
       struct Parent: Reducer {
         struct State: Equatable {
@@ -1060,10 +1060,10 @@ final class StackReducerTests: BaseTCATestCase {
           """
       }
 
-      await store.send(.child(.push(id: 0, subject: Child.State()))) {
+      await store.send(.child(.push(id: 0, state: Child.State()))) {
         $0.children[id: 0] = Child.State()
       }
-      await store.send(.child(.push(id: 0, subject: Child.State())))
+      await store.send(.child(.push(id: 0, state: Child.State())))
     }
   #endif
 
@@ -1072,7 +1072,7 @@ final class StackReducerTests: BaseTCATestCase {
       struct Child: Reducer {
         struct State: Equatable {}
         enum Action: Equatable {}
-        func reduce(into subject: inout State, action: Action) -> Effect<Action> {}
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {}
       }
       struct Parent: Reducer {
         struct State: Equatable {
@@ -1104,7 +1104,7 @@ final class StackReducerTests: BaseTCATestCase {
           """
       }
 
-      await store.send(.child(.push(id: 1, subject: Child.State()))) {
+      await store.send(.child(.push(id: 1, state: Child.State()))) {
         $0.children[id: 1] = Child.State()
       }
     }
@@ -1113,7 +1113,7 @@ final class StackReducerTests: BaseTCATestCase {
       struct Child: Reducer {
         struct State: Equatable {}
         enum Action: Equatable {}
-        func reduce(into subject: inout State, action: Action) -> Effect<Action> {}
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {}
       }
       struct Parent: Reducer {
         struct State: Equatable {
@@ -1145,7 +1145,7 @@ final class StackReducerTests: BaseTCATestCase {
           (Expected: −, Actual: +)
           """
       }
-      await store.send(.child(.push(id: 0, subject: Child.State()))) {
+      await store.send(.child(.push(id: 0, state: Child.State()))) {
         $0.children[id: 1] = Child.State()
       }
     }

@@ -17,10 +17,10 @@
           case textChanged(String)
         }
 
-        func reduce(into subject: inout State, action: Action) -> Effect<Action> {
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
           switch action {
           case let .textChanged(text):
-            subject.text = text
+            state.text = text
             return .none
           }
         }

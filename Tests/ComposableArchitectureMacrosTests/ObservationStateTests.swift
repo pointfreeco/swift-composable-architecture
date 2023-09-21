@@ -5,38 +5,38 @@ import SwiftSyntaxMacrosTestSupport
 import XCTest
 
 final class ObservableStateMacroTests: MacroBaseTestCase {
-  func testObservableState_ObservationTrackedWhen() throws {
+  func testObservableState() throws {
     assertMacro {
       #"""
       @ObservableState
       struct State {
-        var children = IdentifiedArrayOf<ChildFeature.State>()
+        var count = 0
       }
       """#
     } matches: {
       #"""
       struct State {
-        var children = IdentifiedArrayOf<ChildFeature.State>() {
-          init(initialValue) initializes(_children ) {
-                             ╰─ 🛑 unexpected code 'initializes(_children )' in accessor
-            _children  = initialValue
+        var count = 0 {
+          @storageRestrictions(initializes: _count )
+          init(initialValue) {
+            _count  = initialValue
           }
           get {
-            access(keyPath: \.children )
-            return _children
+            access(keyPath: \.count )
+            return _count
           }
           set {
-            if _identifiedArrayIDsAreNotEqual(_children , newValue) {
-              withMutation(keyPath: \.children ) {
-                _children  = newValue
-              }
+            if isIdentityEqual(newValue, _count ) == true {
+              _count  = newValue
             } else {
-              _children  = newValue
+              withMutation(keyPath: \.count ) {
+                _count  = newValue
+              }
             }
           }
         }
 
-        @ObservationIgnored private let _$observationRegistrar = Observation.ObservationRegistrar()
+        private let _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
         internal nonisolated func access<Member>(
             keyPath: KeyPath<State , Member>
@@ -44,19 +44,74 @@ final class ObservableStateMacroTests: MacroBaseTestCase {
           _$observationRegistrar.access(self, keyPath: keyPath)
         }
 
-        internal nonisolated func withMutation<Member, T>(
+        internal nonisolated func withMutation<Member, MutationResult>(
           keyPath: KeyPath<State , Member>,
-          _ mutation: () throws -> T
-        ) rethrows -> T {
+          _ mutation: () throws -> MutationResult
+        ) rethrows -> MutationResult {
           try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
         }
 
-        let _$id = StateID()
-      }
-
-      extension State: ComposableArchitecture.ObservableState, Observation.Observable {
+        var _$id: StateID {
+          self._$observationRegistrar.id
+        }
       }
       """#
+    }
+  }
+
+  func testObservableState_Enum() {
+    assertMacro {
+      """
+      @ObservableState
+      enum Path {
+        case feature1(Feature1.State)
+        case feature2(Feature2.State)
+      }
+      """
+    } matches: {
+      """
+      enum Path {
+        case feature1(Feature1.State)
+        case feature2(Feature2.State)
+
+        var _$id: StateID {
+          switch self {
+          case let .feature1(state):
+            return .stateID(for: state).tagged(0)
+          case let .feature2(state):
+            return .stateID(for: state).tagged(1)
+          }
+        }
+      }
+      """
+    }
+  }
+
+  func testObservableState_Enum_Accessor() {
+    assertMacro {
+      """
+      @ObservableState
+      public enum Path {
+        case feature1(Feature1.State)
+        case feature2(Feature2.State)
+      }
+      """
+    } matches: {
+      """
+      public enum Path {
+        case feature1(Feature1.State)
+        case feature2(Feature2.State)
+
+        public var _$id: StateID {
+          switch self {
+          case let .feature1(state):
+            return .stateID(for: state).tagged(0)
+          case let .feature2(state):
+            return .stateID(for: state).tagged(1)
+          }
+        }
+      }
+      """
     }
   }
 }

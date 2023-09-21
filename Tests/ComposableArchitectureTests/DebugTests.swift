@@ -102,8 +102,8 @@
       struct DebuggedReducer: Reducer {
         typealias State = Int
         typealias Action = Bool
-        func reduce(into subject: inout Int, action: Bool) -> Effect<Bool> {
-          subject += action ? 1 : -1
+        func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
+          state += action ? 1 : -1
           return .none
         }
       }

@@ -63,6 +63,7 @@ final class WithViewStoreTests: MacroBaseTestCase {
     } matches: {
       """
       @WithViewStore(for: Feature.self)
+      ┬────────────────────────────────
       ╰─ 🛑 @WithViewStore macro requires 'FeatureView' to have a 'store' property of type 'Store'.
       struct FeatureView: View {
         var body: some View {
@@ -99,11 +100,13 @@ final class WithViewStoreTests: MacroBaseTestCase {
         var body: some View {
           Button("+") {
             store.send(.incrementButtonTapped)
+            ┬─────────
             ╰─ ⚠️ Do not use 'store.send' directly when using @WithViewStore. Instead, use 'send'.
           }
         }
         func tap() {
           self.store.send(.tap)
+          ┬──────────────
           ╰─ ⚠️ Do not use 'store.send' directly when using @WithViewStore. Instead, use 'send'.
         }
       }
