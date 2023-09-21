@@ -249,3 +249,57 @@ extension Store: Hashable {
     hasher.combine(ObjectIdentifier(self))
   }
 }
+
+// TODO: Constrain?
+extension Store {
+  public func scope<ChildState, ChildAction>(
+    state stateKeyPath: KeyPath<State, ChildState?>,
+    action embedChildAction: @escaping (ChildAction) -> Action
+  ) -> Store<ChildState, ChildAction>? {
+    guard var childState = self.subject.value[keyPath: stateKeyPath]
+    else {
+      return nil
+    }
+    return self.scope(
+      state: {
+        childState = $0[keyPath: stateKeyPath] ?? childState
+        return childState
+      },
+      action: embedChildAction
+    )
+  }
+}
+
+extension Binding {
+  public func scope<State, Action, ChildState, ChildAction>(
+    state toChildState: @escaping (State) -> ChildState,
+    action embedChildAction: @escaping (ChildAction) -> Action
+  )
+    -> Binding<Store<ChildState, ChildAction>>
+  where Value == Store<State, Action> {
+    Binding<Store<ChildState, ChildAction>>(
+      get: { self.wrappedValue.scope(state: toChildState, action: embedChildAction) },
+      set: { _, _ in }
+    )
+  }
+
+  public func scope<State, Action, ChildState, ChildAction>(
+    state stateKeyPath: KeyPath<State, ChildState?>,
+    action embedChildAction: @escaping (PresentationAction<ChildAction>) -> Action
+  )
+    -> Binding<Store<ChildState, ChildAction>?>
+  where Value == Store<State, Action> {
+    Binding<Store<ChildState, ChildAction>?>(
+      get: {
+        self.wrappedValue.scope(state: stateKeyPath, action: { embedChildAction(.presented($0)) })
+      },
+      set: {
+        if $0 == nil {
+          self.transaction($1).wrappedValue.send(embedChildAction(.dismiss))
+        }
+      }
+    )
+  }
+}
+
+extension Store: Identifiable {}

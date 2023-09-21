@@ -2,7 +2,9 @@ import ComposableArchitecture
 import SwiftUI
 
 struct StandupsList: Reducer {
+  @ObservableState
   struct State: Equatable {
+    @ObservationStateIgnored
     @PresentationState var destination: Destination.State?
     var standups: IdentifiedArrayOf<Standup> = []
 
@@ -20,6 +22,7 @@ struct StandupsList: Reducer {
       }
     }
   }
+  @CasePathable
   enum Action: Equatable {
     case addStandupButtonTapped
     case confirmAddStandupButtonTapped
@@ -27,12 +30,14 @@ struct StandupsList: Reducer {
     case dismissAddStandupButtonTapped
   }
   struct Destination: Reducer {
+    @CasePathable
     @ObservableState
     enum State: Equatable {
       case add(StandupForm.State)
       case alert(AlertState<Action.Alert>)
     }
 
+    @CasePathable
     enum Action: Equatable {
       case add(StandupForm.Action)
       case alert(Alert)
@@ -43,7 +48,7 @@ struct StandupsList: Reducer {
     }
 
     var body: some ReducerOf<Self> {
-      Scope(state: /State.add, action: /Action.add) {
+      Scope(state: #casePath(\.add), action: #casePath(\.add)) {
         StandupForm()
       }
     }
@@ -99,7 +104,7 @@ struct StandupsList: Reducer {
 }
 
 struct StandupsListView: View {
-  let store: StoreOf<StandupsList>
+  @State var store: StoreOf<StandupsList>
 
   var body: some View {
     WithViewStore(self.store, observe: \.standups) { viewStore in
@@ -127,9 +132,17 @@ struct StandupsListView: View {
         action: StandupsList.Destination.Action.alert
       )
       .sheet(
-        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /StandupsList.Destination.State.add,
-        action: StandupsList.Destination.Action.add
+        item: self.$store.scope(
+          state: \.destination?.add,
+          action: { (a: PresentationAction<StandupForm.Action>) -> StandupsList.Action in
+            switch a {
+            case let .presented(a):
+              return .destination(.presented(.add(a)))
+            case .dismiss:
+              return .destination(.dismiss)
+            }
+          }
+        )
       ) { store in
         NavigationStack {
           StandupFormView(store: store)
@@ -148,6 +161,28 @@ struct StandupsListView: View {
             }
         }
       }
+//      .sheet(
+//        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
+//        state: /StandupsList.Destination.State.add,
+//        action: StandupsList.Destination.Action.add
+//      ) { store in
+//        NavigationStack {
+//          StandupFormView(store: store)
+//            .navigationTitle("New standup")
+//            .toolbar {
+//              ToolbarItem(placement: .cancellationAction) {
+//                Button("Dismiss") {
+//                  viewStore.send(.dismissAddStandupButtonTapped)
+//                }
+//              }
+//              ToolbarItem(placement: .confirmationAction) {
+//                Button("Add") {
+//                  viewStore.send(.confirmAddStandupButtonTapped)
+//                }
+//              }
+//            }
+//        }
+//      }
     }
   }
 }
