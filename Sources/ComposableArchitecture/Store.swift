@@ -135,8 +135,7 @@ public final class Store<State, Action> {
   private var isSending = false
   var parentCancellable: AnyCancellable?
   private let reducer: any Reducer<State, Action>
-  //@_spi(Internals) 
-  public var subject: CurrentValueSubject<State, Never>
+  @_spi(Internals) public var subject: CurrentValueSubject<State, Never>
   #if DEBUG
     private let mainThreadChecksEnabled: Bool
   #endif
@@ -381,14 +380,6 @@ public final class Store<State, Action> {
     self.scope(state: toChildState, action: fromChildAction, removeDuplicates: nil)
   }
 
-  public func scope<ChildState, ChildAction>(
-    state: KeyPath<State, ChildState>,
-    action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
-  ) -> Store<ChildState, ChildAction> {
-    self.scope(id: state, state: { $0[keyPath: state] }, action: fromChildAction, removeDuplicates: nil)
-  }
-
-
   /// Scopes the store to one that exposes child state and actions.
   ///
   /// This is a special overload of ``scope(state:action:)-9iai9`` that works specifically for
@@ -410,79 +401,18 @@ public final class Store<State, Action> {
     )
   }
 
-  var children: [AnyHashable: AnyObject] = [:]
-
   func scope<ChildState, ChildAction>(
-    id: AnyHashable? = nil,
     state toChildState: @escaping (State) -> ChildState,
     action fromChildAction: @escaping (ChildAction) -> Action,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
-//    self.threadCheck(status: .scope)
-//    return self.reducer.rescope(
-//      self,
-//      state: toChildState,
-//      action: { fromChildAction($1) },
-//      removeDuplicates: isDuplicate
-//    )
-
-    if let id, let store = self.children[id] {
-      return store as! Store<ChildState, ChildAction>
-    }
-
-    var isSending = false
-    let childStore = Store<ChildState, ChildAction>(
-      initialState: toChildState(self.subject.value)
-    ) {
-      Reduce<ChildState, ChildAction>(internal: { state, action in
-        isSending = true
-        defer { isSending = false }
-
-        self.send(fromChildAction(action))
-        state = toChildState(self.subject.value)
-        return .none
-      })
-    }
-
-    if let id {
-      self.children[id] = childStore
-    }
-
-    childStore.parentCancellable = self.subject
-      .dropFirst()
-      .sink { [weak childStore] newValue in
-        guard !isSending, let childStore else { return }
-        childStore.subject.value = toChildState(newValue)
-      }
-
-    return childStore
-
-
-//    let fromScopedAction = self.fromScopedAction as! (ScopedState, ScopedAction) -> RootAction?
-//    let reducer = ScopedReducer<RootState, RootAction, RescopedState, RescopedAction>(
-//      rootStore: self.rootStore,
-//      state: { _ in toRescopedState(store.subject.value) },
-//      action: { fromRescopedAction($0, $1).flatMap { fromScopedAction(store.subject.value, $0) } },
-//      parentStores: self.parentStores + [store]
-//    )
-//    let childStore = Store<RescopedState, RescopedAction>(
-//      initialState: toRescopedState(store.subject.value)
-//    ) {
-//      reducer
-//    }
-//    childStore._isInvalidated = store._isInvalidated
-//    childStore.parentCancellable = store.subject
-//      .dropFirst()
-//      .sink { [weak childStore] newValue in
-//        guard !reducer.isSending, let childStore = childStore else { return }
-//        let newValue = toRescopedState(newValue)
-//        guard isDuplicate.map({ !$0(childStore.subject.value, newValue) }) ?? true else {
-//          return
-//        }
-//        childStore.subject.value = newValue
-//      }
-//    return childStore
-
+    self.threadCheck(status: .scope)
+    return self.reducer.rescope(
+      self,
+      state: toChildState,
+      action: { fromChildAction($1) },
+      removeDuplicates: isDuplicate
+    )
   }
 
   func invalidate(_ isInvalid: @escaping (State) -> Bool) -> Store {
@@ -502,38 +432,34 @@ public final class Store<State, Action> {
     _ action: Action,
     originatingFrom originatingAction: Action?
   ) -> Task<Void, Never>? {
-
-    _ = self.reducer.reduce(into: &self.observedState, action: action)
-    return nil
-
     self.threadCheck(status: .send(action, originatingAction: originatingAction))
 
     self.bufferedActions.append(action)
     guard !self.isSending else { return nil }
 
     self.isSending = true
-//    var currentState = self.subject.value
+    var currentState = self.subject.value
     let tasks = Box<[Task<Void, Never>]>(wrappedValue: [])
-//    defer {
-//      withExtendedLifetime(self.bufferedActions) {
-//        self.bufferedActions.removeAll()
-//      }
-//      self.observedState = currentState
-//      self.isSending = false
-//      if !self.bufferedActions.isEmpty {
-//        if let task = self.send(
-//          self.bufferedActions.removeLast(), originatingFrom: originatingAction
-//        ) {
-//          tasks.wrappedValue.append(task)
-//        }
-//      }
-//    }
+    defer {
+      withExtendedLifetime(self.bufferedActions) {
+        self.bufferedActions.removeAll()
+      }
+      self.observedState = currentState
+      self.isSending = false
+      if !self.bufferedActions.isEmpty {
+        if let task = self.send(
+          self.bufferedActions.removeLast(), originatingFrom: originatingAction
+        ) {
+          tasks.wrappedValue.append(task)
+        }
+      }
+    }
 
     var index = self.bufferedActions.startIndex
     while index < self.bufferedActions.endIndex {
       defer { index += 1 }
       let action = self.bufferedActions[index]
-      let effect = self.reducer.reduce(into: &self.subject.value, action: action)
+      let effect = self.reducer.reduce(into: &currentState, action: action)
 
       switch effect.operation {
       case .none:

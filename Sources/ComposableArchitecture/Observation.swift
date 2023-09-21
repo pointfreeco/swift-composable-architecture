@@ -59,6 +59,7 @@ extension Store where State: ObservableState {
   }
 }
 
+// TODO: optimize, benchmark
 @available(iOS, introduced: 17)
 @available(macOS, introduced: 14)
 @available(tvOS, introduced: 17)
@@ -72,7 +73,7 @@ public func isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
   } else {
 
     func open<C: Collection>(_ lhs: C, _ rhs: Any) -> Bool {
-      let rhs = rhs as! C
+      guard let rhs = rhs as? C else { return false }
       return lhs.count == rhs.count
       && zip(lhs, rhs).allSatisfy(isIdentityEqual)
     }

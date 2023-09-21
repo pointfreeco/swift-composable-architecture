@@ -60,12 +60,14 @@ struct NavigationDemo: Reducer {
   }
 
   struct Path: Reducer {
+    // TODO: make @ObservableState work with enums
     @CasePathable
     enum State: Codable, Equatable, Hashable, ObservableState {
       case screenA(ScreenA.State = .init())
       case screenB(ScreenB.State = .init())
       case screenC(ScreenC.State = .init())
 
+      // TODO: somehow mix in tag of enum into state ID
       var _$id: StateID {
         switch self {
         case let .screenA(s):

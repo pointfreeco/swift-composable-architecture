@@ -343,14 +343,14 @@ extension EnvironmentValues {
 
 
 extension NavigationStack {
-  public init<State, Action, Destination, R>(
+  public init<State: ObservableState, Action, Destination, R>(
     store: Store<StackState<State>, StackAction<State, Action>>,
     root: () -> R,
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination
   )
   where
   Data == StackState<State>.PathView,
-Destination: View,
+  Destination: View,  
   Root == ModifiedContent<R, NavigationDestinationViewModifier<State, Action, Destination>>
   {
     self.init(
