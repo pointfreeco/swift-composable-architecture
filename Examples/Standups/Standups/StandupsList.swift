@@ -2,7 +2,9 @@ import ComposableArchitecture
 import SwiftUI
 
 struct StandupsList: Reducer {
+  @ObservableState
   struct State: Equatable {
+    @ObservationStateIgnored
     @PresentationState var destination: Destination.State?
     var standups: IdentifiedArrayOf<Standup> = []
 
@@ -20,6 +22,7 @@ struct StandupsList: Reducer {
       }
     }
   }
+  @CasePathable
   enum Action: Equatable {
     case addStandupButtonTapped
     case confirmAddStandupButtonTapped
@@ -27,11 +30,14 @@ struct StandupsList: Reducer {
     case dismissAddStandupButtonTapped
   }
   struct Destination: Reducer {
+    @CasePathable
+    @ObservableState
     enum State: Equatable {
       case add(StandupForm.State)
       case alert(AlertState<Action.Alert>)
     }
 
+    @CasePathable
     enum Action: Equatable {
       case add(StandupForm.Action)
       case alert(Alert)
@@ -42,7 +48,7 @@ struct StandupsList: Reducer {
     }
 
     var body: some ReducerOf<Self> {
-      Scope(state: /State.add, action: /Action.add) {
+      Scope(state: #casePath(\.add), action: #casePath(\.add)) {
         StandupForm()
       }
     }
@@ -52,7 +58,7 @@ struct StandupsList: Reducer {
   @Dependency(\.uuid) var uuid
 
   var body: some ReducerOf<Self> {
-    Reduce<State, Action> { state, action in
+    Reduce { state, action in
       switch action {
       case .addStandupButtonTapped:
         state.destination = .add(StandupForm.State(standup: Standup(id: Standup.ID(self.uuid()))))
@@ -98,54 +104,52 @@ struct StandupsList: Reducer {
 }
 
 struct StandupsListView: View {
-  let store: StoreOf<StandupsList>
+  @State var store: StoreOf<StandupsList>
 
   var body: some View {
-    WithViewStore(self.store, observe: \.standups) { viewStore in
-      List {
-        ForEach(viewStore.state) { standup in
-          NavigationLink(
-            state: AppFeature.Path.State.detail(StandupDetail.State(standup: standup))
-          ) {
-            CardView(standup: standup)
-          }
-          .listRowBackground(standup.theme.mainColor)
+    List {
+      ForEach(store.standups) { standup in
+        NavigationLink(
+          state: AppFeature.Path.State.detail(StandupDetail.State(standup: standup))
+        ) {
+          CardView(standup: standup)
         }
+        .listRowBackground(standup.theme.mainColor)
       }
-      .toolbar {
-        Button {
-          viewStore.send(.addStandupButtonTapped)
-        } label: {
-          Image(systemName: "plus")
-        }
+    }
+    .toolbar {
+      Button {
+        store.send(.addStandupButtonTapped)
+      } label: {
+        Image(systemName: "plus")
       }
-      .navigationTitle("Daily Standups")
-      .alert(
-        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /StandupsList.Destination.State.alert,
-        action: StandupsList.Destination.Action.alert
-      )
-      .sheet(
-        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /StandupsList.Destination.State.add,
-        action: StandupsList.Destination.Action.add
-      ) { store in
-        NavigationStack {
-          StandupFormView(store: store)
-            .navigationTitle("New standup")
-            .toolbar {
-              ToolbarItem(placement: .cancellationAction) {
-                Button("Dismiss") {
-                  viewStore.send(.dismissAddStandupButtonTapped)
-                }
-              }
-              ToolbarItem(placement: .confirmationAction) {
-                Button("Add") {
-                  viewStore.send(.confirmAddStandupButtonTapped)
-                }
+    }
+    .navigationTitle("Daily Standups")
+    .alert(
+      store: self.store.scope(state: \.$destination, action: { .destination($0) }),
+      state: /StandupsList.Destination.State.alert,
+      action: StandupsList.Destination.Action.alert
+    )
+    .sheet(
+      store: self.store.scope(state: \.$destination, action: { .destination($0) }),
+      state: /StandupsList.Destination.State.add,
+      action: StandupsList.Destination.Action.add
+    ) { store in
+      NavigationStack {
+        StandupFormView(store: store)
+          .navigationTitle("New standup")
+          .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+              Button("Dismiss") {
+                self.store.send(.dismissAddStandupButtonTapped)
               }
             }
-        }
+            ToolbarItem(placement: .confirmationAction) {
+              Button("Add") {
+                self.store.send(.confirmAddStandupButtonTapped)
+              }
+            }
+          }
       }
     }
   }
