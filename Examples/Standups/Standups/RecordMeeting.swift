@@ -3,17 +3,34 @@ import Speech
 import SwiftUI
 
 struct RecordMeeting: Reducer {
+  @ObservableState
   struct State: Equatable {
+    @ObservationStateIgnored
     @PresentationState var alert: AlertState<Action.Alert>?
     var secondsElapsed = 0
     var speakerIndex = 0
     var standup: Standup
     var transcript = ""
 
+    init(
+      alert: AlertState<Action.Alert>? = nil,
+      secondsElapsed: Int = 0,
+      speakerIndex: Int = 0,
+      standup: Standup,
+      transcript: String = ""
+    ) {
+      self.alert = alert
+      self.secondsElapsed = secondsElapsed
+      self.speakerIndex = speakerIndex
+      self.standup = standup
+      self.transcript = transcript
+    }
+
     var durationRemaining: Duration {
       self.standup.duration - .seconds(self.secondsElapsed)
     }
   }
+  @CasePathable
   enum Action: Equatable {
     case alert(PresentationAction<Alert>)
     case delegate(Delegate)
@@ -38,7 +55,7 @@ struct RecordMeeting: Reducer {
   @Dependency(\.speechClient) var speechClient
 
   var body: some ReducerOf<Self> {
-    Reduce<State, Action> { state, action in
+    Reduce { state, action in
       switch action {
       case .alert(.presented(.confirmDiscard)):
         return .run { _ in
@@ -122,7 +139,7 @@ struct RecordMeeting: Reducer {
         return .none
       }
     }
-    .ifLet(\.$alert, action: /Action.alert)
+    .ifLet(\.$alert, action: #casePath(\.alert))
   }
 
   private func startSpeechRecognition(send: Send<Action>) async {
@@ -144,60 +161,45 @@ struct RecordMeeting: Reducer {
 }
 
 struct RecordMeetingView: View {
-  let store: StoreOf<RecordMeeting>
-
-  struct ViewState: Equatable {
-    let durationRemaining: Duration
-    let secondsElapsed: Int
-    let speakerIndex: Int
-    let standup: Standup
-    init(state: RecordMeeting.State) {
-      self.durationRemaining = state.durationRemaining
-      self.secondsElapsed = state.secondsElapsed
-      self.standup = state.standup
-      self.speakerIndex = state.speakerIndex
-    }
-  }
+  @State var store: StoreOf<RecordMeeting>
 
   var body: some View {
-    WithViewStore(self.store, observe: ViewState.init) { viewStore in
-      ZStack {
-        RoundedRectangle(cornerRadius: 16)
-          .fill(viewStore.standup.theme.mainColor)
+    ZStack {
+      RoundedRectangle(cornerRadius: 16)
+        .fill(self.store.standup.theme.mainColor)
 
-        VStack {
-          MeetingHeaderView(
-            secondsElapsed: viewStore.secondsElapsed,
-            durationRemaining: viewStore.durationRemaining,
-            theme: viewStore.standup.theme
-          )
-          MeetingTimerView(
-            standup: viewStore.standup,
-            speakerIndex: viewStore.speakerIndex
-          )
-          MeetingFooterView(
-            standup: viewStore.standup,
-            nextButtonTapped: {
-              viewStore.send(.nextButtonTapped)
-            },
-            speakerIndex: viewStore.speakerIndex
-          )
-        }
+      VStack {
+        MeetingHeaderView(
+          secondsElapsed: self.store.secondsElapsed,
+          durationRemaining: self.store.durationRemaining,
+          theme: self.store.standup.theme
+        )
+        MeetingTimerView(
+          standup: self.store.standup,
+          speakerIndex: self.store.speakerIndex
+        )
+        MeetingFooterView(
+          standup: self.store.standup,
+          nextButtonTapped: {
+            self.store.send(.nextButtonTapped)
+          },
+          speakerIndex: self.store.speakerIndex
+        )
       }
-      .padding()
-      .foregroundColor(viewStore.standup.theme.accentColor)
-      .navigationBarTitleDisplayMode(.inline)
-      .toolbar {
-        ToolbarItem(placement: .cancellationAction) {
-          Button("End meeting") {
-            viewStore.send(.endMeetingButtonTapped)
-          }
-        }
-      }
-      .navigationBarBackButtonHidden(true)
-      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
-      .task { await viewStore.send(.onTask).finish() }
     }
+    .padding()
+    .foregroundColor(self.store.standup.theme.accentColor)
+    .navigationBarTitleDisplayMode(.inline)
+    .toolbar {
+      ToolbarItem(placement: .cancellationAction) {
+        Button("End meeting") {
+          self.store.send(.endMeetingButtonTapped)
+        }
+      }
+    }
+    .navigationBarBackButtonHidden(true)
+    .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
+    .task { await self.store.send(.onTask).finish() }
   }
 }
 
