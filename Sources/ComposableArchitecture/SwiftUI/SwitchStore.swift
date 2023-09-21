@@ -193,7 +193,7 @@ public struct _CaseLetMismatchView<State, Action>: View {
   }
 }
 
-private final class StoreObservableObject<State, Action>: ObservableObject {
+final class StoreObservableObject<State, Action>: ObservableObject {
   let wrappedValue: Store<State, Action>
 
   init(store: Store<State, Action>) {

@@ -1108,6 +1108,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = VFRXY8HC3H;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = SwiftUICaseStudies/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1127,6 +1128,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = VFRXY8HC3H;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = SwiftUICaseStudies/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
