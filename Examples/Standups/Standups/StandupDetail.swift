@@ -136,6 +136,7 @@ struct StandupDetailView: View {
   }
 
   var body: some View {
+    let _ = Self._printChanges()
     WithViewStore(self.store, observe: ViewState.init) { viewStore in
       List {
         Section {

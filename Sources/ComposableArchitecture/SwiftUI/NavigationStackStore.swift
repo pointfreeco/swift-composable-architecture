@@ -99,7 +99,6 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
       NavigationStack(
         path: viewStore.binding(
           get: { (state: StackState<State>) -> StackState<State>.PathView in
-            dump(state.path.count, name: "$0.path.count")
             return state.path
           },
           send: { newPath in

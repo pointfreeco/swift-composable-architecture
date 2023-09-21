@@ -27,6 +27,7 @@ struct StandupsList: Reducer {
     case dismissAddStandupButtonTapped
   }
   struct Destination: Reducer {
+    @ObservableState
     enum State: Equatable {
       case add(StandupForm.State)
       case alert(AlertState<Action.Alert>)

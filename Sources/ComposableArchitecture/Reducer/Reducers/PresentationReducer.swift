@@ -133,6 +133,14 @@ public struct PresentationState<State>: Observable {
   ) rethrows -> T {
     try _$observationRegistrar.rawValue.withMutation(of: self, keyPath: keyPath, mutation)
   }
+
+  let __$id = StateID()
+}
+
+extension PresentationState: ObservableState where State: ObservableState {
+  public var _$id: StateID {
+    self.wrappedValue?._$id ?? self.__$id
+  }
 }
 
 extension PresentationState: Equatable where State: Equatable {

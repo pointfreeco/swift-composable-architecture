@@ -3,9 +3,10 @@ import SwiftUI
 import SwiftUINavigation
 
 struct StandupForm: Reducer {
+  @ObservableState
   struct State: Equatable, Sendable {
-    @BindingState var focus: Field? = .title
-    @BindingState var standup: Standup
+    var focus: Field? = .title
+    var standup: Standup
 
     init(focus: Field? = .title, standup: Standup) {
       self.focus = focus
@@ -58,44 +59,48 @@ struct StandupForm: Reducer {
 }
 
 struct StandupFormView: View {
-  let store: StoreOf<StandupForm>
+  @State var store: StoreOf<StandupForm>
   @FocusState var focus: StandupForm.State.Field?
 
-  var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          TextField("Title", text: viewStore.$standup.title)
-            .focused(self.$focus, equals: .title)
-          HStack {
-            Slider(value: viewStore.$standup.duration.minutes, in: 5...30, step: 1) {
-              Text("Length")
-            }
-            Spacer()
-            Text(viewStore.standup.duration.formatted(.units()))
-          }
-          ThemePicker(selection: viewStore.$standup.theme)
-        } header: {
-          Text("Standup Info")
-        }
-        Section {
-          ForEach(viewStore.$standup.attendees) { $attendee in
-            TextField("Name", text: $attendee.name)
-              .focused(self.$focus, equals: .attendee(attendee.id))
-          }
-          .onDelete { indices in
-            viewStore.send(.deleteAttendees(atOffsets: indices))
-          }
+  init(store: StoreOf<StandupForm>) {
+    print("StandupFormView.init")
+    self._store = .init(wrappedValue: store)
+  }
 
-          Button("New attendee") {
-            viewStore.send(.addAttendeeButtonTapped)
+  var body: some View {
+    let _ = Self._printChanges()
+    Form {
+      Section {
+        TextField("Title", text: self.$store.standup.title)
+          .focused(self.$focus, equals: .title)
+        HStack {
+          Slider(value: self.$store.standup.duration.minutes, in: 5...30, step: 1) {
+            Text("Length")
           }
-        } header: {
-          Text("Attendees")
+          Spacer()
+          Text(self.store.standup.duration.formatted(.units()))
         }
+        ThemePicker(selection: self.$store.standup.theme)
+      } header: {
+        Text("Standup Info")
       }
-      .bind(viewStore.$focus, to: self.$focus)
+      Section {
+        ForEach(self.$store.standup.attendees) { $attendee in
+          TextField("Name", text: $attendee.name)
+            .focused(self.$focus, equals: .attendee(attendee.id))
+        }
+        .onDelete { indices in
+          self.store.send(.deleteAttendees(atOffsets: indices))
+        }
+
+        Button("New attendee") {
+          self.store.send(.addAttendeeButtonTapped)
+        }
+      } header: {
+        Text("Attendees")
+      }
     }
+    .bind(self.$store.focus, to: self.$focus)
   }
 }
 

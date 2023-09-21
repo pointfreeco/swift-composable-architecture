@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 public protocol ObservableState {
   var _$id: StateID { get }
@@ -69,7 +70,37 @@ extension Store where State: ObservableState {
   public subscript<Value>(dynamicMember keyPath: KeyPath<State, Value>) -> Value {
     self.state[keyPath: keyPath]
   }
+
+  public func binding<Value>(
+    get: @escaping (_ state: State) -> Value,
+    send valueToAction: @escaping (_ value: Value) -> Action
+  ) -> Binding<Value> {
+    ObservedObject(wrappedValue: self)
+      .projectedValue[get: .init(rawValue: get), send: .init(rawValue: valueToAction)]
+  }
+
+  private subscript<Value>(
+    get fromState: HashableWrapper<(State) -> Value>,
+    send toAction: HashableWrapper<(Value) -> Action?>
+  ) -> Value {
+    get { fromState.rawValue(self.state) }
+    set {
+      BindingLocal.$isActive.withValue(true) {
+        if let action = toAction.rawValue(newValue) {
+          self.send(action)
+        }
+      }
+    }
+  }
 }
+
+// TODO: legit?
+@available(iOS, introduced: 17)
+@available(macOS, introduced: 14)
+@available(tvOS, introduced: 17)
+@available(watchOS, introduced: 10)
+extension Store: ObservableObject where State: ObservableState {}
+
 
 // TODO: optimize, benchmark
 // TODO: Open enums to check isIdentityEqual to avoid requiring `enum State: ObservableState`
@@ -163,5 +194,58 @@ public struct ObservationRegistrarWrapper: Sendable {
   @available(watchOS, introduced: 10)
   public var rawValue: ObservationRegistrar {
     self._rawValue.base as! ObservationRegistrar
+  }
+}
+
+@available(iOS, introduced: 17)
+@available(macOS, introduced: 14)
+@available(tvOS, introduced: 17)
+@available(watchOS, introduced: 10)
+extension BindingAction {
+  public static func set<Value: Equatable & Sendable>(
+    _ keyPath: WritableKeyPath<Root, Value>,
+    _ value: Value
+  ) -> Self where Root: ObservableState {
+    .init(
+      keyPath: keyPath,
+      set: { $0[keyPath: keyPath] = value },
+      value: AnySendable(value),
+      valueIsEqualTo: { ($0 as? AnySendable)?.base as? Value == value }
+    )
+  }
+
+  public static func ~= <Value>(
+    keyPath: WritableKeyPath<Root, Value>,
+    bindingAction: Self
+  ) -> Bool where Root: ObservableState {
+    keyPath == bindingAction.keyPath
+  }
+}
+
+@available(iOS, introduced: 17)
+@available(macOS, introduced: 14)
+@available(tvOS, introduced: 17)
+@available(watchOS, introduced: 10)
+extension Binding {
+  public subscript<State: ObservableState, Action: BindableAction, Member: Equatable>(
+    dynamicMember keyPath: WritableKeyPath<State, Member>
+  ) -> Binding<Member>
+  where Value == Store<State, Action>, Action.State == State {
+    Binding<Member>(
+      get: { self.wrappedValue.state[keyPath: keyPath] },
+      set: { self.transaction($1).wrappedValue.send(.binding(.set(keyPath, $0))) }
+    )
+  }
+}
+
+extension Store: Equatable {
+  public static func == (lhs: Store, rhs: Store) -> Bool {
+    lhs === rhs
+  }
+}
+
+extension Store: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(ObjectIdentifier(self))
   }
 }

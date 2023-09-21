@@ -16,11 +16,12 @@ private let readMe = """
 // MARK: - Feature domain
 
 struct BindingForm: Reducer {
+  @ObservableState
   struct State: Equatable {
-    @BindingState var sliderValue = 5.0
-    @BindingState var stepCount = 10
-    @BindingState var text = ""
-    @BindingState var toggleIsOn = false
+    var sliderValue = 5.0
+    var stepCount = 10
+    var text = ""
+    var toggleIsOn = false
   }
 
   enum Action: BindableAction, Equatable {
@@ -32,7 +33,7 @@ struct BindingForm: Reducer {
     BindingReducer()
     Reduce { state, action in
       switch action {
-      case .binding(\.$stepCount):
+      case .binding(\.stepCount):
         state.sliderValue = .minimum(state.sliderValue, Double(state.stepCount))
         return .none
 
@@ -50,45 +51,43 @@ struct BindingForm: Reducer {
 // MARK: - Feature view
 
 struct BindingFormView: View {
-  let store: StoreOf<BindingForm>
+  @State var store: StoreOf<BindingForm>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
-
-        HStack {
-          TextField("Type here", text: viewStore.$text)
-            .disableAutocorrection(true)
-            .foregroundStyle(viewStore.toggleIsOn ? Color.secondary : .primary)
-          Text(alternate(viewStore.text))
-        }
-        .disabled(viewStore.toggleIsOn)
-
-        Toggle("Disable other controls", isOn: viewStore.$toggleIsOn.resignFirstResponder())
-
-        Stepper(
-          "Max slider value: \(viewStore.stepCount)",
-          value: viewStore.$stepCount,
-          in: 0...100
-        )
-        .disabled(viewStore.toggleIsOn)
-
-        HStack {
-          Text("Slider value: \(Int(viewStore.sliderValue))")
-
-          Slider(value: viewStore.$sliderValue, in: 0...Double(viewStore.stepCount))
-            .tint(.accentColor)
-        }
-        .disabled(viewStore.toggleIsOn)
-
-        Button("Reset") {
-          viewStore.send(.resetButtonTapped)
-        }
-        .tint(.red)
+    Form {
+      Section {
+        AboutView(readMe: readMe)
       }
+
+      HStack {
+        TextField("Type here", text: self.$store.text)
+          .disableAutocorrection(true)
+          .foregroundStyle(self.store.toggleIsOn ? Color.secondary : .primary)
+        Text(alternate(self.store.text))
+      }
+      .disabled(self.store.toggleIsOn)
+
+      Toggle("Disable other controls", isOn: self.$store.toggleIsOn.resignFirstResponder())
+
+      Stepper(
+        "Max slider value: \(self.store.stepCount)",
+        value: self.$store.stepCount,
+        in: 0...100
+      )
+      .disabled(self.store.toggleIsOn)
+
+      HStack {
+        Text("Slider value: \(Int(self.store.sliderValue))")
+
+        Slider(value: self.$store.sliderValue, in: 0...Double(self.store.stepCount))
+          .tint(.accentColor)
+      }
+      .disabled(self.store.toggleIsOn)
+
+      Button("Reset") {
+        self.store.send(.resetButtonTapped)
+      }
+      .tint(.red)
     }
     .monospacedDigit()
     .navigationTitle("Bindings form")
