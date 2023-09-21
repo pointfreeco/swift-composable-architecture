@@ -131,9 +131,17 @@ struct StandupsListView: View {
       action: StandupsList.Destination.Action.alert
     )
     .sheet(
-      store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-      state: /StandupsList.Destination.State.add,
-      action: StandupsList.Destination.Action.add
+      item: self.$store.scope(
+        state: \.destination?.add,
+        action: { (a: PresentationAction<StandupForm.Action>) -> StandupsList.Action in
+          switch a {
+          case let .presented(a):
+            return .destination(.presented(.add(a)))
+          case .dismiss:
+            return .destination(.dismiss)
+          }
+        }
+      )
     ) { store in
       NavigationStack {
         StandupFormView(store: store)
