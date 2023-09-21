@@ -2,10 +2,18 @@ import ComposableArchitecture
 import SwiftUI
 
 struct StandupDetail: Reducer {
+  @ObservableState
   struct State: Equatable {
+    @ObservationStateIgnored
     @PresentationState var destination: Destination.State?
     var standup: Standup
+
+    init(destination: Destination.State? = nil, standup: Standup) {
+      self.destination = destination
+      self.standup = standup
+    }
   }
+  @CasePathable
   enum Action: Equatable, Sendable {
     case cancelEditButtonTapped
     case delegate(Delegate)
@@ -28,10 +36,13 @@ struct StandupDetail: Reducer {
   @Dependency(\.speechClient.authorizationStatus) var authorizationStatus
 
   struct Destination: Reducer {
+    @CasePathable
+    @ObservableState
     enum State: Equatable {
       case alert(AlertState<Action.Alert>)
       case edit(StandupForm.State)
     }
+    @CasePathable
     enum Action: Equatable, Sendable {
       case alert(Alert)
       case edit(StandupForm.Action)
@@ -43,14 +54,14 @@ struct StandupDetail: Reducer {
       }
     }
     var body: some ReducerOf<Self> {
-      Scope(state: /State.edit, action: /Action.edit) {
+      Scope(state: #casePath(\.edit), action: #casePath(\.edit)) {
         StandupForm()
       }
     }
   }
 
   var body: some ReducerOf<Self> {
-    Reduce<State, Action> { state, action in
+    Reduce { state, action in
       switch action {
       case .cancelEditButtonTapped:
         state.destination = nil
@@ -114,7 +125,7 @@ struct StandupDetail: Reducer {
         }
       }
     }
-    .ifLet(\.$destination, action: /Action.destination) {
+    .ifLet(\.$destination, action: #casePath(\.destination)) {
       Destination()
     }
     .onChange(of: \.standup) { oldValue, newValue in
@@ -126,114 +137,113 @@ struct StandupDetail: Reducer {
 }
 
 struct StandupDetailView: View {
-  let store: StoreOf<StandupDetail>
-
-  struct ViewState: Equatable {
-    let standup: Standup
-    init(state: StandupDetail.State) {
-      self.standup = state.standup
-    }
-  }
+  @State var store: StoreOf<StandupDetail>
 
   var body: some View {
-    WithViewStore(self.store, observe: ViewState.init) { viewStore in
-      List {
-        Section {
-          Button {
-            viewStore.send(.startMeetingButtonTapped)
-          } label: {
-            Label("Start Meeting", systemImage: "timer")
-              .font(.headline)
-              .foregroundColor(.accentColor)
-          }
-          HStack {
-            Label("Length", systemImage: "clock")
-            Spacer()
-            Text(viewStore.standup.duration.formatted(.units()))
-          }
-
-          HStack {
-            Label("Theme", systemImage: "paintpalette")
-            Spacer()
-            Text(viewStore.standup.theme.name)
-              .padding(4)
-              .foregroundColor(viewStore.standup.theme.accentColor)
-              .background(viewStore.standup.theme.mainColor)
-              .cornerRadius(4)
-          }
-        } header: {
-          Text("Standup Info")
+    List {
+      Section {
+        Button {
+          self.store.send(.startMeetingButtonTapped)
+        } label: {
+          Label("Start Meeting", systemImage: "timer")
+            .font(.headline)
+            .foregroundColor(.accentColor)
+        }
+        HStack {
+          Label("Length", systemImage: "clock")
+          Spacer()
+          Text(self.store.standup.duration.formatted(.units()))
         }
 
-        if !viewStore.standup.meetings.isEmpty {
-          Section {
-            ForEach(viewStore.standup.meetings) { meeting in
-              NavigationLink(
-                state: AppFeature.Path.State.meeting(meeting, standup: viewStore.standup)
-              ) {
-                HStack {
-                  Image(systemName: "calendar")
-                  Text(meeting.date, style: .date)
-                  Text(meeting.date, style: .time)
-                }
+        HStack {
+          Label("Theme", systemImage: "paintpalette")
+          Spacer()
+          Text(self.store.standup.theme.name)
+            .padding(4)
+            .foregroundColor(self.store.standup.theme.accentColor)
+            .background(self.store.standup.theme.mainColor)
+            .cornerRadius(4)
+        }
+      } header: {
+        Text("Standup Info")
+      }
+
+      if !self.store.standup.meetings.isEmpty {
+        Section {
+          ForEach(self.store.standup.meetings) { meeting in
+            NavigationLink(
+              state: AppFeature.Path.State.meeting(meeting, standup: self.store.standup)
+            ) {
+              HStack {
+                Image(systemName: "calendar")
+                Text(meeting.date, style: .date)
+                Text(meeting.date, style: .time)
               }
             }
-            .onDelete { indices in
-              viewStore.send(.deleteMeetings(atOffsets: indices))
-            }
-          } header: {
-            Text("Past meetings")
           }
-        }
-
-        Section {
-          ForEach(viewStore.standup.attendees) { attendee in
-            Label(attendee.name, systemImage: "person")
+          .onDelete { indices in
+            self.store.send(.deleteMeetings(atOffsets: indices))
           }
         } header: {
-          Text("Attendees")
+          Text("Past meetings")
         }
+      }
 
-        Section {
-          Button("Delete") {
-            viewStore.send(.deleteButtonTapped)
+      Section {
+        ForEach(self.store.standup.attendees) { attendee in
+          Label(attendee.name, systemImage: "person")
+        }
+      } header: {
+        Text("Attendees")
+      }
+
+      Section {
+        Button("Delete") {
+          self.store.send(.deleteButtonTapped)
+        }
+        .foregroundColor(.red)
+        .frame(maxWidth: .infinity)
+      }
+    }
+    .navigationTitle(self.store.standup.title)
+    .toolbar {
+      Button("Edit") {
+        self.store.send(.editButtonTapped)
+      }
+    }
+    .alert(
+      store: self.store.scope(state: \.$destination, action: { .destination($0) }),
+      state: /StandupDetail.Destination.State.alert,
+      action: StandupDetail.Destination.Action.alert
+    )
+    .sheet(
+      item: self.$store.scope(
+        state: \.destination?.edit,
+        action: { (a: PresentationAction<StandupForm.Action>) -> StandupDetail.Action in
+          switch a {
+          case let .presented(a):
+            return .destination(.presented(.edit(a)))
+          case .dismiss:
+            return .destination(.dismiss)
           }
-          .foregroundColor(.red)
-          .frame(maxWidth: .infinity)
         }
-      }
-      .navigationTitle(viewStore.standup.title)
-      .toolbar {
-        Button("Edit") {
-          viewStore.send(.editButtonTapped)
-        }
-      }
-      .alert(
-        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /StandupDetail.Destination.State.alert,
-        action: StandupDetail.Destination.Action.alert
       )
-      .sheet(
-        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /StandupDetail.Destination.State.edit,
-        action: StandupDetail.Destination.Action.edit
-      ) { store in
-        NavigationStack {
-          StandupFormView(store: store)
-            .navigationTitle(viewStore.standup.title)
-            .toolbar {
-              ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") {
-                  viewStore.send(.cancelEditButtonTapped)
-                }
-              }
-              ToolbarItem(placement: .confirmationAction) {
-                Button("Done") {
-                  viewStore.send(.doneEditingButtonTapped)
-                }
+    ) { store in
+      NavigationStack {
+        StandupFormView(store: store)
+          .navigationTitle(self.store.standup.title)
+          .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+              Button("Cancel") {
+                self.store.send(.cancelEditButtonTapped)
               }
             }
-        }
+            ToolbarItem(placement: .confirmationAction) {
+              Button("Done") {
+                self.store.send(.doneEditingButtonTapped)
+              }
+            }
+          }
       }
     }
   }
