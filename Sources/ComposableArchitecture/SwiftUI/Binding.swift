@@ -250,6 +250,17 @@ extension BindableAction {
   ) -> Self {
     self.binding(.set(keyPath, value))
   }
+
+  @available(iOS, introduced: 17)
+  @available(macOS, introduced: 14)
+  @available(tvOS, introduced: 17)
+  @available(watchOS, introduced: 10)
+  public static func set<Value: Equatable>(
+    _ keyPath: WritableKeyPath<State, Value>,
+    _ value: Value
+  ) -> Self where State: ObservableState {
+    self.binding(.set(keyPath, value))
+  }
 }
 
 extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {

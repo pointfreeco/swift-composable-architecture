@@ -269,12 +269,6 @@ public struct Component<Element>: Hashable {
 
 extension StackState {
   fileprivate var path: PathView {
-//    _read { yield PathView(base: self) }
-//    _modify {
-//      var path = PathView(base: self)
-//      yield &path
-//      self = path.base
-//    }
     get { PathView(base: self) }
     set { self = newValue.base }
   }
