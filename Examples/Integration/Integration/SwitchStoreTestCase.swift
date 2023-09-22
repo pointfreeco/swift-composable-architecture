@@ -88,7 +88,7 @@ struct SwitchStoreTestCaseView: View {
         HStack {
           Button("-") { viewStore.send(.decrementButtonTapped) }
           Text("\(viewStore.count)")
-          Button("+") { viewStore.send(.decrementButtonTapped) }
+          Button("+") { viewStore.send(.incrementButtonTapped) }
         }
       }
     }
