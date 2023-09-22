@@ -7,41 +7,10 @@ import UIKit
 
 public class LoginViewController: UIViewController {
   let store: StoreOf<Login>
-  let viewStore: ViewStore<ViewState, ViewAction>
   private var cancellables: Set<AnyCancellable> = []
-
-  struct ViewState: Equatable {
-    let alert: AlertState<Login.AlertAction>?
-    let email: String?
-    let isActivityIndicatorHidden: Bool
-    let isEmailTextFieldEnabled: Bool
-    let isLoginButtonEnabled: Bool
-    let isPasswordTextFieldEnabled: Bool
-    let password: String?
-
-    init(state: Login.State) {
-      self.alert = state.alert
-      self.email = state.email
-      self.isActivityIndicatorHidden = !state.isLoginRequestInFlight
-      self.isEmailTextFieldEnabled = !state.isLoginRequestInFlight
-      self.isLoginButtonEnabled = state.isFormValid && !state.isLoginRequestInFlight
-      self.isPasswordTextFieldEnabled = !state.isLoginRequestInFlight
-      self.password = state.password
-    }
-  }
-
-  enum ViewAction {
-    case alertDismissed
-    case emailChanged(String?)
-    case loginButtonTapped
-    case passwordChanged(String?)
-    case twoFactorDismissed
-  }
 
   public init(store: StoreOf<Login>) {
     self.store = store
-//    self.viewStore = ViewStore(store, observe: ViewState.init, send: Login.Action.init)
-    fatalError()
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -117,31 +86,36 @@ public class LoginViewController: UIViewController {
       divider.heightAnchor.constraint(equalToConstant: 1),
     ])
 
-    self.viewStore.publisher.isLoginButtonEnabled
+    self.store.publisher.isFormValid
       .assign(to: \.isEnabled, on: loginButton)
       .store(in: &self.cancellables)
 
-    self.viewStore.publisher.email
+    self.store.publisher.email
+      .map(Optional.some)
       .assign(to: \.text, on: emailTextField)
       .store(in: &self.cancellables)
 
-    self.viewStore.publisher.isEmailTextFieldEnabled
+    self.store.publisher.isLoginRequestInFlight
+      .map(!)
       .assign(to: \.isEnabled, on: emailTextField)
       .store(in: &self.cancellables)
 
-    self.viewStore.publisher.password
+    self.store.publisher.password
+      .map(Optional.some)
       .assign(to: \.text, on: passwordTextField)
       .store(in: &self.cancellables)
 
-    self.viewStore.publisher.isPasswordTextFieldEnabled
+    self.store.publisher.isLoginRequestInFlight
+      .map(!)
       .assign(to: \.isEnabled, on: passwordTextField)
       .store(in: &self.cancellables)
 
-    self.viewStore.publisher.isActivityIndicatorHidden
+    self.store.publisher.isLoginRequestInFlight
+      .map(!)
       .assign(to: \.isHidden, on: activityIndicator)
       .store(in: &self.cancellables)
 
-    self.viewStore.publisher.alert
+    self.store.publisher.alert
       .sink { [weak self] alert in
         guard let self = self else { return }
         guard let alert = alert else { return }
@@ -150,7 +124,7 @@ public class LoginViewController: UIViewController {
           title: String(state: alert.title), message: nil, preferredStyle: .alert)
         alertController.addAction(
           UIAlertAction(title: "Ok", style: .default) { _ in
-            self.viewStore.send(.alertDismissed)
+            self.store.send(.alert(.dismiss))
           }
         )
         self.present(alertController, animated: true, completion: nil)
@@ -178,36 +152,19 @@ public class LoginViewController: UIViewController {
     super.viewDidAppear(animated)
 
     if !self.isMovingToParent {
-      self.viewStore.send(.twoFactorDismissed)
+      self.store.send(.twoFactor(.dismiss))
     }
   }
 
   @objc private func loginButtonTapped(sender: UIButton) {
-    self.viewStore.send(.loginButtonTapped)
+    self.store.send(.view(.loginButtonTapped))
   }
 
   @objc private func emailTextFieldChanged(sender: UITextField) {
-    self.viewStore.send(.emailChanged(sender.text))
+    self.store.email = sender.text ?? ""
   }
 
   @objc private func passwordTextFieldChanged(sender: UITextField) {
-    self.viewStore.send(.passwordChanged(sender.text))
+    self.store.password = sender.text ?? ""
   }
 }
-
-//extension Login.Action {
-//  init(action: LoginViewController.ViewAction) {
-//    switch action {
-//    case .alertDismissed:
-//      self = .alert(.dismiss)
-//    case let .emailChanged(email):
-//      self = .view(.set(\.$email, email ?? ""))
-//    case .loginButtonTapped:
-//      self = .view(.loginButtonTapped)
-//    case let .passwordChanged(password):
-//      self = .view(.set(\.$password, password ?? ""))
-//    case .twoFactorDismissed:
-//      self = .twoFactor(.dismiss)
-//    }
-//  }
-//}

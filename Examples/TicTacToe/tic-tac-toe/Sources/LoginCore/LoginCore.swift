@@ -1,7 +1,6 @@
 import AuthenticationClient
 import ComposableArchitecture
 import Dispatch
-import Observation
 import TwoFactorCore
 
 public struct Login: Reducer, Sendable {
@@ -19,12 +18,14 @@ public struct Login: Reducer, Sendable {
     public init() {}
   }
 
+  @CasePathable
   public enum Action: Equatable, Sendable, ViewAction {
     case alert(PresentationAction<AlertAction>)
     case loginResponse(TaskResult<AuthenticationResponse>)
     case twoFactor(PresentationAction<TwoFactor.Action>)
     case view(View)
 
+    @CasePathable
     public enum View: BindableAction, Equatable, Sendable {
       case binding(BindingAction<State>)
       case loginButtonTapped
@@ -38,7 +39,7 @@ public struct Login: Reducer, Sendable {
   public init() {}
 
   public var body: some Reducer<State, Action> {
-    BindingReducer(action: /Action.view)
+    BindingReducer()
     Reduce { state, action in
       switch action {
       case .alert:

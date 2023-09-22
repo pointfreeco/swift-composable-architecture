@@ -52,6 +52,12 @@ where State == ViewAction.State {
     self.init(internal: { $0 })
   }
 
+  /// Initializes a reducer that updates bindable state when it receives binding actions.
+  @inlinable
+  public init() where Action: ComposableArchitecture.ViewAction, Action.ViewAction == ViewAction {
+    self.init(internal: \.view)
+  }
+
   @inlinable
   public init(action toViewAction: @escaping (_ action: Action) -> ViewAction?) {
     self.init(internal: toViewAction)

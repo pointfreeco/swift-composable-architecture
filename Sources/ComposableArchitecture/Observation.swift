@@ -226,6 +226,38 @@ extension BindingAction {
 @available(macOS, introduced: 14)
 @available(tvOS, introduced: 17)
 @available(watchOS, introduced: 10)
+extension Store where State: ObservableState, Action: BindableAction, Action.State == State {
+  public subscript<Value: Equatable>(
+    dynamicMember keyPath: WritableKeyPath<State, Value>
+  ) -> Value {
+    get { self.observedState[keyPath: keyPath] }
+    set { self.send(.binding(.set(keyPath, newValue))) }
+  }
+}
+
+@available(iOS, introduced: 17)
+@available(macOS, introduced: 14)
+@available(tvOS, introduced: 17)
+@available(watchOS, introduced: 10)
+extension Store
+where
+  State: ObservableState,
+  Action: ViewAction,
+  Action.ViewAction: BindableAction,
+  Action.ViewAction.State == State
+{
+  public subscript<Value: Equatable>(
+    dynamicMember keyPath: WritableKeyPath<State, Value>
+  ) -> Value {
+    get { self.observedState[keyPath: keyPath] }
+    set { self.send(.view(.binding(.set(keyPath, newValue)))) }
+  }
+}
+
+@available(iOS, introduced: 17)
+@available(macOS, introduced: 14)
+@available(tvOS, introduced: 17)
+@available(watchOS, introduced: 10)
 extension Binding {
   public subscript<State: ObservableState, Action: BindableAction, Member: Equatable>(
     dynamicMember keyPath: WritableKeyPath<State, Member>

@@ -52,11 +52,12 @@ public struct LoginView: View {
       .disabled(!self.store.isFormValid)
     }
     .disabled(self.store.isLoginRequestInFlight)
-    .alert(store: self.store.scope(state: \.$alert, action: Login.Action.alert))
+    .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
     .navigationDestination(
-      store: self.store.scope(state: \.$twoFactor, action: Login.Action.twoFactor),
-      destination: TwoFactorView.init
-    )
+      item: self.$store.scope(state: \.twoFactor, action: { .twoFactor($0) })
+    ) { store in
+      TwoFactorView(store: store)
+    }
     .navigationTitle("Login")
   }
 }

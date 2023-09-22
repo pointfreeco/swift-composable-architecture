@@ -3,64 +3,45 @@ import ComposableArchitecture
 import SwiftUI
 import TwoFactorCore
 
+@WithViewStore(for: TwoFactor.self)
 public struct TwoFactorView: View {
-  let store: StoreOf<TwoFactor>
-
-  struct ViewState: Equatable {
-    @BindingViewState var code: String
-    var isActivityIndicatorVisible: Bool
-    var isFormDisabled: Bool
-    var isSubmitButtonDisabled: Bool
-  }
+  @State var store: StoreOf<TwoFactor>
 
   public init(store: StoreOf<TwoFactor>) {
     self.store = store
   }
 
   public var body: some View {
-    WithViewStore(self.store, observe: \.view, send: { .view($0) }) { viewStore in
-      Form {
-        Text(#"To confirm the second factor enter "1234" into the form."#)
+    Form {
+      Text(#"To confirm the second factor enter "1234" into the form."#)
 
-        Section {
-          TextField("1234", text: viewStore.$code)
-            .keyboardType(.numberPad)
+      Section {
+        TextField("1234", text: self.$store.code)
+          .keyboardType(.numberPad)
+      }
+
+      HStack {
+        Button("Submit") {
+          // NB: SwiftUI will print errors to the console about "AttributeGraph: cycle detected"
+          //     if you disable a text field while it is focused. This hack will force all
+          //     fields to unfocus before we send the action to the view store.
+          // CF: https://stackoverflow.com/a/69653555
+          UIApplication.shared.sendAction(
+            #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
+          )
+          self.send(.submitButtonTapped)
         }
+        .disabled(!self.store.isFormValid)
 
-        HStack {
-          Button("Submit") {
-            // NB: SwiftUI will print errors to the console about "AttributeGraph: cycle detected"
-            //     if you disable a text field while it is focused. This hack will force all
-            //     fields to unfocus before we send the action to the view store.
-            // CF: https://stackoverflow.com/a/69653555
-            UIApplication.shared.sendAction(
-              #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
-            )
-            viewStore.send(.submitButtonTapped)
-          }
-          .disabled(viewStore.isSubmitButtonDisabled)
-
-          if viewStore.isActivityIndicatorVisible {
-            Spacer()
-            ProgressView()
-          }
+        if self.store.isTwoFactorRequestInFlight {
+          Spacer()
+          ProgressView()
         }
       }
-      .alert(store: self.store.scope(state: \.$alert, action: TwoFactor.Action.alert))
-      .disabled(viewStore.isFormDisabled)
-      .navigationTitle("Confirmation Code")
     }
-  }
-}
-
-extension BindingViewStore<TwoFactor.State> {
-  var view: TwoFactorView.ViewState {
-    TwoFactorView.ViewState(
-      code: self.$code,
-      isActivityIndicatorVisible: self.isTwoFactorRequestInFlight,
-      isFormDisabled: self.isTwoFactorRequestInFlight,
-      isSubmitButtonDisabled: !self.isFormValid
-    )
+    .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
+    .disabled(self.store.isTwoFactorRequestInFlight)
+    .navigationTitle("Confirmation Code")
   }
 }
 

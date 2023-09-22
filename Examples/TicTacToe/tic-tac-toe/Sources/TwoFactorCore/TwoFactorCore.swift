@@ -4,9 +4,11 @@ import ComposableArchitecture
 import Dispatch
 
 public struct TwoFactor: Reducer, Sendable {
+  @ObservableState
   public struct State: Equatable {
+    @ObservationStateIgnored
     @PresentationState public var alert: AlertState<Action.Alert>?
-    @BindingState public var code = ""
+    public var code = ""
     public var isFormValid = false
     public var isTwoFactorRequestInFlight = false
     public let token: String
@@ -16,13 +18,15 @@ public struct TwoFactor: Reducer, Sendable {
     }
   }
 
-  public enum Action: Equatable, Sendable {
+  @CasePathable
+  public enum Action: Equatable, Sendable, ViewAction {
     case alert(PresentationAction<Alert>)
     case twoFactorResponse(TaskResult<AuthenticationResponse>)
     case view(View)
 
     public enum Alert: Equatable, Sendable {}
 
+    @CasePathable
     public enum View: BindableAction, Equatable, Sendable {
       case binding(BindingAction<State>)
       case submitButtonTapped
@@ -34,7 +38,7 @@ public struct TwoFactor: Reducer, Sendable {
   public init() {}
 
   public var body: some ReducerOf<Self> {
-    BindingReducer(action: /Action.view)
+    BindingReducer()
     Reduce { state, action in
       switch action {
       case .alert:

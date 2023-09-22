@@ -23,4 +23,5 @@ public macro WithViewStore<R: Reducer>(for: R.Type) = #externalMacro(
 public protocol ViewAction<ViewAction> {
   associatedtype ViewAction
   static func view(_ action: ViewAction) -> Self
+  var view: ViewAction? { get }
 }

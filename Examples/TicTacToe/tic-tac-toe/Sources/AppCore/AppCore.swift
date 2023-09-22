@@ -37,7 +37,7 @@ public struct TicTacToe: Reducer {
       case .login:
         return .none
 
-      case .newGame(.logoutButtonTapped):
+      case .newGame(.view(.logoutButtonTapped)):
         state = .login(Login.State())
         return .none
 
