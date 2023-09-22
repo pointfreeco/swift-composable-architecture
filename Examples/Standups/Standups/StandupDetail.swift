@@ -261,6 +261,8 @@ struct StandupDetailView: View {
       NavigationStack {
         StandupFormView(store: store)
           .navigationTitle(self.store.standup.title)
+          // TODO: Why does this over-evaluate?
+//           .navigationTitle(store.standup.title)
           .toolbar {
             ToolbarItem(placement: .cancellationAction) {
               Button("Cancel") {
@@ -279,7 +281,7 @@ struct StandupDetailView: View {
 }
 
 extension PresentationAction {
-  func presenting<NewAction>(
+  func presented<NewAction>(
     _ transform: (Action) -> NewAction
   ) -> PresentationAction<NewAction> {
     switch self {

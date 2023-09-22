@@ -123,7 +123,7 @@ struct AppFeature: Reducer {
 }
 
 struct AppView: View {
-  let store: StoreOf<AppFeature>
+  @State var store: StoreOf<AppFeature>
 
   var body: some View {
     NavigationStack(store: self.store.scope(state: \.path, action: { .path($0) })) {
