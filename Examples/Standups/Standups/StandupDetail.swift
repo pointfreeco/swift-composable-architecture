@@ -280,30 +280,6 @@ struct StandupDetailView: View {
   }
 }
 
-extension PresentationAction {
-  func presented<NewAction>(
-    _ transform: (Action) -> NewAction
-  ) -> PresentationAction<NewAction> {
-    switch self {
-    case .dismiss:
-      return .dismiss
-    case let .presented(action):
-      return .presented(transform(action))
-    }
-  }
-
-  func map<NewAction>(
-    _ transform: (Action) -> NewAction
-  ) -> PresentationAction<NewAction> {
-    switch self {
-    case .dismiss:
-      return .dismiss
-    case let .presented(action):
-      return .presented(transform(action))
-    }
-  }
-}
-
 extension View {
   @available(*, deprecated)
   public func sheet<

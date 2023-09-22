@@ -218,6 +218,17 @@ public enum PresentationAction<Action> {
 
   /// An action sent to the associated, non-`nil` presentation state.
   indirect case presented(Action)
+
+  public func presented<NewAction>(
+    _ transform: (Action) -> NewAction
+  ) -> PresentationAction<NewAction> {
+    switch self {
+    case .dismiss:
+      return .dismiss
+    case let .presented(action):
+      return .presented(transform(action))
+    }
+  }
 }
 
 extension PresentationAction: Equatable where Action: Equatable {}
