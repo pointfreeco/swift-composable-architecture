@@ -2528,14 +2528,16 @@ final class PresentationReducerTests: BaseTCATestCase {
         )
       }
 
-      XCTExpectFailure {
-        $0.compactDescription.hasPrefix(
-          """
-          A "Scope" at "\(#fileID):\(line)" received a child action when child state was set to a \
-          different case. …
-          """
-        )
-      }
+      #if DEBUG
+        XCTExpectFailure {
+          $0.compactDescription.hasPrefix(
+            """
+            A "Scope" at "\(#fileID):\(line)" received a child action when child state was set to a \
+            different case. …
+            """
+          )
+        }
+      #endif
       await store.send(.destination(.presented(.child(.decrementButtonTapped))))
     }
   }
