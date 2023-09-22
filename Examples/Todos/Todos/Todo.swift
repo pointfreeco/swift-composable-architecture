@@ -2,10 +2,11 @@ import ComposableArchitecture
 import SwiftUI
 
 struct Todo: Reducer {
+  @ObservableState
   struct State: Equatable, Identifiable {
-    @BindingState var description = ""
+    var description = ""
     let id: UUID
-    @BindingState var isComplete = false
+    var isComplete = false
   }
 
   enum Action: BindableAction, Equatable, Sendable {
@@ -18,21 +19,20 @@ struct Todo: Reducer {
 }
 
 struct TodoView: View {
-  let store: StoreOf<Todo>
+  @State var store: StoreOf<Todo>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      HStack {
-        Button {
-          viewStore.$isComplete.wrappedValue.toggle()
-        } label: {
-          Image(systemName: viewStore.isComplete ? "checkmark.square" : "square")
-        }
-        .buttonStyle(.plain)
-
-        TextField("Untitled Todo", text: viewStore.$description)
+    let _ = Self._printChanges()
+    HStack {
+      Button {
+        self.$store.isComplete.wrappedValue.toggle()
+      } label: {
+        Image(systemName: self.store.isComplete ? "checkmark.square" : "square")
       }
-      .foregroundColor(viewStore.isComplete ? .gray : nil)
+      .buttonStyle(.plain)
+
+      TextField("Untitled Todo", text: self.$store.description)
     }
+    .foregroundColor(self.store.isComplete ? .gray : nil)
   }
 }
