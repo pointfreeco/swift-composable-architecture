@@ -238,17 +238,24 @@ struct StandupDetailView: View {
 //          }
 //      }
 //    }
+
+//    .sheet(
+//      item: self.$store.scope(
+//        state: \.destination?.edit,
+//        action: { .destination($0.map { .edit($0) }) }
+//      )
+//    )
+
+    // self.store.scope(#feature(\.edit))
+    // self.store.scope(#feature(\.destination?.edit))
+
     .sheet(
+      // item: self.$store.scope(#feature(\.destination?.edit))
       item: self.$store.scope(
         state: \.destination?.edit,
-        action: { (a: PresentationAction<StandupForm.Action>) -> StandupDetail.Action in
-          switch a {
-          case let .presented(a):
-            return .destination(.presented(.edit(a)))
-          case .dismiss:
-            return .destination(.dismiss)
-          }
-        }
+        action: { .destination($0.presented { .edit($0) }) }
+        // action: #presentationAction(\.destination?.presented?.edit)
+        // destination: { .destination($0) }, action: { .edit($0) }
       )
     ) { store in
       NavigationStack {
@@ -271,6 +278,29 @@ struct StandupDetailView: View {
   }
 }
 
+extension PresentationAction {
+  func presenting<NewAction>(
+    _ transform: (Action) -> NewAction
+  ) -> PresentationAction<NewAction> {
+    switch self {
+    case .dismiss:
+      return .dismiss
+    case let .presented(action):
+      return .presented(transform(action))
+    }
+  }
+
+  func map<NewAction>(
+    _ transform: (Action) -> NewAction
+  ) -> PresentationAction<NewAction> {
+    switch self {
+    case .dismiss:
+      return .dismiss
+    case let .presented(action):
+      return .presented(transform(action))
+    }
+  }
+}
 
 extension View {
   @available(*, deprecated)
