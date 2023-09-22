@@ -1,0 +1,69 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "swift",
+			"args": [
+				"build",
+				"--target",
+				"ComposableArchitecture",
+				"-Xswiftc",
+				"-g",
+				"-Xswiftc",
+				"-use-ld=link",
+			],
+			"cwd": ".",
+			"problemMatcher": [
+				"$swiftc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"label": "swift: Build Debug ComposableArchitecture",
+			"detail": "swift build --target ComposableArchitecture ..."
+		},
+		{
+			"type": "swift",
+			"args": [
+				"build",
+				"-vvv",
+				"--target",
+				"ComposableArchitecture",
+				"-Xswiftc",
+				"-g",
+				"-Xswiftc",
+				"-use-ld=link",
+				"-j",
+				"1",
+			],
+			"cwd": ".",
+			"problemMatcher": [
+				"$swiftc"
+			],
+			"group": "build",
+			"label": "swift: Build Debug - Verbose Output - ComposableArchitecture",
+			"detail": "swift build --target ComposableArchitecture ..."
+		},
+		{
+			"type": "swift",
+			"args": [
+				"test",
+				"-Xswiftc",
+				"-g",
+				"-Xswiftc",
+				"-use-ld=link"
+			],
+			"cwd": ".",
+			"problemMatcher": [
+				"$swiftc"
+			],
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			},
+			"label": "swift: test",
+			"detail": "swift test ..."
+		},
+	]
+}

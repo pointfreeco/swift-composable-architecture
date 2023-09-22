@@ -1,5 +1,10 @@
-import Combine
 import ComposableArchitecture
+import Dispatch
+#if canImport(OpenCombine)
+import OpenCombine
+#else
+import Combine
+#endif
 import XCTest
 
 @MainActor

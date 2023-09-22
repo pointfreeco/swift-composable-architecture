@@ -1,5 +1,9 @@
-import Combine
 import Foundation
+#if canImport(OpenCombine)
+import OpenCombine
+#else
+import Combine
+#endif
 
 /// A store represents the runtime that powers the application. It is the object that you will pass
 /// around to views that need to interact with the application.
@@ -338,8 +342,8 @@ public final class Store<State, Action> {
     #else
       return (self.scope ?? StoreScope(root: self))
         .rescope(
-          self, 
-          state: toChildState, 
+          self,
+          state: toChildState,
           action: { fromChildAction($1) },
           removeDuplicates: isDuplicate,
           instrumentation: instrumentation,

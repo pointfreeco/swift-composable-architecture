@@ -1,14 +1,15 @@
-PLATFORM_IOS = iOS Simulator,name=iPhone 11 Pro Max
+CONFIG = debug
+PLATFORM_IOS = iOS Simulator,id=$(call udid_for,iPhone)
 PLATFORM_MACOS = macOS
 PLATFORM_MAC_CATALYST = macOS,variant=Mac Catalyst
-PLATFORM_TVOS = tvOS Simulator,name=Apple TV
-PLATFORM_WATCHOS = watchOS Simulator,name=Apple Watch Series 7 (45mm)
+PLATFORM_TVOS = tvOS Simulator,id=$(call udid_for,TV)
+PLATFORM_WATCHOS = watchOS Simulator,id=$(call udid_for,Watch)
 
 default: test-all
 
 test-all: test-examples
-	CONFIG=debug test-library 
-	CONFIG=release test-library
+	$(MAKE) CONFIG=debug test-library
+	$(MAKE) CONFIG=release test-library
 
 test-library:
 	for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_MAC_CATALYST)" "$(PLATFORM_TVOS)" "$(PLATFORM_WATCHOS)"; do \
@@ -51,10 +52,14 @@ benchmark:
 		swift-composable-architecture-benchmark
 
 format:
-	swift format \
-		--ignore-unparsable-files \
-		--in-place \
-		--recursive \
-		./Examples ./Package.swift ./Sources ./Tests
+	find . \
+		-path '*/Documentation.docc' -prune -o \
+		-name '*.swift' \
+		-not -path '*/.*' -print0 \
+		| xargs -0 swift format --ignore-unparsable-files --in-place
 
 .PHONY: format test-all test-swift test-workspace
+
+define udid_for
+$(shell xcrun simctl list --json devices available $(1) | jq -r '.devices | to_entries | map(select(.value | add)) | sort_by(.key) | last.value | last.udid')
+endef

@@ -1,4 +1,8 @@
+#if canImport(OpenCombine)
+import OpenCombine
+#else
 import Combine
+#endif
 import ComposableArchitecture
 import XCTest
 

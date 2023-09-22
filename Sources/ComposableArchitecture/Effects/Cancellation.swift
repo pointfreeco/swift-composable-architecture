@@ -1,5 +1,10 @@
-import Combine
 import Foundation
+#if canImport(OpenCombine)
+import OpenCombine
+#else
+import Combine
+#endif
+
 
 extension EffectPublisher {
   /// Turns an effect into one that is capable of being canceled.

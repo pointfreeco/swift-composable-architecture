@@ -1,5 +1,9 @@
 @_spi(Internals) import CasePaths
+#if canImport(OpenCombine)
+import OpenCombine
+#else
 import Combine
+#endif
 import CustomDump
 import Foundation
 import XCTestDynamicOverlay
@@ -2433,7 +2437,9 @@ private func _XCTExpectFailure(
   strict: Bool = true,
   failingBlock: () -> Void
 ) {
+
   #if DEBUG
+  #if !os(Windows)
     guard
       let XCTExpectedFailureOptions = NSClassFromString("XCTExpectedFailureOptions")
         as Any as? NSObjectProtocol,
@@ -2451,6 +2457,9 @@ private func _XCTExpectFailure(
     )
 
     XCTExpectFailureWithOptionsInBlock(failureReason, options, failingBlock)
+  #else
+    print("Ignoring _XCTExpectFailure call on Windows platform.\n\nExpectedFailure: \(failureReason ?? "")")
+  #endif
   #endif
 }
 

@@ -1,4 +1,8 @@
+#if canImport(OpenCombine)
+import OpenCombine
+#else
 import Combine
+#endif
 
 extension EffectPublisher {
   /// Returns an effect that will be executed after given `dueTime`.

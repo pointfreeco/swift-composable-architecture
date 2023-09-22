@@ -1,28 +1,32 @@
 #if DEBUG
-  import Combine
-  import XCTest
+#if canImport(OpenCombine)
+import OpenCombine
+#else
+import Combine
+#endif
+import XCTest
 
-  @testable import ComposableArchitecture
+@testable import ComposableArchitecture
 
-  @MainActor
-  final class StoreFilterTests: XCTestCase {
-    var cancellables: Set<AnyCancellable> = []
+@MainActor
+final class StoreFilterTests: XCTestCase {
+  var cancellables: Set<AnyCancellable> = []
 
-    func testFilter() {
-      let store = Store<Int?, Void>(initialState: nil, reducer: EmptyReducer())
-        .filter { state, _ in state != nil }
+  func testFilter() async {
+    let store = Store<Int?, Void>(initialState: nil, reducer: EmptyReducer())
+      .filter { state, _ in state != nil }
 
-      let viewStore = ViewStore(store)
-      var count = 0
-      viewStore.publisher
-        .sink { _ in count += 1 }
-        .store(in: &self.cancellables)
+    let viewStore = ViewStore(store)
+    var count = 0
+    viewStore.publisher
+      .sink { _ in count += 1 }
+      .store(in: &self.cancellables)
 
-      XCTAssertEqual(count, 1)
-      viewStore.send(())
-      XCTAssertEqual(count, 1)
-      viewStore.send(())
-      XCTAssertEqual(count, 1)
-    }
+    XCTAssertEqual(count, 1)
+    viewStore.send(())
+    XCTAssertEqual(count, 1)
+    viewStore.send(())
+    XCTAssertEqual(count, 1)
   }
+}
 #endif

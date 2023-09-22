@@ -1,4 +1,8 @@
+#if canImport(OpenCombine)
+import OpenCombine
+#else
 import Combine
+#endif
 
 extension EffectPublisher {
   /// Turns an effect into one that can be debounced.

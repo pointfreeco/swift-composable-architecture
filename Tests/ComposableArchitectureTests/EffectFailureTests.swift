@@ -1,5 +1,9 @@
 #if DEBUG
+  #if canImport(OpenCombine)
+  import OpenCombine
+  #else
   import Combine
+  #endif
   import ComposableArchitecture
   import XCTest
 
@@ -7,8 +11,9 @@
   final class EffectFailureTests: XCTestCase {
     var cancellables: Set<AnyCancellable> = []
 
-    func testTaskUnexpectedThrows() async {
+    func testTaskUnexpectedThrows() async throws {
       guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
+      try XCTSkipIfWindowsExpectFailure()
 
       var line: UInt!
       XCTExpectFailure {
@@ -31,8 +36,9 @@
       for await _ in effect.values {}
     }
 
-    func testRunUnexpectedThrows() async {
+    func testRunUnexpectedThrows() async throws {
       guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
+      try XCTSkipIfWindowsExpectFailure()
 
       var line: UInt!
       XCTExpectFailure {

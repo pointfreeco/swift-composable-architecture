@@ -1,4 +1,8 @@
+#if canImport(OpenCombine)
+import OpenCombine
+#else
 import Combine
+#endif
 
 extension EffectPublisher where Failure == Never {
   /// Creates an effect from a Combine publisher.
@@ -20,7 +24,7 @@ extension EffectPublisher where Failure == Never {
 extension EffectPublisher: Publisher {
   public typealias Output = Action
 
-  public func receive<S: Combine.Subscriber>(
+  public func receive<S: CombineSubscriber>(
     subscriber: S
   ) where S.Input == Action, S.Failure == Failure {
     self.publisher.subscribe(subscriber)
@@ -40,10 +44,10 @@ extension EffectPublisher: Publisher {
             var isCompleted = false
             defer { isCompleted = true }
           #endif
-          let send = Send<Action> {
+            let send = Send<Action> {
             #if DEBUG
-              if isCompleted {
-                runtimeWarn(
+            if isCompleted {
+              runtimeWarn(
                   """
                   An action was sent from a completed effect:
 
@@ -57,8 +61,8 @@ extension EffectPublisher: Publisher {
                   To fix this, make sure that your 'run' closure does not return until you're \
                   done calling 'send'.
                   """
-                )
-              }
+              )
+            }
             #endif
             subscriber.send($0)
           }

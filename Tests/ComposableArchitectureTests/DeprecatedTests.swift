@@ -1,3 +1,4 @@
+#if !os(Windows) // we don't build Deprecations.swift on Windows
 import ComposableArchitecture
 import XCTest
 
@@ -32,3 +33,4 @@ final class DeprecatedTests: XCTestCase {
     wait(for: expectations, timeout: 1)
   }
 }
+#endif
