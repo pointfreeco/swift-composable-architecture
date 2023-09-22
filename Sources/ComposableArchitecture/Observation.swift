@@ -236,6 +236,20 @@ extension Binding {
       set: { self.transaction($1).wrappedValue.send(.binding(.set(keyPath, $0))) }
     )
   }
+
+  public subscript<State: ObservableState, Action: ViewAction, Member: Equatable>(
+    dynamicMember keyPath: WritableKeyPath<State, Member>
+  ) -> Binding<Member>
+  where 
+    Value == Store<State, Action>,
+    Action.ViewAction: BindableAction,
+    Action.ViewAction.State == State
+  {
+    Binding<Member>(
+      get: { self.wrappedValue.state[keyPath: keyPath] },
+      set: { self.transaction($1).wrappedValue.send(.view(.binding(.set(keyPath, $0)))) }
+    )
+  }
 }
 
 extension Store: Equatable {

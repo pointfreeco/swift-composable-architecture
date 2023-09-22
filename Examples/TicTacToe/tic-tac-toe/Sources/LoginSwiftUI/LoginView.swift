@@ -10,26 +10,25 @@ public struct LoginView: View {
   @State var store: StoreOf<Login>
 
   public init(store: StoreOf<Login>) {
-    self._store = .init(wrappedValue: store)
+    self.store = store
   }
 
   public var body: some View {
     Form {
       Text(
-          """
-          To login use any email and "password" for the password. If your email contains the \
-          characters "2fa" you will be taken to a two-factor flow, and on that screen you can \
-          use "1234" for the code.
-          """
+        """
+        To login use any email and "password" for the password. If your email contains the \
+        characters "2fa" you will be taken to a two-factor flow, and on that screen you can \
+        use "1234" for the code.
+        """
       )
 
       Section {
-//        TextField("blob@pointfree.co", text: self.$store.email)
-//          .autocapitalization(.none)
-//          .keyboardType(.emailAddress)
-//          .textContentType(.emailAddress)
-        // TODO: ???
-//        SecureField("••••••••", text: self.$store.password)
+        TextField("blob@pointfree.co", text: self.$store.email)
+          .autocapitalization(.none)
+          .keyboardType(.emailAddress)
+          .textContentType(.emailAddress)
+        SecureField("••••••••", text: self.$store.password)
       }
 
       Button {
@@ -61,18 +60,6 @@ public struct LoginView: View {
     .navigationTitle("Login")
   }
 }
-
-//extension BindingViewStore<Login.State> {
-//  var view: LoginView.ViewState {
-//    LoginView.ViewState(
-//      email: self.$email,
-//      isActivityIndicatorVisible: self.isLoginRequestInFlight,
-//      isFormDisabled: self.isLoginRequestInFlight,
-//      isLoginButtonDisabled: !self.isFormValid,
-//      password: self.$password
-//    )
-//  }
-//}
 
 struct LoginView_Previews: PreviewProvider {
   static var previews: some View {

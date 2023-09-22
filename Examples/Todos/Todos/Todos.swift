@@ -128,16 +128,25 @@ struct AppView: View {
       }
       .navigationTitle("Todos")
       .navigationBarItems(
-        trailing: HStack(spacing: 20) {
-          EditButton()
-          Button("Clear Completed") {
-            self.store.send(.clearCompletedButtonTapped, animation: .default)
-          }
-          .disabled(!self.store.todos.contains(where: \.isComplete))
-          Button("Add Todo") { self.store.send(.addTodoButtonTapped, animation: .default) }
-        }
+        trailing: NavigationBarItemsView(store: self.store)
       )
       .environment(\.editMode, self.$store.editMode)
+    }
+  }
+}
+
+struct NavigationBarItemsView: View {
+  @State var store: StoreOf<Todos>
+
+  var body: some View {
+    let _ = Self._printChanges()
+    HStack(spacing: 20) {
+      EditButton()
+      Button("Clear Completed") {
+        self.store.send(.clearCompletedButtonTapped, animation: .default)
+      }
+      .disabled(!self.store.todos.contains(where: \.isComplete))
+      Button("Add Todo") { self.store.send(.addTodoButtonTapped, animation: .default) }
     }
   }
 }
