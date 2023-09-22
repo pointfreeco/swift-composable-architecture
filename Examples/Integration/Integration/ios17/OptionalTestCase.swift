@@ -32,7 +32,13 @@ struct OptionalView: View {
     }
     var body: some ReducerOf<Self> {
       Reduce { state, action in
-          .none
+        switch action {
+        case .child:
+          return .none
+        case .toggleButtonTapped:
+          state.child = BasicsView.Feature.State()
+          return .none
+        }
       }
       .ifLet(\.$child, action: #casePath(\.child)) {
         BasicsView.Feature()

@@ -75,4 +75,21 @@ extension Store {
       action: embedChildAction
     )
   }
+
+  public func scope<ChildState, ChildAction>(
+    state stateKeyPath: KeyPath<State, ChildState?>,
+    action embedChildAction: @escaping (PresentationAction<ChildAction>) -> Action
+  ) -> Store<ChildState, ChildAction>? {
+    guard var childState = self.subject.value[keyPath: stateKeyPath]
+    else {
+      return nil
+    }
+    return self.scope(
+      state: {
+        childState = $0[keyPath: stateKeyPath] ?? childState
+        return childState
+      },
+      action: { embedChildAction(.presented($0)) }
+    )
+  }
 }

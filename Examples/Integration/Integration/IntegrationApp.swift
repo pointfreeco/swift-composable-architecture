@@ -26,6 +26,9 @@ struct ContentView: View {
           NavigationLink("Siblings") {
             SiblingFeaturesView()
           }
+          NavigationLink("Optional") {
+            OptionalView()
+          }
         } header: {
           Text("iOS 17")
         }
