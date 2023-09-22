@@ -146,9 +146,7 @@ struct VoiceMemosView: View {
             .onDelete { viewStore.send(.onDelete($0)) }
           }
 
-          IfLetStore(
-            self.store.scope(state: \.$recordingMemo, action: VoiceMemos.Action.recordingMemo)
-          ) { store in
+          IfLetStore(self.store.scope(#feature(\.$recordingMemo))) { store in
             RecordingMemoView(store: store)
           } else: {
             RecordButton(permission: viewStore.audioRecorderPermission) {
@@ -161,7 +159,7 @@ struct VoiceMemosView: View {
           .frame(maxWidth: .infinity)
           .background(Color.init(white: 0.95))
         }
-        .alert(store: self.store.scope(state: \.$alert, action: VoiceMemos.Action.alert))
+        .alert(store: self.store.scope(#feature(\.$alert)))
         .navigationTitle("Voice memos")
       }
     }

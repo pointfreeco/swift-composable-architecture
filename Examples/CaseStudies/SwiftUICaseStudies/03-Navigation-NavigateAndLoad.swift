@@ -67,12 +67,7 @@ struct NavigateAndLoadView: View {
           AboutView(readMe: readMe)
         }
         NavigationLink(
-          destination: IfLetStore(
-            self.store.scope(
-              state: \.optionalCounter,
-              action: NavigateAndLoad.Action.optionalCounter
-            )
-          ) {
+          destination: IfLetStore(self.store.scope(#feature(\.optionalCounter))) {
             CounterView(store: $0)
           } else: {
             ProgressView()

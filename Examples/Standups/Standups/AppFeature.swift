@@ -126,10 +126,8 @@ struct AppView: View {
   @State var store: StoreOf<AppFeature>
 
   var body: some View {
-    NavigationStack(store: self.store.scope(state: \.path, action: { .path($0) })) {
-      StandupsListView(
-        store: self.store.scope(state: \.standupsList, action: { .standupsList($0) })
-      )
+    NavigationStack(store: self.store.scope(#feature(\.path))) {
+      StandupsListView(store: self.store.scope(#feature(\.standupsList)))
     } destination: {
       switch $0.state {
       case .detail:

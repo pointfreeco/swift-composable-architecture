@@ -79,7 +79,7 @@ struct FavoriteButton<ID: Hashable & Sendable>: View {
         Image(systemName: "heart")
           .symbolVariant(viewStore.isFavorite ? .fill : .none)
       }
-      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
+      .alert(store: self.store.scope(#feature(\.$alert)))
     }
   }
 }
@@ -122,12 +122,7 @@ struct EpisodeView: View {
 
         Spacer()
 
-        FavoriteButton(
-          store: self.store.scope(
-            state: \.favorite,
-            action: Episode.Action.favorite
-          )
-        )
+        FavoriteButton(store: self.store.scope(#feature(\.favorite)))
       }
     }
   }

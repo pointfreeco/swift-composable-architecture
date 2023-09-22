@@ -93,9 +93,7 @@ struct NavigationDemoView: View {
 
   var body: some View {
     let _ = Self._printChanges()
-    NavigationStack(
-      store: self.store.scope(state: \.path, action: NavigationDemo.Action.path)
-    ) {
+    NavigationStack(store: self.store.scope(state: \.path, action: { .path($0) })) {
       Form {
         Section { Text(template: readMe) }
 

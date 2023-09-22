@@ -212,52 +212,9 @@ struct StandupDetailView: View {
       }
     }
     .alert(
-      store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-      state: /StandupDetail.Destination.State.alert,
-      action: StandupDetail.Destination.Action.alert
+      store: self.store.scope(#feature(\.$destination)), state: \.alert, action: { .alert($0) }
     )
-//    .sheet(
-//      store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-//      state: /StandupDetail.Destination.State.edit,
-//      action: StandupDetail.Destination.Action.edit
-//    ) { store in
-//      NavigationStack {
-//        StandupFormView(store: store)
-//          .navigationTitle(self.store.standup.title)
-//          .toolbar {
-//            ToolbarItem(placement: .cancellationAction) {
-//              Button("Cancel") {
-//                self.store.send(.cancelEditButtonTapped)
-//              }
-//            }
-//            ToolbarItem(placement: .confirmationAction) {
-//              Button("Done") {
-//                self.store.send(.doneEditingButtonTapped)
-//              }
-//            }
-//          }
-//      }
-//    }
-
-//    .sheet(
-//      item: self.$store.scope(
-//        state: \.destination?.edit,
-//        action: { .destination($0.map { .edit($0) }) }
-//      )
-//    )
-
-    // self.store.scope(#feature(\.edit))
-    // self.store.scope(#feature(\.destination?.edit))
-
-    .sheet(
-      // item: self.$store.scope(#feature(\.destination?.edit))
-      item: self.$store.scope(
-        state: \.destination?.edit,
-        action: { .destination($0.presented { .edit($0) }) }
-        // action: #presentationAction(\.destination?.presented?.edit)
-        // destination: { .destination($0) }, action: { .edit($0) }
-      )
-    ) { store in
+    .sheet(item: self.$store.scope(#feature(\.destination?.edit))) { store in
       NavigationStack {
         StandupFormView(store: store)
           .navigationTitle(self.store.standup.title)

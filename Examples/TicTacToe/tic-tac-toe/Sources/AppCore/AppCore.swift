@@ -45,10 +45,10 @@ public struct TicTacToe: Reducer {
         return .none
       }
     }
-    .ifCaseLet(/State.login, action: /Action.login) {
+    .ifCaseLet(#casePath(\.login), action: #casePath(\.login)) {
       Login()
     }
-    .ifCaseLet(/State.newGame, action: /Action.newGame) {
+    .ifCaseLet(#casePath(\.newGame), action: #casePath(\.newGame)) {
       NewGame()
     }
   }

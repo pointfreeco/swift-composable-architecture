@@ -120,12 +120,8 @@ struct AlertAndConfirmationDialogView: View {
       }
     }
     .navigationTitle("Alerts & Dialogs")
-    .alert(
-      store: self.store.scope(state: \.$alert, action: { .alert($0) })
-    )
-    .confirmationDialog(
-      store: self.store.scope(state: \.$confirmationDialog, action: { .confirmationDialog($0) })
-    )
+    .alert(store: self.store.scope(#feature(\.$alert)))
+    .confirmationDialog(store: self.store.scope(#feature(\.$confirmationDialog)))
   }
 }
 

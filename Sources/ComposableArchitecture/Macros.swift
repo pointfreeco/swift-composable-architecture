@@ -1,5 +1,12 @@
 import Observation
 
+@freestanding(expression)
+public macro feature<State, Action, ChildState, ChildAction>(
+  _ keyPath: KeyPath<State, ChildState>
+) -> Feature<State, Action, ChildState, ChildAction> = #externalMacro(
+  module: "ComposableArchitectureMacros", type: "FeatureMacro"
+)
+
 @attached(member, names: named(_$id), named(_$observationRegistrar), named(access), named(withMutation))
 @attached(memberAttribute)
 @attached(extension, conformances: Observable, ObservableState)

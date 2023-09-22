@@ -16,8 +16,9 @@ class MacroBaseTestCase: XCTestCase {
 }
 
 let testMacros: [Macro.Type] = [
+  FeatureMacro.self,
   ObservableStateMacro.self,
-  WithViewStoreMacro.self,
   ObservationStateTrackedMacro.self,
   ObservationStateIgnoredMacro.self,
+  WithViewStoreMacro.self,
 ]

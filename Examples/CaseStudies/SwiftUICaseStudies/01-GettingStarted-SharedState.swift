@@ -175,13 +175,11 @@ struct SharedStateView: View {
         .pickerStyle(.segmented)
 
         if viewStore.state == .counter {
-          SharedStateCounterView(
-            store: self.store.scope(state: \.counter, action: SharedState.Action.counter))
+          SharedStateCounterView(store: self.store.scope(#feature(\.counter)))
         }
 
         if viewStore.state == .profile {
-          SharedStateProfileView(
-            store: self.store.scope(state: \.profile, action: SharedState.Action.profile))
+          SharedStateProfileView(store: self.store.scope(#feature(\.profile)))
         }
 
         Spacer()
@@ -222,7 +220,7 @@ struct SharedStateCounterView: View {
       }
       .padding(.top)
       .navigationTitle("Shared State Demo")
-      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
+      .alert(store: self.store.scope(#feature(\.$alert)))
     }
   }
 }

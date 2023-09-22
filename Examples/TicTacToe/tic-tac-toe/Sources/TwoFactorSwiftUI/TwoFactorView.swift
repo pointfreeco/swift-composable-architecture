@@ -39,7 +39,7 @@ public struct TwoFactorView: View {
         }
       }
     }
-    .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
+    .alert(store: self.store.scope(#feature(\.$alert)))
     .disabled(self.store.isTwoFactorRequestInFlight)
     .navigationTitle("Confirmation Code")
   }

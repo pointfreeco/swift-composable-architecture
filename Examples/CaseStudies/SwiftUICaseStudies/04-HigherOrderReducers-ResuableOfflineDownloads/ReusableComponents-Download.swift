@@ -92,13 +92,8 @@ struct CityMapRowView: View {
 
           Spacer()
 
-          DownloadComponentView(
-            store: self.store.scope(
-              state: \.downloadComponent,
-              action: CityMap.Action.downloadComponent
-            )
-          )
-          .padding(.trailing, 8)
+          DownloadComponentView(store: self.store.scope(#feature(\.downloadComponent)))
+            .padding(.trailing, 8)
         }
       }
     }
@@ -124,12 +119,7 @@ struct CityMapDetailView: View {
 
           Spacer()
 
-          DownloadComponentView(
-            store: self.store.scope(
-              state: \.downloadComponent,
-              action: CityMap.Action.downloadComponent
-            )
-          )
+          DownloadComponentView(store: self.store.scope(#feature(\.downloadComponent)))
         }
 
         Spacer()

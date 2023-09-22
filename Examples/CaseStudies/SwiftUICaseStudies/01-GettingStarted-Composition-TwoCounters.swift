@@ -47,7 +47,7 @@ struct TwoCountersView: View {
         Text("Counter 1")
         Spacer()
         CounterView(
-          store: self.store.scope(state: \.counter1, action: TwoCounters.Action.counter1)
+          store: self.store.scope(#feature(\.counter1))
         )
       }
 
@@ -55,7 +55,7 @@ struct TwoCountersView: View {
         Text("Counter 2")
         Spacer()
         CounterView(
-          store: self.store.scope(state: \.counter2, action: TwoCounters.Action.counter2)
+          store: self.store.scope(#feature(\.counter1))
         )
       }
     }

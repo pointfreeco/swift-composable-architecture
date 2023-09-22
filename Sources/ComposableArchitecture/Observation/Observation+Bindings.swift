@@ -120,7 +120,7 @@ extension Binding {
     state toChildState: @escaping (State) -> ChildState,
     action embedChildAction: @escaping (ChildAction) -> Action
   )
-    -> Binding<Store<ChildState, ChildAction>>
+  -> Binding<Store<ChildState, ChildAction>>
   where Value == Store<State, Action> {
     Binding<Store<ChildState, ChildAction>>(
       get: { self.wrappedValue.scope(state: toChildState, action: embedChildAction) },
@@ -132,7 +132,7 @@ extension Binding {
     state stateKeyPath: KeyPath<State, ChildState?>,
     action embedChildAction: @escaping (PresentationAction<ChildAction>) -> Action
   )
-    -> Binding<Store<ChildState, ChildAction>?>
+  -> Binding<Store<ChildState, ChildAction>?>
   where Value == Store<State, Action> {
     Binding<Store<ChildState, ChildAction>?>(
       get: {
@@ -144,5 +144,13 @@ extension Binding {
         }
       }
     )
+  }
+
+  public func scope<State, Action, ChildState, ChildAction>(
+    _ feature: Feature<State, Action, ChildState?, PresentationAction<ChildAction>>
+  )
+    -> Binding<Store<ChildState, ChildAction>?>
+  where Value == Store<State, Action> {
+    self.scope(state: feature.toChildState, action: feature.toChildAction)
   }
 }

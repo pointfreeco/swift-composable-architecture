@@ -126,23 +126,9 @@ struct StandupsListView: View {
     }
     .navigationTitle("Daily Standups")
     .alert(
-      store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-      state: /StandupsList.Destination.State.alert,
-      action: StandupsList.Destination.Action.alert
+      store: self.store.scope(#feature(\.$destination)), state: \.alert, action: { .alert($0) }
     )
-    .sheet(
-      item: self.$store.scope(
-        state: \.destination?.add,
-        action: { (a: PresentationAction<StandupForm.Action>) -> StandupsList.Action in
-          switch a {
-          case let .presented(a):
-            return .destination(.presented(.add(a)))
-          case .dismiss:
-            return .destination(.dismiss)
-          }
-        }
-      )
-    ) { store in
+    .sheet(item: self.$store.scope(#feature(\.destination?.add))) { store in
       NavigationStack {
         StandupFormView(store: store)
           .navigationTitle("New standup")
