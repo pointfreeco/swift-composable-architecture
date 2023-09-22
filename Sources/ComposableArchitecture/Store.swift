@@ -790,6 +790,21 @@ extension ScopedReducer: AnyScopedReducer {
     ) {
       reducer
     }
+    // TODO: bring this back and see if it affects body recomputations.
+//    let childStore: Store<RescopedState, RescopedAction>
+//    if #available(iOS 17.0, *) {
+//      childStore = Store<RescopedState, RescopedAction>(
+//        initialState: toRescopedState(store.observedState)
+//      ) {
+//        reducer
+//      }
+//    } else {
+//      childStore = Store<RescopedState, RescopedAction>(
+//        initialState: toRescopedState(store.subject.value)
+//      ) {
+//        reducer
+//      }
+//    }
     childStore._isInvalidated = store._isInvalidated
     childStore.parentCancellable = store.subject
       .dropFirst()

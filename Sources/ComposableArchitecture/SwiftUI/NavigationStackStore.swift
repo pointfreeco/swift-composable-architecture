@@ -11,9 +11,8 @@ import SwiftUI
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 public struct NavigationStackStore<State, Action, Root: View, Destination: View>: View {
   private let root: Root
-  private let destination: (State) -> Destination
+  private let destination: (Component<State>) -> Destination
   @StateObject private var viewStore: ViewStore<StackState<State>, StackAction<State, Action>>
-  @StateObject var store: StoreObservableObject<StackState<State>, StackAction<State, Action>>
 
   /// Creates a navigation stack with a store of stack state and actions.
   ///
@@ -23,34 +22,34 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
   ///   - destination: A view builder that defines a view to display when an element is appended to
   ///     the stack's state. The closure takes one argument, which is a store of the value to
   ///     present.
-//  public init(
-//    _ store: @autoclosure @escaping () -> Store<StackState<State>, StackAction<State, Action>>,
-//    @ViewBuilder root: () -> Root,
-//    @ViewBuilder destination: @escaping (_ store: Store<State, Action>) -> Destination
-//  ) {
-//    self.root = root()
-//    self.destination = { component in
-//      var state = component.element
-//      return destination(
-//        store()
-//          .invalidate { !$0.ids.contains(component.id) }
-//          .scope(
-//            state: {
-//              state = $0[id: component.id] ?? state
-//              return state
-//            },
-//            action: { .element(id: component.id, action: $0) }
-//          )
-//      )
-//    }
-//    self._viewStore = StateObject(
-//      wrappedValue: ViewStore(
-//        store(),
-//        observe: { $0 },
-//        removeDuplicates: { areOrderedSetsDuplicates($0.ids, $1.ids) }
-//      )
-//    )
-//  }
+  public init(
+    _ store: Store<StackState<State>, StackAction<State, Action>>,
+    @ViewBuilder root: () -> Root,
+    @ViewBuilder destination: @escaping (_ store: Store<State, Action>) -> Destination
+  ) {
+    self.root = root()
+    self.destination = { component in
+      var state = component.element
+      return destination(
+        store
+          .invalidate { !$0.ids.contains(component.id) }
+          .scope(
+            state: {
+              state = $0[id: component.id] ?? state
+              return state
+            },
+            action: { .element(id: component.id, action: $0) }
+          )
+      )
+    }
+    self._viewStore = StateObject(
+      wrappedValue: ViewStore(
+        store,
+        observe: { $0 },
+        removeDuplicates: { areOrderedSetsDuplicates($0.ids, $1.ids) }
+      )
+    )
+  }
 
   /// Creates a navigation stack with a store of stack state and actions.
   ///
@@ -61,33 +60,31 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
   ///     the stack's state. The closure takes one argument, which is the initial enum state to
   ///     present. You can switch over this value and use ``CaseLet`` views to handle each case.
   @_disfavoredOverload
-  public init(
-    _ store: @escaping @autoclosure () -> Store<StackState<State>, StackAction<State, Action>>,
+  public init<D: View>(
+    _ store: Store<StackState<State>, StackAction<State, Action>>,
     @ViewBuilder root: () -> Root,
-    @ViewBuilder destination: @escaping (_ initialState: State) -> Destination
-  )  {
+    @ViewBuilder destination: @escaping (_ initialState: State) -> D
+  ) where Destination == SwitchStore<State, Action, D> {
     self.root = root()
-    self._store = .init(wrappedValue: .init(store: store()))
-    self.destination = destination
-//    self.destination = { component in
-//      var state = component.element
-//      return SwitchStore(
-//        self.store.wrappedValue
-//          .invalidate { !$0.ids.contains(component.id) }
-//          .scope(
-//            state: {
-//              state = $0[id: component.id] ?? state
-//              return state
-//            },
-//            action: { .element(id: component.id, action: $0) }
-//          )
-//      ) { _ in
-//        destination(component.element)
-//      }
-//    }
+    self.destination = { component in
+      var state = component.element
+      return SwitchStore(
+        store
+          .invalidate { !$0.ids.contains(component.id) }
+          .scope(
+            state: {
+              state = $0[id: component.id] ?? state
+              return state
+            },
+            action: { .element(id: component.id, action: $0) }
+          )
+      ) { _ in
+        destination(component.element)
+      }
+    }
     self._viewStore = StateObject(
       wrappedValue: ViewStore(
-        store(),
+        store,
         observe: { $0 },
         removeDuplicates: { areOrderedSetsDuplicates($0.ids, $1.ids) }
       )
@@ -95,47 +92,23 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
   }
 
   public var body: some View {
-    WithViewStore(self.store.wrappedValue, observe: { $0 }, removeDuplicates: { areOrderedSetsDuplicates($0.ids, $1.ids) }) { viewStore in
-      NavigationStack(
-        path: viewStore.binding(
-          get: { (state: StackState<State>) -> StackState<State>.PathView in
-            return state.path
-          },
-          send: { newPath in
-            if newPath.count > viewStore.path.count, let component = newPath.last {
-              return .push(id: component.id, state: component.element)
-            } else {
-              return .popFrom(id: viewStore.path[newPath.count].id)
-            }
+    NavigationStack(
+      path: self.viewStore.binding(
+        get: { $0.path },
+        send: { newPath in
+          if newPath.count > self.viewStore.path.count, let component = newPath.last {
+            return .push(id: component.id, state: component.element)
+          } else {
+            return .popFrom(id: self.viewStore.path[newPath.count].id)
           }
-        )
-      ) {
-        self.root
-          .environment(\.navigationDestinationType, State.self)
-          .navigationDestination(for: Component<State>.self) { component in
-            NavigationDestinationView(
-              component: component,
-              destination: { (component: Component<State>) -> SwitchStore<State, Action, Destination> in
-                var state = component.element
-                return SwitchStore(
-                  self.store.wrappedValue
-                    .invalidate { !$0.ids.contains(component.id) }
-                    .scope(
-                      state: {
-                        state = $0[id: component.id] ?? state
-                        return state
-                      },
-                      action: { .element(id: component.id, action: $0) }
-                    )
-                ) { _ in
-//                  EmptyView()
-                  destination(component.element)
-                }
-              }
-                //self.destination
-            )
-          }
-      }
+        }
+      )
+    ) {
+      self.root
+        .environment(\.navigationDestinationType, State.self)
+        .navigationDestination(for: Component<State>.self) { component in
+          NavigationDestinationView(component: component, destination: self.destination)
+        }
     }
   }
 }
@@ -148,26 +121,26 @@ public struct _NavigationLinkStoreContent<State, Label: View>: View {
   @Environment(\.navigationDestinationType) var navigationDestinationType
 
   public var body: some View {
-    #if DEBUG
-      self.label.onAppear {
-        if self.navigationDestinationType != State.self {
-//          runtimeWarn(
-//            """
-//            A navigation link at "\(self.fileID):\(self.line)" is unpresentable. …
-//
-//              NavigationStackStore element type:
-//                \(self.navigationDestinationType.map(typeName) ?? "(None found in view hierarchy)")
-//              NavigationLink state type:
-//                \(typeName(State.self))
-//              NavigationLink state value:
-//              \(String(customDumping: self.state).indent(by: 2))
-//            """
-//          )
-        }
+#if DEBUG
+    self.label.onAppear {
+      if self.navigationDestinationType != State.self {
+        runtimeWarn(
+            """
+            A navigation link at "\(self.fileID):\(self.line)" is unpresentable. …
+
+              NavigationStackStore element type:
+                \(self.navigationDestinationType.map(typeName) ?? "(None found in view hierarchy)")
+              NavigationLink state type:
+                \(typeName(State.self))
+              NavigationLink state value:
+              \(String(customDumping: self.state).indent(by: 2))
+            """
+        )
       }
-    #else
-      self.label
-    #endif
+    }
+#else
+    self.label
+#endif
   }
 }
 
@@ -269,12 +242,17 @@ public struct Component<Element>: Hashable {
 
 extension StackState {
   fileprivate var path: PathView {
-    get { PathView(base: self) }
+    _read { yield PathView(base: self) }
+    _modify {
+      var path = PathView(base: self)
+      yield &path
+      self = path.base
+    }
     set { self = newValue.base }
   }
 
   public struct PathView: MutableCollection, RandomAccessCollection,
-    RangeReplaceableCollection
+                               RangeReplaceableCollection
   {
     var base: StackState
 
@@ -330,9 +308,6 @@ extension EnvironmentValues {
     set { self[NavigationDestinationTypeKey.self] = newValue }
   }
 }
-
-
-
 
 @available(iOS 17, tvOS 17, watchOS 10, macOS 14, *)
 extension NavigationStack {

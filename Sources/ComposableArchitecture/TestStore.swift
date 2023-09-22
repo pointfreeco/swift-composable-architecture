@@ -2068,7 +2068,7 @@ class TestReducer<State, Action>: Reducer {
   let effectDidSubscribe = AsyncStream.makeStream(of: Void.self)
   var inFlightEffects: Set<LongLivingEffect> = []
   var receivedActions: [(action: Action, state: State)] = []
-  var state: State
+  var state: State 
 
   init(
     _ base: Reduce<State, Action>,

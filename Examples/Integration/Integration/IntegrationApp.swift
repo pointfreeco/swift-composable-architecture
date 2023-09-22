@@ -20,6 +20,17 @@ struct ContentView: View {
     NavigationStack {
       List {
         Section {
+          NavigationLink("Basics") {
+            BasicsView()
+          }
+          NavigationLink("Siblings") {
+            SiblingFeaturesView()
+          }
+        } header: {
+          Text("iOS 17")
+        }
+
+        Section {
           ForEach(TestCase.allCases) { test in
             switch test {
             case .escapedWithViewStore:
@@ -75,6 +86,8 @@ struct ContentView: View {
               }
             }
           }
+        } header: {
+          Text("Pre-iOS 17")
         }
 
         Section {
