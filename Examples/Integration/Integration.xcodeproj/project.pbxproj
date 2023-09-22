@@ -12,7 +12,8 @@
 		CA4BA5E929E76A7F0004FF9D /* NavigationStackTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4BA5E829E76A7F0004FF9D /* NavigationStackTestCase.swift */; };
 		CA4BA5EB29E76F110004FF9D /* NavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4BA5EA29E76F110004FF9D /* NavigationTests.swift */; };
 		CA4E126E2ABE09080086BB68 /* BasicsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4E126D2ABE09080086BB68 /* BasicsTestCase.swift */; };
-		CA4E12702ABE0B180086BB68 /* SiblingFeaturesTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4E126F2ABE0B180086BB68 /* SiblingFeaturesTestCase.swift */; };
+		CA4E12702ABE0B180086BB68 /* SiblingTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4E126F2ABE0B180086BB68 /* SiblingTestCase.swift */; };
+		CA4E12722ABE12060086BB68 /* OptionalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4E12712ABE12060086BB68 /* OptionalTestCase.swift */; };
 		CA595273296DF46D00B5B695 /* NavigationStackBindingTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA595272296DF46D00B5B695 /* NavigationStackBindingTestCase.swift */; };
 		CA595275296DF55A00B5B695 /* NavigationStackBindingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA595274296DF55A00B5B695 /* NavigationStackBindingTests.swift */; };
 		CA595278296DF67E00B5B695 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = CA595277296DF67E00B5B695 /* ComposableArchitecture */; };
@@ -83,7 +84,8 @@
 		CA4BA5E829E76A7F0004FF9D /* NavigationStackTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStackTestCase.swift; sourceTree = "<group>"; };
 		CA4BA5EA29E76F110004FF9D /* NavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationTests.swift; sourceTree = "<group>"; };
 		CA4E126D2ABE09080086BB68 /* BasicsTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicsTestCase.swift; sourceTree = "<group>"; };
-		CA4E126F2ABE0B180086BB68 /* SiblingFeaturesTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiblingFeaturesTestCase.swift; sourceTree = "<group>"; };
+		CA4E126F2ABE0B180086BB68 /* SiblingTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiblingTestCase.swift; sourceTree = "<group>"; };
+		CA4E12712ABE12060086BB68 /* OptionalTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionalTestCase.swift; sourceTree = "<group>"; };
 		CA595272296DF46D00B5B695 /* NavigationStackBindingTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStackBindingTestCase.swift; sourceTree = "<group>"; };
 		CA595274296DF55A00B5B695 /* NavigationStackBindingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStackBindingTests.swift; sourceTree = "<group>"; };
 		CA595276296DF66B00B5B695 /* swift-composable-architecture */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "swift-composable-architecture"; path = ../..; sourceTree = "<group>"; };
@@ -151,7 +153,8 @@
 			isa = PBXGroup;
 			children = (
 				CA4E126D2ABE09080086BB68 /* BasicsTestCase.swift */,
-				CA4E126F2ABE0B180086BB68 /* SiblingFeaturesTestCase.swift */,
+				CA4E12712ABE12060086BB68 /* OptionalTestCase.swift */,
+				CA4E126F2ABE0B180086BB68 /* SiblingTestCase.swift */,
 			);
 			path = ios17;
 			sourceTree = "<group>";
@@ -400,7 +403,7 @@
 				CAA1CB1F296DEEAC000665B1 /* ForEachBindingTestCase.swift in Sources */,
 				DC140CC529E0BB2C006DF553 /* SwitchStoreTestCase.swift in Sources */,
 				DC92799B2A1E59D500B2031A /* PresentationItemTestCase.swift in Sources */,
-				CA4E12702ABE0B180086BB68 /* SiblingFeaturesTestCase.swift in Sources */,
+				CA4E12702ABE0B180086BB68 /* SiblingTestCase.swift in Sources */,
 				CA4BA5E929E76A7F0004FF9D /* NavigationStackTestCase.swift in Sources */,
 				E9919D42296E47A400C8716B /* BindingsAnimationsTestBench.swift in Sources */,
 				DCFFB8E72A156488006AF839 /* BindingLocalTestCase.swift in Sources */,
@@ -409,6 +412,7 @@
 				CA4E126E2ABE09080086BB68 /* BasicsTestCase.swift in Sources */,
 				E9919D3E296E28C800C8716B /* EscapedWithViewStoreTestCase.swift in Sources */,
 				CAA1CAF5296DEE78000665B1 /* IntegrationApp.swift in Sources */,
+				CA4E12722ABE12060086BB68 /* OptionalTestCase.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
