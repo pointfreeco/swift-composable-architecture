@@ -701,7 +701,8 @@ func testAdd() async {
 }
 ```
 
-However even this simple passes when `showSkippedAssertions` is set to true:
+While we would expect this simple test to pass, it fails when `showSkippedAssertions` is set to
+`true`:
 
 > ❌ Failure: A state change does not match expectation: …
 >
