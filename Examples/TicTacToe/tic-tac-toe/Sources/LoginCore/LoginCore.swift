@@ -1,21 +1,25 @@
 import AuthenticationClient
 import ComposableArchitecture
 import Dispatch
+import Observation
 import TwoFactorCore
 
 public struct Login: Reducer, Sendable {
+  @ObservableState
   public struct State: Equatable {
+    @ObservationStateIgnored
     @PresentationState public var alert: AlertState<AlertAction>?
-    @BindingState public var email = ""
+    public var email = ""
     public var isFormValid = false
     public var isLoginRequestInFlight = false
-    @BindingState public var password = ""
+    public var password = ""
+    @ObservationStateIgnored
     @PresentationState public var twoFactor: TwoFactor.State?
 
     public init() {}
   }
 
-  public enum Action: Equatable, Sendable {
+  public enum Action: Equatable, Sendable, ViewAction {
     case alert(PresentationAction<AlertAction>)
     case loginResponse(TaskResult<AuthenticationResponse>)
     case twoFactor(PresentationAction<TwoFactor.Action>)

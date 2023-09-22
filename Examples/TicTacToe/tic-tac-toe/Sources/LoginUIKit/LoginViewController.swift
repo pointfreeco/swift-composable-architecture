@@ -40,7 +40,8 @@ public class LoginViewController: UIViewController {
 
   public init(store: StoreOf<Login>) {
     self.store = store
-    self.viewStore = ViewStore(store, observe: ViewState.init, send: Login.Action.init)
+//    self.viewStore = ViewStore(store, observe: ViewState.init, send: Login.Action.init)
+    fatalError()
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -194,19 +195,19 @@ public class LoginViewController: UIViewController {
   }
 }
 
-extension Login.Action {
-  init(action: LoginViewController.ViewAction) {
-    switch action {
-    case .alertDismissed:
-      self = .alert(.dismiss)
-    case let .emailChanged(email):
-      self = .view(.set(\.$email, email ?? ""))
-    case .loginButtonTapped:
-      self = .view(.loginButtonTapped)
-    case let .passwordChanged(password):
-      self = .view(.set(\.$password, password ?? ""))
-    case .twoFactorDismissed:
-      self = .twoFactor(.dismiss)
-    }
-  }
-}
+//extension Login.Action {
+//  init(action: LoginViewController.ViewAction) {
+//    switch action {
+//    case .alertDismissed:
+//      self = .alert(.dismiss)
+//    case let .emailChanged(email):
+//      self = .view(.set(\.$email, email ?? ""))
+//    case .loginButtonTapped:
+//      self = .view(.loginButtonTapped)
+//    case let .passwordChanged(password):
+//      self = .view(.set(\.$password, password ?? ""))
+//    case .twoFactorDismissed:
+//      self = .twoFactor(.dismiss)
+//    }
+//  }
+//}
