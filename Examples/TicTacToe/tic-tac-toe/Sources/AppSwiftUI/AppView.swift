@@ -14,6 +14,7 @@ public struct AppView: View {
   public var body: some View {
     switch self.store.state {
     case .login:
+      // self.store.scope(#feature(\.login)).map { store in
       if let store = self.store.scope(state: \.login, action: { .login($0) }) {
         NavigationStack {
           LoginView(store: store)

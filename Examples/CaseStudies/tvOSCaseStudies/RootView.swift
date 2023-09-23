@@ -8,24 +8,13 @@ struct RootView: View {
     NavigationView {
       Form {
         Section {
-          self.focusView
+          if #available(tvOS 14.0, *) {
+            NavigationLink("Focus") {
+              FocusView(store: self.store.scope(#feature(\.focus)))
+            }
+          }
         }
       }
-    }
-  }
-
-  var focusView: AnyView? {
-    if #available(tvOS 14.0, *) {
-      return AnyView(
-        NavigationLink(
-          "Focus",
-          destination: FocusView(
-            store: self.store.scope(state: \.focus, action: Root.Action.focus)
-          )
-        )
-      )
-    } else {
-      return nil
     }
   }
 }
