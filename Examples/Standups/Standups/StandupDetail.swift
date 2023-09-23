@@ -50,7 +50,7 @@ struct StandupDetail: Reducer {
   }
 
   var body: some ReducerOf<Self> {
-    Reduce<State, Action> { state, action in
+    Reduce { state, action in
       switch action {
       case .cancelEditButtonTapped:
         state.destination = nil

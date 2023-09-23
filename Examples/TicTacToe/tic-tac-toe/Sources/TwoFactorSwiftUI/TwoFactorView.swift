@@ -46,7 +46,7 @@ public struct TwoFactorView: View {
           }
         }
       }
-      .alert(store: self.store.scope(state: \.$alert, action: TwoFactor.Action.alert))
+      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
       .disabled(viewStore.isFormDisabled)
       .navigationTitle("Confirmation Code")
     }

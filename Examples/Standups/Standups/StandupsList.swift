@@ -52,7 +52,7 @@ struct StandupsList: Reducer {
   @Dependency(\.uuid) var uuid
 
   var body: some ReducerOf<Self> {
-    Reduce<State, Action> { state, action in
+    Reduce { state, action in
       switch action {
       case .addStandupButtonTapped:
         state.destination = .add(StandupForm.State(standup: Standup(id: Standup.ID(self.uuid()))))

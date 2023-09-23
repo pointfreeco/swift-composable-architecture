@@ -122,12 +122,7 @@ struct EpisodeView: View {
 
         Spacer()
 
-        FavoriteButton(
-          store: self.store.scope(
-            state: \.favorite,
-            action: Episode.Action.favorite
-          )
-        )
+        FavoriteButton(store: self.store.scope(state: \.favorite, action: { .favorite($0) }))
       }
     }
   }
@@ -161,10 +156,7 @@ struct EpisodesView: View {
         AboutView(readMe: readMe)
       }
       ForEachStore(
-        self.store.scope(
-          state: \.episodes,
-          action: Episodes.Action.episode(id:action:)
-        )
+        self.store.scope(state: \.episodes, action: { .episode(id: $0, action: $1) })
       ) { rowStore in
         EpisodeView(store: rowStore)
       }

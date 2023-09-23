@@ -63,7 +63,7 @@ struct InventoryFeature: Reducer {
   enum Action: Equatable { /* ... */ }
   
   var body: some ReducerOf<Self> {
-    Reduce<State, Action> { state, action in 
+    Reduce { state, action in 
       switch action {
       case .addButtonTapped:
         // Populating this state performs the navigation

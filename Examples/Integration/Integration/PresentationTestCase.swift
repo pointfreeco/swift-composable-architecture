@@ -323,7 +323,7 @@ struct PresentationTestCaseView: View {
         "Custom alert!",
         isPresented:
           viewStore
-          .binding(get: \.destination, send: PresentationTestCase.Action.destination(.dismiss))
+          .binding(get: \.destination, send: .destination(.dismiss))
           .case(/PresentationTestCase.Destination.State.customAlert)
           .isPresent()
       ) {
@@ -509,7 +509,7 @@ private struct NavigationLinkDemoView: View {
           Text(viewStore.state)
 
           NavigationLinkStore(
-            self.store.scope(state: \.$child, action: NavigationLinkDemoFeature.Action.child)
+            self.store.scope(state: \.$child, action: { .child($0) })
           ) {
             viewStore.send(.navigationLinkButtonTapped)
           } destination: { store in
@@ -519,10 +519,7 @@ private struct NavigationLinkDemoView: View {
           }
 
           NavigationLinkStore(
-            self.store.scope(
-              state: \.$identifiedChild,
-              action: NavigationLinkDemoFeature.Action.identifiedChild
-            ),
+            self.store.scope(state: \.$identifiedChild, action: { .identifiedChild($0) }),
             id: UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
           ) {
             viewStore.send(.identifiedNavigationLinkButtonTapped)

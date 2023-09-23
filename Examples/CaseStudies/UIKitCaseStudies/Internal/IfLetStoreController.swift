@@ -20,7 +20,7 @@ final class IfLetStoreController<State, Action>: UIViewController {
   }
 
   init(
-    store: Store<State?, Action>,
+    _ store: Store<State?, Action>,
     then ifDestination: @escaping (Store<State, Action>) -> UIViewController,
     else elseDestination: @escaping () -> UIViewController
   ) {

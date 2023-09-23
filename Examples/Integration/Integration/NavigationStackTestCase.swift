@@ -194,7 +194,7 @@ struct NavigationStackTestCaseView: View {
           }
         }
       }
-      .navigationTitle(Text("Root"))
+      .navigationTitle("Root")
     } destination: {
       ChildView(store: $0)
     }
