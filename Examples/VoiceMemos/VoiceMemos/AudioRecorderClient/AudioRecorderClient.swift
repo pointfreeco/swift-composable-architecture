@@ -20,7 +20,7 @@ extension AudioRecorderClient: TestDependencyKey {
       startRecording: { _ in
         await isRecording.setValue(true)
         while await isRecording.value {
-          try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+          try await Task.sleep(for: .seconds(1))
           await currentTime.withValue { $0 += 1 }
         }
         return true

@@ -191,7 +191,7 @@ struct FavoriteError: LocalizedError, Equatable {
 }
 
 @Sendable func favorite<ID>(id: ID, isFavorite: Bool) async throws -> Bool {
-  try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+  try await Task.sleep(for: .seconds(1))
   if .random(in: 0...1) > 0.25 {
     return isFavorite
   } else {
