@@ -14,7 +14,7 @@ jobs:
     name: swift-format
     runs-on: macos-13
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Select Xcode 14.3
         run: sudo xcode-select -s /Applications/Xcode_14.3.app
       - name: Install swift-format
