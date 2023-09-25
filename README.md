@@ -403,18 +403,20 @@ interacts with the real world API server:
 @main
 struct MyApp: App {
   var body: some Scene {
-    FeatureView(
-      store: Store(initialState: Feature.State()) {
-        Feature(
-          numberFact: { number in
-            let (data, _) = try await URLSession.shared.data(
-              from: URL(string: "http://numbersapi.com/\(number)")!
-            )
-            return String(decoding: data, as: UTF8.self)
-          }
-        )
-      }
-    )
+    WindowGroup {
+      FeatureView(
+        store: Store(initialState: Feature.State()) {
+          Feature(
+            numberFact: { number in
+              let (data, _) = try await URLSession.shared.data(
+                from: URL(string: "http://numbersapi.com/\(number)")!
+              )
+              return String(decoding: data, as: UTF8.self)
+            }
+          )
+        }
+      )
+    }
   }
 }
 ```
