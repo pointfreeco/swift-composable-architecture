@@ -47,7 +47,7 @@ But, so far we have just defined one term, "navigation", by using another undefi
 or vice-versa.
 
 So, when a piece of state switches from not existing to existing, that represents a navigation and 
-change mode in the application, and when the state switches back to not existing, it represents 
+change of mode in the application, and when the state switches back to not existing, it represents 
 undoing the navigation and returning to the previous mode.
 
 That is very abstract way of describing state-driven navigation, and the next two sections make
