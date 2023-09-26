@@ -102,7 +102,7 @@ struct EditItemFeature: Reducer {
 }
 ```
 
-And this can continue on and on for as many layers of navigation exist in the application.
+And this can continue on and on for as many layers of navigation that exist in the application.
 
 With that done, the act of deep-linking into the application is a mere exercise in constructing
 a piece of deeply nested state. So, if we wanted to launch the inventory view into a state where
