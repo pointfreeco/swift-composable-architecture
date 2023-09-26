@@ -233,6 +233,26 @@ struct InventoryFeature: Reducer {
 }
 ```
 
+And then we must make use of the ``Reducer/ifLet(_:action:destination:fileID:line:)`` operator to
+integrate the domain of the destination with the domain of the parent feature:
+
+```swift
+struct InventoryFeature: Reducer {
+  // ...
+
+  var body: some ReducerOf<Self> {
+    Reduce { state, action in 
+      // ...
+    }
+    .ifLet(\.$destination, action: /Action.destination) { 
+      Destination()
+    }
+  }
+}
+```
+
+That completes the steps for integrating the child and parent features together.
+
 Now when we want to present a particular feature we can simply populate the `destination` state
 with a case of the enum:
 
