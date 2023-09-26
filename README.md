@@ -517,11 +517,13 @@ This means the entry point to the application no longer needs to construct depen
 @main
 struct MyApp: App {
   var body: some Scene {
-    FeatureView(
-      store: Store(initialState: Feature.State()) {
-        Feature()
-      }
-    )
+    WindowGroup {
+      FeatureView(
+        store: Store(initialState: Feature.State()) {
+          Feature()
+        }
+      )
+    }
   }
 }
 ```
