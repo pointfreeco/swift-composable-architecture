@@ -89,96 +89,106 @@ struct ContentView: View {
   @State var isBindingLocalTestCasePresented = false
   @State var isNavigationStackTestCasePresented = false
   @State var isNavigationStackBindingTestCasePresented = false
+  @State var isNavigationTestCasePresented = false
 
   var body: some View {
-    NavigationStack {
-      List {
-        Section {
-          NavigationLink("Basics") {
-            Form {
-              BasicsView()
-            }
-          }
-          NavigationLink("Enum") {
-            EnumView()
-          }
-          NavigationLink("Optional") {
-            OptionalView()
-          }
-          NavigationLink("Identified list") {
-            IdentifiedListView()
-          }
-          NavigationLink("Siblings") {
-            SiblingFeaturesView()
-          }
-          NavigationLink("Presentation") {
-            PresentationView()
-          }
-        }
-
-        Section {
-          ForEach(TestCase.allCases) { test in
-            switch test {
-            case .escapedWithViewStore:
-              NavigationLink(test.rawValue) {
-                EscapedWithViewStoreTestCaseView()
+    Group {
+      if self.isNavigationTestCasePresented {
+        NavigationTestCaseView()
+      } else {
+        NavigationStack {
+          List {
+            Section {
+              NavigationLink("Basics") {
+                Form {
+                  BasicsView()
+                }
               }
-
-            case .forEachBinding:
-              NavigationLink(test.rawValue) {
-                ForEachBindingTestCaseView()
+              NavigationLink("Enum") {
+                EnumView()
               }
-
-            case .navigationStack:
-              Button(test.rawValue) {
-                self.isNavigationStackTestCasePresented = true
+              NavigationLink("Optional") {
+                OptionalView()
               }
-              .foregroundColor(.black)
-              .sheet(isPresented: self.$isNavigationStackTestCasePresented) {
-                NavigationStackTestCaseView()
+              NavigationLink("Identified list") {
+                IdentifiedListView()
               }
-
-            case .navigationStackBinding:
-              Button(test.rawValue) {
-                self.isNavigationStackBindingTestCasePresented = true
+              Button("Navigation") {
+                self.isNavigationTestCasePresented = true
               }
-              .foregroundColor(.black)
-              .sheet(isPresented: self.$isNavigationStackBindingTestCasePresented) {
-                NavigationStackBindingTestCaseView()
+              NavigationLink("Siblings") {
+                SiblingFeaturesView()
               }
-
-            case .presentation:
-              NavigationLink(test.rawValue) {
-                PresentationTestCaseView()
-              }
-
-            case .presentationItem:
-              NavigationLink(test.rawValue) {
-                PresentationItemTestCaseView()
-              }
-
-            case .switchStore:
-              NavigationLink(test.rawValue) {
-                SwitchStoreTestCaseView()
-              }
-
-            case .bindingLocal:
-              Button(test.rawValue) {
-                self.isBindingLocalTestCasePresented = true
-              }
-              .foregroundColor(.black)
-              .sheet(isPresented: self.$isBindingLocalTestCasePresented) {
-                BindingLocalTestCaseView()
+              NavigationLink("Presentation") {
+                PresentationView()
               }
             }
-          }
-        } header: {
-          Text("Legacy")
-        }
 
-        Section {
-          NavigationLink("Binding Animations Test Bench") {
-            BindingsAnimationsTestBench()
+            Section {
+              ForEach(TestCase.allCases) { test in
+                switch test {
+                case .escapedWithViewStore:
+                  NavigationLink(test.rawValue) {
+                    EscapedWithViewStoreTestCaseView()
+                  }
+
+                case .forEachBinding:
+                  NavigationLink(test.rawValue) {
+                    ForEachBindingTestCaseView()
+                  }
+
+                case .navigationStack:
+                  Button(test.rawValue) {
+                    self.isNavigationStackTestCasePresented = true
+                  }
+                  .foregroundColor(.black)
+                  .sheet(isPresented: self.$isNavigationStackTestCasePresented) {
+                    NavigationStackTestCaseView()
+                  }
+
+                case .navigationStackBinding:
+                  Button(test.rawValue) {
+                    self.isNavigationStackBindingTestCasePresented = true
+                  }
+                  .foregroundColor(.black)
+                  .sheet(isPresented: self.$isNavigationStackBindingTestCasePresented) {
+                    NavigationStackBindingTestCaseView()
+                  }
+
+                case .presentation:
+                  NavigationLink(test.rawValue) {
+                    PresentationTestCaseView()
+                  }
+
+                case .presentationItem:
+                  NavigationLink(test.rawValue) {
+                    PresentationItemTestCaseView()
+                  }
+
+                case .switchStore:
+                  NavigationLink(test.rawValue) {
+                    SwitchStoreTestCaseView()
+                  }
+
+                case .bindingLocal:
+                  Button(test.rawValue) {
+                    self.isBindingLocalTestCasePresented = true
+                  }
+                  .foregroundColor(.black)
+                  .sheet(isPresented: self.$isBindingLocalTestCasePresented) {
+                    BindingLocalTestCaseView()
+                  }
+                }
+              }
+            } header: {
+              Text("Legacy")
+            }
+
+            Section {
+              NavigationLink("Binding Animations Test Bench") {
+                BindingsAnimationsTestBench()
+              }
+            }
           }
         }
       }
