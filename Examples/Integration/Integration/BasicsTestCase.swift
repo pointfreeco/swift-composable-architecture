@@ -20,11 +20,8 @@ struct BasicsView: View {
     struct State: Equatable, Identifiable {
       let id = UUID()
       var count = 0
-      var isDismissable: Bool
       init(count: Int = 0) {
         self.count = count
-        @Dependency(\.isPresented) var isPresented
-        self.isDismissable = isPresented
       }
     }
     enum Action {
