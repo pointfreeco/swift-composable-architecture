@@ -353,9 +353,10 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
         .map { self.toPresentationAction.embed(.presented($0)) }
         ._cancellable(navigationIDPath: destinationNavigationIDPath)
       baseEffects = self.base.reduce(into: &state, action: action)
-      if isEphemeral(destinationState),
+      if let ephemeralType = ephemeralType(of: destinationState),
         destinationNavigationIDPath
-          == state[keyPath: self.toPresentationState].wrappedValue.map(self.navigationIDPath(for:))
+          == state[keyPath: self.toPresentationState].wrappedValue.map(self.navigationIDPath(for:)),
+        ephemeralType.canSend(destinationAction)
       {
         state[keyPath: self.toPresentationState].wrappedValue = nil
       }

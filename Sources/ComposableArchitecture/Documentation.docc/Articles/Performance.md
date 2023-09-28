@@ -61,15 +61,15 @@ struct AppView: View {
     TabView {
       ActivityView(
         store: self.store
-          .scope(state: \.activity, action: AppFeature.Action.activity)
+          .scope(state: \.activity, action: { .activity($0) })
       )
       SearchView(
         store: self.store
-          .scope(state: \.search, action: AppFeature.Action.search)
+          .scope(state: \.search, action: { .search($0) })
       )
       ProfileView(
         store: self.store
-          .scope(state: \.profile, action: AppFeature.Action.profile)
+          .scope(state: \.profile, action: { .profile($0) })
       )
     }
   }
@@ -106,18 +106,18 @@ struct AppView: View {
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       TabView(
-        selection: viewStore.binding(get: \.selectedTab, send: AppFeature.Action.tabSelected)
+        selection: viewStore.binding(get: \.selectedTab, send: { .tabSelected($0) })
       ) {
         ActivityView(
-          store: self.store.scope(state: \.activity, action: AppFeature.Action.activity)
+          store: self.store.scope(state: \.activity, action: { .activity($0) })
         )
         .tag(AppFeature.Tab.activity)
         SearchView(
-          store: self.store.scope(state: \.search, action: AppFeature.Action.search)
+          store: self.store.scope(state: \.search, action: { .search($0) })
         )
         .tag(AppFeature.Tab.search)
         ProfileView(
-          store: self.store.scope(state: \.profile, action: AppFeature.Action.profile)
+          store: self.store.scope(state: \.profile, action: { .profile($0) })
         )
         .tag(AppFeature.Tab.profile)
       }
@@ -137,7 +137,7 @@ the state the view needs. In this case the view only needs a single field:
 
 ```swift
 WithViewStore(self.store, observe: \.selectedTab) { viewStore in
-  TabView(selection: viewStore.binding(send: AppFeature.Action.tabSelected)) {
+  TabView(selection: viewStore.binding(send: { .tabSelected($0) }) {
     // ...
   }
 }
@@ -157,9 +157,9 @@ WithViewStore(
   observe: { (selectedTab: $0.selectedTab, unreadActivityCount: $0.activity.unreadCount) },
   removeDuplicates: ==
 ) { viewStore in 
-  TabView(selection: viewStore.binding(get: \.selectedTab, send: AppFeature.Action.tabSelected)) {
+  TabView(selection: viewStore.binding(get: \.selectedTab, send: { .tabSelected($0) }) {
     ActivityView(
-      store: self.store.scope(state: \.activity, action: AppFeature.Action.activity)
+      store: self.store.scope(state: \.activity, action: { .activity($0) })
     )
     .tag(AppFeature.Tab.activity)
     .badge("\(viewStore.unreadActivityCount)")
@@ -191,7 +191,7 @@ struct AppView: View {
       TabView {
         ActivityView(
           store: self.store
-            .scope(state: \.activity, action: AppFeature.Action.activity)
+            .scope(state: \.activity, action: { .activity($0) })
         )
         .badge("\(viewStore.unreadActivityCount)")
 

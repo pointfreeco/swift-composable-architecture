@@ -82,7 +82,7 @@ struct EffectsCancellationView: View {
         Section {
           Stepper(
             "\(viewStore.count)",
-            value: viewStore.binding(get: \.count, send: EffectsCancellation.Action.stepperChanged)
+            value: viewStore.binding(get: \.count, send: { .stepperChanged($0) })
           )
 
           if viewStore.isFactRequestInFlight {

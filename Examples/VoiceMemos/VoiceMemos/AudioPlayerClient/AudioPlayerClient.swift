@@ -9,7 +9,7 @@ struct AudioPlayerClient {
 extension AudioPlayerClient: TestDependencyKey {
   static let previewValue = Self(
     play: { _ in
-      try await Task.sleep(nanoseconds: NSEC_PER_SEC * 5)
+      try await Task.sleep(for: .seconds(5))
       return true
     }
   )

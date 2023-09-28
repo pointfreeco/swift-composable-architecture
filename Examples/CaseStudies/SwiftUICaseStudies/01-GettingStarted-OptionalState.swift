@@ -60,20 +60,15 @@ struct OptionalBasicsView: View {
         }
 
         IfLetStore(
-          self.store.scope(
-            state: \.optionalCounter,
-            action: OptionalBasics.Action.optionalCounter
-          ),
-          then: { store in
-            Text(template: "`CounterState` is non-`nil`")
-            CounterView(store: store)
-              .buttonStyle(.borderless)
-              .frame(maxWidth: .infinity)
-          },
-          else: {
-            Text(template: "`CounterState` is `nil`")
-          }
-        )
+          self.store.scope(state: \.optionalCounter, action: { .optionalCounter($0) })
+        ) { store in
+          Text(template: "`CounterState` is non-`nil`")
+          CounterView(store: store)
+            .buttonStyle(.borderless)
+            .frame(maxWidth: .infinity)
+        } else: {
+          Text(template: "`CounterState` is `nil`")
+        }
       }
     }
     .navigationTitle("Optional state")

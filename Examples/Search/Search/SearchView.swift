@@ -127,9 +127,7 @@ struct SearchView: View {
             Image(systemName: "magnifyingglass")
             TextField(
               "New York, San Francisco, ...",
-              text: viewStore.binding(
-                get: \.searchQuery, send: Search.Action.searchQueryChanged
-              )
+              text: viewStore.binding(get: \.searchQuery, send: { .searchQueryChanged($0) })
             )
             .textFieldStyle(.roundedBorder)
             .autocapitalization(.none)
@@ -169,7 +167,7 @@ struct SearchView: View {
       }
       .task(id: viewStore.searchQuery) {
         do {
-          try await Task.sleep(nanoseconds: NSEC_PER_SEC / 3)
+          try await Task.sleep(for: .seconds(3))
           await viewStore.send(.searchQueryChangeDebounced).finish()
         } catch {}
       }

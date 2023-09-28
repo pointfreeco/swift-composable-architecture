@@ -39,10 +39,7 @@ extension SpeechClient: TestDependencyKey {
             var text = ""
             while await isRecording.value {
               let word = finalText.prefix { $0 != " " }
-              try await Task.sleep(
-                nanoseconds: UInt64(word.count) * NSEC_PER_MSEC * 50
-                  + .random(in: 0...(NSEC_PER_MSEC * 200))
-              )
+              try await Task.sleep(for: .milliseconds(word.count * 50 + .random(in: 0...200)))
               finalText.removeFirst(word.count)
               if finalText.first == " " {
                 finalText.removeFirst()

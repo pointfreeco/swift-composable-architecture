@@ -89,9 +89,7 @@ struct NavigationDemoView: View {
   let store: StoreOf<NavigationDemo>
 
   var body: some View {
-    NavigationStackStore(
-      self.store.scope(state: \.path, action: NavigationDemo.Action.path)
-    ) {
+    NavigationStackStore(self.store.scope(state: \.path, action: { .path($0) })) {
       Form {
         Section { Text(template: readMe) }
 
@@ -368,29 +366,27 @@ struct ScreenBView: View {
   let store: StoreOf<ScreenB>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          Text(
-            """
-            This screen demonstrates how to navigate to other screens without needing to compile \
-            any symbols from those screens. You can send an action into the system, and allow the \
-            root feature to intercept that action and push the next feature onto the stack.
-            """
-          )
-        }
-        Button("Decoupled navigation to screen A") {
-          viewStore.send(.screenAButtonTapped)
-        }
-        Button("Decoupled navigation to screen B") {
-          viewStore.send(.screenBButtonTapped)
-        }
-        Button("Decoupled navigation to screen C") {
-          viewStore.send(.screenCButtonTapped)
-        }
+    Form {
+      Section {
+        Text(
+          """
+          This screen demonstrates how to navigate to other screens without needing to compile \
+          any symbols from those screens. You can send an action into the system, and allow the \
+          root feature to intercept that action and push the next feature onto the stack.
+          """
+        )
       }
-      .navigationTitle("Screen B")
+      Button("Decoupled navigation to screen A") {
+        self.store.send(.screenAButtonTapped)
+      }
+      Button("Decoupled navigation to screen B") {
+        self.store.send(.screenBButtonTapped)
+      }
+      Button("Decoupled navigation to screen C") {
+        self.store.send(.screenCButtonTapped)
+      }
     }
+    .navigationTitle("Screen B")
   }
 }
 
@@ -460,7 +456,7 @@ struct ScreenCView: View {
         Section {
           NavigationLink(
             "Go to screen A",
-            state: NavigationDemo.Path.State.screenA(.init(count: viewStore.count))
+            state: NavigationDemo.Path.State.screenA(ScreenA.State(count: viewStore.count))
           )
           NavigationLink(
             "Go to screen B",
