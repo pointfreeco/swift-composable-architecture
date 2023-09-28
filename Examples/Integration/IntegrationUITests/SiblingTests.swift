@@ -32,6 +32,7 @@ final class SiblingsTests: BaseIntegrationTests {
     StoreOf<Integration.BasicsView.Feature>.scope
     StoreOf<Integration.SiblingFeaturesView.Feature>.scope
     BasicsView.body
+    BasicsView.body
     """)
   }
 
@@ -46,6 +47,7 @@ final class SiblingsTests: BaseIntegrationTests {
     StoreOf<Integration.SiblingFeaturesView.Feature>.scope
     StoreOf<Integration.BasicsView.Feature>.scope
     StoreOf<Integration.SiblingFeaturesView.Feature>.scope
+    BasicsView.body
     BasicsView.body
     """)
   }

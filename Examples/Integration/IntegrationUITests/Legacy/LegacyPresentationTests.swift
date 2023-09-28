@@ -3,7 +3,7 @@ import TestCases
 import XCTest
 
 @MainActor
-final class PresentationTests: BaseIntegrationTests {
+final class LegacyPresentationTests: BaseIntegrationTests {
   override func setUp() {
     super.setUp()
     self.app.collectionViews.buttons[TestCase.presentation.rawValue].tap()

@@ -105,11 +105,14 @@ struct ContentView: View {
           NavigationLink("Optional") {
             OptionalView()
           }
+          NavigationLink("Identified list") {
+            IdentifiedListView()
+          }
           NavigationLink("Siblings") {
             SiblingFeaturesView()
           }
-          NavigationLink("Identified list") {
-            IdentifiedListView()
+          NavigationLink("Presentation") {
+            PresentationView()
           }
         }
 
