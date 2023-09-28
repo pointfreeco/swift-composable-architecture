@@ -9,14 +9,10 @@ struct BasicsView: View {
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       let _ = Logger.shared.log("\(Self.self).body")
-      //Form {
-      VStack {
-        Text(viewStore.count.description)
-        Button("Decrement") { self.store.send(.decrementButtonTapped) }
-        Button("Increment") { self.store.send(.incrementButtonTapped) }
-        Button("Dismiss") { self.store.send(.dismissButtonTapped) }
-        //}
-      }
+      Text(viewStore.count.description)
+      Button("Decrement") { self.store.send(.decrementButtonTapped) }
+      Button("Increment") { self.store.send(.incrementButtonTapped) }
+      Button("Dismiss") { self.store.send(.dismissButtonTapped) }
     }
   }
 

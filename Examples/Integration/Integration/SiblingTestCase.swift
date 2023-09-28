@@ -9,12 +9,16 @@ struct SiblingFeaturesView: View {
   var body: some View {
     let _ = Logger.shared.log("\(Self.self).body")
     VStack {
-      BasicsView(
-        store: self.store.scope(state: \.child1, action: { .child1($0) })
-      )
-      BasicsView(
-        store: self.store.scope(state: \.child2, action: { .child2($0) })
-      )
+      Form {
+        BasicsView(
+          store: self.store.scope(state: \.child1, action: { .child1($0) })
+        )
+      }
+      Form {
+        BasicsView(
+          store: self.store.scope(state: \.child2, action: { .child2($0) })
+        )
+      }
       Spacer()
       Form {
         Button("Reset all") {

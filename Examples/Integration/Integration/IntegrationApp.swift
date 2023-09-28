@@ -95,7 +95,9 @@ struct ContentView: View {
       List {
         Section {
           NavigationLink("Basics") {
-            BasicsView()
+            Form {
+              BasicsView()
+            }
           }
           NavigationLink("Enum") {
             EnumView()

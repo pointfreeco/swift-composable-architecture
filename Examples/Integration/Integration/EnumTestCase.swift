@@ -58,7 +58,9 @@ struct EnumView: View {
       action: { .feature1($0) }
     ) { store in
       Section {
-        BasicsView(store: store)
+        Form {
+          BasicsView(store: store)
+        }
       } header: {
         Text("Feature 1")
       }
@@ -69,7 +71,9 @@ struct EnumView: View {
       action: { .feature2($0) }
     ) { store in
       Section {
-        BasicsView(store: store)
+        Form {
+          BasicsView(store: store)
+        }
       } header: {
         Text("Feature 2")
       }

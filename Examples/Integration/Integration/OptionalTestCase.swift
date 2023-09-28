@@ -39,7 +39,9 @@ struct OptionalView: View {
       }
     }
     IfLetStore(self.store.scope(state: \.$child, action: { .child($0) })) { store in
-      BasicsView(store: store)
+      Form {
+        BasicsView(store: store)
+      }
     }
   }
 

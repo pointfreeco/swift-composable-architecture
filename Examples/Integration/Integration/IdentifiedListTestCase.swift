@@ -31,7 +31,9 @@ struct IdentifiedListView: View {
           WithViewStore(store.scope(state: \.id, action: { $0 }), observe: { $0 }) { viewStore in
             Section {
               HStack {
-                BasicsView(store: store)
+                VStack {
+                  BasicsView(store: store)
+                }
                 Spacer()
                 Button(action: { self.store.send(.removeButtonTapped(id: viewStore.state)) }) {
                   Image(systemName: "trash")
