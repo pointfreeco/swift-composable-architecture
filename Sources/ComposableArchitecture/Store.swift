@@ -150,6 +150,7 @@ public final class Store<State, Action> {
     @ReducerBuilder<State, Action> reducer: () -> R,
     withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
   ) where R.State == State, R.Action == Action {
+    defer { Logger.shared.log("\(typeName(of: self)).init") }
     if let prepareDependencies = prepareDependencies {
       let (initialState, reducer) = withDependencies(prepareDependencies) {
         (initialState(), reducer())
@@ -166,6 +167,10 @@ public final class Store<State, Action> {
         mainThreadChecksEnabled: true
       )
     }
+  }
+  
+  deinit {
+    Logger.shared.log("\(typeName(of: self)).deinit")
   }
 
   /// Calls the given closure with the current state of the store.
@@ -793,6 +798,7 @@ extension ScopedReducer: AnyScopedReducer {
           return
         }
         childStore.state.value = newValue
+        Logger.shared.log("\(typeName(of: store)).scope")
       }
     return childStore
   }
@@ -873,5 +879,18 @@ public struct StoreTask: Hashable, Sendable {
   /// way to uncancel a task.
   public var isCancelled: Bool {
     self.rawValue?.isCancelled ?? true
+  }
+}
+
+fileprivate func typeName<State, Action>(of store: Store<State, Action>) -> String {
+  let stateType = _typeName(State.self)
+  let actionType = _typeName(Action.self)
+  if stateType.hasSuffix(".State"),
+     actionType.hasSuffix(".Action"),
+     stateType.dropLast(6) == actionType.dropLast(7)
+  {
+    return "StoreOf<\(stateType.dropLast(6))>"
+  } else {
+    return "Store<\(stateType), \(actionType)>"
   }
 }
