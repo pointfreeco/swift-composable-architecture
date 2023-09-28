@@ -105,7 +105,6 @@ struct AppView: View {
   @State var store: StoreOf<Todos>
 
   var body: some View {
-    let _ = Self._printChanges()
     NavigationStack {
       VStack(alignment: .leading) {
         Picker("Filter", selection: self.$store.filter.animation()) {
@@ -139,7 +138,6 @@ struct NavigationBarItemsView: View {
   @State var store: StoreOf<Todos>
 
   var body: some View {
-    let _ = Self._printChanges()
     HStack(spacing: 20) {
       EditButton()
       Button("Clear Completed") {

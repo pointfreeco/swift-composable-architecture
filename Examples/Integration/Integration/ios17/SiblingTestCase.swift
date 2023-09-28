@@ -7,6 +7,7 @@ struct SiblingFeaturesView: View {
   }
 
   var body: some View {
+    let _ = Log.shared.log("\(Self.self).body")
     VStack {
       BasicsView(
         store: self.store.scope(state: \.child1, action: { .child1($0) })

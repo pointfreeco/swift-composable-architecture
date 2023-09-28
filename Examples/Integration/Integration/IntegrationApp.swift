@@ -2,12 +2,86 @@ import ComposableArchitecture
 import SwiftUI
 import TestCases
 
+private struct LogsView: View {
+  @State var logs: [String] = ["Hello!"]
+
+  var body: some View {
+    if true || ProcessInfo.processInfo.environment["UI_TEST"] != nil {
+      VStack {
+        Button("Clear logs") { Log.shared.clear() }
+          .accessibilityIdentifier("composable-architecture.debug.clear-logs")
+
+        Spacer()
+
+        Text(self.logs.joined(separator: "\n"))
+          .accessibilityIdentifier("composable-architecture.debug.logs")
+          .allowsHitTesting(false)
+      }
+      .background(Color.clear)
+      .onReceive(Log.shared.$logs) { self.logs = $0 }
+    }
+  }
+}
+
+final class IntegrationSceneDelegate: NSObject, UIWindowSceneDelegate {
+  var keyWindow: UIWindow!
+  var logsWindow: UIWindow!
+
+  func scene(
+    _ scene: UIScene,
+    willConnectTo session: UISceneSession,
+    options connectionOptions: UIScene.ConnectionOptions
+  ) {
+    guard let windowScene = scene as? UIWindowScene
+    else { return }
+
+    self.keyWindow = UIWindow(windowScene: windowScene)
+    self.keyWindow.rootViewController = UIHostingController(rootView: ContentView())
+
+    self.logsWindow = UIWindow(windowScene: windowScene)
+    self.logsWindow.rootViewController = UIHostingController(rootView: LogsView())
+    self.logsWindow.rootViewController?.view.backgroundColor = .clear
+
+    let switchToLogsButton = UIButton()
+    switchToLogsButton.setTitle("Switch to logs", for: .normal)
+    switchToLogsButton.addAction(UIAction(handler: { _ in
+      self.logsWindow.makeKeyAndVisible()
+    }), for: .touchUpInside)
+    switchToLogsButton.sizeToFit()
+    switchToLogsButton.frame.origin.y = 100
+    switchToLogsButton.backgroundColor = .red
+    self.keyWindow.rootViewController?.view.addSubview(switchToLogsButton)
+
+    let switchToWindowButton = UIButton()
+    switchToWindowButton.setTitle("Switch to window", for: .normal)
+    switchToWindowButton.addAction(UIAction(handler: { _ in
+      self.keyWindow.makeKeyAndVisible()
+    }), for: .touchUpInside)
+    switchToWindowButton.sizeToFit()
+    switchToWindowButton.frame.origin.y = 100
+    switchToWindowButton.backgroundColor = .red
+    self.logsWindow.rootViewController?.view.addSubview(switchToWindowButton)
+
+    self.keyWindow.makeKeyAndVisible()
+  }
+}
+final class IntegrationAppDelegate: NSObject, UIApplicationDelegate {
+  func application(
+    _ application: UIApplication,
+    configurationForConnecting connectingSceneSession: UISceneSession,
+    options: UIScene.ConnectionOptions
+  ) -> UISceneConfiguration {
+    let sceneConfig = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
+    sceneConfig.delegateClass = IntegrationSceneDelegate.self
+    return sceneConfig
+  }
+}
+
 @main
 struct IntegrationApp: App {
+  @UIApplicationDelegateAdaptor var appDelegate: IntegrationAppDelegate
   var body: some Scene {
-    WindowGroup {
-      ContentView()
-    }
+    WindowGroup {}
   }
 }
 
@@ -23,11 +97,14 @@ struct ContentView: View {
           NavigationLink("Basics") {
             BasicsView()
           }
-          NavigationLink("Siblings") {
-            SiblingFeaturesView()
+          NavigationLink("Enum") {
+            EnumView()
           }
           NavigationLink("Optional") {
             OptionalView()
+          }
+          NavigationLink("Siblings") {
+            SiblingFeaturesView()
           }
         } header: {
           Text("iOS 17")

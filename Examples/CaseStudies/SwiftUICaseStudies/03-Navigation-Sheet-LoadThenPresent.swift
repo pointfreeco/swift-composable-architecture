@@ -59,7 +59,6 @@ struct LoadThenPresentView: View {
   let store: StoreOf<LoadThenPresent>
 
   var body: some View {
-    let _ = Self._printChanges()
     Form {
       Section {
         AboutView(readMe: readMe)

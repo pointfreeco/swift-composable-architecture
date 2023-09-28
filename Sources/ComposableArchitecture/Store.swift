@@ -153,6 +153,7 @@ public final class Store<State, Action> {
     @ReducerBuilder<State, Action> reducer: () -> R,
     withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
   ) where R.State == State, R.Action == Action {
+    Log.shared.log("\(Self.typeName).init")
     if let prepareDependencies = prepareDependencies {
       let (initialState, reducer) = withDependencies(prepareDependencies) {
         (initialState(), reducer())
@@ -169,6 +170,10 @@ public final class Store<State, Action> {
         mainThreadChecksEnabled: true
       )
     }
+  }
+
+  deinit {
+    Log.shared.log("\(Self.typeName).deinit")
   }
 
   /// Calls the given closure with the current state of the store.
@@ -682,6 +687,19 @@ public final class Store<State, Action> {
   public var publisher: StorePublisher<State> {
     StorePublisher(store: self, upstream: self.subject)
   }
+
+  fileprivate static var typeName: String {
+    let stateType = _typeName(State.self)
+    let actionType = _typeName(Action.self)
+    if stateType.hasSuffix(".State"),
+       actionType.hasSuffix(".Action"),
+       stateType.dropLast(6) == actionType.dropLast(7)
+    {
+      return "StoreOf<\(stateType.dropLast(6))>"
+    } else {
+      return "Store<\(stateType), \(actionType)>"
+    }
+  }
 }
 
 /// A convenience type alias for referring to a store of a given reducer's domain.
@@ -815,6 +833,7 @@ extension ScopedReducer: AnyScopedReducer {
           return
         }
         childStore.subject.value = newValue
+        Log.shared.log("\(Store<ScopedState, ScopedAction>.typeName).scope")
       }
     return childStore
   }
@@ -896,4 +915,37 @@ public struct StoreTask: Hashable, Sendable {
   public var isCancelled: Bool {
     self.rawValue?.isCancelled ?? true
   }
+}
+
+import OSLog
+public final class Log {
+  @available(iOS 14.0, *)
+  var logger: Logger {
+    Logger(subsystem: "composable-architecture", category: "store-events")
+  }
+  @Published public var logs: [String] = []
+  public static let shared = Log()
+#if DEBUG
+  public func log(level: OSLogType = .default, _ string: @autoclosure () -> String) {
+    let string = string()
+    if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+      print("\(string)")
+    } else {
+      if #available(iOS 14.0, *) {
+        self.logger.log(level: level, "\(string)")
+      }
+    }
+    self.logs.append(string)
+  }
+  public func clear() {
+    self.logs = []
+  }
+#else
+  @inlinable @inline(__always)
+  public func log(level: OSLogType = .default, _ string: @autoclosure () -> String) {
+  }
+  @inlinable @inline(__always)
+  public func clear() {
+  }
+#endif
 }

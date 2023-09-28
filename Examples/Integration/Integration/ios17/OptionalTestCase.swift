@@ -7,10 +7,21 @@ struct OptionalView: View {
   }
 
   var body: some View {
+    let _ = Log.shared.log("\(Self.self).body")
     Form {
       Section {
         Button("Toggle") {
           self.store.send(.toggleButtonTapped)
+        }
+      }
+      if self.store.child != nil {
+        Section {
+          if self.store.isObservingCount {
+            Button("Stop observing count") { self.store.send(.toggleIsObservingCount) }
+            Text("Count: \(self.store.child?.count ?? 0)")
+          } else {
+            Button("Observe count") { self.store.send(.toggleIsObservingCount) }
+          }
         }
       }
     }
@@ -24,11 +35,13 @@ struct OptionalView: View {
     struct State {
       @ObservationStateIgnored
       @PresentationState var child: BasicsView.Feature.State?
+      var isObservingCount = false
     }
     @CasePathable
     enum Action {
       case child(PresentationAction<BasicsView.Feature.Action>)
       case toggleButtonTapped
+      case toggleIsObservingCount
     }
     var body: some ReducerOf<Self> {
       Reduce { state, action in
@@ -36,7 +49,10 @@ struct OptionalView: View {
         case .child:
           return .none
         case .toggleButtonTapped:
-          state.child = BasicsView.Feature.State()
+          state.child = state.child == nil ? BasicsView.Feature.State() : nil
+          return .none
+        case .toggleIsObservingCount:
+          state.isObservingCount.toggle()
           return .none
         }
       }

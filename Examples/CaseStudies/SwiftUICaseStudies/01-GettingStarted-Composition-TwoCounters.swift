@@ -37,7 +37,6 @@ struct TwoCountersView: View {
   let store: StoreOf<TwoCounters>
 
   var body: some View {
-    let _ = Self._printChanges()
     Form {
       Section {
         AboutView(readMe: readMe)

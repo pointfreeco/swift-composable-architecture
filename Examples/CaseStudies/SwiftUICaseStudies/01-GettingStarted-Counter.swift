@@ -40,7 +40,6 @@ struct CounterView: View {
   let store: StoreOf<Counter>
 
   var body: some View {
-    let _ = Self._printChanges()
     HStack {
       Button {
         self.store.send(.decrementButtonTapped)

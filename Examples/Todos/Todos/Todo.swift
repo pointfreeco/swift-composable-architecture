@@ -22,7 +22,6 @@ struct TodoView: View {
   @State var store: StoreOf<Todo>
 
   var body: some View {
-    let _ = Self._printChanges()
     HStack {
       Button {
         self.$store.isComplete.wrappedValue.toggle()
