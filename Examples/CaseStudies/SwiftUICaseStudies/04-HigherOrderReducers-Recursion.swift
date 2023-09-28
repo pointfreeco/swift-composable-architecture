@@ -64,7 +64,7 @@ struct NestedView: View {
         }
 
         ForEachStore(
-          self.store.scope(state: \.rows, action: Nested.Action.row(id:action:))
+          self.store.scope(state: \.rows, action: { .row(id: $0, action: $1) })
         ) { rowStore in
           WithViewStore(rowStore, observe: \.name) { rowViewStore in
             NavigationLink(
@@ -73,7 +73,7 @@ struct NestedView: View {
               HStack {
                 TextField(
                   "Untitled",
-                  text: rowViewStore.binding(send: Nested.Action.nameTextFieldChanged)
+                  text: rowViewStore.binding(send: { .nameTextFieldChanged($0) })
                 )
                 Text("Next")
                   .font(.callout)

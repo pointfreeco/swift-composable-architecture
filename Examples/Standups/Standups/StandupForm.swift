@@ -31,7 +31,7 @@ struct StandupForm: Reducer {
 
   var body: some ReducerOf<Self> {
     BindingReducer()
-    Reduce<State, Action> { state, action in
+    Reduce { state, action in
       switch action {
       case .addAttendeeButtonTapped:
         let attendee = Attendee(id: Attendee.ID(self.uuid()))

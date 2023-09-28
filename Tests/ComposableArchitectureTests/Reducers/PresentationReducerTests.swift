@@ -2066,7 +2066,7 @@ final class PresentationReducerTests: BaseTCATestCase {
         }
 
         var body: some ReducerOf<Self> {
-          Reduce<State, Action> { state, action in
+          Reduce { state, action in
             switch action {
             case .destination(.presented(.alert(.showDialog))):
               state.destination = .dialog(

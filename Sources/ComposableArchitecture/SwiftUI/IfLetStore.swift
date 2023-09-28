@@ -9,7 +9,7 @@ import SwiftUI
 ///
 /// ```swift
 /// IfLetStore(
-///   store.scope(state: \.results, action: Search.Action.results)
+///   store.scope(state: \.results, action: { .results($0) })
 /// ) {
 ///   SearchResultsView(store: $0)
 /// } else: {

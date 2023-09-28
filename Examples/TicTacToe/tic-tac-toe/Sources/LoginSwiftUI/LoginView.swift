@@ -61,9 +61,9 @@ public struct LoginView: View {
         .disabled(viewStore.isLoginButtonDisabled)
       }
       .disabled(viewStore.isFormDisabled)
-      .alert(store: self.store.scope(state: \.$alert, action: Login.Action.alert))
+      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
       .navigationDestination(
-        store: self.store.scope(state: \.$twoFactor, action: Login.Action.twoFactor),
+        store: self.store.scope(state: \.$twoFactor, action: { .twoFactor($0) }),
         destination: TwoFactorView.init
       )
     }
