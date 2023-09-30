@@ -124,7 +124,7 @@ struct Feature: Reducer {
           from: URL(string: "http://numbersapi.com/\(count)/trivia")!
         )
         await send(
-          .numberFactResponse(String(decoding: data, as: UTF8.self)
+          .numberFactResponse(String(decoding: data, as: UTF8.self))
         )
       }
 
