@@ -33,9 +33,7 @@ class BaseIntegrationTests: XCTestCase {
   }
 
   func clearLogs() {
-    self.app.buttons["Switch to logs"].tap()
-    self.app.buttons["composable-architecture.debug.clear-logs"].tap()
-    self.app.buttons["Switch to window"].tap()
+    XCUIDevice.shared.system.open(URL(string: "integration:///clear-logs")!)
   }
 
   func assertLogs(

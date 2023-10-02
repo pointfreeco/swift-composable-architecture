@@ -19,6 +19,9 @@ private struct LogsView: View {
       }
       .background(Color.clear)
       .onReceive(Logger.shared.$logs) { self.logs = $0 }
+      .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("clear-logs"))) { _ in
+        Logger.shared.clear()
+      }
     }
   }
 }
@@ -26,6 +29,10 @@ private struct LogsView: View {
 final class IntegrationSceneDelegate: NSObject, UIWindowSceneDelegate {
   var keyWindow: UIWindow!
   var logsWindow: UIWindow!
+
+  func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+    NotificationCenter.default.post(name: NSNotification.Name("clear-logs"), object: nil)
+  }
 
   func scene(
     _ scene: UIScene,
@@ -41,26 +48,9 @@ final class IntegrationSceneDelegate: NSObject, UIWindowSceneDelegate {
     self.logsWindow = UIWindow(windowScene: windowScene)
     self.logsWindow.rootViewController = UIHostingController(rootView: LogsView())
     self.logsWindow.rootViewController?.view.backgroundColor = .clear
-
-    let switchToLogsButton = UIButton()
-    switchToLogsButton.setTitle("Switch to logs", for: .normal)
-    switchToLogsButton.addAction(UIAction(handler: { _ in
-      self.logsWindow.makeKeyAndVisible()
-    }), for: .touchUpInside)
-    switchToLogsButton.sizeToFit()
-    switchToLogsButton.frame.origin.y = 100
-    switchToLogsButton.backgroundColor = .red
-    self.keyWindow.rootViewController?.view.addSubview(switchToLogsButton)
-
-    let switchToWindowButton = UIButton()
-    switchToWindowButton.setTitle("Switch to window", for: .normal)
-    switchToWindowButton.addAction(UIAction(handler: { _ in
-      self.keyWindow.makeKeyAndVisible()
-    }), for: .touchUpInside)
-    switchToWindowButton.sizeToFit()
-    switchToWindowButton.frame.origin.y = 100
-    switchToWindowButton.backgroundColor = .red
-    self.logsWindow.rootViewController?.view.addSubview(switchToWindowButton)
+    self.logsWindow.windowLevel = .init(999999999)
+    self.logsWindow.makeKeyAndVisible()
+    self.logsWindow.isUserInteractionEnabled = false
 
     self.keyWindow.makeKeyAndVisible()
   }
