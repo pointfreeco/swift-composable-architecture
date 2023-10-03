@@ -26,6 +26,7 @@ struct WebSocket: Reducer {
     }
   }
 
+  @CasePathable
   enum Action: Equatable {
     case alert(PresentationAction<Alert>)
     case connectButtonTapped
@@ -130,7 +131,7 @@ struct WebSocket: Reducer {
         return .none
       }
     }
-    .ifLet(\.$alert, action: /Action.alert)
+    .ifLet(\.$alert, action: \.alert)
   }
 }
 

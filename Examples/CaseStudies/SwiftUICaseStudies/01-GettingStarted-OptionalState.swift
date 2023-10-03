@@ -19,6 +19,7 @@ struct OptionalBasics: Reducer {
     var optionalCounter: Counter.State?
   }
 
+  @CasePathable
   enum Action: Equatable {
     case optionalCounter(Counter.Action)
     case toggleCounterButtonTapped
@@ -37,7 +38,7 @@ struct OptionalBasics: Reducer {
         return .none
       }
     }
-    .ifLet(\.optionalCounter, action: /Action.optionalCounter) {
+    .ifLet(\.optionalCounter, action: \.optionalCounter) {
       Counter()
     }
   }

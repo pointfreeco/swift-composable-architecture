@@ -9,6 +9,7 @@ struct LazyNavigation: Reducer {
     var isActivityIndicatorHidden = true
   }
 
+  @CasePathable
   enum Action: Equatable {
     case onDisappear
     case optionalCounter(Counter.Action)
@@ -46,7 +47,7 @@ struct LazyNavigation: Reducer {
         return .none
       }
     }
-    .ifLet(\.optionalCounter, action: /Action.optionalCounter) {
+    .ifLet(\.optionalCounter, action: \.optionalCounter) {
       Counter()
     }
   }

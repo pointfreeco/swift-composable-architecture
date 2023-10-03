@@ -28,6 +28,7 @@ struct Animations: Reducer {
     var isCircleScaled = false
   }
 
+  @CasePathable
   enum Action: Equatable, Sendable {
     case alert(PresentationAction<Alert>)
     case circleScaleToggleChanged(Bool)
@@ -93,7 +94,7 @@ struct Animations: Reducer {
         return .none
       }
     }
-    .ifLet(\.$alert, action: /Action.alert)
+    .ifLet(\.$alert, action: \.alert)
   }
 }
 

@@ -16,6 +16,7 @@ struct NavigateAndLoad: Reducer {
     var optionalCounter: Counter.State?
   }
 
+  @CasePathable
   enum Action: Equatable {
     case optionalCounter(Counter.Action)
     case setNavigation(isActive: Bool)
@@ -49,7 +50,7 @@ struct NavigateAndLoad: Reducer {
         return .none
       }
     }
-    .ifLet(\.optionalCounter, action: /Action.optionalCounter) {
+    .ifLet(\.optionalCounter, action: \.optionalCounter) {
       Counter()
     }
   }

@@ -17,6 +17,7 @@ struct Nested: Reducer {
     var rows: IdentifiedArrayOf<State> = []
   }
 
+  @CasePathable
   enum Action: Equatable {
     case addRowButtonTapped
     case nameTextFieldChanged(String)
@@ -45,7 +46,7 @@ struct Nested: Reducer {
         return .none
       }
     }
-    .forEach(\.rows, action: /Action.row(id:action:)) {
+    .forEach(\.rows, action: \.row) {
       Self()
     }
   }

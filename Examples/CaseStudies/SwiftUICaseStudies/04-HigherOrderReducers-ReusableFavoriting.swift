@@ -98,13 +98,16 @@ struct Episode: Reducer {
       set { (self.alert, self.isFavorite) = (newValue.alert, newValue.isFavorite) }
     }
   }
+
+  @CasePathable
   enum Action: Equatable {
     case favorite(FavoritingAction)
   }
+
   let favorite: @Sendable (UUID, Bool) async throws -> Bool
 
   var body: some Reducer<State, Action> {
-    Scope(state: \.favorite, action: /Action.favorite) {
+    Scope(state: \.favorite, action: \.favorite) {
       Favoriting(favorite: self.favorite)
     }
   }
@@ -132,16 +135,19 @@ struct Episodes: Reducer {
   struct State: Equatable {
     var episodes: IdentifiedArrayOf<Episode.State> = []
   }
+
+  @CasePathable
   enum Action: Equatable {
     case episode(id: Episode.State.ID, action: Episode.Action)
   }
+
   let favorite: @Sendable (UUID, Bool) async throws -> Bool
 
   var body: some Reducer<State, Action> {
     Reduce { state, action in
       .none
     }
-    .forEach(\.episodes, action: /Action.episode) {
+    .forEach(\.episodes, action: \.episode) {
       Episode(favorite: self.favorite)
     }
   }

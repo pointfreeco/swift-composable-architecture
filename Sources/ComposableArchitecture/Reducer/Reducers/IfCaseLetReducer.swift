@@ -58,7 +58,12 @@ extension Reducer {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> _IfCaseLetReducer<Self, Case>
-  where CaseState == Case.State, CaseAction == Case.Action {
+  where
+    State: CasePathable,
+    CaseState == Case.State,
+    Action: CasePathable,
+    CaseAction == Case.Action
+  {
     .init(
       parent: self,
       child: `case`(),

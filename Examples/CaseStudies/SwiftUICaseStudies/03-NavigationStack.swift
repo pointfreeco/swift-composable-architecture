@@ -10,6 +10,7 @@ struct NavigationDemo: Reducer {
     var path = StackState<Path.State>()
   }
 
+  @CasePathable
   enum Action: Equatable {
     case goBackToScreen(id: StackElementID)
     case goToABCButtonTapped
@@ -53,18 +54,20 @@ struct NavigationDemo: Reducer {
         return .none
       }
     }
-    .forEach(\.path, action: /Action.path) {
+    .forEach(\.path, action: \.path) {
       Path()
     }
   }
 
   struct Path: Reducer {
+    @CasePathable
     enum State: Codable, Equatable, Hashable {
       case screenA(ScreenA.State = .init())
       case screenB(ScreenB.State = .init())
       case screenC(ScreenC.State = .init())
     }
 
+    @CasePathable
     enum Action: Equatable {
       case screenA(ScreenA.Action)
       case screenB(ScreenB.Action)
@@ -72,13 +75,13 @@ struct NavigationDemo: Reducer {
     }
 
     var body: some Reducer<State, Action> {
-      Scope(state: /State.screenA, action: /Action.screenA) {
+      Scope(state: \.screenA, action: \.screenA) {
         ScreenA()
       }
-      Scope(state: /State.screenB, action: /Action.screenB) {
+      Scope(state: \.screenB, action: \.screenB) {
         ScreenB()
       }
-      Scope(state: /State.screenC, action: /Action.screenC) {
+      Scope(state: \.screenC, action: \.screenC) {
         ScreenC()
       }
     }

@@ -28,6 +28,7 @@ struct Root: Reducer {
     var webSocket = WebSocket.State()
   }
 
+  @CasePathable
   enum Action {
     case alertAndConfirmationDialog(AlertAndConfirmationDialog.Action)
     case animation(Animations.Action)
@@ -70,76 +71,76 @@ struct Root: Reducer {
       }
     }
 
-    Scope(state: \.alertAndConfirmationDialog, action: /Action.alertAndConfirmationDialog) {
+    Scope(state: \.alertAndConfirmationDialog, action: \.alertAndConfirmationDialog) {
       AlertAndConfirmationDialog()
     }
-    Scope(state: \.animation, action: /Action.animation) {
+    Scope(state: \.animation, action: \.animation) {
       Animations()
     }
-    Scope(state: \.bindingBasics, action: /Action.bindingBasics) {
+    Scope(state: \.bindingBasics, action: \.bindingBasics) {
       BindingBasics()
     }
-    Scope(state: \.bindingForm, action: /Action.bindingForm) {
+    Scope(state: \.bindingForm, action: \.bindingForm) {
       BindingForm()
     }
-    Scope(state: \.counter, action: /Action.counter) {
+    Scope(state: \.counter, action: \.counter) {
       Counter()
     }
-    Scope(state: \.effectsBasics, action: /Action.effectsBasics) {
+    Scope(state: \.effectsBasics, action: \.effectsBasics) {
       EffectsBasics()
     }
-    Scope(state: \.effectsCancellation, action: /Action.effectsCancellation) {
+    Scope(state: \.effectsCancellation, action: \.effectsCancellation) {
       EffectsCancellation()
     }
-    Scope(state: \.episodes, action: /Action.episodes) {
+    Scope(state: \.episodes, action: \.episodes) {
       Episodes(favorite: favorite(id:isFavorite:))
     }
-    Scope(state: \.focusDemo, action: /Action.focusDemo) {
+    Scope(state: \.focusDemo, action: \.focusDemo) {
       FocusDemo()
     }
-    Scope(state: \.loadThenPresent, action: /Action.loadThenPresent) {
+    Scope(state: \.loadThenPresent, action: \.loadThenPresent) {
       LoadThenPresent()
     }
-    Scope(state: \.longLivingEffects, action: /Action.longLivingEffects) {
+    Scope(state: \.longLivingEffects, action: \.longLivingEffects) {
       LongLivingEffects()
     }
-    Scope(state: \.map, action: /Action.map) {
+    Scope(state: \.map, action: \.map) {
       MapApp()
     }
-    Scope(state: \.multipleDestinations, action: /Action.multipleDestinations) {
+    Scope(state: \.multipleDestinations, action: \.multipleDestinations) {
       MultipleDestinations()
     }
-    Scope(state: \.navigateAndLoad, action: /Action.navigateAndLoad) {
+    Scope(state: \.navigateAndLoad, action: \.navigateAndLoad) {
       NavigateAndLoad()
     }
-    Scope(state: \.navigateAndLoadList, action: /Action.navigateAndLoadList) {
+    Scope(state: \.navigateAndLoadList, action: \.navigateAndLoadList) {
       NavigateAndLoadList()
     }
-    Scope(state: \.navigationStack, action: /Action.navigationStack) {
+    Scope(state: \.navigationStack, action: \.navigationStack) {
       NavigationDemo()
     }
-    Scope(state: \.nested, action: /Action.nested) {
+    Scope(state: \.nested, action: \.nested) {
       Nested()
     }
-    Scope(state: \.optionalBasics, action: /Action.optionalBasics) {
+    Scope(state: \.optionalBasics, action: \.optionalBasics) {
       OptionalBasics()
     }
-    Scope(state: \.presentAndLoad, action: /Action.presentAndLoad) {
+    Scope(state: \.presentAndLoad, action: \.presentAndLoad) {
       PresentAndLoad()
     }
-    Scope(state: \.refreshable, action: /Action.refreshable) {
+    Scope(state: \.refreshable, action: \.refreshable) {
       Refreshable()
     }
-    Scope(state: \.shared, action: /Action.shared) {
+    Scope(state: \.shared, action: \.shared) {
       SharedState()
     }
-    Scope(state: \.timers, action: /Action.timers) {
+    Scope(state: \.timers, action: \.timers) {
       Timers()
     }
-    Scope(state: \.twoCounters, action: /Action.twoCounters) {
+    Scope(state: \.twoCounters, action: \.twoCounters) {
       TwoCounters()
     }
-    Scope(state: \.webSocket, action: /Action.webSocket) {
+    Scope(state: \.webSocket, action: \.webSocket) {
       WebSocket()
     }
   }

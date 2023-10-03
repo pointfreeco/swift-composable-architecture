@@ -15,16 +15,17 @@ struct TwoCounters: Reducer {
     var counter2 = Counter.State()
   }
 
+  @CasePathable
   enum Action: Equatable {
     case counter1(Counter.Action)
     case counter2(Counter.Action)
   }
 
   var body: some Reducer<State, Action> {
-    Scope(state: \.counter1, action: /Action.counter1) {
+    Scope(state: \.counter1, action: \.counter1) {
       Counter()
     }
-    Scope(state: \.counter2, action: /Action.counter2) {
+    Scope(state: \.counter2, action: \.counter2) {
       Counter()
     }
   }

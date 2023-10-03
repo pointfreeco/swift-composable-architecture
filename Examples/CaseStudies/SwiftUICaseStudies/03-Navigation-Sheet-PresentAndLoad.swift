@@ -16,6 +16,7 @@ struct PresentAndLoad: Reducer {
     var isSheetPresented = false
   }
 
+  @CasePathable
   enum Action {
     case optionalCounter(Counter.Action)
     case setSheet(isPresented: Bool)
@@ -49,7 +50,7 @@ struct PresentAndLoad: Reducer {
         return .none
       }
     }
-    .ifLet(\.optionalCounter, action: /Action.optionalCounter) {
+    .ifLet(\.optionalCounter, action: \.optionalCounter) {
       Counter()
     }
   }

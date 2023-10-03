@@ -25,6 +25,7 @@ struct NavigateAndLoadList: Reducer {
     }
   }
 
+  @CasePathable
   enum Action: Equatable {
     case counter(Counter.Action)
     case setNavigation(selection: UUID?)
@@ -61,9 +62,9 @@ struct NavigateAndLoadList: Reducer {
         return .none
       }
     }
-    .ifLet(\State.selection, action: /Action.counter) {
+    .ifLet(\.selection, action: \.counter) {
       EmptyReducer()
-        .ifLet(\Identified<State.Row.ID, Counter.State?>.value, action: .self) {
+        .ifLet(\.value, action: \.self) {
           Counter()
         }
     }

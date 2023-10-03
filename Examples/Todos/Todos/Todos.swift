@@ -22,6 +22,7 @@ struct Todos: Reducer {
     }
   }
 
+  @CasePathable
   enum Action: BindableAction, Equatable, Sendable {
     case addTodoButtonTapped
     case binding(BindingAction<State>)
@@ -94,7 +95,7 @@ struct Todos: Reducer {
         return .none
       }
     }
-    .forEach(\.todos, action: /Action.todo(id:action:)) {
+    .forEach(\.todos, action: \.todo) {
       Todo()
     }
   }
