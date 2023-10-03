@@ -87,9 +87,6 @@ extension Reducer {
     )
   }
 
-  #if swift(>=5.9)
-    @available(*, deprecated, message: "TODO")
-  #endif
   @inlinable
   @warn_unqualified_access
   public func ifLet<WrappedState, WrappedAction, Wrapped: Reducer>(
@@ -110,9 +107,6 @@ extension Reducer {
     )
   }
 
-  #if swift(>=5.9)
-    @available(*, deprecated, message: "TODO")
-  #endif
   @inlinable
   @warn_unqualified_access
   public func ifLet<WrappedState: _EphemeralState, WrappedAction>(

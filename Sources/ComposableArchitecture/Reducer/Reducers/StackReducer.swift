@@ -83,9 +83,6 @@ public struct StackState<Element> {
     }
   }
 
-  #if swift(>=5.9)
-    @available(*, deprecated, message: "TODO")
-  #endif
   public subscript<Case>(id id: StackElementID, case path: AnyCasePath<Element, Case>) -> Case? {
     _read { yield self[id: id].flatMap(path.extract) }
     _modify {
@@ -301,9 +298,6 @@ extension Reducer {
     )
   }
 
-  #if swift(>=5.9)
-    @available(*, deprecated, message: "TODO")
-  #endif
   @inlinable
   @warn_unqualified_access
   public func forEach<DestinationState, DestinationAction, Destination: Reducer>(

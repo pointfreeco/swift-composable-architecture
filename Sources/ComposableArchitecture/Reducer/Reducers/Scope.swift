@@ -233,9 +233,6 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
     )
   }
 
-  #if swift(>=5.9)
-    @available(*, deprecated, message: "TODO")
-  #endif
   @inlinable
   public init<ChildState, ChildAction>(
     state toChildState: WritableKeyPath<ParentState, ChildState>,
@@ -249,9 +246,6 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
     )
   }
 
-  #if swift(>=5.9)
-    @available(*, deprecated, message: "TODO")
-  #endif
   @inlinable
   public init<ChildState, ChildAction>(
     state toChildState: AnyCasePath<ParentState, ChildState>,

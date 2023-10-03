@@ -290,9 +290,6 @@ extension Reducer {
     )
   }
 
-  #if swift(>=5.9)
-    @available(*, deprecated, message: "TODO")
-  #endif
   @warn_unqualified_access
   @inlinable
   public func ifLet<DestinationState, DestinationAction, Destination: Reducer>(
@@ -313,9 +310,6 @@ extension Reducer {
     )
   }
 
-  #if swift(>=5.9)
-    @available(*, deprecated, message: "TODO")
-  #endif
   @warn_unqualified_access
   @inlinable
   public func ifLet<DestinationState: _EphemeralState, DestinationAction>(

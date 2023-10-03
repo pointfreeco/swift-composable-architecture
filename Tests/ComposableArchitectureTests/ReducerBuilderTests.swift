@@ -148,7 +148,7 @@ private struct IfLetExample: Reducer {
   enum Action {}
 
   var body: some ReducerOf<Self> {
-    EmptyReducer().ifLet(\.optional, action: .self) { EmptyReducer() }
+    EmptyReducer().ifLet(\.optional, action: \.self) { EmptyReducer() }
   }
 }
 
@@ -160,7 +160,7 @@ private struct IfCaseLetExample: Reducer {
   enum Action {}
 
   var body: some ReducerOf<Self> {
-    EmptyReducer().ifCaseLet(/State.value, action: .self) { EmptyReducer() }
+    EmptyReducer().ifCaseLet(/State.value, action: AnyCasePath()) { EmptyReducer() }
   }
 }
 
@@ -191,9 +191,9 @@ private struct ScopeIfLetExample: Reducer {
   enum Action {}
 
   var body: some ReducerOf<Self> {
-    Scope(state: \.self, action: .self) {
+    Scope(state: \.self, action: \.self) {
       EmptyReducer()
-        .ifLet(\.optionalSelf, action: .self) {
+        .ifLet(\.optionalSelf, action: \.self) {
           EmptyReducer()
         }
     }

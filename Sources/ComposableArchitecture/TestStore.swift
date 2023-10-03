@@ -1891,6 +1891,17 @@ extension TestStore {
   /// - Parameter toViewAction: A case path from action to a bindable view action.
   /// - Returns: A binding view store.
   public func bindings<ViewAction: BindableAction>(
+    action toViewAction: CaseKeyPath<Action, ViewAction>
+  ) -> BindingViewStore<State> where State == ViewAction.State, Action: CasePathable {
+    BindingViewStore(
+      store: Store(initialState: self.state) {
+        BindingReducer(action: { $0[keyPath: toViewAction] })
+      }
+      .scope(state: { $0 }, action: { toViewAction($0) })
+    )
+  }
+
+  public func bindings<ViewAction: BindableAction>(
     action toViewAction: AnyCasePath<Action, ViewAction>
   ) -> BindingViewStore<State> where State == ViewAction.State {
     BindingViewStore(
@@ -1925,7 +1936,7 @@ extension TestStore where Action: BindableAction, State == Action.State {
   ///
   /// - Returns: A binding view store.
   public var bindings: BindingViewStore<State> {
-    self.bindings(action: .self)
+    self.bindings(action: AnyCasePath())
   }
 }
 

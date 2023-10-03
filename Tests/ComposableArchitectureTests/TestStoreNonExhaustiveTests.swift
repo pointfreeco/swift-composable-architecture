@@ -594,7 +594,7 @@
       }
 
       await store.send(.tap)
-      await store.receive({ (/Action.response) ~= $0 })
+      await store.receive { if case .response = $0 { return true } else { return false } }
     }
 
     func testCasePathReceive_SkipReceivedAction() async {
@@ -668,7 +668,7 @@
       await store.send(.tap) { state in
         state.count = 1
         XCTExpectFailure {
-          XCTModify(&state.child, case: /.some) { _ in }
+          XCTModify(&state.child) { _ in }
         } issueMatcher: {
           $0.compactDescription == """
             XCTModify failed: expected "Int" value to be modified but it was unchanged.
@@ -678,7 +678,7 @@
       await store.receive(.response) { state in
         state.count = 2
         XCTExpectFailure {
-          XCTModify(&state.child, case: /Optional.some) { _ in }
+          XCTModify(&state.child) { _ in }
         } issueMatcher: {
           $0.compactDescription == """
             XCTModify failed: expected "Int" value to be modified but it was unchanged.
@@ -702,10 +702,10 @@
       store.exhaustivity = .off
 
       await store.send(.tap) {
-        XCTModify(&$0, case: /Optional.some) { _ in }
+        XCTModify(&$0) { _ in }
       }
       await store.receive(.response) {
-        XCTModify(&$0, case: /Optional.some) { _ in }
+        XCTModify(&$0) { _ in }
       }
     }
 

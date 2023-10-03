@@ -74,9 +74,6 @@ extension Reducer {
     )
   }
 
-  #if swift(>=5.9)
-    @available(*, deprecated, message: "TODO")
-  #endif
   @inlinable
   @warn_unqualified_access
   public func ifCaseLet<CaseState, CaseAction, Case: Reducer>(

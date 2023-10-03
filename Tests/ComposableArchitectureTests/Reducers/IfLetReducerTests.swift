@@ -7,7 +7,7 @@ final class IfLetReducerTests: BaseTCATestCase {
     func testNilChild() async {
       let store = TestStore(initialState: Int?.none) {
         EmptyReducer<Int?, Void>()
-          .ifLet(\.self, action: /.self) {}
+          .ifLet(\.self, action: \.self) {}
       }
 
       XCTExpectFailure {
@@ -99,12 +99,12 @@ final class IfLetReducerTests: BaseTCATestCase {
       await store.send(.child(.timerButtonTapped))
       await clock.advance(by: .seconds(2))
       await store.receive(.child(.timerTick)) {
-        try (/.some).modify(&$0.child) {
+        XCTModify(&$0.child) {
           $0.count = 1
         }
       }
       await store.receive(.child(.timerTick)) {
-        try (/.some).modify(&$0.child) {
+        XCTModify(&$0.child) {
           $0.count = 2
         }
       }
@@ -192,8 +192,8 @@ final class IfLetReducerTests: BaseTCATestCase {
       await store.send(.child(.grandChild(.timerButtonTapped)))
       await clock.advance(by: .seconds(1))
       await store.receive(.child(.grandChild(.timerTick))) {
-        try (/.some).modify(&$0.child) {
-          try (/.some).modify(&$0.grandChild) {
+        XCTModify(&$0.child) {
+          XCTModify(&$0.grandChild) {
             $0.count = 1
           }
         }

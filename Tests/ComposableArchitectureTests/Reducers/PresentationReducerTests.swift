@@ -108,7 +108,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       $0.child = Child.State()
     }
     await store.send(.child(.presented(.incrementButtonTapped))) {
-      try (/.some).modify(&$0.child) {
+      XCTModify(&$0.child) {
         $0.count = 1
       }
     }
@@ -174,7 +174,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       $0.child = Child.State()
     }
     await store.send(.child(.presented(.incrementButtonTapped))) {
-      try (/.some).modify(&$0.child) {
+      XCTModify(&$0.child) {
         $0.count = 1
       }
     }
@@ -246,7 +246,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       $0.child = Child.State()
     }
     await store.send(.child(.presented(.decrementButtonTapped))) {
-      try (/.some).modify(&$0.child) {
+      XCTModify(&$0.child) {
         $0.count = -1
       }
     }
@@ -320,12 +320,12 @@ final class PresentationReducerTests: BaseTCATestCase {
       await store.send(.child(.presented(.startButtonTapped)))
       await clock.advance(by: .seconds(2))
       await store.receive(.child(.presented(.tick))) {
-        try (/.some).modify(&$0.child) {
+        XCTModify(&$0.child) {
           $0.count = 1
         }
       }
       await store.receive(.child(.presented(.tick))) {
-        try (/.some).modify(&$0.child) {
+        XCTModify(&$0.child) {
           $0.count = 2
         }
       }
@@ -405,12 +405,12 @@ final class PresentationReducerTests: BaseTCATestCase {
       await store.send(.child(.presented(.startButtonTapped)))
       await clock.advance(by: .seconds(2))
       await store.receive(.child(.presented(.tick))) {
-        try (/.some).modify(&$0.child) {
+        XCTModify(&$0.child) {
           $0.count = 1
         }
       }
       await store.receive(.child(.presented(.tick))) {
-        try (/.some).modify(&$0.child) {
+        XCTModify(&$0.child) {
           $0.count = 2
         }
       }
@@ -487,12 +487,12 @@ final class PresentationReducerTests: BaseTCATestCase {
       await store.send(.child(.presented(.startButtonTapped)))
       await clock.advance(by: .seconds(2))
       await store.receive(.child(.presented(.tick))) {
-        try (/.some).modify(&$0.child) {
+        XCTModify(&$0.child) {
           $0.count = 1
         }
       }
       await store.receive(.child(.presented(.tick))) {
-        try (/.some).modify(&$0.child) {
+        XCTModify(&$0.child) {
           $0.count = 2
         }
       }
