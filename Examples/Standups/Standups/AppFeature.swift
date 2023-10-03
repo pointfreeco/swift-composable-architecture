@@ -7,6 +7,7 @@ struct AppFeature: Reducer {
     var standupsList = StandupsList.State()
   }
 
+  @CasePathable
   enum Action: Equatable {
     case path(StackAction<Path.State, Path.Action>)
     case standupsList(StandupsList.Action)
@@ -22,7 +23,7 @@ struct AppFeature: Reducer {
   }
 
   var body: some ReducerOf<Self> {
-    Scope(state: \.standupsList, action: /Action.standupsList) {
+    Scope(state: \.standupsList, action: \.standupsList) {
       StandupsList()
     }
     Reduce { state, action in
@@ -58,7 +59,7 @@ struct AppFeature: Reducer {
             return .none
           }
 
-          state.path[id: id, case: /Path.State.detail]?.standup.meetings.insert(
+          state.path[id: id, case: \.detail]?.standup.meetings.insert(
             Meeting(
               id: Meeting.ID(self.uuid()),
               date: self.now,
@@ -66,7 +67,7 @@ struct AppFeature: Reducer {
             ),
             at: 0
           )
-          guard let standup = state.path[id: id, case: /Path.State.detail]?.standup
+          guard let standup = state.path[id: id, case: \.detail]?.standup
           else { return .none }
           state.standupsList.standups[id: standup.id] = standup
           return .none
@@ -79,7 +80,7 @@ struct AppFeature: Reducer {
         return .none
       }
     }
-    .forEach(\.path, action: /Action.path) {
+    .forEach(\.path, action: \.path) {
       Path()
     }
 
@@ -95,22 +96,24 @@ struct AppFeature: Reducer {
   }
 
   struct Path: Reducer {
+    @CasePathable
     enum State: Equatable {
       case detail(StandupDetail.State)
       case meeting(Meeting, standup: Standup)
       case record(RecordMeeting.State)
     }
 
+    @CasePathable
     enum Action: Equatable {
       case detail(StandupDetail.Action)
       case record(RecordMeeting.Action)
     }
 
     var body: some Reducer<State, Action> {
-      Scope(state: /State.detail, action: /Action.detail) {
+      Scope(state: \.detail, action: \.detail) {
         StandupDetail()
       }
-      Scope(state: /State.record, action: /Action.record) {
+      Scope(state: \.record, action: \.record) {
         RecordMeeting()
       }
     }
@@ -129,7 +132,7 @@ struct AppView: View {
       switch $0 {
       case .detail:
         CaseLet(
-          /AppFeature.Path.State.detail,
+          \AppFeature.Path.State.detail,
           action: AppFeature.Path.Action.detail,
           then: StandupDetailView.init(store:)
         )
@@ -137,7 +140,7 @@ struct AppView: View {
         MeetingView(meeting: meeting, standup: standup)
       case .record:
         CaseLet(
-          /AppFeature.Path.State.record,
+          \AppFeature.Path.State.record,
           action: AppFeature.Path.Action.record,
           then: RecordMeetingView.init(store:)
         )

@@ -98,7 +98,7 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   @usableFromInline
   enum StatePath {
     case casePath(
-      CasePath<ParentState, Child.State>,
+      AnyCasePath<ParentState, Child.State>,
       fileID: StaticString,
       line: UInt
     )
@@ -109,7 +109,7 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   let toChildState: StatePath
 
   @usableFromInline
-  let toChildAction: CasePath<ParentAction, Child.Action>
+  let toChildAction: AnyCasePath<ParentAction, Child.Action>
 
   @usableFromInline
   let child: Child
@@ -117,7 +117,7 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   @usableFromInline
   init(
     toChildState: StatePath,
-    toChildAction: CasePath<ParentAction, Child.Action>,
+    toChildAction: AnyCasePath<ParentAction, Child.Action>,
     child: Child
   ) {
     self.toChildState = toChildState
@@ -149,12 +149,12 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   @inlinable
   public init<ChildState, ChildAction>(
     state toChildState: WritableKeyPath<ParentState, ChildState>,
-    action toChildAction: CasePath<ParentAction, ChildAction>,
+    action toChildAction: CaseKeyPath<ParentAction, ChildAction>,
     @ReducerBuilder<ChildState, ChildAction> child: () -> Child
   ) where ChildState == Child.State, ChildAction == Child.Action {
     self.init(
       toChildState: .keyPath(toChildState),
-      toChildAction: toChildAction,
+      toChildAction: AnyCasePath(toChildAction),
       child: child()
     )
   }
@@ -220,8 +220,42 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   ///   - child: A reducer that will be invoked with child actions against child state.
   @inlinable
   public init<ChildState, ChildAction>(
-    state toChildState: CasePath<ParentState, ChildState>,
-    action toChildAction: CasePath<ParentAction, ChildAction>,
+    state toChildState: CaseKeyPath<ParentState, ChildState>,
+    action toChildAction: CaseKeyPath<ParentAction, ChildAction>,
+    @ReducerBuilder<ChildState, ChildAction> child: () -> Child,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) where ChildState == Child.State, ChildAction == Child.Action {
+    self.init(
+      toChildState: .casePath(AnyCasePath(toChildState), fileID: fileID, line: line),
+      toChildAction: AnyCasePath(toChildAction),
+      child: child()
+    )
+  }
+
+  #if swift(>=5.9)
+    @available(*, deprecated, message: "TODO")
+  #endif
+  @inlinable
+  public init<ChildState, ChildAction>(
+    state toChildState: WritableKeyPath<ParentState, ChildState>,
+    action toChildAction: AnyCasePath<ParentAction, ChildAction>,
+    @ReducerBuilder<ChildState, ChildAction> child: () -> Child
+  ) where ChildState == Child.State, ChildAction == Child.Action {
+    self.init(
+      toChildState: .keyPath(toChildState),
+      toChildAction: toChildAction,
+      child: child()
+    )
+  }
+
+  #if swift(>=5.9)
+    @available(*, deprecated, message: "TODO")
+  #endif
+  @inlinable
+  public init<ChildState, ChildAction>(
+    state toChildState: AnyCasePath<ParentState, ChildState>,
+    action toChildAction: AnyCasePath<ParentAction, ChildAction>,
     @ReducerBuilder<ChildState, ChildAction> child: () -> Child,
     fileID: StaticString = #fileID,
     line: UInt = #line

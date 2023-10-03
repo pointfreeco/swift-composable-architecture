@@ -1288,7 +1288,7 @@ extension TestStore where State: Equatable {
   }
 
   private func _receive<Value>(
-    _ actionCase: CasePath<Action, Value>,
+    _ actionCase: AnyCasePath<Action, Value>,
     assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
@@ -1453,7 +1453,7 @@ extension TestStore where State: Equatable {
   @MainActor
   @_disfavoredOverload
   public func receive<Value>(
-    _ actionCase: CasePath<Action, Value>,
+    _ actionCase: AnyCasePath<Action, Value>,
     timeout nanoseconds: UInt64? = nil,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
     file: StaticString = #file,
@@ -1516,7 +1516,7 @@ extension TestStore where State: Equatable {
     @_disfavoredOverload
     @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
     public func receive<Value>(
-      _ actionCase: CasePath<Action, Value>,
+      _ actionCase: AnyCasePath<Action, Value>,
       timeout duration: Duration,
       assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
       file: StaticString = #file,
@@ -1891,7 +1891,7 @@ extension TestStore {
   /// - Parameter toViewAction: A case path from action to a bindable view action.
   /// - Returns: A binding view store.
   public func bindings<ViewAction: BindableAction>(
-    action toViewAction: CasePath<Action, ViewAction>
+    action toViewAction: AnyCasePath<Action, ViewAction>
   ) -> BindingViewStore<State> where State == ViewAction.State {
     BindingViewStore(
       store: Store(initialState: self.state) {

@@ -14,6 +14,8 @@ struct RecordMeeting: Reducer {
       self.standup.duration - .seconds(self.secondsElapsed)
     }
   }
+
+  @CasePathable
   enum Action: Equatable {
     case alert(PresentationAction<Alert>)
     case delegate(Delegate)
@@ -122,7 +124,7 @@ struct RecordMeeting: Reducer {
         return .none
       }
     }
-    .ifLet(\.$alert, action: /Action.alert)
+    .ifLet(\.$alert, action: \.alert)
   }
 
   private func startSpeechRecognition(send: Send<Action>) async {

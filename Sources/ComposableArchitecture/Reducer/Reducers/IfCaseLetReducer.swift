@@ -52,8 +52,31 @@ extension Reducer {
   @inlinable
   @warn_unqualified_access
   public func ifCaseLet<CaseState, CaseAction, Case: Reducer>(
-    _ toCaseState: CasePath<State, CaseState>,
-    action toCaseAction: CasePath<Action, CaseAction>,
+    _ toCaseState: CaseKeyPath<State, CaseState>,
+    action toCaseAction: CaseKeyPath<Action, CaseAction>,
+    @ReducerBuilder<CaseState, CaseAction> then case: () -> Case,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> _IfCaseLetReducer<Self, Case>
+  where CaseState == Case.State, CaseAction == Case.Action {
+    .init(
+      parent: self,
+      child: `case`(),
+      toChildState: AnyCasePath(toCaseState),
+      toChildAction: AnyCasePath(toCaseAction),
+      fileID: fileID,
+      line: line
+    )
+  }
+
+  #if swift(>=5.9)
+    @available(*, deprecated, message: "TODO")
+  #endif
+  @inlinable
+  @warn_unqualified_access
+  public func ifCaseLet<CaseState, CaseAction, Case: Reducer>(
+    _ toCaseState: AnyCasePath<State, CaseState>,
+    action toCaseAction: AnyCasePath<Action, CaseAction>,
     @ReducerBuilder<CaseState, CaseAction> then case: () -> Case,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -78,10 +101,10 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   let child: Child
 
   @usableFromInline
-  let toChildState: CasePath<Parent.State, Child.State>
+  let toChildState: AnyCasePath<Parent.State, Child.State>
 
   @usableFromInline
-  let toChildAction: CasePath<Parent.Action, Child.Action>
+  let toChildAction: AnyCasePath<Parent.Action, Child.Action>
 
   @usableFromInline
   let fileID: StaticString
@@ -95,8 +118,8 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   init(
     parent: Parent,
     child: Child,
-    toChildState: CasePath<Parent.State, Child.State>,
-    toChildAction: CasePath<Parent.Action, Child.Action>,
+    toChildState: AnyCasePath<Parent.State, Child.State>,
+    toChildAction: AnyCasePath<Parent.Action, Child.Action>,
     fileID: StaticString,
     line: UInt
   ) {

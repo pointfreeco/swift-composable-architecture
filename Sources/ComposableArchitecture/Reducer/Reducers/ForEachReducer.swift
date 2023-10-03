@@ -55,7 +55,30 @@ extension Reducer {
   @warn_unqualified_access
   public func forEach<ElementState, ElementAction, ID: Hashable, Element: Reducer>(
     _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
-    action toElementAction: CasePath<Action, (ID, ElementAction)>,
+    action toElementAction: CaseKeyPath<Action, (ID, ElementAction)>,
+    @ReducerBuilder<ElementState, ElementAction> element: () -> Element,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> _ForEachReducer<Self, ID, Element>
+  where ElementState == Element.State, ElementAction == Element.Action {
+    _ForEachReducer(
+      parent: self,
+      toElementsState: toElementsState,
+      toElementAction: AnyCasePath(toElementAction),
+      element: element(),
+      fileID: fileID,
+      line: line
+    )
+  }
+
+  #if swift(>=5.9)
+    @available(*, deprecated, message: "TODO")
+  #endif
+  @inlinable
+  @warn_unqualified_access
+  public func forEach<ElementState, ElementAction, ID: Hashable, Element: Reducer>(
+    _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
+    action toElementAction: AnyCasePath<Action, (ID, ElementAction)>,
     @ReducerBuilder<ElementState, ElementAction> element: () -> Element,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -82,7 +105,7 @@ public struct _ForEachReducer<
   let toElementsState: WritableKeyPath<Parent.State, IdentifiedArray<ID, Element.State>>
 
   @usableFromInline
-  let toElementAction: CasePath<Parent.Action, (ID, Element.Action)>
+  let toElementAction: AnyCasePath<Parent.Action, (ID, Element.Action)>
 
   @usableFromInline
   let element: Element
@@ -99,7 +122,7 @@ public struct _ForEachReducer<
   init(
     parent: Parent,
     toElementsState: WritableKeyPath<Parent.State, IdentifiedArray<ID, Element.State>>,
-    toElementAction: CasePath<Parent.Action, (ID, Element.Action)>,
+    toElementAction: AnyCasePath<Parent.Action, (ID, Element.Action)>,
     element: Element,
     fileID: StaticString,
     line: UInt

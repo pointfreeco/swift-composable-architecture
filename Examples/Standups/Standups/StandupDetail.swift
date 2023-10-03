@@ -6,6 +6,8 @@ struct StandupDetail: Reducer {
     @PresentationState var destination: Destination.State?
     var standup: Standup
   }
+
+  @CasePathable
   enum Action: Equatable, Sendable {
     case cancelEditButtonTapped
     case delegate(Delegate)
@@ -28,10 +30,13 @@ struct StandupDetail: Reducer {
   @Dependency(\.speechClient.authorizationStatus) var authorizationStatus
 
   struct Destination: Reducer {
+    @CasePathable
     enum State: Equatable {
       case alert(AlertState<Action.Alert>)
       case edit(StandupForm.State)
     }
+
+    @CasePathable
     enum Action: Equatable, Sendable {
       case alert(Alert)
       case edit(StandupForm.Action)
@@ -42,8 +47,9 @@ struct StandupDetail: Reducer {
         case openSettings
       }
     }
+
     var body: some ReducerOf<Self> {
-      Scope(state: /State.edit, action: /Action.edit) {
+      Scope(state: \.edit, action: \.edit) {
         StandupForm()
       }
     }
@@ -114,7 +120,7 @@ struct StandupDetail: Reducer {
         }
       }
     }
-    .ifLet(\.$destination, action: /Action.destination) {
+    .ifLet(\.$destination, action: \.destination) {
       Destination()
     }
     .onChange(of: \.standup) { oldValue, newValue in
@@ -210,13 +216,13 @@ struct StandupDetailView: View {
       }
       .alert(
         store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /StandupDetail.Destination.State.alert,
-        action: StandupDetail.Destination.Action.alert
+        state: \.alert,
+        action: { .alert($0) }
       )
       .sheet(
         store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /StandupDetail.Destination.State.edit,
-        action: StandupDetail.Destination.Action.edit
+        state: \.edit,
+        action: { .edit($0) }
       ) { store in
         NavigationStack {
           StandupFormView(store: store)

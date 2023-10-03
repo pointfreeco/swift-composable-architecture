@@ -53,7 +53,48 @@ extension Reducer {
   @warn_unqualified_access
   public func ifLet<WrappedState, WrappedAction, Wrapped: Reducer>(
     _ toWrappedState: WritableKeyPath<State, WrappedState?>,
-    action toWrappedAction: CasePath<Action, WrappedAction>,
+    action toWrappedAction: CaseKeyPath<Action, WrappedAction>,
+    @ReducerBuilder<WrappedState, WrappedAction> then wrapped: () -> Wrapped,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> _IfLetReducer<Self, Wrapped>
+  where WrappedState == Wrapped.State, WrappedAction == Wrapped.Action {
+    .init(
+      parent: self,
+      child: wrapped(),
+      toChildState: toWrappedState,
+      toChildAction: AnyCasePath(toWrappedAction),
+      fileID: fileID,
+      line: line
+    )
+  }
+
+  @inlinable
+  @warn_unqualified_access
+  public func ifLet<WrappedState: _EphemeralState, WrappedAction>(
+    _ toWrappedState: WritableKeyPath<State, WrappedState?>,
+    action toWrappedAction: CaseKeyPath<Action, WrappedAction>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> _IfLetReducer<Self, EmptyReducer<WrappedState, WrappedAction>> {
+    .init(
+      parent: self,
+      child: EmptyReducer(),
+      toChildState: toWrappedState,
+      toChildAction: AnyCasePath(toWrappedAction),
+      fileID: fileID,
+      line: line
+    )
+  }
+
+  #if swift(>=5.9)
+    @available(*, deprecated, message: "TODO")
+  #endif
+  @inlinable
+  @warn_unqualified_access
+  public func ifLet<WrappedState, WrappedAction, Wrapped: Reducer>(
+    _ toWrappedState: WritableKeyPath<State, WrappedState?>,
+    action toWrappedAction: AnyCasePath<Action, WrappedAction>,
     @ReducerBuilder<WrappedState, WrappedAction> then wrapped: () -> Wrapped,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -69,11 +110,14 @@ extension Reducer {
     )
   }
 
+  #if swift(>=5.9)
+    @available(*, deprecated, message: "TODO")
+  #endif
   @inlinable
   @warn_unqualified_access
   public func ifLet<WrappedState: _EphemeralState, WrappedAction>(
     _ toWrappedState: WritableKeyPath<State, WrappedState?>,
-    action toWrappedAction: CasePath<Action, WrappedAction>,
+    action toWrappedAction: AnyCasePath<Action, WrappedAction>,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> _IfLetReducer<Self, EmptyReducer<WrappedState, WrappedAction>> {
@@ -99,7 +143,7 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   let toChildState: WritableKeyPath<Parent.State, Child.State?>
 
   @usableFromInline
-  let toChildAction: CasePath<Parent.Action, Child.Action>
+  let toChildAction: AnyCasePath<Parent.Action, Child.Action>
 
   @usableFromInline
   let fileID: StaticString
@@ -114,7 +158,7 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     parent: Parent,
     child: Child,
     toChildState: WritableKeyPath<Parent.State, Child.State?>,
-    toChildAction: CasePath<Parent.Action, Child.Action>,
+    toChildAction: AnyCasePath<Parent.Action, Child.Action>,
     fileID: StaticString,
     line: UInt
   ) {

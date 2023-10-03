@@ -78,7 +78,7 @@ public struct PresentationState<State> {
   /// Accesses the value associated with the given case for reading and writing.
   ///
   /// > Note: Accessing the wrong case will result in a runtime warning.
-  public subscript<Case>(case path: CasePath<State, Case>) -> Case? {
+  public subscript<Case>(case path: AnyCasePath<State, Case>) -> Case? {
     _read { yield self.wrappedValue.flatMap(path.extract) }
     _modify {
       let root = self.wrappedValue
@@ -255,7 +255,49 @@ extension Reducer {
   @inlinable
   public func ifLet<DestinationState, DestinationAction, Destination: Reducer>(
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
-    action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
+    action toPresentationAction: CaseKeyPath<Action, PresentationAction<DestinationAction>>,
+    @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> _PresentationReducer<Self, Destination>
+  where Destination.State == DestinationState, Destination.Action == DestinationAction {
+    _PresentationReducer(
+      base: self,
+      toPresentationState: toPresentationState,
+      toPresentationAction: AnyCasePath(toPresentationAction),
+      destination: destination(),
+      fileID: fileID,
+      line: line
+    )
+  }
+
+  /// A special overload of ``Reducer/ifLet(_:action:destination:fileID:line:)`` for alerts and
+  /// confirmation dialogs that does not require a child reducer.
+  @warn_unqualified_access
+  @inlinable
+  public func ifLet<DestinationState: _EphemeralState, DestinationAction>(
+    _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
+    action toPresentationAction: CaseKeyPath<Action, PresentationAction<DestinationAction>>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> _PresentationReducer<Self, EmptyReducer<DestinationState, DestinationAction>> {
+    self.ifLet(
+      toPresentationState,
+      action: toPresentationAction,
+      destination: {},
+      fileID: fileID,
+      line: line
+    )
+  }
+
+  #if swift(>=5.9)
+    @available(*, deprecated, message: "TODO")
+  #endif
+  @warn_unqualified_access
+  @inlinable
+  public func ifLet<DestinationState, DestinationAction, Destination: Reducer>(
+    _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
+    action toPresentationAction: AnyCasePath<Action, PresentationAction<DestinationAction>>,
     @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -271,13 +313,14 @@ extension Reducer {
     )
   }
 
-  /// A special overload of ``Reducer/ifLet(_:action:destination:fileID:line:)`` for alerts and
-  /// confirmation dialogs that does not require a child reducer.
+  #if swift(>=5.9)
+    @available(*, deprecated, message: "TODO")
+  #endif
   @warn_unqualified_access
   @inlinable
   public func ifLet<DestinationState: _EphemeralState, DestinationAction>(
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
-    action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
+    action toPresentationAction: AnyCasePath<Action, PresentationAction<DestinationAction>>,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> _PresentationReducer<Self, EmptyReducer<DestinationState, DestinationAction>> {
@@ -288,15 +331,14 @@ extension Reducer {
       fileID: fileID,
       line: line
     )
-  }
-}
+  }}
 
 public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer {
   @usableFromInline let base: Base
   @usableFromInline let toPresentationState:
     WritableKeyPath<Base.State, PresentationState<Destination.State>>
   @usableFromInline let toPresentationAction:
-    CasePath<Base.Action, PresentationAction<Destination.Action>>
+    AnyCasePath<Base.Action, PresentationAction<Destination.Action>>
   @usableFromInline let destination: Destination
   @usableFromInline let fileID: StaticString
   @usableFromInline let line: UInt
@@ -307,7 +349,7 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
   init(
     base: Base,
     toPresentationState: WritableKeyPath<Base.State, PresentationState<Destination.State>>,
-    toPresentationAction: CasePath<Base.Action, PresentationAction<Destination.Action>>,
+    toPresentationAction: AnyCasePath<Base.Action, PresentationAction<Destination.Action>>,
     destination: Destination,
     fileID: StaticString,
     line: UInt

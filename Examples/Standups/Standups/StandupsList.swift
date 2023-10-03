@@ -20,18 +20,23 @@ struct StandupsList: Reducer {
       }
     }
   }
+
+  @CasePathable
   enum Action: Equatable {
     case addStandupButtonTapped
     case confirmAddStandupButtonTapped
     case destination(PresentationAction<Destination.Action>)
     case dismissAddStandupButtonTapped
   }
+
   struct Destination: Reducer {
+    @CasePathable
     enum State: Equatable {
       case add(StandupForm.State)
       case alert(AlertState<Action.Alert>)
     }
 
+    @CasePathable
     enum Action: Equatable {
       case add(StandupForm.Action)
       case alert(Alert)
@@ -42,7 +47,7 @@ struct StandupsList: Reducer {
     }
 
     var body: some ReducerOf<Self> {
-      Scope(state: /State.add, action: /Action.add) {
+      Scope(state: \.add, action: \.add) {
         StandupForm()
       }
     }
@@ -91,7 +96,7 @@ struct StandupsList: Reducer {
         return .none
       }
     }
-    .ifLet(\.$destination, action: /Action.destination) {
+    .ifLet(\.$destination, action: \.destination) {
       Destination()
     }
   }
@@ -122,13 +127,13 @@ struct StandupsListView: View {
       .navigationTitle("Daily Standups")
       .alert(
         store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /StandupsList.Destination.State.alert,
-        action: StandupsList.Destination.Action.alert
+        state: \.alert,
+        action: { .alert($0) }
       )
       .sheet(
         store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /StandupsList.Destination.State.add,
-        action: StandupsList.Destination.Action.add
+        state: \.add,
+        action: { .add($0) }
       ) { store in
         NavigationStack {
           StandupFormView(store: store)
