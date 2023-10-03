@@ -315,7 +315,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     await withTaskCancellationHandler {
       await self.yield(while: predicate)
     } onCancel: {
-      task.rawValue?.cancel()
+      task.cancel()
     }
   }
 
@@ -338,7 +338,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     await withTaskCancellationHandler {
       await self.yield(while: predicate)
     } onCancel: {
-      task.rawValue?.cancel()
+      task.cancel()
     }
   }
 
