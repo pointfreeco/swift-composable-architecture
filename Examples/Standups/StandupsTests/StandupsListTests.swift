@@ -26,7 +26,7 @@ final class StandupsListTests: XCTestCase {
 
     standup.title = "Engineering"
     await store.send(.destination(.presented(.add(.set(\.$standup, standup))))) {
-      $0.$destination[case: /StandupsList.Destination.State.add]?.standup.title = "Engineering"
+      $0.$destination[case: \.add]?.standup.title = "Engineering"
     }
 
     await store.send(.confirmAddStandupButtonTapped) {

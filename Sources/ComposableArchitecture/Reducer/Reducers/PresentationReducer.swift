@@ -75,6 +75,33 @@ public struct PresentationState<State> {
     _modify { yield &self }
   }
 
+  public subscript<Case>(case path: CaseKeyPath<State, Case>) -> Case?
+  where State: CasePathable {
+    _read { yield self.wrappedValue.flatMap { $0[keyPath: path] } }
+    _modify {
+      let root = self.wrappedValue
+      var value = root.flatMap { $0[keyPath: path] }
+      let success = value != nil
+      yield &value
+      guard success else {
+        var description: String?
+        if let root = root,
+          let metadata = EnumMetadata(State.self),
+          let caseName = metadata.caseName(forTag: metadata.tag(of: root))
+        {
+          description = caseName
+        }
+        runtimeWarn(
+          """
+          Can't modify unrelated case\(description.map { " \($0.debugDescription)" } ?? "")
+          """
+        )
+        return
+      }
+      self.wrappedValue = value.map { path($0) }
+    }
+  }
+
   /// Accesses the value associated with the given case for reading and writing.
   ///
   /// > Note: Accessing the wrong case will result in a runtime warning.

@@ -22,13 +22,13 @@ final class AppFeatureTests: XCTestCase {
     }
 
     await store.send(.path(.element(id: 0, action: .detail(.deleteButtonTapped)))) {
-      $0.path[id: 0, case: /AppFeature.Path.State.detail]?.destination = .alert(.deleteStandup)
+      $0.path[id: 0, case: \.detail]?.destination = .alert(.deleteStandup)
     }
 
     await store.send(
       .path(.element(id: 0, action: .detail(.destination(.presented(.alert(.confirmDeletion))))))
     ) {
-      $0.path[id: 0, case: /AppFeature.Path.State.detail]?.destination = nil
+      $0.path[id: 0, case: \.detail]?.destination = nil
     }
 
     await store.receive(.path(.element(id: 0, action: .detail(.delegate(.deleteStandup))))) {
@@ -61,7 +61,7 @@ final class AppFeatureTests: XCTestCase {
     }
 
     await store.send(.path(.element(id: 0, action: .detail(.editButtonTapped)))) {
-      $0.path[id: 0, case: /AppFeature.Path.State.detail]?.destination = .edit(
+      $0.path[id: 0, case: \.detail]?.destination = .edit(
         StandupForm.State(standup: standup)
       )
     }
@@ -75,12 +75,11 @@ final class AppFeatureTests: XCTestCase {
         )
       )
     ) {
-      $0.path[id: 0, case: /AppFeature.Path.State.detail]?
-        .$destination[case: /StandupDetail.Destination.State.edit]?.standup.title = "Blob"
+      $0.path[id: 0, case: \.detail]?.$destination[case: \.edit]?.standup.title = "Blob"
     }
 
     await store.send(.path(.element(id: 0, action: .detail(.doneEditingButtonTapped)))) {
-      XCTModify(&$0.path[id: 0], case: /AppFeature.Path.State.detail) {
+      $0.path[id: 0].modify(\.some.detail) {
         $0.destination = nil
         $0.standup.title = "Blob"
       }
@@ -145,7 +144,7 @@ final class AppFeatureTests: XCTestCase {
         .element(id: 1, action: .record(.delegate(.save(transcript: "I completed the project"))))
       )
     ) {
-      $0.path[id: 0, case: /AppFeature.Path.State.detail]?.standup.meetings = [
+      $0.path[id: 0, case: \.detail]?.standup.meetings = [
         Meeting(
           id: Meeting.ID(UUID(0)),
           date: Date(timeIntervalSince1970: 1_234_567_890),
