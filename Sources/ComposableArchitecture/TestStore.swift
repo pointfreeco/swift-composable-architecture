@@ -116,7 +116,6 @@ import XCTestDynamicOverlay
 /// > ```
 /// >
 /// > (Expected: −, Actual: +)
-/// ```
 ///
 /// For a more complex example, consider the following bare-bones search feature that uses a clock
 /// and cancel token to debounce requests:
