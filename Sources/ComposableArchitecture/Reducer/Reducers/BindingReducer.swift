@@ -64,7 +64,7 @@ where State == ViewAction.State {
 
   @inlinable
   public func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    guard let bindingAction = self.toViewAction(action).flatMap(/ViewAction.binding)
+    guard let bindingAction = self.toViewAction(action).flatMap(\.binding)
     else { return .none }
 
     bindingAction.set(&state)

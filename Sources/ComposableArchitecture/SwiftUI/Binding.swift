@@ -236,7 +236,17 @@ public protocol BindableAction {
   ///
   /// - Returns: A binding action.
   static func binding(_ action: BindingAction<State>) -> Self
+
+  var binding: BindingAction<State>? { get }
 }
+
+#if swift(<5.9)
+  extension BindableAction {
+    public var binding: BindingAction<State>? {
+      /Self.binding
+    }
+  }
+#endif
 
 extension BindableAction {
   /// Constructs a binding action for the given key path and bindable value.
