@@ -19,7 +19,7 @@ private struct LogsView: View {
       }
       .background(Color.clear)
       .onReceive(Logger.shared.$logs) { self.logs = $0 }
-      .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("clear-logs"))) { _ in
+      .onReceive(NotificationCenter.default.publisher(for: .clearLogs)) { _ in
         Logger.shared.clear()
       }
     }
@@ -31,7 +31,7 @@ final class IntegrationSceneDelegate: NSObject, UIWindowSceneDelegate {
   var logsWindow: UIWindow!
 
   func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
-    NotificationCenter.default.post(name: NSNotification.Name("clear-logs"), object: nil)
+    NotificationCenter.default.post(name: .clearLogs, object: nil)
   }
 
   func scene(
@@ -48,7 +48,6 @@ final class IntegrationSceneDelegate: NSObject, UIWindowSceneDelegate {
     self.logsWindow = UIWindow(windowScene: windowScene)
     self.logsWindow.rootViewController = UIHostingController(rootView: LogsView())
     self.logsWindow.rootViewController?.view.backgroundColor = .clear
-    self.logsWindow.windowLevel = .init(999999999)
     self.logsWindow.makeKeyAndVisible()
     self.logsWindow.isUserInteractionEnabled = false
 
@@ -229,4 +228,8 @@ struct ContentView_Previews: PreviewProvider {
   static var previews: some View {
     ContentView()
   }
+}
+
+extension Notification.Name {
+  static let clearLogs = Self("clear-logs")
 }
