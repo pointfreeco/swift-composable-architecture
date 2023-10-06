@@ -25,7 +25,7 @@ struct AppFeature: Reducer {
     Scope(state: \.standupsList, action: /Action.standupsList) {
       StandupsList()
     }
-    Reduce<State, Action> { state, action in
+    Reduce { state, action in
       switch action {
       case let .path(.element(id, .detail(.delegate(delegateAction)))):
         guard case let .some(.detail(detailState)) = state.path[id: id]
@@ -83,7 +83,7 @@ struct AppFeature: Reducer {
       Path()
     }
 
-    Reduce<State, Action> { state, action in
+    Reduce { state, action in
       return .run { [standups = state.standupsList.standups] _ in
         try await withTaskCancellation(id: CancelID.saveDebounce, cancelInFlight: true) {
           try await self.clock.sleep(for: .seconds(1))

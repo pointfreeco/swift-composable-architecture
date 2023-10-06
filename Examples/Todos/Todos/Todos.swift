@@ -129,7 +129,7 @@ struct AppView: View {
 
           List {
             ForEachStore(
-              self.store.scope(state: \.filteredTodos, action: Todos.Action.todo(id:action:))
+              self.store.scope(state: \.filteredTodos, action: { .todo(id: $0, action: $1) })
             ) {
               TodoView(store: $0)
             }

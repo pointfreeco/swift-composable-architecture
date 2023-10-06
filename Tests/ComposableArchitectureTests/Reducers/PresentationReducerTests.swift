@@ -2066,7 +2066,7 @@ final class PresentationReducerTests: BaseTCATestCase {
         }
 
         var body: some ReducerOf<Self> {
-          Reduce<State, Action> { state, action in
+          Reduce { state, action in
             switch action {
             case .destination(.presented(.alert(.showDialog))):
               state.destination = .dialog(
@@ -2426,5 +2426,119 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
     // NB: Another action needs to come into the `ifLet` to cancel the child action
     await store.send(.tapAfter)
+  }
+
+  func testPresentation_leaveAlertPresentedForNonAlertActions() async {
+    if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
+      struct Child: Reducer {
+        struct State: Equatable {
+          var count = 0
+        }
+        enum Action: Equatable {
+          case decrementButtonTapped
+          case incrementButtonTapped
+        }
+        func reduce(into state: inout State, action: Action) -> Effect<Action> {
+          switch action {
+          case .decrementButtonTapped:
+            state.count -= 1
+            return .none
+          case .incrementButtonTapped:
+            state.count += 1
+            return .none
+          }
+        }
+      }
+
+      struct Parent: Reducer {
+        struct State: Equatable {
+          @PresentationState var destination: Destination.State?
+          var isDeleted = false
+        }
+        enum Action: Equatable {
+          case destination(PresentationAction<Destination.Action>)
+          case presentAlert
+          case presentChild
+        }
+
+        var body: some ReducerOf<Self> {
+          Reduce { state, action in
+            switch action {
+            case .destination(.presented(.alert(.deleteButtonTapped))):
+              state.isDeleted = true
+              return .none
+            case .destination:
+              return .none
+            case .presentAlert:
+              state.destination = .alert(
+                AlertState {
+                  TextState("Uh oh!")
+                } actions: {
+                  ButtonState(role: .destructive, action: .deleteButtonTapped) {
+                    TextState("Delete")
+                  }
+                }
+              )
+              return .none
+            case .presentChild:
+              state.destination = .child(Child.State())
+              return .none
+            }
+          }
+          .ifLet(\.$destination, action: /Action.destination) {
+            Destination()
+          }
+        }
+        struct Destination: Reducer {
+          enum State: Equatable {
+            case alert(AlertState<Action.Alert>)
+            case child(Child.State)
+          }
+          enum Action: Equatable {
+            case alert(Alert)
+            case child(Child.Action)
+
+            enum Alert: Equatable {
+              case deleteButtonTapped
+            }
+          }
+          var body: some ReducerOf<Self> {
+            Scope(state: /State.alert, action: /Action.alert) {}
+            Scope(state: /State.child, action: /Action.child) {
+              Child()
+            }
+          }
+        }
+      }
+      let line = #line - 6
+
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      }
+
+      await store.send(.presentAlert) {
+        $0.destination = .alert(
+          AlertState {
+            TextState("Uh oh!")
+          } actions: {
+            ButtonState(role: .destructive, action: .deleteButtonTapped) {
+              TextState("Delete")
+            }
+          }
+        )
+      }
+
+      #if DEBUG
+        XCTExpectFailure {
+          $0.compactDescription.hasPrefix(
+            """
+            A "Scope" at "\(#fileID):\(line)" received a child action when child state was set to a \
+            different case. …
+            """
+          )
+        }
+      #endif
+      await store.send(.destination(.presented(.child(.decrementButtonTapped))))
+    }
   }
 }

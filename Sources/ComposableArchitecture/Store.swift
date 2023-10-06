@@ -60,17 +60,17 @@ import SwiftUI
 ///   var body: some View {
 ///     TabView {
 ///       ActivityView(
-///         store: self.store.scope(state: \.activity, action: AppFeature.Action.activity)
+///         store: self.store.scope(state: \.activity, action: { .activity($0) })
 ///       )
 ///       .tabItem { Text("Activity") }
 ///
 ///       SearchView(
-///         store: self.store.scope(state: \.search, action: AppFeature.Action.search)
+///         store: self.store.scope(state: \.search, action: { .search($0) })
 ///       )
 ///       .tabItem { Text("Search") }
 ///
 ///       ProfileView(
-///         store: self.store.scope(state: \.profile, action: AppFeature.Action.profile)
+///         store: self.store.scope(state: \.profile, action: { .profile($0) })
 ///       )
 ///       .tabItem { Text("Profile") }
 ///     }

@@ -6,16 +6,20 @@ extension Effect {
   /// To turn an effect into a debounce-able one you must provide an identifier, which is used to
   /// determine which in-flight effect should be canceled in order to start a new effect. Any
   /// hashable value can be used for the identifier, such as a string, but you can add a bit of
-  /// protection against typos by defining a new type that conforms to `Hashable`, such as an empty
-  /// struct:
+  /// protection against typos by defining a new type that conforms to `Hashable`, such as an enum:
   ///
   /// ```swift
   /// case let .textChanged(text):
   ///   enum CancelID { case search }
   ///
-  ///   return self.apiClient.search(text)
-  ///     .debounce(id: CancelID.search, for: 0.5, scheduler: self.mainQueue)
-  ///     .map(Action.searchResponse)
+  ///   return .run { send in
+  ///     await send(
+  ///       .searchResponse(
+  ///         TaskResult { await self.apiClient.search(text) }
+  ///       )
+  ///     )
+  ///   }
+  ///   .debounce(id: CancelID.search, for: 0.5, scheduler: self.mainQueue)
   /// ```
   ///
   /// - Parameters:

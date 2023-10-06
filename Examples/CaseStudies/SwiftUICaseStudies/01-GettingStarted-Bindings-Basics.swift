@@ -72,7 +72,7 @@ struct BindingBasicsView: View {
         HStack {
           TextField(
             "Type here",
-            text: viewStore.binding(get: \.text, send: BindingBasics.Action.textChanged)
+            text: viewStore.binding(get: \.text, send: { .textChanged($0) })
           )
           .disableAutocorrection(true)
           .foregroundStyle(viewStore.toggleIsOn ? Color.secondary : .primary)
@@ -82,13 +82,13 @@ struct BindingBasicsView: View {
 
         Toggle(
           "Disable other controls",
-          isOn: viewStore.binding(get: \.toggleIsOn, send: BindingBasics.Action.toggleChanged)
+          isOn: viewStore.binding(get: \.toggleIsOn, send: { .toggleChanged(isOn: $0) })
             .resignFirstResponder()
         )
 
         Stepper(
           "Max slider value: \(viewStore.stepCount)",
-          value: viewStore.binding(get: \.stepCount, send: BindingBasics.Action.stepCountChanged),
+          value: viewStore.binding(get: \.stepCount, send: { .stepCountChanged($0) }),
           in: 0...100
         )
         .disabled(viewStore.toggleIsOn)
@@ -96,10 +96,7 @@ struct BindingBasicsView: View {
         HStack {
           Text("Slider value: \(Int(viewStore.sliderValue))")
           Slider(
-            value: viewStore.binding(
-              get: \.sliderValue,
-              send: BindingBasics.Action.sliderValueChanged
-            ),
+            value: viewStore.binding(get: \.sliderValue, send: { .sliderValueChanged($0) }),
             in: 0...Double(viewStore.stepCount)
           )
           .tint(.accentColor)
