@@ -30,6 +30,7 @@ final class EnumTests: BaseIntegrationTests {
         """)
     ])
     self.app.buttons["Increment"].tap()
+    XCTAssertEqual(self.app.staticTexts["1"].exists, true)
     self.assertLogs([
       .unordered(
         """

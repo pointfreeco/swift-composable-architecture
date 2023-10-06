@@ -81,103 +81,100 @@ struct ContentView: View {
   @State var isNavigationTestCasePresented = false
 
   var body: some View {
-    Group {
-      if self.isNavigationTestCasePresented {
-        NavigationTestCaseView()
-      } else {
-        NavigationStack {
-          List {
-            Section {
-              NavigationLink("Basics") {
-                Form {
-                  BasicsView()
-                }
+    NavigationStack {
+      List {
+        Section {
+          NavigationLink("Basics") {
+            Form {
+              BasicsView()
+            }
+          }
+          NavigationLink("Enum") {
+            EnumView()
+          }
+          NavigationLink("Optional") {
+            OptionalView()
+          }
+          NavigationLink("Identified list") {
+            IdentifiedListView()
+          }
+          Button("Navigation") {
+            self.isNavigationTestCasePresented = true
+          }
+          .sheet(isPresented: self.$isNavigationTestCasePresented) {
+            NavigationTestCaseView()
+          }
+          NavigationLink("Siblings") {
+            SiblingFeaturesView()
+          }
+          NavigationLink("Presentation") {
+            PresentationView()
+          }
+        }
+        
+        Section {
+          ForEach(TestCase.allCases) { test in
+            switch test {
+            case .escapedWithViewStore:
+              NavigationLink(test.rawValue) {
+                EscapedWithViewStoreTestCaseView()
               }
-              NavigationLink("Enum") {
-                EnumView()
+              
+            case .forEachBinding:
+              NavigationLink(test.rawValue) {
+                ForEachBindingTestCaseView()
               }
-              NavigationLink("Optional") {
-                OptionalView()
+              
+            case .navigationStack:
+              Button(test.rawValue) {
+                self.isNavigationStackTestCasePresented = true
               }
-              NavigationLink("Identified list") {
-                IdentifiedListView()
+              .foregroundColor(.black)
+              .sheet(isPresented: self.$isNavigationStackTestCasePresented) {
+                NavigationStackTestCaseView()
               }
-              Button("Navigation") {
-                self.isNavigationTestCasePresented = true
+              
+            case .navigationStackBinding:
+              Button(test.rawValue) {
+                self.isNavigationStackBindingTestCasePresented = true
               }
-              NavigationLink("Siblings") {
-                SiblingFeaturesView()
+              .foregroundColor(.black)
+              .sheet(isPresented: self.$isNavigationStackBindingTestCasePresented) {
+                NavigationStackBindingTestCaseView()
               }
-              NavigationLink("Presentation") {
-                PresentationView()
+              
+            case .presentation:
+              NavigationLink(test.rawValue) {
+                PresentationTestCaseView()
+              }
+              
+            case .presentationItem:
+              NavigationLink(test.rawValue) {
+                PresentationItemTestCaseView()
+              }
+              
+            case .switchStore:
+              NavigationLink(test.rawValue) {
+                SwitchStoreTestCaseView()
+              }
+              
+            case .bindingLocal:
+              Button(test.rawValue) {
+                self.isBindingLocalTestCasePresented = true
+              }
+              .foregroundColor(.black)
+              .sheet(isPresented: self.$isBindingLocalTestCasePresented) {
+                BindingLocalTestCaseView()
               }
             }
-
-            Section {
-              ForEach(TestCase.allCases) { test in
-                switch test {
-                case .escapedWithViewStore:
-                  NavigationLink(test.rawValue) {
-                    EscapedWithViewStoreTestCaseView()
-                  }
-
-                case .forEachBinding:
-                  NavigationLink(test.rawValue) {
-                    ForEachBindingTestCaseView()
-                  }
-
-                case .navigationStack:
-                  Button(test.rawValue) {
-                    self.isNavigationStackTestCasePresented = true
-                  }
-                  .foregroundColor(.black)
-                  .sheet(isPresented: self.$isNavigationStackTestCasePresented) {
-                    NavigationStackTestCaseView()
-                  }
-
-                case .navigationStackBinding:
-                  Button(test.rawValue) {
-                    self.isNavigationStackBindingTestCasePresented = true
-                  }
-                  .foregroundColor(.black)
-                  .sheet(isPresented: self.$isNavigationStackBindingTestCasePresented) {
-                    NavigationStackBindingTestCaseView()
-                  }
-
-                case .presentation:
-                  NavigationLink(test.rawValue) {
-                    PresentationTestCaseView()
-                  }
-
-                case .presentationItem:
-                  NavigationLink(test.rawValue) {
-                    PresentationItemTestCaseView()
-                  }
-
-                case .switchStore:
-                  NavigationLink(test.rawValue) {
-                    SwitchStoreTestCaseView()
-                  }
-
-                case .bindingLocal:
-                  Button(test.rawValue) {
-                    self.isBindingLocalTestCasePresented = true
-                  }
-                  .foregroundColor(.black)
-                  .sheet(isPresented: self.$isBindingLocalTestCasePresented) {
-                    BindingLocalTestCaseView()
-                  }
-                }
-              }
-            } header: {
-              Text("Legacy")
-            }
-
-            Section {
-              NavigationLink("Binding Animations Test Bench") {
-                BindingsAnimationsTestBench()
-              }
-            }
+          }
+        } header: {
+          Text("Legacy")
+        }
+        
+        Section {
+          NavigationLink("Binding Animations Test Bench") {
+            BindingsAnimationsTestBench()
           }
         }
       }
