@@ -213,7 +213,7 @@ additional logic, such as popping the "edit" feature and saving the edited item 
 
 ```swift
 case let .path(.element(id: id, action: .editItem(.saveButtonTapped))):
-  guard case let .editItem(editItemState) = self.path[id: id]
+  guard case let .editItem(editItemState) = state.path[id: id]
   else { return .none }
 
   state.path.pop(from: id)
