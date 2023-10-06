@@ -122,7 +122,7 @@ enum Log: ExpressibleByStringLiteral, CustomStringConvertible {
   var description: String {
     switch self {
     case let .exact(log), let .optional(log), let .matching(log), let .unordered(log):
-      log
+      return log
     }
   }
 }
