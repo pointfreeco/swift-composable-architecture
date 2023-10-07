@@ -12,12 +12,23 @@ class BaseIntegrationTests: XCTestCase {
   }
 
   override func setUp() {
+    // SnapshotTesting.isRecording = true
     // self.continueAfterFailure = false
     self.app = XCUIApplication()
     self.app.launchEnvironment["UI_TEST"] = "true"
     self.app.launch()
     self.logs = self.app.staticTexts["composable-architecture.debug.logs"]
-    // SnapshotTesting.isRecording = true
+    // NB: When opening URLs through XCUIDevice the simulator will sometimes ask you to
+    //     confirm opening. This taps on "Open" if such an alert appears.
+    //
+    //     More info: https://developer.apple.com/forums/thread/25355?answerId=765146022#765146022
+    self.addUIInterruptionMonitor(withDescription: "System Dialog") { alert in
+      let open = alert.buttons.element(boundBy: 1)
+      if open.exists {
+        open.tap()
+      }
+      return true
+    }
   }
 
   override func tearDown() {
