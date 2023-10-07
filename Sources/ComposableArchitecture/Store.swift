@@ -792,7 +792,10 @@ extension ScopedReducer: AnyScopedReducer {
     childStore.parentCancellable = store.state
       .dropFirst()
       .sink { [weak childStore] newValue in
-        guard !reducer.isSending, let childStore = childStore else { return }
+        guard
+          !reducer.isSending,
+          let childStore = childStore
+        else { return }
         let newValue = toRescopedState(newValue)
         guard isDuplicate.map({ !$0(childStore.state.value, newValue) }) ?? true else {
           return
@@ -886,6 +889,7 @@ fileprivate func typeName<State, Action>(of store: Store<State, Action>) -> Stri
   let stateType = typeName(State.self, genericsAbbreviated: false)
   let actionType = typeName(Action.self, genericsAbbreviated: false)
   // TODO: `PresentationStoreOf`, `StackStoreOf`, `IdentifiedStoreOf`?
+  //       `StoreOf<Feature?>`
   if stateType.hasSuffix(".State"),
      actionType.hasSuffix(".Action"),
      stateType.dropLast(6) == actionType.dropLast(7)
