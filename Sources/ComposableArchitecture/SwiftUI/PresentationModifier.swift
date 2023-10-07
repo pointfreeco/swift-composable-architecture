@@ -213,7 +213,6 @@ public struct PresentationStore<
   }
 
   public var body: some View {
-    let id = self.toID(self.viewStore.state)
     self.content(
       self.viewStore.binding(
         get: {
@@ -224,8 +223,7 @@ public struct PresentationStore<
         compactSend: {
           guard
             $0 == nil,
-            self.viewStore.wrappedValue != nil,
-            id == nil || self.toID(self.viewStore.state) == id
+            self.viewStore.wrappedValue != nil
           else { return nil }
           return .dismiss
         }
