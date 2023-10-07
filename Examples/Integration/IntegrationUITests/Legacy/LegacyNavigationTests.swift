@@ -58,12 +58,14 @@ final class LegacyNavigationTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["Root"].exists, true)
   }
 
-  func testChildEffectsCancelOnDismiss() async throws {
+  func testChildEffectsCancelOnDismiss() {
     self.app.buttons["Go to counter"].tap()
     self.app.buttons["Run effect"].tap()
     self.app.buttons["Root"].tap()
-    try await Task.sleep(for: .seconds(3))
-    XCTAssertEqual(self.app.staticTexts["Child response: 1"].exists, false)
+    XCTAssertEqual(
+      self.app.staticTexts["Child response: 1"].waitForExistence(timeout: 3),
+      false
+    )
   }
 
   func testChildViewIdentity() {

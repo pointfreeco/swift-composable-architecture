@@ -7,7 +7,6 @@ struct SiblingFeaturesView: View {
   }
 
   var body: some View {
-    let _ = Logger.shared.log("\(Self.self).body")
     VStack {
       Form {
         BasicsView(

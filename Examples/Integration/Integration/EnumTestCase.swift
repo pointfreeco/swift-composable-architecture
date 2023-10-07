@@ -51,31 +51,27 @@ struct EnumView: View {
           }
         }
       }
-    }
-    IfLetStore(
-      self.store.scope(state: \.$destination, action: { .destination($0) }),
-      state: /Feature.Destination.State.feature1,
-      action: { .feature1($0) }
-    ) { store in
-      Section {
-        Form {
+      IfLetStore(
+        self.store.scope(state: \.$destination, action: { .destination($0) }),
+        state: /Feature.Destination.State.feature1,
+        action: { .feature1($0) }
+      ) { store in
+        Section {
           BasicsView(store: store)
+        } header: {
+          Text("Feature 1")
         }
-      } header: {
-        Text("Feature 1")
       }
-    }
-    IfLetStore(
-      self.store.scope(state: \.$destination, action: { .destination($0) }),
-      state: /Feature.Destination.State.feature2,
-      action: { .feature2($0) }
-    ) { store in
-      Section {
-        Form {
+      IfLetStore(
+        self.store.scope(state: \.$destination, action: { .destination($0) }),
+        state: /Feature.Destination.State.feature2,
+        action: { .feature2($0) }
+      ) { store in
+        Section {
           BasicsView(store: store)
+        } header: {
+          Text("Feature 2")
         }
-      } header: {
-        Text("Feature 2")
       }
     }
   }
@@ -138,5 +134,11 @@ struct EnumView: View {
         Destination()
       }
     }
+  }
+}
+
+struct EnumTestCase_Previews: PreviewProvider {
+  static var previews: some View {
+    EnumView()
   }
 }

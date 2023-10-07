@@ -15,6 +15,7 @@ struct IdentifiedListView: View {
 
   var body: some View {
     WithViewStore(self.store, observe: ViewState.init) { viewStore in
+      let _ = Logger.shared.log("\(Self.self).body")
       List {
         Section {
           if let firstCount = viewStore.firstCount {
@@ -28,7 +29,10 @@ struct IdentifiedListView: View {
           }
         }
         ForEachStore(self.store.scope(state: \.rows, action: { .row(id: $0, action: $1) })) { store in
-          WithViewStore(store.scope(state: \.id, action: { $0 }), observe: { $0 }) { viewStore in
+          let _ = Logger.shared.log("\(Self.self).body.ForEachStore")
+          let idStore = store.scope(state: \.id, action: { $0 })
+          WithViewStore(idStore, observe: { $0 }) { viewStore in
+            let _ = Logger.shared.log("\(type(of: idStore))")
             Section {
               HStack {
                 VStack {
