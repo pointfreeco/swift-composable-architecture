@@ -46,7 +46,7 @@ class BaseIntegrationTests: XCTestCase {
   func clearLogs() {
     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
       let systemAlerts = XCUIApplication(bundleIdentifier: "com.apple.springboard").alerts
-      if systemAlerts.buttons["Open"].waitForExistence(timeout: 1) {
+      if systemAlerts.buttons["Open"].exists {
         systemAlerts.buttons["Open"].tap()
       }
     }
