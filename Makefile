@@ -1,5 +1,5 @@
 CONFIG = debug
-PLATFORM_IOS = iOS Simulator,id=$(call udid_for,iPhone,iOS-16)
+PLATFORM_IOS = iOS Simulator,id=$(call udid_for,iPhone,iOS-17)
 PLATFORM_MACOS = macOS
 PLATFORM_MAC_CATALYST = macOS,variant=Mac Catalyst
 PLATFORM_TVOS = tvOS Simulator,id=$(call udid_for,TV,tvOS-16)
