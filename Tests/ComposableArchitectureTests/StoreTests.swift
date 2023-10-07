@@ -426,7 +426,7 @@ final class StoreTests: BaseTCATestCase {
         state.child = .init(count: nil)
         return .none
 
-      case .child(let childCount):
+      case let .child(childCount):
         state.count = childCount
         return .none
       }

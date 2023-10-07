@@ -89,6 +89,15 @@ public struct DismissEffect: Sendable {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) async {
+    await callAsFunction(transaction: Transaction(animation: animation), fileID: fileID, line: line)
+  }
+
+  @MainActor
+  public func callAsFunction(
+    transaction: Transaction,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) async {
     guard let dismiss = self.dismiss
     else {
       runtimeWarn(
@@ -104,7 +113,7 @@ public struct DismissEffect: Sendable {
       )
       return
     }
-    withAnimation(animation) {
+    withTransaction(transaction) {
       dismiss()
     }
   }

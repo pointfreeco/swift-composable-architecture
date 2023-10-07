@@ -2,260 +2,177 @@ import ComposableArchitecture
 import SwiftUI
 
 struct RootView: View {
+  @State var isNavigationStackCaseStudyPresented = false
   let store: StoreOf<Root>
 
   var body: some View {
     NavigationStack {
       Form {
-        Section(header: Text("Getting started")) {
-          NavigationLink(
-            "Basics",
-            destination: CounterDemoView(
-              store: self.store.scope(
-                state: \.counter,
-                action: Root.Action.counter
-              )
+        Section {
+          NavigationLink("Basics") {
+            CounterDemoView(
+              store: self.store.scope(state: \.counter, action: { .counter($0) })
             )
-          )
-
-          NavigationLink(
-            "Combining reducers",
-            destination: TwoCountersView(
-              store: self.store.scope(
-                state: \.twoCounters,
-                action: Root.Action.twoCounters
-              )
+          }
+          NavigationLink("Combining reducers") {
+            TwoCountersView(
+              store: self.store.scope(state: \.twoCounters, action: { .twoCounters($0) })
             )
-          )
-
-          NavigationLink(
-            "Bindings",
-            destination: BindingBasicsView(
-              store: self.store.scope(
-                state: \.bindingBasics,
-                action: Root.Action.bindingBasics
-              )
+          }
+          NavigationLink("Bindings") {
+            BindingBasicsView(
+              store: self.store.scope(state: \.bindingBasics, action: { .bindingBasics($0) })
             )
-          )
-
-          NavigationLink(
-            "Form bindings",
-            destination: BindingFormView(
-              store: self.store.scope(
-                state: \.bindingForm,
-                action: Root.Action.bindingForm
-              )
+          }
+          NavigationLink("Form bindings") {
+            BindingFormView(
+              store: self.store.scope(state: \.bindingForm, action: { .bindingForm($0) })
             )
-          )
-
-          NavigationLink(
-            "Optional state",
-            destination: OptionalBasicsView(
-              store: self.store.scope(
-                state: \.optionalBasics,
-                action: Root.Action.optionalBasics
-              )
+          }
+          NavigationLink("Optional state") {
+            OptionalBasicsView(
+              store: self.store.scope(state: \.optionalBasics, action: { .optionalBasics($0) })
             )
-          )
-
-          NavigationLink(
-            "Shared state",
-            destination: SharedStateView(
-              store: self.store.scope(
-                state: \.shared,
-                action: Root.Action.shared
-              )
+          }
+          NavigationLink("Shared state") {
+            SharedStateView(
+              store: self.store.scope(state: \.shared, action: { .shared($0) })
             )
-          )
-
-          NavigationLink(
-            "Alerts and Confirmation Dialogs",
-            destination: AlertAndConfirmationDialogView(
+          }
+          NavigationLink("Alerts and Confirmation Dialogs") {
+            AlertAndConfirmationDialogView(
               store: self.store.scope(
                 state: \.alertAndConfirmationDialog,
-                action: Root.Action.alertAndConfirmationDialog
+                action: { .alertAndConfirmationDialog($0) }
               )
             )
-          )
-
-          NavigationLink(
-            "Focus State",
-            destination: FocusDemoView(
-              store: self.store.scope(
-                state: \.focusDemo,
-                action: Root.Action.focusDemo
-              )
+          }
+          NavigationLink("Focus State") {
+            FocusDemoView(
+              store: self.store.scope(state: \.focusDemo, action: { .focusDemo($0) })
             )
-          )
-
-          NavigationLink(
-            "Animations",
-            destination: AnimationsView(
-              store: self.store.scope(
-                state: \.animation,
-                action: Root.Action.animation
-              )
+          }
+          NavigationLink("Animations") {
+            AnimationsView(
+              store: self.store.scope(state: \.animation, action: { .animation($0) })
             )
-          )
+          }
+        } header: {
+          Text("Getting started")
         }
 
-        Section(header: Text("Effects")) {
-          NavigationLink(
-            "Basics",
-            destination: EffectsBasicsView(
-              store: self.store.scope(
-                state: \.effectsBasics,
-                action: Root.Action.effectsBasics
-              )
+        Section {
+          NavigationLink("Basics") {
+            EffectsBasicsView(
+              store: self.store.scope(state: \.effectsBasics, action: { .effectsBasics($0) })
             )
-          )
-
-          NavigationLink(
-            "Cancellation",
-            destination: EffectsCancellationView(
+          }
+          NavigationLink("Cancellation") {
+            EffectsCancellationView(
               store: self.store.scope(
                 state: \.effectsCancellation,
-                action: Root.Action.effectsCancellation)
+                action: { .effectsCancellation($0) }
+              )
             )
-          )
-
-          NavigationLink(
-            "Long-living effects",
-            destination: LongLivingEffectsView(
+          }
+          NavigationLink("Long-living effects") {
+            LongLivingEffectsView(
               store: self.store.scope(
                 state: \.longLivingEffects,
-                action: Root.Action.longLivingEffects
+                action: { .longLivingEffects($0) }
               )
             )
-          )
-
-          NavigationLink(
-            "Refreshable",
-            destination: RefreshableView(
-              store: self.store.scope(
-                state: \.refreshable,
-                action: Root.Action.refreshable
-              )
+          }
+          NavigationLink("Refreshable") {
+            RefreshableView(
+              store: self.store.scope(state: \.refreshable, action: { .refreshable($0) })
             )
-          )
-
-          NavigationLink(
-            "Timers",
-            destination: TimersView(
-              store: self.store.scope(
-                state: \.timers,
-                action: Root.Action.timers
-              )
+          }
+          NavigationLink("Timers") {
+            TimersView(
+              store: self.store.scope(state: \.timers, action: { .timers($0) })
             )
-          )
-
-          NavigationLink(
-            "Web socket",
-            destination: WebSocketView(
-              store: self.store.scope(
-                state: \.webSocket,
-                action: Root.Action.webSocket
-              )
+          }
+          NavigationLink("Web socket") {
+            WebSocketView(
+              store: self.store.scope(state: \.webSocket, action: { .webSocket($0) })
             )
-          )
+          }
+        } header: {
+          Text("Effects")
         }
 
-        Section(header: Text("Navigation")) {
-          NavigationLink(
-            "Stack",
-            destination: NavigationDemoView(
+        Section {
+          Button("Stack") {
+            self.isNavigationStackCaseStudyPresented = true
+          }
+          .buttonStyle(.plain)
+
+          NavigationLink("Navigate and load data") {
+            NavigateAndLoadView(
+              store: self.store.scope(state: \.navigateAndLoad, action: { .navigateAndLoad($0) })
+            )
+          }
+
+          NavigationLink("Lists: Navigate and load data") {
+            NavigateAndLoadListView(
               store: self.store.scope(
-                state: \.navigationStack,
-                action: Root.Action.navigationStack
+                state: \.navigateAndLoadList, action: { .navigateAndLoadList($0) }
               )
             )
-          )
-
-          NavigationLink(
-            "Navigate and load data",
-            destination: NavigateAndLoadView(
-              store: self.store.scope(
-                state: \.navigateAndLoad,
-                action: Root.Action.navigateAndLoad
-              )
+          }
+          NavigationLink("Sheets: Present and load data") {
+            PresentAndLoadView(
+              store: self.store.scope(state: \.presentAndLoad, action: { .presentAndLoad($0) })
             )
-          )
-
-          NavigationLink(
-            "Lists: Navigate and load data",
-            destination: NavigateAndLoadListView(
-              store: self.store.scope(
-                state: \.navigateAndLoadList,
-                action: Root.Action.navigateAndLoadList
-              )
+          }
+          NavigationLink("Sheets: Load data then present") {
+            LoadThenPresentView(
+              store: self.store.scope(state: \.loadThenPresent, action: { .loadThenPresent($0) })
             )
-          )
-
-          NavigationLink(
-            "Sheets: Present and load data",
-            destination: PresentAndLoadView(
-              store: self.store.scope(
-                state: \.presentAndLoad,
-                action: Root.Action.presentAndLoad
-              )
-            )
-          )
-
-          NavigationLink(
-            "Sheets: Load data then present",
-            destination: LoadThenPresentView(
-              store: self.store.scope(
-                state: \.loadThenPresent,
-                action: Root.Action.loadThenPresent
-              )
-            )
-          )
-
-          NavigationLink(
-            "Multiple destinations",
-            destination: MultipleDestinationsView(
+          }
+          NavigationLink("Multiple destinations") {
+            MultipleDestinationsView(
               store: self.store.scope(
                 state: \.multipleDestinations,
-                action: Root.Action.multipleDestinations
+                action: { .multipleDestinations($0) }
               )
             )
-          )
+          }
+        } header: {
+          Text("Navigation")
         }
 
-        Section(header: Text("Higher-order reducers")) {
-          NavigationLink(
-            "Reusable favoriting component",
-            destination: EpisodesView(
-              store: self.store.scope(
-                state: \.episodes,
-                action: Root.Action.episodes
-              )
+        Section {
+          NavigationLink("Reusable favoriting component") {
+            EpisodesView(
+              store: self.store.scope(state: \.episodes, action: { .episodes($0) })
             )
-          )
-
-          NavigationLink(
-            "Reusable offline download component",
-            destination: CitiesView(
-              store: self.store.scope(
-                state: \.map,
-                action: Root.Action.map
-              )
+          }
+          NavigationLink("Reusable offline download component") {
+            CitiesView(
+              store: self.store.scope(state: \.map, action: { .map($0) })
             )
-          )
-
-          NavigationLink(
-            "Recursive state and actions",
-            destination: NestedView(
-              store: self.store.scope(
-                state: \.nested,
-                action: Root.Action.nested
-              )
+          }
+          NavigationLink("Recursive state and actions") {
+            NestedView(
+              store: self.store.scope(state: \.nested, action: { .nested($0) })
             )
-          )
+          }
+        } header: {
+          Text("Higher-order reducers")
         }
       }
       .navigationTitle("Case Studies")
       .onAppear { self.store.send(.onAppear) }
+      .sheet(isPresented: self.$isNavigationStackCaseStudyPresented) {
+        NavigationDemoView(
+          store: self.store.scope(
+            state: \.navigationStack,
+            action: { .navigationStack($0) }
+          )
+        )
+      }
     }
   }
 }

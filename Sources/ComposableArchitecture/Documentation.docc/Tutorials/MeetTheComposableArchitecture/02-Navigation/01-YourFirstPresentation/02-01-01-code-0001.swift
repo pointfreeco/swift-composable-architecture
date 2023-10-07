@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct ContentView: View {
+struct ContactsView: View {
   let store: StoreOf<ContactsFeature>
 
   var body: some View {

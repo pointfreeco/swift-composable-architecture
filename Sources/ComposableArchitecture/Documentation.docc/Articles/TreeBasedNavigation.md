@@ -63,7 +63,7 @@ struct InventoryFeature: Reducer {
   enum Action: Equatable { /* ... */ }
   
   var body: some ReducerOf<Self> {
-    Reduce<State, Action> { state, action in 
+    Reduce { state, action in 
       switch action {
       case .addButtonTapped:
         // Populating this state performs the navigation
@@ -232,6 +232,26 @@ struct InventoryFeature: Reducer {
   // ...
 }
 ```
+
+And then we must make use of the ``Reducer/ifLet(_:action:destination:fileID:line:)`` operator to
+integrate the domain of the destination with the domain of the parent feature:
+
+```swift
+struct InventoryFeature: Reducer {
+  // ...
+
+  var body: some ReducerOf<Self> {
+    Reduce { state, action in 
+      // ...
+    }
+    .ifLet(\.$destination, action: /Action.destination) { 
+      Destination()
+    }
+  }
+}
+```
+
+That completes the steps for integrating the child and parent features together.
 
 Now when we want to present a particular feature we can simply populate the `destination` state
 with a case of the enum:
@@ -496,7 +516,7 @@ struct Feature: Reducer {
     @PresentationState var counter: CounterFeature.State?
   }
   enum Action: Equatable {
-    case counter(CounterFeature.Action)
+    case counter(PresentationAction<CounterFeature.Action>)
   }
   var body: some ReducerOf<Self> {
     Reduce { state, action in
@@ -558,7 +578,7 @@ other.
 However, the more complex the features become, the more cumbersome testing their integration can be.
 By default, ``TestStore`` requires us to be exhaustive in our assertions. We must assert on how
 every piece of state changes, how every effect feeds data back into the system, and we must make
-sure that all effects finish by the end of the test (see <docs:Testing> for more info).
+sure that all effects finish by the end of the test (see <doc:Testing> for more info).
 
 But ``TestStore`` also supports a form of testing known as "non-exhaustive testing" that allows you
 to assert on only the parts of the features that you actually care about (see 

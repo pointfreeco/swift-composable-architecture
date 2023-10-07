@@ -25,7 +25,7 @@ struct AppFeature: Reducer {
     Scope(state: \.standupsList, action: /Action.standupsList) {
       StandupsList()
     }
-    Reduce<State, Action> { state, action in
+    Reduce { state, action in
       switch action {
       case let .path(.element(id, .detail(.delegate(delegateAction)))):
         guard case let .some(.detail(detailState)) = state.path[id: id]
@@ -83,7 +83,7 @@ struct AppFeature: Reducer {
       Path()
     }
 
-    Reduce<State, Action> { state, action in
+    Reduce { state, action in
       return .run { [standups = state.standupsList.standups] _ in
         try await withTaskCancellation(id: CancelID.saveDebounce, cancelInFlight: true) {
           try await self.clock.sleep(for: .seconds(1))
@@ -97,22 +97,18 @@ struct AppFeature: Reducer {
   struct Path: Reducer {
     enum State: Equatable {
       case detail(StandupDetail.State)
-      case meeting(MeetingReducer.State)
+      case meeting(Meeting, standup: Standup)
       case record(RecordMeeting.State)
     }
 
     enum Action: Equatable {
       case detail(StandupDetail.Action)
-      case meeting(MeetingReducer.Action)
       case record(RecordMeeting.Action)
     }
 
     var body: some Reducer<State, Action> {
       Scope(state: /State.detail, action: /Action.detail) {
         StandupDetail()
-      }
-      Scope(state: /State.meeting, action: /Action.meeting) {
-        MeetingReducer()
       }
       Scope(state: /State.record, action: /Action.record) {
         RecordMeeting()
@@ -137,12 +133,8 @@ struct AppView: View {
           action: AppFeature.Path.Action.detail,
           then: StandupDetailView.init(store:)
         )
-      case .meeting:
-        CaseLet(
-          /AppFeature.Path.State.meeting,
-          action: AppFeature.Path.Action.meeting,
-          then: MeetingView.init(store:)
-        )
+      case let .meeting(meeting, standup: standup):
+        MeetingView(meeting: meeting, standup: standup)
       case .record:
         CaseLet(
           /AppFeature.Path.State.record,

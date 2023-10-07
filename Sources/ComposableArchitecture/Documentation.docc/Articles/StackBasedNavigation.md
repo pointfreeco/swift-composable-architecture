@@ -213,7 +213,7 @@ additional logic, such as popping the "edit" feature and saving the edited item 
 
 ```swift
 case let .path(.element(id: id, action: .editItem(.saveButtonTapped))):
-  guard case let .editItem(editItemState) = self.path[id: id]
+  guard case let .editItem(editItemState) = state.path[id: id]
   else { return .none }
 
   state.path.pop(from: id)
@@ -336,7 +336,7 @@ struct CounterFeature: Reducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .decrementButtonTapped:
-      state.count += 1
+      state.count -= 1
       return .none
 
     case .incrementButtonTapped:
@@ -429,7 +429,7 @@ use the `XCTModify` helper:
 
 ```swift
 await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) {
-  XCTModify(&$0[id: 0], case: /Feature.Path.State.counter) {
+  XCTModify(&$0.path[id: 0], case: /Feature.Path.State.counter) {
     $0.count = 4
   }
 }
@@ -439,7 +439,7 @@ The `XCTModify` function takes an `inout` piece of enum state as its first argum
 path for its second argument, and then uses the case path to extract the payload in that case, 
 allow you to perform a mutation to it, and embed the data back into the enum. So, in the code
 above we are subscripting into ID 0, isolating the `.counter` case of the `Path.State` enum, 
-and mutating the `count` to be 4 since it incremented by one. Further, if the case of `$0[id: 0]`
+and mutating the `count` to be 4 since it incremented by one. Further, if the case of `$0.path[id: 0]`
 didn't match the case path, then a test failure would be emitted.
 
 Another option is to use ``StackState/subscript(id:case:)`` to simultaneously subscript into an 
@@ -447,7 +447,7 @@ ID on the stack _and_ a case of the path enum:
 
 ```swift
 await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) {
-  $0[id: 0, case: /Feature.Path.State.counter]?.count = 4
+  $0.path[id: 0, case: /Feature.Path.State.counter]?.count = 4
 }
 ```
 
@@ -458,7 +458,7 @@ Continuing with the test, we can send it one more time to see that the count goe
 
 ```swift
 await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) {
-  XCTModify(&$0[id: 0], case: /Feature.Path.State.counter) {
+  XCTModify(&$0.path[id: 0], case: /Feature.Path.State.counter) {
     $0.count = 5
   }
 }
@@ -481,7 +481,7 @@ other in a navigation stack.
 However, the more complex the features become, the more cumbersome testing their integration can be.
 By default, ``TestStore`` requires us to be exhaustive in our assertions. We must assert on how
 every piece of state changes, how every effect feeds data back into the system, and we must make
-sure that all effects finish by the end of the test (see <docs:Testing> for more info).
+sure that all effects finish by the end of the test (see <doc:Testing> for more info).
 
 But ``TestStore`` also supports a form of testing known as "non-exhaustive testing" that allows you
 to assert on only the parts of the features that you actually care about (see 

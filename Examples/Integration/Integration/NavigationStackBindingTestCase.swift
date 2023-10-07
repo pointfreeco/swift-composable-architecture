@@ -32,12 +32,7 @@ struct NavigationStackBindingTestCaseView: View {
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
-      NavigationStack(
-        path: viewStore.binding(
-          get: \.path,
-          send: NavigationStackBindingTestCase.Action.navigationPathChanged
-        )
-      ) {
+      NavigationStack(path: viewStore.binding(get: \.path, send: { .navigationPathChanged($0) })) {
         VStack {
           Text("Root")
           Button("Go to child") {

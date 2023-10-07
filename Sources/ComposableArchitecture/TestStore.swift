@@ -116,7 +116,6 @@ import XCTestDynamicOverlay
 /// > ```
 /// >
 /// > (Expected: −, Actual: +)
-/// ```
 ///
 /// For a more complex example, consider the following bare-bones search feature that uses a clock
 /// and cancel token to debounce requests:
@@ -1077,13 +1076,13 @@ extension TestStore where State: Equatable {
       let difference =
         diff(expected, actual, format: .proportional)
         .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
-        ?? """
-        Expected:
-        \(String(describing: expected).indent(by: 2))
+          ?? """
+          Expected:
+          \(String(describing: expected).indent(by: 2))
 
-        Actual:
-        \(String(describing: actual).indent(by: 2))
-        """
+          Actual:
+          \(String(describing: actual).indent(by: 2))
+          """
       let messageHeading =
         updateStateToExpectedResult != nil
         ? "A state change does not match expectation"
@@ -1140,13 +1139,13 @@ extension TestStore where State: Equatable, Action: Equatable {
         TaskResultDebugging.$emitRuntimeWarnings.withValue(false) {
           diff(expectedAction, receivedAction, format: .proportional)
             .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
-            ?? """
-            Expected:
-            \(String(describing: expectedAction).indent(by: 2))
+              ?? """
+              Expected:
+              \(String(describing: expectedAction).indent(by: 2))
 
-            Received:
-            \(String(describing: receivedAction).indent(by: 2))
-            """
+              Received:
+              \(String(describing: receivedAction).indent(by: 2))
+              """
         }
       },
       updateStateToExpectedResult,
@@ -1861,8 +1860,76 @@ extension TestStore {
   }
 }
 
-/// The type returned from ``TestStore/send(_:assert:file:line:)`` that represents the lifecycle of
-/// the effect started from sending an action.
+extension TestStore {
+  /// Returns a binding view store for this store.
+  ///
+  /// Useful for testing view state of a store.
+  ///
+  /// ```swift
+  /// let store = TestStore(LoginFeature.State()) {
+  ///   Login.Feature()
+  /// }
+  /// await store.send(.view(.set(\.$email, "blob@pointfree.co"))) {
+  ///   $0.email = "blob@pointfree.co"
+  /// }
+  /// XCTAssertTrue(
+  ///   LoginView.ViewState(store.bindings(action: /LoginFeature.Action.view))
+  ///     .isLoginButtonDisabled
+  /// )
+  ///
+  /// await store.send(.view(.set(\.$password, "whats-the-point?"))) {
+  ///   $0.password = "blob@pointfree.co"
+  ///   $0.isFormValid = true
+  /// }
+  /// XCTAssertFalse(
+  ///   LoginView.ViewState(store.bindings(action: /LoginFeature.Action.view))
+  ///     .isLoginButtonDisabled
+  /// )
+  /// ```
+  ///
+  /// - Parameter toViewAction: A case path from action to a bindable view action.
+  /// - Returns: A binding view store.
+  public func bindings<ViewAction: BindableAction>(
+    action toViewAction: CasePath<Action, ViewAction>
+  ) -> BindingViewStore<State> where State == ViewAction.State {
+    BindingViewStore(
+      store: Store(initialState: self.state) {
+        BindingReducer(action: toViewAction.extract(from:))
+      }
+      .scope(state: { $0 }, action: toViewAction.embed)
+    )
+  }
+}
+
+extension TestStore where Action: BindableAction, State == Action.State {
+  /// Returns a binding view store for this store.
+  ///
+  /// Useful for testing view state of a store.
+  ///
+  /// ```swift
+  /// let store = TestStore(LoginFeature.State()) {
+  ///   Login.Feature()
+  /// }
+  /// await store.send(.set(\.$email, "blob@pointfree.co")) {
+  ///   $0.email = "blob@pointfree.co"
+  /// }
+  /// XCTAssertTrue(LoginView.ViewState(store.bindings).isLoginButtonDisabled)
+  ///
+  /// await store.send(.set(\.$password, "whats-the-point?")) {
+  ///   $0.password = "blob@pointfree.co"
+  ///   $0.isFormValid = true
+  /// }
+  /// XCTAssertFalse(LoginView.ViewState(store.bindings).isLoginButtonDisabled)
+  /// ```
+  ///
+  /// - Returns: A binding view store.
+  public var bindings: BindingViewStore<State> {
+    self.bindings(action: .self)
+  }
+}
+
+/// The type returned from ``TestStore/send(_:assert:file:line:)-1ax61`` that represents the
+/// lifecycle of the effect started from sending an action.
 ///
 /// You can use this value in tests to cancel the effect started from sending an action:
 ///
@@ -2072,6 +2139,10 @@ class TestReducer<State, Action>: Reducer {
     let origin: Origin
     let file: StaticString
     let line: UInt
+
+    fileprivate var action: Action {
+      self.origin.action
+    }
 
     enum Origin {
       case receive(Action)

@@ -36,7 +36,7 @@ public struct NewGameView: View {
         Section {
           TextField(
             "Blob Sr.",
-            text: viewStore.binding(get: \.xPlayerName, send: ViewAction.xPlayerNameChanged)
+            text: viewStore.binding(get: \.xPlayerName, send: { .xPlayerNameChanged($0) })
           )
           .autocapitalization(.words)
           .disableAutocorrection(true)
@@ -48,7 +48,7 @@ public struct NewGameView: View {
         Section {
           TextField(
             "Blob Jr.",
-            text: viewStore.binding(get: \.oPlayerName, send: ViewAction.oPlayerNameChanged)
+            text: viewStore.binding(get: \.oPlayerName, send: { .oPlayerNameChanged($0) })
           )
           .autocapitalization(.words)
           .disableAutocorrection(true)
@@ -65,7 +65,7 @@ public struct NewGameView: View {
       .navigationTitle("New Game")
       .navigationBarItems(trailing: Button("Logout") { viewStore.send(.logoutButtonTapped) })
       .navigationDestination(
-        store: self.store.scope(state: \.$game, action: NewGame.Action.game),
+        store: self.store.scope(state: \.$game, action: { .game($0) }),
         destination: GameView.init
       )
     }

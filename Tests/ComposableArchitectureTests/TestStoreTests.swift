@@ -93,7 +93,7 @@ final class TestStoreTests: BaseTCATestCase {
           case .increment:
             state.isChanging = true
             return .send(.changed(from: state.count, to: state.count + 1))
-          case .changed(let from, let to):
+          case let .changed(from, to):
             state.isChanging = false
             if state.count == from {
               state.count = to

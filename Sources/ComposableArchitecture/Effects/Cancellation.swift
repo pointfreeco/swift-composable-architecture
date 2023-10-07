@@ -14,9 +14,14 @@ extension Effect {
   ///
   /// case .reloadButtonTapped:
   ///   // Start a new effect to load the user
-  ///   return self.apiClient.loadUser()
-  ///     .map(Action.userResponse)
-  ///     .cancellable(id: CancelID.loadUser, cancelInFlight: true)
+  ///   return .run { send in
+  ///     await send(
+  ///       .userResponse(
+  ///         TaskResult { try await self.apiClient.loadUser() }
+  ///       )
+  ///     )
+  ///   }
+  ///   .cancellable(id: CancelID.loadUser, cancelInFlight: true)
   ///
   /// case .cancelButtonTapped:
   ///   // Cancel any in-flight requests to load the user

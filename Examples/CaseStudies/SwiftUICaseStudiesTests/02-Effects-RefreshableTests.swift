@@ -44,7 +44,7 @@ final class RefreshableTests: XCTestCase {
       Refreshable()
     } withDependencies: {
       $0.factClient.fetch = {
-        try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+        try await Task.sleep(for: .seconds(1))
         return "\($0) is a good number."
       }
       $0.continuousClock = ImmediateClock()

@@ -44,17 +44,13 @@ struct TwoCountersView: View {
       HStack {
         Text("Counter 1")
         Spacer()
-        CounterView(
-          store: self.store.scope(state: \.counter1, action: TwoCounters.Action.counter1)
-        )
+        CounterView(store: self.store.scope(state: \.counter1, action: { .counter1($0) }))
       }
 
       HStack {
         Text("Counter 2")
         Spacer()
-        CounterView(
-          store: self.store.scope(state: \.counter2, action: TwoCounters.Action.counter2)
-        )
+        CounterView(store: self.store.scope(state: \.counter2, action: { .counter2($0) }))
       }
     }
     .buttonStyle(.borderless)

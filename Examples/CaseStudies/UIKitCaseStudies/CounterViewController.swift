@@ -27,11 +27,11 @@ struct Counter: Reducer {
 }
 
 final class CounterViewController: UIViewController {
-  let viewStore: ViewStoreOf<Counter>
+  let store: StoreOf<Counter>
   private var cancellables: Set<AnyCancellable> = []
 
   init(store: StoreOf<Counter>) {
-    self.viewStore = ViewStore(store, observe: { $0 })
+    self.store = store
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -68,18 +68,18 @@ final class CounterViewController: UIViewController {
       rootStackView.centerYAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.centerYAnchor),
     ])
 
-    self.viewStore.publisher
+    self.store.publisher
       .map { "\($0.count)" }
       .assign(to: \.text, on: countLabel)
       .store(in: &self.cancellables)
   }
 
   @objc func decrementButtonTapped() {
-    self.viewStore.send(.decrementButtonTapped)
+    self.store.send(.decrementButtonTapped)
   }
 
   @objc func incrementButtonTapped() {
-    self.viewStore.send(.incrementButtonTapped)
+    self.store.send(.incrementButtonTapped)
   }
 }
 

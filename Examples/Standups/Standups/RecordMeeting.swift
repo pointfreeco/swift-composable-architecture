@@ -38,7 +38,7 @@ struct RecordMeeting: Reducer {
   @Dependency(\.speechClient) var speechClient
 
   var body: some ReducerOf<Self> {
-    Reduce<State, Action> { state, action in
+    Reduce { state, action in
       switch action {
       case .alert(.presented(.confirmDiscard)):
         return .run { _ in

@@ -2,8 +2,9 @@ import ComposableArchitecture
 import SwiftUI
 
 private let readMe = """
-  This demonstrates how to make use of SwiftUI's `@FocusState` in the Composable Architecture. \
-  If you tap the "Sign in" button while a field is empty, the focus will be changed to that field.
+  This demonstrates how to make use of SwiftUI's `@FocusState` in the Composable Architecture with \
+  the library's `bind` view modifier. If you tap the "Sign in" button while a field is empty, the \
+  focus will be changed to that field.
   """
 
 // MARK: - Feature domain
@@ -66,20 +67,10 @@ struct FocusDemoView: View {
         }
         .textFieldStyle(.roundedBorder)
       }
-      .synchronize(viewStore.$focusedField, self.$focusedField)
+      // Synchronize store focus state and local focus state.
+      .bind(viewStore.$focusedField, to: self.$focusedField)
     }
     .navigationTitle("Focus demo")
-  }
-}
-
-extension View {
-  func synchronize<Value>(
-    _ first: Binding<Value>,
-    _ second: FocusState<Value>.Binding
-  ) -> some View {
-    self
-      .onChange(of: first.wrappedValue) { second.wrappedValue = $0 }
-      .onChange(of: second.wrappedValue) { first.wrappedValue = $0 }
   }
 }
 

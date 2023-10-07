@@ -403,18 +403,20 @@ interacts with the real world API server:
 @main
 struct MyApp: App {
   var body: some Scene {
-    FeatureView(
-      store: Store(initialState: Feature.State()) {
-        Feature(
-          numberFact: { number in
-            let (data, _) = try await URLSession.shared.data(
-              from: URL(string: "http://numbersapi.com/\(number)")!
-            )
-            return String(decoding: data, as: UTF8.self)
-          }
-        )
-      }
-    )
+    WindowGroup {
+      FeatureView(
+        store: Store(initialState: Feature.State()) {
+          Feature(
+            numberFact: { number in
+              let (data, _) = try await URLSession.shared.data(
+                from: URL(string: "http://numbersapi.com/\(number)")!
+              )
+              return String(decoding: data, as: UTF8.self)
+            }
+          )
+        }
+      )
+    }
   }
 }
 ```
@@ -515,11 +517,13 @@ This means the entry point to the application no longer needs to construct depen
 @main
 struct MyApp: App {
   var body: some Scene {
-    FeatureView(
-      store: Store(initialState: Feature.State()) {
-        Feature()
-      }
-    )
+    WindowGroup {
+      FeatureView(
+        store: Store(initialState: Feature.State()) {
+          Feature()
+        }
+      )
+    }
   }
 }
 ```
@@ -547,13 +551,16 @@ advanced usages.
 The documentation for releases and `main` are available here:
 
 * [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture)
-* [1.0.0](https://pointfreeco.github.io/swift-composable-architecture/1.0.0/documentation/composablearchitecture/)
+* [1.2.0](https://pointfreeco.github.io/swift-composable-architecture/1.2.0/documentation/composablearchitecture/)
 
 <details>
   <summary>
   Other versions
   </summary>
 
+  * [1.1.0](https://pointfreeco.github.io/swift-composable-architecture/1.1.0/documentation/composablearchitecture/)
+  * [1.0.0](https://pointfreeco.github.io/swift-composable-architecture/1.0.0/documentation/composablearchitecture/)
+  * [0.59.0](https://pointfreeco.github.io/swift-composable-architecture/0.59.0/documentation/composablearchitecture/)
   * [0.58.0](https://pointfreeco.github.io/swift-composable-architecture/0.58.0/documentation/composablearchitecture/)
   * [0.57.0](https://pointfreeco.github.io/swift-composable-architecture/0.57.0/documentation/composablearchitecture/)
   * [0.56.0](https://pointfreeco.github.io/swift-composable-architecture/0.56.0/documentation/composablearchitecture/)
@@ -603,6 +610,20 @@ You can add ComposableArchitecture to an Xcode project by adding it as a package
         [Tic-Tac-Toe](./Examples/TicTacToe) demo application, which splits lots of features into 
         modules and consumes the static library in this fashion using the **tic-tac-toe** Swift 
         package.
+
+## Companion libraries
+
+The Composable Architecture is built with extensibility in mind, and there are a number of
+community-supported libraries available to enhance your applications:
+
+* [Composable Architecture Extras](https://github.com/Ryu0118/swift-composable-architecture-extras):
+  A companion library to the Composable Architecture.
+* [TCACoordinators](https://github.com/johnpatrickmorgan/TCACoordinators): The coordinator pattern
+  in the Composable Architecture
+
+If you'd like to contribute a library, please [open a
+PR](https://github.com/pointfreeco/swift-composable-architecture/edit/main/README.md) with a link
+to it!
 
 ## Translations
 

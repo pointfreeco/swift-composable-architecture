@@ -50,7 +50,7 @@ struct StandupDetail: Reducer {
   }
 
   var body: some ReducerOf<Self> {
-    Reduce<State, Action> { state, action in
+    Reduce { state, action in
       switch action {
       case .cancelEditButtonTapped:
         state.destination = nil
@@ -169,9 +169,7 @@ struct StandupDetailView: View {
           Section {
             ForEach(viewStore.standup.meetings) { meeting in
               NavigationLink(
-                state: AppFeature.Path.State.meeting(
-                  MeetingReducer.State(meeting: meeting, standup: viewStore.standup)
-                )
+                state: AppFeature.Path.State.meeting(meeting, standup: viewStore.standup)
               ) {
                 HStack {
                   Image(systemName: "calendar")

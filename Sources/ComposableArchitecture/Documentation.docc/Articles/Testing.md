@@ -57,7 +57,7 @@ This will technically work, but it's a lot boilerplate for something that should
 
 The library comes with a tool specifically designed to make testing like this much simpler and more
 concise. It's called ``TestStore``, and it is constructed similarly to ``Store`` by providing the
-initial state of the feature and the ``Reducer`` that run's the feature's logic:
+initial state of the feature and the ``Reducer`` that runs the feature's logic:
 
 ```swift
 @MainActor
@@ -695,7 +695,8 @@ func testAdd() async {
 }
 ```
 
-However even this simple passes when `showSkippedAssertions` is set to true:
+While we would expect this simple test to pass, it fails when `showSkippedAssertions` is set to
+`true`:
 
 > ❌ Failure: A state change does not match expectation: …
 >
