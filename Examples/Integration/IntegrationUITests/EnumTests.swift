@@ -1,3 +1,4 @@
+import InlineSnapshotTesting
 import TestCases
 import XCTest
 
@@ -7,45 +8,44 @@ final class EnumTests: BaseIntegrationTests {
     super.setUp()
     self.app.buttons["Enum"].tap()
     self.clearLogs()
+    // SnapshotTesting.isRecording = true
   }
 
   func testBasics() {
     self.app.buttons["Toggle feature 1 on"].tap()
     XCTAssertEqual(self.app.staticTexts["Feature 1"].exists, true)
-    self.assertLogs([
-      .unordered(
-        """
-        Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.scope
-        Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.scope
-        Store<ComposableArchitecture.PresentationState<Integration.EnumView.Feature.Destination.State>, ComposableArchitecture.PresentationAction<Integration.EnumView.Feature.Destination.Action>>.scope
-        StoreOf<Integration.EnumView.Feature>.scope
-        Store<ComposableArchitecture.PresentationState<Integration.EnumView.Feature.Destination.State>, ComposableArchitecture.PresentationAction<Integration.EnumView.Feature.Destination.Action>>.scope
-        StoreOf<Integration.EnumView.Feature>.scope
-        StoreOf<Integration.EnumView.Feature>.scope
-        Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.init
-        StoreOf<Integration.BasicsView.Feature>.init
-        EnumView.body
-        StoreOf<Integration.BasicsView.Feature>.init
-        BasicsView.body
-        """)
-    ])
+    self.assertLogs {
+      """
+      BasicsView.body
+      EnumView.body
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.init
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
+      Store<PresentationState<EnumView.Feature.Destination.State>, PresentationAction<EnumView.Feature.Destination.Action>>.scope
+      Store<PresentationState<EnumView.Feature.Destination.State>, PresentationAction<EnumView.Feature.Destination.Action>>.scope
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<EnumView.Feature>.scope
+      StoreOf<EnumView.Feature>.scope
+      StoreOf<EnumView.Feature>.scope
+      """
+    }
     self.app.buttons["Increment"].tap()
     XCTAssertEqual(self.app.staticTexts["1"].exists, true)
-    self.assertLogs([
-      .unordered(
-        """
-        Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.scope
-        Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.scope
-        Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.scope
-        Store<ComposableArchitecture.PresentationState<Integration.EnumView.Feature.Destination.State>, ComposableArchitecture.PresentationAction<Integration.EnumView.Feature.Destination.Action>>.scope
-        StoreOf<Integration.EnumView.Feature>.scope
-        Store<ComposableArchitecture.PresentationState<Integration.EnumView.Feature.Destination.State>, ComposableArchitecture.PresentationAction<Integration.EnumView.Feature.Destination.Action>>.scope
-        StoreOf<Integration.EnumView.Feature>.scope
-        StoreOf<Integration.EnumView.Feature>.scope
-        StoreOf<Integration.BasicsView.Feature>.scope
-        BasicsView.body
-        """)
-    ])
+    self.assertLogs {
+      """
+      BasicsView.body
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
+      Store<PresentationState<EnumView.Feature.Destination.State>, PresentationAction<EnumView.Feature.Destination.Action>>.scope
+      Store<PresentationState<EnumView.Feature.Destination.State>, PresentationAction<EnumView.Feature.Destination.Action>>.scope
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<EnumView.Feature>.scope
+      StoreOf<EnumView.Feature>.scope
+      StoreOf<EnumView.Feature>.scope
+      """
+    }
   }
 
   func testToggle1On_Toggle1Off() {
@@ -54,24 +54,24 @@ final class EnumTests: BaseIntegrationTests {
     self.clearLogs()
     self.app.buttons["Toggle feature 1 off"].tap()
     XCTAssertEqual(self.app.staticTexts["Feature 1"].exists, false)
-    self.assertLogs([
-      .unordered("""
-      Store<ComposableArchitecture.PresentationState<Integration.EnumView.Feature.Destination.State>, ComposableArchitecture.PresentationAction<Integration.EnumView.Feature.Destination.Action>>.scope
-      StoreOf<Integration.EnumView.Feature>.scope
-      StoreOf<Integration.EnumView.Feature>.scope
-      Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.scope
-      StoreOf<Integration.BasicsView.Feature>.scope
-      Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.scope
-      Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.scope
-      Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.scope
-      Store<ComposableArchitecture.PresentationState<Integration.EnumView.Feature.Destination.State>, ComposableArchitecture.PresentationAction<Integration.EnumView.Feature.Destination.Action>>.scope
-      StoreOf<Integration.EnumView.Feature>.scope
+    self.assertLogs {
+      """
       EnumView.body
-      StoreOf<Integration.BasicsView.Feature>.deinit
-      StoreOf<Integration.BasicsView.Feature>.deinit
-      Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.deinit
-      """)
-    ])
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
+      Store<PresentationState<EnumView.Feature.Destination.State>, PresentationAction<EnumView.Feature.Destination.Action>>.scope
+      Store<PresentationState<EnumView.Feature.Destination.State>, PresentationAction<EnumView.Feature.Destination.Action>>.scope
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<EnumView.Feature>.scope
+      StoreOf<EnumView.Feature>.scope
+      StoreOf<EnumView.Feature>.scope
+      """
+    }
   }
 
   func testToggle1On_Toggle2On() {
@@ -80,30 +80,30 @@ final class EnumTests: BaseIntegrationTests {
     self.clearLogs()
     self.app.buttons["Toggle feature 2 on"].tap()
     XCTAssertEqual(self.app.staticTexts["Feature 2"].exists, true)
-    self.assertLogs([
-      .unordered("""
-      Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.scope
-      StoreOf<Integration.BasicsView.Feature>.scope
-      Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.scope
-      Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.scope
-      Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.scope
-      Store<ComposableArchitecture.PresentationState<Integration.EnumView.Feature.Destination.State>, ComposableArchitecture.PresentationAction<Integration.EnumView.Feature.Destination.Action>>.scope
-      StoreOf<Integration.EnumView.Feature>.scope
-      Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.scope
-      Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.scope
-      Store<ComposableArchitecture.PresentationState<Integration.EnumView.Feature.Destination.State>, ComposableArchitecture.PresentationAction<Integration.EnumView.Feature.Destination.Action>>.scope
-      StoreOf<Integration.EnumView.Feature>.scope
-      StoreOf<Integration.EnumView.Feature>.scope
-      Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.init
-      StoreOf<Integration.BasicsView.Feature>.init
-      EnumView.body
-      StoreOf<Integration.BasicsView.Feature>.deinit
-      StoreOf<Integration.BasicsView.Feature>.init
+    self.assertLogs {
+      """
       BasicsView.body
-      StoreOf<Integration.BasicsView.Feature>.deinit
-      Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.deinit
-      """)
-    ])
+      EnumView.body
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.init
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
+      Store<PresentationState<EnumView.Feature.Destination.State>, PresentationAction<EnumView.Feature.Destination.Action>>.scope
+      Store<PresentationState<EnumView.Feature.Destination.State>, PresentationAction<EnumView.Feature.Destination.Action>>.scope
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<EnumView.Feature>.scope
+      StoreOf<EnumView.Feature>.scope
+      StoreOf<EnumView.Feature>.scope
+      """
+    }
   }
 
   func testDismiss() {
@@ -112,32 +112,32 @@ final class EnumTests: BaseIntegrationTests {
     self.clearLogs()
     self.app.buttons["Dismiss"].tap()
     XCTAssertEqual(self.app.staticTexts["Feature 1"].exists, false)
-    self.assertLogs([
-      .unordered("""
-      StoreOf<Integration.EnumView.Feature>.scope
-      Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.scope
-      Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.scope
-      Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.scope
-      Store<ComposableArchitecture.PresentationState<Integration.EnumView.Feature.Destination.State>, ComposableArchitecture.PresentationAction<Integration.EnumView.Feature.Destination.Action>>.scope
-      StoreOf<Integration.EnumView.Feature>.scope
-      Store<ComposableArchitecture.PresentationState<Integration.EnumView.Feature.Destination.State>, ComposableArchitecture.PresentationAction<Integration.EnumView.Feature.Destination.Action>>.scope
-      StoreOf<Integration.EnumView.Feature>.scope
-      StoreOf<Integration.BasicsView.Feature>.scope
-      StoreOf<Integration.EnumView.Feature>.scope
-      Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.scope
-      StoreOf<Integration.BasicsView.Feature>.scope
-      Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.scope
-      Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.scope
-      Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.scope
-      Store<ComposableArchitecture.PresentationState<Integration.EnumView.Feature.Destination.State>, ComposableArchitecture.PresentationAction<Integration.EnumView.Feature.Destination.Action>>.scope
-      StoreOf<Integration.EnumView.Feature>.scope
-      Store<ComposableArchitecture.PresentationState<Integration.EnumView.Feature.Destination.State>, ComposableArchitecture.PresentationAction<Integration.EnumView.Feature.Destination.Action>>.scope
-      StoreOf<Integration.EnumView.Feature>.scope
+    self.assertLogs {
+      """
       EnumView.body
-      StoreOf<Integration.BasicsView.Feature>.deinit
-      StoreOf<Integration.BasicsView.Feature>.deinit
-      Store<Swift.Optional<Integration.BasicsView.Feature.State>, Integration.BasicsView.Feature.Action>.deinit
-      """)
-    ])
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
+      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
+      Store<PresentationState<EnumView.Feature.Destination.State>, PresentationAction<EnumView.Feature.Destination.Action>>.scope
+      Store<PresentationState<EnumView.Feature.Destination.State>, PresentationAction<EnumView.Feature.Destination.Action>>.scope
+      Store<PresentationState<EnumView.Feature.Destination.State>, PresentationAction<EnumView.Feature.Destination.Action>>.scope
+      Store<PresentationState<EnumView.Feature.Destination.State>, PresentationAction<EnumView.Feature.Destination.Action>>.scope
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<EnumView.Feature>.scope
+      StoreOf<EnumView.Feature>.scope
+      StoreOf<EnumView.Feature>.scope
+      StoreOf<EnumView.Feature>.scope
+      StoreOf<EnumView.Feature>.scope
+      StoreOf<EnumView.Feature>.scope
+      """
+    }
   }
 }

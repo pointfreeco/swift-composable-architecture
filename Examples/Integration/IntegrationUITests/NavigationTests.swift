@@ -1,3 +1,4 @@
+import InlineSnapshotTesting
 import TestCases
 import XCTest
 
@@ -7,23 +8,28 @@ final class NavigationTests: BaseIntegrationTests {
     super.setUp()
     self.app.buttons["Navigation"].tap()
     self.clearLogs()
+    // SnapshotTesting.isRecording = true
   }
 
   func testBasics() {
     self.app.buttons["Push feature"].tap()
-    self.assertLogs("""
-    Store<ComposableArchitecture.StackState<Integration.BasicsView.Feature.State>, ComposableArchitecture.StackAction<Integration.BasicsView.Feature.State, Integration.BasicsView.Feature.Action>>.init
-    StoreOf<Integration.BasicsView.Feature>.init
-    StoreOf<Integration.BasicsView.Feature>.init
-    BasicsView.body
-    """)
+    self.assertLogs {
+      """
+      BasicsView.body
+      Store<StackState<BasicsView.Feature.State>, StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>>.init
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
+      """
+    }
     self.app.buttons["Increment"].tap()
-    self.assertLogs("""
-    Store<ComposableArchitecture.StackState<Integration.BasicsView.Feature.State>, ComposableArchitecture.StackAction<Integration.BasicsView.Feature.State, Integration.BasicsView.Feature.Action>>.scope
-    StoreOf<Integration.NavigationTestCaseView.Feature>.scope
-    StoreOf<Integration.BasicsView.Feature>.scope
-    BasicsView.body
-    """)
+    self.assertLogs {
+      """
+      BasicsView.body
+      Store<StackState<BasicsView.Feature.State>, StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>>.scope
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<NavigationTestCaseView.Feature>.scope
+      """
+    }
   }
 
 
@@ -35,25 +41,25 @@ final class NavigationTests: BaseIntegrationTests {
     self.app.buttons["Push feature"].tap()
     self.clearLogs()
     self.app.buttons["Increment"].tap()
-    self.assertLogs([
-      .unordered("""
-      StoreOf<Integration.BasicsView.Feature>.scope
-      Store<ComposableArchitecture.StackState<Integration.BasicsView.Feature.State>, ComposableArchitecture.StackAction<Integration.BasicsView.Feature.State, Integration.BasicsView.Feature.Action>>.scope
-      Store<ComposableArchitecture.StackState<Integration.BasicsView.Feature.State>, ComposableArchitecture.StackAction<Integration.BasicsView.Feature.State, Integration.BasicsView.Feature.Action>>.scope
-      StoreOf<Integration.BasicsView.Feature>.scope
-      Store<ComposableArchitecture.StackState<Integration.BasicsView.Feature.State>, ComposableArchitecture.StackAction<Integration.BasicsView.Feature.State, Integration.BasicsView.Feature.Action>>.scope
-      Store<ComposableArchitecture.StackState<Integration.BasicsView.Feature.State>, ComposableArchitecture.StackAction<Integration.BasicsView.Feature.State, Integration.BasicsView.Feature.Action>>.scope
-      StoreOf<Integration.BasicsView.Feature>.scope
-      Store<ComposableArchitecture.StackState<Integration.BasicsView.Feature.State>, ComposableArchitecture.StackAction<Integration.BasicsView.Feature.State, Integration.BasicsView.Feature.Action>>.scope
-      Store<ComposableArchitecture.StackState<Integration.BasicsView.Feature.State>, ComposableArchitecture.StackAction<Integration.BasicsView.Feature.State, Integration.BasicsView.Feature.Action>>.scope
-      StoreOf<Integration.BasicsView.Feature>.scope
-      Store<ComposableArchitecture.StackState<Integration.BasicsView.Feature.State>, ComposableArchitecture.StackAction<Integration.BasicsView.Feature.State, Integration.BasicsView.Feature.Action>>.scope
-      Store<ComposableArchitecture.StackState<Integration.BasicsView.Feature.State>, ComposableArchitecture.StackAction<Integration.BasicsView.Feature.State, Integration.BasicsView.Feature.Action>>.scope
-      Store<ComposableArchitecture.StackState<Integration.BasicsView.Feature.State>, ComposableArchitecture.StackAction<Integration.BasicsView.Feature.State, Integration.BasicsView.Feature.Action>>.scope
-      StoreOf<Integration.NavigationTestCaseView.Feature>.scope
-      StoreOf<Integration.BasicsView.Feature>.scope
+    self.assertLogs {
+      """
       BasicsView.body
-      """)
-    ])
+      Store<StackState<BasicsView.Feature.State>, StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>>.scope
+      Store<StackState<BasicsView.Feature.State>, StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>>.scope
+      Store<StackState<BasicsView.Feature.State>, StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>>.scope
+      Store<StackState<BasicsView.Feature.State>, StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>>.scope
+      Store<StackState<BasicsView.Feature.State>, StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>>.scope
+      Store<StackState<BasicsView.Feature.State>, StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>>.scope
+      Store<StackState<BasicsView.Feature.State>, StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>>.scope
+      Store<StackState<BasicsView.Feature.State>, StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>>.scope
+      Store<StackState<BasicsView.Feature.State>, StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>>.scope
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<NavigationTestCaseView.Feature>.scope
+      """
+    }
   }
 }

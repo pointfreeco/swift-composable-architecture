@@ -42,6 +42,8 @@
 		CAF8595829BF8882008721D4 /* SwiftUINavigation in Frameworks */ = {isa = PBXBuildFile; productRef = CAF8595729BF8882008721D4 /* SwiftUINavigation */; };
 		DC140CC529E0BB2C006DF553 /* SwitchStoreTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC140CC429E0BB2C006DF553 /* SwitchStoreTestCase.swift */; };
 		DC140CC729E0E8F3006DF553 /* SwitchStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC140CC629E0E8F3006DF553 /* SwitchStoreTests.swift */; };
+		DC6268502AD1C85E00F2E2EF /* InlineSnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = DC62684F2AD1C85E00F2E2EF /* InlineSnapshotTesting */; };
+		DC6268532AD1E06300F2E2EF /* InlineSnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = DC6268522AD1E06300F2E2EF /* InlineSnapshotTesting */; };
 		DC808D6529E91FAA0072B4A9 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC808D6429E91FAA0072B4A9 /* ComposableArchitecture */; };
 		DC92799B2A1E59D500B2031A /* PresentationItemTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC92799A2A1E59D500B2031A /* PresentationItemTestCase.swift */; };
 		DCFFB8E72A156488006AF839 /* BindingLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCFFB8E62A156488006AF839 /* BindingLocalTestCase.swift */; };
@@ -149,6 +151,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				DC808D6529E91FAA0072B4A9 /* ComposableArchitecture in Frameworks */,
+				DC6268502AD1C85E00F2E2EF /* InlineSnapshotTesting in Frameworks */,
+				DC6268532AD1E06300F2E2EF /* InlineSnapshotTesting in Frameworks */,
 				CAF5802329A564590042FB62 /* TestCases.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -336,6 +340,8 @@
 			name = IntegrationUITests;
 			packageProductDependencies = (
 				DC808D6429E91FAA0072B4A9 /* ComposableArchitecture */,
+				DC62684F2AD1C85E00F2E2EF /* InlineSnapshotTesting */,
+				DC6268522AD1E06300F2E2EF /* InlineSnapshotTesting */,
 			);
 			productName = IntegrationUITests;
 			productReference = CAA1CB0B296DEE79000665B1 /* IntegrationUITests.xctest */;
@@ -355,6 +361,8 @@
 			dependencies = (
 			);
 			name = TestCases;
+			packageProductDependencies = (
+			);
 			productName = TestCases;
 			productReference = CAF57FFC29A564210042FB62 /* TestCases.framework */;
 			productType = "com.apple.product-type.framework";
@@ -392,6 +400,7 @@
 			mainGroup = CAA1CAE8296DEE78000665B1;
 			packageReferences = (
 				CAF8595629BF8882008721D4 /* XCRemoteSwiftPackageReference "swiftui-navigation" */,
+				DC6268512AD1E06300F2E2EF /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
 			);
 			productRefGroup = CAA1CAF2296DEE78000665B1 /* Products */;
 			projectDirPath = "";
@@ -825,6 +834,14 @@
 				minimumVersion = 1.0.0;
 			};
 		};
+		DC6268512AD1E06300F2E2EF /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing.git";
+			requirement = {
+				kind = revision;
+				revision = bbc9ec6e41ba964a5d04371af0acfb574cadafbd;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -840,6 +857,15 @@
 			isa = XCSwiftPackageProductDependency;
 			package = CAF8595629BF8882008721D4 /* XCRemoteSwiftPackageReference "swiftui-navigation" */;
 			productName = SwiftUINavigation;
+		};
+		DC62684F2AD1C85E00F2E2EF /* InlineSnapshotTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = InlineSnapshotTesting;
+		};
+		DC6268522AD1E06300F2E2EF /* InlineSnapshotTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DC6268512AD1E06300F2E2EF /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
+			productName = InlineSnapshotTesting;
 		};
 		DC808D6429E91FAA0072B4A9 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;

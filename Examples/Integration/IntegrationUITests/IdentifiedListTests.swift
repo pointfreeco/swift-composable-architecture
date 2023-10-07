@@ -1,3 +1,4 @@
+import InlineSnapshotTesting
 import TestCases
 import XCTest
 
@@ -7,32 +8,33 @@ final class IdentifiedListTests: BaseIntegrationTests {
     super.setUp()
     self.app.buttons["Identified list"].tap()
     self.clearLogs()
+    // SnapshotTesting.isRecording = true
   }
 
   func testBasics() {
     self.app.buttons["Add"].tap()
-    self.assertLogs([
-      .unordered("""
-      StoreOf<Integration.IdentifiedListView.Feature>.scope
-      Store<IdentifiedCollections.IdentifiedArray<Foundation.UUID, Integration.BasicsView.Feature.State>, (Foundation.UUID, Integration.BasicsView.Feature.Action)>.scope
-      StoreOf<Integration.IdentifiedListView.Feature>.scope
-      Store<IdentifiedCollections.IdentifiedArray<Foundation.UUID, Integration.BasicsView.Feature.State>, (Foundation.UUID, Integration.BasicsView.Feature.Action)>.init
-      Store<IdentifiedCollections.IdentifiedArray<Foundation.UUID, Integration.BasicsView.Feature.State>, (Foundation.UUID, Integration.BasicsView.Feature.Action)>.init
-      Store<IdentifiedCollections.IdentifiedArray<Foundation.UUID, Integration.BasicsView.Feature.State>, (Foundation.UUID, Integration.BasicsView.Feature.Action)>.deinit
-      Store<IdentifiedCollections.IdentifiedArray<Foundation.UUID, Integration.BasicsView.Feature.State>, (Foundation.UUID, Integration.BasicsView.Feature.Action)>.deinit
-      StoreOf<Integration.BasicsView.Feature>.init
-      Store<Foundation.UUID, Integration.BasicsView.Feature.Action>.init
-      Store<Foundation.UUID, Integration.BasicsView.Feature.Action>.init
-      StoreOf<Integration.BasicsView.Feature>.init
-      Store<Foundation.UUID, Integration.BasicsView.Feature.Action>.init
-      Store<Foundation.UUID, Integration.BasicsView.Feature.Action>.init
-      Store<Foundation.UUID, Integration.BasicsView.Feature.Action>.deinit
-      Store<Foundation.UUID, Integration.BasicsView.Feature.Action>.deinit
-      StoreOf<Integration.BasicsView.Feature>.deinit
-      StoreOf<Integration.BasicsView.Feature>.init
+    self.assertLogs {
+      """
       BasicsView.body
-      """)
-    ])
+      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.deinit
+      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.deinit
+      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.init
+      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.init
+      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.scope
+      Store<UUID, BasicsView.Feature.Action>.deinit
+      Store<UUID, BasicsView.Feature.Action>.deinit
+      Store<UUID, BasicsView.Feature.Action>.init
+      Store<UUID, BasicsView.Feature.Action>.init
+      Store<UUID, BasicsView.Feature.Action>.init
+      Store<UUID, BasicsView.Feature.Action>.init
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<IdentifiedListView.Feature>.scope
+      StoreOf<IdentifiedListView.Feature>.scope
+      """
+    }
   }
 
   func testAddTwoIncrementFirst() {
@@ -41,42 +43,42 @@ final class IdentifiedListTests: BaseIntegrationTests {
     self.clearLogs()
     self.app.buttons["Increment"].firstMatch.tap()
     XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
-    self.assertLogs([
-      .unordered("""
-      Store<Foundation.UUID, Integration.BasicsView.Feature.Action>.scope
-      StoreOf<Integration.BasicsView.Feature>.scope
-      Store<IdentifiedCollections.IdentifiedArray<Foundation.UUID, Integration.BasicsView.Feature.State>, (Foundation.UUID, Integration.BasicsView.Feature.Action)>.scope
-      Store<IdentifiedCollections.IdentifiedArray<Foundation.UUID, Integration.BasicsView.Feature.State>, (Foundation.UUID, Integration.BasicsView.Feature.Action)>.scope
-      Store<Foundation.UUID, Integration.BasicsView.Feature.Action>.scope
-      StoreOf<Integration.BasicsView.Feature>.scope
-      StoreOf<Integration.BasicsView.Feature>.scope
-      Store<IdentifiedCollections.IdentifiedArray<Foundation.UUID, Integration.BasicsView.Feature.State>, (Foundation.UUID, Integration.BasicsView.Feature.Action)>.scope
-      StoreOf<Integration.IdentifiedListView.Feature>.scope
-      StoreOf<Integration.IdentifiedListView.Feature>.scope
-      StoreOf<Integration.BasicsView.Feature>.scope
+    self.assertLogs {
+      """
       BasicsView.body
-      Store<IdentifiedCollections.IdentifiedArray<Foundation.UUID, Integration.BasicsView.Feature.State>, (Foundation.UUID, Integration.BasicsView.Feature.Action)>.init
-      Store<IdentifiedCollections.IdentifiedArray<Foundation.UUID, Integration.BasicsView.Feature.State>, (Foundation.UUID, Integration.BasicsView.Feature.Action)>.init
-      Store<IdentifiedCollections.IdentifiedArray<Foundation.UUID, Integration.BasicsView.Feature.State>, (Foundation.UUID, Integration.BasicsView.Feature.Action)>.deinit
-      StoreOf<Integration.BasicsView.Feature>.init
-      Store<Foundation.UUID, Integration.BasicsView.Feature.Action>.init
-      Store<Foundation.UUID, Integration.BasicsView.Feature.Action>.init
-      StoreOf<Integration.BasicsView.Feature>.init
-      Store<Foundation.UUID, Integration.BasicsView.Feature.Action>.init
-      Store<Foundation.UUID, Integration.BasicsView.Feature.Action>.init
-      StoreOf<Integration.BasicsView.Feature>.init
-      StoreOf<Integration.BasicsView.Feature>.deinit
       BasicsView.body
-      Store<Foundation.UUID, Integration.BasicsView.Feature.Action>.deinit
-      Store<Foundation.UUID, Integration.BasicsView.Feature.Action>.deinit
-      StoreOf<Integration.BasicsView.Feature>.init
-      StoreOf<Integration.BasicsView.Feature>.deinit
       BasicsView.body
-      Store<Foundation.UUID, Integration.BasicsView.Feature.Action>.deinit
-      Store<Foundation.UUID, Integration.BasicsView.Feature.Action>.deinit
-      StoreOf<Integration.BasicsView.Feature>.deinit
-      """)
-    ])
+      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.deinit
+      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.init
+      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.init
+      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.scope
+      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.scope
+      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.scope
+      Store<UUID, BasicsView.Feature.Action>.deinit
+      Store<UUID, BasicsView.Feature.Action>.deinit
+      Store<UUID, BasicsView.Feature.Action>.deinit
+      Store<UUID, BasicsView.Feature.Action>.deinit
+      Store<UUID, BasicsView.Feature.Action>.init
+      Store<UUID, BasicsView.Feature.Action>.init
+      Store<UUID, BasicsView.Feature.Action>.init
+      Store<UUID, BasicsView.Feature.Action>.init
+      Store<UUID, BasicsView.Feature.Action>.scope
+      Store<UUID, BasicsView.Feature.Action>.scope
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<IdentifiedListView.Feature>.scope
+      StoreOf<IdentifiedListView.Feature>.scope
+      """
+    }
   }
 
   func testAddTwoIncrementSecond() {
@@ -85,21 +87,21 @@ final class IdentifiedListTests: BaseIntegrationTests {
     self.clearLogs()
     self.app.cells.element(boundBy: 2).buttons["Increment"].tap()
     XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
-    self.assertLogs([
-      .unordered("""
-      StoreOf<Integration.IdentifiedListView.Feature>.scope
-      Store<IdentifiedCollections.IdentifiedArray<Foundation.UUID, Integration.BasicsView.Feature.State>, (Foundation.UUID, Integration.BasicsView.Feature.Action)>.scope
-      StoreOf<Integration.BasicsView.Feature>.scope
-      Store<IdentifiedCollections.IdentifiedArray<Foundation.UUID, Integration.BasicsView.Feature.State>, (Foundation.UUID, Integration.BasicsView.Feature.Action)>.scope
-      Store<Foundation.UUID, Integration.BasicsView.Feature.Action>.scope
-      StoreOf<Integration.BasicsView.Feature>.scope
-      Store<IdentifiedCollections.IdentifiedArray<Foundation.UUID, Integration.BasicsView.Feature.State>, (Foundation.UUID, Integration.BasicsView.Feature.Action)>.scope
-      StoreOf<Integration.IdentifiedListView.Feature>.scope
-      StoreOf<Integration.BasicsView.Feature>.scope
-      Store<Foundation.UUID, Integration.BasicsView.Feature.Action>.scope
-      StoreOf<Integration.BasicsView.Feature>.scope
+    self.assertLogs {
+      """
       BasicsView.body
-      """)
-    ])
+      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.scope
+      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.scope
+      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.scope
+      Store<UUID, BasicsView.Feature.Action>.scope
+      Store<UUID, BasicsView.Feature.Action>.scope
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<IdentifiedListView.Feature>.scope
+      StoreOf<IdentifiedListView.Feature>.scope
+      """
+    }
   }
 }

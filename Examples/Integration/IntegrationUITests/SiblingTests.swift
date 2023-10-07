@@ -1,3 +1,4 @@
+import InlineSnapshotTesting
 import TestCases
 import XCTest
 
@@ -7,17 +8,20 @@ final class SiblingsTests: BaseIntegrationTests {
     super.setUp()
     self.app.buttons["Siblings"].tap()
     self.clearLogs()
+    // SnapshotTesting.isRecording = true
   }
 
   func testBasics() {
     self.app.buttons["Increment"].firstMatch.tap()
     XCTAssertEqual(self.app.staticTexts["1"].exists, true)
-    self.assertLogs("""
-    StoreOf<Integration.BasicsView.Feature>.scope
-    StoreOf<Integration.SiblingFeaturesView.Feature>.scope
-    StoreOf<Integration.BasicsView.Feature>.scope
-    BasicsView.body
-    """)
+    self.assertLogs {
+      """
+      BasicsView.body
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<SiblingFeaturesView.Feature>.scope
+      """
+    }
   }
 
   func testResetAll() {
@@ -26,14 +30,16 @@ final class SiblingsTests: BaseIntegrationTests {
     self.clearLogs()
     self.app.buttons["Reset all"].tap()
     XCTAssertEqual(self.app.staticTexts["1"].exists, false)
-    self.assertLogs("""
-    StoreOf<Integration.BasicsView.Feature>.scope
-    StoreOf<Integration.SiblingFeaturesView.Feature>.scope
-    StoreOf<Integration.BasicsView.Feature>.scope
-    StoreOf<Integration.SiblingFeaturesView.Feature>.scope
-    BasicsView.body
-    BasicsView.body
-    """)
+    self.assertLogs {
+      """
+      BasicsView.body
+      BasicsView.body
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<SiblingFeaturesView.Feature>.scope
+      StoreOf<SiblingFeaturesView.Feature>.scope
+      """
+    }
   }
 
   func testResetSelf() {
@@ -42,14 +48,16 @@ final class SiblingsTests: BaseIntegrationTests {
     self.clearLogs()
     self.app.buttons["Reset self"].tap()
     XCTAssertEqual(self.app.staticTexts["1"].exists, false)
-    self.assertLogs("""
-    StoreOf<Integration.BasicsView.Feature>.scope
-    StoreOf<Integration.SiblingFeaturesView.Feature>.scope
-    StoreOf<Integration.BasicsView.Feature>.scope
-    StoreOf<Integration.SiblingFeaturesView.Feature>.scope
-    BasicsView.body
-    BasicsView.body
-    """)
+    self.assertLogs {
+      """
+      BasicsView.body
+      BasicsView.body
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<SiblingFeaturesView.Feature>.scope
+      StoreOf<SiblingFeaturesView.Feature>.scope
+      """
+    }
   }
 
   func testResetSwap() {
@@ -58,13 +66,15 @@ final class SiblingsTests: BaseIntegrationTests {
     self.clearLogs()
     self.app.buttons["Swap"].tap()
     XCTAssertEqual(self.app.staticTexts["1"].exists, true)
-    self.assertLogs("""
-    StoreOf<Integration.BasicsView.Feature>.scope
-    StoreOf<Integration.SiblingFeaturesView.Feature>.scope
-    StoreOf<Integration.BasicsView.Feature>.scope
-    StoreOf<Integration.SiblingFeaturesView.Feature>.scope
-    BasicsView.body
-    BasicsView.body
-    """)
+    self.assertLogs {
+      """
+      BasicsView.body
+      BasicsView.body
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<SiblingFeaturesView.Feature>.scope
+      StoreOf<SiblingFeaturesView.Feature>.scope
+      """
+    }
   }
 }

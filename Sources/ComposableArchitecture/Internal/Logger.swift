@@ -5,7 +5,7 @@ public final class Logger {
   public static let shared = Logger()
   @Published public var logs: [String] = []
   #if DEBUG
-    @available(iOS 14.0, *)
+    @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
     var logger: os.Logger {
       os.Logger(subsystem: "composable-architecture", category: "store-events")
     }
@@ -14,7 +14,7 @@ public final class Logger {
       if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
         print("\(string)")
       } else {
-        if #available(iOS 14.0, *) {
+        if #available(iOS 14, macOS 11, tvOS 14, watchOS 7, *) {
           self.logger.log(level: level, "\(string)")
         }
       }
