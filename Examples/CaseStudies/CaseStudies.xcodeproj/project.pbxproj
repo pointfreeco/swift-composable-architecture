@@ -16,6 +16,7 @@
 		CA410EE0247A15FE00E41798 /* 02-Effects-WebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA410EDF247A15FE00E41798 /* 02-Effects-WebSocket.swift */; };
 		CA410EE2247C73B400E41798 /* 02-Effects-WebSocketTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA410EE1247C73B400E41798 /* 02-Effects-WebSocketTests.swift */; };
 		CA50BE6024A8F46500FE7DBA /* 01-GettingStarted-AlertsAndConfirmationDialogsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA50BE5F24A8F46500FE7DBA /* 01-GettingStarted-AlertsAndConfirmationDialogsTests.swift */; };
+		CA5D7C292AD22CA900D3A67C /* 02-Effects-SwiftData.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA5D7C282AD22CA900D3A67C /* 02-Effects-SwiftData.swift */; };
 		CA5ECF92267A79F0002067FF /* FactClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA5ECF91267A79F0002067FF /* FactClient.swift */; };
 		CA6AC2642451135C00C71CB3 /* ReusableComponents-Download.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA6AC2602451135C00C71CB3 /* ReusableComponents-Download.swift */; };
 		CA6AC2652451135C00C71CB3 /* CircularProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA6AC2612451135C00C71CB3 /* CircularProgressView.swift */; };
@@ -157,6 +158,7 @@
 		CA410EDF247A15FE00E41798 /* 02-Effects-WebSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-WebSocket.swift"; sourceTree = "<group>"; };
 		CA410EE1247C73B400E41798 /* 02-Effects-WebSocketTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-WebSocketTests.swift"; sourceTree = "<group>"; };
 		CA50BE5F24A8F46500FE7DBA /* 01-GettingStarted-AlertsAndConfirmationDialogsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-AlertsAndConfirmationDialogsTests.swift"; sourceTree = "<group>"; };
+		CA5D7C282AD22CA900D3A67C /* 02-Effects-SwiftData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-SwiftData.swift"; sourceTree = "<group>"; };
 		CA5ECF91267A79F0002067FF /* FactClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FactClient.swift; sourceTree = "<group>"; };
 		CA6AC2602451135C00C71CB3 /* ReusableComponents-Download.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ReusableComponents-Download.swift"; sourceTree = "<group>"; };
 		CA6AC2612451135C00C71CB3 /* CircularProgressView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CircularProgressView.swift; sourceTree = "<group>"; };
@@ -402,13 +404,14 @@
 				CAA9ADC524465C810003A984 /* 02-Effects-Cancellation.swift */,
 				CAA9ADC92446605B0003A984 /* 02-Effects-LongLiving.swift */,
 				CABC4F3826AEE00C00D5FA2C /* 02-Effects-Refreshable.swift */,
+				CA5D7C282AD22CA900D3A67C /* 02-Effects-SwiftData.swift */,
 				DC89C45424465C44006900B9 /* 02-Effects-Timers.swift */,
 				CA410EDF247A15FE00E41798 /* 02-Effects-WebSocket.swift */,
 				DC89C45224465451006900B9 /* 03-Navigation-Lists-NavigateAndLoad.swift */,
+				433B8B752A49C9AF0035DEE4 /* 03-Navigation-Multiple-Destinations.swift */,
 				DC89C44C244621A5006900B9 /* 03-Navigation-NavigateAndLoad.swift */,
 				DC072321244663B1003A8B65 /* 03-Navigation-Sheet-LoadThenPresent.swift */,
 				DCC68EAA244666AF0037F998 /* 03-Navigation-Sheet-PresentAndLoad.swift */,
-				433B8B752A49C9AF0035DEE4 /* 03-Navigation-Multiple-Destinations.swift */,
 				DC3C87AF29A48C4D004D9104 /* 03-NavigationStack.swift */,
 				DCE63B70245CC0B90080A23D /* 04-HigherOrderReducers-Recursion.swift */,
 				DCC68EE22447C8540037F998 /* 04-HigherOrderReducers-ReusableFavoriting.swift */,
@@ -741,6 +744,7 @@
 				DCC68EE32447C8540037F998 /* 04-HigherOrderReducers-ReusableFavoriting.swift in Sources */,
 				CA3E421F26B8337500581ABC /* 01-GettingStarted-FocusState.swift in Sources */,
 				DCC68EDF2447BC810037F998 /* TemplateText.swift in Sources */,
+				CA5D7C292AD22CA900D3A67C /* 02-Effects-SwiftData.swift in Sources */,
 				CA6AC2672451135C00C71CB3 /* DownloadClient.swift in Sources */,
 				CAA9ADC624465C810003A984 /* 02-Effects-Cancellation.swift in Sources */,
 				CA5ECF92267A79F0002067FF /* FactClient.swift in Sources */,
