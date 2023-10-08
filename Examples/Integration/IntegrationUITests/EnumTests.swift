@@ -13,7 +13,7 @@ final class EnumTests: BaseIntegrationTests {
 
   func testBasics() {
     self.app.buttons["Toggle feature 1 on"].tap()
-    XCTAssertEqual(self.app.staticTexts["Feature 1"].exists, true)
+    XCTAssertEqual(self.app.staticTexts["FEATURE 1"].exists, true)
     self.assertLogs {
       """
       BasicsView.body
@@ -50,22 +50,19 @@ final class EnumTests: BaseIntegrationTests {
 
   func testToggle1On_Toggle1Off() {
     self.app.buttons["Toggle feature 1 on"].tap()
-    XCTAssertEqual(self.app.staticTexts["Feature 1"].exists, true)
+    XCTAssertEqual(self.app.staticTexts["FEATURE 1"].exists, true)
     self.clearLogs()
     self.app.buttons["Toggle feature 1 off"].tap()
-    XCTAssertEqual(self.app.staticTexts["Feature 1"].exists, false)
+    XCTAssertEqual(self.app.staticTexts["FEATURE 1"].exists, false)
     self.assertLogs {
       """
       EnumView.body
-      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
       Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
       Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
       Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
       Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
       Store<PresentationState<EnumView.Feature.Destination.State>, PresentationAction<EnumView.Feature.Destination.Action>>.scope
       Store<PresentationState<EnumView.Feature.Destination.State>, PresentationAction<EnumView.Feature.Destination.Action>>.scope
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.scope
       StoreOf<EnumView.Feature>.scope
       StoreOf<EnumView.Feature>.scope
@@ -76,15 +73,14 @@ final class EnumTests: BaseIntegrationTests {
 
   func testToggle1On_Toggle2On() {
     self.app.buttons["Toggle feature 1 on"].tap()
-    XCTAssertEqual(self.app.staticTexts["Feature 1"].exists, true)
+    XCTAssertEqual(self.app.staticTexts["FEATURE 1"].exists, true)
     self.clearLogs()
     self.app.buttons["Toggle feature 2 on"].tap()
-    XCTAssertEqual(self.app.staticTexts["Feature 2"].exists, true)
+    XCTAssertEqual(self.app.staticTexts["FEATURE 2"].exists, true)
     self.assertLogs {
       """
       BasicsView.body
       EnumView.body
-      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
       Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.init
       Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
       Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
@@ -94,8 +90,6 @@ final class EnumTests: BaseIntegrationTests {
       Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
       Store<PresentationState<EnumView.Feature.Destination.State>, PresentationAction<EnumView.Feature.Destination.Action>>.scope
       Store<PresentationState<EnumView.Feature.Destination.State>, PresentationAction<EnumView.Feature.Destination.Action>>.scope
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.scope
@@ -108,14 +102,13 @@ final class EnumTests: BaseIntegrationTests {
 
   func testDismiss() {
     self.app.buttons["Toggle feature 1 on"].tap()
-    XCTAssertEqual(self.app.staticTexts["Feature 1"].exists, true)
+    XCTAssertEqual(self.app.staticTexts["FEATURE 1"].exists, true)
     self.clearLogs()
     self.app.buttons["Dismiss"].tap()
-    XCTAssertEqual(self.app.staticTexts["Feature 1"].exists, false)
+    XCTAssertEqual(self.app.staticTexts["FEATURE 1"].exists, false)
     self.assertLogs {
       """
       EnumView.body
-      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
       Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
       Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
       Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
@@ -127,8 +120,6 @@ final class EnumTests: BaseIntegrationTests {
       Store<PresentationState<EnumView.Feature.Destination.State>, PresentationAction<EnumView.Feature.Destination.Action>>.scope
       Store<PresentationState<EnumView.Feature.Destination.State>, PresentationAction<EnumView.Feature.Destination.Action>>.scope
       Store<PresentationState<EnumView.Feature.Destination.State>, PresentationAction<EnumView.Feature.Destination.Action>>.scope
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<EnumView.Feature>.scope

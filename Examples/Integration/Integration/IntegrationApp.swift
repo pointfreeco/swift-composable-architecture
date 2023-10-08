@@ -8,11 +8,6 @@ private struct LogsView: View {
   var body: some View {
     if ProcessInfo.processInfo.environment["UI_TEST"] != nil {
       VStack {
-        Button("Clear logs") { Logger.shared.clear() }
-          .accessibilityIdentifier("composable-architecture.debug.clear-logs")
-
-        Spacer()
-
         Text(self.logs.joined(separator: "\n"))
           .accessibilityIdentifier("composable-architecture.debug.logs")
           .allowsHitTesting(false)
@@ -42,15 +37,14 @@ final class IntegrationSceneDelegate: NSObject, UIWindowSceneDelegate {
     guard let windowScene = scene as? UIWindowScene
     else { return }
 
-    self.keyWindow = UIWindow(windowScene: windowScene)
-    self.keyWindow.rootViewController = UIHostingController(rootView: ContentView())
-
     self.logsWindow = UIWindow(windowScene: windowScene)
     self.logsWindow.rootViewController = UIHostingController(rootView: LogsView())
     self.logsWindow.rootViewController?.view.backgroundColor = .clear
-    self.logsWindow.makeKeyAndVisible()
     self.logsWindow.isUserInteractionEnabled = false
+    self.logsWindow.makeKeyAndVisible()
 
+    self.keyWindow = UIWindow(windowScene: windowScene)
+    self.keyWindow.rootViewController = UIHostingController(rootView: ContentView())
     self.keyWindow.makeKeyAndVisible()
   }
 }
