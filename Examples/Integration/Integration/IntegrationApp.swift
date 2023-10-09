@@ -106,7 +106,7 @@ struct ContentView: View {
             PresentationView()
           }
         }
-        
+
         Section {
           ForEach(TestCase.allCases) { test in
             switch test {
@@ -114,12 +114,12 @@ struct ContentView: View {
               NavigationLink(test.rawValue) {
                 EscapedWithViewStoreTestCaseView()
               }
-              
+
             case .forEachBinding:
               NavigationLink(test.rawValue) {
                 ForEachBindingTestCaseView()
               }
-              
+
             case .navigationStack:
               Button(test.rawValue) {
                 self.isNavigationStackTestCasePresented = true
@@ -128,7 +128,7 @@ struct ContentView: View {
               .sheet(isPresented: self.$isNavigationStackTestCasePresented) {
                 NavigationStackTestCaseView()
               }
-              
+
             case .navigationStackBinding:
               Button(test.rawValue) {
                 self.isNavigationStackBindingTestCasePresented = true
@@ -137,22 +137,22 @@ struct ContentView: View {
               .sheet(isPresented: self.$isNavigationStackBindingTestCasePresented) {
                 NavigationStackBindingTestCaseView()
               }
-              
+
             case .presentation:
               NavigationLink(test.rawValue) {
                 PresentationTestCaseView()
               }
-              
+
             case .presentationItem:
               NavigationLink(test.rawValue) {
                 PresentationItemTestCaseView()
               }
-              
+
             case .switchStore:
               NavigationLink(test.rawValue) {
                 SwitchStoreTestCaseView()
               }
-              
+
             case .bindingLocal:
               Button(test.rawValue) {
                 self.isBindingLocalTestCasePresented = true
@@ -166,7 +166,7 @@ struct ContentView: View {
         } header: {
           Text("Legacy")
         }
-        
+
         Section {
           NavigationLink("Binding Animations Test Bench") {
             BindingsAnimationsTestBench()

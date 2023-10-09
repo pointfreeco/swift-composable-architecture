@@ -39,8 +39,7 @@ class BaseIntegrationTests: XCTestCase {
     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
       let alert = XCUIApplication(bundleIdentifier: "com.apple.springboard").alerts
       let open = alert.buttons["Open"]
-      if
-        alert.firstMatch.waitForExistence(timeout: 0.3),
+      if alert.firstMatch.waitForExistence(timeout: 0.3),
         open.waitForExistence(timeout: 0.3)
       {
         alert.buttons["Open"].tap()

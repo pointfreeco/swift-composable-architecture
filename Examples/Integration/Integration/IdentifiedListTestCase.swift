@@ -28,7 +28,8 @@ struct IdentifiedListView: View {
             }
           }
         }
-        ForEachStore(self.store.scope(state: \.rows, action: { .row(id: $0, action: $1) })) { store in
+        ForEachStore(self.store.scope(state: \.rows, action: { .row(id: $0, action: $1) })) {
+          store in
           let _ = Logger.shared.log("\(Self.self).body.ForEachStore")
           let idStore = store.scope(state: \.id, action: { $0 })
           WithViewStore(idStore, observe: { $0 }) { viewStore in

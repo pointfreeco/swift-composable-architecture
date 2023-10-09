@@ -168,7 +168,7 @@ public final class Store<State, Action> {
       )
     }
   }
-  
+
   deinit {
     Logger.shared.log("\(typeName(of: self)).deinit")
   }
@@ -885,14 +885,14 @@ public struct StoreTask: Hashable, Sendable {
   }
 }
 
-fileprivate func typeName<State, Action>(of store: Store<State, Action>) -> String {
+private func typeName<State, Action>(of store: Store<State, Action>) -> String {
   let stateType = typeName(State.self, genericsAbbreviated: false)
   let actionType = typeName(Action.self, genericsAbbreviated: false)
   // TODO: `PresentationStoreOf`, `StackStoreOf`, `IdentifiedStoreOf`?
   //       `StoreOf<Feature?>`
   if stateType.hasSuffix(".State"),
-     actionType.hasSuffix(".Action"),
-     stateType.dropLast(6) == actionType.dropLast(7)
+    actionType.hasSuffix(".Action"),
+    stateType.dropLast(6) == actionType.dropLast(7)
   {
     return "StoreOf<\(stateType.dropLast(6))>"
   } else {
@@ -901,7 +901,7 @@ fileprivate func typeName<State, Action>(of store: Store<State, Action>) -> Stri
 }
 
 // NB: From swift-custom-dump. Consider publicizing interface in some way to keep things in sync.
-fileprivate func typeName(
+private func typeName(
   _ type: Any.Type,
   qualified: Bool = true,
   genericsAbbreviated: Bool = true

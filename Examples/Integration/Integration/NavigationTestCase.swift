@@ -34,7 +34,7 @@ struct NavigationTestCaseView: View {
     }
     var body: some ReducerOf<Self> {
       Reduce { state, action in
-          .none
+        .none
       }
       .forEach(\.path, action: /Action.path) {
         BasicsView.Feature()

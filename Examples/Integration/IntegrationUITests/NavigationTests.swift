@@ -32,7 +32,6 @@ final class NavigationTests: BaseIntegrationTests {
     }
   }
 
-
   func testDeepStack() {
     self.app.buttons["Push feature"].tap()
     self.app.buttons["Push feature"].tap()
