@@ -1,24 +1,22 @@
-import ComposableArchitecture
+@_spi(Logging) import ComposableArchitecture
 import SwiftUI
 import TestCases
 
 private struct LogsView: View {
-  @State var logs: [String] = ["Hello!"]
+  @State var logs: [String] = []
 
   var body: some View {
-    if true || ProcessInfo.processInfo.environment["UI_TEST"] != nil {
+    if ProcessInfo.processInfo.environment["UI_TEST"] != nil {
       VStack {
-        Button("Clear logs") { Log.shared.clear() }
-          .accessibilityIdentifier("composable-architecture.debug.clear-logs")
-
-        Spacer()
-
         Text(self.logs.joined(separator: "\n"))
           .accessibilityIdentifier("composable-architecture.debug.logs")
           .allowsHitTesting(false)
       }
       .background(Color.clear)
-      .onReceive(Log.shared.$logs) { self.logs = $0 }
+      .onReceive(Logger.shared.$logs) { self.logs = $0 }
+      .onReceive(NotificationCenter.default.publisher(for: .clearLogs)) { _ in
+        Logger.shared.clear()
+      }
     }
   }
 }
@@ -26,6 +24,10 @@ private struct LogsView: View {
 final class IntegrationSceneDelegate: NSObject, UIWindowSceneDelegate {
   var keyWindow: UIWindow!
   var logsWindow: UIWindow!
+
+  func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+    NotificationCenter.default.post(name: .clearLogs, object: nil)
+  }
 
   func scene(
     _ scene: UIScene,
@@ -35,33 +37,14 @@ final class IntegrationSceneDelegate: NSObject, UIWindowSceneDelegate {
     guard let windowScene = scene as? UIWindowScene
     else { return }
 
-    self.keyWindow = UIWindow(windowScene: windowScene)
-    self.keyWindow.rootViewController = UIHostingController(rootView: ContentView())
-
     self.logsWindow = UIWindow(windowScene: windowScene)
     self.logsWindow.rootViewController = UIHostingController(rootView: LogsView())
     self.logsWindow.rootViewController?.view.backgroundColor = .clear
+    self.logsWindow.isUserInteractionEnabled = false
+    self.logsWindow.makeKeyAndVisible()
 
-    let switchToLogsButton = UIButton()
-    switchToLogsButton.setTitle("Switch to logs", for: .normal)
-    switchToLogsButton.addAction(UIAction(handler: { _ in
-      self.logsWindow.makeKeyAndVisible()
-    }), for: .touchUpInside)
-    switchToLogsButton.sizeToFit()
-    switchToLogsButton.frame.origin.y = 100
-    switchToLogsButton.backgroundColor = .red
-    self.keyWindow.rootViewController?.view.addSubview(switchToLogsButton)
-
-    let switchToWindowButton = UIButton()
-    switchToWindowButton.setTitle("Switch to window", for: .normal)
-    switchToWindowButton.addAction(UIAction(handler: { _ in
-      self.keyWindow.makeKeyAndVisible()
-    }), for: .touchUpInside)
-    switchToWindowButton.sizeToFit()
-    switchToWindowButton.frame.origin.y = 100
-    switchToWindowButton.backgroundColor = .red
-    self.logsWindow.rootViewController?.view.addSubview(switchToWindowButton)
-
+    self.keyWindow = UIWindow(windowScene: windowScene)
+    self.keyWindow.rootViewController = UIHostingController(rootView: ContentView())
     self.keyWindow.makeKeyAndVisible()
   }
 }
@@ -71,6 +54,7 @@ final class IntegrationAppDelegate: NSObject, UIApplicationDelegate {
     configurationForConnecting connectingSceneSession: UISceneSession,
     options: UIScene.ConnectionOptions
   ) -> UISceneConfiguration {
+    Logger.shared.isEnabled = true
     let sceneConfig = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
     sceneConfig.delegateClass = IntegrationSceneDelegate.self
     return sceneConfig
@@ -89,13 +73,16 @@ struct ContentView: View {
   @State var isBindingLocalTestCasePresented = false
   @State var isNavigationStackTestCasePresented = false
   @State var isNavigationStackBindingTestCasePresented = false
+  @State var isNavigationTestCasePresented = false
 
   var body: some View {
     NavigationStack {
       List {
         Section {
           NavigationLink("Basics") {
-            BasicsView()
+            Form {
+              BasicsView()
+            }
           }
           NavigationLink("Enum") {
             EnumView()
@@ -103,11 +90,21 @@ struct ContentView: View {
           NavigationLink("Optional") {
             OptionalView()
           }
+          NavigationLink("Identified list") {
+            IdentifiedListView()
+          }
+          Button("Navigation") {
+            self.isNavigationTestCasePresented = true
+          }
+          .sheet(isPresented: self.$isNavigationTestCasePresented) {
+            NavigationTestCaseView()
+          }
           NavigationLink("Siblings") {
             SiblingFeaturesView()
           }
-        } header: {
-          Text("iOS 17")
+          NavigationLink("Presentation") {
+            PresentationView()
+          }
         }
 
         Section {
@@ -167,7 +164,7 @@ struct ContentView: View {
             }
           }
         } header: {
-          Text("Pre-iOS 17")
+          Text("Legacy")
         }
 
         Section {
@@ -223,4 +220,8 @@ struct ContentView_Previews: PreviewProvider {
   static var previews: some View {
     ContentView()
   }
+}
+
+extension Notification.Name {
+  static let clearLogs = Self("clear-logs")
 }

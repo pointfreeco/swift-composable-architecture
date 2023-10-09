@@ -83,23 +83,18 @@ struct NavigateAndLoadListView: View {
         }
         ForEach(viewStore.rows) { row in
           NavigationLink(
-            destination: IfLetStore(
-              self.store.scope(
-                state: \.selection?.value,
-                action: NavigateAndLoadList.Action.counter
-              )
-            ) {
-              CounterView(store: $0)
-            } else: {
-              ProgressView()
-            },
+            "Load optional counter that starts from \(row.count)",
             tag: row.id,
             selection: viewStore.binding(
               get: \.selection?.id,
-              send: NavigateAndLoadList.Action.setNavigation(selection:)
+              send: { .setNavigation(selection: $0) }
             )
           ) {
-            Text("Load optional counter that starts from \(row.count)")
+            IfLetStore(self.store.scope(state: \.selection?.value, action: { .counter($0) })) {
+              CounterView(store: $0)
+            } else: {
+              ProgressView()
+            }
           }
         }
       }

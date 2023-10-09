@@ -86,25 +86,25 @@ struct MultipleDestinationsView: View {
         }
       }
       .navigationDestination(
-        store: store.scope(state: \.$destination, action: { .destination($0) }),
+        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
         state: /MultipleDestinations.Destination.State.drillDown,
         action: MultipleDestinations.Destination.Action.drillDown
-      ) {
-        CounterView(store: $0)
+      ) { store in
+        CounterView(store: store)
       }
       .popover(
-        store: store.scope(state: \.$destination, action: { .destination($0) }),
+        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
         state: /MultipleDestinations.Destination.State.popover,
         action: MultipleDestinations.Destination.Action.popover
-      ) {
-        CounterView(store: $0)
+      ) { store in
+        CounterView(store: store)
       }
       .sheet(
-        store: store.scope(state: \.$destination, action: { .destination($0) }),
+        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
         state: /MultipleDestinations.Destination.State.sheet,
         action: MultipleDestinations.Destination.Action.sheet
-      ) {
-        CounterView(store: $0)
+      ) { store in
+        CounterView(store: store)
       }
     }
   }

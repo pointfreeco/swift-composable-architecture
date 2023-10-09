@@ -163,8 +163,7 @@ struct WebSocketView: View {
             HStack {
               TextField(
                 "Type message here",
-                text: viewStore.binding(
-                  get: \.messageToSend, send: WebSocket.Action.messageToSendChanged)
+                text: viewStore.binding(get: \.messageToSend, send: { .messageToSendChanged($0) })
               )
               .textFieldStyle(.roundedBorder)
 

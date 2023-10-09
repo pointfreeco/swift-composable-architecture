@@ -44,7 +44,7 @@ private struct Feature: Reducer {
     case none
   }
   var body: some ReducerOf<Self> {
-    Reduce<State, Action> { state, action in
+    Reduce { state, action in
       switch action {
       case .child:
         return .none

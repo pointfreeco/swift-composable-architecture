@@ -1,4 +1,4 @@
-import ComposableArchitecture
+@_spi(Logging) import ComposableArchitecture
 import SwiftUI
 
 struct SiblingFeaturesView: View {
@@ -7,14 +7,17 @@ struct SiblingFeaturesView: View {
   }
 
   var body: some View {
-    let _ = Log.shared.log("\(Self.self).body")
     VStack {
-      BasicsView(
-        store: self.store.scope(state: \.child1, action: { .child1($0) })
-      )
-      BasicsView(
-        store: self.store.scope(state: \.child2, action: { .child2($0) })
-      )
+      Form {
+        BasicsView(
+          store: self.store.scope(state: \.child1, action: { .child1($0) })
+        )
+      }
+      Form {
+        BasicsView(
+          store: self.store.scope(state: \.child2, action: { .child2($0) })
+        )
+      }
       Spacer()
       Form {
         Button("Reset all") {
@@ -31,12 +34,10 @@ struct SiblingFeaturesView: View {
   }
 
   struct Feature: Reducer {
-    @ObservableState
-    struct State {
+    struct State: Equatable {
       var child1 = BasicsView.Feature.State()
       var child2 = BasicsView.Feature.State()
     }
-    @CasePathable
     enum Action {
       case child1(BasicsView.Feature.Action)
       case child2(BasicsView.Feature.Action)
@@ -45,10 +46,10 @@ struct SiblingFeaturesView: View {
       case swapButtonTapped
     }
     var body: some ReducerOf<Self> {
-      Scope(state: \.child1, action: #casePath(\.child1)) {
+      Scope(state: \.child1, action: /Action.child1) {
         BasicsView.Feature()
       }
-      Scope(state: \.child2, action: #casePath(\.child2)) {
+      Scope(state: \.child2, action: /Action.child2) {
         BasicsView.Feature()
       }
       Reduce { state, action in

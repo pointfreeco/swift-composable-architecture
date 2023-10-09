@@ -65,7 +65,7 @@ final class LoginCoreTests: XCTestCase {
         AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true)
       }
       $0.authenticationClient.twoFactor = { _ in
-        try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+        try await Task.sleep(for: .seconds(1))
         return AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
       }
     }

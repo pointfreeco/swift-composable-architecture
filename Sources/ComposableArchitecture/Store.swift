@@ -61,17 +61,17 @@ import SwiftUI
 ///   var body: some View {
 ///     TabView {
 ///       ActivityView(
-///         store: self.store.scope(state: \.activity, action: AppFeature.Action.activity)
+///         store: self.store.scope(state: \.activity, action: { .activity($0) })
 ///       )
 ///       .tabItem { Text("Activity") }
 ///
 ///       SearchView(
-///         store: self.store.scope(state: \.search, action: AppFeature.Action.search)
+///         store: self.store.scope(state: \.search, action: { .search($0) })
 ///       )
 ///       .tabItem { Text("Search") }
 ///
 ///       ProfileView(
-///         store: self.store.scope(state: \.profile, action: AppFeature.Action.profile)
+///         store: self.store.scope(state: \.profile, action: { .profile($0) })
 ///       )
 ///       .tabItem { Text("Profile") }
 ///     }
@@ -153,7 +153,7 @@ public final class Store<State, Action> {
     @ReducerBuilder<State, Action> reducer: () -> R,
     withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
   ) where R.State == State, R.Action == Action {
-    Log.shared.log("\(Self.typeName).init")
+    defer { Logger.shared.log("\(typeName(of: self)).init") }
     if let prepareDependencies = prepareDependencies {
       let (initialState, reducer) = withDependencies(prepareDependencies) {
         (initialState(), reducer())
@@ -171,9 +171,9 @@ public final class Store<State, Action> {
       )
     }
   }
-
+  
   deinit {
-    Log.shared.log("\(Self.typeName).deinit")
+    Logger.shared.log("\(typeName(of: self)).deinit")
   }
 
   /// Calls the given closure with the current state of the store.
@@ -687,19 +687,6 @@ public final class Store<State, Action> {
   public var publisher: StorePublisher<State> {
     StorePublisher(store: self, upstream: self.subject)
   }
-
-  fileprivate static var typeName: String {
-    let stateType = _typeName(State.self)
-    let actionType = _typeName(Action.self)
-    if stateType.hasSuffix(".State"),
-       actionType.hasSuffix(".Action"),
-       stateType.dropLast(6) == actionType.dropLast(7)
-    {
-      return "StoreOf<\(stateType.dropLast(6))>"
-    } else {
-      return "Store<\(stateType), \(actionType)>"
-    }
-  }
 }
 
 /// A convenience type alias for referring to a store of a given reducer's domain.
@@ -827,13 +814,16 @@ extension ScopedReducer: AnyScopedReducer {
     childStore.parentCancellable = store.subject
       .dropFirst()
       .sink { [weak childStore] newValue in
-        guard !reducer.isSending, let childStore = childStore else { return }
+        guard
+          !reducer.isSending,
+          let childStore = childStore
+        else { return }
         let newValue = toRescopedState(newValue)
         guard isDuplicate.map({ !$0(childStore.subject.value, newValue) }) ?? true else {
           return
         }
         childStore.subject.value = newValue
-        Log.shared.log("\(Store<ScopedState, ScopedAction>.typeName).scope")
+        Logger.shared.log("\(typeName(of: store)).scope")
       }
     return childStore
   }
@@ -917,35 +907,65 @@ public struct StoreTask: Hashable, Sendable {
   }
 }
 
-import OSLog
-public final class Log {
-  @available(iOS 14.0, *)
-  var logger: Logger {
-    Logger(subsystem: "composable-architecture", category: "store-events")
-  }
-  @Published public var logs: [String] = []
-  public static let shared = Log()
-#if DEBUG
-  public func log(level: OSLogType = .default, _ string: @autoclosure () -> String) {
-    let string = string()
-    if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
-      print("\(string)")
-    } else {
-      if #available(iOS 14.0, *) {
-        self.logger.log(level: level, "\(string)")
-      }
+fileprivate func typeName<State, Action>(of store: Store<State, Action>) -> String {
+  // NB: From swift-custom-dump. Consider publicizing interface in some way to keep things in sync.
+  func typeName(
+    _ type: Any.Type,
+    qualified: Bool = true,
+    genericsAbbreviated: Bool = true
+  ) -> String {
+    var name = _typeName(type, qualified: qualified)
+      .replacingOccurrences(
+        of: #"\(unknown context at \$[[:xdigit:]]+\)\."#,
+        with: "",
+        options: .regularExpression
+      )
+    for _ in 1...10 {  // NB: Only handle so much nesting
+      let abbreviated =
+        name
+        .replacingOccurrences(
+          of: #"\bSwift.Optional<([^><]+)>"#,
+          with: "$1?",
+          options: .regularExpression
+        )
+        .replacingOccurrences(
+          of: #"\bSwift.Array<([^><]+)>"#,
+          with: "[$1]",
+          options: .regularExpression
+        )
+        .replacingOccurrences(
+          of: #"\bSwift.Dictionary<([^,<]+), ([^><]+)>"#,
+          with: "[$1: $2]",
+          options: .regularExpression
+        )
+      if abbreviated == name { break }
+      name = abbreviated
     }
-    self.logs.append(string)
+    name = name.replacingOccurrences(
+      of: #"\w+\.([\w.]+)"#,
+      with: "$1",
+      options: .regularExpression
+    )
+    if genericsAbbreviated {
+      name = name.replacingOccurrences(
+        of: #"<.+>"#,
+        with: "",
+        options: .regularExpression
+      )
+    }
+    return name
   }
-  public func clear() {
-    self.logs = []
+
+  let stateType = typeName(State.self, genericsAbbreviated: false)
+  let actionType = typeName(Action.self, genericsAbbreviated: false)
+  // TODO: `PresentationStoreOf`, `StackStoreOf`, `IdentifiedStoreOf`?
+  //       `StoreOf<Feature?>`
+  if stateType.hasSuffix(".State"),
+     actionType.hasSuffix(".Action"),
+     stateType.dropLast(6) == actionType.dropLast(7)
+  {
+    return "StoreOf<\(stateType.dropLast(6))>"
+  } else {
+    return "Store<\(stateType), \(actionType)>"
   }
-#else
-  @inlinable @inline(__always)
-  public func log(level: OSLogType = .default, _ string: @autoclosure () -> String) {
-  }
-  @inlinable @inline(__always)
-  public func clear() {
-  }
-#endif
 }

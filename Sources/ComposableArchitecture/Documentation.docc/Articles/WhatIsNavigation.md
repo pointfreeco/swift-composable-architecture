@@ -47,7 +47,7 @@ But, so far we have just defined one term, "navigation", by using another undefi
 or vice-versa.
 
 So, when a piece of state switches from not existing to existing, that represents a navigation and 
-change mode in the application, and when the state switches back to not existing, it represents 
+change of mode in the application, and when the state switches back to not existing, it represents 
 undoing the navigation and returning to the previous mode.
 
 That is very abstract way of describing state-driven navigation, and the next two sections make
@@ -102,7 +102,7 @@ struct EditItemFeature: Reducer {
 }
 ```
 
-And this can continue on and on for as many layers of navigation exist in the application.
+And this can continue on and on for as many layers of navigation that exist in the application.
 
 With that done, the act of deep-linking into the application is a mere exercise in constructing
 a piece of deeply nested state. So, if we wanted to launch the inventory view into a state where

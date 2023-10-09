@@ -1,4 +1,4 @@
-import ComposableArchitecture
+@_spi(Logging) import ComposableArchitecture
 import SwiftUI
 
 struct BasicsView: View {
@@ -7,9 +7,9 @@ struct BasicsView: View {
   }
 
   var body: some View {
-    let _ = Log.shared.log("\(Self.self).body")
-    Form {
-      Text(self.store.count.description)
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
+      let _ = Logger.shared.log("\(Self.self).body")
+      Text(viewStore.count.description)
       Button("Decrement") { self.store.send(.decrementButtonTapped) }
       Button("Increment") { self.store.send(.incrementButtonTapped) }
       Button("Dismiss") { self.store.send(.dismissButtonTapped) }
@@ -17,14 +17,11 @@ struct BasicsView: View {
   }
 
   struct Feature: Reducer {
-    @ObservableState
-    struct State {
+    struct State: Equatable, Identifiable {
+      let id = UUID()
       var count = 0
-      var isDismissable: Bool
       init(count: Int = 0) {
         self.count = count
-        @Dependency(\.isPresented) var isPresented
-        self.isDismissable = isPresented
       }
     }
     enum Action {
