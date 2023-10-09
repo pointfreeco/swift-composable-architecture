@@ -150,6 +150,7 @@ public final class Store<State, Action> {
     @ReducerBuilder<State, Action> reducer: () -> R,
     withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
   ) where R.State == State, R.Action == Action {
+    defer { Logger.shared.log("\(typeName(of: self)).init") }
     if let prepareDependencies = prepareDependencies {
       let (initialState, reducer) = withDependencies(prepareDependencies) {
         (initialState(), reducer())
@@ -166,6 +167,10 @@ public final class Store<State, Action> {
         mainThreadChecksEnabled: true
       )
     }
+  }
+  
+  deinit {
+    Logger.shared.log("\(typeName(of: self)).deinit")
   }
 
   /// Calls the given closure with the current state of the store.
@@ -787,12 +792,16 @@ extension ScopedReducer: AnyScopedReducer {
     childStore.parentCancellable = store.state
       .dropFirst()
       .sink { [weak childStore] newValue in
-        guard !reducer.isSending, let childStore = childStore else { return }
+        guard
+          !reducer.isSending,
+          let childStore = childStore
+        else { return }
         let newValue = toRescopedState(newValue)
         guard isDuplicate.map({ !$0(childStore.state.value, newValue) }) ?? true else {
           return
         }
         childStore.state.value = newValue
+        Logger.shared.log("\(typeName(of: store)).scope")
       }
     return childStore
   }
@@ -874,4 +883,67 @@ public struct StoreTask: Hashable, Sendable {
   public var isCancelled: Bool {
     self.rawValue?.isCancelled ?? true
   }
+}
+
+fileprivate func typeName<State, Action>(of store: Store<State, Action>) -> String {
+  let stateType = typeName(State.self, genericsAbbreviated: false)
+  let actionType = typeName(Action.self, genericsAbbreviated: false)
+  // TODO: `PresentationStoreOf`, `StackStoreOf`, `IdentifiedStoreOf`?
+  //       `StoreOf<Feature?>`
+  if stateType.hasSuffix(".State"),
+     actionType.hasSuffix(".Action"),
+     stateType.dropLast(6) == actionType.dropLast(7)
+  {
+    return "StoreOf<\(stateType.dropLast(6))>"
+  } else {
+    return "Store<\(stateType), \(actionType)>"
+  }
+}
+
+// NB: From swift-custom-dump. Consider publicizing interface in some way to keep things in sync.
+fileprivate func typeName(
+  _ type: Any.Type,
+  qualified: Bool = true,
+  genericsAbbreviated: Bool = true
+) -> String {
+  var name = _typeName(type, qualified: qualified)
+    .replacingOccurrences(
+      of: #"\(unknown context at \$[[:xdigit:]]+\)\."#,
+      with: "",
+      options: .regularExpression
+    )
+  for _ in 1...10 {  // NB: Only handle so much nesting
+    let abbreviated =
+      name
+      .replacingOccurrences(
+        of: #"\bSwift.Optional<([^><]+)>"#,
+        with: "$1?",
+        options: .regularExpression
+      )
+      .replacingOccurrences(
+        of: #"\bSwift.Array<([^><]+)>"#,
+        with: "[$1]",
+        options: .regularExpression
+      )
+      .replacingOccurrences(
+        of: #"\bSwift.Dictionary<([^,<]+), ([^><]+)>"#,
+        with: "[$1: $2]",
+        options: .regularExpression
+      )
+    if abbreviated == name { break }
+    name = abbreviated
+  }
+  name = name.replacingOccurrences(
+    of: #"\w+\.([\w.]+)"#,
+    with: "$1",
+    options: .regularExpression
+  )
+  if genericsAbbreviated {
+    name = name.replacingOccurrences(
+      of: #"<.+>"#,
+      with: "",
+      options: .regularExpression
+    )
+  }
+  return name
 }
