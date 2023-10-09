@@ -3,7 +3,7 @@ import SwiftData
 import SwiftUI
 
 @Model
-class Book {
+class Book: Identifiable {
   var title: String
   var isCheckedOut: Bool
   init(title: String = "", isCheckedOut: Bool = false) {
@@ -12,10 +12,11 @@ class Book {
   }
 }
 
-@Model private class Foo { init() {} }
+@Model private class Private { init() {} }
 private enum ModelContainerKey: DependencyKey {
   static var liveValue: ModelContainer {
-    return try! ModelContainer(for: Foo.self, configurations: ModelConfiguration())
+    // runtimeWarn
+    return try! ModelContainer(for: Private.self, configurations: ModelConfiguration())
   }
 }
 extension DependencyValues {
@@ -25,16 +26,45 @@ extension DependencyValues {
   }
 }
 
-private enum ModelContextKey: DependencyKey {
-  static var liveValue: ModelContext {
-    @Dependency(\.modelContainer) var modelContainer
-    return ModelContext(modelContainer)
+actor ContextActor: ModelActor {
+  let modelExecutor: ModelExecutor
+  let modelContainer: ModelContainer
+  let context: ModelContext
+  init(
+    modelExecutor: ModelExecutor,
+    modelContainer: ModelContainer,
+    context: ModelContext) {
+    self.modelExecutor = modelExecutor
+    self.modelContainer = modelContainer
+    self.context = context
+  }
+}
+//extension ContextActor: TestDependencyKey {
+//  static var testValue: ContextActor {
+//    ContextActor(
+//      modelExecutor: ModelExecutor.,
+//      modelContainer: <#T##ModelContainer#>,
+//      context: <#T##ModelContext#>
+//    )
+//  }
+//}
+
+struct ModelContextClient: Sendable {
+  let context: @Sendable () -> ModelContext
+  func callAsFunction() -> ModelContext { self.context() }
+}
+extension ModelContextClient: DependencyKey {
+  static var liveValue: ModelContextClient {
+    Self {
+      @Dependency(\.modelContainer) var modelContainer
+      return ModelContext(modelContainer)
+    }
   }
 }
 extension DependencyValues {
-  var modelContext: ModelContext {
-    get { self[ModelContextKey.self] }
-    set { self[ModelContextKey.self] = newValue }
+  var modelContext: ModelContextClient {
+    get { self[ModelContextClient.self] }
+    set { self[ModelContextClient.self] = newValue }
   }
 }
 
@@ -45,9 +75,10 @@ struct LibraryFeature: Reducer {
   enum Action: BindableAction {
     case addButtonTapped
     case binding(BindingAction<State>)
+    case onTask
   }
+  @Dependency(\.continuousClock) var clock
   @Dependency(\.modelContext) var modelContext
-  @Dependency(\.modelContainer) var modelContainer
   var body: some ReducerOf<Self> {
     BindingReducer()
     Reduce { state, action in
@@ -55,22 +86,26 @@ struct LibraryFeature: Reducer {
       case .addButtonTapped:
         let book = Book()
         state.books.append(book)
-        self.modelContext.insert(book)
-        return .none
+        self.modelContext().insert(book)
+        return .run { send in
+          //await self.modelActor.context.insert(book)
+        }
       case .binding:
+        return .none
+      case .onTask:
+        do {
+          state.books = try modelContext().fetch(FetchDescriptor<Book>())
+        } catch {
+        }
         return .none
       }
     }
     Reduce { _, _ in
       return .run { _ in
-        //try await Task.sleep(for: .seconds(1))
-        print("Try saving")
+        try await self.clock.sleep(for: .seconds(1))
         do {
-          try await self.modelContainer.mainContext.save()
-          print("Saved")
-          //try self.modelContext.save()
+          try self.modelContext().save()
         } catch {
-          print(error)
         }
       }
       .cancellable(id: CancelID.save, cancelInFlight: true)
@@ -80,15 +115,13 @@ struct LibraryFeature: Reducer {
   private enum CancelID { case save }
 }
 
-
 struct LibraryView: View {
   let store: StoreOf<LibraryFeature>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
-        let tmp = viewStore.$books
-        ForEach(tmp) { $book in
+        ForEach(viewStore.$books) { $book in
           HStack {
             TextField("Title", text: $book.title)
             Spacer()
@@ -107,6 +140,7 @@ struct LibraryView: View {
         }
       }
     }
+    .task { await self.store.send(.onTask).finish() }
   }
 }
 
@@ -115,7 +149,11 @@ struct LibraryView: View {
     LibraryView(
       store: Store(initialState: LibraryFeature.State()) {
         LibraryFeature()
-          .dependency(\.modelContainer, try! ModelContainer(for: Book.self, configurations: .init()))
+      } withDependencies: {
+        $0.modelContainer = try! ModelContainer(
+          for: Book.self,
+          configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+        )
       }
     )
   }
