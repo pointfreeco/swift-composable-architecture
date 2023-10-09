@@ -3,6 +3,7 @@ import OSLog
 @_spi(Logging)
 public final class Logger {
   public static let shared = Logger()
+  @_spi(Logging) public var isEnabled = false
   @Published public var logs: [String] = []
   #if DEBUG
     @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
@@ -10,6 +11,7 @@ public final class Logger {
       os.Logger(subsystem: "composable-architecture", category: "store-events")
     }
     public func log(level: OSLogType = .default, _ string: @autoclosure () -> String) {
+      guard self.isEnabled else { return }
       let string = string()
       if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
         print("\(string)")

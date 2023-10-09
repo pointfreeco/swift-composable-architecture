@@ -54,6 +54,7 @@ final class IntegrationAppDelegate: NSObject, UIApplicationDelegate {
     configurationForConnecting connectingSceneSession: UISceneSession,
     options: UIScene.ConnectionOptions
   ) -> UISceneConfiguration {
+    Logger.shared.isEnabled = true
     let sceneConfig = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
     sceneConfig.delegateClass = IntegrationSceneDelegate.self
     return sceneConfig
