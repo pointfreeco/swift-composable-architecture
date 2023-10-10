@@ -17,4 +17,8 @@ extension Store: Observable where State: ObservableState {
       }
     }
   }
+
+  public subscript<Value>(dynamicMember keyPath: KeyPath<State, Value>) -> Value {
+    self.state[keyPath: keyPath]
+  }
 }

@@ -71,6 +71,7 @@ struct IntegrationApp: App {
 
 struct ContentView: View {
   @State var isBindingLocalTestCasePresented = false
+  @State var isObservableNavigationTestCasePresented = false
   @State var isNavigationStackTestCasePresented = false
   @State var isNavigationStackBindingTestCasePresented = false
   @State var isNavigationTestCasePresented = false
@@ -104,6 +105,35 @@ struct ContentView: View {
           }
           NavigationLink("Presentation") {
             PresentationView()
+          }
+        }
+
+        Section {
+          NavigationLink("Observable Basics") {
+            Form {
+              ObservableBasicsView()
+            }
+          }
+          NavigationLink("Observable Enum") {
+            ObservableEnumView()
+          }
+          NavigationLink("Observable Optional") {
+            ObservableOptionalView()
+          }
+          NavigationLink("Observable Identified list") {
+            ObservableIdentifiedListView()
+          }
+          Button("Observable Navigation") {
+            self.isObservableNavigationTestCasePresented = true
+          }
+          .sheet(isPresented: self.$isObservableNavigationTestCasePresented) {
+            ObservableNavigationTestCaseView()
+          }
+          NavigationLink("Observable Siblings") {
+            ObservableSiblingFeaturesView()
+          }
+          NavigationLink("Observable Presentation") {
+            ObservablePresentationView()
           }
         }
 
