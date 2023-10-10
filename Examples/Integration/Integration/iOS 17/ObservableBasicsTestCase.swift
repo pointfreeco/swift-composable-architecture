@@ -15,25 +15,10 @@ struct ObservableBasicsView: View {
   }
 
   struct Feature: Reducer {
-    struct State: Equatable, Identifiable, ObservableState {
+    @ObservableState
+    struct State: Equatable, Identifiable {
       let id = UUID()
-      var _count = 0
-      var count: Int {
-        get {
-          self._$observationRegistrar.access(self, keyPath: \.count)
-          return self._count
-        }
-        set {
-          self._$observationRegistrar.withMutation(of: self, keyPath: \.count) {
-            self._count = newValue
-          }
-        }
-      }
-      init(count: Int = 0) {
-        self.count = count
-      }
-      let _$id = ObservableStateID()
-      let _$observationRegistrar = ObservationRegistrar()
+      var count = 0
     }
     enum Action {
       case decrementButtonTapped

@@ -14,3 +14,12 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
     self.uuid = UUID()
   }
 }
+
+@available(iOS 17, *)
+public func isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
+  guard 
+    let lhs = lhs as? any ObservableState,
+    let rhs = rhs as? any ObservableState
+  else { return false }
+  return lhs._$id == rhs._$id
+}

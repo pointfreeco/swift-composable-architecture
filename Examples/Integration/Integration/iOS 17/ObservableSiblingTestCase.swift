@@ -12,9 +12,7 @@ struct ObservableSiblingFeaturesView: View {
       Form {
         ObservableBasicsView(
           store: self.store.scope(
-            state: {
-              $0.child1
-            },
+            state: \.child1,
             action: { .child1($0) }
           )
         )
@@ -43,8 +41,6 @@ struct ObservableSiblingFeaturesView: View {
     struct State: Equatable {
       var child1 = ObservableBasicsView.Feature.State()
       var child2 = ObservableBasicsView.Feature.State()
-
-
     }
     enum Action {
       case child1(ObservableBasicsView.Feature.Action)
