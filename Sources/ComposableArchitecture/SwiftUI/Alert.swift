@@ -31,7 +31,7 @@ extension View {
     self.presentation(
       store: store, state: toDestinationState, action: fromDestinationAction
     ) { `self`, $isPresented, destination in
-      let alertState = store.state.value.wrappedValue.flatMap(toDestinationState)
+      let alertState = store.withState { $0 }.wrappedValue.flatMap(toDestinationState)
       self.alert(
         (alertState?.title).map(Text.init) ?? Text(""),
         isPresented: $isPresented,

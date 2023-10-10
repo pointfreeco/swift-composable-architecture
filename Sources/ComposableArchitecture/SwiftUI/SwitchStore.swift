@@ -157,7 +157,7 @@ public struct _CaseLetMismatchView<State, Action>: View {
         Warning: A "CaseLet" at "\(self.fileID):\(self.line)" was encountered when state was set \
         to another case:
 
-            \(debugCaseOutput(self.store.wrappedValue.state.value))
+            \(debugCaseOutput(self.store.wrappedValue.withState { $0 }))
 
         This usually happens when there is a mismatch between the case being switched on and the \
         "CaseLet" view being rendered.
