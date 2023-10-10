@@ -31,4 +31,37 @@ extension Store where State: ObservableState {
   public subscript<Value>(dynamicMember keyPath: KeyPath<State, Value>) -> Value {
     self.state[keyPath: keyPath]
   }
+
+  public func scope<ChildState, ChildAction>(
+    state toChildState: @escaping (_ state: State) -> ChildState?,
+    action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
+  ) -> Store<ChildState, ChildAction>? {
+    guard var initialChildState = toChildState(self.state)
+    else { return nil }
+    return self.scope(
+      state: {
+        let childState = toChildState($0) ?? initialChildState
+        initialChildState = childState
+        return childState
+      },
+      action: fromChildAction
+    ) as Store<ChildState, ChildAction>
+  }
+
+  public func scope<ChildState, ChildAction>(
+    state toChildState: @escaping (_ state: State) -> PresentationState<ChildState>,
+    action fromChildAction:
+      @escaping (_ presentationAction: PresentationAction<ChildAction>) -> Action
+  ) -> Store<ChildState, ChildAction>? {
+    guard var initialChildState = toChildState(self.state).wrappedValue
+    else { return nil }
+    return self.scope(
+      state: { state -> ChildState in
+        let childState = toChildState(state).wrappedValue ?? initialChildState
+        initialChildState = childState
+        return childState
+      },
+      action: { fromChildAction(.presented($0)) }
+    )
+  }
 }

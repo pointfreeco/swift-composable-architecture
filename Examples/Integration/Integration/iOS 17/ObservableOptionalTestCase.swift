@@ -25,7 +25,9 @@ struct ObservableOptionalView: View {
         }
       }
     }
-    IfLetStore(self.store.scope(state: \.$child, action: { .child($0) })) { store in
+    // TODO: Why does this observe a _ton_?
+    // IfLetStore(self.store.scope(state: \.$child, action: { .child($0) })) { store in
+    if let store = self.store.scope(state: \.$child, action: { .child($0) }) {
       Form {
         ObservableBasicsView(store: store)
       }
