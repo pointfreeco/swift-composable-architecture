@@ -13,29 +13,42 @@ final class ObservableOptionalTests: BaseIntegrationTests {
 
   func testBasics() {
     self.app.buttons["Toggle"].tap()
+    XCTAssertEqual(self.app.staticTexts["0"].exists, true)
+    XCTAssertEqual(self.app.staticTexts["1"].exists, false)
     self.assertLogs {
       """
       ObservableBasicsView.body
       ObservableOptionalView.body
+      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.deinit
+      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.deinit
+      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.deinit
+      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.deinit
+      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
+      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
+      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
+      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
       Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
       Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
       Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
+      Store<PresentationState<ObservableBasicsView.Feature.State>, PresentationAction<ObservableBasicsView.Feature.Action>>.deinit
+      Store<PresentationState<ObservableBasicsView.Feature.State>, PresentationAction<ObservableBasicsView.Feature.Action>>.init
       Store<PresentationState<ObservableBasicsView.Feature.State>, PresentationAction<ObservableBasicsView.Feature.Action>>.scope
+      StoreOf<ObservableBasicsView.Feature>.deinit
       StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableOptionalView.Feature>.scope
+      StoreOf<ObservableBasicsView.Feature>.init
       StoreOf<ObservableOptionalView.Feature>.scope
       """
     }
     self.app.buttons["Increment"].tap()
+    XCTAssertEqual(self.app.staticTexts["0"].exists, false)
+    XCTAssertEqual(self.app.staticTexts["1"].exists, true)
     self.assertLogs {
       """
       ObservableBasicsView.body
-      ObservableOptionalView.body
       Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
       Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
       Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
       Store<PresentationState<ObservableBasicsView.Feature.State>, PresentationAction<ObservableBasicsView.Feature.Action>>.scope
-      StoreOf<ObservableOptionalView.Feature>.scope
       StoreOf<ObservableOptionalView.Feature>.scope
       """
     }
@@ -49,8 +62,15 @@ final class ObservableOptionalTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
     self.assertLogs {
       """
+      ObservableBasicsView.body
       ObservableOptionalView.body
-      StoreOf<ObservableOptionalView.Feature>.scope
+      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.deinit
+      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
+      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
+      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
+      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
+      Store<PresentationState<ObservableBasicsView.Feature.State>, PresentationAction<ObservableBasicsView.Feature.Action>>.init
+      StoreOf<ObservableBasicsView.Feature>.init
       """
     }
     self.app.buttons["Increment"].tap()
@@ -58,10 +78,26 @@ final class ObservableOptionalTests: BaseIntegrationTests {
       """
       ObservableBasicsView.body
       ObservableOptionalView.body
+      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.deinit
+      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.deinit
+      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.deinit
+      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.deinit
+      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
+      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
+      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
+      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
       Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
       Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
       Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
+      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
+      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
+      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
+      Store<PresentationState<ObservableBasicsView.Feature.State>, PresentationAction<ObservableBasicsView.Feature.Action>>.deinit
+      Store<PresentationState<ObservableBasicsView.Feature.State>, PresentationAction<ObservableBasicsView.Feature.Action>>.init
       Store<PresentationState<ObservableBasicsView.Feature.State>, PresentationAction<ObservableBasicsView.Feature.Action>>.scope
+      Store<PresentationState<ObservableBasicsView.Feature.State>, PresentationAction<ObservableBasicsView.Feature.Action>>.scope
+      StoreOf<ObservableBasicsView.Feature>.deinit
+      StoreOf<ObservableBasicsView.Feature>.init
       StoreOf<ObservableOptionalView.Feature>.scope
       StoreOf<ObservableOptionalView.Feature>.scope
       """

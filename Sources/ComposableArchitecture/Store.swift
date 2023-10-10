@@ -787,9 +787,16 @@ extension ScopedReducer: AnyScopedReducer {
       },
       parentStores: self.parentStores + [store]
     )
+    let initialState: ScopedState
+    // TODO: Should we use observedState in iOS 17+?
+    // if #available(iOS 17, *) {
+    //   initialState = store.observedState
+    // } else {
+    //   initialState = store.stateSubject.value
+    // }
+    initialState = store.stateSubject.value
     let childStore = Store<RescopedState, RescopedAction>(
-      // TODO: Should we use observedState in iOS 17+?
-      initialState: toRescopedState(store.stateSubject.value)
+      initialState: toRescopedState(initialState)
     ) {
       reducer
     }

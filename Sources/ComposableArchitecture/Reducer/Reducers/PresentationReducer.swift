@@ -61,31 +61,32 @@ public struct PresentationState<State> {
   }
 
   public var wrappedValue: State? {
-    _read { yield self.storage.state }
+    _read {
+      if #available(macOS 14, iOS 17, watchOS 10, tvOS 17, *), State.self is ObservableState.Type {
+        self._$observationRegistrar.access(self, keyPath: \.wrappedValue)
+      }
+      yield self.storage.state
+    }
     set {
-      if #available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *) {
-        if isIdentityEqual(self.storage.state, newValue) {
-          self.storage.state = newValue
+      func update() {
+        if !isKnownUniquelyReferenced(&self.storage) {
+          self.storage = Storage(state: newValue)
         } else {
-          if let obs = self as? any Observable {
-
-            
-
-          }
+          self.storage.state = newValue
+        }
+      }
+      if #available(macOS 14, iOS 17, watchOS 10, tvOS 17, *), State.self is ObservableState.Type {
+        if !isIdentityEqual(self.storage.state, newValue) {
           self._$observationRegistrar.withMutation(of: self, keyPath: \.wrappedValue) {
-            self.storage.state = newValue
+            update()
           }
+        } else {
+          update()
         }
       } else {
-        self.storage.state = newValue
+        update()
       }
     }
-//    _modify {
-//      if !isKnownUniquelyReferenced(&self.storage) {
-//        self.storage = Storage(state: self.storage.state)
-//      }
-//      yield &self.storage.state
-//    }
   }
 
   public var projectedValue: Self {
@@ -130,8 +131,8 @@ public struct PresentationState<State> {
   private let _$observationRegistrar = ObservationRegistrarWrapper()
 }
 
-@available(iOS 17, *)
-extension PresentationState: Observable where State: ObservableState {}
+@available(macOS 14, iOS 17, watchOS 10, tvOS 17, *)
+extension PresentationState: Observable {}
 
 extension PresentationState: Equatable where State: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
