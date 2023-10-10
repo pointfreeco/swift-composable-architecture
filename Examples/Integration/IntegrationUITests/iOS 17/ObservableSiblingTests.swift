@@ -44,6 +44,8 @@ final class ObservableSiblingsTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["1"].exists, false)
     self.assertLogs {
       """
+      ObservableBasicsView.body
+      ObservableBasicsView.body
       StoreOf<ObservableSiblingFeaturesView.Feature>.scope
       StoreOf<ObservableSiblingFeaturesView.Feature>.scope
       """

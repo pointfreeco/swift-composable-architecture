@@ -788,6 +788,7 @@ extension ScopedReducer: AnyScopedReducer {
       parentStores: self.parentStores + [store]
     )
     let childStore = Store<RescopedState, RescopedAction>(
+      // TODO: Should we use observedState in iOS 17+?
       initialState: toRescopedState(store.stateSubject.value)
     ) {
       reducer
@@ -804,7 +805,11 @@ extension ScopedReducer: AnyScopedReducer {
         guard isDuplicate.map({ !$0(childStore.stateSubject.value, newValue) }) ?? true else {
           return
         }
-        childStore.stateSubject.value = newValue
+        if #available(iOS 17, *) {
+          childStore.observedState = newValue
+        } else {
+          childStore.stateSubject.value = newValue
+        }
         Logger.shared.log("\(typeName(of: store)).scope")
       }
     return childStore
