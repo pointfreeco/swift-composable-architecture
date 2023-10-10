@@ -137,6 +137,7 @@ public final class Store<State, Action> {
   #if DEBUG
     private let mainThreadChecksEnabled: Bool
   #endif
+  let _$observationRegistrar = ObservationRegistrarWrapper()
 
   /// Initializes a store from an initial state and a reducer.
   ///
