@@ -8,7 +8,7 @@ final class PresentationTests: BaseIntegrationTests {
     super.setUp()
     self.app.buttons["Presentation"].tap()
     self.clearLogs()
-    //SnapshotTesting.isRecording = true
+    // SnapshotTesting.isRecording = true
   }
 
   func testOptional() {
@@ -48,9 +48,6 @@ final class PresentationTests: BaseIntegrationTests {
     self.app.buttons["Dismiss"].firstMatch.tap()
     self.assertLogs {
       """
-      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
-      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
-      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
       Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
       Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
       Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.init
@@ -119,9 +116,6 @@ final class PresentationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       PresentationView.body
-      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
-      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
-      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
       Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
       Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
       Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.init
