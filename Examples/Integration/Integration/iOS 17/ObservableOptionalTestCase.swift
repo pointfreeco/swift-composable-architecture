@@ -6,34 +6,21 @@ struct ObservableOptionalView: View {
     Feature()
   }
 
-  struct ViewState: Equatable {
-    var childCount: Int?
-    var isChildNonNil: Bool
-    var isObservingCount: Bool
-    init(state: Feature.State) {
-      self.childCount = state.child?.count
-      self.isChildNonNil = state.child != nil
-      self.isObservingCount = state.isObservingCount
-    }
-  }
-
   var body: some View {
-    WithViewStore(self.store, observe: ViewState.init) { viewStore in
-      let _ = Logger.shared.log("\(Self.self).body")
-      Form {
-        Section {
-          Button("Toggle") {
-            self.store.send(.toggleButtonTapped)
-          }
+    let _ = Logger.shared.log("\(Self.self).body")
+    Form {
+      Section {
+        Button("Toggle") {
+          self.store.send(.toggleButtonTapped)
         }
-        if viewStore.isChildNonNil {
-          Section {
-            if viewStore.isObservingCount {
-              Button("Stop observing count") { self.store.send(.toggleIsObservingCount) }
-              Text("Count: \(viewStore.childCount ?? 0)")
-            } else {
-              Button("Observe count") { self.store.send(.toggleIsObservingCount) }
-            }
+      }
+      if self.store.child != nil {
+        Section {
+          if self.store.isObservingCount {
+            Button("Stop observing count") { self.store.send(.toggleIsObservingCount) }
+            Text("Count: \(self.store.child?.count ?? 0)")
+          } else {
+            Button("Observe count") { self.store.send(.toggleIsObservingCount) }
           }
         }
       }
@@ -46,7 +33,9 @@ struct ObservableOptionalView: View {
   }
 
   struct Feature: Reducer {
+    @ObservableState
     struct State: Equatable {
+      @ObservationStateIgnored
       @PresentationState var child: ObservableBasicsView.Feature.State?
       var isObservingCount = false
     }

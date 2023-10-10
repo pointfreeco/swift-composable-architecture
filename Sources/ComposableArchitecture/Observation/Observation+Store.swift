@@ -10,7 +10,7 @@ extension Store: Observable {
       return self.stateSubject.value
     }
     set {
-      if (self.stateSubject.value as? any ObservableState)?._$id != (newValue as? any ObservableState)?._$id {
+      if !isIdentityEqual(self.stateSubject.value, newValue) {
         self._$observationRegistrar.withMutation(of: self, keyPath: \.observedState) {
           self.stateSubject.value = newValue
         }

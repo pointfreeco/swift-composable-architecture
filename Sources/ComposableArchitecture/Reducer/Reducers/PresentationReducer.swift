@@ -1,4 +1,5 @@
 @_spi(Reflection) import CasePaths
+import Observation
 import Combine
 
 /// A property wrapper for state that can be presented.
@@ -61,12 +62,30 @@ public struct PresentationState<State> {
 
   public var wrappedValue: State? {
     _read { yield self.storage.state }
-    _modify {
-      if !isKnownUniquelyReferenced(&self.storage) {
-        self.storage = Storage(state: self.storage.state)
+    set {
+      if #available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *) {
+        if isIdentityEqual(self.storage.state, newValue) {
+          self.storage.state = newValue
+        } else {
+          if let obs = self as? any Observable {
+
+            
+
+          }
+          self._$observationRegistrar.withMutation(of: self, keyPath: \.wrappedValue) {
+            self.storage.state = newValue
+          }
+        }
+      } else {
+        self.storage.state = newValue
       }
-      yield &self.storage.state
     }
+//    _modify {
+//      if !isKnownUniquelyReferenced(&self.storage) {
+//        self.storage = Storage(state: self.storage.state)
+//      }
+//      yield &self.storage.state
+//    }
   }
 
   public var projectedValue: Self {
@@ -107,7 +126,12 @@ public struct PresentationState<State> {
   func sharesStorage(with other: Self) -> Bool {
     self.storage === other.storage
   }
+
+  private let _$observationRegistrar = ObservationRegistrarWrapper()
 }
+
+@available(iOS 17, *)
+extension PresentationState: Observable where State: ObservableState {}
 
 extension PresentationState: Equatable where State: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
