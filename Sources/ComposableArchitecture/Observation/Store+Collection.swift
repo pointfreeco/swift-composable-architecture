@@ -1,65 +1,6 @@
 import Foundation
 import OrderedCollections
 
-// TODO: Constrain to ObservableState?
-
-extension Reducer {
-  public func forEach<
-    ElementsState: MutableCollection,
-    ElementsAction: CollectionAction<ElementsState>
-  >(
-    _ stateKeyPath: WritableKeyPath<State, ElementsState>,
-    action actionCasePath: CasePath<Action, ElementsAction>,
-    @ReducerBuilder<ElementsState.Element, ElementsAction.ElementAction> _ element:
-      () -> some Reducer<ElementsState.Element, ElementsAction.ElementAction>
-  ) -> some ReducerOf<Self> where ElementsState.Index: Hashable & Sendable {
-    _ForEachCollectionReducer(
-      base: self,
-      stateKeyPath: stateKeyPath,
-      actionCasePath: actionCasePath,
-      element: element()
-    )
-  }
-}
-
-private struct _ForEachCollectionReducer<
-  Base: Reducer,
-  ElementsState: MutableCollection,
-  ElementsAction: CollectionAction<ElementsState>,
-  Element: Reducer<ElementsState.Element, ElementsAction.ElementAction>
->: Reducer
-where
-  ElementsState.Index: Hashable & Sendable
-{
-  let base: Base
-  let stateKeyPath: WritableKeyPath<Base.State, ElementsState>
-  let actionCasePath: CasePath<Base.Action, ElementsAction>
-  let element: Element
-
-  func reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action> {
-    var elementEffects: Effect<Base.Action> = .none
-    element: if let elementAction = self.actionCasePath.extract(from: action) {
-      guard let element = elementAction.element
-      else { break element }
-      guard let index = ElementsAction.index(at: element.id, elements: state[keyPath: stateKeyPath])
-      else {
-        // TODO: runtimeWarn
-        break element
-      }
-      elementEffects = self.element
-        .reduce(
-          into: &state[keyPath: self.stateKeyPath][index],
-          action: element.action
-        )
-        .map { self.actionCasePath.embed(.element(id: element.id, action: $0)) }
-    }
-    return .merge(
-      elementEffects,
-      self.base.reduce(into: &state, action: action)
-    )
-  }
-}
-
 public protocol CollectionAction<Elements> {
   associatedtype Elements: Collection
   associatedtype ID: Hashable = Elements.Index
@@ -173,3 +114,68 @@ where Element.State: Identifiable {
     }
   }
 }
+
+@available(iOS 17, macOS 14, watchOS 10, tvOS 17, *)
+extension Reducer {
+  public func forEach<
+    ElementsState: MutableCollection,
+    ElementsAction: CollectionAction<ElementsState>
+  >(
+    _ stateKeyPath: WritableKeyPath<State, ElementsState>,
+    action actionCasePath: CasePath<Action, ElementsAction>,
+    @ReducerBuilder<ElementsState.Element, ElementsAction.ElementAction> _ element:
+      () -> some Reducer<ElementsState.Element, ElementsAction.ElementAction>
+  ) -> some ReducerOf<Self>
+  where
+    ElementsState.Element: ObservableState,
+    ElementsState.Index: Hashable & Sendable
+  {
+    _ForEachCollectionReducer(
+      base: self,
+      stateKeyPath: stateKeyPath,
+      actionCasePath: actionCasePath,
+      element: element()
+    )
+  }
+}
+
+@available(iOS 17, macOS 14, watchOS 10, tvOS 17, *)
+private struct _ForEachCollectionReducer<
+  Base: Reducer,
+  ElementsState: MutableCollection,
+  ElementsAction: CollectionAction<ElementsState>,
+  Element: Reducer<ElementsState.Element, ElementsAction.ElementAction>
+>: Reducer
+where
+  ElementsState.Element: ObservableState,
+  ElementsState.Index: Hashable & Sendable
+{
+  let base: Base
+  let stateKeyPath: WritableKeyPath<Base.State, ElementsState>
+  let actionCasePath: CasePath<Base.Action, ElementsAction>
+  let element: Element
+
+  func reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action> {
+    var elementEffects: Effect<Base.Action> = .none
+    element: if let elementAction = self.actionCasePath.extract(from: action) {
+      guard let element = elementAction.element
+      else { break element }
+      guard let index = ElementsAction.index(at: element.id, elements: state[keyPath: stateKeyPath])
+      else {
+        // TODO: runtimeWarn
+        break element
+      }
+      elementEffects = self.element
+        .reduce(
+          into: &state[keyPath: self.stateKeyPath][index],
+          action: element.action
+        )
+        .map { self.actionCasePath.embed(.element(id: element.id, action: $0)) }
+    }
+    return .merge(
+      elementEffects,
+      self.base.reduce(into: &state, action: action)
+    )
+  }
+}
+
