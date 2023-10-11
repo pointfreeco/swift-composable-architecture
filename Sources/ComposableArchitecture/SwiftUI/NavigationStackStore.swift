@@ -228,7 +228,7 @@ private struct NavigationDestinationView<State, Destination: View>: View {
 }
 
 extension StackState {
-  fileprivate var path: PathView {
+  var path: PathView {
     _read { yield PathView(base: self) }
     _modify {
       var path = PathView(base: self)
@@ -303,7 +303,7 @@ private struct NavigationDestinationTypeKey: EnvironmentKey {
 }
 
 extension EnvironmentValues {
-  fileprivate var navigationDestinationType: Any.Type? {
+  var navigationDestinationType: Any.Type? {
     get { self[NavigationDestinationTypeKey.self] }
     set { self[NavigationDestinationTypeKey.self] = newValue }
   }

@@ -17,37 +17,17 @@ final class ObservableNavigationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableBasicsView.body
-      Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.deinit
-      Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.deinit
-      Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.deinit
-      Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.deinit
-      Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.deinit
       Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.init
-      Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.init
-      Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.init
-      Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.init
-      Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.init
-      Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.init
-      Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.scope
-      Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.scope
-      Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.scope
-      Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.scope
-      StoreOf<ObservableBasicsView.Feature>.deinit
-      StoreOf<ObservableBasicsView.Feature>.deinit
-      StoreOf<ObservableBasicsView.Feature>.deinit
       StoreOf<ObservableBasicsView.Feature>.deinit
       StoreOf<ObservableBasicsView.Feature>.init
       StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableNavigationTestCaseView.Feature>.scope
       """
     }
     self.app.buttons["Increment"].tap()
     self.assertLogs {
       """
       ObservableBasicsView.body
-      Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.scope
+      StoreOf<ObservableNavigationTestCaseView.Feature>.scope
       StoreOf<ObservableNavigationTestCaseView.Feature>.scope
       """
     }
@@ -72,7 +52,7 @@ final class ObservableNavigationTests: BaseIntegrationTests {
       Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.scope
       Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.scope
       Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.scope
-      Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.scope
+      StoreOf<ObservableNavigationTestCaseView.Feature>.scope
       StoreOf<ObservableNavigationTestCaseView.Feature>.scope
       """
     }

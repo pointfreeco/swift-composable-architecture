@@ -31,12 +31,15 @@ extension Store where State: ObservableState {
   public subscript<Value>(dynamicMember keyPath: KeyPath<State, Value>) -> Value {
     self.state[keyPath: keyPath]
   }
+}
 
-  public func scope<ChildState, ChildAction>(
+@available(iOS 17, macOS 14, watchOS 10, tvOS 17, *)
+extension Store {
+  public func scope<ChildState: ObservableState, ChildAction>(
     state toChildState: @escaping (_ state: State) -> ChildState?,
     action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction>? {
-    guard var initialChildState = toChildState(self.state)
+    guard var initialChildState = toChildState(self.observedState)
     else { return nil }
     return self.scope(
       state: {
@@ -48,12 +51,12 @@ extension Store where State: ObservableState {
     ) as Store<ChildState, ChildAction>
   }
 
-  public func scope<ChildState, ChildAction>(
+  public func scope<ChildState: ObservableState, ChildAction>(
     state toChildState: @escaping (_ state: State) -> PresentationState<ChildState>,
     action fromChildAction:
       @escaping (_ presentationAction: PresentationAction<ChildAction>) -> Action
   ) -> Store<ChildState, ChildAction>? {
-    guard var initialChildState = toChildState(self.state).wrappedValue
+    guard var initialChildState = toChildState(self.observedState).wrappedValue
     else { return nil }
     return self.scope(
       state: { state -> ChildState in
