@@ -34,7 +34,7 @@ struct ObservableEnumView: View {
           }
         }
       }
-      if let store = self.store.scope(state: \.$destination, action: { .destination($0) }) {
+      if let store = self.store.scope(state: \.destination, action: { .destination($0) }) {
         switch store.state {
         case .feature1:
           if let store = store.scope(

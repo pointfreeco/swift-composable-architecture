@@ -1,4 +1,5 @@
 import Observation
+import SwiftUI
 
 @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
 extension Store: Observable {
@@ -34,8 +35,16 @@ extension Store where State: ObservableState {
 }
 
 @available(iOS 17, macOS 14, watchOS 10, tvOS 17, *)
+extension Store: Identifiable where State: ObservableState {
+  public var id: AnyHashable {
+    self.state._$id
+  }
+}
+
+// TODO: Should these scopes be constrained?
+//@available(iOS 17, macOS 14, watchOS 10, tvOS 17, *)
 extension Store {
-  public func scope<ChildState: ObservableState, ChildAction>(
+  public func scope<ChildState, ChildAction>(
     state toChildState: @escaping (_ state: State) -> ChildState?,
     action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction>? {
@@ -51,20 +60,45 @@ extension Store {
     ) as Store<ChildState, ChildAction>
   }
 
-  public func scope<ChildState: ObservableState, ChildAction>(
-    state toChildState: @escaping (_ state: State) -> PresentationState<ChildState>,
+  public func scope<ChildState, ChildAction>(
+    state toChildState: @escaping (_ state: State) -> ChildState?,
     action fromChildAction:
       @escaping (_ presentationAction: PresentationAction<ChildAction>) -> Action
   ) -> Store<ChildState, ChildAction>? {
-    guard var initialChildState = toChildState(self.stateSubject.value).wrappedValue
-    else { return nil }
-    return self.scope(
-      state: { state -> ChildState in
-        let childState = toChildState(state).wrappedValue ?? initialChildState
-        initialChildState = childState
-        return childState
+    self.scope(state: toChildState, action: { fromChildAction(.presented($0)) })
+  }
+}
+
+// TODO: Should these scopes be constrained?
+//@available(iOS 17, macOS 14, watchOS 10, tvOS 17, *)
+extension Binding {
+  // public func scope<State, Action, ChildState, ChildAction>(
+  //   state toChildState: @escaping (State) -> ChildState,
+  //   action embedChildAction: @escaping (ChildAction) -> Action
+  // )
+  //   -> Binding<Store<ChildState, ChildAction>>
+  // where Value == Store<State, Action> {
+  //   Binding<Store<ChildState, ChildAction>>(
+  //     get: { self.wrappedValue.scope(state: toChildState, action: embedChildAction) },
+  //     set: { _, _ in }
+  //   )
+  // }
+
+  public func scope<State, Action, ChildState, ChildAction>(
+    state toChildState: @escaping (State) -> ChildState?,
+    action embedChildAction: @escaping (PresentationAction<ChildAction>) -> Action
+  )
+    -> Binding<Store<ChildState, ChildAction>?>
+  where Value == Store<State, Action> {
+    Binding<Store<ChildState, ChildAction>?>(
+      get: {
+        self.wrappedValue.scope(state: toChildState, action: { embedChildAction(.presented($0)) })
       },
-      action: { fromChildAction(.presented($0)) }
+      set: {
+        if $0 == nil {
+          self.transaction($1).wrappedValue.send(embedChildAction(.dismiss))
+        }
+      }
     )
   }
 }

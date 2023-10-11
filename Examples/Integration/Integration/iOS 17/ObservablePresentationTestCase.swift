@@ -6,14 +6,8 @@ struct ObservablePresentationView: View {
     Feature()
   }
 
-  struct ViewState: Equatable {
-    var sheetCount: Int?
-    init(state: Feature.State) {
-      self.sheetCount = state.isObservingChildCount ? state.sheet?.count : nil
-    }
-  }
-
   var body: some View {
+    let _ = Logger.shared.log("\(Self.self).body")
     Form {
       Section {
         Button("Present full-screen cover") {
@@ -29,20 +23,18 @@ struct ObservablePresentationView: View {
         Button("Present sheet") {
           self.store.send(.presentSheetButtonTapped)
         }
-        WithViewStore(self.store, observe: ViewState.init) { viewStore in
-          let _ = Logger.shared.log("\(Self.self).body")
-          if let count = viewStore.sheetCount {
-            Text("Count: \(count)")
-          }
+        if self.store.isObservingChildCount, let sheetCount = self.store.sheet?.count {
+          Text("Count: \(sheetCount)")
         }
       } header: {
         Text("Optional")
       }
     }
     .fullScreenCover(
-      store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-      state: /Feature.Destination.State.fullScreenCover,
-      action: { .fullScreenCover($0) }
+      item: self.$store.scope(
+        state: { $0.destination.flatMap(/Feature.Destination.State.fullScreenCover) },
+        action: { .destination($0.presented { .fullScreenCover($0) }) }
+      )
     ) { store in
       NavigationStack {
         Form {
@@ -59,9 +51,10 @@ struct ObservablePresentationView: View {
       }
     }
     .popover(
-      store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-      state: /Feature.Destination.State.popover,
-      action: { .popover($0) }
+      item: self.$store.scope(
+        state: { $0.destination.flatMap(/Feature.Destination.State.popover) },
+        action: { .destination($0.presented { .popover($0) }) }
+      )
     ) { store in
       NavigationStack {
         Form {
@@ -77,7 +70,7 @@ struct ObservablePresentationView: View {
         }
       }
     }
-    .sheet(store: self.store.scope(state: \.$sheet, action: { .sheet($0) })) { store in
+    .sheet(item: self.$store.scope(state: \.sheet, action: { .sheet($0) })) { store in
       NavigationStack {
         Form {
           ObservableBasicsView(store: store)
@@ -101,9 +94,12 @@ struct ObservablePresentationView: View {
   }
 
   struct Feature: Reducer {
+    @ObservableState
     struct State: Equatable {
       var isObservingChildCount = false
+      @ObservationStateIgnored
       @PresentationState var destination: Destination.State?
+      @ObservationStateIgnored
       @PresentationState var sheet: ObservableBasicsView.Feature.State?
     }
     enum Action {
@@ -116,6 +112,7 @@ struct ObservablePresentationView: View {
       case toggleObserveChildCountButtonTapped
     }
     struct Destination: Reducer {
+      @ObservableState
       enum State: Equatable {
         case fullScreenCover(ObservableBasicsView.Feature.State)
         case popover(ObservableBasicsView.Feature.State)
@@ -157,6 +154,9 @@ struct ObservablePresentationView: View {
           state.isObservingChildCount.toggle()
           return .none
         }
+      }
+      .ifLet(\.$destination, action: /Action.destination) {
+        Destination()
       }
       .ifLet(\.$sheet, action: /Action.sheet) {
         ObservableBasicsView.Feature()

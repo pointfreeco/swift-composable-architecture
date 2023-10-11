@@ -17,55 +17,23 @@ final class ObservablePresentationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableBasicsView.body
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.deinit
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.deinit
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
-      Store<PresentationState<ObservableBasicsView.Feature.State>, PresentationAction<ObservableBasicsView.Feature.Action>>.scope
+      ObservablePresentationView.body
       StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservablePresentationView.Feature>.scope
-      StoreOf<ObservablePresentationView.Feature>.scope
+      StoreOf<ObservableBasicsView.Feature>.init
       """
     }
     self.app.buttons["Increment"].tap()
     self.assertLogs {
       """
       ObservableBasicsView.body
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<PresentationState<ObservableBasicsView.Feature.State>, PresentationAction<ObservableBasicsView.Feature.Action>>.scope
-      Store<PresentationState<ObservableBasicsView.Feature.State>, PresentationAction<ObservableBasicsView.Feature.Action>>.scope
-      StoreOf<ObservablePresentationView.Feature>.scope
       StoreOf<ObservablePresentationView.Feature>.scope
       """
     }
     self.app.buttons["Dismiss"].firstMatch.tap()
     self.assertLogs {
       """
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.deinit
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.deinit
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.deinit
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.deinit
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.deinit
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<PresentationState<ObservableBasicsView.Feature.State>, PresentationAction<ObservableBasicsView.Feature.Action>>.scope
-      Store<PresentationState<ObservableBasicsView.Feature.State>, PresentationAction<ObservableBasicsView.Feature.Action>>.scope
+      ObservablePresentationView.body
       StoreOf<ObservableBasicsView.Feature>.deinit
-      StoreOf<ObservablePresentationView.Feature>.scope
       StoreOf<ObservablePresentationView.Feature>.scope
       StoreOf<ObservablePresentationView.Feature>.scope
       StoreOf<ObservablePresentationView.Feature>.scope
@@ -78,24 +46,20 @@ final class ObservablePresentationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableBasicsView.body
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.deinit
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.deinit
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
-      Store<PresentationState<ObservableBasicsView.Feature.State>, PresentationAction<ObservableBasicsView.Feature.Action>>.scope
+      ObservablePresentationView.body
       StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservablePresentationView.Feature>.scope
-      StoreOf<ObservablePresentationView.Feature>.scope
+      StoreOf<ObservableBasicsView.Feature>.init
       """
     }
     self.app.buttons["Observe child count"].tap()
     self.assertLogs {
       """
+      ObservableBasicsView.body
       ObservablePresentationView.body
+      StoreOf<ObservableBasicsView.Feature>.deinit
+      StoreOf<ObservableBasicsView.Feature>.init
+      StoreOf<ObservableBasicsView.Feature>.init
+      StoreOf<ObservablePresentationView.Feature>.scope
       StoreOf<ObservablePresentationView.Feature>.scope
       """
     }
@@ -103,13 +67,11 @@ final class ObservablePresentationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableBasicsView.body
+      ObservableBasicsView.body
       ObservablePresentationView.body
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<PresentationState<ObservableBasicsView.Feature.State>, PresentationAction<ObservableBasicsView.Feature.Action>>.scope
-      Store<PresentationState<ObservableBasicsView.Feature.State>, PresentationAction<ObservableBasicsView.Feature.Action>>.scope
+      StoreOf<ObservableBasicsView.Feature>.deinit
+      StoreOf<ObservableBasicsView.Feature>.init
+      StoreOf<ObservableBasicsView.Feature>.init
       StoreOf<ObservablePresentationView.Feature>.scope
       StoreOf<ObservablePresentationView.Feature>.scope
       """
@@ -119,26 +81,10 @@ final class ObservablePresentationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservablePresentationView.body
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.deinit
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.deinit
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.deinit
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.deinit
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.deinit
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<PresentationState<ObservableBasicsView.Feature.State>, PresentationAction<ObservableBasicsView.Feature.Action>>.scope
-      Store<PresentationState<ObservableBasicsView.Feature.State>, PresentationAction<ObservableBasicsView.Feature.Action>>.scope
-      Store<PresentationState<ObservableBasicsView.Feature.State>, PresentationAction<ObservableBasicsView.Feature.Action>>.scope
       StoreOf<ObservableBasicsView.Feature>.deinit
+      StoreOf<ObservablePresentationView.Feature>.scope
+      StoreOf<ObservablePresentationView.Feature>.scope
+      StoreOf<ObservablePresentationView.Feature>.scope
       StoreOf<ObservablePresentationView.Feature>.scope
       StoreOf<ObservablePresentationView.Feature>.scope
       StoreOf<ObservablePresentationView.Feature>.scope
