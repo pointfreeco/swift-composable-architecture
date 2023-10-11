@@ -17,12 +17,12 @@ final class OptionalTests: BaseIntegrationTests {
       """
       BasicsView.body
       OptionalView.body
-      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.init
-      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
-      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
-      Store<PresentationState<BasicsView.Feature.State>, PresentationAction<BasicsView.Feature.Action>>.scope
+      PresentationStoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
       StoreOf<OptionalView.Feature>.scope
       StoreOf<OptionalView.Feature>.scope
       """
@@ -32,11 +32,11 @@ final class OptionalTests: BaseIntegrationTests {
       """
       BasicsView.body
       OptionalView.body
-      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
-      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
-      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
-      Store<PresentationState<BasicsView.Feature.State>, PresentationAction<BasicsView.Feature.Action>>.scope
+      PresentationStoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
       StoreOf<OptionalView.Feature>.scope
       StoreOf<OptionalView.Feature>.scope
       """
@@ -60,11 +60,11 @@ final class OptionalTests: BaseIntegrationTests {
       """
       BasicsView.body
       OptionalView.body
-      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
-      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
-      Store<BasicsView.Feature.State?, BasicsView.Feature.Action>.scope
-      Store<PresentationState<BasicsView.Feature.State>, PresentationAction<BasicsView.Feature.Action>>.scope
+      PresentationStoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
       StoreOf<OptionalView.Feature>.scope
       StoreOf<OptionalView.Feature>.scope
       """
