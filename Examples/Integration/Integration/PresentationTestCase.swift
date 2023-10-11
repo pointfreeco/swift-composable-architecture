@@ -158,6 +158,9 @@ struct PresentationView: View {
           return .none
         }
       }
+      .ifLet(\.$destination, action: /Action.destination) {
+        Destination()
+      }
       .ifLet(\.$sheet, action: /Action.sheet) {
         BasicsView.Feature()
       }
