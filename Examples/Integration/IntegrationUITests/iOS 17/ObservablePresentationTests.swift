@@ -36,7 +36,6 @@ final class ObservablePresentationTests: BaseIntegrationTests {
       StoreOf<ObservableBasicsView.Feature>.deinit
       StoreOf<ObservablePresentationView.Feature>.scope
       StoreOf<ObservablePresentationView.Feature>.scope
-      StoreOf<ObservablePresentationView.Feature>.scope
       """
     }
   }
@@ -82,9 +81,6 @@ final class ObservablePresentationTests: BaseIntegrationTests {
       """
       ObservablePresentationView.body
       StoreOf<ObservableBasicsView.Feature>.deinit
-      StoreOf<ObservablePresentationView.Feature>.scope
-      StoreOf<ObservablePresentationView.Feature>.scope
-      StoreOf<ObservablePresentationView.Feature>.scope
       StoreOf<ObservablePresentationView.Feature>.scope
       StoreOf<ObservablePresentationView.Feature>.scope
       StoreOf<ObservablePresentationView.Feature>.scope

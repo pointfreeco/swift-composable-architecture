@@ -56,7 +56,9 @@ extension Store {
         initialChildState = childState
         return childState
       },
-      action: fromChildAction
+      action: fromChildAction,
+      invalidate: { toChildState($0) == nil },
+      removeDuplicates: nil
     ) as Store<ChildState, ChildAction>
   }
 
@@ -95,7 +97,7 @@ extension Binding {
         self.wrappedValue.scope(state: toChildState, action: { embedChildAction(.presented($0)) })
       },
       set: {
-        if $0 == nil {
+        if $0 == nil, toChildState(self.wrappedValue.stateSubject.value) != nil {
           self.transaction($1).wrappedValue.send(embedChildAction(.dismiss))
         }
       }

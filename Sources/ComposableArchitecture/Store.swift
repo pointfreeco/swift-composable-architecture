@@ -408,15 +408,20 @@ public final class Store<State, Action> {
   func scope<ChildState, ChildAction>(
     state toChildState: @escaping (State) -> ChildState,
     action fromChildAction: @escaping (ChildAction) -> Action,
+    invalidate isInvalid: ((State) -> Bool)? = nil,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
     self.threadCheck(status: .scope)
-    return self.reducer.rescope(
+    let store = self.reducer.rescope(
       self,
       state: toChildState,
       action: { fromChildAction($1) },
       removeDuplicates: isDuplicate
     )
+    if let isInvalid = isInvalid {
+      store._isInvalidated = { self._isInvalidated() || isInvalid(self.stateSubject.value) }
+    }
+    return store
   }
 
   func invalidate(_ isInvalid: @escaping (State) -> Bool) -> Store {
