@@ -39,7 +39,7 @@ extension Store {
     state toChildState: @escaping (_ state: State) -> ChildState?,
     action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction>? {
-    guard var initialChildState = toChildState(self.observedState)
+    guard var initialChildState = toChildState(self.stateSubject.value)
     else { return nil }
     return self.scope(
       state: {
@@ -56,7 +56,7 @@ extension Store {
     action fromChildAction:
       @escaping (_ presentationAction: PresentationAction<ChildAction>) -> Action
   ) -> Store<ChildState, ChildAction>? {
-    guard var initialChildState = toChildState(self.observedState).wrappedValue
+    guard var initialChildState = toChildState(self.stateSubject.value).wrappedValue
     else { return nil }
     return self.scope(
       state: { state -> ChildState in

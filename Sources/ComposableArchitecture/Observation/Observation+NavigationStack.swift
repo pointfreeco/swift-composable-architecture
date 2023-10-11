@@ -45,7 +45,9 @@ public struct NavigationDestinationViewModifier<State: ObservableState, Action, 
           state: \.[id: component.id],
           action: { .element(id: component.id, action: $0) }
         ) {
-          self.destination(store)
+          self
+            .destination(store)
+            .environment(\.navigationDestinationType, State.self)
         }
       }
   }
