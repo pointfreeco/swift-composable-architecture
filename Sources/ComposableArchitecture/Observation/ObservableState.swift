@@ -9,9 +9,28 @@ public protocol ObservableState: Observable {
 //@available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
 public struct ObservableStateID: Equatable, Hashable, Sendable {
   private let uuid: UUID
+  private var tag: Int?
 
   public init() {
     self.uuid = UUID()
+  }
+
+  public static let _$inert = Self()
+
+  public func _$tag(_ tag: Int?) -> Self {
+    var copy = self
+    copy.tag = tag
+    return copy
+  }
+
+  @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
+  public static func _$id<T>(for value: T) -> Self {
+    (value as? any ObservableState)?._$id ?? ._$inert
+  }
+
+  @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
+  public static func _$id(for value: some ObservableState) -> Self {
+    value._$id
   }
 }
 

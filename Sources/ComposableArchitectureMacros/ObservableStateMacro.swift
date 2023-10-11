@@ -253,14 +253,14 @@ extension ObservableStateMacro {
         cases.append(
           """
           case let .\(enumCaseDecl.name.text)(state):
-            return .stateID(for: state).tagged(\(tag))
+            return ._$id(for: state)._$tag(\(tag))
           """
         )
       } else {
         cases.append(
           """
           case .\(enumCaseDecl.name.text):
-            return .inert.tagged(\(tag))
+            return ._$inert._$tag(\(tag))
           """
         )
       }
@@ -268,7 +268,7 @@ extension ObservableStateMacro {
 
     return [
       """
-      \(access)var _$id: StateID {
+      \(access)var _$id: ObservableStateID {
         switch self {
       \(raw: cases.joined(separator: "\n"))
         }

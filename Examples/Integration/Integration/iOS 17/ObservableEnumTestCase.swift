@@ -6,78 +6,65 @@ struct ObservableEnumView: View {
     Feature()
   }
 
-  struct ViewState: Equatable {
-    enum Tag { case feature1, feature2, none }
-    let tag: Tag
-    init(state: Feature.State) {
-      switch state.destination {
-      case .feature1:
-        self.tag = .feature1
-      case .feature2:
-        self.tag = .feature2
-      case .none:
-        self.tag = .none
-      }
-    }
-  }
-
   var body: some View {
+    let _ = Logger.shared.log("\(Self.self).body")
     Form {
-      WithViewStore(self.store, observe: ViewState.init) { viewStore in
-        let _ = Logger.shared.log("\(Self.self).body")
-        Section {
-          switch viewStore.tag {
-          case .feature1:
-            Button("Toggle feature 1 off") {
-              self.store.send(.toggle1ButtonTapped)
-            }
-            Button("Toggle feature 2 on") {
-              self.store.send(.toggle2ButtonTapped)
-            }
-          case .feature2:
-            Button("Toggle feature 1 on") {
-              self.store.send(.toggle1ButtonTapped)
-            }
-            Button("Toggle feature 2 off") {
-              self.store.send(.toggle2ButtonTapped)
-            }
-          case .none:
-            Button("Toggle feature 1 on") {
-              self.store.send(.toggle1ButtonTapped)
-            }
-            Button("Toggle feature 2 on") {
-              self.store.send(.toggle2ButtonTapped)
-            }
+      Section {
+        switch store.destination {
+        case .feature1:
+          Button("Toggle feature 1 off") {
+            self.store.send(.toggle1ButtonTapped)
+          }
+          Button("Toggle feature 2 on") {
+            self.store.send(.toggle2ButtonTapped)
+          }
+        case .feature2:
+          Button("Toggle feature 1 on") {
+            self.store.send(.toggle1ButtonTapped)
+          }
+          Button("Toggle feature 2 off") {
+            self.store.send(.toggle2ButtonTapped)
+          }
+        case .none:
+          Button("Toggle feature 1 on") {
+            self.store.send(.toggle1ButtonTapped)
+          }
+          Button("Toggle feature 2 on") {
+            self.store.send(.toggle2ButtonTapped)
           }
         }
       }
-      IfLetStore(
-        self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /Feature.Destination.State.feature1,
-        action: { .feature1($0) }
-      ) { store in
-        Section {
-          ObservableBasicsView(store: store)
-        } header: {
-          Text("Feature 1")
-        }
-      }
-      IfLetStore(
-        self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /Feature.Destination.State.feature2,
-        action: { .feature2($0) }
-      ) { store in
-        Section {
-          ObservableBasicsView(store: store)
-        } header: {
-          Text("Feature 2")
+      if let store = self.store.scope(state: \.$destination, action: { .destination($0) }) {
+        switch store.state {
+        case .feature1:
+          if let store = store.scope(
+            state: /Feature.Destination.State.feature1, action: { .feature1($0) }
+          ) {
+            Section {
+              ObservableBasicsView(store: store)
+            } header: {
+              Text("Feature 1")
+            }
+          }
+        case .feature2:
+          if let store = store.scope(
+            state: /Feature.Destination.State.feature2, action: { .feature2($0) }
+          ) {
+            Section {
+              ObservableBasicsView(store: store)
+            } header: {
+              Text("Feature 2")
+            }
+          }
         }
       }
     }
   }
 
   struct Feature: Reducer {
+    @ObservableState
     struct State: Equatable {
+      @ObservationStateIgnored
       @PresentationState var destination: Destination.State?
     }
     enum Action {
@@ -86,6 +73,7 @@ struct ObservableEnumView: View {
       case toggle2ButtonTapped
     }
     struct Destination: Reducer {
+      @ObservableState
       enum State: Equatable {
         case feature1(ObservableBasicsView.Feature.State)
         case feature2(ObservableBasicsView.Feature.State)

@@ -19,15 +19,8 @@ final class ObservableEnumTests: BaseIntegrationTests {
       """
       ObservableBasicsView.body
       ObservableEnumView.body
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<PresentationState<ObservableEnumView.Feature.Destination.State>, PresentationAction<ObservableEnumView.Feature.Destination.Action>>.scope
-      Store<PresentationState<ObservableEnumView.Feature.Destination.State>, PresentationAction<ObservableEnumView.Feature.Destination.Action>>.scope
       StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableEnumView.Feature>.scope
-      StoreOf<ObservableEnumView.Feature>.scope
-      StoreOf<ObservableEnumView.Feature>.scope
+      StoreOf<ObservableEnumView.Feature.Destination>.init
       """
     }
     self.app.buttons["Increment"].tap()
@@ -35,13 +28,6 @@ final class ObservableEnumTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableBasicsView.body
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<PresentationState<ObservableEnumView.Feature.Destination.State>, PresentationAction<ObservableEnumView.Feature.Destination.Action>>.scope
-      Store<PresentationState<ObservableEnumView.Feature.Destination.State>, PresentationAction<ObservableEnumView.Feature.Destination.Action>>.scope
-      StoreOf<ObservableEnumView.Feature>.scope
-      StoreOf<ObservableEnumView.Feature>.scope
       StoreOf<ObservableEnumView.Feature>.scope
       """
     }
@@ -56,14 +42,7 @@ final class ObservableEnumTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableEnumView.body
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<PresentationState<ObservableEnumView.Feature.Destination.State>, PresentationAction<ObservableEnumView.Feature.Destination.Action>>.scope
-      Store<PresentationState<ObservableEnumView.Feature.Destination.State>, PresentationAction<ObservableEnumView.Feature.Destination.Action>>.scope
-      StoreOf<ObservableEnumView.Feature>.scope
-      StoreOf<ObservableEnumView.Feature>.scope
+      StoreOf<ObservableEnumView.Feature.Destination>.scope
       StoreOf<ObservableEnumView.Feature>.scope
       """
     }
@@ -79,18 +58,9 @@ final class ObservableEnumTests: BaseIntegrationTests {
       """
       ObservableBasicsView.body
       ObservableEnumView.body
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.init
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<PresentationState<ObservableEnumView.Feature.Destination.State>, PresentationAction<ObservableEnumView.Feature.Destination.Action>>.scope
-      Store<PresentationState<ObservableEnumView.Feature.Destination.State>, PresentationAction<ObservableEnumView.Feature.Destination.Action>>.scope
       StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableEnumView.Feature>.scope
-      StoreOf<ObservableEnumView.Feature>.scope
+      StoreOf<ObservableEnumView.Feature.Destination>.init
+      StoreOf<ObservableEnumView.Feature.Destination>.scope
       StoreOf<ObservableEnumView.Feature>.scope
       """
     }
@@ -105,21 +75,7 @@ final class ObservableEnumTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableEnumView.body
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<ObservableBasicsView.Feature.State?, ObservableBasicsView.Feature.Action>.scope
-      Store<PresentationState<ObservableEnumView.Feature.Destination.State>, PresentationAction<ObservableEnumView.Feature.Destination.Action>>.scope
-      Store<PresentationState<ObservableEnumView.Feature.Destination.State>, PresentationAction<ObservableEnumView.Feature.Destination.Action>>.scope
-      Store<PresentationState<ObservableEnumView.Feature.Destination.State>, PresentationAction<ObservableEnumView.Feature.Destination.Action>>.scope
-      Store<PresentationState<ObservableEnumView.Feature.Destination.State>, PresentationAction<ObservableEnumView.Feature.Destination.Action>>.scope
-      StoreOf<ObservableEnumView.Feature>.scope
-      StoreOf<ObservableEnumView.Feature>.scope
-      StoreOf<ObservableEnumView.Feature>.scope
-      StoreOf<ObservableEnumView.Feature>.scope
+      StoreOf<ObservableEnumView.Feature.Destination>.scope
       StoreOf<ObservableEnumView.Feature>.scope
       StoreOf<ObservableEnumView.Feature>.scope
       """
