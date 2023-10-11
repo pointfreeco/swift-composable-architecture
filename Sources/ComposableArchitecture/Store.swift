@@ -889,12 +889,27 @@ private func typeName<State, Action>(of store: Store<State, Action>) -> String {
   let stateType = typeName(State.self, genericsAbbreviated: false)
   let actionType = typeName(Action.self, genericsAbbreviated: false)
   // TODO: `PresentationStoreOf`, `StackStoreOf`, `IdentifiedStoreOf`?
-  //       `StoreOf<Feature?>`
   if stateType.hasSuffix(".State"),
     actionType.hasSuffix(".Action"),
     stateType.dropLast(6) == actionType.dropLast(7)
   {
     return "StoreOf<\(stateType.dropLast(6))>"
+  } else if stateType.hasSuffix(".State?"),
+    actionType.hasSuffix(".Action"),
+    stateType.dropLast(7) == actionType.dropLast(7)
+  {
+    return "StoreOf<\(stateType.dropLast(7))?>"
+  } else if stateType.hasPrefix("PresentationState<"),
+    actionType.hasPrefix("PresentationAction<"),
+    stateType.dropFirst(18).dropLast(7) == actionType.dropFirst(19).dropLast(8)
+  {
+    return "PresentationStoreOf<\(stateType.dropFirst(18).dropLast(7))>"
+  } else if stateType.hasPrefix("StackState<"),
+    actionType.hasPrefix("StackAction<"),
+    stateType.dropFirst(11).dropLast(7)
+      == actionType.dropFirst(12).prefix(while: { $0 != "," }).dropLast(6)
+  {
+    return "StackStoreOf<\(stateType.dropFirst(11).dropLast(7))>"
   } else {
     return "Store<\(stateType), \(actionType)>"
   }
