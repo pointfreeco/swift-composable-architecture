@@ -41,10 +41,9 @@ extension Store: Identifiable where State: ObservableState {
   }
 }
 
-// TODO: Should these scopes be constrained?
-//@available(iOS 17, macOS 14, watchOS 10, tvOS 17, *)
+@available(iOS 17, macOS 14, watchOS 10, tvOS 17, *)
 extension Store {
-  public func scope<ChildState, ChildAction>(
+  public func scope<ChildState: ObservableState, ChildAction>(
     state toChildState: @escaping (_ state: State) -> ChildState?,
     action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction>? {
@@ -62,7 +61,7 @@ extension Store {
     ) as Store<ChildState, ChildAction>
   }
 
-  public func scope<ChildState, ChildAction>(
+  public func scope<ChildState: ObservableState, ChildAction>(
     state toChildState: @escaping (_ state: State) -> ChildState?,
     action fromChildAction:
       @escaping (_ presentationAction: PresentationAction<ChildAction>) -> Action
@@ -71,26 +70,23 @@ extension Store {
   }
 }
 
-// TODO: Should these scopes be constrained?
-//@available(iOS 17, macOS 14, watchOS 10, tvOS 17, *)
+@available(iOS 17, macOS 14, watchOS 10, tvOS 17, *)
 extension Binding {
-  // public func scope<State, Action, ChildState, ChildAction>(
-  //   state toChildState: @escaping (State) -> ChildState,
-  //   action embedChildAction: @escaping (ChildAction) -> Action
-  // )
-  //   -> Binding<Store<ChildState, ChildAction>>
-  // where Value == Store<State, Action> {
-  //   Binding<Store<ChildState, ChildAction>>(
-  //     get: { self.wrappedValue.scope(state: toChildState, action: embedChildAction) },
-  //     set: { _, _ in }
-  //   )
-  // }
+  public func scope<State: ObservableState, Action, ChildState, ChildAction>(
+    state toChildState: @escaping (State) -> ChildState,
+    action embedChildAction: @escaping (ChildAction) -> Action
+  ) -> Binding<Store<ChildState, ChildAction>>
+  where Value == Store<State, Action> {
+    Binding<Store<ChildState, ChildAction>>(
+      get: { self.wrappedValue.scope(state: toChildState, action: embedChildAction) },
+      set: { _, _ in }
+    )
+  }
 
-  public func scope<State, Action, ChildState, ChildAction>(
+  public func scope<State, Action, ChildState: ObservableState, ChildAction>(
     state toChildState: @escaping (State) -> ChildState?,
     action embedChildAction: @escaping (PresentationAction<ChildAction>) -> Action
-  )
-    -> Binding<Store<ChildState, ChildAction>?>
+  ) -> Binding<Store<ChildState, ChildAction>?>
   where Value == Store<State, Action> {
     Binding<Store<ChildState, ChildAction>?>(
       get: {
