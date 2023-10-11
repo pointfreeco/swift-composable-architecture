@@ -10,7 +10,7 @@ extension NavigationStack {
   where
     Data == StackState<State>.PathView,
     Destination: View,
-    Root == ModifiedContent<R, NavigationDestinationViewModifier<State, Action, Destination>>
+    Root == ModifiedContent<R, _NavigationDestinationViewModifier<State, Action, Destination>>
   {
     self.init(
       path: Binding(
@@ -25,13 +25,13 @@ extension NavigationStack {
       )
     ) {
       root()
-        .modifier(NavigationDestinationViewModifier(store: store, destination: destination))
+        .modifier(_NavigationDestinationViewModifier(store: store, destination: destination))
     }
   }
 }
 
 @available(iOS 17, tvOS 17, watchOS 10, macOS 14, *)
-public struct NavigationDestinationViewModifier<State: ObservableState, Action, Destination: View>:
+public struct _NavigationDestinationViewModifier<State: ObservableState, Action, Destination: View>:
   ViewModifier
 {
   @SwiftUI.State var store: Store<StackState<State>, StackAction<State, Action>>
