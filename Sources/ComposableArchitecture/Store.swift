@@ -381,7 +381,7 @@ public final class Store<State, Action> {
     state toChildState: @escaping (_ state: State) -> ChildState,
     action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction> {
-    self.scope(state: toChildState, action: fromChildAction, removeDuplicates: nil)
+    self.scope(state: toChildState, action: { fromChildAction($1) }, removeDuplicates: nil)
   }
 
   /// Scopes the store to one that exposes child state and actions.
@@ -400,14 +400,14 @@ public final class Store<State, Action> {
   ) -> Store<PresentationState<ChildState>, PresentationAction<ChildAction>> {
     self.scope(
       state: toChildState,
-      action: fromChildAction,
+      action: { fromChildAction($1) },
       removeDuplicates: { $0.sharesStorage(with: $1) }
     )
   }
 
   func scope<ChildState, ChildAction>(
     state toChildState: @escaping (State) -> ChildState,
-    action fromChildAction: @escaping (ChildAction) -> Action,
+    action fromChildAction: @escaping (State, ChildAction) -> Action,
     invalidate isInvalid: ((State) -> Bool)? = nil,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
@@ -415,7 +415,7 @@ public final class Store<State, Action> {
     let store = self.reducer.rescope(
       self,
       state: toChildState,
-      action: { fromChildAction($1) },
+      action: fromChildAction,
       removeDuplicates: isDuplicate
     )
     if let isInvalid = isInvalid {
@@ -708,7 +708,7 @@ extension Reducer {
   fileprivate func rescope<ChildState, ChildAction>(
     _ store: Store<State, Action>,
     state toChildState: @escaping (State) -> ChildState,
-    action fromChildAction: @escaping (ChildState, ChildAction) -> Action?,
+    action fromChildAction: @escaping (State, ChildAction) -> Action?,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
     (self as? any AnyScopedReducer ?? ScopedReducer(rootStore: store)).rescope(
@@ -724,7 +724,7 @@ private final class ScopedReducer<RootState, RootAction, State, Action>: Reducer
   let rootStore: Store<RootState, RootAction>
   let toScopedState: (RootState) -> State
   private let parentStores: [Any]
-  let fromScopedAction: (State, Action) -> RootAction?
+  let fromScopedAction: (RootState, Action) -> RootAction?
   private(set) var isSending = false
 
   @inlinable
@@ -740,7 +740,7 @@ private final class ScopedReducer<RootState, RootAction, State, Action>: Reducer
   init(
     rootStore: Store<RootState, RootAction>,
     state toScopedState: @escaping (RootState) -> State,
-    action fromScopedAction: @escaping (State, Action) -> RootAction?,
+    action fromScopedAction: @escaping (RootState, Action) -> RootAction?,
     parentStores: [Any]
   ) {
     self.rootStore = rootStore
@@ -756,7 +756,7 @@ private final class ScopedReducer<RootState, RootAction, State, Action>: Reducer
       state = self.toScopedState(self.rootStore.stateSubject.value)
       self.isSending = false
     }
-    if let action = self.fromScopedAction(state, action),
+    if let action = self.fromScopedAction(self.rootStore.stateSubject.value, action),
       let task = self.rootStore.send(action, originatingFrom: nil)
     {
       return .run { _ in await task.cancellableValue }
@@ -770,7 +770,7 @@ protocol AnyScopedReducer {
   func rescope<ScopedState, ScopedAction, RescopedState, RescopedAction>(
     _ store: Store<ScopedState, ScopedAction>,
     state toRescopedState: @escaping (ScopedState) -> RescopedState,
-    action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?,
+    action fromRescopedAction: @escaping (ScopedState, RescopedAction) -> ScopedAction?,
     removeDuplicates isDuplicate: ((RescopedState, RescopedState) -> Bool)?
   ) -> Store<RescopedState, RescopedAction>
 }
@@ -780,15 +780,18 @@ extension ScopedReducer: AnyScopedReducer {
   func rescope<ScopedState, ScopedAction, RescopedState, RescopedAction>(
     _ store: Store<ScopedState, ScopedAction>,
     state toRescopedState: @escaping (ScopedState) -> RescopedState,
-    action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?,
+    action fromRescopedAction: @escaping (ScopedState, RescopedAction) -> ScopedAction?,
     removeDuplicates isDuplicate: ((RescopedState, RescopedState) -> Bool)?
   ) -> Store<RescopedState, RescopedAction> {
-    let fromScopedAction = self.fromScopedAction as! (ScopedState, ScopedAction) -> RootAction?
+    let toScopedState = self.toScopedState as! (RootState) -> ScopedState
+    let fromScopedAction = self.fromScopedAction as! (RootState, ScopedAction) -> RootAction?
     let reducer = ScopedReducer<RootState, RootAction, RescopedState, RescopedAction>(
       rootStore: self.rootStore,
       state: { _ in toRescopedState(store.stateSubject.value) },
       action: {
-        fromRescopedAction($0, $1).flatMap { fromScopedAction(store.stateSubject.value, $0) }
+        fromRescopedAction(toScopedState($0), $1).flatMap {
+          fromScopedAction(self.rootStore.stateSubject.value, $0)
+        }
       },
       parentStores: self.parentStores + [store]
     )
@@ -810,6 +813,7 @@ extension ScopedReducer: AnyScopedReducer {
       .dropFirst()
       .sink { [weak childStore] newValue in
         guard
+          childStore?._isInvalidated() != true,
           !reducer.isSending,
           let childStore = childStore
         else { return }

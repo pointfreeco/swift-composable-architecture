@@ -6,58 +6,45 @@ struct ObservableIdentifiedListView: View {
     Feature()
   }
 
-  struct ViewState: Equatable {
-    var firstCount: Int?
-    init(state: Feature.State) {
-      self.firstCount = state.rows.first?.count
-    }
-  }
-
   var body: some View {
-    WithViewStore(self.store, observe: ViewState.init) { viewStore in
-      let _ = Logger.shared.log("\(Self.self).body")
-      List {
-        Section {
-          if let firstCount = viewStore.firstCount {
-            HStack {
-              Button("Increment First") {
-                self.store.send(.incrementFirstButtonTapped)
-              }
-              Spacer()
-              Text("Count: \(firstCount)")
+    let _ = Logger.shared.log("\(Self.self).body")
+    List {
+      Section {
+        if let firstCount = self.store.rows.first?.count {
+          HStack {
+            Button("Increment First") {
+              self.store.send(.incrementFirstButtonTapped)
             }
-          }
-        }
-        ForEachStore(self.store.scope(state: \.rows, action: { .row(id: $0, action: $1) })) {
-          store in
-          let _ = Logger.shared.log("\(Self.self).body.ForEachStore")
-          let idStore = store.scope(state: \.id, action: { $0 })
-          WithViewStore(idStore, observe: { $0 }) { viewStore in
-            let _ = Logger.shared.log("\(type(of: idStore))")
-            Section {
-              HStack {
-                VStack {
-                  ObservableBasicsView(store: store)
-                }
-                Spacer()
-                Button(action: { self.store.send(.removeButtonTapped(id: viewStore.state)) }) {
-                  Image(systemName: "trash")
-                }
-              }
-            }
-            .buttonStyle(.borderless)
+            Spacer()
+            Text("Count: \(firstCount)")
           }
         }
       }
-      .toolbar {
-        ToolbarItem {
-          Button("Add") { self.store.send(.addButtonTapped) }
+      ForEach(self.store.scope(state: \.rows, action: { .rows($0) })) { store in
+        let _ = Logger.shared.log("\(Self.self).body.ForEach")
+        Section {
+          HStack {
+            VStack {
+              ObservableBasicsView(store: store)
+            }
+            Spacer()
+            Button(action: { self.store.send(.removeButtonTapped(id: store.id)) }) {
+              Image(systemName: "trash")
+            }
+          }
         }
+        .buttonStyle(.borderless)
+      }
+    }
+    .toolbar {
+      ToolbarItem {
+        Button("Add") { self.store.send(.addButtonTapped) }
       }
     }
   }
 
   struct Feature: Reducer {
+    @ObservableState
     struct State: Equatable {
       var rows: IdentifiedArrayOf<ObservableBasicsView.Feature.State> = []
     }
@@ -65,7 +52,7 @@ struct ObservableIdentifiedListView: View {
       case addButtonTapped
       case incrementFirstButtonTapped
       case removeButtonTapped(id: ObservableBasicsView.Feature.State.ID)
-      case row(id: ObservableBasicsView.Feature.State.ID, action: ObservableBasicsView.Feature.Action)
+      case rows(IdentifiedArrayAction<ObservableBasicsView.Feature>)
     }
     var body: some ReducerOf<Self> {
       Reduce { state, action in
@@ -79,11 +66,11 @@ struct ObservableIdentifiedListView: View {
         case let .removeButtonTapped(id: id):
           state.rows.remove(id: id)
           return .none
-        case .row:
+        case .rows:
           return .none
         }
       }
-      .forEach(\.rows, action: /Action.row) {
+      .forEach(\.rows, action: /Action.rows) {
         ObservableBasicsView.Feature()
       }
     }

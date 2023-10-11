@@ -36,7 +36,7 @@ extension Store where State: ObservableState {
 
 @available(iOS 17, macOS 14, watchOS 10, tvOS 17, *)
 extension Store: Identifiable where State: ObservableState {
-  public var id: AnyHashable {
+  public var id: ObservableStateID {
     self.state._$id
   }
 }
@@ -55,7 +55,7 @@ extension Store {
         initialChildState = childState
         return childState
       },
-      action: fromChildAction,
+      action: { fromChildAction($1) },
       invalidate: { toChildState($0) == nil },
       removeDuplicates: nil
     ) as Store<ChildState, ChildAction>

@@ -18,24 +18,19 @@ final class ObservableIdentifiedListTests: BaseIntegrationTests {
       """
       ObservableBasicsView.body
       ObservableIdentifiedListView.body
-      ObservableIdentifiedListView.body.ForEachStore
-      ObservableIdentifiedListView.body.ForEachStore
-      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, (UUID, ObservableBasicsView.Feature.Action)>.deinit
-      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, (UUID, ObservableBasicsView.Feature.Action)>.deinit
-      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, (UUID, ObservableBasicsView.Feature.Action)>.init
-      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, (UUID, ObservableBasicsView.Feature.Action)>.init
-      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, (UUID, ObservableBasicsView.Feature.Action)>.scope
-      Store<UUID, Action>
-      Store<UUID, ObservableBasicsView.Feature.Action>.deinit
-      Store<UUID, ObservableBasicsView.Feature.Action>.deinit
-      Store<UUID, ObservableBasicsView.Feature.Action>.init
-      Store<UUID, ObservableBasicsView.Feature.Action>.init
-      Store<UUID, ObservableBasicsView.Feature.Action>.init
-      Store<UUID, ObservableBasicsView.Feature.Action>.init
+      ObservableIdentifiedListView.body.ForEach
+      ObservableIdentifiedListView.body.ForEach
+      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, IdentifiedArrayAction<ObservableBasicsView.Feature>>.deinit
+      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, IdentifiedArrayAction<ObservableBasicsView.Feature>>.init
+      StoreOf<ObservableBasicsView.Feature>.deinit
+      StoreOf<ObservableBasicsView.Feature>.deinit
+      StoreOf<ObservableBasicsView.Feature>.deinit
       StoreOf<ObservableBasicsView.Feature>.deinit
       StoreOf<ObservableBasicsView.Feature>.init
       StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableIdentifiedListView.Feature>.scope
+      StoreOf<ObservableBasicsView.Feature>.init
+      StoreOf<ObservableBasicsView.Feature>.init
+      StoreOf<ObservableBasicsView.Feature>.init
       StoreOf<ObservableIdentifiedListView.Feature>.scope
       """
     }
@@ -53,31 +48,26 @@ final class ObservableIdentifiedListTests: BaseIntegrationTests {
       ObservableBasicsView.body
       ObservableBasicsView.body
       ObservableIdentifiedListView.body
-      ObservableIdentifiedListView.body.ForEachStore
-      ObservableIdentifiedListView.body.ForEachStore
-      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, (UUID, ObservableBasicsView.Feature.Action)>.deinit
-      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, (UUID, ObservableBasicsView.Feature.Action)>.init
-      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, (UUID, ObservableBasicsView.Feature.Action)>.init
-      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, (UUID, ObservableBasicsView.Feature.Action)>.scope
-      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, (UUID, ObservableBasicsView.Feature.Action)>.scope
-      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, (UUID, ObservableBasicsView.Feature.Action)>.scope
-      Store<UUID, Action>
-      Store<UUID, Action>
-      Store<UUID, ObservableBasicsView.Feature.Action>.deinit
-      Store<UUID, ObservableBasicsView.Feature.Action>.deinit
-      Store<UUID, ObservableBasicsView.Feature.Action>.deinit
-      Store<UUID, ObservableBasicsView.Feature.Action>.deinit
-      Store<UUID, ObservableBasicsView.Feature.Action>.init
-      Store<UUID, ObservableBasicsView.Feature.Action>.init
-      Store<UUID, ObservableBasicsView.Feature.Action>.init
-      Store<UUID, ObservableBasicsView.Feature.Action>.init
-      Store<UUID, ObservableBasicsView.Feature.Action>.scope
-      Store<UUID, ObservableBasicsView.Feature.Action>.scope
+      ObservableIdentifiedListView.body.ForEach
+      ObservableIdentifiedListView.body.ForEach
+      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, IdentifiedArrayAction<ObservableBasicsView.Feature>>.init
+      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, IdentifiedArrayAction<ObservableBasicsView.Feature>>.scope
+      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, IdentifiedArrayAction<ObservableBasicsView.Feature>>.scope
+      StoreOf<ObservableBasicsView.Feature>.deinit
+      StoreOf<ObservableBasicsView.Feature>.deinit
+      StoreOf<ObservableBasicsView.Feature>.deinit
+      StoreOf<ObservableBasicsView.Feature>.deinit
+      StoreOf<ObservableBasicsView.Feature>.deinit
+      StoreOf<ObservableBasicsView.Feature>.deinit
       StoreOf<ObservableBasicsView.Feature>.deinit
       StoreOf<ObservableBasicsView.Feature>.init
       StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableBasicsView.Feature>.scope
-      StoreOf<ObservableBasicsView.Feature>.scope
+      StoreOf<ObservableBasicsView.Feature>.init
+      StoreOf<ObservableBasicsView.Feature>.init
+      StoreOf<ObservableBasicsView.Feature>.init
+      StoreOf<ObservableBasicsView.Feature>.init
+      StoreOf<ObservableBasicsView.Feature>.init
+      StoreOf<ObservableBasicsView.Feature>.init
       StoreOf<ObservableIdentifiedListView.Feature>.scope
       StoreOf<ObservableIdentifiedListView.Feature>.scope
       """
@@ -93,13 +83,8 @@ final class ObservableIdentifiedListTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableBasicsView.body
-      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, (UUID, ObservableBasicsView.Feature.Action)>.scope
-      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, (UUID, ObservableBasicsView.Feature.Action)>.scope
-      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, (UUID, ObservableBasicsView.Feature.Action)>.scope
-      Store<UUID, ObservableBasicsView.Feature.Action>.scope
-      Store<UUID, ObservableBasicsView.Feature.Action>.scope
-      StoreOf<ObservableBasicsView.Feature>.scope
-      StoreOf<ObservableBasicsView.Feature>.scope
+      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, IdentifiedArrayAction<ObservableBasicsView.Feature>>.scope
+      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, IdentifiedArrayAction<ObservableBasicsView.Feature>>.scope
       StoreOf<ObservableIdentifiedListView.Feature>.scope
       StoreOf<ObservableIdentifiedListView.Feature>.scope
       """
