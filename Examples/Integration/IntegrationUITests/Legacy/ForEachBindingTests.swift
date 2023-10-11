@@ -3,8 +3,13 @@ import XCTest
 
 @MainActor
 final class ForEachBindingTests: BaseIntegrationTests {
-  func testExample() async throws {
+  override func setUp() {
+    super.setUp()
+    self.app.buttons["Legacy"].tap()
     app.collectionViews.buttons[TestCase.forEachBinding.rawValue].tap()
+  }
+
+  func testExample() async throws {
     app.buttons["Remove last"].tap()
     XCTAssertFalse(app.textFields["C"].exists)
     app.buttons["Remove last"].tap()

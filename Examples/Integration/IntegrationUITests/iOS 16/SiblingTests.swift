@@ -6,6 +6,7 @@ import XCTest
 final class SiblingsTests: BaseIntegrationTests {
   override func setUp() {
     super.setUp()
+    self.app.buttons["iOS 16"].tap()
     self.app.buttons["Siblings"].tap()
     self.clearLogs()
     // SnapshotTesting.isRecording = true

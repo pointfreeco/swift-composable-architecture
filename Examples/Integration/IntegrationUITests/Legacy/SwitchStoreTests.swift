@@ -4,10 +4,14 @@ import XCTest
 
 @MainActor
 final class SwitchStoreTests: BaseIntegrationTests {
+  override func setUp() {
+    super.setUp()
+    self.app.buttons["Legacy"].tap()
+    app.collectionViews.buttons[TestCase.switchStore.rawValue].tap()
+  }
+
   func testExample() async throws {
     self.expectRuntimeWarnings()
-
-    app.collectionViews.buttons[TestCase.switchStore.rawValue].tap()
 
     XCTAssertFalse(
       app.staticTexts

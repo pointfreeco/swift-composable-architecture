@@ -6,6 +6,7 @@ import XCTest
 final class ObservableOptionalTests: BaseIntegrationTests {
   override func setUp() {
     super.setUp()
+    self.app.buttons["iOS 17"].tap()
     self.app.buttons["Observable Optional"].tap()
     self.clearLogs()
     // SnapshotTesting.isRecording = true

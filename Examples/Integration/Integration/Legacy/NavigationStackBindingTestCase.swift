@@ -46,6 +46,7 @@ struct NavigationStackBindingTestCaseView: View {
           case .child: Text("Child")
           }
         }
+        .navigationTitle("Root")
       }
     }
   }
