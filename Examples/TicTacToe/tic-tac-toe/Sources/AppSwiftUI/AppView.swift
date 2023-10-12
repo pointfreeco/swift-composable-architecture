@@ -15,13 +15,13 @@ public struct AppView: View {
     SwitchStore(self.store) { state in
       switch state {
       case .login:
-        CaseLet(/TicTacToe.State.login, action: TicTacToe.Action.login) { store in
+        CaseLet(\TicTacToe.State.login, action: TicTacToe.Action.login) { store in
           NavigationStack {
             LoginView(store: store)
           }
         }
       case .newGame:
-        CaseLet(/TicTacToe.State.newGame, action: TicTacToe.Action.newGame) { store in
+        CaseLet(\TicTacToe.State.newGame, action: TicTacToe.Action.newGame) { store in
           NavigationStack {
             NewGameView(store: store)
           }

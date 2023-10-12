@@ -16,12 +16,14 @@ public struct Login: Reducer, Sendable {
   }
 
   @CasePathable
+  @dynamicMemberLookup
   public enum Action: Equatable, Sendable {
     case alert(PresentationAction<AlertAction>)
     case loginResponse(TaskResult<AuthenticationResponse>)
     case twoFactor(PresentationAction<TwoFactor.Action>)
     case view(View)
 
+    @CasePathable
     public enum View: BindableAction, Equatable, Sendable {
       case binding(BindingAction<State>)
       case loginButtonTapped

@@ -6,6 +6,7 @@ import NewGameCore
 
 public struct TicTacToe: Reducer {
   @CasePathable
+  @dynamicMemberLookup
   public enum State: Equatable {
     case login(Login.State)
     case newGame(NewGame.State)
