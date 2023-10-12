@@ -49,6 +49,19 @@ final class PresentationTests: BaseIntegrationTests {
     self.app.buttons["Dismiss"].firstMatch.tap()
     self.assertLogs {
       """
+      PresentationStoreOf<BasicsView.Feature>.scope
+      PresentationStoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
       StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
@@ -103,7 +116,20 @@ final class PresentationTests: BaseIntegrationTests {
     self.app.buttons["Dismiss"].firstMatch.tap()
     self.assertLogs {
       """
+      PresentationStoreOf<BasicsView.Feature>.scope
+      PresentationStoreOf<BasicsView.Feature>.scope
       PresentationView.body
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
       StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope

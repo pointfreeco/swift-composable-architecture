@@ -134,7 +134,7 @@ public final class Store<State, Action> {
   private var isSending = false
   var parentCancellable: AnyCancellable?
   private let reducer: any Reducer<State, Action>
-  @_spi(Internals) public var stateSubject: CurrentValueSubject<State, Never>
+  @_spi(Internals) public var stateSubject: CurrentValueSubject<State, Never>!
   #if DEBUG
     private let mainThreadChecksEnabled: Bool
   #endif
@@ -169,6 +169,14 @@ public final class Store<State, Action> {
         mainThreadChecksEnabled: true
       )
     }
+  }
+
+  init() {
+    self._isInvalidated = { true }
+    self.reducer = EmptyReducer()
+    #if DEBUG
+      self.mainThreadChecksEnabled = true
+    #endif
   }
 
   deinit {
@@ -412,6 +420,11 @@ public final class Store<State, Action> {
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
     self.threadCheck(status: .scope)
+    guard isInvalid?(self.stateSubject.value) != true else {
+      // NB: This is required for `ForEach` over a binding of stores to not crash when accessing old
+      //     data held by the `ForEach`.
+      return Store<ChildState, ChildAction>()
+    }
     let store = self.reducer.rescope(
       self,
       state: toChildState,
@@ -813,15 +826,22 @@ extension ScopedReducer: AnyScopedReducer {
       .dropFirst()
       .sink { [weak childStore] newValue in
         guard
-          childStore?._isInvalidated() != true,
           !reducer.isSending,
           let childStore = childStore
         else { return }
+        // NB: Returning early prevents "legacy" observation wrappers like `IfLetStore` from
+        //     observing state going `nil`.
+        if #available(iOS 17, macOS 14, watchOS 10, tvOS 17, *),
+          RescopedState.self is ObservableState.Type,
+          childStore._isInvalidated()
+        {
+          return
+        }
         let newValue = toRescopedState(newValue)
         guard isDuplicate.map({ !$0(childStore.stateSubject.value, newValue) }) ?? true else {
           return
         }
-        if #available(iOS 17, *) {
+        if #available(iOS 17, macOS 14, watchOS 10, tvOS 17, *) {
           childStore.observedState = newValue
         } else {
           childStore.stateSubject.value = newValue
