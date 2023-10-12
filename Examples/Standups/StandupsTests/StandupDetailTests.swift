@@ -97,9 +97,7 @@ final class StandupDetailTests: XCTestCase {
 
     standup.title = "Blob's Meeting"
     await store.send(.destination(.presented(.edit(.set(\.$standup, standup))))) {
-      $0.destination.modify(\.some.edit) {
-        $0.standup.title = "Blob's Meeting"
-      }
+      $0.$destination[case: \.edit]?.standup.title = "Blob's Meeting"
     }
 
     await store.send(.doneEditingButtonTapped) {

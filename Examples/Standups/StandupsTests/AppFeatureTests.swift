@@ -79,10 +79,8 @@ final class AppFeatureTests: XCTestCase {
     }
 
     await store.send(.path(.element(id: 0, action: .detail(.doneEditingButtonTapped)))) {
-      $0.path[id: 0].modify(\.some.detail) {
-        $0.destination = nil
-        $0.standup.title = "Blob"
-      }
+      $0.path[id: 0, case: \.detail]?.destination = nil
+      $0.path[id: 0, case: \.detail]?.standup.title = "Blob"
     }
 
     await store.receive(
