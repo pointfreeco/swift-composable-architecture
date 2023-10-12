@@ -75,6 +75,9 @@ public struct PresentationState<State> {
     _modify { yield &self }
   }
 
+  /// Accesses the value associated with the given case for reading and writing.
+  ///
+  /// > Note: Accessing the wrong case will result in a runtime warning.
   public subscript<Case>(case path: CaseKeyPath<State, Case>) -> Case?
   where State: CasePathable {
     _read { yield self.wrappedValue.flatMap { $0[keyPath: path] } }

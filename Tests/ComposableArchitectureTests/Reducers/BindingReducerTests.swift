@@ -2,6 +2,7 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
+@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 final class BindingTests: BaseTCATestCase {
   struct BindingTest: Reducer {
     struct State: Equatable {

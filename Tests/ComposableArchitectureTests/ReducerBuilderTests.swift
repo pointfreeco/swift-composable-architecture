@@ -30,6 +30,7 @@ func testLimitedAvailability() {
   }
 }
 
+@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 private struct Root: Reducer {
   struct State {
     var feature: Feature.State
@@ -152,6 +153,7 @@ private struct IfLetExample: Reducer {
   }
 }
 
+@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 private struct IfCaseLetExample: Reducer {
   enum State {
     case value(Int)
@@ -164,6 +166,7 @@ private struct IfCaseLetExample: Reducer {
   }
 }
 
+@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 private struct ForEachExample: Reducer {
   struct Element: Identifiable { let id: Int }
 
