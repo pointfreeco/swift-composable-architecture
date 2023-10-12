@@ -64,7 +64,9 @@ where State == ViewAction.State {
 
   @inlinable
   public func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    guard let bindingAction = self.toViewAction(action).flatMap(/ViewAction.binding)
+    guard
+      let bindingAction = self.toViewAction(action)
+        .flatMap({ AnyCasePath(unsafe: ViewAction.binding).extract(from: $0) })
     else { return .none }
 
     bindingAction.set(&state)

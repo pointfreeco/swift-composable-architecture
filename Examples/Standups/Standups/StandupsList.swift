@@ -31,6 +31,7 @@ struct StandupsList: Reducer {
 
   struct Destination: Reducer {
     @CasePathable
+    @dynamicMemberLookup
     enum State: Equatable {
       case add(StandupForm.State)
       case alert(AlertState<Action.Alert>)

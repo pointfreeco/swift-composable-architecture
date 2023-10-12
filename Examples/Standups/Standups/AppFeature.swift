@@ -97,6 +97,7 @@ struct AppFeature: Reducer {
 
   struct Path: Reducer {
     @CasePathable
+    @dynamicMemberLookup
     enum State: Equatable {
       case detail(StandupDetail.State)
       case meeting(Meeting, standup: Standup)
