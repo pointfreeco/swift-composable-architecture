@@ -17,7 +17,7 @@ final class ObservableNavigationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableBasicsView.body
-      Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.init
+      StackStoreOf<ObservableBasicsView.Feature>.init
       StoreOf<ObservableBasicsView.Feature>.deinit
       StoreOf<ObservableBasicsView.Feature>.init
       StoreOf<ObservableBasicsView.Feature>.init
@@ -44,14 +44,14 @@ final class ObservableNavigationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableBasicsView.body
-      Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.scope
-      Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.scope
-      Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.scope
-      Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.scope
-      Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.scope
-      Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.scope
-      Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.scope
-      Store<StackState<ObservableBasicsView.Feature.State>, StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>>.scope
+      StackStoreOf<ObservableBasicsView.Feature>.scope
+      StackStoreOf<ObservableBasicsView.Feature>.scope
+      StackStoreOf<ObservableBasicsView.Feature>.scope
+      StackStoreOf<ObservableBasicsView.Feature>.scope
+      StackStoreOf<ObservableBasicsView.Feature>.scope
+      StackStoreOf<ObservableBasicsView.Feature>.scope
+      StackStoreOf<ObservableBasicsView.Feature>.scope
+      StackStoreOf<ObservableBasicsView.Feature>.scope
       StoreOf<ObservableNavigationTestCaseView.Feature>.scope
       StoreOf<ObservableNavigationTestCaseView.Feature>.scope
       """

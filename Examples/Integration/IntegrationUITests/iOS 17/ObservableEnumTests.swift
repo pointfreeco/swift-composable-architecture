@@ -42,8 +42,6 @@ final class ObservableEnumTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableEnumView.body
-      StoreOf<ObservableEnumView.Feature.Destination>.scope
-      StoreOf<ObservableEnumView.Feature>.scope
       """
     }
   }
@@ -60,7 +58,6 @@ final class ObservableEnumTests: BaseIntegrationTests {
       ObservableEnumView.body
       StoreOf<ObservableBasicsView.Feature>.init
       StoreOf<ObservableEnumView.Feature.Destination>.init
-      StoreOf<ObservableEnumView.Feature.Destination>.scope
       StoreOf<ObservableEnumView.Feature>.scope
       """
     }
@@ -75,8 +72,6 @@ final class ObservableEnumTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableEnumView.body
-      StoreOf<ObservableEnumView.Feature.Destination>.scope
-      StoreOf<ObservableEnumView.Feature>.scope
       StoreOf<ObservableEnumView.Feature>.scope
       """
     }

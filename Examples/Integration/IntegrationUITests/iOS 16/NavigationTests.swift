@@ -17,7 +17,7 @@ final class NavigationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      Store<StackState<BasicsView.Feature.State>, StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>>.init
+      StackStoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
       """
@@ -26,7 +26,7 @@ final class NavigationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      Store<StackState<BasicsView.Feature.State>, StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>>.scope
+      StackStoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<NavigationTestCaseView.Feature>.scope
       """
@@ -44,15 +44,15 @@ final class NavigationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      Store<StackState<BasicsView.Feature.State>, StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>>.scope
-      Store<StackState<BasicsView.Feature.State>, StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>>.scope
-      Store<StackState<BasicsView.Feature.State>, StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>>.scope
-      Store<StackState<BasicsView.Feature.State>, StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>>.scope
-      Store<StackState<BasicsView.Feature.State>, StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>>.scope
-      Store<StackState<BasicsView.Feature.State>, StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>>.scope
-      Store<StackState<BasicsView.Feature.State>, StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>>.scope
-      Store<StackState<BasicsView.Feature.State>, StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>>.scope
-      Store<StackState<BasicsView.Feature.State>, StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>>.scope
+      StackStoreOf<BasicsView.Feature>.scope
+      StackStoreOf<BasicsView.Feature>.scope
+      StackStoreOf<BasicsView.Feature>.scope
+      StackStoreOf<BasicsView.Feature>.scope
+      StackStoreOf<BasicsView.Feature>.scope
+      StackStoreOf<BasicsView.Feature>.scope
+      StackStoreOf<BasicsView.Feature>.scope
+      StackStoreOf<BasicsView.Feature>.scope
+      StackStoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
