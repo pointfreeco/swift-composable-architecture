@@ -1,8 +1,7 @@
 import Foundation
 import Observation
 
-@available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
-public protocol ObservableState: Observable {
+public protocol ObservableState {
   var _$id: ObservableStateID { get }
 }
 
@@ -34,7 +33,6 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
   }
 }
 
-@available(iOS 17, *)
 public func isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
   if
     let lhs = lhs as? any ObservableState,
