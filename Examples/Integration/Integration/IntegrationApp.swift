@@ -143,6 +143,20 @@ struct ContentView: View {
           }
         }
 
+        NavigationLink("iOS 16 + 17") {
+          List {
+            NavigationLink("New containing old") {
+              NewContainsOldTestCase()
+            }
+            NavigationLink("Old containing new") {
+              OldContainsNewTestCase()
+            }
+            NavigationLink("Siblings") {
+              SiblingNewOldFeaturesView()
+            }
+          }
+        }
+
         NavigationLink("Legacy") {
           List {
             Section {
