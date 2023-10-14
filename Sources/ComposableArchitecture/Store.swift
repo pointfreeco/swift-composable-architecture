@@ -811,7 +811,7 @@ extension ScopedReducer: AnyScopedReducer {
     let initialState: ScopedState
     // TODO: Should we use observedState in iOS 17+?
     // if #available(iOS 17, *) {
-    //   initialState = store.observedState
+    //   initialState = store.observableState
     // } else {
     //   initialState = store.stateSubject.value
     // }
@@ -842,7 +842,7 @@ extension ScopedReducer: AnyScopedReducer {
           return
         }
         if #available(iOS 17, macOS 14, watchOS 10, tvOS 17, *) {
-          childStore.observedState = newValue
+          childStore.observableState = newValue
         } else {
           childStore.stateSubject.value = newValue
         }

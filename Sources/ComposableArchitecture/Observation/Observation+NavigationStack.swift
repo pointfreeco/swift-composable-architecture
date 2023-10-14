@@ -14,7 +14,7 @@ extension NavigationStack {
   {
     self.init(
       path: Binding(
-        get: { store.observedState.path },
+        get: { store.observableState.path },
         set: { pathView in
           if pathView.count > store.withState({ $0 }).count, let component = pathView.last {
             store.send(.push(id: component.id, state: component.element))

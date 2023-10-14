@@ -1,5 +1,7 @@
 @_spi(Reflection) import CasePaths
+#if canImport(Observation)
 import Observation
+#endif
 import Combine
 
 /// A property wrapper for state that can be presented.
@@ -131,8 +133,10 @@ public struct PresentationState<State> {
   private let _$observationRegistrar = ObservationRegistrarWrapper()
 }
 
+#if canImport(Observation)
 @available(macOS 14, iOS 17, watchOS 10, tvOS 17, *)
 extension PresentationState: Observable {}
+#endif
 
 extension PresentationState: Equatable where State: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
