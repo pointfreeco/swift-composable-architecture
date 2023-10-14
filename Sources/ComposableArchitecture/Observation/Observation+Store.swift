@@ -5,12 +5,18 @@ import SwiftUI
 extension Store: Observable {
   var observableState: State {
     get {
-      // TODO: should we skip this if State is not ObservableState?
-      self._$observationRegistrar.access(self, keyPath: \.observableState)
+      if
+        State.self is ObservableState.Type
+      {
+        self._$observationRegistrar.access(self, keyPath: \.observableState)
+      }
       return self.stateSubject.value
     }
     set {
-      if !isIdentityEqual(self.stateSubject.value, newValue) {
+      if
+        State.self is ObservableState.Type,
+        !isIdentityEqual(self.stateSubject.value, newValue)
+      {
         self._$observationRegistrar.withMutation(of: self, keyPath: \.observableState) {
           self.stateSubject.value = newValue
         }

@@ -145,14 +145,14 @@ struct ContentView: View {
 
         NavigationLink("iOS 16 + 17") {
           List {
-            NavigationLink("New containing old") {
-              NewContainsOldTestCase()
+            NavigationLink("New presents old") {
+              NewPresentsOldTestCase()
             }
-            NavigationLink("Old containing new") {
-              OldContainsNewTestCase()
+            NavigationLink("Old presents new") {
+              OldPresentsNewTestCase()
             }
             NavigationLink("Siblings") {
-              SiblingNewOldFeaturesView()
+              NewOldSiblingsView()
             }
           }
         }

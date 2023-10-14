@@ -3,7 +3,7 @@ import TestCases
 import XCTest
 
 @MainActor
-final class EnumTests: BaseIntegrationTests {
+final class iOS16_EnumTests: BaseIntegrationTests {
   override func setUp() {
     super.setUp()
     self.app.buttons["iOS 16"].tap()

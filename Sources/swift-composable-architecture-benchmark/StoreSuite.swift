@@ -15,7 +15,7 @@ let storeSuite = BenchmarkSuite(name: "Store") {
         Feature()
       }
     } tearDown: {
-      precondition(count(of: store.state.value, level: level) == 1)
+      precondition(count(of: store.withState { $0 }, level: level) == 1)
       _cancellationCancellables.removeAll()
     }
   }
@@ -27,7 +27,7 @@ let storeSuite = BenchmarkSuite(name: "Store") {
         Feature()
       }
     } tearDown: {
-      precondition(count(of: store.state.value, level: level) == 0)
+      precondition(count(of: store.withState { $0 }, level: level) == 0)
       _cancellationCancellables.removeAll()
     }
   }

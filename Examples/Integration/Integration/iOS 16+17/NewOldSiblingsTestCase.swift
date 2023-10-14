@@ -1,7 +1,7 @@
 @_spi(Logging) import ComposableArchitecture
 import SwiftUI
 
-struct SiblingNewOldFeaturesView: View {
+struct NewOldSiblingsView: View {
   @State var store = Store(initialState: Feature.State()) {
     Feature()
   }
@@ -74,5 +74,5 @@ struct SiblingNewOldFeaturesView: View {
 }
 
 #Preview {
-  SiblingNewOldFeaturesView()
+  NewOldSiblingsView()
 }

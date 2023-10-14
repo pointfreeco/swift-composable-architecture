@@ -3,7 +3,7 @@ import TestCases
 import XCTest
 
 @MainActor
-final class SiblingNewOldTests: BaseIntegrationTests {
+final class iOS16_17_NewOldSiblingsTests: BaseIntegrationTests {
   override func setUp() {
     super.setUp()
     self.app.buttons["iOS 16 + 17"].tap()
@@ -19,7 +19,7 @@ final class SiblingNewOldTests: BaseIntegrationTests {
       """
       BasicsView.body
       StoreOf<BasicsView.Feature>.scope
-      StoreOf<SiblingNewOldFeaturesView.Feature>.scope
+      StoreOf<NewOldSiblingsView.Feature>.scope
       """
     }
 
@@ -29,7 +29,7 @@ final class SiblingNewOldTests: BaseIntegrationTests {
       """
       ObservableBasicsView.body
       StoreOf<BasicsView.Feature>.scope
-      StoreOf<SiblingNewOldFeaturesView.Feature>.scope
+      StoreOf<NewOldSiblingsView.Feature>.scope
       """
     }
   }
@@ -49,8 +49,8 @@ final class SiblingNewOldTests: BaseIntegrationTests {
       BasicsView.body
       ObservableBasicsView.body
       StoreOf<BasicsView.Feature>.scope
-      StoreOf<SiblingNewOldFeaturesView.Feature>.scope
-      StoreOf<SiblingNewOldFeaturesView.Feature>.scope
+      StoreOf<NewOldSiblingsView.Feature>.scope
+      StoreOf<NewOldSiblingsView.Feature>.scope
       """
     }
   }
@@ -70,8 +70,8 @@ final class SiblingNewOldTests: BaseIntegrationTests {
       BasicsView.body
       ObservableBasicsView.body
       StoreOf<BasicsView.Feature>.scope
-      StoreOf<SiblingNewOldFeaturesView.Feature>.scope
-      StoreOf<SiblingNewOldFeaturesView.Feature>.scope
+      StoreOf<NewOldSiblingsView.Feature>.scope
+      StoreOf<NewOldSiblingsView.Feature>.scope
       """
     }
   }

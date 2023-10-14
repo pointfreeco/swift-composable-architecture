@@ -64,7 +64,10 @@ public struct PresentationState<State> {
 
   public var wrappedValue: State? {
     _read {
-      if #available(macOS 14, iOS 17, watchOS 10, tvOS 17, *), State.self is ObservableState.Type {
+      if
+        #available(macOS 14, iOS 17, watchOS 10, tvOS 17, *),
+        State.self is ObservableState.Type
+      {
         self._$observationRegistrar.access(self, keyPath: \.wrappedValue)
       }
       yield self.storage.state
@@ -77,12 +80,12 @@ public struct PresentationState<State> {
           self.storage.state = newValue
         }
       }
-      if #available(macOS 14, iOS 17, watchOS 10, tvOS 17, *), State.self is ObservableState.Type {
-        if !isIdentityEqual(self.storage.state, newValue) {
-          self._$observationRegistrar.withMutation(of: self, keyPath: \.wrappedValue) {
-            update()
-          }
-        } else {
+      if 
+        #available(macOS 14, iOS 17, watchOS 10, tvOS 17, *),
+        State.self is ObservableState.Type,
+        !isIdentityEqual(self.storage.state, newValue)
+      {
+        self._$observationRegistrar.withMutation(of: self, keyPath: \.wrappedValue) {
           update()
         }
       } else {

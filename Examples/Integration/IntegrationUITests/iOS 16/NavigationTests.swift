@@ -3,7 +3,7 @@ import TestCases
 import XCTest
 
 @MainActor
-final class NavigationTests: BaseIntegrationTests {
+final class iOS16_NavigationTests: BaseIntegrationTests {
   override func setUp() {
     super.setUp()
     self.app.buttons["iOS 16"].tap()

@@ -1,7 +1,7 @@
 @_spi(Logging) import ComposableArchitecture
 import SwiftUI
 
-struct OldContainsNewTestCase: View {
+struct OldPresentsNewTestCase: View {
   @State var store = Store(initialState: Feature.State()) {
     Feature()
   }
@@ -80,5 +80,5 @@ struct OldContainsNewTestCase: View {
 }
 
 #Preview {
-  OldContainsNewTestCase()
+  OldPresentsNewTestCase()
 }

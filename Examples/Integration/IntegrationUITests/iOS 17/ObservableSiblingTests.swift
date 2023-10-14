@@ -3,7 +3,7 @@ import TestCases
 import XCTest
 
 @MainActor
-final class ObservableSiblingsTests: BaseIntegrationTests {
+final class iOS17_ObservableSiblingsTests: BaseIntegrationTests {
   override func setUp() {
     super.setUp()
     self.app.buttons["iOS 17"].tap()
