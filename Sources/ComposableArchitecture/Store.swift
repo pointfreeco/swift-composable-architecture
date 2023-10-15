@@ -126,7 +126,9 @@ import SwiftUI
 /// to run only on the main thread, and so a check is executed immediately to make sure that is the
 /// case. Further, all actions sent to the store and all scopes (see ``scope(state:action:)-9iai9``) of
 /// the store are also checked to make sure that work is performed on the main thread.
+#if canImport(Observation)
 @dynamicMemberLookup
+#endif
 public final class Store<State, Action> {
   private var bufferedActions: [Action] = []
   @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] = [:]
@@ -841,11 +843,15 @@ extension ScopedReducer: AnyScopedReducer {
         guard isDuplicate.map({ !$0(childStore.stateSubject.value, newValue) }) ?? true else {
           return
         }
+        #if canImport(Observation)
         if #available(iOS 17, macOS 14, watchOS 10, tvOS 17, *) {
           childStore.observableState = newValue
         } else {
           childStore.stateSubject.value = newValue
         }
+        #else
+        childStore.stateSubject.value = newValue
+        #endif
         Logger.shared.log("\(typeName(of: store)).scope")
       }
     return childStore

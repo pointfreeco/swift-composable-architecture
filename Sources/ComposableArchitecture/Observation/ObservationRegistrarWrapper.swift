@@ -29,7 +29,7 @@ extension ObservationRegistrarWrapper: Equatable, Hashable, Codable {
 #if canImport(Observation)
   @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
   extension ObservationRegistrarWrapper {
-    var rawValue: ObservationRegistrar {
+    private var rawValue: ObservationRegistrar {
       self._rawValue.base as! ObservationRegistrar
     }
 

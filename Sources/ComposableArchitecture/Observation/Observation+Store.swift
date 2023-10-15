@@ -1,11 +1,19 @@
+#if canImport(Observation)
 import Observation
+#endif
 import SwiftUI
 
+#if canImport(Observation)
 @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
-extension Store: Observable {
+extension Store: Observable {}
+#endif
+
+#if canImport(Observation)
+extension Store {
   var observableState: State {
     get {
       if
+        #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *),
         State.self is ObservableState.Type
       {
         self._$observationRegistrar.access(self, keyPath: \.observableState)
@@ -14,6 +22,7 @@ extension Store: Observable {
     }
     set {
       if
+        #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *),
         State.self is ObservableState.Type,
         !isIdentityEqual(self.stateSubject.value, newValue)
       {
@@ -27,7 +36,6 @@ extension Store: Observable {
   }
 }
 
-@available(iOS 17, macOS 14, watchOS 10, tvOS 17, *)
 extension Store where State: ObservableState {
   private(set) public var state: State {
     get { self.observableState }
@@ -39,12 +47,12 @@ extension Store where State: ObservableState {
   }
 }
 
-@available(iOS 17, macOS 14, watchOS 10, tvOS 17, *)
 extension Store: Identifiable where State: ObservableState {
   public var id: ObservableStateID {
     self.state._$id
   }
 }
+#endif
 
 extension Store {
   // TODO: Document that this should only be used with SwiftUI.

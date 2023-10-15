@@ -115,7 +115,6 @@ where Element.State: Identifiable {
   }
 }
 
-@available(iOS 17, macOS 14, watchOS 10, tvOS 17, *)
 extension Reducer {
   public func forEach<
     ElementsState: MutableCollection,
@@ -139,7 +138,6 @@ extension Reducer {
   }
 }
 
-@available(iOS 17, macOS 14, watchOS 10, tvOS 17, *)
 private struct _ForEachCollectionReducer<
   Base: Reducer,
   ElementsState: MutableCollection,
