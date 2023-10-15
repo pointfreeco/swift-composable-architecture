@@ -14,6 +14,10 @@
 		CA595273296DF46D00B5B695 /* NavigationStackBindingTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA595272296DF46D00B5B695 /* NavigationStackBindingTestCase.swift */; };
 		CA595275296DF55A00B5B695 /* NavigationStackBindingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA595274296DF55A00B5B695 /* NavigationStackBindingTests.swift */; };
 		CA595278296DF67E00B5B695 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = CA595277296DF67E00B5B695 /* ComposableArchitecture */; };
+		CA7BDDA12ADB543400277984 /* NewContainsOldTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7BDDA02ADB543400277984 /* NewContainsOldTestCase.swift */; };
+		CA7BDDA32ADB575F00277984 /* OldContainsNewTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7BDDA22ADB575F00277984 /* OldContainsNewTestCase.swift */; };
+		CA7BDDA52ADB5E5700277984 /* OldContainsNewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7BDDA42ADB5E5700277984 /* OldContainsNewTests.swift */; };
+		CA7BDDA72ADB637300277984 /* NewContainsOldTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7BDDA62ADB637300277984 /* NewContainsOldTests.swift */; };
 		CA8B2E9A2AC576CA008272E0 /* BasicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA8B2E962AC576B5008272E0 /* BasicsTests.swift */; };
 		CA8B2E9B2AC576CA008272E0 /* EnumTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA8B2E942AC576B5008272E0 /* EnumTests.swift */; };
 		CA8B2E9C2AC576CA008272E0 /* OptionalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA8B2E952AC576B5008272E0 /* OptionalTests.swift */; };
@@ -120,6 +124,10 @@
 		CA595272296DF46D00B5B695 /* NavigationStackBindingTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStackBindingTestCase.swift; sourceTree = "<group>"; };
 		CA595274296DF55A00B5B695 /* NavigationStackBindingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStackBindingTests.swift; sourceTree = "<group>"; };
 		CA595276296DF66B00B5B695 /* swift-composable-architecture */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "swift-composable-architecture"; path = ../..; sourceTree = "<group>"; };
+		CA7BDDA02ADB543400277984 /* NewContainsOldTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewContainsOldTestCase.swift; sourceTree = "<group>"; };
+		CA7BDDA22ADB575F00277984 /* OldContainsNewTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OldContainsNewTestCase.swift; sourceTree = "<group>"; };
+		CA7BDDA42ADB5E5700277984 /* OldContainsNewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OldContainsNewTests.swift; sourceTree = "<group>"; };
+		CA7BDDA62ADB637300277984 /* NewContainsOldTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewContainsOldTests.swift; sourceTree = "<group>"; };
 		CA8B2E942AC576B5008272E0 /* EnumTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EnumTests.swift; sourceTree = "<group>"; };
 		CA8B2E952AC576B5008272E0 /* OptionalTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OptionalTests.swift; sourceTree = "<group>"; };
 		CA8B2E962AC576B5008272E0 /* BasicsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BasicsTests.swift; sourceTree = "<group>"; };
@@ -315,6 +323,8 @@
 			children = (
 				CAA6BEAD2ADADE5900FF83BC /* NewOldSiblingsTests.swift */,
 				CAA6BEB62ADAF0DF00FF83BC /* NewPresentsOldTests.swift */,
+				CA7BDDA42ADB5E5700277984 /* OldContainsNewTests.swift */,
+				CA7BDDA62ADB637300277984 /* NewContainsOldTests.swift */,
 				CAA6BEB82ADAF61A00FF83BC /* OldPresentsNewTests.swift */,
 			);
 			path = "iOS 16+17";
@@ -323,9 +333,11 @@
 		CAA6BEAF2ADADE6200FF83BC /* iOS 16+17 */ = {
 			isa = PBXGroup;
 			children = (
-				CAA6BEB42ADAE08A00FF83BC /* NewPresentsOldTestCase.swift */,
-				CAA6BEB22ADAE08300FF83BC /* OldPresentsNewTestCase.swift */,
+				CA7BDDA02ADB543400277984 /* NewContainsOldTestCase.swift */,
 				CAA6BEB02ADADE7700FF83BC /* NewOldSiblingsTestCase.swift */,
+				CAA6BEB42ADAE08A00FF83BC /* NewPresentsOldTestCase.swift */,
+				CA7BDDA22ADB575F00277984 /* OldContainsNewTestCase.swift */,
+				CAA6BEB22ADAE08300FF83BC /* OldPresentsNewTestCase.swift */,
 			);
 			path = "iOS 16+17";
 			sourceTree = "<group>";
@@ -563,9 +575,11 @@
 				E9919D42296E47A400C8716B /* BindingsAnimationsTestBench.swift in Sources */,
 				DCFFB8E72A156488006AF839 /* BindingLocalTestCase.swift in Sources */,
 				DC6E2D992AD5C56F005ACC26 /* ObservableOptionalTestCase.swift in Sources */,
+				CA7BDDA12ADB543400277984 /* NewContainsOldTestCase.swift in Sources */,
 				CA595273296DF46D00B5B695 /* NavigationStackBindingTestCase.swift in Sources */,
 				CAF5802529A5651D0042FB62 /* LegacyPresentationTestCase.swift in Sources */,
 				DC6E2D9A2AD5C56F005ACC26 /* ObservableEnumTestCase.swift in Sources */,
+				CA7BDDA32ADB575F00277984 /* OldContainsNewTestCase.swift in Sources */,
 				CA8B2EB22AC5AD63008272E0 /* NavigationTestCase.swift in Sources */,
 				CAA6BEB32ADAE08300FF83BC /* OldPresentsNewTestCase.swift in Sources */,
 				DC6E2D952AD5C56F005ACC26 /* ObservableBasicsTestCase.swift in Sources */,
@@ -593,6 +607,7 @@
 				CA8B2EB42AC5AF70008272E0 /* NavigationTests.swift in Sources */,
 				E9919D40296E3EF400C8716B /* EscapedWithViewStoreTests.swift in Sources */,
 				CA3A7B9D29CB61E9002CD272 /* TestHelpers.swift in Sources */,
+				CA7BDDA52ADB5E5700277984 /* OldContainsNewTests.swift in Sources */,
 				CA8B2E9B2AC576CA008272E0 /* EnumTests.swift in Sources */,
 				DC6E2DA62AD5C677005ACC26 /* ObservableIdentifiedListTests.swift in Sources */,
 				CAF5802729A567BB0042FB62 /* LegacyPresentationTests.swift in Sources */,
@@ -608,6 +623,7 @@
 				CA8B2E9A2AC576CA008272E0 /* BasicsTests.swift in Sources */,
 				DC140CC729E0E8F3006DF553 /* SwitchStoreTests.swift in Sources */,
 				CA8B2E9C2AC576CA008272E0 /* OptionalTests.swift in Sources */,
+				CA7BDDA72ADB637300277984 /* NewContainsOldTests.swift in Sources */,
 				DC6E2DA82AD5C677005ACC26 /* ObservableSiblingTests.swift in Sources */,
 				CAA6BEAE2ADADE5900FF83BC /* NewOldSiblingsTests.swift in Sources */,
 				CAA6BEB72ADAF0DF00FF83BC /* NewPresentsOldTests.swift in Sources */,

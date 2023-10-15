@@ -184,7 +184,11 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
     self.app.buttons.matching(identifier: "Increment").element(boundBy: 0).tap()
     self.app.buttons["Dismiss"].tap()
     self.clearLogs()
-    self.app.buttons["Back"].tap()
-    self.assertLogs()
+    self.app.buttons["iOS 16 + 17"].tap()
+    self.assertLogs {
+      """
+      StoreOf<BasicsView.Feature?>.deinit
+      """
+    }
   }
 }

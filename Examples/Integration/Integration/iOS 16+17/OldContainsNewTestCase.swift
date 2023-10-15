@@ -1,17 +1,17 @@
 @_spi(Logging) import ComposableArchitecture
 import SwiftUI
 
-struct OldPresentsNewTestCase: View {
+struct OldContainsNewTestCase: View {
   @State var store = Store(initialState: Feature.State()) {
     Feature()
   }
 
   struct ViewState: Equatable {
-    let childCount: Int?
+    let childCount: Int
     let count: Int
     let isObservingChildCount: Bool
     init(state: Feature.State) {
-      self.childCount = state.child?.count
+      self.childCount = state.child.count
       self.count = state.count
       self.isObservingChildCount = state.isObservingChildCount
     }
@@ -24,41 +24,41 @@ struct OldPresentsNewTestCase: View {
         Section {
           Text(viewStore.count.description)
           Button("Increment") { self.store.send(.incrementButtonTapped) }
+        } header: {
+          Text("iOS 16")
         }
         Section {
           if viewStore.isObservingChildCount {
-            Text("Child count: " + (viewStore.childCount?.description ?? "N/A"))
+            Text("Child count: \(viewStore.childCount)")
           }
-          Button("Toggle observe child count") {
-            self.store.send(.toggleObservingChildCount)
+          Button("Toggle observing child count") {
+            self.store.send(.toggleIsObservingChildCount)
           }
         }
         Section {
-          Button("Present child") { self.store.send(.presentChildButtonTapped) }
+          ObservableBasicsView(store: self.store.scope(state: \.child, action: { .child($0) }))
+        } header: {
+          Text("iOS 17")
         }
       }
-    }
-    .sheet(store: self.store.scope(state: \.$child, action: { .child($0) })) { store in
-      Form {
-        ObservableBasicsView(store: store)
-      }
-        .presentationDetents([.medium])
     }
   }
 
   struct Feature: Reducer {
     struct State {
-      @PresentationState var child: ObservableBasicsView.Feature.State?
+      var child = ObservableBasicsView.Feature.State()
       var count = 0
       var isObservingChildCount = false
     }
     enum Action {
-      case child(PresentationAction<ObservableBasicsView.Feature.Action>)
+      case child(ObservableBasicsView.Feature.Action)
       case incrementButtonTapped
-      case presentChildButtonTapped
-      case toggleObservingChildCount
+      case toggleIsObservingChildCount
     }
     var body: some ReducerOf<Self> {
+      Scope(state: \.child, action: /Action.child) {
+        ObservableBasicsView.Feature()
+      }
       Reduce { state, action in
         switch action {
         case .child:
@@ -66,21 +66,15 @@ struct OldPresentsNewTestCase: View {
         case .incrementButtonTapped:
           state.count += 1
           return .none
-        case .presentChildButtonTapped:
-          state.child = ObservableBasicsView.Feature.State()
-          return .none
-        case .toggleObservingChildCount:
+        case .toggleIsObservingChildCount:
           state.isObservingChildCount.toggle()
           return .none
         }
-      }
-      .ifLet(\.$child, action: /Action.child) {
-        ObservableBasicsView.Feature()
       }
     }
   }
 }
 
 #Preview {
-  OldPresentsNewTestCase()
+  OldContainsNewTestCase()
 }
