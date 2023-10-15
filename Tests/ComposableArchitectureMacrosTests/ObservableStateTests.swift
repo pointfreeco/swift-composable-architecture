@@ -85,7 +85,7 @@ final class ObservableStateMacroTests: MacroBaseTestCase {
     }
   }
 
-  func testObservableState_Enum_Accessor() {
+  func testObservableState_Enum_AccessControl() {
     assertMacro {
       """
       @ObservableState
