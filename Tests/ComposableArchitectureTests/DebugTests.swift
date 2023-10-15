@@ -133,7 +133,7 @@
         typealias Action = Bool
         func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
           state += action ? 1 : -1
-          return .none
+          return .run { _ in await Task.yield() }
         }
       }
 
