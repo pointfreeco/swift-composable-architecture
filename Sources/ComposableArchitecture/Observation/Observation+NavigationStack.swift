@@ -39,7 +39,7 @@ public struct _NavigationDestinationViewModifier<
 {
   @SwiftUI.State var store: Store<StackState<State>, StackAction<State, Action>>
   fileprivate let destination: (Store<State, Action>) -> Destination
-  
+
   public func body(content: Content) -> some View {
     content
       .environment(\.navigationDestinationType, State.self)
