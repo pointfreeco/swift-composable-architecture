@@ -1,3 +1,6 @@
+import Combine
+import Dispatch
+
 extension Reducer {
   #if swift(>=5.8)
     /// Enhances a reducer with debug logging of received actions and state mutations for the given
@@ -26,13 +29,19 @@ extension Reducer {
   #endif
 }
 
+private let printQueue = DispatchQueue(label: "co.pointfree.swift-composable-architecture.printer")
+
 public struct _ReducerPrinter<State, Action> {
   private let _printChange: (_ receivedAction: Action, _ oldState: State, _ newState: State) -> Void
+  @usableFromInline
+  let queue: DispatchQueue
 
   public init(
-    printChange: @escaping (_ receivedAction: Action, _ oldState: State, _ newState: State) -> Void
+    printChange: @escaping (_ receivedAction: Action, _ oldState: State, _ newState: State) -> Void,
+    queue: DispatchQueue? = nil
   ) {
     self._printChange = printChange
+    self.queue = queue ?? printQueue
   }
 
   public func printChange(receivedAction: Action, oldState: State, newState: State) {
@@ -81,8 +90,13 @@ public struct _PrintChangesReducer<Base: Reducer>: Reducer {
         let oldState = state
         let effects = self.base.reduce(into: &state, action: action)
         return effects.merge(
-          with: .run { [newState = state] _ in
-            printer.printChange(receivedAction: action, oldState: oldState, newState: newState)
+          with: .publisher { [newState = state, queue = printer.queue] in
+            Deferred<Empty<Action, Never>> {
+              queue.async {
+                printer.printChange(receivedAction: action, oldState: oldState, newState: newState)
+              }
+              return Empty()
+            }
           }
         )
       }
