@@ -1,3 +1,4 @@
+import Combine
 import Dispatch
 
 extension Reducer {
@@ -89,9 +90,12 @@ public struct _PrintChangesReducer<Base: Reducer>: Reducer {
         let oldState = state
         let effects = self.base.reduce(into: &state, action: action)
         return effects.merge(
-          with: .run { [newState = state, queue = printer.queue] _ in
-            queue.async {
-              printer.printChange(receivedAction: action, oldState: oldState, newState: newState)
+          with: .publisher { [newState = state, queue = printer.queue] in
+            Deferred<Empty<Action, Never>> {
+              queue.async {
+                printer.printChange(receivedAction: action, oldState: oldState, newState: newState)
+              }
+              return Empty()
             }
           }
         )
