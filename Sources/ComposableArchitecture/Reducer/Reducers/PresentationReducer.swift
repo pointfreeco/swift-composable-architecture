@@ -1,6 +1,9 @@
 @_spi(Reflection) import CasePaths
-import Observation
 import Combine
+
+#if canImport(Observation)
+  import Observation
+#endif
 
 /// A property wrapper for state that can be presented.
 ///
@@ -62,9 +65,13 @@ public struct PresentationState<State> {
 
   public var wrappedValue: State? {
     _read {
-      if #available(macOS 14, iOS 17, watchOS 10, tvOS 17, *), State.self is ObservableState.Type {
-        self._$observationRegistrar.access(self, keyPath: \.wrappedValue)
-      }
+      #if canImport(Observation)
+        if #available(macOS 14, iOS 17, watchOS 10, tvOS 17, *),
+          State.self is ObservableState.Type
+        {
+          self._$observationRegistrar.access(self, keyPath: \.wrappedValue)
+        }
+      #endif
       yield self.storage.state
     }
     set {
@@ -75,17 +82,20 @@ public struct PresentationState<State> {
           self.storage.state = newValue
         }
       }
-      if #available(macOS 14, iOS 17, watchOS 10, tvOS 17, *), State.self is ObservableState.Type {
-        if !isIdentityEqual(self.storage.state, newValue) {
+      #if canImport(Observation)
+        if #available(macOS 14, iOS 17, watchOS 10, tvOS 17, *),
+          State.self is ObservableState.Type,
+          !isIdentityEqual(self.storage.state, newValue)
+        {
           self._$observationRegistrar.withMutation(of: self, keyPath: \.wrappedValue) {
             update()
           }
         } else {
           update()
         }
-      } else {
+      #else
         update()
-      }
+      #endif
     }
   }
 
@@ -131,8 +141,10 @@ public struct PresentationState<State> {
   private let _$observationRegistrar = ObservationRegistrarWrapper()
 }
 
-@available(macOS 14, iOS 17, watchOS 10, tvOS 17, *)
-extension PresentationState: Observable {}
+#if canImport(Observation)
+  @available(macOS 14, iOS 17, watchOS 10, tvOS 17, *)
+  extension PresentationState: Observable {}
+#endif
 
 extension PresentationState: Equatable where State: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {

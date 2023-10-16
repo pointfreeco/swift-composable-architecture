@@ -1,7 +1,9 @@
+#if swift(>=5.9)
 import Observation
 
 @attached(member, names: named(_$id), named(_$observationRegistrar), named(access), named(withMutation))
 @attached(memberAttribute)
+// TODO: Is this Observable conformance needed?
 @attached(extension, conformances: Observable, ObservableState)
 public macro ObservableState() =
 #externalMacro(module: "ComposableArchitectureMacros", type: "ObservableStateMacro")
@@ -25,3 +27,4 @@ public macro ObservationStateIgnored() =
 //  static func view(_ action: ViewAction) -> Self
 //  var view: ViewAction? { get }
 //}
+#endif

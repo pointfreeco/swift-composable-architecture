@@ -1,18 +1,32 @@
+#if canImport(Observation)
 import Observation
+#endif
 import SwiftUI
 
+#if canImport(Observation)
 @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
-extension Store: Observable {
-  // TODO: Rename to observableState
-  var observedState: State {
+extension Store: Observable {}
+#endif
+
+#if canImport(Observation)
+extension Store {
+  var observableState: State {
     get {
-      // TODO: should we skip this if State is not ObservableState?
-      self._$observationRegistrar.access(self, keyPath: \.observedState)
+      if
+        #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *),
+        State.self is ObservableState.Type
+      {
+        self._$observationRegistrar.access(self, keyPath: \.observableState)
+      }
       return self.stateSubject.value
     }
     set {
-      if !isIdentityEqual(self.stateSubject.value, newValue) {
-        self._$observationRegistrar.withMutation(of: self, keyPath: \.observedState) {
+      if
+        #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *),
+        State.self is ObservableState.Type,
+        !isIdentityEqual(self.stateSubject.value, newValue)
+      {
+        self._$observationRegistrar.withMutation(of: self, keyPath: \.observableState) {
           self.stateSubject.value = newValue
         }
       } else {
@@ -22,11 +36,10 @@ extension Store: Observable {
   }
 }
 
-@available(iOS 17, macOS 14, watchOS 10, tvOS 17, *)
 extension Store where State: ObservableState {
   private(set) public var state: State {
-    get { self.observedState }
-    set { self.observedState = newValue }
+    get { self.observableState }
+    set { self.observableState = newValue }
   }
 
   public subscript<Value>(dynamicMember keyPath: KeyPath<State, Value>) -> Value {
@@ -34,16 +47,17 @@ extension Store where State: ObservableState {
   }
 }
 
-@available(iOS 17, macOS 14, watchOS 10, tvOS 17, *)
 extension Store: Identifiable where State: ObservableState {
   public var id: ObservableStateID {
     self.state._$id
   }
 }
+#endif
 
-@available(iOS 17, macOS 14, watchOS 10, tvOS 17, *)
 extension Store {
-  public func scope<ChildState: ObservableState, ChildAction>(
+  // TODO: Document that this should only be used with SwiftUI.
+  // TODO: ChildState: ObservableState?
+  public func scope<ChildState, ChildAction>(
     state toChildState: @escaping (_ state: State) -> ChildState?,
     action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction>? {
@@ -58,10 +72,12 @@ extension Store {
       action: { fromChildAction($1) },
       invalidate: { toChildState($0) == nil },
       removeDuplicates: nil
-    ) as Store<ChildState, ChildAction>
+    )
   }
 
-  public func scope<ChildState: ObservableState, ChildAction>(
+  // TODO: Document that this should only be used with SwiftUI.
+  // TODO: ChildState: ObservableState?
+  public func scope<ChildState, ChildAction>(
     state toChildState: @escaping (_ state: State) -> ChildState?,
     action fromChildAction:
       @escaping (_ presentationAction: PresentationAction<ChildAction>) -> Action
@@ -70,9 +86,9 @@ extension Store {
   }
 }
 
-@available(iOS 17, macOS 14, watchOS 10, tvOS 17, *)
 extension Binding {
-  public func scope<State: ObservableState, Action, ChildState, ChildAction>(
+  // TODO: State: ObservableState?
+  public func scope<State, Action, ChildState, ChildAction>(
     state toChildState: @escaping (State) -> ChildState,
     action embedChildAction: @escaping (ChildAction) -> Action
   ) -> Binding<Store<ChildState, ChildAction>>
@@ -83,7 +99,8 @@ extension Binding {
     )
   }
 
-  public func scope<State, Action, ChildState: ObservableState, ChildAction>(
+  // TODO: State: ObservableState?
+  public func scope<State, Action, ChildState, ChildAction>(
     state toChildState: @escaping (State) -> ChildState?,
     action embedChildAction: @escaping (PresentationAction<ChildAction>) -> Action
   ) -> Binding<Store<ChildState, ChildAction>?>

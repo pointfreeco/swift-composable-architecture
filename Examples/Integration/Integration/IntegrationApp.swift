@@ -110,6 +110,7 @@ struct ContentView: View {
               }
             }
           }
+          .navigationTitle("iOS 17")
         }
 
         NavigationLink("iOS 16") {
@@ -141,6 +142,33 @@ struct ContentView: View {
               PresentationView()
             }
           }
+          .navigationTitle("iOS 16")
+        }
+
+        NavigationLink("iOS 16 + 17") {
+          List {
+            NavigationLink("New containing old") {
+              NewContainsOldTestCase()
+                .navigationTitle("New containing old")
+            }
+            NavigationLink("New presents old") {
+              NewPresentsOldTestCase()
+                .navigationTitle("New presents old")
+            }
+            NavigationLink("Old containing new") {
+              NewContainsOldTestCase()
+                .navigationTitle("Old containing new")
+            }
+            NavigationLink("Old presents new") {
+              OldPresentsNewTestCase()
+                .navigationTitle("Old presents new")
+            }
+            NavigationLink("Siblings") {
+              NewOldSiblingsView()
+                .navigationTitle("Siblings")
+            }
+          }
+          .navigationTitle("iOS 16 + 17")
         }
 
         NavigationLink("Legacy") {
@@ -203,6 +231,7 @@ struct ContentView: View {
               }
             }
           }
+          .navigationTitle("Legacy")
         }
 
         Section {

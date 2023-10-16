@@ -3,7 +3,7 @@ import TestCases
 import XCTest
 
 @MainActor
-final class ObservableIdentifiedListTests: BaseIntegrationTests {
+final class iOS17_ObservableIdentifiedListTests: BaseIntegrationTests {
   override func setUp() {
     super.setUp()
     self.app.buttons["iOS 17"].tap()
@@ -78,7 +78,7 @@ final class ObservableIdentifiedListTests: BaseIntegrationTests {
     self.app.buttons["Add"].tap()
     self.app.buttons["Add"].tap()
     self.clearLogs()
-    self.app.cells.element(boundBy: 2).buttons["Increment"].tap()
+    self.app.buttons.matching(identifier: "Increment").element(boundBy: 1).tap()
     XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
     self.assertLogs {
       """

@@ -1,6 +1,7 @@
+#if canImport(Observation)
 import SwiftUI
 
-@available(iOS 17, tvOS 17, watchOS 10, macOS 14, *)
+@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension NavigationStack {
   public init<State: ObservableState, Action, Destination, R>(
     store: Store<StackState<State>, StackAction<State, Action>>,
@@ -8,13 +9,13 @@ extension NavigationStack {
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination
   )
   where
-    Data == StackState<State>.PathView,
-    Destination: View,
-    Root == ModifiedContent<R, _NavigationDestinationViewModifier<State, Action, Destination>>
+  Data == StackState<State>.PathView,
+Destination: View,
+  Root == ModifiedContent<R, _NavigationDestinationViewModifier<State, Action, Destination>>
   {
     self.init(
       path: Binding(
-        get: { store.observedState.path },
+        get: { store.observableState.path },
         set: { pathView in
           if pathView.count > store.withState({ $0 }).count, let component = pathView.last {
             store.send(.push(id: component.id, state: component.element))
@@ -30,8 +31,10 @@ extension NavigationStack {
   }
 }
 
-@available(iOS 17, tvOS 17, watchOS 10, macOS 14, *)
-public struct _NavigationDestinationViewModifier<State: ObservableState, Action, Destination: View>:
+@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+public struct _NavigationDestinationViewModifier<
+  State: ObservableState, Action, Destination: View
+>:
   ViewModifier
 {
   @SwiftUI.State var store: Store<StackState<State>, StackAction<State, Action>>
@@ -52,3 +55,4 @@ public struct _NavigationDestinationViewModifier<State: ObservableState, Action,
       }
   }
 }
+#endif
