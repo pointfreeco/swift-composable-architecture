@@ -4,6 +4,10 @@ enum ObservedViewLocal {
   @TaskLocal static var isExecutingBody = false
 }
 
+// TODO: try function instead of view?
+//public func _ObservedView() -> Content {
+//}
+
 @available(iOS, deprecated: 17)
 @MainActor
 public struct ObservedView<Content: View>: View {
