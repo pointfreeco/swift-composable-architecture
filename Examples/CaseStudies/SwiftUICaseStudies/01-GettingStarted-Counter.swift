@@ -44,6 +44,11 @@ struct CounterView: View {
 //
 //    }
 
+
+    // iOS 16 SDK, iOS 17 SDK
+    // iOS 16 device, iOS 17 device
+    // Old style, new style, mixtures of styles
+
     //WithViewStore(…) { viewStore in }
     ObservedView {
       HStack {
