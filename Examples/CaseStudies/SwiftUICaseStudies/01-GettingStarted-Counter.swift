@@ -40,6 +40,11 @@ struct CounterView: View {
   let store: StoreOf<Counter>
 
   var body: some View {
+//    self.store.observing {
+//
+//    }
+
+    //WithViewStore(…) { viewStore in }
     ObservedView {
       HStack {
         Button {
