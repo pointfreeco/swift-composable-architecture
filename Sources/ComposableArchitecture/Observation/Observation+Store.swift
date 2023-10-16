@@ -56,7 +56,8 @@ extension Store: Identifiable where State: ObservableState {
 
 extension Store {
   // TODO: Document that this should only be used with SwiftUI.
-  public func scope<ChildState: ObservableState, ChildAction>(
+  // TODO: ChildState: ObservableState?
+  public func scope<ChildState, ChildAction>(
     state toChildState: @escaping (_ state: State) -> ChildState?,
     action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction>? {
@@ -75,7 +76,8 @@ extension Store {
   }
 
   // TODO: Document that this should only be used with SwiftUI.
-  public func scope<ChildState: ObservableState, ChildAction>(
+  // TODO: ChildState: ObservableState?
+  public func scope<ChildState, ChildAction>(
     state toChildState: @escaping (_ state: State) -> ChildState?,
     action fromChildAction:
       @escaping (_ presentationAction: PresentationAction<ChildAction>) -> Action
@@ -85,7 +87,8 @@ extension Store {
 }
 
 extension Binding {
-  public func scope<State: ObservableState, Action, ChildState, ChildAction>(
+  // TODO: State: ObservableState?
+  public func scope<State, Action, ChildState, ChildAction>(
     state toChildState: @escaping (State) -> ChildState,
     action embedChildAction: @escaping (ChildAction) -> Action
   ) -> Binding<Store<ChildState, ChildAction>>
@@ -96,7 +99,8 @@ extension Binding {
     )
   }
 
-  public func scope<State, Action, ChildState: ObservableState, ChildAction>(
+  // TODO: State: ObservableState?
+  public func scope<State, Action, ChildState, ChildAction>(
     state toChildState: @escaping (State) -> ChildState?,
     action embedChildAction: @escaping (PresentationAction<ChildAction>) -> Action
   ) -> Binding<Store<ChildState, ChildAction>?>

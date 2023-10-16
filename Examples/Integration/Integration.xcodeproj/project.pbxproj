@@ -321,10 +321,10 @@
 		CAA6BEAC2ADADE4300FF83BC /* iOS 16+17 */ = {
 			isa = PBXGroup;
 			children = (
+				CA7BDDA62ADB637300277984 /* NewContainsOldTests.swift */,
 				CAA6BEAD2ADADE5900FF83BC /* NewOldSiblingsTests.swift */,
 				CAA6BEB62ADAF0DF00FF83BC /* NewPresentsOldTests.swift */,
 				CA7BDDA42ADB5E5700277984 /* OldContainsNewTests.swift */,
-				CA7BDDA62ADB637300277984 /* NewContainsOldTests.swift */,
 				CAA6BEB82ADAF61A00FF83BC /* OldPresentsNewTests.swift */,
 			);
 			path = "iOS 16+17";
