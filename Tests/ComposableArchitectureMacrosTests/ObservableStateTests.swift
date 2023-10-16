@@ -5,6 +5,59 @@ import SwiftSyntaxMacrosTestSupport
 import XCTest
 
 final class ObservableStateMacroTests: MacroBaseTestCase {
+  func testAvailability() {
+    assertMacro(record: true) {
+      """
+      @ObservableState
+      @available(iOS 18, *)
+      struct State {
+        var count = 0
+      }
+      """
+    } expansion: {
+      #"""
+      @available(iOS 18, *)
+      struct State {
+        var count = 0 {
+          @storageRestrictions(initializes: _count )
+          init(initialValue) {
+            _count  = initialValue
+          }
+          get {
+            access(keyPath: \.count )
+            return _count
+          }
+          set {
+            if isIdentityEqual(newValue, _count ) == true {
+              _count  = newValue
+            } else {
+              withMutation(keyPath: \.count ) {
+                _count  = newValue
+              }
+            }
+          }
+        }
+
+        private let _$observationRegistrar = ComposableArchitecture.ObservationRegistrarWrapper()
+
+        internal nonisolated func access<Member>(
+            keyPath: KeyPath<State , Member>
+        ) {
+          _$observationRegistrar.access(self, keyPath: keyPath)
+        }
+
+        internal nonisolated func withMutation<Member, MutationResult>(
+          keyPath: KeyPath<State , Member>,
+          _ mutation: () throws -> MutationResult
+        ) rethrows -> MutationResult {
+          try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
+        }
+
+        let _$id = ObservableStateID()
+      }
+      """#
+    }
+  }
   func testObservableState() throws {
     assertMacro {
       #"""

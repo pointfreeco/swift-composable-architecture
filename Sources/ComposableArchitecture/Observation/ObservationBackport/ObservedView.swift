@@ -1,5 +1,10 @@
 import SwiftUI
 
+enum ObservedViewLocal {
+  @TaskLocal static var isExecutingBody = false
+}
+
+@available(iOS, deprecated: 17)
 @MainActor
 public struct ObservedView<Content: View>: View {
   @State var id = 0
@@ -7,13 +12,20 @@ public struct ObservedView<Content: View>: View {
   public init(@ViewBuilder content: @escaping () -> Content) {
     self.content = content
   }
-  public var body: some View {
-    let _ = self.id
-    TCAWithObservationTracking {
-      self.content()
-    } onChange: {
-      Task { @MainActor in
-        self.id += 1
+  public var body: Content {
+    if #available(iOS 17, *) {
+      return self.content()
+    } else {
+      // TODO: only do in DEBUG
+      return ObservedViewLocal.$isExecutingBody.withValue(true) {
+        let _ = self.id
+        return TCAWithObservationTracking {
+          self.content()
+        } onChange: {
+          Task { @MainActor in
+            self.id += 1
+          }
+        }
       }
     }
   }

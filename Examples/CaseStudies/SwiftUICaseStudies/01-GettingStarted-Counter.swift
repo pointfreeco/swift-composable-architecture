@@ -12,6 +12,7 @@ private let readMe = """
 // MARK: - Feature domain
 
 struct Counter: Reducer {
+  @ObservableState
   struct State: Equatable {
     var count = 0
   }
@@ -39,19 +40,19 @@ struct CounterView: View {
   let store: StoreOf<Counter>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
+    ObservedView {
       HStack {
         Button {
-          viewStore.send(.decrementButtonTapped)
+          self.store.send(.decrementButtonTapped)
         } label: {
           Image(systemName: "minus")
         }
 
-        Text("\(viewStore.count)")
+        Text("\(self.store.count)")
           .monospacedDigit()
 
         Button {
-          viewStore.send(.incrementButtonTapped)
+          self.store.send(.incrementButtonTapped)
         } label: {
           Image(systemName: "plus")
         }

@@ -43,7 +43,11 @@ extension Store where State: ObservableState {
   }
 
   public subscript<Value>(dynamicMember keyPath: KeyPath<State, Value>) -> Value {
-    self.state[keyPath: keyPath]
+    // TODO: only do in DEBUG
+    if #unavailable(iOS 17), !ObservedViewLocal.isExecutingBody {
+      runtimeWarn("Not observing state. Wrap view in ObservedView.")
+    }
+    return self.state[keyPath: keyPath]
   }
 }
 

@@ -21,7 +21,13 @@ private let readMe = """
 // MARK: - Feature domain
 
 struct EffectsBasics: Reducer {
+  @ObservableState
   struct State: Equatable {
+
+//    func foo() {
+//      _$observationRegistrar.access(self, keyPath: \.count)
+//    }
+
     var count = 0
     var isNumberFactRequestInFlight = false
     var numberFact: String?
@@ -90,12 +96,13 @@ struct EffectsBasics: Reducer {
 
 // MARK: - Feature view
 
+//@WithViewStore(send:)
 struct EffectsBasicsView: View {
   let store: StoreOf<EffectsBasics>
   @Environment(\.openURL) var openURL
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
+    ObservedView {
       Form {
         Section {
           AboutView(readMe: readMe)
@@ -104,34 +111,34 @@ struct EffectsBasicsView: View {
         Section {
           HStack {
             Button {
-              viewStore.send(.decrementButtonTapped)
+              self.store.send(.decrementButtonTapped)
             } label: {
               Image(systemName: "minus")
             }
 
-            Text("\(viewStore.count)")
+            Text("\(self.store.count)")
               .monospacedDigit()
 
             Button {
-              viewStore.send(.incrementButtonTapped)
+              self.store.send(.incrementButtonTapped)
             } label: {
               Image(systemName: "plus")
             }
           }
           .frame(maxWidth: .infinity)
 
-          Button("Number fact") { viewStore.send(.numberFactButtonTapped) }
+          Button("Number fact") { self.store.send(.numberFactButtonTapped) }
             .frame(maxWidth: .infinity)
 
-          if viewStore.isNumberFactRequestInFlight {
+          if self.store.isNumberFactRequestInFlight {
             ProgressView()
               .frame(maxWidth: .infinity)
-              // NB: There seems to be a bug in SwiftUI where the progress view does not show
-              // a second time unless it is given a new identity.
+            // NB: There seems to be a bug in SwiftUI where the progress view does not show
+            // a second time unless it is given a new identity.
               .id(UUID())
           }
 
-          if let numberFact = viewStore.numberFact {
+          if let numberFact = self.store.numberFact {
             Text(numberFact)
           }
         }
@@ -145,8 +152,8 @@ struct EffectsBasicsView: View {
         }
       }
       .buttonStyle(.borderless)
+      .navigationTitle("Effects")
     }
-    .navigationTitle("Effects")
   }
 }
 

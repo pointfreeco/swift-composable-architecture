@@ -12,7 +12,9 @@ private let readMe = """
 // MARK: - Feature domain
 
 struct LoadThenPresent: Reducer {
+  @ObservableState
   struct State: Equatable {
+    @ObservationStateIgnored
     @PresentationState var counter: Counter.State?
     var isActivityIndicatorVisible = false
   }
@@ -57,17 +59,17 @@ struct LoadThenPresentView: View {
   let store: StoreOf<LoadThenPresent>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
+    ObservedView {
       Form {
         Section {
           AboutView(readMe: readMe)
         }
         Button {
-          viewStore.send(.counterButtonTapped)
+          self.store.send(.counterButtonTapped)
         } label: {
           HStack {
             Text("Load optional counter")
-            if viewStore.isActivityIndicatorVisible {
+            if self.store.isActivityIndicatorVisible {
               Spacer()
               ProgressView()
             }
