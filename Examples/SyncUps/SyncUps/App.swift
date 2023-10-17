@@ -2,7 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 @main
-struct StandupsApp: App {
+struct SyncUpsApp: App {
   var body: some Scene {
     WindowGroup {
       // NB: This conditional is here only to facilitate UI testing so that we can mock out certain

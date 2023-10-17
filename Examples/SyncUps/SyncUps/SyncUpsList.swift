@@ -1,10 +1,10 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct StandupsList: Reducer {
+struct SyncUpsList: Reducer {
   struct State: Equatable {
     @PresentationState var destination: Destination.State?
-    var standups: IdentifiedArrayOf<Standup> = []
+    var syncUps: IdentifiedArrayOf<SyncUp> = []
 
     init(
       destination: Destination.State? = nil
@@ -13,7 +13,7 @@ struct StandupsList: Reducer {
 
       do {
         @Dependency(\.dataManager.load) var load
-        self.standups = try JSONDecoder().decode(IdentifiedArray.self, from: load(.standups))
+        self.syncUps = try JSONDecoder().decode(IdentifiedArray.self, from: load(.syncUps))
       } catch is DecodingError {
         self.destination = .alert(.dataFailedToLoad)
       } catch {
@@ -21,19 +21,19 @@ struct StandupsList: Reducer {
     }
   }
   enum Action: Equatable {
-    case addStandupButtonTapped
-    case confirmAddStandupButtonTapped
+    case addSyncUpButtonTapped
+    case confirmAddSyncUpButtonTapped
     case destination(PresentationAction<Destination.Action>)
-    case dismissAddStandupButtonTapped
+    case dismissAddSyncUpButtonTapped
   }
   struct Destination: Reducer {
     enum State: Equatable {
-      case add(StandupForm.State)
+      case add(SyncUpForm.State)
       case alert(AlertState<Action.Alert>)
     }
 
     enum Action: Equatable {
-      case add(StandupForm.Action)
+      case add(SyncUpForm.Action)
       case alert(Alert)
 
       enum Alert {
@@ -43,7 +43,7 @@ struct StandupsList: Reducer {
 
     var body: some ReducerOf<Self> {
       Scope(state: /State.add, action: /Action.add) {
-        StandupForm()
+        SyncUpForm()
       }
     }
   }
@@ -54,29 +54,29 @@ struct StandupsList: Reducer {
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
-      case .addStandupButtonTapped:
-        state.destination = .add(StandupForm.State(standup: Standup(id: Standup.ID(self.uuid()))))
+      case .addSyncUpButtonTapped:
+        state.destination = .add(SyncUpForm.State(syncUp: SyncUp(id: SyncUp.ID(self.uuid()))))
         return .none
 
-      case .confirmAddStandupButtonTapped:
+      case .confirmAddSyncUpButtonTapped:
         guard case let .some(.add(editState)) = state.destination
         else { return .none }
-        var standup = editState.standup
-        standup.attendees.removeAll { attendee in
+        var syncUp = editState.syncUp
+        syncUp.attendees.removeAll { attendee in
           attendee.name.allSatisfy(\.isWhitespace)
         }
-        if standup.attendees.isEmpty {
-          standup.attendees.append(
-            editState.standup.attendees.first
+        if syncUp.attendees.isEmpty {
+          syncUp.attendees.append(
+            editState.syncUp.attendees.first
               ?? Attendee(id: Attendee.ID(self.uuid()))
           )
         }
-        state.standups.append(standup)
+        state.syncUps.append(syncUp)
         state.destination = nil
         return .none
 
       case .destination(.presented(.alert(.confirmLoadMockData))):
-        state.standups = [
+        state.syncUps = [
           .mock,
           .designMock,
           .engineeringMock,
@@ -86,7 +86,7 @@ struct StandupsList: Reducer {
       case .destination:
         return .none
 
-      case .dismissAddStandupButtonTapped:
+      case .dismissAddSyncUpButtonTapped:
         state.destination = nil
         return .none
       }
@@ -97,51 +97,51 @@ struct StandupsList: Reducer {
   }
 }
 
-struct StandupsListView: View {
-  let store: StoreOf<StandupsList>
+struct SyncUpsListView: View {
+  let store: StoreOf<SyncUpsList>
 
   var body: some View {
-    WithViewStore(self.store, observe: \.standups) { viewStore in
+    WithViewStore(self.store, observe: \.syncUps) { viewStore in
       List {
-        ForEach(viewStore.state) { standup in
+        ForEach(viewStore.state) { syncUp in
           NavigationLink(
-            state: AppFeature.Path.State.detail(StandupDetail.State(standup: standup))
+            state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: syncUp))
           ) {
-            CardView(standup: standup)
+            CardView(syncUp: syncUp)
           }
-          .listRowBackground(standup.theme.mainColor)
+          .listRowBackground(syncUp.theme.mainColor)
         }
       }
       .toolbar {
         Button {
-          viewStore.send(.addStandupButtonTapped)
+          viewStore.send(.addSyncUpButtonTapped)
         } label: {
           Image(systemName: "plus")
         }
       }
-      .navigationTitle("Daily Standups")
+      .navigationTitle("Daily Sync-ups")
       .alert(
         store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /StandupsList.Destination.State.alert,
-        action: StandupsList.Destination.Action.alert
+        state: /SyncUpsList.Destination.State.alert,
+        action: SyncUpsList.Destination.Action.alert
       )
       .sheet(
         store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /StandupsList.Destination.State.add,
-        action: StandupsList.Destination.Action.add
+        state: /SyncUpsList.Destination.State.add,
+        action: SyncUpsList.Destination.Action.add
       ) { store in
         NavigationStack {
-          StandupFormView(store: store)
-            .navigationTitle("New standup")
+          SyncUpFormView(store: store)
+            .navigationTitle("New sync-up")
             .toolbar {
               ToolbarItem(placement: .cancellationAction) {
                 Button("Dismiss") {
-                  viewStore.send(.dismissAddStandupButtonTapped)
+                  viewStore.send(.dismissAddSyncUpButtonTapped)
                 }
               }
               ToolbarItem(placement: .confirmationAction) {
                 Button("Add") {
-                  viewStore.send(.confirmAddStandupButtonTapped)
+                  viewStore.send(.confirmAddSyncUpButtonTapped)
                 }
               }
             }
@@ -151,7 +151,7 @@ struct StandupsListView: View {
   }
 }
 
-extension AlertState where Action == StandupsList.Destination.Action.Alert {
+extension AlertState where Action == SyncUpsList.Destination.Action.Alert {
   static let dataFailedToLoad = Self {
     TextState("Data failed to load")
   } actions: {
@@ -172,23 +172,23 @@ extension AlertState where Action == StandupsList.Destination.Action.Alert {
 }
 
 struct CardView: View {
-  let standup: Standup
+  let syncUp: SyncUp
 
   var body: some View {
     VStack(alignment: .leading) {
-      Text(self.standup.title)
+      Text(self.syncUp.title)
         .font(.headline)
       Spacer()
       HStack {
-        Label("\(self.standup.attendees.count)", systemImage: "person.3")
+        Label("\(self.syncUp.attendees.count)", systemImage: "person.3")
         Spacer()
-        Label(self.standup.duration.formatted(.units()), systemImage: "clock")
+        Label(self.syncUp.duration.formatted(.units()), systemImage: "clock")
           .labelStyle(.trailingIcon)
       }
       .font(.caption)
     }
     .padding()
-    .foregroundColor(self.standup.theme.accentColor)
+    .foregroundColor(self.syncUp.theme.accentColor)
   }
 }
 
@@ -205,15 +205,15 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
   static var trailingIcon: Self { Self() }
 }
 
-struct StandupsList_Previews: PreviewProvider {
+struct SyncUpsList_Previews: PreviewProvider {
   static var previews: some View {
-    StandupsListView(
-      store: Store(initialState: StandupsList.State()) {
-        StandupsList()
+    SyncUpsListView(
+      store: Store(initialState: SyncUpsList.State()) {
+        SyncUpsList()
       } withDependencies: {
         $0.dataManager.load = { _ in
           try JSONEncoder().encode([
-            Standup.mock,
+            SyncUp.mock,
             .designMock,
             .engineeringMock,
           ])
@@ -221,9 +221,9 @@ struct StandupsList_Previews: PreviewProvider {
       }
     )
 
-    StandupsListView(
-      store: Store(initialState: StandupsList.State()) {
-        StandupsList()
+    SyncUpsListView(
+      store: Store(initialState: SyncUpsList.State()) {
+        SyncUpsList()
       } withDependencies: {
         $0.dataManager = .mock(initialData: Data("!@#$% bad data ^&*()".utf8))
       }

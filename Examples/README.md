@@ -11,7 +11,7 @@ This directory holds many case studies and applications to demonstrate solving v
 * **Speech Recognition**
   <br> This application uses Apple's Speech framework to demonstrate how to wrap complex dependencies in the `Effect` type of the Composable Architecture. Doing a little bit of upfront work allows you to interact with the dependencies in a controlled, understandable way, and you can write tests on how the dependency interacts with your application logic.
 
-* **Standups**
+* **SyncUps**
   <br> This application is a faithful reconstruction of one of Apple's more interesting sample projects, called [Scrumdinger][scrumdinger]. It deals with many forms of navigation (alerts, sheets, drill-downs) and many forms of side effects (data persistence, timers and speech recognizers).
 
 * **Tic-Tac-Toe**
