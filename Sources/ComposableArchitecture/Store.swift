@@ -428,7 +428,7 @@ public final class Store<State, Action> {
     let store = self.reducer.rescope(
       self,
       state: toChildState,
-      action: fromChildAction,
+      action: { BindingLocal.isActive && isInvalid?($0) == true ? nil : fromChildAction($0, $1) },
       removeDuplicates: isDuplicate
     )
     if let isInvalid = isInvalid {
