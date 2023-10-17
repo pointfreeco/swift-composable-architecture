@@ -83,7 +83,11 @@ extension Binding {
     Binding<Member>(
       // TODO: Should this use `state/observableState`? It warns but could wrap with task local.
       get: { self.wrappedValue.stateSubject.value[keyPath: keyPath] },
-      set: { self.transaction($1).wrappedValue.send(.binding(.set(keyPath, $0))) }
+      set: { newValue, transaction in
+        BindingLocal.$isActive.withValue(true) {
+          _ = self.transaction(transaction).wrappedValue.send(.binding(.set(keyPath, newValue)))
+        }
+      }
     )
   }
 
@@ -97,7 +101,13 @@ extension Binding {
   {
     Binding<Member>(
       get: { self.wrappedValue.state[keyPath: keyPath] },
-      set: { self.transaction($1).wrappedValue.send(.view(.binding(.set(keyPath, $0)))) }
+      set: { newValue, transaction in
+        BindingLocal.$isActive.withValue(true) {
+          _ = self.transaction(transaction).wrappedValue.send(
+            .view(.binding(.set(keyPath, newValue)))
+          )
+        }
+      }
     )
   }
 }
