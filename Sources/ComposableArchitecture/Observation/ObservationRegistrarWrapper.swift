@@ -65,7 +65,7 @@ extension ObservationRegistrarWrapper {
   public func access<Subject: TCAObservable, Member>(
     _ subject: Subject, keyPath: KeyPath<Subject, Member>
   ) {
-    if #available(iOS 17, *) {
+    if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
       func `open`<T: Observable>(_ subject: T) {
         // TODO: bitcast worth it?
         if let keyPath = keyPath as? KeyPath<T, Member> {
@@ -99,7 +99,10 @@ extension ObservationRegistrarWrapper {
   public func withMutation<Subject: TCAObservable, Member, T>(
     of subject: Subject, keyPath: KeyPath<Subject, Member>, _ mutation: () throws -> T
   ) rethrows -> T {
-    if #available(iOS 17, *), let subject = subject as? any Observable {
+    if 
+      #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *),
+      let subject = subject as? any Observable
+    {
       func `open`<S: Observable>(_ subject: S) throws -> T {
         // TODO: bitcast worth it?
         let keyPath = keyPath as! KeyPath<S, Member>

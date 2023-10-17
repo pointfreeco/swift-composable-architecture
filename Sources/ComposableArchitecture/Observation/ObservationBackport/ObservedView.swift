@@ -17,7 +17,7 @@ public struct ObservedView<Content: View>: View {
     self.content = content
   }
   public var body: Content {
-    if #available(iOS 17, *) {
+    if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
       return self.content()
     } else {
       // TODO: only do in DEBUG
