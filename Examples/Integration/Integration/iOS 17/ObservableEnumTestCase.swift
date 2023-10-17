@@ -7,30 +7,32 @@ struct ObservableEnumView: View {
   }
 
   var body: some View {
-    let _ = Logger.shared.log("\(Self.self).body")
-    Form {
-      Section {
-        switch store.destination {
-        case .feature1:
-          Button("Toggle feature 1 off") {
-            self.store.send(.toggle1ButtonTapped)
-          }
-          Button("Toggle feature 2 on") {
-            self.store.send(.toggle2ButtonTapped)
-          }
-        case .feature2:
-          Button("Toggle feature 1 on") {
-            self.store.send(.toggle1ButtonTapped)
-          }
-          Button("Toggle feature 2 off") {
-            self.store.send(.toggle2ButtonTapped)
-          }
-        case .none:
-          Button("Toggle feature 1 on") {
-            self.store.send(.toggle1ButtonTapped)
-          }
-          Button("Toggle feature 2 on") {
-            self.store.send(.toggle2ButtonTapped)
+    ObservedView {
+      let _ = Logger.shared.log("\(Self.self).body")
+      Form {
+        Section {
+          switch store.destination {
+          case .feature1:
+            Button("Toggle feature 1 off") {
+              self.store.send(.toggle1ButtonTapped)
+            }
+            Button("Toggle feature 2 on") {
+              self.store.send(.toggle2ButtonTapped)
+            }
+          case .feature2:
+            Button("Toggle feature 1 on") {
+              self.store.send(.toggle1ButtonTapped)
+            }
+            Button("Toggle feature 2 off") {
+              self.store.send(.toggle2ButtonTapped)
+            }
+          case .none:
+            Button("Toggle feature 1 on") {
+              self.store.send(.toggle1ButtonTapped)
+            }
+            Button("Toggle feature 2 on") {
+              self.store.send(.toggle2ButtonTapped)
+            }
           }
         }
       }

@@ -7,31 +7,33 @@ struct ObservableSiblingFeaturesView: View {
   }
 
   var body: some View {
-    let _ = Logger.shared.log("\(Self.self).body")
-    VStack {
-      Form {
-        ObservableBasicsView(
-          store: self.store.scope(
-            state: \.child1,
-            action: { .child1($0) }
+    ObservedView {
+      let _ = Logger.shared.log("\(Self.self).body")
+      VStack {
+        Form {
+          ObservableBasicsView(
+            store: self.store.scope(
+              state: \.child1,
+              action: { .child1($0) }
+            )
           )
-        )
-      }
-      Form {
-        ObservableBasicsView(
-          store: self.store.scope(state: \.child2, action: { .child2($0) })
-        )
-      }
-      Spacer()
-      Form {
-        Button("Reset all") {
-          self.store.send(.resetAllButtonTapped)
         }
-        Button("Reset self") {
-          self.store.send(.resetSelfButtonTapped)
+        Form {
+          ObservableBasicsView(
+            store: self.store.scope(state: \.child2, action: { .child2($0) })
+          )
         }
-        Button("Swap") {
-          self.store.send(.swapButtonTapped)
+        Spacer()
+        Form {
+          Button("Reset all") {
+            self.store.send(.resetAllButtonTapped)
+          }
+          Button("Reset self") {
+            self.store.send(.resetSelfButtonTapped)
+          }
+          Button("Swap") {
+            self.store.send(.swapButtonTapped)
+          }
         }
       }
     }

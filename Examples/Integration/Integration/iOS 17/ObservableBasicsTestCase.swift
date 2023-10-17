@@ -7,11 +7,13 @@ struct ObservableBasicsView: View {
   }
 
   var body: some View {
-    let _ = Logger.shared.log("\(Self.self).body")
-    Text(self.store.count.description)
-    Button("Decrement") { self.store.send(.decrementButtonTapped) }
-    Button("Increment") { self.store.send(.incrementButtonTapped) }
-    Button("Dismiss") { self.store.send(.dismissButtonTapped) }
+    ObservedView {
+      let _ = Logger.shared.log("\(Self.self).body")
+      Text(self.store.count.description)
+      Button("Decrement") { self.store.send(.decrementButtonTapped) }
+      Button("Increment") { self.store.send(.incrementButtonTapped) }
+      Button("Dismiss") { self.store.send(.dismissButtonTapped) }
+    }
   }
 
   struct Feature: Reducer {

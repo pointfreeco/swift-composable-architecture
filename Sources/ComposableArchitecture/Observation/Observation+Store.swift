@@ -58,7 +58,7 @@ extension Store where State: ObservableState {
 
 extension Store: Identifiable where State: ObservableState {
   public var id: ObservableStateID {
-    self.state._$id
+    self.stateSubject.value._$id
   }
 }
 #endif

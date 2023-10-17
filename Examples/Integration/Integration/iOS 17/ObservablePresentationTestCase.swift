@@ -7,89 +7,91 @@ struct ObservablePresentationView: View {
   }
 
   var body: some View {
-    let _ = Logger.shared.log("\(Self.self).body")
-    Form {
-      Section {
-        Button("Present full-screen cover") {
-          self.store.send(.presentFullScreenCoverButtonTapped)
+    ObservedView {
+      let _ = Logger.shared.log("\(Self.self).body")
+      Form {
+        Section {
+          Button("Present full-screen cover") {
+            self.store.send(.presentFullScreenCoverButtonTapped)
+          }
+          Button("Present popover") {
+            self.store.send(.presentPopoverButtonTapped)
+          }
+        } header: {
+          Text("Enum")
         }
-        Button("Present popover") {
-          self.store.send(.presentPopoverButtonTapped)
+        Section {
+          Button("Present sheet") {
+            self.store.send(.presentSheetButtonTapped)
+          }
+          if self.store.isObservingChildCount, let sheetCount = self.store.sheet?.count {
+            Text("Count: \(sheetCount)")
+          }
+        } header: {
+          Text("Optional")
         }
-      } header: {
-        Text("Enum")
       }
-      Section {
-        Button("Present sheet") {
-          self.store.send(.presentSheetButtonTapped)
-        }
-        if self.store.isObservingChildCount, let sheetCount = self.store.sheet?.count {
-          Text("Count: \(sheetCount)")
-        }
-      } header: {
-        Text("Optional")
-      }
-    }
-    .fullScreenCover(
-      item: self.$store.scope(
-        state: { $0.destination.flatMap(/Feature.Destination.State.fullScreenCover) },
-        action: { .destination($0.presented { .fullScreenCover($0) }) }
-      )
-    ) { store in
-      NavigationStack {
-        Form {
-          ObservableBasicsView(store: store)
-        }
-        .navigationTitle("Full-screen cover")
-        .toolbar {
-          ToolbarItem {
-            Button("Dismiss") {
-              self.store.send(.dismissButtonTapped)
+      .fullScreenCover(
+        item: self.$store.scope(
+          state: { $0.destination.flatMap(/Feature.Destination.State.fullScreenCover) },
+          action: { .destination($0.presented { .fullScreenCover($0) }) }
+        )
+      ) { store in
+        NavigationStack {
+          Form {
+            ObservableBasicsView(store: store)
+          }
+          .navigationTitle("Full-screen cover")
+          .toolbar {
+            ToolbarItem {
+              Button("Dismiss") {
+                self.store.send(.dismissButtonTapped)
+              }
             }
           }
         }
       }
-    }
-    .popover(
-      item: self.$store.scope(
-        state: { $0.destination.flatMap(/Feature.Destination.State.popover) },
-        action: { .destination($0.presented { .popover($0) }) }
-      )
-    ) { store in
-      NavigationStack {
-        Form {
-          ObservableBasicsView(store: store)
-        }
-        .navigationTitle("Popover")
-        .toolbar {
-          ToolbarItem {
-            Button("Dismiss") {
-              self.store.send(.dismissButtonTapped)
+      .popover(
+        item: self.$store.scope(
+          state: { $0.destination.flatMap(/Feature.Destination.State.popover) },
+          action: { .destination($0.presented { .popover($0) }) }
+        )
+      ) { store in
+        NavigationStack {
+          Form {
+            ObservableBasicsView(store: store)
+          }
+          .navigationTitle("Popover")
+          .toolbar {
+            ToolbarItem {
+              Button("Dismiss") {
+                self.store.send(.dismissButtonTapped)
+              }
             }
           }
         }
       }
-    }
-    .sheet(item: self.$store.scope(state: \.sheet, action: { .sheet($0) })) { store in
-      NavigationStack {
-        Form {
-          ObservableBasicsView(store: store)
-        }
-        .navigationTitle("Sheet")
-        .toolbar {
-          ToolbarItem {
-            Button("Dismiss") {
-              self.store.send(.dismissButtonTapped)
+      .sheet(item: self.$store.scope(state: \.sheet, action: { .sheet($0) })) { store in
+        NavigationStack {
+          Form {
+            ObservableBasicsView(store: store)
+          }
+          .navigationTitle("Sheet")
+          .toolbar {
+            ToolbarItem {
+              Button("Dismiss") {
+                self.store.send(.dismissButtonTapped)
+              }
+            }
+            ToolbarItem(placement: .cancellationAction) {
+              Button("Observe child count") {
+                self.store.send(.toggleObserveChildCountButtonTapped)
+              }
             }
           }
-          ToolbarItem(placement: .cancellationAction) {
-            Button("Observe child count") {
-              self.store.send(.toggleObserveChildCountButtonTapped)
-            }
-          }
         }
+        .presentationDetents([.medium])
       }
-      .presentationDetents([.medium])
     }
   }
 
