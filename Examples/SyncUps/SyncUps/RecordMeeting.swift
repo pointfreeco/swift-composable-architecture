@@ -7,11 +7,11 @@ struct RecordMeeting: Reducer {
     @PresentationState var alert: AlertState<Action.Alert>?
     var secondsElapsed = 0
     var speakerIndex = 0
-    var standup: Standup
+    var syncUp: SyncUp
     var transcript = ""
 
     var durationRemaining: Duration {
-      self.standup.duration - .seconds(self.secondsElapsed)
+      self.syncUp.duration - .seconds(self.secondsElapsed)
     }
   }
   enum Action: Equatable {
@@ -62,14 +62,14 @@ struct RecordMeeting: Reducer {
         return .none
 
       case .nextButtonTapped:
-        guard state.speakerIndex < state.standup.attendees.count - 1
+        guard state.speakerIndex < state.syncUp.attendees.count - 1
         else {
           state.alert = .endMeeting(isDiscardable: false)
           return .none
         }
         state.speakerIndex += 1
         state.secondsElapsed =
-          state.speakerIndex * Int(state.standup.durationPerAttendee.components.seconds)
+          state.speakerIndex * Int(state.syncUp.durationPerAttendee.components.seconds)
         return .none
 
       case .onTask:
@@ -97,9 +97,9 @@ struct RecordMeeting: Reducer {
 
         state.secondsElapsed += 1
 
-        let secondsPerAttendee = Int(state.standup.durationPerAttendee.components.seconds)
+        let secondsPerAttendee = Int(state.syncUp.durationPerAttendee.components.seconds)
         if state.secondsElapsed.isMultiple(of: secondsPerAttendee) {
-          if state.speakerIndex == state.standup.attendees.count - 1 {
+          if state.speakerIndex == state.syncUp.attendees.count - 1 {
             return .run { [transcript = state.transcript] send in
               await send(.delegate(.save(transcript: transcript)))
               await self.dismiss()
@@ -150,11 +150,11 @@ struct RecordMeetingView: View {
     let durationRemaining: Duration
     let secondsElapsed: Int
     let speakerIndex: Int
-    let standup: Standup
+    let syncUp: SyncUp
     init(state: RecordMeeting.State) {
       self.durationRemaining = state.durationRemaining
       self.secondsElapsed = state.secondsElapsed
-      self.standup = state.standup
+      self.syncUp = state.syncUp
       self.speakerIndex = state.speakerIndex
     }
   }
@@ -163,20 +163,20 @@ struct RecordMeetingView: View {
     WithViewStore(self.store, observe: ViewState.init) { viewStore in
       ZStack {
         RoundedRectangle(cornerRadius: 16)
-          .fill(viewStore.standup.theme.mainColor)
+          .fill(viewStore.syncUp.theme.mainColor)
 
         VStack {
           MeetingHeaderView(
             secondsElapsed: viewStore.secondsElapsed,
             durationRemaining: viewStore.durationRemaining,
-            theme: viewStore.standup.theme
+            theme: viewStore.syncUp.theme
           )
           MeetingTimerView(
-            standup: viewStore.standup,
+            syncUp: viewStore.syncUp,
             speakerIndex: viewStore.speakerIndex
           )
           MeetingFooterView(
-            standup: viewStore.standup,
+            syncUp: viewStore.syncUp,
             nextButtonTapped: {
               viewStore.send(.nextButtonTapped)
             },
@@ -185,7 +185,7 @@ struct RecordMeetingView: View {
         }
       }
       .padding()
-      .foregroundColor(viewStore.standup.theme.accentColor)
+      .foregroundColor(viewStore.syncUp.theme.accentColor)
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem(placement: .cancellationAction) {
@@ -300,7 +300,7 @@ struct MeetingProgressViewStyle: ProgressViewStyle {
 }
 
 struct MeetingTimerView: View {
-  let standup: Standup
+  let syncUp: SyncUp
   let speakerIndex: Int
 
   var body: some View {
@@ -309,8 +309,8 @@ struct MeetingTimerView: View {
       .overlay {
         VStack {
           Group {
-            if self.speakerIndex < self.standup.attendees.count {
-              Text(self.standup.attendees[self.speakerIndex].name)
+            if self.speakerIndex < self.syncUp.attendees.count {
+              Text(self.syncUp.attendees[self.speakerIndex].name)
             } else {
               Text("Someone")
             }
@@ -321,14 +321,14 @@ struct MeetingTimerView: View {
             .font(.largeTitle)
             .padding(.top)
         }
-        .foregroundStyle(self.standup.theme.accentColor)
+        .foregroundStyle(self.syncUp.theme.accentColor)
       }
       .overlay {
-        ForEach(Array(self.standup.attendees.enumerated()), id: \.element.id) { index, attendee in
+        ForEach(Array(self.syncUp.attendees.enumerated()), id: \.element.id) { index, attendee in
           if index < self.speakerIndex + 1 {
-            SpeakerArc(totalSpeakers: self.standup.attendees.count, speakerIndex: index)
+            SpeakerArc(totalSpeakers: self.syncUp.attendees.count, speakerIndex: index)
               .rotation(Angle(degrees: -90))
-              .stroke(self.standup.theme.mainColor, lineWidth: 12)
+              .stroke(self.syncUp.theme.mainColor, lineWidth: 12)
           }
         }
       }
@@ -367,15 +367,15 @@ struct SpeakerArc: Shape {
 }
 
 struct MeetingFooterView: View {
-  let standup: Standup
+  let syncUp: SyncUp
   var nextButtonTapped: () -> Void
   let speakerIndex: Int
 
   var body: some View {
     VStack {
       HStack {
-        if self.speakerIndex < self.standup.attendees.count - 1 {
-          Text("Speaker \(self.speakerIndex + 1) of \(self.standup.attendees.count)")
+        if self.speakerIndex < self.syncUp.attendees.count - 1 {
+          Text("Speaker \(self.speakerIndex + 1) of \(self.syncUp.attendees.count)")
         } else {
           Text("No more speakers.")
         }
@@ -393,7 +393,7 @@ struct RecordMeeting_Previews: PreviewProvider {
   static var previews: some View {
     NavigationStack {
       RecordMeetingView(
-        store: Store(initialState: RecordMeeting.State(standup: .mock)) {
+        store: Store(initialState: RecordMeeting.State(syncUp: .mock)) {
           RecordMeeting()
         }
       )

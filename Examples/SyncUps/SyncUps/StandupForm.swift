@@ -2,17 +2,17 @@ import ComposableArchitecture
 import SwiftUI
 import SwiftUINavigation
 
-struct StandupForm: Reducer {
+struct SyncUpForm: Reducer {
   struct State: Equatable, Sendable {
     @BindingState var focus: Field? = .title
-    @BindingState var standup: Standup
+    @BindingState var syncUp: SyncUp
 
-    init(focus: Field? = .title, standup: Standup) {
+    init(focus: Field? = .title, syncUp: SyncUp) {
       self.focus = focus
-      self.standup = standup
-      if self.standup.attendees.isEmpty {
+      self.syncUp = syncUp
+      if self.syncUp.attendees.isEmpty {
         @Dependency(\.uuid) var uuid
-        self.standup.attendees.append(Attendee(id: Attendee.ID(uuid())))
+        self.syncUp.attendees.append(Attendee(id: Attendee.ID(uuid())))
       }
     }
 
@@ -35,7 +35,7 @@ struct StandupForm: Reducer {
       switch action {
       case .addAttendeeButtonTapped:
         let attendee = Attendee(id: Attendee.ID(self.uuid()))
-        state.standup.attendees.append(attendee)
+        state.syncUp.attendees.append(attendee)
         state.focus = .attendee(attendee.id)
         return .none
 
@@ -43,43 +43,43 @@ struct StandupForm: Reducer {
         return .none
 
       case let .deleteAttendees(atOffsets: indices):
-        state.standup.attendees.remove(atOffsets: indices)
-        if state.standup.attendees.isEmpty {
-          state.standup.attendees.append(Attendee(id: Attendee.ID(self.uuid())))
+        state.syncUp.attendees.remove(atOffsets: indices)
+        if state.syncUp.attendees.isEmpty {
+          state.syncUp.attendees.append(Attendee(id: Attendee.ID(self.uuid())))
         }
         guard let firstIndex = indices.first
         else { return .none }
-        let index = min(firstIndex, state.standup.attendees.count - 1)
-        state.focus = .attendee(state.standup.attendees[index].id)
+        let index = min(firstIndex, state.syncUp.attendees.count - 1)
+        state.focus = .attendee(state.syncUp.attendees[index].id)
         return .none
       }
     }
   }
 }
 
-struct StandupFormView: View {
-  let store: StoreOf<StandupForm>
-  @FocusState var focus: StandupForm.State.Field?
+struct SyncUpFormView: View {
+  let store: StoreOf<SyncUpForm>
+  @FocusState var focus: SyncUpForm.State.Field?
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
         Section {
-          TextField("Title", text: viewStore.$standup.title)
+          TextField("Title", text: viewStore.$syncUp.title)
             .focused(self.$focus, equals: .title)
           HStack {
-            Slider(value: viewStore.$standup.duration.minutes, in: 5...30, step: 1) {
+            Slider(value: viewStore.$syncUp.duration.minutes, in: 5...30, step: 1) {
               Text("Length")
             }
             Spacer()
-            Text(viewStore.standup.duration.formatted(.units()))
+            Text(viewStore.syncUp.duration.formatted(.units()))
           }
-          ThemePicker(selection: viewStore.$standup.theme)
+          ThemePicker(selection: viewStore.$syncUp.theme)
         } header: {
-          Text("Standup Info")
+          Text("SyncUp Info")
         }
         Section {
-          ForEach(viewStore.$standup.attendees) { $attendee in
+          ForEach(viewStore.$syncUp.attendees) { $attendee in
             TextField("Name", text: $attendee.name)
               .focused(self.$focus, equals: .attendee(attendee.id))
           }
@@ -126,12 +126,12 @@ extension Duration {
   }
 }
 
-struct EditStandup_Previews: PreviewProvider {
+struct EditSyncUp_Previews: PreviewProvider {
   static var previews: some View {
     NavigationStack {
-      StandupFormView(
-        store: Store(initialState: StandupForm.State(standup: .mock)) {
-          StandupForm()
+      SyncUpFormView(
+        store: Store(initialState: SyncUpForm.State(syncUp: .mock)) {
+          SyncUpForm()
         }
       )
     }

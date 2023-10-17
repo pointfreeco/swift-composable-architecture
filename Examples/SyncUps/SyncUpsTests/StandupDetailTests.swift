@@ -1,13 +1,13 @@
 import ComposableArchitecture
 import XCTest
 
-@testable import Standups
+@testable import SyncUps
 
 @MainActor
-final class StandupDetailTests: XCTestCase {
+final class SyncUpDetailTests: XCTestCase {
   func testSpeechRestricted() async {
-    let store = TestStore(initialState: StandupDetail.State(standup: .mock)) {
-      StandupDetail()
+    let store = TestStore(initialState: SyncUpDetail.State(syncUp: .mock)) {
+      SyncUpDetail()
     } withDependencies: {
       $0.speechClient.authorizationStatus = { .restricted }
     }
@@ -18,8 +18,8 @@ final class StandupDetailTests: XCTestCase {
   }
 
   func testSpeechDenied() async throws {
-    let store = TestStore(initialState: StandupDetail.State(standup: .mock)) {
-      StandupDetail()
+    let store = TestStore(initialState: SyncUpDetail.State(syncUp: .mock)) {
+      SyncUpDetail()
     } withDependencies: {
       $0.speechClient.authorizationStatus = {
         .denied
@@ -35,12 +35,12 @@ final class StandupDetailTests: XCTestCase {
     let settingsOpened = LockIsolated(false)
 
     let store = TestStore(
-      initialState: StandupDetail.State(
+      initialState: SyncUpDetail.State(
         destination: .alert(.speechRecognitionDenied),
-        standup: .mock
+        syncUp: .mock
       )
     ) {
-      StandupDetail()
+      SyncUpDetail()
     } withDependencies: {
       $0.openSettings = { settingsOpened.setValue(true) }
       $0.speechClient.authorizationStatus = { .denied }
@@ -54,12 +54,12 @@ final class StandupDetailTests: XCTestCase {
 
   func testContinueWithoutRecording() async throws {
     let store = TestStore(
-      initialState: StandupDetail.State(
+      initialState: SyncUpDetail.State(
         destination: .alert(.speechRecognitionDenied),
-        standup: .mock
+        syncUp: .mock
       )
     ) {
-      StandupDetail()
+      SyncUpDetail()
     } withDependencies: {
       $0.speechClient.authorizationStatus = { .denied }
     }
@@ -72,8 +72,8 @@ final class StandupDetailTests: XCTestCase {
   }
 
   func testSpeechAuthorized() async throws {
-    let store = TestStore(initialState: StandupDetail.State(standup: .mock)) {
-      StandupDetail()
+    let store = TestStore(initialState: SyncUpDetail.State(syncUp: .mock)) {
+      SyncUpDetail()
     } withDependencies: {
       $0.speechClient.authorizationStatus = { .authorized }
     }
@@ -84,29 +84,29 @@ final class StandupDetailTests: XCTestCase {
   }
 
   func testEdit() async {
-    var standup = Standup.mock
-    let store = TestStore(initialState: StandupDetail.State(standup: standup)) {
-      StandupDetail()
+    var syncUp = SyncUp.mock
+    let store = TestStore(initialState: SyncUpDetail.State(syncUp: syncUp)) {
+      SyncUpDetail()
     } withDependencies: {
       $0.uuid = .incrementing
     }
 
     await store.send(.editButtonTapped) {
-      $0.destination = .edit(StandupForm.State(standup: standup))
+      $0.destination = .edit(SyncUpForm.State(syncUp: syncUp))
     }
 
-    standup.title = "Blob's Meeting"
-    await store.send(.destination(.presented(.edit(.set(\.$standup, standup))))) {
-      try (/StandupDetail.Destination.State.edit).modify(&$0.destination) {
-        $0.standup.title = "Blob's Meeting"
+    syncUp.title = "Blob's Meeting"
+    await store.send(.destination(.presented(.edit(.set(\.$syncUp, syncUp))))) {
+      try (/SyncUpDetail.Destination.State.edit).modify(&$0.destination) {
+        $0.syncUp.title = "Blob's Meeting"
       }
     }
 
     await store.send(.doneEditingButtonTapped) {
       $0.destination = nil
-      $0.standup.title = "Blob's Meeting"
+      $0.syncUp.title = "Blob's Meeting"
     }
 
-    await store.receive(.delegate(.standupUpdated(standup)))
+    await store.receive(.delegate(.syncUpUpdated(syncUp)))
   }
 }

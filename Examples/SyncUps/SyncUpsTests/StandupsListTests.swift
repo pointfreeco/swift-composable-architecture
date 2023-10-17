@@ -1,37 +1,37 @@
 import ComposableArchitecture
 import XCTest
 
-@testable import Standups
+@testable import SyncUps
 
 @MainActor
-final class StandupsListTests: XCTestCase {
+final class SyncUpsListTests: XCTestCase {
   func testAdd() async throws {
-    let store = TestStore(initialState: StandupsList.State()) {
-      StandupsList()
+    let store = TestStore(initialState: SyncUpsList.State()) {
+      SyncUpsList()
     } withDependencies: {
       $0.continuousClock = ImmediateClock()
       $0.dataManager = .mock()
       $0.uuid = .incrementing
     }
 
-    var standup = Standup(
-      id: Standup.ID(UUID(0)),
+    var syncUp = SyncUp(
+      id: SyncUp.ID(UUID(0)),
       attendees: [
         Attendee(id: Attendee.ID(UUID(1)))
       ]
     )
-    await store.send(.addStandupButtonTapped) {
-      $0.destination = .add(StandupForm.State(standup: standup))
+    await store.send(.addSyncUpButtonTapped) {
+      $0.destination = .add(SyncUpForm.State(syncUp: syncUp))
     }
 
-    standup.title = "Engineering"
-    await store.send(.destination(.presented(.add(.set(\.$standup, standup))))) {
-      $0.$destination[case: /StandupsList.Destination.State.add]?.standup.title = "Engineering"
+    syncUp.title = "Engineering"
+    await store.send(.destination(.presented(.add(.set(\.$syncUp, syncUp))))) {
+      $0.$destination[case: /SyncUpsList.Destination.State.add]?.syncUp.title = "Engineering"
     }
 
-    await store.send(.confirmAddStandupButtonTapped) {
+    await store.send(.confirmAddSyncUpButtonTapped) {
       $0.destination = nil
-      $0.standups = [standup]
+      $0.syncUps = [syncUp]
     }
   }
 
@@ -39,11 +39,11 @@ final class StandupsListTests: XCTestCase {
     @Dependency(\.uuid) var uuid
 
     let store = TestStore(
-      initialState: StandupsList.State(
+      initialState: SyncUpsList.State(
         destination: .add(
-          StandupForm.State(
-            standup: Standup(
-              id: Standup.ID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!,
+          SyncUpForm.State(
+            syncUp: SyncUp(
+              id: SyncUp.ID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!,
               attendees: [
                 Attendee(id: Attendee.ID(uuid()), name: ""),
                 Attendee(id: Attendee.ID(uuid()), name: "    "),
@@ -54,18 +54,18 @@ final class StandupsListTests: XCTestCase {
         )
       )
     ) {
-      StandupsList()
+      SyncUpsList()
     } withDependencies: {
       $0.continuousClock = ImmediateClock()
       $0.dataManager = .mock()
       $0.uuid = .incrementing
     }
 
-    await store.send(.confirmAddStandupButtonTapped) {
+    await store.send(.confirmAddSyncUpButtonTapped) {
       $0.destination = nil
-      $0.standups = [
-        Standup(
-          id: Standup.ID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!,
+      $0.syncUps = [
+        SyncUp(
+          id: SyncUp.ID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!,
           attendees: [
             Attendee(id: Attendee.ID(UUID(0)))
           ],
@@ -76,8 +76,8 @@ final class StandupsListTests: XCTestCase {
   }
 
   func testLoadingDataDecodingFailed() async throws {
-    let store = TestStore(initialState: StandupsList.State()) {
-      StandupsList()
+    let store = TestStore(initialState: SyncUpsList.State()) {
+      SyncUpsList()
     } withDependencies: {
       $0.continuousClock = ImmediateClock()
       $0.dataManager = .mock(
@@ -89,7 +89,7 @@ final class StandupsListTests: XCTestCase {
 
     await store.send(.destination(.presented(.alert(.confirmLoadMockData)))) {
       $0.destination = nil
-      $0.standups = [
+      $0.syncUps = [
         .mock,
         .designMock,
         .engineeringMock,
@@ -98,8 +98,8 @@ final class StandupsListTests: XCTestCase {
   }
 
   func testLoadingDataFileNotFound() async throws {
-    let store = TestStore(initialState: StandupsList.State()) {
-      StandupsList()
+    let store = TestStore(initialState: SyncUpsList.State()) {
+      SyncUpsList()
     } withDependencies: {
       $0.continuousClock = ImmediateClock()
       $0.dataManager.load = { _ in
