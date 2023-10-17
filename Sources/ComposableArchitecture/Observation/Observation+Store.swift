@@ -19,7 +19,12 @@ extension Store: TCAObservable {
       {
         // TODO: only do in DEBUG
         if #unavailable(iOS 17), !ObservedViewLocal.isExecutingBody {
-          runtimeWarn("Not observing state. Wrap view in ObservedView.")
+          runtimeWarn(
+            """
+            Observable state was accessed but is not being tracked. Track changes to store state \
+            in an 'ObservedView' to ensure the delivery of view updates.
+            """
+          )
         }
         self._$observationRegistrar.access(self, keyPath: \.observableState)
       }
