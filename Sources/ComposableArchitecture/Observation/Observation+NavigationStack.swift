@@ -44,14 +44,18 @@ public struct _NavigationDestinationViewModifier<
     content
       .environment(\.navigationDestinationType, State.self)
       .navigationDestination(for: StackState<State>.Component.self) { component in
-        if let store = self.store.scope(
-          state: \.[id: component.id],
-          action: { .element(id: component.id, action: $0) }
-        ) {
-          self
-            .destination(store)
-            .environment(\.navigationDestinationType, State.self)
-        }
+        var state = component.element
+        self
+          .destination(
+            self.store.scope(
+              state: {
+                state = $0[id: component.id] ?? state
+                return state
+              },
+              action: { .element(id: component.id, action: $0) }
+            )
+          )
+          .environment(\.navigationDestinationType, State.self)
       }
   }
 }

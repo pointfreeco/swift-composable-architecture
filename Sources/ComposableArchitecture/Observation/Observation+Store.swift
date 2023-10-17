@@ -17,6 +17,10 @@ extension Store: TCAObservable {
       if
         State.self is ObservableState.Type
       {
+        // TODO: only do in DEBUG
+        if #unavailable(iOS 17), !ObservedViewLocal.isExecutingBody {
+          runtimeWarn("Not observing state. Wrap view in ObservedView.")
+        }
         self._$observationRegistrar.access(self, keyPath: \.observableState)
       }
       return self.stateSubject.value
@@ -43,11 +47,7 @@ extension Store where State: ObservableState {
   }
 
   public subscript<Value>(dynamicMember keyPath: KeyPath<State, Value>) -> Value {
-    // TODO: only do in DEBUG
-    if #unavailable(iOS 17), !ObservedViewLocal.isExecutingBody {
-      runtimeWarn("Not observing state. Wrap view in ObservedView.")
-    }
-    return self.state[keyPath: keyPath]
+    self.state[keyPath: keyPath]
   }
 }
 
