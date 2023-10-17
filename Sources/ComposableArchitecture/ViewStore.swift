@@ -585,7 +585,7 @@ extension ViewStore where ViewState: Equatable {
   }
 }
 
-private struct HashableWrapper<Value>: Hashable {
+struct HashableWrapper<Value>: Hashable {
   let rawValue: Value
   static func == (lhs: Self, rhs: Self) -> Bool { false }
   func hash(into hasher: inout Hasher) {}
