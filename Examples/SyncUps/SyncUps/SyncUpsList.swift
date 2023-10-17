@@ -119,7 +119,7 @@ struct SyncUpsListView: View {
           Image(systemName: "plus")
         }
       }
-      .navigationTitle("Daily SyncUps")
+      .navigationTitle("Daily Sync-ups")
       .alert(
         store: self.store.scope(state: \.$destination, action: { .destination($0) }),
         state: /SyncUpsList.Destination.State.alert,
@@ -132,7 +132,7 @@ struct SyncUpsListView: View {
       ) { store in
         NavigationStack {
           SyncUpFormView(store: store)
-            .navigationTitle("New SyncUp")
+            .navigationTitle("New sync-up")
             .toolbar {
               ToolbarItem(placement: .cancellationAction) {
                 Button("Dismiss") {

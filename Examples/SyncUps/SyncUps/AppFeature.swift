@@ -147,5 +147,5 @@ struct AppView: View {
 }
 
 extension URL {
-  static let syncUps = Self.documentsDirectory.appending(component: "syncUps.json")
+  static let syncUps = Self.documentsDirectory.appending(component: "sync-ups.json")
 }

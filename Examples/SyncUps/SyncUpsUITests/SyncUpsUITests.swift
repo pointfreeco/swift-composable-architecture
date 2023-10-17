@@ -12,17 +12,17 @@ final class SyncUpsUITests: XCTestCase {
   }
 
   // This test demonstrates the simple flow of tapping the "Add" button, filling in some fields in
-  // the form, and then adding the syncUp to the list. It's a very simple test, but it takes
+  // the form, and then adding the sync-up to the list. It's a very simple test, but it takes
   // approximately 10 seconds to run, and it depends on a lot of internal implementation details to
   // get right, such as tapping a button with the literal label "Add".
   //
   // This test is also written in the simpler, "unit test" style in SyncUpsListTests.swift, where
   // it takes 0.025 seconds (400 times faster) and it even tests more. It further confirms that when
-  // the syncUp is added to the list its data will be persisted to disk so that it will be
+  // the sync-up is added to the list its data will be persisted to disk so that it will be
   // available on next launch.
   func testAdd() throws {
     app.launch()
-    app.navigationBars["Daily SyncUps"].buttons["Add"].tap()
+    app.navigationBars["Daily Sync-ups"].buttons["Add"].tap()
 
     let collectionViews = app.collectionViews
     let titleTextField = collectionViews.textFields["Title"]
@@ -36,7 +36,7 @@ final class SyncUpsUITests: XCTestCase {
     collectionViews.buttons["New attendee"].tap()
     app.typeText("Blob Jr.")
 
-    app.navigationBars["New SyncUp"].buttons["Add"].tap()
+    app.navigationBars["New sync-up"].buttons["Add"].tap()
 
     XCTAssertEqual(collectionViews.staticTexts["Engineering"].exists, true)
   }

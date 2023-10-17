@@ -162,7 +162,7 @@ struct SyncUpDetailView: View {
               .cornerRadius(4)
           }
         } header: {
-          Text("SyncUp Info")
+          Text("Sync-up Info")
         }
 
         if !viewStore.syncUp.meetings.isEmpty {

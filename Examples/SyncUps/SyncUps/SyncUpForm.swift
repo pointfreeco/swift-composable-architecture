@@ -76,7 +76,7 @@ struct SyncUpFormView: View {
           }
           ThemePicker(selection: viewStore.$syncUp.theme)
         } header: {
-          Text("SyncUp Info")
+          Text("Sync-up Info")
         }
         Section {
           ForEach(viewStore.$syncUp.attendees) { $attendee in
