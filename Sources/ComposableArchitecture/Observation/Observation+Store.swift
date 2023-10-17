@@ -10,7 +10,6 @@ import SwiftUI
 extension Store: Observable {}
 #endif
 
-#if canImport(Observation)
 extension Store: TCAObservable {
   var observableState: State {
     get {
@@ -68,7 +67,6 @@ extension Store: Identifiable where State: ObservableState {
     self.stateSubject.value._$id
   }
 }
-#endif
 
 extension Store {
   // TODO: Document that this should only be used with SwiftUI.
