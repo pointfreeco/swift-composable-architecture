@@ -29,6 +29,7 @@ struct SyncUpsList: Reducer {
     case dismissAddSyncUpButtonTapped
   }
   struct Destination: Reducer {
+    @ObservableState
     enum State: Equatable {
       case add(SyncUpForm.State)
       case alert(AlertState<Action.Alert>)
@@ -128,9 +129,10 @@ struct SyncUpsListView: View {
         action: SyncUpsList.Destination.Action.alert
       )
       .sheet(
-        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /SyncUpsList.Destination.State.add,
-        action: SyncUpsList.Destination.Action.add
+        item: self.$store.scope(
+          state: { $0.destination.flatMap(/SyncUpsList.Destination.State.add) },
+          action: { .destination($0.presented { .add($0) }) }
+        )
       ) { store in
         NavigationStack {
           SyncUpFormView(store: store)

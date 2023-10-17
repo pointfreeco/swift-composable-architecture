@@ -30,6 +30,7 @@ struct SyncUpDetail: Reducer {
   @Dependency(\.speechClient.authorizationStatus) var authorizationStatus
 
   struct Destination: Reducer {
+    @ObservableState
     enum State: Equatable {
       case alert(AlertState<Action.Alert>)
       case edit(SyncUpForm.State)
@@ -216,16 +217,10 @@ struct SyncUpDetailView: View {
         action: SyncUpDetail.Destination.Action.alert
       )
       .sheet(
-        // TODO: Why doesn't this work?
-        // item: self.$store.scope(
-        //   state: {
-        //     $0.destination.flatMap(/SyncUpDetail.Destination.State.edit)
-        //   },
-        //   action: { .destination($0.presented { .edit($0) }) }
-        // )
-        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /SyncUpDetail.Destination.State.edit,
-        action: SyncUpDetail.Destination.Action.edit
+        item: self.$store.scope(
+          state: { $0.destination.flatMap(/SyncUpDetail.Destination.State.edit) },
+          action: { .destination($0.presented { .edit($0) }) }
+        )
       ) { store in
         ObservedView {
           NavigationStack {

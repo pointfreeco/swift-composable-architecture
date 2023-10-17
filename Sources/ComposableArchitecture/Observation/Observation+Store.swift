@@ -68,15 +68,13 @@ extension Store: Identifiable where State: ObservableState {
   }
 }
 
-extension Store {
+extension Store where State: ObservableState {
   // TODO: Document that this should only be used with SwiftUI.
   // TODO: ChildState: ObservableState?
   public func scope<ChildState, ChildAction>(
     state toChildState: @escaping (_ state: State) -> ChildState?,
     action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
-  ) -> Store<ChildState, ChildAction>? 
-  where State: ObservableState
-  {
+  ) -> Store<ChildState, ChildAction>? {
     guard var initialChildState = toChildState(self.observableState)
     else { return nil }
     return self.scope(
