@@ -1,4 +1,4 @@
-# Standups
+# SyncUps
 
 This project demonstrates how to build a complex, real world application that deals with many forms
 of navigation (_e.g._, sheets, drill-downs, alerts), many side effects (timers, speech recognizer,
@@ -27,14 +27,14 @@ But, the simplicity of Apple's Scrumdinger codebase is not a defect. In fact, it
 Apple's sample code is viewed by hundreds of thousands of developers across the world, and so its
 goal is to be as approachable as possible in order to teach the basics of SwiftUI. But, that doesn't mean there isn't room for improvement.
 
-## Composable Standups
+## Composable SyncUps
 
-Our Standups application is a rebuild of Apple's Scrumdinger application, but with a focus on
+Our SyncUps application is a rebuild of Apple's Scrumdinger application, but with a focus on
 modern, best practices for SwiftUI development. We faithfully recreate the Scrumdinger, but with
 some key additions:
 
  1. Identifiers are made type safe using our [Tagged library][tagged-gh]. This prevents us from
-    writing nonsensical code, such as comparing a `Standup.ID` to a `Attendee.ID`.
+    writing nonsensical code, such as comparing a `SyncUp.ID` to a `Attendee.ID`.
  2. Instead of using bare arrays in feature logic we use an "identified" array from our
     [IdentifiedCollections][identified-collections-gh] library. This allows you to read and modify
     elements of the collection via their ID rather than positional index, which can be error-prone
@@ -53,8 +53,8 @@ some key additions:
     [Dependencies][dependencies-gh] library.
  6. The project includes a full test suite. Since all of navigation is driven off of state, and
     because we controlled all dependencies, we can write very comprehensive and nuanced tests. For
-    example, we can write a unit test that proves that when a standup meeting's timer runs out the
-    screen pops off the stack and a new transcript is added to the standup. Such a test would be
+    example, we can write a unit test that proves that when a sync-up meeting's timer runs out the
+    screen pops off the stack and a new transcript is added to the sync-up. Such a test would be
     very difficult, if not impossible, without controlling dependencies.
 
 [scrumdinger]: https://developer.apple.com/tutorials/app-dev-training/getting-started-with-scrumdinger
