@@ -36,7 +36,7 @@ final class SyncUpsUITests: XCTestCase {
     collectionViews.buttons["New attendee"].tap()
     app.typeText("Blob Jr.")
 
-    app.navigationBars["New syncUp"].buttons["Add"].tap()
+    app.navigationBars["New SyncUp"].buttons["Add"].tap()
 
     XCTAssertEqual(collectionViews.staticTexts["Engineering"].exists, true)
   }
