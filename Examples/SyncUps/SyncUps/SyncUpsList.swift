@@ -132,7 +132,7 @@ struct SyncUpsListView: View {
       ) { store in
         NavigationStack {
           SyncUpFormView(store: store)
-            .navigationTitle("New syncUp")
+            .navigationTitle("New SyncUp")
             .toolbar {
               ToolbarItem(placement: .cancellationAction) {
                 Button("Dismiss") {
