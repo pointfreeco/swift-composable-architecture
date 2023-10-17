@@ -1,28 +1,28 @@
 import ComposableArchitecture
 import XCTest
 
-@testable import Standups
+@testable import SyncUps
 
 @MainActor
 final class AppFeatureTests: XCTestCase {
   func testDelete() async throws {
-    let standup = Standup.mock
+    let syncUp = SyncUp.mock
 
     let store = TestStore(initialState: AppFeature.State()) {
       AppFeature()
     } withDependencies: {
       $0.continuousClock = ImmediateClock()
       $0.dataManager = .mock(
-        initialData: try! JSONEncoder().encode([standup])
+        initialData: try! JSONEncoder().encode([syncUp])
       )
     }
 
-    await store.send(.path(.push(id: 0, state: .detail(StandupDetail.State(standup: standup))))) {
-      $0.path[id: 0] = .detail(StandupDetail.State(standup: standup))
+    await store.send(.path(.push(id: 0, state: .detail(SyncUpDetail.State(syncUp: syncUp))))) {
+      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: syncUp))
     }
 
     await store.send(.path(.element(id: 0, action: .detail(.deleteButtonTapped)))) {
-      $0.path[id: 0, case: /AppFeature.Path.State.detail]?.destination = .alert(.deleteStandup)
+      $0.path[id: 0, case: /AppFeature.Path.State.detail]?.destination = .alert(.deleteSyncUp)
     }
 
     await store.send(
@@ -31,8 +31,8 @@ final class AppFeatureTests: XCTestCase {
       $0.path[id: 0, case: /AppFeature.Path.State.detail]?.destination = nil
     }
 
-    await store.receive(.path(.element(id: 0, action: .detail(.delegate(.deleteStandup))))) {
-      $0.standupsList.standups = []
+    await store.receive(.path(.element(id: 0, action: .detail(.delegate(.deleteSyncUp))))) {
+      $0.syncUpsList.syncUps = []
     }
     await store.receive(.path(.popFrom(id: 0))) {
       $0.path = StackState()
@@ -40,7 +40,7 @@ final class AppFeatureTests: XCTestCase {
   }
 
   func testDetailEdit() async throws {
-    var standup = Standup.mock
+    var syncUp = SyncUp.mock
     let savedData = LockIsolated(Data?.none)
 
     let store = TestStore(initialState: AppFeature.State()) {
@@ -48,7 +48,7 @@ final class AppFeatureTests: XCTestCase {
     } withDependencies: { dependencies in
       dependencies.continuousClock = ImmediateClock()
       dependencies.dataManager = .mock(
-        initialData: try! JSONEncoder().encode([standup])
+        initialData: try! JSONEncoder().encode([syncUp])
       )
       dependencies.dataManager.save = { [dependencies] data, url in
         savedData.setValue(data)
@@ -56,47 +56,47 @@ final class AppFeatureTests: XCTestCase {
       }
     }
 
-    await store.send(.path(.push(id: 0, state: .detail(StandupDetail.State(standup: standup))))) {
-      $0.path[id: 0] = .detail(StandupDetail.State(standup: standup))
+    await store.send(.path(.push(id: 0, state: .detail(SyncUpDetail.State(syncUp: syncUp))))) {
+      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: syncUp))
     }
 
     await store.send(.path(.element(id: 0, action: .detail(.editButtonTapped)))) {
       $0.path[id: 0, case: /AppFeature.Path.State.detail]?.destination = .edit(
-        StandupForm.State(standup: standup)
+        SyncUpForm.State(syncUp: syncUp)
       )
     }
 
-    standup.title = "Blob"
+    syncUp.title = "Blob"
     await store.send(
       .path(
         .element(
           id: 0,
-          action: .detail(.destination(.presented(.edit(.set(\.$standup, standup)))))
+          action: .detail(.destination(.presented(.edit(.set(\.$syncUp, syncUp)))))
         )
       )
     ) {
       $0.path[id: 0, case: /AppFeature.Path.State.detail]?
-        .$destination[case: /StandupDetail.Destination.State.edit]?.standup.title = "Blob"
+        .$destination[case: /SyncUpDetail.Destination.State.edit]?.syncUp.title = "Blob"
     }
 
     await store.send(.path(.element(id: 0, action: .detail(.doneEditingButtonTapped)))) {
       XCTModify(&$0.path[id: 0], case: /AppFeature.Path.State.detail) {
         $0.destination = nil
-        $0.standup.title = "Blob"
+        $0.syncUp.title = "Blob"
       }
     }
 
     await store.receive(
-      .path(.element(id: 0, action: .detail(.delegate(.standupUpdated(standup)))))
+      .path(.element(id: 0, action: .detail(.delegate(.syncUpUpdated(syncUp)))))
     ) {
-      $0.standupsList.standups[0].title = "Blob"
+      $0.syncUpsList.syncUps[0].title = "Blob"
     }
 
-    var savedStandup = standup
-    savedStandup.title = "Blob"
+    var savedSyncUp = syncUp
+    savedSyncUp.title = "Blob"
     XCTAssertNoDifference(
-      try JSONDecoder().decode([Standup].self, from: savedData.value!),
-      [savedStandup]
+      try JSONDecoder().decode([SyncUp].self, from: savedData.value!),
+      [savedSyncUp]
     )
   }
 
@@ -105,8 +105,8 @@ final class AppFeatureTests: XCTestCase {
       bestTranscription: Transcription(formattedString: "I completed the project"),
       isFinal: true
     )
-    let standup = Standup(
-      id: Standup.ID(),
+    let syncUp = SyncUp(
+      id: SyncUp.ID(),
       attendees: [
         Attendee(id: Attendee.ID()),
         Attendee(id: Attendee.ID()),
@@ -118,14 +118,14 @@ final class AppFeatureTests: XCTestCase {
     let store = TestStore(
       initialState: AppFeature.State(
         path: StackState([
-          .detail(StandupDetail.State(standup: standup)),
-          .record(RecordMeeting.State(standup: standup)),
+          .detail(SyncUpDetail.State(syncUp: syncUp)),
+          .record(RecordMeeting.State(syncUp: syncUp)),
         ])
       )
     ) {
       AppFeature()
     } withDependencies: {
-      $0.dataManager = .mock(initialData: try! JSONEncoder().encode([standup]))
+      $0.dataManager = .mock(initialData: try! JSONEncoder().encode([syncUp]))
       $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
       $0.continuousClock = ImmediateClock()
       $0.speechClient.authorizationStatus = { .authorized }
@@ -145,7 +145,7 @@ final class AppFeatureTests: XCTestCase {
         .element(id: 1, action: .record(.delegate(.save(transcript: "I completed the project"))))
       )
     ) {
-      $0.path[id: 0, case: /AppFeature.Path.State.detail]?.standup.meetings = [
+      $0.path[id: 0, case: /AppFeature.Path.State.detail]?.syncUp.meetings = [
         Meeting(
           id: Meeting.ID(UUID(0)),
           date: Date(timeIntervalSince1970: 1_234_567_890),

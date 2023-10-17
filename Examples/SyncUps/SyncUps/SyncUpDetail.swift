@@ -1,10 +1,10 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct StandupDetail: Reducer {
+struct SyncUpDetail: Reducer {
   struct State: Equatable {
     @PresentationState var destination: Destination.State?
-    var standup: Standup
+    var syncUp: SyncUp
   }
   enum Action: Equatable, Sendable {
     case cancelEditButtonTapped
@@ -17,8 +17,8 @@ struct StandupDetail: Reducer {
     case startMeetingButtonTapped
 
     enum Delegate: Equatable {
-      case deleteStandup
-      case standupUpdated(Standup)
+      case deleteSyncUp
+      case syncUpUpdated(SyncUp)
       case startMeeting
     }
   }
@@ -30,11 +30,11 @@ struct StandupDetail: Reducer {
   struct Destination: Reducer {
     enum State: Equatable {
       case alert(AlertState<Action.Alert>)
-      case edit(StandupForm.State)
+      case edit(SyncUpForm.State)
     }
     enum Action: Equatable, Sendable {
       case alert(Alert)
-      case edit(StandupForm.Action)
+      case edit(SyncUpForm.Action)
 
       enum Alert {
         case confirmDeletion
@@ -44,7 +44,7 @@ struct StandupDetail: Reducer {
     }
     var body: some ReducerOf<Self> {
       Scope(state: /State.edit, action: /Action.edit) {
-        StandupForm()
+        SyncUpForm()
       }
     }
   }
@@ -60,18 +60,18 @@ struct StandupDetail: Reducer {
         return .none
 
       case .deleteButtonTapped:
-        state.destination = .alert(.deleteStandup)
+        state.destination = .alert(.deleteSyncUp)
         return .none
 
       case let .deleteMeetings(atOffsets: indices):
-        state.standup.meetings.remove(atOffsets: indices)
+        state.syncUp.meetings.remove(atOffsets: indices)
         return .none
 
       case let .destination(.presented(.alert(alertAction))):
         switch alertAction {
         case .confirmDeletion:
           return .run { send in
-            await send(.delegate(.deleteStandup), animation: .default)
+            await send(.delegate(.deleteSyncUp), animation: .default)
             await self.dismiss()
           }
         case .continueWithoutRecording:
@@ -88,12 +88,12 @@ struct StandupDetail: Reducer {
       case .doneEditingButtonTapped:
         guard case let .some(.edit(editState)) = state.destination
         else { return .none }
-        state.standup = editState.standup
+        state.syncUp = editState.syncUp
         state.destination = nil
         return .none
 
       case .editButtonTapped:
-        state.destination = .edit(StandupForm.State(standup: state.standup))
+        state.destination = .edit(SyncUpForm.State(syncUp: state.syncUp))
         return .none
 
       case .startMeetingButtonTapped:
@@ -117,21 +117,21 @@ struct StandupDetail: Reducer {
     .ifLet(\.$destination, action: /Action.destination) {
       Destination()
     }
-    .onChange(of: \.standup) { oldValue, newValue in
+    .onChange(of: \.syncUp) { oldValue, newValue in
       Reduce { state, action in
-        .send(.delegate(.standupUpdated(newValue)))
+        .send(.delegate(.syncUpUpdated(newValue)))
       }
     }
   }
 }
 
-struct StandupDetailView: View {
-  let store: StoreOf<StandupDetail>
+struct SyncUpDetailView: View {
+  let store: StoreOf<SyncUpDetail>
 
   struct ViewState: Equatable {
-    let standup: Standup
-    init(state: StandupDetail.State) {
-      self.standup = state.standup
+    let syncUp: SyncUp
+    init(state: SyncUpDetail.State) {
+      self.syncUp = state.syncUp
     }
   }
 
@@ -149,27 +149,27 @@ struct StandupDetailView: View {
           HStack {
             Label("Length", systemImage: "clock")
             Spacer()
-            Text(viewStore.standup.duration.formatted(.units()))
+            Text(viewStore.syncUp.duration.formatted(.units()))
           }
 
           HStack {
             Label("Theme", systemImage: "paintpalette")
             Spacer()
-            Text(viewStore.standup.theme.name)
+            Text(viewStore.syncUp.theme.name)
               .padding(4)
-              .foregroundColor(viewStore.standup.theme.accentColor)
-              .background(viewStore.standup.theme.mainColor)
+              .foregroundColor(viewStore.syncUp.theme.accentColor)
+              .background(viewStore.syncUp.theme.mainColor)
               .cornerRadius(4)
           }
         } header: {
-          Text("Standup Info")
+          Text("Sync-up Info")
         }
 
-        if !viewStore.standup.meetings.isEmpty {
+        if !viewStore.syncUp.meetings.isEmpty {
           Section {
-            ForEach(viewStore.standup.meetings) { meeting in
+            ForEach(viewStore.syncUp.meetings) { meeting in
               NavigationLink(
-                state: AppFeature.Path.State.meeting(meeting, standup: viewStore.standup)
+                state: AppFeature.Path.State.meeting(meeting, syncUp: viewStore.syncUp)
               ) {
                 HStack {
                   Image(systemName: "calendar")
@@ -187,7 +187,7 @@ struct StandupDetailView: View {
         }
 
         Section {
-          ForEach(viewStore.standup.attendees) { attendee in
+          ForEach(viewStore.syncUp.attendees) { attendee in
             Label(attendee.name, systemImage: "person")
           }
         } header: {
@@ -202,7 +202,7 @@ struct StandupDetailView: View {
           .frame(maxWidth: .infinity)
         }
       }
-      .navigationTitle(viewStore.standup.title)
+      .navigationTitle(viewStore.syncUp.title)
       .toolbar {
         Button("Edit") {
           viewStore.send(.editButtonTapped)
@@ -210,17 +210,17 @@ struct StandupDetailView: View {
       }
       .alert(
         store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /StandupDetail.Destination.State.alert,
-        action: StandupDetail.Destination.Action.alert
+        state: /SyncUpDetail.Destination.State.alert,
+        action: SyncUpDetail.Destination.Action.alert
       )
       .sheet(
         store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /StandupDetail.Destination.State.edit,
-        action: StandupDetail.Destination.Action.edit
+        state: /SyncUpDetail.Destination.State.edit,
+        action: SyncUpDetail.Destination.Action.edit
       ) { store in
         NavigationStack {
-          StandupFormView(store: store)
-            .navigationTitle(viewStore.standup.title)
+          SyncUpFormView(store: store)
+            .navigationTitle(viewStore.syncUp.title)
             .toolbar {
               ToolbarItem(placement: .cancellationAction) {
                 Button("Cancel") {
@@ -239,8 +239,8 @@ struct StandupDetailView: View {
   }
 }
 
-extension AlertState where Action == StandupDetail.Destination.Action.Alert {
-  static let deleteStandup = Self {
+extension AlertState where Action == SyncUpDetail.Destination.Action.Alert {
+  static let deleteSyncUp = Self {
     TextState("Delete?")
   } actions: {
     ButtonState(role: .destructive, action: .confirmDeletion) {
@@ -268,9 +268,8 @@ extension AlertState where Action == StandupDetail.Destination.Action.Alert {
   } message: {
     TextState(
       """
-      You previously denied speech recognition and so your meeting meeting will not be \
-      recorded. You can enable speech recognition in settings, or you can continue without \
-      recording.
+      You previously denied speech recognition and so your meeting will not be recorded. You can \
+      enable speech recognition in settings, or you can continue without recording.
       """
     )
   }
@@ -293,12 +292,12 @@ extension AlertState where Action == StandupDetail.Destination.Action.Alert {
   }
 }
 
-struct StandupDetail_Previews: PreviewProvider {
+struct SyncUpDetail_Previews: PreviewProvider {
   static var previews: some View {
     NavigationStack {
-      StandupDetailView(
-        store: Store(initialState: StandupDetail.State(standup: .mock)) {
-          StandupDetail()
+      SyncUpDetailView(
+        store: Store(initialState: SyncUpDetail.State(syncUp: .mock)) {
+          SyncUpDetail()
         }
       )
     }

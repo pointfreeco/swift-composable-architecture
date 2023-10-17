@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import XCTest
 
-@testable import Standups
+@testable import SyncUps
 
 @MainActor
 final class RecordMeetingTests: XCTestCase {
@@ -11,8 +11,8 @@ final class RecordMeetingTests: XCTestCase {
 
     let store = TestStore(
       initialState: RecordMeeting.State(
-        standup: Standup(
-          id: Standup.ID(),
+        syncUp: SyncUp(
+          id: SyncUp.ID(),
           attendees: [
             Attendee(id: Attendee.ID()),
             Attendee(id: Attendee.ID()),
@@ -86,8 +86,8 @@ final class RecordMeetingTests: XCTestCase {
 
     let store = TestStore(
       initialState: RecordMeeting.State(
-        standup: Standup(
-          id: Standup.ID(),
+        syncUp: SyncUp(
+          id: SyncUp.ID(),
           attendees: [
             Attendee(id: Attendee.ID()),
             Attendee(id: Attendee.ID()),
@@ -145,7 +145,7 @@ final class RecordMeetingTests: XCTestCase {
     let clock = TestClock()
     let dismissed = self.expectation(description: "dismissed")
 
-    let store = TestStore(initialState: RecordMeeting.State(standup: .mock)) {
+    let store = TestStore(initialState: RecordMeeting.State(syncUp: .mock)) {
       RecordMeeting()
     } withDependencies: {
       $0.continuousClock = clock
@@ -178,7 +178,7 @@ final class RecordMeetingTests: XCTestCase {
     let clock = TestClock()
     let dismissed = self.expectation(description: "dismissed")
 
-    let store = TestStore(initialState: RecordMeeting.State(standup: .mock)) {
+    let store = TestStore(initialState: RecordMeeting.State(syncUp: .mock)) {
       RecordMeeting()
     } withDependencies: {
       $0.continuousClock = clock
@@ -206,8 +206,8 @@ final class RecordMeetingTests: XCTestCase {
 
     let store = TestStore(
       initialState: RecordMeeting.State(
-        standup: Standup(
-          id: Standup.ID(),
+        syncUp: SyncUp(
+          id: SyncUp.ID(),
           attendees: [
             Attendee(id: Attendee.ID()),
             Attendee(id: Attendee.ID()),
@@ -255,8 +255,8 @@ final class RecordMeetingTests: XCTestCase {
 
     let store = TestStore(
       initialState: RecordMeeting.State(
-        standup: Standup(
-          id: Standup.ID(),
+        syncUp: SyncUp(
+          id: SyncUp.ID(),
           attendees: [
             Attendee(id: Attendee.ID()),
             Attendee(id: Attendee.ID()),
@@ -324,7 +324,7 @@ final class RecordMeetingTests: XCTestCase {
     let clock = TestClock()
     let dismissed = self.expectation(description: "dismissed")
 
-    let store = TestStore(initialState: RecordMeeting.State(standup: .mock)) {
+    let store = TestStore(initialState: RecordMeeting.State(syncUp: .mock)) {
       RecordMeeting()
     } withDependencies: {
       $0.continuousClock = clock

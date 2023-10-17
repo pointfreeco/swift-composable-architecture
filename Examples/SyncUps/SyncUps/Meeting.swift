@@ -3,7 +3,7 @@ import SwiftUI
 
 struct MeetingView: View {
   let meeting: Meeting
-  let standup: Standup
+  let syncUp: SyncUp
 
   var body: some View {
     ScrollView {
@@ -12,7 +12,7 @@ struct MeetingView: View {
           .padding(.bottom)
         Text("Attendees")
           .font(.headline)
-        ForEach(self.standup.attendees) { attendee in
+        ForEach(self.syncUp.attendees) { attendee in
           Text(attendee.name)
         }
         Text("Transcript")

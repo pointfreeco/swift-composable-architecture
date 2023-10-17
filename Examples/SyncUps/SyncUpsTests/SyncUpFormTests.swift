@@ -1,27 +1,27 @@
 import ComposableArchitecture
 import XCTest
 
-@testable import Standups
+@testable import SyncUps
 
 @MainActor
-final class StandupFormTests: XCTestCase {
+final class SyncUpFormTests: XCTestCase {
   func testAddAttendee() async {
     let store = TestStore(
-      initialState: StandupForm.State(
-        standup: Standup(
-          id: Standup.ID(),
+      initialState: SyncUpForm.State(
+        syncUp: SyncUp(
+          id: SyncUp.ID(),
           attendees: [],
           title: "Engineering"
         )
       )
     ) {
-      StandupForm()
+      SyncUpForm()
     } withDependencies: {
       $0.uuid = .incrementing
     }
 
     XCTAssertNoDifference(
-      store.state.standup.attendees,
+      store.state.syncUp.attendees,
       [
         Attendee(id: Attendee.ID(UUID(0)))
       ]
@@ -29,7 +29,7 @@ final class StandupFormTests: XCTestCase {
 
     await store.send(.addAttendeeButtonTapped) {
       $0.focus = .attendee(Attendee.ID(UUID(1)))
-      $0.standup.attendees = [
+      $0.syncUp.attendees = [
         Attendee(id: Attendee.ID(UUID(0))),
         Attendee(id: Attendee.ID(UUID(1))),
       ]
@@ -38,9 +38,9 @@ final class StandupFormTests: XCTestCase {
 
   func testFocus_RemoveAttendee() async {
     let store = TestStore(
-      initialState: StandupForm.State(
-        standup: Standup(
-          id: Standup.ID(),
+      initialState: SyncUpForm.State(
+        syncUp: SyncUp(
+          id: SyncUp.ID(),
           attendees: [
             Attendee(id: Attendee.ID()),
             Attendee(id: Attendee.ID()),
@@ -51,38 +51,38 @@ final class StandupFormTests: XCTestCase {
         )
       )
     ) {
-      StandupForm()
+      SyncUpForm()
     } withDependencies: {
       $0.uuid = .incrementing
     }
 
     await store.send(.deleteAttendees(atOffsets: [0])) {
-      $0.focus = .attendee($0.standup.attendees[1].id)
-      $0.standup.attendees = [
-        $0.standup.attendees[1],
-        $0.standup.attendees[2],
-        $0.standup.attendees[3],
+      $0.focus = .attendee($0.syncUp.attendees[1].id)
+      $0.syncUp.attendees = [
+        $0.syncUp.attendees[1],
+        $0.syncUp.attendees[2],
+        $0.syncUp.attendees[3],
       ]
     }
 
     await store.send(.deleteAttendees(atOffsets: [1])) {
-      $0.focus = .attendee($0.standup.attendees[2].id)
-      $0.standup.attendees = [
-        $0.standup.attendees[0],
-        $0.standup.attendees[2],
+      $0.focus = .attendee($0.syncUp.attendees[2].id)
+      $0.syncUp.attendees = [
+        $0.syncUp.attendees[0],
+        $0.syncUp.attendees[2],
       ]
     }
 
     await store.send(.deleteAttendees(atOffsets: [1])) {
-      $0.focus = .attendee($0.standup.attendees[0].id)
-      $0.standup.attendees = [
-        $0.standup.attendees[0]
+      $0.focus = .attendee($0.syncUp.attendees[0].id)
+      $0.syncUp.attendees = [
+        $0.syncUp.attendees[0]
       ]
     }
 
     await store.send(.deleteAttendees(atOffsets: [0])) {
       $0.focus = .attendee(Attendee.ID(UUID(0)))
-      $0.standup.attendees = [
+      $0.syncUp.attendees = [
         Attendee(id: Attendee.ID(UUID(0)))
       ]
     }

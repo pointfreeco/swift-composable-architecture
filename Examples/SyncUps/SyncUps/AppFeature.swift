@@ -4,12 +4,12 @@ import SwiftUI
 struct AppFeature: Reducer {
   struct State: Equatable {
     var path = StackState<Path.State>()
-    var standupsList = StandupsList.State()
+    var syncUpsList = SyncUpsList.State()
   }
 
   enum Action: Equatable {
     case path(StackAction<Path.State, Path.Action>)
-    case standupsList(StandupsList.Action)
+    case syncUpsList(SyncUpsList.Action)
   }
 
   @Dependency(\.continuousClock) var clock
@@ -22,8 +22,8 @@ struct AppFeature: Reducer {
   }
 
   var body: some ReducerOf<Self> {
-    Scope(state: \.standupsList, action: /Action.standupsList) {
-      StandupsList()
+    Scope(state: \.syncUpsList, action: /Action.syncUpsList) {
+      SyncUpsList()
     }
     Reduce { state, action in
       switch action {
@@ -32,16 +32,16 @@ struct AppFeature: Reducer {
         else { return .none }
 
         switch delegateAction {
-        case .deleteStandup:
-          state.standupsList.standups.remove(id: detailState.standup.id)
+        case .deleteSyncUp:
+          state.syncUpsList.syncUps.remove(id: detailState.syncUp.id)
           return .none
 
-        case let .standupUpdated(standup):
-          state.standupsList.standups[id: standup.id] = standup
+        case let .syncUpUpdated(syncUp):
+          state.syncUpsList.syncUps[id: syncUp.id] = syncUp
           return .none
 
         case .startMeeting:
-          state.path.append(.record(RecordMeeting.State(standup: detailState.standup)))
+          state.path.append(.record(RecordMeeting.State(syncUp: detailState.syncUp)))
           return .none
         }
 
@@ -58,7 +58,7 @@ struct AppFeature: Reducer {
             return .none
           }
 
-          state.path[id: id, case: /Path.State.detail]?.standup.meetings.insert(
+          state.path[id: id, case: /Path.State.detail]?.syncUp.meetings.insert(
             Meeting(
               id: Meeting.ID(self.uuid()),
               date: self.now,
@@ -66,16 +66,16 @@ struct AppFeature: Reducer {
             ),
             at: 0
           )
-          guard let standup = state.path[id: id, case: /Path.State.detail]?.standup
+          guard let syncUp = state.path[id: id, case: /Path.State.detail]?.syncUp
           else { return .none }
-          state.standupsList.standups[id: standup.id] = standup
+          state.syncUpsList.syncUps[id: syncUp.id] = syncUp
           return .none
         }
 
       case .path:
         return .none
 
-      case .standupsList:
+      case .syncUpsList:
         return .none
       }
     }
@@ -84,10 +84,10 @@ struct AppFeature: Reducer {
     }
 
     Reduce { state, action in
-      return .run { [standups = state.standupsList.standups] _ in
+      return .run { [syncUps = state.syncUpsList.syncUps] _ in
         try await withTaskCancellation(id: CancelID.saveDebounce, cancelInFlight: true) {
           try await self.clock.sleep(for: .seconds(1))
-          try await self.saveData(JSONEncoder().encode(standups), .standups)
+          try await self.saveData(JSONEncoder().encode(syncUps), .syncUps)
         }
       } catch: { _, _ in
       }
@@ -96,19 +96,19 @@ struct AppFeature: Reducer {
 
   struct Path: Reducer {
     enum State: Equatable {
-      case detail(StandupDetail.State)
-      case meeting(Meeting, standup: Standup)
+      case detail(SyncUpDetail.State)
+      case meeting(Meeting, syncUp: SyncUp)
       case record(RecordMeeting.State)
     }
 
     enum Action: Equatable {
-      case detail(StandupDetail.Action)
+      case detail(SyncUpDetail.Action)
       case record(RecordMeeting.Action)
     }
 
     var body: some Reducer<State, Action> {
       Scope(state: /State.detail, action: /Action.detail) {
-        StandupDetail()
+        SyncUpDetail()
       }
       Scope(state: /State.record, action: /Action.record) {
         RecordMeeting()
@@ -122,8 +122,8 @@ struct AppView: View {
 
   var body: some View {
     NavigationStackStore(self.store.scope(state: \.path, action: { .path($0) })) {
-      StandupsListView(
-        store: self.store.scope(state: \.standupsList, action: { .standupsList($0) })
+      SyncUpsListView(
+        store: self.store.scope(state: \.syncUpsList, action: { .syncUpsList($0) })
       )
     } destination: {
       switch $0 {
@@ -131,10 +131,10 @@ struct AppView: View {
         CaseLet(
           /AppFeature.Path.State.detail,
           action: AppFeature.Path.Action.detail,
-          then: StandupDetailView.init(store:)
+          then: SyncUpDetailView.init(store:)
         )
-      case let .meeting(meeting, standup: standup):
-        MeetingView(meeting: meeting, standup: standup)
+      case let .meeting(meeting, syncUp: syncUp):
+        MeetingView(meeting: meeting, syncUp: syncUp)
       case .record:
         CaseLet(
           /AppFeature.Path.State.record,
@@ -147,5 +147,5 @@ struct AppView: View {
 }
 
 extension URL {
-  static let standups = Self.documentsDirectory.appending(component: "standups.json")
+  static let syncUps = Self.documentsDirectory.appending(component: "sync-ups.json")
 }
