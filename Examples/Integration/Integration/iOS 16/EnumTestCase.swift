@@ -6,27 +6,12 @@ struct EnumView: View {
     Feature()
   }
 
-  struct ViewState: Equatable {
-    enum Tag { case feature1, feature2, none }
-    let tag: Tag
-    init(state: Feature.State) {
-      switch state.destination {
-      case .feature1:
-        self.tag = .feature1
-      case .feature2:
-        self.tag = .feature2
-      case .none:
-        self.tag = .none
-      }
-    }
-  }
-
   var body: some View {
     Form {
-      WithViewStore(self.store, observe: ViewState.init) { viewStore in
+      ObservedView {
         let _ = Logger.shared.log("\(Self.self).body")
         Section {
-          switch viewStore.tag {
+          switch self.store.state.destination {
           case .feature1:
             Button("Toggle feature 1 off") {
               self.store.send(.toggle1ButtonTapped)
@@ -51,28 +36,25 @@ struct EnumView: View {
           }
         }
       }
-      IfLetStore(self.store.scope(state: \.$destination, action: { .destination($0) })) { store in
-        SwitchStore(store) {
-          switch $0 {
-          case .feature1:
-            CaseLet(
-              /Feature.Destination.State.feature1, action: Feature.Destination.Action.feature1
-            ) { store in
-              Section {
-                BasicsView(store: store)
-              } header: {
-                Text("Feature 1")
-              }
+      
+      // TODO: these scopes should warn if called outside ObservedView
+      if let store = self.store.scope(state: \.destination, action: { .destination($0) }) {
+        switch store.state {
+        case .feature1:
+          if let store = store.scope(state: /Feature.Destination.State.feature1, action: { .feature1($0) }) {
+            Section {
+              BasicsView(store: store)
+            } header: {
+              Text("Feature 1")
             }
-          case .feature2:
-            CaseLet(
-              /Feature.Destination.State.feature2, action: Feature.Destination.Action.feature2
-            ) { store in
-              Section {
-                BasicsView(store: store)
-              } header: {
-                Text("Feature 2")
-              }
+          }
+          
+        case .feature2:
+          if let store = store.scope(state: /Feature.Destination.State.feature2, action: { .feature2($0) }) {
+            Section {
+              BasicsView(store: store)
+            } header: {
+              Text("Feature 2")
             }
           }
         }
@@ -81,7 +63,9 @@ struct EnumView: View {
   }
 
   struct Feature: Reducer {
+    @ObservableState
     struct State: Equatable {
+      @ObservationStateIgnored
       @PresentationState var destination: Destination.State?
     }
     enum Action {
@@ -90,6 +74,7 @@ struct EnumView: View {
       case toggle2ButtonTapped
     }
     struct Destination: Reducer {
+      @ObservableState
       enum State: Equatable {
         case feature1(BasicsView.Feature.State)
         case feature2(BasicsView.Feature.State)

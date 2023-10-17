@@ -65,13 +65,9 @@ public struct PresentationState<State> {
 
   public var wrappedValue: State? {
     _read {
-      #if canImport(Observation)
-        if #available(macOS 14, iOS 17, watchOS 10, tvOS 17, *),
-          State.self is ObservableState.Type
-        {
-          self._$observationRegistrar.access(self, keyPath: \.wrappedValue)
-        }
-      #endif
+      if State.self is ObservableState.Type {
+        self._$observationRegistrar.access(self, keyPath: \.wrappedValue)
+      }
       yield self.storage.state
     }
     set {
@@ -82,20 +78,16 @@ public struct PresentationState<State> {
           self.storage.state = newValue
         }
       }
-      #if canImport(Observation)
-        if #available(macOS 14, iOS 17, watchOS 10, tvOS 17, *),
-          State.self is ObservableState.Type,
-          !isIdentityEqual(self.storage.state, newValue)
-        {
-          self._$observationRegistrar.withMutation(of: self, keyPath: \.wrappedValue) {
-            update()
-          }
-        } else {
+      if
+        State.self is ObservableState.Type,
+        !isIdentityEqual(self.storage.state, newValue)
+      {
+        self._$observationRegistrar.withMutation(of: self, keyPath: \.wrappedValue) {
           update()
         }
-      #else
+      } else {
         update()
-      #endif
+      }
     }
   }
 
@@ -145,6 +137,8 @@ public struct PresentationState<State> {
   @available(macOS 14, iOS 17, watchOS 10, tvOS 17, *)
   extension PresentationState: Observable {}
 #endif
+
+extension PresentationState: TCAObservable {}
 
 extension PresentationState: Equatable where State: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {

@@ -1,3 +1,5 @@
+// TODO: rename Store+Observation?
+
 #if canImport(Observation)
 import Observation
 #endif
@@ -9,11 +11,10 @@ extension Store: Observable {}
 #endif
 
 #if canImport(Observation)
-extension Store {
+extension Store: TCAObservable {
   var observableState: State {
     get {
       if
-        #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *),
         State.self is ObservableState.Type
       {
         self._$observationRegistrar.access(self, keyPath: \.observableState)
@@ -22,7 +23,6 @@ extension Store {
     }
     set {
       if
-        #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *),
         State.self is ObservableState.Type,
         !isIdentityEqual(self.stateSubject.value, newValue)
       {
@@ -64,8 +64,10 @@ extension Store {
   public func scope<ChildState, ChildAction>(
     state toChildState: @escaping (_ state: State) -> ChildState?,
     action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
-  ) -> Store<ChildState, ChildAction>? {
-    guard var initialChildState = toChildState(self.stateSubject.value)
+  ) -> Store<ChildState, ChildAction>? 
+  where State: ObservableState
+  {
+    guard var initialChildState = toChildState(self.observableState)
     else { return nil }
     return self.scope(
       state: {
@@ -85,7 +87,9 @@ extension Store {
     state toChildState: @escaping (_ state: State) -> ChildState?,
     action fromChildAction:
       @escaping (_ presentationAction: PresentationAction<ChildAction>) -> Action
-  ) -> Store<ChildState, ChildAction>? {
+  ) -> Store<ChildState, ChildAction>?
+  where State: ObservableState
+  {
     self.scope(state: toChildState, action: { fromChildAction(.presented($0)) })
   }
 }
@@ -104,7 +108,7 @@ extension Binding {
   }
 
   // TODO: State: ObservableState?
-  public func scope<State, Action, ChildState, ChildAction>(
+  public func scope<State: ObservableState, Action, ChildState, ChildAction>(
     state toChildState: @escaping (State) -> ChildState?,
     action embedChildAction: @escaping (PresentationAction<ChildAction>) -> Action
   ) -> Binding<Store<ChildState, ChildAction>?>
