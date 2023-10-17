@@ -146,7 +146,7 @@ struct RecordMeeting: Reducer {
 }
 
 struct RecordMeetingView: View {
-  let store: StoreOf<RecordMeeting>
+  @State var store: StoreOf<RecordMeeting>
 
   struct ViewState: Equatable {
     let durationRemaining: Duration

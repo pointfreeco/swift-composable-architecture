@@ -128,7 +128,7 @@ struct SyncUpDetail: Reducer {
 }
 
 struct SyncUpDetailView: View {
-  let store: StoreOf<SyncUpDetail>
+  @State var store: StoreOf<SyncUpDetail>
 
   struct ViewState: Equatable {
     let syncUp: SyncUp

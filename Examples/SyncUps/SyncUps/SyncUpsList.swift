@@ -100,7 +100,7 @@ struct SyncUpsList: Reducer {
 }
 
 struct SyncUpsListView: View {
-  let store: StoreOf<SyncUpsList>
+  @State var store: StoreOf<SyncUpsList>
 
   var body: some View {
     ObservedView {
