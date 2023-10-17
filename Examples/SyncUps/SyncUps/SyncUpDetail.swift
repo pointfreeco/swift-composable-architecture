@@ -268,9 +268,8 @@ extension AlertState where Action == SyncUpDetail.Destination.Action.Alert {
   } message: {
     TextState(
       """
-      You previously denied speech recognition and so your meeting meeting will not be \
-      recorded. You can enable speech recognition in settings, or you can continue without \
-      recording.
+      You previously denied speech recognition and so your meeting will not be recorded. You can \
+      enable speech recognition in settings, or you can continue without recording.
       """
     )
   }
