@@ -2,7 +2,9 @@ import ComposableArchitecture
 import SwiftUI
 
 struct SyncUpDetail: Reducer {
+  @ObservableState
   struct State: Equatable {
+    @ObservationStateIgnored
     @PresentationState var destination: Destination.State?
     var syncUp: SyncUp
   }
@@ -136,11 +138,11 @@ struct SyncUpDetailView: View {
   }
 
   var body: some View {
-    WithViewStore(self.store, observe: ViewState.init) { viewStore in
+    ObservedView {
       List {
         Section {
           Button {
-            viewStore.send(.startMeetingButtonTapped)
+            self.store.send(.startMeetingButtonTapped)
           } label: {
             Label("Start Meeting", systemImage: "timer")
               .font(.headline)
@@ -149,27 +151,27 @@ struct SyncUpDetailView: View {
           HStack {
             Label("Length", systemImage: "clock")
             Spacer()
-            Text(viewStore.syncUp.duration.formatted(.units()))
+            Text(self.store.syncUp.duration.formatted(.units()))
           }
 
           HStack {
             Label("Theme", systemImage: "paintpalette")
             Spacer()
-            Text(viewStore.syncUp.theme.name)
+            Text(self.store.syncUp.theme.name)
               .padding(4)
-              .foregroundColor(viewStore.syncUp.theme.accentColor)
-              .background(viewStore.syncUp.theme.mainColor)
+              .foregroundColor(self.store.syncUp.theme.accentColor)
+              .background(self.store.syncUp.theme.mainColor)
               .cornerRadius(4)
           }
         } header: {
           Text("Sync-up Info")
         }
 
-        if !viewStore.syncUp.meetings.isEmpty {
+        if !self.store.syncUp.meetings.isEmpty {
           Section {
-            ForEach(viewStore.syncUp.meetings) { meeting in
+            ForEach(self.store.syncUp.meetings) { meeting in
               NavigationLink(
-                state: AppFeature.Path.State.meeting(meeting, syncUp: viewStore.syncUp)
+                state: AppFeature.Path.State.meeting(meeting, syncUp: self.store.syncUp)
               ) {
                 HStack {
                   Image(systemName: "calendar")
@@ -179,7 +181,7 @@ struct SyncUpDetailView: View {
               }
             }
             .onDelete { indices in
-              viewStore.send(.deleteMeetings(atOffsets: indices))
+              self.store.send(.deleteMeetings(atOffsets: indices))
             }
           } header: {
             Text("Past meetings")
@@ -187,7 +189,7 @@ struct SyncUpDetailView: View {
         }
 
         Section {
-          ForEach(viewStore.syncUp.attendees) { attendee in
+          ForEach(self.store.syncUp.attendees) { attendee in
             Label(attendee.name, systemImage: "person")
           }
         } header: {
@@ -196,16 +198,16 @@ struct SyncUpDetailView: View {
 
         Section {
           Button("Delete") {
-            viewStore.send(.deleteButtonTapped)
+            self.store.send(.deleteButtonTapped)
           }
           .foregroundColor(.red)
           .frame(maxWidth: .infinity)
         }
       }
-      .navigationTitle(viewStore.syncUp.title)
+      .navigationTitle(self.store.syncUp.title)
       .toolbar {
         Button("Edit") {
-          viewStore.send(.editButtonTapped)
+          self.store.send(.editButtonTapped)
         }
       }
       .alert(
@@ -218,21 +220,23 @@ struct SyncUpDetailView: View {
         state: /SyncUpDetail.Destination.State.edit,
         action: SyncUpDetail.Destination.Action.edit
       ) { store in
-        NavigationStack {
-          SyncUpFormView(store: store)
-            .navigationTitle(viewStore.syncUp.title)
-            .toolbar {
-              ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") {
-                  viewStore.send(.cancelEditButtonTapped)
+        ObservedView {
+          NavigationStack {
+            SyncUpFormView(store: store)
+              .navigationTitle(self.store.syncUp.title)
+              .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                  Button("Cancel") {
+                    self.store.send(.cancelEditButtonTapped)
+                  }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                  Button("Done") {
+                    self.store.send(.doneEditingButtonTapped)
+                  }
                 }
               }
-              ToolbarItem(placement: .confirmationAction) {
-                Button("Done") {
-                  viewStore.send(.doneEditingButtonTapped)
-                }
-              }
-            }
+          }
         }
       }
     }
