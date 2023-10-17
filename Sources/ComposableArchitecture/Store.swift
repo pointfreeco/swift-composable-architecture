@@ -833,7 +833,7 @@ extension ScopedReducer: AnyScopedReducer {
         else { return }
         // NB: Returning early prevents "legacy" observation wrappers like `IfLetStore` from
         //     observing state going `nil`.
-        if #available(iOS 17, macOS 14, watchOS 10, tvOS 17, *),
+        if
           RescopedState.self is ObservableState.Type,
           childStore._isInvalidated()
         {
@@ -843,15 +843,7 @@ extension ScopedReducer: AnyScopedReducer {
         guard isDuplicate.map({ !$0(childStore.stateSubject.value, newValue) }) ?? true else {
           return
         }
-        #if canImport(Observation)
-        if #available(iOS 17, macOS 14, watchOS 10, tvOS 17, *) {
-          childStore.observableState = newValue
-        } else {
-          childStore.stateSubject.value = newValue
-        }
-        #else
-        childStore.stateSubject.value = newValue
-        #endif
+        childStore.observableState = newValue
         Logger.shared.log("\(typeName(of: store)).scope")
       }
     return childStore

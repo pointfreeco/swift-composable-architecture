@@ -17,15 +17,22 @@ extension Store: TCAObservable {
       if
         State.self is ObservableState.Type
       {
-        // TODO: only do in DEBUG
-        if #unavailable(iOS 17), !ObservedViewLocal.isExecutingBody {
-          runtimeWarn(
-            """
-            Observable state was accessed but is not being tracked. Track changes to store state \
-            in an 'ObservedView' to ensure the delivery of view updates.
-            """
-          )
-        }
+        #if DEBUG
+          if
+            #unavailable(iOS 17),
+            !ObservedViewLocal.isExecutingBody,
+            Thread.callStackSymbols.contains(where: {
+              $0.split(separator: " ").dropFirst().first == "AttributeGraph"
+            })
+          {
+            runtimeWarn(
+              """
+              Observable state was accessed but is not being tracked. Track changes to store state \
+              in an 'ObservedView' to ensure the delivery of view updates.
+              """
+            )
+          }
+        #endif
         self._$observationRegistrar.access(self, keyPath: \.observableState)
       }
       return self.stateSubject.value
