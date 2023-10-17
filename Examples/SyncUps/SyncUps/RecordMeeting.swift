@@ -3,7 +3,9 @@ import Speech
 import SwiftUI
 
 struct RecordMeeting: Reducer {
+  @ObservableState
   struct State: Equatable {
+    @ObservationStateIgnored
     @PresentationState var alert: AlertState<Action.Alert>?
     var secondsElapsed = 0
     var speakerIndex = 0
@@ -160,43 +162,43 @@ struct RecordMeetingView: View {
   }
 
   var body: some View {
-    WithViewStore(self.store, observe: ViewState.init) { viewStore in
+    ObservedView {
       ZStack {
         RoundedRectangle(cornerRadius: 16)
-          .fill(viewStore.syncUp.theme.mainColor)
+          .fill(self.store.syncUp.theme.mainColor)
 
         VStack {
           MeetingHeaderView(
-            secondsElapsed: viewStore.secondsElapsed,
-            durationRemaining: viewStore.durationRemaining,
-            theme: viewStore.syncUp.theme
+            secondsElapsed: self.store.secondsElapsed,
+            durationRemaining: self.store.durationRemaining,
+            theme: self.store.syncUp.theme
           )
           MeetingTimerView(
-            syncUp: viewStore.syncUp,
-            speakerIndex: viewStore.speakerIndex
+            syncUp: self.store.syncUp,
+            speakerIndex: self.store.speakerIndex
           )
           MeetingFooterView(
-            syncUp: viewStore.syncUp,
+            syncUp: self.store.syncUp,
             nextButtonTapped: {
-              viewStore.send(.nextButtonTapped)
+              self.store.send(.nextButtonTapped)
             },
-            speakerIndex: viewStore.speakerIndex
+            speakerIndex: self.store.speakerIndex
           )
         }
       }
       .padding()
-      .foregroundColor(viewStore.syncUp.theme.accentColor)
+      .foregroundColor(self.store.syncUp.theme.accentColor)
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem(placement: .cancellationAction) {
           Button("End meeting") {
-            viewStore.send(.endMeetingButtonTapped)
+            self.store.send(.endMeetingButtonTapped)
           }
         }
       }
       .navigationBarBackButtonHidden(true)
       .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
-      .task { await viewStore.send(.onTask).finish() }
+      .task { await self.store.send(.onTask).finish() }
     }
   }
 }
