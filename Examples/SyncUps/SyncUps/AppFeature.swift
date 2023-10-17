@@ -2,6 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 struct AppFeature: Reducer {
+  @ObservableState
   struct State: Equatable {
     var path = StackState<Path.State>()
     var syncUpsList = SyncUpsList.State()
@@ -95,6 +96,7 @@ struct AppFeature: Reducer {
   }
 
   struct Path: Reducer {
+    @ObservableState
     enum State: Equatable {
       case detail(SyncUpDetail.State)
       case meeting(Meeting, syncUp: SyncUp)
@@ -121,26 +123,22 @@ struct AppView: View {
   let store: StoreOf<AppFeature>
 
   var body: some View {
-    NavigationStackStore(self.store.scope(state: \.path, action: { .path($0) })) {
+    NavigationStack(store: self.store.scope(state: \.path, action: { .path($0) })) {
       SyncUpsListView(
         store: self.store.scope(state: \.syncUpsList, action: { .syncUpsList($0) })
       )
-    } destination: {
-      switch $0 {
+    } destination: { store in
+      switch store.state {
       case .detail:
-        CaseLet(
-          /AppFeature.Path.State.detail,
-          action: AppFeature.Path.Action.detail,
-          then: SyncUpDetailView.init(store:)
-        )
+        if let store = store.scope(state: /AppFeature.Path.State.detail, action: { .detail($0) }) {
+          SyncUpDetailView(store: store)
+        }
       case let .meeting(meeting, syncUp: syncUp):
         MeetingView(meeting: meeting, syncUp: syncUp)
       case .record:
-        CaseLet(
-          /AppFeature.Path.State.record,
-          action: AppFeature.Path.Action.record,
-          then: RecordMeetingView.init(store:)
-        )
+        if let store = store.scope(state: /AppFeature.Path.State.record, action: { .record($0) }) {
+          RecordMeetingView(store: store)
+        }
       }
     }
   }
