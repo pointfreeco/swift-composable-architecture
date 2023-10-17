@@ -2,7 +2,9 @@ import ComposableArchitecture
 import SwiftUI
 
 struct SyncUpsList: Reducer {
+  @ObservableState
   struct State: Equatable {
+    @ObservationStateIgnored
     @PresentationState var destination: Destination.State?
     var syncUps: IdentifiedArrayOf<SyncUp> = []
 
@@ -101,9 +103,9 @@ struct SyncUpsListView: View {
   let store: StoreOf<SyncUpsList>
 
   var body: some View {
-    WithViewStore(self.store, observe: \.syncUps) { viewStore in
+    ObservedView {
       List {
-        ForEach(viewStore.state) { syncUp in
+        ForEach(self.store.syncUps) { syncUp in
           NavigationLink(
             state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: syncUp))
           ) {
@@ -114,7 +116,7 @@ struct SyncUpsListView: View {
       }
       .toolbar {
         Button {
-          viewStore.send(.addSyncUpButtonTapped)
+          self.store.send(.addSyncUpButtonTapped)
         } label: {
           Image(systemName: "plus")
         }
@@ -136,12 +138,12 @@ struct SyncUpsListView: View {
             .toolbar {
               ToolbarItem(placement: .cancellationAction) {
                 Button("Dismiss") {
-                  viewStore.send(.dismissAddSyncUpButtonTapped)
+                  self.store.send(.dismissAddSyncUpButtonTapped)
                 }
               }
               ToolbarItem(placement: .confirmationAction) {
                 Button("Add") {
-                  viewStore.send(.confirmAddSyncUpButtonTapped)
+                  self.store.send(.confirmAddSyncUpButtonTapped)
                 }
               }
             }
