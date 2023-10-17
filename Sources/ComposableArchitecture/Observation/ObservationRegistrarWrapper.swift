@@ -8,7 +8,11 @@ public struct ObservationRegistrarWrapper: Sendable {
 
   public init() {
     if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
+      #if swift(>=5.9)
       self._rawValue = AnySendable(ObservationRegistrar())
+      #else
+      self._rawValue = AnySendable(TCAObservationRegistrar())
+      #endif
     } else {
       self._rawValue = AnySendable(TCAObservationRegistrar())
     }
@@ -65,6 +69,7 @@ extension ObservationRegistrarWrapper {
   public func access<Subject: TCAObservable, Member>(
     _ subject: Subject, keyPath: KeyPath<Subject, Member>
   ) {
+    #if swift(>=5.9)
     if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
       func `open`<T: Observable>(_ subject: T) {
         // TODO: bitcast worth it?
@@ -78,6 +83,7 @@ extension ObservationRegistrarWrapper {
     } else {
       self.rawValue2.access(subject, keyPath: keyPath)
     }
+    #endif
   }
 
   // TODO:
@@ -99,6 +105,7 @@ extension ObservationRegistrarWrapper {
   public func withMutation<Subject: TCAObservable, Member, T>(
     of subject: Subject, keyPath: KeyPath<Subject, Member>, _ mutation: () throws -> T
   ) rethrows -> T {
+    #if swift(>=5.9)
     if 
       #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *),
       let subject = subject as? any Observable
@@ -112,5 +119,8 @@ extension ObservationRegistrarWrapper {
     } else {
       return try self.rawValue2.withMutation(of: subject, keyPath: keyPath, mutation)
     }
+    #else
+    return try mutation()
+    #endif
   }
 }
