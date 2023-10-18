@@ -131,13 +131,6 @@ struct SyncUpDetail: Reducer {
 struct SyncUpDetailView: View {
   @State var store: StoreOf<SyncUpDetail>
 
-  struct ViewState: Equatable {
-    let syncUp: SyncUp
-    init(state: SyncUpDetail.State) {
-      self.syncUp = state.syncUp
-    }
-  }
-
   var body: some View {
     ObservedView {
       List {

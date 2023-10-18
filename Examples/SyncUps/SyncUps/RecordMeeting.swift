@@ -148,19 +148,6 @@ struct RecordMeeting: Reducer {
 struct RecordMeetingView: View {
   @State var store: StoreOf<RecordMeeting>
 
-  struct ViewState: Equatable {
-    let durationRemaining: Duration
-    let secondsElapsed: Int
-    let speakerIndex: Int
-    let syncUp: SyncUp
-    init(state: RecordMeeting.State) {
-      self.durationRemaining = state.durationRemaining
-      self.secondsElapsed = state.secondsElapsed
-      self.syncUp = state.syncUp
-      self.speakerIndex = state.speakerIndex
-    }
-  }
-
   var body: some View {
     ObservedView {
       ZStack {
