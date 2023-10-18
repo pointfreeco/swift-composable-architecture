@@ -4,15 +4,14 @@ enum ObservedViewLocal {
   @TaskLocal static var isExecutingBody = false
 }
 
-// TODO: try function instead of view?
-//public func _ObservedView() -> Content {
-//}
-
-@available(iOS, deprecated: 17)
 @MainActor
+@available(iOS, deprecated: 17)
+@available(macOS, deprecated: 14)
+@available(tvOS, deprecated: 17)
+@available(watchOS, deprecated: 10)
 public struct ObservedView<Content: View>: View {
   @State var id = 0
-  let content: () -> Content
+  private let content: () -> Content
   public init(@ViewBuilder content: @escaping () -> Content) {
     self.content = content
   }
@@ -20,16 +19,23 @@ public struct ObservedView<Content: View>: View {
     if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
       return self.content()
     } else {
-      // TODO: only do in DEBUG
-      return ObservedViewLocal.$isExecutingBody.withValue(true) {
+      #if DEBUG
         let _ = self.id
-        return TCAWithObservationTracking {
-          self.content()
-        } onChange: {
-          Task { @MainActor in
-            self.id += 1
-          }
+        return ObservedViewLocal.$isExecutingBody.withValue(true) {
+          self.self.trackedContent()
         }
+      #else
+        return self.trackedContent()
+      #endif
+    }
+  }
+
+  func trackedContent() -> Content {
+    TCAWithObservationTracking {
+      self.content()
+    } onChange: {
+      Task { @MainActor in
+        self.id += 1
       }
     }
   }

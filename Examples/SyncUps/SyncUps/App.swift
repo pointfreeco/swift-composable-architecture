@@ -3,6 +3,11 @@ import SwiftUI
 
 @main
 struct SyncUpsApp: App {
+  let store = Store(initialState: AppFeature.State()) {
+    AppFeature()
+      ._printChanges()
+  }
+  
   var body: some Scene {
     WindowGroup {
       // NB: This conditional is here only to facilitate UI testing so that we can mock out certain
@@ -15,12 +20,7 @@ struct SyncUpsApp: App {
         // NB: Don't run application when testing so that it doesn't interfere with tests.
         EmptyView()
       } else {
-        AppView(
-          store: Store(initialState: AppFeature.State()) {
-            AppFeature()
-              ._printChanges()
-          }
-        )
+        AppView(store: self.store)
       }
     }
   }
