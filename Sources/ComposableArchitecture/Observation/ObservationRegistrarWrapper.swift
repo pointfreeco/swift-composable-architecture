@@ -39,18 +39,6 @@ extension ObservationRegistrarWrapper: Equatable, Hashable, Codable {
       self.registrar.access(subject, keyPath: keyPath)
     }
 
-    public func willSet<Subject: Observable, Member>(
-      _ subject: Subject, keyPath: KeyPath<Subject, Member>
-    ) {
-      self.registrar.willSet(subject, keyPath: keyPath)
-    }
-
-    public func didSet<Subject: Observable, Member>(
-      _ subject: Subject, keyPath: KeyPath<Subject, Member>
-    ) {
-      self.registrar.didSet(subject, keyPath: keyPath)
-    }
-
     public func withMutation<Subject: Observable, Member, T>(
       of subject: Subject, keyPath: KeyPath<Subject, Member>, _ mutation: () throws -> T
     ) rethrows -> T {
@@ -67,7 +55,8 @@ extension ObservationRegistrarWrapper {
 
   @_disfavoredOverload
   public func access<Subject: _TCAObservable, Member>(
-    _ subject: Subject, keyPath: KeyPath<Subject, Member>
+    _ subject: Subject, 
+    keyPath: KeyPath<Subject, Member>
   ) {
     #if swift(>=5.9)
       if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
