@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol ObservableState: TCAObservable {
+public protocol ObservableState: _TCAObservable {
   var _$id: ObservableStateID { get }
 }
 

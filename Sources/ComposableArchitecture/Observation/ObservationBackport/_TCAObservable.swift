@@ -10,5 +10,5 @@
 //===----------------------------------------------------------------------===//
 
 // TODO: rename to _TCAObservable
-public protocol TCAObservable {
+public protocol _TCAObservable {
 }

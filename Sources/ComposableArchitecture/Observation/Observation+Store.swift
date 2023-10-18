@@ -10,7 +10,7 @@ import SwiftUI
 extension Store: Observable {}
 #endif
 
-extension Store: TCAObservable {
+extension Store: _TCAObservable {
   var observableState: State {
     get {
       if

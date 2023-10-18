@@ -66,7 +66,7 @@ extension ObservationRegistrarWrapper {
   }
 
   @_disfavoredOverload
-  public func access<Subject: TCAObservable, Member>(
+  public func access<Subject: _TCAObservable, Member>(
     _ subject: Subject, keyPath: KeyPath<Subject, Member>
   ) {
     #if swift(>=5.9)
@@ -102,7 +102,7 @@ extension ObservationRegistrarWrapper {
 //  }
 
   @_disfavoredOverload
-  public func withMutation<Subject: TCAObservable, Member, T>(
+  public func withMutation<Subject: _TCAObservable, Member, T>(
     of subject: Subject, keyPath: KeyPath<Subject, Member>, _ mutation: () throws -> T
   ) rethrows -> T {
     #if swift(>=5.9)

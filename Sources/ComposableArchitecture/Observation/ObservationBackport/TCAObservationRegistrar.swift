@@ -191,7 +191,7 @@ struct TCAObservationRegistrar: Sendable {
       return trackers
     }
 
-    internal mutating func didSet<Subject: TCAObservable, Member>(keyPath: KeyPath<Subject, Member>) -> ([@Sendable (Any) -> Void], [@Sendable () -> Void]) {
+    internal mutating func didSet<Subject: _TCAObservable, Member>(keyPath: KeyPath<Subject, Member>) -> ([@Sendable (Any) -> Void], [@Sendable () -> Void]) {
       var observers = [@Sendable (Any) -> Void]()
       var trackers = [@Sendable () -> Void]()
       if let ids = lookups[keyPath] {
@@ -246,7 +246,7 @@ struct TCAObservationRegistrar: Sendable {
       state.withCriticalRegion { $0.cancelAll() }
     }
 
-    internal func willSet<Subject: TCAObservable, Member>(
+    internal func willSet<Subject: _TCAObservable, Member>(
       _ subject: Subject,
       keyPath: KeyPath<Subject, Member>
     ) {
@@ -256,7 +256,7 @@ struct TCAObservationRegistrar: Sendable {
       }
     }
 
-    internal func didSet<Subject: TCAObservable, Member>(
+    internal func didSet<Subject: _TCAObservable, Member>(
       _ subject: Subject,
       keyPath: KeyPath<Subject, Member>
     ) {
@@ -294,7 +294,7 @@ struct TCAObservationRegistrar: Sendable {
   init() {
   }
 
-  func access<Subject: TCAObservable, Member>(
+  func access<Subject: _TCAObservable, Member>(
     _ subject: Subject,
     keyPath: KeyPath<Subject, Member>
   ) {
@@ -307,21 +307,21 @@ struct TCAObservationRegistrar: Sendable {
     }
   }
 
-  func willSet<Subject: TCAObservable, Member>(
+  func willSet<Subject: _TCAObservable, Member>(
     _ subject: Subject,
     keyPath: KeyPath<Subject, Member>
   ) {
     context.willSet(subject, keyPath: keyPath)
   }
 
-  func didSet<Subject: TCAObservable, Member>(
+  func didSet<Subject: _TCAObservable, Member>(
     _ subject: Subject,
     keyPath: KeyPath<Subject, Member>
   ) {
     context.didSet(subject, keyPath: keyPath)
   }
 
-  func withMutation<Subject: TCAObservable, Member, T>(
+  func withMutation<Subject: _TCAObservable, Member, T>(
     of subject: Subject,
     keyPath: KeyPath<Subject, Member>,
     _ mutation: () throws -> T

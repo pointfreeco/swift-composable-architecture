@@ -138,7 +138,7 @@ public struct PresentationState<State> {
   extension PresentationState: Observable {}
 #endif
 
-extension PresentationState: TCAObservable {}
+extension PresentationState: _TCAObservable {}
 
 extension PresentationState: Equatable where State: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {

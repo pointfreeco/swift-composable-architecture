@@ -52,7 +52,7 @@ struct ObservationTracking: Sendable {
 
     internal init() { }
 
-    internal mutating func addAccess<Subject: TCAObservable>(
+    internal mutating func addAccess<Subject: _TCAObservable>(
       keyPath: PartialKeyPath<Subject>,
       context: TCAObservationRegistrar.Context
     ) {
