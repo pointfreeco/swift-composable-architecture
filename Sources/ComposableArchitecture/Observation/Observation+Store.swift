@@ -18,7 +18,7 @@ extension Store: TCAObservable {
       {
         #if DEBUG
           if
-            #unavailable(iOS 17),
+            #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10),
             !ObservedViewLocal.isExecutingBody,
             Thread.callStackSymbols.contains(where: {
               $0.split(separator: " ").dropFirst().first == "AttributeGraph"
