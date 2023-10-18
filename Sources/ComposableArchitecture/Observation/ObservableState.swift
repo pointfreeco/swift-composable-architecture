@@ -1,5 +1,6 @@
 import Foundation
 
+/// A type that emits notifications to observers when underlying data changes.
 public protocol ObservableState: _TCAObservable {
   var _$id: ObservableStateID { get }
 }
@@ -29,13 +30,16 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
   }
 }
 
-public func isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
+public func _isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
+  // TODO: Should we make a fast path for IdentifiedArray? We can memcmp id sets?
   func open<C: Collection>(_ lhs: C, _ rhs: Any) -> Bool {
     guard
       C.Element.self is ObservableState.Type,
-      let rhs = rhs as? C
-    else { return false }
-    return lhs.count == rhs.count && zip(lhs, rhs).allSatisfy(isIdentityEqual)
+      let rhs = rhs as? C  // TODO: Why can't this by an unsafeBitCast?
+    else {
+      return false
+    }
+    return lhs.count == rhs.count && zip(lhs, rhs).allSatisfy(_isIdentityEqual)
   }
 
   if

@@ -39,7 +39,7 @@ extension Store: _TCAObservable {
     set {
       if
         State.self is ObservableState.Type,
-        !isIdentityEqual(self.stateSubject.value, newValue)
+        !_isIdentityEqual(self.stateSubject.value, newValue)
       {
         self._$observationRegistrar.withMutation(of: self, keyPath: \.observableState) {
           self.stateSubject.value = newValue
