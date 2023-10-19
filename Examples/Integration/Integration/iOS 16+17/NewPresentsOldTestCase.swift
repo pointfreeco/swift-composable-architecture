@@ -15,11 +15,7 @@ struct NewPresentsOldTestCase: View {
       }
       Section {
         if self.store.isObservingChildCount {
-          // TODO: This is a gotcha will accessing unobserved state from an observed
-          //       store. Can we runtime warn if this happens?
-          WithViewStore(self.store, observe: \.child?.count) { viewStore in
-            Text("Child count: " + (viewStore.state?.description ?? "N/A"))
-          }
+          Text("Child count: " + (store.child?.count.description ?? "N/A"))
         }
         Button("Toggle observe child count") {
           self.store.send(.toggleObservingChildCount)

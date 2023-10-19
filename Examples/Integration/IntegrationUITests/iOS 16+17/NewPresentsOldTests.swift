@@ -101,6 +101,8 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
     self.app.buttons["Toggle observe child count"].tap()
     self.clearLogs()
     self.app.buttons["Present child"].tap()
+    XCTAssertEqual(self.app.staticTexts["0"].exists, true)
+    XCTAssertEqual(self.app.staticTexts["Child count: 0"].exists, true)
     self.assertLogs {
       """
       BasicsView.body

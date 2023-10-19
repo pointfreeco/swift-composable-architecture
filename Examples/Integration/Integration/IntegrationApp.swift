@@ -84,7 +84,7 @@ struct ContentView: View {
             Section {
               NavigationLink("Observable Basics") {
                 Form {
-                  ObservableBasicsView()
+                  ObservableBasicsView(showExtraButtons: true)
                 }
               }
               NavigationLink("Observable Enum") {
