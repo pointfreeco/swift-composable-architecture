@@ -104,19 +104,17 @@ extension Store where State: ObservableState {
 }
 
 extension Binding {
-  // TODO: State: ObservableState?
-//  public func scope<State, Action, ChildState, ChildAction>(
-//    state toChildState: @escaping (State) -> ChildState,
-//    action embedChildAction: @escaping (ChildAction) -> Action
-//  ) -> Binding<Store<ChildState, ChildAction>>
-//  where Value == Store<State, Action> {
-//    Binding<Store<ChildState, ChildAction>>(
-//      get: { self.wrappedValue.scope(state: toChildState, action: embedChildAction) },
-//      set: { _, _ in }
-//    )
-//  }
+  public func scope<State: ObservableState, Action, ChildState, ChildAction>(
+    state toChildState: KeyPath<State, ChildState>,
+    action embedChildAction: @escaping (ChildAction) -> Action
+  ) -> Binding<Store<ChildState, ChildAction>>
+  where Value == Store<State, Action> {
+    Binding<Store<ChildState, ChildAction>>(
+      get: { self.wrappedValue.scope(state: toChildState, action: embedChildAction) },
+      set: { _, _ in }
+    )
+  }
 
-  // TODO: State: ObservableState?
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
     state toChildState: KeyPath<State, ChildState?>,
     action embedChildAction: @escaping (PresentationAction<ChildAction>) -> Action

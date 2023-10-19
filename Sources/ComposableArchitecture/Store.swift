@@ -129,6 +129,7 @@ import SwiftUI
 @dynamicMemberLookup
 public final class Store<State, Action> {
   private var bufferedActions: [Action] = []
+  private var children: [AnyHashable: AnyObject] = [:]
   @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] = [:]
   var _isInvalidated = { false }
   private var isSending = false
@@ -410,7 +411,6 @@ public final class Store<State, Action> {
     )
   }
 
-
   /// Scopes the store to one that exposes child state and actions.
   ///
   /// This is a special overload of ``scope(state:action:)-9iai9`` that works specifically for
@@ -433,8 +433,6 @@ public final class Store<State, Action> {
     )
   }
 
-  var children: [AnyHashable: AnyObject] = [:]
-
   func scope<ChildState, ChildAction>(
     state toChildState: @escaping (State) -> ChildState,
     id: @escaping (State) -> AnyHashable?,
@@ -442,34 +440,93 @@ public final class Store<State, Action> {
     invalidate isInvalid: ((State) -> Bool)? = nil,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
+    self.threadCheck(status: .scope)
 
     let id = id(self.stateSubject.value)
     if
       let id = id,
-      let child = self.children[id] as? Store<ChildState, ChildAction>
+      let childStore = self.children[id] as? Store<ChildState, ChildAction>
     {
-      return child
+      return childStore
     }
-
-    self.threadCheck(status: .scope)
     guard isInvalid?(self.stateSubject.value) != true else {
       // NB: This is required for `ForEach` over a binding of stores to not crash when accessing old
       //     data held by the `ForEach`.
       return Store<ChildState, ChildAction>()
     }
-    let store = self.reducer.rescope(
-      self,
-      state: toChildState,
-      action: { BindingLocal.isActive && isInvalid?($0) == true ? nil : fromChildAction($0, $1) },
-      removeDuplicates: isDuplicate
-    )
-    if let isInvalid = isInvalid {
-      store._isInvalidated = { self._isInvalidated() || isInvalid(self.stateSubject.value) }
+
+    let isInvalid = { [weak self] in
+      guard let self = self else { return true }
+      return self._isInvalidated() || isInvalid?(self.stateSubject.value) == true
     }
+    let fromChildAction = {
+      BindingLocal.isActive && isInvalid() ? nil : fromChildAction($0, $1)
+    }
+    var isSending = false
+    let childStore = Store<ChildState, ChildAction>(
+      initialState: toChildState(self.stateSubject.value)
+    ) {
+      Reduce(internal: { [weak self] childState, childAction in
+        guard let self else { return .none }
+        guard !isInvalid()
+        else {
+          if let id = id {
+            self.invalidateChild(id: id)
+          }
+          return .none
+        }
+        guard let action = fromChildAction(self.stateSubject.value, childAction)
+        else { return .none }
+        isSending = true
+        defer { isSending = false }
+        self.send(action)
+        childState = toChildState(self.stateSubject.value)
+        return .none
+      })
+    }
+    childStore._isInvalidated = isInvalid
+    childStore.parentCancellable = self.stateSubject
+      .dropFirst()
+      .sink { [weak self, weak childStore] state in
+        guard
+          !isSending,
+          let self = self,
+          let childStore = childStore
+        else { return }
+        // NB: Returning early prevents "legacy" observation wrappers like `IfLetStore` from
+        //     observing state going `nil`.
+        if
+          ChildState.self is ObservableState.Type,
+          childStore._isInvalidated()
+        {
+          if let id = id {
+            self.invalidateChild(id: id)
+          }
+          return
+        }
+        let childState = toChildState(state)
+        guard isDuplicate.map({ !$0(childStore.stateSubject.value, childState) }) ?? true else {
+          return
+        }
+        childStore.observableState = childState
+        Logger.shared.log("\(typeName(of: self)).scope")
+      }
     if let id = id {
-      self.children[id] = store
+      self.children[id] = childStore
     }
-    return store
+    return childStore
+  }
+
+  fileprivate func invalidate() {
+    for id in self.children.keys {
+      self.invalidateChild(id: id)
+    }
+  }
+
+  private func invalidateChild(id: AnyHashable) {
+    guard self.children.keys.contains(id) else { return }
+    (self.children[id] as? any AnyStore)?.invalidate()
+    self.children[id] = nil
   }
 
   func invalidate(_ isInvalid: @escaping (State) -> Bool) -> Store {
@@ -751,6 +808,10 @@ public final class Store<State, Action> {
 /// let store: StoreOf<Feature>
 /// ```
 public typealias StoreOf<R: Reducer> = Store<R.State, R.Action>
+
+private protocol AnyStore {
+  func invalidate()
+}
 
 extension Reducer {
   fileprivate func rescope<ChildState, ChildAction>(
