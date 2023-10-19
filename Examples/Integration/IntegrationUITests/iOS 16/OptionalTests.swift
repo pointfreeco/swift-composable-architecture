@@ -110,7 +110,6 @@ final class iOS16_OptionalTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
       StoreOf<OptionalView.Feature>.scope
       StoreOf<OptionalView.Feature>.scope
       StoreOf<OptionalView.Feature>.scope
