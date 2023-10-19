@@ -45,8 +45,6 @@ final class iOS17_ObservableIdentifiedListTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableBasicsView.body
-      ObservableBasicsView.body
-      ObservableBasicsView.body
       ObservableIdentifiedListView.body
       ObservableIdentifiedListView.body.ForEach
       ObservableIdentifiedListView.body.ForEach

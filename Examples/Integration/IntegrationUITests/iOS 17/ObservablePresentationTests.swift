@@ -64,7 +64,6 @@ final class iOS17_ObservablePresentationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableBasicsView.body
-      ObservableBasicsView.body
       ObservablePresentationView.body
       StoreOf<ObservableBasicsView.Feature>.deinit
       StoreOf<ObservableBasicsView.Feature>.init
