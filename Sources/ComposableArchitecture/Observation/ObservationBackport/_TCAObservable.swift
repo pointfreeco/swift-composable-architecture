@@ -9,6 +9,5 @@
 //
 //===----------------------------------------------------------------------===//
 
-// TODO: rename to _TCAObservable
 public protocol _TCAObservable {
 }
