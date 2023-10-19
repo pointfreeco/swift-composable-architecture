@@ -6,29 +6,29 @@ public protocol ViewAction<ViewAction> {
   var view: ViewAction? { get }
 }
 
-extension Store: /* TODO: Legit conformance? */ ObservableObject where State: ObservableState {
-  public func binding<Value>(
-    get: @escaping (_ state: State) -> Value,
-    send valueToAction: @escaping (_ value: Value) -> Action
-  ) -> Binding<Value> {
-    ObservedObject(wrappedValue: self)
-      .projectedValue[get: .init(rawValue: get), send: .init(rawValue: valueToAction)]
-  }
-
-  private subscript<Value>(
-    get fromState: HashableWrapper<(State) -> Value>,
-    send toAction: HashableWrapper<(Value) -> Action?>
-  ) -> Value {
-    get { fromState.rawValue(self.state) }
-    set {
-      BindingLocal.$isActive.withValue(true) {
-        if let action = toAction.rawValue(newValue) {
-          self.send(action)
-        }
-      }
-    }
-  }
-}
+//extension Store: /* TODO: Legit conformance? */ ObservableObject where State: ObservableState {
+//  public func binding<Value>(
+//    get: @escaping (_ state: State) -> Value,
+//    send valueToAction: @escaping (_ value: Value) -> Action
+//  ) -> Binding<Value> {
+//    ObservedObject(wrappedValue: self)
+//      .projectedValue[get: .init(rawValue: get), send: .init(rawValue: valueToAction)]
+//  }
+//
+//  private subscript<Value>(
+//    get fromState: HashableWrapper<(State) -> Value>,
+//    send toAction: HashableWrapper<(Value) -> Action?>
+//  ) -> Value {
+//    get { fromState.rawValue(self.state) }
+//    set {
+//      BindingLocal.$isActive.withValue(true) {
+//        if let action = toAction.rawValue(newValue) {
+//          self.send(action)
+//        }
+//      }
+//    }
+//  }
+//}
 
 extension BindingAction {
   public static func set<Value: Equatable & Sendable>(
