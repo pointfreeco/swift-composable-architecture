@@ -48,7 +48,7 @@ struct PresentationView: View {
         Form {
           BasicsView(store: store)
         }
-        .navigationTitle("Full-screen cover")
+        .navigationTitle(Text("Full-screen cover"))
         .toolbar {
           ToolbarItem {
             Button("Dismiss") {
@@ -67,7 +67,7 @@ struct PresentationView: View {
         Form {
           BasicsView(store: store)
         }
-        .navigationTitle("Popover")
+        .navigationTitle(Text("Popver"))
         .toolbar {
           ToolbarItem {
             Button("Dismiss") {
@@ -82,7 +82,7 @@ struct PresentationView: View {
         Form {
           BasicsView(store: store)
         }
-        .navigationTitle("Sheet")
+        .navigationTitle(Text("Sheet"))
         .toolbar {
           ToolbarItem {
             Button("Dismiss") {
