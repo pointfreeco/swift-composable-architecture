@@ -28,7 +28,6 @@ final class iOS17_ObservableEnumTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableBasicsView.body
-      StoreOf<ObservableEnumView.Feature>.scope
       """
     }
   }
@@ -42,6 +41,7 @@ final class iOS17_ObservableEnumTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableEnumView.body
+      StoreOf<ObservableEnumView.Feature.Destination>.deinit
       """
     }
   }
@@ -57,7 +57,6 @@ final class iOS17_ObservableEnumTests: BaseIntegrationTests {
       ObservableBasicsView.body
       ObservableEnumView.body
       StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableEnumView.Feature.Destination>.init
       StoreOf<ObservableEnumView.Feature>.scope
       """
     }
@@ -72,7 +71,7 @@ final class iOS17_ObservableEnumTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableEnumView.body
-      StoreOf<ObservableEnumView.Feature>.scope
+      StoreOf<ObservableEnumView.Feature.Destination>.deinit
       """
     }
   }

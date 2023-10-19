@@ -21,8 +21,6 @@ final class iOS16_IdentifiedListTests: BaseIntegrationTests {
       IdentifiedListView.body.ForEachStore
       IdentifiedListView.body.ForEachStore
       Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.deinit
-      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.deinit
-      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.init
       Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.init
       Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.scope
       Store<UUID, Action>
@@ -58,13 +56,11 @@ final class iOS16_IdentifiedListTests: BaseIntegrationTests {
       IdentifiedListView.body.ForEachStore
       Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.deinit
       Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.init
-      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.init
       Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.scope
       Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.scope
       Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.scope
       Store<UUID, Action>
       Store<UUID, Action>
-      Store<UUID, BasicsView.Feature.Action>.deinit
       Store<UUID, BasicsView.Feature.Action>.deinit
       Store<UUID, BasicsView.Feature.Action>.deinit
       Store<UUID, BasicsView.Feature.Action>.deinit
@@ -85,7 +81,7 @@ final class iOS16_IdentifiedListTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
-      StoreOf<IdentifiedListView.Feature>.scope
+      StoreOf<BasicsView.Feature>.scope
       StoreOf<IdentifiedListView.Feature>.scope
       """
     }
@@ -109,7 +105,7 @@ final class iOS16_IdentifiedListTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
-      StoreOf<IdentifiedListView.Feature>.scope
+      StoreOf<BasicsView.Feature>.scope
       StoreOf<IdentifiedListView.Feature>.scope
       """
     }

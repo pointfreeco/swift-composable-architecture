@@ -19,21 +19,18 @@ final class iOS17_ObservablePresentationTests: BaseIntegrationTests {
       ObservableBasicsView.body
       ObservablePresentationView.body
       StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableBasicsView.Feature>.init
       """
     }
     self.app.buttons["Increment"].tap()
     self.assertLogs {
       """
       ObservableBasicsView.body
-      StoreOf<ObservablePresentationView.Feature>.scope
       """
     }
     self.app.buttons["Dismiss"].firstMatch.tap()
     self.assertLogs {
       """
       ObservablePresentationView.body
-      StoreOf<ObservableBasicsView.Feature>.deinit
       """
     }
   }
@@ -45,18 +42,12 @@ final class iOS17_ObservablePresentationTests: BaseIntegrationTests {
       ObservableBasicsView.body
       ObservablePresentationView.body
       StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableBasicsView.Feature>.init
       """
     }
     self.app.buttons["Observe child count"].tap()
     self.assertLogs {
       """
-      ObservableBasicsView.body
       ObservablePresentationView.body
-      StoreOf<ObservableBasicsView.Feature>.deinit
-      StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservablePresentationView.Feature>.scope
       StoreOf<ObservablePresentationView.Feature>.scope
       """
     }
@@ -65,11 +56,6 @@ final class iOS17_ObservablePresentationTests: BaseIntegrationTests {
       """
       ObservableBasicsView.body
       ObservablePresentationView.body
-      StoreOf<ObservableBasicsView.Feature>.deinit
-      StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservablePresentationView.Feature>.scope
-      StoreOf<ObservablePresentationView.Feature>.scope
       """
     }
     XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
@@ -77,7 +63,6 @@ final class iOS17_ObservablePresentationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservablePresentationView.body
-      StoreOf<ObservableBasicsView.Feature>.deinit
       """
     }
   }

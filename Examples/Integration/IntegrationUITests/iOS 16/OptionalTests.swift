@@ -18,8 +18,6 @@ final class iOS16_OptionalTests: BaseIntegrationTests {
       """
       BasicsView.body
       OptionalView.body
-      PresentationStoreOf<BasicsView.Feature>.deinit
-      PresentationStoreOf<BasicsView.Feature>.init
       PresentationStoreOf<BasicsView.Feature>.scope
       Store<OptionalView.ViewState, OptionalView.Feature.Action>.deinit
       Store<OptionalView.ViewState, OptionalView.Feature.Action>.init
@@ -27,6 +25,7 @@ final class iOS16_OptionalTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
@@ -44,26 +43,7 @@ final class iOS16_OptionalTests: BaseIntegrationTests {
     self.app.buttons["Increment"].tap()
     self.assertLogs {
       """
-      BasicsView.body
-      OptionalView.body
-      OptionalView.body
-      PresentationStoreOf<BasicsView.Feature>.init
-      PresentationStoreOf<BasicsView.Feature>.scope
-      Store<OptionalView.ViewState, OptionalView.Feature.Action>.deinit
-      Store<OptionalView.ViewState, OptionalView.Feature.Action>.init
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<OptionalView.Feature>.scope
-      StoreOf<OptionalView.Feature>.scope
       """
     }
   }
@@ -77,42 +57,17 @@ final class iOS16_OptionalTests: BaseIntegrationTests {
     self.assertLogs {
       """
       OptionalView.body
+      PresentationStoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<OptionalView.Feature>.scope
       StoreOf<OptionalView.Feature>.scope
       """
     }
     self.app.buttons["Increment"].tap()
     self.assertLogs {
       """
-      BasicsView.body
-      OptionalView.body
-      OptionalView.body
-      PresentationStoreOf<BasicsView.Feature>.deinit
-      PresentationStoreOf<BasicsView.Feature>.init
-      PresentationStoreOf<BasicsView.Feature>.scope
-      PresentationStoreOf<BasicsView.Feature>.scope
-      Store<OptionalView.ViewState, OptionalView.Feature.Action>.deinit
-      Store<OptionalView.ViewState, OptionalView.Feature.Action>.init
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<OptionalView.Feature>.scope
-      StoreOf<OptionalView.Feature>.scope
-      StoreOf<OptionalView.Feature>.scope
       """
     }
   }

@@ -17,9 +17,6 @@ final class iOS17_ObservableNavigationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableBasicsView.body
-      ObservableBasicsView.body
-      StackStoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableBasicsView.Feature>.init
       StoreOf<ObservableBasicsView.Feature>.init
       """
     }
@@ -27,9 +24,6 @@ final class iOS17_ObservableNavigationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableBasicsView.body
-      StackStoreOf<ObservableBasicsView.Feature>.scope
-      StoreOf<ObservableNavigationTestCaseView.Feature>.scope
-      StoreOf<ObservableNavigationTestCaseView.Feature>.scope
       """
     }
   }
@@ -49,13 +43,6 @@ final class iOS17_ObservableNavigationTests: BaseIntegrationTests {
       StackStoreOf<ObservableBasicsView.Feature>.scope
       StackStoreOf<ObservableBasicsView.Feature>.scope
       StackStoreOf<ObservableBasicsView.Feature>.scope
-      StackStoreOf<ObservableBasicsView.Feature>.scope
-      StackStoreOf<ObservableBasicsView.Feature>.scope
-      StackStoreOf<ObservableBasicsView.Feature>.scope
-      StackStoreOf<ObservableBasicsView.Feature>.scope
-      StackStoreOf<ObservableBasicsView.Feature>.scope
-      StoreOf<ObservableNavigationTestCaseView.Feature>.scope
-      StoreOf<ObservableNavigationTestCaseView.Feature>.scope
       """
     }
   }

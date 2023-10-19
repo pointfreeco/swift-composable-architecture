@@ -25,7 +25,6 @@ struct ObservableSiblingFeaturesView: View {
         }
         Spacer()
         Form {
-          Text((self.store.child1.count + self.store.child2.count).description)
           Button("Reset all") {
             self.store.send(.resetAllButtonTapped)
           }
