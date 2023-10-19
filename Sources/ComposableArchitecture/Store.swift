@@ -385,12 +385,31 @@ public final class Store<State, Action> {
   ///   - toChildState: A function that transforms `State` into `ChildState`.
   ///   - fromChildAction: A function that transforms `ChildAction` into `Action`.
   /// - Returns: A new store with its domain (state and action) transformed.
+  @_disfavoredOverload
   public func scope<ChildState, ChildAction>(
     state toChildState: @escaping (_ state: State) -> ChildState,
     action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction> {
-    self.scope(state: toChildState, action: { fromChildAction($1) }, removeDuplicates: nil)
+    self.scope(
+      state: toChildState,
+      id: { _ in nil },
+      action: { fromChildAction($1) },
+      removeDuplicates: nil
+    )
   }
+
+  public func scope<ChildState, ChildAction>(
+    state toChildState: KeyPath<State, ChildState>,
+    action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
+  ) -> Store<ChildState, ChildAction> {
+    self.scope(
+      state: { $0[keyPath: toChildState] },
+      id: { _ in toChildState },
+      action: { fromChildAction($1) },
+      removeDuplicates: nil
+    )
+  }
+
 
   /// Scopes the store to one that exposes child state and actions.
   ///
@@ -408,17 +427,30 @@ public final class Store<State, Action> {
   ) -> Store<PresentationState<ChildState>, PresentationAction<ChildAction>> {
     self.scope(
       state: toChildState,
+      id: { _ in nil },
       action: { fromChildAction($1) },
       removeDuplicates: { $0.sharesStorage(with: $1) }
     )
   }
 
+  var children: [AnyHashable: AnyObject] = [:]
+
   func scope<ChildState, ChildAction>(
     state toChildState: @escaping (State) -> ChildState,
+    id: @escaping (State) -> AnyHashable?,
     action fromChildAction: @escaping (State, ChildAction) -> Action,
     invalidate isInvalid: ((State) -> Bool)? = nil,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
+
+    let id = id(self.stateSubject.value)
+    if
+      let id = id,
+      let child = self.children[id] as? Store<ChildState, ChildAction>
+    {
+      return child
+    }
+
     self.threadCheck(status: .scope)
     guard isInvalid?(self.stateSubject.value) != true else {
       // NB: This is required for `ForEach` over a binding of stores to not crash when accessing old
@@ -433,6 +465,9 @@ public final class Store<State, Action> {
     )
     if let isInvalid = isInvalid {
       store._isInvalidated = { self._isInvalidated() || isInvalid(self.stateSubject.value) }
+    }
+    if let id = id {
+      self.children[id] = store
     }
     return store
   }

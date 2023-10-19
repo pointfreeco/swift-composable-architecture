@@ -35,30 +35,30 @@ struct ObservableEnumView: View {
             }
           }
         }
-        if let store = self.store.scope(state: \.destination, action: { .destination($0) }) {
-          switch store.state {
-          case .feature1:
-            if let store = store.scope(
-              state: /Feature.Destination.State.feature1, action: { .feature1($0) }
-            ) {
-              Section {
-                ObservableBasicsView(store: store)
-              } header: {
-                Text("Feature 1")
-              }
-            }
-          case .feature2:
-            if let store = store.scope(
-              state: /Feature.Destination.State.feature2, action: { .feature2($0) }
-            ) {
-              Section {
-                ObservableBasicsView(store: store)
-              } header: {
-                Text("Feature 2")
-              }
-            }
-          }
-        }
+//        if let store = self.store.scope(state: \.destination, action: { .destination($0) }) {
+//          switch store.state {
+//          case .feature1:
+//            if let store = store.scope(
+//              state: /Feature.Destination.State.feature1, action: { .feature1($0) }
+//            ) {
+//              Section {
+//                ObservableBasicsView(store: store)
+//              } header: {
+//                Text("Feature 1")
+//              }
+//            }
+//          case .feature2:
+//            if let store = store.scope(
+//              state: /Feature.Destination.State.feature2, action: { .feature2($0) }
+//            ) {
+//              Section {
+//                ObservableBasicsView(store: store)
+//              } header: {
+//                Text("Feature 2")
+//              }
+//            }
+//          }
+//        }
       }
     }
   }

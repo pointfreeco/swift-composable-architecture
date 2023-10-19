@@ -72,19 +72,20 @@ extension Store where State: ObservableState {
   // TODO: Document that this should only be used with SwiftUI.
   // TODO: ChildState: ObservableState?
   public func scope<ChildState, ChildAction>(
-    state toChildState: @escaping (_ state: State) -> ChildState?,
+    state toChildState: KeyPath<State, ChildState?>,
     action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction>? {
-    guard var initialChildState = toChildState(self.observableState)
+    guard var initialChildState = self.observableState[keyPath: toChildState]
     else { return nil }
     return self.scope(
       state: {
-        let childState = toChildState($0) ?? initialChildState
+        let childState = $0[keyPath: toChildState] ?? initialChildState
         initialChildState = childState
         return childState
       },
+      id: { _ in toChildState },
       action: { fromChildAction($1) },
-      invalidate: { toChildState($0) == nil },
+      invalidate: { $0[keyPath: toChildState] == nil },
       removeDuplicates: nil
     )
   }
@@ -92,7 +93,7 @@ extension Store where State: ObservableState {
   // TODO: Document that this should only be used with SwiftUI.
   // TODO: ChildState: ObservableState?
   public func scope<ChildState, ChildAction>(
-    state toChildState: @escaping (_ state: State) -> ChildState?,
+    state toChildState: KeyPath<State, ChildState?>,
     action fromChildAction:
       @escaping (_ presentationAction: PresentationAction<ChildAction>) -> Action
   ) -> Store<ChildState, ChildAction>?
@@ -104,20 +105,20 @@ extension Store where State: ObservableState {
 
 extension Binding {
   // TODO: State: ObservableState?
-  public func scope<State, Action, ChildState, ChildAction>(
-    state toChildState: @escaping (State) -> ChildState,
-    action embedChildAction: @escaping (ChildAction) -> Action
-  ) -> Binding<Store<ChildState, ChildAction>>
-  where Value == Store<State, Action> {
-    Binding<Store<ChildState, ChildAction>>(
-      get: { self.wrappedValue.scope(state: toChildState, action: embedChildAction) },
-      set: { _, _ in }
-    )
-  }
+//  public func scope<State, Action, ChildState, ChildAction>(
+//    state toChildState: @escaping (State) -> ChildState,
+//    action embedChildAction: @escaping (ChildAction) -> Action
+//  ) -> Binding<Store<ChildState, ChildAction>>
+//  where Value == Store<State, Action> {
+//    Binding<Store<ChildState, ChildAction>>(
+//      get: { self.wrappedValue.scope(state: toChildState, action: embedChildAction) },
+//      set: { _, _ in }
+//    )
+//  }
 
   // TODO: State: ObservableState?
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
-    state toChildState: @escaping (State) -> ChildState?,
+    state toChildState: KeyPath<State, ChildState?>,
     action embedChildAction: @escaping (PresentationAction<ChildAction>) -> Action
   ) -> Binding<Store<ChildState, ChildAction>?>
   where Value == Store<State, Action> {
@@ -126,7 +127,7 @@ extension Binding {
         self.wrappedValue.scope(state: toChildState, action: { embedChildAction(.presented($0)) })
       },
       set: {
-        if $0 == nil, toChildState(self.wrappedValue.stateSubject.value) != nil {
+        if $0 == nil, self.wrappedValue.stateSubject.value[keyPath: toChildState] != nil {
           self.transaction($1).wrappedValue.send(embedChildAction(.dismiss))
         }
       }
