@@ -130,7 +130,7 @@ import SwiftUI
 public final class Store<State, Action> {
   private var bufferedActions: [Action] = []
   @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] = [:]
-  var _isInvalidated = { false }
+  var _isAttached = { true }
   private var isSending = false
   var parentCancellable: AnyCancellable?
   private let reducer: any Reducer<State, Action>
@@ -171,9 +171,14 @@ public final class Store<State, Action> {
     }
   }
 
+  // NB: This initializes a store that lazily crashes. It is returned when scoping to an invalid
+  //     store, _e.g._ when subscripting into a store of a collection at an index that doesn't
+  //     exist. This allows us to work around a bug in SwiftUI in which a `ForEach` over a binding
+  //     of stores will cache this scoping and access it at invalid times.
   init() {
-    self._isInvalidated = { true }
+    self._isAttached = { false }
     self.reducer = EmptyReducer()
+    self.stateSubject = nil
     #if DEBUG
       self.mainThreadChecksEnabled = true
     #endif
@@ -416,11 +421,11 @@ public final class Store<State, Action> {
   func scope<ChildState, ChildAction>(
     state toChildState: @escaping (State) -> ChildState,
     action fromChildAction: @escaping (State, ChildAction) -> Action,
-    invalidate isInvalid: ((State) -> Bool)? = nil,
+    isAttached: ((State) -> Bool)? = nil,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
     self.threadCheck(status: .scope)
-    guard isInvalid?(self.stateSubject.value) != true else {
+    guard isAttached?(self.stateSubject.value) != false else {
       // NB: This is required for `ForEach` over a binding of stores to not crash when accessing old
       //     data held by the `ForEach`.
       return Store<ChildState, ChildAction>()
@@ -428,25 +433,20 @@ public final class Store<State, Action> {
     let store = self.reducer.rescope(
       self,
       state: toChildState,
-      action: { BindingLocal.isActive && isInvalid?($0) == true ? nil : fromChildAction($0, $1) },
+      action: { BindingLocal.isActive && isAttached?($0) == false ? nil : fromChildAction($0, $1) },
       removeDuplicates: isDuplicate
     )
-    if let isInvalid = isInvalid {
-      store._isInvalidated = { self._isInvalidated() || isInvalid(self.stateSubject.value) }
-    }
+    store._isAttached = { self._isAttached() && isAttached?(self.stateSubject.value) != false }
     return store
   }
 
   func invalidate(_ isInvalid: @escaping (State) -> Bool) -> Store {
-    self.threadCheck(status: .scope)
-    let store: Store = self.reducer.rescope(
-      self,
+    self.scope(
       state: { $0 },
-      action: { state, action in isInvalid(state) && BindingLocal.isActive ? nil : action },
+      action: { $1 },
+      isAttached: { !isInvalid($0) },
       removeDuplicates: { isInvalid($0) && isInvalid($1) }
     )
-    store._isInvalidated = { self._isInvalidated() || isInvalid(self.stateSubject.value) }
-    return store
   }
 
   @_spi(Internals)
@@ -817,7 +817,7 @@ extension ScopedReducer: AnyScopedReducer {
     ) {
       reducer
     }
-    childStore._isInvalidated = store._isInvalidated
+    childStore._isAttached = store._isAttached
     childStore.parentCancellable = store.stateSubject
       .dropFirst()
       .sink { [weak childStore] newValue in
@@ -829,7 +829,7 @@ extension ScopedReducer: AnyScopedReducer {
         //     observing state going `nil`.
         if
           RescopedState.self is ObservableState.Type,
-          childStore._isInvalidated()
+          !childStore._isAttached()
         {
           return
         }

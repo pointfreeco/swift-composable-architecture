@@ -266,7 +266,7 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
             value: value,
             bindableActionType: ViewAction.self,
             context: .bindingState,
-            isInvalidated: self._isInvalidated,
+            isAttached: self._isAttached,
             fileID: bindingState.fileID,
             line: bindingState.line
           )
@@ -403,7 +403,7 @@ public struct BindingViewStore<State> {
                 value: value,
                 bindableActionType: self.bindableActionType,
                 context: .bindingStore,
-                isInvalidated: self.store._isInvalidated,
+                isAttached: self.store._isAttached,
                 fileID: self.fileID,
                 line: self.line
               )
@@ -668,7 +668,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
     let value: Value
     let bindableActionType: Any.Type
     let context: Context
-    let isInvalidated: () -> Bool
+    let isAttached: () -> Bool
     let fileID: StaticString
     let line: UInt
     var wasCalled = false
@@ -677,20 +677,20 @@ extension WithViewStore where ViewState: Equatable, Content: View {
       value: Value,
       bindableActionType: Any.Type,
       context: Context,
-      isInvalidated: @escaping () -> Bool,
+      isAttached: @escaping () -> Bool,
       fileID: StaticString,
       line: UInt
     ) {
       self.value = value
       self.bindableActionType = bindableActionType
       self.context = context
-      self.isInvalidated = isInvalidated
+      self.isAttached = isAttached
       self.fileID = fileID
       self.line = line
     }
 
     deinit {
-      guard !self.isInvalidated() else { return }
+      guard self.isAttached() else { return }
       guard self.wasCalled else {
         var value = ""
         customDump(self.value, to: &value, maxDepth: 0)

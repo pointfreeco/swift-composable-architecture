@@ -67,7 +67,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
   public private(set) lazy var objectWillChange = ObservableObjectPublisher()
 
-  let _isInvalidated: () -> Bool
+  let _isAttached: () -> Bool
   private let _send: (ViewAction) -> Task<Void, Never>?
   fileprivate let _state: CurrentValueRelay<ViewState>
   private var viewCancellable: AnyCancellable?
@@ -93,7 +93,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ) {
     self._send = { store.send($0, originatingFrom: nil) }
     self._state = CurrentValueRelay(toViewState(store.stateSubject.value))
-    self._isInvalidated = store._isInvalidated
+    self._isAttached = store._isAttached
     self.viewCancellable = store.stateSubject
       .map(toViewState)
       .removeDuplicates(by: isDuplicate)
@@ -127,7 +127,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ) {
     self._send = { store.send(fromViewAction($0), originatingFrom: nil) }
     self._state = CurrentValueRelay(toViewState(store.stateSubject.value))
-    self._isInvalidated = store._isInvalidated
+    self._isAttached = store._isAttached
     self.viewCancellable = store.stateSubject
       .map(toViewState)
       .removeDuplicates(by: isDuplicate)
@@ -141,7 +141,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   init(_ viewStore: ViewStore<ViewState, ViewAction>) {
     self._send = viewStore._send
     self._state = viewStore._state
-    self._isInvalidated = viewStore._isInvalidated
+    self._isAttached = viewStore._isAttached
     self.objectWillChange = viewStore.objectWillChange
     self.viewCancellable = viewStore.viewCancellable
   }
