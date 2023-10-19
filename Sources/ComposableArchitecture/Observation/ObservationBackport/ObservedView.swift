@@ -19,8 +19,8 @@ public struct ObservedView<Content: View>: View {
     if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
       return self.content()
     } else {
+      let _ = self.id
       #if DEBUG
-        let _ = self.id
         return ObservedViewLocal.$isExecutingBody.withValue(true) {
           self.self.trackedContent()
         }
