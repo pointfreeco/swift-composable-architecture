@@ -35,30 +35,26 @@ struct ObservableEnumView: View {
             }
           }
         }
-//        if let store = self.store.scope(state: \.destination, action: { .destination($0) }) {
-//          switch store.state {
-//          case .feature1:
-//            if let store = store.scope(
-//              state: /Feature.Destination.State.feature1, action: { .feature1($0) }
-//            ) {
-//              Section {
-//                ObservableBasicsView(store: store)
-//              } header: {
-//                Text("Feature 1")
-//              }
-//            }
-//          case .feature2:
-//            if let store = store.scope(
-//              state: /Feature.Destination.State.feature2, action: { .feature2($0) }
-//            ) {
-//              Section {
-//                ObservableBasicsView(store: store)
-//              } header: {
-//                Text("Feature 2")
-//              }
-//            }
-//          }
-//        }
+        if let store = self.store.scope(state: \.destination, action: { .destination($0) }) {
+          switch store.state {
+          case .feature1:
+            if let store = store.scope(state: \.feature1, action: { .feature1($0) }) {
+              Section {
+                ObservableBasicsView(store: store)
+              } header: {
+                Text("Feature 1")
+              }
+            }
+          case .feature2:
+            if let store = store.scope(state: \.feature2, action: { .feature2($0) }) {
+              Section {
+                ObservableBasicsView(store: store)
+              } header: {
+                Text("Feature 2")
+              }
+            }
+          }
+        }
       }
     }
   }
@@ -75,7 +71,9 @@ struct ObservableEnumView: View {
       case toggle2ButtonTapped
     }
     struct Destination: Reducer {
+      @CasePathable
       @ObservableState
+      @dynamicMemberLookup
       enum State: Equatable {
         case feature1(ObservableBasicsView.Feature.State)
         case feature2(ObservableBasicsView.Feature.State)

@@ -31,46 +31,46 @@ struct ObservablePresentationView: View {
           Text("Optional")
         }
       }
-//      .fullScreenCover(
-//        item: self.$store.scope(
-//          state: { $0.destination.flatMap(/Feature.Destination.State.fullScreenCover) },
-//          action: { .destination($0.presented { .fullScreenCover($0) }) }
-//        )
-//      ) { store in
-//        NavigationStack {
-//          Form {
-//            ObservableBasicsView(store: store)
-//          }
-//          .navigationTitle("Full-screen cover")
-//          .toolbar {
-//            ToolbarItem {
-//              Button("Dismiss") {
-//                self.store.send(.dismissButtonTapped)
-//              }
-//            }
-//          }
-//        }
-//      }
-//      .popover(
-//        item: self.$store.scope(
-//          state: { $0.destination.flatMap(/Feature.Destination.State.popover) },
-//          action: { .destination($0.presented { .popover($0) }) }
-//        )
-//      ) { store in
-//        NavigationStack {
-//          Form {
-//            ObservableBasicsView(store: store)
-//          }
-//          .navigationTitle("Popover")
-//          .toolbar {
-//            ToolbarItem {
-//              Button("Dismiss") {
-//                self.store.send(.dismissButtonTapped)
-//              }
-//            }
-//          }
-//        }
-//      }
+      .fullScreenCover(
+        item: self.$store.scope(
+          state: \.destination?.fullScreenCover,
+          action: { .destination($0.presented { .fullScreenCover($0) }) }
+        )
+      ) { store in
+        NavigationStack {
+          Form {
+            ObservableBasicsView(store: store)
+          }
+          .navigationTitle("Full-screen cover")
+          .toolbar {
+            ToolbarItem {
+              Button("Dismiss") {
+                self.store.send(.dismissButtonTapped)
+              }
+            }
+          }
+        }
+      }
+      .popover(
+        item: self.$store.scope(
+          state: \.destination?.popover,
+          action: { .destination($0.presented { .popover($0) }) }
+        )
+      ) { store in
+        NavigationStack {
+          Form {
+            ObservableBasicsView(store: store)
+          }
+          .navigationTitle("Popover")
+          .toolbar {
+            ToolbarItem {
+              Button("Dismiss") {
+                self.store.send(.dismissButtonTapped)
+              }
+            }
+          }
+        }
+      }
       .sheet(item: self.$store.scope(state: \.sheet, action: { .sheet($0) })) { store in
         NavigationStack {
           Form {
@@ -114,7 +114,9 @@ struct ObservablePresentationView: View {
       case toggleObserveChildCountButtonTapped
     }
     struct Destination: Reducer {
+      @CasePathable
       @ObservableState
+      @dynamicMemberLookup
       enum State: Equatable {
         case fullScreenCover(ObservableBasicsView.Feature.State)
         case popover(ObservableBasicsView.Feature.State)
