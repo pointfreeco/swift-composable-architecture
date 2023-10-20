@@ -52,7 +52,10 @@ public struct _NavigationDestinationViewModifier<
                   state = $0[id: component.id] ?? state
                   return state
                 },
-                action: { .element(id: component.id, action: $0) }
+                id: { _ in component.id },
+                action: { .element(id: component.id, action: $1) },
+                invalidate: { !$0.ids.contains(component.id) },
+                removeDuplicates: nil
               )
             )
             .environment(\.navigationDestinationType, State.self)
