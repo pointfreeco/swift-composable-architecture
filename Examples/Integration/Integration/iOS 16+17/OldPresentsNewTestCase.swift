@@ -42,7 +42,7 @@ struct OldPresentsNewTestCase: View {
       Form {
         ObservableBasicsView(store: store)
       }
-        .presentationDetents([.medium])
+      .presentationDetents([.medium])
     }
   }
 

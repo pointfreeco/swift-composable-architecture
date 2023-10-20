@@ -33,9 +33,9 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       """
       BasicsView.body
       PresentationStoreOf<BasicsView.Feature>.scope
+      PresentationStoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.init
@@ -55,7 +55,46 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
     self.app.buttons["Dismiss"].tap()
     self.assertLogs {
       """
+      BasicsView.body
+      PresentationStoreOf<BasicsView.Feature>.scope
+      PresentationStoreOf<BasicsView.Feature>.scope
+      PresentationStoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<NewPresentsOldTestCase.Feature>.scope
       """
     }
   }
@@ -94,7 +133,6 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
@@ -117,7 +155,22 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["Child count: 1"].exists, true)
     self.assertLogs {
       """
+      BasicsView.body
+      BasicsView.body
+      NewPresentsOldTestCase.body
+      PresentationStoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
       """
     }
   }
@@ -129,7 +182,47 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
     self.app.buttons["Dismiss"].tap()
     self.assertLogs {
       """
+      BasicsView.body
+      NewPresentsOldTestCase.body
+      NewPresentsOldTestCase.body
+      PresentationStoreOf<BasicsView.Feature>.init
+      PresentationStoreOf<BasicsView.Feature>.init
+      PresentationStoreOf<BasicsView.Feature>.scope
+      PresentationStoreOf<BasicsView.Feature>.scope
+      PresentationStoreOf<BasicsView.Feature>.scope
+      PresentationStoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<NewPresentsOldTestCase.Feature>.scope
       """
     }
   }
@@ -143,7 +236,6 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
     self.app.buttons["iOS 16 + 17"].tap()
     self.assertLogs {
       """
-      PresentationStoreOf<BasicsView.Feature>.deinit
       PresentationStoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature?>.deinit
       """

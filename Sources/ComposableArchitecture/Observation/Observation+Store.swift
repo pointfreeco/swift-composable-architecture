@@ -62,11 +62,7 @@ extension Store where State: ObservableState {
   }
 }
 
-extension Store: Identifiable where State: ObservableState {
-  public var id: ObservableStateID {
-    self.stateSubject.value._$id
-  }
-}
+extension Store: Identifiable {}
 
 extension Store where State: ObservableState {
   // TODO: Document that this should only be used with SwiftUI.

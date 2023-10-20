@@ -442,6 +442,11 @@ public final class Store<State, Action> {
   ) -> Store<ChildState, ChildAction> {
     self.threadCheck(status: .scope)
 
+    guard isInvalid?(self.stateSubject.value) != true else {
+      // NB: This is required for `ForEach` over a binding of stores to not crash when accessing old
+      //     data held by the `ForEach`.
+      return Store<ChildState, ChildAction>()
+    }
     let id = id(self.stateSubject.value)
     if
       let id = id,
@@ -449,16 +454,16 @@ public final class Store<State, Action> {
     {
       return childStore
     }
-    guard isInvalid?(self.stateSubject.value) != true else {
-      // NB: This is required for `ForEach` over a binding of stores to not crash when accessing old
-      //     data held by the `ForEach`.
-      return Store<ChildState, ChildAction>()
-    }
-
-    let isInvalid = { [weak self] in
-      guard let self = self else { return true }
-      return self._isInvalidated() || isInvalid?(self.stateSubject.value) == true
-    }
+    // NB: This strong/weak self dance forces the child to retain the parent when the parent doesn't
+    //     retain the child.
+    let isInvalid = id == nil
+      ? {
+        self._isInvalidated() || isInvalid?(self.stateSubject.value) == true
+      }
+      : { [weak self] in
+        guard let self = self else { return true }
+        return self._isInvalidated() || isInvalid?(self.stateSubject.value) == true
+      }
     let fromChildAction = {
       BindingLocal.isActive && isInvalid() ? nil : fromChildAction($0, $1)
     }

@@ -9,7 +9,7 @@ final class iOS16_17_OldPresentsNewTests: BaseIntegrationTests {
     self.app.buttons["iOS 16 + 17"].tap()
     self.app.buttons["Old presents new"].tap()
     self.clearLogs()
-    //SnapshotTesting.isRecording = true
+    // SnapshotTesting.isRecording = true
   }
 
   func testBasics() {
@@ -31,25 +31,23 @@ final class iOS16_17_OldPresentsNewTests: BaseIntegrationTests {
       """
       ObservableBasicsView.body
       OldPresentsNewTestCase.body
+      OldPresentsNewTestCase.body
       PresentationStoreOf<ObservableBasicsView.Feature>.deinit
       PresentationStoreOf<ObservableBasicsView.Feature>.init
+      PresentationStoreOf<ObservableBasicsView.Feature>.scope
       PresentationStoreOf<ObservableBasicsView.Feature>.scope
       Store<OldPresentsNewTestCase.ViewState, OldPresentsNewTestCase.Feature.Action>.deinit
       Store<OldPresentsNewTestCase.ViewState, OldPresentsNewTestCase.Feature.Action>.init
       StoreOf<ObservableBasicsView.Feature>.init
       StoreOf<ObservableBasicsView.Feature?>.deinit
       StoreOf<ObservableBasicsView.Feature?>.deinit
-      StoreOf<ObservableBasicsView.Feature?>.deinit
-      StoreOf<ObservableBasicsView.Feature?>.deinit
-      StoreOf<ObservableBasicsView.Feature?>.deinit
       StoreOf<ObservableBasicsView.Feature?>.init
       StoreOf<ObservableBasicsView.Feature?>.init
       StoreOf<ObservableBasicsView.Feature?>.init
       StoreOf<ObservableBasicsView.Feature?>.init
       StoreOf<ObservableBasicsView.Feature?>.init
       StoreOf<ObservableBasicsView.Feature?>.init
-      StoreOf<ObservableBasicsView.Feature?>.init
-      StoreOf<ObservableBasicsView.Feature?>.init
+      StoreOf<OldPresentsNewTestCase.Feature>.scope
       StoreOf<OldPresentsNewTestCase.Feature>.scope
       """
     }
@@ -62,7 +60,26 @@ final class iOS16_17_OldPresentsNewTests: BaseIntegrationTests {
     self.app.buttons["Dismiss"].tap()
     self.assertLogs {
       """
-
+      OldPresentsNewTestCase.body
+      PresentationStoreOf<ObservableBasicsView.Feature>.init
+      PresentationStoreOf<ObservableBasicsView.Feature>.scope
+      PresentationStoreOf<ObservableBasicsView.Feature>.scope
+      Store<OldPresentsNewTestCase.ViewState, OldPresentsNewTestCase.Feature.Action>.init
+      StoreOf<ObservableBasicsView.Feature>.deinit
+      StoreOf<ObservableBasicsView.Feature?>.deinit
+      StoreOf<ObservableBasicsView.Feature?>.deinit
+      StoreOf<ObservableBasicsView.Feature?>.deinit
+      StoreOf<ObservableBasicsView.Feature?>.init
+      StoreOf<ObservableBasicsView.Feature?>.init
+      StoreOf<ObservableBasicsView.Feature?>.scope
+      StoreOf<ObservableBasicsView.Feature?>.scope
+      StoreOf<ObservableBasicsView.Feature?>.scope
+      StoreOf<ObservableBasicsView.Feature?>.scope
+      StoreOf<ObservableBasicsView.Feature?>.scope
+      StoreOf<ObservableBasicsView.Feature?>.scope
+      StoreOf<OldPresentsNewTestCase.Feature>.scope
+      StoreOf<OldPresentsNewTestCase.Feature>.scope
+      StoreOf<OldPresentsNewTestCase.Feature>.scope
       """
     }
   }
@@ -98,7 +115,6 @@ final class iOS16_17_OldPresentsNewTests: BaseIntegrationTests {
       StoreOf<ObservableBasicsView.Feature>.init
       StoreOf<ObservableBasicsView.Feature?>.deinit
       StoreOf<ObservableBasicsView.Feature?>.deinit
-      StoreOf<ObservableBasicsView.Feature?>.deinit
       StoreOf<ObservableBasicsView.Feature?>.init
       StoreOf<ObservableBasicsView.Feature?>.init
       StoreOf<ObservableBasicsView.Feature?>.init
@@ -120,7 +136,26 @@ final class iOS16_17_OldPresentsNewTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["Child count: 1"].exists, true)
     self.assertLogs {
       """
-
+      ObservableBasicsView.body
+      ObservableBasicsView.body
+      OldPresentsNewTestCase.body
+      OldPresentsNewTestCase.body
+      PresentationStoreOf<ObservableBasicsView.Feature>.init
+      PresentationStoreOf<ObservableBasicsView.Feature>.scope
+      PresentationStoreOf<ObservableBasicsView.Feature>.scope
+      Store<OldPresentsNewTestCase.ViewState, OldPresentsNewTestCase.Feature.Action>.init
+      StoreOf<ObservableBasicsView.Feature>.init
+      StoreOf<ObservableBasicsView.Feature?>.deinit
+      StoreOf<ObservableBasicsView.Feature?>.init
+      StoreOf<ObservableBasicsView.Feature?>.init
+      StoreOf<ObservableBasicsView.Feature?>.init
+      StoreOf<ObservableBasicsView.Feature?>.init
+      StoreOf<ObservableBasicsView.Feature?>.init
+      StoreOf<ObservableBasicsView.Feature?>.scope
+      StoreOf<ObservableBasicsView.Feature?>.scope
+      StoreOf<ObservableBasicsView.Feature?>.scope
+      StoreOf<ObservableBasicsView.Feature?>.scope
+      StoreOf<OldPresentsNewTestCase.Feature>.scope
       """
     }
   }
@@ -133,7 +168,35 @@ final class iOS16_17_OldPresentsNewTests: BaseIntegrationTests {
     self.app.buttons["Dismiss"].tap()
     self.assertLogs {
       """
-
+      OldPresentsNewTestCase.body
+      OldPresentsNewTestCase.body
+      PresentationStoreOf<ObservableBasicsView.Feature>.init
+      PresentationStoreOf<ObservableBasicsView.Feature>.scope
+      PresentationStoreOf<ObservableBasicsView.Feature>.scope
+      PresentationStoreOf<ObservableBasicsView.Feature>.scope
+      PresentationStoreOf<ObservableBasicsView.Feature>.scope
+      Store<OldPresentsNewTestCase.ViewState, OldPresentsNewTestCase.Feature.Action>.init
+      StoreOf<ObservableBasicsView.Feature>.deinit
+      StoreOf<ObservableBasicsView.Feature?>.deinit
+      StoreOf<ObservableBasicsView.Feature?>.deinit
+      StoreOf<ObservableBasicsView.Feature?>.deinit
+      StoreOf<ObservableBasicsView.Feature?>.deinit
+      StoreOf<ObservableBasicsView.Feature?>.deinit
+      StoreOf<ObservableBasicsView.Feature?>.init
+      StoreOf<ObservableBasicsView.Feature?>.init
+      StoreOf<ObservableBasicsView.Feature?>.init
+      StoreOf<ObservableBasicsView.Feature?>.init
+      StoreOf<ObservableBasicsView.Feature?>.scope
+      StoreOf<ObservableBasicsView.Feature?>.scope
+      StoreOf<ObservableBasicsView.Feature?>.scope
+      StoreOf<ObservableBasicsView.Feature?>.scope
+      StoreOf<ObservableBasicsView.Feature?>.scope
+      StoreOf<ObservableBasicsView.Feature?>.scope
+      StoreOf<ObservableBasicsView.Feature?>.scope
+      StoreOf<ObservableBasicsView.Feature?>.scope
+      StoreOf<OldPresentsNewTestCase.Feature>.scope
+      StoreOf<OldPresentsNewTestCase.Feature>.scope
+      StoreOf<OldPresentsNewTestCase.Feature>.scope
       """
     }
   }
@@ -147,7 +210,6 @@ final class iOS16_17_OldPresentsNewTests: BaseIntegrationTests {
     self.app.buttons["iOS 16 + 17"].tap()
     self.assertLogs {
       """
-      PresentationStoreOf<ObservableBasicsView.Feature>.deinit
       PresentationStoreOf<ObservableBasicsView.Feature>.deinit
       Store<OldPresentsNewTestCase.ViewState, OldPresentsNewTestCase.Feature.Action>.deinit
       StoreOf<ObservableBasicsView.Feature?>.deinit
