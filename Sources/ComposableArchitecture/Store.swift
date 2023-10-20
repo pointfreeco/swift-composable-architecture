@@ -412,7 +412,7 @@ public final class Store<State, Action> {
   /// ``PresentationState`` and ``PresentationAction``.
   ///
   /// - Parameters:
-  ///   - toChildState: A function that transforms `State` into ``PresentationState``.
+  ///   - toChildState: A key path from `State` to ``PresentationState``.
   ///   - fromChildAction: A function that transforms ``PresentationAction`` into `Action`.
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<ChildState, ChildAction>(
