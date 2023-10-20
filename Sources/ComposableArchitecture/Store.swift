@@ -128,6 +128,7 @@ import SwiftUI
 /// the store are also checked to make sure that work is performed on the main thread.
 public final class Store<State, Action> {
   private var bufferedActions: [Action] = []
+  private var children: [AnyHashable: AnyObject] = [:]
   @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] = [:]
   var _isInvalidated = { false }
   private var isSending = false
@@ -372,14 +373,37 @@ public final class Store<State, Action> {
   /// when non-view state changes), and is incapable of sending any actions but view actions.
   ///
   /// - Parameters:
-  ///   - toChildState: A function that transforms `State` into `ChildState`.
+  ///   - toChildState: A key path from `State` to `ChildState`.
   ///   - fromChildAction: A function that transforms `ChildAction` into `Action`.
   /// - Returns: A new store with its domain (state and action) transformed.
+  public func scope<ChildState, ChildAction>(
+    state toChildState: KeyPath<State, ChildState>,
+    action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
+  ) -> Store<ChildState, ChildAction> {
+    self.scope(
+      state: { $0[keyPath: toChildState] },
+      id: { _ in toChildState },
+      action: { fromChildAction($1) },
+      isInvalid: nil,
+      removeDuplicates: nil
+    )
+  }
+
+  @available(iOS, deprecated: 9999, message: "Pass 'state' a key path to child state, instead.")
+  @available(macOS, deprecated: 9999, message: "Pass 'state' a key path to child state, instead.")
+  @available(tvOS, deprecated: 9999, message: "Pass 'state' a key path to child state, instead.")
+  @available(watchOS, deprecated: 9999, message: "Pass 'state' a key path to child state, instead.")
   public func scope<ChildState, ChildAction>(
     state toChildState: @escaping (_ state: State) -> ChildState,
     action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction> {
-    self.scope(state: toChildState, action: fromChildAction, removeDuplicates: nil)
+    self.scope(
+      state: toChildState,
+      id: nil,
+      action: { fromChildAction($1) },
+      isInvalid: nil,
+      removeDuplicates: nil
+    )
   }
 
   /// Scopes the store to one that exposes child state and actions.
@@ -392,41 +416,133 @@ public final class Store<State, Action> {
   ///   - fromChildAction: A function that transforms ``PresentationAction`` into `Action`.
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<ChildState, ChildAction>(
+    state toChildState: KeyPath<State, PresentationState<ChildState>>,
+    action fromChildAction: @escaping (_ presentationAction: PresentationAction<ChildAction>) ->
+      Action
+  ) -> Store<PresentationState<ChildState>, PresentationAction<ChildAction>> {
+    self.scope(
+      state: { $0[keyPath: toChildState] },
+      id: nil,
+      action: { fromChildAction($1) },
+      isInvalid: nil,
+      removeDuplicates: { $0.sharesStorage(with: $1) }
+    )
+  }
+
+  @available(
+    iOS, deprecated: 9999, message: "Pass 'state' a key path to presentation state, instead."
+  )
+  @available(
+    macOS, deprecated: 9999, message: "Pass 'state' a key path to presentation state, instead."
+  )
+  @available(
+    tvOS, deprecated: 9999, message: "Pass 'state' a key path to presentation state, instead."
+  )
+  @available(
+    watchOS, deprecated: 9999, message: "Pass 'state' a key path to presentation state, instead."
+  )
+  public func scope<ChildState, ChildAction>(
     state toChildState: @escaping (_ state: State) -> PresentationState<ChildState>,
     action fromChildAction: @escaping (_ presentationAction: PresentationAction<ChildAction>) ->
       Action
   ) -> Store<PresentationState<ChildState>, PresentationAction<ChildAction>> {
     self.scope(
       state: toChildState,
-      action: fromChildAction,
+      id: nil,
+      action: { fromChildAction($1) },
+      isInvalid: nil,
       removeDuplicates: { $0.sharesStorage(with: $1) }
     )
   }
 
   func scope<ChildState, ChildAction>(
     state toChildState: @escaping (State) -> ChildState,
-    action fromChildAction: @escaping (ChildAction) -> Action,
+    id: ((State) -> AnyHashable)?,
+    action fromChildAction: @escaping (State, ChildAction) -> Action,
+    isInvalid: ((State) -> Bool)?,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
     self.threadCheck(status: .scope)
-    return self.reducer.rescope(
-      self,
-      state: toChildState,
-      action: { fromChildAction($1) },
-      removeDuplicates: isDuplicate
-    )
+
+    let initialChildState = toChildState(self.state.value)
+
+    let id = id?(self.state.value)
+    if
+      let id = id,
+      let childStore = self.children[id] as? Store<ChildState, ChildAction>
+    {
+      return childStore
+    }
+    // NB: This strong/weak self dance forces the child to retain the parent when the parent doesn't
+    //     retain the child.
+    let isInvalid = id == nil
+      ? {
+        self._isInvalidated() || isInvalid?(self.state.value) == true
+      }
+      : { [weak self] in
+        guard let self = self else { return true }
+        return self._isInvalidated() || isInvalid?(self.state.value) == true
+      }
+    let fromChildAction = {
+      BindingLocal.isActive && isInvalid() ? nil : fromChildAction($0, $1)
+    }
+    var isSending = false
+    let childStore = Store<ChildState, ChildAction>(
+      initialState: initialChildState
+    ) {
+      Reduce(internal: { [weak self] childState, childAction in
+        guard let self else { return .none }
+        if isInvalid(), let id = id {
+          self.invalidateChild(id: id)
+        }
+        guard let action = fromChildAction(self.state.value, childAction)
+        else { return .none }
+        isSending = true
+        defer { isSending = false }
+        let task = self.send(action)
+        childState = toChildState(self.state.value)
+        if let task = task.rawValue {
+          return .run { _ in await task.cancellableValue }
+        } else {
+          return .none
+        }
+      })
+    }
+    childStore._isInvalidated = isInvalid
+    childStore.parentCancellable = self.state
+      .dropFirst()
+      .sink { [weak self, weak childStore] state in
+        guard
+          !isSending,
+          let self = self,
+          let childStore = childStore
+        else { return }
+        if childStore._isInvalidated(), let id = id {
+          self.invalidateChild(id: id)
+        }
+        let childState = toChildState(state)
+        guard isDuplicate.map({ !$0(childStore.state.value, childState) }) ?? true else {
+          return
+        }
+        childStore.state.value = childState
+        Logger.shared.log("\(typeName(of: self)).scope")
+      }
+    if let id = id {
+      self.children[id] = childStore
+    }
+    return childStore
   }
 
-  func invalidate(_ isInvalid: @escaping (State) -> Bool) -> Store {
-    self.threadCheck(status: .scope)
-    let store: Store = self.reducer.rescope(
-      self,
-      state: { $0 },
-      action: { state, action in isInvalid(state) && BindingLocal.isActive ? nil : action },
-      removeDuplicates: { isInvalid($0) && isInvalid($1) }
-    )
-    store._isInvalidated = { self._isInvalidated() || isInvalid(self.state.value) }
-    return store
+  fileprivate func invalidate() {
+    for id in self.children.keys {
+      self.invalidateChild(id: id)
+    }
+  }
+
+  private func invalidateChild(id: AnyHashable) {
+    guard self.children.keys.contains(id) else { return }
+    (self.children[id] as? any AnyStore)?.invalidate()
+    self.children[id] = nil
   }
 
   @_spi(Internals)
@@ -697,116 +813,6 @@ public final class Store<State, Action> {
 /// ```
 public typealias StoreOf<R: Reducer> = Store<R.State, R.Action>
 
-extension Reducer {
-  fileprivate func rescope<ChildState, ChildAction>(
-    _ store: Store<State, Action>,
-    state toChildState: @escaping (State) -> ChildState,
-    action fromChildAction: @escaping (ChildState, ChildAction) -> Action?,
-    removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
-  ) -> Store<ChildState, ChildAction> {
-    (self as? any AnyScopedReducer ?? ScopedReducer(rootStore: store)).rescope(
-      store,
-      state: toChildState,
-      action: fromChildAction,
-      removeDuplicates: isDuplicate
-    )
-  }
-}
-
-private final class ScopedReducer<RootState, RootAction, State, Action>: Reducer {
-  let rootStore: Store<RootState, RootAction>
-  let toScopedState: (RootState) -> State
-  private let parentStores: [Any]
-  let fromScopedAction: (State, Action) -> RootAction?
-  private(set) var isSending = false
-
-  @inlinable
-  init(rootStore: Store<RootState, RootAction>)
-  where RootState == State, RootAction == Action {
-    self.rootStore = rootStore
-    self.toScopedState = { $0 }
-    self.parentStores = []
-    self.fromScopedAction = { $1 }
-  }
-
-  @inlinable
-  init(
-    rootStore: Store<RootState, RootAction>,
-    state toScopedState: @escaping (RootState) -> State,
-    action fromScopedAction: @escaping (State, Action) -> RootAction?,
-    parentStores: [Any]
-  ) {
-    self.rootStore = rootStore
-    self.toScopedState = toScopedState
-    self.fromScopedAction = fromScopedAction
-    self.parentStores = parentStores
-  }
-
-  @inlinable
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    self.isSending = true
-    defer {
-      state = self.toScopedState(self.rootStore.state.value)
-      self.isSending = false
-    }
-    if let action = self.fromScopedAction(state, action),
-      let task = self.rootStore.send(action, originatingFrom: nil)
-    {
-      return .run { _ in await task.cancellableValue }
-    } else {
-      return .none
-    }
-  }
-}
-
-protocol AnyScopedReducer {
-  func rescope<ScopedState, ScopedAction, RescopedState, RescopedAction>(
-    _ store: Store<ScopedState, ScopedAction>,
-    state toRescopedState: @escaping (ScopedState) -> RescopedState,
-    action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?,
-    removeDuplicates isDuplicate: ((RescopedState, RescopedState) -> Bool)?
-  ) -> Store<RescopedState, RescopedAction>
-}
-
-extension ScopedReducer: AnyScopedReducer {
-  @inlinable
-  func rescope<ScopedState, ScopedAction, RescopedState, RescopedAction>(
-    _ store: Store<ScopedState, ScopedAction>,
-    state toRescopedState: @escaping (ScopedState) -> RescopedState,
-    action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?,
-    removeDuplicates isDuplicate: ((RescopedState, RescopedState) -> Bool)?
-  ) -> Store<RescopedState, RescopedAction> {
-    let fromScopedAction = self.fromScopedAction as! (ScopedState, ScopedAction) -> RootAction?
-    let reducer = ScopedReducer<RootState, RootAction, RescopedState, RescopedAction>(
-      rootStore: self.rootStore,
-      state: { _ in toRescopedState(store.state.value) },
-      action: { fromRescopedAction($0, $1).flatMap { fromScopedAction(store.state.value, $0) } },
-      parentStores: self.parentStores + [store]
-    )
-    let childStore = Store<RescopedState, RescopedAction>(
-      initialState: toRescopedState(store.state.value)
-    ) {
-      reducer
-    }
-    childStore._isInvalidated = store._isInvalidated
-    childStore.parentCancellable = store.state
-      .dropFirst()
-      .sink { [weak childStore] newValue in
-        guard
-          !reducer.isSending,
-          let childStore = childStore
-        else { return }
-        let newValue = toRescopedState(newValue)
-        guard isDuplicate.map({ !$0(childStore.state.value, newValue) }) ?? true else {
-          return
-        }
-        childStore.state.value = newValue
-        Logger.shared.log("\(typeName(of: store)).scope")
-      }
-    return childStore
-  }
-}
-
 /// A publisher of store state.
 @dynamicMemberLookup
 public struct StorePublisher<State>: Publisher {
@@ -883,6 +889,10 @@ public struct StoreTask: Hashable, Sendable {
   public var isCancelled: Bool {
     self.rawValue?.isCancelled ?? true
   }
+}
+
+private protocol AnyStore {
+  func invalidate()
 }
 
 private func typeName<State, Action>(of store: Store<State, Action>) -> String {

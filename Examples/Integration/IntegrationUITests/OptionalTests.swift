@@ -20,7 +20,6 @@ final class OptionalTests: BaseIntegrationTests {
       PresentationStoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<OptionalView.Feature>.scope
@@ -32,12 +31,8 @@ final class OptionalTests: BaseIntegrationTests {
       """
       BasicsView.body
       OptionalView.body
-      PresentationStoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<OptionalView.Feature>.scope
       StoreOf<OptionalView.Feature>.scope
       """
     }
@@ -60,12 +55,8 @@ final class OptionalTests: BaseIntegrationTests {
       """
       BasicsView.body
       OptionalView.body
-      PresentationStoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<OptionalView.Feature>.scope
       StoreOf<OptionalView.Feature>.scope
       """
     }
