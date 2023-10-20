@@ -2,15 +2,14 @@ import SwiftUI
 
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension NavigationStack {
-  public init<State: ObservableState, Action, Destination, R>(
+  public init<State: ObservableState, Action, Destination: View, R>(
     store: Store<StackState<State>, StackAction<State, Action>>,
     root: () -> R,
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination
   )
   where
-  Data == StackState<State>.PathView,
-Destination: View,
-  Root == ModifiedContent<R, _NavigationDestinationViewModifier<State, Action, Destination>>
+    Data == StackState<State>.PathView,
+    Root == ModifiedContent<R, _NavigationDestinationViewModifier<State, Action, Destination>>
   {
     self.init(
       path: Binding(

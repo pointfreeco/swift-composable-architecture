@@ -440,6 +440,8 @@ public final class Store<State, Action> {
     invalidate isInvalid: ((State) -> Bool)? = nil,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
+    let _ = toChildState(self.observableState)
+
     self.threadCheck(status: .scope)
 
     guard isInvalid?(self.stateSubject.value) != true else {
