@@ -43,9 +43,9 @@ public func _isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
   }
 
   if
-    let lhs = lhs as? any ObservableState,
-    let rhs = rhs as? any ObservableState
+    let lhs = lhs as? any ObservableState
   {
+    let rhs = rhs as! any ObservableState
     return lhs._$id == rhs._$id
   } else if let lhs = lhs as? any Collection {
     return open(lhs, rhs)
