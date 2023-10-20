@@ -54,7 +54,9 @@ struct Nested: Reducer {
 // MARK: - Feature view
 
 struct NestedView: View {
-  let store: StoreOf<Nested>
+  @State var store = Store(initialState: Nested.State(id: UUID())) {
+    Nested()
+  }
 
   var body: some View {
     WithViewStore(self.store, observe: \.name) { viewStore in

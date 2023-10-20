@@ -51,7 +51,9 @@ struct Timers: Reducer {
 // MARK: - Feature view
 
 struct TimersView: View {
-  let store: StoreOf<Timers>
+  @State var store = Store(initialState: Timers.State()) {
+    Timers()
+  }
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in

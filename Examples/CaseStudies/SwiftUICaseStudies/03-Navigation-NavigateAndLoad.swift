@@ -58,7 +58,9 @@ struct NavigateAndLoad: Reducer {
 // MARK: - Feature view
 
 struct NavigateAndLoadView: View {
-  let store: StoreOf<NavigateAndLoad>
+  @State var store = Store(initialState: NavigateAndLoad.State()) {
+    NavigateAndLoad()
+  }
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in

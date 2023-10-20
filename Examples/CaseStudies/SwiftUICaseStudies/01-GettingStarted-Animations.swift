@@ -100,7 +100,9 @@ struct Animations: Reducer {
 // MARK: - Feature view
 
 struct AnimationsView: View {
-  let store: StoreOf<Animations>
+  @State var store = Store(initialState: Animations.State()) {
+    Animations()
+  }
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in

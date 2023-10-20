@@ -69,7 +69,9 @@ private enum ScreenshotsKey: DependencyKey {
 // MARK: - Feature view
 
 struct LongLivingEffectsView: View {
-  let store: StoreOf<LongLivingEffects>
+  @State var store = Store(initialState: LongLivingEffects.State()) {
+    LongLivingEffects()
+  }
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in

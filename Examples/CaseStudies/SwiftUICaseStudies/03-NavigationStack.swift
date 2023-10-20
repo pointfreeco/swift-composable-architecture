@@ -86,7 +86,9 @@ struct NavigationDemo: Reducer {
 }
 
 struct NavigationDemoView: View {
-  let store: StoreOf<NavigationDemo>
+  @State var store = Store(initialState: NavigationDemo.State()) {
+    NavigationDemo()
+  }
 
   var body: some View {
     NavigationStackStore(self.store.scope(state: \.path, action: { .path($0) })) {
