@@ -96,7 +96,9 @@ struct AppFeature: Reducer {
   }
 
   struct Path: Reducer {
+    @CasePathable
     @ObservableState
+    @dynamicMemberLookup
     enum State: Equatable {
       case detail(SyncUpDetail.State)
       case meeting(Meeting, syncUp: SyncUp)
@@ -130,13 +132,13 @@ struct AppView: View {
     } destination: { store in
       switch store.state {
       case .detail:
-        if let store = store.scope(state: /AppFeature.Path.State.detail, action: { .detail($0) }) {
+        if let store = store.scope(state: \.detail, action: { .detail($0) }) {
           SyncUpDetailView(store: store)
         }
       case let .meeting(meeting, syncUp: syncUp):
         MeetingView(meeting: meeting, syncUp: syncUp)
       case .record:
-        if let store = store.scope(state: /AppFeature.Path.State.record, action: { .record($0) }) {
+        if let store = store.scope(state: \.record, action: { .record($0) }) {
           RecordMeetingView(store: store)
         }
       }

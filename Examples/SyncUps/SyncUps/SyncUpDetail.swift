@@ -30,7 +30,9 @@ struct SyncUpDetail: Reducer {
   @Dependency(\.speechClient.authorizationStatus) var authorizationStatus
 
   struct Destination: Reducer {
+    @CasePathable
     @ObservableState
+    @dynamicMemberLookup
     enum State: Equatable {
       case alert(AlertState<Action.Alert>)
       case edit(SyncUpForm.State)
@@ -211,7 +213,7 @@ struct SyncUpDetailView: View {
       )
       .sheet(
         item: self.$store.scope(
-          state: { $0.destination.flatMap(/SyncUpDetail.Destination.State.edit) },
+          state: \.destination?.edit,
           action: { .destination($0.presented { .edit($0) }) }
         )
       ) { store in

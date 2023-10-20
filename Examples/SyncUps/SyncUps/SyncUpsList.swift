@@ -29,7 +29,9 @@ struct SyncUpsList: Reducer {
     case dismissAddSyncUpButtonTapped
   }
   struct Destination: Reducer {
+    @CasePathable
     @ObservableState
+    @dynamicMemberLookup
     enum State: Equatable {
       case add(SyncUpForm.State)
       case alert(AlertState<Action.Alert>)
@@ -130,7 +132,7 @@ struct SyncUpsListView: View {
       )
       .sheet(
         item: self.$store.scope(
-          state: { $0.destination.flatMap(/SyncUpsList.Destination.State.add) },
+          state: \.destination?.add,
           action: { .destination($0.presented { .add($0) }) }
         )
       ) { store in
