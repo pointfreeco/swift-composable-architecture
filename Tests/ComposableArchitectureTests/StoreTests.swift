@@ -160,10 +160,6 @@ final class StoreTests: BaseTCATestCase {
 
     viewStore4.send(())
 
-    #warning("""
-      These numbers went up do to Store.scope's actual argument taking full State instead of
-      child state
-      """)
     XCTAssertEqual(numCalls1, 2)
     XCTAssertEqual(numCalls2, 2)
     XCTAssertEqual(numCalls3, 2)
