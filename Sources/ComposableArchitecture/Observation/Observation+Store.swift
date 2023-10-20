@@ -116,9 +116,12 @@ extension Binding {
     action embedChildAction: @escaping (PresentationAction<ChildAction>) -> Action
   ) -> Binding<Store<ChildState, ChildAction>?>
   where Value == Store<State, Action> {
-    Binding<Store<ChildState, ChildAction>?>(
+    let isExecutingBody = ObservedViewLocal.isExecutingBody
+    return Binding<Store<ChildState, ChildAction>?>(
       get: {
-        self.wrappedValue.scope(state: toChildState, action: { embedChildAction(.presented($0)) })
+        ObservedViewLocal.$isExecutingBody.withValue(isExecutingBody) {
+          self.wrappedValue.scope(state: toChildState, action: { embedChildAction(.presented($0)) })
+        }
       },
       set: {
         if $0 == nil, self.wrappedValue.stateSubject.value[keyPath: toChildState] != nil {

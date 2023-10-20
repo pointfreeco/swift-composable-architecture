@@ -125,21 +125,23 @@ struct AppView: View {
   @State var store: StoreOf<AppFeature>
 
   var body: some View {
-    NavigationStack(store: self.store.scope(state: \.path, action: { .path($0) })) {
-      SyncUpsListView(
-        store: self.store.scope(state: \.syncUpsList, action: { .syncUpsList($0) })
-      )
-    } destination: { store in
-      switch store.state {
-      case .detail:
-        if let store = store.scope(state: \.detail, action: { .detail($0) }) {
-          SyncUpDetailView(store: store)
-        }
-      case let .meeting(meeting, syncUp: syncUp):
-        MeetingView(meeting: meeting, syncUp: syncUp)
-      case .record:
-        if let store = store.scope(state: \.record, action: { .record($0) }) {
-          RecordMeetingView(store: store)
+    ObservedView {
+      NavigationStack(store: self.store.scope(state: \.path, action: { .path($0) })) {
+        SyncUpsListView(
+          store: self.store.scope(state: \.syncUpsList, action: { .syncUpsList($0) })
+        )
+      } destination: { store in
+        switch store.state {
+        case .detail:
+          if let store = store.scope(state: \.detail, action: { .detail($0) }) {
+            SyncUpDetailView(store: store)
+          }
+        case let .meeting(meeting, syncUp: syncUp):
+          MeetingView(meeting: meeting, syncUp: syncUp)
+        case .record:
+          if let store = store.scope(state: \.record, action: { .record($0) }) {
+            RecordMeetingView(store: store)
+          }
         }
       }
     }
