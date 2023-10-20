@@ -119,6 +119,7 @@ extension Binding {
     let isExecutingBody = ObservedViewLocal.isExecutingBody
     return Binding<Store<ChildState, ChildAction>?>(
       get: {
+        // TODO: Is this right? Should we just be more forgiving in bindings?
         ObservedViewLocal.$isExecutingBody.withValue(isExecutingBody) {
           self.wrappedValue.scope(state: toChildState, action: { embedChildAction(.presented($0)) })
         }
