@@ -491,7 +491,7 @@ public final class Store<State, Action> {
       initialState: initialChildState
     ) {
       Reduce(internal: { [weak self] childState, childAction in
-        guard let self else { return .none }
+        guard let self = self else { return .none }
         if isInvalid(), let id = id {
           self.invalidateChild(id: id)
         }
