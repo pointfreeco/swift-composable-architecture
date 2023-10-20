@@ -440,7 +440,7 @@ public final class Store<State, Action> {
     invalidate isInvalid: ((State) -> Bool)? = nil,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
-    let _ = toChildState(self.observableState)
+    let initialChildState = toChildState(self.observableState)
 
     self.threadCheck(status: .scope)
 
@@ -471,7 +471,7 @@ public final class Store<State, Action> {
     }
     var isSending = false
     let childStore = Store<ChildState, ChildAction>(
-      initialState: toChildState(self.stateSubject.value)
+      initialState: initialChildState
     ) {
       Reduce(internal: { [weak self] childState, childAction in
         guard let self else { return .none }
@@ -486,9 +486,13 @@ public final class Store<State, Action> {
         else { return .none }
         isSending = true
         defer { isSending = false }
-        self.send(action)
+        let task = self.send(action)
         childState = toChildState(self.stateSubject.value)
-        return .none
+        if let task = task.rawValue {
+          return .run { _ in await task.cancellableValue }
+        } else {
+          return .none
+        }
       })
     }
     childStore._isInvalidated = isInvalid
