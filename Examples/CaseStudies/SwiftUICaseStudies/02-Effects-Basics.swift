@@ -91,7 +91,9 @@ struct EffectsBasics: Reducer {
 // MARK: - Feature view
 
 struct EffectsBasicsView: View {
-  let store: StoreOf<EffectsBasics>
+  @State var store = Store(initialState: EffectsBasics.State()) {
+    EffectsBasics()
+  }
   @Environment(\.openURL) var openURL
 
   var body: some View {

@@ -46,7 +46,9 @@ struct OptionalBasics: Reducer {
 // MARK: - Feature view
 
 struct OptionalBasicsView: View {
-  let store: StoreOf<OptionalBasics>
+  @State var store = Store(initialState: OptionalBasics.State()) {
+    OptionalBasics()
+  }
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in

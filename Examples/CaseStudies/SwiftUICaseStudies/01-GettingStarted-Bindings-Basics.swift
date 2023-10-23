@@ -60,7 +60,9 @@ struct BindingBasics: Reducer {
 // MARK: - Feature view
 
 struct BindingBasicsView: View {
-  let store: StoreOf<BindingBasics>
+  @State var store = Store(initialState: BindingBasics.State()) {
+    BindingBasics()
+  }
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
