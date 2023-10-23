@@ -127,12 +127,12 @@ struct SyncUpsListView: View {
       }
       .navigationTitle("Daily Sync-ups")
       .alert(
-        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
+        store: self.store.scope(state: \.$destination, action: \.destination),
         state: \.alert,
         action: { .alert($0) }
       )
       .sheet(
-        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
+        store: self.store.scope(state: \.$destination, action: \.destination),
         state: \.add,
         action: { .add($0) }
       ) { store in

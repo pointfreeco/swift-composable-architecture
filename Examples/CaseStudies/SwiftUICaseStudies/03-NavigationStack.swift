@@ -61,6 +61,7 @@ struct NavigationDemo: Reducer {
 
   struct Path: Reducer {
     @CasePathable
+    @dynamicMemberLookup
     enum State: Codable, Equatable, Hashable {
       case screenA(ScreenA.State = .init())
       case screenB(ScreenB.State = .init())
@@ -94,7 +95,7 @@ struct NavigationDemoView: View {
   }
 
   var body: some View {
-    NavigationStackStore(self.store.scope(state: \.path, action: { .path($0) })) {
+    NavigationStackStore(self.store.scope(state: \.path, action: \.path)) {
       Form {
         Section { Text(template: readMe) }
 
@@ -124,19 +125,19 @@ struct NavigationDemoView: View {
       switch $0 {
       case .screenA:
         CaseLet(
-          /NavigationDemo.Path.State.screenA,
+          \NavigationDemo.Path.State.screenA,
           action: NavigationDemo.Path.Action.screenA,
           then: ScreenAView.init(store:)
         )
       case .screenB:
         CaseLet(
-          /NavigationDemo.Path.State.screenB,
+          \NavigationDemo.Path.State.screenB,
           action: NavigationDemo.Path.Action.screenB,
           then: ScreenBView.init(store:)
         )
       case .screenC:
         CaseLet(
-          /NavigationDemo.Path.State.screenC,
+          \NavigationDemo.Path.State.screenC,
           action: NavigationDemo.Path.Action.screenC,
           then: ScreenCView.init(store:)
         )

@@ -90,7 +90,7 @@ struct PresentationItemTestCaseView: View {
         self.behavior = .sheetStores
       }
       self.core.sheet(
-        store: self.store.scope(state: \.$destination, action: { .destination($0) })
+        store: self.store.scope(state: \.$destination, action: \.destination)
       ) { store in
         SwitchStore(store) {
           switch $0 {
@@ -123,7 +123,7 @@ struct PresentationItemTestCaseView: View {
       }
       self.core
         .sheet(
-          store: self.store.scope(state: \.$destination, action: { .destination($0) }),
+          store: self.store.scope(state: \.$destination, action: \.destination),
           state: \.childA,
           action: { .childA($0) }
         ) { store in
@@ -133,7 +133,7 @@ struct PresentationItemTestCaseView: View {
           }
         }
         .sheet(
-          store: self.store.scope(state: \.$destination, action: { .destination($0) }),
+          store: self.store.scope(state: \.$destination, action: \.destination),
           state: \.childB,
           action: { .childB($0) }
         ) { store in

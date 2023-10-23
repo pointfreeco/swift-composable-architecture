@@ -9,6 +9,7 @@ private let readMe = """
 struct MultipleDestinations: Reducer {
   public struct Destination: Reducer {
     @CasePathable
+    @dynamicMemberLookup
     public enum State: Equatable {
       case drillDown(Counter.State)
       case popover(Counter.State)
@@ -91,23 +92,23 @@ struct MultipleDestinationsView: View {
         }
       }
       .navigationDestination(
-        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /MultipleDestinations.Destination.State.drillDown,
-        action: MultipleDestinations.Destination.Action.drillDown
+        store: self.store.scope(state: \.$destination, action: \.destination),
+        state: \.drillDown,
+        action: { .drillDown($0) }
       ) { store in
         CounterView(store: store)
       }
       .popover(
-        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /MultipleDestinations.Destination.State.popover,
-        action: MultipleDestinations.Destination.Action.popover
+        store: self.store.scope(state: \.$destination, action: \.destination),
+        state: \.popover,
+        action: { .popover($0) }
       ) { store in
         CounterView(store: store)
       }
       .sheet(
-        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /MultipleDestinations.Destination.State.sheet,
-        action: MultipleDestinations.Destination.Action.sheet
+        store: self.store.scope(state: \.$destination, action: \.destination),
+        state: \.sheet,
+        action: { .sheet($0) }
       ) { store in
         CounterView(store: store)
       }

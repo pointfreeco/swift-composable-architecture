@@ -67,7 +67,7 @@ struct NestedView: View {
         }
 
         ForEachStore(
-          self.store.scope(state: \.rows, action: { .row(id: $0, action: $1) })
+          self.store.scope(state: \.rows, action: \.row)
         ) { rowStore in
           WithViewStore(rowStore, observe: \.name) { rowViewStore in
             NavigationLink(

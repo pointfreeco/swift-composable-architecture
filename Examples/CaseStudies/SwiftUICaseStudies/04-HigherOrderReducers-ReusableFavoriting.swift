@@ -25,6 +25,7 @@ struct FavoritingState<ID: Hashable & Sendable>: Equatable {
   var isFavorite: Bool
 }
 
+@CasePathable
 enum FavoritingAction: Equatable {
   case alert(PresentationAction<Alert>)
   case buttonTapped
@@ -79,7 +80,7 @@ struct FavoriteButton<ID: Hashable & Sendable>: View {
         Image(systemName: "heart")
           .symbolVariant(viewStore.isFavorite ? .fill : .none)
       }
-      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
+      .alert(store: self.store.scope(state: \.$alert, action: \.alert))
     }
   }
 }
@@ -125,7 +126,7 @@ struct EpisodeView: View {
 
         Spacer()
 
-        FavoriteButton(store: self.store.scope(state: \.favorite, action: { .favorite($0) }))
+        FavoriteButton(store: self.store.scope(state: \.favorite, action: \.favorite))
       }
     }
   }
@@ -164,7 +165,7 @@ struct EpisodesView: View {
         AboutView(readMe: readMe)
       }
       ForEachStore(
-        self.store.scope(state: \.episodes, action: { .episode(id: $0, action: $1) })
+        self.store.scope(state: \.episodes, action: \.episode)
       ) { rowStore in
         EpisodeView(store: rowStore)
       }

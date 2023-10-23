@@ -374,25 +374,49 @@ public final class Store<State, Action> {
   ///
   /// - Parameters:
   ///   - toChildState: A key path from `State` to `ChildState`.
-  ///   - fromChildAction: A function that transforms `ChildAction` into `Action`.
+  ///   - toChildAction: A case key path from `Action` to `ChildAction`.
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<ChildState, ChildAction>(
     state toChildState: KeyPath<State, ChildState>,
-    action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
+    action toChildAction: CaseKeyPath<Action, ChildAction>
   ) -> Store<ChildState, ChildAction> {
     self.scope(
       state: { $0[keyPath: toChildState] },
-      id: { _ in toChildState },
-      action: { fromChildAction($1) },
+      id: { _ in Scope(state: toChildState, action: toChildAction) },
+      action: { toChildAction($1) },
       isInvalid: nil,
       removeDuplicates: nil
     )
   }
 
-  @available(iOS, deprecated: 9999, message: "Pass 'state' a key path to child state, instead.")
-  @available(macOS, deprecated: 9999, message: "Pass 'state' a key path to child state, instead.")
-  @available(tvOS, deprecated: 9999, message: "Pass 'state' a key path to child state, instead.")
-  @available(watchOS, deprecated: 9999, message: "Pass 'state' a key path to child state, instead.")
+  @available(
+    iOS, deprecated: 9999,
+    message:
+      """
+      Pass 'state' a key path to child state and 'action' a case key path to child action, instead.
+      """
+  )
+  @available(
+    macOS, deprecated: 9999,
+    message:
+      """
+      Pass 'state' a key path to child state and 'action' a case key path to child action, instead.
+      """
+  )
+  @available(
+    tvOS, deprecated: 9999,
+    message:
+      """
+      Pass 'state' a key path to child state and 'action' a case key path to child action, instead.
+      """
+  )
+  @available(
+    watchOS, deprecated: 9999,
+    message:
+      """
+      Pass 'state' a key path to child state and 'action' a case key path to child action, instead.
+      """
+  )
   public func scope<ChildState, ChildAction>(
     state toChildState: @escaping (_ state: State) -> ChildState,
     action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
@@ -413,33 +437,48 @@ public final class Store<State, Action> {
   ///
   /// - Parameters:
   ///   - toChildState: A key path from `State` to ``PresentationState``.
-  ///   - fromChildAction: A function that transforms ``PresentationAction`` into `Action`.
+  ///   - toChildAction: A case key path from `Action` to ``PresentationAction``.
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<ChildState, ChildAction>(
     state toChildState: KeyPath<State, PresentationState<ChildState>>,
-    action fromChildAction: @escaping (_ presentationAction: PresentationAction<ChildAction>) ->
-      Action
+    action toChildAction: CaseKeyPath<Action, PresentationAction<ChildAction>>
   ) -> Store<PresentationState<ChildState>, PresentationAction<ChildAction>> {
     self.scope(
       state: { $0[keyPath: toChildState] },
-      id: nil,
-      action: { fromChildAction($1) },
+      id: { _ in Scope(state: toChildState, action: toChildAction) },
+      action: { toChildAction($1) },
       isInvalid: nil,
       removeDuplicates: { $0.sharesStorage(with: $1) }
     )
   }
 
   @available(
-    iOS, deprecated: 9999, message: "Pass 'state' a key path to presentation state, instead."
+    iOS, deprecated: 9999,
+    message:
+      """
+      Pass 'state' a key path to child state and 'action' a case key path to child action, instead.
+      """
   )
   @available(
-    macOS, deprecated: 9999, message: "Pass 'state' a key path to presentation state, instead."
+    macOS, deprecated: 9999,
+    message:
+      """
+      Pass 'state' a key path to child state and 'action' a case key path to child action, instead.
+      """
   )
   @available(
-    tvOS, deprecated: 9999, message: "Pass 'state' a key path to presentation state, instead."
+    tvOS, deprecated: 9999,
+    message:
+      """
+      Pass 'state' a key path to child state and 'action' a case key path to child action, instead.
+      """
   )
   @available(
-    watchOS, deprecated: 9999, message: "Pass 'state' a key path to presentation state, instead."
+    watchOS, deprecated: 9999,
+    message:
+      """
+      Pass 'state' a key path to child state and 'action' a case key path to child action, instead.
+      """
   )
   public func scope<ChildState, ChildAction>(
     state toChildState: @escaping (_ state: State) -> PresentationState<ChildState>,
@@ -467,15 +506,15 @@ public final class Store<State, Action> {
     let initialChildState = toChildState(self.state.value)
 
     let id = id?(self.state.value)
-    if
-      let id = id,
+    if let id = id,
       let childStore = self.children[id] as? Store<ChildState, ChildAction>
     {
       return childStore
     }
     // NB: This strong/weak self dance forces the child to retain the parent when the parent doesn't
     //     retain the child.
-    let isInvalid = id == nil
+    let isInvalid =
+      id == nil
       ? {
         self._isInvalidated() || isInvalid?(self.state.value) == true
       }
@@ -795,6 +834,18 @@ public final class Store<State, Action> {
   /// ```
   public var publisher: StorePublisher<State> {
     StorePublisher(store: self, upstream: self.state)
+  }
+
+  private struct Scope<ChildState, ChildAction>: Hashable {
+    let toChildState: KeyPath<State, ChildState>
+    let toChildAction: CaseKeyPath<Action, ChildAction>
+    init(
+      state toChildState: KeyPath<State, ChildState>,
+      action toChildAction: CaseKeyPath<Action, ChildAction>
+    ) {
+      self.toChildState = toChildState
+      self.toChildAction = toChildAction
+    }
   }
 }
 

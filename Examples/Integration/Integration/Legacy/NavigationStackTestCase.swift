@@ -125,10 +125,9 @@ private struct ChildView: View {
         print("onAppear")
         viewStore.send(.onAppear)
       }
-      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
+      .alert(store: self.store.scope(state: \.$alert, action: \.alert))
       .navigationDestination(
-        store: self.store.scope(
-          state: \.$navigationDestination, action: { .navigationDestination($0) })
+        store: self.store.scope(state: \.$navigationDestination, action: \.navigationDestination)
       ) {
         DestinationView(store: $0)
       }
@@ -184,7 +183,7 @@ struct NavigationStackTestCaseView: View {
   }
 
   var body: some View {
-    NavigationStackStore(self.store.scope(state: \.children, action: { .child($0) })) {
+    NavigationStackStore(self.store.scope(state: \.children, action: \.child)) {
       WithViewStore(self.store, observe: \.childResponse) { viewStore in
         Form {
           if let childResponse = viewStore.state {

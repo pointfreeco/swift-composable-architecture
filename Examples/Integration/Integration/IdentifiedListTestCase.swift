@@ -28,10 +28,10 @@ struct IdentifiedListView: View {
             }
           }
         }
-        ForEachStore(self.store.scope(state: \.rows, action: { .row(id: $0, action: $1) })) {
+        ForEachStore(self.store.scope(state: \.rows, action: \.row)) {
           store in
           let _ = Logger.shared.log("\(Self.self).body.ForEachStore")
-          let idStore = store.scope(state: \.id, action: { $0 })
+          let idStore = store.scope(state: \.id, action: \.self)
           WithViewStore(idStore, observe: { $0 }) { viewStore in
             let _ = Logger.shared.log("\(type(of: idStore))")
             Section {
@@ -61,6 +61,7 @@ struct IdentifiedListView: View {
     struct State: Equatable {
       var rows: IdentifiedArrayOf<BasicsView.Feature.State> = []
     }
+    @CasePathable
     enum Action {
       case addButtonTapped
       case incrementFirstButtonTapped
@@ -83,7 +84,7 @@ struct IdentifiedListView: View {
           return .none
         }
       }
-      .forEach(\.rows, action: /Action.row) {
+      .forEach(\.rows, action: \.row) {
         BasicsView.Feature()
       }
     }

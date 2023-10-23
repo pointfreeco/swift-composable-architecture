@@ -216,12 +216,12 @@ struct SyncUpDetailView: View {
         }
       }
       .alert(
-        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
+        store: self.store.scope(state: \.$destination, action: \.destination),
         state: \.alert,
         action: { .alert($0) }
       )
       .sheet(
-        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
+        store: self.store.scope(state: \.$destination, action: \.destination),
         state: \.edit,
         action: { .edit($0) }
       ) { store in

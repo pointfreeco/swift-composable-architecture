@@ -77,7 +77,7 @@ struct NavigateAndLoadView: View {
           )
         ) {
           IfLetStore(
-            self.store.scope(state: \.optionalCounter, action: { .optionalCounter($0) })
+            self.store.scope(state: \.optionalCounter, action: \.optionalCounter)
           ) {
             CounterView(store: $0)
           } else: {

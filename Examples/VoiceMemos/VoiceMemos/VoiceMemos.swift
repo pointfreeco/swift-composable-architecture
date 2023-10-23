@@ -140,7 +140,7 @@ struct VoiceMemosView: View {
         VStack {
           List {
             ForEachStore(
-              self.store.scope(state: \.voiceMemos, action: { .voiceMemos(id: $0, action: $1) })
+              self.store.scope(state: \.voiceMemos, action: \.voiceMemos)
             ) {
               VoiceMemoView(store: $0)
             }
@@ -148,7 +148,7 @@ struct VoiceMemosView: View {
           }
 
           IfLetStore(
-            self.store.scope(state: \.$recordingMemo, action: { .recordingMemo($0) })
+            self.store.scope(state: \.$recordingMemo, action: \.recordingMemo)
           ) { store in
             RecordingMemoView(store: store)
           } else: {
@@ -162,7 +162,7 @@ struct VoiceMemosView: View {
           .frame(maxWidth: .infinity)
           .background(Color.init(white: 0.95))
         }
-        .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
+        .alert(store: self.store.scope(state: \.$alert, action: \.alert))
         .navigationTitle("Voice memos")
       }
     }

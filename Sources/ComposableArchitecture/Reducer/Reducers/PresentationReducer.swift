@@ -208,12 +208,38 @@ extension PresentationState: CustomReflectable {
 /// See the dedicated article on <doc:Navigation> for more information on the library's navigation
 /// tools, and in particular see <doc:TreeBasedNavigation> for information on modeling navigation
 /// using optionals and enums.
-public enum PresentationAction<Action> {
+public enum PresentationAction<Action>: CasePathable {
   /// An action sent to `nil` out the associated presentation state.
   case dismiss
 
   /// An action sent to the associated, non-`nil` presentation state.
   indirect case presented(Action)
+
+  public static var allCasePaths: AllCasePaths {
+    AllCasePaths()
+  }
+
+  public struct AllCasePaths {
+    public var dismiss: AnyCasePath<PresentationAction, Void> {
+      AnyCasePath(
+        embed: { .dismiss },
+        extract: {
+          guard case .dismiss = $0 else { return nil }
+          return ()
+        }
+      )
+    }
+
+    public var presented: AnyCasePath<PresentationAction, Action> {
+      AnyCasePath(
+        embed: PresentationAction.presented,
+        extract: {
+          guard case let .presented(value) = $0 else { return nil }
+          return value
+        }
+      )
+    }
+  }
 }
 
 extension PresentationAction: Equatable where Action: Equatable {}
