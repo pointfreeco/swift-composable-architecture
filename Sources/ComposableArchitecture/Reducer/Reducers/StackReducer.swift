@@ -58,10 +58,10 @@ public struct StackState<Element> {
   /// > Note: Accessing the wrong case will result in a runtime warning.
   public subscript<Case>(id id: StackElementID, case path: CaseKeyPath<Element, Case>) -> Case?
   where Element: CasePathable {
-    _read { yield self[id: id].flatMap { $0[keyPath: path] } }
+    _read { yield self[id: id].flatMap { $0[case: path] } }
     _modify {
       let root = self[id: id]
-      var value = root.flatMap { $0[keyPath: path] }
+      var value = root.flatMap { $0[case: path] }
       let success = value != nil
       yield &value
       guard success else {
