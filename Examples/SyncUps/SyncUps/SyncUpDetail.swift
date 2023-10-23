@@ -217,10 +217,7 @@ struct SyncUpDetailView: View {
         action: { .alert($0) }
       )
       .sheet(
-        item: self.$store.scope(
-          state: { $0.destination.flatMap(/SyncUpDetail.Destination.State.edit) },
-          action: { .destination($0.presented { .edit($0) }) }
-        )
+        item: self.$store.scope(state: \.destination?.edit, action: \.destination.edit)
       ) { store in
         ObservedView {
           NavigationStack {
