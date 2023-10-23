@@ -62,11 +62,7 @@ extension Store where State: ObservableState {
   }
 }
 
-extension Store: Identifiable where State: ObservableState {
-  public var id: ObservableStateID {
-    self.stateSubject.value._$id
-  }
-}
+extension Store: Identifiable {}
 
 extension Store where State: ObservableState {
   // TODO: Document that this should only be used with SwiftUI.
@@ -101,8 +97,7 @@ extension Store where State: ObservableState {
 }
 
 extension Binding {
-  // TODO: State: ObservableState?
-  public func scope<State, Action, ChildState, ChildAction>(
+  public func scope<State: ObservableState, Action, ChildState, ChildAction>(
     state toChildState: KeyPath<State, ChildState>,
     action toChildAction: CaseKeyPath<Action, ChildAction>
   ) -> Binding<Store<ChildState, ChildAction>>
@@ -113,18 +108,21 @@ extension Binding {
     )
   }
 
-  // TODO: State: ObservableState?
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
     state toChildState: KeyPath<State, ChildState?>,
     action toChildAction: CaseKeyPath<Action, PresentationAction<ChildAction>>
   ) -> Binding<Store<ChildState, ChildAction>?>
   where Value == Store<State, Action> {
-    Binding<Store<ChildState, ChildAction>?>(
+    let isExecutingBody = ObservedViewLocal.isExecutingBody
+    return Binding<Store<ChildState, ChildAction>?>(
       get: {
-        self.wrappedValue.scope(
-          state: toChildState,
-          action: toChildAction.appending(path: \.presented)
-        )
+        // TODO: Is this right? Should we just be more forgiving in bindings?
+        ObservedViewLocal.$isExecutingBody.withValue(isExecutingBody) {
+          self.wrappedValue.scope(
+            state: toChildState,
+            action: toChildAction.appending(path: \.presented)
+          )
+        }
       },
       set: {
         if $0 == nil, self.wrappedValue.stateSubject.value[keyPath: toChildState] != nil {
