@@ -148,7 +148,9 @@ struct Episodes: Reducer {
 }
 
 struct EpisodesView: View {
-  let store: StoreOf<Episodes>
+  @State var store = Store(initialState: Episodes.State()) {
+    Episodes(favorite: favorite(id:isFavorite:))
+  }
 
   var body: some View {
     Form {

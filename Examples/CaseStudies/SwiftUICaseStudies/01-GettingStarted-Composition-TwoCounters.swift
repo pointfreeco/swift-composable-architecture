@@ -33,7 +33,9 @@ struct TwoCounters: Reducer {
 // MARK: - Feature view
 
 struct TwoCountersView: View {
-  let store: StoreOf<TwoCounters>
+  @State var store = Store(initialState: TwoCounters.State()) {
+    TwoCounters()
+  }
 
   var body: some View {
     Form {

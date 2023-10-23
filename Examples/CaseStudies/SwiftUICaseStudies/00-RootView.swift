@@ -3,59 +3,37 @@ import SwiftUI
 
 struct RootView: View {
   @State var isNavigationStackCaseStudyPresented = false
-  let store: StoreOf<Root>
 
   var body: some View {
     NavigationStack {
       Form {
         Section {
           NavigationLink("Basics") {
-            CounterDemoView(
-              store: self.store.scope(state: \.counter, action: { .counter($0) })
-            )
+            CounterDemoView()
           }
           NavigationLink("Combining reducers") {
-            TwoCountersView(
-              store: self.store.scope(state: \.twoCounters, action: { .twoCounters($0) })
-            )
+            TwoCountersView()
           }
           NavigationLink("Bindings") {
-            BindingBasicsView(
-              store: self.store.scope(state: \.bindingBasics, action: { .bindingBasics($0) })
-            )
+            BindingBasicsView()
           }
           NavigationLink("Form bindings") {
-            BindingFormView(
-              store: self.store.scope(state: \.bindingForm, action: { .bindingForm($0) })
-            )
+            BindingFormView()
           }
           NavigationLink("Optional state") {
-            OptionalBasicsView(
-              store: self.store.scope(state: \.optionalBasics, action: { .optionalBasics($0) })
-            )
+            OptionalBasicsView()
           }
           NavigationLink("Shared state") {
-            SharedStateView(
-              store: self.store.scope(state: \.shared, action: { .shared($0) })
-            )
+            SharedStateView()
           }
           NavigationLink("Alerts and Confirmation Dialogs") {
-            AlertAndConfirmationDialogView(
-              store: self.store.scope(
-                state: \.alertAndConfirmationDialog,
-                action: { .alertAndConfirmationDialog($0) }
-              )
-            )
+            AlertAndConfirmationDialogView()
           }
           NavigationLink("Focus State") {
-            FocusDemoView(
-              store: self.store.scope(state: \.focusDemo, action: { .focusDemo($0) })
-            )
+            FocusDemoView()
           }
           NavigationLink("Animations") {
-            AnimationsView(
-              store: self.store.scope(state: \.animation, action: { .animation($0) })
-            )
+            AnimationsView()
           }
         } header: {
           Text("Getting started")
@@ -63,40 +41,22 @@ struct RootView: View {
 
         Section {
           NavigationLink("Basics") {
-            EffectsBasicsView(
-              store: self.store.scope(state: \.effectsBasics, action: { .effectsBasics($0) })
-            )
+            EffectsBasicsView()
           }
           NavigationLink("Cancellation") {
-            EffectsCancellationView(
-              store: self.store.scope(
-                state: \.effectsCancellation,
-                action: { .effectsCancellation($0) }
-              )
-            )
+            EffectsCancellationView()
           }
           NavigationLink("Long-living effects") {
-            LongLivingEffectsView(
-              store: self.store.scope(
-                state: \.longLivingEffects,
-                action: { .longLivingEffects($0) }
-              )
-            )
+            LongLivingEffectsView()
           }
           NavigationLink("Refreshable") {
-            RefreshableView(
-              store: self.store.scope(state: \.refreshable, action: { .refreshable($0) })
-            )
+            RefreshableView()
           }
           NavigationLink("Timers") {
-            TimersView(
-              store: self.store.scope(state: \.timers, action: { .timers($0) })
-            )
+            TimersView()
           }
           NavigationLink("Web socket") {
-            WebSocketView(
-              store: self.store.scope(state: \.webSocket, action: { .webSocket($0) })
-            )
+            WebSocketView()
           }
         } header: {
           Text("Effects")
@@ -109,35 +69,20 @@ struct RootView: View {
           .buttonStyle(.plain)
 
           NavigationLink("Navigate and load data") {
-            NavigateAndLoadView(
-              store: self.store.scope(state: \.navigateAndLoad, action: { .navigateAndLoad($0) })
-            )
+            NavigateAndLoadView()
           }
 
           NavigationLink("Lists: Navigate and load data") {
-            NavigateAndLoadListView(
-              store: self.store.scope(
-                state: \.navigateAndLoadList, action: { .navigateAndLoadList($0) }
-              )
-            )
+            NavigateAndLoadListView()
           }
           NavigationLink("Sheets: Present and load data") {
-            PresentAndLoadView(
-              store: self.store.scope(state: \.presentAndLoad, action: { .presentAndLoad($0) })
-            )
+            PresentAndLoadView()
           }
           NavigationLink("Sheets: Load data then present") {
-            LoadThenPresentView(
-              store: self.store.scope(state: \.loadThenPresent, action: { .loadThenPresent($0) })
-            )
+            LoadThenPresentView()
           }
           NavigationLink("Multiple destinations") {
-            MultipleDestinationsView(
-              store: self.store.scope(
-                state: \.multipleDestinations,
-                action: { .multipleDestinations($0) }
-              )
-            )
+            MultipleDestinationsView()
           }
         } header: {
           Text("Navigation")
@@ -145,33 +90,21 @@ struct RootView: View {
 
         Section {
           NavigationLink("Reusable favoriting component") {
-            EpisodesView(
-              store: self.store.scope(state: \.episodes, action: { .episodes($0) })
-            )
+            EpisodesView()
           }
           NavigationLink("Reusable offline download component") {
-            CitiesView(
-              store: self.store.scope(state: \.map, action: { .map($0) })
-            )
+            CitiesView()
           }
           NavigationLink("Recursive state and actions") {
-            NestedView(
-              store: self.store.scope(state: \.nested, action: { .nested($0) })
-            )
+            NestedView()
           }
         } header: {
           Text("Higher-order reducers")
         }
       }
       .navigationTitle("Case Studies")
-      .onAppear { self.store.send(.onAppear) }
       .sheet(isPresented: self.$isNavigationStackCaseStudyPresented) {
-        NavigationDemoView(
-          store: self.store.scope(
-            state: \.navigationStack,
-            action: { .navigationStack($0) }
-          )
-        )
+        NavigationDemoView()
       }
     }
   }
@@ -181,10 +114,6 @@ struct RootView: View {
 
 struct RootView_Previews: PreviewProvider {
   static var previews: some View {
-    RootView(
-      store: Store(initialState: Root.State()) {
-        Root()
-      }
-    )
+    RootView()
   }
 }

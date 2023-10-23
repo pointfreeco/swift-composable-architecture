@@ -47,7 +47,9 @@ struct FocusDemo: Reducer {
 // MARK: - Feature view
 
 struct FocusDemoView: View {
-  let store: StoreOf<FocusDemo>
+  @State var store = Store(initialState: FocusDemo.State()) {
+    FocusDemo()
+  }
   @FocusState var focusedField: FocusDemo.State.Field?
 
   var body: some View {

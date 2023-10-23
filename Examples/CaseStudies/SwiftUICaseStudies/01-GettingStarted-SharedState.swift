@@ -157,7 +157,9 @@ struct SharedState: Reducer {
 // MARK: - Feature view
 
 struct SharedStateView: View {
-  let store: StoreOf<SharedState>
+  @State var store = Store(initialState: SharedState.State()) {
+    SharedState()
+  }
 
   var body: some View {
     WithViewStore(self.store, observe: \.currentTab) { viewStore in
