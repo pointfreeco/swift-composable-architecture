@@ -80,10 +80,10 @@ public struct PresentationState<State> {
   /// > Note: Accessing the wrong case will result in a runtime warning.
   public subscript<Case>(case path: CaseKeyPath<State, Case>) -> Case?
   where State: CasePathable {
-    _read { yield self.wrappedValue.flatMap { $0[keyPath: path] } }
+    _read { yield self.wrappedValue.flatMap { $0[case: path] } }
     _modify {
       let root = self.wrappedValue
-      var value = root.flatMap { $0[keyPath: path] }
+      var value = root.flatMap { $0[case: path] }
       let success = value != nil
       yield &value
       guard success else {

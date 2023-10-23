@@ -1896,7 +1896,7 @@ extension TestStore {
   ) -> BindingViewStore<State> where State == ViewAction.State, Action: CasePathable {
     BindingViewStore(
       store: Store(initialState: self.state) {
-        BindingReducer(action: { $0[keyPath: toViewAction] })
+        BindingReducer(action: { $0[case: toViewAction] })
       }
       .scope(state: { $0 }, action: { toViewAction($0) })
     )
