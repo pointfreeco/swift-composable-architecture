@@ -138,7 +138,9 @@ struct WebSocket: Reducer {
 // MARK: - Feature view
 
 struct WebSocketView: View {
-  let store: StoreOf<WebSocket>
+  @State var store = Store(initialState: WebSocket.State()) {
+    WebSocket()
+  }
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in

@@ -67,8 +67,10 @@ struct Refreshable: Reducer {
 // MARK: - Feature view
 
 struct RefreshableView: View {
+  @State var store = Store(initialState: Refreshable.State()) {
+    Refreshable()
+  }
   @State var isLoading = false
-  let store: StoreOf<Refreshable>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in

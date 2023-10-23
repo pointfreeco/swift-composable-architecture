@@ -67,7 +67,9 @@ struct EffectsCancellation: Reducer {
 // MARK: - Feature view
 
 struct EffectsCancellationView: View {
-  let store: StoreOf<EffectsCancellation>
+  @State var store = Store(initialState: EffectsCancellation.State()) {
+    EffectsCancellation()
+  }
   @Environment(\.openURL) var openURL
 
   var body: some View {

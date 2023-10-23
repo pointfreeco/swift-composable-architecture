@@ -106,7 +106,9 @@ struct AlertAndConfirmationDialog: Reducer {
 // MARK: - Feature view
 
 struct AlertAndConfirmationDialogView: View {
-  let store: StoreOf<AlertAndConfirmationDialog>
+  @State var store = Store(initialState: AlertAndConfirmationDialog.State()) {
+    AlertAndConfirmationDialog()
+  }
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in

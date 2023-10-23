@@ -59,7 +59,9 @@ struct PresentAndLoad: Reducer {
 // MARK: - Feature view
 
 struct PresentAndLoadView: View {
-  let store: StoreOf<PresentAndLoad>
+  @State var store = Store(initialState: PresentAndLoad.State()) {
+    PresentAndLoad()
+  }
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in

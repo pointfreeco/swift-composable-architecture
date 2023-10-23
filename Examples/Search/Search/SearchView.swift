@@ -165,7 +165,7 @@ struct SearchView: View {
       }
       .task(id: viewStore.searchQuery) {
         do {
-          try await Task.sleep(for: .seconds(3))
+          try await Task.sleep(for: .milliseconds(300))
           await viewStore.send(.searchQueryChangeDebounced).finish()
         } catch {}
       }

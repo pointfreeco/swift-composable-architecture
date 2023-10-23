@@ -70,7 +70,9 @@ struct MultipleDestinations: Reducer {
 }
 
 struct MultipleDestinationsView: View {
-  let store: StoreOf<MultipleDestinations>
+  @State var store = Store(initialState: MultipleDestinations.State()) {
+    MultipleDestinations()
+  }
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in

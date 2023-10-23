@@ -153,7 +153,9 @@ struct MapApp: Reducer {
 }
 
 struct CitiesView: View {
-  let store: StoreOf<MapApp>
+  @State var store = Store(initialState: MapApp.State(cityMaps: .mocks)) {
+    MapApp()
+  }
 
   var body: some View {
     Form {
