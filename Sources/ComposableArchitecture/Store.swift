@@ -513,14 +513,16 @@ public final class Store<State, Action> {
   ) -> Store<ChildState, ChildAction> {
     self.threadCheck(status: .scope)
 
-    let initialChildState = toChildState(self.observableState)
-
     let id = id?(self.stateSubject.value)
     if let id = id,
       let childStore = self.children[id] as? Store<ChildState, ChildAction>
     {
+      _ = toChildState(self.observableState)
       return childStore
     }
+
+    let initialChildState = toChildState(self.observableState)
+
     // NB: This strong/weak self dance forces the child to retain the parent when the parent doesn't
     //     retain the child.
     let isInvalid =
@@ -568,6 +570,10 @@ public final class Store<State, Action> {
         else { return }
         if childStore._isInvalidated(), let id = id {
           self.invalidateChild(id: id)
+          guard ChildState.self is _OptionalProtocol.Type
+          else {
+            return
+          }
         }
         let childState = toChildState(state)
         guard isDuplicate.map({ !$0(childStore.stateSubject.value, childState) }) ?? true else {
@@ -955,6 +961,9 @@ public struct StoreTask: Hashable, Sendable {
 private protocol AnyStore {
   func invalidate()
 }
+
+private protocol _OptionalProtocol {}
+extension Optional: _OptionalProtocol {}
 
 private func typeName<State, Action>(of store: Store<State, Action>) -> String {
   let stateType = typeName(State.self, genericsAbbreviated: false)
