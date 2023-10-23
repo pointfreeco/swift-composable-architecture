@@ -10,6 +10,7 @@ struct NavigationDemo: Reducer {
     var path = StackState<Path.State>()
   }
 
+  @CasePathable
   enum Action: Equatable {
     case goBackToScreen(id: StackElementID)
     case goToABCButtonTapped
@@ -53,18 +54,21 @@ struct NavigationDemo: Reducer {
         return .none
       }
     }
-    .forEach(\.path, action: /Action.path) {
+    .forEach(\.path, action: \.path) {
       Path()
     }
   }
 
   struct Path: Reducer {
+    @CasePathable
+    @dynamicMemberLookup
     enum State: Codable, Equatable, Hashable {
       case screenA(ScreenA.State = .init())
       case screenB(ScreenB.State = .init())
       case screenC(ScreenC.State = .init())
     }
 
+    @CasePathable
     enum Action: Equatable {
       case screenA(ScreenA.Action)
       case screenB(ScreenB.Action)
@@ -72,13 +76,13 @@ struct NavigationDemo: Reducer {
     }
 
     var body: some Reducer<State, Action> {
-      Scope(state: /State.screenA, action: /Action.screenA) {
+      Scope(state: \.screenA, action: \.screenA) {
         ScreenA()
       }
-      Scope(state: /State.screenB, action: /Action.screenB) {
+      Scope(state: \.screenB, action: \.screenB) {
         ScreenB()
       }
-      Scope(state: /State.screenC, action: /Action.screenC) {
+      Scope(state: \.screenC, action: \.screenC) {
         ScreenC()
       }
     }
@@ -86,10 +90,12 @@ struct NavigationDemo: Reducer {
 }
 
 struct NavigationDemoView: View {
-  let store: StoreOf<NavigationDemo>
+  @State var store = Store(initialState: NavigationDemo.State()) {
+    NavigationDemo()
+  }
 
   var body: some View {
-    NavigationStackStore(self.store.scope(state: \.path, action: { .path($0) })) {
+    NavigationStackStore(self.store.scope(state: \.path, action: \.path)) {
       Form {
         Section { Text(template: readMe) }
 
@@ -119,19 +125,19 @@ struct NavigationDemoView: View {
       switch $0 {
       case .screenA:
         CaseLet(
-          /NavigationDemo.Path.State.screenA,
+          \NavigationDemo.Path.State.screenA,
           action: NavigationDemo.Path.Action.screenA,
           then: ScreenAView.init(store:)
         )
       case .screenB:
         CaseLet(
-          /NavigationDemo.Path.State.screenB,
+          \NavigationDemo.Path.State.screenB,
           action: NavigationDemo.Path.Action.screenB,
           then: ScreenBView.init(store:)
         )
       case .screenC:
         CaseLet(
-          /NavigationDemo.Path.State.screenC,
+          \NavigationDemo.Path.State.screenC,
           action: NavigationDemo.Path.Action.screenC,
           then: ScreenCView.init(store:)
         )

@@ -15,6 +15,7 @@ private struct ChildFeature: Reducer {
     var count = 0
     var hasAppeared = false
   }
+  @CasePathable
   enum Action {
     case alert(PresentationAction<Alert>)
     case navigationDestination(PresentationAction<Never>)
@@ -77,8 +78,8 @@ private struct ChildFeature: Reducer {
         return .none
       }
     }
-    .ifLet(\.$alert, action: /Action.alert)
-    .ifLet(\.$navigationDestination, action: /Action.navigationDestination) {
+    .ifLet(\.$alert, action: \.alert)
+    .ifLet(\.$navigationDestination, action: \.navigationDestination) {
       EmptyReducer()
     }
   }
@@ -124,10 +125,9 @@ private struct ChildView: View {
         print("onAppear")
         viewStore.send(.onAppear)
       }
-      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
+      .alert(store: self.store.scope(state: \.$alert, action: \.alert))
       .navigationDestination(
-        store: self.store.scope(
-          state: \.$navigationDestination, action: { .navigationDestination($0) })
+        store: self.store.scope(state: \.$navigationDestination, action: \.navigationDestination)
       ) {
         DestinationView(store: $0)
       }
@@ -140,6 +140,7 @@ private struct NavigationStackTestCase: Reducer {
     var children = StackState<ChildFeature.State>()
     var childResponse: Int?
   }
+  @CasePathable
   enum Action {
     case child(StackAction<ChildFeature.State, ChildFeature.Action>)
   }
@@ -162,7 +163,7 @@ private struct NavigationStackTestCase: Reducer {
         return .none
       }
     }
-    .forEach(\.children, action: /Action.child) { ChildFeature() }
+    .forEach(\.children, action: \.child) { ChildFeature() }
   }
 }
 
@@ -182,7 +183,7 @@ struct NavigationStackTestCaseView: View {
   }
 
   var body: some View {
-    NavigationStackStore(self.store.scope(state: \.children, action: { .child($0) })) {
+    NavigationStackStore(self.store.scope(state: \.children, action: \.child)) {
       WithViewStore(self.store, observe: \.childResponse) { viewStore in
         Form {
           if let childResponse = viewStore.state {

@@ -30,6 +30,7 @@ func testLimitedAvailability() {
   }
 }
 
+@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 private struct Root: Reducer {
   struct State {
     var feature: Feature.State
@@ -148,10 +149,11 @@ private struct IfLetExample: Reducer {
   enum Action {}
 
   var body: some ReducerOf<Self> {
-    EmptyReducer().ifLet(\.optional, action: .self) { EmptyReducer() }
+    EmptyReducer().ifLet(\.optional, action: \.self) { EmptyReducer() }
   }
 }
 
+@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 private struct IfCaseLetExample: Reducer {
   enum State {
     case value(Int)
@@ -160,10 +162,11 @@ private struct IfCaseLetExample: Reducer {
   enum Action {}
 
   var body: some ReducerOf<Self> {
-    EmptyReducer().ifCaseLet(/State.value, action: .self) { EmptyReducer() }
+    EmptyReducer().ifCaseLet(/State.value, action: AnyCasePath()) { EmptyReducer() }
   }
 }
 
+@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 private struct ForEachExample: Reducer {
   struct Element: Identifiable { let id: Int }
 
@@ -191,9 +194,9 @@ private struct ScopeIfLetExample: Reducer {
   enum Action {}
 
   var body: some ReducerOf<Self> {
-    Scope(state: \.self, action: .self) {
+    Scope(state: \.self, action: \.self) {
       EmptyReducer()
-        .ifLet(\.optionalSelf, action: .self) {
+        .ifLet(\.optionalSelf, action: \.self) {
           EmptyReducer()
         }
     }

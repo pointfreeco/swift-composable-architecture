@@ -8,6 +8,7 @@ struct AppFeature: Reducer {
     var syncUpsList = SyncUpsList.State()
   }
 
+  @CasePathable
   enum Action: Equatable {
     case path(StackAction<Path.State, Path.Action>)
     case syncUpsList(SyncUpsList.Action)
@@ -23,7 +24,7 @@ struct AppFeature: Reducer {
   }
 
   var body: some ReducerOf<Self> {
-    Scope(state: \.syncUpsList, action: /Action.syncUpsList) {
+    Scope(state: \.syncUpsList, action: \.syncUpsList) {
       SyncUpsList()
     }
     Reduce { state, action in
@@ -59,7 +60,7 @@ struct AppFeature: Reducer {
             return .none
           }
 
-          state.path[id: id, case: /Path.State.detail]?.syncUp.meetings.insert(
+          state.path[id: id, case: \.detail]?.syncUp.meetings.insert(
             Meeting(
               id: Meeting.ID(self.uuid()),
               date: self.now,
@@ -67,7 +68,7 @@ struct AppFeature: Reducer {
             ),
             at: 0
           )
-          guard let syncUp = state.path[id: id, case: /Path.State.detail]?.syncUp
+          guard let syncUp = state.path[id: id, case: \.detail]?.syncUp
           else { return .none }
           state.syncUpsList.syncUps[id: syncUp.id] = syncUp
           return .none
@@ -80,7 +81,7 @@ struct AppFeature: Reducer {
         return .none
       }
     }
-    .forEach(\.path, action: /Action.path) {
+    .forEach(\.path, action: \.path) {
       Path()
     }
 
@@ -96,23 +97,26 @@ struct AppFeature: Reducer {
   }
 
   struct Path: Reducer {
+    @CasePathable
     @ObservableState
+    @dynamicMemberLookup
     enum State: Equatable {
       case detail(SyncUpDetail.State)
       case meeting(Meeting, syncUp: SyncUp)
       case record(RecordMeeting.State)
     }
 
+    @CasePathable
     enum Action: Equatable {
       case detail(SyncUpDetail.Action)
       case record(RecordMeeting.Action)
     }
 
     var body: some Reducer<State, Action> {
-      Scope(state: /State.detail, action: /Action.detail) {
+      Scope(state: \.detail, action: \.detail) {
         SyncUpDetail()
       }
-      Scope(state: /State.record, action: /Action.record) {
+      Scope(state: \.record, action: \.record) {
         RecordMeeting()
       }
     }
@@ -123,20 +127,20 @@ struct AppView: View {
   @State var store: StoreOf<AppFeature>
 
   var body: some View {
-    NavigationStack(store: self.store.scope(state: \.path, action: { .path($0) })) {
+    NavigationStack(store: self.store.scope(state: \.path, action: \.path)) {
       SyncUpsListView(
-        store: self.store.scope(state: \.syncUpsList, action: { .syncUpsList($0) })
+        store: self.store.scope(state: \.syncUpsList, action: \.syncUpsList)
       )
     } destination: { store in
       switch store.state {
       case .detail:
-        if let store = store.scope(state: /AppFeature.Path.State.detail, action: { .detail($0) }) {
+        if let store = store.scope(state: \.detail, action: \.detail) {
           SyncUpDetailView(store: store)
         }
       case let .meeting(meeting, syncUp: syncUp):
         MeetingView(meeting: meeting, syncUp: syncUp)
       case .record:
-        if let store = store.scope(state: /AppFeature.Path.State.record, action: { .record($0) }) {
+        if let store = store.scope(state: \.record, action: \.record) {
           RecordMeetingView(store: store)
         }
       }

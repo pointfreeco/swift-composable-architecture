@@ -97,9 +97,7 @@ final class SyncUpDetailTests: XCTestCase {
 
     syncUp.title = "Blob's Meeting"
     await store.send(.destination(.presented(.edit(.set(\.$syncUp, syncUp))))) {
-      try (/SyncUpDetail.Destination.State.edit).modify(&$0.destination) {
-        $0.syncUp.title = "Blob's Meeting"
-      }
+      $0.$destination[case: \.edit]?.syncUp.title = "Blob's Meeting"
     }
 
     await store.send(.doneEditingButtonTapped) {

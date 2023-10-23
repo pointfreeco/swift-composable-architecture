@@ -120,7 +120,7 @@ public class NewGameViewController: UIViewController {
       .store(in: &self.cancellables)
 
     self.store
-      .scope(state: \.game, action: { .game(.presented($0)) })
+      .scope(state: \.game, action: \.game.presented)
       .ifLet(
         then: { [weak self] gameStore in
           self?.navigationController?.pushViewController(

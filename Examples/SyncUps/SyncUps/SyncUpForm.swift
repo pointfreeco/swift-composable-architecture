@@ -22,6 +22,8 @@ struct SyncUpForm: Reducer {
       case title
     }
   }
+
+  @CasePathable
   enum Action: BindableAction, Equatable, Sendable {
     case addAttendeeButtonTapped
     case binding(BindingAction<State>)

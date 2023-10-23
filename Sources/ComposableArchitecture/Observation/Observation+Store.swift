@@ -83,8 +83,9 @@ extension Store where State: ObservableState {
         initialChildState = childState
         return childState
       },
+      id: nil,
       action: { fromChildAction($1) },
-      invalidate: { toChildState($0) == nil },
+      isInvalid: { toChildState($0) == nil },
       removeDuplicates: nil
     )
   }

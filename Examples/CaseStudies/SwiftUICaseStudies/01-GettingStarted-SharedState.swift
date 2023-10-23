@@ -46,6 +46,7 @@ struct SharedState: Reducer {
     }
   }
 
+  @CasePathable
   enum Action: Equatable {
     case counter(Counter.Action)
     case profile(Profile.Action)
@@ -53,11 +54,11 @@ struct SharedState: Reducer {
   }
 
   var body: some Reducer<State, Action> {
-    Scope(state: \.counter, action: /Action.counter) {
+    Scope(state: \.counter, action: \.counter) {
       Counter()
     }
 
-    Scope(state: \.profile, action: /Action.profile) {
+    Scope(state: \.profile, action: \.profile) {
       Profile()
     }
 
@@ -81,6 +82,7 @@ struct SharedState: Reducer {
       var numberOfCounts = 0
     }
 
+    @CasePathable
     enum Action: Equatable {
       case alert(PresentationAction<Alert>)
       case decrementButtonTapped
@@ -119,7 +121,7 @@ struct SharedState: Reducer {
           return .none
         }
       }
-      .ifLet(\.$alert, action: /Action.alert)
+      .ifLet(\.$alert, action: \.alert)
     }
   }
 
@@ -157,7 +159,9 @@ struct SharedState: Reducer {
 // MARK: - Feature view
 
 struct SharedStateView: View {
-  let store: StoreOf<SharedState>
+  @State var store = Store(initialState: SharedState.State()) {
+    SharedState()
+  }
 
   var body: some View {
     WithViewStore(self.store, observe: \.currentTab) { viewStore in
@@ -173,13 +177,13 @@ struct SharedStateView: View {
 
         if viewStore.state == .counter {
           SharedStateCounterView(
-            store: self.store.scope(state: \.counter, action: { .counter($0) })
+            store: self.store.scope(state: \.counter, action: \.counter)
           )
         }
 
         if viewStore.state == .profile {
           SharedStateProfileView(
-            store: self.store.scope(state: \.profile, action: { .profile($0) })
+            store: self.store.scope(state: \.profile, action: \.profile)
           )
         }
 
@@ -221,7 +225,7 @@ struct SharedStateCounterView: View {
       }
       .padding(.top)
       .navigationTitle("Shared State Demo")
-      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
+      .alert(store: self.store.scope(state: \.$alert, action: \.alert))
     }
   }
 }

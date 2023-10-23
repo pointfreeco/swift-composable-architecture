@@ -57,8 +57,9 @@ where
     get {
       self.scope(
         state: { $0[Action.index(at: Action.id(at: position, elements: $0), elements: $0)!] },
+        id: { Action.id(at: position, elements: $0) },
         action: { .element(id: Action.id(at: position, elements: $0), action: $1) },
-        invalidate: {
+        isInvalid: {
           !(
             $0.indices.contains(position)
               && Action.index(at: Action.id(at: position, elements: $0), elements: $0) != nil

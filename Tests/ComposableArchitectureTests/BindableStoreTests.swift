@@ -4,6 +4,7 @@ import SwiftUI
 import XCTest
 
 @MainActor
+@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 final class BindableStoreTests: XCTestCase {
   func testBindableStore() {
     struct BindableReducer: Reducer {

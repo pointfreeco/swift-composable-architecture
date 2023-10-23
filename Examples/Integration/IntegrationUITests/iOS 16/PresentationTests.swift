@@ -28,75 +28,14 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
       StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
       """
     }
     self.app.buttons["Increment"].tap()
-    self.assertLogs {
-      """
-      BasicsView.body
-      BasicsView.body
-      PresentationStoreOf<BasicsView.Feature>.scope
-      PresentationStoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<PresentationView.Feature>.scope
-      StoreOf<PresentationView.Feature>.scope
-      """
-    }
+    self.assertLogs ()
     self.app.buttons["Dismiss"].firstMatch.tap()
-    self.assertLogs {
-      """
-      PresentationStoreOf<BasicsView.Feature>.scope
-      PresentationStoreOf<BasicsView.Feature>.scope
-      PresentationStoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<PresentationView.Feature>.scope
-      StoreOf<PresentationView.Feature>.scope
-      StoreOf<PresentationView.Feature>.scope
-      StoreOf<PresentationView.Feature>.scope
-      """
-    }
+    self.assertLogs()
   }
 
   func testOptional_ObserveChildCount() {
@@ -114,7 +53,6 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
       StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
       """
@@ -127,77 +65,9 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
       """
     }
     self.app.buttons["Increment"].tap()
-    self.assertLogs {
-      """
-      BasicsView.body
-      BasicsView.body
-      PresentationStoreOf<BasicsView.Feature>.scope
-      PresentationStoreOf<BasicsView.Feature>.scope
-      PresentationStoreOf<BasicsView.Feature>.scope
-      PresentationView.body
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<PresentationView.Feature>.scope
-      StoreOf<PresentationView.Feature>.scope
-      """
-    }
+    self.assertLogs()
     XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
     self.app.buttons["Dismiss"].firstMatch.tap()
-    self.assertLogs {
-      """
-      PresentationStoreOf<BasicsView.Feature>.scope
-      PresentationStoreOf<BasicsView.Feature>.scope
-      PresentationStoreOf<BasicsView.Feature>.scope
-      PresentationStoreOf<BasicsView.Feature>.scope
-      PresentationView.body
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<PresentationView.Feature>.scope
-      StoreOf<PresentationView.Feature>.scope
-      StoreOf<PresentationView.Feature>.scope
-      StoreOf<PresentationView.Feature>.scope
-      """
-    }
+    self.assertLogs()
   }
 }

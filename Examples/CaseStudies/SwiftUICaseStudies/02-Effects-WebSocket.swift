@@ -26,6 +26,7 @@ struct WebSocket: Reducer {
     }
   }
 
+  @CasePathable
   enum Action: Equatable {
     case alert(PresentationAction<Alert>)
     case connectButtonTapped
@@ -130,14 +131,16 @@ struct WebSocket: Reducer {
         return .none
       }
     }
-    .ifLet(\.$alert, action: /Action.alert)
+    .ifLet(\.$alert, action: \.alert)
   }
 }
 
 // MARK: - Feature view
 
 struct WebSocketView: View {
-  let store: StoreOf<WebSocket>
+  @State var store = Store(initialState: WebSocket.State()) {
+    WebSocket()
+  }
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -183,7 +186,7 @@ struct WebSocketView: View {
           Text("Received messages")
         }
       }
-      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
+      .alert(store: self.store.scope(state: \.$alert, action: \.alert))
       .navigationTitle("Web Socket")
     }
   }

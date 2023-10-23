@@ -1,7 +1,7 @@
-# ``ComposableArchitecture/Store/scope(state:action:)-9iai9``
+# ``ComposableArchitecture/Store/scope(state:action:)-9syqx``
 
 ## Topics
 
 ### Overloads
 
-- ``scope(state:action:)-hei8``
+- ``scope(state:action:)-3ulzv``

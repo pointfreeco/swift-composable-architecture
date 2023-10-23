@@ -32,7 +32,6 @@
 		CABC4F3926AEE00C00D5FA2C /* 02-Effects-Refreshable.swift in Sources */ = {isa = PBXBuildFile; fileRef = CABC4F3826AEE00C00D5FA2C /* 02-Effects-Refreshable.swift */; };
 		CABC4F3B26AEE20200D5FA2C /* 02-Effects-RefreshableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CABC4F3A26AEE20200D5FA2C /* 02-Effects-RefreshableTests.swift */; };
 		CAE962FD24A7F7BE00EFC025 /* 01-GettingStarted-AlertsAndConfirmationDialogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAE962FC24A7F7BE00EFC025 /* 01-GettingStarted-AlertsAndConfirmationDialogs.swift */; };
-		CAF069D024ACC5AF00A1AAEF /* 00-Core.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF069CF24ACC5AF00A1AAEF /* 00-Core.swift */; };
 		CAF88E7324B8E26D00539345 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF88E7224B8E26D00539345 /* AppDelegate.swift */; };
 		CAF88E7524B8E26D00539345 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF88E7424B8E26D00539345 /* RootView.swift */; };
 		CAF88E7724B8E26E00539345 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CAF88E7624B8E26E00539345 /* Assets.xcassets */; };
@@ -173,7 +172,6 @@
 		CABC4F3826AEE00C00D5FA2C /* 02-Effects-Refreshable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-Refreshable.swift"; sourceTree = "<group>"; };
 		CABC4F3A26AEE20200D5FA2C /* 02-Effects-RefreshableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-RefreshableTests.swift"; sourceTree = "<group>"; };
 		CAE962FC24A7F7BE00EFC025 /* 01-GettingStarted-AlertsAndConfirmationDialogs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-AlertsAndConfirmationDialogs.swift"; sourceTree = "<group>"; };
-		CAF069CF24ACC5AF00A1AAEF /* 00-Core.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "00-Core.swift"; sourceTree = "<group>"; };
 		CAF88E7024B8E26D00539345 /* tvOSCaseStudies.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = tvOSCaseStudies.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CAF88E7224B8E26D00539345 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CAF88E7424B8E26D00539345 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
@@ -387,7 +385,6 @@
 			isa = PBXGroup;
 			children = (
 				DC89C42424460F96006900B9 /* Info.plist */,
-				CAF069CF24ACC5AF00A1AAEF /* 00-Core.swift */,
 				DC89C41A24460F95006900B9 /* 00-RootView.swift */,
 				CAE962FC24A7F7BE00EFC025 /* 01-GettingStarted-AlertsAndConfirmationDialogs.swift */,
 				DC88D8A5245341EC0077F427 /* 01-GettingStarted-Animations.swift */,
@@ -737,7 +734,6 @@
 				DCC68EE12447C4630037F998 /* 01-GettingStarted-Composition-TwoCounters.swift in Sources */,
 				DC072322244663B1003A8B65 /* 03-Navigation-Sheet-LoadThenPresent.swift in Sources */,
 				DC89C45324465452006900B9 /* 03-Navigation-Lists-NavigateAndLoad.swift in Sources */,
-				CAF069D024ACC5AF00A1AAEF /* 00-Core.swift in Sources */,
 				DCC68EE32447C8540037F998 /* 04-HigherOrderReducers-ReusableFavoriting.swift in Sources */,
 				CA3E421F26B8337500581ABC /* 01-GettingStarted-FocusState.swift in Sources */,
 				DCC68EDF2447BC810037F998 /* TemplateText.swift in Sources */,

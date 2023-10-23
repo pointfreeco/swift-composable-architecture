@@ -98,7 +98,9 @@ struct EffectsBasics: Reducer {
 
 //@WithViewStore(send:)
 struct EffectsBasicsView: View {
-  let store: StoreOf<EffectsBasics>
+  @State var store = Store(initialState: EffectsBasics.State()) {
+    EffectsBasics()
+  }
   @Environment(\.openURL) var openURL
 
   var body: some View {

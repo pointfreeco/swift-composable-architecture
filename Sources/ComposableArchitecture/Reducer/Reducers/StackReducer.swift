@@ -56,7 +56,34 @@ public struct StackState<Element> {
   /// Accesses the value associated with the given id and case for reading and writing.
   ///
   /// > Note: Accessing the wrong case will result in a runtime warning.
-  public subscript<Case>(id id: StackElementID, case path: CasePath<Element, Case>) -> Case? {
+  public subscript<Case>(id id: StackElementID, case path: CaseKeyPath<Element, Case>) -> Case?
+  where Element: CasePathable {
+    _read { yield self[id: id].flatMap { $0[case: path] } }
+    _modify {
+      let root = self[id: id]
+      var value = root.flatMap { $0[case: path] }
+      let success = value != nil
+      yield &value
+      guard success else {
+        var description: String?
+        if let root = root,
+          let metadata = EnumMetadata(Element.self),
+          let caseName = metadata.caseName(forTag: metadata.tag(of: root))
+        {
+          description = caseName
+        }
+        runtimeWarn(
+          """
+          Can't modify unrelated case\(description.map { " \($0.debugDescription)" } ?? "")
+          """
+        )
+        return
+      }
+      self[id: id] = value.map { path($0) }
+    }
+  }
+
+  public subscript<Case>(id id: StackElementID, case path: AnyCasePath<Element, Case>) -> Case? {
     _read { yield self[id: id].flatMap(path.extract) }
     _modify {
       let root = self[id: id]
@@ -176,7 +203,7 @@ extension StackState: CustomDumpReflectable {
 /// See the dedicated article on <doc:Navigation> for more information on the library's navigation
 /// tools, and in particular see <doc:StackBasedNavigation> for information on modeling navigation
 /// using ``StackAction`` for navigation stacks.
-public enum StackAction<State, Action> {
+public enum StackAction<State, Action>: CasePathable {
   /// An action sent to the associated stack element at a given identifier.
   indirect case element(id: StackElementID, action: Action)
 
@@ -186,6 +213,42 @@ public enum StackAction<State, Action> {
   /// An action sent to present the given state at a given identifier in a navigation stack. This
   /// action is typically sent from the view via the `NavigationLink(value:)` initializer.
   case push(id: StackElementID, state: State)
+
+  public static var allCasePaths: AllCasePaths {
+    AllCasePaths()
+  }
+
+  public struct AllCasePaths {
+    public var element: AnyCasePath<StackAction, (id: StackElementID, action: Action)> {
+      AnyCasePath(
+        embed: StackAction.element,
+        extract: {
+          guard case let .element(id, action) = $0 else { return nil }
+          return (id: id, action: action)
+        }
+      )
+    }
+
+    public var popFrom: AnyCasePath<StackAction, StackElementID> {
+      AnyCasePath(
+        embed: StackAction.popFrom,
+        extract: {
+          guard case let .popFrom(id) = $0 else { return nil }
+          return id
+        }
+      )
+    }
+
+    public var push: AnyCasePath<StackAction, (id: StackElementID, state: State)> {
+      AnyCasePath(
+        embed: StackAction.push,
+        extract: {
+          guard case let .push(id, state) = $0 else { return nil }
+          return (id: id, state: state)
+        }
+      )
+    }
+  }
 }
 
 extension StackAction: Equatable where State: Equatable, Action: Equatable {}
@@ -255,7 +318,27 @@ extension Reducer {
   @warn_unqualified_access
   public func forEach<DestinationState, DestinationAction, Destination: Reducer>(
     _ toStackState: WritableKeyPath<State, StackState<DestinationState>>,
-    action toStackAction: CasePath<Action, StackAction<DestinationState, DestinationAction>>,
+    action toStackAction: CaseKeyPath<Action, StackAction<DestinationState, DestinationAction>>,
+    @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> _StackReducer<Self, Destination>
+  where Destination.State == DestinationState, Destination.Action == DestinationAction {
+    _StackReducer(
+      base: self,
+      toStackState: toStackState,
+      toStackAction: AnyCasePath(toStackAction),
+      destination: destination(),
+      fileID: fileID,
+      line: line
+    )
+  }
+
+  @inlinable
+  @warn_unqualified_access
+  public func forEach<DestinationState, DestinationAction, Destination: Reducer>(
+    _ toStackState: WritableKeyPath<State, StackState<DestinationState>>,
+    action toStackAction: AnyCasePath<Action, StackAction<DestinationState, DestinationAction>>,
     @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -275,7 +358,7 @@ extension Reducer {
 public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
   let base: Base
   let toStackState: WritableKeyPath<Base.State, StackState<Destination.State>>
-  let toStackAction: CasePath<Base.Action, StackAction<Destination.State, Destination.Action>>
+  let toStackAction: AnyCasePath<Base.Action, StackAction<Destination.State, Destination.Action>>
   let destination: Destination
   let fileID: StaticString
   let line: UInt
@@ -286,7 +369,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
   init(
     base: Base,
     toStackState: WritableKeyPath<Base.State, StackState<Destination.State>>,
-    toStackAction: CasePath<Base.Action, StackAction<Destination.State, Destination.Action>>,
+    toStackAction: AnyCasePath<Base.Action, StackAction<Destination.State, Destination.Action>>,
     destination: Destination,
     fileID: StaticString,
     line: UInt

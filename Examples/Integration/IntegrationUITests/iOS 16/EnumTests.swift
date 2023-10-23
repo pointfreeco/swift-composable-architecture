@@ -15,74 +15,10 @@ final class iOS16_EnumTests: BaseIntegrationTests {
   func testBasics() {
     self.app.buttons["Toggle feature 1 on"].tap()
     XCTAssertEqual(self.app.staticTexts["FEATURE 1"].exists, true)
-    self.assertLogs {
-      """
-      BasicsView.body
-      EnumView.body
-      EnumView.body
-      PresentationStoreOf<EnumView.Feature.Destination>.deinit
-      PresentationStoreOf<EnumView.Feature.Destination>.init
-      Store<EnumView.ViewState, EnumView.Feature.Action>.deinit
-      Store<EnumView.ViewState, EnumView.Feature.Action>.init
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<EnumView.Feature.Destination>.init
-      StoreOf<EnumView.Feature.Destination>.init
-      StoreOf<EnumView.Feature.Destination?>.deinit
-      StoreOf<EnumView.Feature.Destination?>.deinit
-      StoreOf<EnumView.Feature.Destination?>.deinit
-      StoreOf<EnumView.Feature.Destination?>.init
-      StoreOf<EnumView.Feature.Destination?>.init
-      StoreOf<EnumView.Feature.Destination?>.init
-      StoreOf<EnumView.Feature.Destination?>.init
-      StoreOf<EnumView.Feature>.scope
-      """
-    }
+    self.assertLogs()
     self.app.buttons["Increment"].tap()
     XCTAssertEqual(self.app.staticTexts["1"].exists, true)
-    self.assertLogs {
-      """
-      BasicsView.body
-      BasicsView.body
-      EnumView.body
-      PresentationStoreOf<EnumView.Feature.Destination>.init
-      PresentationStoreOf<EnumView.Feature.Destination>.scope
-      Store<EnumView.ViewState, EnumView.Feature.Action>.deinit
-      Store<EnumView.ViewState, EnumView.Feature.Action>.init
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<EnumView.Feature.Destination>.deinit
-      StoreOf<EnumView.Feature.Destination>.init
-      StoreOf<EnumView.Feature.Destination>.init
-      StoreOf<EnumView.Feature.Destination>.scope
-      StoreOf<EnumView.Feature.Destination>.scope
-      StoreOf<EnumView.Feature.Destination?>.deinit
-      StoreOf<EnumView.Feature.Destination?>.init
-      StoreOf<EnumView.Feature.Destination?>.init
-      StoreOf<EnumView.Feature.Destination?>.init
-      StoreOf<EnumView.Feature.Destination?>.init
-      StoreOf<EnumView.Feature.Destination?>.scope
-      StoreOf<EnumView.Feature.Destination?>.scope
-      StoreOf<EnumView.Feature.Destination?>.scope
-      StoreOf<EnumView.Feature.Destination?>.scope
-      StoreOf<EnumView.Feature>.scope
-      StoreOf<EnumView.Feature>.scope
-      """
-    }
+    self.assertLogs()
   }
 
   func testToggle1On_Toggle1Off() {
@@ -102,14 +38,12 @@ final class iOS16_EnumTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
       StoreOf<EnumView.Feature.Destination>.scope
       StoreOf<EnumView.Feature.Destination>.scope
       StoreOf<EnumView.Feature.Destination?>.deinit
       StoreOf<EnumView.Feature.Destination?>.init
       StoreOf<EnumView.Feature.Destination?>.init
       StoreOf<EnumView.Feature.Destination?>.init
-      StoreOf<EnumView.Feature.Destination?>.scope
       StoreOf<EnumView.Feature.Destination?>.scope
       StoreOf<EnumView.Feature.Destination?>.scope
       StoreOf<EnumView.Feature.Destination?>.scope
@@ -143,8 +77,6 @@ final class iOS16_EnumTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<EnumView.Feature.Destination>.deinit
@@ -156,7 +88,6 @@ final class iOS16_EnumTests: BaseIntegrationTests {
       StoreOf<EnumView.Feature.Destination?>.init
       StoreOf<EnumView.Feature.Destination?>.init
       StoreOf<EnumView.Feature.Destination?>.init
-      StoreOf<EnumView.Feature.Destination?>.scope
       StoreOf<EnumView.Feature.Destination?>.scope
       StoreOf<EnumView.Feature.Destination?>.scope
       StoreOf<EnumView.Feature>.scope
@@ -171,74 +102,6 @@ final class iOS16_EnumTests: BaseIntegrationTests {
     self.clearLogs()
     self.app.buttons["Dismiss"].tap()
     XCTAssertEqual(self.app.staticTexts["FEATURE 1"].exists, false)
-    self.assertLogs {
-      """
-      BasicsView.body
-      EnumView.body
-      EnumView.body
-      EnumView.body
-      PresentationStoreOf<EnumView.Feature.Destination>.init
-      PresentationStoreOf<EnumView.Feature.Destination>.init
-      PresentationStoreOf<EnumView.Feature.Destination>.scope
-      PresentationStoreOf<EnumView.Feature.Destination>.scope
-      PresentationStoreOf<EnumView.Feature.Destination>.scope
-      Store<EnumView.ViewState, EnumView.Feature.Action>.deinit
-      Store<EnumView.ViewState, EnumView.Feature.Action>.deinit
-      Store<EnumView.ViewState, EnumView.Feature.Action>.init
-      Store<EnumView.ViewState, EnumView.Feature.Action>.init
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<EnumView.Feature.Destination>.deinit
-      StoreOf<EnumView.Feature.Destination>.init
-      StoreOf<EnumView.Feature.Destination>.init
-      StoreOf<EnumView.Feature.Destination>.scope
-      StoreOf<EnumView.Feature.Destination>.scope
-      StoreOf<EnumView.Feature.Destination>.scope
-      StoreOf<EnumView.Feature.Destination>.scope
-      StoreOf<EnumView.Feature.Destination>.scope
-      StoreOf<EnumView.Feature.Destination?>.deinit
-      StoreOf<EnumView.Feature.Destination?>.deinit
-      StoreOf<EnumView.Feature.Destination?>.init
-      StoreOf<EnumView.Feature.Destination?>.init
-      StoreOf<EnumView.Feature.Destination?>.init
-      StoreOf<EnumView.Feature.Destination?>.init
-      StoreOf<EnumView.Feature.Destination?>.init
-      StoreOf<EnumView.Feature.Destination?>.init
-      StoreOf<EnumView.Feature.Destination?>.init
-      StoreOf<EnumView.Feature.Destination?>.scope
-      StoreOf<EnumView.Feature.Destination?>.scope
-      StoreOf<EnumView.Feature.Destination?>.scope
-      StoreOf<EnumView.Feature.Destination?>.scope
-      StoreOf<EnumView.Feature.Destination?>.scope
-      StoreOf<EnumView.Feature.Destination?>.scope
-      StoreOf<EnumView.Feature.Destination?>.scope
-      StoreOf<EnumView.Feature.Destination?>.scope
-      StoreOf<EnumView.Feature.Destination?>.scope
-      StoreOf<EnumView.Feature.Destination?>.scope
-      StoreOf<EnumView.Feature>.scope
-      StoreOf<EnumView.Feature>.scope
-      StoreOf<EnumView.Feature>.scope
-      StoreOf<EnumView.Feature>.scope
-      StoreOf<EnumView.Feature>.scope
-      """
-    }
+    self.assertLogs()
   }
 }

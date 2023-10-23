@@ -9,6 +9,7 @@ struct DownloadComponent: Reducer {
     let url: URL
   }
 
+  @CasePathable
   enum Action: Equatable {
     case alert(PresentationAction<Alert>)
     case buttonTapped
@@ -80,7 +81,7 @@ struct DownloadComponent: Reducer {
         return .none
       }
     }
-    .ifLet(\.$alert, action: /Action.alert)
+    .ifLet(\.$alert, action: \.alert)
   }
 
   private var deleteAlert: AlertState<Action.Alert> {
@@ -162,7 +163,7 @@ struct DownloadComponentView: View {
         }
       }
       .foregroundStyle(.primary)
-      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
+      .alert(store: self.store.scope(state: \.$alert, action: \.alert))
     }
   }
 }

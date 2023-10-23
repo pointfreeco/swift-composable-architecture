@@ -22,13 +22,13 @@ final class AppFeatureTests: XCTestCase {
     }
 
     await store.send(.path(.element(id: 0, action: .detail(.deleteButtonTapped)))) {
-      $0.path[id: 0, case: /AppFeature.Path.State.detail]?.destination = .alert(.deleteSyncUp)
+      $0.path[id: 0, case: \.detail]?.destination = .alert(.deleteSyncUp)
     }
 
     await store.send(
       .path(.element(id: 0, action: .detail(.destination(.presented(.alert(.confirmDeletion))))))
     ) {
-      $0.path[id: 0, case: /AppFeature.Path.State.detail]?.destination = nil
+      $0.path[id: 0, case: \.detail]?.destination = nil
     }
 
     await store.receive(.path(.element(id: 0, action: .detail(.delegate(.deleteSyncUp))))) {
@@ -61,7 +61,7 @@ final class AppFeatureTests: XCTestCase {
     }
 
     await store.send(.path(.element(id: 0, action: .detail(.editButtonTapped)))) {
-      $0.path[id: 0, case: /AppFeature.Path.State.detail]?.destination = .edit(
+      $0.path[id: 0, case: \.detail]?.destination = .edit(
         SyncUpForm.State(syncUp: syncUp)
       )
     }
@@ -75,15 +75,12 @@ final class AppFeatureTests: XCTestCase {
         )
       )
     ) {
-      $0.path[id: 0, case: /AppFeature.Path.State.detail]?
-        .$destination[case: /SyncUpDetail.Destination.State.edit]?.syncUp.title = "Blob"
+      $0.path[id: 0, case: \.detail]?.$destination[case: \.edit]?.syncUp.title = "Blob"
     }
 
     await store.send(.path(.element(id: 0, action: .detail(.doneEditingButtonTapped)))) {
-      XCTModify(&$0.path[id: 0], case: /AppFeature.Path.State.detail) {
-        $0.destination = nil
-        $0.syncUp.title = "Blob"
-      }
+      $0.path[id: 0, case: \.detail]?.destination = nil
+      $0.path[id: 0, case: \.detail]?.syncUp.title = "Blob"
     }
 
     await store.receive(
@@ -145,7 +142,7 @@ final class AppFeatureTests: XCTestCase {
         .element(id: 1, action: .record(.delegate(.save(transcript: "I completed the project"))))
       )
     ) {
-      $0.path[id: 0, case: /AppFeature.Path.State.detail]?.syncUp.meetings = [
+      $0.path[id: 0, case: \.detail]?.syncUp.meetings = [
         Meeting(
           id: Meeting.ID(UUID(0)),
           date: Date(timeIntervalSince1970: 1_234_567_890),

@@ -2,6 +2,7 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
+@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 final class IfCaseLetReducerTests: BaseTCATestCase {
   func testChildAction() async {
     struct SomeError: Error, Equatable {}
@@ -10,7 +11,7 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
       Reduce<Result<Int, SomeError>, Result<Int, SomeError>> { state, action in
         .none
       }
-      .ifCaseLet(/Result.success, action: /Result.success) {
+      .ifCaseLet(\.success, action: \.success) {
         Reduce { state, action in
           state = action
           return state < 0 ? .run { await $0(0) } : .none
@@ -36,7 +37,7 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
 
       let store = TestStore(initialState: Result.failure(SomeError())) {
         EmptyReducer<Result<Int, SomeError>, Result<Int, SomeError>>()
-          .ifCaseLet(/Result.success, action: /Result.success) {}
+          .ifCaseLet(\.success, action: \.success) {}
       }
 
       XCTExpectFailure {

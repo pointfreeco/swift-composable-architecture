@@ -15,6 +15,7 @@ struct SpeechRecognition: Reducer {
     var transcribedText = ""
   }
 
+  @CasePathable
   enum Action: Equatable {
     case alert(PresentationAction<Alert>)
     case recordButtonTapped
@@ -103,7 +104,7 @@ struct SpeechRecognition: Reducer {
         }
       }
     }
-    .ifLet(\.$alert, action: /Action.alert)
+    .ifLet(\.$alert, action: \.alert)
   }
 }
 
@@ -147,7 +148,7 @@ struct SpeechRecognitionView: View {
         }
       }
       .padding()
-      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
+      .alert(store: self.store.scope(state: \.$alert, action: \.alert))
     }
   }
 }

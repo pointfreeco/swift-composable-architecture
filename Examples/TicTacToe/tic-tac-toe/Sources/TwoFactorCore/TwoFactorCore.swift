@@ -16,6 +16,8 @@ public struct TwoFactor: Reducer, Sendable {
     }
   }
 
+  @CasePathable
+  @dynamicMemberLookup
   public enum Action: Equatable, Sendable {
     case alert(PresentationAction<Alert>)
     case twoFactorResponse(TaskResult<AuthenticationResponse>)
@@ -23,6 +25,7 @@ public struct TwoFactor: Reducer, Sendable {
 
     public enum Alert: Equatable, Sendable {}
 
+    @CasePathable
     public enum View: BindableAction, Equatable, Sendable {
       case binding(BindingAction<State>)
       case submitButtonTapped
@@ -34,7 +37,7 @@ public struct TwoFactor: Reducer, Sendable {
   public init() {}
 
   public var body: some ReducerOf<Self> {
-    BindingReducer(action: /Action.view)
+    BindingReducer(action: \.view)
     Reduce { state, action in
       switch action {
       case .alert:
@@ -66,6 +69,6 @@ public struct TwoFactor: Reducer, Sendable {
         }
       }
     }
-    .ifLet(\.$alert, action: /Action.alert)
+    .ifLet(\.$alert, action: \.alert)
   }
 }

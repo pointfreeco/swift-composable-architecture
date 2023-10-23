@@ -10,12 +10,12 @@ struct SiblingFeaturesView: View {
     VStack {
       Form {
         BasicsView(
-          store: self.store.scope(state: \.child1, action: { .child1($0) })
+          store: self.store.scope(state: \.child1, action: \.child1)
         )
       }
       Form {
         BasicsView(
-          store: self.store.scope(state: \.child2, action: { .child2($0) })
+          store: self.store.scope(state: \.child2, action: \.child2)
         )
       }
       Spacer()
@@ -38,6 +38,7 @@ struct SiblingFeaturesView: View {
       var child1 = BasicsView.Feature.State()
       var child2 = BasicsView.Feature.State()
     }
+    @CasePathable
     enum Action {
       case child1(BasicsView.Feature.Action)
       case child2(BasicsView.Feature.Action)
@@ -46,10 +47,10 @@ struct SiblingFeaturesView: View {
       case swapButtonTapped
     }
     var body: some ReducerOf<Self> {
-      Scope(state: \.child1, action: /Action.child1) {
+      Scope(state: \.child1, action: \.child1) {
         BasicsView.Feature()
       }
-      Scope(state: \.child2, action: /Action.child2) {
+      Scope(state: \.child2, action: \.child2) {
         BasicsView.Feature()
       }
       Reduce { state, action in

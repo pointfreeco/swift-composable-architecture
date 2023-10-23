@@ -5,12 +5,13 @@ struct Root: Reducer {
     var focus = Focus.State()
   }
 
+  @CasePathable
   enum Action {
     case focus(Focus.Action)
   }
 
   var body: some Reducer<State, Action> {
-    Scope(state: \.focus, action: /Action.focus) {
+    Scope(state: \.focus, action: \.focus) {
       Focus()
     }
   }
