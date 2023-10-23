@@ -10,6 +10,7 @@ public struct NewGame: Reducer {
     public init() {}
   }
 
+  @CasePathable
   public enum Action: Equatable {
     case game(PresentationAction<Game.Action>)
     case letsPlayButtonTapped
@@ -45,7 +46,7 @@ public struct NewGame: Reducer {
         return .none
       }
     }
-    .ifLet(\.$game, action: /NewGame.Action.game) {
+    .ifLet(\.$game, action: \.game) {
       Game()
     }
   }
