@@ -42,8 +42,7 @@ public func _isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
     return lhs.count == rhs.count && zip(lhs, rhs).allSatisfy(_isIdentityEqual)
   }
 
-  if let lhs = lhs as? any ObservableState {
-    let rhs = rhs as! any ObservableState
+  if let lhs = lhs as? any ObservableState, let rhs = rhs as? any ObservableState {
     return lhs._$id == rhs._$id
   } else if let lhs = lhs as? any Collection {
     return open(lhs, rhs)

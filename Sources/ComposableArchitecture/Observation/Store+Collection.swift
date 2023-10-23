@@ -122,11 +122,12 @@ extension Reducer {
     ElementsAction: CollectionAction<ElementsState>
   >(
     _ stateKeyPath: WritableKeyPath<State, ElementsState>,
-    action actionCasePath: CasePath<Action, ElementsAction>,
+    action actionCasePath: CaseKeyPath<Action, ElementsAction>,
     @ReducerBuilder<ElementsState.Element, ElementsAction.ElementAction> _ element:
       () -> some Reducer<ElementsState.Element, ElementsAction.ElementAction>
   ) -> some ReducerOf<Self>
   where
+    Action: CasePathable,
     ElementsState.Element: ObservableState,
     ElementsState.Index: Hashable & Sendable
   {
@@ -146,17 +147,18 @@ private struct _ForEachCollectionReducer<
   Element: Reducer<ElementsState.Element, ElementsAction.ElementAction>
 >: Reducer
 where
+  Base.Action: CasePathable,
   ElementsState.Element: ObservableState,
   ElementsState.Index: Hashable & Sendable
 {
   let base: Base
   let stateKeyPath: WritableKeyPath<Base.State, ElementsState>
-  let actionCasePath: CasePath<Base.Action, ElementsAction>
+  let actionCasePath: CaseKeyPath<Base.Action, ElementsAction>
   let element: Element
 
   func reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action> {
     var elementEffects: Effect<Base.Action> = .none
-    element: if let elementAction = self.actionCasePath.extract(from: action) {
+    element: if let elementAction = action[case: self.actionCasePath] {
       guard let element = elementAction.element
       else { break element }
       guard let index = ElementsAction.index(at: element.id, elements: state[keyPath: stateKeyPath])
@@ -169,7 +171,7 @@ where
           into: &state[keyPath: self.stateKeyPath][index],
           action: element.action
         )
-        .map { self.actionCasePath.embed(.element(id: element.id, action: $0)) }
+        .map { self.actionCasePath(.element(id: element.id, action: $0)) }
     }
     return .merge(
       elementEffects,

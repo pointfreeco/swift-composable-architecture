@@ -47,7 +47,6 @@ final class iOS16_17_NewOldSiblingsTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      ObservableBasicsView.body
       StoreOf<BasicsView.Feature>.scope
       StoreOf<NewOldSiblingsView.Feature>.scope
       StoreOf<NewOldSiblingsView.Feature>.scope
@@ -68,7 +67,6 @@ final class iOS16_17_NewOldSiblingsTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      ObservableBasicsView.body
       StoreOf<BasicsView.Feature>.scope
       StoreOf<NewOldSiblingsView.Feature>.scope
       StoreOf<NewOldSiblingsView.Feature>.scope

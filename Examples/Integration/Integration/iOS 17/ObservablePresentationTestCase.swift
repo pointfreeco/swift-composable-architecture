@@ -33,8 +33,8 @@ struct ObservablePresentationView: View {
       }
       .fullScreenCover(
         item: self.$store.scope(
-          state: { $0.destination.flatMap(/Feature.Destination.State.fullScreenCover) },
-          action: { .destination($0.presented { .fullScreenCover($0) }) }
+          state: \.destination?.fullScreenCover,
+          action: \.destination.fullScreenCover
         )
       ) { store in
         NavigationStack {
@@ -52,10 +52,7 @@ struct ObservablePresentationView: View {
         }
       }
       .popover(
-        item: self.$store.scope(
-          state: { $0.destination.flatMap(/Feature.Destination.State.popover) },
-          action: { .destination($0.presented { .popover($0) }) }
-        )
+        item: self.$store.scope(state: \.destination?.popover, action: \.destination.popover)
       ) { store in
         NavigationStack {
           Form {
@@ -71,7 +68,7 @@ struct ObservablePresentationView: View {
           }
         }
       }
-      .sheet(item: self.$store.scope(state: \.sheet, action: { .sheet($0) })) { store in
+      .sheet(item: self.$store.scope(state: \.sheet, action: \.sheet)) { store in
         NavigationStack {
           Form {
             ObservableBasicsView(store: store)
@@ -104,6 +101,7 @@ struct ObservablePresentationView: View {
       @ObservationStateIgnored
       @PresentationState var sheet: ObservableBasicsView.Feature.State?
     }
+    @CasePathable
     enum Action {
       case destination(PresentationAction<Destination.Action>)
       case dismissButtonTapped
@@ -114,20 +112,23 @@ struct ObservablePresentationView: View {
       case toggleObserveChildCountButtonTapped
     }
     struct Destination: Reducer {
+      @CasePathable
       @ObservableState
+      @dynamicMemberLookup
       enum State: Equatable {
         case fullScreenCover(ObservableBasicsView.Feature.State)
         case popover(ObservableBasicsView.Feature.State)
       }
+      @CasePathable
       enum Action {
         case fullScreenCover(ObservableBasicsView.Feature.Action)
         case popover(ObservableBasicsView.Feature.Action)
       }
       var body: some ReducerOf<Self> {
-        Scope(state: /State.fullScreenCover, action: /Action.fullScreenCover) {
+        Scope(state: \.fullScreenCover, action: \.fullScreenCover) {
           ObservableBasicsView.Feature()
         }
-        Scope(state: /State.popover, action: /Action.popover) {
+        Scope(state: \.popover, action: \.popover) {
           ObservableBasicsView.Feature()
         }
       }
@@ -157,10 +158,10 @@ struct ObservablePresentationView: View {
           return .none
         }
       }
-      .ifLet(\.$destination, action: /Action.destination) {
+      .ifLet(\.$destination, action: \.destination) {
         Destination()
       }
-      .ifLet(\.$sheet, action: /Action.sheet) {
+      .ifLet(\.$sheet, action: \.sheet) {
         ObservableBasicsView.Feature()
       }
     }

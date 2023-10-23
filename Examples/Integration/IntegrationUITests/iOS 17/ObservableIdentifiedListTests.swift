@@ -20,16 +20,6 @@ final class iOS17_ObservableIdentifiedListTests: BaseIntegrationTests {
       ObservableIdentifiedListView.body
       ObservableIdentifiedListView.body.ForEach
       ObservableIdentifiedListView.body.ForEach
-      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, IdentifiedArrayAction<ObservableBasicsView.Feature>>.deinit
-      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, IdentifiedArrayAction<ObservableBasicsView.Feature>>.init
-      StoreOf<ObservableBasicsView.Feature>.deinit
-      StoreOf<ObservableBasicsView.Feature>.deinit
-      StoreOf<ObservableBasicsView.Feature>.deinit
-      StoreOf<ObservableBasicsView.Feature>.deinit
-      StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableBasicsView.Feature>.init
       StoreOf<ObservableBasicsView.Feature>.init
       StoreOf<ObservableIdentifiedListView.Feature>.scope
       """
@@ -48,26 +38,7 @@ final class iOS17_ObservableIdentifiedListTests: BaseIntegrationTests {
       ObservableIdentifiedListView.body
       ObservableIdentifiedListView.body.ForEach
       ObservableIdentifiedListView.body.ForEach
-      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, IdentifiedArrayAction<ObservableBasicsView.Feature>>.init
       Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, IdentifiedArrayAction<ObservableBasicsView.Feature>>.scope
-      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, IdentifiedArrayAction<ObservableBasicsView.Feature>>.scope
-      StoreOf<ObservableBasicsView.Feature>.deinit
-      StoreOf<ObservableBasicsView.Feature>.deinit
-      StoreOf<ObservableBasicsView.Feature>.deinit
-      StoreOf<ObservableBasicsView.Feature>.deinit
-      StoreOf<ObservableBasicsView.Feature>.deinit
-      StoreOf<ObservableBasicsView.Feature>.deinit
-      StoreOf<ObservableBasicsView.Feature>.deinit
-      StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableIdentifiedListView.Feature>.scope
-      StoreOf<ObservableIdentifiedListView.Feature>.scope
       """
     }
   }
@@ -82,9 +53,6 @@ final class iOS17_ObservableIdentifiedListTests: BaseIntegrationTests {
       """
       ObservableBasicsView.body
       Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, IdentifiedArrayAction<ObservableBasicsView.Feature>>.scope
-      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, IdentifiedArrayAction<ObservableBasicsView.Feature>>.scope
-      StoreOf<ObservableIdentifiedListView.Feature>.scope
-      StoreOf<ObservableIdentifiedListView.Feature>.scope
       """
     }
   }

@@ -846,7 +846,7 @@ public final class Store<State, Action> {
     StorePublisher(store: self, upstream: self.stateSubject)
   }
 
-  private struct Scope<ChildState, ChildAction>: Hashable {
+  struct Scope<ChildState, ChildAction>: Hashable {
     let toChildState: KeyPath<State, ChildState>
     let toChildAction: CaseKeyPath<Action, ChildAction>
     init(

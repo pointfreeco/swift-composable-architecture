@@ -25,7 +25,7 @@ struct NewPresentsOldTestCase: View {
         Button("Present child") { self.store.send(.presentChildButtonTapped) }
       }
     }
-    .sheet(store: self.store.scope(state: \.$child, action: { .child($0) })) { store in
+    .sheet(store: self.store.scope(state: \.$child, action: \.child)) { store in
       Form {
         BasicsView(store: store)
       }
@@ -41,6 +41,7 @@ struct NewPresentsOldTestCase: View {
       var count = 0
       var isObservingChildCount = false
     }
+    @CasePathable
     enum Action {
       case child(PresentationAction<BasicsView.Feature.Action>)
       case incrementButtonTapped
@@ -63,7 +64,7 @@ struct NewPresentsOldTestCase: View {
           return .none
         }
       }
-      .ifLet(\.$child, action: /Action.child) {
+      .ifLet(\.$child, action: \.child) {
         BasicsView.Feature()
       }
     }

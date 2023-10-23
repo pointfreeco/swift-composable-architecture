@@ -269,7 +269,6 @@ public enum PresentationAction<Action>: CasePathable {
     }
   }
 
-  // TODO: Can this be dynamic instead?
   public func presented<NewAction>(
     _ transform: (Action) -> NewAction
   ) -> PresentationAction<NewAction> {
@@ -279,6 +278,34 @@ public enum PresentationAction<Action>: CasePathable {
     case let .presented(action):
       return .presented(transform(action))
     }
+  }
+}
+
+extension Case {
+  public subscript<Action: CasePathable, AppendedAction>(
+    dynamicMember keyPath: KeyPath<Action.AllCasePaths, AnyCasePath<Action, AppendedAction>>
+  ) -> Case<PresentationAction<AppendedAction>>
+  where Value == PresentationAction<Action> {
+    Case<PresentationAction<AppendedAction>>(
+      embed: {
+        switch $0 {
+        case .dismiss:
+          return self.embed(.dismiss)
+        case let .presented(action):
+          return self.embed(.presented(Action.allCasePaths[keyPath: keyPath].embed(action)))
+        }
+      },
+      extract: {
+        switch self.extract(from: $0) {
+        case .none:
+          return nil
+        case .some(.dismiss):
+          return .dismiss
+        case let .some(.presented(action)):
+          return Action.allCasePaths[keyPath: keyPath].extract(from: action).map { .presented($0) }
+        }
+      }
+    )
   }
 }
 
