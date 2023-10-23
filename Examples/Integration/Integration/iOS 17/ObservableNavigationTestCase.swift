@@ -8,7 +8,7 @@ struct ObservableNavigationTestCaseView: View {
 
   var body: some View {
     ObservedView {
-      NavigationStack(store: self.store.scope(state: \.path, action: { .path($0) })) {
+      NavigationStack(store: self.store.scope(state: \.path, action: \.path)) {
         NavigationLink(state: ObservableBasicsView.Feature.State()) {
           Text("Push feature")
         }
@@ -32,6 +32,7 @@ struct ObservableNavigationTestCaseView: View {
     struct State: Equatable {
       var path = StackState<ObservableBasicsView.Feature.State>()
     }
+    @CasePathable
     enum Action {
       case path(
         StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>
@@ -41,7 +42,7 @@ struct ObservableNavigationTestCaseView: View {
       Reduce { state, action in
         .none
       }
-      .forEach(\.path, action: /Action.path) {
+      .forEach(\.path, action: \.path) {
         ObservableBasicsView.Feature()
       }
     }

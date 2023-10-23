@@ -100,7 +100,7 @@ struct NavigationID: Hashable, @unchecked Sendable {
   init<Value, Root>(
     root: Root,
     value: Value,
-    casePath: CasePath<Root, Value>
+    casePath: AnyCasePath<Root, Value>
   ) {
     self.kind = .casePath(root: Root.self, value: Value.self)
     self.tag = EnumMetadata(Root.self)?.tag(of: root)

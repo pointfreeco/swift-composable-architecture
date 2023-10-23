@@ -97,7 +97,37 @@ public struct PresentationState<State> {
   /// Accesses the value associated with the given case for reading and writing.
   ///
   /// > Note: Accessing the wrong case will result in a runtime warning.
-  public subscript<Case>(case path: CasePath<State, Case>) -> Case? {
+  public subscript<Case>(case path: CaseKeyPath<State, Case>) -> Case?
+  where State: CasePathable {
+    _read { yield self.wrappedValue.flatMap { $0[case: path] } }
+    _modify {
+      let root = self.wrappedValue
+      var value = root.flatMap { $0[case: path] }
+      let success = value != nil
+      yield &value
+      guard success else {
+        var description: String?
+        if let root = root,
+          let metadata = EnumMetadata(State.self),
+          let caseName = metadata.caseName(forTag: metadata.tag(of: root))
+        {
+          description = caseName
+        }
+        runtimeWarn(
+          """
+          Can't modify unrelated case\(description.map { " \($0.debugDescription)" } ?? "")
+          """
+        )
+        return
+      }
+      self.wrappedValue = value.map { path($0) }
+    }
+  }
+
+  /// Accesses the value associated with the given case for reading and writing.
+  ///
+  /// > Note: Accessing the wrong case will result in a runtime warning.
+  public subscript<Case>(case path: AnyCasePath<State, Case>) -> Case? {
     _read { yield self.wrappedValue.flatMap(path.extract) }
     _modify {
       let root = self.wrappedValue
@@ -206,12 +236,38 @@ extension PresentationState: CustomReflectable {
 /// See the dedicated article on <doc:Navigation> for more information on the library's navigation
 /// tools, and in particular see <doc:TreeBasedNavigation> for information on modeling navigation
 /// using optionals and enums.
-public enum PresentationAction<Action> {
+public enum PresentationAction<Action>: CasePathable {
   /// An action sent to `nil` out the associated presentation state.
   case dismiss
 
   /// An action sent to the associated, non-`nil` presentation state.
   indirect case presented(Action)
+
+  public static var allCasePaths: AllCasePaths {
+    AllCasePaths()
+  }
+
+  public struct AllCasePaths {
+    public var dismiss: AnyCasePath<PresentationAction, Void> {
+      AnyCasePath(
+        embed: { .dismiss },
+        extract: {
+          guard case .dismiss = $0 else { return nil }
+          return ()
+        }
+      )
+    }
+
+    public var presented: AnyCasePath<PresentationAction, Action> {
+      AnyCasePath(
+        embed: PresentationAction.presented,
+        extract: {
+          guard case let .presented(value) = $0 else { return nil }
+          return value
+        }
+      )
+    }
+  }
 
   public func presented<NewAction>(
     _ transform: (Action) -> NewAction
@@ -222,6 +278,34 @@ public enum PresentationAction<Action> {
     case let .presented(action):
       return .presented(transform(action))
     }
+  }
+}
+
+extension Case {
+  public subscript<Action: CasePathable, AppendedAction>(
+    dynamicMember keyPath: KeyPath<Action.AllCasePaths, AnyCasePath<Action, AppendedAction>>
+  ) -> Case<PresentationAction<AppendedAction>>
+  where Value == PresentationAction<Action> {
+    Case<PresentationAction<AppendedAction>>(
+      embed: {
+        switch $0 {
+        case .dismiss:
+          return self.embed(.dismiss)
+        case let .presented(action):
+          return self.embed(.presented(Action.allCasePaths[keyPath: keyPath].embed(action)))
+        }
+      },
+      extract: {
+        switch self.extract(from: $0) {
+        case .none:
+          return nil
+        case .some(.dismiss):
+          return .dismiss
+        case let .some(.presented(action)):
+          return Action.allCasePaths[keyPath: keyPath].extract(from: action).map { .presented($0) }
+        }
+      }
+    )
   }
 }
 
@@ -294,7 +378,46 @@ extension Reducer {
   @inlinable
   public func ifLet<DestinationState, DestinationAction, Destination: Reducer>(
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
-    action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
+    action toPresentationAction: CaseKeyPath<Action, PresentationAction<DestinationAction>>,
+    @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> _PresentationReducer<Self, Destination>
+  where Destination.State == DestinationState, Destination.Action == DestinationAction {
+    _PresentationReducer(
+      base: self,
+      toPresentationState: toPresentationState,
+      toPresentationAction: AnyCasePath(toPresentationAction),
+      destination: destination(),
+      fileID: fileID,
+      line: line
+    )
+  }
+
+  /// A special overload of ``Reducer/ifLet(_:action:destination:fileID:line:)`` for alerts and
+  /// confirmation dialogs that does not require a child reducer.
+  @warn_unqualified_access
+  @inlinable
+  public func ifLet<DestinationState: _EphemeralState, DestinationAction>(
+    _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
+    action toPresentationAction: CaseKeyPath<Action, PresentationAction<DestinationAction>>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> _PresentationReducer<Self, EmptyReducer<DestinationState, DestinationAction>> {
+    self.ifLet(
+      toPresentationState,
+      action: toPresentationAction,
+      destination: {},
+      fileID: fileID,
+      line: line
+    )
+  }
+
+  @warn_unqualified_access
+  @inlinable
+  public func ifLet<DestinationState, DestinationAction, Destination: Reducer>(
+    _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
+    action toPresentationAction: AnyCasePath<Action, PresentationAction<DestinationAction>>,
     @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -310,13 +433,11 @@ extension Reducer {
     )
   }
 
-  /// A special overload of ``Reducer/ifLet(_:action:destination:fileID:line:)`` for alerts and
-  /// confirmation dialogs that does not require a child reducer.
   @warn_unqualified_access
   @inlinable
   public func ifLet<DestinationState: _EphemeralState, DestinationAction>(
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
-    action toPresentationAction: CasePath<Action, PresentationAction<DestinationAction>>,
+    action toPresentationAction: AnyCasePath<Action, PresentationAction<DestinationAction>>,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> _PresentationReducer<Self, EmptyReducer<DestinationState, DestinationAction>> {
@@ -327,15 +448,14 @@ extension Reducer {
       fileID: fileID,
       line: line
     )
-  }
-}
+  }}
 
 public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer {
   @usableFromInline let base: Base
   @usableFromInline let toPresentationState:
     WritableKeyPath<Base.State, PresentationState<Destination.State>>
   @usableFromInline let toPresentationAction:
-    CasePath<Base.Action, PresentationAction<Destination.Action>>
+    AnyCasePath<Base.Action, PresentationAction<Destination.Action>>
   @usableFromInline let destination: Destination
   @usableFromInline let fileID: StaticString
   @usableFromInline let line: UInt
@@ -346,7 +466,7 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
   init(
     base: Base,
     toPresentationState: WritableKeyPath<Base.State, PresentationState<Destination.State>>,
-    toPresentationAction: CasePath<Base.Action, PresentationAction<Destination.Action>>,
+    toPresentationAction: AnyCasePath<Base.Action, PresentationAction<Destination.Action>>,
     destination: Destination,
     fileID: StaticString,
     line: UInt

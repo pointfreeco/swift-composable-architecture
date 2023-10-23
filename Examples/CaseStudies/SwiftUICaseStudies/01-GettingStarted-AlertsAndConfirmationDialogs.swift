@@ -28,6 +28,7 @@ struct AlertAndConfirmationDialog: Reducer {
     var count = 0
   }
 
+  @CasePathable
   enum Action: Equatable {
     case alert(PresentationAction<Alert>)
     case alertButtonTapped
@@ -97,8 +98,8 @@ struct AlertAndConfirmationDialog: Reducer {
         return .none
       }
     }
-    .ifLet(\.$alert, action: /Action.alert)
-    .ifLet(\.$confirmationDialog, action: /Action.confirmationDialog)
+    .ifLet(\.$alert, action: \.alert)
+    .ifLet(\.$confirmationDialog, action: \.confirmationDialog)
   }
 }
 
@@ -123,10 +124,10 @@ struct AlertAndConfirmationDialogView: View {
     }
     .navigationTitle("Alerts & Dialogs")
     .alert(
-      store: self.store.scope(state: \.$alert, action: { .alert($0) })
+      store: self.store.scope(state: \.$alert, action: \.alert)
     )
     .confirmationDialog(
-      store: self.store.scope(state: \.$confirmationDialog, action: { .confirmationDialog($0) })
+      store: self.store.scope(state: \.$confirmationDialog, action: \.confirmationDialog)
     )
   }
 }

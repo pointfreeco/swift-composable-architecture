@@ -41,9 +41,7 @@ final class iOS17_ObservableOptionalTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
     self.assertLogs {
       """
-      ObservableBasicsView.body
       ObservableOptionalView.body
-      StoreOf<ObservableBasicsView.Feature>.init
       StoreOf<ObservableOptionalView.Feature>.scope
       """
     }
@@ -52,9 +50,6 @@ final class iOS17_ObservableOptionalTests: BaseIntegrationTests {
       """
       ObservableBasicsView.body
       ObservableOptionalView.body
-      StoreOf<ObservableBasicsView.Feature>.deinit
-      StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableOptionalView.Feature>.scope
       """
     }
   }

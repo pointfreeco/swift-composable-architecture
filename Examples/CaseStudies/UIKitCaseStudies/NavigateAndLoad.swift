@@ -9,6 +9,7 @@ struct EagerNavigation: Reducer {
     var optionalCounter: Counter.State?
   }
 
+  @CasePathable
   enum Action: Equatable {
     case optionalCounter(Counter.Action)
     case setNavigation(isActive: Bool)
@@ -42,7 +43,7 @@ struct EagerNavigation: Reducer {
         return .none
       }
     }
-    .ifLet(\.optionalCounter, action: /Action.optionalCounter) {
+    .ifLet(\.optionalCounter, action: \.optionalCounter) {
       Counter()
     }
   }
@@ -84,7 +85,7 @@ class EagerNavigationViewController: UIViewController {
       if isNavigationActive {
         self.navigationController?.pushViewController(
           IfLetStoreController(
-            self.store.scope(state: \.optionalCounter, action: { .optionalCounter($0) })
+            self.store.scope(state: \.optionalCounter, action: \.optionalCounter)
           ) {
             CounterViewController(store: $0)
           } else: {

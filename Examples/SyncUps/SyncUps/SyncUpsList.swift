@@ -22,19 +22,25 @@ struct SyncUpsList: Reducer {
       }
     }
   }
+
+  @CasePathable
   enum Action: Equatable {
     case addSyncUpButtonTapped
     case confirmAddSyncUpButtonTapped
     case destination(PresentationAction<Destination.Action>)
     case dismissAddSyncUpButtonTapped
   }
+
   struct Destination: Reducer {
+    @CasePathable
     @ObservableState
+    @dynamicMemberLookup
     enum State: Equatable {
       case add(SyncUpForm.State)
       case alert(AlertState<Action.Alert>)
     }
 
+    @CasePathable
     enum Action: Equatable {
       case add(SyncUpForm.Action)
       case alert(Alert)
@@ -45,7 +51,7 @@ struct SyncUpsList: Reducer {
     }
 
     var body: some ReducerOf<Self> {
-      Scope(state: /State.add, action: /Action.add) {
+      Scope(state: \.add, action: \.add) {
         SyncUpForm()
       }
     }
@@ -94,7 +100,7 @@ struct SyncUpsList: Reducer {
         return .none
       }
     }
-    .ifLet(\.$destination, action: /Action.destination) {
+    .ifLet(\.$destination, action: \.destination) {
       Destination()
     }
   }
@@ -124,15 +130,12 @@ struct SyncUpsListView: View {
       }
       .navigationTitle("Daily Sync-ups")
       .alert(
-        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /SyncUpsList.Destination.State.alert,
-        action: SyncUpsList.Destination.Action.alert
+        store: self.store.scope(state: \.$destination, action: \.destination),
+        state: \.alert,
+        action: { .alert($0) }
       )
       .sheet(
-        item: self.$store.scope(
-          state: { $0.destination.flatMap(/SyncUpsList.Destination.State.add) },
-          action: { .destination($0.presented { .add($0) }) }
-        )
+        item: self.$store.scope(state: \.destination?.add, action: \.destination.add)
       ) { store in
         NavigationStack {
           SyncUpFormView(store: store)

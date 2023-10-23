@@ -8,6 +8,8 @@ struct SyncUpDetail: Reducer {
     @PresentationState var destination: Destination.State?
     var syncUp: SyncUp
   }
+
+  @CasePathable
   enum Action: Equatable, Sendable {
     case cancelEditButtonTapped
     case delegate(Delegate)
@@ -30,11 +32,15 @@ struct SyncUpDetail: Reducer {
   @Dependency(\.speechClient.authorizationStatus) var authorizationStatus
 
   struct Destination: Reducer {
+    @CasePathable
     @ObservableState
+    @dynamicMemberLookup
     enum State: Equatable {
       case alert(AlertState<Action.Alert>)
       case edit(SyncUpForm.State)
     }
+
+    @CasePathable
     enum Action: Equatable, Sendable {
       case alert(Alert)
       case edit(SyncUpForm.Action)
@@ -45,8 +51,9 @@ struct SyncUpDetail: Reducer {
         case openSettings
       }
     }
+
     var body: some ReducerOf<Self> {
-      Scope(state: /State.edit, action: /Action.edit) {
+      Scope(state: \.edit, action: \.edit) {
         SyncUpForm()
       }
     }
@@ -117,7 +124,7 @@ struct SyncUpDetail: Reducer {
         }
       }
     }
-    .ifLet(\.$destination, action: /Action.destination) {
+    .ifLet(\.$destination, action: \.destination) {
       Destination()
     }
     .onChange(of: \.syncUp) { oldValue, newValue in
@@ -205,15 +212,12 @@ struct SyncUpDetailView: View {
         }
       }
       .alert(
-        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /SyncUpDetail.Destination.State.alert,
-        action: SyncUpDetail.Destination.Action.alert
+        store: self.store.scope(state: \.$destination, action: \.destination),
+        state: \.alert,
+        action: { .alert($0) }
       )
       .sheet(
-        item: self.$store.scope(
-          state: { $0.destination.flatMap(/SyncUpDetail.Destination.State.edit) },
-          action: { .destination($0.presented { .edit($0) }) }
-        )
+        item: self.$store.scope(state: \.destination?.edit, action: \.destination.edit)
       ) { store in
         ObservedView {
           NavigationStack {

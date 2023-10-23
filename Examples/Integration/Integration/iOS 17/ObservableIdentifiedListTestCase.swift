@@ -21,7 +21,7 @@ struct ObservableIdentifiedListView: View {
             }
           }
         }
-        ForEach(self.store.scope(state: \.rows, action: { .rows($0) })) { store in
+        ForEach(self.store.scope(state: \.rows, action: \.rows)) { store in
           let _ = Logger.shared.log("\(Self.self).body.ForEach")
           Section {
             HStack {
@@ -50,6 +50,7 @@ struct ObservableIdentifiedListView: View {
     struct State: Equatable {
       var rows: IdentifiedArrayOf<ObservableBasicsView.Feature.State> = []
     }
+    @CasePathable
     enum Action {
       case addButtonTapped
       case incrementFirstButtonTapped
@@ -72,7 +73,7 @@ struct ObservableIdentifiedListView: View {
           return .none
         }
       }
-      .forEach(\.rows, action: /Action.rows) {
+      .forEach(\.rows, action: \.rows) {
         ObservableBasicsView.Feature()
       }
     }

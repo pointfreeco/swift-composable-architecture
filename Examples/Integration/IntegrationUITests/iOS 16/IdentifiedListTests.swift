@@ -9,7 +9,7 @@ final class iOS16_IdentifiedListTests: BaseIntegrationTests {
     self.app.buttons["iOS 16"].tap()
     self.app.buttons["Identified list"].tap()
     self.clearLogs()
-    //SnapshotTesting.isRecording = true
+    // SnapshotTesting.isRecording = true
   }
 
   func testBasics() {
@@ -20,11 +20,9 @@ final class iOS16_IdentifiedListTests: BaseIntegrationTests {
       IdentifiedListView.body
       IdentifiedListView.body.ForEachStore
       IdentifiedListView.body.ForEachStore
-      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.deinit
-      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.deinit
-      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.init
-      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.init
-      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.scope
+      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (id: UUID, action: BasicsView.Feature.Action)>.deinit
+      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (id: UUID, action: BasicsView.Feature.Action)>.init
+      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (id: UUID, action: BasicsView.Feature.Action)>.scope
       Store<UUID, Action>
       Store<UUID, BasicsView.Feature.Action>.deinit
       Store<UUID, BasicsView.Feature.Action>.deinit
@@ -56,15 +54,13 @@ final class iOS16_IdentifiedListTests: BaseIntegrationTests {
       IdentifiedListView.body
       IdentifiedListView.body.ForEachStore
       IdentifiedListView.body.ForEachStore
-      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.deinit
-      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.init
-      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.init
-      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.scope
-      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.scope
-      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.scope
+      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (id: UUID, action: BasicsView.Feature.Action)>.deinit
+      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (id: UUID, action: BasicsView.Feature.Action)>.init
+      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (id: UUID, action: BasicsView.Feature.Action)>.scope
+      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (id: UUID, action: BasicsView.Feature.Action)>.scope
+      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (id: UUID, action: BasicsView.Feature.Action)>.scope
       Store<UUID, Action>
       Store<UUID, Action>
-      Store<UUID, BasicsView.Feature.Action>.deinit
       Store<UUID, BasicsView.Feature.Action>.deinit
       Store<UUID, BasicsView.Feature.Action>.deinit
       Store<UUID, BasicsView.Feature.Action>.deinit
@@ -85,7 +81,7 @@ final class iOS16_IdentifiedListTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
-      StoreOf<IdentifiedListView.Feature>.scope
+      StoreOf<BasicsView.Feature>.scope
       StoreOf<IdentifiedListView.Feature>.scope
       """
     }
@@ -100,16 +96,16 @@ final class iOS16_IdentifiedListTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.scope
-      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.scope
-      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (UUID, BasicsView.Feature.Action)>.scope
+      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (id: UUID, action: BasicsView.Feature.Action)>.scope
+      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (id: UUID, action: BasicsView.Feature.Action)>.scope
+      Store<IdentifiedArray<UUID, BasicsView.Feature.State>, (id: UUID, action: BasicsView.Feature.Action)>.scope
       Store<UUID, BasicsView.Feature.Action>.scope
       Store<UUID, BasicsView.Feature.Action>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
-      StoreOf<IdentifiedListView.Feature>.scope
+      StoreOf<BasicsView.Feature>.scope
       StoreOf<IdentifiedListView.Feature>.scope
       """
     }

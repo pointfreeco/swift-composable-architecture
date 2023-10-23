@@ -34,22 +34,26 @@ public struct IfLetStore<State, Action, Content: View>: View {
     @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent,
     @ViewBuilder else elseContent: () -> ElseContent
   ) where Content == _ConditionalContent<IfContent, ElseContent> {
-    let store = store.invalidate { $0 == nil }
+    let store = store.scope(
+      state: { $0 },
+      id: nil,
+      action: { $1 },
+      isInvalid: { $0 == nil },
+      removeDuplicates: nil
+    )
     self.store = store
     let elseContent = elseContent()
     self.content = { viewStore in
       if var state = viewStore.state {
         return ViewBuilder.buildEither(
           first: ifContent(
-            store
-              .invalidate { $0 == nil }
-              .scope(
-                state: {
-                  state = $0 ?? state
-                  return state
-                },
-                action: { $0 }
-              )
+            store.scope(
+              state: {
+                state = $0 ?? state
+                return state
+              },
+              action: { $0 }
+            )
           )
         )
       } else {
@@ -69,20 +73,24 @@ public struct IfLetStore<State, Action, Content: View>: View {
     _ store: Store<State?, Action>,
     @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent
   ) where Content == IfContent? {
-    let store = store.invalidate { $0 == nil }
+    let store = store.scope(
+      state: { $0 },
+      id: nil,
+      action: { $1 },
+      isInvalid: { $0 == nil },
+      removeDuplicates: nil
+    )
     self.store = store
     self.content = { viewStore in
       if var state = viewStore.state {
         return ifContent(
-          store
-            .invalidate { $0 == nil }
-            .scope(
-              state: {
-                state = $0 ?? state
-                return state
-              },
-              action: { $0 }
-            )
+          store.scope(
+            state: {
+              state = $0 ?? state
+              return state
+            },
+            action: { $0 }
+          )
         )
       } else {
         return nil

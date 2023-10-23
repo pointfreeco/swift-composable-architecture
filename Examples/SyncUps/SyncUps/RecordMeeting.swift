@@ -16,6 +16,8 @@ struct RecordMeeting: Reducer {
       self.syncUp.duration - .seconds(self.secondsElapsed)
     }
   }
+
+  @CasePathable
   enum Action: Equatable {
     case alert(PresentationAction<Alert>)
     case delegate(Delegate)
@@ -124,7 +126,7 @@ struct RecordMeeting: Reducer {
         return .none
       }
     }
-    .ifLet(\.$alert, action: /Action.alert)
+    .ifLet(\.$alert, action: \.alert)
   }
 
   private func startSpeechRecognition(send: Send<Action>) async {
@@ -184,7 +186,7 @@ struct RecordMeetingView: View {
         }
       }
       .navigationBarBackButtonHidden(true)
-      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
+      .alert(store: self.store.scope(state: \.$alert, action: \.alert))
       .task { await self.store.send(.onTask).finish() }
     }
   }

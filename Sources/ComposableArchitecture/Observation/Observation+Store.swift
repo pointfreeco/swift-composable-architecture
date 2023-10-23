@@ -62,29 +62,25 @@ extension Store where State: ObservableState {
   }
 }
 
-extension Store: Identifiable where State: ObservableState {
-  public var id: ObservableStateID {
-    self.stateSubject.value._$id
-  }
-}
+extension Store: Identifiable {}
 
 extension Store where State: ObservableState {
   // TODO: Document that this should only be used with SwiftUI.
   // TODO: ChildState: ObservableState?
   public func scope<ChildState, ChildAction>(
-    state toChildState: @escaping (_ state: State) -> ChildState?,
-    action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
+    state toChildState: KeyPath<State, ChildState?>,
+    action toChildAction: CaseKeyPath<Action, ChildAction>
   ) -> Store<ChildState, ChildAction>? {
-    guard var initialChildState = toChildState(self.observableState)
+    guard var childState = self.observableState[keyPath: toChildState]
     else { return nil }
     return self.scope(
       state: {
-        let childState = toChildState($0) ?? initialChildState
-        initialChildState = childState
+        childState = $0[keyPath: toChildState] ?? childState
         return childState
       },
-      action: { fromChildAction($1) },
-      invalidate: { toChildState($0) == nil },
+      id: { _ in Scope(state: toChildState, action: toChildAction) },
+      action: { toChildAction($1) },
+      isInvalid: { $0[keyPath: toChildState] == nil },
       removeDuplicates: nil
     )
   }
@@ -92,42 +88,45 @@ extension Store where State: ObservableState {
   // TODO: Document that this should only be used with SwiftUI.
   // TODO: ChildState: ObservableState?
   public func scope<ChildState, ChildAction>(
-    state toChildState: @escaping (_ state: State) -> ChildState?,
-    action fromChildAction:
-      @escaping (_ presentationAction: PresentationAction<ChildAction>) -> Action
+    state toChildState: KeyPath<State, ChildState?>,
+    action toChildAction: CaseKeyPath<Action, PresentationAction<ChildAction>>
   ) -> Store<ChildState, ChildAction>?
-  where State: ObservableState
-  {
-    self.scope(state: toChildState, action: { fromChildAction(.presented($0)) })
+  where State: ObservableState {
+    self.scope(state: toChildState, action: toChildAction.appending(path: \.presented))
   }
 }
 
 extension Binding {
-  // TODO: State: ObservableState?
-  public func scope<State, Action, ChildState, ChildAction>(
-    state toChildState: @escaping (State) -> ChildState,
-    action embedChildAction: @escaping (ChildAction) -> Action
+  public func scope<State: ObservableState, Action, ChildState, ChildAction>(
+    state toChildState: KeyPath<State, ChildState>,
+    action toChildAction: CaseKeyPath<Action, ChildAction>
   ) -> Binding<Store<ChildState, ChildAction>>
   where Value == Store<State, Action> {
     Binding<Store<ChildState, ChildAction>>(
-      get: { self.wrappedValue.scope(state: toChildState, action: embedChildAction) },
+      get: { self.wrappedValue.scope(state: toChildState, action: toChildAction) },
       set: { _, _ in }
     )
   }
 
-  // TODO: State: ObservableState?
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
-    state toChildState: @escaping (State) -> ChildState?,
-    action embedChildAction: @escaping (PresentationAction<ChildAction>) -> Action
+    state toChildState: KeyPath<State, ChildState?>,
+    action toChildAction: CaseKeyPath<Action, PresentationAction<ChildAction>>
   ) -> Binding<Store<ChildState, ChildAction>?>
   where Value == Store<State, Action> {
-    Binding<Store<ChildState, ChildAction>?>(
+    let isExecutingBody = ObservedViewLocal.isExecutingBody
+    return Binding<Store<ChildState, ChildAction>?>(
       get: {
-        self.wrappedValue.scope(state: toChildState, action: { embedChildAction(.presented($0)) })
+        // TODO: Is this right? Should we just be more forgiving in bindings?
+        ObservedViewLocal.$isExecutingBody.withValue(isExecutingBody) {
+          self.wrappedValue.scope(
+            state: toChildState,
+            action: toChildAction.appending(path: \.presented)
+          )
+        }
       },
       set: {
-        if $0 == nil, toChildState(self.wrappedValue.stateSubject.value) != nil {
-          self.transaction($1).wrappedValue.send(embedChildAction(.dismiss))
+        if $0 == nil, self.wrappedValue.stateSubject.value[keyPath: toChildState] != nil {
+          self.transaction($1).wrappedValue.send(toChildAction(.dismiss))
         }
       }
     )

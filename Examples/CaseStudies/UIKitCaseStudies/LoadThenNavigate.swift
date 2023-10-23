@@ -9,6 +9,7 @@ struct LazyNavigation: Reducer {
     var isActivityIndicatorHidden = true
   }
 
+  @CasePathable
   enum Action: Equatable {
     case onDisappear
     case optionalCounter(Counter.Action)
@@ -46,7 +47,7 @@ struct LazyNavigation: Reducer {
         return .none
       }
     }
-    .ifLet(\.optionalCounter, action: /Action.optionalCounter) {
+    .ifLet(\.optionalCounter, action: \.optionalCounter) {
       Counter()
     }
   }
@@ -96,7 +97,7 @@ class LazyNavigationViewController: UIViewController {
       .store(in: &self.cancellables)
 
     self.store
-      .scope(state: \.optionalCounter, action: { .optionalCounter($0) })
+      .scope(state: \.optionalCounter, action: \.optionalCounter)
       .ifLet { [weak self] store in
         self?.navigationController?.pushViewController(
           CounterViewController(store: store), animated: true)

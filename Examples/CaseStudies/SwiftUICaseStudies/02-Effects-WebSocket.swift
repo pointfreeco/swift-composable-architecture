@@ -26,6 +26,7 @@ struct WebSocket: Reducer {
     }
   }
 
+  @CasePathable
   enum Action: Equatable {
     case alert(PresentationAction<Alert>)
     case connectButtonTapped
@@ -130,7 +131,7 @@ struct WebSocket: Reducer {
         return .none
       }
     }
-    .ifLet(\.$alert, action: /Action.alert)
+    .ifLet(\.$alert, action: \.alert)
   }
 }
 
@@ -185,7 +186,7 @@ struct WebSocketView: View {
           Text("Received messages")
         }
       }
-      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
+      .alert(store: self.store.scope(state: \.$alert, action: \.alert))
       .navigationTitle("Web Socket")
     }
   }

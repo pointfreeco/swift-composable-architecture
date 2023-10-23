@@ -2,6 +2,7 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
+@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 final class ForEachReducerTests: BaseTCATestCase {
   func testElementAction() async {
     let store = TestStore(
@@ -219,6 +220,7 @@ final class ForEachReducerTests: BaseTCATestCase {
   }
 }
 
+@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 struct Elements: Reducer {
   struct State: Equatable {
     struct Row: Equatable, Identifiable {

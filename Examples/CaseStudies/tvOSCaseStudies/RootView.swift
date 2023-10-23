@@ -10,7 +10,7 @@ struct RootView: View {
         Section {
           if #available(tvOS 14, *) {
             FocusView(
-              store: self.store.scope(state: \.focus, action: { .focus($0) })
+              store: self.store.scope(state: \.focus, action: \.focus)
             )
           }
         }

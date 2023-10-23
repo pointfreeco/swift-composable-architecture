@@ -38,11 +38,11 @@ struct OldPresentsNewTestCase: View {
         }
       }
     }
-    .sheet(store: self.store.scope(state: \.$child, action: { .child($0) })) { store in
+    .sheet(store: self.store.scope(state: \.$child, action: \.child)) { store in
       Form {
         ObservableBasicsView(store: store)
       }
-        .presentationDetents([.medium])
+      .presentationDetents([.medium])
     }
   }
 
@@ -52,6 +52,7 @@ struct OldPresentsNewTestCase: View {
       var count = 0
       var isObservingChildCount = false
     }
+    @CasePathable
     enum Action {
       case child(PresentationAction<ObservableBasicsView.Feature.Action>)
       case incrementButtonTapped
@@ -74,7 +75,7 @@ struct OldPresentsNewTestCase: View {
           return .none
         }
       }
-      .ifLet(\.$child, action: /Action.child) {
+      .ifLet(\.$child, action: \.child) {
         ObservableBasicsView.Feature()
       }
     }

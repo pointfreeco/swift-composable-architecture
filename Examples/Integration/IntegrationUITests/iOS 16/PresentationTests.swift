@@ -28,7 +28,6 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
       StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
       """
@@ -38,8 +37,6 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
       """
       BasicsView.body
       BasicsView.body
-      PresentationStoreOf<BasicsView.Feature>.scope
-      PresentationStoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
@@ -49,12 +46,7 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
       """
     }
@@ -64,6 +56,10 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
       PresentationStoreOf<BasicsView.Feature>.scope
       PresentationStoreOf<BasicsView.Feature>.scope
       PresentationStoreOf<BasicsView.Feature>.scope
+      PresentationStoreOf<PresentationView.Feature.Destination>.scope
+      PresentationStoreOf<PresentationView.Feature.Destination>.scope
+      PresentationStoreOf<PresentationView.Feature.Destination>.scope
+      PresentationStoreOf<PresentationView.Feature.Destination>.scope
       StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.deinit
@@ -74,8 +70,6 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
@@ -89,9 +83,6 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
@@ -114,7 +105,6 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
       StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
       """
@@ -132,8 +122,6 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
       BasicsView.body
       BasicsView.body
       PresentationStoreOf<BasicsView.Feature>.scope
-      PresentationStoreOf<BasicsView.Feature>.scope
-      PresentationStoreOf<BasicsView.Feature>.scope
       PresentationView.body
       StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.init
@@ -144,14 +132,9 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
       """
     }
@@ -162,7 +145,10 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
       PresentationStoreOf<BasicsView.Feature>.scope
       PresentationStoreOf<BasicsView.Feature>.scope
       PresentationStoreOf<BasicsView.Feature>.scope
-      PresentationStoreOf<BasicsView.Feature>.scope
+      PresentationStoreOf<PresentationView.Feature.Destination>.scope
+      PresentationStoreOf<PresentationView.Feature.Destination>.scope
+      PresentationStoreOf<PresentationView.Feature.Destination>.scope
+      PresentationStoreOf<PresentationView.Feature.Destination>.scope
       PresentationView.body
       StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.deinit
@@ -174,8 +160,6 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
@@ -189,11 +173,6 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope

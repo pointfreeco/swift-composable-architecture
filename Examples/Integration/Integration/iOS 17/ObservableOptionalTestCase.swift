@@ -26,7 +26,7 @@ struct ObservableOptionalView: View {
           }
         }
       }
-      if let store = self.store.scope(state: \.child, action: { .child($0) }) {
+      if let store = self.store.scope(state: \.child, action: \.child) {
         Form {
           ObservableBasicsView(store: store)
         }
@@ -41,6 +41,7 @@ struct ObservableOptionalView: View {
       @PresentationState var child: ObservableBasicsView.Feature.State?
       var isObservingCount = false
     }
+    @CasePathable
     enum Action {
       case child(PresentationAction<ObservableBasicsView.Feature.Action>)
       case toggleButtonTapped
@@ -59,7 +60,7 @@ struct ObservableOptionalView: View {
           return .none
         }
       }
-      .ifLet(\.$child, action: /Action.child) {
+      .ifLet(\.$child, action: \.child) {
         ObservableBasicsView.Feature()
       }
     }

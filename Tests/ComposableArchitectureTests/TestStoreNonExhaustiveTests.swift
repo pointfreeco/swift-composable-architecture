@@ -514,10 +514,10 @@
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.onAppear)
-      await store.receive(/NonExhaustiveReceive.Action.response1) {
+      await store.receive(\.response1) {
         $0.int = 42
       }
-      await store.receive(/NonExhaustiveReceive.Action.response2) {
+      await store.receive(\.response2) {
         $0.string = "Hello"
       }
     }
@@ -529,10 +529,10 @@
       store.exhaustivity = .off
 
       await store.send(.onAppear)
-      await store.receive(/NonExhaustiveReceive.Action.response1) {
+      await store.receive(\.response1) {
         $0.int = 42
       }
-      await store.receive(/NonExhaustiveReceive.Action.response2) {
+      await store.receive(\.response2) {
         $0.string = "Hello"
       }
     }
@@ -543,25 +543,19 @@
       }
 
       await store.send(.onAppear)
-      await store.receive(/NonExhaustiveReceive.Action.response1) {
+      await store.receive(\.response1) {
         $0.count = 1
         $0.int = 42
       }
-      await store.receive(/NonExhaustiveReceive.Action.response2) {
+      await store.receive(\.response2) {
         $0.count = 2
         $0.string = "Hello"
       }
     }
 
     func testCasePathReceive_Exhaustive_NonEquatable() async {
-      struct NonEquatable {}
-      enum Action {
-        case tap
-        case response(NonEquatable)
-      }
-
       let store = TestStore(initialState: 0) {
-        Reduce<Int, Action> { state, action in
+        Reduce<Int, NonEquatableAction> { state, action in
           switch action {
           case .tap:
             return .send(.response(NonEquatable()))
@@ -572,7 +566,7 @@
       }
 
       await store.send(.tap)
-      await store.receive(/Action.response)
+      await store.receive(\.response)
     }
 
     func testPredicateReceive_Exhaustive_NonEquatable() async {
@@ -594,7 +588,7 @@
       }
 
       await store.send(.tap)
-      await store.receive({ (/Action.response) ~= $0 })
+      await store.receive { if case .response = $0 { return true } else { return false } }
     }
 
     func testCasePathReceive_SkipReceivedAction() async {
@@ -604,7 +598,7 @@
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.onAppear)
-      await store.receive(/NonExhaustiveReceive.Action.response2) {
+      await store.receive(\.response2) {
         $0.string = "Hello"
       }
     }
@@ -623,9 +617,9 @@
           """
       }
 
-      await store.receive(/NonExhaustiveReceive.Action.onAppear)
-      await store.receive(/NonExhaustiveReceive.Action.response1)
-      await store.receive(/NonExhaustiveReceive.Action.response2)
+      await store.receive(\.onAppear)
+      await store.receive(\.response1)
+      await store.receive(\.response2)
     }
 
     func testCasePathReceive_ReceivedExtraAction() async {
@@ -635,7 +629,7 @@
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.onAppear)
-      await store.receive(/NonExhaustiveReceive.Action.response2)
+      await store.receive(\.response2)
 
       XCTExpectFailure {
         $0.compactDescription == """
@@ -643,7 +637,7 @@
           """
       }
 
-      await store.receive(/NonExhaustiveReceive.Action.response2)
+      await store.receive(\.response2)
     }
 
     func testXCTModifyExhaustive() async {
@@ -668,7 +662,7 @@
       await store.send(.tap) { state in
         state.count = 1
         XCTExpectFailure {
-          XCTModify(&state.child, case: /.some) { _ in }
+          XCTModify(&state.child) { _ in }
         } issueMatcher: {
           $0.compactDescription == """
             XCTModify failed: expected "Int" value to be modified but it was unchanged.
@@ -678,7 +672,7 @@
       await store.receive(.response) { state in
         state.count = 2
         XCTExpectFailure {
-          XCTModify(&state.child, case: /Optional.some) { _ in }
+          XCTModify(&state.child) { _ in }
         } issueMatcher: {
           $0.compactDescription == """
             XCTModify failed: expected "Int" value to be modified but it was unchanged.
@@ -702,10 +696,10 @@
       store.exhaustivity = .off
 
       await store.send(.tap) {
-        XCTModify(&$0, case: /Optional.some) { _ in }
+        XCTModify(&$0) { _ in }
       }
       await store.receive(.response) {
-        XCTModify(&$0, case: /Optional.some) { _ in }
+        XCTModify(&$0) { _ in }
       }
     }
 
@@ -941,6 +935,8 @@
       var int = 0
       var string = ""
     }
+    @CasePathable
+    @dynamicMemberLookup
     enum Action: Equatable {
       case onAppear
       case response1(Int)
@@ -1007,5 +1003,13 @@
         return .none
       }
     }
+  }
+
+  private struct NonEquatable {}
+  @CasePathable
+  @dynamicMemberLookup
+  private enum NonEquatableAction {
+    case tap
+    case response(NonEquatable)
   }
 #endif

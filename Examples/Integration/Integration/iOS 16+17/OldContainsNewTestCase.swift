@@ -36,7 +36,7 @@ struct OldContainsNewTestCase: View {
           }
         }
         Section {
-          ObservableBasicsView(store: self.store.scope(state: \.child, action: { .child($0) }))
+          ObservableBasicsView(store: self.store.scope(state: \.child, action: \.child))
         } header: {
           Text("iOS 17")
         }
@@ -50,13 +50,14 @@ struct OldContainsNewTestCase: View {
       var count = 0
       var isObservingChildCount = false
     }
+    @CasePathable
     enum Action {
       case child(ObservableBasicsView.Feature.Action)
       case incrementButtonTapped
       case toggleIsObservingChildCount
     }
     var body: some ReducerOf<Self> {
-      Scope(state: \.child, action: /Action.child) {
+      Scope(state: \.child, action: \.child) {
         ObservableBasicsView.Feature()
       }
       Reduce { state, action in

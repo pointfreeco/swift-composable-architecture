@@ -35,12 +35,10 @@ struct ObservableEnumView: View {
             }
           }
         }
-        if let store = self.store.scope(state: \.destination, action: { .destination($0) }) {
+        if let store = self.store.scope(state: \.destination, action: \.destination) {
           switch store.state {
           case .feature1:
-            if let store = store.scope(
-              state: /Feature.Destination.State.feature1, action: { .feature1($0) }
-            ) {
+            if let store = store.scope(state: \.feature1, action: \.feature1) {
               Section {
                 ObservableBasicsView(store: store)
               } header: {
@@ -48,9 +46,7 @@ struct ObservableEnumView: View {
               }
             }
           case .feature2:
-            if let store = store.scope(
-              state: /Feature.Destination.State.feature2, action: { .feature2($0) }
-            ) {
+            if let store = store.scope(state: \.feature2, action: \.feature2) {
               Section {
                 ObservableBasicsView(store: store)
               } header: {
@@ -69,26 +65,30 @@ struct ObservableEnumView: View {
       @ObservationStateIgnored
       @PresentationState var destination: Destination.State?
     }
+    @CasePathable
     enum Action {
       case destination(PresentationAction<Destination.Action>)
       case toggle1ButtonTapped
       case toggle2ButtonTapped
     }
     struct Destination: Reducer {
+      @CasePathable
       @ObservableState
+      @dynamicMemberLookup
       enum State: Equatable {
         case feature1(ObservableBasicsView.Feature.State)
         case feature2(ObservableBasicsView.Feature.State)
       }
+      @CasePathable
       enum Action {
         case feature1(ObservableBasicsView.Feature.Action)
         case feature2(ObservableBasicsView.Feature.Action)
       }
       var body: some ReducerOf<Self> {
-        Scope(state: /State.feature1, action: /Action.feature1) {
+        Scope(state: \.feature1, action: \.feature1) {
           ObservableBasicsView.Feature()
         }
-        Scope(state: /State.feature2, action: /Action.feature2) {
+        Scope(state: \.feature2, action: \.feature2) {
           ObservableBasicsView.Feature()
         }
       }
@@ -120,7 +120,7 @@ struct ObservableEnumView: View {
           return .none
         }
       }
-      .ifLet(\.$destination, action: /Action.destination) {
+      .ifLet(\.$destination, action: \.destination) {
         Destination()
       }
     }

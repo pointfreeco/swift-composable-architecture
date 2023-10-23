@@ -16,6 +16,7 @@ struct PresentAndLoad: Reducer {
     var isSheetPresented = false
   }
 
+  @CasePathable
   enum Action {
     case optionalCounter(Counter.Action)
     case setSheet(isPresented: Bool)
@@ -49,7 +50,7 @@ struct PresentAndLoad: Reducer {
         return .none
       }
     }
-    .ifLet(\.optionalCounter, action: /Action.optionalCounter) {
+    .ifLet(\.optionalCounter, action: \.optionalCounter) {
       Counter()
     }
   }
@@ -78,7 +79,7 @@ struct PresentAndLoadView: View {
           send: { .setSheet(isPresented: $0) }
         )
       ) {
-        IfLetStore(self.store.scope(state: \.optionalCounter, action: { .optionalCounter($0) })) {
+        IfLetStore(self.store.scope(state: \.optionalCounter, action: \.optionalCounter)) {
           CounterView(store: $0)
         } else: {
           ProgressView()
