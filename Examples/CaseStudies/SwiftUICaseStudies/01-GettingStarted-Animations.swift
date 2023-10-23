@@ -28,6 +28,7 @@ struct Animations: Reducer {
     var isCircleScaled = false
   }
 
+  @CasePathable
   enum Action: Equatable, Sendable {
     case alert(PresentationAction<Alert>)
     case circleScaleToggleChanged(Bool)
@@ -93,14 +94,16 @@ struct Animations: Reducer {
         return .none
       }
     }
-    .ifLet(\.$alert, action: /Action.alert)
+    .ifLet(\.$alert, action: \.alert)
   }
 }
 
 // MARK: - Feature view
 
 struct AnimationsView: View {
-  let store: StoreOf<Animations>
+  @State var store = Store(initialState: Animations.State()) {
+    Animations()
+  }
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in

@@ -16,6 +16,7 @@ struct VoiceMemos: Reducer {
     }
   }
 
+  @CasePathable
   enum Action: Equatable {
     case alert(PresentationAction<AlertAction>)
     case onDelete(IndexSet)
@@ -111,11 +112,11 @@ struct VoiceMemos: Reducer {
         return .none
       }
     }
-    .ifLet(\.$alert, action: /Action.alert)
-    .ifLet(\.$recordingMemo, action: /Action.recordingMemo) {
+    .ifLet(\.$alert, action: \.alert)
+    .ifLet(\.$recordingMemo, action: \.recordingMemo) {
       RecordingMemo()
     }
-    .forEach(\.voiceMemos, action: /Action.voiceMemos) {
+    .forEach(\.voiceMemos, action: \.voiceMemos) {
       VoiceMemo()
     }
   }

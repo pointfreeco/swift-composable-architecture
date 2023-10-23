@@ -50,7 +50,9 @@ struct BindingForm: Reducer {
 // MARK: - Feature view
 
 struct BindingFormView: View {
-  let store: StoreOf<BindingForm>
+  @State var store = Store(initialState: BindingForm.State()) {
+    BindingForm()
+  }
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in

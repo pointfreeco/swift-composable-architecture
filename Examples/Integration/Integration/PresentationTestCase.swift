@@ -41,7 +41,7 @@ struct PresentationView: View {
     }
     .fullScreenCover(
       store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-      state: /Feature.Destination.State.fullScreenCover,
+      state: \.fullScreenCover,
       action: { .fullScreenCover($0) }
     ) { store in
       NavigationStack {
@@ -60,7 +60,7 @@ struct PresentationView: View {
     }
     .popover(
       store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-      state: /Feature.Destination.State.popover,
+      state: \.popover,
       action: { .popover($0) }
     ) { store in
       NavigationStack {
@@ -106,6 +106,7 @@ struct PresentationView: View {
       @PresentationState var destination: Destination.State?
       @PresentationState var sheet: BasicsView.Feature.State?
     }
+    @CasePathable
     enum Action {
       case destination(PresentationAction<Destination.Action>)
       case dismissButtonTapped
@@ -116,19 +117,22 @@ struct PresentationView: View {
       case toggleObserveChildCountButtonTapped
     }
     struct Destination: Reducer {
+      @CasePathable
+      @dynamicMemberLookup
       enum State: Equatable {
         case fullScreenCover(BasicsView.Feature.State)
         case popover(BasicsView.Feature.State)
       }
+      @CasePathable
       enum Action {
         case fullScreenCover(BasicsView.Feature.Action)
         case popover(BasicsView.Feature.Action)
       }
       var body: some ReducerOf<Self> {
-        Scope(state: /State.fullScreenCover, action: /Action.fullScreenCover) {
+        Scope(state: \.fullScreenCover, action: \.fullScreenCover) {
           BasicsView.Feature()
         }
-        Scope(state: /State.popover, action: /Action.popover) {
+        Scope(state: \.popover, action: \.popover) {
           BasicsView.Feature()
         }
       }
@@ -158,10 +162,10 @@ struct PresentationView: View {
           return .none
         }
       }
-      .ifLet(\.$destination, action: /Action.destination) {
+      .ifLet(\.$destination, action: \.destination) {
         Destination()
       }
-      .ifLet(\.$sheet, action: /Action.sheet) {
+      .ifLet(\.$sheet, action: \.sheet) {
         BasicsView.Feature()
       }
     }

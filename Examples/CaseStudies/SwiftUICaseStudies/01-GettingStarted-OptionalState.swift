@@ -19,6 +19,7 @@ struct OptionalBasics: Reducer {
     var optionalCounter: Counter.State?
   }
 
+  @CasePathable
   enum Action: Equatable {
     case optionalCounter(Counter.Action)
     case toggleCounterButtonTapped
@@ -37,7 +38,7 @@ struct OptionalBasics: Reducer {
         return .none
       }
     }
-    .ifLet(\.optionalCounter, action: /Action.optionalCounter) {
+    .ifLet(\.optionalCounter, action: \.optionalCounter) {
       Counter()
     }
   }
@@ -46,7 +47,9 @@ struct OptionalBasics: Reducer {
 // MARK: - Feature view
 
 struct OptionalBasicsView: View {
-  let store: StoreOf<OptionalBasics>
+  @State var store = Store(initialState: OptionalBasics.State()) {
+    OptionalBasics()
+  }
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in

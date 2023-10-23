@@ -17,6 +17,7 @@ struct LoadThenPresent: Reducer {
     var isActivityIndicatorVisible = false
   }
 
+  @CasePathable
   enum Action {
     case counter(PresentationAction<Counter.Action>)
     case counterButtonTapped
@@ -45,7 +46,7 @@ struct LoadThenPresent: Reducer {
 
       }
     }
-    .ifLet(\.$counter, action: /Action.counter) {
+    .ifLet(\.$counter, action: \.counter) {
       Counter()
     }
   }
@@ -54,7 +55,9 @@ struct LoadThenPresent: Reducer {
 // MARK: - Feature view
 
 struct LoadThenPresentView: View {
-  let store: StoreOf<LoadThenPresent>
+  @State var store = Store(initialState: LoadThenPresent.State()) {
+    LoadThenPresent()
+  }
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in

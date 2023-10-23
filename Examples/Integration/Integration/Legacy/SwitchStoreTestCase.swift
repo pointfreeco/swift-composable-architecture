@@ -22,10 +22,13 @@ struct SwitchStoreTestCase: Reducer {
     }
   }
 
+  @CasePathable
+  @dynamicMemberLookup
   enum State: Equatable {
     case screenA(Screen.State = .init())
     case screenB(Screen.State = .init())
   }
+  @CasePathable
   enum Action {
     case screenA(Screen.Action)
     case screenB(Screen.Action)
@@ -45,10 +48,10 @@ struct SwitchStoreTestCase: Reducer {
         return .none
       }
     }
-    .ifCaseLet(/State.screenA, action: /Action.screenA) {
+    .ifCaseLet(\.screenA, action: \.screenA) {
       Screen()
     }
-    .ifCaseLet(/State.screenB, action: /Action.screenB) {
+    .ifCaseLet(\.screenB, action: \.screenB) {
       Screen()
     }
   }
@@ -65,14 +68,14 @@ struct SwitchStoreTestCaseView: View {
       switch $0 {
       case .screenA:
         CaseLet(
-          /SwitchStoreTestCase.State.screenA, action: SwitchStoreTestCase.Action.screenA
+          \SwitchStoreTestCase.State.screenA, action: SwitchStoreTestCase.Action.screenA
         ) { store in
           ScreenView(store: store)
         }
       case .screenB:
         // Simulate copy-paste error:
         CaseLet(
-          /SwitchStoreTestCase.State.screenA, action: SwitchStoreTestCase.Action.screenA
+          \SwitchStoreTestCase.State.screenA, action: SwitchStoreTestCase.Action.screenA
         ) { store in
           ScreenView(store: store)
         }

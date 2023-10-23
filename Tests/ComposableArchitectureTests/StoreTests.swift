@@ -3,6 +3,7 @@ import Combine
 import XCTest
 
 @MainActor
+@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 final class StoreTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
 

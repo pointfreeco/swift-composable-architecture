@@ -45,6 +45,7 @@ struct CityMap: Reducer {
     }
   }
 
+  @CasePathable
   enum Action {
     case downloadComponent(DownloadComponent.Action)
   }
@@ -54,7 +55,7 @@ struct CityMap: Reducer {
   }
 
   var body: some Reducer<State, Action> {
-    Scope(state: \.downloadComponent, action: /Action.downloadComponent) {
+    Scope(state: \.downloadComponent, action: \.downloadComponent) {
       DownloadComponent()
     }
 
@@ -139,19 +140,22 @@ struct MapApp: Reducer {
     var cityMaps: IdentifiedArrayOf<CityMap.State>
   }
 
+  @CasePathable
   enum Action {
     case cityMaps(id: CityMap.State.ID, action: CityMap.Action)
   }
 
   var body: some Reducer<State, Action> {
-    EmptyReducer().forEach(\.cityMaps, action: /Action.cityMaps(id:action:)) {
+    EmptyReducer().forEach(\.cityMaps, action: \.cityMaps) {
       CityMap()
     }
   }
 }
 
 struct CitiesView: View {
-  let store: StoreOf<MapApp>
+  @State var store = Store(initialState: MapApp.State(cityMaps: .mocks)) {
+    MapApp()
+  }
 
   var body: some View {
     Form {

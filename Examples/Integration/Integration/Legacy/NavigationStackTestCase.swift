@@ -15,6 +15,7 @@ private struct ChildFeature: Reducer {
     var count = 0
     var hasAppeared = false
   }
+  @CasePathable
   enum Action {
     case alert(PresentationAction<Alert>)
     case navigationDestination(PresentationAction<Never>)
@@ -77,8 +78,8 @@ private struct ChildFeature: Reducer {
         return .none
       }
     }
-    .ifLet(\.$alert, action: /Action.alert)
-    .ifLet(\.$navigationDestination, action: /Action.navigationDestination) {
+    .ifLet(\.$alert, action: \.alert)
+    .ifLet(\.$navigationDestination, action: \.navigationDestination) {
       EmptyReducer()
     }
   }
@@ -140,6 +141,7 @@ private struct NavigationStackTestCase: Reducer {
     var children = StackState<ChildFeature.State>()
     var childResponse: Int?
   }
+  @CasePathable
   enum Action {
     case child(StackAction<ChildFeature.State, ChildFeature.Action>)
   }
@@ -162,7 +164,7 @@ private struct NavigationStackTestCase: Reducer {
         return .none
       }
     }
-    .forEach(\.children, action: /Action.child) { ChildFeature() }
+    .forEach(\.children, action: \.child) { ChildFeature() }
   }
 }
 

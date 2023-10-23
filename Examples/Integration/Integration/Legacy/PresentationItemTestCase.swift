@@ -3,19 +3,22 @@ import SwiftUI
 
 private struct PresentationItemTestCase: Reducer {
   struct Destination: Reducer {
+    @CasePathable
+    @dynamicMemberLookup
     enum State: Equatable {
       case childA(Child.State)
       case childB(Child.State)
     }
+    @CasePathable
     enum Action: Equatable {
       case childA(Child.Action)
       case childB(Child.Action)
     }
     var body: some Reducer<State, Action> {
-      Scope(state: /State.childA, action: /Action.childA) {
+      Scope(state: \.childA, action: \.childA) {
         Child()
       }
-      Scope(state: /State.childB, action: /Action.childB) {
+      Scope(state: \.childB, action: \.childB) {
         Child()
       }
     }
@@ -23,6 +26,7 @@ private struct PresentationItemTestCase: Reducer {
   struct State: Equatable {
     @PresentationState var destination: Destination.State?
   }
+  @CasePathable
   enum Action: Equatable {
     case childAButtonTapped
     case childBButtonTapped
@@ -41,7 +45,7 @@ private struct PresentationItemTestCase: Reducer {
         return .none
       }
     }
-    .ifLet(\.$destination, action: /Action.destination) {
+    .ifLet(\.$destination, action: \.destination) {
       Destination()
     }
   }
@@ -92,7 +96,7 @@ struct PresentationItemTestCaseView: View {
           switch $0 {
           case .childA:
             CaseLet(
-              /PresentationItemTestCase.Destination.State.childA,
+              \PresentationItemTestCase.Destination.State.childA,
               action: PresentationItemTestCase.Destination.Action.childA
             ) { store in
               Text("Child A")
@@ -102,7 +106,7 @@ struct PresentationItemTestCaseView: View {
             }
           case .childB:
             CaseLet(
-              /PresentationItemTestCase.Destination.State.childB,
+              \PresentationItemTestCase.Destination.State.childB,
               action: PresentationItemTestCase.Destination.Action.childB
             ) { store in
               Text("Child B")
@@ -120,8 +124,8 @@ struct PresentationItemTestCaseView: View {
       self.core
         .sheet(
           store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-          state: /PresentationItemTestCase.Destination.State.childA,
-          action: PresentationItemTestCase.Destination.Action.childA
+          state: \.childA,
+          action: { .childA($0) }
         ) { store in
           Text("Child A")
           Button("Swap") {
@@ -130,8 +134,8 @@ struct PresentationItemTestCaseView: View {
         }
         .sheet(
           store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-          state: /PresentationItemTestCase.Destination.State.childB,
-          action: PresentationItemTestCase.Destination.Action.childB
+          state: \.childB,
+          action: { .childB($0) }
         ) { store in
           Text("Child B")
           Button("Swap") {

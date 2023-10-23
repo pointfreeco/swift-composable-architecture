@@ -8,12 +8,14 @@ private let readMe = """
 
 struct MultipleDestinations: Reducer {
   public struct Destination: Reducer {
+    @CasePathable
     public enum State: Equatable {
       case drillDown(Counter.State)
       case popover(Counter.State)
       case sheet(Counter.State)
     }
 
+    @CasePathable
     public enum Action {
       case drillDown(Counter.Action)
       case popover(Counter.Action)
@@ -21,13 +23,13 @@ struct MultipleDestinations: Reducer {
     }
 
     public var body: some Reducer<State, Action> {
-      Scope(state: /State.drillDown, action: /Action.drillDown) {
+      Scope(state: \.drillDown, action: \.drillDown) {
         Counter()
       }
-      Scope(state: /State.sheet, action: /Action.sheet) {
+      Scope(state: \.sheet, action: \.sheet) {
         Counter()
       }
-      Scope(state: /State.popover, action: /Action.popover) {
+      Scope(state: \.popover, action: \.popover) {
         Counter()
       }
     }
@@ -37,6 +39,7 @@ struct MultipleDestinations: Reducer {
     @PresentationState var destination: Destination.State?
   }
 
+  @CasePathable
   enum Action {
     case destination(PresentationAction<Destination.Action>)
     case showDrillDown
@@ -60,14 +63,16 @@ struct MultipleDestinations: Reducer {
         return .none
       }
     }
-    .ifLet(\.$destination, action: /Action.destination) {
+    .ifLet(\.$destination, action: \.destination) {
       Destination()
     }
   }
 }
 
 struct MultipleDestinationsView: View {
-  let store: StoreOf<MultipleDestinations>
+  @State var store = Store(initialState: MultipleDestinations.State()) {
+    MultipleDestinations()
+  }
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in

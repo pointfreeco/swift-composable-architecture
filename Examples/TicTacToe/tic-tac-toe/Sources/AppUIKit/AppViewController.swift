@@ -42,14 +42,14 @@ class AppViewController: UINavigationController {
     super.viewDidLoad()
 
     self.store
-      .scope(state: /TicTacToe.State.login, action: TicTacToe.Action.login)
+      .scope(state: \.login, action: { .login($0) })
       .ifLet { [weak self] loginStore in
         self?.setViewControllers([LoginViewController(store: loginStore)], animated: false)
       }
       .store(in: &self.cancellables)
 
     self.store
-      .scope(state: /TicTacToe.State.newGame, action: TicTacToe.Action.newGame)
+      .scope(state: \.newGame, action: { .newGame($0) })
       .ifLet { [weak self] newGameStore in
         self?.setViewControllers([NewGameViewController(store: newGameStore)], animated: false)
       }

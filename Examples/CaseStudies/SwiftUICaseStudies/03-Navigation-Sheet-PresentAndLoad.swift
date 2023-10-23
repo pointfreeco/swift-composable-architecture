@@ -16,6 +16,7 @@ struct PresentAndLoad: Reducer {
     var isSheetPresented = false
   }
 
+  @CasePathable
   enum Action {
     case optionalCounter(Counter.Action)
     case setSheet(isPresented: Bool)
@@ -49,7 +50,7 @@ struct PresentAndLoad: Reducer {
         return .none
       }
     }
-    .ifLet(\.optionalCounter, action: /Action.optionalCounter) {
+    .ifLet(\.optionalCounter, action: \.optionalCounter) {
       Counter()
     }
   }
@@ -58,7 +59,9 @@ struct PresentAndLoad: Reducer {
 // MARK: - Feature view
 
 struct PresentAndLoadView: View {
-  let store: StoreOf<PresentAndLoad>
+  @State var store = Store(initialState: PresentAndLoad.State()) {
+    PresentAndLoad()
+  }
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in

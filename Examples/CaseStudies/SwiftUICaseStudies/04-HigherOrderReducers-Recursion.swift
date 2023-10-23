@@ -17,6 +17,7 @@ struct Nested: Reducer {
     var rows: IdentifiedArrayOf<State> = []
   }
 
+  @CasePathable
   enum Action: Equatable {
     case addRowButtonTapped
     case nameTextFieldChanged(String)
@@ -45,7 +46,7 @@ struct Nested: Reducer {
         return .none
       }
     }
-    .forEach(\.rows, action: /Action.row(id:action:)) {
+    .forEach(\.rows, action: \.row) {
       Self()
     }
   }
@@ -54,7 +55,9 @@ struct Nested: Reducer {
 // MARK: - Feature view
 
 struct NestedView: View {
-  let store: StoreOf<Nested>
+  @State var store = Store(initialState: Nested.State(id: UUID())) {
+    Nested()
+  }
 
   var body: some View {
     WithViewStore(self.store, observe: \.name) { viewStore in

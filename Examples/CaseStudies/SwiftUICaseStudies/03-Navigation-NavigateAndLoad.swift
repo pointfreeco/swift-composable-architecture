@@ -16,6 +16,7 @@ struct NavigateAndLoad: Reducer {
     var optionalCounter: Counter.State?
   }
 
+  @CasePathable
   enum Action: Equatable {
     case optionalCounter(Counter.Action)
     case setNavigation(isActive: Bool)
@@ -49,7 +50,7 @@ struct NavigateAndLoad: Reducer {
         return .none
       }
     }
-    .ifLet(\.optionalCounter, action: /Action.optionalCounter) {
+    .ifLet(\.optionalCounter, action: \.optionalCounter) {
       Counter()
     }
   }
@@ -58,7 +59,9 @@ struct NavigateAndLoad: Reducer {
 // MARK: - Feature view
 
 struct NavigateAndLoadView: View {
-  let store: StoreOf<NavigateAndLoad>
+  @State var store = Store(initialState: NavigateAndLoad.State()) {
+    NavigateAndLoad()
+  }
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in

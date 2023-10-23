@@ -8,13 +8,14 @@ struct CounterList: Reducer {
     var counters: IdentifiedArrayOf<Counter.State> = []
   }
 
+  @CasePathable
   enum Action: Equatable {
     case counter(id: Counter.State.ID, action: Counter.Action)
   }
 
   var body: some Reducer<State, Action> {
     EmptyReducer()
-      .forEach(\.counters, action: /Action.counter) {
+      .forEach(\.counters, action: \.counter) {
         Counter()
       }
   }

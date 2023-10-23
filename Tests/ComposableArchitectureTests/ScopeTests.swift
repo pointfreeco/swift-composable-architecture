@@ -2,6 +2,7 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
+@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 final class ScopeTests: BaseTCATestCase {
   func testStructChild() async {
     let store = TestStore(initialState: Feature.State()) {
@@ -77,6 +78,7 @@ final class ScopeTests: BaseTCATestCase {
   #endif
 }
 
+@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 private struct Feature: Reducer {
   struct State: Equatable {
     var child1 = Child1.State()
@@ -118,6 +120,7 @@ private struct Child1: Reducer {
   }
 }
 
+@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 private struct Child2: Reducer {
   enum State: Equatable {
     case count(Int)

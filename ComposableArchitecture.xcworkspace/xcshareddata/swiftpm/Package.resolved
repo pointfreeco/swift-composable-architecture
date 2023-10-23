@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-case-paths",
       "state" : {
-        "revision" : "5da6989aae464f324eef5c5b52bdb7974725ab81",
-        "version" : "1.0.0"
+        "branch" : "case-key-paths",
+        "revision" : "891b5ea7cb1530f11958f67f5e21ba340b8b2663"
       }
     },
     {
@@ -121,8 +121,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-syntax.git",
       "state" : {
-        "revision" : "74203046135342e4a4a627476dd6caf8b28fe11b",
-        "version" : "509.0.0"
+        "revision" : "ffa3cd6fc2aa62adbedd31d3efaf7c0d86a9f029",
+        "version" : "509.0.1"
       }
     },
     {
@@ -139,8 +139,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swiftui-navigation",
       "state" : {
-        "revision" : "f5bcdac5b6bb3f826916b14705f37a3937c2fd34",
-        "version" : "1.0.0"
+        "branch" : "case-key-paths",
+        "revision" : "32cb29168fe74ceb1355e91ffc3b853870ebddb8"
       }
     },
     {

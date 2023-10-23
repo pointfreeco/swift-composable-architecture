@@ -9,6 +9,7 @@ private struct BindingLocalTestCase: Reducer {
     @PresentationState var popover: Child.State?
     @PresentationState var sheet: Child.State?
   }
+  @CasePathable
   enum Action: Equatable {
     case fullScreenCover(PresentationAction<Child.Action>)
     case fullScreenCoverButtonTapped
@@ -47,19 +48,19 @@ private struct BindingLocalTestCase: Reducer {
         return .none
       }
     }
-    .forEach(\.path, action: /Action.path) {
+    .forEach(\.path, action: \.path) {
       Child()
     }
-    .ifLet(\.$fullScreenCover, action: /Action.fullScreenCover) {
+    .ifLet(\.$fullScreenCover, action: \.fullScreenCover) {
       Child()
     }
-    .ifLet(\.$navigationDestination, action: /Action.navigationDestination) {
+    .ifLet(\.$navigationDestination, action: \.navigationDestination) {
       Child()
     }
-    .ifLet(\.$popover, action: /Action.popover) {
+    .ifLet(\.$popover, action: \.popover) {
       Child()
     }
-    .ifLet(\.$sheet, action: /Action.sheet) {
+    .ifLet(\.$sheet, action: \.sheet) {
       Child()
     }
   }

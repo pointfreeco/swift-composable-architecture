@@ -28,6 +28,7 @@ struct AlertAndConfirmationDialog: Reducer {
     var count = 0
   }
 
+  @CasePathable
   enum Action: Equatable {
     case alert(PresentationAction<Alert>)
     case alertButtonTapped
@@ -97,15 +98,17 @@ struct AlertAndConfirmationDialog: Reducer {
         return .none
       }
     }
-    .ifLet(\.$alert, action: /Action.alert)
-    .ifLet(\.$confirmationDialog, action: /Action.confirmationDialog)
+    .ifLet(\.$alert, action: \.alert)
+    .ifLet(\.$confirmationDialog, action: \.confirmationDialog)
   }
 }
 
 // MARK: - Feature view
 
 struct AlertAndConfirmationDialogView: View {
-  let store: StoreOf<AlertAndConfirmationDialog>
+  @State var store = Store(initialState: AlertAndConfirmationDialog.State()) {
+    AlertAndConfirmationDialog()
+  }
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
