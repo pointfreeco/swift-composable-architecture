@@ -44,6 +44,7 @@ test-docs:
 test-examples:
 	for scheme in "CaseStudies (SwiftUI)" "CaseStudies (UIKit)" Integration Search SyncUps SpeechRecognition TicTacToe Todos VoiceMemos; do \
 		xcodebuild test \
+			-skipMacroValidation \
 			-scheme "$$scheme" \
 			-destination platform="$(PLATFORM_IOS)" || exit 1; \
 	done
