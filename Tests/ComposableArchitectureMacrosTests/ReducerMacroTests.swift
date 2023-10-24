@@ -34,6 +34,7 @@ final class ReducerMacroTests: XCTestCase {
         @CasePathable
         enum Action {
         }
+        @ReducerBuilder<State, Action>
         var body: some ReducerOf<Self> {
           EmptyReducer()
         }
@@ -68,6 +69,7 @@ final class ReducerMacroTests: XCTestCase {
         @CasePathable
         enum Action {
         }
+        @ReducerBuilder<State, Action>
         var body: some ReducerOf<Self> {
           EmptyReducer()
         }
@@ -106,6 +108,7 @@ final class ReducerMacroTests: XCTestCase {
         @CasePathable
         enum Action {
         }
+        @ReducerBuilder<State, Action>
         var body: some ReducerOf<Self> {
           EmptyReducer()
         }

@@ -1,7 +1,8 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct SyncUpsList: Reducer {
+@Reducer
+struct SyncUpsList {
   struct State: Equatable {
     @PresentationState var destination: Destination.State?
     var syncUps: IdentifiedArrayOf<SyncUp> = []
@@ -21,7 +22,6 @@ struct SyncUpsList: Reducer {
     }
   }
 
-  @CasePathable
   enum Action: Equatable {
     case addSyncUpButtonTapped
     case confirmAddSyncUpButtonTapped
@@ -29,15 +29,13 @@ struct SyncUpsList: Reducer {
     case dismissAddSyncUpButtonTapped
   }
 
-  struct Destination: Reducer {
-    @CasePathable
-    @dynamicMemberLookup
+  @Reducer
+  struct Destination {
     enum State: Equatable {
       case add(SyncUpForm.State)
       case alert(AlertState<Action.Alert>)
     }
 
-    @CasePathable
     enum Action: Equatable {
       case add(SyncUpForm.Action)
       case alert(Alert)

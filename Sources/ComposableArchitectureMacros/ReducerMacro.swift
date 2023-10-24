@@ -1,8 +1,8 @@
-import SwiftSyntax
-import SwiftSyntaxMacros
 import SwiftDiagnostics
 import SwiftOperators
+import SwiftSyntax
 import SwiftSyntaxBuilder
+import SwiftSyntaxMacros
 
 public enum ReducerMacro {
 }
@@ -31,7 +31,9 @@ extension ReducerMacro: ExtensionMacro {
   ) throws -> [ExtensionDeclSyntax] {
     if let inheritanceClause = declaration.inheritanceClause,
       inheritanceClause.inheritedTypes.contains(
-        where: { ["ComposableArchitecture.Reducer", "Reducer"].contains($0.type.trimmedDescription) }
+        where: {
+          ["ComposableArchitecture.Reducer", "Reducer"].contains($0.type.trimmedDescription)
+        }
       )
     {
       return []
@@ -51,27 +53,50 @@ extension ReducerMacro: MemberAttributeMacro {
     providingAttributesFor member: M,
     in context: C
   ) throws -> [AttributeSyntax] {
-    guard let enumDecl = member.as(EnumDeclSyntax.self) 
-    else { return [] }
-
-    var attributes: [String] = []
-    switch enumDecl.name.text {
-    case "State":
-      attributes = ["CasePathable", "dynamicMemberLookup"]
-    case "Action":
-      attributes = ["CasePathable"]
-    default:
-      break
-    }
-    for attribute in enumDecl.attributes {
-      guard
-        case let .attribute(attribute) = attribute,
-        let attributeName = attribute.attributeName.as(IdentifierTypeSyntax.self)?.name.text
-      else { continue }
-      attributes.removeAll(where: { $0 == attributeName })
-    }
-    return attributes.map {
-      AttributeSyntax(attributeName: IdentifierTypeSyntax(name: .identifier($0)))
+    if let enumDecl = member.as(EnumDeclSyntax.self) {
+      var attributes: [String] = []
+      switch enumDecl.name.text {
+      case "State":
+        attributes = ["CasePathable", "dynamicMemberLookup"]
+      case "Action":
+        attributes = ["CasePathable"]
+      default:
+        break
+      }
+      for attribute in enumDecl.attributes {
+        guard
+          case let .attribute(attribute) = attribute,
+          let attributeName = attribute.attributeName.as(IdentifierTypeSyntax.self)?.name.text
+        else { continue }
+        attributes.removeAll(where: { $0 == attributeName })
+      }
+      return attributes.map {
+        AttributeSyntax(attributeName: IdentifierTypeSyntax(name: .identifier($0)))
+      }
+    } else if let property = member.as(VariableDeclSyntax.self),
+      property.bindingSpecifier.text == "var",
+      property.bindings.count == 1,
+      let binding = property.bindings.first,
+      binding.pattern.as(IdentifierPatternSyntax.self)?.identifier.text == "body",
+      case .getter = binding.accessorBlock?.accessors
+    {
+      for attribute in property.attributes {
+        guard
+          case let .attribute(attribute) = attribute,
+          let attributeName = attribute.attributeName.as(IdentifierTypeSyntax.self)?.name.text
+        else { continue }
+        guard
+          !attributeName.starts(with: "ReducerBuilder"),
+          !attributeName.starts(with: "ComposableArchitecture.ReducerBuilder")
+        else { return [] }
+      }
+      return [
+        AttributeSyntax(
+          attributeName: IdentifierTypeSyntax(name: .identifier("ReducerBuilder<State, Action>"))
+        )
+      ]
+    } else {
+      return []
     }
   }
 }

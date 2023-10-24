@@ -29,15 +29,13 @@ struct SyncUpDetail {
   @Dependency(\.openSettings) var openSettings
   @Dependency(\.speechClient.authorizationStatus) var authorizationStatus
 
-  struct Destination: Reducer {
-    @CasePathable
-    @dynamicMemberLookup
+  @Reducer
+  struct Destination {
     enum State: Equatable {
       case alert(AlertState<Action.Alert>)
       case edit(SyncUpForm.State)
     }
 
-    @CasePathable
     enum Action: Equatable, Sendable {
       case alert(Alert)
       case edit(SyncUpForm.Action)
