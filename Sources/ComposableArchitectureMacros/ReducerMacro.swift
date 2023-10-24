@@ -92,7 +92,9 @@ extension ReducerMacro: MemberAttributeMacro {
       }
       return [
         AttributeSyntax(
-          attributeName: IdentifierTypeSyntax(name: .identifier("ReducerBuilder<State, Action>"))
+          attributeName: IdentifierTypeSyntax(
+            name: .identifier("ComposableArchitecture.ReducerBuilder<State, Action>")
+          )
         )
       ]
     } else {
