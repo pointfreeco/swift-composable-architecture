@@ -33,7 +33,7 @@
       "location" : "https://github.com/pointfreeco/swift-case-paths",
       "state" : {
         "branch" : "case-key-paths",
-        "revision" : "7612c8f0cebf42873351f6f4f16ed5ecfaf8b714"
+        "revision" : "c0c5af4e542b27a67842f58cf9bb13f205ee384c"
       }
     },
     {
@@ -146,7 +146,7 @@
     {
       "identity" : "swiftui-navigation",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/pointfreeco/swiftui-navigation.git",
+      "location" : "https://github.com/pointfreeco/swiftui-navigation",
       "state" : {
         "branch" : "case-key-paths",
         "revision" : "911c8b05ad15d80c2f9e174bb3aa75aaca498288"
