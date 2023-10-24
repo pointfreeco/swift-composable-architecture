@@ -33,12 +33,12 @@ let storeSuite = BenchmarkSuite(name: "Store") {
   }
 }
 
-private struct Feature: Reducer {
+@Reducer
+private struct Feature {
   struct State {
     @PresentationState var child: State?
     var count = 0
   }
-  @CasePathable
   enum Action {
     indirect case child(PresentationAction<Action>)
     case tap
