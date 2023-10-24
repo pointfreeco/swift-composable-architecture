@@ -2,12 +2,12 @@
 import SwiftUI
 import SwiftUINavigation
 
-private struct PresentationTestCase: Reducer {
+@Reducer
+private struct PresentationTestCase {
   struct State: Equatable {
     var message = ""
     @PresentationState var destination: Destination.State?
   }
-  @CasePathable
   enum Action: Equatable, Sendable {
     case alertButtonTapped
     case customAlertButtonTapped
@@ -20,9 +20,8 @@ private struct PresentationTestCase: Reducer {
     case sheetButtonTapped
   }
 
-  struct Destination: Reducer {
-    @CasePathable
-    @dynamicMemberLookup
+  @Reducer
+  struct Destination {
     enum State: Equatable {
       case alert(AlertState<AlertAction>)
       case customAlert
@@ -33,7 +32,6 @@ private struct PresentationTestCase: Reducer {
       case popover(ChildFeature.State)
       case sheet(ChildFeature.State)
     }
-    @CasePathable
     enum Action: Equatable {
       case alert(AlertAction)
       case customAlert(AlertAction)

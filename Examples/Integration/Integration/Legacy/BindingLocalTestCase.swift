@@ -1,7 +1,8 @@
 import ComposableArchitecture
 import SwiftUI
 
-private struct BindingLocalTestCase: Reducer {
+@Reducer
+private struct BindingLocalTestCase {
   struct State: Equatable {
     @PresentationState var fullScreenCover: Child.State?
     @PresentationState var navigationDestination: Child.State?
@@ -9,7 +10,6 @@ private struct BindingLocalTestCase: Reducer {
     @PresentationState var popover: Child.State?
     @PresentationState var sheet: Child.State?
   }
-  @CasePathable
   enum Action: Equatable {
     case fullScreenCover(PresentationAction<Child.Action>)
     case fullScreenCoverButtonTapped
@@ -66,7 +66,8 @@ private struct BindingLocalTestCase: Reducer {
   }
 }
 
-private struct Child: Reducer {
+@Reducer
+private struct Child {
   struct State: Equatable {
     @BindingState var sendOnDisappear = false
     @BindingState var text = ""

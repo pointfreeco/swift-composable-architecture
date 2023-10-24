@@ -100,13 +100,13 @@ struct PresentationView: View {
     }
   }
 
-  struct Feature: Reducer {
+  @Reducer
+  struct Feature {
     struct State: Equatable {
       var isObservingChildCount = false
       @PresentationState var destination: Destination.State?
       @PresentationState var sheet: BasicsView.Feature.State?
     }
-    @CasePathable
     enum Action {
       case destination(PresentationAction<Destination.Action>)
       case dismissButtonTapped
@@ -116,14 +116,12 @@ struct PresentationView: View {
       case sheet(PresentationAction<BasicsView.Feature.Action>)
       case toggleObserveChildCountButtonTapped
     }
-    struct Destination: Reducer {
-      @CasePathable
-      @dynamicMemberLookup
+    @Reducer
+    struct Destination {
       enum State: Equatable {
         case fullScreenCover(BasicsView.Feature.State)
         case popover(BasicsView.Feature.State)
       }
-      @CasePathable
       enum Action {
         case fullScreenCover(BasicsView.Feature.Action)
         case popover(BasicsView.Feature.Action)

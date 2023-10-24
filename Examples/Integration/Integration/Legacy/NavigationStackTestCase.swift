@@ -8,14 +8,14 @@ private struct DestinationView: View {
   }
 }
 
-private struct ChildFeature: Reducer {
+@Reducer
+private struct ChildFeature {
   struct State: Hashable {
     @PresentationState var alert: AlertState<Action.Alert>?
     @PresentationState var navigationDestination: Int?
     var count = 0
     var hasAppeared = false
   }
-  @CasePathable
   enum Action {
     case alert(PresentationAction<Alert>)
     case navigationDestination(PresentationAction<Never>)

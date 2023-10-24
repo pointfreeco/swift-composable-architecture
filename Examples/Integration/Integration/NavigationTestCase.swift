@@ -25,11 +25,11 @@ struct NavigationTestCaseView: View {
     }
   }
 
-  struct Feature: Reducer {
+  @Reducer
+  struct Feature {
     struct State: Equatable {
       var path = StackState<BasicsView.Feature.State>()
     }
-    @CasePathable
     enum Action {
       case path(StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>)
     }

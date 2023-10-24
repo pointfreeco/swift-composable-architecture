@@ -80,23 +80,22 @@ struct EnumView: View {
     }
   }
 
-  struct Feature: Reducer {
+  @Reducer
+  struct Feature {
     struct State: Equatable {
       @PresentationState var destination: Destination.State?
     }
-    @CasePathable
     enum Action {
       case destination(PresentationAction<Destination.Action>)
       case toggle1ButtonTapped
       case toggle2ButtonTapped
     }
-    struct Destination: Reducer {
-      @CasePathable
+    @Reducer
+    struct Destination {
       enum State: Equatable {
         case feature1(BasicsView.Feature.State)
         case feature2(BasicsView.Feature.State)
       }
-      @CasePathable
       enum Action {
         case feature1(BasicsView.Feature.Action)
         case feature2(BasicsView.Feature.Action)

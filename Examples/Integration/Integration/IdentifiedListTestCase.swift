@@ -57,11 +57,11 @@ struct IdentifiedListView: View {
     }
   }
 
-  struct Feature: Reducer {
+  @Reducer
+  struct Feature {
     struct State: Equatable {
       var rows: IdentifiedArrayOf<BasicsView.Feature.State> = []
     }
-    @CasePathable
     enum Action {
       case addButtonTapped
       case incrementFirstButtonTapped

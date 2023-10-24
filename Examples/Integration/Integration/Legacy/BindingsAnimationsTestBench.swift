@@ -1,7 +1,8 @@
 import ComposableArchitecture
 import SwiftUI
 
-private struct BindingsAnimations: Reducer {
+@Reducer
+private struct BindingsAnimations {
   func reduce(into state: inout Bool, action: Void) -> Effect<Void> {
     state.toggle()
     return .none
