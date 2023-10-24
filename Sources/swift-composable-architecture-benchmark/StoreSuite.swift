@@ -38,6 +38,7 @@ private struct Feature: Reducer {
     @PresentationState var child: State?
     var count = 0
   }
+  @CasePathable
   enum Action {
     indirect case child(PresentationAction<Action>)
     case tap
@@ -55,7 +56,7 @@ private struct Feature: Reducer {
         return .none
       }
     }
-    .ifLet(\.$child, action: /Action.child) {
+    .ifLet(\.$child, action: \.child) {
       Feature()
     }
   }

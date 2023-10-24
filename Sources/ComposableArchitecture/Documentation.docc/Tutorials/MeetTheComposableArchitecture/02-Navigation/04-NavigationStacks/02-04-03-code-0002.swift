@@ -5,6 +5,7 @@ struct ContactDetailFeature: Reducer {
     @PresentationState var alert: AlertState<Action.Alert>?
     let contact: Contact
   }
+  @CasePathable
   enum Action: Equatable {
     case alert(PresentationAction<Alert>)
     case delegate(Delegate)
@@ -34,7 +35,7 @@ struct ContactDetailFeature: Reducer {
         return .none
       }
     }
-    .ifLet(\.$alert, action: /Action.alert)
+    .ifLet(\.$alert, action: \.alert)
   }
 }
 

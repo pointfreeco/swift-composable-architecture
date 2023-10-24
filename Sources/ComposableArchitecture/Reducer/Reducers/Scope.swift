@@ -38,13 +38,14 @@
 ///     // ...
 ///   }
 ///
+///   @CasePathable
 ///   enum Action {
 ///     case child(Child.Action)
 ///     // ...
 ///   }
 ///
 ///   var body: some Reducer<State, Action> {
-///     Scope(state: \.child, action: /Action.child) {
+///     Scope(state: \.child, action: \.child) {
 ///       Child()
 ///     }
 ///     Reduce { state, action in
@@ -65,18 +66,20 @@
 ///
 /// ```swift
 /// struct Feature: Reducer {
+///   @CasePathable
 ///   enum State {
 ///     case unloaded
 ///     case loading
 ///     case loaded(Child.State)
 ///   }
+///   @CasePathable
 ///   enum Action {
 ///     case child(Child.Action)
 ///     // ...
 ///   }
 ///
 ///   var body: some Reducer<State, Action> {
-///     Scope(state: /State.loaded, action: /Action.child) {
+///     Scope(state: \.loaded, action: \.child) {
 ///       Child()
 ///     }
 ///     Reduce { state, action in
@@ -132,10 +135,10 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   ///
   /// ```swift
   /// var body: some Reducer<State, Action> {
-  ///   Scope(state: \.profile, action: /Action.profile) {
+  ///   Scope(state: \.profile, action: \.profile) {
   ///     Profile()
   ///   }
-  ///   Scope(state: \.settings, action: /Action.settings) {
+  ///   Scope(state: \.settings, action: \.settings) {
   ///     Settings()
   ///   }
   ///   // ...
@@ -166,10 +169,10 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   ///
   /// ```swift
   /// var body: some Reducer<State, Action> {
-  ///   Scope(state: /State.loggedIn, action: /Action.loggedIn) {
+  ///   Scope(state: \.loggedIn, action: \.loggedIn) {
   ///     LoggedIn()
   ///   }
-  ///   Scope(state: /State.loggedOut, action: /Action.loggedOut) {
+  ///   Scope(state: \.loggedOut, action: \.loggedOut) {
   ///     LoggedOut()
   ///   }
   /// }
@@ -192,7 +195,7 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   /// >   // ...
   /// >   }
   /// > }
-  /// > Scope(state: /State.loggedIn, action: /Action.loggedIn) {
+  /// > Scope(state: \.loggedIn, action: \.loggedIn) {
   /// >   LoggedIn()  // ⚠️ Logged-in domain can't handle `quitButtonTapped`
   /// > }
   /// > ```
@@ -209,7 +212,7 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   /// >   // ...
   /// >   }
   /// > }
-  /// > .ifCaseLet(/State.loggedIn, action: /Action.loggedIn) {
+  /// > .ifCaseLet(\.loggedIn, action: \.loggedIn) {
   /// >   LoggedIn()  // ✅ Receives actions before its case can change
   /// > }
   /// > ```

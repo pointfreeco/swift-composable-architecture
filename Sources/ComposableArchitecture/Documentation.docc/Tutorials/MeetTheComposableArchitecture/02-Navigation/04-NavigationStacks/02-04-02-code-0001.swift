@@ -4,6 +4,7 @@ struct ContactsFeature: Reducer {
     @PresentationState var destination: Destination.State?
     var path = StackState<ContactDetailFeature.State>()
   }
+  @CasePathable
   enum Action: Equatable {
     case addButtonTapped
     case deleteButtonTapped(id: Contact.ID)
@@ -41,7 +42,7 @@ struct ContactsFeature: Reducer {
         return .none
       }
     }
-    .ifLet(\.$destination, action: /Action.destination) {
+    .ifLet(\.$destination, action: \.destination) {
       Destination()
     }
   }

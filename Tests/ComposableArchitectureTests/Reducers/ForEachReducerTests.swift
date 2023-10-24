@@ -40,7 +40,7 @@ final class ForEachReducerTests: BaseTCATestCase {
     func testMissingElement() async {
       let store = TestStore(initialState: Elements.State()) {
         EmptyReducer<Elements.State, Elements.Action>()
-          .forEach(\.rows, action: /Elements.Action.row) {}
+          .forEach(\.rows, action: \.row) {}
       }
 
       XCTExpectFailure {
@@ -229,6 +229,7 @@ struct Elements: Reducer {
     }
     var rows: IdentifiedArrayOf<Row> = []
   }
+  @CasePathable
   enum Action: Equatable {
     case buttonTapped
     case row(id: Int, action: String)
@@ -237,7 +238,7 @@ struct Elements: Reducer {
     Reduce { state, action in
       .none
     }
-    .forEach(\.rows, action: /Action.row) {
+    .forEach(\.rows, action: \.row) {
       Reduce { state, action in
         state.value = action
         return action.isEmpty

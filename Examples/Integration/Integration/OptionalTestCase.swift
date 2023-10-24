@@ -50,6 +50,7 @@ struct OptionalView: View {
       @PresentationState var child: BasicsView.Feature.State?
       var isObservingCount = false
     }
+    @CasePathable
     enum Action {
       case child(PresentationAction<BasicsView.Feature.Action>)
       case toggleButtonTapped
@@ -68,7 +69,7 @@ struct OptionalView: View {
           return .none
         }
       }
-      .ifLet(\.$child, action: /Action.child) {
+      .ifLet(\.$child, action: \.child) {
         BasicsView.Feature()
       }
     }

@@ -3,6 +3,7 @@ struct ContactsFeature: Reducer {
     var contacts: IdentifiedArrayOf<Contact> = []
     @PresentationState var destination: Destination.State?
   }
+  @CasePathable
   enum Action: Equatable {
     case addButtonTapped
     case deleteButtonTapped(id: Contact.ID)
@@ -45,9 +46,9 @@ struct ContactsFeature: Reducer {
         return .none
       }
     }
-    .ifLet(\.$addContact, action: /Action.addContact) {
+    .ifLet(\.$addContact, action: \.addContact) {
       AddContactFeature()
     }
-    .ifLet(\.$alert, action: /Action.alert)
+    .ifLet(\.$alert, action: \.alert)
   }
 }

@@ -6,10 +6,12 @@ extension Reducer {
   ///
   /// ```swift
   /// struct Parent: Reducer {
+  ///   @CasePathable
   ///   enum State {
   ///     case loggedIn(Authenticated.State)
   ///     case loggedOut(Unauthenticated.State)
   ///   }
+  ///   @CasePathable
   ///   enum Action {
   ///     case loggedIn(Authenticated.Action)
   ///     case loggedOut(Unauthenticated.Action)
@@ -20,10 +22,10 @@ extension Reducer {
   ///     Reduce { state, action in
   ///       // Core logic for parent feature
   ///     }
-  ///     .ifCaseLet(/State.loggedIn, action: /Action.loggedIn) {
+  ///     .ifCaseLet(\.loggedIn, action: \.loggedIn) {
   ///       Authenticated()
   ///     }
-  ///     .ifCaseLet(/State.loggedOut, action: /Action.loggedOut) {
+  ///     .ifCaseLet(\.loggedOut, action: \.loggedOut) {
   ///       Unauthenticated()
   ///     }
   ///   }

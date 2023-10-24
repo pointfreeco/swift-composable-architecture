@@ -29,6 +29,7 @@ struct NavigationTestCaseView: View {
     struct State: Equatable {
       var path = StackState<BasicsView.Feature.State>()
     }
+    @CasePathable
     enum Action {
       case path(StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>)
     }
@@ -36,7 +37,7 @@ struct NavigationTestCaseView: View {
       Reduce { state, action in
         .none
       }
-      .forEach(\.path, action: /Action.path) {
+      .forEach(\.path, action: \.path) {
         BasicsView.Feature()
       }
     }

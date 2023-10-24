@@ -7,6 +7,7 @@ private struct PresentationTestCase: Reducer {
     var message = ""
     @PresentationState var destination: Destination.State?
   }
+  @CasePathable
   enum Action: Equatable, Sendable {
     case alertButtonTapped
     case customAlertButtonTapped
@@ -20,6 +21,8 @@ private struct PresentationTestCase: Reducer {
   }
 
   struct Destination: Reducer {
+    @CasePathable
+    @dynamicMemberLookup
     enum State: Equatable {
       case alert(AlertState<AlertAction>)
       case customAlert
@@ -30,6 +33,7 @@ private struct PresentationTestCase: Reducer {
       case popover(ChildFeature.State)
       case sheet(ChildFeature.State)
     }
+    @CasePathable
     enum Action: Equatable {
       case alert(AlertAction)
       case customAlert(AlertAction)
@@ -53,19 +57,19 @@ private struct PresentationTestCase: Reducer {
       case showSheet
     }
     var body: some ReducerOf<Self> {
-      Scope(state: /State.fullScreenCover, action: /Action.fullScreenCover) {
+      Scope(state: \.fullScreenCover, action: \.fullScreenCover) {
         ChildFeature()
       }
-      Scope(state: /State.navigationDestination, action: /Action.navigationDestination) {
+      Scope(state: \.navigationDestination, action: \.navigationDestination) {
         ChildFeature()
       }
-      Scope(state: /State.navigationLinkDemo, action: /Action.navigationLinkDemo) {
+      Scope(state: \.navigationLinkDemo, action: \.navigationLinkDemo) {
         NavigationLinkDemoFeature()
       }
-      Scope(state: /State.sheet, action: /Action.sheet) {
+      Scope(state: \.sheet, action: \.sheet) {
         ChildFeature()
       }
-      Scope(state: /State.popover, action: /Action.popover) {
+      Scope(state: \.popover, action: \.popover) {
         ChildFeature()
       }
     }
@@ -225,7 +229,7 @@ private struct PresentationTestCase: Reducer {
         return .none
       }
     }
-    .ifLet(\.$destination, action: /Action.destination) {
+    .ifLet(\.$destination, action: \.destination) {
       Destination()
     }
   }
@@ -312,8 +316,8 @@ struct PresentationTestCaseView: View {
       .alert(
         store: self.store.scope(
           state: \.$destination, action: PresentationTestCase.Action.destination),
-        state: /PresentationTestCase.Destination.State.alert,
-        action: PresentationTestCase.Destination.Action.alert
+        state: \.alert,
+        action: { .alert($0) }
       )
 
       Button("Open custom alert") {
@@ -338,8 +342,8 @@ struct PresentationTestCaseView: View {
       .confirmationDialog(
         store: self.store.scope(
           state: \.$destination, action: PresentationTestCase.Action.destination),
-        state: /PresentationTestCase.Destination.State.dialog,
-        action: PresentationTestCase.Destination.Action.dialog
+        state: \.dialog,
+        action: { .dialog($0) }
       )
 
       Button("Open full screen cover") {
@@ -348,8 +352,8 @@ struct PresentationTestCaseView: View {
       .fullScreenCover(
         store: self.store.scope(
           state: \.$destination, action: PresentationTestCase.Action.destination),
-        state: /PresentationTestCase.Destination.State.fullScreenCover,
-        action: PresentationTestCase.Destination.Action.fullScreenCover
+        state: \.fullScreenCover,
+        action: { .fullScreenCover($0) }
       ) { store in
         ChildView(store: store)
       }
@@ -364,8 +368,8 @@ struct PresentationTestCaseView: View {
       .sheet(
         store: self.store.scope(
           state: \.$destination, action: PresentationTestCase.Action.destination),
-        state: /PresentationTestCase.Destination.State.navigationLinkDemo,
-        action: PresentationTestCase.Destination.Action.navigationLinkDemo
+        state: \.navigationLinkDemo,
+        action: { .navigationLinkDemo($0) }
       ) { store in
         NavigationLinkDemoView(store: store)
       }
@@ -376,8 +380,8 @@ struct PresentationTestCaseView: View {
       .navigationDestination(
         store: self.store.scope(
           state: \.$destination, action: PresentationTestCase.Action.destination),
-        state: /PresentationTestCase.Destination.State.navigationDestination,
-        action: PresentationTestCase.Destination.Action.navigationDestination
+        state: \.navigationDestination,
+        action: { .navigationDestination($0) }
       ) { store in
         ChildView(store: store)
       }
@@ -388,8 +392,8 @@ struct PresentationTestCaseView: View {
       .popover(
         store: self.store.scope(
           state: \.$destination, action: PresentationTestCase.Action.destination),
-        state: /PresentationTestCase.Destination.State.popover,
-        action: PresentationTestCase.Destination.Action.popover
+        state: \.popover,
+        action: { .popover($0) }
       ) { store in
         ChildView(store: store)
       }
@@ -400,8 +404,8 @@ struct PresentationTestCaseView: View {
       .sheet(
         store: self.store.scope(
           state: \.$destination, action: PresentationTestCase.Action.destination),
-        state: /PresentationTestCase.Destination.State.sheet,
-        action: PresentationTestCase.Destination.Action.sheet
+        state: \.sheet,
+        action: { .sheet($0) }
       ) { store in
         ChildView(store: store)
       }
@@ -450,6 +454,7 @@ private struct NavigationLinkDemoFeature: Reducer {
     @PresentationState var child: ChildFeature.State?
     @PresentationState var identifiedChild: ChildFeature.State?
   }
+  @CasePathable
   enum Action: Equatable {
     case child(PresentationAction<ChildFeature.Action>)
     case identifiedChild(PresentationAction<ChildFeature.Action>)
@@ -490,10 +495,10 @@ private struct NavigationLinkDemoFeature: Reducer {
         return .none
       }
     }
-    .ifLet(\.$child, action: /Action.child) {
+    .ifLet(\.$child, action: \.child) {
       ChildFeature()
     }
-    .ifLet(\.$identifiedChild, action: /Action.identifiedChild) {
+    .ifLet(\.$identifiedChild, action: \.identifiedChild) {
       ChildFeature()
     }
   }

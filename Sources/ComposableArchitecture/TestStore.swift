@@ -1875,7 +1875,7 @@ extension TestStore {
   ///   $0.email = "blob@pointfree.co"
   /// }
   /// XCTAssertTrue(
-  ///   LoginView.ViewState(store.bindings(action: /LoginFeature.Action.view))
+  ///   LoginView.ViewState(store.bindings(action: \.view))
   ///     .isLoginButtonDisabled
   /// )
   ///
@@ -1884,7 +1884,7 @@ extension TestStore {
   ///   $0.isFormValid = true
   /// }
   /// XCTAssertFalse(
-  ///   LoginView.ViewState(store.bindings(action: /LoginFeature.Action.view))
+  ///   LoginView.ViewState(store.bindings(action: \.view))
   ///     .isLoginButtonDisabled
   /// )
   /// ```

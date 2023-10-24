@@ -236,6 +236,7 @@ extension Reducer {
   ///     var path = StackState<Path.State>()
   ///     // ...
   ///   }
+  ///   @CasePathable
   ///   enum Action {
   ///     case path(StackAction<Path.State, Path.Action>)
   ///     // ...
@@ -244,7 +245,7 @@ extension Reducer {
   ///     Reduce { state, action in
   ///       // Core parent logic
   ///     }
-  ///     .forEach(\.path, action: /Action.path) {
+  ///     .forEach(\.path, action: \.path) {
   ///       Path()
   ///     }
   ///   }

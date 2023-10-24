@@ -53,6 +53,7 @@ import SwiftUI
 /// Define a case to handle actions sent to the child domain:
 ///
 /// ```swift
+/// @CasePathable
 /// enum Action {
 ///   case todo(id: Todo.State.ID, action: Todo.Action)
 /// }
@@ -65,7 +66,7 @@ import SwiftUI
 ///   Reduce { state, action in
 ///     // ...
 ///   }
-///   .forEach(\.todos, action: /Action.todo(id:action:)) {
+///   .forEach(\.todos, action: \.todo(id:action:)) {
 ///     Todo()
 ///   }
 /// }

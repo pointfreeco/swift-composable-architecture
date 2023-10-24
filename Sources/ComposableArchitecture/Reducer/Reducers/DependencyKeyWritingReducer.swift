@@ -16,13 +16,14 @@ extension Reducer {
   ///     var feature: Feature.State
   ///     // Additional onboarding state
   ///   }
+  ///   @CasePathable
   ///   enum Action {
   ///     case feature(Feature.Action)
   ///     // Additional onboarding actions
   ///   }
   ///
   ///   var body: some Reducer<State, Action> {
-  ///     Scope(state: \.feature, action: /Action.feature) {
+  ///     Scope(state: \.feature, action: \.feature) {
   ///       Feature()
   ///     }
   ///
@@ -45,7 +46,7 @@ extension Reducer {
   ///
   /// ```swift
   /// var body: some Reducer<State, Action> {
-  ///   Scope(state: \.feature, action: /Action.feature) {
+  ///   Scope(state: \.feature, action: \.feature) {
   ///     Feature()
   ///       .dependency(\.apiClient, .mock)
   ///       .dependency(\.userDefaults, .mock)

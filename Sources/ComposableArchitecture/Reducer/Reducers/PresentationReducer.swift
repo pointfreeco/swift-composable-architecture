@@ -33,7 +33,7 @@ import Combine
 ///     Reduce { state, action in
 ///       // Core logic for parent feature
 ///     }
-///     .ifLet(\.$child, action: /Action.child) {
+///     .ifLet(\.$child, action: \.child) {
 ///       ChildFeature()
 ///     }
 ///   }
@@ -237,6 +237,7 @@ extension Reducer {
   ///     @PresentationState var child: Child.State?
   ///     // ...
   ///   }
+  ///   @CasePathable
   ///   enum Action {
   ///     case child(PresentationAction<Child.Action>)
   ///     // ...
@@ -246,7 +247,7 @@ extension Reducer {
   ///     Reduce { state, action in
   ///       // Core logic for parent feature
   ///     }
-  ///     .ifLet(\.$child, action: /Action.child) {
+  ///     .ifLet(\.$child, action: \.child) {
   ///       Child()
   ///     }
   ///   }

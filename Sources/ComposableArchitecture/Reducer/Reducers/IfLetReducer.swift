@@ -10,6 +10,7 @@ extension Reducer {
   ///     var child: Child.State?
   ///     // ...
   ///   }
+  ///   @CasePathable
   ///   enum Action {
   ///     case child(Child.Action)
   ///     // ...
@@ -19,7 +20,7 @@ extension Reducer {
   ///     Reduce { state, action in
   ///       // Core logic for parent feature
   ///     }
-  ///     .ifLet(\.child, action: /Action.child) {
+  ///     .ifLet(\.child, action: \.child) {
   ///       Child()
   ///     }
   ///   }

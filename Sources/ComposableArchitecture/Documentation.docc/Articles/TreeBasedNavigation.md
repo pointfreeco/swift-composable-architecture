@@ -60,6 +60,7 @@ parent domain for populating the child's state to drive navigation:
 ```swift
 struct InventoryFeature: Reducer {
   struct State: Equatable { /* ... */ }
+  @CasePathable
   enum Action: Equatable { /* ... */ }
   
   var body: some ReducerOf<Self> {
@@ -73,7 +74,7 @@ struct InventoryFeature: Reducer {
       // ...
       }
     }
-    .ifLet(\.$addItem, action: /Action.addItem) {
+    .ifLet(\.$addItem, action: \.addItem) {
       ItemFormFeature()
     }
   }
@@ -184,24 +185,26 @@ struct InventoryFeature: Reducer {
   // ...
 
   struct Destination: Reducer {
+    @CasePathable
     enum State {
       case addItem(AddFeature.State)
       case detailItem(DetailFeature.State)
       case editItem(EditFeature.State)
     }
+    @CasePathable
     enum Action {
       case addItem(AddFeature.Action)
       case detailItem(DetailFeature.Action)
       case editItem(EditFeature.Action)
     }
     var body: some ReducerOf<Self> {
-      Scope(state: /State.addItem, action: /Action.addItem) { 
+      Scope(state: \.addItem, action: \.addItem) { 
         AddFeature()
       }
-      Scope(state: /State.editItem, action: /Action.editItem) { 
+      Scope(state: \.editItem, action: \.editItem) { 
         EditFeature()
       }
-      Scope(state: /State.detailItem, action: /Action.detailItem) { 
+      Scope(state: \.detailItem, action: \.detailItem) { 
         DetailFeature()
       }
     }
@@ -244,7 +247,7 @@ struct InventoryFeature: Reducer {
     Reduce { state, action in 
       // ...
     }
-    .ifLet(\.$destination, action: /Action.destination) { 
+    .ifLet(\.$destination, action: \.destination) { 
       Destination()
     }
   }
@@ -286,28 +289,43 @@ struct InventoryView: View {
     }
     .sheet(
       store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-      state: /InventoryFeature.Destination.State.addItem,
-      action: InventoryFeature.Destination.Action.addItem
+      state: \.addItem,
+      action: { .addItem($0) }
     ) { store in 
       AddFeatureView(store: store)
     }
     .popover(
       store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-      state: /InventoryFeature.Destination.State.editItem,
-      action: InventoryFeature.Destination.Action.editItem
+      state: \.editItem,
+      action: { .editItem($0) }
     ) { store in 
       EditFeatureView(store: store)
     }
     .navigationDestination(
       store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-      state: /InventoryFeature.Destination.State.detailItem,
-      action: InventoryFeature.Destination.Action.detailItem
+      state: \.detailItem,
+      action: { .detailItem($0) }
     ) { store in 
       DetailFeatureView(store: store)
     }
   }
 }
 ```
+
+> Important: In order to unlock the shortened `state: \.addItem` syntax you must annotate your enum
+> with both the `@CasePathable` macro as well as `@dynamicMemberLookup`:
+> 
+> ```swift
+> @CasePathable
+> @dynamicMemberLookup
+> enum Action {
+>   case addItem(AddFeature.Action)
+>   case detailItem(DetailFeature.Action)
+>   case editItem(EditFeature.Action)
+> }
+> ```
+> 
+> The endows your enum with getter properties for each case.
 
 With those steps completed you can be sure that your domains are modeled as concisely as possible.
 If the "add" item sheet was presented, and you decided to mutate the `destination` state to point
@@ -515,6 +533,7 @@ struct Feature: Reducer {
   struct State: Equatable {
     @PresentationState var counter: CounterFeature.State?
   }
+  @CasePathable
   enum Action: Equatable {
     case counter(PresentationAction<CounterFeature.Action>)
   }
@@ -522,7 +541,7 @@ struct Feature: Reducer {
     Reduce { state, action in
       // Logic and behavior for core feature.
     }
-    .ifLet(\.$counter, action: /Action.counter) {
+    .ifLet(\.$counter, action: \.counter) {
       CounterFeature()
     }
   }
@@ -618,7 +637,7 @@ The library provides a tool to perform these steps in a single step, and it is c
 
 ```swift
 await store.send(.destination(.presented(.counter(.incrementButtonTapped)))) {
-  XCTModify(&$0.destination, case: /Feature.Destination.State.counter) { 
+  XCTModify(&$0.destination, case: \.counter) { 
     $0.count = 4
   }
 }

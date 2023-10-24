@@ -34,24 +34,26 @@ struct RootFeature: Reducer {
   // ...
 
   struct Path: Reducer {
+    @CasePathable
     enum State {
       case addItem(AddFeature.State)
       case detailItem(DetailFeature.State)
       case editItem(EditFeature.State)
     }
+    @CasePathable
     enum Action {
       case addItem(AddFeature.Action)
       case detailItem(DetailFeature.Action)
       case editItem(EditFeature.Action)
     }
     var body: some ReducerOf<Self> {
-      Scope(state: /State.addItem, action: /Action.addItem) { 
+      Scope(state: \.addItem, action: \.addItem) { 
         AddFeature()
       }
-      Scope(state: /State.editItem, action: /Action.editItem) { 
+      Scope(state: \.editItem, action: \.editItem) { 
         EditFeature()
       }
-      Scope(state: /State.detailItem, action: /Action.detailItem) { 
+      Scope(state: \.detailItem, action: \.detailItem) { 
         DetailFeature()
       }
     }
@@ -93,7 +95,7 @@ struct RootFeature: Reducer {
     Reduce { state, action in 
       // Core logic for root feature
     }
-    .forEach(\.path, action: /Action.path) { 
+    .forEach(\.path, action: \.path) { 
       Path()
     }
   }
@@ -356,15 +358,18 @@ struct Feature: Reducer {
   struct State: Equatable {
     var path = StackState<Path.State>()
   }
+  @CasePathable
   enum Action: Equatable {
     case path(StackAction<Path.State, Path.Action>)
   }
 
   struct Path: Reducer {
+    @CasePathable
     enum State: Equatable { case counter(Counter.State) }
+    @CasePathable
     enum Action: Equatable { case counter(Counter.Action) }
     var body: some ReducerOf<Self> {
-      Scope(state: /State.counter, action: /Action.counter) { Counter() }
+      Scope(state: \.counter, action: \.counter) { Counter() }
     }
   }
 
@@ -372,7 +377,7 @@ struct Feature: Reducer {
     Reduce { state, action in
       // Logic and behavior for core feature.
     }
-    .forEach(\.path, action: /Action.path) { Path() }
+    .forEach(\.path, action: \.path) { Path() }
   }
 }
 ```
@@ -429,7 +434,7 @@ use the `XCTModify` helper:
 
 ```swift
 await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) {
-  XCTModify(&$0.path[id: 0], case: /Feature.Path.State.counter) {
+  XCTModify(&$0.path[id: 0], case: \.counter) {
     $0.count = 4
   }
 }
@@ -447,7 +452,7 @@ ID on the stack _and_ a case of the path enum:
 
 ```swift
 await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) {
-  $0.path[id: 0, case: /Feature.Path.State.counter]?.count = 4
+  $0.path[id: 0, case: \.counter]?.count = 4
 }
 ```
 
@@ -458,7 +463,7 @@ Continuing with the test, we can send it one more time to see that the count goe
 
 ```swift
 await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) {
-  XCTModify(&$0.path[id: 0], case: /Feature.Path.State.counter) {
+  XCTModify(&$0.path[id: 0], case: \.counter) {
     $0.count = 5
   }
 }

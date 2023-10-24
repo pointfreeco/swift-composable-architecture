@@ -13,6 +13,7 @@ extension Reducer {
   ///     var rows: IdentifiedArrayOf<Row.State>
   ///     // ...
   ///   }
+  ///   @CasePathable
   ///   enum Action {
   ///     case row(id: Row.State.ID, action: Row.Action)
   ///     // ...
@@ -22,7 +23,7 @@ extension Reducer {
   ///     Reduce { state, action in
   ///       // Core logic for parent feature
   ///     }
-  ///     .forEach(\.rows, action: /Action.row) {
+  ///     .forEach(\.rows, action: \.row) {
   ///       Row()
   ///     }
   ///   }
