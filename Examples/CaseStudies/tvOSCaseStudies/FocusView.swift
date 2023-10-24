@@ -10,7 +10,8 @@ private let readMe = """
   to reset its focus.
   """
 
-struct Focus: Reducer {
+@Reducer
+struct Focus {
   struct State: Equatable {
     var currentFocus = 1
   }

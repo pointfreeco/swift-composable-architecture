@@ -10,7 +10,8 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct NavigateAndLoadList: Reducer {
+@Reducer
+struct NavigateAndLoadList {
   struct State: Equatable {
     var rows: IdentifiedArrayOf<Row> = [
       Row(count: 1, id: UUID()),
@@ -25,7 +26,6 @@ struct NavigateAndLoadList: Reducer {
     }
   }
 
-  @CasePathable
   enum Action: Equatable {
     case counter(Counter.Action)
     case setNavigation(selection: UUID?)

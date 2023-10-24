@@ -10,13 +10,13 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct NavigateAndLoad: Reducer {
+@Reducer
+struct NavigateAndLoad {
   struct State: Equatable {
     var isNavigationActive = false
     var optionalCounter: Counter.State?
   }
 
-  @CasePathable
   enum Action: Equatable {
     case optionalCounter(Counter.Action)
     case setNavigation(isActive: Bool)

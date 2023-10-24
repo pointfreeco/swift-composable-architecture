@@ -17,7 +17,8 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct LongLivingEffects: Reducer {
+@Reducer
+struct LongLivingEffects {
   struct State: Equatable {
     var screenshotCount = 0
   }

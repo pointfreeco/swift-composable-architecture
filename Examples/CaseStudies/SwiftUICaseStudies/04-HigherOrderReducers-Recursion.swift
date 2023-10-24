@@ -10,6 +10,7 @@ private let readMe = """
 
 // MARK: - Feature domain
 
+// NB: `@Reducer` cannot be applied to recursive reducers.
 struct Nested: Reducer {
   struct State: Equatable, Identifiable {
     let id: UUID

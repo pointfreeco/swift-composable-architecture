@@ -3,7 +3,8 @@ import ComposableArchitecture
 import SwiftUI
 import UIKit
 
-struct Counter: Reducer {
+@Reducer
+struct Counter {
   struct State: Equatable, Identifiable {
     let id = UUID()
     var count = 0

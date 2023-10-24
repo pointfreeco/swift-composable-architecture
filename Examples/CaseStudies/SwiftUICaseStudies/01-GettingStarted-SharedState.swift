@@ -16,7 +16,8 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct SharedState: Reducer {
+@Reducer
+struct SharedState {
   enum Tab { case counter, profile }
 
   struct State: Equatable {
@@ -46,7 +47,6 @@ struct SharedState: Reducer {
     }
   }
 
-  @CasePathable
   enum Action: Equatable {
     case counter(Counter.Action)
     case profile(Profile.Action)
@@ -73,7 +73,8 @@ struct SharedState: Reducer {
     }
   }
 
-  struct Counter: Reducer {
+  @Reducer
+  struct Counter {
     struct State: Equatable {
       @PresentationState var alert: AlertState<Action.Alert>?
       var count = 0
@@ -82,7 +83,6 @@ struct SharedState: Reducer {
       var numberOfCounts = 0
     }
 
-    @CasePathable
     enum Action: Equatable {
       case alert(PresentationAction<Alert>)
       case decrementButtonTapped
@@ -125,7 +125,8 @@ struct SharedState: Reducer {
     }
   }
 
-  struct Profile: Reducer {
+  @Reducer
+  struct Profile {
     struct State: Equatable {
       private(set) var currentTab: Tab
       private(set) var count = 0

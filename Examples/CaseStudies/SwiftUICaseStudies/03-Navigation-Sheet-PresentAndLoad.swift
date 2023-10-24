@@ -10,13 +10,13 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct PresentAndLoad: Reducer {
+@Reducer
+struct PresentAndLoad {
   struct State: Equatable {
     var optionalCounter: Counter.State?
     var isSheetPresented = false
   }
 
-  @CasePathable
   enum Action {
     case optionalCounter(Counter.Action)
     case setSheet(isPresented: Bool)

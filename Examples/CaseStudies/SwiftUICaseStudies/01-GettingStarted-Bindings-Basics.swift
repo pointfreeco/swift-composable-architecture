@@ -20,7 +20,8 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct BindingBasics: Reducer {
+@Reducer
+struct BindingBasics {
   struct State: Equatable {
     var sliderValue = 5.0
     var stepCount = 10

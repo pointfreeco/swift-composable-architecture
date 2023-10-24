@@ -5,12 +5,12 @@ private let readMe = """
   This screen demonstrates how to use `NavigationStack` with Composable Architecture applications.
   """
 
-struct NavigationDemo: Reducer {
+@Reducer
+struct NavigationDemo {
   struct State: Equatable {
     var path = StackState<Path.State>()
   }
 
-  @CasePathable
   enum Action: Equatable {
     case goBackToScreen(id: StackElementID)
     case goToABCButtonTapped
@@ -59,15 +59,14 @@ struct NavigationDemo: Reducer {
     }
   }
 
-  struct Path: Reducer {
-    @CasePathable
+  @Reducer
+  struct Path {
     enum State: Codable, Equatable, Hashable {
       case screenA(ScreenA.State = .init())
       case screenB(ScreenB.State = .init())
       case screenC(ScreenC.State = .init())
     }
 
-    @CasePathable
     enum Action: Equatable {
       case screenA(ScreenA.Action)
       case screenB(ScreenB.Action)
@@ -213,7 +212,8 @@ struct FloatingMenuView: View {
 
 // MARK: - Screen A
 
-struct ScreenA: Reducer {
+@Reducer
+struct ScreenA {
   struct State: Codable, Equatable, Hashable {
     var count = 0
     var fact: String?
@@ -342,7 +342,8 @@ struct ScreenAView: View {
 
 // MARK: - Screen B
 
-struct ScreenB: Reducer {
+@Reducer
+struct ScreenB {
   struct State: Codable, Equatable, Hashable {}
 
   enum Action: Equatable {
@@ -393,7 +394,8 @@ struct ScreenBView: View {
 
 // MARK: - Screen C
 
-struct ScreenC: Reducer {
+@Reducer
+struct ScreenC {
   struct State: Codable, Equatable, Hashable {
     var count = 0
     var isTimerRunning = false

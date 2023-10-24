@@ -11,7 +11,8 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct Timers: Reducer {
+@Reducer
+struct Timers {
   struct State: Equatable {
     var isTimerActive = false
     var secondsElapsed = 0

@@ -33,7 +33,8 @@ enum FavoritingAction: Equatable {
   enum Alert: Equatable {}
 }
 
-struct Favoriting<ID: Hashable & Sendable>: Reducer {
+@Reducer
+struct Favoriting<ID: Hashable & Sendable> {
   let favorite: @Sendable (ID, Bool) async throws -> Bool
 
   private struct CancelID: Hashable {
@@ -86,7 +87,8 @@ struct FavoriteButton<ID: Hashable & Sendable>: View {
 
 // MARK: - Feature domain
 
-struct Episode: Reducer {
+@Reducer
+struct Episode {
   struct State: Equatable, Identifiable {
     var alert: AlertState<FavoritingAction.Alert>?
     let id: UUID
@@ -99,7 +101,6 @@ struct Episode: Reducer {
     }
   }
 
-  @CasePathable
   enum Action: Equatable {
     case favorite(FavoritingAction)
   }
@@ -131,12 +132,12 @@ struct EpisodeView: View {
   }
 }
 
-struct Episodes: Reducer {
+@Reducer
+struct Episodes {
   struct State: Equatable {
     var episodes: IdentifiedArrayOf<Episode.State> = []
   }
 
-  @CasePathable
   enum Action: Equatable {
     case episode(id: Episode.State.ID, action: Episode.Action)
   }

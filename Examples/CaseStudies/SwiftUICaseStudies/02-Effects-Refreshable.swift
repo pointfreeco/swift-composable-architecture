@@ -13,7 +13,8 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct Refreshable: Reducer {
+@Reducer
+struct Refreshable {
   struct State: Equatable {
     var count = 0
     var fact: String?

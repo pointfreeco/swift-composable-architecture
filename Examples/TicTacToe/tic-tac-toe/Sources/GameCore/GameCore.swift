@@ -1,7 +1,8 @@
 import ComposableArchitecture
 import SwiftUI
 
-public struct Game: Reducer, Sendable {
+@Reducer
+public struct Game: Sendable {
   public struct State: Equatable {
     public var board: Three<Three<Player?>> = .empty
     public var currentPlayer: Player = .x

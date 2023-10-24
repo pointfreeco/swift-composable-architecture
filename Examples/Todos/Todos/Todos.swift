@@ -7,7 +7,8 @@ enum Filter: LocalizedStringKey, CaseIterable, Hashable {
   case completed = "Completed"
 }
 
-struct Todos: Reducer {
+@Reducer
+struct Todos {
   struct State: Equatable {
     @BindingState var editMode: EditMode = .inactive
     @BindingState var filter: Filter = .all
@@ -22,7 +23,6 @@ struct Todos: Reducer {
     }
   }
 
-  @CasePathable
   enum Action: BindableAction, Equatable, Sendable {
     case addTodoButtonTapped
     case binding(BindingAction<State>)

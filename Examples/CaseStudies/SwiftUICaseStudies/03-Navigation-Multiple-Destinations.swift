@@ -6,16 +6,16 @@ private let readMe = """
   piece of enum state.
   """
 
-struct MultipleDestinations: Reducer {
-  public struct Destination: Reducer {
-    @CasePathable
+@Reducer
+struct MultipleDestinations {
+  @Reducer
+  public struct Destination {
     public enum State: Equatable {
       case drillDown(Counter.State)
       case popover(Counter.State)
       case sheet(Counter.State)
     }
 
-    @CasePathable
     public enum Action {
       case drillDown(Counter.Action)
       case popover(Counter.Action)
@@ -39,7 +39,6 @@ struct MultipleDestinations: Reducer {
     @PresentationState var destination: Destination.State?
   }
 
-  @CasePathable
   enum Action {
     case destination(PresentationAction<Destination.Action>)
     case showDrillDown

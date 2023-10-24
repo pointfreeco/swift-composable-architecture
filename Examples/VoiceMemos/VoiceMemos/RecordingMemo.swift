@@ -1,7 +1,8 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct RecordingMemo: Reducer {
+@Reducer
+struct RecordingMemo {
   struct State: Equatable {
     var date: Date
     var duration: TimeInterval = 0

@@ -14,12 +14,12 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct OptionalBasics: Reducer {
+@Reducer
+struct OptionalBasics {
   struct State: Equatable {
     var optionalCounter: Counter.State?
   }
 
-  @CasePathable
   enum Action: Equatable {
     case optionalCounter(Counter.Action)
     case toggleCounterButtonTapped

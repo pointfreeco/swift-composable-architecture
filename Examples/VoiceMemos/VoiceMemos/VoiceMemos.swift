@@ -2,7 +2,8 @@ import AVFoundation
 import ComposableArchitecture
 import SwiftUI
 
-struct VoiceMemos: Reducer {
+@Reducer
+struct VoiceMemos {
   struct State: Equatable {
     @PresentationState var alert: AlertState<AlertAction>?
     var audioRecorderPermission = RecorderPermission.undetermined
@@ -16,7 +17,6 @@ struct VoiceMemos: Reducer {
     }
   }
 
-  @CasePathable
   enum Action: Equatable {
     case alert(PresentationAction<AlertAction>)
     case onDelete(IndexSet)

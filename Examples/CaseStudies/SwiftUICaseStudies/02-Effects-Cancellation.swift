@@ -14,7 +14,8 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct EffectsCancellation: Reducer {
+@Reducer
+struct EffectsCancellation {
   struct State: Equatable {
     var count = 0
     var currentFact: String?

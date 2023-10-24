@@ -9,7 +9,8 @@ private let readMe = """
 
 // MARK: - Search feature domain
 
-struct Search: Reducer {
+@Reducer
+struct Search {
   struct State: Equatable {
     var results: [GeocodingSearch.Result] = []
     var resultForecastRequestInFlight: GeocodingSearch.Result?

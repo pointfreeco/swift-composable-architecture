@@ -20,7 +20,8 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct EffectsBasics: Reducer {
+@Reducer
+struct EffectsBasics {
   struct State: Equatable {
     var count = 0
     var isNumberFactRequestInFlight = false

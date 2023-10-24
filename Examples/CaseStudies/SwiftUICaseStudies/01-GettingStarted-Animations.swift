@@ -20,7 +20,8 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct Animations: Reducer {
+@Reducer
+struct Animations {
   struct State: Equatable {
     @PresentationState var alert: AlertState<Action.Alert>?
     var circleCenter: CGPoint?
@@ -28,7 +29,6 @@ struct Animations: Reducer {
     var isCircleScaled = false
   }
 
-  @CasePathable
   enum Action: Equatable, Sendable {
     case alert(PresentationAction<Alert>)
     case circleScaleToggleChanged(Bool)
