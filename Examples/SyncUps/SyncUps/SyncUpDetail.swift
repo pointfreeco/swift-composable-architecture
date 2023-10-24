@@ -1,13 +1,13 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct SyncUpDetail: Reducer {
+@Reducer
+struct SyncUpDetail {
   struct State: Equatable {
     @PresentationState var destination: Destination.State?
     var syncUp: SyncUp
   }
 
-  @CasePathable
   enum Action: Equatable, Sendable {
     case cancelEditButtonTapped
     case delegate(Delegate)
