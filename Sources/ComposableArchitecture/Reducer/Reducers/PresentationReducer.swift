@@ -356,7 +356,8 @@ extension Reducer {
       fileID: fileID,
       line: line
     )
-  }}
+  }
+}
 
 public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer {
   @usableFromInline let base: Base
