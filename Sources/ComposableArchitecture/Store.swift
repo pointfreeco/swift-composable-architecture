@@ -171,6 +171,7 @@ public final class Store<State, Action> {
   }
 
   deinit {
+    self.invalidate()
     Logger.shared.log("\(typeName(of: self)).deinit")
   }
 
