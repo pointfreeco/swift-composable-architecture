@@ -77,7 +77,7 @@
       will first integrate the features' reducers, which consists of utilizing 
       ``ComposableArchitecture/PresentationState`` and ``ComposableArchitecture/PresentationAction``
       to integrate the domains, and the reducer operator
-      ``ComposableArchitecture/Reducer/ifLet(_:action:destination:fileID:line:)`` to
+      ``ComposableArchitecture/Reducer/ifLet(_:action:fileID:line:)-2eczg`` to
       integrate the reducers.
     }
     
@@ -120,13 +120,17 @@
        
       @Step {
         Integrate the reducers together by making use of the
-        ``ComposableArchitecture/Reducer/ifLet(_:action:fileID:line:)-5hrqk``
+        ``ComposableArchitecture/Reducer/ifLet(_:action:fileID:line:)-2eczg``
         reducer operator.
         
         This creates a new reducer that runs the child reducer when a child 
         action comes into the system, and runs the parent reducer on all actions. It also 
         automatically handles effect cancellation when the child feature is dismissed, and a lot
         more. See the documentation for more information.
+        
+        > Important: You must apply the `@CasePathable` macro to your `Action` enum in order to
+        > use the `ifLet` operator. Doing so gives you the ability to specify the action case
+        > of the child feature you are presenting.
         
         @Code(name: "ContactsFeature.swift", file: "02-01-02-code-0004")
       }
