@@ -26,8 +26,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Select Xcode 15.0
         run: sudo xcode-select -s /Applications/Xcode_15.0.app
-      - name: List available devices
-        run: xcrun simctl list --json devices available
       - name: Run ${{ matrix.config }} tests
         run: make CONFIG=${{ matrix.config }} test-library
 
