@@ -42,7 +42,7 @@ test-docs:
 		&& exit 1)
 
 test-examples:
-	for scheme in "CaseStudies (SwiftUI)" "CaseStudies (UIKit)" Integration Search SyncUps SpeechRecognition TicTacToe Todos VoiceMemos; do \
+	for scheme in "CaseStudies (SwiftUI)" "CaseStudies (UIKit)" Search SyncUps SpeechRecognition TicTacToe Todos VoiceMemos; do \
 		xcodebuild test \
 			-skipMacroValidation \
 			-scheme "$$scheme" \
