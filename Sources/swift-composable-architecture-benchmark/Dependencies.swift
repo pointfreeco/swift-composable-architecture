@@ -21,7 +21,8 @@ let dependenciesSuite = BenchmarkSuite(name: "Dependencies") { suite in
   }
 }
 
-private struct BenchmarkReducer: Reducer {
+@Reducer
+private struct BenchmarkReducer {
   @Dependency(\.someValue) var someValue
   func reduce(into state: inout Int, action: Void) -> Effect<Void> {
     state = self.someValue

@@ -119,7 +119,8 @@ final class DependencyKeyWritingReducerTests: BaseTCATestCase {
   }
 }
 
-private struct Feature: Reducer {
+@Reducer
+private struct Feature {
   @Dependency(\.myValue) var myValue
   struct State: Equatable { var value = 0 }
   enum Action { case tap }

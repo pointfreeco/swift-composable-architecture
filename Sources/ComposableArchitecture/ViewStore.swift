@@ -245,7 +245,8 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   /// gesture is performed on a list. The domain and logic for this feature can be modeled like so:
   ///
   /// ```swift
-  /// struct Feature: Reducer {
+  /// @Reducer
+  /// struct Feature {
   ///   struct State: Equatable {
   ///     var isLoading = false
   ///     var response: String?

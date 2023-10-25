@@ -232,7 +232,7 @@ extension Reducer {
   ///
   /// ```swift
   /// @Reducer
-  /// struct ParentFeature: Reducer {
+  /// struct ParentFeature {
   ///   struct State {
   ///     var path = StackState<Path.State>()
   ///     // ...

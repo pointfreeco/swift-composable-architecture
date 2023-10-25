@@ -1,7 +1,8 @@
 import Benchmark
 import ComposableArchitecture
 
-private struct Counter: Reducer {
+@Reducer
+private struct Counter {
   typealias State = Int
   typealias Action = Bool
   func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {

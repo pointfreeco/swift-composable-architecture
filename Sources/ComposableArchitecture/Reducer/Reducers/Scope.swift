@@ -17,7 +17,8 @@
 /// For example, given the basic scaffolding of child reducer:
 ///
 /// ```swift
-/// struct Child: Reducer {
+/// @Reducer
+/// struct Child {
 ///   struct State {
 ///     // ...
 ///   }
@@ -33,7 +34,7 @@
 ///
 /// ```swift
 /// @Reducer
-/// struct Parent: Reducer {
+/// struct Parent {
 ///   struct State {
 ///     var child: Child.State
 ///     // ...
@@ -66,7 +67,7 @@
 ///
 /// ```swift
 /// @Reducer
-/// struct Feature: Reducer {
+/// struct Feature {
 ///   enum State {
 ///     case unloaded
 ///     case loading

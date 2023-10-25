@@ -45,7 +45,8 @@ import XCTestDynamicOverlay
 /// For example, given a simple counter reducer:
 ///
 /// ```swift
-/// struct Counter: Reducer {
+/// @Reducer
+/// struct Counter {
 ///   struct State: Equatable {
 ///     var count = 0
 ///   }
@@ -121,7 +122,8 @@ import XCTestDynamicOverlay
 /// and cancel token to debounce requests:
 ///
 /// ```swift
-/// struct Search: Reducer {
+/// @Reducer
+/// struct Search {
 ///   struct State: Equatable {
 ///     var query = ""
 ///     var results: [String] = []

@@ -6,7 +6,7 @@ extension Reducer {
   ///
   /// ```swift
   /// @Reducer
-  /// struct Parent: Reducer {
+  /// struct Parent {
   ///   struct State {
   ///     var child: Child.State?
   ///     // ...

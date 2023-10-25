@@ -78,8 +78,8 @@ final class ScopeTests: BaseTCATestCase {
   #endif
 }
 
-@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
-private struct Feature: Reducer {
+@Reducer
+private struct Feature {
   struct State: Equatable {
     var child1 = Child1.State()
     var child2 = Child2.State.count(0)
@@ -89,16 +89,17 @@ private struct Feature: Reducer {
     case child2(Child2.Action)
   }
   var body: some ReducerOf<Self> {
-    Scope(state: \.child1, action: /Action.child1) {
+    Scope(state: \.child1, action: \.child1) {
       Child1()
     }
-    Scope(state: \.child2, action: /Action.child2) {
+    Scope(state: \.child2, action: \.child2) {
       Child2()
     }
   }
 }
 
-private struct Child1: Reducer {
+@Reducer
+private struct Child1 {
   struct State: Equatable {
     var count = 0
   }
@@ -120,8 +121,8 @@ private struct Child1: Reducer {
   }
 }
 
-@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
-private struct Child2: Reducer {
+@Reducer
+private struct Child2 {
   enum State: Equatable {
     case count(Int)
     case name(String)
@@ -131,7 +132,7 @@ private struct Child2: Reducer {
     case name(String)
   }
   var body: some ReducerOf<Self> {
-    Scope(state: /State.count, action: /Action.count) {
+    Scope(state: \.count, action: \.count) {
       Reduce { state, action in
         state = action
         return state < 0
@@ -139,7 +140,7 @@ private struct Child2: Reducer {
           : .none
       }
     }
-    Scope(state: /State.name, action: /Action.name) {
+    Scope(state: \.name, action: \.name) {
       Reduce { state, action in
         state = action
         return state.isEmpty

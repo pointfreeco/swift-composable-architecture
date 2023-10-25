@@ -6,7 +6,8 @@ import SwiftUI
 /// feature's reducer:
 ///
 /// ```swift
-/// struct Feature: Reducer {
+/// @Reducer
+/// struct Feature {
 ///   struct State {
 ///     @BindingState var isOn = false
 ///     // More properties...

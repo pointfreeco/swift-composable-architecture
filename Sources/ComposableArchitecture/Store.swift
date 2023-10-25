@@ -232,8 +232,8 @@ public final class Store<State, Action> {
   /// example:
   ///
   /// ```swift
-  /// // Application state made from child states.
-  /// struct AppFeature: Reducer {
+  /// @Reducer
+  /// struct AppFeature {
   ///   struct State {
   ///     var login: Login.State
   ///     // ...
@@ -270,7 +270,8 @@ public final class Store<State, Action> {
   /// first:
   ///
   /// ```swift
-  /// struct Login: Reducer {
+  /// @Reducer
+  /// struct Login {
   ///   struct State: Equatable {
   ///     var email = ""
   ///     var password = ""

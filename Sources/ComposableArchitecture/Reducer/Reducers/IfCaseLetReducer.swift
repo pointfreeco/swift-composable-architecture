@@ -6,7 +6,7 @@ extension Reducer {
   ///
   /// ```swift
   /// @Reducer
-  /// struct Parent: Reducer {
+  /// struct Parent {
   ///   enum State {
   ///     case loggedIn(Authenticated.State)
   ///     case loggedOut(Unauthenticated.State)

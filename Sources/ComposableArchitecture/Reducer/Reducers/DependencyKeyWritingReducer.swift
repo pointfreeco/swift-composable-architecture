@@ -12,7 +12,7 @@ extension Reducer {
   ///
   /// ```swift
   /// @Reducer
-  /// struct Onboarding: Reducer {
+  /// struct Onboarding {
   ///   struct State {
   ///     var feature: Feature.State
   ///     // Additional onboarding state

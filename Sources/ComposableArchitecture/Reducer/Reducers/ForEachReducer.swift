@@ -9,7 +9,7 @@ extension Reducer {
   ///
   /// ```swift
   /// @Reducer
-  /// struct Parent: Reducer {
+  /// struct Parent {
   ///   struct State {
   ///     var rows: IdentifiedArrayOf<Row.State>
   ///     // ...

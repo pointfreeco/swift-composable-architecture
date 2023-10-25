@@ -166,7 +166,8 @@ final class EffectThrottleTests: BaseTCATestCase {
   }
 }
 
-struct ThrottleFeature: Reducer {
+@Reducer
+struct ThrottleFeature {
   struct State: Equatable {
     var count = 0
   }

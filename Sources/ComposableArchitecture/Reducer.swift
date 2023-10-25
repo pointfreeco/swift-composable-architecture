@@ -6,7 +6,8 @@
 /// conformance:
 ///
 /// ```swift
-/// struct Feature: Reducer {
+/// @Reducer
+/// struct Feature {
 ///   struct State {
 ///     var count = 0
 ///   }
@@ -24,7 +25,8 @@
 /// ``Reducer/reduce(into:action:)-1t2ri`` method of the protocol.
 ///
 /// ```swift
-/// struct Feature: Reducer {
+/// @Reducer
+/// struct Feature {
 ///   // ...
 ///
 ///   func reduce(into state: inout State, action: Action) -> Effect<Action> {
@@ -51,7 +53,8 @@
 /// the `count` will be incremented. That could be done like so:
 ///
 /// ```swift
-/// struct Feature: Reducer {
+/// @Reducer
+/// struct Feature {
 ///   struct State {
 ///     var count = 0
 ///   }
