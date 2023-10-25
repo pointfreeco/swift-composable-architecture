@@ -1,6 +1,7 @@
 import ComposableArchitecture
 
-struct CounterFeature: Reducer {
+@Reducer
+struct CounterFeature {
   struct State: Equatable {
     var count = 0
   }

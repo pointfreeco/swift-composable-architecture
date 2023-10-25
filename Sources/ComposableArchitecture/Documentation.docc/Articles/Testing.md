@@ -20,7 +20,8 @@ the system. To test this we can technically run a piece of mutable state through
 then assert on how it changed after, like this:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   struct State: Equatable { var count = 0 }
   enum Action { case incrementButtonTapped, decrementButtonTapped }
 
@@ -190,7 +191,8 @@ a timer that counts up until you reach 5, and then stops. This can be accomplish
 an asynchronous context to operate in and can send multiple actions back into the system:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   struct State: Equatable { var count = 0 }
   enum Action { case startTimerButtonTapped, timerTick }
 
@@ -326,7 +328,8 @@ asynchrony, but in a way that is controllable. One way to do this is to add a cl
 ```swift
 import Clocks
 
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   struct State { /* ... */ }
   enum Action { /* ... */ }
   @Dependency(\.continuousClock) var clock
@@ -664,7 +667,8 @@ trouble when using non-exhaustive test stores and showing skipped assertions. To
 the following simple reducer that appends a new model to an array when an action is sent:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   struct State: Equatable { var values: [Model] = [] }
   enum Action { case addButtonTapped }
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
@@ -738,7 +742,8 @@ struct Model: Equatable {
 And then move the responsibility of generating new IDs to the reducer:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   // ...
   @Dependency(\.uuid) var uuid
   func reduce(into state: inout State, action: Action) -> Effect<Action> {

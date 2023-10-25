@@ -30,17 +30,17 @@ together. This consists of defining a new reducer, typically called `Path`, that
 of all the features that can be pushed onto the stack:
 
 ```swift
-struct RootFeature: Reducer {
+@Reducer
+struct RootFeature {
   // ...
 
-  struct Path: Reducer {
-    @CasePathable
+  @Reducer
+  struct Path {
     enum State {
       case addItem(AddFeature.State)
       case detailItem(DetailFeature.State)
       case editItem(EditFeature.State)
     }
-    @CasePathable
     enum Action {
       case addItem(AddFeature.Action)
       case detailItem(DetailFeature.Action)
@@ -68,7 +68,8 @@ Once the `Path` reducer is defined we can then hold onto ``StackState`` and ``St
 feature that manages the navigation stack:
 
 ```swift
-struct RootFeature: Reducer {
+@Reducer
+struct RootFeature {
   struct State {
     var path = StackState<Path.State>()
     // ...
@@ -88,7 +89,8 @@ method to integrate the domains of all the features that can be navigated to wit
 parent feature:
 
 ```swift
-struct RootFeature: Reducer {
+@Reducer
+struct RootFeature {
   // ...
 
   var body: some ReducerOf<Self> {
@@ -269,7 +271,8 @@ where the rest of your feature's logic and behavior resides. It is accessed via 
 dependency management system (see <doc:DependencyManagement>) using ``DismissEffect``:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   struct State { /* ... */ }
   enum Action { 
     case closeButtonTapped
@@ -324,7 +327,8 @@ As an example, consider the following simple counter feature that wants to dismi
 count is greater than or equal to 5:
 
 ```swift
-struct CounterFeature: Reducer {
+@Reducer
+struct CounterFeature {
   struct State: Equatable {
     var count = 0
   }
@@ -354,19 +358,18 @@ struct CounterFeature: Reducer {
 And then let's embed that feature into a parent feature:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   struct State: Equatable {
     var path = StackState<Path.State>()
   }
-  @CasePathable
   enum Action: Equatable {
     case path(StackAction<Path.State, Path.Action>)
   }
 
-  struct Path: Reducer {
-    @CasePathable
+  @Reducer  
+  struct Path {
     enum State: Equatable { case counter(Counter.State) }
-    @CasePathable
     enum Action: Equatable { case counter(Counter.Action) }
     var body: some ReducerOf<Self> {
       Scope(state: \.counter, action: \.counter) { Counter() }

@@ -136,12 +136,12 @@ private struct ChildView: View {
   }
 }
 
+@Reducer
 private struct NavigationStackTestCase: Reducer {
   struct State: Equatable {
     var children = StackState<ChildFeature.State>()
     var childResponse: Int?
   }
-  @CasePathable
   enum Action {
     case child(StackAction<ChildFeature.State, ChildFeature.Action>)
   }

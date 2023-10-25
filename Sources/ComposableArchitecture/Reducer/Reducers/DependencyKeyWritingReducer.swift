@@ -11,12 +11,12 @@ extension Reducer {
   /// feature's domain and layers on additional logic:
   ///
   /// ```swift
+  /// @Reducer
   /// struct Onboarding: Reducer {
   ///   struct State {
   ///     var feature: Feature.State
   ///     // Additional onboarding state
   ///   }
-  ///   @CasePathable
   ///   enum Action {
   ///     case feature(Feature.Action)
   ///     // Additional onboarding actions

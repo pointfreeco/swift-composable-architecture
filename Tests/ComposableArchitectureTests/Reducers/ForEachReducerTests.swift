@@ -221,7 +221,8 @@ final class ForEachReducerTests: BaseTCATestCase {
 }
 
 @available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
-struct Elements: Reducer {
+@Reducer
+struct Elements {
   struct State: Equatable {
     struct Row: Equatable, Identifiable {
       var id: Int
@@ -229,7 +230,6 @@ struct Elements: Reducer {
     }
     var rows: IdentifiedArrayOf<Row> = []
   }
-  @CasePathable
   enum Action: Equatable {
     case buttonTapped
     case row(id: Int, action: String)

@@ -6,7 +6,8 @@ struct Contact: Equatable, Identifiable {
   var name: String
 }
 
-struct ContactsFeature: Reducer {
+@Reducer
+struct ContactsFeature {
   struct State: Equatable {
     var contacts: IdentifiedArrayOf<Contact> = []
   }

@@ -5,13 +5,12 @@ extension Reducer {
   /// states, then `ifCaseLet` can run a child reducer on a particular case of the enum:
   ///
   /// ```swift
+  /// @Reducer
   /// struct Parent: Reducer {
-  ///   @CasePathable
   ///   enum State {
   ///     case loggedIn(Authenticated.State)
   ///     case loggedOut(Unauthenticated.State)
   ///   }
-  ///   @CasePathable
   ///   enum Action {
   ///     case loggedIn(Authenticated.Action)
   ///     case loggedOut(Unauthenticated.Action)

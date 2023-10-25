@@ -231,12 +231,12 @@ extension Reducer {
   /// of each child feature using the `forEach` operator:
   ///
   /// ```swift
+  /// @Reducer
   /// struct ParentFeature: Reducer {
   ///   struct State {
   ///     var path = StackState<Path.State>()
   ///     // ...
   ///   }
-  ///   @CasePathable
   ///   enum Action {
   ///     case path(StackAction<Path.State, Path.Action>)
   ///     // ...

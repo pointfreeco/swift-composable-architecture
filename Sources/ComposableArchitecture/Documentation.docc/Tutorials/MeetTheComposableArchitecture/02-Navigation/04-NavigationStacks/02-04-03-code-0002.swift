@@ -1,11 +1,11 @@
 import ComposableArchitecture
 
-struct ContactDetailFeature: Reducer {
+@Reducer
+struct ContactDetailFeature {
   struct State: Equatable {
     @PresentationState var alert: AlertState<Action.Alert>?
     let contact: Contact
   }
-  @CasePathable
   enum Action: Equatable {
     case alert(PresentationAction<Alert>)
     case delegate(Delegate)

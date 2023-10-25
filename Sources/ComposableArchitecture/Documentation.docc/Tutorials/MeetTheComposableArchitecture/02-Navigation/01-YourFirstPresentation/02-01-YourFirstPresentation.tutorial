@@ -128,10 +128,6 @@
         automatically handles effect cancellation when the child feature is dismissed, and a lot
         more. See the documentation for more information.
         
-        > Important: You must apply the `@CasePathable` macro to your `Action` enum in order to
-        > use the `ifLet` operator. Doing so gives you the ability to specify the action case
-        > of the child feature you are presenting.
-        
         @Code(name: "ContactsFeature.swift", file: "02-01-02-code-0004")
       }
       

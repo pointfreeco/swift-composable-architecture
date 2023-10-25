@@ -8,12 +8,12 @@ extension Reducer {
   /// its core logic _and_ the child's logic by using the `forEach` operator:
   ///
   /// ```swift
+  /// @Reducer
   /// struct Parent: Reducer {
   ///   struct State {
   ///     var rows: IdentifiedArrayOf<Row.State>
   ///     // ...
   ///   }
-  ///   @CasePathable
   ///   enum Action {
   ///     case row(id: Row.State.ID, action: Row.Action)
   ///     // ...

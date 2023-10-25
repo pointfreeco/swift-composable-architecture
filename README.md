@@ -113,12 +113,13 @@ tapped makes an API request to fetch a random fact about that number and then di
 an alert.
 
 To implement this feature we create a new type that will house the domain and behavior of the 
-feature by conforming to `Reducer`:
+feature, and it will be annotated with the `@Reducer` macro:
 
 ```swift
 import ComposableArchitecture
 
-struct Feature: Reducer {
+@Reducer
+struct Feature {
 }
 ```
 
@@ -127,7 +128,8 @@ current count, as well as an optional string that represents the title of the al
 (optional because `nil` represents not showing an alert):
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   struct State: Equatable {
     var count = 0
     var numberFactAlert: String?
@@ -141,7 +143,8 @@ non-obvious ones, such as the action of the user dismissing the alert, and the a
 when we receive a response from the fact API request:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   struct State: Equatable { /* ... */ }
   enum Action: Equatable {
     case factAlertDismissed
@@ -159,7 +162,8 @@ describes what effects need to be executed. Some actions don't need to execute e
 can return `.none` to represent that:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   struct State: Equatable { /* ... */ }
   enum Action: Equatable { /* ... */ }
   
@@ -380,7 +384,8 @@ dependency when running the application on a device, but use a mocked dependency
 do this by adding a property to the `Feature` reducer:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   let numberFact: (Int) async throws -> String
   // ...
 }
@@ -495,7 +500,8 @@ With that little bit of upfront work done you can instantly start making use of 
 any feature by using the `@Dependency` property wrapper:
 
 ```diff
- struct Feature: Reducer {
+@Reducer
+ struct Feature {
 -  let numberFact: (Int) async throws -> String
 +  @Dependency(\.numberFact) var numberFact
    

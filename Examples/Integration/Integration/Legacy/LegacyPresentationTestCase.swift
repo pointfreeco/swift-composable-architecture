@@ -446,13 +446,13 @@ private struct ChildView: View {
   }
 }
 
+@Reducer
 private struct NavigationLinkDemoFeature: Reducer {
   struct State: Equatable {
     var message = ""
     @PresentationState var child: ChildFeature.State?
     @PresentationState var identifiedChild: ChildFeature.State?
   }
-  @CasePathable
   enum Action: Equatable {
     case child(PresentationAction<ChildFeature.Action>)
     case identifiedChild(PresentationAction<ChildFeature.Action>)

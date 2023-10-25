@@ -5,12 +5,12 @@ extension Reducer {
   /// perform its core logic _and_ the child's logic by using the `ifLet` operator:
   ///
   /// ```swift
+  /// @Reducer
   /// struct Parent: Reducer {
   ///   struct State {
   ///     var child: Child.State?
   ///     // ...
   ///   }
-  ///   @CasePathable
   ///   enum Action {
   ///     case child(Child.Action)
   ///     // ...

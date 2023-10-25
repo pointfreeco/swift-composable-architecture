@@ -23,7 +23,8 @@ Reducers are executed with a mutable, `inout` state variable, and such variables
 from within `@Sendable` closures:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   struct State { /* ... */ }
   enum Action { /* ... */ }
 

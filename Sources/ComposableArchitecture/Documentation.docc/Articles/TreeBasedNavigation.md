@@ -34,7 +34,8 @@ form for adding a new item. We can integrate state and actions together by utili
 ``PresentationState`` and ``PresentationAction`` types:
 
 ```swift
-struct InventoryFeature: Reducer {
+@Reducer
+struct InventoryFeature {
   struct State: Equatable {
     @PresentationState var addItem: ItemFormFeature.State?
     var items: IdentifiedArrayOf<Item> = []
@@ -58,9 +59,9 @@ Next you can integrate the reducers of the parent and child features by using th
 parent domain for populating the child's state to drive navigation:
 
 ```swift
-struct InventoryFeature: Reducer {
+@Reducer
+struct InventoryFeature {
   struct State: Equatable { /* ... */ }
-  @CasePathable
   enum Action: Equatable { /* ... */ }
   
   var body: some ReducerOf<Self> {
@@ -181,17 +182,17 @@ navigate to. And typically it's best to nest this reducer inside the feature tha
 navigation:
 
 ```swift
-struct InventoryFeature: Reducer {
+@Reducer
+struct InventoryFeature {
   // ...
 
-  struct Destination: Reducer {
-    @CasePathable
+  @Reducer
+  struct Destination {
     enum State {
       case addItem(AddFeature.State)
       case detailItem(DetailFeature.State)
       case editItem(EditFeature.State)
     }
-    @CasePathable
     enum Action {
       case addItem(AddFeature.Action)
       case detailItem(DetailFeature.Action)
@@ -222,7 +223,8 @@ With that done we can now hold onto a _single_ piece of optional state in our fe
 ``PresentationAction`` type:
 
 ```swift
-struct InventoryFeature: Reducer {
+@Reducer
+struct InventoryFeature {
   struct State { 
     @PresentationState var destination: Destination.State?
     // ...
@@ -240,7 +242,8 @@ And then we must make use of the ``Reducer/ifLet(_:action:destination:fileID:lin
 integrate the domain of the destination with the domain of the parent feature:
 
 ```swift
-struct InventoryFeature: Reducer {
+@Reducer
+struct InventoryFeature {
   // ...
 
   var body: some ReducerOf<Self> {
@@ -311,21 +314,6 @@ struct InventoryView: View {
   }
 }
 ```
-
-> Important: In order to unlock the shortened `state: \.addItem` syntax you must annotate your enum
-> with both the `@CasePathable` macro as well as `@dynamicMemberLookup`:
-> 
-> ```swift
-> @CasePathable
-> @dynamicMemberLookup
-> enum Action {
->   case addItem(AddFeature.Action)
->   case detailItem(DetailFeature.Action)
->   case editItem(EditFeature.Action)
-> }
-> ```
-> 
-> The endows your enum with getter properties for each case.
 
 With those steps completed you can be sure that your domains are modeled as concisely as possible.
 If the "add" item sheet was presented, and you decided to mutate the `destination` state to point
@@ -445,7 +433,8 @@ where the rest of your feature's logic and behavior resides. It is accessed via 
 dependency management system (see <doc:DependencyManagement>) using ``DismissEffect``:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   struct State { /* ... */ }
   enum Action { 
     case closeButtonTapped
@@ -498,7 +487,8 @@ As an example, consider the following simple counter feature that wants to dismi
 count is greater than or equal to 5:
 
 ```swift
-struct CounterFeature: Reducer {
+@Reducer
+struct CounterFeature {
   struct State: Equatable {
     var count = 0
   }
@@ -529,11 +519,11 @@ And then let's embed that feature into a parent feature using ``PresentationStat
 ``PresentationAction`` and ``Reducer/ifLet(_:action:destination:fileID:line:)``:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   struct State: Equatable {
     @PresentationState var counter: CounterFeature.State?
   }
-  @CasePathable
   enum Action: Equatable {
     case counter(PresentationAction<CounterFeature.Action>)
   }

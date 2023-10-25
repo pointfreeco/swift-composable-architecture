@@ -42,6 +42,7 @@ import SwiftUI
 /// state:
 ///
 /// ```swift
+/// @Reducer
 /// struct Todos: Reducer {
 ///   struct State: Equatable {
 ///     var todos: IdentifiedArrayOf<Todo.State> = []
@@ -53,7 +54,6 @@ import SwiftUI
 /// Define a case to handle actions sent to the child domain:
 ///
 /// ```swift
-/// @CasePathable
 /// enum Action {
 ///   case todo(id: Todo.State.ID, action: Todo.Action)
 /// }

@@ -929,13 +929,13 @@
     }
   }
 
+  @Reducer
   struct NonExhaustiveReceive: Reducer {
     struct State: Equatable {
       var count = 0
       var int = 0
       var string = ""
     }
-    @CasePathable
     @dynamicMemberLookup
     enum Action: Equatable {
       case onAppear

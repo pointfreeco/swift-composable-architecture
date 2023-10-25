@@ -1,10 +1,10 @@
-struct ContactsFeature: Reducer {
+@Reducer
+struct ContactsFeature {
   struct State: Equatable {
     var contacts: IdentifiedArrayOf<Contact> = []
     @PresentationState var destination: Destination.State?
     var path = StackState<ContactDetailFeature.State>()
   }
-  @CasePathable
   enum Action: Equatable {
     case addButtonTapped
     case deleteButtonTapped(id: Contact.ID)

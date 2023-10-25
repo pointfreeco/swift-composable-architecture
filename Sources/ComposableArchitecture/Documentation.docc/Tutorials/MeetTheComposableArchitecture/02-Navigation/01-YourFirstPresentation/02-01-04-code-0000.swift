@@ -1,6 +1,7 @@
 import ComposableArchitecture
 
-struct AddContactFeature: Reducer {
+@Reducer
+struct AddContactFeature {
   struct State: Equatable {
     var contact: Contact
   }

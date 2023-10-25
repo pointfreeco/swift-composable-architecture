@@ -1,10 +1,10 @@
-struct ContactsFeature: Reducer {
+@Reducer
+struct ContactsFeature {
   struct State: Equatable {
     @PresentationState var addContact: AddContactFeature.State?
     @PresentationState var alert: AlertState<Action.Alert>?
     var contacts: IdentifiedArrayOf<Contact> = []
   }
-  @CasePathable
   enum Action: Equatable {
     case addButtonTapped
     case addContact(PresentationAction<AddContactFeature.Action>)

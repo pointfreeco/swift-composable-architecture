@@ -32,13 +32,13 @@
 /// ``init(state:action:child:)`` to embed the child reducer in its ``Reducer/body-swift.property``:
 ///
 /// ```swift
+/// @Reducer
 /// struct Parent: Reducer {
 ///   struct State {
 ///     var child: Child.State
 ///     // ...
 ///   }
 ///
-///   @CasePathable
 ///   enum Action {
 ///     case child(Child.Action)
 ///     // ...
@@ -65,14 +65,13 @@
 /// scope to the loaded case to run a reduce on only that case:
 ///
 /// ```swift
+/// @Reducer
 /// struct Feature: Reducer {
-///   @CasePathable
 ///   enum State {
 ///     case unloaded
 ///     case loading
 ///     case loaded(Child.State)
 ///   }
-///   @CasePathable
 ///   enum Action {
 ///     case child(Child.Action)
 ///     // ...

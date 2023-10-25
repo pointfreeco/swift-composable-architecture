@@ -19,7 +19,8 @@ For example, a reducer may have a domain that tracks if user has enabled haptic 
 can define a boolean property on state:
 
 ```swift
-struct Settings: Reducer {
+@Reducer
+struct Settings {
   struct State: Equatable {
     var isHapticFeedbackEnabled = true
     // ...
@@ -33,7 +34,8 @@ Then, in order to allow the outside world to mutate this state, for example from
 define a corresponding action that can be sent updates:
 
 ```swift
-struct Settings: Reducer {
+@Reducer
+struct Settings {
   struct State: Equatable { /* ... */ }
 
   enum Action { 
@@ -48,7 +50,8 @@ struct Settings: Reducer {
 When the reducer handles this action, it can update state accordingly:
 
 ```swift
-struct Settings: Reducer {
+@Reducer
+struct Settings {
   struct State: Equatable { /* ... */ }
   enum Action { /* ... */ }
   
@@ -100,7 +103,8 @@ a collection of tools that can be applied to a reducer's domain and logic to mak
 For example, a settings screen may model its state with the following struct:
 
 ```swift
-struct Settings: Reducer {
+@Reducer
+struct Settings {
   struct State: Equatable {
     var digest = Digest.daily
     var displayName = ""
@@ -120,7 +124,8 @@ means that each field requires a corresponding action that can be sent to the st
 comes in the form of an enum with a case per field:
 
 ```swift
-struct Settings: Reducer {
+@Reducer
+struct Settings {
   struct State: Equatable { /* ... */ }
 
   enum Action {
@@ -140,7 +145,8 @@ And we're not even done yet. In the reducer we must now handle each action, whic
 the state at each field with a new value:
 
 ```swift
-struct Settings: Reducer {
+@Reducer
+struct Settings {
   struct State: Equatable { /* ... */ }
   enum Action { /* ... */ }
 
@@ -182,7 +188,8 @@ eliminate this boilerplate using ``BindingState``, ``BindableAction``, and ``Bin
 First, we can annotate each bindable value of state with the ``BindingState`` property wrapper:
 
 ```swift
-struct Settings: Reducer {
+@Reducer
+struct Settings {
   struct State: Equatable {
     @BindingState var digest = Digest.daily
     @BindingState var displayName = ""
@@ -206,7 +213,8 @@ field-mutating actions into a single case that holds a ``BindingAction`` generic
 state:
 
 ```swift
-struct Settings: Reducer {
+@Reducer
+struct Settings {
   struct State: Equatable { /* ... */ }
 
   enum Action: BindableAction {
@@ -221,7 +229,8 @@ And then, we can simplify the settings reducer by allowing the ``BindingReducer`
 field mutations for us:
 
 ```swift
-struct Settings: Reducer {
+@Reducer
+struct Settings {
   struct State: Equatable { /* ... */ }
   enum Action: BindableAction { /* ... */ }
 
@@ -280,7 +289,8 @@ store.send(.set(\.$protectMyPosts, true)) {
 > fields, apply the ``Reducer/onChange(of:_:)`` modifier to the ``BindingReducer``:
 >
 > ```swift
-> struct Settings: Reducer {
+> @Reducer
+> struct Settings {
 >   struct State {
 >     @BindingState var developerSettings: DeveloperSettings
 >     // ...
