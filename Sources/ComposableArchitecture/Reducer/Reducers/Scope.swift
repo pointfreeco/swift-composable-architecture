@@ -30,7 +30,8 @@
 /// ```
 ///
 /// A parent reducer with a domain that holds onto the child domain can use
-/// ``init(state:action:child:)-88vdx`` to embed the child reducer in its ``Reducer/body-swift.property``:
+/// ``init(state:action:child:)-88vdx`` to embed the child reducer in its
+/// ``Reducer/body-swift.property``:
 ///
 /// ```swift
 /// @Reducer
@@ -201,8 +202,8 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   /// > ```
   /// >
   /// > If the parent domain contains additional logic for switching between cases of child state,
-  /// > prefer ``Reducer/ifCaseLet(_:action:then:fileID:line:)-3k4yb``, which better ensures that child
-  /// > logic runs _before_ any parent logic can replace child state:
+  /// > prefer ``Reducer/ifCaseLet(_:action:then:fileID:line:)-3k4yb``, which better ensures that
+  /// > child logic runs _before_ any parent logic can replace child state:
   /// >
   /// > ```swift
   /// > Reduce { state, action in
