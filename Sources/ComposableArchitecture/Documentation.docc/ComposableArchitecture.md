@@ -49,7 +49,6 @@ day-to-day when building applications, such as:
 
 - <doc:MeetComposableArchitecture>
 - <doc:GettingStarted>
-- <doc:CasePaths>
 - <doc:DependencyManagement>
 - <doc:Testing>
 - <doc:Navigation>

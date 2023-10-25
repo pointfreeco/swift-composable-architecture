@@ -19,9 +19,9 @@ the rest.
 ## Basics
 
 The tools for this style of navigation include the ``PresentationState`` property wrapper,
-``PresentationAction``, the ``Reducer/ifLet(_:action:then:fileID:line:)`` operator, and a bunch of
-APIs that mimic SwiftUI's regular tools, such as `.sheet`, `.popover`, etc., but tuned specifically
-for the Composable Architecture.
+``PresentationAction``, the ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` operator, and 
+a bunch of APIs that mimic SwiftUI's regular tools, such as `.sheet`, `.popover`, etc., but tuned 
+specifically for the Composable Architecture.
 
 The process of integrating two features together for navigation largely consists of 2 steps:
 integrating the features' domains together and integrating the features' views together. One
@@ -55,8 +55,8 @@ struct InventoryFeature {
 > being presented, and `nil` presents the feature is dismissed.
 
 Next you can integrate the reducers of the parent and child features by using the 
-``Reducer/ifLet(_:action:then:fileID:line:)`` reducer operator, as well as having an action in the
-parent domain for populating the child's state to drive navigation:
+``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` reducer operator, as well as having an 
+action in the parent domain for populating the child's state to drive navigation:
 
 ```swift
 @Reducer
@@ -238,7 +238,7 @@ struct InventoryFeature {
 }
 ```
 
-And then we must make use of the ``Reducer/ifLet(_:action:destination:fileID:line:)`` operator to
+And then we must make use of the ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` operator to
 integrate the domain of the destination with the domain of the parent feature:
 
 ```swift
@@ -325,7 +325,7 @@ drill-down will occur immediately.
 One of the best features of tree-based navigation is that it unifies all forms of navigation with a
 single style of API. First of all, regardless of the type of navigation you plan on performing,
 integrating the parent and child features together can be done with the single
-``Reducer/ifLet(_:action:destination:fileID:line:)`` operator. This one single API services all
+``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` operator. This one single API services all
 forms of optional-driven navigation.
 
 And then in the view, whether you are wanting to perform a drill-down, show a sheet, display
@@ -516,7 +516,7 @@ struct CounterFeature {
 ```
 
 And then let's embed that feature into a parent feature using ``PresentationState``, 
-``PresentationAction`` and ``Reducer/ifLet(_:action:destination:fileID:line:)``:
+``PresentationAction`` and ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at``:
 
 ```swift
 @Reducer

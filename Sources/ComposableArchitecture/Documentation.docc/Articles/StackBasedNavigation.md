@@ -19,7 +19,7 @@ It also allows for complex and recursive navigation paths in your application.
 ## Basics
 
 The tools for this style of navigation include ``StackState``, ``StackAction`` and the
-``Reducer/forEach(_:action:destination:fileID:line:)`` operator, as well as a new 
+``Reducer/forEach(_:action:destination:fileID:line:)-yz3v`` operator, as well as a new 
 ``NavigationStackStore`` view that behaves like `NavigationStack` but is tuned specifically for the 
 Composable Architecture.
 
@@ -84,7 +84,7 @@ struct RootFeature {
 > Note: ``StackAction`` is generic over both state and action of the `Path` domain. This is 
 > different from ``PresentationAction``, which only has a single generic.
 
-And then we must make use of the ``Reducer/forEach(_:action:destination:fileID:line:)``
+And then we must make use of the ``Reducer/forEach(_:action:destination:fileID:line:)-yz3v``
 method to integrate the domains of all the features that can be navigated to with the domain of the
 parent feature:
 
@@ -450,7 +450,7 @@ above we are subscripting into ID 0, isolating the `.counter` case of the `Path.
 and mutating the `count` to be 4 since it incremented by one. Further, if the case of `$0.path[id: 0]`
 didn't match the case path, then a test failure would be emitted.
 
-Another option is to use ``StackState/subscript(id:case:)`` to simultaneously subscript into an 
+Another option is to use ``StackState/subscript(id:case:)-7gczr`` to simultaneously subscript into an 
 ID on the stack _and_ a case of the path enum:
 
 ```swift
@@ -460,7 +460,7 @@ await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) {
 ```
 
 The `XCTModify` style is best when you have many things you need to modify on the state, and the
-``StackState/subscript(id:case:)`` style is best when you have simple mutations.
+``StackState/subscript(id:case:)-7gczr`` style is best when you have simple mutations.
 
 Continuing with the test, we can send it one more time to see that the count goes up to 5:
 

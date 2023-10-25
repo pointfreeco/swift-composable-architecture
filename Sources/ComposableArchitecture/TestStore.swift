@@ -1385,7 +1385,7 @@ extension TestStore where State: Equatable {
   /// was in the effect that you chose not to assert on.
   ///
   /// If you only want to check that a particular action case was received, then you might find the
-  /// ``receive(_:timeout:assert:file:line:)-6m8t6`` overload of this method more useful.
+  /// ``receive(_:timeout:assert:file:line:)-6pv94`` overload of this method more useful.
   ///
   /// - Parameters:
   ///   - isMatching: A closure that attempts to match an action. If it returns `false`, a test
@@ -1943,7 +1943,7 @@ extension TestStore where Action: BindableAction, State == Action.State {
   }
 }
 
-/// The type returned from ``TestStore/send(_:assert:file:line:)-1ax61`` that represents the
+/// The type returned from ``TestStore/send(_:assert:file:line:)-2co21`` that represents the
 /// lifecycle of the effect started from sending an action.
 ///
 /// You can use this value in tests to cancel the effect started from sending an action:
@@ -2197,7 +2197,7 @@ public enum Exhaustivity: Equatable, Sendable {
   /// ``TestStore/skipInFlightEffects(strict:file:line:)-5hbsk``.
   ///
   /// To partially match an action received from an effect, use
-  /// ``TestStore/receive(_:timeout:assert:file:line:)-6m8t6`` or
+  /// ``TestStore/receive(_:timeout:assert:file:line:)-6pv94`` or
   /// ``TestStore/receive(_:timeout:assert:file:line:)-7md3m``.
 
   case on

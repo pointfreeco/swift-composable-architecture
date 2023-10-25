@@ -55,7 +55,7 @@
       
       @Step {
         Integrate the alert's logic into the `ContactsFeature` by making another use of the 
-        ``ComposableArchitecture/Reducer/ifLet(_:action:destination:fileID:line:)`` operator.
+        ``ComposableArchitecture/Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` operator.
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0004)
       }

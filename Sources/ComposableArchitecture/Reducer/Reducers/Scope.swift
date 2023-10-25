@@ -96,7 +96,7 @@
 /// bugs, and so we show a runtime warning in that case, and cause test failures.
 ///
 /// For an alternative to using ``Scope`` with state case paths that enforces the order, check out
-/// the ``ifCaseLet(_:action:then:fileID:line:)`` operator.
+/// the ``ifCaseLet(_:action:then:fileID:line:)-7zcm0`` operator.
 public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   @usableFromInline
   enum StatePath {
@@ -201,7 +201,7 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   /// > ```
   /// >
   /// > If the parent domain contains additional logic for switching between cases of child state,
-  /// > prefer ``Reducer/ifCaseLet(_:action:then:fileID:line:)``, which better ensures that child
+  /// > prefer ``Reducer/ifCaseLet(_:action:then:fileID:line:)-3k4yb``, which better ensures that child
   /// > logic runs _before_ any parent logic can replace child state:
   /// >
   /// > ```swift

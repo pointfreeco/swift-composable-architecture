@@ -1,15 +1,13 @@
-# ``ComposableArchitecture/Reducer/ifLet(_:action:then:fileID:line:)``
+# ``ComposableArchitecture/Reducer/ifLet(_:action:destination:fileID:line:)-4f2at``
 
 ## Topics
 
 ### Ephemeral state
 
-- ``Reducer/ifLet(_:action:fileID:line:)-4b4ej``
+- ``Reducer/ifLet(_:action:fileID:line:)-2eczg``
 
 ### Presentation
 
 - ``PresentationState``
 - ``PresentationAction``
 - ``DismissEffect``
-- ``Reducer/ifLet(_:action:destination:fileID:line:)``
-- ``Reducer/ifLet(_:action:fileID:line:)-g5q2``

@@ -17,7 +17,7 @@
 
 - ``send(_:assert:file:line:)``
 - ``receive(_:timeout:assert:file:line:)-5awso``
-- ``receive(_:timeout:assert:file:line:)-6m8t6``
+- ``receive(_:timeout:assert:file:line:)-6pv94``
 - ``receive(_:timeout:assert:file:line:)-7md3m``
 - ``assert(_:file:line:)``
 - ``finish(timeout:file:line:)-53gi5``
@@ -36,7 +36,7 @@ also access it directly throughout a test.
 
 - ``state``
 - ``bindings``
-- ``bindings(action:)``
+- ``bindings(action:)-2nhb5``
 
 ### Deprecations
 

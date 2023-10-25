@@ -17,5 +17,5 @@ instead.
 
 - ``TestStore/finish(timeout:file:line:)-43l4y``
 - ``TestStore/receive(_:timeout:assert:file:line:)-5vi0x``
-- ``TestStore/receive(_:timeout:assert:file:line:)-1t9vb``
+- ``TestStore/receive(_:timeout:assert:file:line:)-3swdn``
 - ``TestStore/receive(_:timeout:assert:file:line:)-8r59i``
