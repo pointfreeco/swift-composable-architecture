@@ -4,6 +4,7 @@
 
 ### Implementing a reducer
 
+- ``Reducer()``
 - ``reduce(into:action:)-1t2ri``
 - ``State``
 - ``Action``

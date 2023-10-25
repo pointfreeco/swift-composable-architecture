@@ -12,14 +12,14 @@
     
     @Steps {
       @Step {
-        Create a new file called ContactDetailFeature.swift, import the Composable Architecture, and start
-        a stub of a reducer conformance.
+        Create a new file called ContactDetailFeature.swift, import the Composable Architecture, and 
+        start a stub of a reducer by using the ``ComposableArchitecture/Reducer()`` macro.
         
         @Code(name: "ContactDetailFeature.swift", file: 02-04-01-code-0000)
       }
       
       @Step {
-        Add a `State` struct to fulfill that requirement for the 
+        Add a ``ComposableArchitecture/Reducer/State`` struct to fulfill that requirement for the 
         ``ComposableArchitecture/Reducer`` protocol. The only state we currently need is the
         contact, and it can be `let` since we do not plan on mutating it from this screen.
         
@@ -27,7 +27,7 @@
       }
       
       @Step {
-        Add an `Action` enum to fulfill that requirement for the
+        Add an ``ComposableArchitecture/Reducer/Action`` enum to fulfill that requirement for the
         ``ComposableArchitecture/Reducer`` protocol. There are not currently any actions that can
         be performed in this feature, so we will leave it empty.
         
@@ -35,9 +35,9 @@
       }
       
       @Step {
-        Implement a basic `body` property to fulfill that requirement of
-        ``ComposableArchitecture/Reducer`` protocol. Since there are no actions in this feature
-        there is nothing we can do in the reducer. More will be added to this later.
+        Implement a basic ``ComposableArchitecture/Reducer/body-8lumc`` property to fulfill that 
+        requirement of ``ComposableArchitecture/Reducer`` protocol. Since there are no actions in 
+        this feature there is nothing we can do in the reducer. More will be added to this later.
         
         @Code(name: "ContactDetailFeature.swift", file: 02-04-01-code-0003)
       }

@@ -1,9 +1,17 @@
 /// A protocol that describes how to evolve the current state of an application to the next state,
 /// given an action, and describes what ``Effect``s should be executed later by the store, if any.
 ///
-/// Conform types to this protocol to represent the domain, logic and behavior for your feature.
-/// The domain is specified by the "state" and "actions", which can be nested types inside the
-/// conformance:
+/// Types that conform to this protocol represent the domain, logic and behavior for a feature.
+/// Rather than defining a conformance directly, it is more common to use the ``Reducer()`` macro:
+///
+/// ```swift
+/// @Reducer
+/// struct Feature {
+/// }
+/// ```
+///
+/// The domain of a feature is specified by the "state" and "actions", which can be nested types
+/// inside the reducer:
 ///
 /// ```swift
 /// @Reducer
