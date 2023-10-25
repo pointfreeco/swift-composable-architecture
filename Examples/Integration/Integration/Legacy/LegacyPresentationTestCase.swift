@@ -233,7 +233,8 @@ private struct PresentationTestCase {
   }
 }
 
-private struct ChildFeature: Reducer {
+@Reducer
+private struct ChildFeature {
   struct State: Equatable, Identifiable {
     var id = UUID()
     var count = 0
@@ -447,7 +448,7 @@ private struct ChildView: View {
 }
 
 @Reducer
-private struct NavigationLinkDemoFeature: Reducer {
+private struct NavigationLinkDemoFeature {
   struct State: Equatable {
     var message = ""
     @PresentationState var child: ChildFeature.State?

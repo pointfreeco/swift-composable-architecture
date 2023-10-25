@@ -137,7 +137,7 @@ private struct ChildView: View {
 }
 
 @Reducer
-private struct NavigationStackTestCase: Reducer {
+private struct NavigationStackTestCase {
   struct State: Equatable {
     var children = StackState<ChildFeature.State>()
     var childResponse: Int?

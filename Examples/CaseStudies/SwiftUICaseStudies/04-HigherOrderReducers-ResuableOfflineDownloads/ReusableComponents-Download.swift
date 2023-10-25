@@ -136,7 +136,7 @@ struct CityMapDetailView: View {
 }
 
 @Reducer
-struct MapApp: Reducer {
+struct MapApp {
   struct State: Equatable {
     var cityMaps: IdentifiedArrayOf<CityMap.State>
   }

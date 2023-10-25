@@ -49,7 +49,8 @@ private struct PresentationItemTestCase {
   }
 }
 
-private struct Child: Reducer {
+@Reducer
+private struct Child {
   struct State: Equatable {}
   enum Action: Equatable {
     case swapButtonTapped
