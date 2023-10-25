@@ -77,35 +77,35 @@ final class DependencyKeyWritingReducerTests: BaseTCATestCase {
     }
   }
 
-  func testDependency_EffectOfEffect() async {
-    struct Feature: Reducer {
-      struct State: Equatable { var count = 0 }
-      enum Action: Equatable {
-        case tap
-        case response(Int)
-        case otherResponse(Int)
-      }
-      @Dependency(\.myValue) var myValue
+  @Reducer
+  fileprivate struct Feature_testDependency_EffectOfEffect {
+    struct State: Equatable { var count = 0 }
+    enum Action: Equatable {
+      case tap
+      case response(Int)
+      case otherResponse(Int)
+    }
+    @Dependency(\.myValue) var myValue
 
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .tap:
-          state.count += 1
-          return .run { send in await send(.response(self.myValue)) }
+    func reduce(into state: inout State, action: Action) -> Effect<Action> {
+      switch action {
+      case .tap:
+        state.count += 1
+        return .run { send in await send(.response(self.myValue)) }
 
-        case let .response(value):
-          state.count = value
-          return .run { send in await send(.otherResponse(self.myValue)) }
+      case let .response(value):
+        state.count = value
+        return .run { send in await send(.otherResponse(self.myValue)) }
 
-        case let .otherResponse(value):
-          state.count = value
-          return .none
-        }
+      case let .otherResponse(value):
+        state.count = value
+        return .none
       }
     }
-
-    let store = TestStore(initialState: Feature.State()) {
-      Feature()
+  }
+  func testDependency_EffectOfEffect() async {
+    let store = TestStore(initialState: Feature_testDependency_EffectOfEffect.State()) {
+      Feature_testDependency_EffectOfEffect()
         .dependency(\.myValue, 42)
     }
 

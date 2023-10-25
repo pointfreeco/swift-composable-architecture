@@ -229,25 +229,25 @@ final class TestStoreTests: BaseTCATestCase {
     XCTAssertEqual(store.state, 4)
   }
 
-  func testOverrideDependenciesDirectlyOnReducer() async {
-    struct Counter: Reducer {
-      @Dependency(\.calendar) var calendar
-      @Dependency(\.locale) var locale
-      @Dependency(\.timeZone) var timeZone
-      @Dependency(\.urlSession) var urlSession
+  @Reducer
+  struct Feature_testOverrideDependenciesDirectlyOnReducer {
+    @Dependency(\.calendar) var calendar
+    @Dependency(\.locale) var locale
+    @Dependency(\.timeZone) var timeZone
+    @Dependency(\.urlSession) var urlSession
 
-      func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
-        _ = self.calendar
-        _ = self.locale
-        _ = self.timeZone
-        _ = self.urlSession
-        state += action ? 1 : -1
-        return .none
-      }
+    func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
+      _ = self.calendar
+      _ = self.locale
+      _ = self.timeZone
+      _ = self.urlSession
+      state += action ? 1 : -1
+      return .none
     }
-
+  }
+  func testOverrideDependenciesDirectlyOnReducer() async {
     let store = TestStore(initialState: 0) {
-      Counter()
+      Feature_testOverrideDependenciesDirectlyOnReducer()
         .dependency(\.calendar, Calendar(identifier: .gregorian))
         .dependency(\.locale, Locale(identifier: "en_US"))
         .dependency(\.timeZone, TimeZone(secondsFromGMT: 0)!)
@@ -257,25 +257,25 @@ final class TestStoreTests: BaseTCATestCase {
     await store.send(true) { $0 = 1 }
   }
 
-  func testOverrideDependenciesOnTestStore() async {
-    struct Counter: Reducer {
-      @Dependency(\.calendar) var calendar
-      @Dependency(\.locale) var locale
-      @Dependency(\.timeZone) var timeZone
-      @Dependency(\.urlSession) var urlSession
+  @Reducer
+  struct Feature_testOverrideDependenciesOnTestStore {
+    @Dependency(\.calendar) var calendar
+    @Dependency(\.locale) var locale
+    @Dependency(\.timeZone) var timeZone
+    @Dependency(\.urlSession) var urlSession
 
-      func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
-        _ = self.calendar
-        _ = self.locale
-        _ = self.timeZone
-        _ = self.urlSession
-        state += action ? 1 : -1
-        return .none
-      }
+    func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
+      _ = self.calendar
+      _ = self.locale
+      _ = self.timeZone
+      _ = self.urlSession
+      state += action ? 1 : -1
+      return .none
     }
-
+  }
+  func testOverrideDependenciesOnTestStore() async {
     let store = TestStore(initialState: 0) {
-      Counter()
+      Feature_testOverrideDependenciesOnTestStore()
     }
     store.dependencies.calendar = Calendar(identifier: .gregorian)
     store.dependencies.locale = Locale(identifier: "en_US")
@@ -285,18 +285,18 @@ final class TestStoreTests: BaseTCATestCase {
     await store.send(true) { $0 = 1 }
   }
 
-  func testOverrideDependenciesOnTestStore_MidwayChange() async {
-    struct Counter: Reducer {
-      @Dependency(\.date.now) var now
+  @Reducer
+  struct Feature_testOverrideDependenciesOnTestStore_MidwayChange {
+    @Dependency(\.date.now) var now
 
-      func reduce(into state: inout Int, action: ()) -> Effect<Void> {
-        state = Int(self.now.timeIntervalSince1970)
-        return .none
-      }
+    func reduce(into state: inout Int, action: ()) -> Effect<Void> {
+      state = Int(self.now.timeIntervalSince1970)
+      return .none
     }
-
+  }
+  func testOverrideDependenciesOnTestStore_MidwayChange() async {
     let store = TestStore(initialState: 0) {
-      Counter()
+      Feature_testOverrideDependenciesOnTestStore_MidwayChange()
     } withDependencies: {
       $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
     }
@@ -308,27 +308,27 @@ final class TestStoreTests: BaseTCATestCase {
     await store.send(()) { $0 = 987_654_321 }
   }
 
-  func testOverrideDependenciesOnTestStore_Init() async {
-    struct Counter: Reducer {
-      @Dependency(\.calendar) var calendar
-      @Dependency(\.client.fetch) var fetch
-      @Dependency(\.locale) var locale
-      @Dependency(\.timeZone) var timeZone
-      @Dependency(\.urlSession) var urlSession
+  @Reducer
+  struct Feature_testOverrideDependenciesOnTestStore_Init {
+    @Dependency(\.calendar) var calendar
+    @Dependency(\.client.fetch) var fetch
+    @Dependency(\.locale) var locale
+    @Dependency(\.timeZone) var timeZone
+    @Dependency(\.urlSession) var urlSession
 
-      func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
-        _ = self.calendar
-        _ = self.fetch()
-        _ = self.locale
-        _ = self.timeZone
-        _ = self.urlSession
-        state += action ? 1 : -1
-        return .none
-      }
+    func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
+      _ = self.calendar
+      _ = self.fetch()
+      _ = self.locale
+      _ = self.timeZone
+      _ = self.urlSession
+      state += action ? 1 : -1
+      return .none
     }
-
+  }
+  func testOverrideDependenciesOnTestStore_Init() async {
     let store = TestStore(initialState: 0) {
-      Counter()
+      Feature_testOverrideDependenciesOnTestStore_Init()
     } withDependencies: {
       $0.calendar = Calendar(identifier: .gregorian)
       $0.client.fetch = { 1 }
@@ -340,36 +340,36 @@ final class TestStoreTests: BaseTCATestCase {
     await store.send(true) { $0 = 1 }
   }
 
-  func testDependenciesEarlyBinding() async {
-    struct Feature: Reducer {
-      struct State: Equatable {
-        var count = 0
-        var date: Date
-        init() {
-          @Dependency(\.date.now) var now: Date
-          self.date = now
-        }
-      }
-      enum Action: Equatable {
-        case tap
-        case response(Int)
-      }
-      @Dependency(\.date.now) var now: Date
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .tap:
-          state.count += 1
-          return .run { send in await send(.response(42)) }
-        case let .response(number):
-          state.count = number
-          state.date = now
-          return .none
-        }
+  @Reducer
+  struct Feature_testDependenciesEarlyBinding {
+    struct State: Equatable {
+      var count = 0
+      var date: Date
+      init() {
+        @Dependency(\.date.now) var now: Date
+        self.date = now
       }
     }
-
-    let store = TestStore(initialState: Feature.State()) {
-      Feature()
+    enum Action: Equatable {
+      case tap
+      case response(Int)
+    }
+    @Dependency(\.date.now) var now: Date
+    func reduce(into state: inout State, action: Action) -> Effect<Action> {
+      switch action {
+      case .tap:
+        state.count += 1
+        return .run { send in await send(.response(42)) }
+      case let .response(number):
+        state.count = number
+        state.date = now
+        return .none
+      }
+    }
+  }
+  func testDependenciesEarlyBinding() async {
+    let store = TestStore(initialState: Feature_testDependenciesEarlyBinding.State()) {
+      Feature_testDependenciesEarlyBinding()
     } withDependencies: {
       $0.date = .constant(Date(timeIntervalSince1970: 1_234_567_890))
     }

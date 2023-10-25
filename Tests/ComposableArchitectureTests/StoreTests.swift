@@ -529,25 +529,24 @@ final class StoreTests: BaseTCATestCase {
     XCTAssertEqual(scopedStore.effectCancellables.count, 0)
   }
 
-  func testOverrideDependenciesDirectlyOnReducer() {
-    struct Counter: Reducer {
-      @Dependency(\.calendar) var calendar
-      @Dependency(\.locale) var locale
-      @Dependency(\.timeZone) var timeZone
-      @Dependency(\.urlSession) var urlSession
-
-      func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
-        _ = self.calendar
-        _ = self.locale
-        _ = self.timeZone
-        _ = self.urlSession
-        state += action ? 1 : -1
-        return .none
-      }
+  @Reducer
+  fileprivate struct Feature_testOverrideDependenciesDirectlyOnReducer {
+    @Dependency(\.calendar) var calendar
+    @Dependency(\.locale) var locale
+    @Dependency(\.timeZone) var timeZone
+    @Dependency(\.urlSession) var urlSession
+    func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
+      _ = self.calendar
+      _ = self.locale
+      _ = self.timeZone
+      _ = self.urlSession
+      state += action ? 1 : -1
+      return .none
     }
-
+  }
+  func testOverrideDependenciesDirectlyOnReducer() {
     let store = Store(initialState: 0) {
-      Counter()
+      Feature_testOverrideDependenciesDirectlyOnReducer()
         .dependency(\.calendar, Calendar(identifier: .gregorian))
         .dependency(\.locale, Locale(identifier: "en_US"))
         .dependency(\.timeZone, TimeZone(secondsFromGMT: 0)!)
@@ -557,20 +556,18 @@ final class StoreTests: BaseTCATestCase {
     ViewStore(store, observe: { $0 }).send(true)
   }
 
-  func testOverrideDependenciesDirectlyOnStore() {
-    struct MyReducer: Reducer {
-      @Dependency(\.uuid) var uuid
-
-      func reduce(into state: inout UUID, action: Void) -> Effect<Void> {
-        state = self.uuid()
-        return .none
-      }
-    }
-
+  @Reducer
+  fileprivate struct Feature_testOverrideDependenciesDirectlyOnStore {
     @Dependency(\.uuid) var uuid
-
+    func reduce(into state: inout UUID, action: Void) -> Effect<Void> {
+      state = self.uuid()
+      return .none
+    }
+  }
+  func testOverrideDependenciesDirectlyOnStore() {
+    @Dependency(\.uuid) var uuid
     let store = Store(initialState: uuid()) {
-      MyReducer()
+      Feature_testOverrideDependenciesDirectlyOnStore()
     } withDependencies: {
       $0.uuid = .constant(UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!)
     }
@@ -579,49 +576,50 @@ final class StoreTests: BaseTCATestCase {
     XCTAssertEqual(viewStore.state, UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!)
   }
 
+  @Reducer
+  fileprivate struct Feature_testStoreVsTestStore {
+    struct State: Equatable {
+      var count = 0
+    }
+    enum Action: Equatable {
+      case tap
+      case response1(Int)
+      case response2(Int)
+      case response3(Int)
+    }
+    @Dependency(\.count) var count
+    func reduce(into state: inout State, action: Action) -> Effect<Action> {
+      switch action {
+      case .tap:
+        return withDependencies {
+          $0.count.value += 1
+        } operation: {
+          .run { send in await send(.response1(self.count.value)) }
+        }
+      case let .response1(count):
+        state.count = count
+        return withDependencies {
+          $0.count.value += 1
+        } operation: {
+          .run { send in await send(.response2(self.count.value)) }
+        }
+      case let .response2(count):
+        state.count = count
+        return withDependencies {
+          $0.count.value += 1
+        } operation: {
+          .run { send in await send(.response3(self.count.value)) }
+        }
+      case let .response3(count):
+        state.count = count
+        return .none
+      }
+    }
+  }
   func testStoreVsTestStore() async {
-    struct Feature: Reducer {
-      struct State: Equatable {
-        var count = 0
-      }
-      enum Action: Equatable {
-        case tap
-        case response1(Int)
-        case response2(Int)
-        case response3(Int)
-      }
-      @Dependency(\.count) var count
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .tap:
-          return withDependencies {
-            $0.count.value += 1
-          } operation: {
-            .run { send in await send(.response1(self.count.value)) }
-          }
-        case let .response1(count):
-          state.count = count
-          return withDependencies {
-            $0.count.value += 1
-          } operation: {
-            .run { send in await send(.response2(self.count.value)) }
-          }
-        case let .response2(count):
-          state.count = count
-          return withDependencies {
-            $0.count.value += 1
-          } operation: {
-            .run { send in await send(.response3(self.count.value)) }
-          }
-        case let .response3(count):
-          state.count = count
-          return .none
-        }
-      }
-    }
 
-    let testStore = TestStore(initialState: Feature.State()) {
-      Feature()
+    let testStore = TestStore(initialState: Feature_testStoreVsTestStore.State()) {
+      Feature_testStoreVsTestStore()
     }
     await testStore.send(.tap)
     await testStore.receive(.response1(1)) {
@@ -630,56 +628,56 @@ final class StoreTests: BaseTCATestCase {
     await testStore.receive(.response2(1))
     await testStore.receive(.response3(1))
 
-    let store = Store(initialState: Feature.State()) {
-      Feature()
+    let store = Store(initialState: Feature_testStoreVsTestStore.State()) {
+      Feature_testStoreVsTestStore()
     }
     await store.send(.tap, originatingFrom: nil)?.value
     XCTAssertEqual(store.state.value.count, testStore.state.count)
   }
 
+  @Reducer
+  fileprivate struct Feature_testStoreVsTestStore_Publisher {
+    struct State: Equatable {
+      var count = 0
+    }
+    enum Action: Equatable {
+      case tap
+      case response1(Int)
+      case response2(Int)
+      case response3(Int)
+    }
+    @Dependency(\.count) var count
+    func reduce(into state: inout State, action: Action) -> Effect<Action> {
+      switch action {
+      case .tap:
+        return withDependencies {
+          $0.count.value += 1
+        } operation: {
+          .run { send in await send(.response1(self.count.value)) }
+        }
+      case let .response1(count):
+        state.count = count
+        return withDependencies {
+          $0.count.value += 1
+        } operation: {
+          .run { send in await send(.response2(self.count.value)) }
+        }
+      case let .response2(count):
+        state.count = count
+        return withDependencies {
+          $0.count.value += 1
+        } operation: {
+          .run { send in await send(.response3(self.count.value)) }
+        }
+      case let .response3(count):
+        state.count = count
+        return .none
+      }
+    }
+  }
   func testStoreVsTestStore_Publisher() async {
-    struct Feature: Reducer {
-      struct State: Equatable {
-        var count = 0
-      }
-      enum Action: Equatable {
-        case tap
-        case response1(Int)
-        case response2(Int)
-        case response3(Int)
-      }
-      @Dependency(\.count) var count
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .tap:
-          return withDependencies {
-            $0.count.value += 1
-          } operation: {
-            .run { send in await send(.response1(self.count.value)) }
-          }
-        case let .response1(count):
-          state.count = count
-          return withDependencies {
-            $0.count.value += 1
-          } operation: {
-            .run { send in await send(.response2(self.count.value)) }
-          }
-        case let .response2(count):
-          state.count = count
-          return withDependencies {
-            $0.count.value += 1
-          } operation: {
-            .run { send in await send(.response3(self.count.value)) }
-          }
-        case let .response3(count):
-          state.count = count
-          return .none
-        }
-      }
-    }
-
-    let testStore = TestStore(initialState: Feature.State()) {
-      Feature()
+    let testStore = TestStore(initialState: Feature_testStoreVsTestStore_Publisher.State()) {
+      Feature_testStoreVsTestStore_Publisher()
     }
     await testStore.send(.tap)
     await testStore.receive(.response1(1)) {
@@ -688,65 +686,70 @@ final class StoreTests: BaseTCATestCase {
     await testStore.receive(.response2(1))
     await testStore.receive(.response3(1))
 
-    let store = Store(initialState: Feature.State()) {
-      Feature()
+    let store = Store(initialState: Feature_testStoreVsTestStore_Publisher.State()) {
+      Feature_testStoreVsTestStore_Publisher()
     }
     await store.send(.tap, originatingFrom: nil)?.value
     XCTAssertEqual(store.state.value.count, testStore.state.count)
   }
 
-  func testChildParentEffectCancellation() async throws {
-    struct Child: Reducer {
-      struct State: Equatable {}
-      enum Action: Equatable {
-        case task
-        case didFinish
-      }
+  @Reducer
+  struct Child_testChildParentEffectCancellation {
+    struct State: Equatable {}
+    enum Action: Equatable {
+      case task
+      case didFinish
+    }
 
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
+    func reduce(into state: inout State, action: Action) -> Effect<Action> {
+      switch action {
+      case .task:
+        return .run { send in await send(.didFinish) }
+      case .didFinish:
+        return .none
+      }
+    }
+  }
+  @Reducer
+  struct Parent_testChildParentEffectCancellation {
+    struct State: Equatable {
+      var count = 0
+      var child: Child_testChildParentEffectCancellation.State?
+    }
+    enum Action: Equatable {
+      case child(Child_testChildParentEffectCancellation.Action)
+      case delay
+    }
+    @Dependency(\.mainQueue) var mainQueue
+    var body: some ReducerOf<Self> {
+      Reduce { state, action in
         switch action {
-        case .task:
-          return .run { send in await send(.didFinish) }
-        case .didFinish:
+        case .child(.didFinish):
+          state.child = nil
+          return .run { send in
+            try await self.mainQueue.sleep(for: .seconds(1))
+            await send(.delay)
+          }
+        case .child:
+          return .none
+        case .delay:
+          state.count += 1
           return .none
         }
       }
-    }
-    struct Parent: Reducer {
-      struct State: Equatable {
-        var count = 0
-        var child: Child.State?
-      }
-      enum Action: Equatable {
-        case child(Child.Action)
-        case delay
-      }
-      @Dependency(\.mainQueue) var mainQueue
-      var body: some ReducerOf<Self> {
-        Reduce { state, action in
-          switch action {
-          case .child(.didFinish):
-            state.child = nil
-            return .run { send in
-              try await self.mainQueue.sleep(for: .seconds(1))
-              await send(.delay)
-            }
-          case .child:
-            return .none
-          case .delay:
-            state.count += 1
-            return .none
-          }
-        }
-        .ifLet(\.child, action: /Action.child) {
-          Child()
-        }
+      .ifLet(\.child, action: /Action.child) {
+        Child_testChildParentEffectCancellation()
       }
     }
-
+  }
+  func testChildParentEffectCancellation() async throws {
     let mainQueue = DispatchQueue.test
-    let store = Store(initialState: Parent.State(child: Child.State())) {
-      Parent()
+    let store = Store(
+      initialState: Parent_testChildParentEffectCancellation.State(
+        child: .init()
+      )
+    ) {
+      Parent_testChildParentEffectCancellation()
     } withDependencies: {
       $0.mainQueue = mainQueue.eraseToAnyScheduler()
     }
@@ -811,34 +814,37 @@ final class StoreTests: BaseTCATestCase {
     XCTAssertEqual(store.state.value.date, Date(timeIntervalSinceReferenceDate: 1_234_567_890))
   }
 
-  func testPresentationScope() async {
-    struct Feature: Reducer {
-      struct State: Equatable {
-        var count = 0
-        @PresentationState var child: Feature.State?
-      }
-      enum Action {
-        case child(PresentationAction<Feature.Action>)
-        case tap
-      }
-      var body: some ReducerOf<Self> {
-        Reduce { state, action in
-          switch action {
-          case .child:
-            return .none
-          case .tap:
-            state.count += 1
-            return .none
-          }
+  @Reducer
+  struct Feature_testPresentationScope {
+    struct State: Equatable {
+      var count = 0
+      @PresentationState var child: State?
+    }
+    enum Action {
+      case child(PresentationAction<Action>)
+      case tap
+    }
+    var body: some ReducerOf<Self> {
+      Reduce { state, action in
+        switch action {
+        case .child:
+          return .none
+        case .tap:
+          state.count += 1
+          return .none
         }
-        .ifLet(\.$child, action: /Action.child) {
-          Feature()
-        }
+      }
+      .ifLet(\.$child, action: \.child) {
+        Feature_testPresentationScope()
       }
     }
-
-    let store = Store(initialState: Feature.State(child: Feature.State(child: Feature.State()))) {
-      Feature()
+  }
+  func testPresentationScope() async {
+    let store = Store(
+      initialState: Feature_testPresentationScope.State(
+        child: .init(child: .init()))
+    ) {
+      Feature_testPresentationScope()
     }
     var removeDuplicatesCount1 = 0
     var stateScopeCount1 = 0

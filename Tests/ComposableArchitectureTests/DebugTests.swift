@@ -99,23 +99,20 @@
 
     @MainActor
     func testDebugReducer() async throws {
-      struct Feature: Reducer {
-        typealias State = Int
-        typealias Action = Bool
-        func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
-          state += action ? 1 : -1
-          return .none
-        }
-      }
-
       let logs = LockIsolated<String>("")
-      let printer = _ReducerPrinter<Feature.State, Feature.Action>(
+      let printer = _ReducerPrinter<Int, Bool>(
         printChange: { action, oldState, newState in
           logs.withValue { _ = dump(action, to: &$0) }
         }
       )
 
-      let store = Store(initialState: 0) { Feature()._printChanges(printer) }
+      let store = Store<Int, Bool>(initialState: 0) {
+        Reduce<Int, Bool>(internal: { state, action in
+          state += action ? 1 : -1
+          return .none
+        })
+          ._printChanges(printer)
+      }
       store.send(true)
       try await Task.sleep(nanoseconds: 300_000_000)
       XCTAssertNoDifference(
@@ -128,28 +125,22 @@
     }
 
     func testDebugReducer_Order() {
-      struct Feature: Reducer {
-        typealias State = Int
-        typealias Action = Bool
-        func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
-          state += action ? 1 : -1
-          return .run { _ in await Task.yield() }
-        }
-      }
-
       let logs = LockIsolated<String>("")
-      let printer = _ReducerPrinter<Feature.State, Feature.Action>(
+      let printer = _ReducerPrinter<Int, Bool>(
         printChange: { action, oldState, newState in
           logs.withValue { _ = dump(action, to: &$0) }
         }
       )
 
-      let store = Store(initialState: 0) {
-        Feature()
-          ._printChanges(printer)
-          ._printChanges(printer)
-          ._printChanges(printer)
-          ._printChanges(printer)
+      let store = Store<Int, Bool>(initialState: 0) {
+        Reduce<Int, Bool>(internal: { state, action in
+          state += action ? 1 : -1
+          return .run { _ in await Task.yield() }
+        })
+        ._printChanges(printer)
+        ._printChanges(printer)
+        ._printChanges(printer)
+        ._printChanges(printer)
       }
       store.send(true)
       store.send(false)

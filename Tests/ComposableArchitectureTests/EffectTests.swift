@@ -126,27 +126,28 @@ final class EffectTests: BaseTCATestCase {
     XCTAssertEqual(result, 42)
   }
 
-  func testDependenciesTransferredToEffects_Task() async {
-    struct Feature: Reducer {
-      enum Action: Equatable {
-        case tap
-        case response(Int)
-      }
-      @Dependency(\.date) var date
-      func reduce(into state: inout Int, action: Action) -> Effect<Action> {
-        switch action {
-        case .tap:
-          return .run { send in
-            await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
-          }
-        case let .response(value):
-          state = value
-          return .none
+  @Reducer
+  fileprivate struct Feature_testDependenciesTransferredToEffects_Task {
+    enum Action: Equatable {
+      case tap
+      case response(Int)
+    }
+    @Dependency(\.date) var date
+    func reduce(into state: inout Int, action: Action) -> Effect<Action> {
+      switch action {
+      case .tap:
+        return .run { send in
+          await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
         }
+      case let .response(value):
+        state = value
+        return .none
       }
     }
+  }
+  func testDependenciesTransferredToEffects_Task() async {
     let store = TestStore(initialState: 0) {
-      Feature()
+      Feature_testDependenciesTransferredToEffects_Task()
         .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1_234_567_890)))
     }
 
@@ -156,27 +157,28 @@ final class EffectTests: BaseTCATestCase {
     }
   }
 
-  func testDependenciesTransferredToEffects_Run() async {
-    struct Feature: Reducer {
-      enum Action: Equatable {
-        case tap
-        case response(Int)
-      }
-      @Dependency(\.date) var date
-      func reduce(into state: inout Int, action: Action) -> Effect<Action> {
-        switch action {
-        case .tap:
-          return .run { send in
-            await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
-          }
-        case let .response(value):
-          state = value
-          return .none
+  @Reducer
+  fileprivate struct Feature_testDependenciesTransferredToEffects_Run {
+    enum Action: Equatable {
+      case tap
+      case response(Int)
+    }
+    @Dependency(\.date) var date
+    func reduce(into state: inout Int, action: Action) -> Effect<Action> {
+      switch action {
+      case .tap:
+        return .run { send in
+          await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
         }
+      case let .response(value):
+        state = value
+        return .none
       }
     }
+  }
+  func testDependenciesTransferredToEffects_Run() async {
     let store = TestStore(initialState: 0) {
-      Feature()
+      Feature_testDependenciesTransferredToEffects_Run()
         .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1_234_567_890)))
     }
 
