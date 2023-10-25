@@ -86,6 +86,7 @@
   /// ```swift
   /// @Reducer
   /// struct Feature {
+  ///   struct State { /* ... */ }
   ///   // ...
   /// }
   ///
