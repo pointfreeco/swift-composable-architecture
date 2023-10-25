@@ -1,0 +1,36 @@
+{
+  "configurations" : [
+    {
+      "id" : "010513FF-66DF-47DB-B263-451122E2CE20",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:SyncUps.xcodeproj",
+      "identifier" : "DC808D6E29E9C3AC0072B4A9",
+      "name" : "SyncUps"
+    }
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:SyncUps.xcodeproj",
+        "identifier" : "DC808D7E29E9C3AD0072B4A9",
+        "name" : "SyncUpsTests"
+      }
+    },
+    {
+      "enabled" : false,
+      "target" : {
+        "containerPath" : "container:SyncUps.xcodeproj",
+        "identifier" : "DC808D8829E9C3AD0072B4A9",
+        "name" : "SyncUpsUITests"
+      }
+    }
+  ],
+  "version" : 1
+}
