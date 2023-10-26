@@ -1,10 +1,13 @@
 import ComposableArchitecture
 import SwiftUI
 
-private struct BindingsAnimations: Reducer {
-  func reduce(into state: inout Bool, action: Void) -> Effect<Void> {
-    state.toggle()
-    return .none
+@Reducer
+private struct BindingsAnimations {
+  var body: some Reducer<Bool, Void> {
+    Reduce { state, _ in
+      state.toggle()
+      return .none
+    }
   }
 }
 

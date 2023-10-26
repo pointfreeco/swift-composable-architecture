@@ -1,7 +1,8 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct DownloadComponent: Reducer {
+@Reducer
+struct DownloadComponent {
   struct State: Equatable {
     @PresentationState var alert: AlertState<Action.Alert>?
     let id: AnyHashable
@@ -9,7 +10,6 @@ struct DownloadComponent: Reducer {
     let url: URL
   }
 
-  @CasePathable
   enum Action: Equatable {
     case alert(PresentationAction<Alert>)
     case buttonTapped

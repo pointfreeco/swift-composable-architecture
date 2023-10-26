@@ -1,8 +1,10 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct SwitchStoreTestCase: Reducer {
-  struct Screen: Reducer {
+@Reducer
+struct SwitchStoreTestCase {
+  @Reducer
+  struct Screen {
     struct State: Equatable {
       var count = 0
     }
@@ -10,25 +12,24 @@ struct SwitchStoreTestCase: Reducer {
       case decrementButtonTapped
       case incrementButtonTapped
     }
-    func reduce(into state: inout State, action: Action) -> Effect<Action> {
-      switch action {
-      case .decrementButtonTapped:
-        state.count -= 1
-        return .none
-      case .incrementButtonTapped:
-        state.count += 1
-        return .none
+    var body: some Reducer<State, Action> {
+      Reduce { state, action in
+        switch action {
+        case .decrementButtonTapped:
+          state.count -= 1
+          return .none
+        case .incrementButtonTapped:
+          state.count += 1
+          return .none
+        }
       }
     }
   }
 
-  @CasePathable
-  @dynamicMemberLookup
   enum State: Equatable {
     case screenA(Screen.State = .init())
     case screenB(Screen.State = .init())
   }
-  @CasePathable
   enum Action {
     case screenA(Screen.Action)
     case screenB(Screen.Action)

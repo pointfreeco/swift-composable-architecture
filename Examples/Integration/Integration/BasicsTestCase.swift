@@ -16,7 +16,8 @@ struct BasicsView: View {
     }
   }
 
-  struct Feature: Reducer {
+  @Reducer
+  struct Feature {
     struct State: Equatable, Identifiable {
       let id = UUID()
       var count = 0

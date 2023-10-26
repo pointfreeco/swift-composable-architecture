@@ -20,18 +20,25 @@ the system. To test this we can technically run a piece of mutable state through
 then assert on how it changed after, like this:
 
 ```swift
-struct Feature: Reducer {
-  struct State: Equatable { var count = 0 }
-  enum Action { case incrementButtonTapped, decrementButtonTapped }
-
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .incrementButtonTapped:
-      state.count += 1
-      return .none
-    case .decrementButtonTapped:
-      state.count -= 1
-      return .none
+@Reducer
+struct Feature {
+  struct State: Equatable {
+    var count = 0
+  }
+  enum Action {
+    case incrementButtonTapped
+    case decrementButtonTapped
+  }
+  var body: some Reduce<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .incrementButtonTapped:
+        state.count += 1
+        return .none
+      case .decrementButtonTapped:
+        state.count -= 1
+        return .none
+      }
     }
   }
 }
@@ -190,24 +197,31 @@ a timer that counts up until you reach 5, and then stops. This can be accomplish
 an asynchronous context to operate in and can send multiple actions back into the system:
 
 ```swift
-struct Feature: Reducer {
-  struct State: Equatable { var count = 0 }
-  enum Action { case startTimerButtonTapped, timerTick }
-
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .startTimerButtonTapped:
-      state.count = 0
-      return .run { send in
-        for _ in 1...5 {
-          try await Task.sleep(for: .seconds(1))
-          await send(.timerTick)
+@Reducer
+struct Feature {
+  struct State: Equatable {
+    var count = 0
+  }
+  enum Action {
+    case startTimerButtonTapped
+    case timerTick
+  }
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .startTimerButtonTapped:
+        state.count = 0
+        return .run { send in
+          for _ in 1...5 {
+            try await Task.sleep(for: .seconds(1))
+            await send(.timerTick)
+          }
         }
-      }
 
-    case .timerTick:
-      state.count += 1
-      return .none
+      case .timerTick:
+        state.count += 1
+        return .none
+      }
     }
   }
 }
@@ -326,7 +340,8 @@ asynchrony, but in a way that is controllable. One way to do this is to add a cl
 ```swift
 import Clocks
 
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   struct State { /* ... */ }
   enum Action { /* ... */ }
   @Dependency(\.continuousClock) var clock
@@ -664,14 +679,21 @@ trouble when using non-exhaustive test stores and showing skipped assertions. To
 the following simple reducer that appends a new model to an array when an action is sent:
 
 ```swift
-struct Feature: Reducer {
-  struct State: Equatable { var values: [Model] = [] }
-  enum Action { case addButtonTapped }
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .addButtonTapped:
-      state.values.append(Model())
-      return .none
+@Reducer
+struct Feature {
+  struct State: Equatable {
+    var values: [Model] = []
+  }
+  enum Action {
+    case addButtonTapped
+  }
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .addButtonTapped:
+        state.values.append(Model())
+        return .none
+      }
     }
   }
 }
@@ -738,14 +760,17 @@ struct Model: Equatable {
 And then move the responsibility of generating new IDs to the reducer:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   // ...
   @Dependency(\.uuid) var uuid
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .addButtonTapped:
-      state.values.append(Model(id: self.uuid()))
-      return .none
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .addButtonTapped:
+        state.values.append(Model(id: self.uuid()))
+        return .none
+      }
     }
   }
 }

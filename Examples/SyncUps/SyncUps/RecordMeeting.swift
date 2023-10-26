@@ -2,7 +2,8 @@ import ComposableArchitecture
 import Speech
 import SwiftUI
 
-struct RecordMeeting: Reducer {
+@Reducer
+struct RecordMeeting {
   struct State: Equatable {
     @PresentationState var alert: AlertState<Action.Alert>?
     var secondsElapsed = 0
@@ -15,7 +16,6 @@ struct RecordMeeting: Reducer {
     }
   }
 
-  @CasePathable
   enum Action: Equatable {
     case alert(PresentationAction<Alert>)
     case delegate(Delegate)

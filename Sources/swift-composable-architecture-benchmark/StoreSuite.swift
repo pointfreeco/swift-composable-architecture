@@ -33,7 +33,8 @@ let storeSuite = BenchmarkSuite(name: "Store") {
   }
 }
 
-private struct Feature: Reducer {
+@Reducer
+private struct Feature {
   struct State {
     @PresentationState var child: State?
     var count = 0
@@ -55,7 +56,7 @@ private struct Feature: Reducer {
         return .none
       }
     }
-    .ifLet(\.$child, action: /Action.child) {
+    .ifLet(\.$child, action: \.child) {
       Feature()
     }
   }

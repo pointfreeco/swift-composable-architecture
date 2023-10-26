@@ -12,7 +12,7 @@
 ///     ReducerB()
 ///     ReducerC()
 ///   }
-///   .ifLet(\.child, action: /Action.child)
+///   ._printChanges()
 /// }
 /// ```
 public struct CombineReducers<State, Action, Reducers: Reducer>: Reducer

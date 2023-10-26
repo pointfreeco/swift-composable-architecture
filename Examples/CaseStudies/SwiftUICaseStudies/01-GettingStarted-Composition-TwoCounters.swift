@@ -9,13 +9,13 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct TwoCounters: Reducer {
+@Reducer
+struct TwoCounters {
   struct State: Equatable {
     var counter1 = Counter.State()
     var counter2 = Counter.State()
   }
 
-  @CasePathable
   enum Action: Equatable {
     case counter1(Counter.Action)
     case counter2(Counter.Action)

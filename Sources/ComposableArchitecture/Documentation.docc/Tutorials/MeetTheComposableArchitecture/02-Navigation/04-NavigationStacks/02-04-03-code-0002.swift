@@ -1,6 +1,7 @@
 import ComposableArchitecture
 
-struct ContactDetailFeature: Reducer {
+@Reducer
+struct ContactDetailFeature {
   struct State: Equatable {
     @PresentationState var alert: AlertState<Action.Alert>?
     let contact: Contact
@@ -34,7 +35,7 @@ struct ContactDetailFeature: Reducer {
         return .none
       }
     }
-    .ifLet(\.$alert, action: /Action.alert)
+    .ifLet(\.$alert, action: \.alert)
   }
 }
 

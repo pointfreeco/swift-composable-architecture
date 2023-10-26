@@ -3,12 +3,12 @@ import ComposableArchitecture
 import SwiftUI
 import UIKit
 
-struct CounterList: Reducer {
+@Reducer
+struct CounterList {
   struct State: Equatable {
     var counters: IdentifiedArrayOf<Counter.State> = []
   }
 
-  @CasePathable
   enum Action: Equatable {
     case counter(id: Counter.State.ID, action: Counter.Action)
   }

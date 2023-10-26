@@ -11,7 +11,8 @@ import SwiftUI
 /// For example, a todos app may define the domain and logic associated with an individual todo:
 ///
 /// ```swift
-/// struct Todo: Reducer {
+/// @Reducer
+/// struct Todo {
 ///   struct State: Equatable, Identifiable {
 ///     let id: UUID
 ///     var description = ""
@@ -23,7 +24,7 @@ import SwiftUI
 ///     case descriptionChanged(String)
 ///   }
 ///
-///   func reduce(into state: inout State, action: Action) -> Effect<Action> {
+///   var body: some Reducer<State, Action> {
 ///     // ...
 ///   }
 /// }
@@ -42,7 +43,8 @@ import SwiftUI
 /// state:
 ///
 /// ```swift
-/// struct Todos: Reducer {
+/// @Reducer
+/// struct Todos {
 ///   struct State: Equatable {
 ///     var todos: IdentifiedArrayOf<Todo.State> = []
 ///   }
@@ -58,14 +60,14 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// Enhance its core reducer using ``Reducer/forEach(_:action:element:fileID:line:)``:
+/// Enhance its core reducer using ``Reducer/forEach(_:action:element:fileID:line:)-8ujke``:
 ///
 /// ```swift
 /// var body: some Reducer<State, Action> {
 ///   Reduce { state, action in
 ///     // ...
 ///   }
-///   .forEach(\.todos, action: /Action.todo(id:action:)) {
+///   .forEach(\.todos, action: \.todo(id:action:)) {
 ///     Todo()
 ///   }
 /// }

@@ -1,6 +1,7 @@
 import ComposableArchitecture
 
-struct AddContactFeature: Reducer {
+@Reducer
+struct AddContactFeature {
   struct State: Equatable {
     var contact: Contact
   }
@@ -15,20 +16,22 @@ struct AddContactFeature: Reducer {
     }
   }
   @Dependency(\.dismiss) var dismiss
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .cancelButtonTapped:
-      return .send(.delegate(.cancel))
-
-    case .delegate:
-      return .none
-
-    case .saveButtonTapped:
-      return .send(.delegate(.saveContact(state.contact)))
-
-    case let .setName(name):
-      state.contact.name = name
-      return .none
+  var body: some ReducerOf<Self> {
+    Reduce { state, action in
+      switch action {
+      case .cancelButtonTapped:
+        return .send(.delegate(.cancel))
+        
+      case .delegate:
+        return .none
+        
+      case .saveButtonTapped:
+        return .send(.delegate(.saveContact(state.contact)))
+        
+      case let .setName(name):
+        state.contact.name = name
+        return .none
+      }
     }
   }
 }

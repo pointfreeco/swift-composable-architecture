@@ -5,7 +5,8 @@ extension Reducer {
   /// perform its core logic _and_ the child's logic by using the `ifLet` operator:
   ///
   /// ```swift
-  /// struct Parent: Reducer {
+  /// @Reducer
+  /// struct Parent {
   ///   struct State {
   ///     var child: Child.State?
   ///     // ...
@@ -19,7 +20,7 @@ extension Reducer {
   ///     Reduce { state, action in
   ///       // Core logic for parent feature
   ///     }
-  ///     .ifLet(\.child, action: /Action.child) {
+  ///     .ifLet(\.child, action: \.child) {
   ///       Child()
   ///     }
   ///   }
@@ -39,7 +40,7 @@ extension Reducer {
   ///   * Automatically `nil`s out child state when an action is sent for alerts and confirmation
   ///     dialogs.
   ///
-  /// See ``Reducer/ifLet(_:action:destination:fileID:line:)`` for a more advanced operator suited
+  /// See ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` for a more advanced operator suited
   /// to navigation.
   ///
   /// - Parameters:

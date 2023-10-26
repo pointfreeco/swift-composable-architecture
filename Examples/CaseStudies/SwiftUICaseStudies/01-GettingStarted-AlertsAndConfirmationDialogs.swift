@@ -21,14 +21,14 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct AlertAndConfirmationDialog: Reducer {
+@Reducer
+struct AlertAndConfirmationDialog {
   struct State: Equatable {
     @PresentationState var alert: AlertState<Action.Alert>?
     @PresentationState var confirmationDialog: ConfirmationDialogState<Action.ConfirmationDialog>?
     var count = 0
   }
 
-  @CasePathable
   enum Action: Equatable {
     case alert(PresentationAction<Alert>)
     case alertButtonTapped

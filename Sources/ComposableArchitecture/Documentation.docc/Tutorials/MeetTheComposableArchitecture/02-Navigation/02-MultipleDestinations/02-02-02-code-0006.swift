@@ -1,5 +1,6 @@
 extension ContactsFeature {
-  struct Destination: Reducer {
+  @Reducer
+  struct Destination {
     enum State: Equatable {
       case addContact(AddContactFeature.State)
       case alert(AlertState<ContactsFeature.Action.Alert>)
@@ -9,7 +10,7 @@ extension ContactsFeature {
       case alert(ContactsFeature.Action.Alert)
     }
     var body: some ReducerOf<Self> {
-      Scope(state: /State.addContact, action: /Action.addContact) {
+      Scope(state: \.addContact, action: \.addContact) {
         AddContactFeature()
       }
     }

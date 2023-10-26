@@ -16,31 +16,33 @@ final class ComposableArchitectureTests: BaseTCATestCase {
         case squareNow
       }
       @Dependency(\.mainQueue) var mainQueue
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .incrAndSquareLater:
-          return .run { send in
-            await withThrowingTaskGroup(of: Void.self) { group in
-              group.addTask {
-                try await self.mainQueue.sleep(for: .seconds(2))
-                await send(.incrNow)
-              }
-              group.addTask {
-                try await self.mainQueue.sleep(for: .seconds(1))
-                await send(.squareNow)
-              }
-              group.addTask {
-                try await self.mainQueue.sleep(for: .seconds(2))
-                await send(.squareNow)
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          switch action {
+          case .incrAndSquareLater:
+            return .run { send in
+              await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                  try await self.mainQueue.sleep(for: .seconds(2))
+                  await send(.incrNow)
+                }
+                group.addTask {
+                  try await self.mainQueue.sleep(for: .seconds(1))
+                  await send(.squareNow)
+                }
+                group.addTask {
+                  try await self.mainQueue.sleep(for: .seconds(2))
+                  await send(.squareNow)
+                }
               }
             }
+          case .incrNow:
+            state += 1
+            return .none
+          case .squareNow:
+            state *= state
+            return .none
           }
-        case .incrNow:
-          state += 1
-          return .none
-        case .squareNow:
-          state *= state
-          return .none
         }
       }
     }

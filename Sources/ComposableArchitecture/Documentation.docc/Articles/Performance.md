@@ -37,7 +37,8 @@ For example, if the root of our application was a tab view, then we could model 
 struct that holds each tab's state as a property:
 
 ```swift
-struct AppFeature: Reducer {
+@Reducer
+struct AppFeature {
   struct State {
     var activity: Activity.State
     var search: Search.State
@@ -85,7 +86,8 @@ only the bare essentials of state necessary for the view to do its job. For exam
 we need access to the currently selected tab in state:
 
 ```swift
-struct AppFeature: Reducer {
+@Reducer
+struct AppFeature {
   enum Tab { case activity, search, profile }
   struct State {
     var activity: Activity.State
@@ -231,32 +233,31 @@ and execute an effect. That common mutation and effect could be put into its own
 each user action can return an effect that immediately emits that shared action:
 
 ```swift
-struct Feature: Reducer {
-  struct State {
-    // ...
-  }
-  enum Action {
-    // ...
-  }
+@Reducer
+struct Feature {
+  struct State { /* ... */ }
+  enum Action { /* ... */ }
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .buttonTapped:
-      state.count += 1
-      return .send(.sharedComputation)
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .buttonTapped:
+        state.count += 1
+        return .send(.sharedComputation)
 
-    case .toggleChanged:
-      state.isEnabled.toggle()
-      return .send(.sharedComputation)
+      case .toggleChanged:
+        state.isEnabled.toggle()
+        return .send(.sharedComputation)
 
-    case let .textFieldChanged(text):
-      state.description = text
-      return .send(.sharedComputation)
+      case let .textFieldChanged(text):
+        state.description = text
+        return .send(.sharedComputation)
 
-    case .sharedComputation:
-      // Some shared work to compute something.
-      return .run { send in
-        // A shared effect to compute something
+      case .sharedComputation:
+        // Some shared work to compute something.
+        return .run { send in
+          // A shared effect to compute something
+        }
       }
     }
   }
@@ -312,27 +313,26 @@ state, and it can return an `Effect<Action>` if it needs to execute effects.
 The above example can be refactored like so:
 
 ```swift
-struct Feature: Reducer {
-  struct State {
-    // ...
-  }
-  enum Action {
-    // ...
-  }
+@Reducer
+struct Feature {
+  struct State { /* ... */ }
+  enum Action { /* ... */ }
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .buttonTapped:
-      state.count += 1
-      return self.sharedComputation(state: &state)
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .buttonTapped:
+        state.count += 1
+        return self.sharedComputation(state: &state)
 
-    case .toggleChanged:
-      state.isEnabled.toggle()
-      return self.sharedComputation(state: &state)
+      case .toggleChanged:
+        state.isEnabled.toggle()
+        return self.sharedComputation(state: &state)
 
-    case let .textFieldChanged(text):
-      state.description = text
-      return self.sharedComputation(state: &state)
+      case let .textFieldChanged(text):
+        state.description = text
+        return self.sharedComputation(state: &state)
+      }
     }
   }
 

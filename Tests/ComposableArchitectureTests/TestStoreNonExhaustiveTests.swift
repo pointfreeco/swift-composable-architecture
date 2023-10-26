@@ -262,17 +262,17 @@
     // Confirms that you can send actions without having received all effect actions in
     // non-exhaustive test stores.
     func testSend_SkipReceivedActions() async {
-      struct Feature: Reducer {
-        struct State: Equatable {
-          var count = 0
-          var isLoggedIn = false
-        }
-        enum Action {
-          case decrement
-          case increment
-          case loggedInResponse(Bool)
-        }
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
+      struct State: Equatable {
+        var count = 0
+        var isLoggedIn = false
+      }
+      enum Action {
+        case decrement
+        case increment
+        case loggedInResponse(Bool)
+      }
+      let store = TestStore(initialState: State()) {
+        Reduce<State, Action> { state, action in
           switch action {
           case .decrement:
             state.count -= 1
@@ -285,9 +285,6 @@
             return .none
           }
         }
-      }
-      let store = TestStore(initialState: Feature.State()) {
-        Feature()
       }
       store.exhaustivity = .off(showSkippedAssertions: true)
 
@@ -304,16 +301,16 @@
     // Confirms that if you receive an action in a non-exhaustive test store with a bad assertion
     // you will still get a failure.
     func testSend_SkipReceivedActions_BadAssertion() async {
-      struct Feature: Reducer {
-        struct State: Equatable {
-          var count = 0
-          var isLoggedIn = false
-        }
-        enum Action: Equatable {
-          case increment
-          case loggedInResponse(Bool)
-        }
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
+      struct State: Equatable {
+        var count = 0
+        var isLoggedIn = false
+      }
+      enum Action: Equatable {
+        case increment
+        case loggedInResponse(Bool)
+      }
+      let store = TestStore(initialState: State()) {
+        Reduce<State, Action> { state, action in
           switch action {
           case .increment:
             state.count += 1
@@ -324,9 +321,6 @@
           }
         }
       }
-      let store = TestStore(initialState: Feature.State()) {
-        Feature()
-      }
       store.exhaustivity = .off(showSkippedAssertions: true)
 
       await store.send(.increment) {
@@ -336,7 +330,7 @@
         $0.compactDescription == """
           A state change does not match expectation: …
 
-                TestStoreNonExhaustiveTests.Feature.State(
+                TestStoreNonExhaustiveTests.State(
               −   count: 2,
               +   count: 1,
                   isLoggedIn: true
@@ -434,12 +428,12 @@
     // Confirms that when you send an action the test store skips any unreceived actions
     // automatically.
     func testSendWithUnreceivedActions_SkipsActions() async {
-      struct Feature: Reducer {
-        enum Action: Equatable {
-          case tap
-          case response(Int)
-        }
-        func reduce(into state: inout Int, action: Action) -> Effect<Action> {
+      enum Action: Equatable {
+        case tap
+        case response(Int)
+      }
+      let store = TestStore(initialState: 0) {
+        Reduce<Int, Action> { state, action in
           switch action {
           case .tap:
             state += 1
@@ -449,10 +443,6 @@
             return .none
           }
         }
-      }
-
-      let store = TestStore(initialState: 0) {
-        Feature()
       }
       store.exhaustivity = .off
 
@@ -704,12 +694,12 @@
     }
 
     func testReceiveNonExhaustiveWithTimeout() async {
-      struct Feature: Reducer {
-        struct State: Equatable {}
-        enum Action: Equatable { case tap, response1, response2 }
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
-          switch action {
+      struct State: Equatable {}
+      enum Action: Equatable { case tap, response1, response2 }
 
+      let store = TestStore(initialState: State()) {
+        Reduce<State, Action> { state, action in
+          switch action {
           case .tap:
             return .run { send in
               try await Task.sleep(nanoseconds: 10_000_000)
@@ -722,10 +712,6 @@
           }
         }
       }
-
-      let store = TestStore(initialState: Feature.State()) {
-        Feature()
-      }
       store.exhaustivity = .off
 
       await store.send(.tap)
@@ -733,12 +719,11 @@
     }
 
     func testReceiveNonExhaustiveWithTimeoutMultipleNonMatching() async {
-      struct Feature: Reducer {
-        struct State: Equatable {}
-        enum Action: Equatable { case tap, response1, response2 }
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
+      struct State: Equatable {}
+      enum Action: Equatable { case tap, response1, response2 }
+      let store = TestStore(initialState: State()) {
+        Reduce<State, Action> { state, action in
           switch action {
-
           case .tap:
             return .run { send in
               try await Task.sleep(nanoseconds: 10_000_000)
@@ -752,10 +737,6 @@
             return .none
           }
         }
-      }
-
-      let store = TestStore(initialState: Feature.State()) {
-        Feature()
       }
       store.exhaustivity = .off
 
@@ -773,12 +754,11 @@
     }
 
     func testReceiveNonExhaustiveWithTimeoutMultipleMatching() async {
-      struct Feature: Reducer {
-        struct State: Equatable {}
-        enum Action: Equatable { case tap, response1, response2 }
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
+      struct State: Equatable {}
+      enum Action: Equatable { case tap, response1, response2 }
+      let store = TestStore(initialState: State()) {
+        Reduce<State, Action> { state, action in
           switch action {
-
           case .tap:
             return .run { send in
               try await Task.sleep(nanoseconds: 10_000_000)
@@ -790,10 +770,6 @@
             return .none
           }
         }
-      }
-
-      let store = TestStore(initialState: Feature.State()) {
-        Feature()
       }
       store.exhaustivity = .off
 
@@ -868,20 +844,11 @@
           self.id = uuid()
         }
       }
-      struct Feature: Reducer {
-        struct State: Equatable {
-          var values: [Model] = []
-        }
-        enum Action {
-          case addButtonTapped
-        }
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
-          switch action {
-          case .addButtonTapped:
-            state.values.append(Model())
-            return .none
-          }
-        }
+      struct State: Equatable {
+        var values: [Model] = []
+      }
+      enum Action {
+        case addButtonTapped
       }
 
       XCTTODO(
@@ -890,8 +857,14 @@
         """
       )
 
-      let store = TestStore(initialState: Feature.State()) {
-        Feature()
+      let store = TestStore(initialState: State()) {
+        Reduce<State, Action> { state, action in 
+          switch action {
+          case .addButtonTapped:
+            state.values.append(Model())
+            return .none
+          }
+        }
       } withDependencies: {
         $0.uuid = .incrementing
       }
@@ -906,7 +879,8 @@
     }
   }
 
-  struct Counter: Reducer {
+  @Reducer
+  struct Counter {
     struct State: Equatable {
       var count = 0
       var isEven = true
@@ -915,56 +889,61 @@
       case increment
       case decrement
     }
-    func reduce(into state: inout State, action: Action) -> Effect<Action> {
-      switch action {
-      case .increment:
-        state.count += 1
-        state.isEven.toggle()
-        return .none
-      case .decrement:
-        state.count -= 1
-        state.isEven.toggle()
-        return .none
+    var body: some Reducer<State, Action> {
+      Reduce { state, action in
+        switch action {
+        case .increment:
+          state.count += 1
+          state.isEven.toggle()
+          return .none
+        case .decrement:
+          state.count -= 1
+          state.isEven.toggle()
+          return .none
+        }
       }
     }
   }
 
-  struct NonExhaustiveReceive: Reducer {
+  @Reducer
+  struct NonExhaustiveReceive {
     struct State: Equatable {
       var count = 0
       var int = 0
       var string = ""
     }
-    @CasePathable
     @dynamicMemberLookup
     enum Action: Equatable {
       case onAppear
       case response1(Int)
       case response2(String)
     }
-    func reduce(into state: inout State, action: Action) -> Effect<Action> {
-      switch action {
-      case .onAppear:
-        state = State()
-        return .merge(
-          .send(.response1(42)),
-          .send(.response2("Hello"))
-        )
-      case let .response1(int):
-        state.count += 1
-        state.int = int
-        return .none
-      case let .response2(string):
-        state.count += 1
-        state.string = string
-        return .none
+    var body: some Reducer<State, Action> {
+      Reduce { state, action in
+        switch action {
+        case .onAppear:
+          state = State()
+          return .merge(
+            .send(.response1(42)),
+            .send(.response2("Hello"))
+          )
+        case let .response1(int):
+          state.count += 1
+          state.int = int
+          return .none
+        case let .response2(string):
+          state.count += 1
+          state.string = string
+          return .none
+        }
       }
     }
   }
 
   // This example comes from Krzysztof Zabłocki's blog post:
   // https://www.merowing.info/exhaustive-testing-in-tca/
-  struct KrzysztofExample: Reducer {
+  @Reducer
+  struct KrzysztofExample {
     struct State: Equatable {
       var name: String = "Krzysztof"
       var surname: String = "Zabłocki"
@@ -980,27 +959,29 @@
 
     @Dependency(\.mainQueue) var mainQueue
 
-    func reduce(into state: inout State, action: Action) -> Effect<Action> {
-      switch action {
-      case let .changeIdentity(name, surname):
-        state.name = name
-        state.surname = surname
-        return .none
+    var body: some Reducer<State, Action> {
+      Reduce { state, action in
+        switch action {
+        case let .changeIdentity(name, surname):
+          state.name = name
+          state.surname = surname
+          return .none
 
-      case .advanceAgeAndMoodAfterDelay:
-        return .run { [state] send in
-          try await self.mainQueue.sleep(for: .seconds(1))
-          async let changeAge: () = send(.changeAge(state.age + 1))
-          async let changeMood: () = send(.changeMood(state.mood + 1))
-          _ = await (changeAge, changeMood)
+        case .advanceAgeAndMoodAfterDelay:
+          return .run { [state] send in
+            try await self.mainQueue.sleep(for: .seconds(1))
+            async let changeAge: () = send(.changeAge(state.age + 1))
+            async let changeMood: () = send(.changeMood(state.mood + 1))
+            _ = await (changeAge, changeMood)
+          }
+
+        case let .changeAge(age):
+          state.age = age
+          return .none
+        case let .changeMood(mood):
+          state.mood = mood
+          return .none
         }
-
-      case let .changeAge(age):
-        state.age = age
-        return .none
-      case let .changeMood(mood):
-        state.mood = mood
-        return .none
       }
     }
   }

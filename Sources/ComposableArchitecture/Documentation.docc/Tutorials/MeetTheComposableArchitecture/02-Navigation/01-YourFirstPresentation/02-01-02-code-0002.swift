@@ -1,4 +1,5 @@
-struct ContactsFeature: Reducer {
+@Reducer
+struct ContactsFeature {
   struct State: Equatable {
     @PresentationState var addContact: AddContactFeature.State?
     var contacts: IdentifiedArrayOf<Contact> = []

@@ -25,7 +25,8 @@ struct NavigationTestCaseView: View {
     }
   }
 
-  struct Feature: Reducer {
+  @Reducer
+  struct Feature {
     struct State: Equatable {
       var path = StackState<BasicsView.Feature.State>()
     }

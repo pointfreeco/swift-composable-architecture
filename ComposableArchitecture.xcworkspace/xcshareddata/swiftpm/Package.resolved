@@ -33,7 +33,7 @@
       "location" : "https://github.com/pointfreeco/swift-case-paths",
       "state" : {
         "branch" : "case-key-paths",
-        "revision" : "7612c8f0cebf42873351f6f4f16ed5ecfaf8b714"
+        "revision" : "bbb22fe70903cad80d20f43d377f33006390393c"
       }
     },
     {
@@ -109,6 +109,15 @@
       }
     },
     {
+      "identity" : "swift-macro-testing",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pointfreeco/swift-macro-testing",
+      "state" : {
+        "revision" : "35acd9468d40ae87e75991a18af6271e8124c261",
+        "version" : "0.2.1"
+      }
+    },
+    {
       "identity" : "swift-snapshot-testing",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-snapshot-testing.git",
@@ -140,7 +149,7 @@
       "location" : "https://github.com/pointfreeco/swiftui-navigation",
       "state" : {
         "branch" : "case-key-paths",
-        "revision" : "911c8b05ad15d80c2f9e174bb3aa75aaca498288"
+        "revision" : "3285fbeadb9d9fcfff01714f62e06d124f954f40"
       }
     },
     {

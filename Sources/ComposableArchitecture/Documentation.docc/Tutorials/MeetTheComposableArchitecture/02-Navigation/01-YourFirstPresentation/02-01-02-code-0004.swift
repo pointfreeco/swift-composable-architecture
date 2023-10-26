@@ -1,4 +1,5 @@
-struct ContactsFeature: Reducer {
+@Reducer
+struct ContactsFeature {
   struct State: Equatable {
     @PresentationState var addContact: AddContactFeature.State?
     var contacts: IdentifiedArrayOf<Contact> = []
@@ -18,7 +19,7 @@ struct ContactsFeature: Reducer {
         return .none
       }
     }
-    .ifLet(\.$addContact, action: /Action.addContact) {
+    .ifLet(\.$addContact, action: \.addContact) {
       AddContactFeature()
     }
   }

@@ -1,6 +1,7 @@
 import ComposableArchitecture
 
-struct CounterFeature: Reducer {
+@Reducer
+struct CounterFeature {
   struct State: Equatable {
     var count = 0
     var fact: String?
@@ -13,24 +14,26 @@ struct CounterFeature: Reducer {
     case incrementButtonTapped
   }
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .decrementButtonTapped:
-      state.count -= 1
-      state.fact = nil
-      return .none
-
-    case .factButtonTapped:
-      state.fact = nil
-      state.isLoading = true
-      return .run { send in
-        // ✅ Do async work in here, and send actions back into the system.
+  var body: some ReducerOf<Self> {
+    Reduce { state, action in
+      switch action {
+      case .decrementButtonTapped:
+        state.count -= 1
+        state.fact = nil
+        return .none
+        
+      case .factButtonTapped:
+        state.fact = nil
+        state.isLoading = true
+        return .run { send in
+          // ✅ Do async work in here, and send actions back into the system.
+        }
+        
+      case .incrementButtonTapped:
+        state.count += 1
+        state.fact = nil
+        return .none
       }
-
-    case .incrementButtonTapped:
-      state.count += 1
-      state.fact = nil
-      return .none
     }
   }
 }

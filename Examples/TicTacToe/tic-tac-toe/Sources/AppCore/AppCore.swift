@@ -4,9 +4,8 @@ import Dispatch
 import LoginCore
 import NewGameCore
 
-public struct TicTacToe: Reducer {
-  @CasePathable
-  @dynamicMemberLookup
+@Reducer
+public struct TicTacToe {
   public enum State: Equatable {
     case login(Login.State)
     case newGame(NewGame.State)
@@ -14,7 +13,6 @@ public struct TicTacToe: Reducer {
     public init() { self = .login(Login.State()) }
   }
 
-  @CasePathable
   public enum Action: Equatable {
     case login(Login.Action)
     case newGame(NewGame.Action)

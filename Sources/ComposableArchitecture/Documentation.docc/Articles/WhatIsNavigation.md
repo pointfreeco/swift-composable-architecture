@@ -67,7 +67,8 @@ those items performs a drill-down navigation to a detail screen for the item. Th
 modeled with the ``PresentationState`` property wrapper pointing to some optional state:
 
 ```swift
-struct InventoryFeature: Reducer {
+@Reducer
+struct InventoryFeature {
   struct State {
     @PresentationState var detailItem: DetailItemFeature.State?
     // ...
@@ -80,7 +81,8 @@ Then, inside that detail screen there may be a button to edit the item in a shee
 be modeled with a ``PresentationState`` property wrapper pointing to a piece of optional state:
 
 ```swift
-struct DetailItemFeature: Reducer {
+@Reducer
+struct DetailItemFeature {
   struct State {
     @PresentationState var editItem: EditItemFeature.State?
     // ...
@@ -93,7 +95,8 @@ And further, inside the "edit item" feature there can be a piece of optional sta
 whether or not an alert is displayed:
 
 ```swift
-struct EditItemFeature: Reducer {
+@Reducer
+struct EditItemFeature {
   struct State {
     @PresentationState var alert: AlertState<AlertAction>?
     // ...

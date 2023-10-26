@@ -8,7 +8,8 @@ extension Reducer {
   /// its core logic _and_ the child's logic by using the `forEach` operator:
   ///
   /// ```swift
-  /// struct Parent: Reducer {
+  /// @Reducer
+  /// struct Parent {
   ///   struct State {
   ///     var rows: IdentifiedArrayOf<Row.State>
   ///     // ...
@@ -22,7 +23,7 @@ extension Reducer {
   ///     Reduce { state, action in
   ///       // Core logic for parent feature
   ///     }
-  ///     .forEach(\.rows, action: /Action.row) {
+  ///     .forEach(\.rows, action: \.row) {
   ///       Row()
   ///     }
   ///   }
