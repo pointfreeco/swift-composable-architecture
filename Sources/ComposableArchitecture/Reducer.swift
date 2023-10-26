@@ -29,23 +29,25 @@
 /// ```
 ///
 /// The logic of your feature is implemented by mutating the feature's current state when an action
-/// comes into the system. This is most easily done by implementing the
-/// ``Reducer/reduce(into:action:)-1t2ri`` method of the protocol.
+/// comes into the system. This is most easily done by constructing a ``Reduce`` inside the
+/// ``body-8lumc`` of your reducer:
 ///
 /// ```swift
 /// @Reducer
 /// struct Feature {
 ///   // ...
 ///
-///   func reduce(into state: inout State, action: Action) -> Effect<Action> {
-///     switch action {
-///     case .decrementButtonTapped:
-///       state.count -= 1
-///       return .none
+///   var body: some ReducerOf<Self> {
+///     Reduce { state, action in
+///       switch action {
+///       case .decrementButtonTapped:
+///         state.count -= 1
+///         return .none
 ///
-///     case .incrementButtonTapped:
-///       state.count += 1
-///       return .none
+///       case .incrementButtonTapped:
+///         state.count += 1
+///         return .none
+///       }
 ///     }
 ///   }
 /// }
@@ -75,31 +77,33 @@
 ///   }
 ///   enum CancelID { case timer }
 ///
-///   func reduce(into state: inout State, action: Action) -> Effect<Action> {
-///     switch action {
-///     case .decrementButtonTapped:
-///       state.count -= 1
-///       return .none
+///   var body: some ReducerOf<Self> {
+///     Reduce { state, action in
+///       switch action {
+///       case .decrementButtonTapped:
+///         state.count -= 1
+///         return .none
 ///
-///     case .incrementButtonTapped:
-///       state.count += 1
-///       return .none
+///       case .incrementButtonTapped:
+///         state.count += 1
+///         return .none
 ///
-///     case .startTimerButtonTapped:
-///       return .run { send in
-///         while true {
-///           try await Task.sleep(for: .seconds(1))
-///           await send(.timerTick)
+///       case .startTimerButtonTapped:
+///         return .run { send in
+///           while true {
+///             try await Task.sleep(for: .seconds(1))
+///             await send(.timerTick)
+///           }
 ///         }
+///         .cancellable(CancelID.timer)
+///
+///       case .stopTimerButtonTapped:
+///         return .cancel(CancelID.timer)
+///
+///       case .timerTick:
+///         state.count += 1
+///         return .none
 ///       }
-///       .cancellable(CancelID.timer)
-///
-///     case .stopTimerButtonTapped:
-///       return .cancel(CancelID.timer)
-///
-///     case .timerTick:
-///       state.count += 1
-///       return .none
 ///     }
 ///   }
 /// }
@@ -182,7 +186,7 @@ public protocol Reducer<State, Action> {
   #if DEBUG
     associatedtype _Body
 
-    /// A type representing the body of this reducer. // 6f25w
+    /// A type representing the body of this reducer.
     ///
     /// When you create a custom reducer by implementing the ``body-swift.property``, Swift infers
     /// this type from the value returned.
