@@ -17,13 +17,13 @@
 
 - ``send(_:assert:file:line:)``
 - ``receive(_:timeout:assert:file:line:)-5awso``
-- ``receive(_:timeout:assert:file:line:)-6pv94``
+- ``receive(_:timeout:assert:file:line:)-6325h``
 - ``receive(_:timeout:assert:file:line:)-7md3m``
 - ``assert(_:file:line:)``
 - ``finish(timeout:file:line:)-53gi5``
 - ``TestStoreTask``
 
-### Methods for skipping actions and effects
+### Skipping actions and effects
 
 - ``skipReceivedActions(strict:file:line:)-a4ri``
 - ``skipInFlightEffects(strict:file:line:)-5hbsk``

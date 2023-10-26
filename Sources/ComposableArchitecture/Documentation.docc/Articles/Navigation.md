@@ -22,7 +22,6 @@ use these tools.
 - ``PresentationState``
 - ``PresentationAction``
 - ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at``
-- ``DismissEffect``
 
 ### Stack-based navigation
 
@@ -31,4 +30,7 @@ use these tools.
 - ``StackAction``
 - ``StackElementID``
 - ``Reducer/forEach(_:action:destination:fileID:line:)-yz3v``
+
+### Dismissal
+
 - ``DismissEffect``

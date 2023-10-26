@@ -1289,13 +1289,13 @@ extension TestStore where State: Equatable {
   }
 
   private func _receive<Value>(
-    _ extractAction: (Action) -> Value?,
+    _ actionCase: AnyCasePath<Action, Value>,
     assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) {
     self.receiveAction(
-      matching: { extractAction($0) != nil },
+      matching: { actionCase.extract(from: $0) != nil },
       failureMessage: "Expected to receive an action matching case path, but didn't get one.",
       unexpectedActionDescription: { receivedAction in
         var action = ""
@@ -1385,7 +1385,7 @@ extension TestStore where State: Equatable {
   /// was in the effect that you chose not to assert on.
   ///
   /// If you only want to check that a particular action case was received, then you might find the
-  /// ``receive(_:timeout:assert:file:line:)-6pv94`` overload of this method more useful.
+  /// ``receive(_:timeout:assert:file:line:)-6325h`` overload of this method more useful.
   ///
   /// - Parameters:
   ///   - isMatching: A closure that attempts to match an action. If it returns `false`, a test
@@ -1445,7 +1445,7 @@ extension TestStore where State: Equatable {
   /// was in the effect that you chose not to assert on.
   ///
   /// - Parameters:
-  ///   - extractAction: A closure identifying the case of an action enum to receive.
+  ///   - actionCase: A case path identifying the case of an action to enum to receive
   ///   - nanoseconds: The amount of time to wait for the expected action.
   ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
   ///     the store. The mutable state sent to this closure must be modified to match the state of
@@ -1454,7 +1454,25 @@ extension TestStore where State: Equatable {
   @MainActor
   @_disfavoredOverload
   public func receive<Value>(
-    _ extractAction: (Action) -> Value?,
+    _ actionCase: CaseKeyPath<Action, Value>,
+    timeout nanoseconds: UInt64? = nil,
+    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) async {
+    await self.receive(
+      AnyCasePath(actionCase),
+      timeout: nanoseconds,
+      assert: updateStateToExpectedResult,
+      file: file,
+      line: line
+    )
+  }
+
+  @MainActor
+  @_disfavoredOverload
+  public func receive<Value>(
+    _ actionCase: AnyCasePath<Action, Value>,
     timeout nanoseconds: UInt64? = nil,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
     file: StaticString = #file,
@@ -1464,18 +1482,18 @@ extension TestStore where State: Equatable {
       guard !self.reducer.inFlightEffects.isEmpty
       else {
         _ = {
-          self._receive(extractAction, assert: updateStateToExpectedResult, file: file, line: line)
+          self._receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
         }()
         return
       }
       await self.receiveAction(
-        matching: { extractAction($0) != nil },
+        matching: { actionCase.extract(from: $0) != nil },
         timeout: nanoseconds,
         file: file,
         line: line
       )
       _ = {
-        self._receive(extractAction, assert: updateStateToExpectedResult, file: file, line: line)
+        self._receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
       }()
       await Task.megaYield()
     }
@@ -1507,7 +1525,7 @@ extension TestStore where State: Equatable {
     /// data was in the effect that you chose not to assert on.
     ///
     /// - Parameters:
-    ///   - extractAction: A closure identifying the case of an action to enum to receive
+    ///   - actionCase: A case path identifying the case of an action to enum to receive
     ///   - duration: The amount of time to wait for the expected action.
     ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action
     ///     to the store. The mutable state sent to this closure must be modified to match the state
@@ -1517,7 +1535,26 @@ extension TestStore where State: Equatable {
     @_disfavoredOverload
     @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
     public func receive<Value>(
-      _ extractAction: (Action) -> Value?,
+      _ actionCase: CaseKeyPath<Action, Value>,
+      timeout duration: Duration,
+      assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
+      file: StaticString = #file,
+      line: UInt = #line
+    ) async {
+      await self.receive(
+        AnyCasePath(actionCase),
+        timeout: duration,
+        assert: updateStateToExpectedResult,
+        file: file,
+        line: line
+      )
+    }
+
+    @MainActor
+    @_disfavoredOverload
+    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+    public func receive<Value>(
+      _ actionCase: AnyCasePath<Action, Value>,
       timeout duration: Duration,
       assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
       file: StaticString = #file,
@@ -1528,19 +1565,19 @@ extension TestStore where State: Equatable {
         else {
           _ = {
             self._receive(
-              extractAction, assert: updateStateToExpectedResult, file: file, line: line
+              actionCase, assert: updateStateToExpectedResult, file: file, line: line
             )
           }()
           return
         }
         await self.receiveAction(
-          matching: { extractAction($0) != nil },
+          matching: { actionCase.extract(from: $0) != nil },
           timeout: duration.nanoseconds,
           file: file,
           line: line
         )
         _ = {
-          self._receive(extractAction, assert: updateStateToExpectedResult, file: file, line: line)
+          self._receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
         }()
         await Task.megaYield()
       }
@@ -2197,7 +2234,7 @@ public enum Exhaustivity: Equatable, Sendable {
   /// ``TestStore/skipInFlightEffects(strict:file:line:)-5hbsk``.
   ///
   /// To partially match an action received from an effect, use
-  /// ``TestStore/receive(_:timeout:assert:file:line:)-6pv94`` or
+  /// ``TestStore/receive(_:timeout:assert:file:line:)-6325h`` or
   /// ``TestStore/receive(_:timeout:assert:file:line:)-7md3m``.
 
   case on
