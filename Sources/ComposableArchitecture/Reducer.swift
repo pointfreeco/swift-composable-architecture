@@ -53,7 +53,7 @@
 /// }
 /// ```
 ///
-/// The `reduce` method's first responsibility is to mutate the feature's current state given an
+/// The ``Reduce`` reducer's first responsibility is to mutate the feature's current state given an
 /// action. Its second responsibility is to return effects that will be executed asynchronously
 /// and feed their data back into the system. Currently `Feature` does not need to run any effects,
 /// and so ``Effect/none`` is returned.
@@ -115,21 +115,17 @@
 /// method. Read the <doc:DependencyManagement> and <doc:Testing> articles for more
 /// information.
 ///
-/// That is the basics of implementing a feature as a conformance to ``Reducer``. There are
-/// actually two ways to define a reducer:
-///
-///   1. You can either implement the ``reduce(into:action:)-1t2ri`` method, as shown above, which
-///   is given direct mutable access to application ``State`` whenever an ``Action`` is fed into
-///   the system, and returns an ``Effect`` that can communicate with the outside world and
-///   feed additional ``Action``s back into the system.
-///
-///   2. Or you can implement the ``body-swift.property`` property, which combines one or
-///   more reducers together.
+/// That is the basics of implementing a feature as a conformance to ``Reducer``. There is actually
+/// an alternative way to define a reducer: you can implement the ``reduce(into:action:)-1t2ri``
+/// method directly, which, like ``Reduce``, is given direct mutable access to application ``State``
+/// whenever an ``Action`` is fed into the system, and returns an ``Effect`` that can communicate
+/// with the outside world and feed additional ``Action``s back into the system.
 ///
 /// At most one of these requirements should be implemented. If a conformance implements both
-/// requirements, only ``reduce(into:action:)-1t2ri`` will be called by the ``Store``. If your
-/// reducer assembles a body from other reducers _and_ has additional business logic it needs to
-/// layer onto the feature, introduce this logic into the body instead, either with ``Reduce``:
+/// ``body-8lumc`` and ``reduce(into:action:)-1t2ri``, only ``reduce(into:action:)-1t2ri`` will be
+/// called by the ``Store``. If your reducer assembles a body from other reducers _and_ has
+/// additional business logic it needs to layer onto the feature, introduce this logic into the body
+/// instead, either with ``Reduce``:
 ///
 /// ```swift
 /// var body: some Reducer<State, Action> {
