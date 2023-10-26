@@ -104,4 +104,25 @@
   public macro Reducer() = #externalMacro(
     module: "ComposableArchitectureMacros", type: "ReducerMacro"
   )
+
+  @freestanding(declaration, names: named(body))
+  public macro Reduce<State, Action>(
+    _ reducer: (inout State, Action) -> Effect<Action>
+  ) = #externalMacro(
+    module: "ComposableArchitectureMacros", type: "ReduceMacro"
+  )
+
+  @freestanding(declaration, names: named(body))
+  public macro Reduce2<State, Action>(
+    @ReducerBuilder<State, Action> _ reducer: () -> any Reducer<State, Action>
+  ) = #externalMacro(
+    module: "ComposableArchitectureMacros", type: "ReduceMacro"
+  )
+
+  // @freestanding(declaration, names: named(body))
+  // public macro ReduceOf<R: Reducer>(
+  //   _ reducer: (inout R.State, R.Action) -> Effect<R.Action>
+  // ) = #externalMacro(
+  //   module: "ComposableArchitectureMacros", type: "ReduceMacro"
+  // )
 #endif
