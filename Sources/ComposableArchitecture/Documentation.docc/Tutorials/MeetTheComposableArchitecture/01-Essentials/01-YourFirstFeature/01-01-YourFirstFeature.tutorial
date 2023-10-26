@@ -65,12 +65,12 @@
       
       @Step {
         And finally, to finish conforming to ``ComposableArchitecture/Reducer``, you must implement
-        a ``ComposableArchitecture/Reducer/body-8lumc`` method
-        that evolves the state from its current value to the next value given a user action, and
-        returns any effects that the feature wants to execute in the outside world. This almost
-        always begins by switching on the incoming action to determine what logic you need to 
-        perform, and the `state` is provided as `inout` so you can perform mutations on it 
-        directly. 
+        a ``ComposableArchitecture/Reducer/body-8lumc`` property with a
+        ``ComposableArchitecture/Reduce`` reducer that evolves the state from its current value to
+        the next value given a user action, and returns any effects that the feature wants to
+        execute in the outside world. This almost always begins by switching on the incoming action
+        to determine what logic you need to perform, and the `state` is provided as `inout` so you
+        can perform mutations on it directly.
         
         > Note: A reducer is implemented by providing a 
         > ``ComposableArchitecture/Reducer/body-8lumc`` property, and then listing the 
