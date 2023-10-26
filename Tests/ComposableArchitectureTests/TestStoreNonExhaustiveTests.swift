@@ -889,16 +889,18 @@
       case increment
       case decrement
     }
-    func reduce(into state: inout State, action: Action) -> Effect<Action> {
-      switch action {
-      case .increment:
-        state.count += 1
-        state.isEven.toggle()
-        return .none
-      case .decrement:
-        state.count -= 1
-        state.isEven.toggle()
-        return .none
+    var body: some Reducer<State, Action> {
+      Reduce { state, action in
+        switch action {
+        case .increment:
+          state.count += 1
+          state.isEven.toggle()
+          return .none
+        case .decrement:
+          state.count -= 1
+          state.isEven.toggle()
+          return .none
+        }
       }
     }
   }
@@ -916,22 +918,24 @@
       case response1(Int)
       case response2(String)
     }
-    func reduce(into state: inout State, action: Action) -> Effect<Action> {
-      switch action {
-      case .onAppear:
-        state = State()
-        return .merge(
-          .send(.response1(42)),
-          .send(.response2("Hello"))
-        )
-      case let .response1(int):
-        state.count += 1
-        state.int = int
-        return .none
-      case let .response2(string):
-        state.count += 1
-        state.string = string
-        return .none
+    var body: some Reducer<State, Action> {
+      Reduce { state, action in
+        switch action {
+        case .onAppear:
+          state = State()
+          return .merge(
+            .send(.response1(42)),
+            .send(.response2("Hello"))
+          )
+        case let .response1(int):
+          state.count += 1
+          state.int = int
+          return .none
+        case let .response2(string):
+          state.count += 1
+          state.string = string
+          return .none
+        }
       }
     }
   }
@@ -955,27 +959,29 @@
 
     @Dependency(\.mainQueue) var mainQueue
 
-    func reduce(into state: inout State, action: Action) -> Effect<Action> {
-      switch action {
-      case let .changeIdentity(name, surname):
-        state.name = name
-        state.surname = surname
-        return .none
+    var body: some Reducer<State, Action> {
+      Reduce { state, action in
+        switch action {
+        case let .changeIdentity(name, surname):
+          state.name = name
+          state.surname = surname
+          return .none
 
-      case .advanceAgeAndMoodAfterDelay:
-        return .run { [state] send in
-          try await self.mainQueue.sleep(for: .seconds(1))
-          async let changeAge: () = send(.changeAge(state.age + 1))
-          async let changeMood: () = send(.changeMood(state.mood + 1))
-          _ = await (changeAge, changeMood)
+        case .advanceAgeAndMoodAfterDelay:
+          return .run { [state] send in
+            try await self.mainQueue.sleep(for: .seconds(1))
+            async let changeAge: () = send(.changeAge(state.age + 1))
+            async let changeMood: () = send(.changeMood(state.mood + 1))
+            _ = await (changeAge, changeMood)
+          }
+
+        case let .changeAge(age):
+          state.age = age
+          return .none
+        case let .changeMood(mood):
+          state.mood = mood
+          return .none
         }
-
-      case let .changeAge(age):
-        state.age = age
-        return .none
-      case let .changeMood(mood):
-        state.mood = mood
-        return .none
       }
     }
   }

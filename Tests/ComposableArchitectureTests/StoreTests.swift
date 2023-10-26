@@ -535,13 +535,15 @@ final class StoreTests: BaseTCATestCase {
     @Dependency(\.locale) var locale
     @Dependency(\.timeZone) var timeZone
     @Dependency(\.urlSession) var urlSession
-    func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
-      _ = self.calendar
-      _ = self.locale
-      _ = self.timeZone
-      _ = self.urlSession
-      state += action ? 1 : -1
-      return .none
+    var body: some Reducer<Int, Bool> {
+      Reduce { state, action in
+        _ = self.calendar
+        _ = self.locale
+        _ = self.timeZone
+        _ = self.urlSession
+        state += action ? 1 : -1
+        return .none
+      }
     }
   }
   func testOverrideDependenciesDirectlyOnReducer() {
@@ -559,9 +561,11 @@ final class StoreTests: BaseTCATestCase {
   @Reducer
   fileprivate struct Feature_testOverrideDependenciesDirectlyOnStore {
     @Dependency(\.uuid) var uuid
-    func reduce(into state: inout UUID, action: Void) -> Effect<Void> {
-      state = self.uuid()
-      return .none
+    var body: some Reducer<UUID, Void> {
+      Reduce { state, action in
+        state = self.uuid()
+        return .none
+      }
     }
   }
   func testOverrideDependenciesDirectlyOnStore() {
@@ -588,31 +592,33 @@ final class StoreTests: BaseTCATestCase {
       case response3(Int)
     }
     @Dependency(\.count) var count
-    func reduce(into state: inout State, action: Action) -> Effect<Action> {
-      switch action {
-      case .tap:
-        return withDependencies {
-          $0.count.value += 1
-        } operation: {
-          .run { send in await send(.response1(self.count.value)) }
+    var body: some Reducer<State, Action> {
+      Reduce { state, action in
+        switch action {
+        case .tap:
+          return withDependencies {
+            $0.count.value += 1
+          } operation: {
+            .run { send in await send(.response1(self.count.value)) }
+          }
+        case let .response1(count):
+          state.count = count
+          return withDependencies {
+            $0.count.value += 1
+          } operation: {
+            .run { send in await send(.response2(self.count.value)) }
+          }
+        case let .response2(count):
+          state.count = count
+          return withDependencies {
+            $0.count.value += 1
+          } operation: {
+            .run { send in await send(.response3(self.count.value)) }
+          }
+        case let .response3(count):
+          state.count = count
+          return .none
         }
-      case let .response1(count):
-        state.count = count
-        return withDependencies {
-          $0.count.value += 1
-        } operation: {
-          .run { send in await send(.response2(self.count.value)) }
-        }
-      case let .response2(count):
-        state.count = count
-        return withDependencies {
-          $0.count.value += 1
-        } operation: {
-          .run { send in await send(.response3(self.count.value)) }
-        }
-      case let .response3(count):
-        state.count = count
-        return .none
       }
     }
   }
@@ -647,31 +653,33 @@ final class StoreTests: BaseTCATestCase {
       case response3(Int)
     }
     @Dependency(\.count) var count
-    func reduce(into state: inout State, action: Action) -> Effect<Action> {
-      switch action {
-      case .tap:
-        return withDependencies {
-          $0.count.value += 1
-        } operation: {
-          .run { send in await send(.response1(self.count.value)) }
+    var body: some Reducer<State, Action> {
+      Reduce { state, action in
+        switch action {
+        case .tap:
+          return withDependencies {
+            $0.count.value += 1
+          } operation: {
+            .run { send in await send(.response1(self.count.value)) }
+          }
+        case let .response1(count):
+          state.count = count
+          return withDependencies {
+            $0.count.value += 1
+          } operation: {
+            .run { send in await send(.response2(self.count.value)) }
+          }
+        case let .response2(count):
+          state.count = count
+          return withDependencies {
+            $0.count.value += 1
+          } operation: {
+            .run { send in await send(.response3(self.count.value)) }
+          }
+        case let .response3(count):
+          state.count = count
+          return .none
         }
-      case let .response1(count):
-        state.count = count
-        return withDependencies {
-          $0.count.value += 1
-        } operation: {
-          .run { send in await send(.response2(self.count.value)) }
-        }
-      case let .response2(count):
-        state.count = count
-        return withDependencies {
-          $0.count.value += 1
-        } operation: {
-          .run { send in await send(.response3(self.count.value)) }
-        }
-      case let .response3(count):
-        state.count = count
-        return .none
       }
     }
   }
@@ -701,12 +709,14 @@ final class StoreTests: BaseTCATestCase {
       case didFinish
     }
 
-    func reduce(into state: inout State, action: Action) -> Effect<Action> {
-      switch action {
-      case .task:
-        return .run { send in await send(.didFinish) }
-      case .didFinish:
-        return .none
+    var body: some Reducer<State, Action> {
+      Reduce { state, action in
+        switch action {
+        case .task:
+          return .run { send in await send(.didFinish) }
+        case .didFinish:
+          return .none
+        }
       }
     }
   }
@@ -780,7 +790,9 @@ final class StoreTests: BaseTCATestCase {
         }
       }
       enum Action: Equatable {}
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {}
+      var body: some Reducer<State, Action> {
+        EmptyReducer()
+      }
     }
 
     let store = Store(initialState: Feature.State()) {
@@ -797,9 +809,11 @@ final class StoreTests: BaseTCATestCase {
       let date: Date
       struct State: Equatable { var date: Date? }
       enum Action: Equatable { case tap }
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        state.date = self.date
-        return .none
+      var body: some Reducer<State, Action> {
+        Reduce { state, _ in
+          state.date = self.date
+          return .none
+        }
       }
     }
 

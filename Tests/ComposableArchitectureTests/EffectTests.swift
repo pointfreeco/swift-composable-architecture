@@ -133,15 +133,17 @@ final class EffectTests: BaseTCATestCase {
       case response(Int)
     }
     @Dependency(\.date) var date
-    func reduce(into state: inout Int, action: Action) -> Effect<Action> {
-      switch action {
-      case .tap:
-        return .run { send in
-          await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
+    var body: some Reducer<Int, Action> {
+      Reduce { state, action in
+        switch action {
+        case .tap:
+          return .run { send in
+            await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
+          }
+        case let .response(value):
+          state = value
+          return .none
         }
-      case let .response(value):
-        state = value
-        return .none
       }
     }
   }
@@ -164,15 +166,17 @@ final class EffectTests: BaseTCATestCase {
       case response(Int)
     }
     @Dependency(\.date) var date
-    func reduce(into state: inout Int, action: Action) -> Effect<Action> {
-      switch action {
-      case .tap:
-        return .run { send in
-          await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
+    var body: some Reducer<Int, Action> {
+      Reduce { state, action in
+        switch action {
+        case .tap:
+          return .run { send in
+            await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
+          }
+        case let .response(value):
+          state = value
+          return .none
         }
-      case let .response(value):
-        state = value
-        return .none
       }
     }
   }

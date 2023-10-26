@@ -81,17 +81,19 @@ final class ForEachReducerTests: BaseTCATestCase {
           case tick
         }
         @Dependency(\.continuousClock) var clock
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
-          switch action {
-          case .startButtonTapped:
-            return .run { send in
-              for await _ in self.clock.timer(interval: .seconds(1)) {
-                await send(.tick)
+        var body: some Reducer<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .startButtonTapped:
+              return .run { send in
+                for await _ in self.clock.timer(interval: .seconds(1)) {
+                  await send(.tick)
+                }
               }
+            case .tick:
+              state.elapsed += 1
+              return .none
             }
-          case .tick:
-            state.elapsed += 1
-            return .none
           }
         }
       }

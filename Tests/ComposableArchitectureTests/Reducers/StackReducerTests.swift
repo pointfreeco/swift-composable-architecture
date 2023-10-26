@@ -71,14 +71,16 @@ final class StackReducerTests: BaseTCATestCase {
         case decrementButtonTapped
         case incrementButtonTapped
       }
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .decrementButtonTapped:
-          state.count -= 1
-          return .none
-        case .incrementButtonTapped:
-          state.count += 1
-          return .none
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          switch action {
+          case .decrementButtonTapped:
+            state.count -= 1
+            return .none
+          case .incrementButtonTapped:
+            state.count += 1
+            return .none
+          }
         }
       }
     }
@@ -121,11 +123,13 @@ final class StackReducerTests: BaseTCATestCase {
       enum Action: Equatable {
         case onAppear
       }
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .onAppear:
-          return .run { _ in
-            try await Task.never()
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          switch action {
+          case .onAppear:
+            return .run { _ in
+              try await Task.never()
+            }
           }
         }
       }
@@ -179,15 +183,17 @@ final class StackReducerTests: BaseTCATestCase {
         case onAppear
       }
       @Dependency(\.dismiss) var dismiss
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .closeButtonTapped:
-          return .run { _ in
-            await self.dismiss()
-          }
-        case .onAppear:
-          return .run { _ in
-            try await Task.never()
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          switch action {
+          case .closeButtonTapped:
+            return .run { _ in
+              await self.dismiss()
+            }
+          case .onAppear:
+            return .run { _ in
+              try await Task.never()
+            }
           }
         }
       }
@@ -236,8 +242,10 @@ final class StackReducerTests: BaseTCATestCase {
         struct State: Equatable {}
         enum Action: Equatable { case tap }
         @Dependency(\.dismiss) var dismiss
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
-          .run { _ in await self.dismiss() }
+        var body: some Reducer<State, Action> {
+          Reduce { state, action in
+              .run { _ in await self.dismiss() }
+          }
         }
       }
       struct Parent: Reducer {
@@ -284,12 +292,14 @@ final class StackReducerTests: BaseTCATestCase {
       }
       @Dependency(\.dismiss) var dismiss
       @Dependency(\.mainQueue) var mainQueue
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .onAppear:
-          return .run { [count = state.count] _ in
-            try await self.mainQueue.sleep(for: .seconds(count))
-            await self.dismiss()
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          switch action {
+          case .onAppear:
+            return .run { [count = state.count] _ in
+              try await self.mainQueue.sleep(for: .seconds(count))
+              await self.dismiss()
+            }
           }
         }
       }
@@ -345,11 +355,13 @@ final class StackReducerTests: BaseTCATestCase {
         case closeButtonTapped
       }
       @Dependency(\.dismiss) var dismiss
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .closeButtonTapped:
-          return .run { _ in
-            await self.dismiss()
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          switch action {
+          case .closeButtonTapped:
+            return .run { _ in
+              await self.dismiss()
+            }
           }
         }
       }
@@ -401,18 +413,20 @@ final class StackReducerTests: BaseTCATestCase {
         case onAppear
       }
       @Dependency(\.dismiss) var dismiss
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .closeButtonTapped:
-          return .run { _ in
-            await self.dismiss()
-          }
-        case .incrementButtonTapped:
-          state.count += 1
-          return .none
-        case .onAppear:
-          return .run { _ in
-            try await Task.never()
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          switch action {
+          case .closeButtonTapped:
+            return .run { _ in
+              await self.dismiss()
+            }
+          case .incrementButtonTapped:
+            state.count += 1
+            return .none
+          case .onAppear:
+            return .run { _ in
+              try await Task.never()
+            }
           }
         }
       }
@@ -484,8 +498,10 @@ final class StackReducerTests: BaseTCATestCase {
       struct State: Equatable {}
       enum Action { case tap }
       @Dependency(\.dismiss) var dismiss
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        .run { _ in try await Task.never() }
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+            .run { _ in try await Task.never() }
+        }
       }
     }
     struct Parent: Reducer {
@@ -544,19 +560,21 @@ final class StackReducerTests: BaseTCATestCase {
       }
       @Dependency(\.mainQueue) var mainQueue
       enum CancelID: Hashable { case cancel }
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .cancel:
-          return .cancel(id: CancelID.cancel)
-        case let .response(value):
-          state.count = value
-          return .none
-        case .tap:
-          return .run { send in
-            try await self.mainQueue.sleep(for: .seconds(1))
-            await send(.response(42))
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          switch action {
+          case .cancel:
+            return .cancel(id: CancelID.cancel)
+          case let .response(value):
+            state.count = value
+            return .none
+          case .tap:
+            return .run { send in
+              try await self.mainQueue.sleep(for: .seconds(1))
+              await send(.response(42))
+            }
+            .cancellable(id: CancelID.cancel)
           }
-          .cancellable(id: CancelID.cancel)
         }
       }
     }
@@ -640,15 +658,17 @@ final class StackReducerTests: BaseTCATestCase {
         case tap
       }
       @Dependency(\.mainQueue) var mainQueue
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case let .response(value):
-          state.count += value
-          return .none
-        case .tap:
-          return .run { send in
-            try await self.mainQueue.sleep(for: .seconds(self.id))
-            await send(.response(self.id))
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          switch action {
+          case let .response(value):
+            state.count += value
+            return .none
+          case .tap:
+            return .run { send in
+              try await self.mainQueue.sleep(for: .seconds(self.id))
+              await send(.response(self.id))
+            }
           }
         }
       }
@@ -823,8 +843,10 @@ final class StackReducerTests: BaseTCATestCase {
     struct Child: Reducer {
       struct State: Equatable {}
       enum Action { case tap }
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        .run { _ in try await Task.never() }
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          .run { _ in try await Task.never() }
+        }
       }
     }
     struct Parent: Reducer {
@@ -883,16 +905,18 @@ final class StackReducerTests: BaseTCATestCase {
         case response(Int)
       }
       @Dependency(\.mainQueue) var mainQueue
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .tap:
-          return .run { [count = state.count] send in
-            try await self.mainQueue.sleep(for: .seconds(count))
-            await send(.response(42))
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          switch action {
+          case .tap:
+            return .run { [count = state.count] send in
+              try await self.mainQueue.sleep(for: .seconds(count))
+              await send(.response(42))
+            }
+          case let .response(value):
+            state.count = value
+            return .none
           }
-        case let .response(value):
-          state.count = value
-          return .none
         }
       }
     }
@@ -939,8 +963,10 @@ final class StackReducerTests: BaseTCATestCase {
     struct Child: Reducer {
       struct State: Equatable {}
       enum Action: Equatable { case tap }
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        .run { _ in try await Task.never() }
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          .run { _ in try await Task.never() }
+        }
       }
     }
     struct Parent: Reducer {
@@ -976,7 +1002,9 @@ final class StackReducerTests: BaseTCATestCase {
     struct Child: Reducer {
       struct State: Equatable {}
       enum Action: Equatable {}
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {}
+      var body: some Reducer<State, Action> {
+        EmptyReducer()
+      }
     }
     struct Parent: Reducer {
       struct State: Equatable {
@@ -1029,7 +1057,9 @@ final class StackReducerTests: BaseTCATestCase {
       struct Child: Reducer {
         struct State: Equatable {}
         enum Action: Equatable {}
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {}
+        var body: some Reducer<State, Action> {
+          EmptyReducer()
+        }
       }
       struct Parent: Reducer {
         struct State: Equatable {
@@ -1073,7 +1103,9 @@ final class StackReducerTests: BaseTCATestCase {
       struct Child: Reducer {
         struct State: Equatable {}
         enum Action: Equatable {}
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {}
+        var body: some Reducer<State, Action> {
+          EmptyReducer()
+        }
       }
       struct Parent: Reducer {
         struct State: Equatable {
@@ -1114,7 +1146,9 @@ final class StackReducerTests: BaseTCATestCase {
       struct Child: Reducer {
         struct State: Equatable {}
         enum Action: Equatable {}
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {}
+        var body: some Reducer<State, Action> {
+          EmptyReducer()
+        }
       }
       struct Parent: Reducer {
         struct State: Equatable {

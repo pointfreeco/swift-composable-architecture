@@ -28,11 +28,13 @@ final class ReducerTests: BaseTCATestCase {
       @Dependency(\.continuousClock) var clock
       let delay: Duration
       let setValue: @Sendable () async -> Void
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        state += 1
-        return .run { _ in
-          try await self.clock.sleep(for: self.delay)
-          await self.setValue()
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          state += 1
+          return .run { _ in
+            try await self.clock.sleep(for: self.delay)
+            await self.setValue()
+          }
         }
       }
     }
@@ -72,10 +74,12 @@ final class ReducerTests: BaseTCATestCase {
     typealias State = Int
     enum Action { case increment }
     let effect: @Sendable () async -> Void
-    func reduce(into state: inout State, action: Action) -> Effect<Action> {
-      state += 1
-      return .run { _ in
-        await self.effect()
+    var body: some Reducer<State, Action> {
+      Reduce { state, action in
+        state += 1
+        return .run { _ in
+          await self.effect()
+        }
       }
     }
   }

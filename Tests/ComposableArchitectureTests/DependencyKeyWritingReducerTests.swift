@@ -87,19 +87,21 @@ final class DependencyKeyWritingReducerTests: BaseTCATestCase {
     }
     @Dependency(\.myValue) var myValue
 
-    func reduce(into state: inout State, action: Action) -> Effect<Action> {
-      switch action {
-      case .tap:
-        state.count += 1
-        return .run { send in await send(.response(self.myValue)) }
+    var body: some Reducer<State, Action> {
+      Reduce { state, action in
+        switch action {
+        case .tap:
+          state.count += 1
+          return .run { send in await send(.response(self.myValue)) }
 
-      case let .response(value):
-        state.count = value
-        return .run { send in await send(.otherResponse(self.myValue)) }
+        case let .response(value):
+          state.count = value
+          return .run { send in await send(.otherResponse(self.myValue)) }
 
-      case let .otherResponse(value):
-        state.count = value
-        return .none
+        case let .otherResponse(value):
+          state.count = value
+          return .none
+        }
       }
     }
   }
@@ -124,11 +126,13 @@ private struct Feature {
   @Dependency(\.myValue) var myValue
   struct State: Equatable { var value = 0 }
   enum Action { case tap }
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .tap:
-      state.value = self.myValue
-      return .none
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .tap:
+        state.value = self.myValue
+        return .none
+      }
     }
   }
 }

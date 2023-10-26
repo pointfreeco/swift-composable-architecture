@@ -5,13 +5,15 @@ import ComposableArchitecture
 private struct Counter {
   typealias State = Int
   typealias Action = Bool
-  func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
-    if action {
-      state += 1
-      return .none
-    } else {
-      state -= 1
-      return .none
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      if action {
+        state += 1
+        return .none
+      } else {
+        state -= 1
+        return .none
+      }
     }
   }
 }

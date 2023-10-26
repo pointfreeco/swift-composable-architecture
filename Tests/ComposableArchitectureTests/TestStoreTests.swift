@@ -236,13 +236,15 @@ final class TestStoreTests: BaseTCATestCase {
     @Dependency(\.timeZone) var timeZone
     @Dependency(\.urlSession) var urlSession
 
-    func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
-      _ = self.calendar
-      _ = self.locale
-      _ = self.timeZone
-      _ = self.urlSession
-      state += action ? 1 : -1
-      return .none
+    var body: some Reducer<Int, Bool> {
+      Reduce { state, action in
+        _ = self.calendar
+        _ = self.locale
+        _ = self.timeZone
+        _ = self.urlSession
+        state += action ? 1 : -1
+        return .none
+      }
     }
   }
   func testOverrideDependenciesDirectlyOnReducer() async {
@@ -264,13 +266,15 @@ final class TestStoreTests: BaseTCATestCase {
     @Dependency(\.timeZone) var timeZone
     @Dependency(\.urlSession) var urlSession
 
-    func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
-      _ = self.calendar
-      _ = self.locale
-      _ = self.timeZone
-      _ = self.urlSession
-      state += action ? 1 : -1
-      return .none
+    var body: some Reducer<Int, Bool> {
+      Reduce { state, action in
+        _ = self.calendar
+        _ = self.locale
+        _ = self.timeZone
+        _ = self.urlSession
+        state += action ? 1 : -1
+        return .none
+      }
     }
   }
   func testOverrideDependenciesOnTestStore() async {
@@ -289,9 +293,11 @@ final class TestStoreTests: BaseTCATestCase {
   struct Feature_testOverrideDependenciesOnTestStore_MidwayChange {
     @Dependency(\.date.now) var now
 
-    func reduce(into state: inout Int, action: ()) -> Effect<Void> {
-      state = Int(self.now.timeIntervalSince1970)
-      return .none
+    var body: some Reducer<Int, Void> {
+      Reduce { state, _ in
+        state = Int(self.now.timeIntervalSince1970)
+        return .none
+      }
     }
   }
   func testOverrideDependenciesOnTestStore_MidwayChange() async {
@@ -316,14 +322,16 @@ final class TestStoreTests: BaseTCATestCase {
     @Dependency(\.timeZone) var timeZone
     @Dependency(\.urlSession) var urlSession
 
-    func reduce(into state: inout Int, action: Bool) -> Effect<Bool> {
-      _ = self.calendar
-      _ = self.fetch()
-      _ = self.locale
-      _ = self.timeZone
-      _ = self.urlSession
-      state += action ? 1 : -1
-      return .none
+    var body: some Reducer<Int, Bool> {
+      Reduce { state, action in
+        _ = self.calendar
+        _ = self.fetch()
+        _ = self.locale
+        _ = self.timeZone
+        _ = self.urlSession
+        state += action ? 1 : -1
+        return .none
+      }
     }
   }
   func testOverrideDependenciesOnTestStore_Init() async {
@@ -355,15 +363,17 @@ final class TestStoreTests: BaseTCATestCase {
       case response(Int)
     }
     @Dependency(\.date.now) var now: Date
-    func reduce(into state: inout State, action: Action) -> Effect<Action> {
-      switch action {
-      case .tap:
-        state.count += 1
-        return .run { send in await send(.response(42)) }
-      case let .response(number):
-        state.count = number
-        state.date = now
-        return .none
+    var body: some Reducer<State, Action> {
+      Reduce { state, action in
+        switch action {
+        case .tap:
+          state.count += 1
+          return .run { send in await send(.response(42)) }
+        case let .response(number):
+          state.count = number
+          state.date = now
+          return .none
+        }
       }
     }
   }
