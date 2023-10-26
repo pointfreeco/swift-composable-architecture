@@ -6,10 +6,9 @@
 
 - ``State``
 - ``Action``
-- ``Effect``
 - ``body-swift.property``
-- ``Body-swift.typealias``
 - ``Reduce``
+- ``Effect``
 
 ### Composing reducers
 
@@ -19,9 +18,10 @@
 ### Embedding child features
 
 - ``Scope``
-- ``ifLet(_:action:destination:fileID:line:)-4f2at``
+- ``ifLet(_:action:then:fileID:line:)-42kki``
 - ``ifCaseLet(_:action:then:fileID:line:)-3k4yb``
 - ``forEach(_:action:element:fileID:line:)-8ujke``
+- <doc:Navigation>
 
 ### Supporting reducers
 
@@ -40,6 +40,6 @@
 
 - ``ReducerOf``
 
-### Low-level conformance
+### Deprecations
 
-- ``reduce(into:action:)-1t2ri``
+- <doc:ReducerDeprecations>
