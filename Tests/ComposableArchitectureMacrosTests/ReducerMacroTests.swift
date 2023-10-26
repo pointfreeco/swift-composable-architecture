@@ -117,4 +117,62 @@ final class ReducerMacroTests: XCTestCase {
       """
     }
   }
+  
+  func testReduceMethodDiagnostic() {
+    assertMacro {
+      """
+      @Reducer
+      struct Feature {
+        struct State {
+        }
+        enum Action {
+        }
+        func reduce(into state: inout State, action: Action) -> EffectOf<Self> {
+          .none
+        }
+        var body: some ReducerOf<Self> {
+          EmptyReducer()
+        }
+      }
+      """
+    } diagnostics: {
+      """
+      @Reducer
+      struct Feature {
+        struct State {
+        }
+        enum Action {
+        }
+        func reduce(into state: inout State, action: Action) -> EffectOf<Self> {
+             ┬─────
+             ╰─ ⚠️ A 'reduce' method should not be defined in a reducer with a 'body'; it takes precedence and 'body' will never be invoked.
+          .none
+        }
+        var body: some ReducerOf<Self> {
+          EmptyReducer()
+        }
+      }
+      """
+    } expansion: {
+      """
+      struct Feature {
+        struct State {
+        }
+        @CasePathable
+        enum Action {
+        }
+        func reduce(into state: inout State, action: Action) -> EffectOf<Self> {
+          .none
+        }
+        @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
+        var body: some ReducerOf<Self> {
+          EmptyReducer()
+        }
+      }
+
+      extension Feature: ComposableArchitecture.Reducer {
+      }
+      """
+    }
+  }
 }
