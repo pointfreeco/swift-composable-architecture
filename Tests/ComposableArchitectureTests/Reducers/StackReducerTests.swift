@@ -548,8 +548,9 @@ final class StackReducerTests: BaseTCATestCase {
     }
   }
 
-  func testSiblingCannotCancel() async {
-    struct Child: Reducer {
+  enum TestSiblingCannotCancel {
+    @Reducer
+    struct Child {
       struct State: Equatable {
         var count = 0
       }
@@ -578,7 +579,8 @@ final class StackReducerTests: BaseTCATestCase {
         }
       }
     }
-    struct Path: Reducer {
+    @Reducer
+    struct Path {
       enum State: Equatable {
         case child1(Child.State)
         case child2(Child.State)
@@ -592,7 +594,8 @@ final class StackReducerTests: BaseTCATestCase {
         Scope(state: /State.child2, action: /Action.child2) { Child() }
       }
     }
-    struct Parent: Reducer {
+    @Reducer
+    struct Parent {
       struct State: Equatable {
         var path = StackState<Path.State>()
       }
@@ -619,13 +622,14 @@ final class StackReducerTests: BaseTCATestCase {
         }
       }
     }
-
-    var path = StackState<Path.State>()
-    path.append(.child1(Child.State()))
-    path.append(.child2(Child.State()))
+  }
+  func testSiblingCannotCancel() async {
+    var path = StackState<TestSiblingCannotCancel.Path.State>()
+    path.append(.child1(TestSiblingCannotCancel.Child.State()))
+    path.append(.child2(TestSiblingCannotCancel.Child.State()))
     let mainQueue = DispatchQueue.test
-    let store = TestStore(initialState: Parent.State(path: path)) {
-      Parent()
+    let store = TestStore(initialState: TestSiblingCannotCancel.Parent.State(path: path)) {
+      TestSiblingCannotCancel.Parent()
     } withDependencies: {
       $0.mainQueue = mainQueue.eraseToAnyScheduler()
     }
@@ -635,7 +639,7 @@ final class StackReducerTests: BaseTCATestCase {
     await store.send(.path(.element(id: 0, action: .child1(.cancel))))
     await mainQueue.advance(by: .seconds(1))
     await store.receive(.path(.element(id: 1, action: .child2(.response(42))))) {
-      $0.path[id: 1, case: /Path.State.child2]?.count = 42
+      $0.path[id: 1, case: \.child2]?.count = 42
     }
 
     await store.send(.path(.element(id: 0, action: .child1(.tap))))
@@ -643,12 +647,13 @@ final class StackReducerTests: BaseTCATestCase {
     await store.send(.path(.element(id: 1, action: .child2(.cancel))))
     await mainQueue.advance(by: .seconds(1))
     await store.receive(.path(.element(id: 0, action: .child1(.response(42))))) {
-      $0.path[id: 0, case: /Path.State.child1]?.count = 42
+      $0.path[id: 0, case: \.child1]?.count = 42
     }
   }
 
-  func testFirstChildWhileEffectInFlight_DeliversToCorrectID() async {
-    struct Child: Reducer {
+  enum TestFirstChildWhileEffectInFlight_DeliversToCorrectID {
+    @Reducer
+    struct Child {
       let id: Int
       struct State: Equatable {
         var count = 0
@@ -673,7 +678,8 @@ final class StackReducerTests: BaseTCATestCase {
         }
       }
     }
-    struct Path: Reducer {
+    @Reducer
+    struct Path {
       enum State: Equatable {
         case child1(Child.State)
         case child2(Child.State)
@@ -683,11 +689,12 @@ final class StackReducerTests: BaseTCATestCase {
         case child2(Child.Action)
       }
       var body: some ReducerOf<Self> {
-        Scope(state: /State.child1, action: /Action.child1) { Child(id: 1) }
-        Scope(state: /State.child2, action: /Action.child2) { Child(id: 2) }
+        Scope(state: \.child1, action: \.child1) { Child(id: 1) }
+        Scope(state: \.child2, action: \.child2) { Child(id: 2) }
       }
     }
-    struct Parent: Reducer {
+    @Reducer
+    struct Parent {
       struct State: Equatable {
         var path = StackState<Path.State>()
       }
@@ -714,17 +721,18 @@ final class StackReducerTests: BaseTCATestCase {
         }
       }
     }
-
+  }
+  func testFirstChildWhileEffectInFlight_DeliversToCorrectID() async {
     let mainQueue = DispatchQueue.test
     let store = TestStore(
-      initialState: Parent.State(
+      initialState: TestFirstChildWhileEffectInFlight_DeliversToCorrectID.Parent.State(
         path: StackState([
-          .child1(Child.State()),
-          .child2(Child.State()),
+          .child1(TestFirstChildWhileEffectInFlight_DeliversToCorrectID.Child.State()),
+          .child2(TestFirstChildWhileEffectInFlight_DeliversToCorrectID.Child.State()),
         ])
       )
     ) {
-      Parent()
+      TestFirstChildWhileEffectInFlight_DeliversToCorrectID.Parent()
     } withDependencies: {
       $0.mainQueue = mainQueue.eraseToAnyScheduler()
     }
@@ -733,11 +741,11 @@ final class StackReducerTests: BaseTCATestCase {
     await store.send(.path(.element(id: 1, action: .child2(.tap))))
     await mainQueue.advance(by: .seconds(1))
     await store.receive(.path(.element(id: 0, action: .child1(.response(1))))) {
-      $0.path[id: 0, case: /Path.State.child1]?.count = 1
+      $0.path[id: 0, case: \.child1]?.count = 1
     }
     await mainQueue.advance(by: .seconds(1))
     await store.receive(.path(.element(id: 1, action: .child2(.response(2))))) {
-      $0.path[id: 1, case: /Path.State.child2]?.count = 2
+      $0.path[id: 1, case: \.child2]?.count = 2
     }
 
     await store.send(.path(.element(id: 0, action: .child1(.tap))))
@@ -747,7 +755,7 @@ final class StackReducerTests: BaseTCATestCase {
     }
     await mainQueue.advance(by: .seconds(2))
     await store.receive(.path(.element(id: 1, action: .child2(.response(2))))) {
-      $0.path[id: 1, case: /Path.State.child2]?.count = 4
+      $0.path[id: 1, case: \.child2]?.count = 4
     }
     await store.send(.popFirst) {
       $0.path[id: 1] = nil

@@ -41,8 +41,8 @@ final class ScopeTests: BaseTCATestCase {
 
   #if DEBUG
     func testNilChild() async {
-      let store = TestStore(initialState: Child2.State.count(0)) {
-        Scope(state: /Child2.State.name, action: /Child2.Action.name) {}
+      let store = TestStoreOf<Child2>(initialState: Child2.State.count(0)) {
+        Scope(state: \.name, action: \.name) {}
       }
 
       XCTExpectFailure {

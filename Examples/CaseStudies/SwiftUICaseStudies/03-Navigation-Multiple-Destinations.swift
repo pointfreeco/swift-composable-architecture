@@ -91,22 +91,22 @@ struct MultipleDestinationsView: View {
       }
       .navigationDestination(
         store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /MultipleDestinations.Destination.State.drillDown,
-        action: MultipleDestinations.Destination.Action.drillDown
+        state: \.drillDown,
+        action: { .drillDown($0) }
       ) { store in
         CounterView(store: store)
       }
       .popover(
         store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /MultipleDestinations.Destination.State.popover,
-        action: MultipleDestinations.Destination.Action.popover
+        state: \.popover,
+        action: { .popover($0) }
       ) { store in
         CounterView(store: store)
       }
       .sheet(
         store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /MultipleDestinations.Destination.State.sheet,
-        action: MultipleDestinations.Destination.Action.sheet
+        state: \.sheet,
+        action: { .sheet($0) }
       ) { store in
         CounterView(store: store)
       }
