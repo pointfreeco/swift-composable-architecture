@@ -1,11 +1,11 @@
 import ComposableArchitecture
 
-struct Root: Reducer {
+@Reducer
+struct Root {
   struct State {
     var focus = Focus.State()
   }
 
-  @CasePathable
   enum Action {
     case focus(Focus.Action)
   }

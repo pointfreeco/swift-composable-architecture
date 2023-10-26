@@ -3,7 +3,8 @@ import Combine
 import ComposableArchitecture
 import Dispatch
 
-public struct TwoFactor: Reducer, Sendable {
+@Reducer
+public struct TwoFactor: Sendable {
   public struct State: Equatable {
     @PresentationState public var alert: AlertState<Action.Alert>?
     @BindingState public var code = ""
@@ -16,7 +17,6 @@ public struct TwoFactor: Reducer, Sendable {
     }
   }
 
-  @CasePathable
   @dynamicMemberLookup
   public enum Action: Equatable, Sendable {
     case alert(PresentationAction<Alert>)
@@ -25,7 +25,6 @@ public struct TwoFactor: Reducer, Sendable {
 
     public enum Alert: Equatable, Sendable {}
 
-    @CasePathable
     public enum View: BindableAction, Equatable, Sendable {
       case binding(BindingAction<State>)
       case submitButtonTapped

@@ -49,6 +49,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		DC43064F2AE8CF7C005AFB1E /* SyncUps.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = SyncUps.xctestplan; sourceTree = "<group>"; };
 		DC7CE4E629E9E6E4006B6263 /* ding.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ding.wav; sourceTree = "<group>"; };
 		DC808D6F29E9C3AC0072B4A9 /* SyncUps.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SyncUps.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC808D7229E9C3AC0072B4A9 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
@@ -114,11 +115,12 @@
 			isa = PBXGroup;
 			children = (
 				DC808D9C29E9C3C10072B4A9 /* swift-composable-architecture */,
+				DC43064F2AE8CF7C005AFB1E /* SyncUps.xctestplan */,
+				DC808DA129E9C4490072B4A9 /* Frameworks */,
 				DC808D7029E9C3AC0072B4A9 /* Products */,
 				DC808D7129E9C3AC0072B4A9 /* SyncUps */,
 				DC808D8229E9C3AD0072B4A9 /* SyncUpsTests */,
 				DC808D8C29E9C3AD0072B4A9 /* SyncUpsUITests */,
-				DC808DA129E9C4490072B4A9 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};

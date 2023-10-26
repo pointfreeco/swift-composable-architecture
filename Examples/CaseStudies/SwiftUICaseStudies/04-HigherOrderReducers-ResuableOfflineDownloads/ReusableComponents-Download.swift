@@ -14,7 +14,8 @@ private let readMe = """
   screen to see that the state is carried over.
   """
 
-struct CityMap: Reducer {
+@Reducer
+struct CityMap {
   struct State: Equatable, Identifiable {
     var download: Download
     var downloadAlert: AlertState<DownloadComponent.Action.Alert>?
@@ -45,7 +46,6 @@ struct CityMap: Reducer {
     }
   }
 
-  @CasePathable
   enum Action {
     case downloadComponent(DownloadComponent.Action)
   }
@@ -135,12 +135,12 @@ struct CityMapDetailView: View {
   }
 }
 
-struct MapApp: Reducer {
+@Reducer
+struct MapApp {
   struct State: Equatable {
     var cityMaps: IdentifiedArrayOf<CityMap.State>
   }
 
-  @CasePathable
   enum Action {
     case cityMaps(id: CityMap.State.ID, action: CityMap.Action)
   }

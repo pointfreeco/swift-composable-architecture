@@ -5,7 +5,8 @@ extension Reducer {
   /// ``BindingReducer`` makes a deeper change to a struct held in ``BindingState``.
   ///
   /// ```swift
-  /// struct Settings: Reducer {
+  /// @Reducer
+  /// struct Settings {
   ///   struct State {
   ///     @BindingState var userSettings: UserSettings
   ///     // ...
@@ -64,7 +65,8 @@ extension Reducer {
   /// ``BindingReducer`` makes a deeper change to a struct held in ``BindingState``.
   ///
   /// ```swift
-  /// struct Settings: Reducer {
+  /// @Reducer
+  /// struct Settings {
   ///   struct State {
   ///     @BindingState var userSettings: UserSettings
   ///     // ...

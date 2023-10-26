@@ -205,7 +205,8 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   /// for each tab as well as the currently selected tab:
   ///
   /// ```swift
-  /// struct AppFeature: Reducer {
+  /// @Reducer
+  /// struct AppFeature {
   ///   enum Tab { case activity, search, profile }
   ///   struct State {
   ///     var activity: Activity.State
@@ -295,7 +296,8 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   /// for each tab as well as the currently selected tab:
   ///
   /// ```swift
-  /// struct AppFeature: Reducer {
+  /// @Reducer
+  /// struct AppFeature {
   ///   enum Tab { case activity, search, profile }
   ///   struct State {
   ///     var activity: Activity.State
@@ -385,7 +387,8 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   /// for each tab as well as the currently selected tab:
   ///
   /// ```swift
-  /// struct AppFeature: Reducer {
+  /// @Reducer
+  /// struct AppFeature {
   ///   enum Tab { case activity, search, profile }
   ///   struct State {
   ///     var activity: Activity.State
@@ -472,7 +475,8 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   /// for each tab as well as the currently selected tab:
   ///
   /// ```swift
-  /// struct AppFeature: Reducer {
+  /// @Reducer
+  /// struct AppFeature {
   ///   enum Tab { case activity, search, profile }
   ///   struct State {
   ///     var activity: Activity.State

@@ -3,7 +3,8 @@ import ComposableArchitecture
 import Dispatch
 import TwoFactorCore
 
-public struct Login: Reducer, Sendable {
+@Reducer
+public struct Login: Sendable {
   public struct State: Equatable {
     @PresentationState public var alert: AlertState<AlertAction>?
     @BindingState public var email = ""
@@ -15,7 +16,6 @@ public struct Login: Reducer, Sendable {
     public init() {}
   }
 
-  @CasePathable
   @dynamicMemberLookup
   public enum Action: Equatable, Sendable {
     case alert(PresentationAction<AlertAction>)
@@ -23,7 +23,6 @@ public struct Login: Reducer, Sendable {
     case twoFactor(PresentationAction<TwoFactor.Action>)
     case view(View)
 
-    @CasePathable
     public enum View: BindableAction, Equatable, Sendable {
       case binding(BindingAction<State>)
       case loginButtonTapped

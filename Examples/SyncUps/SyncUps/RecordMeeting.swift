@@ -2,7 +2,8 @@ import ComposableArchitecture
 import Speech
 import SwiftUI
 
-struct RecordMeeting: Reducer {
+@Reducer
+struct RecordMeeting {
   @ObservableState
   struct State: Equatable {
     @ObservationStateIgnored
@@ -17,7 +18,6 @@ struct RecordMeeting: Reducer {
     }
   }
 
-  @CasePathable
   enum Action: Equatable {
     case alert(PresentationAction<Alert>)
     case delegate(Delegate)

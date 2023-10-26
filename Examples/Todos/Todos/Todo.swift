@@ -1,7 +1,8 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct Todo: Reducer {
+@Reducer
+struct Todo {
   struct State: Equatable, Identifiable {
     @BindingState var description = ""
     let id: UUID

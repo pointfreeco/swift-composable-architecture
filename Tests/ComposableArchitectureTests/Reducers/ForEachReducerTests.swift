@@ -2,7 +2,6 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
-@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 final class ForEachReducerTests: BaseTCATestCase {
   func testElementAction() async {
     let store = TestStore(
@@ -40,7 +39,7 @@ final class ForEachReducerTests: BaseTCATestCase {
     func testMissingElement() async {
       let store = TestStore(initialState: Elements.State()) {
         EmptyReducer<Elements.State, Elements.Action>()
-          .forEach(\.rows, action: /Elements.Action.row) {}
+          .forEach(\.rows, action: \.row) {}
       }
 
       XCTExpectFailure {
@@ -82,17 +81,19 @@ final class ForEachReducerTests: BaseTCATestCase {
           case tick
         }
         @Dependency(\.continuousClock) var clock
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
-          switch action {
-          case .startButtonTapped:
-            return .run { send in
-              for await _ in self.clock.timer(interval: .seconds(1)) {
-                await send(.tick)
+        var body: some Reducer<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .startButtonTapped:
+              return .run { send in
+                for await _ in self.clock.timer(interval: .seconds(1)) {
+                  await send(.tick)
+                }
               }
+            case .tick:
+              state.elapsed += 1
+              return .none
             }
-          case .tick:
-            state.elapsed += 1
-            return .none
           }
         }
       }
@@ -220,8 +221,8 @@ final class ForEachReducerTests: BaseTCATestCase {
   }
 }
 
-@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
-struct Elements: Reducer {
+@Reducer
+struct Elements {
   struct State: Equatable {
     struct Row: Equatable, Identifiable {
       var id: Int
@@ -237,7 +238,7 @@ struct Elements: Reducer {
     Reduce { state, action in
       .none
     }
-    .forEach(\.rows, action: /Action.row) {
+    .forEach(\.rows, action: \.row) {
       Reduce { state, action in
         state.value = action
         return action.isEmpty

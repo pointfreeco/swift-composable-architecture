@@ -6,7 +6,7 @@ import OrderedCollections
 /// A list of data representing the content of a navigation stack.
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
-/// ``Reducer/forEach(_:action:destination:fileID:line:)``.
+/// ``Reducer/forEach(_:action:destination:fileID:line:)-yz3v``.
 ///
 /// See the dedicated article on <doc:Navigation> for more information on the library's navigation
 /// tools, and in particular see <doc:StackBasedNavigation> for information on modeling navigation
@@ -198,7 +198,7 @@ extension StackState: CustomDumpReflectable {
 /// A wrapper type for actions that can be presented in a navigation stack.
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
-/// ``Reducer/forEach(_:action:destination:fileID:line:)``.
+/// ``Reducer/forEach(_:action:destination:fileID:line:)-yz3v``.
 ///
 /// See the dedicated article on <doc:Navigation> for more information on the library's navigation
 /// tools, and in particular see <doc:StackBasedNavigation> for information on modeling navigation
@@ -267,7 +267,8 @@ extension Reducer {
   /// of each child feature using the `forEach` operator:
   ///
   /// ```swift
-  /// struct ParentFeature: Reducer {
+  /// @Reducer
+  /// struct ParentFeature {
   ///   struct State {
   ///     var path = StackState<Path.State>()
   ///     // ...
@@ -280,7 +281,7 @@ extension Reducer {
   ///     Reduce { state, action in
   ///       // Core parent logic
   ///     }
-  ///     .forEach(\.path, action: /Action.path) {
+  ///     .forEach(\.path, action: \.path) {
   ///       Path()
   ///     }
   ///   }

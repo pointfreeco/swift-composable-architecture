@@ -2,7 +2,8 @@ import ComposableArchitecture
 import SwiftUI
 import SwiftUINavigation
 
-struct SyncUpForm: Reducer {
+@Reducer
+struct SyncUpForm {
   @ObservableState
   struct State: Equatable, Sendable {
     var focus: Field? = .title
@@ -23,7 +24,6 @@ struct SyncUpForm: Reducer {
     }
   }
 
-  @CasePathable
   enum Action: BindableAction, Equatable, Sendable {
     case addAttendeeButtonTapped
     case binding(BindingAction<State>)

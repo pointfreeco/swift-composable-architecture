@@ -1,14 +1,14 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct AppFeature: Reducer {
+@Reducer
+struct AppFeature {
   @ObservableState
   struct State: Equatable {
     var path = StackState<Path.State>()
     var syncUpsList = SyncUpsList.State()
   }
 
-  @CasePathable
   enum Action: Equatable {
     case path(StackAction<Path.State, Path.Action>)
     case syncUpsList(SyncUpsList.Action)
@@ -96,17 +96,15 @@ struct AppFeature: Reducer {
     }
   }
 
-  struct Path: Reducer {
-    @CasePathable
+  @Reducer
+  struct Path {
     @ObservableState
-    @dynamicMemberLookup
     enum State: Equatable {
       case detail(SyncUpDetail.State)
       case meeting(Meeting, syncUp: SyncUp)
       case record(RecordMeeting.State)
     }
 
-    @CasePathable
     enum Action: Equatable {
       case detail(SyncUpDetail.Action)
       case record(RecordMeeting.Action)

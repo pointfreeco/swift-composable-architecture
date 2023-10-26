@@ -8,14 +8,14 @@ private let readMe = """
   on the device and live-transcribe it to the UI.
   """
 
-struct SpeechRecognition: Reducer {
+@Reducer
+struct SpeechRecognition {
   struct State: Equatable {
     @PresentationState var alert: AlertState<Action.Alert>?
     var isRecording = false
     var transcribedText = ""
   }
 
-  @CasePathable
   enum Action: Equatable {
     case alert(PresentationAction<Alert>)
     case recordButtonTapped

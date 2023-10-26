@@ -1,7 +1,8 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct SyncUpDetail: Reducer {
+@Reducer
+struct SyncUpDetail {
   @ObservableState
   struct State: Equatable {
     @ObservationStateIgnored
@@ -9,7 +10,6 @@ struct SyncUpDetail: Reducer {
     var syncUp: SyncUp
   }
 
-  @CasePathable
   enum Action: Equatable, Sendable {
     case cancelEditButtonTapped
     case delegate(Delegate)
@@ -31,16 +31,14 @@ struct SyncUpDetail: Reducer {
   @Dependency(\.openSettings) var openSettings
   @Dependency(\.speechClient.authorizationStatus) var authorizationStatus
 
-  struct Destination: Reducer {
-    @CasePathable
+  @Reducer
+  struct Destination {
     @ObservableState
-    @dynamicMemberLookup
     enum State: Equatable {
       case alert(AlertState<Action.Alert>)
       case edit(SyncUpForm.State)
     }
 
-    @CasePathable
     enum Action: Equatable, Sendable {
       case alert(Alert)
       case edit(SyncUpForm.Action)

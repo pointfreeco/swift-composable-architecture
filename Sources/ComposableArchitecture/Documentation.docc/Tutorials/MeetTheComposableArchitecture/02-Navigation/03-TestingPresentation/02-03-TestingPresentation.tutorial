@@ -114,8 +114,8 @@
         ``ComposableArchitecture/PresentationState`` that allows you to modify the data in the case
         of any enum.
         
-        > Tip: See ``ComposableArchitecture/PresentationState/subscript(case:)`` for documentation
-        > on this subscript.
+        > Tip: See ``ComposableArchitecture/PresentationState/subscript(case:)-2sweb`` for 
+        > documentation on this subscript.
         
         @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0011)
       }
@@ -210,7 +210,7 @@
         Next we want to assert that sometime after the user taps the "Save" button that the 
         contact is added to the array and the child feature is dismissed. However, we cannot assert
         on that until all the actions have been received, and so we can do that by using
-        ``ComposableArchitecture/TestStore/skipreceivedactions(strict:file:line:)``.
+        ``ComposableArchitecture/TestStore/skipReceivedActions(strict:file:line:)``.
         
         @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0005)
       }

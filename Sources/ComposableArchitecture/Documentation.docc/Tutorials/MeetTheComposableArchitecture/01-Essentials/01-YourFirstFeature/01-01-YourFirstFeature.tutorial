@@ -1,17 +1,17 @@
 @Tutorial(time: 20) { 
   @Intro(title: "Your first feature") {
-    Learn how to create a conformance to the ``ComposableArchitecture/Reducer`` protocol for
-    implementing the logic and behavior of a feature, and then learn how to hook up that feature to
-    a SwiftUI view.
+    Learn how to create a reducer to implement the logic and behavior of a feature, and then 
+    learn how to hook up that feature to a SwiftUI view.
   }
   
   @Section(title: "Create a reducer") {
     @ContentAndMedia {
       The fundamental unit that features are built with in the Composable Architecture is the
-      ``ComposableArchitecture/Reducer``. A conformance to that protocol represents the 
-      logic and behavior for a feature in your application. This includes how to evolve the current
-      state to the next state when an action is sent into the system, and how effects communicate
-      with the outside world and feed data back into the system.
+      ``ComposableArchitecture/Reducer()`` macro and ``ComposableArchitecture/Reducer`` protocol.
+      A conformance to that protocol represents the logic and behavior for a feature in your
+      application. This includes how to evolve the current state to the next state when an action is 
+      sent into the system, and how effects communicate with the outside world and feed data back 
+      into the system.
       
       And most importantly, the feature's core logic and behavior can be built in full isolation
       with no mention of a SwiftUI view, which makes it easier to develop in isolation, easier
@@ -32,8 +32,13 @@
       }
       
       @Step {
-        Define a new struct called CounterFeature that conforms to the 
-        ``ComposableArchitecture/Reducer`` protocol.
+        Define a new struct called `CounterFeature`, and annotate it with the
+        ``ComposableArchitecture/Reducer()`` macro.
+        
+        > Note: The ``ComposableArchitecture/Reducer()`` macro does a few things for you, but at
+        > this point you only need to know that it extends your type to conform to the 
+        > ``ComposableArchitecture/Reducer`` protocol.
+        
         @Code(name: "CounterFeature.swift", file: 01-01-01-code-0002.swift)
       }
       
@@ -60,15 +65,18 @@
       
       @Step {
         And finally, to finish conforming to ``ComposableArchitecture/Reducer``, you must implement
-        a ``ComposableArchitecture/Reducer/reduce(into:action:)-1t2ri`` method
-        that evolves the state from its current value to the next value given a user action, and
-        returns any effects that the feature wants to execute in the outside world. This almost
-        always begins by switching on the incoming action to determine what logic you need to 
-        perform.
+        a ``ComposableArchitecture/Reducer/body-8lumc`` property with a
+        ``ComposableArchitecture/Reduce`` reducer that evolves the state from its current value to
+        the next value given a user action, and returns any effects that the feature wants to
+        execute in the outside world. This almost always begins by switching on the incoming action
+        to determine what logic you need to perform, and the `state` is provided as `inout` so you
+        can perform mutations on it directly.
         
-        > Note: The `reduce` method takes `State` as an argument and it is marked as `inout`. This
-        > means you can make any mutations you want directly to the state. There is no need to make
-        > a copy of the state just to return it.
+        > Note: A reducer is implemented by providing a 
+        > ``ComposableArchitecture/Reducer/body-8lumc`` property, and then listing the 
+        > reducers inside that you want to compose. Right now we only have one reducer we want to
+        > run, and so a simple ``ComposableArchitecture/Reduce`` is sufficient, but it is more
+        > typical to compose many reducers together, and that will be shown later in the tutorial.
         
         @Code(name: "CounterFeature.swift", file: 01-01-01-code-0005.swift)
       }

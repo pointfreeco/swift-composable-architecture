@@ -8,14 +8,15 @@ import Combine
 /// A property wrapper for state that can be presented.
 ///
 /// Use this property wrapper for modeling a feature's domain that needs to present a child feature
-/// using ``Reducer/ifLet(_:action:destination:fileID:line:)``.
+/// using ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at``.
 ///
 /// For example, if you have a `ChildFeature` reducer that encapsulates the logic and behavior for a
 /// feature, then any feature that wants to present that feature will hold onto `ChildFeature.State`
 /// like so:
 ///
 /// ```swift
-/// struct ParentFeature: Reducer {
+/// @Reducer
+/// struct ParentFeature {
 ///   struct State {
 ///     @PresentationState var child: ChildFeature.State?
 ///      // ...
@@ -26,18 +27,19 @@ import Combine
 ///
 /// For the most part your feature's logic can deal with `child` as a plain optional value, but
 /// there are times you need to know that you are secretly dealing with `PresentationState`. For
-/// example, when using the ``Reducer/ifLet(_:action:destination:fileID:line:)`` reducer operator to
+/// example, when using the ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` reducer operator to
 /// integrate the parent and child features together, you will construct a key path to the projected
 /// value `\.$child`:
 ///
 /// ```swift
-/// struct ParentFeature: Reducer {
+/// @Reducer
+/// struct ParentFeature {
 ///   // ...
 ///   var body: some ReducerOf<Self> {
 ///     Reduce { state, action in
 ///       // Core logic for parent feature
 ///     }
-///     .ifLet(\.$child, action: /Action.child) {
+///     .ifLet(\.$child, action: \.child) {
 ///       ChildFeature()
 ///     }
 ///   }
@@ -211,14 +213,15 @@ extension PresentationState: CustomReflectable {
 /// A wrapper type for actions that can be presented.
 ///
 /// Use this wrapper type for modeling a feature's domain that needs to present a child
-/// feature using ``Reducer/ifLet(_:action:destination:fileID:line:)``.
+/// feature using ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at``.
 ///
 /// For example, if you have a `ChildFeature` reducer that encapsulates the logic and behavior
 /// for a feature, then any feature that wants to present that feature will hold onto
 /// `ChildFeature.Action` like so:
 ///
 /// ```swift
-/// struct ParentFeature: Reducer {
+/// @Reducer
+/// struct ParentFeature {
 ///   // ...
 ///   enum Action {
 ///     case child(PresentationAction<ChildFeature.Action>)
@@ -325,7 +328,8 @@ extension Reducer {
   /// perform its core logic _and_ the child's logic by using the `ifLet` operator:
   ///
   /// ```swift
-  /// struct Parent: Reducer {
+  /// @Reducer
+  /// struct Parent {
   ///   struct State {
   ///     @PresentationState var child: Child.State?
   ///     // ...
@@ -339,7 +343,7 @@ extension Reducer {
   ///     Reduce { state, action in
   ///       // Core logic for parent feature
   ///     }
-  ///     .ifLet(\.$child, action: /Action.child) {
+  ///     .ifLet(\.$child, action: \.child) {
   ///       Child()
   ///     }
   ///   }
@@ -394,7 +398,7 @@ extension Reducer {
     )
   }
 
-  /// A special overload of ``Reducer/ifLet(_:action:destination:fileID:line:)`` for alerts and
+  /// A special overload of ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` for alerts and
   /// confirmation dialogs that does not require a child reducer.
   @warn_unqualified_access
   @inlinable
@@ -448,7 +452,8 @@ extension Reducer {
       fileID: fileID,
       line: line
     )
-  }}
+  }
+}
 
 public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer {
   @usableFromInline let base: Base

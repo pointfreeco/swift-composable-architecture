@@ -12,7 +12,8 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct WebSocket: Reducer {
+@Reducer
+struct WebSocket {
   struct State: Equatable {
     @PresentationState var alert: AlertState<Action.Alert>?
     var connectivityState = ConnectivityState.disconnected
@@ -26,7 +27,6 @@ struct WebSocket: Reducer {
     }
   }
 
-  @CasePathable
   enum Action: Equatable {
     case alert(PresentationAction<Alert>)
     case connectButtonTapped

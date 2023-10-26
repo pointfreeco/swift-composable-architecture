@@ -3,13 +3,13 @@ import ComposableArchitecture
 import SwiftUI
 import UIKit
 
-struct LazyNavigation: Reducer {
+@Reducer
+struct LazyNavigation {
   struct State: Equatable {
     var optionalCounter: Counter.State?
     var isActivityIndicatorHidden = true
   }
 
-  @CasePathable
   enum Action: Equatable {
     case onDisappear
     case optionalCounter(Counter.Action)

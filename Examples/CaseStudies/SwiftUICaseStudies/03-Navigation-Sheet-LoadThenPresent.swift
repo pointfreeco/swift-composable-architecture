@@ -11,7 +11,8 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct LoadThenPresent: Reducer {
+@Reducer
+struct LoadThenPresent {
   @ObservableState
   struct State: Equatable {
     @ObservationStateIgnored
@@ -19,7 +20,6 @@ struct LoadThenPresent: Reducer {
     var isActivityIndicatorVisible = false
   }
 
-  @CasePathable
   enum Action {
     case counter(PresentationAction<Counter.Action>)
     case counterButtonTapped

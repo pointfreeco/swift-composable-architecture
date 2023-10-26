@@ -10,3 +10,4 @@ builder:
   - platform: watchos
     scheme: ComposableArchitecture
   - documentation_targets: [ComposableArchitecture]
+    swift_version: 5.9

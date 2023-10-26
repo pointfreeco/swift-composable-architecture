@@ -45,7 +45,8 @@ import XCTestDynamicOverlay
 /// For example, given a simple counter reducer:
 ///
 /// ```swift
-/// struct Counter: Reducer {
+/// @Reducer
+/// struct Counter {
 ///   struct State: Equatable {
 ///     var count = 0
 ///   }
@@ -55,17 +56,17 @@ import XCTestDynamicOverlay
 ///     case incrementButtonTapped
 ///   }
 ///
-///   func reduce(
-///     into state: inout State, action: Action
-///   ) -> Effect<Action> {
-///     switch action {
-///     case .decrementButtonTapped:
-///       state.count -= 1
-///       return .none
+///   var body: some Reducer<State, Action> {
+///     Reduce { state, action in
+///       switch action {
+///       case .decrementButtonTapped:
+///         state.count -= 1
+///         return .none
 ///
-///     case .incrementButtonTapped:
-///       state.count += 1
-///       return .none
+///       case .incrementButtonTapped:
+///         state.count += 1
+///         return .none
+///       }
 ///     }
 ///   }
 /// }
@@ -121,7 +122,8 @@ import XCTestDynamicOverlay
 /// and cancel token to debounce requests:
 ///
 /// ```swift
-/// struct Search: Reducer {
+/// @Reducer
+/// struct Search {
 ///   struct State: Equatable {
 ///     var query = ""
 ///     var results: [String] = []
@@ -136,29 +138,29 @@ import XCTestDynamicOverlay
 ///   @Dependency(\.continuousClock) var clock
 ///   private enum CancelID { case search }
 ///
-///   func reduce(
-///     into state: inout State, action: Action
-///   ) -> Effect<Action> {
-///     switch action {
-///     case let .queryChanged(query):
-///       state.query = query
-///       return .run { send in
-///         try await self.clock.sleep(for: 0.5)
+///   var body: some Reducer<State, Action> {
+///     Reduce { state, action in
+///       switch action {
+///       case let .queryChanged(query):
+///         state.query = query
+///         return .run { send in
+///           try await self.clock.sleep(for: 0.5)
 ///
-///         guard let results = try? await self.apiClient.search(query)
-///         else { return }
+///           guard let results = try? await self.apiClient.search(query)
+///           else { return }
 ///
-///         await send(.response(results))
+///           await send(.response(results))
+///         }
+///         .cancellable(id: CancelID.search, cancelInFlight: true)
+///
+///       case let .searchResponse(.success(results)):
+///         state.results = results
+///         return .none
+///
+///       case .searchResponse(.failure):
+///         // Do error handling here.
+///         return .none
 ///       }
-///       .cancellable(id: CancelID.search, cancelInFlight: true)
-///
-///     case let .searchResponse(.success(results)):
-///       state.results = results
-///       return .none
-///
-///     case .searchResponse(.failure):
-///       // Do error handling here.
-///       return .none
 ///     }
 ///   }
 /// }
@@ -1287,13 +1289,13 @@ extension TestStore where State: Equatable {
   }
 
   private func _receive<Value>(
-    _ extractAction: (Action) -> Value?,
+    _ actionCase: AnyCasePath<Action, Value>,
     assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
     file: StaticString = #file,
     line: UInt = #line
   ) {
     self.receiveAction(
-      matching: { extractAction($0) != nil },
+      matching: { actionCase.extract(from: $0) != nil },
       failureMessage: "Expected to receive an action matching case path, but didn't get one.",
       unexpectedActionDescription: { receivedAction in
         var action = ""
@@ -1383,7 +1385,7 @@ extension TestStore where State: Equatable {
   /// was in the effect that you chose not to assert on.
   ///
   /// If you only want to check that a particular action case was received, then you might find the
-  /// ``receive(_:timeout:assert:file:line:)-6m8t6`` overload of this method more useful.
+  /// ``receive(_:timeout:assert:file:line:)-6325h`` overload of this method more useful.
   ///
   /// - Parameters:
   ///   - isMatching: A closure that attempts to match an action. If it returns `false`, a test
@@ -1443,7 +1445,7 @@ extension TestStore where State: Equatable {
   /// was in the effect that you chose not to assert on.
   ///
   /// - Parameters:
-  ///   - extractAction: A closure identifying the case of an action enum to receive.
+  ///   - actionCase: A case path identifying the case of an action to enum to receive
   ///   - nanoseconds: The amount of time to wait for the expected action.
   ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
   ///     the store. The mutable state sent to this closure must be modified to match the state of
@@ -1452,7 +1454,25 @@ extension TestStore where State: Equatable {
   @MainActor
   @_disfavoredOverload
   public func receive<Value>(
-    _ extractAction: (Action) -> Value?,
+    _ actionCase: CaseKeyPath<Action, Value>,
+    timeout nanoseconds: UInt64? = nil,
+    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) async {
+    await self.receive(
+      AnyCasePath(actionCase),
+      timeout: nanoseconds,
+      assert: updateStateToExpectedResult,
+      file: file,
+      line: line
+    )
+  }
+
+  @MainActor
+  @_disfavoredOverload
+  public func receive<Value>(
+    _ actionCase: AnyCasePath<Action, Value>,
     timeout nanoseconds: UInt64? = nil,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
     file: StaticString = #file,
@@ -1462,18 +1482,18 @@ extension TestStore where State: Equatable {
       guard !self.reducer.inFlightEffects.isEmpty
       else {
         _ = {
-          self._receive(extractAction, assert: updateStateToExpectedResult, file: file, line: line)
+          self._receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
         }()
         return
       }
       await self.receiveAction(
-        matching: { extractAction($0) != nil },
+        matching: { actionCase.extract(from: $0) != nil },
         timeout: nanoseconds,
         file: file,
         line: line
       )
       _ = {
-        self._receive(extractAction, assert: updateStateToExpectedResult, file: file, line: line)
+        self._receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
       }()
       await Task.megaYield()
     }
@@ -1505,7 +1525,7 @@ extension TestStore where State: Equatable {
     /// data was in the effect that you chose not to assert on.
     ///
     /// - Parameters:
-    ///   - extractAction: A closure identifying the case of an action to enum to receive
+    ///   - actionCase: A case path identifying the case of an action to enum to receive
     ///   - duration: The amount of time to wait for the expected action.
     ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action
     ///     to the store. The mutable state sent to this closure must be modified to match the state
@@ -1515,7 +1535,26 @@ extension TestStore where State: Equatable {
     @_disfavoredOverload
     @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
     public func receive<Value>(
-      _ extractAction: (Action) -> Value?,
+      _ actionCase: CaseKeyPath<Action, Value>,
+      timeout duration: Duration,
+      assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
+      file: StaticString = #file,
+      line: UInt = #line
+    ) async {
+      await self.receive(
+        AnyCasePath(actionCase),
+        timeout: duration,
+        assert: updateStateToExpectedResult,
+        file: file,
+        line: line
+      )
+    }
+
+    @MainActor
+    @_disfavoredOverload
+    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+    public func receive<Value>(
+      _ actionCase: AnyCasePath<Action, Value>,
       timeout duration: Duration,
       assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
       file: StaticString = #file,
@@ -1526,19 +1565,19 @@ extension TestStore where State: Equatable {
         else {
           _ = {
             self._receive(
-              extractAction, assert: updateStateToExpectedResult, file: file, line: line
+              actionCase, assert: updateStateToExpectedResult, file: file, line: line
             )
           }()
           return
         }
         await self.receiveAction(
-          matching: { extractAction($0) != nil },
+          matching: { actionCase.extract(from: $0) != nil },
           timeout: duration.nanoseconds,
           file: file,
           line: line
         )
         _ = {
-          self._receive(extractAction, assert: updateStateToExpectedResult, file: file, line: line)
+          self._receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
         }()
         await Task.megaYield()
       }
@@ -1875,7 +1914,7 @@ extension TestStore {
   ///   $0.email = "blob@pointfree.co"
   /// }
   /// XCTAssertTrue(
-  ///   LoginView.ViewState(store.bindings(action: /LoginFeature.Action.view))
+  ///   LoginView.ViewState(store.bindings(action: \.view))
   ///     .isLoginButtonDisabled
   /// )
   ///
@@ -1884,7 +1923,7 @@ extension TestStore {
   ///   $0.isFormValid = true
   /// }
   /// XCTAssertFalse(
-  ///   LoginView.ViewState(store.bindings(action: /LoginFeature.Action.view))
+  ///   LoginView.ViewState(store.bindings(action: \.view))
   ///     .isLoginButtonDisabled
   /// )
   /// ```
@@ -1941,7 +1980,7 @@ extension TestStore where Action: BindableAction, State == Action.State {
   }
 }
 
-/// The type returned from ``TestStore/send(_:assert:file:line:)-1ax61`` that represents the
+/// The type returned from ``TestStore/send(_:assert:file:line:)-2co21`` that represents the
 /// lifecycle of the effect started from sending an action.
 ///
 /// You can use this value in tests to cancel the effect started from sending an action:
@@ -2195,7 +2234,7 @@ public enum Exhaustivity: Equatable, Sendable {
   /// ``TestStore/skipInFlightEffects(strict:file:line:)-5hbsk``.
   ///
   /// To partially match an action received from an effect, use
-  /// ``TestStore/receive(_:timeout:assert:file:line:)-6m8t6`` or
+  /// ``TestStore/receive(_:timeout:assert:file:line:)-6325h`` or
   /// ``TestStore/receive(_:timeout:assert:file:line:)-7md3m``.
 
   case on

@@ -1,15 +1,14 @@
 import ComposableArchitecture
 import SwiftUI
 
-private struct PresentationItemTestCase: Reducer {
-  struct Destination: Reducer {
-    @CasePathable
-    @dynamicMemberLookup
+@Reducer
+private struct PresentationItemTestCase {
+  @Reducer
+  struct Destination  {
     enum State: Equatable {
       case childA(Child.State)
       case childB(Child.State)
     }
-    @CasePathable
     enum Action: Equatable {
       case childA(Child.Action)
       case childB(Child.Action)
@@ -26,7 +25,6 @@ private struct PresentationItemTestCase: Reducer {
   struct State: Equatable {
     @PresentationState var destination: Destination.State?
   }
-  @CasePathable
   enum Action: Equatable {
     case childAButtonTapped
     case childBButtonTapped
@@ -51,7 +49,8 @@ private struct PresentationItemTestCase: Reducer {
   }
 }
 
-private struct Child: Reducer {
+@Reducer
+private struct Child {
   struct State: Equatable {}
   enum Action: Equatable {
     case swapButtonTapped

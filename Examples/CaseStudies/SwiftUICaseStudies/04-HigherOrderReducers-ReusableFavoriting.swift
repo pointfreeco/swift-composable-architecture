@@ -34,37 +34,38 @@ enum FavoritingAction: Equatable {
   enum Alert: Equatable {}
 }
 
-struct Favoriting<ID: Hashable & Sendable>: Reducer {
+@Reducer
+struct Favoriting<ID: Hashable & Sendable> {
   let favorite: @Sendable (ID, Bool) async throws -> Bool
 
   private struct CancelID: Hashable {
     let id: AnyHashable
   }
 
-  func reduce(
-    into state: inout FavoritingState<ID>, action: FavoritingAction
-  ) -> Effect<FavoritingAction> {
-    switch action {
-    case .alert(.dismiss):
-      state.alert = nil
-      state.isFavorite.toggle()
-      return .none
+  var body: some Reducer<FavoritingState<ID>, FavoritingAction> {
+    Reduce { state, action in
+      switch action {
+      case .alert(.dismiss):
+        state.alert = nil
+        state.isFavorite.toggle()
+        return .none
 
-    case .buttonTapped:
-      state.isFavorite.toggle()
+      case .buttonTapped:
+        state.isFavorite.toggle()
 
-      return .run { [id = state.id, isFavorite = state.isFavorite, favorite] send in
-        await send(.response(TaskResult { try await favorite(id, isFavorite) }))
+        return .run { [id = state.id, isFavorite = state.isFavorite, favorite] send in
+          await send(.response(TaskResult { try await favorite(id, isFavorite) }))
+        }
+        .cancellable(id: CancelID(id: state.id), cancelInFlight: true)
+
+      case let .response(.failure(error)):
+        state.alert = AlertState { TextState(error.localizedDescription) }
+        return .none
+
+      case let .response(.success(isFavorite)):
+        state.isFavorite = isFavorite
+        return .none
       }
-      .cancellable(id: CancelID(id: state.id), cancelInFlight: true)
-
-    case let .response(.failure(error)):
-      state.alert = AlertState { TextState(error.localizedDescription) }
-      return .none
-
-    case let .response(.success(isFavorite)):
-      state.isFavorite = isFavorite
-      return .none
     }
   }
 }
@@ -87,7 +88,8 @@ struct FavoriteButton<ID: Hashable & Sendable>: View {
 
 // MARK: - Feature domain
 
-struct Episode: Reducer {
+@Reducer
+struct Episode {
   struct State: Equatable, Identifiable {
     var alert: AlertState<FavoritingAction.Alert>?
     let id: UUID
@@ -100,7 +102,6 @@ struct Episode: Reducer {
     }
   }
 
-  @CasePathable
   enum Action: Equatable {
     case favorite(FavoritingAction)
   }
@@ -132,12 +133,12 @@ struct EpisodeView: View {
   }
 }
 
-struct Episodes: Reducer {
+@Reducer
+struct Episodes {
   struct State: Equatable {
     var episodes: IdentifiedArrayOf<Episode.State> = []
   }
 
-  @CasePathable
   enum Action: Equatable {
     case episode(id: Episode.State.ID, action: Episode.Action)
   }

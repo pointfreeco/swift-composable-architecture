@@ -80,7 +80,8 @@ struct EnumView: View {
     }
   }
 
-  struct Feature: Reducer {
+  @Reducer
+  struct Feature {
     struct State: Equatable {
       @PresentationState var destination: Destination.State?
     }
@@ -90,9 +91,8 @@ struct EnumView: View {
       case toggle1ButtonTapped
       case toggle2ButtonTapped
     }
-    struct Destination: Reducer {
-      @CasePathable
-      @dynamicMemberLookup
+    @Reducer
+    struct Destination {
       enum State: Equatable {
         case feature1(BasicsView.Feature.State)
         case feature2(BasicsView.Feature.State)
