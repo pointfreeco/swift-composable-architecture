@@ -156,44 +156,46 @@ struct Feature {
 }
 ```
 
-And then we implement the `reduce` method which is responsible for handling the actual logic and 
-behavior for the feature. It describes how to change the current state to the next state, and 
-describes what effects need to be executed. Some actions don't need to execute effects, and they 
-can return `.none` to represent that:
+And then we implement the `body` property, which is responsible for composing the actual logic and 
+behavior for the feature. In it we can use the `Reduce` reducer to describe how to change the
+current state to the next state, and what effects need to be executed. Some actions don't need to
+execute effects, and they can return `.none` to represent that:
 
 ```swift
 @Reducer
 struct Feature {
   struct State: Equatable { /* ... */ }
   enum Action: Equatable { /* ... */ }
-  
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .factAlertDismissed:
-      state.numberFactAlert = nil
-      return .none
 
-    case .decrementButtonTapped:
-      state.count -= 1
-      return .none
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .factAlertDismissed:
+        state.numberFactAlert = nil
+        return .none
 
-    case .incrementButtonTapped:
-      state.count += 1
-      return .none
+      case .decrementButtonTapped:
+        state.count -= 1
+        return .none
 
-    case .numberFactButtonTapped:
-      return .run { [count = state.count] send in
-        let (data, _) = try await URLSession.shared.data(
-          from: URL(string: "http://numbersapi.com/\(count)/trivia")!
-        )
-        await send(
-          .numberFactResponse(String(decoding: data, as: UTF8.self))
-        )
+      case .incrementButtonTapped:
+        state.count += 1
+        return .none
+
+      case .numberFactButtonTapped:
+        return .run { [count = state.count] send in
+          let (data, _) = try await URLSession.shared.data(
+            from: URL(string: "http://numbersapi.com/\(count)/trivia")!
+          )
+          await send(
+            .numberFactResponse(String(decoding: data, as: UTF8.self))
+          )
+        }
+
+      case let .numberFactResponse(fact):
+        state.numberFactAlert = fact
+        return .none
       }
-
-    case let .numberFactResponse(fact):
-      state.numberFactAlert = fact
-      return .none
     }
   }
 }

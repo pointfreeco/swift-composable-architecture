@@ -8,14 +8,16 @@ private struct EscapedWithViewStoreTestCase {
     case decr
   }
 
-  func reduce(into state: inout Int, action: Action) -> Effect<Action> {
-    switch action {
-    case .incr:
-      state += 1
-      return .none
-    case .decr:
-      state -= 1
-      return .none
+  var body: some Reducer<Int, Action> {
+    Reduce { state, action in
+      switch action {
+      case .incr:
+        state += 1
+        return .none
+      case .decr:
+        state -= 1
+        return .none
+      }
     }
   }
 }

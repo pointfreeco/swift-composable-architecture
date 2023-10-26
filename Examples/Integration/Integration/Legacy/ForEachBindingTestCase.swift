@@ -11,17 +11,19 @@ private struct ForEachBindingTestCase {
     case removeLast
   }
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case let .change(offset: offset, value: value):
-      state.values[offset] = value
-      return .none
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case let .change(offset: offset, value: value):
+        state.values[offset] = value
+        return .none
 
-    case .removeLast:
-      guard !state.values.isEmpty
-      else { return .none }
-      state.values.removeLast()
-      return .none
+      case .removeLast:
+        guard !state.values.isEmpty
+        else { return .none }
+        state.values.removeLast()
+        return .none
+      }
     }
   }
 }

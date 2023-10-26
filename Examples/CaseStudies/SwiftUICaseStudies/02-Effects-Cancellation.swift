@@ -32,35 +32,37 @@ struct EffectsCancellation {
   @Dependency(\.factClient) var factClient
   private enum CancelID { case factRequest }
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .cancelButtonTapped:
-      state.isFactRequestInFlight = false
-      return .cancel(id: CancelID.factRequest)
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .cancelButtonTapped:
+        state.isFactRequestInFlight = false
+        return .cancel(id: CancelID.factRequest)
 
-    case let .stepperChanged(value):
-      state.count = value
-      state.currentFact = nil
-      state.isFactRequestInFlight = false
-      return .cancel(id: CancelID.factRequest)
+      case let .stepperChanged(value):
+        state.count = value
+        state.currentFact = nil
+        state.isFactRequestInFlight = false
+        return .cancel(id: CancelID.factRequest)
 
-    case .factButtonTapped:
-      state.currentFact = nil
-      state.isFactRequestInFlight = true
+      case .factButtonTapped:
+        state.currentFact = nil
+        state.isFactRequestInFlight = true
 
-      return .run { [count = state.count] send in
-        await send(.factResponse(TaskResult { try await self.factClient.fetch(count) }))
+        return .run { [count = state.count] send in
+          await send(.factResponse(TaskResult { try await self.factClient.fetch(count) }))
+        }
+        .cancellable(id: CancelID.factRequest)
+
+      case let .factResponse(.success(response)):
+        state.isFactRequestInFlight = false
+        state.currentFact = response
+        return .none
+
+      case .factResponse(.failure):
+        state.isFactRequestInFlight = false
+        return .none
       }
-      .cancellable(id: CancelID.factRequest)
-
-    case let .factResponse(.success(response)):
-      state.isFactRequestInFlight = false
-      state.currentFact = response
-      return .none
-
-    case .factResponse(.failure):
-      state.isFactRequestInFlight = false
-      return .none
     }
   }
 }

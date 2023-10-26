@@ -23,11 +23,13 @@ extension DependencyValues {
 ///     // ...
 ///   }
 ///   @Dependency(\.dismiss) var dismiss
-///   func reduce(into state: inout State, action: Action) -> Effect<Action> {
-///     switch action {
-///     case .exitButtonTapped:
-///       return .run { _ in await self.dismiss() }
-///     // ...
+///   var body: some Reducer<State, Action> {
+///     Reduce { state, action in
+///       switch action {
+///       case .exitButtonTapped:
+///         return .run { _ in await self.dismiss() }
+///       // ...
+///       }
 ///     }
 ///   }
 /// }

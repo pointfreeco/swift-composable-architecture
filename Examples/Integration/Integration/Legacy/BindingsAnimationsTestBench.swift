@@ -3,9 +3,11 @@ import SwiftUI
 
 @Reducer
 private struct BindingsAnimations {
-  func reduce(into state: inout Bool, action: Void) -> Effect<Void> {
-    state.toggle()
-    return .none
+  var body: some Reducer<Bool, Void> {
+    Reduce { state, _ in
+      state.toggle()
+      return .none
+    }
   }
 }
 

@@ -441,11 +441,13 @@ struct Feature {
     // ...
   }
   @Dependency(\.dismiss) var dismiss
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .closeButtonTapped:
-      return .run { _ in await self.dismiss() }
-    } 
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .closeButtonTapped:
+        return .run { _ in await self.dismiss() }
+      }
+    }
   }
 }
 ```
@@ -499,17 +501,19 @@ struct CounterFeature {
 
   @Dependency(\.dismiss) var dismiss
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .decrementButtonTapped:
-      state.count -= 1
-      return .none
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .decrementButtonTapped:
+        state.count -= 1
+        return .none
 
-    case .incrementButtonTapped:
-      state.count += 1
-      return state.count >= 5
-        ? .run { _ in await self.dismiss() }
-        : .none
+      case .incrementButtonTapped:
+        state.count += 1
+        return state.count >= 5
+          ? .run { _ in await self.dismiss() }
+          : .none
+      }
     }
   }
 }
@@ -527,7 +531,7 @@ struct Feature {
   enum Action: Equatable {
     case counter(PresentationAction<CounterFeature.Action>)
   }
-  var body: some ReducerOf<Self> {
+  var body: some Reducer<State, Action> {
     Reduce { state, action in
       // Logic and behavior for core feature.
     }

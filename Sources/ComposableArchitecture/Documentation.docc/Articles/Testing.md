@@ -22,17 +22,23 @@ then assert on how it changed after, like this:
 ```swift
 @Reducer
 struct Feature {
-  struct State: Equatable { var count = 0 }
-  enum Action { case incrementButtonTapped, decrementButtonTapped }
-
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .incrementButtonTapped:
-      state.count += 1
-      return .none
-    case .decrementButtonTapped:
-      state.count -= 1
-      return .none
+  struct State: Equatable {
+    var count = 0
+  }
+  enum Action {
+    case incrementButtonTapped
+    case decrementButtonTapped
+  }
+  var body: some Reduce<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .incrementButtonTapped:
+        state.count += 1
+        return .none
+      case .decrementButtonTapped:
+        state.count -= 1
+        return .none
+      }
     }
   }
 }
@@ -193,23 +199,29 @@ an asynchronous context to operate in and can send multiple actions back into th
 ```swift
 @Reducer
 struct Feature {
-  struct State: Equatable { var count = 0 }
-  enum Action { case startTimerButtonTapped, timerTick }
-
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .startTimerButtonTapped:
-      state.count = 0
-      return .run { send in
-        for _ in 1...5 {
-          try await Task.sleep(for: .seconds(1))
-          await send(.timerTick)
+  struct State: Equatable {
+    var count = 0
+  }
+  enum Action {
+    case startTimerButtonTapped
+    case timerTick
+  }
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .startTimerButtonTapped:
+        state.count = 0
+        return .run { send in
+          for _ in 1...5 {
+            try await Task.sleep(for: .seconds(1))
+            await send(.timerTick)
+          }
         }
-      }
 
-    case .timerTick:
-      state.count += 1
-      return .none
+      case .timerTick:
+        state.count += 1
+        return .none
+      }
     }
   }
 }
@@ -669,13 +681,19 @@ the following simple reducer that appends a new model to an array when an action
 ```swift
 @Reducer
 struct Feature {
-  struct State: Equatable { var values: [Model] = [] }
-  enum Action { case addButtonTapped }
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .addButtonTapped:
-      state.values.append(Model())
-      return .none
+  struct State: Equatable {
+    var values: [Model] = []
+  }
+  enum Action {
+    case addButtonTapped
+  }
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .addButtonTapped:
+        state.values.append(Model())
+        return .none
+      }
     }
   }
 }
@@ -746,11 +764,13 @@ And then move the responsibility of generating new IDs to the reducer:
 struct Feature {
   // ...
   @Dependency(\.uuid) var uuid
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .addButtonTapped:
-      state.values.append(Model(id: self.uuid()))
-      return .none
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .addButtonTapped:
+        state.values.append(Model(id: self.uuid()))
+        return .none
+      }
     }
   }
 }

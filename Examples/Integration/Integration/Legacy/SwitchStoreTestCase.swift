@@ -12,14 +12,16 @@ struct SwitchStoreTestCase {
       case decrementButtonTapped
       case incrementButtonTapped
     }
-    func reduce(into state: inout State, action: Action) -> Effect<Action> {
-      switch action {
-      case .decrementButtonTapped:
-        state.count -= 1
-        return .none
-      case .incrementButtonTapped:
-        state.count += 1
-        return .none
+    var body: some Reducer<State, Action> {
+      Reduce { state, action in
+        switch action {
+        case .decrementButtonTapped:
+          state.count -= 1
+          return .none
+        case .incrementButtonTapped:
+          state.count += 1
+          return .none
+        }
       }
     }
   }

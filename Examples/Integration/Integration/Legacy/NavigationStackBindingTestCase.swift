@@ -14,14 +14,16 @@ private struct NavigationStackBindingTestCase {
     case navigationPathChanged([State.Destination])
   }
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .goToChild:
-      state.path.append(.child)
-      return .none
-    case let .navigationPathChanged(path):
-      state.path = path
-      return .none
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .goToChild:
+        state.path.append(.child)
+        return .none
+      case let .navigationPathChanged(path):
+        state.path = path
+        return .none
+      }
     }
   }
 }
