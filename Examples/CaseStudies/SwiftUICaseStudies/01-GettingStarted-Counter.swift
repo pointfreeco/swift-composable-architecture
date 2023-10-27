@@ -22,15 +22,12 @@ struct Counter {
     case incrementButtonTapped
   }
 
-  #Reduce2<State, Action> {
-    EmptyReducer()
-    Reduce { state, action in
-      switch action {
-      case .decrementButtonTapped:
-        return .none
-      case .incrementButtonTapped:
-        return .none
-      }
+  #Reduce<State, Action> { state, action in
+    switch action {
+    case .decrementButtonTapped:
+      return .none
+    case .incrementButtonTapped:
+      return .none
     }
   }
 }
