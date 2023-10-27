@@ -36,8 +36,8 @@ extension ReduceMacro: DeclarationMacro {
     } else {
       return [
         """
-        var body: some Reducer<Self.State, Self.Action> {
-        Reduce<Self.State, Self.Action> \(trailingClosure)
+        var body: some Reducer<State, Action> {
+        Reduce<State, Action> \(trailingClosure)
         }
         """
       ]

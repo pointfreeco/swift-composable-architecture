@@ -11,8 +11,8 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-@Reducer
-struct Counter {
+//@Reducer
+struct Counter: Reducer {
   struct State: Equatable {
     var count = 0
   }
