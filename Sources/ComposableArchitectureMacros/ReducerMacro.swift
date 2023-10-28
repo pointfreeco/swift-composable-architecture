@@ -89,7 +89,7 @@ extension ReducerMacro: MemberAttributeMacro {
             message: SimpleDiagnosticMessage(
               message: """
                 A 'reduce' method should not be defined in a reducer with a 'body'; it takes \
-                precedence and 'body' will never be invoked.
+                precedence and 'body' will never be invoked
                 """,
               diagnosticID: "reducer-with-body-and-reduce",
               severity: .warning
@@ -98,7 +98,7 @@ extension ReducerMacro: MemberAttributeMacro {
               Note(
                 node: Syntax(identifier),
                 message: SimpleNoteMessage(
-                  message: "'body' defined here.",
+                  message: "'body' defined here",
                   fixItID: "reducer-with-body-and-reduce"
                 )
               )
