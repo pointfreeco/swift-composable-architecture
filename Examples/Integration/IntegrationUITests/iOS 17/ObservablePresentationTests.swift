@@ -31,7 +31,6 @@ final class iOS17_ObservablePresentationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservablePresentationView.body
-      StoreOf<ObservablePresentationView.Feature>.scope
       """
     }
   }
@@ -64,7 +63,6 @@ final class iOS17_ObservablePresentationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservablePresentationView.body
-      StoreOf<ObservablePresentationView.Feature>.scope
       """
     }
   }

@@ -36,12 +36,13 @@ struct ObservableSiblingFeaturesView: View {
     }
   }
 
-  struct Feature: Reducer {
+  @Reducer
+  struct Feature {
+    @ObservableState
     struct State: Equatable {
       var child1 = ObservableBasicsView.Feature.State()
       var child2 = ObservableBasicsView.Feature.State()
     }
-    @CasePathable
     enum Action {
       case child1(ObservableBasicsView.Feature.Action)
       case child2(ObservableBasicsView.Feature.Action)

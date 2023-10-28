@@ -22,7 +22,8 @@ struct ObservableBasicsView: View {
     }
   }
 
-  struct Feature: Reducer {
+  @Reducer
+  struct Feature {
     @ObservableState
     struct State: Equatable, Identifiable {
       let id = UUID()
