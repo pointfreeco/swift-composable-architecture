@@ -84,16 +84,6 @@ extension Store where State: ObservableState {
       removeDuplicates: nil
     )
   }
-
-  // TODO: Document that this should only be used with SwiftUI.
-  // TODO: ChildState: ObservableState?
-  public func scope<ChildState, ChildAction>(
-    state toChildState: KeyPath<State, ChildState?>,
-    action toChildAction: CaseKeyPath<Action, PresentationAction<ChildAction>>
-  ) -> Store<ChildState, ChildAction>?
-  where State: ObservableState {
-    self.scope(state: toChildState, action: toChildAction.appending(path: \.presented))
-  }
 }
 
 extension Binding {

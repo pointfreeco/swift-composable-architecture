@@ -26,7 +26,7 @@ struct ObservableOptionalView: View {
           }
         }
       }
-      if let store = self.store.scope(state: \.child, action: \.child) {
+      if let store = self.store.scope(state: \.child, action: \.child.presented) {
         Form {
           ObservableBasicsView(store: store)
         }

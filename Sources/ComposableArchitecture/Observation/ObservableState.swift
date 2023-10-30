@@ -30,6 +30,19 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
   }
 }
 
+public func _isIdentityEqual<T>(_ lhs: IdentifiedArrayOf<T>, _ rhs: IdentifiedArrayOf<T>) -> Bool {
+  areOrderedSetsDuplicates(lhs.ids, rhs.ids)
+}
+@_disfavoredOverload
+public func _isIdentityEqual<C: Collection>(
+  _ lhs: C,
+  _ rhs: C
+) -> Bool
+where C.Element: ObservableState
+{
+  lhs.count == rhs.count && zip(lhs, rhs).allSatisfy(_isIdentityEqual)
+}
+
 public func _isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
   // TODO: Should we make a fast path for IdentifiedArray? We can memcmp id sets?
   func open<C: Collection>(_ lhs: C, _ rhs: Any) -> Bool {
