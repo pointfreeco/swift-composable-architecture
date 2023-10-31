@@ -24,7 +24,6 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
   public static func _$id<T>(for value: T) -> Self {
     (value as? any ObservableState)?._$id ?? ._$inert
   }
-
   public static func _$id(for value: some ObservableState) -> Self {
     value._$id
   }
