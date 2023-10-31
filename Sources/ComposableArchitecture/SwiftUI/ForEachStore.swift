@@ -106,7 +106,7 @@ public struct ForEachStore<
       ForEach<IdentifiedArray<ID, EachState>, ID, EachContent>
     >
   {
-    self.data = store.state.value
+    self.data = store.withState { $0 }
     self.content = WithViewStore(
       store,
       observe: { $0 },

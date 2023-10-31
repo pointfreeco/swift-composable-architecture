@@ -388,7 +388,7 @@ public struct BindingViewStore<State> {
   }
 
   public var wrappedValue: State {
-    self.store.state.value
+    self.store.withState { $0 }
   }
 
   public var projectedValue: Self {
