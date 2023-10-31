@@ -19,6 +19,13 @@ private struct Test: Reducer {
   }
 }
 
+func testExistentialReducers() {
+  _ = CombineReducers {
+    Test()
+    Test() as any ReducerOf<Test>
+  }
+}
+
 func testLimitedAvailability() {
   _ = CombineReducers {
     Test()
