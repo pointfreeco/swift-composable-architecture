@@ -698,7 +698,7 @@ final class StoreTests: BaseTCATestCase {
       Feature_testStoreVsTestStore_Publisher()
     }
     await store.send(.tap, originatingFrom: nil)?.value
-    XCTAssertEqual(store.state.value.count, testStore.state.count)
+    XCTAssertEqual(store.withState(\.count), testStore.state.count)
   }
 
   @Reducer
@@ -801,7 +801,7 @@ final class StoreTests: BaseTCATestCase {
       $0.date = .constant(Date(timeIntervalSinceReferenceDate: 1_234_567_890))
     }
 
-    XCTAssertEqual(store.state.value.date, Date(timeIntervalSinceReferenceDate: 1_234_567_890))
+    XCTAssertEqual(store.withState(\.date), Date(timeIntervalSinceReferenceDate: 1_234_567_890))
   }
 
   func testInit_ReducerBuilder_WithDependencies() async {
@@ -825,7 +825,7 @@ final class StoreTests: BaseTCATestCase {
     }
 
     store.send(.tap)
-    XCTAssertEqual(store.state.value.date, Date(timeIntervalSinceReferenceDate: 1_234_567_890))
+    XCTAssertEqual(store.withState(\.date), Date(timeIntervalSinceReferenceDate: 1_234_567_890))
   }
 
   @Reducer
@@ -886,7 +886,7 @@ final class StoreTests: BaseTCATestCase {
     childViewStore1.objectWillChange
       .sink { _ in viewStoreCount1 += 1 }
       .store(in: &self.cancellables)
-    childStore1.state
+    childStore1.stateSubject
       .sink { _ in storeStateCount1 += 1 }
       .store(in: &self.cancellables)
     let childStore2 = store.scope(
@@ -907,7 +907,7 @@ final class StoreTests: BaseTCATestCase {
     childViewStore2.objectWillChange
       .sink { _ in viewStoreCount2 += 1 }
       .store(in: &self.cancellables)
-    childStore2.state
+    childStore2.stateSubject
       .sink { _ in storeStateCount2 += 1 }
       .store(in: &self.cancellables)
 

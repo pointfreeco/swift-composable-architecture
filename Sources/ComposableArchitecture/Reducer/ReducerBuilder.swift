@@ -47,6 +47,14 @@ public enum ReducerBuilder<State, Action> {
   }
 
   @inlinable
+  @_disfavoredOverload
+  public static func buildExpression(
+    _ expression: any Reducer<State, Action>
+  ) -> Reduce<State, Action> {
+    Reduce(expression)
+  }
+
+  @inlinable
   public static func buildFinalResult<R: Reducer>(_ reducer: R) -> R
   where R.State == State, R.Action == Action {
     reducer
