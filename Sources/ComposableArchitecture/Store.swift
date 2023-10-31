@@ -780,7 +780,9 @@ extension ScopedReducer: AnyScopedReducer {
     let reducer = ScopedReducer<RootState, RootAction, RescopedState, RescopedAction>(
       rootStore: self.rootStore,
       state: { _ in toRescopedState(store.stateSubject.value) },
-      action: { fromRescopedAction($0, $1).flatMap { fromScopedAction(store.stateSubject.value, $0) } },
+      action: {
+        fromRescopedAction($0, $1).flatMap { fromScopedAction(store.stateSubject.value, $0) }
+      },
       parentStores: self.parentStores + [store]
     )
     let childStore = Store<RescopedState, RescopedAction>(
