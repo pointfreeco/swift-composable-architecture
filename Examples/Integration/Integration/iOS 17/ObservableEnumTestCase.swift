@@ -59,27 +59,25 @@ struct ObservableEnumView: View {
     }
   }
 
-  struct Feature: Reducer {
+  @Reducer
+  struct Feature {
     @ObservableState
     struct State: Equatable {
       @ObservationStateIgnored
       @PresentationState var destination: Destination.State?
     }
-    @CasePathable
     enum Action {
       case destination(PresentationAction<Destination.Action>)
       case toggle1ButtonTapped
       case toggle2ButtonTapped
     }
-    struct Destination: Reducer {
-      @CasePathable
+    @Reducer
+    struct Destination {
       @ObservableState
-      @dynamicMemberLookup
       enum State: Equatable {
         case feature1(ObservableBasicsView.Feature.State)
         case feature2(ObservableBasicsView.Feature.State)
       }
-      @CasePathable
       enum Action {
         case feature1(ObservableBasicsView.Feature.Action)
         case feature2(ObservableBasicsView.Feature.Action)

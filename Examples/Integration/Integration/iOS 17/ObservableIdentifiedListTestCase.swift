@@ -45,12 +45,12 @@ struct ObservableIdentifiedListView: View {
     }
   }
 
-  struct Feature: Reducer {
+  @Reducer
+  struct Feature {
     @ObservableState
     struct State: Equatable {
       var rows: IdentifiedArrayOf<ObservableBasicsView.Feature.State> = []
     }
-    @CasePathable
     enum Action {
       case addButtonTapped
       case incrementFirstButtonTapped

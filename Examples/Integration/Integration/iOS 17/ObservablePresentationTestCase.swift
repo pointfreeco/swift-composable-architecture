@@ -92,7 +92,8 @@ struct ObservablePresentationView: View {
     }
   }
 
-  struct Feature: Reducer {
+  @Reducer
+  struct Feature {
     @ObservableState
     struct State: Equatable {
       var isObservingChildCount = false
@@ -101,7 +102,6 @@ struct ObservablePresentationView: View {
       @ObservationStateIgnored
       @PresentationState var sheet: ObservableBasicsView.Feature.State?
     }
-    @CasePathable
     enum Action {
       case destination(PresentationAction<Destination.Action>)
       case dismissButtonTapped
@@ -111,15 +111,13 @@ struct ObservablePresentationView: View {
       case sheet(PresentationAction<ObservableBasicsView.Feature.Action>)
       case toggleObserveChildCountButtonTapped
     }
-    struct Destination: Reducer {
-      @CasePathable
+    @Reducer
+    struct Destination {
       @ObservableState
-      @dynamicMemberLookup
       enum State: Equatable {
         case fullScreenCover(ObservableBasicsView.Feature.State)
         case popover(ObservableBasicsView.Feature.State)
       }
-      @CasePathable
       enum Action {
         case fullScreenCover(ObservableBasicsView.Feature.Action)
         case popover(ObservableBasicsView.Feature.Action)

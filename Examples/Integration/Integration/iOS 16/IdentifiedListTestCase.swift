@@ -62,7 +62,6 @@ struct IdentifiedListView: View {
     struct State: Equatable {
       var rows: IdentifiedArrayOf<BasicsView.Feature.State> = []
     }
-    @CasePathable
     enum Action {
       case addButtonTapped
       case incrementFirstButtonTapped

@@ -62,6 +62,18 @@ extension Store where State: ObservableState {
   }
 }
 
+extension Store: Equatable {
+  public static func == (lhs: Store, rhs: Store) -> Bool {
+    lhs === rhs
+  }
+}
+
+extension Store: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(ObjectIdentifier(self))
+  }
+}
+
 extension Store: Identifiable {}
 
 extension Store where State: ObservableState {

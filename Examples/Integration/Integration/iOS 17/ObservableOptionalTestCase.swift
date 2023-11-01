@@ -34,14 +34,14 @@ struct ObservableOptionalView: View {
     }
   }
 
-  struct Feature: Reducer {
+  @Reducer
+  struct Feature {
     @ObservableState
     struct State: Equatable {
       @ObservationStateIgnored
       @PresentationState var child: ObservableBasicsView.Feature.State?
       var isObservingCount = false
     }
-    @CasePathable
     enum Action {
       case child(PresentationAction<ObservableBasicsView.Feature.Action>)
       case toggleButtonTapped

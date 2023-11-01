@@ -44,13 +44,13 @@ struct OldContainsNewTestCase: View {
     }
   }
 
-  struct Feature: Reducer {
+  @Reducer
+  struct Feature {
     struct State {
       var child = ObservableBasicsView.Feature.State()
       var count = 0
       var isObservingChildCount = false
     }
-    @CasePathable
     enum Action {
       case child(ObservableBasicsView.Feature.Action)
       case incrementButtonTapped

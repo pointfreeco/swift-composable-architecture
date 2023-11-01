@@ -27,12 +27,12 @@ struct ObservableNavigationTestCaseView: View {
     }
   }
 
-  struct Feature: Reducer {
+  @Reducer
+  struct Feature {
     @ObservableState
     struct State: Equatable {
       var path = StackState<ObservableBasicsView.Feature.State>()
     }
-    @CasePathable
     enum Action {
       case path(
         StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>

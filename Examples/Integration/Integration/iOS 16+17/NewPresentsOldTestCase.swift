@@ -29,11 +29,12 @@ struct NewPresentsOldTestCase: View {
       Form {
         BasicsView(store: store)
       }
-        .presentationDetents([.medium])
+      .presentationDetents([.medium])
     }
   }
 
-  struct Feature: Reducer {
+  @Reducer
+  struct Feature {
     @ObservableState
     struct State {
       @ObservationStateIgnored
@@ -41,7 +42,6 @@ struct NewPresentsOldTestCase: View {
       var count = 0
       var isObservingChildCount = false
     }
-    @CasePathable
     enum Action {
       case child(PresentationAction<BasicsView.Feature.Action>)
       case incrementButtonTapped
