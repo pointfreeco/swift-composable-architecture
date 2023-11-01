@@ -9,25 +9,30 @@ struct SiblingFeaturesView: View {
   var body: some View {
     VStack {
       Form {
-        BasicsView(
-          store: self.store.scope(state: \.child1, action: \.child1)
-        )
-      }
-      Form {
-        BasicsView(
-          store: self.store.scope(state: \.child2, action: \.child2)
-        )
-      }
-      Spacer()
-      Form {
-        Button("Reset all") {
-          self.store.send(.resetAllButtonTapped)
+        Section {
+          BasicsView(
+            store: self.store.scope(state: \.child1, action: \.child1)
+          )
+        } header: {
+          Text("Child 1")
         }
-        Button("Reset self") {
-          self.store.send(.resetSelfButtonTapped)
+        Section {
+          BasicsView(
+            store: self.store.scope(state: \.child2, action: \.child2)
+          )
+        } header: {
+          Text("Child 2")
         }
-        Button("Swap") {
-          self.store.send(.swapButtonTapped)
+        Section {
+          Button("Reset all") {
+            self.store.send(.resetAllButtonTapped)
+          }
+          Button("Reset self") {
+            self.store.send(.resetSelfButtonTapped)
+          }
+          Button("Swap") {
+            self.store.send(.swapButtonTapped)
+          }
         }
       }
     }

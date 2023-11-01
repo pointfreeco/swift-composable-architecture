@@ -11,27 +11,37 @@ struct ObservableSiblingFeaturesView: View {
       let _ = Logger.shared.log("\(Self.self).body")
       VStack {
         Form {
-          ObservableBasicsView(
-            store: self.store.scope(state: \.child1, action: \.child1)
-          )
-        }
-        Form {
-          ObservableBasicsView(
-            store: self.store.scope(state: \.child2, action: \.child2)
-          )
-        }
-        Spacer()
-        Form {
-          Button("Reset all") {
-            self.store.send(.resetAllButtonTapped)
+          Section {
+            ObservableBasicsView(
+              store: self.store.scope(state: \.child1, action: \.child1)
+            )
+          } header: {
+            Text("Child 1")
           }
-          Button("Reset self") {
-            self.store.send(.resetSelfButtonTapped)
+          Section {
+            ObservableBasicsView(
+              store: self.store.scope(state: \.child2, action: \.child2)
+            )
+          } header: {
+            Text("Child 2")
           }
-          Button("Swap") {
-            self.store.send(.swapButtonTapped)
+          Section {
+            Button("Reset all") {
+              self.store.send(.resetAllButtonTapped)
+            }
+            Button("Reset self") {
+              self.store.send(.resetSelfButtonTapped)
+            }
+            Button("Swap") {
+              self.store.send(.swapButtonTapped)
+            }
           }
         }
+        // NB: Conditional child views of `Form` that use `@State` are stale when they reappear. This
+        //     `id` forces a refresh.
+        //
+        // Feedback filed: https://gist.github.com/stephencelis/fd078ca2d260c316b70dfc1e0f29883f
+        .id(UUID())
       }
     }
   }
