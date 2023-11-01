@@ -123,12 +123,6 @@
   public macro ObservationStateIgnored() =
   #externalMacro(module: "ComposableArchitectureMacros", type: "ObservationStateIgnoredMacro")
 
-  //@attached(accessor, names: named(init), named(get), named(set))
-  //@attached(peer, names: overloaded, prefixed(`$`))
-  //public macro PresentationState() = #externalMacro(
-  //  module: "ComposableArchitectureMacros", type: "PresentationStateMacro"
-  //)
-
   //@attached(member, names: named(send))
   //public macro WithViewStore<R: Reducer>(for: R.Type) = #externalMacro(
   //  module: "ComposableArchitectureMacros", type: "WithViewStoreMacro"
