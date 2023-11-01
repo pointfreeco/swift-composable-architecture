@@ -527,15 +527,14 @@ public final class Store<State, Action> {
   ) -> Store<ChildState, ChildAction> {
     self.threadCheck(status: .scope)
 
+    let initialChildState = toChildState(self.observableState)
+
     let id = id?(self.stateSubject.value)
     if let id = id,
       let childStore = self.children[id] as? Store<ChildState, ChildAction>
     {
-      _ = toChildState(self.observableState)
       return childStore
     }
-
-    let initialChildState = toChildState(self.observableState)
 
     // NB: This strong/weak self dance forces the child to retain the parent when the parent doesn't
     //     retain the child.
