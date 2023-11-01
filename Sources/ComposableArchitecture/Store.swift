@@ -505,9 +505,9 @@ public final class Store<State, Action> {
   ) -> Store<ChildState, ChildAction> {
     self.threadCheck(status: .scope)
 
-    let initialChildState = toChildState(self.state.value)
+    let initialChildState = toChildState(self.stateSubject.value)
 
-    let id = id?(self.state.value)
+    let id = id?(self.stateSubject.value)
     if let id = id,
       let childStore = self.children[id] as? Store<ChildState, ChildAction>
     {
@@ -518,11 +518,11 @@ public final class Store<State, Action> {
     let isInvalid =
       id == nil
       ? {
-        self._isInvalidated() || isInvalid?(self.state.value) == true
+        self._isInvalidated() || isInvalid?(self.stateSubject.value) == true
       }
       : { [weak self] in
         guard let self = self else { return true }
-        return self._isInvalidated() || isInvalid?(self.state.value) == true
+        return self._isInvalidated() || isInvalid?(self.stateSubject.value) == true
       }
     let fromChildAction = {
       BindingLocal.isActive && isInvalid() ? nil : fromChildAction($0, $1)
@@ -536,12 +536,12 @@ public final class Store<State, Action> {
         if isInvalid(), let id = id {
           self.invalidateChild(id: id)
         }
-        guard let action = fromChildAction(self.state.value, childAction)
+        guard let action = fromChildAction(self.stateSubject.value, childAction)
         else { return .none }
         isSending = true
         defer { isSending = false }
         let task = self.send(action)
-        childState = toChildState(self.state.value)
+        childState = toChildState(self.stateSubject.value)
         if let task = task.rawValue {
           return .run { _ in await task.cancellableValue }
         } else {
@@ -550,7 +550,7 @@ public final class Store<State, Action> {
       })
     }
     childStore._isInvalidated = isInvalid
-    childStore.parentCancellable = self.state
+    childStore.parentCancellable = self.stateSubject
       .dropFirst()
       .sink { [weak self, weak childStore] state in
         guard
@@ -562,10 +562,10 @@ public final class Store<State, Action> {
           self.invalidateChild(id: id)
         }
         let childState = toChildState(state)
-        guard isDuplicate.map({ !$0(childStore.state.value, childState) }) ?? true else {
+        guard isDuplicate.map({ !$0(childStore.stateSubject.value, childState) }) ?? true else {
           return
         }
-        childStore.state.value = childState
+        childStore.stateSubject.value = childState
         Logger.shared.log("\(typeName(of: self)).scope")
       }
     if let id = id {
