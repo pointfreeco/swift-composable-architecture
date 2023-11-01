@@ -6,7 +6,6 @@ import SwiftUI
 struct RecordMeeting {
   @ObservableState
   struct State: Equatable {
-    @ObservationStateIgnored
     @PresentationState var alert: AlertState<Action.Alert>?
     var secondsElapsed = 0
     var speakerIndex = 0

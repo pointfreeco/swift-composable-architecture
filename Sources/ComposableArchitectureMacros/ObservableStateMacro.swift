@@ -38,6 +38,7 @@ public struct ObservableStateMacro {
 
   static let trackedMacroName = "ObservationStateTracked"
   static let ignoredMacroName = "ObservationStateIgnored"
+  static let presentationStateMacroName = "PresentationState"
 
   static let registrarVariableName = "_$observationRegistrar"
 
@@ -304,11 +305,11 @@ extension ObservableStateMacro: MemberAttributeMacro {
     }
 
     // dont apply to ignored properties or properties that are already flagged as tracked
-    if property.hasMacroApplication(ObservableStateMacro.ignoredMacroName) ||
-        property.hasMacroApplication(ObservableStateMacro.trackedMacroName) {
+    if property.hasMacroApplication(ObservableStateMacro.ignoredMacroName)
+      || property.hasMacroApplication(ObservableStateMacro.presentationStateMacroName)
+      || property.hasMacroApplication(ObservableStateMacro.trackedMacroName) {
       return []
     }
-
 
     return [
       AttributeSyntax(attributeName: IdentifierTypeSyntax(name: .identifier(ObservableStateMacro.trackedMacroName)))
@@ -370,7 +371,9 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
       return []
     }
 
-    if property.hasMacroApplication(ObservableStateMacro.ignoredMacroName) {
+    if property.hasMacroApplication(ObservableStateMacro.ignoredMacroName)
+      || property.hasMacroApplication(ObservableStateMacro.presentationStateMacroName)
+    {
       return []
     }
 
@@ -421,8 +424,10 @@ extension ObservationStateTrackedMacro: PeerMacro {
       return []
     }
 
-    if property.hasMacroApplication(ObservableStateMacro.ignoredMacroName) ||
-        property.hasMacroApplication(ObservableStateMacro.trackedMacroName) {
+    if property.hasMacroApplication(ObservableStateMacro.ignoredMacroName)
+      || property.hasMacroApplication(ObservableStateMacro.presentationStateMacroName)
+      || property.hasMacroApplication(ObservableStateMacro.trackedMacroName)
+    {
       return []
     }
 

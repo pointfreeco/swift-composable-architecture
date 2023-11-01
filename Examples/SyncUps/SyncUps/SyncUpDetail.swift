@@ -5,7 +5,6 @@ import SwiftUI
 struct SyncUpDetail {
   @ObservableState
   struct State: Equatable {
-    @ObservationStateIgnored
     @PresentationState var destination: Destination.State?
     var syncUp: SyncUp
   }

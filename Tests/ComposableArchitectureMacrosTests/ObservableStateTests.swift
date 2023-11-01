@@ -6,7 +6,7 @@ import XCTest
 
 final class ObservableStateMacroTests: MacroBaseTestCase {
   func testAvailability() {
-    assertMacro(record: true) {
+    assertMacro {
       """
       @ObservableState
       @available(iOS 18, *)
@@ -58,6 +58,7 @@ final class ObservableStateMacroTests: MacroBaseTestCase {
       """#
     }
   }
+
   func testObservableState() throws {
     assertMacro {
       #"""
@@ -220,6 +221,41 @@ final class ObservableStateMacroTests: MacroBaseTestCase {
             return ._$inert._$tag(0)
           }
         }
+      }
+      """
+    }
+  }
+
+  func testPresentationState() {
+    assertMacro {
+      """
+      @ObservableState
+      public struct State {
+        @PresentationState var destination: Destination.State?
+      }
+      """
+    } expansion: {
+      """
+      public struct State {
+        @PresentationState
+        var destination: Destination.State?
+
+        private let _$observationRegistrar = ComposableArchitecture.ObservationRegistrarWrapper()
+
+        internal nonisolated func access<Member>(
+            keyPath: KeyPath<State , Member>
+        ) {
+          _$observationRegistrar.access(self, keyPath: keyPath)
+        }
+
+        internal nonisolated func withMutation<Member, MutationResult>(
+          keyPath: KeyPath<State , Member>,
+          _ mutation: () throws -> MutationResult
+        ) rethrows -> MutationResult {
+          try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
+        }
+
+        public let _$id = ObservableStateID()
       }
       """
     }

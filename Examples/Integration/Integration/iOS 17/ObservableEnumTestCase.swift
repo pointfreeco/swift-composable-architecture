@@ -68,7 +68,6 @@ struct ObservableEnumView: View {
   struct Feature {
     @ObservableState
     struct State: Equatable {
-      @ObservationStateIgnored
       @PresentationState var destination: Destination.State?
     }
     enum Action {

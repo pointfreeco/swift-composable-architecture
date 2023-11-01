@@ -97,9 +97,7 @@ struct ObservablePresentationView: View {
     @ObservableState
     struct State: Equatable {
       var isObservingChildCount = false
-      @ObservationStateIgnored
       @PresentationState var destination: Destination.State?
-      @ObservationStateIgnored
       @PresentationState var sheet: ObservableBasicsView.Feature.State?
     }
     enum Action {

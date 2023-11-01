@@ -5,7 +5,6 @@ import SwiftUI
 struct SyncUpsList {
   @ObservableState
   struct State: Equatable {
-    @ObservationStateIgnored
     @PresentationState var destination: Destination.State?
     var syncUps: IdentifiedArrayOf<SyncUp> = []
 

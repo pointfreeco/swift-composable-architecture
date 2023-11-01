@@ -38,7 +38,6 @@ struct ObservableOptionalView: View {
   struct Feature {
     @ObservableState
     struct State: Equatable {
-      @ObservationStateIgnored
       @PresentationState var child: ObservableBasicsView.Feature.State?
       var isObservingCount = false
     }
