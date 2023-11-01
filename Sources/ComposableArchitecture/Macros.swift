@@ -79,6 +79,32 @@
   ///
   /// ## Gotchas
   ///
+  /// ### Autocomplete
+  ///
+  /// Applying `@Reducer` can break autocompletion in the `body` of the reducer. This is a known
+  /// [issue](https://github.com/apple/swift/issues/69477), and it can generally be worked around by
+  /// providing additional type hints to the compiler:
+  ///
+  ///  1. Adding an explicit `Reducer` conformance in addition to the macro application can restore
+  ///     autocomplete throughout the body of the reducer:
+  ///
+  ///     ```diff
+  ///      @Reducer
+  ///     -struct Feature {
+  ///     +struct Feature: Reducer {
+  ///     ```
+  ///
+  ///  2. Adding explicit generics to instances of `Reduce` in the `body` can restore autocomplete
+  ///     inside the `Reduce`:
+  ///
+  ///     ```diff
+  ///      var body: some Reducer<State, Action> {
+  ///     -  Reduce { state, action in
+  ///     +  Reduce<State, Action> { state, action in
+  ///     ```
+  ///
+  /// ### Circular reference errors
+  ///
   /// There is currently a bug in the Swift compiler and macros that prevents you from extending
   /// types that are inside other types with macros applied in the same file. For example, if you
   /// wanted to extend a reducer's `State` with some extra functionality:
