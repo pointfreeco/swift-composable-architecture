@@ -37,8 +37,8 @@ struct ObservableSiblingFeaturesView: View {
             }
           }
         }
-        // NB: Conditional child views of `Form` that use `@State` are stale when they reappear. This
-        //     `id` forces a refresh.
+        // NB: Conditional child views of `Form` that use `@State` are stale when they reappear.
+        //     This `id` forces a refresh.
         //
         // Feedback filed: https://gist.github.com/stephencelis/fd078ca2d260c316b70dfc1e0f29883f
         .id(UUID())

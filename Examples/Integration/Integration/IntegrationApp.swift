@@ -253,20 +253,27 @@ struct RuntimeWarnings: View {
   var body: some View {
     VStack {
       if !self.runtimeWarnings.isEmpty {
-        ScrollView {
-          ForEach(self.runtimeWarnings, id: \.self) { warning in
-            HStack(alignment: .firstTextBaseline) {
-              Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundColor(.purple)
-              VStack(alignment: .leading, spacing: 4) {
-                Text("Runtime warning")
-                  .font(.headline)
-                Text(warning)
+        VStack(spacing: 10) {
+          ScrollView {
+            ForEach(self.runtimeWarnings, id: \.self) { warning in
+              HStack(alignment: .firstTextBaseline) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                  .foregroundColor(.purple)
+                VStack(alignment: .leading, spacing: 4) {
+                  Text("Runtime warning")
+                    .font(.headline)
+                  Text(warning)
+                }
               }
             }
           }
-          .padding(EdgeInsets(top: 16, leading: 10, bottom: 16, trailing: 10))
+          Button {
+            self.runtimeWarnings.removeAll()
+          } label: {
+            Text("Dismiss")
+          }
         }
+        .padding(EdgeInsets(top: 16, leading: 10, bottom: 16, trailing: 10))
         .frame(maxHeight: 160)
         .background(Color.white)
         .cornerRadius(4)
