@@ -1,24 +1,22 @@
 // TODO: rename Store+Observation?
 
-#if canImport(Observation)
-import Observation
-#endif
 import SwiftUI
 
 #if canImport(Observation)
-@available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
-extension Store: Observable {}
+  import Observation
+#endif
+
+#if canImport(Observation)
+  @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
+  extension Store: Observable {}
 #endif
 
 extension Store: _TCAObservable {
   var observableState: State {
     get {
-      if
-        State.self is ObservableState.Type
-      {
+      if State.self is ObservableState.Type {
         #if DEBUG
-          if
-            #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10),
+          if #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10),
             !ObservedViewLocal.isExecutingBody,
             Thread.callStackSymbols.contains(where: {
               $0.split(separator: " ").dropFirst().first == "AttributeGraph"
@@ -37,8 +35,7 @@ extension Store: _TCAObservable {
       return self.stateSubject.value
     }
     set {
-      if
-        State.self is ObservableState.Type,
+      if State.self is ObservableState.Type,
         !_isIdentityEqual(self.stateSubject.value, newValue)
       {
         self._$observationRegistrar.withMutation(of: self, keyPath: \.observableState) {
@@ -90,7 +87,13 @@ extension Store where State: ObservableState {
         childState = $0[keyPath: toChildState] ?? childState
         return childState
       },
-      id: { _ in Scope(state: toChildState, action: toChildAction) },
+      id: {
+        Scope(
+          state: toChildState,
+          action: toChildAction,
+          id: ($0[keyPath: toChildState] as? any ObservableState)?._$id
+        )
+      },
       action: { toChildAction($1) },
       isInvalid: { $0[keyPath: toChildState] == nil },
       removeDuplicates: nil

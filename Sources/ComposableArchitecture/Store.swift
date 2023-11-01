@@ -394,7 +394,13 @@ public final class Store<State, Action> {
   ) -> Store<ChildState, ChildAction> {
     self.scope(
       state: { $0[keyPath: toChildState] },
-      id: { _ in Scope(state: toChildState, action: toChildAction) },
+      id: {
+        Scope(
+          state: toChildState,
+          action: toChildAction,
+          id: ($0[keyPath: toChildState] as? any ObservableState)?._$id
+        )
+      },
       action: { toChildAction($1) },
       isInvalid: nil,
       removeDuplicates: nil
@@ -457,7 +463,13 @@ public final class Store<State, Action> {
   ) -> Store<PresentationState<ChildState>, PresentationAction<ChildAction>> {
     self.scope(
       state: { $0[keyPath: toChildState] },
-      id: { _ in Scope(state: toChildState, action: toChildAction) },
+      id: {
+        Scope(
+          state: toChildState,
+          action: toChildAction,
+          id: ($0[keyPath: toChildState] as? any ObservableState)?._$id
+        )
+      },
       action: { toChildAction($1) },
       isInvalid: nil,
       removeDuplicates: { $0.sharesStorage(with: $1) }
@@ -857,12 +869,15 @@ public final class Store<State, Action> {
   struct Scope<ChildState, ChildAction>: Hashable {
     let toChildState: KeyPath<State, ChildState>
     let toChildAction: CaseKeyPath<Action, ChildAction>
+    let observableStateID: ObservableStateID?
     init(
       state toChildState: KeyPath<State, ChildState>,
-      action toChildAction: CaseKeyPath<Action, ChildAction>
+      action toChildAction: CaseKeyPath<Action, ChildAction>,
+      id observableStateID: ObservableStateID?
     ) {
       self.toChildState = toChildState
       self.toChildAction = toChildAction
+      self.observableStateID = observableStateID
     }
   }
 }
