@@ -86,7 +86,7 @@
   /// providing additional type hints to the compiler:
   ///
   ///  1. Adding an explicit `Reducer` conformance in addition to the macro application can restore
-  ///     autocomplete throughout the body of the reducer:
+  ///     autocomplete throughout the `body` of the reducer:
   ///
   ///     ```diff
   ///      @Reducer
