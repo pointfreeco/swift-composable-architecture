@@ -119,13 +119,35 @@ struct AppView: View {
 
         List {
 //          ForEachStore(store.scope(state: \.filteredTodos, action: \.todos.element)) {
+
 //          ForEach(store.scope(state: \.filteredTodos, action: \.todos)) {
+
+//          ForEach(
+//            store.todos.ids.map { id in
+//              store.scope(state: \.filteredTodos[id: id]!, action: \.todos[id: id])
+//            }
+//          ) {
+
+//          ForEach(store.scope2(state: \.filteredTodos, action: \.todos)) {
+
+//          ForEach(
+//            store.todos.indices.map { position in
+//              store.scope(
+//                state: \.filteredTodos[position], action: \.todos[id: store.todos.ids[position]]
+//              )
+//            }
+//          ) {
+
           ForEach(
             store.todos.ids.map { id in
-              store.scope(state: \.filteredTodos[id: id]!, action: \.todos[id: id])
+              store.scope(
+                state: \.filteredTodos[id: id]!,
+                action: \.todos[id: id],
+                isInvalid: { !$0.filteredTodos.ids.contains(id) }
+              )
             }
           ) {
-//          ForEach(store.scope2(state: \.filteredTodos, action: \.todos)) {
+
             let _ = print("ForEach")
             TodoView(store: $0)
           }
