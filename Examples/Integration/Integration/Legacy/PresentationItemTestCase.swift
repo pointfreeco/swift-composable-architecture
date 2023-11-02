@@ -122,9 +122,7 @@ struct PresentationItemTestCaseView: View {
       }
       self.core
         .sheet(
-          store: self.store.scope(state: \.$destination, action: \.destination),
-          state: \.childA,
-          action: { .childA($0) }
+          store: self.store.scope(state: \.$destination.childA, action: \.destination.childB)
         ) { store in
           Text("Child A")
           Button("Swap") {
@@ -132,9 +130,7 @@ struct PresentationItemTestCaseView: View {
           }
         }
         .sheet(
-          store: self.store.scope(state: \.$destination, action: \.destination),
-          state: \.childB,
-          action: { .childB($0) }
+          store: self.store.scope(state: \.$destination.childB, action: \.destination.childB)
         ) { store in
           Text("Child B")
           Button("Swap") {

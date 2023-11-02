@@ -208,11 +208,7 @@ struct SyncUpDetailView: View {
           self.store.send(.editButtonTapped)
         }
       }
-      .alert(
-        store: self.store.scope(state: \.$destination, action: \.destination),
-        state: \.alert,
-        action: { .alert($0) }
-      )
+      .alert(store: self.store.scope(state: \.$destination.alert, action: \.destination.alert))
       .sheet(
         item: self.$store.scope(state: \.destination?.edit, action: \.destination.edit)
       ) { store in

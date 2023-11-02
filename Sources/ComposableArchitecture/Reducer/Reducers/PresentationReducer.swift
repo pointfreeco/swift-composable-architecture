@@ -49,6 +49,7 @@ import Combine
 /// See the dedicated article on <doc:Navigation> for more information on the library's navigation
 /// tools, and in particular see <doc:TreeBasedNavigation> for information on modeling navigation
 /// using optionals and enums.
+@dynamicMemberLookup
 @propertyWrapper
 public struct PresentationState<State> {
   private class Storage: @unchecked Sendable {
@@ -94,6 +95,13 @@ public struct PresentationState<State> {
     get { self }
     set { self = newValue }
     _modify { yield &self }
+  }
+
+  public subscript<Case>(
+    dynamicMember keyPath: CaseKeyPath<State, Case>
+  ) -> PresentationState<Case>
+  where State: CasePathable {
+    PresentationState<Case>(wrappedValue: self.wrappedValue.flatMap { $0[case: keyPath] })
   }
 
   /// Accesses the value associated with the given case for reading and writing.
@@ -317,6 +325,34 @@ extension PresentationAction: Hashable where Action: Hashable {}
 extension PresentationAction: Sendable where Action: Sendable {}
 extension PresentationAction: Decodable where Action: Decodable {}
 extension PresentationAction: Encodable where Action: Encodable {}
+
+extension Case {
+  public subscript<Action: CasePathable, AppendedAction>(
+    dynamicMember keyPath: KeyPath<Action.AllCasePaths, AnyCasePath<Action, AppendedAction>>
+  ) -> Case<PresentationAction<AppendedAction>>
+  where Value == PresentationAction<Action> {
+    Case<PresentationAction<AppendedAction>>(
+      embed: {
+        switch $0 {
+        case .dismiss:
+          return self.embed(.dismiss)
+        case let .presented(action):
+          return self.embed(.presented(Action.allCasePaths[keyPath: keyPath].embed(action)))
+        }
+      },
+      extract: {
+        switch self.extract(from: $0) {
+        case .none:
+          return nil
+        case .some(.dismiss):
+          return .dismiss
+        case let .some(.presented(action)):
+          return Action.allCasePaths[keyPath: keyPath].extract(from: action).map { .presented($0) }
+        }
+      }
+    )
+  }
+}
 
 extension Reducer {
   /// Embeds a child reducer in a parent domain that works on an optional property of parent state.
