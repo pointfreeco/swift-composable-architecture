@@ -64,10 +64,8 @@ where
         id: { Action.id(at: position, elements: $0) },
         action: { .element(id: Action.id(at: position, elements: $0), action: $1) },
         isInvalid: {
-          !(
-            $0.indices.contains(position)
-              && Action.index(at: Action.id(at: position, elements: $0), elements: $0) != nil
-          )
+          !($0.indices.contains(position)
+            && Action.index(at: Action.id(at: position, elements: $0), elements: $0) != nil)
         },
         removeDuplicates: nil
       )
@@ -118,6 +116,10 @@ public enum IdentifiedArrayAction<ID: Hashable, State, Action>: CollectionAction
 extension IdentifiedArrayAction: Equatable where Action: Equatable {}
 extension IdentifiedArrayAction: Hashable where Action: Hashable {}
 extension IdentifiedArrayAction: Sendable where ID: Sendable, Action: Sendable {}
+
+typealias IdentifiedArrayActionOf<R: Reducer> = IdentifiedArrayAction<
+  R.State.ID, R.State, R.Action
+> where R.State: Identifiable
 
 extension Reducer {
   public func forEach<
@@ -182,4 +184,3 @@ where
     )
   }
 }
-
