@@ -104,7 +104,7 @@ struct InventoryView: View {
       // ...
     }
     .sheet(
-      store: self.store.scope(state: \.$addItem, action: { .addItem($0) })
+      store: self.store.scope(state: \.$addItem, action: \.addItem)
     ) { store in
       ItemFormView(store: store)
     }
@@ -238,8 +238,8 @@ struct InventoryFeature {
 }
 ```
 
-And then we must make use of the ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` operator to
-integrate the domain of the destination with the domain of the parent feature:
+And then we must make use of the ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` operator
+to integrate the domain of the destination with the domain of the parent feature:
 
 ```swift
 @Reducer
@@ -271,16 +271,13 @@ case addButtonTapped:
 And at any time we can figure out exactly what feature is being presented by switching or otherwise
 destructuring the single piece of `destination` state rather than checking multiple optional values.
 
-The final step is to make use of the special view modifiers that come with this library that mimic
-SwiftUI's APIs, but are tuned specifically for enum state. In particular, you provide a store that
-is focused in on the `Destination` domain, and then provide transformations for isolating a
-particular case of the state and action enums.
+The final step is to make use of the library's scoping powers to focus in on the `Destination`
+domain and further isolate a particular case of the state and action enums via dot-chaining.
 
 For example, suppose the "add" screen is presented as a sheet, the "edit" screen is presented 
 by a popover, and the "detail" screen is presented in a drill-down. Then we can use the 
-`.sheet(store:state:action:)`, `.popover(store:state:action:)`, and 
-`.navigationDestination(store:state:action:)` view modifiers to have each of those styles of 
-presentation powered by the respective case of the destination enum:
+`.sheet(store:)`, `.popover(store:)`, and `.navigationDestination(store:)` view modifiers to have
+each of those styles of presentation powered by the respective case of the destination enum:
 
 ```swift
 struct InventoryView: View {
@@ -291,23 +288,26 @@ struct InventoryView: View {
       // ...
     }
     .sheet(
-      store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-      state: \.addItem,
-      action: { .addItem($0) }
+      store: self.store.scope(
+        state: \.$destination.addItem,
+        action: \.destination.addItem
+      )
     ) { store in 
       AddFeatureView(store: store)
     }
     .popover(
-      store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-      state: \.editItem,
-      action: { .editItem($0) }
+      store: self.store.scope(
+        state: \.$destination.editItem,
+        action: \.destination.editItem
+      )
     ) { store in 
       EditFeatureView(store: store)
     }
     .navigationDestination(
-      store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-      state: \.detailItem,
-      action: { .detailItem($0) }
+      store: self.store.scope(
+        state: \.$destination.detailItem,
+        action: \.destination.detailItem
+      )
     ) { store in 
       DetailFeatureView(store: store)
     }
@@ -340,25 +340,25 @@ forms of navigation could be as simple as this:
 
 ```swift
 .sheet(
-  store: self.store.scope(state: \.addItem, action: { .addItem($0) })
+  store: self.store.scope(state: \.addItem, action: \.addItem)
 ) { store in 
   AddFeatureView(store: store)
 }
 .popover(
-  store: self.store.scope(state: \.editItem, action: { .editItem($0) })
+  store: self.store.scope(state: \.editItem, action: \.editItem)
 ) { store in 
   EditFeatureView(store: store)
 }
 .navigationDestination(
-  store: self.store.scope(state: \.detailItem, action: { .detailItem($0) })
+  store: self.store.scope(state: \.detailItem, action: \.detailItem)
 ) { store in 
   DetailFeatureView(store: store)
 }
 .alert(
-  store: self.store.scope(state: \.alert, action: { .alert($0) })
+  store: self.store.scope(state: \.alert, action: \.alert)
 )
 .confirmationDialog(
-  store: self.store.scope(state: \.confirmationDialog, action: { .confirmationDialog($0) })
+  store: self.store.scope(state: \.confirmationDialog, action: \.confirmationDialog)
 )
 ```
 
