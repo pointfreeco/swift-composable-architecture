@@ -36,7 +36,7 @@ extension View {
     ) { `self`, $isPresented, destination in
       let confirmationDialogState = store.withState { $0.wrappedValue.flatMap(toDestinationState) }
       self.confirmationDialog(
-        (confirmationDialogState?.title).map(Text.init) ?? Text(""),
+        (confirmationDialogState?.title).map(Text.init) ?? Text(verbatim: ""),
         isPresented: $isPresented,
         titleVisibility: (confirmationDialogState?.titleVisibility).map(Visibility.init)
           ?? .automatic,
