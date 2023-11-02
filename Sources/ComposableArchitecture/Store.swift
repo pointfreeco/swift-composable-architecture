@@ -389,19 +389,19 @@ public final class Store<State, Action> {
   ///   - toChildAction: A case key path from `Action` to `ChildAction`.
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<ChildState, ChildAction>(
-    state toChildState: KeyPath<State, ChildState>,
-    action toChildAction: CaseKeyPath<Action, ChildAction>
+    state: KeyPath<State, ChildState>,
+    action: CaseKeyPath<Action, ChildAction>
   ) -> Store<ChildState, ChildAction> {
     self.scope(
-      state: { $0[keyPath: toChildState] },
+      state: { $0[keyPath: state] },
       id: {
         Scope(
-          state: toChildState,
-          action: toChildAction,
-          id: ($0[keyPath: toChildState] as? any ObservableState)?._$id
+          state: state,
+          action: action,
+          id: ($0[keyPath: state] as? any ObservableState)?._$id
         )
       },
-      action: { toChildAction($1) },
+      action: { action($1) },
       isInvalid: nil,
       removeDuplicates: nil
     )
@@ -445,34 +445,6 @@ public final class Store<State, Action> {
       action: { fromChildAction($1) },
       isInvalid: nil,
       removeDuplicates: nil
-    )
-  }
-
-  /// Scopes the store to one that exposes child state and actions.
-  ///
-  /// This is a special overload of ``scope(state:action:)-9iai9`` that works specifically for
-  /// ``PresentationState`` and ``PresentationAction``.
-  ///
-  /// - Parameters:
-  ///   - toChildState: A key path from `State` to ``PresentationState``.
-  ///   - toChildAction: A case key path from `Action` to ``PresentationAction``.
-  /// - Returns: A new store with its domain (state and action) transformed.
-  public func scope<ChildState, ChildAction>(
-    state toChildState: KeyPath<State, PresentationState<ChildState>>,
-    action toChildAction: CaseKeyPath<Action, PresentationAction<ChildAction>>
-  ) -> Store<PresentationState<ChildState>, PresentationAction<ChildAction>> {
-    self.scope(
-      state: { $0[keyPath: toChildState] },
-      id: {
-        Scope(
-          state: toChildState,
-          action: toChildAction,
-          id: ($0[keyPath: toChildState] as? any ObservableState)?._$id
-        )
-      },
-      action: { toChildAction($1) },
-      isInvalid: nil,
-      removeDuplicates: { $0.sharesStorage(with: $1) }
     )
   }
 
@@ -866,18 +838,9 @@ public final class Store<State, Action> {
   }
 
   struct Scope<ChildState, ChildAction>: Hashable {
-    let toChildState: KeyPath<State, ChildState>
-    let toChildAction: CaseKeyPath<Action, ChildAction>
-    let observableStateID: ObservableStateID?
-    init(
-      state toChildState: KeyPath<State, ChildState>,
-      action toChildAction: CaseKeyPath<Action, ChildAction>,
-      id observableStateID: ObservableStateID?
-    ) {
-      self.toChildState = toChildState
-      self.toChildAction = toChildAction
-      self.observableStateID = observableStateID
-    }
+    let state: KeyPath<State, ChildState>
+    let action: CaseKeyPath<Action, ChildAction>
+    let id: ObservableStateID?
   }
 }
 
