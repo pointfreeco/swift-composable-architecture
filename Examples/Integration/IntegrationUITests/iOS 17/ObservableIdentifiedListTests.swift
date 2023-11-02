@@ -38,7 +38,7 @@ final class iOS17_ObservableIdentifiedListTests: BaseIntegrationTests {
       ObservableIdentifiedListView.body
       ObservableIdentifiedListView.body.ForEach
       ObservableIdentifiedListView.body.ForEach
-      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, IdentifiedArrayAction<ObservableBasicsView.Feature>>.scope
+      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, (id: UUID, action: ObservableBasicsView.Feature.Action)>.scope
       """
     }
   }
@@ -52,7 +52,7 @@ final class iOS17_ObservableIdentifiedListTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableBasicsView.body
-      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, IdentifiedArrayAction<ObservableBasicsView.Feature>>.scope
+      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, (id: UUID, action: ObservableBasicsView.Feature.Action)>.scope
       """
     }
   }
