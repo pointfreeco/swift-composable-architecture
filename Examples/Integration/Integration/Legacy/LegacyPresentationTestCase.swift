@@ -314,11 +314,7 @@ struct PresentationTestCaseView: View {
       Button("Open alert") {
         self.viewStore.send(.alertButtonTapped)
       }
-      .alert(
-        store: self.store.scope(state: \.$destination, action: \.destination),
-        state: \.alert,
-        action: { .alert($0) }
-      )
+      .alert(store: self.store.scope(state: \.$destination.alert, action: \.destination.alert))
 
       Button("Open custom alert") {
         self.viewStore.send(.customAlertButtonTapped)
@@ -340,18 +336,17 @@ struct PresentationTestCaseView: View {
         self.viewStore.send(.dialogButtonTapped)
       }
       .confirmationDialog(
-        store: self.store.scope(state: \.$destination, action: \.destination),
-        state: \.dialog,
-        action: { .dialog($0) }
+        store: self.store.scope(state: \.$destination.dialog, action: \.destination.dialog)
       )
 
       Button("Open full screen cover") {
         self.viewStore.send(.fullScreenCoverButtonTapped)
       }
       .fullScreenCover(
-        store: self.store.scope(state: \.$destination, action: \.destination),
-        state: \.fullScreenCover,
-        action: { .fullScreenCover($0) }
+        store: self.store.scope(
+          state: \.$destination.fullScreenCover,
+          action: \.destination.fullScreenCover
+        )
       ) { store in
         ChildView(store: store)
       }
@@ -364,9 +359,10 @@ struct PresentationTestCaseView: View {
         Image(systemName: "arrow.up.forward.square")
       }
       .sheet(
-        store: self.store.scope(state: \.$destination, action: \.destination),
-        state: \.navigationLinkDemo,
-        action: { .navigationLinkDemo($0) }
+        store: self.store.scope(
+          state: \.$destination.navigationLinkDemo,
+          action: \.destination.navigationLinkDemo
+        )
       ) { store in
         NavigationLinkDemoView(store: store)
       }
@@ -375,9 +371,10 @@ struct PresentationTestCaseView: View {
         self.viewStore.send(.navigationDestinationButtonTapped)
       }
       .navigationDestination(
-        store: self.store.scope(state: \.$destination, action: \.destination),
-        state: \.navigationDestination,
-        action: { .navigationDestination($0) }
+        store: self.store.scope(
+          state: \.$destination.navigationDestination,
+          action: \.destination.navigationDestination
+        )
       ) { store in
         ChildView(store: store)
       }
@@ -386,9 +383,10 @@ struct PresentationTestCaseView: View {
         self.viewStore.send(.popoverButtonTapped)
       }
       .popover(
-        store: self.store.scope(state: \.$destination, action: \.destination),
-        state: \.popover,
-        action: { .popover($0) }
+        store: self.store.scope(
+          state: \.$destination.popover,
+          action: \.destination.popover
+        )
       ) { store in
         ChildView(store: store)
       }
@@ -397,9 +395,7 @@ struct PresentationTestCaseView: View {
         self.viewStore.send(.sheetButtonTapped)
       }
       .sheet(
-        store: self.store.scope(state: \.$destination, action: \.destination),
-        state: \.sheet,
-        action: { .sheet($0) }
+        store: self.store.scope(state: \.$destination.sheet, action: \.destination.sheet)
       ) { store in
         ChildView(store: store)
       }
