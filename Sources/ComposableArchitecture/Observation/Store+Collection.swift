@@ -39,6 +39,34 @@ where Elements.Index: Hashable {
   }
 }
 
+extension IndexedAction: CasePathable {
+  public static var allCasePaths: AllCasePaths {
+    AllCasePaths()
+  }
+
+  public struct AllCasePaths {
+    public var element: AnyCasePath<IndexedAction, (id: Elements.Index, action: ElementAction)> {
+      AnyCasePath(
+        embed: IndexedAction.element,
+        extract: {
+          guard case let .element(id, action) = $0 else { return nil }
+          return (id, action)
+        }
+      )
+    }
+
+    public subscript(position: Elements.Index) -> AnyCasePath<IndexedAction, ElementAction> {
+      AnyCasePath(
+        embed: { .element(id: position, action: $0) },
+        extract: {
+          guard case .element(position, let action) = $0 else { return nil }
+          return action
+        }
+      )
+    }
+  }
+}
+
 extension IndexedAction: Equatable where ElementAction: Equatable {}
 extension IndexedAction: Hashable where ElementAction: Hashable {}
 extension IndexedAction: Sendable where Elements.Index: Sendable, ElementAction: Sendable {}
@@ -109,6 +137,34 @@ public enum IdentifiedArrayAction<ID: Hashable, State, Action>: CollectionAction
     switch self {
     case let .element(id, action):
       return (id, action)
+    }
+  }
+}
+
+extension IdentifiedArrayAction: CasePathable {
+  public static var allCasePaths: AllCasePaths {
+    AllCasePaths()
+  }
+
+  public struct AllCasePaths {
+    public var element: AnyCasePath<IdentifiedArrayAction, (id: ID, action: Action)> {
+      AnyCasePath(
+        embed: IdentifiedArrayAction.element,
+        extract: {
+          guard case let .element(id, action) = $0 else { return nil }
+          return (id, action)
+        }
+      )
+    }
+
+    public subscript(id id: ID) -> AnyCasePath<IdentifiedArrayAction, Action> {
+      AnyCasePath(
+        embed: { .element(id: id, action: $0) },
+        extract: {
+          guard case .element(id, let action) = $0 else { return nil }
+          return action
+        }
+      )
     }
   }
 }
