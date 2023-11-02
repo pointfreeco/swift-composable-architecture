@@ -31,7 +31,7 @@ struct Todos {
     case delete(IndexSet)
     case move(IndexSet, Int)
     case sortCompletedTodos
-    case todos(IdentifiedArrayActionOf<Todo>)
+    case todos(id: Todo.State.ID, action: Todo.Action)
   }
 
   @Dependency(\.continuousClock) var clock
@@ -85,7 +85,7 @@ struct Todos {
         state.todos.sort { $1.isComplete && !$0.isComplete }
         return .none
 
-      case .todos(.element(id: _, action: .binding(\.isComplete))):
+      case .todos(id: _, action: .binding(\.isComplete)):
         return .run { send in
           try await self.clock.sleep(for: .seconds(1))
           await send(.sortCompletedTodos, animation: .default)
@@ -106,7 +106,6 @@ struct AppView: View {
   @State var store: StoreOf<Todos>
 
   var body: some View {
-    let _ = Self._printChanges()
     NavigationStack {
       VStack(alignment: .leading) {
         Picker("Filter", selection: $store.filter.animation()) {
@@ -118,38 +117,8 @@ struct AppView: View {
         .padding(.horizontal)
 
         List {
-//          ForEachStore(store.scope(state: \.filteredTodos, action: \.todos.element)) {
-
-//          ForEach(store.scope(state: \.filteredTodos, action: \.todos)) {
-
-//          ForEach(
-//            store.todos.ids.map { id in
-//              store.scope(state: \.filteredTodos[id: id]!, action: \.todos[id: id])
-//            }
-//          ) {
-
-//          ForEach(store.scope2(state: \.filteredTodos, action: \.todos)) {
-
-//          ForEach(
-//            store.todos.indices.map { position in
-//              store.scope(
-//                state: \.filteredTodos[position], action: \.todos[id: store.todos.ids[position]]
-//              )
-//            }
-//          ) {
-
-          ForEach(
-            store.todos.ids.map { id in
-              store.scope(
-                state: \.filteredTodos[id: id]!,
-                action: \.todos[id: id],
-                isInvalid: { !$0.filteredTodos.ids.contains(id) }
-              )
-            }
-          ) {
-
-            let _ = print("ForEach")
-            TodoView(store: $0)
+          ForEach(store: store.scope(state: \.filteredTodos, action: \.todos)) { store in
+            TodoView(store: store)
           }
           .onDelete { store.send(.delete($0)) }
           .onMove { store.send(.move($0, $1)) }
