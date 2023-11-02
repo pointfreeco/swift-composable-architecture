@@ -173,7 +173,7 @@ extension IdentifiedArrayAction: Equatable where Action: Equatable {}
 extension IdentifiedArrayAction: Hashable where Action: Hashable {}
 extension IdentifiedArrayAction: Sendable where ID: Sendable, Action: Sendable {}
 
-typealias IdentifiedArrayActionOf<R: Reducer> = IdentifiedArrayAction<
+public typealias IdentifiedArrayActionOf<R: Reducer> = IdentifiedArrayAction<
   R.State.ID, R.State, R.Action
 > where R.State: Identifiable
 

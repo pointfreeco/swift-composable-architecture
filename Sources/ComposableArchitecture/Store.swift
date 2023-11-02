@@ -490,6 +490,27 @@ public final class Store<State, Action> {
     )
   }
 
+  public func scope2<ChildAction: CollectionAction>(
+    state: KeyPath<State, ChildAction.Elements>,
+    action: CaseKeyPath<Action, ChildAction>
+  ) -> [Store<ChildAction.Elements.Element, ChildAction.ElementAction>] {
+    let store = self.scope(state: state, action: action)
+    return store.stateSubject.value.indices.map { position in
+      store.scope(
+        state: { $0[position] },
+        id: { ChildAction.id(at: position, elements: $0) },
+        action: { .element(id: ChildAction.id(at: position, elements: $0), action: $1) },
+        isInvalid: {
+          !($0.indices.contains(position)
+            && ChildAction.index(
+              at: ChildAction.id(at: position, elements: $0), elements: $0
+            ) != nil)
+        },
+        removeDuplicates: nil
+      )
+    }
+  }
+
   func scope<ChildState, ChildAction>(
     state toChildState: @escaping (State) -> ChildState,
     id: ((State) -> AnyHashable)?,

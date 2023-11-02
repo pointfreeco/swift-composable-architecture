@@ -31,7 +31,7 @@ struct Todos {
     case delete(IndexSet)
     case move(IndexSet, Int)
     case sortCompletedTodos
-    case todo(id: Todo.State.ID, action: Todo.Action)
+    case todos(IdentifiedArrayActionOf<Todo>)
   }
 
   @Dependency(\.continuousClock) var clock
@@ -85,18 +85,18 @@ struct Todos {
         state.todos.sort { $1.isComplete && !$0.isComplete }
         return .none
 
-      case .todo(id: _, action: .binding(\.isComplete)):
+      case .todos(.element(id: _, action: .binding(\.isComplete))):
         return .run { send in
           try await self.clock.sleep(for: .seconds(1))
           await send(.sortCompletedTodos, animation: .default)
         }
         .cancellable(id: CancelID.todoCompletion, cancelInFlight: true)
 
-      case .todo:
+      case .todos:
         return .none
       }
     }
-    .forEach(\.todos, action: \.todo) {
+    .forEach(\.todos, action: \.todos) {
       Todo()
     }
   }
@@ -106,6 +106,7 @@ struct AppView: View {
   @State var store: StoreOf<Todos>
 
   var body: some View {
+    let _ = Self._printChanges()
     NavigationStack {
       VStack(alignment: .leading) {
         Picker("Filter", selection: $store.filter.animation()) {
@@ -117,9 +118,15 @@ struct AppView: View {
         .padding(.horizontal)
 
         List {
-          ForEachStore(
-            store.scope(state: \.filteredTodos, action: \.todo)
+//          ForEachStore(store.scope(state: \.filteredTodos, action: \.todos.element)) {
+//          ForEach(store.scope(state: \.filteredTodos, action: \.todos)) {
+          ForEach(
+            store.todos.ids.map { id in
+              store.scope(state: \.filteredTodos[id: id]!, action: \.todos[id: id])
+            }
           ) {
+//          ForEach(store.scope2(state: \.filteredTodos, action: \.todos)) {
+            let _ = print("ForEach")
             TodoView(store: $0)
           }
           .onDelete { store.send(.delete($0)) }
