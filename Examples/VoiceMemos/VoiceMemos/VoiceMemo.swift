@@ -3,6 +3,7 @@ import SwiftUI
 
 @Reducer
 struct VoiceMemo {
+  @ObservableState
   struct State: Equatable, Identifiable {
     var date: Date
     var duration: TimeInterval
@@ -28,12 +29,12 @@ struct VoiceMemo {
     }
   }
 
-  enum Action: Equatable {
+  enum Action: BindableAction, Equatable {
     case audioPlayerClient(TaskResult<Bool>)
+    case binding(BindingAction<State>)
     case delegate(Delegate)
     case playButtonTapped
     case timerUpdated(TimeInterval)
-    case titleTextFieldChanged(String)
 
     enum Delegate {
       case playbackStarted
@@ -46,6 +47,7 @@ struct VoiceMemo {
   private enum CancelID { case play }
 
   var body: some Reducer<State, Action> {
+    BindingReducer()
     Reduce { state, action in
       switch action {
       case .audioPlayerClient(.failure):
@@ -58,6 +60,9 @@ struct VoiceMemo {
       case .audioPlayerClient:
         state.mode = .notPlaying
         return .cancel(id: CancelID.play)
+
+      case .binding:
+        return .none
 
       case .delegate:
         return .none
@@ -97,57 +102,51 @@ struct VoiceMemo {
           state.mode = .playing(progress: time / state.duration)
         }
         return .none
-
-      case let .titleTextFieldChanged(text):
-        state.title = text
-        return .none
       }
     }
   }
 }
 
 struct VoiceMemoView: View {
-  let store: StoreOf<VoiceMemo>
+  @State var store: StoreOf<VoiceMemo>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      let currentTime =
-        viewStore.mode.progress.map { $0 * viewStore.duration } ?? viewStore.duration
-      HStack {
-        TextField(
-          "Untitled, \(viewStore.date.formatted(date: .numeric, time: .shortened))",
-          text: viewStore.binding(get: \.title, send: { .titleTextFieldChanged($0) })
-        )
-
-        Spacer()
-
-        dateComponentsFormatter.string(from: currentTime).map {
-          Text($0)
-            .font(.footnote.monospacedDigit())
-            .foregroundColor(Color(.systemGray))
-        }
-
-        Button {
-          viewStore.send(.playButtonTapped)
-        } label: {
-          Image(systemName: viewStore.mode.isPlaying ? "stop.circle" : "play.circle")
-            .font(.system(size: 22))
-        }
-      }
-      .buttonStyle(.borderless)
-      .frame(maxHeight: .infinity, alignment: .center)
-      .padding(.horizontal)
-      .listRowBackground(viewStore.mode.isPlaying ? Color(.systemGray6) : .clear)
-      .listRowInsets(EdgeInsets())
-      .background(
-        Color(.systemGray5)
-          .frame(maxWidth: viewStore.mode.isPlaying ? .infinity : 0)
-          .animation(
-            viewStore.mode.isPlaying ? .linear(duration: viewStore.duration) : nil,
-            value: viewStore.mode.isPlaying
-          ),
-        alignment: .leading
+    let currentTime =
+      self.store.mode.progress.map { $0 * self.store.duration } ?? self.store.duration
+    HStack {
+      TextField(
+        "Untitled, \(self.store.date.formatted(date: .numeric, time: .shortened))",
+        text: self.$store.title
       )
+
+      Spacer()
+
+      dateComponentsFormatter.string(from: currentTime).map {
+        Text($0)
+          .font(.footnote.monospacedDigit())
+          .foregroundColor(Color(.systemGray))
+      }
+
+      Button {
+        self.store.send(.playButtonTapped)
+      } label: {
+        Image(systemName: self.store.mode.isPlaying ? "stop.circle" : "play.circle")
+          .font(.system(size: 22))
+      }
     }
+    .buttonStyle(.borderless)
+    .frame(maxHeight: .infinity, alignment: .center)
+    .padding(.horizontal)
+    .listRowBackground(self.store.mode.isPlaying ? Color(.systemGray6) : .clear)
+    .listRowInsets(EdgeInsets())
+    .background(
+      Color(.systemGray5)
+        .frame(maxWidth: self.store.mode.isPlaying ? .infinity : 0)
+        .animation(
+          self.store.mode.isPlaying ? .linear(duration: self.store.duration) : nil,
+          value: self.store.mode.isPlaying
+        ),
+      alignment: .leading
+    )
   }
 }

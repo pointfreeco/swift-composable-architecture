@@ -3,6 +3,7 @@ import SwiftUI
 
 @Reducer
 struct RecordingMemo {
+  @ObservableState
   struct State: Equatable {
     var date: Date
     var duration: TimeInterval = 0
@@ -83,40 +84,38 @@ struct RecordingMemo {
 }
 
 struct RecordingMemoView: View {
-  let store: StoreOf<RecordingMemo>
+  @State var store: StoreOf<RecordingMemo>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      VStack(spacing: 12) {
-        Text("Recording")
-          .font(.title)
-          .colorMultiply(Color(Int(viewStore.duration).isMultiple(of: 2) ? .systemRed : .label))
-          .animation(.easeInOut(duration: 0.5), value: viewStore.duration)
+    VStack(spacing: 12) {
+      Text("Recording")
+        .font(.title)
+        .colorMultiply(Color(Int(self.store.duration).isMultiple(of: 2) ? .systemRed : .label))
+        .animation(.easeInOut(duration: 0.5), value: self.store.duration)
 
-        if let formattedDuration = dateComponentsFormatter.string(from: viewStore.duration) {
-          Text(formattedDuration)
-            .font(.body.monospacedDigit().bold())
-            .foregroundColor(.black)
-        }
-
-        ZStack {
-          Circle()
-            .foregroundColor(Color(.label))
-            .frame(width: 74, height: 74)
-
-          Button {
-            viewStore.send(.stopButtonTapped, animation: .default)
-          } label: {
-            RoundedRectangle(cornerRadius: 4)
-              .foregroundColor(Color(.systemRed))
-              .padding(17)
-          }
-          .frame(width: 70, height: 70)
-        }
+      if let formattedDuration = dateComponentsFormatter.string(from: self.store.duration) {
+        Text(formattedDuration)
+          .font(.body.monospacedDigit().bold())
+          .foregroundColor(.black)
       }
-      .task {
-        await viewStore.send(.onTask).finish()
+
+      ZStack {
+        Circle()
+          .foregroundColor(Color(.label))
+          .frame(width: 74, height: 74)
+
+        Button {
+          self.store.send(.stopButtonTapped, animation: .default)
+        } label: {
+          RoundedRectangle(cornerRadius: 4)
+            .foregroundColor(Color(.systemRed))
+            .padding(17)
+        }
+        .frame(width: 70, height: 70)
       }
+    }
+    .task {
+      await self.store.send(.onTask).finish()
     }
   }
 }

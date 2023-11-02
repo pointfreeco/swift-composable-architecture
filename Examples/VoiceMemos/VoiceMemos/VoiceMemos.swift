@@ -4,6 +4,7 @@ import SwiftUI
 
 @Reducer
 struct VoiceMemos {
+  @ObservableState
   struct State: Equatable {
     @PresentationState var alert: AlertState<AlertAction>?
     var audioRecorderPermission = RecorderPermission.undetermined
@@ -132,39 +133,37 @@ struct VoiceMemos {
 }
 
 struct VoiceMemosView: View {
-  let store: StoreOf<VoiceMemos>
+  @State var store: StoreOf<VoiceMemos>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      NavigationStack {
-        VStack {
-          List {
-            ForEachStore(
-              self.store.scope(state: \.voiceMemos, action: \.voiceMemos)
-            ) {
-              VoiceMemoView(store: $0)
-            }
-            .onDelete { viewStore.send(.onDelete($0)) }
+    NavigationStack {
+      VStack {
+        List {
+          ForEach(self.store.scope(state: \.voiceMemos, action: \.voiceMemos)) { store in
+            VoiceMemoView(store: store)
           }
-
-          IfLetStore(
-            self.store.scope(state: \.$recordingMemo, action: \.recordingMemo)
-          ) { store in
-            RecordingMemoView(store: store)
-          } else: {
-            RecordButton(permission: viewStore.audioRecorderPermission) {
-              viewStore.send(.recordButtonTapped, animation: .spring())
-            } settingsAction: {
-              viewStore.send(.openSettingsButtonTapped)
-            }
-          }
-          .padding()
-          .frame(maxWidth: .infinity)
-          .background(Color.init(white: 0.95))
+          .onDelete { self.store.send(.onDelete($0)) }
         }
-        .alert(store: self.store.scope(state: \.$alert, action: \.alert))
-        .navigationTitle("Voice memos")
+
+        Group {
+          if let store = self.store.scope(
+            state: \.recordingMemo, action: \.recordingMemo.presented
+          ) {
+            RecordingMemoView(store: store)
+          } else {
+            RecordButton(permission: self.store.audioRecorderPermission) {
+              self.store.send(.recordButtonTapped, animation: .spring())
+            } settingsAction: {
+              self.store.send(.openSettingsButtonTapped)
+            }
+          }
+        }
+        .padding()
+        .frame(maxWidth: .infinity)
+        .background(Color.init(white: 0.95))
       }
+      .alert(store: self.store.scope(state: \.$alert, action: \.alert))
+      .navigationTitle("Voice memos")
     }
   }
 }
