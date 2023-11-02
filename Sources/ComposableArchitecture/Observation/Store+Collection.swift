@@ -39,6 +39,10 @@ where Elements.Index: Hashable {
   }
 }
 
+extension IndexedAction: Equatable where ElementAction: Equatable {}
+extension IndexedAction: Hashable where ElementAction: Hashable {}
+extension IndexedAction: Sendable where Elements.Index: Sendable, ElementAction: Sendable {}
+
 public typealias ArrayAction<Element: Reducer> = IndexedAction<[Element.State], Element.Action>
 
 extension Store: MutableCollection, Collection, Sequence
@@ -92,29 +96,28 @@ where
   Action.Elements == State
 {}
 
-public enum IdentifiedArrayAction<Element: Reducer>: CollectionAction
-where Element.State: Identifiable {
-  case element(id: Element.State.ID, action: Element.Action)
+public enum IdentifiedArrayAction<ID: Hashable, State, Action>: CollectionAction {
+  case element(id: ID, action: Action)
 
-  public static func id(at index: Int, elements: IdentifiedArrayOf<Element.State>)
-    -> Element.State.ID
-  {
+  public static func id(at index: Int, elements: IdentifiedArray<ID, State>) -> ID {
     elements.ids[index]
   }
 
-  public static func index(at id: Element.State.ID, elements: IdentifiedArrayOf<Element.State>)
-    -> Int?
-  {
+  public static func index(at id: ID, elements: IdentifiedArray<ID, State>) -> Int? {
     elements.index(id: id)
   }
 
-  public var element: (id: Element.State.ID, action: Element.Action)? {
+  public var element: (id: ID, action: Action)? {
     switch self {
     case let .element(id, action):
       return (id, action)
     }
   }
 }
+
+extension IdentifiedArrayAction: Equatable where Action: Equatable {}
+extension IdentifiedArrayAction: Hashable where Action: Hashable {}
+extension IdentifiedArrayAction: Sendable where ID: Sendable, Action: Sendable {}
 
 extension Reducer {
   public func forEach<
