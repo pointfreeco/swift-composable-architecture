@@ -379,13 +379,13 @@ public final class Store<State, Action> {
   ///   - toChildAction: A case key path from `Action` to `ChildAction`.
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<ChildState, ChildAction>(
-    state toChildState: KeyPath<State, ChildState>,
-    action toChildAction: CaseKeyPath<Action, ChildAction>
+    state: KeyPath<State, ChildState>,
+    action: CaseKeyPath<Action, ChildAction>
   ) -> Store<ChildState, ChildAction> {
     self.scope(
-      state: { $0[keyPath: toChildState] },
-      id: { _ in Scope(state: toChildState, action: toChildAction) },
-      action: { toChildAction($1) },
+      state: { $0[keyPath: state] },
+      id: { _ in Scope(state: state, action: action) },
+      action: { action($1) },
       isInvalid: nil,
       removeDuplicates: nil
     )
@@ -429,28 +429,6 @@ public final class Store<State, Action> {
       action: { fromChildAction($1) },
       isInvalid: nil,
       removeDuplicates: nil
-    )
-  }
-
-  /// Scopes the store to one that exposes child state and actions.
-  ///
-  /// This is a special overload of ``scope(state:action:)-9iai9`` that works specifically for
-  /// ``PresentationState`` and ``PresentationAction``.
-  ///
-  /// - Parameters:
-  ///   - toChildState: A key path from `State` to ``PresentationState``.
-  ///   - toChildAction: A case key path from `Action` to ``PresentationAction``.
-  /// - Returns: A new store with its domain (state and action) transformed.
-  public func scope<ChildState, ChildAction>(
-    state toChildState: KeyPath<State, PresentationState<ChildState>>,
-    action toChildAction: CaseKeyPath<Action, PresentationAction<ChildAction>>
-  ) -> Store<PresentationState<ChildState>, PresentationAction<ChildAction>> {
-    self.scope(
-      state: { $0[keyPath: toChildState] },
-      id: { _ in Scope(state: toChildState, action: toChildAction) },
-      action: { toChildAction($1) },
-      isInvalid: nil,
-      removeDuplicates: { $0.sharesStorage(with: $1) }
     )
   }
 
@@ -560,6 +538,10 @@ public final class Store<State, Action> {
         else { return }
         if childStore._isInvalidated(), let id = id {
           self.invalidateChild(id: id)
+          guard ChildState.self is _OptionalProtocol.Type
+          else {
+            return
+          }
         }
         let childState = toChildState(state)
         guard isDuplicate.map({ !$0(childStore.stateSubject.value, childState) }) ?? true else {
@@ -839,15 +821,8 @@ public final class Store<State, Action> {
   }
 
   private struct Scope<ChildState, ChildAction>: Hashable {
-    let toChildState: KeyPath<State, ChildState>
-    let toChildAction: CaseKeyPath<Action, ChildAction>
-    init(
-      state toChildState: KeyPath<State, ChildState>,
-      action toChildAction: CaseKeyPath<Action, ChildAction>
-    ) {
-      self.toChildState = toChildState
-      self.toChildAction = toChildAction
-    }
+    let state: KeyPath<State, ChildState>
+    let action: CaseKeyPath<Action, ChildAction>
   }
 }
 
@@ -947,6 +922,9 @@ public struct StoreTask: Hashable, Sendable {
 private protocol AnyStore {
   func invalidate()
 }
+
+private protocol _OptionalProtocol {}
+extension Optional: _OptionalProtocol {}
 
 private func typeName<State, Action>(of store: Store<State, Action>) -> String {
   let stateType = typeName(State.self, genericsAbbreviated: false)
