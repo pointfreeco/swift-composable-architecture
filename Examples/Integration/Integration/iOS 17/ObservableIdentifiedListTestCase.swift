@@ -21,7 +21,7 @@ struct ObservableIdentifiedListView: View {
             }
           }
         }
-        ForEach(store: self.store.scope(state: \.rows, action: \.rows)) { store in
+        ForEach(self.store.scope(state: \.rows, action: \.rows)) { store in
           let _ = Logger.shared.log("\(Self.self).body.ForEach")
           Section {
             HStack {

@@ -117,7 +117,7 @@ struct AppView: View {
         .padding(.horizontal)
 
         List {
-          ForEach(store: store.scope(state: \.filteredTodos, action: \.todos)) { store in
+          ForEach($store.scope(state: \.filteredTodos, action: \.todos)) { $store in
             TodoView(store: store)
           }
           .onDelete { store.send(.delete($0)) }
