@@ -7,12 +7,12 @@ import XCTest
 class MacroBaseTestCase: XCTestCase {
   override func invokeTest() {
     MacroTesting.withMacroTesting(
-      //isRecording: true,
+      // isRecording: true,
       macros: [
         ObservableStateMacro.self,
-        //WithViewStoreMacro.self,
         ObservationStateTrackedMacro.self,
         ObservationStateIgnoredMacro.self,
+        // WithViewStoreMacro.self,
       ]
     ) {
       super.invokeTest()

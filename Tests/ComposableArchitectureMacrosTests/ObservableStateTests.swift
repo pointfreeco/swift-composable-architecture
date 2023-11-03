@@ -38,7 +38,7 @@ final class ObservableStateMacroTests: MacroBaseTestCase {
           }
         }
 
-        private let _$observationRegistrar = ComposableArchitecture.ObservationRegistrarWrapper()
+        private let _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
         internal nonisolated func access<Member>(
             keyPath: KeyPath<State , Member>
@@ -53,7 +53,9 @@ final class ObservableStateMacroTests: MacroBaseTestCase {
           try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
         }
 
-        let _$id = ObservableStateID()
+        var _$id: ComposableArchitecture.ObservableStateID {
+          self._$observationRegistrar.id
+        }
       }
       """#
     }
@@ -90,7 +92,7 @@ final class ObservableStateMacroTests: MacroBaseTestCase {
           }
         }
 
-        private let _$observationRegistrar = ComposableArchitecture.ObservationRegistrarWrapper()
+        private let _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
         internal nonisolated func access<Member>(
             keyPath: KeyPath<State , Member>
@@ -105,7 +107,9 @@ final class ObservableStateMacroTests: MacroBaseTestCase {
           try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
         }
 
-        let _$id = ObservableStateID()
+        var _$id: ComposableArchitecture.ObservableStateID {
+          self._$observationRegistrar.id
+        }
       }
       """#
     }
@@ -125,7 +129,7 @@ final class ObservableStateMacroTests: MacroBaseTestCase {
       struct State {
         var count = 0
 
-        private let _$observationRegistrar = ComposableArchitecture.ObservationRegistrarWrapper()
+        private let _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
         internal nonisolated func access<Member>(
             keyPath: KeyPath<State , Member>
@@ -140,7 +144,9 @@ final class ObservableStateMacroTests: MacroBaseTestCase {
           try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
         }
 
-        let _$id = ObservableStateID()
+        var _$id: ComposableArchitecture.ObservableStateID {
+          self._$observationRegistrar.id
+        }
       }
       """
     }
@@ -161,7 +167,7 @@ final class ObservableStateMacroTests: MacroBaseTestCase {
         case feature1(Feature1.State)
         case feature2(Feature2.State)
 
-        var _$id: ObservableStateID {
+        var _$id: ComposableArchitecture.ObservableStateID {
           switch self {
           case let .feature1(state):
             return ._$id(for: state)._$tag(0)
@@ -189,7 +195,7 @@ final class ObservableStateMacroTests: MacroBaseTestCase {
         case feature1(Feature1.State)
         case feature2(Feature2.State)
 
-        public var _$id: ObservableStateID {
+        public var _$id: ComposableArchitecture.ObservableStateID {
           switch self {
           case let .feature1(state):
             return ._$id(for: state)._$tag(0)
@@ -215,7 +221,7 @@ final class ObservableStateMacroTests: MacroBaseTestCase {
       public enum Path {
         case foo(Int, String)
 
-        public var _$id: ObservableStateID {
+        public var _$id: ComposableArchitecture.ObservableStateID {
           switch self {
           case .foo:
             return ._$inert._$tag(0)

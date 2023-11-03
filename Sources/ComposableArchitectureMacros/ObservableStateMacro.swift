@@ -33,7 +33,12 @@ public struct ObservableStateMacro {
 
   static let registrarTypeName = "ObservationStateRegistrar"
   static var qualifiedRegistrarTypeName: String {
-    return "\(moduleName).\(registrarTypeName)"
+    "\(moduleName).\(registrarTypeName)"
+  }
+
+  static let idName = "ObservableStateID"
+  static var qualifiedIDName: String {
+    "\(moduleName).\(idName)"
   }
 
   static let trackedMacroName = "ObservationStateTracked"
@@ -231,7 +236,7 @@ extension ObservableStateMacro: MemberMacro {
     let access = declaration.modifiers.first { $0.name.tokenKind == .keyword(.public) }
     declaration.addIfNeeded(
       """
-      \(access)var _$id: ComposableArchitecture.ObservableStateID {
+      \(access)var _$id: \(raw: qualifiedIDName) {
       self.\(raw: registrarVariableName).id
       }
       """ as DeclSyntax,
@@ -276,7 +281,7 @@ extension ObservableStateMacro {
 
     return [
       """
-      \(access)var _$id: ObservableStateID {
+      \(access)var _$id: \(raw: qualifiedIDName) {
         switch self {
       \(raw: cases.joined(separator: "\n"))
         }
