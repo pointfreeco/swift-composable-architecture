@@ -2,6 +2,7 @@ import SwiftDiagnostics
 import SwiftOperators
 import SwiftSyntax
 import SwiftSyntaxBuilder
+import SwiftSyntaxMacroExpansion
 import SwiftSyntaxMacros
 
 public enum ReducerMacro {
@@ -86,21 +87,16 @@ extension ReducerMacro: MemberAttributeMacro {
         context.diagnose(
           Diagnostic(
             node: reduce.decl.cast(FunctionDeclSyntax.self).name,
-            message: SimpleDiagnosticMessage(
-              message: """
-                A 'reduce' method should not be defined in a reducer with a 'body'; it takes \
-                precedence and 'body' will never be invoked
-                """,
-              diagnosticID: "reducer-with-body-and-reduce",
-              severity: .warning
+            message: MacroExpansionWarningMessage(
+              """
+              A 'reduce' method should not be defined in a reducer with a 'body'; it takes \
+              precedence and 'body' will never be invoked
+              """
             ),
             notes: [
               Note(
                 node: Syntax(identifier),
-                message: SimpleNoteMessage(
-                  message: "'body' defined here",
-                  fixItID: "reducer-with-body-and-reduce"
-                )
+                message: MacroExpansionNoteMessage("'body' defined here")
               )
             ]
           )
@@ -126,34 +122,6 @@ extension ReducerMacro: MemberAttributeMacro {
     } else {
       return []
     }
-  }
-}
-
-struct SimpleDiagnosticMessage: DiagnosticMessage {
-  var message: String
-  var diagnosticID: MessageID
-  var severity: DiagnosticSeverity
-
-  init(message: String, diagnosticID: String, severity: DiagnosticSeverity) {
-    self.message = message
-    self.diagnosticID = MessageID(
-      domain: "co.pointfree.swift-composable-architecture",
-      id: diagnosticID
-    )
-    self.severity = severity
-  }
-}
-
-struct SimpleNoteMessage: NoteMessage {
-  var message: String
-  var fixItID: MessageID
-
-  init(message: String, fixItID: String) {
-    self.message = message
-    self.fixItID = MessageID(
-      domain: "co.pointfree.swift-composable-architecture",
-      id: fixItID
-    )
   }
 }
 
@@ -188,3 +156,17 @@ extension Array where Element == String {
     self.flatMap { [$0, "ComposableArchitecture.\($0)"] }
   }
 }
+
+struct MacroExpansionNoteMessage: NoteMessage {
+  var message: String
+
+  init(_ message: String) {
+    self.message = message
+  }
+
+  var fixItID: MessageID {
+    MessageID(domain: diagnosticDomain, id: "\(Self.self)")
+  }
+}
+
+private let diagnosticDomain: String = "ComposableArchitectureMacros"

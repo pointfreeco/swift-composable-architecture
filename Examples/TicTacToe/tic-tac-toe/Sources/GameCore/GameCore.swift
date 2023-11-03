@@ -32,7 +32,7 @@ public struct Game: Sendable {
 
   public init() {}
 
-  var body: some Reducer<State, Action> {
+  public var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
       case let .cellTapped(row, column):
