@@ -125,16 +125,15 @@
   /// [known issue](https://github.com/apple/swift/issues/66450), and the only workaround is to
   /// either move the extension to a separate file, or move the code from the extension to be
   /// directly inside the `State` type.
-  @attached(memberAttribute)
   @attached(extension, conformances: Reducer)
+  @attached(memberAttribute)
   public macro Reducer() = #externalMacro(
     module: "ComposableArchitectureMacros", type: "ReducerMacro"
   )
 
+  @attached(extension, conformances: Observable, ObservableState)
   @attached(member, names: named(_$id), named(_$observationRegistrar), named(access), named(withMutation))
   @attached(memberAttribute)
-  // TODO: Is this Observable conformance needed?
-  @attached(extension, conformances: Observable, ObservableState)
   public macro ObservableState() =
   #externalMacro(module: "ComposableArchitectureMacros", type: "ObservableStateMacro")
 
