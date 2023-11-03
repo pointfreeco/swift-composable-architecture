@@ -217,7 +217,7 @@ extension ObservableStateMacro: MemberMacro {
       return []
     }
 
-    let observableType = identified.name
+    let observableType = identified.name.trimmed
 
     if declaration.isClass {
       // classes are not supported

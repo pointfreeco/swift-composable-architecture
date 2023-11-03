@@ -49,13 +49,13 @@ final class ObservableStateMacroTests: MacroBaseTestCase {
         private let _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
         internal nonisolated func access<Member>(
-          keyPath: KeyPath<State , Member>
+          keyPath: KeyPath<State, Member>
         ) {
           _$observationRegistrar.access(self, keyPath: keyPath)
         }
 
         internal nonisolated func withMutation<Member, MutationResult>(
-          keyPath: KeyPath<State , Member>,
+          keyPath: KeyPath<State, Member>,
           _ mutation: () throws -> MutationResult
         ) rethrows -> MutationResult {
           try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
@@ -103,13 +103,13 @@ final class ObservableStateMacroTests: MacroBaseTestCase {
         private let _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
         internal nonisolated func access<Member>(
-          keyPath: KeyPath<State , Member>
+          keyPath: KeyPath<State, Member>
         ) {
           _$observationRegistrar.access(self, keyPath: keyPath)
         }
 
         internal nonisolated func withMutation<Member, MutationResult>(
-          keyPath: KeyPath<State , Member>,
+          keyPath: KeyPath<State, Member>,
           _ mutation: () throws -> MutationResult
         ) rethrows -> MutationResult {
           try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
@@ -140,13 +140,13 @@ final class ObservableStateMacroTests: MacroBaseTestCase {
         private let _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
         internal nonisolated func access<Member>(
-          keyPath: KeyPath<State , Member>
+          keyPath: KeyPath<State, Member>
         ) {
           _$observationRegistrar.access(self, keyPath: keyPath)
         }
 
         internal nonisolated func withMutation<Member, MutationResult>(
-          keyPath: KeyPath<State , Member>,
+          keyPath: KeyPath<State, Member>,
           _ mutation: () throws -> MutationResult
         ) rethrows -> MutationResult {
           try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
