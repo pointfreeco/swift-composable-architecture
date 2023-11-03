@@ -10,6 +10,7 @@ private let readMe = """
 
 @Reducer
 struct SpeechRecognition {
+  @ObservableState
   struct State: Equatable {
     @PresentationState var alert: AlertState<Action.Alert>?
     var isRecording = false

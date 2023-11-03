@@ -18,7 +18,6 @@ public struct TwoFactor: Sendable {
     }
   }
 
-  @dynamicMemberLookup
   public enum Action: Equatable, Sendable, ViewAction {
     case alert(PresentationAction<Alert>)
     case twoFactorResponse(TaskResult<AuthenticationResponse>)

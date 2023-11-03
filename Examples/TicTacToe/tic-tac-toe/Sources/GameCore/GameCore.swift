@@ -7,8 +7,8 @@ public struct Game: Sendable {
   public struct State: Equatable {
     public var board: Three<Three<Player?>> = .empty
     public var currentPlayer: Player = .x
-    public var oPlayerName: String
-    public var xPlayerName: String
+    public let oPlayerName: String
+    public let xPlayerName: String
 
     public init(oPlayerName: String, xPlayerName: String) {
       self.oPlayerName = oPlayerName

@@ -11,6 +11,7 @@ private let readMe = """
 
 @Reducer
 struct Search {
+  @ObservableState
   struct State: Equatable {
     var results: [GeocodingSearch.Result] = []
     var resultForecastRequestInFlight: GeocodingSearch.Result?
@@ -31,9 +32,9 @@ struct Search {
     }
   }
 
-  enum Action: Equatable {
+  enum Action: BindableAction, Equatable {
+    case binding(BindingAction<State>)
     case forecastResponse(GeocodingSearch.Result.ID, TaskResult<Forecast>)
-    case searchQueryChanged(String)
     case searchQueryChangeDebounced
     case searchResponse(TaskResult<GeocodingSearch>)
     case searchResultTapped(GeocodingSearch.Result)
@@ -45,6 +46,19 @@ struct Search {
   var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
+      case .binding(\.searchQuery):
+        // When the query is cleared we can clear the search results, but we have to make sure to
+        // cancel any in-flight search requests too, otherwise we may get data coming in later.
+        guard !state.searchQuery.isEmpty else {
+          state.results = []
+          state.weather = nil
+          return .cancel(id: CancelID.location)
+        }
+        return .none
+
+      case .binding:
+        return .none
+
       case .forecastResponse(_, .failure):
         state.weather = nil
         state.resultForecastRequestInFlight = nil
@@ -64,18 +78,6 @@ struct Search {
           }
         )
         state.resultForecastRequestInFlight = nil
-        return .none
-
-      case let .searchQueryChanged(query):
-        state.searchQuery = query
-
-        // When the query is cleared we can clear the search results, but we have to make sure to
-        // cancel any in-flight search requests too, otherwise we may get data coming in later.
-        guard !query.isEmpty else {
-          state.results = []
-          state.weather = nil
-          return .cancel(id: CancelID.location)
-        }
         return .none
 
       case .searchQueryChangeDebounced:
@@ -115,63 +117,58 @@ struct Search {
 // MARK: - Search feature view
 
 struct SearchView: View {
-  let store: StoreOf<Search>
+  @State var store: StoreOf<Search>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      NavigationStack {
-        VStack(alignment: .leading) {
-          Text(readMe)
-            .padding()
+    NavigationStack {
+      VStack(alignment: .leading) {
+        Text(readMe)
+          .padding()
 
-          HStack {
-            Image(systemName: "magnifyingglass")
-            TextField(
-              "New York, San Francisco, ...",
-              text: viewStore.binding(get: \.searchQuery, send: { .searchQueryChanged($0) })
-            )
+        HStack {
+          Image(systemName: "magnifyingglass")
+          TextField("New York, San Francisco, ...", text: self.$store.searchQuery)
             .textFieldStyle(.roundedBorder)
             .autocapitalization(.none)
             .disableAutocorrection(true)
-          }
-          .padding(.horizontal, 16)
+        }
+        .padding(.horizontal, 16)
 
-          List {
-            ForEach(viewStore.results) { location in
-              VStack(alignment: .leading) {
-                Button {
-                  viewStore.send(.searchResultTapped(location))
-                } label: {
-                  HStack {
-                    Text(location.name)
+        List {
+          ForEach(self.store.results) { location in
+            VStack(alignment: .leading) {
+              Button {
+                self.store.send(.searchResultTapped(location))
+              } label: {
+                HStack {
+                  Text(location.name)
 
-                    if viewStore.resultForecastRequestInFlight?.id == location.id {
-                      ProgressView()
-                    }
+                  if self.store.resultForecastRequestInFlight?.id == location.id {
+                    ProgressView()
                   }
                 }
+              }
 
-                if location.id == viewStore.weather?.id {
-                  self.weatherView(locationWeather: viewStore.weather)
-                }
+              if location.id == self.store.weather?.id {
+                self.weatherView(locationWeather: self.store.weather)
               }
             }
           }
-
-          Button("Weather API provided by Open-Meteo") {
-            UIApplication.shared.open(URL(string: "https://open-meteo.com/en")!)
-          }
-          .foregroundColor(.gray)
-          .padding(.all, 16)
         }
-        .navigationTitle("Search")
+
+        Button("Weather API provided by Open-Meteo") {
+          UIApplication.shared.open(URL(string: "https://open-meteo.com/en")!)
+        }
+        .foregroundColor(.gray)
+        .padding(.all, 16)
       }
-      .task(id: viewStore.searchQuery) {
-        do {
-          try await Task.sleep(for: .milliseconds(300))
-          await viewStore.send(.searchQueryChangeDebounced).finish()
-        } catch {}
-      }
+      .navigationTitle("Search")
+    }
+    .task(id: self.store.searchQuery) {
+      do {
+        try await Task.sleep(for: .milliseconds(300))
+        await self.store.send(.searchQueryChangeDebounced).finish()
+      } catch {}
     }
   }
 

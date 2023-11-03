@@ -3,19 +3,6 @@ import ComposableArchitecture
 import GameCore
 import UIKit
 
-fileprivate extension Game.State {
-  var rows: Three<Three<String>> { self.board.map { $0.map { $0?.label ?? "" } } }
-  var isGameEnabled: Bool { !self.board.hasWinner && !self.board.isFilled }
-  var isPlayAgainButtonHidden: Bool { !self.board.hasWinner && !self.board.isFilled }
-  var title: String {
-    self.board.hasWinner
-    ? "Winner! Congrats \(self.currentPlayerName)!"
-    : self.board.isFilled
-      ? "Tied game!"
-      : "\(self.currentPlayerName), place your \(self.currentPlayer.label)"
-  }
-}
-
 public final class GameViewController: UIViewController {
   let store: StoreOf<Game>
   private var cancellables: Set<AnyCancellable> = []
@@ -160,5 +147,18 @@ public final class GameViewController: UIViewController {
 
   @objc private func playAgainButtonTapped() {
     self.store.send(.playAgainButtonTapped)
+  }
+}
+
+fileprivate extension Game.State {
+  var rows: Three<Three<String>> { self.board.map { $0.map { $0?.label ?? "" } } }
+  var isGameEnabled: Bool { !self.board.hasWinner && !self.board.isFilled }
+  var isPlayAgainButtonHidden: Bool { !self.board.hasWinner && !self.board.isFilled }
+  var title: String {
+    self.board.hasWinner
+    ? "Winner! Congrats \(self.currentPlayerName)!"
+    : self.board.isFilled
+      ? "Tied game!"
+      : "\(self.currentPlayerName), place your \(self.currentPlayer.label)"
   }
 }

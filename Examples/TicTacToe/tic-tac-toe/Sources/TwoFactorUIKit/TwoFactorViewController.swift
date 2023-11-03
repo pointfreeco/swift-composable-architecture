@@ -7,20 +7,6 @@ public final class TwoFactorViewController: UIViewController {
   let store: StoreOf<TwoFactor>
   private var cancellables: Set<AnyCancellable> = []
 
-  struct ViewState: Equatable {
-    let alert: AlertState<TwoFactor.Action.Alert>?
-    let code: String?
-    let isActivityIndicatorHidden: Bool
-    let isLoginButtonEnabled: Bool
-
-    init(state: TwoFactor.State) {
-      self.alert = state.alert
-      self.code = state.code
-      self.isActivityIndicatorHidden = !state.isTwoFactorRequestInFlight
-      self.isLoginButtonEnabled = state.isFormValid && !state.isTwoFactorRequestInFlight
-    }
-  }
-
   public init(store: StoreOf<TwoFactor>) {
     self.store = store
     super.init(nibName: nil, bundle: nil)

@@ -54,6 +54,11 @@ where State == ViewAction.State {
   }
 
   @inlinable
+  public init(action toViewAction: CaseKeyPath<Action, ViewAction>) where Action: CasePathable {
+    self.init(internal: { $0[case: toViewAction] })
+  }
+
+  @inlinable
   public init(action toViewAction: @escaping (_ action: Action) -> ViewAction?) {
     self.init(internal: toViewAction)
   }
