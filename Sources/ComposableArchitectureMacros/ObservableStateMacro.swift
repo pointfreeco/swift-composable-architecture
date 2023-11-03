@@ -31,7 +31,7 @@ public struct ObservableStateMacro {
     "\(raw: qualifiedConformanceName)"
   }
 
-  static let registrarTypeName = "ObservationRegistrarWrapper"
+  static let registrarTypeName = "ObservationStateRegistrar"
   static var qualifiedRegistrarTypeName: String {
     return "\(moduleName).\(registrarTypeName)"
   }
@@ -229,7 +229,14 @@ extension ObservableStateMacro: MemberMacro {
     declaration.addIfNeeded(ObservableStateMacro.accessFunction(observableType), to: &declarations)
     declaration.addIfNeeded(ObservableStateMacro.withMutationFunction(observableType), to: &declarations)
     let access = declaration.modifiers.first { $0.name.tokenKind == .keyword(.public) }
-    declaration.addIfNeeded("\(access)let _$id = ObservableStateID()" as DeclSyntax, to: &declarations)
+    declaration.addIfNeeded(
+      """
+      \(access)var _$id: ComposableArchitecture.ObservableStateID {
+      self.\(raw: registrarVariableName).id
+      }
+      """ as DeclSyntax,
+      to: &declarations
+    )
 
     return declarations
   }
