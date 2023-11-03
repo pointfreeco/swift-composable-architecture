@@ -58,9 +58,9 @@ public struct ObservableStateMacro {
     return
       """
       internal nonisolated func access<Member>(
-          keyPath: KeyPath<\(observableType), Member>
+      keyPath: KeyPath<\(observableType), Member>
       ) {
-        \(raw: registrarVariableName).access(self, keyPath: keyPath)
+      \(raw: registrarVariableName).access(self, keyPath: keyPath)
       }
       """
   }
@@ -69,10 +69,10 @@ public struct ObservableStateMacro {
     return
       """
       internal nonisolated func withMutation<Member, MutationResult>(
-        keyPath: KeyPath<\(observableType), Member>,
-        _ mutation: () throws -> MutationResult
+      keyPath: KeyPath<\(observableType), Member>,
+      _ mutation: () throws -> MutationResult
       ) rethrows -> MutationResult {
-        try \(raw: registrarVariableName).withMutation(of: self, keyPath: keyPath, mutation)
+      try \(raw: registrarVariableName).withMutation(of: self, keyPath: keyPath, mutation)
       }
       """
   }
@@ -266,14 +266,14 @@ extension ObservableStateMacro {
         cases.append(
           """
           case let .\(enumCaseDecl.name.text)(state):
-            return ._$id(for: state)._$tag(\(tag))
+          return ._$id(for: state)._$tag(\(tag))
           """
         )
       } else {
         cases.append(
           """
           case .\(enumCaseDecl.name.text):
-            return ._$inert._$tag(\(tag))
+          return ._$inert._$tag(\(tag))
           """
         )
       }
@@ -282,9 +282,9 @@ extension ObservableStateMacro {
     return [
       """
       \(access)var _$id: \(raw: qualifiedIDName) {
-        switch self {
+      switch self {
       \(raw: cases.joined(separator: "\n"))
-        }
+      }
       }
       """
     ]
@@ -379,7 +379,7 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
   ) throws -> [AccessorDeclSyntax] {
     guard let property = declaration.as(VariableDeclSyntax.self),
           property.isValidForObservation,
-          let identifier = property.identifier else {
+          let identifier = property.identifier?.trimmed else {
       return []
     }
 

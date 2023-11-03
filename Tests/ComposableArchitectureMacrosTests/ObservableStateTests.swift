@@ -5,6 +5,14 @@ import SwiftSyntaxMacrosTestSupport
 import XCTest
 
 final class ObservableStateMacroTests: MacroBaseTestCase {
+  override func invokeTest() {
+    withMacroTesting(
+      // isRecording: true
+    ) {
+      super.invokeTest()
+    }
+  }
+
   func testAvailability() {
     assertMacro {
       """
@@ -19,20 +27,20 @@ final class ObservableStateMacroTests: MacroBaseTestCase {
       @available(iOS 18, *)
       struct State {
         var count = 0 {
-          @storageRestrictions(initializes: _count )
+          @storageRestrictions(initializes: _count)
           init(initialValue) {
-            _count  = initialValue
+            _count = initialValue
           }
           get {
-            access(keyPath: \.count )
+            access(keyPath: \.count)
             return _count
           }
           set {
-            if _isIdentityEqual(newValue, _count ) == true {
-              _count  = newValue
+            if _isIdentityEqual(newValue, _count) == true {
+              _count = newValue
             } else {
-              withMutation(keyPath: \.count ) {
-                _count  = newValue
+              withMutation(keyPath: \.count) {
+                _count = newValue
               }
             }
           }
@@ -41,7 +49,7 @@ final class ObservableStateMacroTests: MacroBaseTestCase {
         private let _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
         internal nonisolated func access<Member>(
-            keyPath: KeyPath<State , Member>
+          keyPath: KeyPath<State , Member>
         ) {
           _$observationRegistrar.access(self, keyPath: keyPath)
         }
@@ -73,20 +81,20 @@ final class ObservableStateMacroTests: MacroBaseTestCase {
       #"""
       struct State {
         var count = 0 {
-          @storageRestrictions(initializes: _count )
+          @storageRestrictions(initializes: _count)
           init(initialValue) {
-            _count  = initialValue
+            _count = initialValue
           }
           get {
-            access(keyPath: \.count )
+            access(keyPath: \.count)
             return _count
           }
           set {
-            if _isIdentityEqual(newValue, _count ) == true {
-              _count  = newValue
+            if _isIdentityEqual(newValue, _count) == true {
+              _count = newValue
             } else {
-              withMutation(keyPath: \.count ) {
-                _count  = newValue
+              withMutation(keyPath: \.count) {
+                _count = newValue
               }
             }
           }
@@ -95,7 +103,7 @@ final class ObservableStateMacroTests: MacroBaseTestCase {
         private let _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
         internal nonisolated func access<Member>(
-            keyPath: KeyPath<State , Member>
+          keyPath: KeyPath<State , Member>
         ) {
           _$observationRegistrar.access(self, keyPath: keyPath)
         }
@@ -132,7 +140,7 @@ final class ObservableStateMacroTests: MacroBaseTestCase {
         private let _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
         internal nonisolated func access<Member>(
-            keyPath: KeyPath<State , Member>
+          keyPath: KeyPath<State , Member>
         ) {
           _$observationRegistrar.access(self, keyPath: keyPath)
         }
