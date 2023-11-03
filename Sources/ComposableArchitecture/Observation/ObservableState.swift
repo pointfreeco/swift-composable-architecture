@@ -38,14 +38,11 @@ public func _isIdentityEqual<T>(_ lhs: StackState<T>, _ rhs: StackState<T>) -> B
   areOrderedSetsDuplicates(lhs.ids, rhs.ids)
 }
 
+// TODO: When is this hit?
 @_disfavoredOverload
-public func _isIdentityEqual<C: Collection>(
-  _ lhs: C,
-  _ rhs: C
-) -> Bool
-where C.Element: ObservableState
-{
-  lhs.count == rhs.count && zip(lhs, rhs).allSatisfy(_isIdentityEqual)
+public func _isIdentityEqual<C: Collection>(_ lhs: C, _ rhs: C) -> Bool
+where C.Element: ObservableState {
+  lhs.count == rhs.count && zip(lhs, rhs).allSatisfy { $0._$id == $1._$id }
 }
 
 public func _isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
