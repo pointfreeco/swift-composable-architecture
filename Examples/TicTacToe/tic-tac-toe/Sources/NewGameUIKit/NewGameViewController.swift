@@ -6,31 +6,10 @@ import UIKit
 
 public class NewGameViewController: UIViewController {
   let store: StoreOf<NewGame>
-  let viewStore: ViewStore<ViewState, ViewAction>
   private var cancellables: Set<AnyCancellable> = []
-
-  struct ViewState: Equatable {
-    let isLetsPlayButtonEnabled: Bool
-    let oPlayerName: String?
-    let xPlayerName: String?
-
-    public init(state: NewGame.State) {
-      self.isLetsPlayButtonEnabled = !state.oPlayerName.isEmpty && !state.xPlayerName.isEmpty
-      self.oPlayerName = state.oPlayerName
-      self.xPlayerName = state.xPlayerName
-    }
-  }
-
-  enum ViewAction {
-    case letsPlayButtonTapped
-    case logoutButtonTapped
-    case oPlayerNameChanged(String?)
-    case xPlayerNameChanged(String?)
-  }
 
   public init(store: StoreOf<NewGame>) {
     self.store = store
-    self.viewStore = ViewStore(store, observe: ViewState.init, send: NewGame.Action.init)
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -107,15 +86,17 @@ public class NewGameViewController: UIViewController {
       rootStackView.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
     ])
 
-    self.viewStore.publisher.isLetsPlayButtonEnabled
+    self.store.publisher.isLetsPlayButtonEnabled
       .assign(to: \.isEnabled, on: letsPlayButton)
       .store(in: &self.cancellables)
 
-    self.viewStore.publisher.oPlayerName
+    self.store.publisher.oPlayerName
+      .map(Optional.some)
       .assign(to: \.text, on: playerOTextField)
       .store(in: &self.cancellables)
 
-    self.viewStore.publisher.xPlayerName
+    self.store.publisher.xPlayerName
+      .map(Optional.some)
       .assign(to: \.text, on: playerXTextField)
       .store(in: &self.cancellables)
 
@@ -137,33 +118,22 @@ public class NewGameViewController: UIViewController {
   }
 
   @objc private func logoutButtonTapped() {
-    self.viewStore.send(.logoutButtonTapped)
+    self.store.send(.logoutButtonTapped)
   }
 
   @objc private func playerXTextChanged(sender: UITextField) {
-    self.viewStore.send(.xPlayerNameChanged(sender.text))
+    self.store.xPlayerName = sender.text ?? ""
   }
 
   @objc private func playerOTextChanged(sender: UITextField) {
-    self.viewStore.send(.oPlayerNameChanged(sender.text))
+    self.store.oPlayerName = sender.text ?? ""
   }
 
   @objc private func letsPlayTapped() {
-    self.viewStore.send(.letsPlayButtonTapped)
+    self.store.send(.letsPlayButtonTapped)
   }
 }
 
-extension NewGame.Action {
-  init(action: NewGameViewController.ViewAction) {
-    switch action {
-    case .letsPlayButtonTapped:
-      self = .letsPlayButtonTapped
-    case .logoutButtonTapped:
-      self = .logoutButtonTapped
-    case let .oPlayerNameChanged(name):
-      self = .oPlayerNameChanged(name ?? "")
-    case let .xPlayerNameChanged(name):
-      self = .xPlayerNameChanged(name ?? "")
-    }
-  }
+fileprivate extension NewGame.State {
+  var isLetsPlayButtonEnabled: Bool { !self.oPlayerName.isEmpty && !self.xPlayerName.isEmpty }
 }

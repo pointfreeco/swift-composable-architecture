@@ -5,19 +5,20 @@ import TwoFactorCore
 
 @Reducer
 public struct Login: Sendable {
+  @ObservableState
   public struct State: Equatable {
     @PresentationState public var alert: AlertState<AlertAction>?
-    @BindingState public var email = ""
+    public var email = ""
     public var isFormValid = false
     public var isLoginRequestInFlight = false
-    @BindingState public var password = ""
+    public var password = ""
     @PresentationState public var twoFactor: TwoFactor.State?
 
     public init() {}
   }
 
   @dynamicMemberLookup
-  public enum Action: Equatable, Sendable {
+  public enum Action: Equatable, Sendable, ViewAction {
     case alert(PresentationAction<AlertAction>)
     case loginResponse(TaskResult<AuthenticationResponse>)
     case twoFactor(PresentationAction<TwoFactor.Action>)

@@ -5,7 +5,6 @@ import UIKit
 
 public final class TwoFactorViewController: UIViewController {
   let store: StoreOf<TwoFactor>
-  let viewStore: ViewStore<ViewState, ViewAction>
   private var cancellables: Set<AnyCancellable> = []
 
   struct ViewState: Equatable {
@@ -22,15 +21,8 @@ public final class TwoFactorViewController: UIViewController {
     }
   }
 
-  enum ViewAction {
-    case alertDismissed
-    case codeChanged(String?)
-    case loginButtonTapped
-  }
-
   public init(store: StoreOf<TwoFactor>) {
     self.store = store
-    self.viewStore = ViewStore(store, observe: ViewState.init, send: TwoFactor.Action.init)
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -80,19 +72,20 @@ public final class TwoFactorViewController: UIViewController {
       rootStackView.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
     ])
 
-    self.viewStore.publisher.isActivityIndicatorHidden
+    self.store.publisher.isActivityIndicatorHidden
       .assign(to: \.isHidden, on: activityIndicator)
       .store(in: &self.cancellables)
 
-    self.viewStore.publisher.code
+    self.store.publisher.code
+      .map(Optional.some)
       .assign(to: \.text, on: codeTextField)
       .store(in: &self.cancellables)
 
-    self.viewStore.publisher.isLoginButtonEnabled
+    self.store.publisher.isLoginButtonEnabled
       .assign(to: \.isEnabled, on: loginButton)
       .store(in: &self.cancellables)
 
-    self.viewStore.publisher.alert
+    self.store.publisher.alert
       .sink { [weak self] alert in
         guard let self = self else { return }
         guard let alert = alert else { return }
@@ -101,7 +94,7 @@ public final class TwoFactorViewController: UIViewController {
           title: String(state: alert.title), message: nil, preferredStyle: .alert)
         alertController.addAction(
           UIAlertAction(title: "Ok", style: .default) { _ in
-            self.viewStore.send(.alertDismissed)
+            self.store.send(.alert(.dismiss))
           }
         )
         self.present(alertController, animated: true, completion: nil)
@@ -110,23 +103,15 @@ public final class TwoFactorViewController: UIViewController {
   }
 
   @objc private func codeTextFieldChanged(sender: UITextField) {
-    self.viewStore.send(.codeChanged(sender.text))
+    self.store.code = sender.text ?? ""
   }
 
   @objc private func loginButtonTapped() {
-    self.viewStore.send(.loginButtonTapped)
+    self.store.send(.view(.submitButtonTapped))
   }
 }
 
-extension TwoFactor.Action {
-  init(action: TwoFactorViewController.ViewAction) {
-    switch action {
-    case .alertDismissed:
-      self = .alert(.dismiss)
-    case let .codeChanged(code):
-      self = .view(.set(\.$code, code ?? ""))
-    case .loginButtonTapped:
-      self = .view(.submitButtonTapped)
-    }
-  }
+fileprivate extension TwoFactor.State {
+  var isActivityIndicatorHidden: Bool { !self.isTwoFactorRequestInFlight }
+  var isLoginButtonEnabled: Bool { self.isFormValid && !self.isTwoFactorRequestInFlight }
 }

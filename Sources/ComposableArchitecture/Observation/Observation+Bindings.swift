@@ -3,7 +3,6 @@ import SwiftUI
 public protocol ViewAction<ViewAction> {
   associatedtype ViewAction
   static func view(_ action: ViewAction) -> Self
-  var view: ViewAction? { get }
 }
 
 //extension Store: /* TODO: Legit conformance? */ ObservableObject where State: ObservableState {
@@ -48,6 +47,15 @@ extension BindingAction {
     bindingAction: Self
   ) -> Bool where Root: ObservableState {
     keyPath == bindingAction.keyPath
+  }
+}
+
+extension BindableAction where State: ObservableState {
+  public static func set<Value: Equatable & Sendable>(
+    _ keyPath: WritableKeyPath<State, Value>,
+    _ value: Value
+  ) -> Self {
+    self.binding(.set(keyPath, value))
   }
 }
 

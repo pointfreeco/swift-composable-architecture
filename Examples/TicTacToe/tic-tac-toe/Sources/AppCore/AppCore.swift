@@ -6,6 +6,7 @@ import NewGameCore
 
 @Reducer
 public struct TicTacToe {
+  @ObservableState
   public enum State: Equatable {
     case login(Login.State)
     case newGame(NewGame.State)

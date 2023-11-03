@@ -3,6 +3,7 @@ import SwiftUI
 
 @Reducer
 public struct Game: Sendable {
+  @ObservableState
   public struct State: Equatable {
     public var board: Three<Three<Player?>> = .empty
     public var currentPlayer: Player = .x
@@ -32,7 +33,7 @@ public struct Game: Sendable {
 
   public init() {}
 
-  var body: some Reducer<State, Action> {
+  public var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
       case let .cellTapped(row, column):
