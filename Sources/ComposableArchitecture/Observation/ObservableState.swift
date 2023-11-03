@@ -33,6 +33,11 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
 public func _isIdentityEqual<T>(_ lhs: IdentifiedArrayOf<T>, _ rhs: IdentifiedArrayOf<T>) -> Bool {
   areOrderedSetsDuplicates(lhs.ids, rhs.ids)
 }
+
+public func _isIdentityEqual<T>(_ lhs: StackState<T>, _ rhs: StackState<T>) -> Bool {
+  areOrderedSetsDuplicates(lhs.ids, rhs.ids)
+}
+
 @_disfavoredOverload
 public func _isIdentityEqual<C: Collection>(
   _ lhs: C,
@@ -44,21 +49,34 @@ where C.Element: ObservableState
 }
 
 public func _isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
-  // TODO: Should we make a fast path for IdentifiedArray? We can memcmp id sets?
-  func open<C: Collection>(_ lhs: C, _ rhs: Any) -> Bool {
-    guard
-      C.Element.self is ObservableState.Type,
-      let rhs = rhs as? C  // TODO: Why can't this by an unsafeBitCast?
-    else {
+  // TODO: Are these dynamic checks ever hit?
+  func openCollection<C: Collection>(_ lhs: C, _ rhs: Any) -> Bool {
+    guard C.Element.self is ObservableState.Type else { return false }
+
+    func openIdentifiable<Element: Identifiable>(_: Element.Type) -> Bool? {
+      guard
+        let lhs = lhs as? IdentifiedArrayOf<Element>,
+        let rhs = rhs as? IdentifiedArrayOf<Element>
+      else { return nil }
+      return areOrderedSetsDuplicates(lhs.ids, rhs.ids)
+    }
+
+    if
+      let identifiable = C.Element.self as? any Identifiable.Type,
+      let result = openIdentifiable(identifiable)
+    {
+      return result
+    } else if let rhs = rhs as? C {
+      return lhs.count == rhs.count && zip(lhs, rhs).allSatisfy(_isIdentityEqual)
+    } else {
       return false
     }
-    return lhs.count == rhs.count && zip(lhs, rhs).allSatisfy(_isIdentityEqual)
   }
 
   if let lhs = lhs as? any ObservableState, let rhs = rhs as? any ObservableState {
     return lhs._$id == rhs._$id
   } else if let lhs = lhs as? any Collection {
-    return open(lhs, rhs)
+    return openCollection(lhs, rhs)
   } else {
     return false
   }
