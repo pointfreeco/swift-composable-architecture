@@ -65,19 +65,17 @@
   ///
   /// This will allow you to use key path syntax for specifying case paths to the `State`'s cases,
   /// as well as allow you to use dot-chaining syntax for optionally extracting a case from the
-  /// state. This can be useful when using the view modifiers that come with the library that allow
-  /// for driving navigation from an enum of options:
+  /// state. This can be useful when using the operators that come with the library that allow for
+  /// driving navigation from an enum of options:
   ///
   /// ```swift
   /// .sheet(
-  ///   store: self.store.scope(state: \.destination, action: \.destination)
-  ///   state: \.editForm,
-  ///   action: { .editForm($0) }
+  ///   item: self.$store.scope(state: \.destination?.editForm, action: \.destination.editForm)
   /// )
   /// ```
   ///
-  /// The syntax `state: \.editForm` is only possible due to both `@dynamicMemberLookup` and
-  /// `@CasePathable` being applied to the `State` enum.
+  /// The syntax `state: \.destination?.editForm` is only possible due to both
+  /// `@dynamicMemberLookup` and `@CasePathable` being applied to the `State` enum.
   ///
   /// ## Gotchas
   ///
