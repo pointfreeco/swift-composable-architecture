@@ -41,7 +41,8 @@ public func _isIdentityEqual<T>(_ lhs: StackState<T>, _ rhs: StackState<T>) -> B
 @_disfavoredOverload
 public func _isIdentityEqual<C: Collection>(_ lhs: C, _ rhs: C) -> Bool
 where C.Element: ObservableState {
-  lhs.count == rhs.count && zip(lhs, rhs).allSatisfy { $0._$id == $1._$id }
+  fatalError("When is this hit??")
+  //lhs.count == rhs.count && zip(lhs, rhs).allSatisfy { $0._$id == $1._$id }
 }
 
 public func _isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
@@ -72,7 +73,8 @@ public func _isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
   if let lhs = lhs as? any ObservableState, let rhs = rhs as? any ObservableState {
     return lhs._$id == rhs._$id
   } else if let lhs = lhs as? any Collection {
-    return openCollection(lhs, rhs)
+    fatalError("When is this called?")
+    //return openCollection(lhs, rhs)
   } else {
     return false
   }
