@@ -248,6 +248,16 @@ public enum StackAction<State, Action>: CasePathable {
         }
       )
     }
+
+    public subscript(id id: StackElementID) -> AnyCasePath<StackAction, Action> {
+      AnyCasePath(
+        embed: { .element(id: id, action: $0) },
+        extract: {
+          guard case .element(id, let action) = $0 else { return nil }
+          return action
+        }
+      )
+    }
   }
 }
 
