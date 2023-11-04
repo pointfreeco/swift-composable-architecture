@@ -111,7 +111,7 @@ extension Reducer {
   }
 }
 
-public struct _OnChangeReducer<Base: Reducer, Value: Equatable, Body: Reducer>: Reducer
+public struct _OnChangeReducer<Base: Reducer, Value, Body: Reducer>: Reducer
 where Base.State == Body.State, Base.Action == Body.Action {
   @usableFromInline
   let base: Base
