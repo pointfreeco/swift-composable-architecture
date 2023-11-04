@@ -230,6 +230,7 @@ public enum PresentationAction<Action>: CasePathable {
     AllCasePaths()
   }
 
+  @dynamicMemberLookup
   public struct AllCasePaths {
     public var dismiss: AnyCasePath<PresentationAction, Void> {
       AnyCasePath(
@@ -250,6 +251,30 @@ public enum PresentationAction<Action>: CasePathable {
         }
       )
     }
+
+    public subscript<AppendedAction>(
+      dynamicMember keyPath: CaseKeyPath<Action, AppendedAction>
+    ) -> AnyCasePath<PresentationAction, PresentationAction<AppendedAction>>
+    where Action: CasePathable {
+      AnyCasePath<PresentationAction, PresentationAction<AppendedAction>>(
+        embed: {
+          switch $0 {
+          case .dismiss:
+            return .dismiss
+          case let .presented(action):
+            return .presented(keyPath(action))
+          }
+        },
+        extract: {
+          switch $0 {
+          case .dismiss:
+            return .dismiss
+          case let .presented(action):
+            return action[case: keyPath].map { .presented($0) }
+          }
+        }
+      )
+    }
   }
 }
 
@@ -258,34 +283,6 @@ extension PresentationAction: Hashable where Action: Hashable {}
 extension PresentationAction: Sendable where Action: Sendable {}
 extension PresentationAction: Decodable where Action: Decodable {}
 extension PresentationAction: Encodable where Action: Encodable {}
-
-extension Case {
-  public subscript<Action: CasePathable, AppendedAction>(
-    dynamicMember keyPath: KeyPath<Action.AllCasePaths, AnyCasePath<Action, AppendedAction>>
-  ) -> Case<PresentationAction<AppendedAction>>
-  where Value == PresentationAction<Action> {
-    Case<PresentationAction<AppendedAction>>(
-      embed: {
-        switch $0 {
-        case .dismiss:
-          return self.embed(.dismiss)
-        case let .presented(action):
-          return self.embed(.presented(Action.allCasePaths[keyPath: keyPath].embed(action)))
-        }
-      },
-      extract: {
-        switch self.extract(from: $0) {
-        case .none:
-          return nil
-        case .some(.dismiss):
-          return .dismiss
-        case let .some(.presented(action)):
-          return Action.allCasePaths[keyPath: keyPath].extract(from: action).map { .presented($0) }
-        }
-      }
-    )
-  }
-}
 
 extension Reducer {
   /// Embeds a child reducer in a parent domain that works on an optional property of parent state.
