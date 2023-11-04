@@ -137,7 +137,7 @@ final class OnChangeReducerTests: BaseTCATestCase {
       $0.childStates[id: 1]?.counter = 1
     }
   }
-    
+
   func testOnChangeTuple() async {
     struct Feature: Reducer {
       struct State: Equatable {
@@ -174,20 +174,20 @@ final class OnChangeReducerTests: BaseTCATestCase {
         }
       }
     }
-    
+
     let store = TestStore(
       initialState: Feature.State()
     ) { Feature() }
-    
+
     await store.send(.incrementButtonTapped) {
       $0.countA = 1
       $0.countB = 1
     }
-    
+
     await store.receive(.updateSum(2)) {
       $0.sum = 2
     }
-    
+
     await store.send(.noop)
   }
 }
