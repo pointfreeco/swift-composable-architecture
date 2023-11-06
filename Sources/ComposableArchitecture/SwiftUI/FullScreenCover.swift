@@ -1,6 +1,8 @@
 import SwiftUI
 
 #if !os(macOS)
+  @available(iOS 14, tvOS 14, watchOS 7, *)
+  @available(macOS, unavailable)
   extension View {
     /// Presents a modal view that covers as much of the screen as possible using the store you
     /// provide as a data source for the sheet's content.
@@ -16,8 +18,6 @@ import SwiftUI
     ///     system dismisses the currently displayed sheet.
     ///   - onDismiss: The closure to execute when dismissing the modal view.
     ///   - content: A closure returning the content of the modal view.
-    @available(iOS 14, tvOS 14, watchOS 7, *)
-    @available(macOS, unavailable)
     public func fullScreenCover<State, Action, Content: View>(
       store: Store<PresentationState<State>, PresentationAction<Action>>,
       onDismiss: (() -> Void)? = nil,
@@ -47,8 +47,10 @@ import SwiftUI
     ///     action.
     ///   - onDismiss: The closure to execute when dismissing the modal view.
     ///   - content: A closure returning the content of the modal view.
-    @available(iOS 14, tvOS 14, watchOS 7, *)
-    @available(macOS, unavailable)
+    @available(
+      *, deprecated,
+      message: "Further scope the store into the 'state' and 'action' cases, instead"
+    )
     public func fullScreenCover<State, Action, DestinationState, DestinationAction, Content: View>(
       store: Store<PresentationState<State>, PresentationAction<Action>>,
       state toDestinationState: @escaping (_ state: State) -> DestinationState?,
