@@ -1,6 +1,11 @@
 import OrderedCollections
 
+/// A wrapper type for actions that can be presented in a list.
+///
+/// Use this type for modeling a feature's domain that needs to present child features using
+/// ``Reducer/forEach(_:action:element:fileID:line:)-2rqmq``.
 public enum IdentifiedAction<ID: Hashable, Action>: CasePathable {
+  /// An action sent to the element at a given identifier.
   case element(id: ID, action: Action)
 
   public static var allCasePaths: AllCasePaths {
@@ -55,7 +60,7 @@ extension Reducer {
   ///     // ...
   ///   }
   ///   enum Action {
-  ///     case row(id: Row.State.ID, action: Row.Action)
+  ///     case rows(IdentifiedActionOf<Row>)
   ///     // ...
   ///   }
   ///
@@ -63,7 +68,7 @@ extension Reducer {
   ///     Reduce { state, action in
   ///       // Core logic for parent feature
   ///     }
-  ///     .forEach(\.rows, action: \.row) {
+  ///     .forEach(\.rows, action: \.rows) {
   ///       Row()
   ///     }
   ///   }
@@ -88,7 +93,8 @@ extension Reducer {
   /// - Parameters:
   ///   - toElementsState: A writable key path from parent state to an `IdentifiedArray` of child
   ///     state.
-  ///   - toElementAction: A case path from parent action to child identifier and child actions.
+  ///   - toElementAction: A case path from parent action to an ``IdentifiedAction`` of child
+  ///     actions.
   ///   - element: A reducer that will be invoked with child actions against elements of child
   ///     state.
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
@@ -106,26 +112,6 @@ extension Reducer {
       parent: self,
       toElementsState: toElementsState,
       toElementAction: AnyCasePath(toElementAction.appending(path: \.element)),
-      element: element(),
-      fileID: fileID,
-      line: line
-    )
-  }
-
-  @inlinable
-  @warn_unqualified_access
-  public func forEach<ElementState, ElementAction, ID: Hashable, Element: Reducer>(
-    _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
-    action toElementAction: AnyCasePath<Action, IdentifiedAction<ID, ElementAction>>,
-    @ReducerBuilder<ElementState, ElementAction> element: () -> Element,
-    fileID: StaticString = #fileID,
-    line: UInt = #line
-  ) -> _ForEachReducer<Self, ID, Element>
-  where ElementState == Element.State, ElementAction == Element.Action {
-    _ForEachReducer(
-      parent: self,
-      toElementsState: toElementsState,
-      toElementAction: toElementAction.appending(path: AnyCasePath(\.element)),
       element: element(),
       fileID: fileID,
       line: line
