@@ -623,7 +623,6 @@ final class StoreTests: BaseTCATestCase {
     }
   }
   func testStoreVsTestStore() async {
-
     let testStore = TestStore(initialState: Feature_testStoreVsTestStore.State()) {
       Feature_testStoreVsTestStore()
     }
@@ -638,7 +637,7 @@ final class StoreTests: BaseTCATestCase {
       Feature_testStoreVsTestStore()
     }
     await store.send(.tap, originatingFrom: nil)?.value
-    XCTAssertEqual(store.state.value.count, testStore.state.count)
+    XCTAssertEqual(store.withState(\.count), testStore.state.count)
   }
 
   @Reducer
