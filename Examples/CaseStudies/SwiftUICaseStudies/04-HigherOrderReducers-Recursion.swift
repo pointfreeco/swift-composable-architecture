@@ -23,7 +23,7 @@ struct Nested: Reducer {
     case addRowButtonTapped
     case nameTextFieldChanged(String)
     case onDelete(IndexSet)
-    indirect case rows(IdentifiedAction<State.ID, Action>)
+    indirect case rows(IdentifiedActionOf<Nested>)
   }
 
   @Dependency(\.uuid) var uuid
