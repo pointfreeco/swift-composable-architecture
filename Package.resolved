@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-case-paths",
       "state" : {
-        "branch" : "swift-syntax-2",
-        "revision" : "aab1815bbc602056d437ae4ed97196b3d8062316"
+        "branch" : "case-key-paths",
+        "revision" : "745b1f1123c613a04d6cb09409cfa34e9150beeb"
       }
     },
     {
@@ -109,6 +109,24 @@
       }
     },
     {
+      "identity" : "swift-macro-testing",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pointfreeco/swift-macro-testing",
+      "state" : {
+        "revision" : "35acd9468d40ae87e75991a18af6271e8124c261",
+        "version" : "0.2.1"
+      }
+    },
+    {
+      "identity" : "swift-snapshot-testing",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pointfreeco/swift-snapshot-testing",
+      "state" : {
+        "revision" : "bb0ea08db8e73324fe6c3727f755ca41a23ff2f4",
+        "version" : "1.14.2"
+      }
+    },
+    {
       "identity" : "swift-syntax",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-syntax.git",
@@ -122,8 +140,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swiftui-navigation",
       "state" : {
-        "revision" : "f5bcdac5b6bb3f826916b14705f37a3937c2fd34",
-        "version" : "1.0.0"
+        "branch" : "case-key-paths",
+        "revision" : "3285fbeadb9d9fcfff01714f62e06d124f954f40"
       }
     },
     {
