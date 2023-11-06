@@ -16,7 +16,6 @@ public struct Login: Sendable {
     public init() {}
   }
 
-  @dynamicMemberLookup
   public enum Action: Equatable, Sendable {
     case alert(PresentationAction<AlertAction>)
     case loginResponse(TaskResult<AuthenticationResponse>)
