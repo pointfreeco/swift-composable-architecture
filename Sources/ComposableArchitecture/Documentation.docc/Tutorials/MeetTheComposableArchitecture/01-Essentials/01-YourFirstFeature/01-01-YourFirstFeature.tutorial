@@ -25,10 +25,8 @@
         Create a new Swift file named CounterFeature.swift and import the Composable Architecture.
         @Code(name: "CounterFeature.swift", file: 01-01-01-code-0001.swift)
         
-        > Note: Before importing the library you will need to depend on it by adding it to your 
-        Xcode project settings or SPM package:
-        > 
-        > http://github.com/pointfreeco/swift-composable-architecture#Installation
+        > Note: Before importing the library you will need to depend on it by [adding it to your 
+        Xcode project settings or SPM package](http://github.com/pointfreeco/swift-composable-architecture#Installation).
       }
       
       @Step {

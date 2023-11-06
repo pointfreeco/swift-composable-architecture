@@ -33,7 +33,7 @@ struct ContactsView: View {
     .sheet(
       store: self.store.scope(
         state: \.$addContact,
-        action: { .addContact($0) }
+        action: \.addContact
       )
     ) { addContactStore in
       NavigationStack {
@@ -43,7 +43,7 @@ struct ContactsView: View {
     .alert(
       store: self.store.scope(
         state: \.$alert,
-        action: { .alert($0) }
+        action: \.alert
       )
     )
   }
