@@ -41,8 +41,7 @@ struct PresentationView: View {
     }
     .fullScreenCover(
       store: self.store.scope(
-        state: \.$destination.fullScreenCover,
-        action: \.destination.fullScreenCover
+        state: \.$destination.fullScreenCover, action: \.destination.fullScreenCover
       )
     ) { store in
       NavigationStack {

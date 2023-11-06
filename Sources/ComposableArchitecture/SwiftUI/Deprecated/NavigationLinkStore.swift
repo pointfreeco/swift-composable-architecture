@@ -13,7 +13,7 @@ import SwiftUI
 ///
 /// ```swift
 /// NavigationLinkStore(
-///   self.store.scope(state: \.$child, action: { .child($0) })
+///   self.store.scope(state: \.$child, action: \.child)
 /// ) {
 ///   viewStore.send(.linkTapped)
 /// } destination: { store in

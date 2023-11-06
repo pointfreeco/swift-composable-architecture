@@ -360,8 +360,7 @@ struct PresentationTestCaseView: View {
       }
       .sheet(
         store: self.store.scope(
-          state: \.$destination.navigationLinkDemo,
-          action: \.destination.navigationLinkDemo
+          state: \.$destination.navigationLinkDemo, action: \.destination.navigationLinkDemo
         )
       ) { store in
         NavigationLinkDemoView(store: store)
@@ -372,8 +371,7 @@ struct PresentationTestCaseView: View {
       }
       .navigationDestination(
         store: self.store.scope(
-          state: \.$destination.navigationDestination,
-          action: \.destination.navigationDestination
+          state: \.$destination.navigationDestination, action: \.destination.navigationDestination
         )
       ) { store in
         ChildView(store: store)
@@ -383,10 +381,7 @@ struct PresentationTestCaseView: View {
         self.viewStore.send(.popoverButtonTapped)
       }
       .popover(
-        store: self.store.scope(
-          state: \.$destination.popover,
-          action: \.destination.popover
-        )
+        store: self.store.scope(state: \.$destination.popover, action: \.destination.popover)
       ) { store in
         ChildView(store: store)
       }
