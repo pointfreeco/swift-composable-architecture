@@ -68,14 +68,12 @@
   ///
   /// ```swift
   /// .sheet(
-  ///   store: self.store.scope(state: \.destination, action: \.destination)
-  ///   state: \.editForm,
-  ///   action: { .editForm($0) }
+  ///   store: self.store.scope(state: \.$destination.editForm, action: \.destination.editForm)
   /// )
   /// ```
   ///
-  /// The syntax `state: \.editForm` is only possible due to both `@dynamicMemberLookup` and
-  /// `@CasePathable` being applied to the `State` enum.
+  /// The syntax `state: \.$destination.editForm` is only possible due to both
+  /// `@dynamicMemberLookup` and `@CasePathable` being applied to the `State` enum.
   ///
   /// ## Gotchas
   ///
