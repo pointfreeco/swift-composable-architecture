@@ -1,5 +1,45 @@
 import OrderedCollections
 
+public enum IdentifiedAction<ID: Hashable, Action>: CasePathable {
+  case element(id: ID, action: Action)
+
+  public static var allCasePaths: AllCasePaths {
+    AllCasePaths()
+  }
+
+  public struct AllCasePaths {
+    public var element: AnyCasePath<IdentifiedAction, (id: ID, action: Action)> {
+      AnyCasePath(
+        embed: IdentifiedAction.element,
+        extract: {
+          guard case let .element(id, action) = $0 else { return nil }
+          return (id, action)
+        }
+      )
+    }
+
+    public subscript(id id: ID) -> AnyCasePath<IdentifiedAction, Action> {
+      AnyCasePath(
+        embed: { .element(id: id, action: $0) },
+        extract: {
+          guard case .element(id, let action) = $0 else { return nil }
+          return action
+        }
+      )
+    }
+  }
+}
+
+extension IdentifiedAction: Equatable where Action: Equatable {}
+extension IdentifiedAction: Hashable where Action: Hashable {}
+extension IdentifiedAction: Sendable where ID: Sendable, Action: Sendable {}
+
+extension IdentifiedAction: Decodable where ID: Decodable, Action: Decodable {}
+extension IdentifiedAction: Encodable where ID: Encodable, Action: Encodable {}
+
+public typealias IdentifiedActionOf<R: Reducer> = IdentifiedAction<R.State.ID, R.Action>
+where R.State: Identifiable
+
 extension Reducer {
   /// Embeds a child reducer in a parent domain that works on elements of a collection in parent
   /// state.
@@ -56,6 +96,50 @@ extension Reducer {
   @warn_unqualified_access
   public func forEach<ElementState, ElementAction, ID: Hashable, Element: Reducer>(
     _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
+    action toElementAction: CaseKeyPath<Action, IdentifiedAction<ID, ElementAction>>,
+    @ReducerBuilder<ElementState, ElementAction> element: () -> Element,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> _ForEachReducer<Self, ID, Element>
+  where ElementState == Element.State, ElementAction == Element.Action {
+    _ForEachReducer(
+      parent: self,
+      toElementsState: toElementsState,
+      toElementAction: AnyCasePath(toElementAction.appending(path: \.element)),
+      element: element(),
+      fileID: fileID,
+      line: line
+    )
+  }
+
+  @inlinable
+  @warn_unqualified_access
+  public func forEach<ElementState, ElementAction, ID: Hashable, Element: Reducer>(
+    _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
+    action toElementAction: AnyCasePath<Action, IdentifiedAction<ID, ElementAction>>,
+    @ReducerBuilder<ElementState, ElementAction> element: () -> Element,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> _ForEachReducer<Self, ID, Element>
+  where ElementState == Element.State, ElementAction == Element.Action {
+    _ForEachReducer(
+      parent: self,
+      toElementsState: toElementsState,
+      toElementAction: toElementAction.appending(path: AnyCasePath(\.element)),
+      element: element(),
+      fileID: fileID,
+      line: line
+    )
+  }
+
+  @available(iOS, deprecated: 9999, message: "Use an 'IdentifiedAction', instead")
+  @available(macOS, deprecated: 9999, message: "Use an 'IdentifiedAction', instead")
+  @available(tvOS, deprecated: 9999, message: "Use an 'IdentifiedAction', instead")
+  @available(watchOS, deprecated: 9999, message: "Use an 'IdentifiedAction', instead")
+  @inlinable
+  @warn_unqualified_access
+  public func forEach<ElementState, ElementAction, ID: Hashable, Element: Reducer>(
+    _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
     action toElementAction: CaseKeyPath<Action, (id: ID, action: ElementAction)>,
     @ReducerBuilder<ElementState, ElementAction> element: () -> Element,
     fileID: StaticString = #fileID,
@@ -72,6 +156,10 @@ extension Reducer {
     )
   }
 
+  @available(iOS, deprecated: 9999, message: "Use an 'IdentifiedAction', instead")
+  @available(macOS, deprecated: 9999, message: "Use an 'IdentifiedAction', instead")
+  @available(tvOS, deprecated: 9999, message: "Use an 'IdentifiedAction', instead")
+  @available(watchOS, deprecated: 9999, message: "Use an 'IdentifiedAction', instead")
   @inlinable
   @warn_unqualified_access
   public func forEach<ElementState, ElementAction, ID: Hashable, Element: Reducer>(

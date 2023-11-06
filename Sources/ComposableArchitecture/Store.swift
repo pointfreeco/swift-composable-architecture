@@ -940,6 +940,11 @@ private func typeName<State, Action>(of store: Store<State, Action>) -> String {
     stateType.dropLast(7) == actionType.dropLast(7)
   {
     return "StoreOf<\(stateType.dropLast(7))?>"
+  } else if stateType.hasPrefix("IdentifiedArray<"),
+    actionType.hasPrefix("IdentifiedAction<"),
+    stateType.dropFirst(16).dropLast(7) == actionType.dropFirst(17).dropLast(8)
+  {
+    return "IdentifiedStoreOf<\(stateType.drop(while: { $0 != "," }).dropFirst(2).dropLast(7))>"
   } else if stateType.hasPrefix("PresentationState<"),
     actionType.hasPrefix("PresentationAction<"),
     stateType.dropFirst(18).dropLast(7) == actionType.dropFirst(19).dropLast(8)

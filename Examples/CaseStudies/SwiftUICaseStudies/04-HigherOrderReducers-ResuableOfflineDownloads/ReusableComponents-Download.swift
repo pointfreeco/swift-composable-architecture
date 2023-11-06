@@ -142,7 +142,7 @@ struct MapApp {
   }
 
   enum Action {
-    case cityMaps(id: CityMap.State.ID, action: CityMap.Action)
+    case cityMaps(IdentifiedActionOf<CityMap>)
   }
 
   var body: some Reducer<State, Action> {
@@ -162,9 +162,7 @@ struct CitiesView: View {
       Section {
         AboutView(readMe: readMe)
       }
-      ForEachStore(
-        self.store.scope(state: \.cityMaps, action: \.cityMaps)
-      ) { cityMapStore in
+      ForEachStore(self.store.scope(state: \.cityMaps, action: \.cityMaps)) { cityMapStore in
         CityMapRowView(store: cityMapStore)
           .buttonStyle(.borderless)
       }

@@ -24,7 +24,7 @@ struct VoiceMemos {
     case recordButtonTapped
     case recordPermissionResponse(Bool)
     case recordingMemo(PresentationAction<RecordingMemo.Action>)
-    case voiceMemos(id: VoiceMemo.State.ID, action: VoiceMemo.Action)
+    case voiceMemos(IdentifiedActionOf<VoiceMemo>)
   }
 
   enum AlertAction: Equatable {}
@@ -96,7 +96,7 @@ struct VoiceMemos {
           return .none
         }
 
-      case let .voiceMemos(id: id, action: .delegate(delegateAction)):
+      case let .voiceMemos(.element(id: id, action: .delegate(delegateAction))):
         switch delegateAction {
         case .playbackFailed:
           state.alert = AlertState { TextState("Voice memo playback failed.") }
@@ -139,10 +139,8 @@ struct VoiceMemosView: View {
       NavigationStack {
         VStack {
           List {
-            ForEachStore(
-              self.store.scope(state: \.voiceMemos, action: \.voiceMemos)
-            ) {
-              VoiceMemoView(store: $0)
+            ForEachStore(self.store.scope(state: \.voiceMemos, action: \.voiceMemos)) { store in
+              VoiceMemoView(store: store)
             }
             .onDelete { viewStore.send(.onDelete($0)) }
           }

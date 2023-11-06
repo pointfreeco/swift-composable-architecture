@@ -140,7 +140,7 @@ struct Episodes {
   }
 
   enum Action: Equatable {
-    case episode(id: Episode.State.ID, action: Episode.Action)
+    case episodes(IdentifiedActionOf<Episode>)
   }
 
   let favorite: @Sendable (UUID, Bool) async throws -> Bool
@@ -149,7 +149,7 @@ struct Episodes {
     Reduce { state, action in
       .none
     }
-    .forEach(\.episodes, action: \.episode) {
+    .forEach(\.episodes, action: \.episodes) {
       Episode(favorite: self.favorite)
     }
   }
@@ -165,9 +165,7 @@ struct EpisodesView: View {
       Section {
         AboutView(readMe: readMe)
       }
-      ForEachStore(
-        self.store.scope(state: \.episodes, action: \.episode)
-      ) { rowStore in
+      ForEachStore(self.store.scope(state: \.episodes, action: \.episodes)) { rowStore in
         EpisodeView(store: rowStore)
       }
       .buttonStyle(.borderless)
