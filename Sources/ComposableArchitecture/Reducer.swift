@@ -247,25 +247,21 @@ extension Reducer where Body: Reducer, Body.State == State, Body.Action == Actio
   }
 }
 
-// NB: This is available starting from Swift 5.7.1 due to the following bug:
-//     https://github.com/apple/swift/issues/60550
-#if swift(>=5.7.1)
-  /// A convenience for constraining a ``Reducer`` conformance.
-  ///
-  /// This allows you to specify the `body` of a ``Reducer`` conformance like so:
-  ///
-  /// ```swift
-  /// var body: some ReducerOf<Self> {
-  ///   // ...
-  /// }
-  /// ```
-  ///
-  /// …instead of the more verbose:
-  ///
-  /// ```swift
-  /// var body: some Reducer<State, Action> {
-  ///   // ...
-  /// }
-  /// ```
-  public typealias ReducerOf<R: Reducer> = Reducer<R.State, R.Action>
-#endif
+/// A convenience for constraining a ``Reducer`` conformance.
+///
+/// This allows you to specify the `body` of a ``Reducer`` conformance like so:
+///
+/// ```swift
+/// var body: some ReducerOf<Self> {
+///   // ...
+/// }
+/// ```
+///
+/// …instead of the more verbose:
+///
+/// ```swift
+/// var body: some Reducer<State, Action> {
+///   // ...
+/// }
+/// ```
+public typealias ReducerOf<R: Reducer> = Reducer<R.State, R.Action>
