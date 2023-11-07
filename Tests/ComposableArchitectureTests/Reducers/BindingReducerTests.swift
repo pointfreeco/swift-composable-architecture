@@ -2,7 +2,6 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
-@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 final class BindingTests: BaseTCATestCase {
   @Reducer
   struct BindingTest {
@@ -125,6 +124,6 @@ final class BindingTests: BaseTCATestCase {
       case fizz(BindingAction<Void>)
       case buzz(Bool)
     }
-    _ = (/Foo.bar).extract(from: .bar(.buzz(true)))
+    _ = AnyCasePath(unsafe: Foo.bar).extract(from: .bar(.buzz(true)))
   }
 }
