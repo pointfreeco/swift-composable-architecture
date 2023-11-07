@@ -396,32 +396,51 @@ public final class Store<State, Action> {
     )
   }
 
+  func foo() {
+    let tmp = Store<Int, Void>(initialState: 0) {
+      EmptyReducer()
+    }
+    .scope(state: { $0 }, action: { $0 })
+  }
+
   @available(
-    iOS, deprecated: 9999,
+    iOS, deprecated: 1,
     message:
       """
-      Pass 'state' a key path to child state and 'action' a case key path to child action, instead.
+      Pass 'state' a key path to child state and 'action' a case key path to child action, \
+      instead. For more information see the following migration guide:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Store-scoping-with-key-paths
       """
   )
   @available(
-    macOS, deprecated: 9999,
+    macOS, deprecated: 1,
     message:
       """
-      Pass 'state' a key path to child state and 'action' a case key path to child action, instead.
+      Pass 'state' a key path to child state and 'action' a case key path to child action, \
+      instead. For more information see the following migration guide:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Store-scoping-with-key-paths
       """
   )
   @available(
     tvOS, deprecated: 9999,
     message:
       """
-      Pass 'state' a key path to child state and 'action' a case key path to child action, instead.
+      Pass 'state' a key path to child state and 'action' a case key path to child action, \
+      instead. For more information see the following migration guide:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Store-scoping-with-key-paths
       """
   )
   @available(
     watchOS, deprecated: 9999,
     message:
       """
-      Pass 'state' a key path to child state and 'action' a case key path to child action, instead.
+      Pass 'state' a key path to child state and 'action' a case key path to child action, \
+      instead. For more information see the following migration guide:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Store-scoping-with-key-paths
       """
   )
   public func scope<ChildState, ChildAction>(
@@ -441,28 +460,40 @@ public final class Store<State, Action> {
     iOS, deprecated: 9999,
     message:
       """
-      Pass 'state' a key path to child state and 'action' a case key path to child action, instead.
+      Pass 'state' a key path to child state and 'action' a case key path to child action, \
+      instead. For more information see the following migration guide:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Store-scoping-with-key-paths
       """
   )
   @available(
     macOS, deprecated: 9999,
     message:
       """
-      Pass 'state' a key path to child state and 'action' a case key path to child action, instead.
+      Pass 'state' a key path to child state and 'action' a case key path to child action, \
+      instead. For more information see the following migration guide:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Store-scoping-with-key-paths
       """
   )
   @available(
     tvOS, deprecated: 9999,
     message:
       """
-      Pass 'state' a key path to child state and 'action' a case key path to child action, instead.
+      Pass 'state' a key path to child state and 'action' a case key path to child action, \
+      instead. For more information see the following migration guide:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Store-scoping-with-key-paths
       """
   )
   @available(
     watchOS, deprecated: 9999,
     message:
       """
-      Pass 'state' a key path to child state and 'action' a case key path to child action, instead.
+      Pass 'state' a key path to child state and 'action' a case key path to child action, \
+      instead. For more information see the following migration guide:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Store-scoping-with-key-paths
       """
   )
   public func scope<ChildState, ChildAction>(
