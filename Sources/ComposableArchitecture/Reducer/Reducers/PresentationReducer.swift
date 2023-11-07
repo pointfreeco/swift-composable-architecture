@@ -219,63 +219,12 @@ extension PresentationState: CustomReflectable {
 /// See the dedicated article on <doc:Navigation> for more information on the library's navigation
 /// tools, and in particular see <doc:TreeBasedNavigation> for information on modeling navigation
 /// using optionals and enums.
-public enum PresentationAction<Action>: CasePathable {
+public enum PresentationAction<Action> {
   /// An action sent to `nil` out the associated presentation state.
   case dismiss
 
   /// An action sent to the associated, non-`nil` presentation state.
   indirect case presented(Action)
-
-  public static var allCasePaths: AllCasePaths {
-    AllCasePaths()
-  }
-
-  @dynamicMemberLookup
-  public struct AllCasePaths {
-    public var dismiss: AnyCasePath<PresentationAction, Void> {
-      AnyCasePath(
-        embed: { .dismiss },
-        extract: {
-          guard case .dismiss = $0 else { return nil }
-          return ()
-        }
-      )
-    }
-
-    public var presented: AnyCasePath<PresentationAction, Action> {
-      AnyCasePath(
-        embed: PresentationAction.presented,
-        extract: {
-          guard case let .presented(value) = $0 else { return nil }
-          return value
-        }
-      )
-    }
-
-    public subscript<AppendedAction>(
-      dynamicMember keyPath: CaseKeyPath<Action, AppendedAction>
-    ) -> AnyCasePath<PresentationAction, PresentationAction<AppendedAction>>
-    where Action: CasePathable {
-      AnyCasePath<PresentationAction, PresentationAction<AppendedAction>>(
-        embed: {
-          switch $0 {
-          case .dismiss:
-            return .dismiss
-          case let .presented(action):
-            return .presented(keyPath(action))
-          }
-        },
-        extract: {
-          switch $0 {
-          case .dismiss:
-            return .dismiss
-          case let .presented(action):
-            return action[case: keyPath].map { .presented($0) }
-          }
-        }
-      )
-    }
-  }
 }
 
 extension PresentationAction: CasePathable {
