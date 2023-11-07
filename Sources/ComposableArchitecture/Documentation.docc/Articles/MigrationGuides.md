@@ -10,6 +10,7 @@ in favor of newer ones. We recommend people update their code as quickly as poss
 APIs, and this article contains some tips for doing so.
 
 * [Store scoping with key paths](#Store-scoping-with-key-paths)
+* [Enum-driven navigation APIs](#Enum-driven-navigation-APIs)
 
 ### Store scoping with key paths
 
@@ -136,3 +137,28 @@ ChildView(
 These tricks should be enough for you to rewrite all of your store scopes using key paths, but if
 you have any problems feel free to open a
 [discussion](http://github.com/pointfreeco/swift-composable-architecture/discussions) on the repo.
+
+## Enum-driven navigation APIs
+
+Prior to version 1.5 of the library, using enum state with navigation view modifiers, such as 
+`sheet`, `popover`, `navigationDestination`, etc, was quite verbose. You first needed to supply a 
+store scoped to the destination domain, and then further provide transformations for isolating the
+case of the state enum to drive the navigation, as well as a transformation for embedding child 
+actions back into the destination domain:
+
+```swift
+.sheet(
+  store: self.store.scope(state: \.$destination, action: { .destination($0) }),
+  state: \.editForm,
+  action: { .editForm($0) }
+)
+```
+
+The navigation view modifiers that take `store`, `state` and `action` arguments are now deprecated,
+and instead you can do it all with a single `store` argument:
+
+```swift
+.sheet(
+  store: self.store.scope(state: \.$destination.editForm, action: \.destination.editForm)
+)
+```

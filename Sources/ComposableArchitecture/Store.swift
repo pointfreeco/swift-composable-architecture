@@ -396,15 +396,8 @@ public final class Store<State, Action> {
     )
   }
 
-  func foo() {
-    let tmp = Store<Int, Void>(initialState: 0) {
-      EmptyReducer()
-    }
-    .scope(state: { $0 }, action: { $0 })
-  }
-
   @available(
-    iOS, deprecated: 1,
+    iOS, deprecated: 9999,
     message:
       """
       Pass 'state' a key path to child state and 'action' a case key path to child action, \
@@ -414,7 +407,7 @@ public final class Store<State, Action> {
       """
   )
   @available(
-    macOS, deprecated: 1,
+    macOS, deprecated: 9999,
     message:
       """
       Pass 'state' a key path to child state and 'action' a case key path to child action, \

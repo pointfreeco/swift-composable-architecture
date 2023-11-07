@@ -42,7 +42,13 @@ extension View {
   ///   - content: A closure returning the content of the modal view.
   @available(
     *, deprecated,
-    message: "Further scope the store into the 'state' and 'action' cases, instead"
+    message:
+      """
+      Further scope the store into the 'state' and 'action' cases, instead. For more information, \
+      see the following article:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Enum-driven-navigation-APIs
+      """
   )
   public func sheet<State, Action, DestinationState, DestinationAction, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,

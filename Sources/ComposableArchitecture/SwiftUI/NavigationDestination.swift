@@ -47,7 +47,13 @@ extension View {
   ///   - destination: A closure returning the content of the destination view.
   @available(
     *, deprecated,
-    message: "Further scope the store into the 'state' and 'action' cases, instead"
+    message:
+      """
+      Further scope the store into the 'state' and 'action' cases, instead. For more information, \
+      see the following article:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Enum-driven-navigation-APIs
+      """
   )
   public func navigationDestination<
     State, Action, DestinationState, DestinationAction, Destination: View
@@ -56,7 +62,7 @@ extension View {
     state toDestinationState: @escaping (_ state: State) -> DestinationState?,
     action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     @ViewBuilder destination: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
-    Destination
+      Destination
   ) -> some View {
     self._navigationDestination(
       store: store,
