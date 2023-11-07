@@ -926,6 +926,29 @@ extension TestStore where State: Equatable {
     }
   }
 
+  @MainActor
+  @discardableResult
+  public func send<Value>(
+    _ keyPath: CaseKeyPath<Action, Value>,
+    _ value: Value,
+    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) async -> TestStoreTask {
+    await self.send(keyPath(value), assert: updateStateToExpectedResult)
+  }
+
+  @MainActor
+  @discardableResult
+  public func send(
+    _ keyPath: CaseKeyPath<Action, Void>,
+    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) async -> TestStoreTask {
+    await self.send(keyPath(), assert: updateStateToExpectedResult)
+  }
+
   /// Assert against the current state of the store.
   ///
   /// The trailing closure provided is given a mutable argument that represents the current state,
@@ -1499,6 +1522,40 @@ extension TestStore where State: Equatable {
     }
   }
 
+  @MainActor
+  public func receive<Value: Equatable>(
+    _ keyPath: CaseKeyPath<Action, Value>,
+    _ value: Value,
+    timeout nanoseconds: UInt64? = nil,
+    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) async where Action: CasePathable {
+    await XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
+      guard !self.reducer.inFlightEffects.isEmpty
+      else {
+        _ = {
+          self._receive(
+            AnyCasePath(keyPath), assert: updateStateToExpectedResult, file: file, line: line
+          )
+        }()
+        return
+      }
+      await self.receiveAction(
+        matching: { $0[case: keyPath] == value },
+        timeout: nanoseconds,
+        file: file,
+        line: line
+      )
+      _ = {
+        self._receive(
+          AnyCasePath(keyPath), assert: updateStateToExpectedResult, file: file, line: line
+        )
+      }()
+      await Task.megaYield()
+    }
+  }
+
   #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     /// Asserts an action was received matching a case path and asserts how the state changes.
     ///
@@ -1581,6 +1638,26 @@ extension TestStore where State: Equatable {
         }()
         await Task.megaYield()
       }
+    }
+
+    @MainActor
+    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+    public func receive<Value: Equatable>(
+      _ keyPath: CaseKeyPath<Action, Value>,
+      _ value: Value,
+      timeout duration: Duration,
+      assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
+      file: StaticString = #file,
+      line: UInt = #line
+    ) async where Action: CasePathable {
+      await self.receive(
+        keyPath,
+        value,
+        timeout: duration.nanoseconds,
+        assert: updateStateToExpectedResult,
+        file: file,
+        line: line
+      )
     }
   #endif
 
