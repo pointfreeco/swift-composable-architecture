@@ -67,25 +67,27 @@ final class VoiceMemosTests: XCTestCase {
         )
       ]
     }
-    await store.send(.voiceMemos(.element(id: deadbeefURL, action: .playButtonTapped)) {
+    await store.send(.voiceMemos(.element(id: deadbeefURL, action: .playButtonTapped))) {
       $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0)
     }
-    await store.receive(.voiceMemos(.element(id: deadbeefURL, action: .delegate(.playbackStarted)))
+    await store.receive(.voiceMemos(.element(id: deadbeefURL, action: .delegate(.playbackStarted))))
     await self.clock.run()
 
-    await store.receive(.voiceMemos(.element(id: deadbeefURL, action: .timerUpdated(0.5))) {
+    await store.receive(.voiceMemos(.element(id: deadbeefURL, action: .timerUpdated(0.5)))) {
       $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0.2)
     }
-    await store.receive(.voiceMemos(.element(id: deadbeefURL, action: .timerUpdated(1))) {
+    await store.receive(.voiceMemos(.element(id: deadbeefURL, action: .timerUpdated(1)))) {
       $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0.4)
     }
-    await store.receive(.voiceMemos(.element(id: deadbeefURL, action: .timerUpdated(1.5))) {
+    await store.receive(.voiceMemos(.element(id: deadbeefURL, action: .timerUpdated(1.5)))) {
       $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0.6)
     }
-    await store.receive(.voiceMemos(.element(id: deadbeefURL, action: .timerUpdated(2))) {
+    await store.receive(.voiceMemos(.element(id: deadbeefURL, action: .timerUpdated(2)))) {
       $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0.8)
     }
-    await store.receive(.voiceMemos(.element(id: deadbeefURL, action: .audioPlayerClient(.success(true)))) {
+    await store.receive(
+      .voiceMemos(.element(id: deadbeefURL, action: .audioPlayerClient(.success(true))))
+    ) {
       $0.voiceMemos[id: deadbeefURL]?.mode = .notPlaying
     }
   }
