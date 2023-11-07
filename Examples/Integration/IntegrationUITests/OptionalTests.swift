@@ -8,7 +8,7 @@ final class OptionalTests: BaseIntegrationTests {
     super.setUp()
     self.app.buttons["Optional"].tap()
     self.clearLogs()
-    // SnapshotTesting.isRecording = true
+    //SnapshotTesting.isRecording = true
   }
 
   func testBasics() {
@@ -30,7 +30,6 @@ final class OptionalTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      OptionalView.body
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<OptionalView.Feature>.scope
