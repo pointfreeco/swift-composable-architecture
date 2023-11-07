@@ -71,13 +71,6 @@ public struct PresentationState<State> {
       self._$observationRegistrar.access(self, keyPath: \.wrappedValue)
       yield self.storage.state
     }
-    _modify {
-      if !isKnownUniquelyReferenced(&self.storage) {
-        self.storage = Storage(state: self.storage.state)
-      }
-      yield &self.storage.state
-      // TODO: runtime warn if _$id changes during modify?
-    }
     set {
       func update() {
         if !isKnownUniquelyReferenced(&self.storage) {
