@@ -47,6 +47,12 @@ final class OptionalTests: BaseIntegrationTests {
     self.assertLogs {
       """
       OptionalView.body
+      PresentationStoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<OptionalView.Feature>.scope
       StoreOf<OptionalView.Feature>.scope
       """
     }

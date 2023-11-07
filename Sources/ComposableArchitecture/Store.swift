@@ -249,6 +249,8 @@ public final class Store<State, Action> {
   ///     case login(Login.Action)
   ///     // ...
   ///   }
+  ///   // ...
+  /// }
   ///
   /// // A store that runs the entire application.
   /// let store = Store(initialState: AppFeature.State()) {
@@ -258,10 +260,7 @@ public final class Store<State, Action> {
   /// // Construct a login view by scoping the store
   /// // to one that works with only login domain.
   /// LoginView(
-  ///   store: store.scope(
-  ///     state: \.login,
-  ///     action: AppFeature.Action.login
-  ///   )
+  ///   store: store.scope(state: \.login, action: \.login)
   /// )
   /// ```
   ///
@@ -512,8 +511,6 @@ public final class Store<State, Action> {
   ) -> Store<ChildState, ChildAction> {
     self.threadCheck(status: .scope)
 
-    let initialChildState = toChildState(self.stateSubject.value)
-
     let id = id?(self.stateSubject.value)
     if let id = id,
       let childStore = self.children[id] as? Store<ChildState, ChildAction>
@@ -536,7 +533,7 @@ public final class Store<State, Action> {
     }
     var isSending = false
     let childStore = Store<ChildState, ChildAction>(
-      initialState: initialChildState
+      initialState: toChildState(self.stateSubject.value)
     ) {
       Reduce(internal: { [weak self] childState, childAction in
         guard let self = self else { return .none }
