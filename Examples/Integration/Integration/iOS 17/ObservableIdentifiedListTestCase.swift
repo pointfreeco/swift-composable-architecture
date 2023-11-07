@@ -29,7 +29,7 @@ struct ObservableIdentifiedListView: View {
                 ObservableBasicsView(store: store)
               }
               Spacer()
-              Button(action: { self.store.send(.removeButtonTapped(id: store.id)) }) {
+              Button(action: { self.store.send(.removeButtonTapped(id: store.state.id)) }) {
                 Image(systemName: "trash")
               }
             }
