@@ -18,6 +18,7 @@ struct Nested: Reducer {
     var rows: IdentifiedArrayOf<State> = []
   }
   
+  @CasePathable
   enum Action: Equatable {
     case addRowButtonTapped
     case nameTextFieldChanged(String)
