@@ -41,7 +41,7 @@
 /// }
 /// ```
 ///
-/// The `reduce` method's first responsibility is to mutate the feature's current state given an
+/// The `reduce` method's first responsibility is to mutate the feature's current state based on the given
 /// action. Its second responsibility is to return effects that will be executed asynchronously
 /// and feed their data back into the system. Currently `Feature` does not need to run any effects,
 /// and so ``Effect/none`` is returned.
