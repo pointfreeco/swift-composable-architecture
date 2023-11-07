@@ -219,6 +219,73 @@ public enum PresentationAction<Action> {
   indirect case presented(Action)
 }
 
+extension PresentationAction: CasePathable {
+  public static var allCasePaths: AllCasePaths {
+    AllCasePaths()
+  }
+
+  @dynamicMemberLookup
+  public struct AllCasePaths {
+    public var dismiss: AnyCasePath<PresentationAction, Void> {
+      AnyCasePath(
+        embed: { .dismiss },
+        extract: {
+          guard case .dismiss = $0 else { return nil }
+          return ()
+        }
+      )
+    }
+
+    public var presented: AnyCasePath<PresentationAction, Action> {
+      AnyCasePath(
+        embed: PresentationAction.presented,
+        extract: {
+          guard case let .presented(value) = $0 else { return nil }
+          return value
+        }
+      )
+    }
+
+    public subscript<AppendedAction>(
+      dynamicMember keyPath: CaseKeyPath<Action, AppendedAction>
+    ) -> AnyCasePath<PresentationAction, AppendedAction>
+    where Action: CasePathable {
+      AnyCasePath<PresentationAction, AppendedAction>(
+        embed: { .presented(keyPath($0)) },
+        extract: {
+          guard case let .presented(action) = $0 else { return nil }
+          return action[case: keyPath]
+        }
+      )
+    }
+
+    @_disfavoredOverload
+    public subscript<AppendedAction>(
+      dynamicMember keyPath: CaseKeyPath<Action, AppendedAction>
+    ) -> AnyCasePath<PresentationAction, PresentationAction<AppendedAction>>
+    where Action: CasePathable {
+      AnyCasePath<PresentationAction, PresentationAction<AppendedAction>>(
+        embed: {
+          switch $0 {
+          case .dismiss:
+            return .dismiss
+          case let .presented(action):
+            return .presented(keyPath(action))
+          }
+        },
+        extract: {
+          switch $0 {
+          case .dismiss:
+            return .dismiss
+          case let .presented(action):
+            return action[case: keyPath].map { .presented($0) }
+          }
+        }
+      )
+    }
+  }
+}
+
 extension PresentationAction: Equatable where Action: Equatable {}
 extension PresentationAction: Hashable where Action: Hashable {}
 extension PresentationAction: Sendable where Action: Sendable {}
