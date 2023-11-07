@@ -4,7 +4,7 @@ import SwiftUI
 @Reducer
 struct RecordingMemo {
   @ObservableState
-  struct State: Equatable {
+  struct State: Equatable, Sendable {
     var date: Date
     var duration: TimeInterval = 0
     var mode: Mode = .recording
@@ -16,7 +16,7 @@ struct RecordingMemo {
     }
   }
 
-  enum Action: Equatable {
+  enum Action: Equatable, Sendable {
     case audioRecorderDidFinish(TaskResult<Bool>)
     case delegate(DelegateAction)
     case finalRecordingTime(TimeInterval)
@@ -25,7 +25,7 @@ struct RecordingMemo {
     case stopButtonTapped
   }
 
-  enum DelegateAction: Equatable {
+  enum DelegateAction: Equatable, Sendable {
     case didFinish(TaskResult<State>)
   }
 

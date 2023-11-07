@@ -8,7 +8,6 @@ private struct PresentationTestCase {
     var message = ""
     @PresentationState var destination: Destination.State?
   }
-  @CasePathable
   enum Action: Equatable, Sendable {
     case alertButtonTapped
     case customAlertButtonTapped
@@ -33,7 +32,6 @@ private struct PresentationTestCase {
       case popover(ChildFeature.State)
       case sheet(ChildFeature.State)
     }
-    @CasePathable
     enum Action: Equatable {
       case alert(AlertAction)
       case customAlert(AlertAction)
@@ -360,8 +358,7 @@ struct PresentationTestCaseView: View {
       }
       .sheet(
         store: self.store.scope(
-          state: \.$destination.navigationLinkDemo,
-          action: \.destination.navigationLinkDemo
+          state: \.$destination.navigationLinkDemo, action: \.destination.navigationLinkDemo
         )
       ) { store in
         NavigationLinkDemoView(store: store)
@@ -372,8 +369,7 @@ struct PresentationTestCaseView: View {
       }
       .navigationDestination(
         store: self.store.scope(
-          state: \.$destination.navigationDestination,
-          action: \.destination.navigationDestination
+          state: \.$destination.navigationDestination, action: \.destination.navigationDestination
         )
       ) { store in
         ChildView(store: store)
@@ -383,10 +379,7 @@ struct PresentationTestCaseView: View {
         self.viewStore.send(.popoverButtonTapped)
       }
       .popover(
-        store: self.store.scope(
-          state: \.$destination.popover,
-          action: \.destination.popover
-        )
+        store: self.store.scope(state: \.$destination.popover, action: \.destination.popover)
       ) { store in
         ChildView(store: store)
       }
@@ -445,7 +438,6 @@ private struct NavigationLinkDemoFeature {
     @PresentationState var child: ChildFeature.State?
     @PresentationState var identifiedChild: ChildFeature.State?
   }
-  @CasePathable
   enum Action: Equatable {
     case child(PresentationAction<ChildFeature.Action>)
     case identifiedChild(PresentationAction<ChildFeature.Action>)

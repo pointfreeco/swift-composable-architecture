@@ -18,6 +18,9 @@ final class iOS16_17_OldPresentsNewTests: BaseIntegrationTests {
     self.assertLogs {
       """
       OldPresentsNewTestCase.body
+      PresentationStoreOf<ObservableBasicsView.Feature>.scope
+      PresentationStoreOf<ObservableBasicsView.Feature>.scope
+      StoreOf<OldPresentsNewTestCase.Feature>.scope
       StoreOf<OldPresentsNewTestCase.Feature>.scope
       """
     }
@@ -59,15 +62,24 @@ final class iOS16_17_OldPresentsNewTests: BaseIntegrationTests {
     self.assertLogs {
       """
       OldPresentsNewTestCase.body
+      OldPresentsNewTestCase.body
       PresentationStoreOf<ObservableBasicsView.Feature>.init
+      PresentationStoreOf<ObservableBasicsView.Feature>.scope
+      PresentationStoreOf<ObservableBasicsView.Feature>.scope
       PresentationStoreOf<ObservableBasicsView.Feature>.scope
       PresentationStoreOf<ObservableBasicsView.Feature>.scope
       Store<OldPresentsNewTestCase.ViewState, OldPresentsNewTestCase.Feature.Action>.init
       StoreOf<ObservableBasicsView.Feature>.deinit
       StoreOf<ObservableBasicsView.Feature?>.deinit
       StoreOf<ObservableBasicsView.Feature?>.deinit
+      StoreOf<ObservableBasicsView.Feature?>.deinit
+      StoreOf<ObservableBasicsView.Feature?>.deinit
       StoreOf<ObservableBasicsView.Feature?>.init
       StoreOf<ObservableBasicsView.Feature?>.init
+      StoreOf<ObservableBasicsView.Feature?>.init
+      StoreOf<ObservableBasicsView.Feature?>.init
+      StoreOf<ObservableBasicsView.Feature?>.scope
+      StoreOf<ObservableBasicsView.Feature?>.scope
       StoreOf<ObservableBasicsView.Feature?>.scope
       StoreOf<ObservableBasicsView.Feature?>.scope
       StoreOf<ObservableBasicsView.Feature?>.scope
@@ -86,6 +98,9 @@ final class iOS16_17_OldPresentsNewTests: BaseIntegrationTests {
     self.assertLogs {
       """
       OldPresentsNewTestCase.body
+      PresentationStoreOf<ObservableBasicsView.Feature>.scope
+      PresentationStoreOf<ObservableBasicsView.Feature>.scope
+      StoreOf<OldPresentsNewTestCase.Feature>.scope
       StoreOf<OldPresentsNewTestCase.Feature>.scope
       """
     }
@@ -100,22 +115,23 @@ final class iOS16_17_OldPresentsNewTests: BaseIntegrationTests {
       """
       ObservableBasicsView.body
       OldPresentsNewTestCase.body
-      OldPresentsNewTestCase.body
       PresentationStoreOf<ObservableBasicsView.Feature>.deinit
       PresentationStoreOf<ObservableBasicsView.Feature>.init
-      PresentationStoreOf<ObservableBasicsView.Feature>.scope
       PresentationStoreOf<ObservableBasicsView.Feature>.scope
       Store<OldPresentsNewTestCase.ViewState, OldPresentsNewTestCase.Feature.Action>.deinit
       Store<OldPresentsNewTestCase.ViewState, OldPresentsNewTestCase.Feature.Action>.init
       StoreOf<ObservableBasicsView.Feature>.init
       StoreOf<ObservableBasicsView.Feature?>.deinit
       StoreOf<ObservableBasicsView.Feature?>.deinit
+      StoreOf<ObservableBasicsView.Feature?>.deinit
+      StoreOf<ObservableBasicsView.Feature?>.deinit
       StoreOf<ObservableBasicsView.Feature?>.init
       StoreOf<ObservableBasicsView.Feature?>.init
       StoreOf<ObservableBasicsView.Feature?>.init
       StoreOf<ObservableBasicsView.Feature?>.init
       StoreOf<ObservableBasicsView.Feature?>.init
-      StoreOf<OldPresentsNewTestCase.Feature>.scope
+      StoreOf<ObservableBasicsView.Feature?>.init
+      StoreOf<ObservableBasicsView.Feature?>.init
       StoreOf<OldPresentsNewTestCase.Feature>.scope
       """
     }
@@ -165,8 +181,6 @@ final class iOS16_17_OldPresentsNewTests: BaseIntegrationTests {
       PresentationStoreOf<ObservableBasicsView.Feature>.scope
       PresentationStoreOf<ObservableBasicsView.Feature>.scope
       Store<OldPresentsNewTestCase.ViewState, OldPresentsNewTestCase.Feature.Action>.init
-      StoreOf<ObservableBasicsView.Feature>.deinit
-      StoreOf<ObservableBasicsView.Feature?>.deinit
       StoreOf<ObservableBasicsView.Feature?>.deinit
       StoreOf<ObservableBasicsView.Feature?>.init
       StoreOf<ObservableBasicsView.Feature?>.init

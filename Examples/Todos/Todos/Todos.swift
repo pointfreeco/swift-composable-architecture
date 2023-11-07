@@ -31,7 +31,7 @@ struct Todos {
     case delete(IndexSet)
     case move(IndexSet, Int)
     case sortCompletedTodos
-    case todos(id: Todo.State.ID, action: Todo.Action)
+    case todos(IdentifiedActionOf<Todo>)
   }
 
   @Dependency(\.continuousClock) var clock
@@ -85,7 +85,7 @@ struct Todos {
         state.todos.sort { $1.isComplete && !$0.isComplete }
         return .none
 
-      case .todos(id: _, action: .binding(\.isComplete)):
+      case .todos(.element(id: _, action: .binding(\.isComplete))):
         return .run { send in
           try await self.clock.sleep(for: .seconds(1))
           await send(.sortCompletedTodos, animation: .default)

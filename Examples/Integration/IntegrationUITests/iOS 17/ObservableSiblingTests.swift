@@ -31,6 +31,11 @@ final class iOS17_ObservableSiblingsTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["1"].exists, false)
     self.assertLogs {
       """
+      ObservableBasicsView.body
+      ObservableBasicsView.body
+      ObservableSiblingFeaturesView.body
+      StoreOf<ObservableBasicsView.Feature>.init
+      StoreOf<ObservableBasicsView.Feature>.init
       StoreOf<ObservableSiblingFeaturesView.Feature>.scope
       StoreOf<ObservableSiblingFeaturesView.Feature>.scope
       """
@@ -45,6 +50,11 @@ final class iOS17_ObservableSiblingsTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["1"].exists, false)
     self.assertLogs {
       """
+      ObservableBasicsView.body
+      ObservableBasicsView.body
+      ObservableSiblingFeaturesView.body
+      StoreOf<ObservableBasicsView.Feature>.init
+      StoreOf<ObservableBasicsView.Feature>.init
       StoreOf<ObservableSiblingFeaturesView.Feature>.scope
       StoreOf<ObservableSiblingFeaturesView.Feature>.scope
       """
@@ -59,6 +69,11 @@ final class iOS17_ObservableSiblingsTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["1"].exists, true)
     self.assertLogs {
       """
+      ObservableBasicsView.body
+      ObservableBasicsView.body
+      ObservableSiblingFeaturesView.body
+      StoreOf<ObservableBasicsView.Feature>.init
+      StoreOf<ObservableBasicsView.Feature>.init
       StoreOf<ObservableSiblingFeaturesView.Feature>.scope
       StoreOf<ObservableSiblingFeaturesView.Feature>.scope
       """

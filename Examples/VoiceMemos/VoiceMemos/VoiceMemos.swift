@@ -18,14 +18,14 @@ struct VoiceMemos {
     }
   }
 
-  enum Action: Equatable {
+  enum Action: Equatable, Sendable {
     case alert(PresentationAction<AlertAction>)
     case onDelete(IndexSet)
     case openSettingsButtonTapped
     case recordButtonTapped
     case recordPermissionResponse(Bool)
     case recordingMemo(PresentationAction<RecordingMemo.Action>)
-    case voiceMemos(id: VoiceMemo.State.ID, action: VoiceMemo.Action)
+    case voiceMemos(IdentifiedActionOf<VoiceMemo>)
   }
 
   enum AlertAction: Equatable {}
@@ -97,7 +97,7 @@ struct VoiceMemos {
           return .none
         }
 
-      case let .voiceMemos(id: id, action: .delegate(delegateAction)):
+      case let .voiceMemos(.element(id: id, action: .delegate(delegateAction))):
         switch delegateAction {
         case .playbackFailed:
           state.alert = AlertState { TextState("Voice memo playback failed.") }

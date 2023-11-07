@@ -3,13 +3,12 @@ import TestCases
 import XCTest
 
 @MainActor
-final class iOS16_OptionalTests: BaseIntegrationTests {
+final class OptionalTests: BaseIntegrationTests {
   override func setUp() {
     super.setUp()
-    self.app.buttons["iOS 16"].tap()
     self.app.buttons["Optional"].tap()
     self.clearLogs()
-    // SnapshotTesting.isRecording = true
+    //SnapshotTesting.isRecording = true
   }
 
   func testBasics() {
@@ -18,18 +17,9 @@ final class iOS16_OptionalTests: BaseIntegrationTests {
       """
       BasicsView.body
       OptionalView.body
-      OptionalView.body
       PresentationStoreOf<BasicsView.Feature>.scope
-      Store<OptionalView.ViewState, OptionalView.Feature.Action>.deinit
-      Store<OptionalView.ViewState, OptionalView.Feature.Action>.init
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<OptionalView.Feature>.scope

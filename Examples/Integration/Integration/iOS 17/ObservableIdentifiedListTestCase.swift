@@ -55,9 +55,7 @@ struct ObservableIdentifiedListView: View {
       case addButtonTapped
       case incrementFirstButtonTapped
       case removeButtonTapped(id: ObservableBasicsView.Feature.State.ID)
-      case rows(
-        id: ObservableBasicsView.Feature.State.ID, action: ObservableBasicsView.Feature.Action
-      )
+      case rows(IdentifiedActionOf<ObservableBasicsView.Feature>)
     }
     var body: some ReducerOf<Self> {
       Reduce { state, action in

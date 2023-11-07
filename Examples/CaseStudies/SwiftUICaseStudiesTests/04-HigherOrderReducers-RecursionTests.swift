@@ -16,7 +16,7 @@ final class RecursionTests: XCTestCase {
       $0.rows.append(Nested.State(id: UUID(0)))
     }
 
-    await store.send(.row(id: UUID(0), action: .addRowButtonTapped)) {
+    await store.send(.rows(.element(id: UUID(0), action: .addRowButtonTapped))) {
       $0.rows[id: UUID(0)]?.rows.append(Nested.State(id: UUID(1)))
     }
   }

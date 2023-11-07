@@ -3,7 +3,6 @@ import Combine
 import XCTest
 
 @MainActor
-@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 final class StoreTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
 
@@ -637,7 +636,7 @@ final class StoreTests: BaseTCATestCase {
       Feature_testStoreVsTestStore()
     }
     await store.send(.tap, originatingFrom: nil)?.value
-    XCTAssertEqual(store.stateSubject.value.count, testStore.state.count)
+    XCTAssertEqual(store.withState(\.count), testStore.state.count)
   }
 
   @Reducer

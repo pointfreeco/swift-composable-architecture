@@ -34,11 +34,11 @@ final class iOS17_ObservableIdentifiedListTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
     self.assertLogs {
       """
+      IdentifiedStoreOf<ObservableBasicsView.Feature>.scope
       ObservableBasicsView.body
       ObservableIdentifiedListView.body
       ObservableIdentifiedListView.body.ForEach
       ObservableIdentifiedListView.body.ForEach
-      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, (id: UUID, action: ObservableBasicsView.Feature.Action)>.scope
       """
     }
   }
@@ -51,8 +51,8 @@ final class iOS17_ObservableIdentifiedListTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
     self.assertLogs {
       """
+      IdentifiedStoreOf<ObservableBasicsView.Feature>.scope
       ObservableBasicsView.body
-      Store<IdentifiedArray<UUID, ObservableBasicsView.Feature.State>, (id: UUID, action: ObservableBasicsView.Feature.Action)>.scope
       """
     }
   }

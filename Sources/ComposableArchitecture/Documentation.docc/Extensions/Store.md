@@ -9,7 +9,7 @@
 
 ### Scoping stores
 
-- ``scope(state:action:)-9syqx``
+- ``scope(state:action:)-90255``
 
 ### Accessing state
 

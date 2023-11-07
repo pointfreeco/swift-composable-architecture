@@ -17,13 +17,13 @@ struct Nested: Reducer {
     var name: String = ""
     var rows: IdentifiedArrayOf<State> = []
   }
-
+  
   @CasePathable
   enum Action: Equatable {
     case addRowButtonTapped
     case nameTextFieldChanged(String)
     case onDelete(IndexSet)
-    indirect case row(id: State.ID, action: Action)
+    indirect case rows(IdentifiedActionOf<Nested>)
   }
 
   @Dependency(\.uuid) var uuid
@@ -43,11 +43,11 @@ struct Nested: Reducer {
         state.rows.remove(atOffsets: indexSet)
         return .none
 
-      case .row:
+      case .rows:
         return .none
       }
     }
-    .forEach(\.rows, action: \.row) {
+    .forEach(\.rows, action: \.rows) {
       Self()
     }
   }
@@ -67,9 +67,7 @@ struct NestedView: View {
           AboutView(readMe: readMe)
         }
 
-        ForEachStore(
-          self.store.scope(state: \.rows, action: \.row)
-        ) { rowStore in
+        ForEachStore(self.store.scope(state: \.rows, action: \.rows)) { rowStore in
           WithViewStore(rowStore, observe: \.name) { rowViewStore in
             NavigationLink(
               destination: NestedView(store: rowStore)

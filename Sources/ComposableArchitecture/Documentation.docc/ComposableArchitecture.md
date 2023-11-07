@@ -53,6 +53,7 @@ day-to-day when building applications, such as:
 - <doc:Testing>
 - <doc:Navigation>
 - <doc:Performance>
+- <doc:MigrationGuides>
 
 ### State management
 

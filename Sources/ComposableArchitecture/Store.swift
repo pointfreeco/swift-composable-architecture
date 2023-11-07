@@ -22,13 +22,13 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// …and then use the ``scope(state:action:)-9iai9`` method to derive more focused stores that can be
+/// …and then use the ``scope(state:action:)-90255`` method to derive more focused stores that can be
 /// passed to subviews.
 ///
 /// ### Scoping
 ///
-/// The most important operation defined on ``Store`` is the ``scope(state:action:)-9iai9`` method, which
-/// allows you to transform a store into one that deals with child state and actions. This is
+/// The most important operation defined on ``Store`` is the ``scope(state:action:)-90255`` method,
+/// which allows you to transform a store into one that deals with child state and actions. This is
 /// necessary for passing stores to subviews that only care about a small portion of the entire
 /// application's domain.
 ///
@@ -36,22 +36,27 @@ import SwiftUI
 /// profile, then we can model the domain like this:
 ///
 /// ```swift
-/// struct State {
-///   var activity: Activity.State
-///   var profile: Profile.State
-///   var search: Search.State
-/// }
+/// @Reducer
+/// struct AppFeature {
+///   struct State {
+///     var activity: Activity.State
+///     var profile: Profile.State
+///     var search: Search.State
+///   }
 ///
-/// enum Action {
-///   case activity(Activity.Action)
-///   case profile(Profile.Action)
-///   case search(Search.Action)
+///   enum Action {
+///     case activity(Activity.Action)
+///     case profile(Profile.Action)
+///     case search(Search.Action)
+///   }
+///
+///   // ...
 /// }
 /// ```
 ///
-/// We can construct a view for each of these domains by applying ``scope(state:action:)-9iai9`` to a
-/// store that holds onto the full app domain in order to transform it into a store for each
-/// sub-domain:
+/// We can construct a view for each of these domains by applying ``scope(state:action:)-90255`` to
+/// a store that holds onto the full app domain in order to transform it into a store for each
+/// subdomain:
 ///
 /// ```swift
 /// struct AppView: View {
@@ -60,17 +65,17 @@ import SwiftUI
 ///   var body: some View {
 ///     TabView {
 ///       ActivityView(
-///         store: self.store.scope(state: \.activity, action: { .activity($0) })
+///         store: self.store.scope(state: \.activity, action: \.activity)
 ///       )
 ///       .tabItem { Text("Activity") }
 ///
 ///       SearchView(
-///         store: self.store.scope(state: \.search, action: { .search($0) })
+///         store: self.store.scope(state: \.search, action: \.search)
 ///       )
 ///       .tabItem { Text("Search") }
 ///
 ///       ProfileView(
-///         store: self.store.scope(state: \.profile, action: { .profile($0) })
+///         store: self.store.scope(state: \.profile, action: \.profile)
 ///       )
 ///       .tabItem { Text("Profile") }
 ///     }
@@ -124,8 +129,8 @@ import SwiftUI
 /// The store performs some basic thread safety checks in order to help catch mistakes. Stores
 /// constructed via the initializer ``init(initialState:reducer:withDependencies:)`` are assumed
 /// to run only on the main thread, and so a check is executed immediately to make sure that is the
-/// case. Further, all actions sent to the store and all scopes (see ``scope(state:action:)-9iai9``) of
-/// the store are also checked to make sure that work is performed on the main thread.
+/// case. Further, all actions sent to the store and all scopes (see ``scope(state:action:)-90255``)
+/// of the store are also checked to make sure that work is performed on the main thread.
 @dynamicMemberLookup
 public final class Store<State, Action> {
   private var bufferedActions: [Action] = []
@@ -254,6 +259,8 @@ public final class Store<State, Action> {
   ///     case login(Login.Action)
   ///     // ...
   ///   }
+  ///   // ...
+  /// }
   ///
   /// // A store that runs the entire application.
   /// let store = Store(initialState: AppFeature.State()) {
@@ -263,10 +270,7 @@ public final class Store<State, Action> {
   /// // Construct a login view by scoping the store
   /// // to one that works with only login domain.
   /// LoginView(
-  ///   store: store.scope(
-  ///     state: \.login,
-  ///     action: AppFeature.Action.login
-  ///   )
+  ///   store: store.scope(state: \.login, action: \.login)
   /// )
   /// ```
   ///
@@ -431,28 +435,40 @@ public final class Store<State, Action> {
     iOS, deprecated: 9999,
     message:
       """
-      Pass 'state' a key path to child state and 'action' a case key path to child action, instead.
+      Pass 'state' a key path to child state and 'action' a case key path to child action, \
+      instead. For more information see the following migration guide:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Store-scoping-with-key-paths
       """
   )
   @available(
     macOS, deprecated: 9999,
     message:
       """
-      Pass 'state' a key path to child state and 'action' a case key path to child action, instead.
+      Pass 'state' a key path to child state and 'action' a case key path to child action, \
+      instead. For more information see the following migration guide:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Store-scoping-with-key-paths
       """
   )
   @available(
     tvOS, deprecated: 9999,
     message:
       """
-      Pass 'state' a key path to child state and 'action' a case key path to child action, instead.
+      Pass 'state' a key path to child state and 'action' a case key path to child action, \
+      instead. For more information see the following migration guide:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Store-scoping-with-key-paths
       """
   )
   @available(
     watchOS, deprecated: 9999,
     message:
       """
-      Pass 'state' a key path to child state and 'action' a case key path to child action, instead.
+      Pass 'state' a key path to child state and 'action' a case key path to child action, \
+      instead. For more information see the following migration guide:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Store-scoping-with-key-paths
       """
   )
   public func scope<ChildState, ChildAction>(
@@ -472,28 +488,40 @@ public final class Store<State, Action> {
     iOS, deprecated: 9999,
     message:
       """
-      Pass 'state' a key path to child state and 'action' a case key path to child action, instead.
+      Pass 'state' a key path to child state and 'action' a case key path to child action, \
+      instead. For more information see the following migration guide:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Store-scoping-with-key-paths
       """
   )
   @available(
     macOS, deprecated: 9999,
     message:
       """
-      Pass 'state' a key path to child state and 'action' a case key path to child action, instead.
+      Pass 'state' a key path to child state and 'action' a case key path to child action, \
+      instead. For more information see the following migration guide:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Store-scoping-with-key-paths
       """
   )
   @available(
     tvOS, deprecated: 9999,
     message:
       """
-      Pass 'state' a key path to child state and 'action' a case key path to child action, instead.
+      Pass 'state' a key path to child state and 'action' a case key path to child action, \
+      instead. For more information see the following migration guide:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Store-scoping-with-key-paths
       """
   )
   @available(
     watchOS, deprecated: 9999,
     message:
       """
-      Pass 'state' a key path to child state and 'action' a case key path to child action, instead.
+      Pass 'state' a key path to child state and 'action' a case key path to child action, \
+      instead. For more information see the following migration guide:
+
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Store-scoping-with-key-paths
       """
   )
   public func scope<ChildState, ChildAction>(
@@ -543,9 +571,7 @@ public final class Store<State, Action> {
       BindingLocal.isActive && isInvalid() ? nil : fromChildAction($0, $1)
     }
     var isSending = false
-    let childStore = Store<ChildState, ChildAction>(
-      initialState: initialChildState
-    ) {
+    let childStore = Store<ChildState, ChildAction>(initialState: initialChildState) {
       Reduce(internal: { [weak self] childState, childAction in
         guard let self = self else { return .none }
         if isInvalid(), let id = id {
@@ -978,6 +1004,11 @@ private func typeName<State, Action>(of store: Store<State, Action>) -> String {
     stateType.dropLast(7) == actionType.dropLast(7)
   {
     return "StoreOf<\(stateType.dropLast(7))?>"
+  } else if stateType.hasPrefix("IdentifiedArray<"),
+    actionType.hasPrefix("IdentifiedAction<"),
+    stateType.dropFirst(16).dropLast(7) == actionType.dropFirst(17).dropLast(8)
+  {
+    return "IdentifiedStoreOf<\(stateType.drop(while: { $0 != "," }).dropFirst(2).dropLast(7))>"
   } else if stateType.hasPrefix("PresentationState<"),
     actionType.hasPrefix("PresentationAction<"),
     stateType.dropFirst(18).dropLast(7) == actionType.dropFirst(19).dropLast(8)

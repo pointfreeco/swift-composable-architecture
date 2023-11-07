@@ -113,7 +113,7 @@ extension BindingState: Sendable where Value: Sendable {}
 /// boilerplate typically associated with mutating multiple fields in state.
 ///
 /// Read <doc:Bindings> for more information.
-public struct BindingAction<Root>: Equatable, @unchecked Sendable {
+public struct BindingAction<Root>: CasePathable, Equatable, @unchecked Sendable {
   public let keyPath: PartialKeyPath<Root>
 
   @usableFromInline
@@ -146,6 +146,22 @@ public struct BindingAction<Root>: Equatable, @unchecked Sendable {
 
   public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.keyPath == rhs.keyPath && lhs.valueIsEqualTo(rhs.value)
+  }
+
+  public static var allCasePaths: AllCasePaths {
+    AllCasePaths()
+  }
+
+  @dynamicMemberLookup
+  public struct AllCasePaths {
+    public subscript<Value: Equatable>(
+      dynamicMember keyPath: WritableKeyPath<Root, BindingState<Value>>
+    ) -> AnyCasePath<BindingAction, Value> {
+      AnyCasePath(
+        embed: { .set(keyPath, $0) },
+        extract: { $0.keyPath == keyPath ? $0.value as? Value : nil }
+      )
+    }
   }
 }
 
