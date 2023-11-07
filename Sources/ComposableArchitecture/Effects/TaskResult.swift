@@ -188,6 +188,34 @@ public enum TaskResult<Success: Sendable>: Sendable {
   }
 }
 
+extension TaskResult: CasePathable {
+  public static var allCasePaths: AllCasePaths {
+    AllCasePaths()
+  }
+
+  public struct AllCasePaths {
+    public var success: AnyCasePath<TaskResult, Success> {
+      AnyCasePath(
+        embed: { .success($0) },
+        extract: {
+          guard case let .success(value) = $0 else { return nil }
+          return value
+        }
+      )
+    }
+
+    public var failure: AnyCasePath<TaskResult, Error> {
+      AnyCasePath(
+        embed: { .failure($0) },
+        extract: {
+          guard case let .failure(value) = $0 else { return nil }
+          return value
+        }
+      )
+    }
+  }
+}
+
 extension Result where Success: Sendable, Failure == Error {
   /// Transforms a `TaskResult` into a `Result`.
   ///
