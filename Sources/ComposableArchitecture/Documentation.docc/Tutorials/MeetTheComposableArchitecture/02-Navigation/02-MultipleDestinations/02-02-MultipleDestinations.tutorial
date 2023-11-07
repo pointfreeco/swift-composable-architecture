@@ -245,7 +245,7 @@
         The state transformation is responsible for taking a piece of `Destination.State`, which
         is an enum, and extracting a particular case from it. This can be done with familiar key
         path syntax because the ``ComposableArchitecture/Reducer()`` macro applies the 
-        `@CasePathable` macro and `@dynamicMemberLookup` to the destination's `Stater` enum.
+        `@CasePathable` macro and `@dynamicMemberLookup` to the destination's `State` enum.
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0016)
       }
