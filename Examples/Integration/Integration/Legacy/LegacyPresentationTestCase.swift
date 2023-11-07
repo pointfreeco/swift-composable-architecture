@@ -8,7 +8,6 @@ private struct PresentationTestCase {
     var message = ""
     @PresentationState var destination: Destination.State?
   }
-  @CasePathable
   enum Action: Equatable, Sendable {
     case alertButtonTapped
     case customAlertButtonTapped
@@ -33,7 +32,6 @@ private struct PresentationTestCase {
       case popover(ChildFeature.State)
       case sheet(ChildFeature.State)
     }
-    @CasePathable
     enum Action: Equatable {
       case alert(AlertAction)
       case customAlert(AlertAction)
@@ -440,7 +438,6 @@ private struct NavigationLinkDemoFeature {
     @PresentationState var child: ChildFeature.State?
     @PresentationState var identifiedChild: ChildFeature.State?
   }
-  @CasePathable
   enum Action: Equatable {
     case child(PresentationAction<ChildFeature.Action>)
     case identifiedChild(PresentationAction<ChildFeature.Action>)
