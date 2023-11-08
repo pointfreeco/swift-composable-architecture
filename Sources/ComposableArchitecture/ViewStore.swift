@@ -111,9 +111,11 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       }
   }
 
-  deinit {
-    Logger.shared.log("View\(self.storeTypeName).deinit")
-  }
+  #if DEBUG
+    deinit {
+      Logger.shared.log("View\(self.storeTypeName).deinit")
+    }
+  #endif
 
   /// Initializes a view store from a store which observes changes to state.
   ///
