@@ -19,6 +19,10 @@ final class NavigationTests: BaseIntegrationTests {
       StackStoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.init
+      WithStoreOf<BasicsView.Feature>.body
       """
     }
     self.app.buttons["Increment"].tap()
@@ -28,6 +32,9 @@ final class NavigationTests: BaseIntegrationTests {
       StackStoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<NavigationTestCaseView.Feature>.scope
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      WithStoreOf<BasicsView.Feature>.body
       """
     }
   }
@@ -58,6 +65,9 @@ final class NavigationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<NavigationTestCaseView.Feature>.scope
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      WithStoreOf<BasicsView.Feature>.body
       """
     }
   }

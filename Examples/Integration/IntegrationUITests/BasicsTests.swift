@@ -17,6 +17,9 @@ final class BasicsTests: BaseIntegrationTests {
       """
       BasicsView.body
       StoreOf<BasicsView.Feature>.scope
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      WithStoreOf<BasicsView.Feature>.body
       """
     }
     self.app.buttons["Decrement"].tap()
@@ -24,6 +27,9 @@ final class BasicsTests: BaseIntegrationTests {
       """
       BasicsView.body
       StoreOf<BasicsView.Feature>.scope
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      WithStoreOf<BasicsView.Feature>.body
       """
     }
   }

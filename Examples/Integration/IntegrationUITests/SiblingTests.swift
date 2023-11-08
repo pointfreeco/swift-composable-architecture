@@ -20,6 +20,9 @@ final class SiblingsTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<SiblingFeaturesView.Feature>.scope
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      WithStoreOf<BasicsView.Feature>.body
       """
     }
   }
@@ -38,6 +41,12 @@ final class SiblingsTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.scope
       StoreOf<SiblingFeaturesView.Feature>.scope
       StoreOf<SiblingFeaturesView.Feature>.scope
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      WithStoreOf<BasicsView.Feature>.body
+      WithStoreOf<BasicsView.Feature>.body
       """
     }
   }
@@ -56,6 +65,12 @@ final class SiblingsTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.scope
       StoreOf<SiblingFeaturesView.Feature>.scope
       StoreOf<SiblingFeaturesView.Feature>.scope
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      WithStoreOf<BasicsView.Feature>.body
+      WithStoreOf<BasicsView.Feature>.body
       """
     }
   }
@@ -74,6 +89,12 @@ final class SiblingsTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.scope
       StoreOf<SiblingFeaturesView.Feature>.scope
       StoreOf<SiblingFeaturesView.Feature>.scope
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      WithStoreOf<BasicsView.Feature>.body
+      WithStoreOf<BasicsView.Feature>.body
       """
     }
   }
