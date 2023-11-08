@@ -70,4 +70,4 @@ jobs:
       - name: Select Xcode 15
         run: sudo xcode-select -s /Applications/Xcode_15.0.1.app
       - name: Run tests
-        run: SCHEME=${{ matrix.scheme }} make test-example
+        run: SCHEME="${{ matrix.scheme }}" make test-example
