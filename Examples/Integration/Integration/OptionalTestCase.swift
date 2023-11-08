@@ -74,3 +74,9 @@ struct OptionalView: View {
     }
   }
 }
+
+struct OptionalPreviews: PreviewProvider {
+  static var previews: some View {
+    OptionalView())
+  }
+}

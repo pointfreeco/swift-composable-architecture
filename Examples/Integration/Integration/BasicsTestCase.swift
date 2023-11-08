@@ -46,3 +46,9 @@ struct BasicsView: View {
     }
   }
 }
+
+struct BasicsPreviews: PreviewProvider {
+  static var previews: some View {
+    BasicsView()
+  }
+}

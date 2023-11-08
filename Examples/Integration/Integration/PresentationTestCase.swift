@@ -167,3 +167,9 @@ struct PresentationView: View {
     }
   }
 }
+
+struct PresentationPreviews: PreviewProvider {
+  static var previews: some View {
+    PresentationView()
+  }
+}

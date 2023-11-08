@@ -147,3 +147,9 @@ struct EnumTestCase_Previews: PreviewProvider {
     EnumView()
   }
 }
+
+struct EnumPreviews: PreviewProvider {
+  static var previews: some View {
+    EnumView()
+  }
+}

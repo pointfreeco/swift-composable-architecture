@@ -75,3 +75,9 @@ struct SiblingFeaturesView: View {
     }
   }
 }
+
+struct SiblingPreviews: PreviewProvider {
+  static var previews: some View {
+    SiblingFeaturesView()
+  }
+}
