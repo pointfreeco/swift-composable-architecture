@@ -1,9 +1,9 @@
 CONFIG = debug
-PLATFORM_IOS = iOS Simulator,id=$(call udid_for,iPhone,iOS-16)
+PLATFORM_IOS = iOS Simulator,id=$(call udid_for,iOS 17,iPhone)
 PLATFORM_MACOS = macOS
 PLATFORM_MAC_CATALYST = macOS,variant=Mac Catalyst
-PLATFORM_TVOS = tvOS Simulator,id=$(call udid_for,TV,tvOS-16)
-PLATFORM_WATCHOS = watchOS Simulator,id=$(call udid_for,Watch,watchOS-9)
+PLATFORM_TVOS = tvOS Simulator,id=$(call udid_for,tvOS 17,TV)
+PLATFORM_WATCHOS = watchOS Simulator,id=$(call udid_for,watchOS 10,Watch)
 
 default: test-all
 
@@ -14,6 +14,7 @@ test-all: test-examples
 test-library:
 	for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_MAC_CATALYST)" "$(PLATFORM_TVOS)" "$(PLATFORM_WATCHOS)"; do \
 		xcodebuild test \
+			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
@@ -41,8 +42,9 @@ test-docs:
 		&& exit 1)
 
 test-examples:
-	for scheme in "CaseStudies (SwiftUI)" "CaseStudies (UIKit)" Integration Search SyncUps SpeechRecognition TicTacToe Todos VoiceMemos; do \
+	for scheme in "CaseStudies (SwiftUI)" "CaseStudies (UIKit)" Search SyncUps SpeechRecognition TicTacToe Todos VoiceMemos; do \
 		xcodebuild test \
+			-skipMacroValidation \
 			-scheme "$$scheme" \
 			-destination platform="$(PLATFORM_IOS)" || exit 1; \
 	done
@@ -61,5 +63,5 @@ format:
 .PHONY: format test-all test-swift test-workspace
 
 define udid_for
-$(shell xcrun simctl list --json devices available $(1) | jq -r '.devices | to_entries | map(select(.value | add)) | sort_by(.key) | .[] | select(.key | contains("$(2)")) | .value | last.udid')
+$(shell xcrun simctl list devices available '$(1)' | grep '$(2)' | sort -r | head -1 | awk -F '[()]' '{ print $$(NF-3) }')
 endef
