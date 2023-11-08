@@ -45,6 +45,7 @@ struct NavigationTestCaseView: View {
 
 struct NavigationPreviews: PreviewProvider {
   static var previews: some View {
+    let _ = Logger.shared.isEnabled = true
     NavigationTestCaseView()
   }
 }
