@@ -28,12 +28,12 @@ struct EffectsBasics {
     var numberFact: String?
   }
 
-  enum Action: Equatable {
+  enum Action {
     case decrementButtonTapped
     case decrementDelayResponse
     case incrementButtonTapped
     case numberFactButtonTapped
-    case numberFactResponse(TaskResult<String>)
+    case numberFactResponse(Result<String, Error>)
   }
 
   @Dependency(\.continuousClock) var clock
@@ -74,7 +74,7 @@ struct EffectsBasics {
         // Return an effect that fetches a number fact from the API and returns the
         // value back to the reducer's `numberFactResponse` action.
         return .run { [count = state.count] send in
-          await send(.numberFactResponse(TaskResult { try await self.factClient.fetch(count) }))
+          await send(.numberFactResponse(Result { try await self.factClient.fetch(count) }))
         }
 
       case let .numberFactResponse(.success(response)):

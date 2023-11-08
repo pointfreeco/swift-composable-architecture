@@ -42,7 +42,7 @@ struct InventoryFeature {
     // ...
   }
 
-  enum Action: Equatable {
+  enum Action {
     case addItem(PresentationAction<ItemFormFeature.Action>)
     // ...
   }
@@ -62,7 +62,7 @@ action in the parent domain for populating the child's state to drive navigation
 @Reducer
 struct InventoryFeature {
   struct State: Equatable { /* ... */ }
-  enum Action: Equatable { /* ... */ }
+  enum Action { /* ... */ }
   
   var body: some ReducerOf<Self> {
     Reduce { state, action in 
@@ -494,7 +494,7 @@ struct CounterFeature {
   struct State: Equatable {
     var count = 0
   }
-  enum Action: Equatable {
+  enum Action {
     case decrementButtonTapped
     case incrementButtonTapped
   }
@@ -528,7 +528,7 @@ struct Feature {
   struct State: Equatable {
     @PresentationState var counter: CounterFeature.State?
   }
-  enum Action: Equatable {
+  enum Action {
     case counter(PresentationAction<CounterFeature.Action>)
   }
   var body: some Reducer<State, Action> {
@@ -577,10 +577,10 @@ await store.send(.counter(.presented(.incrementButtonTapped))) {
 
 And then we finally expect that the child dismisses itself, which manifests itself as the 
 ``PresentationAction/dismiss`` action being sent to `nil` out the `counter` state, which we can
-assert using the ``TestStore/receive(_:timeout:assert:file:line:)-5awso`` method on ``TestStore``:
+assert using the ``TestStore/receive(_:timeout:assert:file:line:)-6325h`` method on ``TestStore``:
 
 ```swift
-await store.receive(.counter(.dismiss)) {
+await store.receive(\.counter.dismiss) {
   $0.counter = nil
 }
 ```
@@ -614,7 +614,7 @@ func testDismissal() {
 
   await store.send(.counter(.presented(.incrementButtonTapped)))
   await store.send(.counter(.presented(.incrementButtonTapped)))
-  await store.receive(.counter(.dismiss)) 
+  await store.receive(\.counter.dismiss) 
 }
 ```
 

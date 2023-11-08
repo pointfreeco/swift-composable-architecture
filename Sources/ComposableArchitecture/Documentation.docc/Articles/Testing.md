@@ -263,12 +263,12 @@ supposed to be running, or perhaps the data it feeds into the system later is wr
 requires all effects to finish.
 
 To get this test passing we need to assert on the actions that are sent back into the system
-by the effect. We do this by using the ``TestStore/receive(_:timeout:assert:file:line:)-5awso``
+by the effect. We do this by using the ``TestStore/receive(_:timeout:assert:file:line:)-6325h``
 method, which allows you to assert which action you expect to receive from an effect, as well as how
 the state changes after receiving that effect:
 
 ```swift
-await store.receive(.timerTick) {
+await store.receive(\.timerTick) {
   $0.count = 1
 }
 ```
@@ -279,13 +279,13 @@ going to be received, but after waiting around for a small amount of time no act
 > ❌ Failure: Expected to receive an action, but received none after 0.1 seconds.
 
 This is because our timer is on a 1 second interval, and by default
-``TestStore/receive(_:timeout:assert:file:line:)-5awso`` only waits for a fraction of a second. This
+``TestStore/receive(_:timeout:assert:file:line:)-6325h`` only waits for a fraction of a second. This
 is because typically you should not be performing real time-based asynchrony in effects, and instead
 using a controlled entity, such as a clock, that can be sped up in tests. We will demonstrate this
 in a moment, so for now let's increase the timeout:
 
 ```swift
-await store.receive(.timerTick, timeout: .seconds(2)) {
+await store.receive(\.timerTick, timeout: .seconds(2)) {
   $0.count = 1
 }
 ```
@@ -294,19 +294,19 @@ This assertion now passes, but the overall test is still failing because there a
 actions to receive. The timer should tick 5 times in total, so we need five `receive` assertions:
 
 ```swift
-await store.receive(.timerTick, timeout: .seconds(2)) {
+await store.receive(\.timerTick, timeout: .seconds(2)) {
   $0.count = 1
 }
-await store.receive(.timerTick, timeout: .seconds(2)) {
+await store.receive(\.timerTick, timeout: .seconds(2)) {
   $0.count = 2
 }
-await store.receive(.timerTick, timeout: .seconds(2)) {
+await store.receive(\.timerTick, timeout: .seconds(2)) {
   $0.count = 3
 }
-await store.receive(.timerTick, timeout: .seconds(2)) {
+await store.receive(\.timerTick, timeout: .seconds(2)) {
   $0.count = 4
 }
-await store.receive(.timerTick, timeout: .seconds(2)) {
+await store.receive(\.timerTick, timeout: .seconds(2)) {
   $0.count = 5
 }
 ```
@@ -378,22 +378,22 @@ let store = TestStore(initialState: Feature.State(count: 0)) {
 ```
 
 With that small change we can drop the `timeout` arguments from the
-``TestStore/receive(_:timeout:assert:file:line:)-5awso`` invocations:
+``TestStore/receive(_:timeout:assert:file:line:)-6325h`` invocations:
 
 ```swift
-await store.receive(.timerTick) {
+await store.receive(\.timerTick) {
   $0.count = 1
 }
-await store.receive(.timerTick) {
+await store.receive(\.timerTick) {
   $0.count = 2
 }
-await store.receive(.timerTick) {
+await store.receive(\.timerTick) {
   $0.count = 3
 }
-await store.receive(.timerTick) {
+await store.receive(\.timerTick) {
   $0.count = 4
 }
-await store.receive(.timerTick) {
+await store.receive(\.timerTick) {
   $0.count = 5
 }
 ```
@@ -452,7 +452,7 @@ await store.send(.login(.submitButtonTapped)) {
 
 // 3️⃣ Login feature performs API request to login, and
 //    sends response back into system.
-await store.receive(.login(.loginResponse(.success))) {
+await store.receive(\.login.loginResponse.success) {
 // 4️⃣ Assert how all state changes in the login feature
   $0.login?.isLoading = false
   // ...
@@ -460,7 +460,7 @@ await store.receive(.login(.loginResponse(.success))) {
 
 // 5️⃣ Login feature sends a delegate action to let parent
 //    feature know it has successfully logged in.
-await store.receive(.login(.delegate(.didLogin))) {
+await store.receive(\.login.delegate.didLogin) {
 // 6️⃣ Assert how all of app state changes due to that action.
   $0.authenticatedTab = .loggedIn(
     Profile.State(...)
@@ -493,7 +493,7 @@ let store = TestStore(initialState: AppFeature.State()) {
 store.exhaustivity = .off  // ⬅️
 
 await store.send(.login(.submitButtonTapped))
-await store.receive(.login(.delegate(.didLogin))) {
+await store.receive(\.login.delegate.didLogin) {
   $0.selectedTab = .activity
 }
 ```
@@ -515,7 +515,7 @@ let store = TestStore(initialState: AppFeature.State()) {
 store.exhaustivity = .off(showSkippedAssertions: true)  // ⬅️
 
 await store.send(.login(.submitButtonTapped))
-await store.receive(.login(.delegate(.didLogin))) {
+await store.receive(\.login.delegate.didLogin) {
   $0.selectedTab = .activity
 }
 ```

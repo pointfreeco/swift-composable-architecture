@@ -57,7 +57,11 @@ final class TodosTests: XCTestCase {
     }
 
     await store.send(
-      .todo(id: state.todos[0].id, action: .set(\.$description, "Learn Composable Architecture"))
+      .todos(
+        .element(
+          id: state.todos[0].id, action: .set(\.$description, "Learn Composable Architecture")
+        )
+      )
     ) {
       $0.todos[id: state.todos[0].id]?.description = "Learn Composable Architecture"
     }
@@ -85,11 +89,11 @@ final class TodosTests: XCTestCase {
       $0.continuousClock = self.clock
     }
 
-    await store.send(.todo(id: state.todos[0].id, action: .set(\.$isComplete, true))) {
+    await store.send(.todos(.element(id: state.todos[0].id, action: .set(\.$isComplete, true)))) {
       $0.todos[id: state.todos[0].id]?.isComplete = true
     }
     await self.clock.advance(by: .seconds(1))
-    await store.receive(.sortCompletedTodos) {
+    await store.receive(\.sortCompletedTodos) {
       $0.todos = [
         $0.todos[1],
         $0.todos[0],
@@ -119,15 +123,15 @@ final class TodosTests: XCTestCase {
       $0.continuousClock = self.clock
     }
 
-    await store.send(.todo(id: state.todos[0].id, action: .set(\.$isComplete, true))) {
+    await store.send(.todos(.element(id: state.todos[0].id, action: .set(\.$isComplete, true)))) {
       $0.todos[id: state.todos[0].id]?.isComplete = true
     }
     await self.clock.advance(by: .milliseconds(500))
-    await store.send(.todo(id: state.todos[0].id, action: .set(\.$isComplete, false))) {
+    await store.send(.todos(.element(id: state.todos[0].id, action: .set(\.$isComplete, false)))) {
       $0.todos[id: state.todos[0].id]?.isComplete = false
     }
     await self.clock.advance(by: .seconds(1))
-    await store.receive(.sortCompletedTodos)
+    await store.receive(\.sortCompletedTodos)
   }
 
   func testClearCompleted() async {
@@ -262,7 +266,7 @@ final class TodosTests: XCTestCase {
       ]
     }
     await self.clock.advance(by: .milliseconds(100))
-    await store.receive(.sortCompletedTodos)
+    await store.receive(\.sortCompletedTodos)
   }
 
   func testEditModeMovingWithFilter() async {
@@ -313,7 +317,7 @@ final class TodosTests: XCTestCase {
       ]
     }
     await self.clock.advance(by: .milliseconds(100))
-    await store.receive(.sortCompletedTodos)
+    await store.receive(\.sortCompletedTodos)
   }
 
   func testFilteredEdit() async {
@@ -340,7 +344,7 @@ final class TodosTests: XCTestCase {
       $0.filter = .completed
     }
     await store.send(
-      .todo(id: state.todos[1].id, action: .set(\.$description, "Did this already"))
+      .todos(.element(id: state.todos[1].id, action: .set(\.$description, "Did this already")))
     ) {
       $0.todos[id: state.todos[1].id]?.description = "Did this already"
     }

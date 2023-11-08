@@ -5,12 +5,12 @@ struct AddContactFeature {
   struct State: Equatable {
     var contact: Contact
   }
-  enum Action: Equatable {
+  enum Action {
     case cancelButtonTapped
     case delegate(Delegate)
     case saveButtonTapped
     case setName(String)
-    enum Delegate: Equatable {
+    enum Delegate {
       // case cancel
       case saveContact(Contact)
     }

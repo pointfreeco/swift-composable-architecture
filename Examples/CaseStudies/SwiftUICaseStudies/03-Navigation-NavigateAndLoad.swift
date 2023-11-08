@@ -17,7 +17,7 @@ struct NavigateAndLoad {
     var optionalCounter: Counter.State?
   }
 
-  enum Action: Equatable {
+  enum Action {
     case optionalCounter(Counter.Action)
     case setNavigation(isActive: Bool)
     case setNavigationIsActiveDelayCompleted

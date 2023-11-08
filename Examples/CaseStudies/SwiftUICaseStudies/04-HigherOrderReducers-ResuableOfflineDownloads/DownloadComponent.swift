@@ -10,12 +10,12 @@ struct DownloadComponent {
     let url: URL
   }
 
-  enum Action: Equatable {
+  enum Action {
     case alert(PresentationAction<Alert>)
     case buttonTapped
-    case downloadClient(TaskResult<DownloadClient.Event>)
+    case downloadClient(Result<DownloadClient.Event, Error>)
 
-    enum Alert: Equatable {
+    enum Alert {
       case deleteButtonTapped
       case stopButtonTapped
     }

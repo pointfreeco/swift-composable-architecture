@@ -32,49 +32,49 @@ final class RecordMeetingTests: XCTestCase {
     let onTask = await store.send(.onTask)
 
     await clock.advance(by: .seconds(1))
-    await store.receive(.timerTick) {
+    await store.receive(\.timerTick) {
       $0.speakerIndex = 0
       $0.secondsElapsed = 1
       XCTAssertEqual($0.durationRemaining, .seconds(5))
     }
 
     await clock.advance(by: .seconds(1))
-    await store.receive(.timerTick) {
+    await store.receive(\.timerTick) {
       $0.speakerIndex = 1
       $0.secondsElapsed = 2
       XCTAssertEqual($0.durationRemaining, .seconds(4))
     }
 
     await clock.advance(by: .seconds(1))
-    await store.receive(.timerTick) {
+    await store.receive(\.timerTick) {
       $0.speakerIndex = 1
       $0.secondsElapsed = 3
       XCTAssertEqual($0.durationRemaining, .seconds(3))
     }
 
     await clock.advance(by: .seconds(1))
-    await store.receive(.timerTick) {
+    await store.receive(\.timerTick) {
       $0.speakerIndex = 2
       $0.secondsElapsed = 4
       XCTAssertEqual($0.durationRemaining, .seconds(2))
     }
 
     await clock.advance(by: .seconds(1))
-    await store.receive(.timerTick) {
+    await store.receive(\.timerTick) {
       $0.speakerIndex = 2
       $0.secondsElapsed = 5
       XCTAssertEqual($0.durationRemaining, .seconds(1))
     }
 
     await clock.advance(by: .seconds(1))
-    await store.receive(.timerTick) {
+    await store.receive(\.timerTick) {
       $0.speakerIndex = 2
       $0.secondsElapsed = 6
       XCTAssertEqual($0.durationRemaining, .seconds(0))
     }
 
     // NB: this improves on the onMeetingFinished pattern from vanilla SwiftUI
-    await store.receive(.delegate(.save(transcript: "")))
+    await store.receive(\.delegate.save)
 
     await self.fulfillment(of: [dismissed])
     await onTask.cancel()
@@ -117,25 +117,21 @@ final class RecordMeetingTests: XCTestCase {
 
     let onTask = await store.send(.onTask)
 
-    await store.receive(
-      .speechResult(
-        .init(bestTranscription: .init(formattedString: "I completed the project"), isFinal: true)
-      )
-    ) {
+    await store.receive(\.speechResult) {
       $0.transcript = "I completed the project"
     }
 
     await store.withExhaustivity(.off(showSkippedAssertions: true)) {
       await clock.advance(by: .seconds(6))
-      await store.receive(.timerTick)
-      await store.receive(.timerTick)
-      await store.receive(.timerTick)
-      await store.receive(.timerTick)
-      await store.receive(.timerTick)
-      await store.receive(.timerTick)
+      await store.receive(\.timerTick)
+      await store.receive(\.timerTick)
+      await store.receive(\.timerTick)
+      await store.receive(\.timerTick)
+      await store.receive(\.timerTick)
+      await store.receive(\.timerTick)
     }
 
-    await store.receive(.delegate(.save(transcript: "I completed the project")))
+    await store.receive(\.delegate.save)
 
     await self.fulfillment(of: [dismissed])
     await onTask.cancel()
@@ -160,15 +156,15 @@ final class RecordMeetingTests: XCTestCase {
     }
 
     await clock.advance(by: .seconds(3))
-    await store.receive(.timerTick)
-    await store.receive(.timerTick)
-    await store.receive(.timerTick)
+    await store.receive(\.timerTick)
+    await store.receive(\.timerTick)
+    await store.receive(\.timerTick)
 
     await store.send(.alert(.presented(.confirmSave))) {
       $0.alert = nil
     }
 
-    await store.receive(.delegate(.save(transcript: "")))
+    await store.receive(\.delegate.save)
 
     await self.fulfillment(of: [dismissed])
     await onTask.cancel()
@@ -244,7 +240,7 @@ final class RecordMeetingTests: XCTestCase {
       $0.alert = nil
     }
 
-    await store.receive(.delegate(.save(transcript: "")))
+    await store.receive(\.delegate.save)
     await self.fulfillment(of: [dismissed])
     await onTask.cancel()
   }
@@ -287,15 +283,11 @@ final class RecordMeetingTests: XCTestCase {
 
     let onTask = await store.send(.onTask)
 
-    await store.receive(
-      .speechResult(
-        .init(bestTranscription: .init(formattedString: "I completed the project"), isFinal: true)
-      )
-    ) {
+    await store.receive(\.speechResult) {
       $0.transcript = "I completed the project"
     }
 
-    await store.receive(.speechFailure) {
+    await store.receive(\.speechFailure) {
       $0.alert = .speechRecognizerFailed
       $0.transcript = "I completed the project ❌"
     }
@@ -307,15 +299,15 @@ final class RecordMeetingTests: XCTestCase {
     await clock.advance(by: .seconds(6))
 
     store.exhaustivity = .off(showSkippedAssertions: true)
-    await store.receive(.timerTick)
-    await store.receive(.timerTick)
-    await store.receive(.timerTick)
-    await store.receive(.timerTick)
-    await store.receive(.timerTick)
-    await store.receive(.timerTick)
+    await store.receive(\.timerTick)
+    await store.receive(\.timerTick)
+    await store.receive(\.timerTick)
+    await store.receive(\.timerTick)
+    await store.receive(\.timerTick)
+    await store.receive(\.timerTick)
     store.exhaustivity = .on
 
-    await store.receive(.delegate(.save(transcript: "I completed the project ❌")))
+    await store.receive(\.delegate.save)
     await self.fulfillment(of: [dismissed])
     await onTask.cancel()
   }
@@ -340,7 +332,7 @@ final class RecordMeetingTests: XCTestCase {
 
     let onTask = await store.send(.onTask)
 
-    await store.receive(.speechFailure) {
+    await store.receive(\.speechFailure) {
       $0.alert = .speechRecognizerFailed
     }
 

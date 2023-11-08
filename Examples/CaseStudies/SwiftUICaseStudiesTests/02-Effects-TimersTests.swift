@@ -18,23 +18,23 @@ final class TimersTests: XCTestCase {
       $0.isTimerActive = true
     }
     await clock.advance(by: .seconds(1))
-    await store.receive(.timerTicked) {
+    await store.receive(\.timerTicked) {
       $0.secondsElapsed = 1
     }
     await clock.advance(by: .seconds(5))
-    await store.receive(.timerTicked) {
+    await store.receive(\.timerTicked) {
       $0.secondsElapsed = 2
     }
-    await store.receive(.timerTicked) {
+    await store.receive(\.timerTicked) {
       $0.secondsElapsed = 3
     }
-    await store.receive(.timerTicked) {
+    await store.receive(\.timerTicked) {
       $0.secondsElapsed = 4
     }
-    await store.receive(.timerTicked) {
+    await store.receive(\.timerTicked) {
       $0.secondsElapsed = 5
     }
-    await store.receive(.timerTicked) {
+    await store.receive(\.timerTicked) {
       $0.secondsElapsed = 6
     }
     await store.send(.toggleTimerButtonTapped) {

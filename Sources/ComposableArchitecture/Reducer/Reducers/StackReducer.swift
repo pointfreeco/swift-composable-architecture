@@ -203,7 +203,7 @@ extension StackState: CustomDumpReflectable {
 /// See the dedicated article on <doc:Navigation> for more information on the library's navigation
 /// tools, and in particular see <doc:StackBasedNavigation> for information on modeling navigation
 /// using ``StackAction`` for navigation stacks.
-public enum StackAction<State, Action> {
+public enum StackAction<State, Action>: CasePathable {
   /// An action sent to the associated stack element at a given identifier.
   indirect case element(id: StackElementID, action: Action)
 
@@ -213,6 +213,52 @@ public enum StackAction<State, Action> {
   /// An action sent to present the given state at a given identifier in a navigation stack. This
   /// action is typically sent from the view via the `NavigationLink(value:)` initializer.
   case push(id: StackElementID, state: State)
+
+  public static var allCasePaths: AllCasePaths {
+    AllCasePaths()
+  }
+
+  public struct AllCasePaths {
+    public var element: AnyCasePath<StackAction, (id: StackElementID, action: Action)> {
+      AnyCasePath(
+        embed: StackAction.element,
+        extract: {
+          guard case let .element(id, action) = $0 else { return nil }
+          return (id: id, action: action)
+        }
+      )
+    }
+
+    public var popFrom: AnyCasePath<StackAction, StackElementID> {
+      AnyCasePath(
+        embed: StackAction.popFrom,
+        extract: {
+          guard case let .popFrom(id) = $0 else { return nil }
+          return id
+        }
+      )
+    }
+
+    public var push: AnyCasePath<StackAction, (id: StackElementID, state: State)> {
+      AnyCasePath(
+        embed: StackAction.push,
+        extract: {
+          guard case let .push(id, state) = $0 else { return nil }
+          return (id: id, state: state)
+        }
+      )
+    }
+
+    public subscript(id id: StackElementID) -> AnyCasePath<StackAction, Action> {
+      AnyCasePath(
+        embed: { .element(id: id, action: $0) },
+        extract: {
+          guard case .element(id, let action) = $0 else { return nil }
+          return action
+        }
+      )
+    }
+  }
 }
 
 extension StackAction: Equatable where State: Equatable, Action: Equatable {}

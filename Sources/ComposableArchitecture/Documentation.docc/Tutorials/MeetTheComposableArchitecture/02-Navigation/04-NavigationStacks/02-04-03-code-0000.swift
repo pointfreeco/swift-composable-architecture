@@ -6,7 +6,7 @@ struct ContactDetailFeature {
     @PresentationState var alert: AlertState<Action.Alert>?
     let contact: Contact
   }
-  enum Action: Equatable {
+  enum Action {
   }
   var body: some ReducerOf<Self> {
     Reduce { state, action in

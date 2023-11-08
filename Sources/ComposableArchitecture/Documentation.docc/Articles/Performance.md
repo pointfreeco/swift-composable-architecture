@@ -286,19 +286,19 @@ let store = TestStore(initialState: Feature.State()) {
 store.send(.buttonTapped) {
   $0.count = 1
 }
-store.receive(.sharedComputation) {
+store.receive(\.sharedComputation) {
   // Assert on shared logic
 }
 store.send(.toggleChanged) {
   $0.isEnabled = true
 }
-store.receive(.sharedComputation) {
+store.receive(\.sharedComputation) {
   // Assert on shared logic
 }
 store.send(.textFieldChanged("Hello") {
   $0.description = "Hello"
 }
-store.receive(.sharedComputation) {
+store.receive(\.sharedComputation) {
   // Assert on shared logic
 }
 ```

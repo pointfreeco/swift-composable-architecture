@@ -28,8 +28,7 @@ struct IdentifiedListView: View {
             }
           }
         }
-        ForEachStore(self.store.scope(state: \.rows, action: { .row(id: $0, action: $1) })) {
-          store in
+        ForEachStore(self.store.scope(state: \.rows, action: { .rows($0) })) { store in
           let _ = Logger.shared.log("\(Self.self).body.ForEachStore")
           let idStore = store.scope(state: \.id, action: { $0 })
           WithViewStore(idStore, observe: { $0 }) { viewStore in
@@ -66,7 +65,7 @@ struct IdentifiedListView: View {
       case addButtonTapped
       case incrementFirstButtonTapped
       case removeButtonTapped(id: BasicsView.Feature.State.ID)
-      case row(id: BasicsView.Feature.State.ID, action: BasicsView.Feature.Action)
+      case rows(IdentifiedActionOf<BasicsView.Feature>)
     }
     var body: some ReducerOf<Self> {
       Reduce { state, action in
@@ -80,11 +79,11 @@ struct IdentifiedListView: View {
         case let .removeButtonTapped(id: id):
           state.rows.remove(id: id)
           return .none
-        case .row:
+        case .rows:
           return .none
         }
       }
-      .forEach(\.rows, action: \.row) {
+      .forEach(\.rows, action: \.rows) {
         BasicsView.Feature()
       }
     }

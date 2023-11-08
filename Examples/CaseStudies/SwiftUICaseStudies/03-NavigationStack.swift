@@ -11,7 +11,7 @@ struct NavigationDemo {
     var path = StackState<Path.State>()
   }
 
-  enum Action: Equatable {
+  enum Action {
     case goBackToScreen(id: StackElementID)
     case goToABCButtonTapped
     case path(StackAction<Path.State, Path.Action>)
@@ -67,7 +67,7 @@ struct NavigationDemo {
       case screenC(ScreenC.State = .init())
     }
 
-    enum Action: Equatable {
+    enum Action {
       case screenA(ScreenA.Action)
       case screenB(ScreenB.Action)
       case screenC(ScreenC.Action)
@@ -220,12 +220,12 @@ struct ScreenA {
     var isLoading = false
   }
 
-  enum Action: Equatable {
+  enum Action {
     case decrementButtonTapped
     case dismissButtonTapped
     case incrementButtonTapped
     case factButtonTapped
-    case factResponse(TaskResult<String>)
+    case factResponse(Result<String, Error>)
   }
 
   @Dependency(\.dismiss) var dismiss
@@ -250,7 +250,7 @@ struct ScreenA {
       case .factButtonTapped:
         state.isLoading = true
         return .run { [count = state.count] send in
-          await send(.factResponse(.init { try await self.factClient.fetch(count) }))
+          await send(.factResponse(Result { try await self.factClient.fetch(count) }))
         }
 
       case let .factResponse(.success(fact)):
@@ -348,7 +348,7 @@ struct ScreenAView: View {
 struct ScreenB {
   struct State: Codable, Equatable, Hashable {}
 
-  enum Action: Equatable {
+  enum Action {
     case screenAButtonTapped
     case screenBButtonTapped
     case screenCButtonTapped
@@ -405,7 +405,7 @@ struct ScreenC {
     var isTimerRunning = false
   }
 
-  enum Action: Equatable {
+  enum Action {
     case startButtonTapped
     case stopButtonTapped
     case timerTick

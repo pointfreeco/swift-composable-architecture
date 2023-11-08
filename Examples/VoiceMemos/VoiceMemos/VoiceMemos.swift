@@ -5,7 +5,7 @@ import SwiftUI
 @Reducer
 struct VoiceMemos {
   struct State: Equatable {
-    @PresentationState var alert: AlertState<AlertAction>?
+    @PresentationState var alert: AlertState<Action.Alert>?
     var audioRecorderPermission = RecorderPermission.undetermined
     @PresentationState var recordingMemo: RecordingMemo.State?
     var voiceMemos: IdentifiedArrayOf<VoiceMemo.State> = []
@@ -17,17 +17,17 @@ struct VoiceMemos {
     }
   }
 
-  enum Action: Equatable {
-    case alert(PresentationAction<AlertAction>)
+  enum Action {
+    case alert(PresentationAction<Alert>)
     case onDelete(IndexSet)
     case openSettingsButtonTapped
     case recordButtonTapped
     case recordPermissionResponse(Bool)
     case recordingMemo(PresentationAction<RecordingMemo.Action>)
-    case voiceMemos(id: VoiceMemo.State.ID, action: VoiceMemo.Action)
-  }
+    case voiceMemos(IdentifiedActionOf<VoiceMemo>)
 
-  enum AlertAction: Equatable {}
+    enum Alert: Equatable {}
+  }
 
   @Dependency(\.audioRecorder.requestRecordPermission) var requestRecordPermission
   @Dependency(\.date) var date
@@ -96,7 +96,7 @@ struct VoiceMemos {
           return .none
         }
 
-      case let .voiceMemos(id: id, action: .delegate(delegateAction)):
+      case let .voiceMemos(.element(id: id, action: .delegate(delegateAction))):
         switch delegateAction {
         case .playbackFailed:
           state.alert = AlertState { TextState("Voice memo playback failed.") }
@@ -139,9 +139,7 @@ struct VoiceMemosView: View {
       NavigationStack {
         VStack {
           List {
-            ForEachStore(
-              self.store.scope(state: \.voiceMemos, action: { .voiceMemos(id: $0, action: $1) })
-            ) {
+            ForEachStore(self.store.scope(state: \.voiceMemos, action: { .voiceMemos($0) })) {
               VoiceMemoView(store: $0)
             }
             .onDelete { viewStore.send(.onDelete($0)) }

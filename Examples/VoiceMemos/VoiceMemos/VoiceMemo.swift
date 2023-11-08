@@ -12,29 +12,22 @@ struct VoiceMemo {
 
     var id: URL { self.url }
 
+    @CasePathable
+    @dynamicMemberLookup
     enum Mode: Equatable {
       case notPlaying
       case playing(progress: Double)
-
-      var isPlaying: Bool {
-        if case .playing = self { return true }
-        return false
-      }
-
-      var progress: Double? {
-        if case let .playing(progress) = self { return progress }
-        return nil
-      }
     }
   }
 
-  enum Action: Equatable {
-    case audioPlayerClient(TaskResult<Bool>)
+  enum Action {
+    case audioPlayerClient(Result<Bool, Error>)
     case delegate(Delegate)
     case playButtonTapped
     case timerUpdated(TimeInterval)
     case titleTextFieldChanged(String)
 
+    @CasePathable
     enum Delegate {
       case playbackStarted
       case playbackFailed
@@ -71,7 +64,7 @@ struct VoiceMemo {
             await send(.delegate(.playbackStarted))
 
             async let playAudio: Void = send(
-              .audioPlayerClient(TaskResult { try await self.audioPlayer.play(url) })
+              .audioPlayerClient(Result { try await self.audioPlayer.play(url) })
             )
 
             var start: TimeInterval = 0
@@ -112,7 +105,7 @@ struct VoiceMemoView: View {
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       let currentTime =
-        viewStore.mode.progress.map { $0 * viewStore.duration } ?? viewStore.duration
+        viewStore.mode.playing.map { $0 * viewStore.duration } ?? viewStore.duration
       HStack {
         TextField(
           "Untitled, \(viewStore.date.formatted(date: .numeric, time: .shortened))",
@@ -130,21 +123,21 @@ struct VoiceMemoView: View {
         Button {
           viewStore.send(.playButtonTapped)
         } label: {
-          Image(systemName: viewStore.mode.isPlaying ? "stop.circle" : "play.circle")
+          Image(systemName: viewStore.mode.is(\.playing) ? "stop.circle" : "play.circle")
             .font(.system(size: 22))
         }
       }
       .buttonStyle(.borderless)
       .frame(maxHeight: .infinity, alignment: .center)
       .padding(.horizontal)
-      .listRowBackground(viewStore.mode.isPlaying ? Color(.systemGray6) : .clear)
+      .listRowBackground(viewStore.mode.is(\.playing) ? Color(.systemGray6) : .clear)
       .listRowInsets(EdgeInsets())
       .background(
         Color(.systemGray5)
-          .frame(maxWidth: viewStore.mode.isPlaying ? .infinity : 0)
+          .frame(maxWidth: viewStore.mode.is(\.playing) ? .infinity : 0)
           .animation(
-            viewStore.mode.isPlaying ? .linear(duration: viewStore.duration) : nil,
-            value: viewStore.mode.isPlaying
+            viewStore.mode.is(\.playing) ? .linear(duration: viewStore.duration) : nil,
+            value: viewStore.mode.is(\.playing)
           ),
         alignment: .leading
       )

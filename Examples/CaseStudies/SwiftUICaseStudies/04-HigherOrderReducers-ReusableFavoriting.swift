@@ -25,10 +25,11 @@ struct FavoritingState<ID: Hashable & Sendable>: Equatable {
   var isFavorite: Bool
 }
 
-enum FavoritingAction: Equatable {
+@CasePathable
+enum FavoritingAction {
   case alert(PresentationAction<Alert>)
   case buttonTapped
-  case response(TaskResult<Bool>)
+  case response(Result<Bool, Error>)
 
   enum Alert: Equatable {}
 }
@@ -53,7 +54,7 @@ struct Favoriting<ID: Hashable & Sendable> {
         state.isFavorite.toggle()
 
         return .run { [id = state.id, isFavorite = state.isFavorite, favorite] send in
-          await send(.response(TaskResult { try await favorite(id, isFavorite) }))
+          await send(.response(Result { try await favorite(id, isFavorite) }))
         }
         .cancellable(id: CancelID(id: state.id), cancelInFlight: true)
 
@@ -101,7 +102,7 @@ struct Episode {
     }
   }
 
-  enum Action: Equatable {
+  enum Action {
     case favorite(FavoritingAction)
   }
 
@@ -138,8 +139,8 @@ struct Episodes {
     var episodes: IdentifiedArrayOf<Episode.State> = []
   }
 
-  enum Action: Equatable {
-    case episode(id: Episode.State.ID, action: Episode.Action)
+  enum Action {
+    case episodes(IdentifiedActionOf<Episode>)
   }
 
   let favorite: @Sendable (UUID, Bool) async throws -> Bool
@@ -148,7 +149,7 @@ struct Episodes {
     Reduce { state, action in
       .none
     }
-    .forEach(\.episodes, action: \.episode) {
+    .forEach(\.episodes, action: \.episodes) {
       Episode(favorite: self.favorite)
     }
   }
@@ -164,9 +165,7 @@ struct EpisodesView: View {
       Section {
         AboutView(readMe: readMe)
       }
-      ForEachStore(
-        self.store.scope(state: \.episodes, action: { .episode(id: $0, action: $1) })
-      ) { rowStore in
+      ForEachStore(self.store.scope(state: \.episodes, action: { .episodes($0) })) { rowStore in
         EpisodeView(store: rowStore)
       }
       .buttonStyle(.borderless)

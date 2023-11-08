@@ -31,10 +31,10 @@ final class AppFeatureTests: XCTestCase {
       $0.path[id: 0, case: \.detail]?.destination = nil
     }
 
-    await store.receive(.path(.element(id: 0, action: .detail(.delegate(.deleteSyncUp))))) {
+    await store.receive(\.path[id: 0].detail.delegate.deleteSyncUp) {
       $0.syncUpsList.syncUps = []
     }
-    await store.receive(.path(.popFrom(id: 0))) {
+    await store.receive(\.path.popFrom) {
       $0.path = StackState()
     }
   }
@@ -83,9 +83,7 @@ final class AppFeatureTests: XCTestCase {
       $0.path[id: 0, case: \.detail]?.syncUp.title = "Blob"
     }
 
-    await store.receive(
-      .path(.element(id: 0, action: .detail(.delegate(.syncUpUpdated(syncUp)))))
-    ) {
+    await store.receive(\.path[id: 0].detail.delegate.syncUpUpdated) {
       $0.syncUpsList.syncUps[0].title = "Blob"
     }
 
@@ -137,11 +135,7 @@ final class AppFeatureTests: XCTestCase {
     store.exhaustivity = .off
 
     await store.send(.path(.element(id: 1, action: .record(.onTask))))
-    await store.receive(
-      .path(
-        .element(id: 1, action: .record(.delegate(.save(transcript: "I completed the project"))))
-      )
-    ) {
+    await store.receive(\.path[id: 1].record.delegate.save) {
       $0.path[id: 0, case: \.detail]?.syncUp.meetings = [
         Meeting(
           id: Meeting.ID(UUID(0)),
@@ -150,7 +144,7 @@ final class AppFeatureTests: XCTestCase {
         )
       ]
     }
-    await store.receive(.path(.popFrom(id: 1))) {
+    await store.receive(\.path.popFrom) {
       XCTAssertEqual($0.path.count, 1)
     }
   }

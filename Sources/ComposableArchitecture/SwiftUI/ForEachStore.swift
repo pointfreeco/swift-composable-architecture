@@ -56,18 +56,18 @@ import SwiftUI
 ///
 /// ```swift
 /// enum Action {
-///   case todo(id: Todo.State.ID, action: Todo.Action)
+///   case todos(IdentifiedActionOf<Todo>)
 /// }
 /// ```
 ///
-/// Enhance its core reducer using ``Reducer/forEach(_:action:element:fileID:line:)-8ujke``:
+/// Enhance its core reducer using ``Reducer/forEach(_:action:element:fileID:line:)-247po``:
 ///
 /// ```swift
 /// var body: some Reducer<State, Action> {
 ///   Reduce { state, action in
 ///     // ...
 ///   }
-///   .forEach(\.todos, action: \.todo(id:action:)) {
+///   .forEach(\.todos, action: \.todos) {
 ///     Todo()
 ///   }
 /// }
@@ -77,7 +77,7 @@ import SwiftUI
 ///
 /// ```swift
 /// ForEachStore(
-///   self.store.scope(state: \.todos, action: { .todo(id: $0, action: $1) })
+///   self.store.scope(state: \.todos, action: \.todos)
 /// ) { todoStore in
 ///   TodoView(store: todoStore)
 /// }
@@ -96,13 +96,50 @@ public struct ForEachStore<
   ///   - store: A store on an identified array of data and an identified action.
   ///   - content: A function that can generate content given a store of an element.
   public init<EachContent>(
-    _ store: Store<IdentifiedArray<ID, EachState>, (ID, EachAction)>,
+    _ store: Store<IdentifiedArray<ID, EachState>, IdentifiedAction<ID, EachAction>>,
     @ViewBuilder content: @escaping (_ store: Store<EachState, EachAction>) -> EachContent
   )
   where
     Data == IdentifiedArray<ID, EachState>,
     Content == WithViewStore<
-      IdentifiedArray<ID, EachState>, (ID, EachAction),
+      IdentifiedArray<ID, EachState>, IdentifiedAction<ID, EachAction>,
+      ForEach<IdentifiedArray<ID, EachState>, ID, EachContent>
+    >
+  {
+    self.data = store.withState { $0 }
+    self.content = WithViewStore(
+      store,
+      observe: { $0 },
+      removeDuplicates: { areOrderedSetsDuplicates($0.ids, $1.ids) }
+    ) { viewStore in
+      ForEach(viewStore.state, id: viewStore.state.id) { element in
+        var element = element
+        let id = element[keyPath: viewStore.state.id]
+        content(
+          store.scope(
+            state: {
+              element = $0[id: id] ?? element
+              return element
+            },
+            action: { .element(id: id, action: $0) }
+          )
+        )
+      }
+    }
+  }
+
+  @available(iOS, deprecated: 9999, message: "Use an 'IdentifiedAction', instead")
+  @available(macOS, deprecated: 9999, message: "Use an 'IdentifiedAction', instead")
+  @available(tvOS, deprecated: 9999, message: "Use an 'IdentifiedAction', instead")
+  @available(watchOS, deprecated: 9999, message: "Use an 'IdentifiedAction', instead")
+  public init<EachContent>(
+    _ store: Store<IdentifiedArray<ID, EachState>, (id: ID, action: EachAction)>,
+    @ViewBuilder content: @escaping (_ store: Store<EachState, EachAction>) -> EachContent
+  )
+  where
+    Data == IdentifiedArray<ID, EachState>,
+    Content == WithViewStore<
+      IdentifiedArray<ID, EachState>, (id: ID, action: EachAction),
       ForEach<IdentifiedArray<ID, EachState>, ID, EachContent>
     >
   {
