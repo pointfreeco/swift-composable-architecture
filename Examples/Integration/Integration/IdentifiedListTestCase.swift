@@ -92,6 +92,8 @@ struct IdentifiedListView: View {
 
 struct IdentifiedListPreviews: PreviewProvider {
   static var previews: some View {
-    IdentifiedListView()
+    NavigationStack {
+      IdentifiedListView()
+    }
   }
 }
