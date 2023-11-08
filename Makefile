@@ -49,6 +49,12 @@ test-examples:
 			-destination platform="$(PLATFORM_IOS)" || exit 1; \
 	done
 
+test-example:
+	xcodebuild test \
+		-skipMacroValidation \
+		-scheme "$(SCHEME)" \
+		-destination platform="$(PLATFORM_IOS)" || exit 1; 
+
 benchmark:
 	swift run --configuration release \
 		swift-composable-architecture-benchmark
