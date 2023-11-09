@@ -1,3 +1,4 @@
+import Accessibility
 import CustomDump
 import InlineSnapshotTesting
 import XCTest
