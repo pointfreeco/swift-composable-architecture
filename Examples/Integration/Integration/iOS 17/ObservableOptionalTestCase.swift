@@ -1,4 +1,5 @@
 @_spi(Logging) import ComposableArchitecture
+import Perception
 import SwiftUI
 
 struct ObservableOptionalView: View {
@@ -7,7 +8,7 @@ struct ObservableOptionalView: View {
   }
 
   var body: some View {
-    ObservedView {
+    PerceptiveView {
       let _ = Logger.shared.log("\(Self.self).body")
       Form {
         Section {

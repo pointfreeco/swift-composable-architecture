@@ -1,24 +1,13 @@
-//===----------------------------------------------------------------------===//
-//
-// This source file is part of the Swift.org open source project
-//
-// Copyright (c) 2023 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
-//
-// See https://swift.org/LICENSE.txt for license information
-//
-//===----------------------------------------------------------------------===//
-
-struct TCAObservationRegistrar: Sendable {
-  internal class ValueObservationStorage {
+struct _PerceptionRegistrar: Sendable {
+  internal class ValuePerceptionStorage {
     func emit<Element>(_ element: Element) -> Bool { return false }
-    func cancel() { }
+    func cancel() {}
   }
 
-  private struct ValuesObserver {
-    private let storage: ValueObservationStorage
+  private struct ValuesPerceptor {
+    private let storage: ValuePerceptionStorage
 
-    internal init(storage: ValueObservationStorage) {
+    internal init(storage: ValuePerceptionStorage) {
       self.storage = storage
     }
 
@@ -32,18 +21,18 @@ struct TCAObservationRegistrar: Sendable {
   }
 
   private struct State: @unchecked Sendable {
-    private enum ObservationKind {
+    private enum PerceptionKind {
       case willSetTracking(@Sendable () -> Void)
       case didSetTracking(@Sendable () -> Void)
       case computed(@Sendable (Any) -> Void)
-      case values(ValuesObserver)
+      case values(ValuesPerceptor)
     }
 
-    private struct Observation {
-      private var kind: ObservationKind
+    private struct Perception {
+      private var kind: PerceptionKind
       internal var properties: Set<AnyKeyPath>
 
-      internal init(kind: ObservationKind, properties: Set<AnyKeyPath>) {
+      internal init(kind: PerceptionKind, properties: Set<AnyKeyPath>) {
         self.kind = kind
         self.properties = properties
       }
@@ -66,16 +55,16 @@ struct TCAObservationRegistrar: Sendable {
         }
       }
 
-      var observer: (@Sendable (Any) -> Void)? {
+      var perceptor: (@Sendable (Any) -> Void)? {
         switch kind {
-        case .computed(let observer):
-          return observer
+        case .computed(let perceptor):
+          return perceptor
         default:
           return nil
         }
       }
 
-      var isValueObserver: Bool {
+      var isValuePerceptor: Bool {
         switch kind {
         case .values:
           return true
@@ -86,8 +75,8 @@ struct TCAObservationRegistrar: Sendable {
 
       func emit<Element>(_ value: Element) -> Bool {
         switch kind {
-        case .values(let observer):
-          return observer.emit(value)
+        case .values(let perceptor):
+          return perceptor.emit(value)
         default:
           return false
         }
@@ -95,8 +84,8 @@ struct TCAObservationRegistrar: Sendable {
 
       func cancel() {
         switch kind {
-        case .values(let observer):
-          observer.cancel()
+        case .values(let perceptor):
+          perceptor.cancel()
         default:
           break
         }
@@ -104,60 +93,69 @@ struct TCAObservationRegistrar: Sendable {
     }
 
     private var id = 0
-    private var observations = [Int : Observation]()
-    private var lookups = [AnyKeyPath : Set<Int>]()
+    private var perceptions = [Int: Perception]()
+    private var lookups = [AnyKeyPath: Set<Int>]()
 
     internal mutating func generateId() -> Int {
       defer { id &+= 1 }
       return id
     }
 
-    internal mutating func registerTracking(for properties: Set<AnyKeyPath>, willSet observer: @Sendable @escaping () -> Void) -> Int {
+    internal mutating func registerTracking(
+      for properties: Set<AnyKeyPath>, willSet perceptor: @Sendable @escaping () -> Void
+    ) -> Int {
       let id = generateId()
-      observations[id] = Observation(kind: .willSetTracking(observer), properties: properties)
+      perceptions[id] = Perception(kind: .willSetTracking(perceptor), properties: properties)
       for keyPath in properties {
         lookups[keyPath, default: []].insert(id)
       }
       return id
     }
 
-    internal mutating func registerTracking(for properties: Set<AnyKeyPath>, didSet observer: @Sendable @escaping () -> Void) -> Int {
+    internal mutating func registerTracking(
+      for properties: Set<AnyKeyPath>, didSet perceptor: @Sendable @escaping () -> Void
+    ) -> Int {
       let id = generateId()
-      observations[id] = Observation(kind: .didSetTracking(observer), properties: properties)
+      perceptions[id] = Perception(kind: .didSetTracking(perceptor), properties: properties)
       for keyPath in properties {
         lookups[keyPath, default: []].insert(id)
       }
       return id
     }
 
-    internal mutating func registerComputedValues(for properties: Set<AnyKeyPath>, observer: @Sendable @escaping (Any) -> Void) -> Int {
+    internal mutating func registerComputedValues(
+      for properties: Set<AnyKeyPath>, perceptor: @Sendable @escaping (Any) -> Void
+    ) -> Int {
       let id = generateId()
-      observations[id] = Observation(kind: .computed(observer), properties: properties)
+      perceptions[id] = Perception(kind: .computed(perceptor), properties: properties)
       for keyPath in properties {
         lookups[keyPath, default: []].insert(id)
       }
       return id
     }
 
-    internal mutating func registerValues(for properties: Set<AnyKeyPath>, storage: ValueObservationStorage) -> Int {
+    internal mutating func registerValues(
+      for properties: Set<AnyKeyPath>, storage: ValuePerceptionStorage
+    ) -> Int {
       let id = generateId()
-      observations[id] = Observation(kind: .values(ValuesObserver(storage: storage)), properties: properties)
+      perceptions[id] = Perception(
+        kind: .values(ValuesPerceptor(storage: storage)), properties: properties)
       for keyPath in properties {
         lookups[keyPath, default: []].insert(id)
       }
       return id
     }
 
-    internal func valueObservers(for keyPath: AnyKeyPath) -> Set<Int> {
+    internal func valuePerceptors(for keyPath: AnyKeyPath) -> Set<Int> {
       guard let ids = lookups[keyPath] else {
         return []
       }
-      return ids.filter { observations[$0]?.isValueObserver == true }
+      return ids.filter { perceptions[$0]?.isValuePerceptor == true }
     }
 
     internal mutating func cancel(_ id: Int) {
-      if let observation = observations.removeValue(forKey: id) {
-        for keyPath in observation.properties {
+      if let perception = perceptions.removeValue(forKey: id) {
+        for keyPath in perception.properties {
           if var ids = lookups[keyPath] {
             ids.remove(id)
             if ids.count == 0 {
@@ -167,15 +165,15 @@ struct TCAObservationRegistrar: Sendable {
             }
           }
         }
-        observation.cancel()
+        perception.cancel()
       }
     }
 
     internal mutating func cancelAll() {
-      for observation in observations.values {
-        observation.cancel()
+      for perception in perceptions.values {
+        perception.cancel()
       }
-      observations.removeAll()
+      perceptions.removeAll()
       lookups.removeAll()
     }
 
@@ -183,7 +181,7 @@ struct TCAObservationRegistrar: Sendable {
       var trackers = [@Sendable () -> Void]()
       if let ids = lookups[keyPath] {
         for id in ids {
-          if let tracker = observations[id]?.willSetTracker {
+          if let tracker = perceptions[id]?.willSetTracker {
             trackers.append(tracker)
           }
         }
@@ -191,26 +189,28 @@ struct TCAObservationRegistrar: Sendable {
       return trackers
     }
 
-    internal mutating func didSet<Subject: _TCAObservable, Member>(keyPath: KeyPath<Subject, Member>) -> ([@Sendable (Any) -> Void], [@Sendable () -> Void]) {
-      var observers = [@Sendable (Any) -> Void]()
+    internal mutating func didSet<Subject: Perceptible, Member>(keyPath: KeyPath<Subject, Member>)
+    -> ([@Sendable (Any) -> Void], [@Sendable () -> Void])
+    {
+      var perceptors = [@Sendable (Any) -> Void]()
       var trackers = [@Sendable () -> Void]()
       if let ids = lookups[keyPath] {
         for id in ids {
-          if let observer = observations[id]?.observer {
-            observers.append(observer)
+          if let perceptor = perceptions[id]?.perceptor {
+            perceptors.append(perceptor)
             cancel(id)
           }
-          if let tracker = observations[id]?.didSetTracker {
+          if let tracker = perceptions[id]?.didSetTracker {
             trackers.append(tracker)
           }
         }
       }
-      return (observers, trackers)
+      return (perceptors, trackers)
     }
 
     internal mutating func emit<Element>(_ value: Element, ids: Set<Int>) {
       for id in ids {
-        if observations[id]?.emit(value) == true {
+        if perceptions[id]?.emit(value) == true {
           cancel(id)
         }
       }
@@ -222,19 +222,27 @@ struct TCAObservationRegistrar: Sendable {
 
     internal var id: ObjectIdentifier { state.id }
 
-    internal func registerTracking(for properties: Set<AnyKeyPath>, willSet observer: @Sendable @escaping () -> Void) -> Int {
-      state.withCriticalRegion { $0.registerTracking(for: properties, willSet: observer) }
+    internal func registerTracking(
+      for properties: Set<AnyKeyPath>, willSet perceptor: @Sendable @escaping () -> Void
+    ) -> Int {
+      state.withCriticalRegion { $0.registerTracking(for: properties, willSet: perceptor) }
     }
 
-    internal func registerTracking(for properties: Set<AnyKeyPath>, didSet observer: @Sendable @escaping () -> Void) -> Int {
-      state.withCriticalRegion { $0.registerTracking(for: properties, didSet: observer) }
+    internal func registerTracking(
+      for properties: Set<AnyKeyPath>, didSet perceptor: @Sendable @escaping () -> Void
+    ) -> Int {
+      state.withCriticalRegion { $0.registerTracking(for: properties, didSet: perceptor) }
     }
 
-    internal func registerComputedValues(for properties: Set<AnyKeyPath>, observer: @Sendable @escaping (Any) -> Void) -> Int {
-      state.withCriticalRegion { $0.registerComputedValues(for: properties, observer: observer) }
+    internal func registerComputedValues(
+      for properties: Set<AnyKeyPath>, perceptor: @Sendable @escaping (Any) -> Void
+    ) -> Int {
+      state.withCriticalRegion { $0.registerComputedValues(for: properties, perceptor: perceptor) }
     }
 
-    internal func registerValues(for properties: Set<AnyKeyPath>, storage: ValueObservationStorage) -> Int {
+    internal func registerValues(for properties: Set<AnyKeyPath>, storage: ValuePerceptionStorage)
+    -> Int
+    {
       state.withCriticalRegion { $0.registerValues(for: properties, storage: storage) }
     }
 
@@ -246,7 +254,7 @@ struct TCAObservationRegistrar: Sendable {
       state.withCriticalRegion { $0.cancelAll() }
     }
 
-    internal func willSet<Subject: _TCAObservable, Member>(
+    internal func willSet<Subject: Perceptible, Member>(
       _ subject: Subject,
       keyPath: KeyPath<Subject, Member>
     ) {
@@ -256,11 +264,13 @@ struct TCAObservationRegistrar: Sendable {
       }
     }
 
-    internal func didSet<Subject: _TCAObservable, Member>(
+    internal func didSet<Subject: Perceptible, Member>(
       _ subject: Subject,
       keyPath: KeyPath<Subject, Member>
     ) {
-      let (ids, (actions, tracking)) = state.withCriticalRegion { ($0.valueObservers(for: keyPath), $0.didSet(keyPath: keyPath)) }
+      let (ids, (actions, tracking)) = state.withCriticalRegion {
+        ($0.valuePerceptors(for: keyPath), $0.didSet(keyPath: keyPath))
+      }
       if !ids.isEmpty {
         let value = subject[keyPath: keyPath]
         state.withCriticalRegion { $0.emit(value, ids: ids) }
@@ -294,34 +304,57 @@ struct TCAObservationRegistrar: Sendable {
   init() {
   }
 
-  func access<Subject: _TCAObservable, Member>(
+  /// Registers access to a specific property for observation.
+  ///
+  /// - Parameters:
+  ///   - subject: An instance of an observable type.
+  ///   - keyPath: The key path of an observed property.
+  func access<Subject: Perceptible, Member>(
     _ subject: Subject,
     keyPath: KeyPath<Subject, Member>
   ) {
     if let trackingPtr = _ThreadLocal.value?
-      .assumingMemoryBound(to: ObservationTracking._AccessList?.self) {
+      .assumingMemoryBound(to: PerceptionTracking._AccessList?.self)
+    {
       if trackingPtr.pointee == nil {
-        trackingPtr.pointee = ObservationTracking._AccessList()
+        trackingPtr.pointee = PerceptionTracking._AccessList()
       }
       trackingPtr.pointee?.addAccess(keyPath: keyPath, context: context)
     }
   }
 
-  func willSet<Subject: _TCAObservable, Member>(
+  /// A property observation called before setting the value of the subject.
+  ///
+  /// - Parameters:
+  ///     - subject: An instance of an observable type.
+  ///     - keyPath: The key path of an observed property.
+  func willSet<Subject: Perceptible, Member>(
     _ subject: Subject,
     keyPath: KeyPath<Subject, Member>
   ) {
     context.willSet(subject, keyPath: keyPath)
   }
 
-  func didSet<Subject: _TCAObservable, Member>(
+  /// A property observation called after setting the value of the subject.
+  ///
+  /// - Parameters:
+  ///   - subject: An instance of an observable type.
+  ///   - keyPath: The key path of an observed property.
+  func didSet<Subject: Perceptible, Member>(
     _ subject: Subject,
     keyPath: KeyPath<Subject, Member>
   ) {
     context.didSet(subject, keyPath: keyPath)
   }
 
-  func withMutation<Subject: _TCAObservable, Member, T>(
+  /// Identifies mutations to the transactions registered for observers.
+  ///
+  /// This method calls ``willset(_:keypath:)`` before the mutation. Then it
+  /// calls ``didset(_:keypath:)`` after the mutation.
+  /// - Parameters:
+  ///   - of: An instance of an observable type.
+  ///   - keyPath: The key path of an observed property.
+  func withMutation<Subject: Perceptible, Member, T>(
     of subject: Subject,
     keyPath: KeyPath<Subject, Member>,
     _ mutation: () throws -> T
@@ -329,28 +362,5 @@ struct TCAObservationRegistrar: Sendable {
     willSet(subject, keyPath: keyPath)
     defer { didSet(subject, keyPath: keyPath) }
     return try mutation()
-  }
-}
-
-extension TCAObservationRegistrar: Codable {
-  init(from decoder: any Decoder) throws {
-    self.init()
-  }
-
-  func encode(to encoder: any Encoder) {
-    // Don't encode a registrar's transient state.
-  }
-}
-
-extension TCAObservationRegistrar: Hashable {
-  static func == (lhs: Self, rhs: Self) -> Bool {
-    // A registrar should be ignored for the purposes of determining its
-    // parent type's equality.
-    return true
-  }
-
-  func hash(into hasher: inout Hasher) {
-    // Don't include a registrar's transient state in its parent type's
-    // hash value.
   }
 }
