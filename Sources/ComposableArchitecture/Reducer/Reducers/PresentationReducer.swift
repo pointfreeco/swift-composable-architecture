@@ -85,6 +85,12 @@ public struct PresentationState<State> {
     PresentationState<Case>(wrappedValue: self.wrappedValue.flatMap { $0[case: keyPath] })
   }
 
+  public subscript<Member>(
+    dynamicMember keyPath: KeyPath<State, Member>
+  ) -> PresentationState<Member> {
+    PresentationState<Member>(wrappedValue: self.wrappedValue?[keyPath: keyPath])
+  }
+
   /// Accesses the value associated with the given case for reading and writing.
   ///
   /// > Note: Accessing the wrong case will result in a runtime warning.
