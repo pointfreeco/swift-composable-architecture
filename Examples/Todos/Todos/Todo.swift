@@ -9,7 +9,7 @@ struct Todo {
     @BindingState var isComplete = false
   }
 
-  enum Action: BindableAction, Equatable, Sendable {
+  enum Action: BindableAction, Sendable {
     case binding(BindingAction<State>)
   }
 

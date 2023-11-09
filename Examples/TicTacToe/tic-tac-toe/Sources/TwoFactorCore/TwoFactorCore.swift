@@ -17,14 +17,14 @@ public struct TwoFactor: Sendable {
     }
   }
 
-  public enum Action: Equatable, Sendable {
+  public enum Action: Sendable {
     case alert(PresentationAction<Alert>)
-    case twoFactorResponse(TaskResult<AuthenticationResponse>)
+    case twoFactorResponse(Result<AuthenticationResponse, Error>)
     case view(View)
 
     public enum Alert: Equatable, Sendable {}
 
-    public enum View: BindableAction, Equatable, Sendable {
+    public enum View: BindableAction, Sendable {
       case binding(BindingAction<State>)
       case submitButtonTapped
     }
@@ -59,7 +59,7 @@ public struct TwoFactor: Sendable {
         return .run { [code = state.code, token = state.token] send in
           await send(
             .twoFactorResponse(
-              await TaskResult {
+              await Result {
                 try await self.authenticationClient.twoFactor(.init(code: code, token: token))
               }
             )

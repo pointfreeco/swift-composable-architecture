@@ -16,7 +16,7 @@ struct TwoCounters {
     var counter2 = Counter.State()
   }
 
-  enum Action: Equatable {
+  enum Action {
     case counter1(Counter.Action)
     case counter2(Counter.Action)
   }

@@ -22,7 +22,7 @@ struct SyncUpsList {
     }
   }
 
-  enum Action: Equatable {
+  enum Action {
     case addSyncUpButtonTapped
     case confirmAddSyncUpButtonTapped
     case destination(PresentationAction<Destination.Action>)
@@ -36,7 +36,7 @@ struct SyncUpsList {
       case alert(AlertState<Action.Alert>)
     }
 
-    enum Action: Equatable {
+    enum Action {
       case add(SyncUpForm.Action)
       case alert(Alert)
 

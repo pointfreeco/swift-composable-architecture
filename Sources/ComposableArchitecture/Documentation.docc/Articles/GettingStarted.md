@@ -87,7 +87,7 @@ when we receive a response from the fact API request:
 @Reducer
 struct Feature {
   struct State: Equatable { /* ... */ }
-  enum Action: Equatable {
+  enum Action {
     case factAlertDismissed
     case decrementButtonTapped
     case incrementButtonTapped
@@ -106,7 +106,7 @@ Some actions don't need to execute effects, and they can return ``Effect/none`` 
 @Reducer
 struct Feature {
   struct State: Equatable { /* ... */ }
-  enum Action: Equatable { /* ... */ }
+  enum Action { /* ... */ }
 
   var body: some Reducer<State, Action> {
     Reduce { state, action in
@@ -300,7 +300,7 @@ receive a fact response back with the fact, which then causes the alert to show:
 ```swift
 await store.send(.numberFactButtonTapped)
 
-await store.receive(.numberFactResponse("???")) {
+await store.receive(\.numberFactResponse) {
   $0.numberFactAlert = "???"
 }
 ```
@@ -374,7 +374,7 @@ the alert:
 ```swift
 await store.send(.numberFactButtonTapped)
 
-await store.receive(.numberFactResponse("0 is a good number Brent")) {
+await store.receive(\.numberFactResponse) {
   $0.numberFactAlert = "0 is a good number Brent"
 }
 
@@ -465,7 +465,7 @@ let store = TestStore(initialState: Feature.State()) {
 }
 
 await store.send(.numberFactButtonTapped)
-await store.receive(.numberFactResponse("0 is a good number Brent")) {
+await store.receive(\.numberFactResponse) {
   $0.numberFactAlert = "0 is a good number Brent"
 }
 ```

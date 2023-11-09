@@ -18,8 +18,9 @@ struct Nested: Reducer {
     var rows: IdentifiedArrayOf<State> = []
   }
   
+  // NB: `@Reducer` cannot be applied to recursive reducers.
   @CasePathable
-  enum Action: Equatable {
+  enum Action {
     case addRowButtonTapped
     case nameTextFieldChanged(String)
     case onDelete(IndexSet)

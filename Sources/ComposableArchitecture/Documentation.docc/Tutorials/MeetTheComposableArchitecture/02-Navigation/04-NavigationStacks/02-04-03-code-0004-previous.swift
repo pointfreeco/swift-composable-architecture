@@ -5,7 +5,7 @@ struct ContactsFeature {
     @PresentationState var destination: Destination.State?
     var path = StackState<ContactDetailFeature.State>()
   }
-  enum Action: Equatable {
+  enum Action {
     case addButtonTapped
     case deleteButtonTapped(id: Contact.ID)
     case destination(PresentationAction<Destination.Action>)

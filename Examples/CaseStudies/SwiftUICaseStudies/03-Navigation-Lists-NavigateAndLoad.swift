@@ -26,7 +26,7 @@ struct NavigateAndLoadList {
     }
   }
 
-  enum Action: Equatable {
+  enum Action {
     case counter(Counter.Action)
     case setNavigation(selection: UUID?)
     case setNavigationSelectionDelayCompleted

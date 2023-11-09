@@ -29,16 +29,16 @@ struct AlertAndConfirmationDialog {
     var count = 0
   }
 
-  enum Action: Equatable {
+  enum Action {
     case alert(PresentationAction<Alert>)
     case alertButtonTapped
     case confirmationDialog(PresentationAction<ConfirmationDialog>)
     case confirmationDialogButtonTapped
 
-    enum Alert: Equatable {
+    enum Alert {
       case incrementButtonTapped
     }
-    enum ConfirmationDialog: Equatable {
+    enum ConfirmationDialog {
       case incrementButtonTapped
       case decrementButtonTapped
     }

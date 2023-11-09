@@ -93,7 +93,7 @@ final class TodosTests: XCTestCase {
       $0.todos[id: state.todos[0].id]?.isComplete = true
     }
     await self.clock.advance(by: .seconds(1))
-    await store.receive(.sortCompletedTodos) {
+    await store.receive(\.sortCompletedTodos) {
       $0.todos = [
         $0.todos[1],
         $0.todos[0],
@@ -131,7 +131,7 @@ final class TodosTests: XCTestCase {
       $0.todos[id: state.todos[0].id]?.isComplete = false
     }
     await self.clock.advance(by: .seconds(1))
-    await store.receive(.sortCompletedTodos)
+    await store.receive(\.sortCompletedTodos)
   }
 
   func testClearCompleted() async {
@@ -266,7 +266,7 @@ final class TodosTests: XCTestCase {
       ]
     }
     await self.clock.advance(by: .milliseconds(100))
-    await store.receive(.sortCompletedTodos)
+    await store.receive(\.sortCompletedTodos)
   }
 
   func testEditModeMovingWithFilter() async {
@@ -317,7 +317,7 @@ final class TodosTests: XCTestCase {
       ]
     }
     await self.clock.advance(by: .milliseconds(100))
-    await store.receive(.sortCompletedTodos)
+    await store.receive(\.sortCompletedTodos)
   }
 
   func testFilteredEdit() async {

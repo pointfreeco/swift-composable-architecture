@@ -283,7 +283,7 @@ public final class Store<State, Action> {
   ///     var password = ""
   ///     var twoFactorAuth: TwoFactorAuthState?
   ///   }
-  ///   enum Action: Equatable {
+  ///   enum Action {
   ///     case emailChanged(String)
   ///     case loginButtonTapped
   ///     case loginResponse(Result<TwoFactorAuthState, LoginError>)
@@ -330,7 +330,7 @@ public final class Store<State, Action> {
   ///     var password: String
   ///   }
   ///
-  ///   enum ViewAction: Equatable {
+  ///   enum ViewAction {
   ///     case emailChanged(String)
   ///     case loginButtonTapped
   ///     case passwordChanged(String)

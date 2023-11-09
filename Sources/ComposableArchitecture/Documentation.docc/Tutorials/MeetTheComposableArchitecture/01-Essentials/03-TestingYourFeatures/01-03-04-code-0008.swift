@@ -13,7 +13,7 @@ final class CounterFeatureTests: XCTestCase {
     await store.send(.factButtonTapped) {
       $0.isLoading = true
     }
-    await store.receive(.factResponse("0 is a good number.")) {
+    await store.receive(\.factResponse) {
       $0.isLoading = false
       $0.fact = "0 is a good number."
     }

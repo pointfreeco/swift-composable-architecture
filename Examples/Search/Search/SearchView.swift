@@ -31,11 +31,11 @@ struct Search {
     }
   }
 
-  enum Action: Equatable {
-    case forecastResponse(GeocodingSearch.Result.ID, TaskResult<Forecast>)
+  enum Action {
+    case forecastResponse(GeocodingSearch.Result.ID, Result<Forecast, Error>)
     case searchQueryChanged(String)
     case searchQueryChangeDebounced
-    case searchResponse(TaskResult<GeocodingSearch>)
+    case searchResponse(Result<GeocodingSearch, Error>)
     case searchResultTapped(GeocodingSearch.Result)
   }
 
@@ -83,7 +83,7 @@ struct Search {
           return .none
         }
         return .run { [query = state.searchQuery] send in
-          await send(.searchResponse(TaskResult { try await self.weatherClient.search(query) }))
+          await send(.searchResponse(Result { try await self.weatherClient.search(query) }))
         }
         .cancellable(id: CancelID.location)
 
@@ -102,7 +102,7 @@ struct Search {
           await send(
             .forecastResponse(
               location.id,
-              TaskResult { try await self.weatherClient.forecast(location) }
+              Result { try await self.weatherClient.forecast(location) }
             )
           )
         }

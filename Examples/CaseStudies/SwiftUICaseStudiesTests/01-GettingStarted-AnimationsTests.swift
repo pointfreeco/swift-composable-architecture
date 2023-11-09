@@ -16,42 +16,42 @@ final class AnimationTests: XCTestCase {
     }
 
     await store.send(.rainbowButtonTapped)
-    await store.receive(.setColor(.red)) {
+    await store.receive(\.setColor) {
       $0.circleColor = .red
     }
 
     await clock.advance(by: .seconds(1))
-    await store.receive(.setColor(.blue)) {
+    await store.receive(\.setColor) {
       $0.circleColor = .blue
     }
 
     await clock.advance(by: .seconds(1))
-    await store.receive(.setColor(.green)) {
+    await store.receive(\.setColor) {
       $0.circleColor = .green
     }
 
     await clock.advance(by: .seconds(1))
-    await store.receive(.setColor(.orange)) {
+    await store.receive(\.setColor) {
       $0.circleColor = .orange
     }
 
     await clock.advance(by: .seconds(1))
-    await store.receive(.setColor(.pink)) {
+    await store.receive(\.setColor) {
       $0.circleColor = .pink
     }
 
     await clock.advance(by: .seconds(1))
-    await store.receive(.setColor(.purple)) {
+    await store.receive(\.setColor) {
       $0.circleColor = .purple
     }
 
     await clock.advance(by: .seconds(1))
-    await store.receive(.setColor(.yellow)) {
+    await store.receive(\.setColor) {
       $0.circleColor = .yellow
     }
 
     await clock.advance(by: .seconds(1))
-    await store.receive(.setColor(.black)) {
+    await store.receive(\.setColor) {
       $0.circleColor = .black
     }
 
@@ -68,12 +68,12 @@ final class AnimationTests: XCTestCase {
     }
 
     await store.send(.rainbowButtonTapped)
-    await store.receive(.setColor(.red)) {
+    await store.receive(\.setColor) {
       $0.circleColor = .red
     }
 
     await clock.advance(by: .seconds(1))
-    await store.receive(.setColor(.blue)) {
+    await store.receive(\.setColor) {
       $0.circleColor = .blue
     }
 

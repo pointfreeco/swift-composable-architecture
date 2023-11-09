@@ -16,10 +16,10 @@ struct SpeechRecognition {
     var transcribedText = ""
   }
 
-  enum Action: Equatable {
+  enum Action {
     case alert(PresentationAction<Alert>)
     case recordButtonTapped
-    case speech(TaskResult<String>)
+    case speech(Result<String, Error>)
     case speechRecognizerAuthorizationStatusResponse(SFSpeechRecognizerAuthorizationStatus)
 
     enum Alert: Equatable {}

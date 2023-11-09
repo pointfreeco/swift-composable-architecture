@@ -10,7 +10,7 @@ private struct BindingLocalTestCase {
     @PresentationState var popover: Child.State?
     @PresentationState var sheet: Child.State?
   }
-  enum Action: Equatable {
+  enum Action {
     case fullScreenCover(PresentationAction<Child.Action>)
     case fullScreenCoverButtonTapped
     case navigationDestination(PresentationAction<Child.Action>)
@@ -72,7 +72,7 @@ private struct Child {
     @BindingState var sendOnDisappear = false
     @BindingState var text = ""
   }
-  enum Action: Equatable, BindableAction {
+  enum Action: BindableAction {
     case binding(BindingAction<State>)
     case onDisappear
   }

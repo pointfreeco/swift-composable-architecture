@@ -26,10 +26,10 @@ struct FavoritingState<ID: Hashable & Sendable>: Equatable {
 }
 
 @CasePathable
-enum FavoritingAction: Equatable {
+enum FavoritingAction {
   case alert(PresentationAction<Alert>)
   case buttonTapped
-  case response(TaskResult<Bool>)
+  case response(Result<Bool, Error>)
 
   enum Alert: Equatable {}
 }
@@ -54,7 +54,7 @@ struct Favoriting<ID: Hashable & Sendable> {
         state.isFavorite.toggle()
 
         return .run { [id = state.id, isFavorite = state.isFavorite, favorite] send in
-          await send(.response(TaskResult { try await favorite(id, isFavorite) }))
+          await send(.response(Result { try await favorite(id, isFavorite) }))
         }
         .cancellable(id: CancelID(id: state.id), cancelInFlight: true)
 
@@ -102,7 +102,7 @@ struct Episode {
     }
   }
 
-  enum Action: Equatable {
+  enum Action {
     case favorite(FavoritingAction)
   }
 
@@ -139,7 +139,7 @@ struct Episodes {
     var episodes: IdentifiedArrayOf<Episode.State> = []
   }
 
-  enum Action: Equatable {
+  enum Action {
     case episodes(IdentifiedActionOf<Episode>)
   }
 

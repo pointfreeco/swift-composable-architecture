@@ -22,11 +22,11 @@ struct EffectsCancellation {
     var isFactRequestInFlight = false
   }
 
-  enum Action: Equatable {
+  enum Action {
     case cancelButtonTapped
     case stepperChanged(Int)
     case factButtonTapped
-    case factResponse(TaskResult<String>)
+    case factResponse(Result<String, Error>)
   }
 
   @Dependency(\.factClient) var factClient
@@ -50,7 +50,7 @@ struct EffectsCancellation {
         state.isFactRequestInFlight = true
 
         return .run { [count = state.count] send in
-          await send(.factResponse(TaskResult { try await self.factClient.fetch(count) }))
+          await send(.factResponse(Result { try await self.factClient.fetch(count) }))
         }
         .cancellable(id: CancelID.factRequest)
 

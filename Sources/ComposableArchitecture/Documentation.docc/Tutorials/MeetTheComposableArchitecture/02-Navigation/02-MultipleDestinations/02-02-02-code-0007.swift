@@ -4,7 +4,7 @@ struct ContactsFeature {
     var contacts: IdentifiedArrayOf<Contact> = []
     @PresentationState var destination: Destination.State?
   }
-  enum Action: Equatable {
+  enum Action {
     case addButtonTapped
     case addContact(PresentationAction<AddContactFeature.Action>)
     case alert(PresentationAction<Alert>)

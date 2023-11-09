@@ -47,7 +47,7 @@ struct SharedState {
     }
   }
 
-  enum Action: Equatable {
+  enum Action {
     case counter(Counter.Action)
     case profile(Profile.Action)
     case selectTab(Tab)
@@ -83,7 +83,7 @@ struct SharedState {
       var numberOfCounts = 0
     }
 
-    enum Action: Equatable {
+    enum Action {
       case alert(PresentationAction<Alert>)
       case decrementButtonTapped
       case incrementButtonTapped
@@ -143,7 +143,7 @@ struct SharedState {
       }
     }
 
-    enum Action: Equatable {
+    enum Action {
       case resetCounterButtonTapped
     }
 

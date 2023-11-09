@@ -253,7 +253,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   }
   ///   enum Action {
   ///     case pulledToRefresh
-  ///     case receivedResponse(TaskResult<String>)
+  ///     case receivedResponse(Result<String, Error>)
   ///   }
   ///   @Dependency(\.fetch) var fetch
   ///
@@ -263,7 +263,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///       case .pulledToRefresh:
   ///         state.isLoading = true
   ///         return .run { send in
-  ///           await send(.receivedResponse(TaskResult { try await self.fetch() }))
+  ///           await send(.receivedResponse(Result { try await self.fetch() }))
   ///         }
   ///
   ///       case let .receivedResponse(result):

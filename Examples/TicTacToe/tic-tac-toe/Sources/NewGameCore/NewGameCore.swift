@@ -11,7 +11,7 @@ public struct NewGame {
     public init() {}
   }
 
-  public enum Action: Equatable {
+  public enum Action {
     case game(PresentationAction<Game.Action>)
     case letsPlayButtonTapped
     case logoutButtonTapped

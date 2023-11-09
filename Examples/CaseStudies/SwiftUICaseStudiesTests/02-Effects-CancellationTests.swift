@@ -21,7 +21,7 @@ final class EffectsCancellationTests: XCTestCase {
     await store.send(.factButtonTapped) {
       $0.isFactRequestInFlight = true
     }
-    await store.receive(.factResponse(.success("0 is a good number Brent"))) {
+    await store.receive(\.factResponse.success) {
       $0.currentFact = "0 is a good number Brent"
       $0.isFactRequestInFlight = false
     }
@@ -38,7 +38,7 @@ final class EffectsCancellationTests: XCTestCase {
     await store.send(.factButtonTapped) {
       $0.isFactRequestInFlight = true
     }
-    await store.receive(.factResponse(.failure(FactError()))) {
+    await store.receive(\.factResponse.failure) {
       $0.isFactRequestInFlight = false
     }
   }

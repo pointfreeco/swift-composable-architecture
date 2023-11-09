@@ -11,7 +11,7 @@ final class CounterFeatureTests: XCTestCase {
     await store.send(.toggleTimerButtonTapped) {
       $0.isTimerRunning = true
     }
-    await store.receive(.timerTick) {
+    await store.receive(\.timerTick) {
       $0.count = 1
     }
     // ✅ Test Suite 'Selected tests' passed at 2023-08-04 11:17:44.823.

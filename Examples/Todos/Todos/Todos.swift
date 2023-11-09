@@ -23,7 +23,7 @@ struct Todos {
     }
   }
 
-  enum Action: BindableAction, Equatable, Sendable {
+  enum Action: BindableAction, Sendable {
     case addTodoButtonTapped
     case binding(BindingAction<State>)
     case clearCompletedButtonTapped
