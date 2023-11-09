@@ -15,40 +15,40 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # library-swift-latest:
-  #   name: Library
-  #   runs-on: macos-13
-  #   strategy:
-  #     matrix:
-  #       config:
-  #         - debug
-  #         - release
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Select Xcode 15
-  #       run: sudo xcode-select -s /Applications/Xcode_15.0.1.app
-  #     - name: Run ${{ matrix.config }} tests
-  #       run: make CONFIG=${{ matrix.config }} test-library
+  library-swift-latest:
+    name: Library
+    runs-on: macos-13
+    strategy:
+      matrix:
+        config:
+          - debug
+          - release
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode 15
+        run: sudo xcode-select -s /Applications/Xcode_15.0.1.app
+      - name: Run ${{ matrix.config }} tests
+        run: make CONFIG=${{ matrix.config }} test-library
 
-  # library-evolution:
-  #   name: Library (evolution)
-  #   runs-on: macos-13
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Select Xcode 15
-  #       run: sudo xcode-select -s /Applications/Xcode_15.0.1.app
-  #     - name: Build for library evolution
-  #       run: make build-for-library-evolution
+  library-evolution:
+    name: Library (evolution)
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode 15
+        run: sudo xcode-select -s /Applications/Xcode_15.0.1.app
+      - name: Build for library evolution
+        run: make build-for-library-evolution
 
-  # benchmarks:
-  #   name: Benchmarks
-  #   runs-on: macos-13
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Select Xcode 15
-  #       run: sudo xcode-select -s /Applications/Xcode_15.0.1.app
-  #     - name: Run benchmark
-  #       run: make benchmark
+  benchmarks:
+    name: Benchmarks
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode 15
+        run: sudo xcode-select -s /Applications/Xcode_15.0.1.app
+      - name: Run benchmark
+        run: make benchmark
 
   examples:
     name: Examples
@@ -56,15 +56,15 @@ jobs:
     strategy:
       matrix:
         scheme:
-          # - CaseStudies (SwiftUI)
-          # - CaseStudies (UIKit)
+          - CaseStudies (SwiftUI)
+          - CaseStudies (UIKit)
           - Integration 
-          # - Search 
-          # - SyncUps 
-          # - SpeechRecognition 
-          # - TicTacToe 
-          # - Todos 
-          # - VoiceMemos
+          - Search 
+          - SyncUps 
+          - SpeechRecognition 
+          - TicTacToe 
+          - Todos 
+          - VoiceMemos
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode 15
