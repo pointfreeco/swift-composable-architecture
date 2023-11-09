@@ -1,8 +1,7 @@
 import Foundation
-import Perception
 
 /// A type that emits notifications to observers when underlying data changes.
-public protocol ObservableState: Perceptible {
+public protocol ObservableState: _TCAObservable {
   var _$id: ObservableStateID { get }
 }
 

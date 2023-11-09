@@ -1,5 +1,4 @@
 @_spi(Logging) import ComposableArchitecture
-import Perception
 import SwiftUI
 
 struct ObservableNavigationTestCaseView: View {
@@ -8,7 +7,7 @@ struct ObservableNavigationTestCaseView: View {
   }
 
   var body: some View {
-    PerceptiveView {
+    ObservedView {
       NavigationStack(store: self.store.scope(state: \.path, action: \.path)) {
         NavigationLink(state: ObservableBasicsView.Feature.State()) {
           Text("Push feature")

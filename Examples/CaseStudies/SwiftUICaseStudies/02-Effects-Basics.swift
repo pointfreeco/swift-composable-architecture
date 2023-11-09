@@ -1,5 +1,4 @@
 import ComposableArchitecture
-import Perception
 import SwiftUI
 
 private let readMe = """
@@ -108,7 +107,7 @@ struct EffectsBasicsView: View {
   @Environment(\.openURL) var openURL
 
   var body: some View {
-    PerceptiveView {
+    ObservedView {
       Form {
         Section {
           AboutView(readMe: readMe)

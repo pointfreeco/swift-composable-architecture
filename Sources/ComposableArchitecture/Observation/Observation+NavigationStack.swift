@@ -1,4 +1,3 @@
-import Perception
 import SwiftUI
 
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
@@ -44,7 +43,7 @@ public struct _NavigationDestinationViewModifier<
       .environment(\.navigationDestinationType, State.self)
       .navigationDestination(for: StackState<State>.Component.self) { component in
         var state = component.element
-        PerceptiveView {
+        ObservedView {
           self
             .destination(
               self.store.scope(

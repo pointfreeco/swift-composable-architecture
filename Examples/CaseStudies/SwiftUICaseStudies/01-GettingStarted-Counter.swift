@@ -1,5 +1,4 @@
 import ComposableArchitecture
-import Perception
 import SwiftUI
 
 private let readMe = """
@@ -54,7 +53,7 @@ struct CounterView: View {
     // Old style, new style, mixtures of styles
 
     //WithViewStore(…) { viewStore in }
-    PerceptiveView {
+    ObservedView {
       HStack {
         Button {
           self.store.send(.decrementButtonTapped)

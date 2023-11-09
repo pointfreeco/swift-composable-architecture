@@ -1,5 +1,4 @@
 @_spi(Logging) import ComposableArchitecture
-import Perception
 import SwiftUI
 
 struct ObservableBasicsView: View {
@@ -9,7 +8,7 @@ struct ObservableBasicsView: View {
   }
 
   var body: some View {
-    PerceptiveView {
+    ObservedView {
       let _ = Logger.shared.log("\(Self.self).body")
       Text(self.store.count.description)
       Button("Decrement") { self.store.send(.decrementButtonTapped) }

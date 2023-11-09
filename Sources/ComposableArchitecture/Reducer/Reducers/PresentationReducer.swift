@@ -1,6 +1,9 @@
 @_spi(Reflection) import CasePaths
 import Combine
-import Perception
+
+#if canImport(Observation)
+  import Observation
+#endif
 
 /// A property wrapper for state that can be presented.
 ///
@@ -172,7 +175,7 @@ public struct PresentationState<State> {
   extension PresentationState: Observable {}
 #endif
 
-extension PresentationState: Perceptible {}
+extension PresentationState: _TCAObservable {}
 
 extension PresentationState: Equatable where State: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {

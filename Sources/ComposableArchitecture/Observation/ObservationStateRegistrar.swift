@@ -1,8 +1,6 @@
-import Perception
-
 public struct ObservationStateRegistrar {
   public let id = ObservableStateID()
-  private let registrar = PerceptionRegistrar()
+  private let registrar = ObservationRegistrarWrapper()
 
   public init() {}
 }
@@ -33,7 +31,7 @@ extension ObservationStateRegistrar: Equatable, Hashable, Codable {
 
 extension ObservationStateRegistrar {
   @_disfavoredOverload
-  public func access<Subject: Perceptible, Member>(
+  public func access<Subject: _TCAObservable, Member>(
     _ subject: Subject,
     keyPath: KeyPath<Subject, Member>
   ) {
@@ -41,7 +39,7 @@ extension ObservationStateRegistrar {
   }
 
   @_disfavoredOverload
-  public func withMutation<Subject: Perceptible, Member, T>(
+  public func withMutation<Subject: _TCAObservable, Member, T>(
     of subject: Subject,
     keyPath: KeyPath<Subject, Member>,
     _ mutation: () throws -> T
