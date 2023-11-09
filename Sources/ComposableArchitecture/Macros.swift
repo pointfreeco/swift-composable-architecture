@@ -125,19 +125,6 @@
   /// [known issue](https://github.com/apple/swift/issues/66450), and the only workaround is to
   /// either move the extension to a separate file, or move the code from the extension to be
   /// directly inside the `State` type.
-  ///
-  /// This error will also occur if you apply the macro to a type with any kind of recursion:
-  ///
-  /// ```swift
-  /// @Reducer  // 🛑 Circular reference
-  /// struct Feature {
-  ///   struct State {
-  ///     var rows: IdentifiedArrayOf<State> = []
-  ///   }
-  ///   // ...
-  /// }
-  /// ```
-  ///
   @attached(memberAttribute)
   @attached(extension, conformances: Reducer)
   public macro Reducer() = #externalMacro(
