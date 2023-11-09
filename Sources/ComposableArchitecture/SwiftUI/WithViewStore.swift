@@ -116,6 +116,7 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
     private let line: UInt
     private var prefix: String?
     private var previousState: (ViewState) -> ViewState?
+    private var storeTypeName: String
   #endif
   @ObservedObject private var viewStore: ViewStore<ViewState, ViewAction>
 
@@ -135,6 +136,7 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
         defer { previousState = currentState }
         return previousState
       }
+      self.storeTypeName = ComposableArchitecture.storeTypeName(of: store)
     #endif
     self.viewStore = ViewStore(store, observe: { $0 }, removeDuplicates: isDuplicate)
   }
@@ -164,6 +166,7 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
 
   public var body: Content {
     #if DEBUG
+      Logger.shared.log("With\(storeTypeName).body")
       if let prefix = self.prefix {
         var stateDump = ""
         customDump(self.viewStore.state, to: &stateDump, indent: 2)

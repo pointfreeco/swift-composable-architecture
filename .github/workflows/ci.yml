@@ -59,3 +59,13 @@ jobs:
         run: sudo xcode-select -s /Applications/Xcode_15.0.1.app
       - name: Run tests
         run: make test-examples
+
+  integration:
+    name: Integration
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode 15
+        run: sudo xcode-select -s /Applications/Xcode_15.0.1.app
+      - name: Run tests
+        run: make test-integration

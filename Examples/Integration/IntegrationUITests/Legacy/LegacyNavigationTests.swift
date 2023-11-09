@@ -6,6 +6,7 @@ import XCTest
 final class LegacyNavigationTests: BaseIntegrationTests {
   override func setUp() {
     super.setUp()
+    self.app.buttons["Legacy"].tap()
     self.app.collectionViews.buttons[TestCase.navigationStack.rawValue].tap()
   }
 

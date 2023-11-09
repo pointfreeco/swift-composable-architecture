@@ -6,6 +6,7 @@ import XCTest
 final class EnumTests: BaseIntegrationTests {
   override func setUp() {
     super.setUp()
+    self.app.buttons["iOS 16"].tap()
     self.app.buttons["Enum"].tap()
     self.clearLogs()
     // SnapshotTesting.isRecording = true
@@ -32,6 +33,24 @@ final class EnumTests: BaseIntegrationTests {
       StoreOf<EnumView.Feature.Destination?>.scope
       StoreOf<EnumView.Feature>.scope
       StoreOf<EnumView.Feature>.scope
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.init
+      ViewStore<EnumView.Feature.Destination.State, EnumView.Feature.Destination.Action>.deinit
+      ViewStore<EnumView.Feature.Destination.State, EnumView.Feature.Destination.Action>.init
+      ViewStore<EnumView.Feature.Destination.State?, EnumView.Feature.Destination.Action>.deinit
+      ViewStore<EnumView.Feature.Destination.State?, EnumView.Feature.Destination.Action>.init
+      ViewStore<EnumView.ViewState, EnumView.Feature.Action>.deinit
+      ViewStore<EnumView.ViewState, EnumView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature?>.init
+      ViewStoreOf<EnumView.Feature.Destination>.init
+      WithStore<EnumView.ViewState, EnumView.Feature.Action>.body
+      WithStoreOf<BasicsView.Feature>.body
+      WithStoreOf<BasicsView.Feature?>.body
+      WithStoreOf<EnumView.Feature.Destination>.body
+      WithStoreOf<EnumView.Feature.Destination?>.body
       """
     }
     self.app.buttons["Increment"].tap()
@@ -52,6 +71,9 @@ final class EnumTests: BaseIntegrationTests {
       StoreOf<EnumView.Feature.Destination?>.scope
       StoreOf<EnumView.Feature>.scope
       StoreOf<EnumView.Feature>.scope
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      WithStoreOf<BasicsView.Feature>.body
       """
     }
   }
@@ -79,6 +101,12 @@ final class EnumTests: BaseIntegrationTests {
       StoreOf<EnumView.Feature.Destination?>.scope
       StoreOf<EnumView.Feature>.scope
       StoreOf<EnumView.Feature>.scope
+      ViewStore<EnumView.Feature.Destination.State?, EnumView.Feature.Destination.Action>.deinit
+      ViewStore<EnumView.Feature.Destination.State?, EnumView.Feature.Destination.Action>.init
+      ViewStore<EnumView.ViewState, EnumView.Feature.Action>.deinit
+      ViewStore<EnumView.ViewState, EnumView.Feature.Action>.init
+      WithStore<EnumView.ViewState, EnumView.Feature.Action>.body
+      WithStoreOf<EnumView.Feature.Destination?>.body
       """
     }
   }
@@ -117,6 +145,25 @@ final class EnumTests: BaseIntegrationTests {
       StoreOf<EnumView.Feature.Destination?>.scope
       StoreOf<EnumView.Feature>.scope
       StoreOf<EnumView.Feature>.scope
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.init
+      ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.init
+      ViewStore<EnumView.Feature.Destination.State, EnumView.Feature.Destination.Action>.deinit
+      ViewStore<EnumView.Feature.Destination.State, EnumView.Feature.Destination.Action>.init
+      ViewStore<EnumView.ViewState, EnumView.Feature.Action>.deinit
+      ViewStore<EnumView.ViewState, EnumView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature?>.deinit
+      ViewStoreOf<BasicsView.Feature?>.init
+      ViewStoreOf<BasicsView.Feature?>.init
+      WithStore<EnumView.ViewState, EnumView.Feature.Action>.body
+      WithStoreOf<BasicsView.Feature>.body
+      WithStoreOf<BasicsView.Feature?>.body
+      WithStoreOf<BasicsView.Feature?>.body
+      WithStoreOf<EnumView.Feature.Destination>.body
       """
     }
   }
@@ -157,6 +204,12 @@ final class EnumTests: BaseIntegrationTests {
       StoreOf<EnumView.Feature>.scope
       StoreOf<EnumView.Feature>.scope
       StoreOf<EnumView.Feature>.scope
+      ViewStore<EnumView.Feature.Destination.State?, EnumView.Feature.Destination.Action>.deinit
+      ViewStore<EnumView.Feature.Destination.State?, EnumView.Feature.Destination.Action>.init
+      ViewStore<EnumView.ViewState, EnumView.Feature.Action>.deinit
+      ViewStore<EnumView.ViewState, EnumView.Feature.Action>.init
+      WithStore<EnumView.ViewState, EnumView.Feature.Action>.body
+      WithStoreOf<EnumView.Feature.Destination?>.body
       """
     }
   }
