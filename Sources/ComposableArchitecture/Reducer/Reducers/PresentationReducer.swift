@@ -391,6 +391,46 @@ extension Reducer {
     )
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message:
+      """
+    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
+    """
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message:
+      """
+    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
+    """
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message:
+      """
+    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
+    """
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message:
+      """
+    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
+    """
+  )
   @warn_unqualified_access
   @inlinable
   public func ifLet<DestinationState, DestinationAction, Destination: Reducer>(
@@ -411,6 +451,46 @@ extension Reducer {
     )
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message:
+      """
+    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
+    """
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message:
+      """
+    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
+    """
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message:
+      """
+    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
+    """
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message:
+      """
+    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
+    """
+  )
   @warn_unqualified_access
   @inlinable
   public func ifLet<DestinationState: _EphemeralState, DestinationAction>(
