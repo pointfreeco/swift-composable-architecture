@@ -12,6 +12,7 @@ APIs, and this article contains some tips for doing so.
 
 * [Using the @Reducer macro](#Using-the-Reducer-macro)
 * [Using case key paths](#Using-case-key-paths)
+* [Receiving test store actions](#Receiving-test-store-actions)
 * [Moving off of `TaskResult`](#Moving-off-of-TaskResult)
 * [Identified actions](#Identified-actions)
 
@@ -90,6 +91,41 @@ To be able to take advantage of this syntax you must annotate your ``Reducer`` c
 struct Feature {
   // ...
 }
+```
+
+### Receiving test store actions
+
+The power of case key paths and the `@CasePathable` macro has made it possible to massively simplify
+how one asserts on actions received in a ``TestStore``. Instead of constructing the concrete action
+received from an effect like this:
+
+```swift
+store.receive(.child(.presented(.response(.success("Hello!")))))
+```
+
+…you can use key path syntax to describe the nesting of action cases that is received:
+
+```swift
+store.receive(\.child.presented.response.success)
+```
+
+This does not assert on the _data_ received in the action, but typically that is already covered
+by the state assertion made inside the trailing closure of `receive`. And if you use this style of
+action receiving exclusively, you can even stop conforming your action types to `Equatable`.
+
+There are a few advanced situations to be aware of. When receiving an action that involves an 
+``IdentifiedAction`` (more information below in <doc:MigratingTo1.4#Identified-actions>), then
+you can use the subscript ``IdentifiedAction/AllCasePaths-swift.struct/subscript(id:)`` to 
+receive a particular action for an element:
+
+```swift
+store.receive(.rows[id: 0].response.success)
+```
+
+And the same goes for ``StackAction`` too:
+
+```swift
+store.receive(.path[id: 0].response.success)
 ```
 
 ### Moving off of TaskResult
