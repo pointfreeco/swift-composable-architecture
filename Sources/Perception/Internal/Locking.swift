@@ -12,6 +12,7 @@
 import Foundation
 
 internal struct _ManagedCriticalState<State> {
+  // TODO: use OSAllocatedUnfairLock when available?
   private let lock = NSLock()
   final private class LockedBuffer: ManagedBuffer<State, UnsafeRawPointer> { }
 

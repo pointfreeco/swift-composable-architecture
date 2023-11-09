@@ -1,5 +1,4 @@
-// TODO: rename Store+Observation?
-
+import Perception
 import SwiftUI
 
 #if canImport(Observation)
@@ -11,13 +10,13 @@ import SwiftUI
   extension Store: Observable {}
 #endif
 
-extension Store: _TCAObservable {
+extension Store: Perceptible {
   var observableState: State {
     get {
       if State.self is ObservableState.Type {
         #if DEBUG
           if #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10),
-            !ObservedViewLocal.isExecutingBody,
+            !PerceptiveViewLocals.isInPerceptiveViewBody,
             Thread.callStackSymbols.contains(where: {
               $0.split(separator: " ").dropFirst().first == "AttributeGraph"
             })
@@ -118,11 +117,11 @@ extension Binding {
     action toChildAction: CaseKeyPath<Action, PresentationAction<ChildAction>>
   ) -> Binding<Store<ChildState, ChildAction>?>
   where Value == Store<State, Action> {
-    let isExecutingBody = ObservedViewLocal.isExecutingBody
+    let isInViewBody = PerceptiveViewLocals.isInPerceptiveViewBody
     return Binding<Store<ChildState, ChildAction>?>(
       get: {
         // TODO: Is this right? Should we just be more forgiving in bindings?
-        ObservedViewLocal.$isExecutingBody.withValue(isExecutingBody) {
+        PerceptiveViewLocals.$isInPerceptiveViewBody.withValue(isInViewBody) {
           self.wrappedValue.scope(
             state: toChildState,
             action: toChildAction.appending(path: \.presented)

@@ -37,6 +37,7 @@ let package = Package(
       name: "ComposableArchitecture",
       dependencies: [
         "ComposableArchitectureMacros",
+        "Perception",
         .product(name: "CasePaths", package: "swift-case-paths"),
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
         .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
@@ -73,6 +74,27 @@ let package = Package(
       dependencies: [
         "ComposableArchitecture",
         .product(name: "Benchmark", package: "swift-benchmark"),
+      ]
+    ),
+    .target(
+      name: "Perception",
+      dependencies: [
+        "PerceptionMacros"
+      ]
+    ),
+    .testTarget(name: "PerceptionTests", dependencies: ["Perception"]),
+    .macro(
+      name: "PerceptionMacros",
+      dependencies: [
+        .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+        .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+      ]
+    ),
+    .testTarget(
+      name: "PerceptionMacrosTests",
+      dependencies: [
+        "PerceptionMacros",
+        .product(name: "MacroTesting", package: "swift-macro-testing"),
       ]
     ),
   ]
