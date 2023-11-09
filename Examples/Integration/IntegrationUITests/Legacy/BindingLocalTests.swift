@@ -3,6 +3,11 @@ import XCTest
 
 @MainActor
 final class BindingLocalTests: BaseIntegrationTests {
+  override func setUp() {
+    super.setUp()
+    self.app.buttons["Legacy"].tap()
+  }
+
   func testNoBindingWarning_FullScreenCover() {
     app.collectionViews.buttons[TestCase.bindingLocal.rawValue].tap()
 

@@ -6,6 +6,7 @@ import XCTest
 final class NavigationTests: BaseIntegrationTests {
   override func setUp() {
     super.setUp()
+    self.app.buttons["iOS 16"].tap()
     self.app.buttons["Navigation"].tap()
     self.clearLogs()
     // SnapshotTesting.isRecording = true

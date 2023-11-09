@@ -6,6 +6,7 @@ import XCTest
 final class IdentifiedListTests: BaseIntegrationTests {
   override func setUp() {
     super.setUp()
+    self.app.buttons["iOS 16"].tap()
     self.app.buttons["Identified list"].tap()
     self.clearLogs()
     //SnapshotTesting.isRecording = true
