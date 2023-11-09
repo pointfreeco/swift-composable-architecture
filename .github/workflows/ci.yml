@@ -60,7 +60,7 @@ jobs:
       - name: Run tests
         run: make test-examples
 
-  examples:
+  integration:
     name: Integration
     runs-on: macos-13
     steps:
