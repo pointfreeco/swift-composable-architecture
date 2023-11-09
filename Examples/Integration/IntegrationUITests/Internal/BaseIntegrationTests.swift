@@ -1,3 +1,4 @@
+import Accessibility
 import CustomDump
 import InlineSnapshotTesting
 import XCTest
@@ -12,11 +13,12 @@ class BaseIntegrationTests: XCTestCase {
   }
 
   override func setUp() {
-    // SnapshotTesting.isRecording = true
+    //SnapshotTesting.isRecording = true
     // self.continueAfterFailure = false
     self.app = XCUIApplication()
     self.app.launchEnvironment["UI_TEST"] = "true"
     self.app.launch()
+    self.app.activate()
     self.logs = self.app.staticTexts["composable-architecture.debug.logs"]
   }
 
