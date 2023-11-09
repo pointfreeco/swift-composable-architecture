@@ -389,7 +389,7 @@ public final class Store<State, Action> {
     self.scope(
       state: { $0[keyPath: state] },
       id: { _ in Scope(state: state, action: action) },
-      action: { action($1) },
+      action: { action($0) },
       isInvalid: nil,
       removeDuplicates: nil
     )
@@ -442,7 +442,7 @@ public final class Store<State, Action> {
     self.scope(
       state: toChildState,
       id: nil,
-      action: { fromChildAction($1) },
+      action: fromChildAction,
       isInvalid: nil,
       removeDuplicates: nil
     )
@@ -496,7 +496,7 @@ public final class Store<State, Action> {
     self.scope(
       state: toChildState,
       id: nil,
-      action: { fromChildAction($1) },
+      action: fromChildAction,
       isInvalid: nil,
       removeDuplicates: { $0.sharesStorage(with: $1) }
     )
@@ -505,7 +505,7 @@ public final class Store<State, Action> {
   func scope<ChildState, ChildAction>(
     state toChildState: @escaping (State) -> ChildState,
     id: ((State) -> AnyHashable)?,
-    action fromChildAction: @escaping (State, ChildAction) -> Action,
+    action fromChildAction: @escaping (ChildAction) -> Action,
     isInvalid: ((State) -> Bool)?,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
@@ -529,7 +529,7 @@ public final class Store<State, Action> {
         return self._isInvalidated() || isInvalid?(self.stateSubject.value) == true
       }
     let fromChildAction = {
-      BindingLocal.isActive && isInvalid() ? nil : fromChildAction($0, $1)
+      BindingLocal.isActive && isInvalid() ? nil : fromChildAction($0)
     }
     var isSending = false
     let childStore = Store<ChildState, ChildAction>(
@@ -540,7 +540,7 @@ public final class Store<State, Action> {
         if isInvalid(), let id = id {
           self.invalidateChild(id: id)
         }
-        guard let action = fromChildAction(self.stateSubject.value, childAction)
+        guard let action = fromChildAction(childAction)
         else { return .none }
         isSending = true
         defer { isSending = false }

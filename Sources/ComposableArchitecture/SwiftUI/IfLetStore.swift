@@ -37,7 +37,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
     let store = store.scope(
       state: { $0 },
       id: nil,
-      action: { $1 },
+      action: { $0 },
       isInvalid: { $0 == nil },
       removeDuplicates: nil
     )
@@ -76,7 +76,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
     let store = store.scope(
       state: { $0 },
       id: nil,
-      action: { $1 },
+      action: { $0 },
       isInvalid: { $0 == nil },
       removeDuplicates: nil
     )
