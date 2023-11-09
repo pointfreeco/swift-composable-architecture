@@ -923,29 +923,6 @@ extension TestStore where State: Equatable {
     }
   }
 
-  @MainActor
-  @discardableResult
-  public func send<Value>(
-    _ keyPath: CaseKeyPath<Action, Value>,
-    _ value: Value,
-    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-    file: StaticString = #file,
-    line: UInt = #line
-  ) async -> TestStoreTask {
-    await self.send(keyPath(value), assert: updateStateToExpectedResult)
-  }
-
-  @MainActor
-  @discardableResult
-  public func send(
-    _ keyPath: CaseKeyPath<Action, Void>,
-    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-    file: StaticString = #file,
-    line: UInt = #line
-  ) async -> TestStoreTask {
-    await self.send(keyPath(), assert: updateStateToExpectedResult)
-  }
-
   /// Assert against the current state of the store.
   ///
   /// The trailing closure provided is given a mutable argument that represents the current state,

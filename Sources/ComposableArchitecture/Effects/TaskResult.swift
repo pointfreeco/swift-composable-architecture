@@ -102,6 +102,10 @@ import XCTestDynamicOverlay
 ///   $0.isLoading = false
 /// }
 /// ```
+@available(iOS, deprecated: 9999, message: "Use 'Result', instead")
+@available(macOS, deprecated: 9999, message: "Use 'Result', instead")
+@available(tvOS, deprecated: 9999, message: "Use 'Result', instead")
+@available(watchOS, deprecated: 9999, message: "Use 'Result', instead")
 public enum TaskResult<Success: Sendable>: Sendable {
   /// A success, storing a `Success` value.
   case success(Success)
