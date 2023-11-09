@@ -155,6 +155,9 @@
         `count` state increases to 1.
                 
         @Code(name: "CounterFeatureTests.swift", file: 01-03-02-code-0005.swift)
+        
+        > Note: We use key path syntax for singling out the case of the `Action` enum we expect
+        to receive from the effect.
       }
       
       @Step {

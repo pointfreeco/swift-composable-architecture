@@ -273,6 +273,11 @@ await store.receive(\.timerTick) {
 }
 ```
 
+> Note: We are using key path syntax `\.timerTick` to specify the case of the action we expect to 
+receive. This works because the ``ComposableArchitecture/Reducer()`` macro automatically applies the 
+`@CasePathable` macro to the `Action` enum, and `@CasePathable` comes from our 
+[CasePaths][swift-case-paths] library which brings key path syntax to enum cases.
+
 However, if we run this test we still get a failure because we asserted a `timerTick` action was
 going to be received, but after waiting around for a small amount of time no action was received:
 
@@ -345,6 +350,7 @@ struct Feature {
   struct State { /* ... */ }
   enum Action { /* ... */ }
   @Dependency(\.continuousClock) var clock
+  // ...
 }
 ```
 
@@ -876,3 +882,4 @@ the "ComposableArchitecture" entry from the `testTarget`'s' `dependencies` array
 [exhaustive-testing-in-tca]: https://www.merowing.info/exhaustive-testing-in-tca/
 [Composable-Architecture-at-Scale]: https://vimeo.com/751173570
 [Non-exhaustive-testing]: #Non-exhaustive-testing
+[swift-case-paths]: http://github.com/pointfreeco/swift-case-paths

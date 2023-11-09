@@ -1419,9 +1419,8 @@ extension TestStore where State: Equatable {
 
   /// Asserts an action was received matching a case path and asserts how the state changes.
   ///
-  /// This method is similar to ``receive(_:timeout:assert:file:line:)-6325h``, except it allows
-  /// you to assert that an action was received that matches a predicate instead of a case key
-  /// path:
+  /// This method is similar to ``receive(_:timeout:assert:file:line:)-7md3m``, except it allows
+  /// you to assert that an action was received that matches a case key path instead of a predicate.
   ///
   /// It can be useful to assert that a particular action was received without asserting on the data
   /// inside the action. For example:
@@ -1499,15 +1498,15 @@ extension TestStore where State: Equatable {
   #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     /// Asserts an action was received matching a case path and asserts how the state changes.
     ///
-    /// This method is similar to ``receive(_:timeout:assert:file:line:)-6325h``, except it allows
-    /// you to assert that an action was received that matches a predicate instead of a case key
-    /// path:
+    /// This method is similar to ``receive(_:timeout:assert:file:line:)-7md3m``, except it allows
+    /// you to assert that an action was received that matches a case key path instead of a
+    /// predicate.
     ///
     /// It can be useful to assert that a particular action was received without asserting
     /// on the data inside the action. For example:
     ///
     /// ```swift
-    /// await store.receive(/Search.Action.searchResponse) {
+    /// await store.receive(\.searchResponse) {
     ///   $0.results = [
     ///     "CasePaths",
     ///     "ComposableArchitecture",
