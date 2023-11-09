@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - case-key-paths
   pull_request:
     branches:
       - '*'

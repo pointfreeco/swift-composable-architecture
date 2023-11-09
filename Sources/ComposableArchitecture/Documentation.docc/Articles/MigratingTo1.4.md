@@ -88,10 +88,15 @@ To be able to take advantage of this syntax you must annotate your ``Reducer`` c
 
 ```swift
 @Reducer
-struct Feature {
+struct Feature: Reducer {
   // ...
 }
 ```
+
+Anywhere you previously used the `/` prefix operator for case paths you should now be able to use
+key path syntax. If you encounter any problems, create a [discussion][tca-discussions] on the 
+Composable Architecture repo.
+
 
 ### Receiving test store actions
 
@@ -226,6 +231,14 @@ Reduce { state, action in
 
 This syntax is shorter, more familiar, and can better leverage Xcode autocomplete and 
 type-inference.
+
+One last change you will need to make is anywhere you are destructuring the old-style action you 
+will need to insert a `.element` layer:
+
+```diff
+-case let .row(id: id, action: .buttonTapped):
++case let .rows(.elements(id: id, action: .buttonTapped)):
+```
 
 [swift-case-paths]: http://github.com/pointfreeco/swift-case-paths
 [tca-discussions]: http://github.com/pointfreeco/swift-composable-architecture/discussions
