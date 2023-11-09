@@ -18,6 +18,7 @@ class BaseIntegrationTests: XCTestCase {
     self.app = XCUIApplication()
     self.app.launchEnvironment["UI_TEST"] = "true"
     self.app.launch()
+    self.app.activate()
     self.logs = self.app.staticTexts["composable-architecture.debug.logs"]
   }
 

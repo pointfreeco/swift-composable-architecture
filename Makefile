@@ -49,10 +49,10 @@ test-examples:
 			-destination platform="$(PLATFORM_IOS)" || exit 1; \
 	done
 
-test-example:
+test-integration:
 	xcodebuild test \
 		-skipMacroValidation \
-		-scheme "$(SCHEME)" \
+		-scheme "Integration" \
 		-destination platform="$(PLATFORM_IOS)" || exit 1; 
 
 benchmark:
