@@ -351,7 +351,7 @@ import XCTestDynamicOverlay
 /// let store = TestStore(App.State()) {
 ///   App()
 /// }
-/// store.exhaustivity = .off // ⬅️
+/// store.exhaustivity = .off  // ⬅️
 ///
 /// await store.send(.login(.submitButtonTapped))
 /// await store.receive(\.login.delegate.didLogin) {
@@ -373,7 +373,7 @@ import XCTestDynamicOverlay
 /// let store = TestStore(initialState: App.State()) {
 ///   App()
 /// }
-/// store.exhaustivity = .off(showSkippedAssertions: true) // ⬅️
+/// store.exhaustivity = .off(showSkippedAssertions: true)  // ⬅️
 ///
 /// await store.send(.login(.submitButtonTapped))
 /// await store.receive(\.login.delegate.didLogin) {
