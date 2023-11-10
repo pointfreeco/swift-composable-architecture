@@ -53,6 +53,46 @@ where State == ViewAction.State {
     self.init(internal: { $0 })
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message:
+      """
+    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
+    """
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message:
+      """
+    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
+    """
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message:
+      """
+    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
+    """
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message:
+      """
+    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
+    """
+  )
   @inlinable
   public init(action toViewAction: CaseKeyPath<Action, ViewAction>) where Action: CasePathable {
     self.init(internal: { $0[case: toViewAction] })
