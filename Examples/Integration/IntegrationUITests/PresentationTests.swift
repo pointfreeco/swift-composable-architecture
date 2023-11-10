@@ -35,8 +35,8 @@ final class PresentationTests: BaseIntegrationTests {
       ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.init
       ViewStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature?>.init
-      WithStoreOf<BasicsView.Feature>.body
-      WithStoreOf<BasicsView.Feature?>.body
+      WithViewStoreOf<BasicsView.Feature>.body
+      WithViewStoreOf<BasicsView.Feature?>.body
       """
     }
     self.app.buttons["Increment"].tap()
@@ -54,7 +54,7 @@ final class PresentationTests: BaseIntegrationTests {
       StoreOf<PresentationView.Feature>.scope
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
-      WithStoreOf<BasicsView.Feature>.body
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
     self.app.buttons["Dismiss"].firstMatch.tap()
@@ -65,6 +65,9 @@ final class PresentationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.init
@@ -106,8 +109,8 @@ final class PresentationTests: BaseIntegrationTests {
       ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.init
       ViewStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature?>.init
-      WithStoreOf<BasicsView.Feature>.body
-      WithStoreOf<BasicsView.Feature?>.body
+      WithViewStoreOf<BasicsView.Feature>.body
+      WithViewStoreOf<BasicsView.Feature?>.body
       """
     }
     self.app.buttons["Observe child count"].tap()
@@ -117,7 +120,7 @@ final class PresentationTests: BaseIntegrationTests {
       StoreOf<PresentationView.Feature>.scope
       ViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.deinit
       ViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.init
-      WithStore<PresentationView.ViewState, PresentationView.Feature.Action>.body
+      WithViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.body
       """
     }
     self.app.buttons["Increment"].tap()
@@ -138,8 +141,8 @@ final class PresentationTests: BaseIntegrationTests {
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
       ViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.deinit
       ViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.init
-      WithStore<PresentationView.ViewState, PresentationView.Feature.Action>.body
-      WithStoreOf<BasicsView.Feature>.body
+      WithViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.body
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
     XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
@@ -152,6 +155,9 @@ final class PresentationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.init
@@ -168,7 +174,7 @@ final class PresentationTests: BaseIntegrationTests {
       ViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.init
       ViewStoreOf<BasicsView.Feature>.deinit
       ViewStoreOf<BasicsView.Feature?>.deinit
-      WithStore<PresentationView.ViewState, PresentationView.Feature.Action>.body
+      WithViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.body
       """
     }
   }

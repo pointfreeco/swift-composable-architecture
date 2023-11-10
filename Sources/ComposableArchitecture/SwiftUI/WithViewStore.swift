@@ -166,7 +166,7 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
 
   public var body: Content {
     #if DEBUG
-      Logger.shared.log("With\(storeTypeName).body")
+      Logger.shared.log("WithView\(storeTypeName).body")
       if let prefix = self.prefix {
         var stateDump = ""
         customDump(self.viewStore.state, to: &stateDump, indent: 2)

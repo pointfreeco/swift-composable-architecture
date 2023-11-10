@@ -33,9 +33,9 @@ final class OptionalTests: BaseIntegrationTests {
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.deinit
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.init
       ViewStoreOf<BasicsView.Feature>.init
-      WithStore<OptionalView.ViewState, OptionalView.Feature.Action>.body
-      WithStoreOf<BasicsView.Feature>.body
-      WithStoreOf<BasicsView.Feature?>.body
+      WithViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.body
+      WithViewStoreOf<BasicsView.Feature>.body
+      WithViewStoreOf<BasicsView.Feature?>.body
       """
     }
     self.app.buttons["Increment"].tap()
@@ -54,8 +54,8 @@ final class OptionalTests: BaseIntegrationTests {
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.deinit
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.init
-      WithStore<OptionalView.ViewState, OptionalView.Feature.Action>.body
-      WithStoreOf<BasicsView.Feature>.body
+      WithViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.body
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
   }
@@ -72,7 +72,7 @@ final class OptionalTests: BaseIntegrationTests {
       StoreOf<OptionalView.Feature>.scope
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.deinit
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.init
-      WithStore<OptionalView.ViewState, OptionalView.Feature.Action>.body
+      WithViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.body
       """
     }
     self.app.buttons["Increment"].tap()
@@ -91,8 +91,8 @@ final class OptionalTests: BaseIntegrationTests {
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.deinit
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.init
-      WithStore<OptionalView.ViewState, OptionalView.Feature.Action>.body
-      WithStoreOf<BasicsView.Feature>.body
+      WithViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.body
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
   }
