@@ -30,7 +30,8 @@ final class PresentationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
+      StoreOf<PresentationView.Feature>.scope
+      StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
@@ -49,11 +50,11 @@ final class PresentationTests: BaseIntegrationTests {
       BasicsView.body
       PresentationStoreOf<BasicsView.Feature>.scope
       PresentationStoreOf<BasicsView.Feature>.scope
+      PresentationStoreOf<BasicsView.Feature>.scope
+      PresentationStoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
@@ -107,7 +108,8 @@ final class PresentationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
+      StoreOf<PresentationView.Feature>.scope
+      StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
@@ -136,6 +138,9 @@ final class PresentationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<PresentationView.Feature>.scope
+      StoreOf<PresentationView.Feature>.scope
+      StoreOf<PresentationView.Feature>.scope
+      StoreOf<PresentationView.Feature>.scope
       ViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.deinit
       ViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.init
       WithViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.body
@@ -145,6 +150,8 @@ final class PresentationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
+      PresentationStoreOf<BasicsView.Feature>.scope
+      PresentationStoreOf<BasicsView.Feature>.scope
       PresentationStoreOf<BasicsView.Feature>.scope
       PresentationStoreOf<BasicsView.Feature>.scope
       PresentationView.body
@@ -177,7 +184,6 @@ final class PresentationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope

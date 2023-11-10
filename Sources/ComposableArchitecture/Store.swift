@@ -574,7 +574,7 @@ public final class Store<State, Action> {
           return
         }
         childStore.stateSubject.value = childState
-        Logger.shared.log("\(typeName(of: self)).scope")
+        Logger.shared.log("\(storeTypeName(of: self)).scope")
       }
     if let id = id {
       self.children[id] = childStore

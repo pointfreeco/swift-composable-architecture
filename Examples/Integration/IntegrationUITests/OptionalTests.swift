@@ -44,12 +44,8 @@ final class OptionalTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<OptionalView.Feature>.scope
-      StoreOf<OptionalView.Feature>.scope
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
-      ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.deinit
-      ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.init
-      WithViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.body
       WithViewStoreOf<BasicsView.Feature>.body
       """
     }
@@ -70,6 +66,7 @@ final class OptionalTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<OptionalView.Feature>.scope
+      StoreOf<OptionalView.Feature>.scope
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.deinit
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.init
       WithViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.body
@@ -82,7 +79,6 @@ final class OptionalTests: BaseIntegrationTests {
       OptionalView.body
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature?>.scope
-      StoreOf<OptionalView.Feature>.scope
       StoreOf<OptionalView.Feature>.scope
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
