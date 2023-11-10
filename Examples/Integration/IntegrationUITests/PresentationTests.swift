@@ -67,9 +67,6 @@ final class PresentationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
@@ -155,9 +152,6 @@ final class PresentationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.init
