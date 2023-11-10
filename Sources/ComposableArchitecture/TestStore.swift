@@ -1419,9 +1419,8 @@ extension TestStore where State: Equatable {
 
   /// Asserts an action was received matching a case path and asserts how the state changes.
   ///
-  /// This method is similar to ``receive(_:timeout:assert:file:line:)-6325h``, except it allows
-  /// you to assert that an action was received that matches a predicate instead of a case key
-  /// path:
+  /// This method is similar to ``receive(_:timeout:assert:file:line:)-7md3m``, except it allows
+  /// you to assert that an action was received that matches a case key path instead of a predicate.
   ///
   /// It can be useful to assert that a particular action was received without asserting on the data
   /// inside the action. For example:
@@ -1466,6 +1465,46 @@ extension TestStore where State: Equatable {
     )
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message:
+      """
+    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
+    """
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message:
+      """
+    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
+    """
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message:
+      """
+    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
+    """
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message:
+      """
+    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
+    """
+  )
   @MainActor
   @_disfavoredOverload
   public func receive<Value>(
@@ -1499,15 +1538,15 @@ extension TestStore where State: Equatable {
   #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     /// Asserts an action was received matching a case path and asserts how the state changes.
     ///
-    /// This method is similar to ``receive(_:timeout:assert:file:line:)-6325h``, except it allows
-    /// you to assert that an action was received that matches a predicate instead of a case key
-    /// path:
+    /// This method is similar to ``receive(_:timeout:assert:file:line:)-7md3m``, except it allows
+    /// you to assert that an action was received that matches a case key path instead of a
+    /// predicate.
     ///
     /// It can be useful to assert that a particular action was received without asserting
     /// on the data inside the action. For example:
     ///
     /// ```swift
-    /// await store.receive(/Search.Action.searchResponse) {
+    /// await store.receive(\.searchResponse) {
     ///   $0.results = [
     ///     "CasePaths",
     ///     "ComposableArchitecture",
@@ -1549,7 +1588,50 @@ extension TestStore where State: Equatable {
 
     @MainActor
     @_disfavoredOverload
-    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+  @available(
+    iOS,
+    introduced: 16,
+    deprecated: 9999,
+    message:
+      """
+    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
+    """
+  )
+  @available(
+    macOS,
+    introduced: 13,
+    deprecated: 9999,
+    message:
+      """
+    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
+    """
+  )
+  @available(
+    tvOS,
+    introduced: 16,
+    deprecated: 9999,
+    message:
+      """
+    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
+    """
+  )
+  @available(
+    watchOS,
+    introduced: 9,
+    deprecated: 9999,
+    message:
+      """
+    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
+    """
+  )
     public func receive<Value>(
       _ actionCase: AnyCasePath<Action, Value>,
       timeout duration: Duration,
@@ -1938,6 +2020,46 @@ extension TestStore {
     )
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message:
+      """
+    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
+    """
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message:
+      """
+    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
+    """
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message:
+      """
+    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
+    """
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message:
+      """
+    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
+    """
+  )
   public func bindings<ViewAction: BindableAction>(
     action toViewAction: AnyCasePath<Action, ViewAction>
   ) -> BindingViewStore<State> where State == ViewAction.State {

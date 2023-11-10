@@ -76,3 +76,10 @@ struct SiblingFeaturesView: View {
     }
   }
 }
+
+struct SiblingPreviews: PreviewProvider {
+  static var previews: some View {
+    let _ = Logger.shared.isEnabled = true
+    SiblingFeaturesView()
+  }
+}

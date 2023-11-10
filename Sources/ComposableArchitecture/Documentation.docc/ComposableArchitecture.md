@@ -72,6 +72,10 @@ day-to-day when building applications, such as:
 - <doc:SwiftUIIntegration>
 - <doc:UIKit>
 
+### Migration guides
+
+- <doc:MigratingTo1.4>
+
 ## See Also
 
 The collection of videos from [Point-Free](https://www.pointfree.co) that dive deep into the

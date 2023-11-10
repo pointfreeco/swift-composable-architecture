@@ -1,5 +1,5 @@
 CONFIG = debug
-PLATFORM_IOS = iOS Simulator,id=$(call udid_for,iOS 17,iPhone)
+PLATFORM_IOS = iOS Simulator,id=$(call udid_for,iOS 17,iPhone \d\+ Pro [^M])
 PLATFORM_MACOS = macOS
 PLATFORM_MAC_CATALYST = macOS,variant=Mac Catalyst
 PLATFORM_TVOS = tvOS Simulator,id=$(call udid_for,tvOS 17,TV)
@@ -48,6 +48,12 @@ test-examples:
 			-scheme "$$scheme" \
 			-destination platform="$(PLATFORM_IOS)" || exit 1; \
 	done
+
+test-integration:
+	xcodebuild test \
+		-skipMacroValidation \
+		-scheme "Integration" \
+		-destination platform="$(PLATFORM_IOS)" || exit 1; 
 
 benchmark:
 	swift run --configuration release \

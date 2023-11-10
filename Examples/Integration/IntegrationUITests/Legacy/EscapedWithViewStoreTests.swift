@@ -4,6 +4,11 @@ import XCTest
 
 @MainActor
 final class EscapedWithViewStoreTests: BaseIntegrationTests {
+  override func setUp() {
+    super.setUp()
+    self.app.buttons["Legacy"].tap()
+  }
+
   func testExample() async throws {
     app.collectionViews.buttons[TestCase.escapedWithViewStore.rawValue].tap()
 

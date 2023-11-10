@@ -156,7 +156,7 @@ public final class Store<State, Action> {
     @ReducerBuilder<State, Action> reducer: () -> R,
     withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
   ) where R.State == State, R.Action == Action {
-    defer { Logger.shared.log("\(typeName(of: self)).init") }
+    defer { Logger.shared.log("\(storeTypeName(of: self)).init") }
     if let prepareDependencies = prepareDependencies {
       let (initialState, reducer) = withDependencies(prepareDependencies) {
         (initialState(), reducer())
@@ -177,7 +177,7 @@ public final class Store<State, Action> {
 
   deinit {
     self.invalidate()
-    Logger.shared.log("\(typeName(of: self)).deinit")
+    Logger.shared.log("\(storeTypeName(of: self)).deinit")
   }
 
   /// Calls the given closure with the current state of the store.
@@ -952,7 +952,7 @@ private protocol AnyStore {
 private protocol _OptionalProtocol {}
 extension Optional: _OptionalProtocol {}
 
-private func typeName<State, Action>(of store: Store<State, Action>) -> String {
+func storeTypeName<State, Action>(of store: Store<State, Action>) -> String {
   let stateType = typeName(State.self, genericsAbbreviated: false)
   let actionType = typeName(Action.self, genericsAbbreviated: false)
   // TODO: `PresentationStoreOf`, `StackStoreOf`, `IdentifiedStoreOf`?
@@ -988,7 +988,7 @@ private func typeName<State, Action>(of store: Store<State, Action>) -> String {
 }
 
 // NB: From swift-custom-dump. Consider publicizing interface in some way to keep things in sync.
-private func typeName(
+func typeName(
   _ type: Any.Type,
   qualified: Bool = true,
   genericsAbbreviated: Bool = true

@@ -6,6 +6,7 @@ import XCTest
 final class BasicsTests: BaseIntegrationTests {
   override func setUp() {
     super.setUp()
+    self.app.buttons["iOS 16"].tap()
     self.app.buttons["Basics"].tap()
     self.clearLogs()
     // SnapshotTesting.isRecording = true
@@ -17,6 +18,9 @@ final class BasicsTests: BaseIntegrationTests {
       """
       BasicsView.body
       StoreOf<BasicsView.Feature>.scope
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
     self.app.buttons["Decrement"].tap()
@@ -24,6 +28,9 @@ final class BasicsTests: BaseIntegrationTests {
       """
       BasicsView.body
       StoreOf<BasicsView.Feature>.scope
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
   }

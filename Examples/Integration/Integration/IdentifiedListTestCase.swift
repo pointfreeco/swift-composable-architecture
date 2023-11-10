@@ -89,3 +89,12 @@ struct IdentifiedListView: View {
     }
   }
 }
+
+struct IdentifiedListPreviews: PreviewProvider {
+  static var previews: some View {
+    let _ = Logger.shared.isEnabled = true
+    NavigationStack {
+      IdentifiedListView()
+    }
+  }
+}

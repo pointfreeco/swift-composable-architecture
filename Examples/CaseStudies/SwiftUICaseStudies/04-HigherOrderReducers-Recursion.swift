@@ -10,7 +10,7 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-// NB: `@Reducer` cannot be applied to recursive reducers.
+@Reducer
 struct Nested: Reducer {
   struct State: Equatable, Identifiable {
     let id: UUID
@@ -18,7 +18,6 @@ struct Nested: Reducer {
     var rows: IdentifiedArrayOf<State> = []
   }
   
-  // NB: `@Reducer` cannot be applied to recursive reducers.
   @CasePathable
   enum Action {
     case addRowButtonTapped
@@ -97,38 +96,35 @@ struct NestedView: View {
   }
 }
 
-extension Nested.State {
-  static let mock = Nested.State(
-    id: UUID(),
-    name: "Foo",
-    rows: [
-      Nested.State(
-        id: UUID(),
-        name: "Bar",
-        rows: [
-          Nested.State(id: UUID(), name: "", rows: [])
-        ]
-      ),
-      Nested.State(
-        id: UUID(),
-        name: "Baz",
-        rows: [
-          Nested.State(id: UUID(), name: "Fizz", rows: []),
-          Nested.State(id: UUID(), name: "Buzz", rows: []),
-        ]
-      ),
-      Nested.State(id: UUID(), name: "", rows: []),
-    ]
-  )
-}
-
 // MARK: - SwiftUI previews
 
 struct NestedView_Previews: PreviewProvider {
   static var previews: some View {
+    let initialState = Nested.State(
+      id: UUID(),
+      name: "Foo",
+      rows: [
+        Nested.State(
+          id: UUID(),
+          name: "Bar",
+          rows: [
+            Nested.State(id: UUID(), name: "", rows: [])
+          ]
+        ),
+        Nested.State(
+          id: UUID(),
+          name: "Baz",
+          rows: [
+            Nested.State(id: UUID(), name: "Fizz", rows: []),
+            Nested.State(id: UUID(), name: "Buzz", rows: []),
+          ]
+        ),
+        Nested.State(id: UUID(), name: "", rows: []),
+      ]
+    )
     NavigationView {
       NestedView(
-        store: Store(initialState: .mock) {
+        store: Store(initialState: initialState) {
           Nested()
         }
       )

@@ -6,6 +6,7 @@ import XCTest
 final class LegacyPresentationTests: BaseIntegrationTests {
   override func setUp() {
     super.setUp()
+    self.app.buttons["Legacy"].tap()
     self.app.collectionViews.buttons[TestCase.presentation.rawValue].tap()
   }
 

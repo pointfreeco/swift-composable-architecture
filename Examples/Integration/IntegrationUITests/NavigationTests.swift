@@ -6,6 +6,7 @@ import XCTest
 final class NavigationTests: BaseIntegrationTests {
   override func setUp() {
     super.setUp()
+    self.app.buttons["iOS 16"].tap()
     self.app.buttons["Navigation"].tap()
     self.clearLogs()
     // SnapshotTesting.isRecording = true
@@ -18,6 +19,10 @@ final class NavigationTests: BaseIntegrationTests {
       BasicsView.body
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.init
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
     self.app.buttons["Increment"].tap()
@@ -25,6 +30,10 @@ final class NavigationTests: BaseIntegrationTests {
       """
       BasicsView.body
       StoreOf<BasicsView.Feature>.scope
+      StoreOf<NavigationTestCaseView.Feature>.scope
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
   }
@@ -49,6 +58,10 @@ final class NavigationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
+      StoreOf<NavigationTestCaseView.Feature>.scope
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
   }

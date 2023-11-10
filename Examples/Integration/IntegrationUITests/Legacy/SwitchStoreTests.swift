@@ -4,6 +4,11 @@ import XCTest
 
 @MainActor
 final class SwitchStoreTests: BaseIntegrationTests {
+  override func setUp() {
+    super.setUp()
+    self.app.buttons["Legacy"].tap()
+  }
+
   func testExample() async throws {
     self.expectRuntimeWarnings()
 
