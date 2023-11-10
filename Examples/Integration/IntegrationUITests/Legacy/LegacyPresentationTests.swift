@@ -410,8 +410,8 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["Custom alert!"].exists, true)
     self.app.typeText("Hello!")
     self.app.buttons["Submit"].tap()
-    XCTAssertEqual(self.app.staticTexts["Hello!"].exists, true)
-    XCTAssertEqual(self.app.staticTexts["Dismiss action sent"].exists, true)
+    XCTAssertEqual(self.app.staticTexts["Hello!"].waitForExistence(timeout: 1), true)
+    XCTAssertEqual(self.app.staticTexts["Dismiss action sent"].waitForExistence(timeout: 1), true)
   }
 
   func testDismissAndAlert() {
