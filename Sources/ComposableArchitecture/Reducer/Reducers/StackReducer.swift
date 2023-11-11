@@ -58,31 +58,34 @@ public struct StackState<Element> {
   /// > Note: Accessing the wrong case will result in a runtime warning.
   public subscript<Case>(id id: StackElementID, case path: CaseKeyPath<Element, Case>) -> Case?
   where Element: CasePathable {
-    _read { yield self[id: id].flatMap { $0[case: path] } }
-    _modify {
-      let root = self[id: id]
-      var value = root.flatMap { $0[case: path] }
-      let success = value != nil
-      yield &value
-      guard success else {
-        var description: String?
-        if let root = root,
-          let metadata = EnumMetadata(Element.self),
-          let caseName = metadata.caseName(forTag: metadata.tag(of: root))
-        {
-          description = caseName
-        }
-        runtimeWarn(
-          """
-          Can't modify unrelated case\(description.map { " \($0.debugDescription)" } ?? "")
-          """
-        )
-        return
-      }
-      self[id: id] = value.map { path($0) }
-    }
+    _read { yield self[id: id, case: AnyCasePath(path)] }
+    _modify { yield &self[id: id, case: AnyCasePath(path)] }
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message:
+      "Use the version of this subscript with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message:
+      "Use the version of this subscript with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message:
+      "Use the version of this subscript with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message:
+      "Use the version of this subscript with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
+  )
   public subscript<Case>(id id: StackElementID, case path: AnyCasePath<Element, Case>) -> Case? {
     _read { yield self[id: id].flatMap(path.extract) }
     _modify {
@@ -348,42 +351,22 @@ extension Reducer {
   @available(
     iOS,
     deprecated: 9999,
-    message:
-      """
-    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
-
-    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
-    """
+    message: "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
   )
   @available(
     macOS,
     deprecated: 9999,
-    message:
-      """
-    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
-
-    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
-    """
+    message: "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
   )
   @available(
     tvOS,
     deprecated: 9999,
-    message:
-      """
-    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
-
-    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
-    """
+    message: "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
   )
   @available(
     watchOS,
     deprecated: 9999,
-    message:
-      """
-    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
-
-    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
-    """
+    message: "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
   )
   @inlinable
   @warn_unqualified_access

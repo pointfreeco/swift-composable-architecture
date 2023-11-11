@@ -74,7 +74,7 @@ struct RecordingMemo {
           }
           await startRecording
         }
-        
+
       case .timerUpdated:
         state.duration += 1
         return .none

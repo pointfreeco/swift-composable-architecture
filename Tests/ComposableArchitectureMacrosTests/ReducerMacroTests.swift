@@ -117,7 +117,7 @@ final class ReducerMacroTests: XCTestCase {
       """
     }
   }
-  
+
   func testReduceMethodDiagnostic() {
     assertMacro {
       """

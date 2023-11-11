@@ -48,12 +48,12 @@ struct EffectsBasics {
         state.numberFact = nil
         // Return an effect that re-increments the count after 1 second if the count is negative
         return state.count >= 0
-        ? .none
-        : .run { send in
-          try await self.clock.sleep(for: .seconds(1))
-          await send(.decrementDelayResponse)
-        }
-        .cancellable(id: CancelID.delay)
+          ? .none
+          : .run { send in
+            try await self.clock.sleep(for: .seconds(1))
+            await send(.decrementDelayResponse)
+          }
+          .cancellable(id: CancelID.delay)
 
       case .decrementDelayResponse:
         if state.count < 0 {
@@ -65,8 +65,8 @@ struct EffectsBasics {
         state.count += 1
         state.numberFact = nil
         return state.count >= 0
-        ? .cancel(id: CancelID.delay)
-        : .none
+          ? .cancel(id: CancelID.delay)
+          : .none
 
       case .numberFactButtonTapped:
         state.isNumberFactRequestInFlight = true

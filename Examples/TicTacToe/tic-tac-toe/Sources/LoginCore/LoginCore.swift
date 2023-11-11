@@ -30,7 +30,6 @@ public struct Login: Sendable {
     }
   }
 
-
   @Dependency(\.authenticationClient) var authenticationClient
 
   public init() {}

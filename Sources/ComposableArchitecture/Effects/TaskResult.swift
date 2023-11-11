@@ -105,38 +105,26 @@ import XCTestDynamicOverlay
 @available(
   iOS,
   deprecated: 9999,
-  message: """
-    Use 'Result', instead. See the following migration guide for more information:
-
-    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Moving-off-of-TaskResult
-    """
+  message:
+    "Use 'Result', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Moving-off-of-TaskResult"
 )
 @available(
   macOS,
   deprecated: 9999,
-  message: """
-    Use 'Result', instead. See the following migration guide for more information:
-
-    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Moving-off-of-TaskResult
-    """
+  message:
+    "Use 'Result', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Moving-off-of-TaskResult"
 )
 @available(
   tvOS,
   deprecated: 9999,
-  message: """
-    Use 'Result', instead. See the following migration guide for more information:
-
-    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Moving-off-of-TaskResult
-    """
+  message:
+    "Use 'Result', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Moving-off-of-TaskResult"
 )
 @available(
   watchOS,
   deprecated: 9999,
-  message: """
-    Use 'Result', instead. See the following migration guide for more information:
-
-    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Moving-off-of-TaskResult
-    """
+  message:
+    "Use 'Result', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Moving-off-of-TaskResult"
 )
 public enum TaskResult<Success: Sendable>: Sendable {
   /// A success, storing a `Success` value.

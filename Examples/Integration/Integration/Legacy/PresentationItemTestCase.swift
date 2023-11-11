@@ -4,7 +4,7 @@ import SwiftUI
 @Reducer
 private struct PresentationItemTestCase {
   @Reducer
-  struct Destination  {
+  struct Destination {
     enum State: Equatable {
       case childA(Child.State)
       case childB(Child.State)

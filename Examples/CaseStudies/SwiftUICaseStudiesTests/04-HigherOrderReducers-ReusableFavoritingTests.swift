@@ -38,7 +38,7 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
       $0.episodes[id: episodes[0].id]?.isFavorite = true
     }
     await clock.advance(by: .seconds(1))
-    await store.receive(\.episodes[id: episodes[0].id].favorite.response.success)
+    await store.receive(\.episodes[id:episodes[0].id].favorite.response.success)
 
     await store.send(.episodes(.element(id: episodes[1].id, action: .favorite(.buttonTapped)))) {
       $0.episodes[id: episodes[1].id]?.isFavorite = true
@@ -47,7 +47,7 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
       $0.episodes[id: episodes[1].id]?.isFavorite = false
     }
     await clock.advance(by: .seconds(1))
-    await store.receive(\.episodes[id: episodes[1].id].favorite.response.success)
+    await store.receive(\.episodes[id:episodes[1].id].favorite.response.success)
   }
 
   func testUnhappyPath() async {
@@ -66,7 +66,7 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
       $0.episodes[id: episodes[0].id]?.isFavorite = true
     }
 
-    await store.receive(\.episodes[id: episodes[0].id].favorite.response.failure) {
+    await store.receive(\.episodes[id:episodes[0].id].favorite.response.failure) {
       $0.episodes[id: episodes[0].id]?.alert = AlertState {
         TextState("Favoriting failed.")
       }
