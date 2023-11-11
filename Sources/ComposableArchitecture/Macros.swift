@@ -127,7 +127,8 @@
   /// directly inside the `State` type.
   @attached(memberAttribute)
   @attached(extension, conformances: Reducer)
-  public macro Reducer() = #externalMacro(
-    module: "ComposableArchitectureMacros", type: "ReducerMacro"
-  )
+  public macro Reducer() =
+    #externalMacro(
+      module: "ComposableArchitectureMacros", type: "ReducerMacro"
+    )
 #endif

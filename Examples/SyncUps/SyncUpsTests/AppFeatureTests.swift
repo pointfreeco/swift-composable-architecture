@@ -31,7 +31,7 @@ final class AppFeatureTests: XCTestCase {
       $0.path[id: 0, case: \.detail]?.destination = nil
     }
 
-    await store.receive(\.path[id: 0].detail.delegate.deleteSyncUp) {
+    await store.receive(\.path[id:0].detail.delegate.deleteSyncUp) {
       $0.syncUpsList.syncUps = []
     }
     await store.receive(\.path.popFrom) {
@@ -83,7 +83,7 @@ final class AppFeatureTests: XCTestCase {
       $0.path[id: 0, case: \.detail]?.syncUp.title = "Blob"
     }
 
-    await store.receive(\.path[id: 0].detail.delegate.syncUpUpdated) {
+    await store.receive(\.path[id:0].detail.delegate.syncUpUpdated) {
       $0.syncUpsList.syncUps[0].title = "Blob"
     }
 
@@ -135,7 +135,7 @@ final class AppFeatureTests: XCTestCase {
     store.exhaustivity = .off
 
     await store.send(.path(.element(id: 1, action: .record(.onTask))))
-    await store.receive(\.path[id: 1].record.delegate.save) {
+    await store.receive(\.path[id:1].record.delegate.save) {
       $0.path[id: 0, case: \.detail]?.syncUp.meetings = [
         Meeting(
           id: Meeting.ID(UUID(0)),

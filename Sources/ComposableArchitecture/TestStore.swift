@@ -1469,41 +1469,25 @@ extension TestStore where State: Equatable {
     iOS,
     deprecated: 9999,
     message:
-      """
-    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
-
-    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
-    """
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
   )
   @available(
     macOS,
     deprecated: 9999,
     message:
-      """
-    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
-
-    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
-    """
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
   )
   @available(
     tvOS,
     deprecated: 9999,
     message:
-      """
-    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
-
-    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
-    """
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
   )
   @available(
     watchOS,
     deprecated: 9999,
     message:
-      """
-    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
-
-    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
-    """
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
   )
   @MainActor
   @_disfavoredOverload
@@ -1588,50 +1572,42 @@ extension TestStore where State: Equatable {
 
     @MainActor
     @_disfavoredOverload
-  @available(
-    iOS,
-    introduced: 16,
-    deprecated: 9999,
-    message:
-      """
-    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+    @available(
+      iOS,
+      introduced: 16,
+      deprecated: 9999,
+      message:
+        """Use the version of this operator with case key paths, instead. See the following migration guide for more information:
 
-    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
-    """
-  )
-  @available(
-    macOS,
-    introduced: 13,
-    deprecated: 9999,
-    message:
-      """
-    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"""
+    )
+    @available(
+      macOS,
+      introduced: 13,
+      deprecated: 9999,
+      message:
+        """Use the version of this operator with case key paths, instead. See the following migration guide for more information:
 
-    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
-    """
-  )
-  @available(
-    tvOS,
-    introduced: 16,
-    deprecated: 9999,
-    message:
-      """
-    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"""
+    )
+    @available(
+      tvOS,
+      introduced: 16,
+      deprecated: 9999,
+      message:
+        """Use the version of this operator with case key paths, instead. See the following migration guide for more information:
 
-    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
-    """
-  )
-  @available(
-    watchOS,
-    introduced: 9,
-    deprecated: 9999,
-    message:
-      """
-    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"""
+    )
+    @available(
+      watchOS,
+      introduced: 9,
+      deprecated: 9999,
+      message:
+        """Use the version of this operator with case key paths, instead. See the following migration guide for more information:
 
-    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
-    """
-  )
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"""
+    )
     public func receive<Value>(
       _ actionCase: AnyCasePath<Action, Value>,
       timeout duration: Duration,
@@ -2014,7 +1990,7 @@ extension TestStore {
   ) -> BindingViewStore<State> where State == ViewAction.State, Action: CasePathable {
     BindingViewStore(
       store: Store(initialState: self.state) {
-        BindingReducer(action: { $0[case: toViewAction] })
+        BindingReducer(action: toViewAction)
       }
       .scope(state: { $0 }, action: { toViewAction($0) })
     )
@@ -2024,41 +2000,25 @@ extension TestStore {
     iOS,
     deprecated: 9999,
     message:
-      """
-    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
-
-    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
-    """
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
   )
   @available(
     macOS,
     deprecated: 9999,
     message:
-      """
-    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
-
-    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
-    """
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
   )
   @available(
     tvOS,
     deprecated: 9999,
     message:
-      """
-    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
-
-    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
-    """
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
   )
   @available(
     watchOS,
     deprecated: 9999,
     message:
-      """
-    Use the version of this operator with case key paths, instead. See the following migration guide for more information:
-
-    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths
-    """
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
   )
   public func bindings<ViewAction: BindableAction>(
     action toViewAction: AnyCasePath<Action, ViewAction>
