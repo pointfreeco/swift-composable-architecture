@@ -56,7 +56,7 @@
   /// ```diff
   /// +@CasePathable
   /// +@dynamicMemberLookup
-  ///  enum Struct {
+  ///  enum State {
   ///    // …
   ///  }
   /// ```
