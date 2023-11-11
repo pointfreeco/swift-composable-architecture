@@ -131,7 +131,12 @@ final class ReducerMacroTests: XCTestCase {
           .none
         }
         var body: some ReducerOf<Self> {
-          EmptyReducer()
+          Reduce(reduce)
+          Reduce(reduce(into:action:))
+          Reduce(self.reduce)
+          Reduce(self.reduce(into:action:))
+          Reduce(AnotherReducer().reduce)
+          Reduce(AnotherReducer().reduce(into:action:))
         }
       }
       """
@@ -146,10 +151,37 @@ final class ReducerMacroTests: XCTestCase {
         func reduce(into state: inout State, action: Action) -> EffectOf<Self> {
              ┬─────
              ╰─ ⚠️ A 'reduce' method should not be defined in a reducer with a 'body'; it takes precedence and 'body' will never be invoked
+                ✏️ Rename to 'update'
           .none
         }
         var body: some ReducerOf<Self> {
-          EmptyReducer()
+          Reduce(reduce)
+          Reduce(reduce(into:action:))
+          Reduce(self.reduce)
+          Reduce(self.reduce(into:action:))
+          Reduce(AnotherReducer().reduce)
+          Reduce(AnotherReducer().reduce(into:action:))
+        }
+      }
+      """
+    } fixes: {
+      """
+      @Reducer
+      struct Feature {
+        struct State {
+        }
+        enum Action {
+        }
+        func update(into state: inout State, action: Action) -> EffectOf<Self> {
+          .none
+        }
+        var body: some ReducerOf<Self> {
+          Reduce(update)
+          Reduce(update(into:action:))
+          Reduce(self.update)
+          Reduce(self.update(into:action:))
+          Reduce(AnotherReducer().reduce)
+          Reduce(AnotherReducer().reduce(into:action:))
         }
       }
       """
@@ -161,12 +193,17 @@ final class ReducerMacroTests: XCTestCase {
         @CasePathable
         enum Action {
         }
-        func reduce(into state: inout State, action: Action) -> EffectOf<Self> {
+        func update(into state: inout State, action: Action) -> EffectOf<Self> {
           .none
         }
         @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
         var body: some ReducerOf<Self> {
-          EmptyReducer()
+          Reduce(update)
+          Reduce(update(into:action:))
+          Reduce(self.update)
+          Reduce(self.update(into:action:))
+          Reduce(AnotherReducer().reduce)
+          Reduce(AnotherReducer().reduce(into:action:))
         }
       }
 

@@ -84,9 +84,12 @@ extension ReducerMacro: MemberAttributeMacro {
         }
         return true
       }) {
+        let reduce = reduce.decl.cast(FunctionDeclSyntax.self)
+        let visitor = ReduceVisitor(viewMode: .all)
+        visitor.walk(declaration)
         context.diagnose(
           Diagnostic(
-            node: reduce.decl.cast(FunctionDeclSyntax.self).name,
+            node: reduce.name,
             message: MacroExpansionWarningMessage(
               """
               A 'reduce' method should not be defined in a reducer with a 'body'; it takes \
@@ -97,6 +100,14 @@ extension ReducerMacro: MemberAttributeMacro {
               Note(
                 node: Syntax(identifier),
                 message: MacroExpansionNoteMessage("'body' defined here")
+              )
+            ],
+            fixIts: [
+              FixIt(
+                message: MacroExpansionFixItMessage("Rename to 'update'"),
+                changes: [
+                  .replace(oldNode: Syntax(reduce), newNode: Syntax(reduce.with(\.name, "update")))
+                ] + visitor.changes
               )
             ]
           )
@@ -144,3 +155,27 @@ struct MacroExpansionNoteMessage: NoteMessage {
 }
 
 private let diagnosticDomain: String = "ComposableArchitectureMacros"
+
+private final class ReduceVisitor: SyntaxVisitor {
+  var changes: [FixIt.Change] = []
+
+  override func visit(_ node: DeclReferenceExprSyntax) -> SyntaxVisitorContinueKind {
+    guard node.baseName.text == "reduce" else { return super.visit(node) }
+    guard
+      node.argumentNames == nil
+        || node.argumentNames?.arguments.map(\.name.text) == ["into", "action"]
+    else { return super.visit(node) }
+    if let base = node.parent?.as(MemberAccessExprSyntax.self)?.base,
+      base.as(DeclReferenceExprSyntax.self)?.baseName.tokenKind != .keyword(Keyword.`self`)
+    {
+      return super.visit(node)
+    }
+    self.changes.append(
+      .replace(
+        oldNode: Syntax(node),
+        newNode: Syntax(node.with(\.baseName, "update"))
+      )
+    )
+    return .visitChildren
+  }
+}
