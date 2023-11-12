@@ -90,7 +90,7 @@ extension ReducerMacro: MemberAttributeMacro {
         context.diagnose(
           Diagnostic(
             node: reduce.name,
-            message: MacroExpansionWarningMessage(
+            message: MacroExpansionErrorMessage(
               """
               A 'reduce' method should not be defined in a reducer with a 'body'; it takes \
               precedence and 'body' will never be invoked

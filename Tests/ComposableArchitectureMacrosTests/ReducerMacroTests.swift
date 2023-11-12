@@ -150,7 +150,7 @@ final class ReducerMacroTests: XCTestCase {
         }
         func reduce(into state: inout State, action: Action) -> EffectOf<Self> {
              ┬─────
-             ╰─ ⚠️ A 'reduce' method should not be defined in a reducer with a 'body'; it takes precedence and 'body' will never be invoked
+             ╰─ 🛑 A 'reduce' method should not be defined in a reducer with a 'body'; it takes precedence and 'body' will never be invoked
           .none
         }
         var body: some ReducerOf<Self> {
@@ -161,31 +161,6 @@ final class ReducerMacroTests: XCTestCase {
           Reduce(AnotherReducer().reduce)
           Reduce(AnotherReducer().reduce(into:action:))
         }
-      }
-      """
-    } expansion: {
-      """
-      struct Feature {
-        struct State {
-        }
-        @CasePathable
-        enum Action {
-        }
-        func reduce(into state: inout State, action: Action) -> EffectOf<Self> {
-          .none
-        }
-        @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
-        var body: some ReducerOf<Self> {
-          Reduce(reduce)
-          Reduce(reduce(into:action:))
-          Reduce(self.reduce)
-          Reduce(self.reduce(into:action:))
-          Reduce(AnotherReducer().reduce)
-          Reduce(AnotherReducer().reduce(into:action:))
-        }
-      }
-
-      extension Feature: ComposableArchitecture.Reducer {
       }
       """
     }
