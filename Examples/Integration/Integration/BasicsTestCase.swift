@@ -21,9 +21,6 @@ struct BasicsView: View {
     struct State: Equatable, Identifiable {
       let id = UUID()
       var count = 0
-      init(count: Int = 0) {
-        self.count = count
-      }
     }
     enum Action {
       case decrementButtonTapped
