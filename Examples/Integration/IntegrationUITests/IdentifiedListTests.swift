@@ -74,9 +74,9 @@ final class IdentifiedListTests: BaseIntegrationTests {
       IdentifiedListView.body.ForEachStore
       IdentifiedListView.body.ForEachStore
       IdentifiedStoreOf<BasicsView.Feature>.deinit
+      IdentifiedStoreOf<BasicsView.Feature>.deinit
       IdentifiedStoreOf<BasicsView.Feature>.init
       IdentifiedStoreOf<BasicsView.Feature>.init
-      IdentifiedStoreOf<BasicsView.Feature>.scope
       IdentifiedStoreOf<BasicsView.Feature>.scope
       IdentifiedStoreOf<BasicsView.Feature>.scope
       Store<UUID, Action>
@@ -91,6 +91,7 @@ final class IdentifiedListTests: BaseIntegrationTests {
       Store<UUID, BasicsView.Feature.Action>.init
       Store<UUID, BasicsView.Feature.Action>.scope
       Store<UUID, BasicsView.Feature.Action>.scope
+      StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.deinit
@@ -148,7 +149,6 @@ final class IdentifiedListTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      IdentifiedStoreOf<BasicsView.Feature>.scope
       IdentifiedStoreOf<BasicsView.Feature>.scope
       IdentifiedStoreOf<BasicsView.Feature>.scope
       Store<UUID, BasicsView.Feature.Action>.scope
