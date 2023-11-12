@@ -101,14 +101,6 @@ extension ReducerMacro: MemberAttributeMacro {
                 node: Syntax(identifier),
                 message: MacroExpansionNoteMessage("'body' defined here")
               )
-            ],
-            fixIts: [
-              FixIt(
-                message: MacroExpansionFixItMessage("Rename to 'update'"),
-                changes: [
-                  .replace(oldNode: Syntax(reduce), newNode: Syntax(reduce.with(\.name, "update")))
-                ] + visitor.changes
-              )
             ]
           )
         )
