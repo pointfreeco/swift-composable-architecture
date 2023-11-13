@@ -6,8 +6,8 @@ import XCTest
 final class ViewStoreTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
 
-  override func setUp() async throws {
-    try await super.setUp()
+  override func setUpWithError() throws {
+    try super.setUpWithError()
     equalityChecks = 0
     subEqualityChecks = 0
   }

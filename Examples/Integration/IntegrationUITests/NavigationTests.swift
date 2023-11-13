@@ -4,8 +4,8 @@ import XCTest
 
 @MainActor
 final class NavigationTests: BaseIntegrationTests {
-  override func setUp() async throws {
-    try await super.setUp()
+  override func setUpWithError() throws {
+    try super.setUpWithError()
     self.app.buttons["iOS 16"].tap()
     self.app.buttons["Navigation"].tap()
     self.clearLogs()

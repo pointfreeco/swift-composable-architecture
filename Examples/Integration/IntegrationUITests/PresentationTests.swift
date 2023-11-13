@@ -4,8 +4,8 @@ import XCTest
 
 @MainActor
 final class PresentationTests: BaseIntegrationTests {
-  override func setUp() async throws {
-    try await super.setUp()
+  override func setUpWithError() throws {
+    try super.setUpWithError()
     self.app.buttons["iOS 16"].tap()
     self.app.buttons["Presentation"].tap()
     self.clearLogs()

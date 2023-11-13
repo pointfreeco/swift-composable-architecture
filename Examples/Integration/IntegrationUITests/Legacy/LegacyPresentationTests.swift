@@ -4,8 +4,8 @@ import XCTest
 
 @MainActor
 final class LegacyPresentationTests: BaseIntegrationTests {
-  override func setUp() async throws {
-    try await super.setUp()
+  override func setUpWithError() throws {
+    try super.setUpWithError()
     self.app.buttons["Legacy"].tap()
     self.app.collectionViews.buttons[TestCase.presentation.rawValue].tap()
   }
