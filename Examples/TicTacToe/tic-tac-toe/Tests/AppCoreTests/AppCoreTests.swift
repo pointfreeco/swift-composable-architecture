@@ -33,13 +33,7 @@ final class AppCoreTests: XCTestCase {
         $0.isLoginRequestInFlight = true
       }
     }
-    await store.receive(
-      .login(
-        .loginResponse(
-          .success(AuthenticationResponse(token: "deadbeef", twoFactorRequired: false))
-        )
-      )
-    ) {
+    await store.receive(\.login.loginResponse.success) {
       $0 = .newGame(NewGame.State())
     }
     await store.send(.newGame(.oPlayerNameChanged("Blob Sr."))) {
@@ -82,11 +76,7 @@ final class AppCoreTests: XCTestCase {
         $0.isLoginRequestInFlight = true
       }
     }
-    await store.receive(
-      .login(
-        .loginResponse(.success(AuthenticationResponse(token: "deadbeef", twoFactorRequired: true)))
-      )
-    ) {
+    await store.receive(\.login.loginResponse.success) {
       try (/TicTacToe.State.login).modify(&$0) {
         $0.isLoginRequestInFlight = false
         $0.twoFactor = TwoFactor.State(token: "deadbeef")
@@ -105,17 +95,7 @@ final class AppCoreTests: XCTestCase {
         $0.twoFactor?.isTwoFactorRequestInFlight = true
       }
     }
-    await store.receive(
-      .login(
-        .twoFactor(
-          .presented(
-            .twoFactorResponse(
-              .success(AuthenticationResponse(token: "deadbeef", twoFactorRequired: false))
-            )
-          )
-        )
-      )
-    ) {
+    await store.receive(\.login.twoFactor.twoFactorResponse.success) {
       $0 = .newGame(NewGame.State())
     }
   }

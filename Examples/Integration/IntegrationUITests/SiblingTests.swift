@@ -4,8 +4,8 @@ import XCTest
 
 @MainActor
 final class SiblingsTests: BaseIntegrationTests {
-  override func setUp() {
-    super.setUp()
+  override func setUpWithError() throws {
+    try super.setUpWithError()
     self.app.buttons["iOS 16"].tap()
     self.app.buttons["Siblings"].tap()
     self.clearLogs()
@@ -23,7 +23,7 @@ final class SiblingsTests: BaseIntegrationTests {
       StoreOf<SiblingFeaturesView.Feature>.scope
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
-      WithStoreOf<BasicsView.Feature>.body
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
   }
@@ -46,8 +46,8 @@ final class SiblingsTests: BaseIntegrationTests {
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
-      WithStoreOf<BasicsView.Feature>.body
-      WithStoreOf<BasicsView.Feature>.body
+      WithViewStoreOf<BasicsView.Feature>.body
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
   }
@@ -70,8 +70,8 @@ final class SiblingsTests: BaseIntegrationTests {
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
-      WithStoreOf<BasicsView.Feature>.body
-      WithStoreOf<BasicsView.Feature>.body
+      WithViewStoreOf<BasicsView.Feature>.body
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
   }
@@ -94,8 +94,8 @@ final class SiblingsTests: BaseIntegrationTests {
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
-      WithStoreOf<BasicsView.Feature>.body
-      WithStoreOf<BasicsView.Feature>.body
+      WithViewStoreOf<BasicsView.Feature>.body
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
   }

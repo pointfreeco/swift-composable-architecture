@@ -2,9 +2,7 @@
 import SwiftUI
 
 struct BasicsView: View {
-  @State var store = Store(initialState: Feature.State()) {
-    Feature()
-  }
+  let store: StoreOf<Feature>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -16,13 +14,11 @@ struct BasicsView: View {
     }
   }
 
-  struct Feature: Reducer {
+  @Reducer
+  struct Feature {
     struct State: Equatable, Identifiable {
       let id = UUID()
       var count = 0
-      init(count: Int = 0) {
-        self.count = count
-      }
     }
     enum Action {
       case decrementButtonTapped
@@ -50,6 +46,12 @@ struct BasicsView: View {
 struct BasicsPreviews: PreviewProvider {
   static var previews: some View {
     let _ = Logger.shared.isEnabled = true
-    BasicsView()
+    Form {
+      BasicsView(
+        store: Store(initialState: BasicsView.Feature.State()) {
+          BasicsView.Feature()
+        }
+      )
+    }
   }
 }

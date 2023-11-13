@@ -1,11 +1,12 @@
 import ComposableArchitecture
 
-struct ContactDetailFeature: Reducer {
+@Reducer
+struct ContactDetailFeature {
   struct State: Equatable {
     @PresentationState var alert: AlertState<Action.Alert>?
     let contact: Contact
   }
-  enum Action: Equatable {
+  enum Action {
   }
   var body: some ReducerOf<Self> {
     Reduce { state, action in

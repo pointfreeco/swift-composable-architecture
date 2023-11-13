@@ -1,7 +1,8 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct RecordingMemo: Reducer {
+@Reducer
+struct RecordingMemo {
   struct State: Equatable {
     var date: Date
     var duration: TimeInterval = 0
@@ -14,17 +15,18 @@ struct RecordingMemo: Reducer {
     }
   }
 
-  enum Action: Equatable {
-    case audioRecorderDidFinish(TaskResult<Bool>)
-    case delegate(DelegateAction)
+  enum Action {
+    case audioRecorderDidFinish(Result<Bool, Error>)
+    case delegate(Delegate)
     case finalRecordingTime(TimeInterval)
     case onTask
     case timerUpdated
     case stopButtonTapped
-  }
 
-  enum DelegateAction: Equatable {
-    case didFinish(TaskResult<State>)
+    @CasePathable
+    enum Delegate {
+      case didFinish(Result<State, Error>)
+    }
   }
 
   struct Failed: Equatable, Error {}
@@ -32,49 +34,51 @@ struct RecordingMemo: Reducer {
   @Dependency(\.audioRecorder) var audioRecorder
   @Dependency(\.continuousClock) var clock
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .audioRecorderDidFinish(.success(true)):
-      return .send(.delegate(.didFinish(.success(state))))
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .audioRecorderDidFinish(.success(true)):
+        return .send(.delegate(.didFinish(.success(state))))
 
-    case .audioRecorderDidFinish(.success(false)):
-      return .send(.delegate(.didFinish(.failure(Failed()))))
+      case .audioRecorderDidFinish(.success(false)):
+        return .send(.delegate(.didFinish(.failure(Failed()))))
 
-    case let .audioRecorderDidFinish(.failure(error)):
-      return .send(.delegate(.didFinish(.failure(error))))
+      case let .audioRecorderDidFinish(.failure(error)):
+        return .send(.delegate(.didFinish(.failure(error))))
 
-    case .delegate:
-      return .none
+      case .delegate:
+        return .none
 
-    case let .finalRecordingTime(duration):
-      state.duration = duration
-      return .none
+      case let .finalRecordingTime(duration):
+        state.duration = duration
+        return .none
 
-    case .stopButtonTapped:
-      state.mode = .encoding
-      return .run { send in
-        if let currentTime = await self.audioRecorder.currentTime() {
-          await send(.finalRecordingTime(currentTime))
+      case .stopButtonTapped:
+        state.mode = .encoding
+        return .run { send in
+          if let currentTime = await self.audioRecorder.currentTime() {
+            await send(.finalRecordingTime(currentTime))
+          }
+          await self.audioRecorder.stopRecording()
         }
-        await self.audioRecorder.stopRecording()
-      }
 
-    case .onTask:
-      return .run { [url = state.url] send in
-        async let startRecording: Void = send(
-          .audioRecorderDidFinish(
-            TaskResult { try await self.audioRecorder.startRecording(url) }
+      case .onTask:
+        return .run { [url = state.url] send in
+          async let startRecording: Void = send(
+            .audioRecorderDidFinish(
+              Result { try await self.audioRecorder.startRecording(url) }
+            )
           )
-        )
-        for await _ in self.clock.timer(interval: .seconds(1)) {
-          await send(.timerUpdated)
+          for await _ in self.clock.timer(interval: .seconds(1)) {
+            await send(.timerUpdated)
+          }
+          await startRecording
         }
-        await startRecording
-      }
 
-    case .timerUpdated:
-      state.duration += 1
-      return .none
+      case .timerUpdated:
+        state.duration += 1
+        return .none
+      }
     }
   }
 }

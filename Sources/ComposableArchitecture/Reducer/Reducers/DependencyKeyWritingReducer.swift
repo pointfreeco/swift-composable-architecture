@@ -11,7 +11,8 @@ extension Reducer {
   /// feature's domain and layers on additional logic:
   ///
   /// ```swift
-  /// struct Onboarding: Reducer {
+  /// @Reducer
+  /// struct Onboarding {
   ///   struct State {
   ///     var feature: Feature.State
   ///     // Additional onboarding state
@@ -22,7 +23,7 @@ extension Reducer {
   ///   }
   ///
   ///   var body: some Reducer<State, Action> {
-  ///     Scope(state: \.feature, action: /Action.feature) {
+  ///     Scope(state: \.feature, action: \.feature) {
   ///       Feature()
   ///     }
   ///
@@ -45,7 +46,7 @@ extension Reducer {
   ///
   /// ```swift
   /// var body: some Reducer<State, Action> {
-  ///   Scope(state: \.feature, action: /Action.feature) {
+  ///   Scope(state: \.feature, action: \.feature) {
   ///     Feature()
   ///       .dependency(\.apiClient, .mock)
   ///       .dependency(\.userDefaults, .mock)

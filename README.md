@@ -113,12 +113,13 @@ tapped makes an API request to fetch a random fact about that number and then di
 an alert.
 
 To implement this feature we create a new type that will house the domain and behavior of the 
-feature by conforming to `Reducer`:
+feature, and it will be annotated with the `@Reducer` macro:
 
 ```swift
 import ComposableArchitecture
 
-struct Feature: Reducer {
+@Reducer
+struct Feature {
 }
 ```
 
@@ -127,7 +128,8 @@ current count, as well as an optional string that represents the title of the al
 (optional because `nil` represents not showing an alert):
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   struct State: Equatable {
     var count = 0
     var numberFactAlert: String?
@@ -141,9 +143,10 @@ non-obvious ones, such as the action of the user dismissing the alert, and the a
 when we receive a response from the fact API request:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   struct State: Equatable { /* ... */ }
-  enum Action: Equatable {
+  enum Action {
     case factAlertDismissed
     case decrementButtonTapped
     case incrementButtonTapped
@@ -153,43 +156,46 @@ struct Feature: Reducer {
 }
 ```
 
-And then we implement the `reduce` method which is responsible for handling the actual logic and 
-behavior for the feature. It describes how to change the current state to the next state, and 
-describes what effects need to be executed. Some actions don't need to execute effects, and they 
-can return `.none` to represent that:
+And then we implement the `body` property, which is responsible for composing the actual logic and 
+behavior for the feature. In it we can use the `Reduce` reducer to describe how to change the
+current state to the next state, and what effects need to be executed. Some actions don't need to
+execute effects, and they can return `.none` to represent that:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   struct State: Equatable { /* ... */ }
-  enum Action: Equatable { /* ... */ }
-  
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .factAlertDismissed:
-      state.numberFactAlert = nil
-      return .none
+  enum Action { /* ... */ }
 
-    case .decrementButtonTapped:
-      state.count -= 1
-      return .none
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .factAlertDismissed:
+        state.numberFactAlert = nil
+        return .none
 
-    case .incrementButtonTapped:
-      state.count += 1
-      return .none
+      case .decrementButtonTapped:
+        state.count -= 1
+        return .none
 
-    case .numberFactButtonTapped:
-      return .run { [count = state.count] send in
-        let (data, _) = try await URLSession.shared.data(
-          from: URL(string: "http://numbersapi.com/\(count)/trivia")!
-        )
-        await send(
-          .numberFactResponse(String(decoding: data, as: UTF8.self))
-        )
+      case .incrementButtonTapped:
+        state.count += 1
+        return .none
+
+      case .numberFactButtonTapped:
+        return .run { [count = state.count] send in
+          let (data, _) = try await URLSession.shared.data(
+            from: URL(string: "http://numbersapi.com/\(count)/trivia")!
+          )
+          await send(
+            .numberFactResponse(String(decoding: data, as: UTF8.self))
+          )
+        }
+
+      case let .numberFactResponse(fact):
+        state.numberFactAlert = fact
+        return .none
       }
-
-    case let .numberFactResponse(fact):
-      state.numberFactAlert = fact
-      return .none
     }
   }
 }
@@ -364,7 +370,7 @@ receive a fact response back with the fact, which then causes the alert to show:
 ```swift
 await store.send(.numberFactButtonTapped)
 
-await store.receive(.numberFactResponse(???)) {
+await store.receive(\.numberFactResponse) {
   $0.numberFactAlert = ???
 }
 ```
@@ -380,7 +386,8 @@ dependency when running the application on a device, but use a mocked dependency
 do this by adding a property to the `Feature` reducer:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   let numberFact: (Int) async throws -> String
   // ...
 }
@@ -440,7 +447,7 @@ the alert:
 ```swift
 await store.send(.numberFactButtonTapped)
 
-await store.receive(.numberFactResponse("0 is a good number Brent")) {
+await store.receive(\.numberFactResponse) {
   $0.numberFactAlert = "0 is a good number Brent"
 }
 
@@ -495,7 +502,8 @@ With that little bit of upfront work done you can instantly start making use of 
 any feature by using the `@Dependency` property wrapper:
 
 ```diff
- struct Feature: Reducer {
+@Reducer
+ struct Feature {
 -  let numberFact: (Int) async throws -> String
 +  @Dependency(\.numberFact) var numberFact
    
@@ -634,7 +642,7 @@ The following translations of this README have been contributed by members of th
 * [Hindi](https://gist.github.com/akashsoni01/b358ee0b3b747167964ef6946123c88d)
 * [Indonesian](https://gist.github.com/wendyliga/792ea9ac5cc887f59de70a9e39cc7343)
 * [Italian](https://gist.github.com/Bellaposa/5114e6d4d55fdb1388e8186886d48958)
-* [Japanese](https://gist.github.com/kalupas226/bdf577e4a7066377ea0a8aaeebcad428)
+* [Japanese](https://gist.github.com/Achoo-kr/2d0712deb77f78b3379551ac7baea3e4)
 * [Korean](https://gist.github.com/Achoo-kr/5d8936d12e71028fcc4a7c5e078ca038)
 * [Polish](https://gist.github.com/MarcelStarczyk/6b6153051f46912a665c32199f0d1d54)
 * [Portuguese](https://gist.github.com/SevioCorrea/2bbf337cd084a58c89f2f7f370626dc8)
@@ -662,7 +670,7 @@ to a [Gist](https://gist.github.com)!
 
     In other ways TCA is a little more lax than the other libraries. For example, Elm controls what 
     kinds of effects can be created via the `Cmd` type, but TCA allows an escape hatch to any kind 
-    of effect since `Effect` conforms to the Combine `Publisher` protocol.
+    of effect since `Effect` wraps around an async operation.
 
     And then there are certain things that TCA prioritizes highly that are not points of focus for 
     Redux, Elm, or most other libraries. For example, composition is very important aspect of TCA, 

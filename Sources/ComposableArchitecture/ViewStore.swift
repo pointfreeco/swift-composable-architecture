@@ -271,29 +271,32 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   /// gesture is performed on a list. The domain and logic for this feature can be modeled like so:
   ///
   /// ```swift
-  /// struct Feature: Reducer {
+  /// @Reducer
+  /// struct Feature {
   ///   struct State: Equatable {
   ///     var isLoading = false
   ///     var response: String?
   ///   }
   ///   enum Action {
   ///     case pulledToRefresh
-  ///     case receivedResponse(TaskResult<String>)
+  ///     case receivedResponse(Result<String, Error>)
   ///   }
   ///   @Dependency(\.fetch) var fetch
   ///
-  ///   func reduce(into state: inout State, action: Action) -> Effect<Action> {
-  ///     switch action {
-  ///     case .pulledToRefresh:
-  ///       state.isLoading = true
-  ///       return .run { send in
-  ///         await send(.receivedResponse(TaskResult { try await self.fetch() }))
-  ///       }
+  ///   var body: some Reducer<State, Action> {
+  ///     Reduce { state, action in
+  ///       switch action {
+  ///       case .pulledToRefresh:
+  ///         state.isLoading = true
+  ///         return .run { send in
+  ///           await send(.receivedResponse(Result { try await self.fetch() }))
+  ///         }
   ///
-  ///     case let .receivedResponse(result):
-  ///       state.isLoading = false
-  ///       state.response = try? result.value
-  ///       return .none
+  ///       case let .receivedResponse(result):
+  ///         state.isLoading = false
+  ///         state.response = try? result.value
+  ///         return .none
+  ///       }
   ///     }
   ///   }
   /// }

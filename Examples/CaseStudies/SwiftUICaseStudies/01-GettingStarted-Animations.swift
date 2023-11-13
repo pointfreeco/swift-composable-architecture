@@ -20,7 +20,8 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct Animations: Reducer {
+@Reducer
+struct Animations {
   struct State: Equatable {
     @PresentationState var alert: AlertState<Action.Alert>?
     var circleCenter: CGPoint?
@@ -28,7 +29,7 @@ struct Animations: Reducer {
     var isCircleScaled = false
   }
 
-  enum Action: Equatable, Sendable {
+  enum Action: Sendable {
     case alert(PresentationAction<Alert>)
     case circleScaleToggleChanged(Bool)
     case rainbowButtonTapped
@@ -36,7 +37,7 @@ struct Animations: Reducer {
     case setColor(Color)
     case tapped(CGPoint)
 
-    enum Alert: Equatable, Sendable {
+    enum Alert: Sendable {
       case resetConfirmationButtonTapped
     }
   }
@@ -93,7 +94,7 @@ struct Animations: Reducer {
         return .none
       }
     }
-    .ifLet(\.$alert, action: /Action.alert)
+    .ifLet(\.$alert, action: \.alert)
   }
 }
 

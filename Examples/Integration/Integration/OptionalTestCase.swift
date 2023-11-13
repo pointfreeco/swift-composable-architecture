@@ -45,7 +45,8 @@ struct OptionalView: View {
     }
   }
 
-  struct Feature: Reducer {
+  @Reducer
+  struct Feature {
     struct State: Equatable {
       @PresentationState var child: BasicsView.Feature.State?
       var isObservingCount = false
@@ -68,7 +69,7 @@ struct OptionalView: View {
           return .none
         }
       }
-      .ifLet(\.$child, action: /Action.child) {
+      .ifLet(\.$child, action: \.child) {
         BasicsView.Feature()
       }
     }

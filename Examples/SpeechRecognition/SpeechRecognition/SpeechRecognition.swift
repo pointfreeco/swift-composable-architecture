@@ -8,17 +8,18 @@ private let readMe = """
   on the device and live-transcribe it to the UI.
   """
 
-struct SpeechRecognition: Reducer {
+@Reducer
+struct SpeechRecognition {
   struct State: Equatable {
     @PresentationState var alert: AlertState<Action.Alert>?
     var isRecording = false
     var transcribedText = ""
   }
 
-  enum Action: Equatable {
+  enum Action {
     case alert(PresentationAction<Alert>)
     case recordButtonTapped
-    case speech(TaskResult<String>)
+    case speech(Result<String, Error>)
     case speechRecognizerAuthorizationStatusResponse(SFSpeechRecognizerAuthorizationStatus)
 
     enum Alert: Equatable {}
@@ -103,7 +104,7 @@ struct SpeechRecognition: Reducer {
         }
       }
     }
-    .ifLet(\.$alert, action: /Action.alert)
+    .ifLet(\.$alert, action: \.alert)
   }
 }
 

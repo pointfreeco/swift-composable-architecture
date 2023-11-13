@@ -34,3 +34,5 @@
 ### Combine integration
 
 - ``publisher(_:)``
+- ``debounce(id:for:scheduler:options:)``
+- ``throttle(id:for:scheduler:latest:)``

@@ -20,18 +20,25 @@ the system. To test this we can technically run a piece of mutable state through
 then assert on how it changed after, like this:
 
 ```swift
-struct Feature: Reducer {
-  struct State: Equatable { var count = 0 }
-  enum Action { case incrementButtonTapped, decrementButtonTapped }
-
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .incrementButtonTapped:
-      state.count += 1
-      return .none
-    case .decrementButtonTapped:
-      state.count -= 1
-      return .none
+@Reducer
+struct Feature {
+  struct State: Equatable {
+    var count = 0
+  }
+  enum Action {
+    case incrementButtonTapped
+    case decrementButtonTapped
+  }
+  var body: some Reduce<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .incrementButtonTapped:
+        state.count += 1
+        return .none
+      case .decrementButtonTapped:
+        state.count -= 1
+        return .none
+      }
     }
   }
 }
@@ -190,24 +197,31 @@ a timer that counts up until you reach 5, and then stops. This can be accomplish
 an asynchronous context to operate in and can send multiple actions back into the system:
 
 ```swift
-struct Feature: Reducer {
-  struct State: Equatable { var count = 0 }
-  enum Action { case startTimerButtonTapped, timerTick }
-
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .startTimerButtonTapped:
-      state.count = 0
-      return .run { send in
-        for _ in 1...5 {
-          try await Task.sleep(for: .seconds(1))
-          await send(.timerTick)
+@Reducer
+struct Feature {
+  struct State: Equatable {
+    var count = 0
+  }
+  enum Action {
+    case startTimerButtonTapped
+    case timerTick
+  }
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .startTimerButtonTapped:
+        state.count = 0
+        return .run { send in
+          for _ in 1...5 {
+            try await Task.sleep(for: .seconds(1))
+            await send(.timerTick)
+          }
         }
-      }
 
-    case .timerTick:
-      state.count += 1
-      return .none
+      case .timerTick:
+        state.count += 1
+        return .none
+      }
     }
   }
 }
@@ -249,15 +263,20 @@ supposed to be running, or perhaps the data it feeds into the system later is wr
 requires all effects to finish.
 
 To get this test passing we need to assert on the actions that are sent back into the system
-by the effect. We do this by using the ``TestStore/receive(_:timeout:assert:file:line:)-5awso``
+by the effect. We do this by using the ``TestStore/receive(_:timeout:assert:file:line:)-6325h``
 method, which allows you to assert which action you expect to receive from an effect, as well as how
 the state changes after receiving that effect:
 
 ```swift
-await store.receive(.timerTick) {
+await store.receive(\.timerTick) {
   $0.count = 1
 }
 ```
+
+> Note: We are using key path syntax `\.timerTick` to specify the case of the action we expect to 
+receive. This works because the ``ComposableArchitecture/Reducer()`` macro automatically applies the 
+`@CasePathable` macro to the `Action` enum, and `@CasePathable` comes from our 
+[CasePaths][swift-case-paths] library which brings key path syntax to enum cases.
 
 However, if we run this test we still get a failure because we asserted a `timerTick` action was
 going to be received, but after waiting around for a small amount of time no action was received:
@@ -265,13 +284,13 @@ going to be received, but after waiting around for a small amount of time no act
 > ❌ Failure: Expected to receive an action, but received none after 0.1 seconds.
 
 This is because our timer is on a 1 second interval, and by default
-``TestStore/receive(_:timeout:assert:file:line:)-5awso`` only waits for a fraction of a second. This
+``TestStore/receive(_:timeout:assert:file:line:)-6325h`` only waits for a fraction of a second. This
 is because typically you should not be performing real time-based asynchrony in effects, and instead
 using a controlled entity, such as a clock, that can be sped up in tests. We will demonstrate this
 in a moment, so for now let's increase the timeout:
 
 ```swift
-await store.receive(.timerTick, timeout: .seconds(2)) {
+await store.receive(\.timerTick, timeout: .seconds(2)) {
   $0.count = 1
 }
 ```
@@ -280,19 +299,19 @@ This assertion now passes, but the overall test is still failing because there a
 actions to receive. The timer should tick 5 times in total, so we need five `receive` assertions:
 
 ```swift
-await store.receive(.timerTick, timeout: .seconds(2)) {
+await store.receive(\.timerTick, timeout: .seconds(2)) {
   $0.count = 1
 }
-await store.receive(.timerTick, timeout: .seconds(2)) {
+await store.receive(\.timerTick, timeout: .seconds(2)) {
   $0.count = 2
 }
-await store.receive(.timerTick, timeout: .seconds(2)) {
+await store.receive(\.timerTick, timeout: .seconds(2)) {
   $0.count = 3
 }
-await store.receive(.timerTick, timeout: .seconds(2)) {
+await store.receive(\.timerTick, timeout: .seconds(2)) {
   $0.count = 4
 }
-await store.receive(.timerTick, timeout: .seconds(2)) {
+await store.receive(\.timerTick, timeout: .seconds(2)) {
   $0.count = 5
 }
 ```
@@ -326,10 +345,12 @@ asynchrony, but in a way that is controllable. One way to do this is to add a cl
 ```swift
 import Clocks
 
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   struct State { /* ... */ }
   enum Action { /* ... */ }
   @Dependency(\.continuousClock) var clock
+  // ...
 }
 ```
 
@@ -363,22 +384,22 @@ let store = TestStore(initialState: Feature.State(count: 0)) {
 ```
 
 With that small change we can drop the `timeout` arguments from the
-``TestStore/receive(_:timeout:assert:file:line:)-5awso`` invocations:
+``TestStore/receive(_:timeout:assert:file:line:)-6325h`` invocations:
 
 ```swift
-await store.receive(.timerTick) {
+await store.receive(\.timerTick) {
   $0.count = 1
 }
-await store.receive(.timerTick) {
+await store.receive(\.timerTick) {
   $0.count = 2
 }
-await store.receive(.timerTick) {
+await store.receive(\.timerTick) {
   $0.count = 3
 }
-await store.receive(.timerTick) {
+await store.receive(\.timerTick) {
   $0.count = 4
 }
-await store.receive(.timerTick) {
+await store.receive(\.timerTick) {
   $0.count = 5
 }
 ```
@@ -437,7 +458,7 @@ await store.send(.login(.submitButtonTapped)) {
 
 // 3️⃣ Login feature performs API request to login, and
 //    sends response back into system.
-await store.receive(.login(.loginResponse(.success))) {
+await store.receive(\.login.loginResponse.success) {
 // 4️⃣ Assert how all state changes in the login feature
   $0.login?.isLoading = false
   // ...
@@ -445,7 +466,7 @@ await store.receive(.login(.loginResponse(.success))) {
 
 // 5️⃣ Login feature sends a delegate action to let parent
 //    feature know it has successfully logged in.
-await store.receive(.login(.delegate(.didLogin))) {
+await store.receive(\.login.delegate.didLogin) {
 // 6️⃣ Assert how all of app state changes due to that action.
   $0.authenticatedTab = .loggedIn(
     Profile.State(...)
@@ -478,7 +499,7 @@ let store = TestStore(initialState: AppFeature.State()) {
 store.exhaustivity = .off  // ⬅️
 
 await store.send(.login(.submitButtonTapped))
-await store.receive(.login(.delegate(.didLogin))) {
+await store.receive(\.login.delegate.didLogin) {
   $0.selectedTab = .activity
 }
 ```
@@ -500,7 +521,7 @@ let store = TestStore(initialState: AppFeature.State()) {
 store.exhaustivity = .off(showSkippedAssertions: true)  // ⬅️
 
 await store.send(.login(.submitButtonTapped))
-await store.receive(.login(.delegate(.didLogin))) {
+await store.receive(\.login.delegate.didLogin) {
   $0.selectedTab = .activity
 }
 ```
@@ -664,14 +685,21 @@ trouble when using non-exhaustive test stores and showing skipped assertions. To
 the following simple reducer that appends a new model to an array when an action is sent:
 
 ```swift
-struct Feature: Reducer {
-  struct State: Equatable { var values: [Model] = [] }
-  enum Action { case addButtonTapped }
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .addButtonTapped:
-      state.values.append(Model())
-      return .none
+@Reducer
+struct Feature {
+  struct State: Equatable {
+    var values: [Model] = []
+  }
+  enum Action {
+    case addButtonTapped
+  }
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .addButtonTapped:
+        state.values.append(Model())
+        return .none
+      }
     }
   }
 }
@@ -738,14 +766,17 @@ struct Model: Equatable {
 And then move the responsibility of generating new IDs to the reducer:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   // ...
   @Dependency(\.uuid) var uuid
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .addButtonTapped:
-      state.values.append(Model(id: self.uuid()))
-      return .none
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .addButtonTapped:
+        state.values.append(Model(id: self.uuid()))
+        return .none
+      }
     }
   }
 }
@@ -851,3 +882,4 @@ the "ComposableArchitecture" entry from the `testTarget`'s' `dependencies` array
 [exhaustive-testing-in-tca]: https://www.merowing.info/exhaustive-testing-in-tca/
 [Composable-Architecture-at-Scale]: https://vimeo.com/751173570
 [Non-exhaustive-testing]: #Non-exhaustive-testing
+[swift-case-paths]: http://github.com/pointfreeco/swift-case-paths

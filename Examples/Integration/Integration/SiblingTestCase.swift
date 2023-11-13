@@ -33,7 +33,8 @@ struct SiblingFeaturesView: View {
     }
   }
 
-  struct Feature: Reducer {
+  @Reducer
+  struct Feature {
     struct State: Equatable {
       var child1 = BasicsView.Feature.State()
       var child2 = BasicsView.Feature.State()
@@ -46,10 +47,10 @@ struct SiblingFeaturesView: View {
       case swapButtonTapped
     }
     var body: some ReducerOf<Self> {
-      Scope(state: \.child1, action: /Action.child1) {
+      Scope(state: \.child1, action: \.child1) {
         BasicsView.Feature()
       }
-      Scope(state: \.child2, action: /Action.child2) {
+      Scope(state: \.child2, action: \.child2) {
         BasicsView.Feature()
       }
       Reduce { state, action in

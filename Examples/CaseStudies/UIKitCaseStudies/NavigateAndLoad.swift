@@ -3,13 +3,14 @@ import ComposableArchitecture
 import SwiftUI
 import UIKit
 
-struct EagerNavigation: Reducer {
+@Reducer
+struct EagerNavigation {
   struct State: Equatable {
     var isNavigationActive = false
     var optionalCounter: Counter.State?
   }
 
-  enum Action: Equatable {
+  enum Action {
     case optionalCounter(Counter.Action)
     case setNavigation(isActive: Bool)
     case setNavigationIsActiveDelayCompleted
@@ -42,7 +43,7 @@ struct EagerNavigation: Reducer {
         return .none
       }
     }
-    .ifLet(\.optionalCounter, action: /Action.optionalCounter) {
+    .ifLet(\.optionalCounter, action: \.optionalCounter) {
       Counter()
     }
   }

@@ -10,13 +10,14 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct NavigateAndLoad: Reducer {
+@Reducer
+struct NavigateAndLoad {
   struct State: Equatable {
     var isNavigationActive = false
     var optionalCounter: Counter.State?
   }
 
-  enum Action: Equatable {
+  enum Action {
     case optionalCounter(Counter.Action)
     case setNavigation(isActive: Bool)
     case setNavigationIsActiveDelayCompleted
@@ -49,7 +50,7 @@ struct NavigateAndLoad: Reducer {
         return .none
       }
     }
-    .ifLet(\.optionalCounter, action: /Action.optionalCounter) {
+    .ifLet(\.optionalCounter, action: \.optionalCounter) {
       Counter()
     }
   }

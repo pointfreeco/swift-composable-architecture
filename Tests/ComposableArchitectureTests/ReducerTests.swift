@@ -20,37 +20,35 @@ final class ReducerTests: BaseTCATestCase {
   }
 
   #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
-    func testCombine_EffectsAreMerged() async throws {
-      if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        enum Action: Equatable {
-          case increment
-        }
-
-        struct Delayed: Reducer {
-          typealias State = Int
-
-          @Dependency(\.continuousClock) var clock
-
-          let delay: Duration
-          let setValue: @Sendable () async -> Void
-
-          func reduce(into state: inout State, action: Action) -> Effect<Action> {
-            state += 1
-            return .run { _ in
-              try await self.clock.sleep(for: self.delay)
-              await self.setValue()
-            }
+    @Reducer
+    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+    fileprivate struct Feature_testCombine_EffectsAreMerged {
+      typealias State = Int
+      enum Action { case increment }
+      @Dependency(\.continuousClock) var clock
+      let delay: Duration
+      let setValue: @Sendable () async -> Void
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          state += 1
+          return .run { _ in
+            try await self.clock.sleep(for: self.delay)
+            await self.setValue()
           }
         }
-
+      }
+    }
+    func testCombine_EffectsAreMerged() async throws {
+      if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
         var fastValue: Int? = nil
         var slowValue: Int? = nil
-
         let clock = TestClock()
 
         let store = TestStore(initialState: 0) {
-          Delayed(delay: .seconds(1), setValue: { @MainActor in fastValue = 42 })
-          Delayed(delay: .seconds(2), setValue: { @MainActor in slowValue = 1729 })
+          Feature_testCombine_EffectsAreMerged(
+            delay: .seconds(1), setValue: { @MainActor in fastValue = 42 })
+          Feature_testCombine_EffectsAreMerged(
+            delay: .seconds(2), setValue: { @MainActor in slowValue = 1729 })
         } withDependencies: {
           $0.continuousClock = clock
         }
@@ -73,28 +71,27 @@ final class ReducerTests: BaseTCATestCase {
     }
   #endif
 
-  func testCombine() async {
-    enum Action: Equatable {
-      case increment
-    }
-
-    struct One: Reducer {
-      typealias State = Int
-      let effect: @Sendable () async -> Void
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
+  @Reducer
+  fileprivate struct Feature_testCombine {
+    typealias State = Int
+    enum Action { case increment }
+    let effect: @Sendable () async -> Void
+    var body: some Reducer<State, Action> {
+      Reduce { state, action in
         state += 1
         return .run { _ in
           await self.effect()
         }
       }
     }
-
+  }
+  func testCombine() async {
     var first = false
     var second = false
 
     let store = TestStore(initialState: 0) {
-      One(effect: { @MainActor in first = true })
-      One(effect: { @MainActor in second = true })
+      Feature_testCombine(effect: { @MainActor in first = true })
+      Feature_testCombine(effect: { @MainActor in second = true })
     }
 
     await store

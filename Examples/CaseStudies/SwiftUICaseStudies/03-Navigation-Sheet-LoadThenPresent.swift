@@ -11,7 +11,8 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct LoadThenPresent: Reducer {
+@Reducer
+struct LoadThenPresent {
   struct State: Equatable {
     @PresentationState var counter: Counter.State?
     var isActivityIndicatorVisible = false
@@ -45,7 +46,7 @@ struct LoadThenPresent: Reducer {
 
       }
     }
-    .ifLet(\.$counter, action: /Action.counter) {
+    .ifLet(\.$counter, action: \.counter) {
       Counter()
     }
   }

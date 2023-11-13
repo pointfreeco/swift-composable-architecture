@@ -1,14 +1,15 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct Todo: Reducer {
+@Reducer
+struct Todo {
   struct State: Equatable, Identifiable {
     @BindingState var description = ""
     let id: UUID
     @BindingState var isComplete = false
   }
 
-  enum Action: BindableAction, Equatable, Sendable {
+  enum Action: BindableAction, Sendable {
     case binding(BindingAction<State>)
   }
 

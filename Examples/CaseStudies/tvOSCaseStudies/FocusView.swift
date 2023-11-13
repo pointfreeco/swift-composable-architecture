@@ -10,7 +10,8 @@ private let readMe = """
   to reset its focus.
   """
 
-struct Focus: Reducer {
+@Reducer
+struct Focus {
   struct State: Equatable {
     var currentFocus = 1
   }
@@ -21,13 +22,15 @@ struct Focus: Reducer {
 
   @Dependency(\.withRandomNumberGenerator) var withRandomNumberGenerator
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .randomButtonClicked:
-      state.currentFocus = self.withRandomNumberGenerator {
-        (1..<11).randomElement(using: &$0)!
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .randomButtonClicked:
+        state.currentFocus = self.withRandomNumberGenerator {
+          (1..<11).randomElement(using: &$0)!
+        }
+        return .none
       }
-      return .none
     }
   }
 }

@@ -10,6 +10,7 @@ private let readMe = """
 
 // MARK: - Feature domain
 
+@Reducer
 struct Nested: Reducer {
   struct State: Equatable, Identifiable {
     let id: UUID
@@ -17,11 +18,12 @@ struct Nested: Reducer {
     var rows: IdentifiedArrayOf<State> = []
   }
 
-  enum Action: Equatable {
+  @CasePathable
+  enum Action {
     case addRowButtonTapped
     case nameTextFieldChanged(String)
     case onDelete(IndexSet)
-    indirect case row(id: State.ID, action: Action)
+    indirect case rows(IdentifiedActionOf<Nested>)
   }
 
   @Dependency(\.uuid) var uuid
@@ -41,11 +43,11 @@ struct Nested: Reducer {
         state.rows.remove(atOffsets: indexSet)
         return .none
 
-      case .row:
+      case .rows:
         return .none
       }
     }
-    .forEach(\.rows, action: /Action.row(id:action:)) {
+    .forEach(\.rows, action: \.rows) {
       Self()
     }
   }
@@ -65,9 +67,7 @@ struct NestedView: View {
           AboutView(readMe: readMe)
         }
 
-        ForEachStore(
-          self.store.scope(state: \.rows, action: { .row(id: $0, action: $1) })
-        ) { rowStore in
+        ForEachStore(self.store.scope(state: \.rows, action: { .rows($0) })) { rowStore in
           WithViewStore(rowStore, observe: \.name) { rowViewStore in
             NavigationLink(
               destination: NestedView(store: rowStore)
@@ -96,38 +96,35 @@ struct NestedView: View {
   }
 }
 
-extension Nested.State {
-  static let mock = Nested.State(
-    id: UUID(),
-    name: "Foo",
-    rows: [
-      Nested.State(
-        id: UUID(),
-        name: "Bar",
-        rows: [
-          Nested.State(id: UUID(), name: "", rows: [])
-        ]
-      ),
-      Nested.State(
-        id: UUID(),
-        name: "Baz",
-        rows: [
-          Nested.State(id: UUID(), name: "Fizz", rows: []),
-          Nested.State(id: UUID(), name: "Buzz", rows: []),
-        ]
-      ),
-      Nested.State(id: UUID(), name: "", rows: []),
-    ]
-  )
-}
-
 // MARK: - SwiftUI previews
 
 struct NestedView_Previews: PreviewProvider {
   static var previews: some View {
+    let initialState = Nested.State(
+      id: UUID(),
+      name: "Foo",
+      rows: [
+        Nested.State(
+          id: UUID(),
+          name: "Bar",
+          rows: [
+            Nested.State(id: UUID(), name: "", rows: [])
+          ]
+        ),
+        Nested.State(
+          id: UUID(),
+          name: "Baz",
+          rows: [
+            Nested.State(id: UUID(), name: "Fizz", rows: []),
+            Nested.State(id: UUID(), name: "Buzz", rows: []),
+          ]
+        ),
+        Nested.State(id: UUID(), name: "", rows: []),
+      ]
+    )
     NavigationView {
       NestedView(
-        store: Store(initialState: .mock) {
+        store: Store(initialState: initialState) {
           Nested()
         }
       )

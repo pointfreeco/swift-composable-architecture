@@ -14,7 +14,8 @@ private let readMe = """
   screen to see that the state is carried over.
   """
 
-struct CityMap: Reducer {
+@Reducer
+struct CityMap {
   struct State: Equatable, Identifiable {
     var download: Download
     var downloadAlert: AlertState<DownloadComponent.Action.Alert>?
@@ -54,7 +55,7 @@ struct CityMap: Reducer {
   }
 
   var body: some Reducer<State, Action> {
-    Scope(state: \.downloadComponent, action: /Action.downloadComponent) {
+    Scope(state: \.downloadComponent, action: \.downloadComponent) {
       DownloadComponent()
     }
 
@@ -134,17 +135,18 @@ struct CityMapDetailView: View {
   }
 }
 
-struct MapApp: Reducer {
+@Reducer
+struct MapApp {
   struct State: Equatable {
     var cityMaps: IdentifiedArrayOf<CityMap.State>
   }
 
   enum Action {
-    case cityMaps(id: CityMap.State.ID, action: CityMap.Action)
+    case cityMaps(IdentifiedActionOf<CityMap>)
   }
 
   var body: some Reducer<State, Action> {
-    EmptyReducer().forEach(\.cityMaps, action: /Action.cityMaps(id:action:)) {
+    EmptyReducer().forEach(\.cityMaps, action: \.cityMaps) {
       CityMap()
     }
   }
@@ -160,9 +162,7 @@ struct CitiesView: View {
       Section {
         AboutView(readMe: readMe)
       }
-      ForEachStore(
-        self.store.scope(state: \.cityMaps, action: { .cityMaps(id: $0, action: $1) })
-      ) { cityMapStore in
+      ForEachStore(self.store.scope(state: \.cityMaps, action: { .cityMaps($0) })) { cityMapStore in
         CityMapRowView(store: cityMapStore)
           .buttonStyle(.borderless)
       }

@@ -1,12 +1,14 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct SyncUpDetail: Reducer {
+@Reducer
+struct SyncUpDetail {
   struct State: Equatable {
     @PresentationState var destination: Destination.State?
     var syncUp: SyncUp
   }
-  enum Action: Equatable, Sendable {
+
+  enum Action: Sendable {
     case cancelEditButtonTapped
     case delegate(Delegate)
     case deleteButtonTapped
@@ -16,7 +18,8 @@ struct SyncUpDetail: Reducer {
     case editButtonTapped
     case startMeetingButtonTapped
 
-    enum Delegate: Equatable {
+    @CasePathable
+    enum Delegate {
       case deleteSyncUp
       case syncUpUpdated(SyncUp)
       case startMeeting
@@ -27,12 +30,14 @@ struct SyncUpDetail: Reducer {
   @Dependency(\.openSettings) var openSettings
   @Dependency(\.speechClient.authorizationStatus) var authorizationStatus
 
-  struct Destination: Reducer {
+  @Reducer
+  struct Destination {
     enum State: Equatable {
       case alert(AlertState<Action.Alert>)
       case edit(SyncUpForm.State)
     }
-    enum Action: Equatable, Sendable {
+
+    enum Action: Sendable {
       case alert(Alert)
       case edit(SyncUpForm.Action)
 
@@ -42,8 +47,9 @@ struct SyncUpDetail: Reducer {
         case openSettings
       }
     }
+
     var body: some ReducerOf<Self> {
-      Scope(state: /State.edit, action: /Action.edit) {
+      Scope(state: \.edit, action: \.edit) {
         SyncUpForm()
       }
     }
@@ -114,7 +120,7 @@ struct SyncUpDetail: Reducer {
         }
       }
     }
-    .ifLet(\.$destination, action: /Action.destination) {
+    .ifLet(\.$destination, action: \.destination) {
       Destination()
     }
     .onChange(of: \.syncUp) { oldValue, newValue in
@@ -210,13 +216,13 @@ struct SyncUpDetailView: View {
       }
       .alert(
         store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /SyncUpDetail.Destination.State.alert,
-        action: SyncUpDetail.Destination.Action.alert
+        state: \.alert,
+        action: { .alert($0) }
       )
       .sheet(
         store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: /SyncUpDetail.Destination.State.edit,
-        action: SyncUpDetail.Destination.Action.edit
+        state: \.edit,
+        action: { .edit($0) }
       ) { store in
         NavigationStack {
           SyncUpFormView(store: store)

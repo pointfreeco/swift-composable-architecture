@@ -20,70 +20,73 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct EffectsBasics: Reducer {
+@Reducer
+struct EffectsBasics {
   struct State: Equatable {
     var count = 0
     var isNumberFactRequestInFlight = false
     var numberFact: String?
   }
 
-  enum Action: Equatable {
+  enum Action {
     case decrementButtonTapped
     case decrementDelayResponse
     case incrementButtonTapped
     case numberFactButtonTapped
-    case numberFactResponse(TaskResult<String>)
+    case numberFactResponse(Result<String, Error>)
   }
 
   @Dependency(\.continuousClock) var clock
   @Dependency(\.factClient) var factClient
   private enum CancelID { case delay }
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .decrementButtonTapped:
-      state.count -= 1
-      state.numberFact = nil
-      // Return an effect that re-increments the count after 1 second if the count is negative
-      return state.count >= 0
-        ? .none
-        : .run { send in
-          try await self.clock.sleep(for: .seconds(1))
-          await send(.decrementDelayResponse)
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .decrementButtonTapped:
+        state.count -= 1
+        state.numberFact = nil
+        // Return an effect that re-increments the count after 1 second if the count is negative
+        return state.count >= 0
+          ? .none
+          : .run { send in
+            try await self.clock.sleep(for: .seconds(1))
+            await send(.decrementDelayResponse)
+          }
+          .cancellable(id: CancelID.delay)
+
+      case .decrementDelayResponse:
+        if state.count < 0 {
+          state.count += 1
         }
-        .cancellable(id: CancelID.delay)
+        return .none
 
-    case .decrementDelayResponse:
-      if state.count < 0 {
+      case .incrementButtonTapped:
         state.count += 1
+        state.numberFact = nil
+        return state.count >= 0
+          ? .cancel(id: CancelID.delay)
+          : .none
+
+      case .numberFactButtonTapped:
+        state.isNumberFactRequestInFlight = true
+        state.numberFact = nil
+        // Return an effect that fetches a number fact from the API and returns the
+        // value back to the reducer's `numberFactResponse` action.
+        return .run { [count = state.count] send in
+          await send(.numberFactResponse(Result { try await self.factClient.fetch(count) }))
+        }
+
+      case let .numberFactResponse(.success(response)):
+        state.isNumberFactRequestInFlight = false
+        state.numberFact = response
+        return .none
+
+      case .numberFactResponse(.failure):
+        // NB: This is where we could handle the error is some way, such as showing an alert.
+        state.isNumberFactRequestInFlight = false
+        return .none
       }
-      return .none
-
-    case .incrementButtonTapped:
-      state.count += 1
-      state.numberFact = nil
-      return state.count >= 0
-        ? .cancel(id: CancelID.delay)
-        : .none
-
-    case .numberFactButtonTapped:
-      state.isNumberFactRequestInFlight = true
-      state.numberFact = nil
-      // Return an effect that fetches a number fact from the API and returns the
-      // value back to the reducer's `numberFactResponse` action.
-      return .run { [count = state.count] send in
-        await send(.numberFactResponse(TaskResult { try await self.factClient.fetch(count) }))
-      }
-
-    case let .numberFactResponse(.success(response)):
-      state.isNumberFactRequestInFlight = false
-      state.numberFact = response
-      return .none
-
-    case .numberFactResponse(.failure):
-      // NB: This is where we could handle the error is some way, such as showing an alert.
-      state.isNumberFactRequestInFlight = false
-      return .none
     }
   }
 }

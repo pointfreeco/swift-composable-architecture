@@ -17,7 +17,7 @@ final class RefreshableTests: XCTestCase {
       $0.count = 1
     }
     await store.send(.refresh)
-    await store.receive(.factResponse(.success("1 is a good number."))) {
+    await store.receive(\.factResponse.success) {
       $0.fact = "1 is a good number."
     }
   }
@@ -36,7 +36,7 @@ final class RefreshableTests: XCTestCase {
       $0.count = 1
     }
     await store.send(.refresh)
-    await store.receive(.factResponse(.failure(FactError())))
+    await store.receive(\.factResponse.failure)
   }
 
   func testCancellation() async {

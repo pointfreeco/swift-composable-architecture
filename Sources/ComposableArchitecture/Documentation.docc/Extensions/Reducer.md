@@ -4,28 +4,27 @@
 
 ### Implementing a reducer
 
-- ``reduce(into:action:)-1t2ri``
 - ``State``
 - ``Action``
+- ``body-swift.property``
+- ``Reduce``
 - ``Effect``
 
-### Reducer composition
+### Composing reducers
 
-- ``body-swift.property``
-- ``Body-swift.typealias``
 - ``ReducerBuilder``
+- ``CombineReducers``
 
 ### Embedding child features
 
 - ``Scope``
-- ``ifLet(_:action:then:fileID:line:)``
-- ``ifCaseLet(_:action:then:fileID:line:)``
-- ``forEach(_:action:element:fileID:line:)``
+- ``ifLet(_:action:then:fileID:line:)-42kki``
+- ``ifCaseLet(_:action:then:fileID:line:)-3k4yb``
+- ``forEach(_:action:element:fileID:line:)-247po``
+- <doc:Navigation>
 
 ### Supporting reducers
 
-- ``Reduce``
-- ``CombineReducers``
 - ``EmptyReducer``
 - ``BindingReducer``
 
@@ -40,3 +39,7 @@
 ### Supporting types
 
 - ``ReducerOf``
+
+### Deprecations
+
+- <doc:ReducerDeprecations>

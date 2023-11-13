@@ -28,11 +28,7 @@ final class LoginCoreTests: XCTestCase {
     let twoFactorPresentationTask = await store.send(.view(.loginButtonTapped)) {
       $0.isLoginRequestInFlight = true
     }
-    await store.receive(
-      .loginResponse(
-        .success(AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true))
-      )
-    ) {
+    await store.receive(\.loginResponse.success) {
       $0.isLoginRequestInFlight = false
       $0.twoFactor = TwoFactor.State(token: "deadbeefdeadbeef")
     }
@@ -43,15 +39,7 @@ final class LoginCoreTests: XCTestCase {
     await store.send(.twoFactor(.presented(.view(.submitButtonTapped)))) {
       $0.twoFactor?.isTwoFactorRequestInFlight = true
     }
-    await store.receive(
-      .twoFactor(
-        .presented(
-          .twoFactorResponse(
-            .success(AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false))
-          )
-        )
-      )
-    ) {
+    await store.receive(\.twoFactor.twoFactorResponse.success) {
       $0.twoFactor?.isTwoFactorRequestInFlight = false
     }
     await twoFactorPresentationTask.cancel()
@@ -80,11 +68,7 @@ final class LoginCoreTests: XCTestCase {
     await store.send(.view(.loginButtonTapped)) {
       $0.isLoginRequestInFlight = true
     }
-    await store.receive(
-      .loginResponse(
-        .success(AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true))
-      )
-    ) {
+    await store.receive(\.loginResponse.success) {
       $0.isLoginRequestInFlight = false
       $0.twoFactor = TwoFactor.State(token: "deadbeefdeadbeef")
     }

@@ -2,6 +2,7 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
+@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 final class IfCaseLetReducerTests: BaseTCATestCase {
   func testChildAction() async {
     struct SomeError: Error, Equatable {}
@@ -10,7 +11,7 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
       Reduce<Result<Int, SomeError>, Result<Int, SomeError>> { state, action in
         .none
       }
-      .ifCaseLet(/Result.success, action: /Result.success) {
+      .ifCaseLet(\.success, action: \.success) {
         Reduce { state, action in
           state = action
           return state < 0 ? .run { await $0(0) } : .none
@@ -36,7 +37,7 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
 
       let store = TestStore(initialState: Result.failure(SomeError())) {
         EmptyReducer<Result<Int, SomeError>, Result<Int, SomeError>>()
-          .ifCaseLet(/Result.success, action: /Result.success) {}
+          .ifCaseLet(\.success, action: \.success) {}
       }
 
       XCTExpectFailure {
@@ -80,17 +81,19 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
           case timerTick
         }
         @Dependency(\.continuousClock) var clock
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
-          switch action {
-          case .timerButtonTapped:
-            return .run { send in
-              for await _ in self.clock.timer(interval: .seconds(1)) {
-                await send(.timerTick)
+        var body: some Reducer<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .timerButtonTapped:
+              return .run { send in
+                for await _ in self.clock.timer(interval: .seconds(1)) {
+                  await send(.timerTick)
+                }
               }
+            case .timerTick:
+              state.count += 1
+              return .none
             }
-          case .timerTick:
-            state.count += 1
-            return .none
           }
         }
       }
@@ -181,17 +184,18 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
         case response(Int)
       }
       @Dependency(\.mainQueue) var mainQueue
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-
-        case .tap:
-          return .run { [id = state.id] send in
-            try await mainQueue.sleep(for: .seconds(0))
-            await send(.response(id))
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          switch action {
+          case .tap:
+            return .run { [id = state.id] send in
+              try await mainQueue.sleep(for: .seconds(0))
+              await send(.response(id))
+            }
+          case let .response(value):
+            state.value = value
+            return .none
           }
-        case let .response(value):
-          state.value = value
-          return .none
         }
       }
     }

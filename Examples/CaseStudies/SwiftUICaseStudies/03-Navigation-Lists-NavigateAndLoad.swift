@@ -10,7 +10,8 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct NavigateAndLoadList: Reducer {
+@Reducer
+struct NavigateAndLoadList {
   struct State: Equatable {
     var rows: IdentifiedArrayOf<Row> = [
       Row(count: 1, id: UUID()),
@@ -25,7 +26,7 @@ struct NavigateAndLoadList: Reducer {
     }
   }
 
-  enum Action: Equatable {
+  enum Action {
     case counter(Counter.Action)
     case setNavigation(selection: UUID?)
     case setNavigationSelectionDelayCompleted
@@ -61,9 +62,9 @@ struct NavigateAndLoadList: Reducer {
         return .none
       }
     }
-    .ifLet(\State.selection, action: /Action.counter) {
+    .ifLet(\.selection, action: \.counter) {
       EmptyReducer()
-        .ifLet(\Identified<State.Row.ID, Counter.State?>.value, action: .self) {
+        .ifLet(\.value, action: \.self) {
           Counter()
         }
     }

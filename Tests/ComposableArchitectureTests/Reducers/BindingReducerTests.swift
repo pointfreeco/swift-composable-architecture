@@ -3,7 +3,8 @@ import XCTest
 
 @MainActor
 final class BindingTests: BaseTCATestCase {
-  struct BindingTest: Reducer {
+  @Reducer
+  struct BindingTest {
     struct State: Equatable {
       @BindingState var nested = Nested()
 

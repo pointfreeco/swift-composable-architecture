@@ -7,7 +7,8 @@ enum Filter: LocalizedStringKey, CaseIterable, Hashable {
   case completed = "Completed"
 }
 
-struct Todos: Reducer {
+@Reducer
+struct Todos {
   struct State: Equatable {
     @BindingState var editMode: EditMode = .inactive
     @BindingState var filter: Filter = .all
@@ -22,14 +23,14 @@ struct Todos: Reducer {
     }
   }
 
-  enum Action: BindableAction, Equatable, Sendable {
+  enum Action: BindableAction, Sendable {
     case addTodoButtonTapped
     case binding(BindingAction<State>)
     case clearCompletedButtonTapped
     case delete(IndexSet)
     case move(IndexSet, Int)
     case sortCompletedTodos
-    case todo(id: Todo.State.ID, action: Todo.Action)
+    case todos(IdentifiedActionOf<Todo>)
   }
 
   @Dependency(\.continuousClock) var clock
@@ -83,18 +84,18 @@ struct Todos: Reducer {
         state.todos.sort { $1.isComplete && !$0.isComplete }
         return .none
 
-      case .todo(id: _, action: .binding(\.$isComplete)):
+      case .todos(.element(id: _, action: .binding(\.$isComplete))):
         return .run { send in
           try await self.clock.sleep(for: .seconds(1))
           await send(.sortCompletedTodos, animation: .default)
         }
         .cancellable(id: CancelID.todoCompletion, cancelInFlight: true)
 
-      case .todo:
+      case .todos:
         return .none
       }
     }
-    .forEach(\.todos, action: /Action.todo(id:action:)) {
+    .forEach(\.todos, action: \.todos) {
       Todo()
     }
   }
@@ -128,9 +129,7 @@ struct AppView: View {
           .padding(.horizontal)
 
           List {
-            ForEachStore(
-              self.store.scope(state: \.filteredTodos, action: { .todo(id: $0, action: $1) })
-            ) {
+            ForEachStore(self.store.scope(state: \.filteredTodos, action: { .todos($0) })) {
               TodoView(store: $0)
             }
             .onDelete { viewStore.send(.delete($0)) }

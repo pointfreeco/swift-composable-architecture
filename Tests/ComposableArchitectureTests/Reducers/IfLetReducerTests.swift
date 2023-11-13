@@ -2,12 +2,13 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
+@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 final class IfLetReducerTests: BaseTCATestCase {
   #if DEBUG
     func testNilChild() async {
       let store = TestStore(initialState: Int?.none) {
         EmptyReducer<Int?, Void>()
-          .ifLet(\.self, action: /.self) {}
+          .ifLet(\.self, action: \.self) {}
       }
 
       XCTExpectFailure {
@@ -50,17 +51,19 @@ final class IfLetReducerTests: BaseTCATestCase {
           case timerTick
         }
         @Dependency(\.continuousClock) var clock
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
-          switch action {
-          case .timerButtonTapped:
-            return .run { send in
-              for await _ in self.clock.timer(interval: .seconds(1)) {
-                await send(.timerTick)
+        var body: some Reducer<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .timerButtonTapped:
+              return .run { send in
+                for await _ in self.clock.timer(interval: .seconds(1)) {
+                  await send(.timerTick)
+                }
               }
+            case .timerTick:
+              state.count += 1
+              return .none
             }
-          case .timerTick:
-            state.count += 1
-            return .none
           }
         }
       }
@@ -99,12 +102,12 @@ final class IfLetReducerTests: BaseTCATestCase {
       await store.send(.child(.timerButtonTapped))
       await clock.advance(by: .seconds(2))
       await store.receive(.child(.timerTick)) {
-        try (/.some).modify(&$0.child) {
+        XCTModify(&$0.child) {
           $0.count = 1
         }
       }
       await store.receive(.child(.timerTick)) {
-        try (/.some).modify(&$0.child) {
+        XCTModify(&$0.child) {
           $0.count = 2
         }
       }
@@ -125,17 +128,19 @@ final class IfLetReducerTests: BaseTCATestCase {
           case timerTick
         }
         @Dependency(\.continuousClock) var clock
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
-          switch action {
-          case .timerButtonTapped:
-            return .run { send in
-              for await _ in self.clock.timer(interval: .seconds(1)) {
-                await send(.timerTick)
+        var body: some Reducer<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .timerButtonTapped:
+              return .run { send in
+                for await _ in self.clock.timer(interval: .seconds(1)) {
+                  await send(.timerTick)
+                }
               }
+            case .timerTick:
+              state.count += 1
+              return .none
             }
-          case .timerTick:
-            state.count += 1
-            return .none
           }
         }
       }
@@ -192,8 +197,8 @@ final class IfLetReducerTests: BaseTCATestCase {
       await store.send(.child(.grandChild(.timerButtonTapped)))
       await clock.advance(by: .seconds(1))
       await store.receive(.child(.grandChild(.timerTick))) {
-        try (/.some).modify(&$0.child) {
-          try (/.some).modify(&$0.grandChild) {
+        XCTModify(&$0.child) {
+          XCTModify(&$0.grandChild) {
             $0.count = 1
           }
         }
@@ -275,17 +280,18 @@ final class IfLetReducerTests: BaseTCATestCase {
         case response(Int)
       }
       @Dependency(\.mainQueue) var mainQueue
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-
-        case .tap:
-          return .run { [id = state.id] send in
-            try await mainQueue.sleep(for: .seconds(0))
-            await send(.response(id))
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          switch action {
+          case .tap:
+            return .run { [id = state.id] send in
+              try await mainQueue.sleep(for: .seconds(0))
+              await send(.response(id))
+            }
+          case let .response(value):
+            state.value = value
+            return .none
           }
-        case let .response(value):
-          state.value = value
-          return .none
         }
       }
     }

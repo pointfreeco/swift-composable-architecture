@@ -32,7 +32,7 @@ struct ContactsView: View {
     }
     .sheet(
       store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-      state: /ContactsFeature.Destination.State.addContact,
+      state: \.addContact,
       action:
     ) { addContactStore in
       NavigationStack {

@@ -25,45 +25,47 @@ struct FavoritingState<ID: Hashable & Sendable>: Equatable {
   var isFavorite: Bool
 }
 
-enum FavoritingAction: Equatable {
+@CasePathable
+enum FavoritingAction {
   case alert(PresentationAction<Alert>)
   case buttonTapped
-  case response(TaskResult<Bool>)
+  case response(Result<Bool, Error>)
 
   enum Alert: Equatable {}
 }
 
-struct Favoriting<ID: Hashable & Sendable>: Reducer {
+@Reducer
+struct Favoriting<ID: Hashable & Sendable> {
   let favorite: @Sendable (ID, Bool) async throws -> Bool
 
   private struct CancelID: Hashable {
     let id: AnyHashable
   }
 
-  func reduce(
-    into state: inout FavoritingState<ID>, action: FavoritingAction
-  ) -> Effect<FavoritingAction> {
-    switch action {
-    case .alert(.dismiss):
-      state.alert = nil
-      state.isFavorite.toggle()
-      return .none
+  var body: some Reducer<FavoritingState<ID>, FavoritingAction> {
+    Reduce { state, action in
+      switch action {
+      case .alert(.dismiss):
+        state.alert = nil
+        state.isFavorite.toggle()
+        return .none
 
-    case .buttonTapped:
-      state.isFavorite.toggle()
+      case .buttonTapped:
+        state.isFavorite.toggle()
 
-      return .run { [id = state.id, isFavorite = state.isFavorite, favorite] send in
-        await send(.response(TaskResult { try await favorite(id, isFavorite) }))
+        return .run { [id = state.id, isFavorite = state.isFavorite, favorite] send in
+          await send(.response(Result { try await favorite(id, isFavorite) }))
+        }
+        .cancellable(id: CancelID(id: state.id), cancelInFlight: true)
+
+      case let .response(.failure(error)):
+        state.alert = AlertState { TextState(error.localizedDescription) }
+        return .none
+
+      case let .response(.success(isFavorite)):
+        state.isFavorite = isFavorite
+        return .none
       }
-      .cancellable(id: CancelID(id: state.id), cancelInFlight: true)
-
-    case let .response(.failure(error)):
-      state.alert = AlertState { TextState(error.localizedDescription) }
-      return .none
-
-    case let .response(.success(isFavorite)):
-      state.isFavorite = isFavorite
-      return .none
     }
   }
 }
@@ -86,7 +88,8 @@ struct FavoriteButton<ID: Hashable & Sendable>: View {
 
 // MARK: - Feature domain
 
-struct Episode: Reducer {
+@Reducer
+struct Episode {
   struct State: Equatable, Identifiable {
     var alert: AlertState<FavoritingAction.Alert>?
     let id: UUID
@@ -98,13 +101,15 @@ struct Episode: Reducer {
       set { (self.alert, self.isFavorite) = (newValue.alert, newValue.isFavorite) }
     }
   }
-  enum Action: Equatable {
+
+  enum Action {
     case favorite(FavoritingAction)
   }
+
   let favorite: @Sendable (UUID, Bool) async throws -> Bool
 
   var body: some Reducer<State, Action> {
-    Scope(state: \.favorite, action: /Action.favorite) {
+    Scope(state: \.favorite, action: \.favorite) {
       Favoriting(favorite: self.favorite)
     }
   }
@@ -128,20 +133,23 @@ struct EpisodeView: View {
   }
 }
 
-struct Episodes: Reducer {
+@Reducer
+struct Episodes {
   struct State: Equatable {
     var episodes: IdentifiedArrayOf<Episode.State> = []
   }
-  enum Action: Equatable {
-    case episode(id: Episode.State.ID, action: Episode.Action)
+
+  enum Action {
+    case episodes(IdentifiedActionOf<Episode>)
   }
+
   let favorite: @Sendable (UUID, Bool) async throws -> Bool
 
   var body: some Reducer<State, Action> {
     Reduce { state, action in
       .none
     }
-    .forEach(\.episodes, action: /Action.episode) {
+    .forEach(\.episodes, action: \.episodes) {
       Episode(favorite: self.favorite)
     }
   }
@@ -157,9 +165,7 @@ struct EpisodesView: View {
       Section {
         AboutView(readMe: readMe)
       }
-      ForEachStore(
-        self.store.scope(state: \.episodes, action: { .episode(id: $0, action: $1) })
-      ) { rowStore in
+      ForEachStore(self.store.scope(state: \.episodes, action: { .episodes($0) })) { rowStore in
         EpisodeView(store: rowStore)
       }
       .buttonStyle(.borderless)
