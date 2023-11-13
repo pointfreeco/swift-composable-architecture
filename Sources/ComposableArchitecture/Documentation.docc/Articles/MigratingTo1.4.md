@@ -147,7 +147,7 @@ specify a concrete action:
 
 ```swift
 store.receive(.response(.success("Hello!"))) {
-  …
+  // ...
 }
 ```
 
@@ -159,7 +159,7 @@ tests:
 
 ```swift
 store.receive(.child(.response(.success("Hello!")))) {
-  …
+  // ...
 }
 ```
 
@@ -170,7 +170,7 @@ since typically that is covered in the state assertion:
 
 ```swift
 store.receive(\.child.response.success) {
-  …
+  // ...
 }
 ```
 
@@ -222,7 +222,7 @@ identified action:
 
 ```swift
 Reduce { state, action in 
-// ...
+  // ...
 }
 .forEach(\.rows, action: \.rows) {
   RowFeature()
