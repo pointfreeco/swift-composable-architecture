@@ -66,8 +66,8 @@ final class IdentifiedListTests: BaseIntegrationTests {
       IdentifiedListView.body.ForEachStore
       IdentifiedListView.body.ForEachStore
       IdentifiedStoreOf<BasicsView.Feature>.deinit
+      IdentifiedStoreOf<BasicsView.Feature>.deinit
       IdentifiedStoreOf<BasicsView.Feature>.init
-      IdentifiedStoreOf<BasicsView.Feature>.scope
       IdentifiedStoreOf<BasicsView.Feature>.scope
       Store<UUID, Action>
       Store<UUID, Action>

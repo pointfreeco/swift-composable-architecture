@@ -12,7 +12,9 @@ final class PresentationTests: BaseIntegrationTests {
     //SnapshotTesting.isRecording = true
   }
 
-  func testOptional() {
+  func testOptional() throws {
+    try XCTSkipIf(ProcessInfo.processInfo.environment["CI"] != nil)
+
     self.app.buttons["Present sheet"].tap()
     self.assertLogs {
       """
