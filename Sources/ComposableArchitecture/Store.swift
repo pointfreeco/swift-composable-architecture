@@ -402,7 +402,7 @@ public final class Store<State, Action> {
       Pass 'state' a key path to child state and 'action' a case key path to child action, \
       instead. For more information see the following migration guide:
 
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Store-scoping-with-key-paths
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths
       """
   )
   @available(
@@ -412,7 +412,7 @@ public final class Store<State, Action> {
       Pass 'state' a key path to child state and 'action' a case key path to child action, \
       instead. For more information see the following migration guide:
 
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Store-scoping-with-key-paths
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths
       """
   )
   @available(
@@ -422,7 +422,7 @@ public final class Store<State, Action> {
       Pass 'state' a key path to child state and 'action' a case key path to child action, \
       instead. For more information see the following migration guide:
 
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Store-scoping-with-key-paths
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths
       """
   )
   @available(
@@ -432,7 +432,7 @@ public final class Store<State, Action> {
       Pass 'state' a key path to child state and 'action' a case key path to child action, \
       instead. For more information see the following migration guide:
 
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Store-scoping-with-key-paths
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths
       """
   )
   public func scope<ChildState, ChildAction>(
@@ -455,7 +455,7 @@ public final class Store<State, Action> {
       Pass 'state' a key path to child state and 'action' a case key path to child action, \
       instead. For more information see the following migration guide:
 
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Store-scoping-with-key-paths
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths
       """
   )
   @available(
@@ -465,7 +465,7 @@ public final class Store<State, Action> {
       Pass 'state' a key path to child state and 'action' a case key path to child action, \
       instead. For more information see the following migration guide:
 
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Store-scoping-with-key-paths
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths
       """
   )
   @available(
@@ -475,7 +475,7 @@ public final class Store<State, Action> {
       Pass 'state' a key path to child state and 'action' a case key path to child action, \
       instead. For more information see the following migration guide:
 
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Store-scoping-with-key-paths
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths
       """
   )
   @available(
@@ -485,7 +485,7 @@ public final class Store<State, Action> {
       Pass 'state' a key path to child state and 'action' a case key path to child action, \
       instead. For more information see the following migration guide:
 
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Store-scoping-with-key-paths
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths
       """
   )
   public func scope<ChildState, ChildAction>(

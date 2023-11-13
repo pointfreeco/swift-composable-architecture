@@ -54,7 +54,7 @@ import SwiftUI
       Further scope the store into the 'state' and 'action' cases, instead. For more information, \
       see the following article:
 
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides#Enum-driven-navigation-APIs
+      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs
       """
     )
     public func fullScreenCover<State, Action, DestinationState, DestinationAction, Content: View>(
