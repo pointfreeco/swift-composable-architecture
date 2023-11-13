@@ -124,13 +124,13 @@ you can use the subscript ``IdentifiedAction/AllCasePaths-swift.struct/subscript
 receive a particular action for an element:
 
 ```swift
-store.receive(.rows[id: 0].response.success)
+store.receive(\.rows[id: 0].response.success)
 ```
 
 And the same goes for ``StackAction`` too:
 
 ```swift
-store.receive(.path[id: 0].response.success)
+store.receive(.\path[id: 0].response.success)
 ```
 
 ### Moving off of TaskResult
