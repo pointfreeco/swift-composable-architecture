@@ -4,8 +4,8 @@ import XCTest
 
 @MainActor
 final class LegacyNavigationTests: BaseIntegrationTests {
-  override func setUp() {
-    super.setUp()
+  override func setUp() async throws {
+    try await super.setUp()
     self.app.buttons["Legacy"].tap()
     self.app.collectionViews.buttons[TestCase.navigationStack.rawValue].tap()
   }

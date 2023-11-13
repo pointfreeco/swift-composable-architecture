@@ -4,8 +4,8 @@ import XCTest
 
 @MainActor
 final class EnumTests: BaseIntegrationTests {
-  override func setUp() {
-    super.setUp()
+  override func setUp() async throws {
+    try await super.setUp()
     self.app.buttons["iOS 16"].tap()
     self.app.buttons["Enum"].tap()
     self.clearLogs()
