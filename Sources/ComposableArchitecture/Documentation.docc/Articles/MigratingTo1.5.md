@@ -1,6 +1,7 @@
-# Migration Guides
+# Migrating to 1.5
 
-Learn how to update your code to use the newest tools of the library as it evolves.
+Update your code to make use of the new ``Store/scope(state:action:)-90255`` operation on ``Store``
+in order to improve the performance of your features and simplify the usage of navigation APIs.
 
 ## Overview
 
@@ -37,7 +38,7 @@ ChildView(
 )
 ```
 
-However, as of 1.5 of the Composable Architecture, the version of 
+However, as of version 1.5 of the Composable Architecture, the version of 
 ``ComposableArchitecture/Store/scope(state:action:)-9iai9`` that takes two closures is deprecated.
 Instead, you are to use the version of ``ComposableArchitecture/Store/scope(state:action:)-90255``
 that takes a key path for the `state` argument, and a case key path for the `action` argument.
