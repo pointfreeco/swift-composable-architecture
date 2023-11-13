@@ -8,7 +8,8 @@ private struct DestinationView: View {
   }
 }
 
-private struct ChildFeature: Reducer {
+@Reducer
+private struct ChildFeature {
   struct State: Hashable {
     @PresentationState var alert: AlertState<Action.Alert>?
     @PresentationState var navigationDestination: Int?
@@ -77,8 +78,8 @@ private struct ChildFeature: Reducer {
         return .none
       }
     }
-    .ifLet(\.$alert, action: /Action.alert)
-    .ifLet(\.$navigationDestination, action: /Action.navigationDestination) {
+    .ifLet(\.$alert, action: \.alert)
+    .ifLet(\.$navigationDestination, action: \.navigationDestination) {
       EmptyReducer()
     }
   }
@@ -135,7 +136,8 @@ private struct ChildView: View {
   }
 }
 
-private struct NavigationStackTestCase: Reducer {
+@Reducer
+private struct NavigationStackTestCase {
   struct State: Equatable {
     var children = StackState<ChildFeature.State>()
     var childResponse: Int?
@@ -162,7 +164,7 @@ private struct NavigationStackTestCase: Reducer {
         return .none
       }
     }
-    .forEach(\.children, action: /Action.child) { ChildFeature() }
+    .forEach(\.children, action: \.child) { ChildFeature() }
   }
 }
 

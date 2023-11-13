@@ -2,6 +2,7 @@ import ComposableArchitecture
 import XCTest
 
 @MainActor
+@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 final class PresentationReducerTests: BaseTCATestCase {
   func testPresentationStateSubscriptCase() {
     enum Child: Equatable {
@@ -64,14 +65,16 @@ final class PresentationReducerTests: BaseTCATestCase {
         case decrementButtonTapped
         case incrementButtonTapped
       }
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .decrementButtonTapped:
-          state.count -= 1
-          return .none
-        case .incrementButtonTapped:
-          state.count += 1
-          return .none
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          switch action {
+          case .decrementButtonTapped:
+            state.count -= 1
+            return .none
+          case .incrementButtonTapped:
+            state.count += 1
+            return .none
+          }
         }
       }
     }
@@ -108,7 +111,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       $0.child = Child.State()
     }
     await store.send(.child(.presented(.incrementButtonTapped))) {
-      try (/.some).modify(&$0.child) {
+      XCTModify(&$0.child) {
         $0.count = 1
       }
     }
@@ -126,14 +129,16 @@ final class PresentationReducerTests: BaseTCATestCase {
         case decrementButtonTapped
         case incrementButtonTapped
       }
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .decrementButtonTapped:
-          state.count -= 1
-          return .none
-        case .incrementButtonTapped:
-          state.count += 1
-          return .none
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          switch action {
+          case .decrementButtonTapped:
+            state.count -= 1
+            return .none
+          case .incrementButtonTapped:
+            state.count += 1
+            return .none
+          }
         }
       }
     }
@@ -174,7 +179,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       $0.child = Child.State()
     }
     await store.send(.child(.presented(.incrementButtonTapped))) {
-      try (/.some).modify(&$0.child) {
+      XCTModify(&$0.child) {
         $0.count = 1
       }
     }
@@ -194,18 +199,20 @@ final class PresentationReducerTests: BaseTCATestCase {
         case incrementButtonTapped
       }
       @Dependency(\.dismiss) var dismiss
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .closeButtonTapped:
-          return .run { _ in
-            await self.dismiss()
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          switch action {
+          case .closeButtonTapped:
+            return .run { _ in
+              await self.dismiss()
+            }
+          case .decrementButtonTapped:
+            state.count -= 1
+            return .none
+          case .incrementButtonTapped:
+            state.count += 1
+            return .none
           }
-        case .decrementButtonTapped:
-          state.count -= 1
-          return .none
-        case .incrementButtonTapped:
-          state.count += 1
-          return .none
         }
       }
     }
@@ -246,7 +253,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       $0.child = Child.State()
     }
     await store.send(.child(.presented(.decrementButtonTapped))) {
-      try (/.some).modify(&$0.child) {
+      XCTModify(&$0.child) {
         $0.count = -1
       }
     }
@@ -268,17 +275,19 @@ final class PresentationReducerTests: BaseTCATestCase {
           case tick
         }
         @Dependency(\.continuousClock) var clock
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
-          switch action {
-          case .startButtonTapped:
-            return .run { send in
-              for try await _ in clock.timer(interval: .seconds(1)) {
-                await send(.tick)
+        var body: some Reducer<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .startButtonTapped:
+              return .run { send in
+                for try await _ in clock.timer(interval: .seconds(1)) {
+                  await send(.tick)
+                }
               }
+            case .tick:
+              state.count += 1
+              return .none
             }
-          case .tick:
-            state.count += 1
-            return .none
           }
         }
       }
@@ -320,12 +329,12 @@ final class PresentationReducerTests: BaseTCATestCase {
       await store.send(.child(.presented(.startButtonTapped)))
       await clock.advance(by: .seconds(2))
       await store.receive(.child(.presented(.tick))) {
-        try (/.some).modify(&$0.child) {
+        XCTModify(&$0.child) {
           $0.count = 1
         }
       }
       await store.receive(.child(.presented(.tick))) {
-        try (/.some).modify(&$0.child) {
+        XCTModify(&$0.child) {
           $0.count = 2
         }
       }
@@ -348,22 +357,24 @@ final class PresentationReducerTests: BaseTCATestCase {
         }
         @Dependency(\.continuousClock) var clock
         @Dependency(\.dismiss) var dismiss
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
-          switch action {
-          case .closeButtonTapped:
-            return .run { _ in
-              await self.dismiss()
-            }
-
-          case .startButtonTapped:
-            return .run { send in
-              for try await _ in clock.timer(interval: .seconds(1)) {
-                await send(.tick)
+        var body: some Reducer<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .closeButtonTapped:
+              return .run { _ in
+                await self.dismiss()
               }
+
+            case .startButtonTapped:
+              return .run { send in
+                for try await _ in clock.timer(interval: .seconds(1)) {
+                  await send(.tick)
+                }
+              }
+            case .tick:
+              state.count += 1
+              return .none
             }
-          case .tick:
-            state.count += 1
-            return .none
           }
         }
       }
@@ -405,12 +416,12 @@ final class PresentationReducerTests: BaseTCATestCase {
       await store.send(.child(.presented(.startButtonTapped)))
       await clock.advance(by: .seconds(2))
       await store.receive(.child(.presented(.tick))) {
-        try (/.some).modify(&$0.child) {
+        XCTModify(&$0.child) {
           $0.count = 1
         }
       }
       await store.receive(.child(.presented(.tick))) {
-        try (/.some).modify(&$0.child) {
+        XCTModify(&$0.child) {
           $0.count = 2
         }
       }
@@ -433,17 +444,19 @@ final class PresentationReducerTests: BaseTCATestCase {
           case tick
         }
         @Dependency(\.continuousClock) var clock
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
-          switch action {
-          case .startButtonTapped:
-            return .run { send in
-              for try await _ in clock.timer(interval: .seconds(1)) {
-                await send(.tick)
+        var body: some Reducer<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .startButtonTapped:
+              return .run { send in
+                for try await _ in clock.timer(interval: .seconds(1)) {
+                  await send(.tick)
+                }
               }
+            case .tick:
+              state.count += 1
+              return .none
             }
-          case .tick:
-            state.count += 1
-            return .none
           }
         }
       }
@@ -487,12 +500,12 @@ final class PresentationReducerTests: BaseTCATestCase {
       await store.send(.child(.presented(.startButtonTapped)))
       await clock.advance(by: .seconds(2))
       await store.receive(.child(.presented(.tick))) {
-        try (/.some).modify(&$0.child) {
+        XCTModify(&$0.child) {
           $0.count = 1
         }
       }
       await store.receive(.child(.presented(.tick))) {
-        try (/.some).modify(&$0.child) {
+        XCTModify(&$0.child) {
           $0.count = 2
         }
       }
@@ -510,7 +523,9 @@ final class PresentationReducerTests: BaseTCATestCase {
     struct Child: Reducer {
       struct State: Equatable {}
       enum Action: Equatable {}
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {}
+      var body: some Reducer<State, Action> {
+        EmptyReducer()
+      }
     }
 
     struct Parent: Reducer {
@@ -550,7 +565,9 @@ final class PresentationReducerTests: BaseTCATestCase {
     struct Child: Reducer {
       struct State: Equatable {}
       enum Action: Equatable {}
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {}
+      var body: some Reducer<State, Action> {
+        EmptyReducer()
+      }
     }
 
     struct Parent: Reducer {
@@ -739,18 +756,20 @@ final class PresentationReducerTests: BaseTCATestCase {
         case incrementButtonTapped
       }
       @Dependency(\.dismiss) var dismiss
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .closeButtonTapped:
-          return .run { _ in
-            await self.dismiss()
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          switch action {
+          case .closeButtonTapped:
+            return .run { _ in
+              await self.dismiss()
+            }
+          case .decrementButtonTapped:
+            state.count -= 1
+            return .none
+          case .incrementButtonTapped:
+            state.count += 1
+            return .none
           }
-        case .decrementButtonTapped:
-          state.count -= 1
-          return .none
-        case .incrementButtonTapped:
-          state.count += 1
-          return .none
         }
       }
     }
@@ -870,21 +889,23 @@ final class PresentationReducerTests: BaseTCATestCase {
         }
         @Dependency(\.continuousClock) var clock
         @Dependency(\.dismiss) var dismiss
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
-          switch action {
-          case .closeButtonTapped:
-            return .run { _ in
-              await self.dismiss()
-            }
-          case .startButtonTapped:
-            return .run { send in
-              for try await _ in clock.timer(interval: .seconds(1)) {
-                await send(.tick)
+        var body: some Reducer<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .closeButtonTapped:
+              return .run { _ in
+                await self.dismiss()
               }
+            case .startButtonTapped:
+              return .run { send in
+                for try await _ in clock.timer(interval: .seconds(1)) {
+                  await send(.tick)
+                }
+              }
+            case .tick:
+              state.count += 1
+              return .none
             }
-          case .tick:
-            state.count += 1
-            return .none
           }
         }
       }
@@ -1040,16 +1061,18 @@ final class PresentationReducerTests: BaseTCATestCase {
         case startButtonTapped
         case stopButtonTapped
       }
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .startButtonTapped:
-          return .run { _ in
-            try await Task.never()
-          }
-          .cancellable(id: 42)
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          switch action {
+          case .startButtonTapped:
+            return .run { _ in
+              try await Task.never()
+            }
+            .cancellable(id: 42)
 
-        case .stopButtonTapped:
-          return .cancel(id: 42)
+          case .stopButtonTapped:
+            return .cancel(id: 42)
+          }
         }
       }
     }
@@ -1096,13 +1119,15 @@ final class PresentationReducerTests: BaseTCATestCase {
         case startButtonTapped
       }
       enum CancelID { case effect }
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .startButtonTapped:
-          return .run { _ in
-            try await Task.never()
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          switch action {
+          case .startButtonTapped:
+            return .run { _ in
+              try await Task.never()
+            }
+            .cancellable(id: CancelID.effect)
           }
-          .cancellable(id: CancelID.effect)
         }
       }
     }
@@ -1196,18 +1221,20 @@ final class PresentationReducerTests: BaseTCATestCase {
         }
         enum CancelID { case effect }
         @Dependency(\.continuousClock) var clock
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
-          switch action {
-          case let .response(value):
-            state.count = value
-            return .none
-          case .startButtonTapped:
-            return .run { send in
-              for await _ in self.clock.timer(interval: .seconds(1)) {
-                await send(.response(42))
+        var body: some Reducer<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case let .response(value):
+              state.count = value
+              return .none
+            case .startButtonTapped:
+              return .run { send in
+                for await _ in self.clock.timer(interval: .seconds(1)) {
+                  await send(.response(42))
+                }
               }
+              .cancellable(id: CancelID.effect)
             }
-            .cancellable(id: CancelID.effect)
           }
         }
       }
@@ -1290,20 +1317,22 @@ final class PresentationReducerTests: BaseTCATestCase {
         }
         enum CancelID { case effect }
         @Dependency(\.continuousClock) var clock
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
-          switch action {
-          case let .response(value):
-            state.count = value
-            return .none
-          case .startButtonTapped:
-            return .run { send in
-              for await _ in self.clock.timer(interval: .seconds(1)) {
-                await send(.response(42))
+        var body: some Reducer<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case let .response(value):
+              state.count = value
+              return .none
+            case .startButtonTapped:
+              return .run { send in
+                for await _ in self.clock.timer(interval: .seconds(1)) {
+                  await send(.response(42))
+                }
               }
+              .cancellable(id: CancelID.effect)
+            case .stopButtonTapped:
+              return .cancel(id: CancelID.effect)
             }
-            .cancellable(id: CancelID.effect)
-          case .stopButtonTapped:
-            return .cancel(id: CancelID.effect)
           }
         }
       }
@@ -1391,20 +1420,22 @@ final class PresentationReducerTests: BaseTCATestCase {
         }
         enum CancelID { case effect }
         @Dependency(\.continuousClock) var clock
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
-          switch action {
-          case let .response(value):
-            state.count = value
-            return .none
-          case .startButtonTapped:
-            return .run { send in
-              for await _ in self.clock.timer(interval: .seconds(1)) {
-                await send(.response(42))
+        var body: some Reducer<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case let .response(value):
+              state.count = value
+              return .none
+            case .startButtonTapped:
+              return .run { send in
+                for await _ in self.clock.timer(interval: .seconds(1)) {
+                  await send(.response(42))
+                }
               }
+              .cancellable(id: CancelID.effect)
+            case .stopButtonTapped:
+              return .cancel(id: CancelID.effect)
             }
-            .cancellable(id: CancelID.effect)
-          case .stopButtonTapped:
-            return .cancel(id: CancelID.effect)
           }
         }
       }
@@ -1487,10 +1518,12 @@ final class PresentationReducerTests: BaseTCATestCase {
         enum Action: Equatable {
           case stopButtonTapped
         }
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
-          switch action {
-          case .stopButtonTapped:
-            return .cancel(id: Parent.CancelID.effect)
+        var body: some Reducer<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .stopButtonTapped:
+              return .cancel(id: Parent.CancelID.effect)
+            }
           }
         }
       }
@@ -1568,16 +1601,18 @@ final class PresentationReducerTests: BaseTCATestCase {
         }
         enum CancelID { case effect }
         @Dependency(\.continuousClock) var clock
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
-          switch action {
-          case .response:
-            return .none
-          case .startButtonTapped:
-            return .run { send in
-              try await clock.sleep(for: .seconds(0))
-              await send(.response(42))
+        var body: some Reducer<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .response:
+              return .none
+            case .startButtonTapped:
+              return .run { send in
+                try await clock.sleep(for: .seconds(0))
+                await send(.response(42))
+              }
+              .cancellable(id: CancelID.effect)
             }
-            .cancellable(id: CancelID.effect)
           }
         }
       }
@@ -1666,7 +1701,8 @@ final class PresentationReducerTests: BaseTCATestCase {
       struct Child: Reducer {
         struct State: Equatable {}
         enum Action: Equatable {}
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
+        var body: some Reducer<State, Action> {
+          EmptyReducer()
         }
       }
 
@@ -1724,8 +1760,8 @@ final class PresentationReducerTests: BaseTCATestCase {
         enum Action: Equatable {
           case tap
         }
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
-          .none
+        var body: some Reducer<State, Action> {
+          EmptyReducer()
         }
       }
 
@@ -1780,7 +1816,8 @@ final class PresentationReducerTests: BaseTCATestCase {
     struct Child: Reducer {
       struct State: Equatable {}
       enum Action: Equatable {}
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
+      var body: some Reducer<State, Action> {
+        EmptyReducer()
       }
     }
 
@@ -1822,7 +1859,8 @@ final class PresentationReducerTests: BaseTCATestCase {
         let id: UUID
       }
       enum Action: Equatable {}
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
+      var body: some Reducer<State, Action> {
+        EmptyReducer()
       }
     }
 
@@ -1880,15 +1918,17 @@ final class PresentationReducerTests: BaseTCATestCase {
         case dismissMe
         case task
       }
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .dismiss:
-          return .send(.dismissMe)
-        case .dismissMe:
-          return .none
-        case .task:
-          return .run { _ in
-            try await Task.never()
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          switch action {
+          case .dismiss:
+            return .send(.dismissMe)
+          case .dismissMe:
+            return .none
+          case .task:
+            return .run { _ in
+              try await Task.never()
+            }
           }
         }
       }
@@ -1948,20 +1988,22 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
       @Dependency(\.mainQueue) var mainQueue
       @Dependency(\.uuid) var uuid
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .resetIdentity:
-          state.count = 0
-          state.id = self.uuid()
-          return .none
-        case .response:
-          state.count = 999
-          return .none
-        case .tap:
-          state.count += 1
-          return .run { send in
-            try await self.mainQueue.sleep(for: .seconds(1))
-            await send(.response)
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          switch action {
+          case .resetIdentity:
+            state.count = 0
+            state.id = self.uuid()
+            return .none
+          case .response:
+            state.count = 999
+            return .none
+          case .tap:
+            state.count += 1
+            return .run { send in
+              try await self.mainQueue.sleep(for: .seconds(1))
+              await send(.response)
+            }
           }
         }
       }
@@ -2141,7 +2183,8 @@ final class PresentationReducerTests: BaseTCATestCase {
     struct Child: Reducer {
       struct State: Equatable {}
       enum Action: Equatable {}
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
+      var body: some Reducer<State, Action> {
+        EmptyReducer()
       }
     }
 
@@ -2182,8 +2225,10 @@ final class PresentationReducerTests: BaseTCATestCase {
     struct Child: Reducer {
       struct State: Equatable {}
       enum Action: Equatable { case tap }
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        .run { _ in try await Task.never() }
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          .run { _ in try await Task.never() }
+        }
       }
     }
 
@@ -2259,17 +2304,19 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
       @Dependency(\.mainQueue) var mainQueue
       struct CancelID: Hashable {}
-      func reduce(into state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case let .response(value):
-          state.count = value
-          return .none
-        case .tap:
-          return .run { send in
-            try await mainQueue.sleep(for: .seconds(1))
-            await send(.response(42))
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          switch action {
+          case let .response(value):
+            state.count = value
+            return .none
+          case .tap:
+            return .run { send in
+              try await mainQueue.sleep(for: .seconds(1))
+              await send(.response(42))
+            }
+            .cancellable(id: CancelID(), cancelInFlight: true)
           }
-          .cancellable(id: CancelID(), cancelInFlight: true)
         }
       }
     }
@@ -2438,14 +2485,16 @@ final class PresentationReducerTests: BaseTCATestCase {
           case decrementButtonTapped
           case incrementButtonTapped
         }
-        func reduce(into state: inout State, action: Action) -> Effect<Action> {
-          switch action {
-          case .decrementButtonTapped:
-            state.count -= 1
-            return .none
-          case .incrementButtonTapped:
-            state.count += 1
-            return .none
+        var body: some Reducer<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .decrementButtonTapped:
+              state.count -= 1
+              return .none
+            case .incrementButtonTapped:
+              state.count += 1
+              return .none
+            }
           }
         }
       }

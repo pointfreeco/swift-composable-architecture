@@ -5,6 +5,7 @@ import XCTestDynamicOverlay
 struct DownloadClient {
   var download: @Sendable (URL) -> AsyncThrowingStream<Event, Error>
 
+  @CasePathable
   enum Event: Equatable {
     case response(Data)
     case updateProgress(Double)

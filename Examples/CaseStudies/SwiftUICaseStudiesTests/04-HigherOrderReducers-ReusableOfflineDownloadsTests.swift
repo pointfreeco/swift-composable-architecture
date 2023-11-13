@@ -25,13 +25,13 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
     }
 
     self.download.continuation.yield(.updateProgress(0.2))
-    await store.receive(.downloadClient(.success(.updateProgress(0.2)))) {
+    await store.receive(\.downloadClient.success.updateProgress) {
       $0.mode = .downloading(progress: 0.2)
     }
 
     self.download.continuation.yield(.response(Data()))
     self.download.continuation.finish()
-    await store.receive(.downloadClient(.success(.response(Data())))) {
+    await store.receive(\.downloadClient.success.response) {
       $0.mode = .downloaded
     }
   }
@@ -54,7 +54,7 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
     }
 
     self.download.continuation.yield(.updateProgress(0.2))
-    await store.receive(.downloadClient(.success(.updateProgress(0.2)))) {
+    await store.receive(\.downloadClient.success.updateProgress) {
       $0.mode = .downloading(progress: 0.2)
     }
 
@@ -109,7 +109,7 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
 
     self.download.continuation.yield(.response(Data()))
     self.download.continuation.finish()
-    await store.receive(.downloadClient(.success(.response(Data())))) {
+    await store.receive(\.downloadClient.success.response) {
       $0.alert = nil
       $0.mode = .downloaded
     }

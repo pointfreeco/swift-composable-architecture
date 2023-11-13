@@ -3,8 +3,8 @@ extension DependencyValues {
   /// feature.
   ///
   /// This value is set to true on reducers that are run from within
-  /// ``Reducer/ifLet(_:action:destination:fileID:line:)`` and
-  /// ``Reducer/forEach(_:action:destination:fileID:line:)``.
+  /// ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` and
+  /// ``Reducer/forEach(_:action:destination:fileID:line:)-yz3v``.
   ///
   /// See ``DismissEffect`` for more information on how child features can easily dismiss themselves
   /// without communicating to the parent.

@@ -1,8 +1,10 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct SwitchStoreTestCase: Reducer {
-  struct Screen: Reducer {
+@Reducer
+struct SwitchStoreTestCase {
+  @Reducer
+  struct Screen {
     struct State: Equatable {
       var count = 0
     }
@@ -10,14 +12,16 @@ struct SwitchStoreTestCase: Reducer {
       case decrementButtonTapped
       case incrementButtonTapped
     }
-    func reduce(into state: inout State, action: Action) -> Effect<Action> {
-      switch action {
-      case .decrementButtonTapped:
-        state.count -= 1
-        return .none
-      case .incrementButtonTapped:
-        state.count += 1
-        return .none
+    var body: some Reducer<State, Action> {
+      Reduce { state, action in
+        switch action {
+        case .decrementButtonTapped:
+          state.count -= 1
+          return .none
+        case .incrementButtonTapped:
+          state.count += 1
+          return .none
+        }
       }
     }
   }
@@ -45,10 +49,10 @@ struct SwitchStoreTestCase: Reducer {
         return .none
       }
     }
-    .ifCaseLet(/State.screenA, action: /Action.screenA) {
+    .ifCaseLet(\.screenA, action: \.screenA) {
       Screen()
     }
-    .ifCaseLet(/State.screenB, action: /Action.screenB) {
+    .ifCaseLet(\.screenB, action: \.screenB) {
       Screen()
     }
   }
@@ -65,14 +69,14 @@ struct SwitchStoreTestCaseView: View {
       switch $0 {
       case .screenA:
         CaseLet(
-          /SwitchStoreTestCase.State.screenA, action: SwitchStoreTestCase.Action.screenA
+          \SwitchStoreTestCase.State.screenA, action: SwitchStoreTestCase.Action.screenA
         ) { store in
           ScreenView(store: store)
         }
       case .screenB:
         // Simulate copy-paste error:
         CaseLet(
-          /SwitchStoreTestCase.State.screenA, action: SwitchStoreTestCase.Action.screenA
+          \SwitchStoreTestCase.State.screenA, action: SwitchStoreTestCase.Action.screenA
         ) { store in
           ScreenView(store: store)
         }

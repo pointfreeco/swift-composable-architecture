@@ -232,8 +232,8 @@ public final class Store<State, Action> {
   /// example:
   ///
   /// ```swift
-  /// // Application state made from child states.
-  /// struct AppFeature: Reducer {
+  /// @Reducer
+  /// struct AppFeature {
   ///   struct State {
   ///     var login: Login.State
   ///     // ...
@@ -270,13 +270,14 @@ public final class Store<State, Action> {
   /// first:
   ///
   /// ```swift
-  /// struct Login: Reducer {
+  /// @Reducer
+  /// struct Login {
   ///   struct State: Equatable {
   ///     var email = ""
   ///     var password = ""
   ///     var twoFactorAuth: TwoFactorAuthState?
   ///   }
-  ///   enum Action: Equatable {
+  ///   enum Action {
   ///     case emailChanged(String)
   ///     case loginButtonTapped
   ///     case loginResponse(Result<TwoFactorAuthState, LoginError>)
@@ -323,7 +324,7 @@ public final class Store<State, Action> {
   ///     var password: String
   ///   }
   ///
-  ///   enum ViewAction: Equatable {
+  ///   enum ViewAction {
   ///     case emailChanged(String)
   ///     case loginButtonTapped
   ///     case passwordChanged(String)
@@ -901,6 +902,11 @@ func storeTypeName<State, Action>(of store: Store<State, Action>) -> String {
     stateType.dropLast(7) == actionType.dropLast(7)
   {
     return "StoreOf<\(stateType.dropLast(7))?>"
+  } else if stateType.hasPrefix("IdentifiedArray<"),
+    actionType.hasPrefix("IdentifiedAction<"),
+    stateType.dropFirst(16).dropLast(7) == actionType.dropFirst(17).dropLast(8)
+  {
+    return "IdentifiedStoreOf<\(stateType.drop(while: { $0 != "," }).dropFirst(2).dropLast(7))>"
   } else if stateType.hasPrefix("PresentationState<"),
     actionType.hasPrefix("PresentationAction<"),
     stateType.dropFirst(18).dropLast(7) == actionType.dropFirst(19).dropLast(8)

@@ -34,20 +34,20 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
       )
     }
 
-    await store.send(.episode(id: episodes[0].id, action: .favorite(.buttonTapped))) {
+    await store.send(.episodes(.element(id: episodes[0].id, action: .favorite(.buttonTapped)))) {
       $0.episodes[id: episodes[0].id]?.isFavorite = true
     }
     await clock.advance(by: .seconds(1))
-    await store.receive(.episode(id: episodes[0].id, action: .favorite(.response(.success(true)))))
+    await store.receive(\.episodes[id:episodes[0].id].favorite.response.success)
 
-    await store.send(.episode(id: episodes[1].id, action: .favorite(.buttonTapped))) {
+    await store.send(.episodes(.element(id: episodes[1].id, action: .favorite(.buttonTapped)))) {
       $0.episodes[id: episodes[1].id]?.isFavorite = true
     }
-    await store.send(.episode(id: episodes[1].id, action: .favorite(.buttonTapped))) {
+    await store.send(.episodes(.element(id: episodes[1].id, action: .favorite(.buttonTapped)))) {
       $0.episodes[id: episodes[1].id]?.isFavorite = false
     }
     await clock.advance(by: .seconds(1))
-    await store.receive(.episode(id: episodes[1].id, action: .favorite(.response(.success(false)))))
+    await store.receive(\.episodes[id:episodes[1].id].favorite.response.success)
   }
 
   func testUnhappyPath() async {
@@ -62,20 +62,17 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
       Episodes(favorite: { _, _ in throw FavoriteError() })
     }
 
-    await store.send(.episode(id: episodes[0].id, action: .favorite(.buttonTapped))) {
+    await store.send(.episodes(.element(id: episodes[0].id, action: .favorite(.buttonTapped)))) {
       $0.episodes[id: episodes[0].id]?.isFavorite = true
     }
 
-    await store.receive(
-      .episode(
-        id: episodes[0].id, action: .favorite(.response(.failure(FavoriteError()))))
-    ) {
+    await store.receive(\.episodes[id:episodes[0].id].favorite.response.failure) {
       $0.episodes[id: episodes[0].id]?.alert = AlertState {
         TextState("Favoriting failed.")
       }
     }
 
-    await store.send(.episode(id: episodes[0].id, action: .favorite(.alert(.dismiss)))) {
+    await store.send(.episodes(.element(id: episodes[0].id, action: .favorite(.alert(.dismiss))))) {
       $0.episodes[id: episodes[0].id]?.alert = nil
       $0.episodes[id: episodes[0].id]?.isFavorite = false
     }

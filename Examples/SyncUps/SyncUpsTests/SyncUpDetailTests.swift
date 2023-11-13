@@ -68,7 +68,7 @@ final class SyncUpDetailTests: XCTestCase {
       $0.destination = nil
     }
 
-    await store.receive(.delegate(.startMeeting))
+    await store.receive(\.delegate.startMeeting)
   }
 
   func testSpeechAuthorized() async throws {
@@ -80,7 +80,7 @@ final class SyncUpDetailTests: XCTestCase {
 
     await store.send(.startMeetingButtonTapped)
 
-    await store.receive(.delegate(.startMeeting))
+    await store.receive(\.delegate.startMeeting)
   }
 
   func testEdit() async {
@@ -97,9 +97,7 @@ final class SyncUpDetailTests: XCTestCase {
 
     syncUp.title = "Blob's Meeting"
     await store.send(.destination(.presented(.edit(.set(\.$syncUp, syncUp))))) {
-      try (/SyncUpDetail.Destination.State.edit).modify(&$0.destination) {
-        $0.syncUp.title = "Blob's Meeting"
-      }
+      $0.$destination[case: \.edit]?.syncUp.title = "Blob's Meeting"
     }
 
     await store.send(.doneEditingButtonTapped) {
@@ -107,6 +105,6 @@ final class SyncUpDetailTests: XCTestCase {
       $0.syncUp.title = "Blob's Meeting"
     }
 
-    await store.receive(.delegate(.syncUpUpdated(syncUp)))
+    await store.receive(\.delegate.syncUpUpdated)
   }
 }

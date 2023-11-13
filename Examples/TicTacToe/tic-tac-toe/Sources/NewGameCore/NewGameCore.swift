@@ -1,7 +1,8 @@
 import ComposableArchitecture
 import GameCore
 
-public struct NewGame: Reducer {
+@Reducer
+public struct NewGame {
   public struct State: Equatable {
     @PresentationState public var game: Game.State?
     public var oPlayerName = ""
@@ -10,7 +11,7 @@ public struct NewGame: Reducer {
     public init() {}
   }
 
-  public enum Action: Equatable {
+  public enum Action {
     case game(PresentationAction<Game.Action>)
     case letsPlayButtonTapped
     case logoutButtonTapped
@@ -45,7 +46,7 @@ public struct NewGame: Reducer {
         return .none
       }
     }
-    .ifLet(\.$game, action: /NewGame.Action.game) {
+    .ifLet(\.$game, action: \.game) {
       Game()
     }
   }

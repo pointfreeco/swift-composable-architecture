@@ -19,7 +19,7 @@ It also allows for complex and recursive navigation paths in your application.
 ## Basics
 
 The tools for this style of navigation include ``StackState``, ``StackAction`` and the
-``Reducer/forEach(_:action:destination:fileID:line:)`` operator, as well as a new 
+``Reducer/forEach(_:action:destination:fileID:line:)-yz3v`` operator, as well as a new 
 ``NavigationStackStore`` view that behaves like `NavigationStack` but is tuned specifically for the 
 Composable Architecture.
 
@@ -30,10 +30,12 @@ together. This consists of defining a new reducer, typically called `Path`, that
 of all the features that can be pushed onto the stack:
 
 ```swift
-struct RootFeature: Reducer {
+@Reducer
+struct RootFeature {
   // ...
 
-  struct Path: Reducer {
+  @Reducer
+  struct Path {
     enum State {
       case addItem(AddFeature.State)
       case detailItem(DetailFeature.State)
@@ -45,13 +47,13 @@ struct RootFeature: Reducer {
       case editItem(EditFeature.Action)
     }
     var body: some ReducerOf<Self> {
-      Scope(state: /State.addItem, action: /Action.addItem) { 
+      Scope(state: \.addItem, action: \.addItem) { 
         AddFeature()
       }
-      Scope(state: /State.editItem, action: /Action.editItem) { 
+      Scope(state: \.editItem, action: \.editItem) { 
         EditFeature()
       }
-      Scope(state: /State.detailItem, action: /Action.detailItem) { 
+      Scope(state: \.detailItem, action: \.detailItem) { 
         DetailFeature()
       }
     }
@@ -66,7 +68,8 @@ Once the `Path` reducer is defined we can then hold onto ``StackState`` and ``St
 feature that manages the navigation stack:
 
 ```swift
-struct RootFeature: Reducer {
+@Reducer
+struct RootFeature {
   struct State {
     var path = StackState<Path.State>()
     // ...
@@ -81,19 +84,20 @@ struct RootFeature: Reducer {
 > Note: ``StackAction`` is generic over both state and action of the `Path` domain. This is 
 > different from ``PresentationAction``, which only has a single generic.
 
-And then we must make use of the ``Reducer/forEach(_:action:destination:fileID:line:)``
+And then we must make use of the ``Reducer/forEach(_:action:destination:fileID:line:)-yz3v``
 method to integrate the domains of all the features that can be navigated to with the domain of the
 parent feature:
 
 ```swift
-struct RootFeature: Reducer {
+@Reducer
+struct RootFeature {
   // ...
 
   var body: some ReducerOf<Self> {
     Reduce { state, action in 
       // Core logic for root feature
     }
-    .forEach(\.path, action: /Action.path) { 
+    .forEach(\.path, action: \.path) { 
       Path()
     }
   }
@@ -267,19 +271,22 @@ where the rest of your feature's logic and behavior resides. It is accessed via 
 dependency management system (see <doc:DependencyManagement>) using ``DismissEffect``:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   struct State { /* ... */ }
   enum Action { 
     case closeButtonTapped
     // ...
   }
   @Dependency(\.dismiss) var dismiss
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .closeButtonTapped:
-      return .run { _ in await self.dismiss() }
-    // ...
-    } 
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .closeButtonTapped:
+        return .run { _ in await self.dismiss() }
+      // ...
+      }
+    }
   }
 }
 ```
@@ -322,28 +329,31 @@ As an example, consider the following simple counter feature that wants to dismi
 count is greater than or equal to 5:
 
 ```swift
-struct CounterFeature: Reducer {
+@Reducer
+struct CounterFeature {
   struct State: Equatable {
     var count = 0
   }
-  enum Action: Equatable {
+  enum Action {
     case decrementButtonTapped
     case incrementButtonTapped
   }
 
   @Dependency(\.dismiss) var dismiss
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .decrementButtonTapped:
-      state.count -= 1
-      return .none
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .decrementButtonTapped:
+        state.count -= 1
+        return .none
 
-    case .incrementButtonTapped:
-      state.count += 1
-      return state.count >= 5
-        ? .run { _ in await self.dismiss() }
-        : .none
+      case .incrementButtonTapped:
+        state.count += 1
+        return state.count >= 5
+          ? .run { _ in await self.dismiss() }
+          : .none
+      }
     }
   }
 }
@@ -352,19 +362,21 @@ struct CounterFeature: Reducer {
 And then let's embed that feature into a parent feature:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   struct State: Equatable {
     var path = StackState<Path.State>()
   }
-  enum Action: Equatable {
+  enum Action {
     case path(StackAction<Path.State, Path.Action>)
   }
 
-  struct Path: Reducer {
+  @Reducer  
+  struct Path {
     enum State: Equatable { case counter(Counter.State) }
-    enum Action: Equatable { case counter(Counter.Action) }
+    enum Action { case counter(Counter.Action) }
     var body: some ReducerOf<Self> {
-      Scope(state: /State.counter, action: /Action.counter) { Counter() }
+      Scope(state: \.counter, action: \.counter) { Counter() }
     }
   }
 
@@ -372,7 +384,7 @@ struct Feature: Reducer {
     Reduce { state, action in
       // Logic and behavior for core feature.
     }
-    .forEach(\.path, action: /Action.path) { Path() }
+    .forEach(\.path, action: \.path) { Path() }
   }
 }
 ```
@@ -429,7 +441,7 @@ use the `XCTModify` helper:
 
 ```swift
 await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) {
-  XCTModify(&$0.path[id: 0], case: /Feature.Path.State.counter) {
+  XCTModify(&$0.path[id: 0], case: \.counter) {
     $0.count = 4
   }
 }
@@ -442,23 +454,23 @@ above we are subscripting into ID 0, isolating the `.counter` case of the `Path.
 and mutating the `count` to be 4 since it incremented by one. Further, if the case of `$0.path[id: 0]`
 didn't match the case path, then a test failure would be emitted.
 
-Another option is to use ``StackState/subscript(id:case:)`` to simultaneously subscript into an 
+Another option is to use ``StackState/subscript(id:case:)-7gczr`` to simultaneously subscript into an 
 ID on the stack _and_ a case of the path enum:
 
 ```swift
 await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) {
-  $0.path[id: 0, case: /Feature.Path.State.counter]?.count = 4
+  $0.path[id: 0, case: \.counter]?.count = 4
 }
 ```
 
 The `XCTModify` style is best when you have many things you need to modify on the state, and the
-``StackState/subscript(id:case:)`` style is best when you have simple mutations.
+``StackState/subscript(id:case:)-7gczr`` style is best when you have simple mutations.
 
 Continuing with the test, we can send it one more time to see that the count goes up to 5:
 
 ```swift
 await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) {
-  XCTModify(&$0.path[id: 0], case: /Feature.Path.State.counter) {
+  XCTModify(&$0.path[id: 0], case: \.counter) {
     $0.count = 5
   }
 }
@@ -466,11 +478,11 @@ await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) {
 
 And then we finally expect that the child dismisses itself, which manifests itself as the 
 ``StackAction/popFrom(id:)`` action being sent to pop the counter feature off the stack, which we 
-can assert using the ``TestStore/receive(_:timeout:assert:file:line:)-5awso`` method on 
+can assert using the ``TestStore/receive(_:timeout:assert:file:line:)-6325h`` method on
 ``TestStore``:
 
 ```swift
-await store.receive(.path(.popFrom(id: 0))) {
+await store.receive(\.path.popFrom) {
   $0.path[id: 0] = nil
 }
 ```
@@ -506,7 +518,7 @@ func testDismissal() {
 
   await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) 
   await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) 
-  await store.receive(.path(.popFrom(id: 0)))
+  await store.receive(\.path.popFrom)
 }
 ```
 

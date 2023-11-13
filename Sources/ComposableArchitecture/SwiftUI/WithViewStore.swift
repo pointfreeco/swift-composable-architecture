@@ -166,7 +166,7 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
 
   public var body: Content {
     #if DEBUG
-      Logger.shared.log("With\(storeTypeName).body")
+      Logger.shared.log("WithView\(storeTypeName).body")
       if let prefix = self.prefix {
         var stateDump = ""
         customDump(self.viewStore.state, to: &stateDump, indent: 2)
@@ -208,7 +208,8 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   /// for each tab as well as the currently selected tab:
   ///
   /// ```swift
-  /// struct AppFeature: Reducer {
+  /// @Reducer
+  /// struct AppFeature {
   ///   enum Tab { case activity, search, profile }
   ///   struct State {
   ///     var activity: Activity.State
@@ -298,7 +299,8 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   /// for each tab as well as the currently selected tab:
   ///
   /// ```swift
-  /// struct AppFeature: Reducer {
+  /// @Reducer
+  /// struct AppFeature {
   ///   enum Tab { case activity, search, profile }
   ///   struct State {
   ///     var activity: Activity.State
@@ -388,7 +390,8 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   /// for each tab as well as the currently selected tab:
   ///
   /// ```swift
-  /// struct AppFeature: Reducer {
+  /// @Reducer
+  /// struct AppFeature {
   ///   enum Tab { case activity, search, profile }
   ///   struct State {
   ///     var activity: Activity.State
@@ -475,7 +478,8 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   /// for each tab as well as the currently selected tab:
   ///
   /// ```swift
-  /// struct AppFeature: Reducer {
+  /// @Reducer
+  /// struct AppFeature {
   ///   enum Tab { case activity, search, profile }
   ///   struct State {
   ///     var activity: Activity.State

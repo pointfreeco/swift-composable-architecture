@@ -19,7 +19,7 @@ final class LongLivingEffectsTests: XCTestCase {
     // Simulate a screenshot being taken
     takeScreenshot.yield()
 
-    await store.receive(.userDidTakeScreenshotNotification) {
+    await store.receive(\.userDidTakeScreenshotNotification) {
       $0.screenshotCount = 1
     }
 

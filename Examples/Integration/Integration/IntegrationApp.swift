@@ -82,7 +82,11 @@ struct ContentView: View {
             Section {
               NavigationLink("Basics") {
                 Form {
-                  BasicsView()
+                  BasicsView(
+                    store: Store(initialState: BasicsView.Feature.State()) {
+                      BasicsView.Feature()
+                    }
+                  )
                 }
               }
               NavigationLink("Enum") {

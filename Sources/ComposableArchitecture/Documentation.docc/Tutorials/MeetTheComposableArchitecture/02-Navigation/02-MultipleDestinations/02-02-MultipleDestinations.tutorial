@@ -55,7 +55,7 @@
       
       @Step {
         Integrate the alert's logic into the `ContactsFeature` by making another use of the 
-        ``ComposableArchitecture/Reducer/ifLet(_:action:destination:fileID:line:)`` operator.
+        ``ComposableArchitecture/Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` operator.
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0004)
       }
@@ -243,8 +243,9 @@
       
       @Step {
         The state transformation is responsible for taking a piece of `Destination.State`, which
-        is an enum, and extracting a particular case from it. We can do this by using a case path
-        derived from the `addContact` case.
+        is an enum, and extracting a particular case from it. This can be done with familiar key
+        path syntax because the ``ComposableArchitecture/Reducer()`` macro applies the 
+        `@CasePathable` macro and `@dynamicMemberLookup` to the destination's `State` enum.
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0016)
       }
@@ -252,7 +253,7 @@
       @Step {
         The action transformation is responsible for taking a child action in the 
         `AddContactFeature` domain and embedding it into the `Destination.Action` enum. This can
-        be done by using the case of the enum as a function.
+        be done by providing a closure to embed the child action into the destination's action.
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0017)
       }

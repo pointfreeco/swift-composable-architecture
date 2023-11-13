@@ -1,7 +1,8 @@
 import ComposableArchitecture
 import SwiftUI
 
-private struct BindingLocalTestCase: Reducer {
+@Reducer
+private struct BindingLocalTestCase {
   struct State: Equatable {
     @PresentationState var fullScreenCover: Child.State?
     @PresentationState var navigationDestination: Child.State?
@@ -9,7 +10,7 @@ private struct BindingLocalTestCase: Reducer {
     @PresentationState var popover: Child.State?
     @PresentationState var sheet: Child.State?
   }
-  enum Action: Equatable {
+  enum Action {
     case fullScreenCover(PresentationAction<Child.Action>)
     case fullScreenCoverButtonTapped
     case navigationDestination(PresentationAction<Child.Action>)
@@ -47,30 +48,31 @@ private struct BindingLocalTestCase: Reducer {
         return .none
       }
     }
-    .forEach(\.path, action: /Action.path) {
+    .forEach(\.path, action: \.path) {
       Child()
     }
-    .ifLet(\.$fullScreenCover, action: /Action.fullScreenCover) {
+    .ifLet(\.$fullScreenCover, action: \.fullScreenCover) {
       Child()
     }
-    .ifLet(\.$navigationDestination, action: /Action.navigationDestination) {
+    .ifLet(\.$navigationDestination, action: \.navigationDestination) {
       Child()
     }
-    .ifLet(\.$popover, action: /Action.popover) {
+    .ifLet(\.$popover, action: \.popover) {
       Child()
     }
-    .ifLet(\.$sheet, action: /Action.sheet) {
+    .ifLet(\.$sheet, action: \.sheet) {
       Child()
     }
   }
 }
 
-private struct Child: Reducer {
+@Reducer
+private struct Child {
   struct State: Equatable {
     @BindingState var sendOnDisappear = false
     @BindingState var text = ""
   }
-  enum Action: Equatable, BindableAction {
+  enum Action: BindableAction {
     case binding(BindingAction<State>)
     case onDisappear
   }

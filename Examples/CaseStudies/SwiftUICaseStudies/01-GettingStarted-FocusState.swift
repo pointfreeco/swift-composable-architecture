@@ -9,7 +9,8 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct FocusDemo: Reducer {
+@Reducer
+struct FocusDemo {
   struct State: Equatable {
     @BindingState var focusedField: Field?
     @BindingState var password: String = ""
@@ -20,7 +21,7 @@ struct FocusDemo: Reducer {
     }
   }
 
-  enum Action: BindableAction, Equatable {
+  enum Action: BindableAction {
     case binding(BindingAction<State>)
     case signInButtonTapped
   }

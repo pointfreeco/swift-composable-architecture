@@ -102,6 +102,30 @@ import XCTestDynamicOverlay
 ///   $0.isLoading = false
 /// }
 /// ```
+@available(
+  iOS,
+  deprecated: 9999,
+  message:
+    "Use 'Result', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Moving-off-of-TaskResult"
+)
+@available(
+  macOS,
+  deprecated: 9999,
+  message:
+    "Use 'Result', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Moving-off-of-TaskResult"
+)
+@available(
+  tvOS,
+  deprecated: 9999,
+  message:
+    "Use 'Result', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Moving-off-of-TaskResult"
+)
+@available(
+  watchOS,
+  deprecated: 9999,
+  message:
+    "Use 'Result', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Moving-off-of-TaskResult"
+)
 public enum TaskResult<Success: Sendable>: Sendable {
   /// A success, storing a `Success` value.
   case success(Success)
@@ -184,6 +208,34 @@ public enum TaskResult<Success: Sendable>: Sendable {
       return transform(value)
     case let .failure(error):
       return .failure(error)
+    }
+  }
+}
+
+extension TaskResult: CasePathable {
+  public static var allCasePaths: AllCasePaths {
+    AllCasePaths()
+  }
+
+  public struct AllCasePaths {
+    public var success: AnyCasePath<TaskResult, Success> {
+      AnyCasePath(
+        embed: { .success($0) },
+        extract: {
+          guard case let .success(value) = $0 else { return nil }
+          return value
+        }
+      )
+    }
+
+    public var failure: AnyCasePath<TaskResult, Error> {
+      AnyCasePath(
+        embed: { .failure($0) },
+        extract: {
+          guard case let .failure(value) = $0 else { return nil }
+          return value
+        }
+      )
     }
   }
 }

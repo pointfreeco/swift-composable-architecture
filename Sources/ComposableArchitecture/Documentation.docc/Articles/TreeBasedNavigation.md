@@ -19,9 +19,9 @@ the rest.
 ## Basics
 
 The tools for this style of navigation include the ``PresentationState`` property wrapper,
-``PresentationAction``, the ``Reducer/ifLet(_:action:then:fileID:line:)`` operator, and a bunch of
-APIs that mimic SwiftUI's regular tools, such as `.sheet`, `.popover`, etc., but tuned specifically
-for the Composable Architecture.
+``PresentationAction``, the ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` operator, and 
+a bunch of APIs that mimic SwiftUI's regular tools, such as `.sheet`, `.popover`, etc., but tuned 
+specifically for the Composable Architecture.
 
 The process of integrating two features together for navigation largely consists of 2 steps:
 integrating the features' domains together and integrating the features' views together. One
@@ -34,14 +34,15 @@ form for adding a new item. We can integrate state and actions together by utili
 ``PresentationState`` and ``PresentationAction`` types:
 
 ```swift
-struct InventoryFeature: Reducer {
+@Reducer
+struct InventoryFeature {
   struct State: Equatable {
     @PresentationState var addItem: ItemFormFeature.State?
     var items: IdentifiedArrayOf<Item> = []
     // ...
   }
 
-  enum Action: Equatable {
+  enum Action {
     case addItem(PresentationAction<ItemFormFeature.Action>)
     // ...
   }
@@ -54,13 +55,14 @@ struct InventoryFeature: Reducer {
 > being presented, and `nil` presents the feature is dismissed.
 
 Next you can integrate the reducers of the parent and child features by using the 
-``Reducer/ifLet(_:action:then:fileID:line:)`` reducer operator, as well as having an action in the
-parent domain for populating the child's state to drive navigation:
+``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` reducer operator, as well as having an 
+action in the parent domain for populating the child's state to drive navigation:
 
 ```swift
-struct InventoryFeature: Reducer {
+@Reducer
+struct InventoryFeature {
   struct State: Equatable { /* ... */ }
-  enum Action: Equatable { /* ... */ }
+  enum Action { /* ... */ }
   
   var body: some ReducerOf<Self> {
     Reduce { state, action in 
@@ -73,7 +75,7 @@ struct InventoryFeature: Reducer {
       // ...
       }
     }
-    .ifLet(\.$addItem, action: /Action.addItem) {
+    .ifLet(\.$addItem, action: \.addItem) {
       ItemFormFeature()
     }
   }
@@ -180,10 +182,12 @@ navigate to. And typically it's best to nest this reducer inside the feature tha
 navigation:
 
 ```swift
-struct InventoryFeature: Reducer {
+@Reducer
+struct InventoryFeature {
   // ...
 
-  struct Destination: Reducer {
+  @Reducer
+  struct Destination {
     enum State {
       case addItem(AddFeature.State)
       case detailItem(DetailFeature.State)
@@ -195,13 +199,13 @@ struct InventoryFeature: Reducer {
       case editItem(EditFeature.Action)
     }
     var body: some ReducerOf<Self> {
-      Scope(state: /State.addItem, action: /Action.addItem) { 
+      Scope(state: \.addItem, action: \.addItem) { 
         AddFeature()
       }
-      Scope(state: /State.editItem, action: /Action.editItem) { 
+      Scope(state: \.editItem, action: \.editItem) { 
         EditFeature()
       }
-      Scope(state: /State.detailItem, action: /Action.detailItem) { 
+      Scope(state: \.detailItem, action: \.detailItem) { 
         DetailFeature()
       }
     }
@@ -219,7 +223,8 @@ With that done we can now hold onto a _single_ piece of optional state in our fe
 ``PresentationAction`` type:
 
 ```swift
-struct InventoryFeature: Reducer {
+@Reducer
+struct InventoryFeature {
   struct State { 
     @PresentationState var destination: Destination.State?
     // ...
@@ -233,18 +238,19 @@ struct InventoryFeature: Reducer {
 }
 ```
 
-And then we must make use of the ``Reducer/ifLet(_:action:destination:fileID:line:)`` operator to
+And then we must make use of the ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` operator to
 integrate the domain of the destination with the domain of the parent feature:
 
 ```swift
-struct InventoryFeature: Reducer {
+@Reducer
+struct InventoryFeature {
   // ...
 
   var body: some ReducerOf<Self> {
     Reduce { state, action in 
       // ...
     }
-    .ifLet(\.$destination, action: /Action.destination) { 
+    .ifLet(\.$destination, action: \.destination) { 
       Destination()
     }
   }
@@ -286,22 +292,22 @@ struct InventoryView: View {
     }
     .sheet(
       store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-      state: /InventoryFeature.Destination.State.addItem,
-      action: InventoryFeature.Destination.Action.addItem
+      state: \.addItem,
+      action: { .addItem($0) }
     ) { store in 
       AddFeatureView(store: store)
     }
     .popover(
       store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-      state: /InventoryFeature.Destination.State.editItem,
-      action: InventoryFeature.Destination.Action.editItem
+      state: \.editItem,
+      action: { .editItem($0) }
     ) { store in 
       EditFeatureView(store: store)
     }
     .navigationDestination(
       store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-      state: /InventoryFeature.Destination.State.detailItem,
-      action: InventoryFeature.Destination.Action.detailItem
+      state: \.detailItem,
+      action: { .detailItem($0) }
     ) { store in 
       DetailFeatureView(store: store)
     }
@@ -319,7 +325,7 @@ drill-down will occur immediately.
 One of the best features of tree-based navigation is that it unifies all forms of navigation with a
 single style of API. First of all, regardless of the type of navigation you plan on performing,
 integrating the parent and child features together can be done with the single
-``Reducer/ifLet(_:action:destination:fileID:line:)`` operator. This one single API services all
+``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` operator. This one single API services all
 forms of optional-driven navigation.
 
 And then in the view, whether you are wanting to perform a drill-down, show a sheet, display
@@ -427,18 +433,21 @@ where the rest of your feature's logic and behavior resides. It is accessed via 
 dependency management system (see <doc:DependencyManagement>) using ``DismissEffect``:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   struct State { /* ... */ }
   enum Action { 
     case closeButtonTapped
     // ...
   }
   @Dependency(\.dismiss) var dismiss
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .closeButtonTapped:
-      return .run { _ in await self.dismiss() }
-    } 
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .closeButtonTapped:
+        return .run { _ in await self.dismiss() }
+      }
+    }
   }
 }
 ```
@@ -480,49 +489,53 @@ As an example, consider the following simple counter feature that wants to dismi
 count is greater than or equal to 5:
 
 ```swift
-struct CounterFeature: Reducer {
+@Reducer
+struct CounterFeature {
   struct State: Equatable {
     var count = 0
   }
-  enum Action: Equatable {
+  enum Action {
     case decrementButtonTapped
     case incrementButtonTapped
   }
 
   @Dependency(\.dismiss) var dismiss
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .decrementButtonTapped:
-      state.count -= 1
-      return .none
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .decrementButtonTapped:
+        state.count -= 1
+        return .none
 
-    case .incrementButtonTapped:
-      state.count += 1
-      return state.count >= 5
-        ? .run { _ in await self.dismiss() }
-        : .none
+      case .incrementButtonTapped:
+        state.count += 1
+        return state.count >= 5
+          ? .run { _ in await self.dismiss() }
+          : .none
+      }
     }
   }
 }
 ```
 
 And then let's embed that feature into a parent feature using ``PresentationState``, 
-``PresentationAction`` and ``Reducer/ifLet(_:action:destination:fileID:line:)``:
+``PresentationAction`` and ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at``:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   struct State: Equatable {
     @PresentationState var counter: CounterFeature.State?
   }
-  enum Action: Equatable {
+  enum Action {
     case counter(PresentationAction<CounterFeature.Action>)
   }
-  var body: some ReducerOf<Self> {
+  var body: some Reducer<State, Action> {
     Reduce { state, action in
       // Logic and behavior for core feature.
     }
-    .ifLet(\.$counter, action: /Action.counter) {
+    .ifLet(\.$counter, action: \.counter) {
       CounterFeature()
     }
   }
@@ -564,10 +577,10 @@ await store.send(.counter(.presented(.incrementButtonTapped))) {
 
 And then we finally expect that the child dismisses itself, which manifests itself as the 
 ``PresentationAction/dismiss`` action being sent to `nil` out the `counter` state, which we can
-assert using the ``TestStore/receive(_:timeout:assert:file:line:)-5awso`` method on ``TestStore``:
+assert using the ``TestStore/receive(_:timeout:assert:file:line:)-6325h`` method on ``TestStore``:
 
 ```swift
-await store.receive(.counter(.dismiss)) {
+await store.receive(\.counter.dismiss) {
   $0.counter = nil
 }
 ```
@@ -601,7 +614,7 @@ func testDismissal() {
 
   await store.send(.counter(.presented(.incrementButtonTapped)))
   await store.send(.counter(.presented(.incrementButtonTapped)))
-  await store.receive(.counter(.dismiss)) 
+  await store.receive(\.counter.dismiss) 
 }
 ```
 
@@ -618,7 +631,7 @@ The library provides a tool to perform these steps in a single step, and it is c
 
 ```swift
 await store.send(.destination(.presented(.counter(.incrementButtonTapped)))) {
-  XCTModify(&$0.destination, case: /Feature.Destination.State.counter) { 
+  XCTModify(&$0.destination, case: \.counter) { 
     $0.count = 4
   }
 }

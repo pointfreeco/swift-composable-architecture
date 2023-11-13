@@ -11,7 +11,8 @@ import SwiftUI
 /// For example, a todos app may define the domain and logic associated with an individual todo:
 ///
 /// ```swift
-/// struct Todo: Reducer {
+/// @Reducer
+/// struct Todo {
 ///   struct State: Equatable, Identifiable {
 ///     let id: UUID
 ///     var description = ""
@@ -23,7 +24,7 @@ import SwiftUI
 ///     case descriptionChanged(String)
 ///   }
 ///
-///   func reduce(into state: inout State, action: Action) -> Effect<Action> {
+///   var body: some Reducer<State, Action> {
 ///     // ...
 ///   }
 /// }
@@ -42,7 +43,8 @@ import SwiftUI
 /// state:
 ///
 /// ```swift
-/// struct Todos: Reducer {
+/// @Reducer
+/// struct Todos {
 ///   struct State: Equatable {
 ///     var todos: IdentifiedArrayOf<Todo.State> = []
 ///   }
@@ -54,18 +56,18 @@ import SwiftUI
 ///
 /// ```swift
 /// enum Action {
-///   case todo(id: Todo.State.ID, action: Todo.Action)
+///   case todos(IdentifiedActionOf<Todo>)
 /// }
 /// ```
 ///
-/// Enhance its core reducer using ``Reducer/forEach(_:action:element:fileID:line:)``:
+/// Enhance its core reducer using ``Reducer/forEach(_:action:element:fileID:line:)-247po``:
 ///
 /// ```swift
 /// var body: some Reducer<State, Action> {
 ///   Reduce { state, action in
 ///     // ...
 ///   }
-///   .forEach(\.todos, action: /Action.todo(id:action:)) {
+///   .forEach(\.todos, action: \.todos) {
 ///     Todo()
 ///   }
 /// }
@@ -75,7 +77,7 @@ import SwiftUI
 ///
 /// ```swift
 /// ForEachStore(
-///   self.store.scope(state: \.todos, action: { .todo(id: $0, action: $1) })
+///   self.store.scope(state: \.todos, action: \.todos)
 /// ) { todoStore in
 ///   TodoView(store: todoStore)
 /// }
@@ -94,13 +96,70 @@ public struct ForEachStore<
   ///   - store: A store on an identified array of data and an identified action.
   ///   - content: A function that can generate content given a store of an element.
   public init<EachContent>(
-    _ store: Store<IdentifiedArray<ID, EachState>, (ID, EachAction)>,
+    _ store: Store<IdentifiedArray<ID, EachState>, IdentifiedAction<ID, EachAction>>,
     @ViewBuilder content: @escaping (_ store: Store<EachState, EachAction>) -> EachContent
   )
   where
     Data == IdentifiedArray<ID, EachState>,
     Content == WithViewStore<
-      IdentifiedArray<ID, EachState>, (ID, EachAction),
+      IdentifiedArray<ID, EachState>, IdentifiedAction<ID, EachAction>,
+      ForEach<IdentifiedArray<ID, EachState>, ID, EachContent>
+    >
+  {
+    self.data = store.withState { $0 }
+    self.content = WithViewStore(
+      store,
+      observe: { $0 },
+      removeDuplicates: { areOrderedSetsDuplicates($0.ids, $1.ids) }
+    ) { viewStore in
+      ForEach(viewStore.state, id: viewStore.state.id) { element in
+        var element = element
+        let id = element[keyPath: viewStore.state.id]
+        content(
+          store.scope(
+            state: {
+              element = $0[id: id] ?? element
+              return element
+            },
+            action: { .element(id: id, action: $0) }
+          )
+        )
+      }
+    }
+  }
+
+  @available(
+    iOS,
+    deprecated: 9999,
+    message:
+      "Use an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Identified-actions"
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message:
+      "Use an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Identified-actions"
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message:
+      "Use an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Identified-actions"
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message:
+      "Use an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Identified-actions"
+  )
+  public init<EachContent>(
+    _ store: Store<IdentifiedArray<ID, EachState>, (id: ID, action: EachAction)>,
+    @ViewBuilder content: @escaping (_ store: Store<EachState, EachAction>) -> EachContent
+  )
+  where
+    Data == IdentifiedArray<ID, EachState>,
+    Content == WithViewStore<
+      IdentifiedArray<ID, EachState>, (id: ID, action: EachAction),
       ForEach<IdentifiedArray<ID, EachState>, ID, EachContent>
     >
   {

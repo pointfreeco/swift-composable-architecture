@@ -13,16 +13,17 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct Refreshable: Reducer {
+@Reducer
+struct Refreshable {
   struct State: Equatable {
     var count = 0
     var fact: String?
   }
 
-  enum Action: Equatable {
+  enum Action {
     case cancelButtonTapped
     case decrementButtonTapped
-    case factResponse(TaskResult<String>)
+    case factResponse(Result<String, Error>)
     case incrementButtonTapped
     case refresh
   }
@@ -30,36 +31,38 @@ struct Refreshable: Reducer {
   @Dependency(\.factClient) var factClient
   private enum CancelID { case factRequest }
 
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .cancelButtonTapped:
-      return .cancel(id: CancelID.factRequest)
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .cancelButtonTapped:
+        return .cancel(id: CancelID.factRequest)
 
-    case .decrementButtonTapped:
-      state.count -= 1
-      return .none
+      case .decrementButtonTapped:
+        state.count -= 1
+        return .none
 
-    case let .factResponse(.success(fact)):
-      state.fact = fact
-      return .none
+      case let .factResponse(.success(fact)):
+        state.fact = fact
+        return .none
 
-    case .factResponse(.failure):
-      // NB: This is where you could do some error handling.
-      return .none
+      case .factResponse(.failure):
+        // NB: This is where you could do some error handling.
+        return .none
 
-    case .incrementButtonTapped:
-      state.count += 1
-      return .none
+      case .incrementButtonTapped:
+        state.count += 1
+        return .none
 
-    case .refresh:
-      state.fact = nil
-      return .run { [count = state.count] send in
-        await send(
-          .factResponse(TaskResult { try await self.factClient.fetch(count) }),
-          animation: .default
-        )
+      case .refresh:
+        state.fact = nil
+        return .run { [count = state.count] send in
+          await send(
+            .factResponse(Result { try await self.factClient.fetch(count) }),
+            animation: .default
+          )
+        }
+        .cancellable(id: CancelID.factRequest)
       }
-      .cancellable(id: CancelID.factRequest)
     }
   }
 }

@@ -21,8 +21,7 @@ use these tools.
 - <doc:TreeBasedNavigation>
 - ``PresentationState``
 - ``PresentationAction``
-- ``Reducer/ifLet(_:action:destination:fileID:line:)``
-- ``DismissEffect``
+- ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at``
 
 ### Stack-based navigation
 
@@ -30,5 +29,8 @@ use these tools.
 - ``StackState``
 - ``StackAction``
 - ``StackElementID``
-- ``Reducer/forEach(_:action:destination:fileID:line:)``
+- ``Reducer/forEach(_:action:destination:fileID:line:)-yz3v``
+
+### Dismissal
+
 - ``DismissEffect``

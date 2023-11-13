@@ -5,7 +5,8 @@ extension Reducer {
   /// states, then `ifCaseLet` can run a child reducer on a particular case of the enum:
   ///
   /// ```swift
-  /// struct Parent: Reducer {
+  /// @Reducer
+  /// struct Parent {
   ///   enum State {
   ///     case loggedIn(Authenticated.State)
   ///     case loggedOut(Unauthenticated.State)
@@ -20,10 +21,10 @@ extension Reducer {
   ///     Reduce { state, action in
   ///       // Core logic for parent feature
   ///     }
-  ///     .ifCaseLet(/State.loggedIn, action: /Action.loggedIn) {
+  ///     .ifCaseLet(\.loggedIn, action: \.loggedIn) {
   ///       Authenticated()
   ///     }
-  ///     .ifCaseLet(/State.loggedOut, action: /Action.loggedOut) {
+  ///     .ifCaseLet(\.loggedOut, action: \.loggedOut) {
   ///       Unauthenticated()
   ///     }
   ///   }
@@ -52,8 +53,57 @@ extension Reducer {
   @inlinable
   @warn_unqualified_access
   public func ifCaseLet<CaseState, CaseAction, Case: Reducer>(
-    _ toCaseState: CasePath<State, CaseState>,
-    action toCaseAction: CasePath<Action, CaseAction>,
+    _ toCaseState: CaseKeyPath<State, CaseState>,
+    action toCaseAction: CaseKeyPath<Action, CaseAction>,
+    @ReducerBuilder<CaseState, CaseAction> then case: () -> Case,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> _IfCaseLetReducer<Self, Case>
+  where
+    State: CasePathable,
+    CaseState == Case.State,
+    Action: CasePathable,
+    CaseAction == Case.Action
+  {
+    .init(
+      parent: self,
+      child: `case`(),
+      toChildState: AnyCasePath(toCaseState),
+      toChildAction: AnyCasePath(toCaseAction),
+      fileID: fileID,
+      line: line
+    )
+  }
+
+  @available(
+    iOS,
+    deprecated: 9999,
+    message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
+  )
+  @inlinable
+  @warn_unqualified_access
+  public func ifCaseLet<CaseState, CaseAction, Case: Reducer>(
+    _ toCaseState: AnyCasePath<State, CaseState>,
+    action toCaseAction: AnyCasePath<Action, CaseAction>,
     @ReducerBuilder<CaseState, CaseAction> then case: () -> Case,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -78,10 +128,10 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   let child: Child
 
   @usableFromInline
-  let toChildState: CasePath<Parent.State, Child.State>
+  let toChildState: AnyCasePath<Parent.State, Child.State>
 
   @usableFromInline
-  let toChildAction: CasePath<Parent.Action, Child.Action>
+  let toChildAction: AnyCasePath<Parent.Action, Child.Action>
 
   @usableFromInline
   let fileID: StaticString
@@ -95,8 +145,8 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   init(
     parent: Parent,
     child: Child,
-    toChildState: CasePath<Parent.State, Child.State>,
-    toChildAction: CasePath<Parent.Action, Child.Action>,
+    toChildState: AnyCasePath<Parent.State, Child.State>,
+    toChildAction: AnyCasePath<Parent.Action, Child.Action>,
     fileID: StaticString,
     line: UInt
   ) {

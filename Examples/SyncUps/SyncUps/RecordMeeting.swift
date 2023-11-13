@@ -2,7 +2,8 @@ import ComposableArchitecture
 import Speech
 import SwiftUI
 
-struct RecordMeeting: Reducer {
+@Reducer
+struct RecordMeeting {
   struct State: Equatable {
     @PresentationState var alert: AlertState<Action.Alert>?
     var secondsElapsed = 0
@@ -14,7 +15,8 @@ struct RecordMeeting: Reducer {
       self.syncUp.duration - .seconds(self.secondsElapsed)
     }
   }
-  enum Action: Equatable {
+
+  enum Action {
     case alert(PresentationAction<Alert>)
     case delegate(Delegate)
     case endMeetingButtonTapped
@@ -28,7 +30,8 @@ struct RecordMeeting: Reducer {
       case confirmDiscard
       case confirmSave
     }
-    enum Delegate: Equatable {
+    @CasePathable
+    enum Delegate {
       case save(transcript: String)
     }
   }
@@ -122,7 +125,7 @@ struct RecordMeeting: Reducer {
         return .none
       }
     }
-    .ifLet(\.$alert, action: /Action.alert)
+    .ifLet(\.$alert, action: \.alert)
   }
 
   private func startSpeechRecognition(send: Send<Action>) async {

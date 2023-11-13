@@ -4,8 +4,8 @@ import XCTest
 
 @MainActor
 final class BasicsTests: BaseIntegrationTests {
-  override func setUp() {
-    super.setUp()
+  override func setUpWithError() throws {
+    try super.setUpWithError()
     self.app.buttons["iOS 16"].tap()
     self.app.buttons["Basics"].tap()
     self.clearLogs()
@@ -20,7 +20,7 @@ final class BasicsTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.scope
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
-      WithStoreOf<BasicsView.Feature>.body
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
     self.app.buttons["Decrement"].tap()
@@ -30,7 +30,7 @@ final class BasicsTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.scope
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
-      WithStoreOf<BasicsView.Feature>.body
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
   }

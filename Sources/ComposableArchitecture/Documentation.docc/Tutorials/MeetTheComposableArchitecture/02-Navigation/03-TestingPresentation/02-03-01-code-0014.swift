@@ -20,7 +20,7 @@ final class ContactsFeatureTests: XCTestCase {
       )
     }
     await store.send(.destination(.presented(.addContact(.setName("Blob Jr."))))) {
-      $0.$destination[case: /ContactsFeature.Destination.State.addContact]?.contact.name = "Blob Jr."
+      $0.$destination[case: \.addContact]?.contact.name = "Blob Jr."
     }
     await store.send(.destination(.presented(.addContact(.saveButtonTapped))))
     await store.receive(

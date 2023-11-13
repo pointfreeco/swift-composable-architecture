@@ -56,10 +56,11 @@ day-to-day when building applications, such as:
 
 ### State management
 
-- ``Reducer``
+- ``Reducer()``
 - ``Effect``
 - ``Store``
 - ``ViewStore``
+
 ### Testing
 
 - ``TestStore``
@@ -69,6 +70,10 @@ day-to-day when building applications, such as:
 - <doc:SwiftConcurrency>
 - <doc:SwiftUIIntegration>
 - <doc:UIKit>
+
+### Migration guides
+
+- <doc:MigratingTo1.4>
 
 ## See Also
 

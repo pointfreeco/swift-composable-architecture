@@ -3,9 +3,10 @@ import ComposableArchitecture
 import Dispatch
 import TwoFactorCore
 
-public struct Login: Reducer, Sendable {
+@Reducer
+public struct Login: Sendable {
   public struct State: Equatable {
-    @PresentationState public var alert: AlertState<AlertAction>?
+    @PresentationState public var alert: AlertState<Action.Alert>?
     @BindingState public var email = ""
     public var isFormValid = false
     public var isLoginRequestInFlight = false
@@ -15,26 +16,26 @@ public struct Login: Reducer, Sendable {
     public init() {}
   }
 
-  public enum Action: Equatable, Sendable {
-    case alert(PresentationAction<AlertAction>)
-    case loginResponse(TaskResult<AuthenticationResponse>)
+  public enum Action: Sendable {
+    case alert(PresentationAction<Alert>)
+    case loginResponse(Result<AuthenticationResponse, Error>)
     case twoFactor(PresentationAction<TwoFactor.Action>)
     case view(View)
 
-    public enum View: BindableAction, Equatable, Sendable {
+    public enum Alert: Equatable, Sendable {}
+
+    public enum View: BindableAction, Sendable {
       case binding(BindingAction<State>)
       case loginButtonTapped
     }
   }
-
-  public enum AlertAction: Equatable, Sendable {}
 
   @Dependency(\.authenticationClient) var authenticationClient
 
   public init() {}
 
   public var body: some Reducer<State, Action> {
-    BindingReducer(action: /Action.view)
+    BindingReducer(action: \.view)
     Reduce { state, action in
       switch action {
       case .alert:
@@ -64,7 +65,7 @@ public struct Login: Reducer, Sendable {
         return .run { [email = state.email, password = state.password] send in
           await send(
             .loginResponse(
-              await TaskResult {
+              await Result {
                 try await self.authenticationClient.login(
                   .init(email: email, password: password)
                 )
@@ -74,8 +75,8 @@ public struct Login: Reducer, Sendable {
         }
       }
     }
-    .ifLet(\.$alert, action: /Action.alert)
-    .ifLet(\.$twoFactor, action: /Action.twoFactor) {
+    .ifLet(\.$alert, action: \.alert)
+    .ifLet(\.$twoFactor, action: \.twoFactor) {
       TwoFactor()
     }
   }

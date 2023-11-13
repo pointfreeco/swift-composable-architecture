@@ -6,11 +6,12 @@ struct Contact: Equatable, Identifiable {
   var name: String
 }
 
-struct ContactsFeature: Reducer {
+@Reducer
+struct ContactsFeature {
   struct State: Equatable {
     var contacts: IdentifiedArrayOf<Contact> = []
   }
-  enum Action: Equatable {
+  enum Action {
     case addButtonTapped
   }
   var body: some ReducerOf<Self> {

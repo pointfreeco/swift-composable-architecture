@@ -16,7 +16,8 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct SharedState: Reducer {
+@Reducer
+struct SharedState {
   enum Tab { case counter, profile }
 
   struct State: Equatable {
@@ -46,18 +47,18 @@ struct SharedState: Reducer {
     }
   }
 
-  enum Action: Equatable {
+  enum Action {
     case counter(Counter.Action)
     case profile(Profile.Action)
     case selectTab(Tab)
   }
 
   var body: some Reducer<State, Action> {
-    Scope(state: \.counter, action: /Action.counter) {
+    Scope(state: \.counter, action: \.counter) {
       Counter()
     }
 
-    Scope(state: \.profile, action: /Action.profile) {
+    Scope(state: \.profile, action: \.profile) {
       Profile()
     }
 
@@ -72,7 +73,8 @@ struct SharedState: Reducer {
     }
   }
 
-  struct Counter: Reducer {
+  @Reducer
+  struct Counter {
     struct State: Equatable {
       @PresentationState var alert: AlertState<Action.Alert>?
       var count = 0
@@ -81,7 +83,7 @@ struct SharedState: Reducer {
       var numberOfCounts = 0
     }
 
-    enum Action: Equatable {
+    enum Action {
       case alert(PresentationAction<Alert>)
       case decrementButtonTapped
       case incrementButtonTapped
@@ -119,11 +121,12 @@ struct SharedState: Reducer {
           return .none
         }
       }
-      .ifLet(\.$alert, action: /Action.alert)
+      .ifLet(\.$alert, action: \.alert)
     }
   }
 
-  struct Profile: Reducer {
+  @Reducer
+  struct Profile {
     struct State: Equatable {
       private(set) var currentTab: Tab
       private(set) var count = 0
@@ -140,15 +143,17 @@ struct SharedState: Reducer {
       }
     }
 
-    enum Action: Equatable {
+    enum Action {
       case resetCounterButtonTapped
     }
 
-    func reduce(into state: inout State, action: Action) -> Effect<Action> {
-      switch action {
-      case .resetCounterButtonTapped:
-        state.resetCount()
-        return .none
+    var body: some Reducer<State, Action> {
+      Reduce { state, action in
+        switch action {
+        case .resetCounterButtonTapped:
+          state.resetCount()
+          return .none
+        }
       }
     }
   }

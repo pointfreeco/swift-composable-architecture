@@ -1,13 +1,14 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct AppFeature: Reducer {
+@Reducer
+struct AppFeature {
   struct State: Equatable {
     var path = StackState<Path.State>()
     var syncUpsList = SyncUpsList.State()
   }
 
-  enum Action: Equatable {
+  enum Action {
     case path(StackAction<Path.State, Path.Action>)
     case syncUpsList(SyncUpsList.Action)
   }
@@ -22,7 +23,7 @@ struct AppFeature: Reducer {
   }
 
   var body: some ReducerOf<Self> {
-    Scope(state: \.syncUpsList, action: /Action.syncUpsList) {
+    Scope(state: \.syncUpsList, action: \.syncUpsList) {
       SyncUpsList()
     }
     Reduce { state, action in
@@ -58,7 +59,7 @@ struct AppFeature: Reducer {
             return .none
           }
 
-          state.path[id: id, case: /Path.State.detail]?.syncUp.meetings.insert(
+          state.path[id: id, case: \.detail]?.syncUp.meetings.insert(
             Meeting(
               id: Meeting.ID(self.uuid()),
               date: self.now,
@@ -66,7 +67,7 @@ struct AppFeature: Reducer {
             ),
             at: 0
           )
-          guard let syncUp = state.path[id: id, case: /Path.State.detail]?.syncUp
+          guard let syncUp = state.path[id: id, case: \.detail]?.syncUp
           else { return .none }
           state.syncUpsList.syncUps[id: syncUp.id] = syncUp
           return .none
@@ -79,7 +80,7 @@ struct AppFeature: Reducer {
         return .none
       }
     }
-    .forEach(\.path, action: /Action.path) {
+    .forEach(\.path, action: \.path) {
       Path()
     }
 
@@ -94,23 +95,24 @@ struct AppFeature: Reducer {
     }
   }
 
-  struct Path: Reducer {
+  @Reducer
+  struct Path {
     enum State: Equatable {
       case detail(SyncUpDetail.State)
       case meeting(Meeting, syncUp: SyncUp)
       case record(RecordMeeting.State)
     }
 
-    enum Action: Equatable {
+    enum Action {
       case detail(SyncUpDetail.Action)
       case record(RecordMeeting.Action)
     }
 
     var body: some Reducer<State, Action> {
-      Scope(state: /State.detail, action: /Action.detail) {
+      Scope(state: \.detail, action: \.detail) {
         SyncUpDetail()
       }
-      Scope(state: /State.record, action: /Action.record) {
+      Scope(state: \.record, action: \.record) {
         RecordMeeting()
       }
     }
@@ -129,7 +131,7 @@ struct AppView: View {
       switch $0 {
       case .detail:
         CaseLet(
-          /AppFeature.Path.State.detail,
+          \AppFeature.Path.State.detail,
           action: AppFeature.Path.Action.detail,
           then: SyncUpDetailView.init(store:)
         )
@@ -137,7 +139,7 @@ struct AppView: View {
         MeetingView(meeting: meeting, syncUp: syncUp)
       case .record:
         CaseLet(
-          /AppFeature.Path.State.record,
+          \AppFeature.Path.State.record,
           action: AppFeature.Path.Action.record,
           then: RecordMeetingView.init(store:)
         )

@@ -10,7 +10,8 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-struct PresentAndLoad: Reducer {
+@Reducer
+struct PresentAndLoad {
   struct State: Equatable {
     var optionalCounter: Counter.State?
     var isSheetPresented = false
@@ -49,7 +50,7 @@ struct PresentAndLoad: Reducer {
         return .none
       }
     }
-    .ifLet(\.optionalCounter, action: /Action.optionalCounter) {
+    .ifLet(\.optionalCounter, action: \.optionalCounter) {
       Counter()
     }
   }

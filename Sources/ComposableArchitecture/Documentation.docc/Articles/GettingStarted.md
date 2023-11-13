@@ -56,10 +56,11 @@ tapped makes an API request to fetch a random fact about that number and then di
 an alert.
 
 To implement this feature we create a new type that will house the domain and behavior of the 
-feature by conforming to ``Reducer``:
+feature, and you will annotate the type with the ``Reducer()`` macro:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
 }
 ```
 
@@ -68,7 +69,8 @@ current count, as well as an optional string that represents the title of the al
 (optional because `nil` represents not showing an alert):
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   struct State: Equatable {
     var count = 0
     var numberFactAlert: String?
@@ -82,9 +84,10 @@ non-obvious ones, such as the action of the user dismissing the alert, and the a
 when we receive a response from the fact API request:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   struct State: Equatable { /* ... */ }
-  enum Action: Equatable {
+  enum Action {
     case factAlertDismissed
     case decrementButtonTapped
     case incrementButtonTapped
@@ -94,43 +97,46 @@ struct Feature: Reducer {
 }
 ```
 
-And then we implement the ``Reducer/reduce(into:action:)-1t2ri`` method which is responsible for
-handling the actual logic and  behavior for the feature. It describes how to change the current
-state to the next state, and describes what effects need to be executed. Some actions don't need to 
-execute effects, and they can return `.none` to represent that:
+And then we implement the ``Reducer/body-swift.property`` property, which is responsible for
+handling the actual logic and behavior for the feature. In it we can use the ``Reduce`` reducer to
+describe how to change the current state to the next state, and what effects need to be executed.
+Some actions don't need to execute effects, and they can return ``Effect/none`` to represent that:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   struct State: Equatable { /* ... */ }
-  enum Action: Equatable { /* ... */ }
-  
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    switch action {
-    case .factAlertDismissed:
-      state.numberFactAlert = nil
-      return .none
+  enum Action { /* ... */ }
 
-    case .decrementButtonTapped:
-      state.count -= 1
-      return .none
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .factAlertDismissed:
+        state.numberFactAlert = nil
+        return .none
 
-    case .incrementButtonTapped:
-      state.count += 1
-      return .none
+      case .decrementButtonTapped:
+        state.count -= 1
+        return .none
 
-    case .numberFactButtonTapped:
-      return .run { [count = state.count] send in
-        let (data, _) = try await URLSession.shared.data(
-          from: URL(string: "http://numbersapi.com/\(count)/trivia")!
-        )
-        await send(
-          .numberFactResponse(String(decoding: data, as: UTF8.self))
-        )
+      case .incrementButtonTapped:
+        state.count += 1
+        return .none
+
+      case .numberFactButtonTapped:
+        return .run { [count = state.count] send in
+          let (data, _) = try await URLSession.shared.data(
+            from: URL(string: "http://numbersapi.com/\(count)/trivia")!
+          )
+          await send(
+            .numberFactResponse(String(decoding: data, as: UTF8.self))
+          )
+        }
+
+      case let .numberFactResponse(fact):
+        state.numberFactAlert = fact
+        return .none
       }
-
-    case let .numberFactResponse(fact):
-      state.numberFactAlert = fact
-      return .none
     }
   }
 }
@@ -294,7 +300,7 @@ receive a fact response back with the fact, which then causes the alert to show:
 ```swift
 await store.send(.numberFactButtonTapped)
 
-await store.receive(.numberFactResponse("???")) {
+await store.receive(\.numberFactResponse) {
   $0.numberFactAlert = "???"
 }
 ```
@@ -310,7 +316,8 @@ dependency when running the application on a device, but use a mocked dependency
 can do this by adding a property to the `Feature` reducer:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   let numberFact: (Int) async throws -> String
   // ...
 }
@@ -367,7 +374,7 @@ the alert:
 ```swift
 await store.send(.numberFactButtonTapped)
 
-await store.receive(.numberFactResponse("0 is a good number Brent")) {
+await store.receive(\.numberFactResponse) {
   $0.numberFactAlert = "0 is a good number Brent"
 }
 
@@ -418,7 +425,8 @@ With that little bit of upfront work done you can instantly start making use of 
 any feature:
 
 ```swift
-struct Feature: Reducer {
+@Reducer
+struct Feature {
   struct State { /* ... */ }
   enum Action { /* ... */ }
   @Dependency(\.numberFact) var numberFact
@@ -457,7 +465,7 @@ let store = TestStore(initialState: Feature.State()) {
 }
 
 await store.send(.numberFactButtonTapped)
-await store.receive(.numberFactResponse("0 is a good number Brent")) {
+await store.receive(\.numberFactResponse) {
   $0.numberFactAlert = "0 is a good number Brent"
 }
 ```

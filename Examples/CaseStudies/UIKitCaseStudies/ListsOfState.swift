@@ -3,18 +3,19 @@ import ComposableArchitecture
 import SwiftUI
 import UIKit
 
-struct CounterList: Reducer {
+@Reducer
+struct CounterList {
   struct State: Equatable {
     var counters: IdentifiedArrayOf<Counter.State> = []
   }
 
-  enum Action: Equatable {
-    case counter(id: Counter.State.ID, action: Counter.Action)
+  enum Action {
+    case counters(IdentifiedActionOf<Counter>)
   }
 
   var body: some Reducer<State, Action> {
     EmptyReducer()
-      .forEach(\.counters, action: /Action.counter) {
+      .forEach(\.counters, action: \.counters) {
         Counter()
       }
   }
@@ -69,7 +70,7 @@ final class CountersTableViewController: UITableViewController {
       CounterViewController(
         store: self.store.scope(
           state: \.counters[indexPathRow],
-          action: { .counter(id: counter.id, action: $0) }
+          action: { .counters(.element(id: counter.id, action: $0)) }
         )
       ),
       animated: true
