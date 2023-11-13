@@ -122,7 +122,7 @@ struct PresentationItemTestCaseView: View {
       }
       self.core
         .sheet(
-          store: self.store.scope(state: \.$destination.childA, action: \.destination.childB)
+          store: self.store.scope(state: \.$destination.childA, action: \.destination.childA)
         ) { store in
           Text("Child A")
           Button("Swap") {

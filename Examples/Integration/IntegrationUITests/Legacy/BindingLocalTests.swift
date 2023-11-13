@@ -3,9 +3,9 @@ import XCTest
 
 @MainActor
 final class BindingLocalTests: BaseIntegrationTests {
-  override func setUp() async throws {
+  override func setUpWithError() throws {
     try XCTSkipIf(ProcessInfo.processInfo.environment["CI"] != nil)
-    try await super.setUp()
+    try super.setUpWithError()
     self.app.buttons["Legacy"].tap()
   }
 
