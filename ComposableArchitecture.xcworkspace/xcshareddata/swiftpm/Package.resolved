@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-case-paths",
       "state" : {
-        "branch" : "case-key-paths",
-        "revision" : "745b1f1123c613a04d6cb09409cfa34e9150beeb"
+        "revision" : "40773cbaf8d71ed5357f297b1ba4073f5b24faaa",
+        "version" : "1.1.0"
       }
     },
     {
@@ -149,8 +149,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swiftui-navigation.git",
       "state" : {
-        "branch" : "case-key-paths",
-        "revision" : "3285fbeadb9d9fcfff01714f62e06d124f954f40"
+        "revision" : "a3aa5d46e8bf174d773d23b030f1c103999398ac",
+        "version" : "1.1.0"
       }
     },
     {
