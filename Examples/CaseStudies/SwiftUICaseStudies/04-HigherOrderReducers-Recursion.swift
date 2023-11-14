@@ -11,7 +11,7 @@ private let readMe = """
 // MARK: - Feature domain
 
 @Reducer
-struct Nested: Reducer {
+struct Nested {
   struct State: Equatable, Identifiable {
     let id: UUID
     var name: String = ""
