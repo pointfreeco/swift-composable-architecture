@@ -425,7 +425,7 @@ public final class Store<State, Action> {
           id: ($0[keyPath: state] as? any ObservableState)?._$id
         )
       },
-      action: { action($1) },
+      action: { action($0) },
       isInvalid: isInvalid,
       removeDuplicates: nil
     )

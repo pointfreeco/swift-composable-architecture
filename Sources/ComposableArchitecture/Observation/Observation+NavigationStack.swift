@@ -53,7 +53,7 @@ public struct _NavigationDestinationViewModifier<
                   return state
                 },
                 id: { _ in component.id },
-                action: { .element(id: component.id, action: $1) },
+                action: { .element(id: component.id, action: $0) },
                 isInvalid: { !$0.ids.contains(component.id) },
                 removeDuplicates: nil
               )

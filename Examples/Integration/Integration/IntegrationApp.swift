@@ -73,6 +73,7 @@ struct ContentView: View {
   @State var isBindingLocalTestCasePresented = false
   @State var isNavigationStackTestCasePresented = false
   @State var isNavigationTestCasePresented = false
+  @State var isObservableNavigationTestCasePresented = false
 
   var body: some View {
     NavigationStack {

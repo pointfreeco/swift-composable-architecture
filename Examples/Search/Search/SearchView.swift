@@ -32,9 +32,9 @@ struct Search {
     }
   }
 
-  enum Action: BindableAction, Equatable {
+  enum Action: BindableAction {
     case binding(BindingAction<State>)
-    case forecastResponse(GeocodingSearch.Result.ID, TaskResult<Forecast>)
+    case forecastResponse(GeocodingSearch.Result.ID, Result<Forecast, Error>)
     case searchQueryChangeDebounced
     case searchResponse(Result<GeocodingSearch, Error>)
     case searchResultTapped(GeocodingSearch.Result)

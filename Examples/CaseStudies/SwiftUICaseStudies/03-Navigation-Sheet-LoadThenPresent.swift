@@ -61,7 +61,7 @@ struct LoadThenPresentView: View {
   }
 
   var body: some View {
-    ObservedView {
+    PerceptiveView {
       Form {
         Section {
           AboutView(readMe: readMe)

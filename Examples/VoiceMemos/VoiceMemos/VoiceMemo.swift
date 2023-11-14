@@ -11,6 +11,21 @@ struct VoiceMemo {
     var title = ""
     var url: URL
 
+    // TODO: Why is this needed?
+    init(
+      date: Date,
+      duration: TimeInterval,
+      mode: Mode = .notPlaying,
+      title: String = "",
+      url: URL
+    ) {
+      self.date = date
+      self.duration = duration
+      self.mode = mode
+      self.title = title
+      self.url = url
+    }
+
     var id: URL { self.url }
 
     @CasePathable
@@ -22,7 +37,7 @@ struct VoiceMemo {
   }
 
   enum Action: BindableAction {
-    case audioPlayerClient(Result<Bool>)
+    case audioPlayerClient(Result<Bool, Error>)
     case binding(BindingAction<State>)
     case delegate(Delegate)
     case playButtonTapped
@@ -105,7 +120,7 @@ struct VoiceMemoView: View {
 
   var body: some View {
     let currentTime =
-      self.store.mode.progress.map { $0 * self.store.duration } ?? self.store.duration
+      self.store.mode.playing.map { $0 * self.store.duration } ?? self.store.duration
     HStack {
       TextField(
         "Untitled, \(self.store.date.formatted(date: .numeric, time: .shortened))",
@@ -123,21 +138,21 @@ struct VoiceMemoView: View {
       Button {
         self.store.send(.playButtonTapped)
       } label: {
-        Image(systemName: self.store.mode.isPlaying ? "stop.circle" : "play.circle")
+        Image(systemName: self.store.mode.is(\.playing) ? "stop.circle" : "play.circle")
           .font(.system(size: 22))
       }
     }
     .buttonStyle(.borderless)
     .frame(maxHeight: .infinity, alignment: .center)
     .padding(.horizontal)
-    .listRowBackground(self.store.mode.isPlaying ? Color(.systemGray6) : .clear)
+    .listRowBackground(self.store.mode.is(\.playing) ? Color(.systemGray6) : .clear)
     .listRowInsets(EdgeInsets())
     .background(
       Color(.systemGray5)
-        .frame(maxWidth: self.store.mode.isPlaying ? .infinity : 0)
+        .frame(maxWidth: self.store.mode.is(\.playing) ? .infinity : 0)
         .animation(
-          self.store.mode.isPlaying ? .linear(duration: self.store.duration) : nil,
-          value: self.store.mode.isPlaying
+          self.store.mode.is(\.playing) ? .linear(duration: self.store.duration) : nil,
+          value: self.store.mode.is(\.playing)
         ),
       alignment: .leading
     )

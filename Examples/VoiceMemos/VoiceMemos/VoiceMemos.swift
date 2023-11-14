@@ -27,7 +27,7 @@ struct VoiceMemos {
     case recordingMemo(PresentationAction<RecordingMemo.Action>)
     case voiceMemos(IdentifiedActionOf<VoiceMemo>)
 
-    enum Alert {}
+    enum Alert: Equatable {}
   }
 
   @Dependency(\.audioRecorder.requestRecordPermission) var requestRecordPermission

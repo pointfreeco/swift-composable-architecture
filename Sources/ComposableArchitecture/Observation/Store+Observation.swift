@@ -93,7 +93,7 @@ extension Store where State: ObservableState {
           id: ($0[keyPath: toChildState] as? any ObservableState)?._$id
         )
       },
-      action: { toChildAction($1) },
+      action: { toChildAction($0) },
       isInvalid: { $0[keyPath: toChildState] == nil },
       removeDuplicates: nil
     )

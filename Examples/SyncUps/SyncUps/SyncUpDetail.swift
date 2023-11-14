@@ -7,6 +7,15 @@ struct SyncUpDetail {
   struct State: Equatable {
     @PresentationState var destination: Destination.State?
     var syncUp: SyncUp
+
+    // TODO: Why is this needed?
+    init(
+      destination: Destination.State? = nil,
+      syncUp: SyncUp
+    ) {
+      self.destination = destination
+      self.syncUp = syncUp
+    }
   }
 
   enum Action: Sendable {
@@ -137,7 +146,7 @@ struct SyncUpDetailView: View {
   @State var store: StoreOf<SyncUpDetail>
 
   var body: some View {
-    ObservedView {
+    PerceptiveView {
       List {
         Section {
           Button {
@@ -213,7 +222,7 @@ struct SyncUpDetailView: View {
       .sheet(
         item: self.$store.scope(state: \.destination?.edit, action: \.destination.edit)
       ) { store in
-        ObservedView {
+        PerceptiveView {
           NavigationStack {
             SyncUpFormView(store: store)
               .navigationTitle(self.store.syncUp.title)

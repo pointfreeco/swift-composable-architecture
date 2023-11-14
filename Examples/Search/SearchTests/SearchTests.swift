@@ -12,14 +12,14 @@ final class SearchTests: XCTestCase {
       $0.weatherClient.search = { _ in .mock }
     }
 
-    await store.send(.searchQueryChanged("S")) {
+    await store.send(.binding(.set(\.searchQuery, "S"))) {
       $0.searchQuery = "S"
     }
     await store.send(.searchQueryChangeDebounced)
     await store.receive(\.searchResponse.success) {
       $0.results = GeocodingSearch.mock.results
     }
-    await store.send(.searchQueryChanged("")) {
+    await store.send(.binding(.set(\.searchQuery, ""))) {
       $0.results = []
       $0.searchQuery = ""
     }
@@ -32,7 +32,7 @@ final class SearchTests: XCTestCase {
       $0.weatherClient.search = { _ in throw SomethingWentWrong() }
     }
 
-    await store.send(.searchQueryChanged("S")) {
+    await store.send(.binding(.set(\.searchQuery, "S"))) {
       $0.searchQuery = "S"
     }
     await store.send(.searchQueryChangeDebounced)
@@ -46,11 +46,11 @@ final class SearchTests: XCTestCase {
       $0.weatherClient.search = { _ in .mock }
     }
 
-    let searchQueryChanged = await store.send(.searchQueryChanged("S")) {
+    let searchQueryChanged = await store.send(.binding(.set(\.searchQuery, "S"))) {
       $0.searchQuery = "S"
     }
     await searchQueryChanged.cancel()
-    await store.send(.searchQueryChanged("")) {
+    await store.send(.binding(.set(\.searchQuery, ""))) {
       $0.searchQuery = ""
     }
   }

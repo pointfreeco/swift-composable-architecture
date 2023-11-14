@@ -7,7 +7,7 @@ import TwoFactorCore
 public struct Login: Sendable {
   @ObservableState
   public struct State: Equatable {
-    @PresentationState public var alert: AlertState<AlertAction>?
+    @PresentationState public var alert: AlertState<Action.Alert>?
     public var email = ""
     public var isFormValid = false
     public var isLoginRequestInFlight = false
@@ -18,7 +18,7 @@ public struct Login: Sendable {
   }
 
   public enum Action: Sendable, ViewAction {
-    case alert(PresentationAction<AlertAction>)
+    case alert(PresentationAction<Alert>)
     case loginResponse(Result<AuthenticationResponse, Error>)
     case twoFactor(PresentationAction<TwoFactor.Action>)
     case view(View)

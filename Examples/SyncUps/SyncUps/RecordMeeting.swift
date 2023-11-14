@@ -12,6 +12,21 @@ struct RecordMeeting {
     var syncUp: SyncUp
     var transcript = ""
 
+    // TODO: Why is this needed?
+    init(
+      alert: AlertState<Action.Alert>? = nil,
+      secondsElapsed: Int = 0,
+      speakerIndex: Int = 0,
+      syncUp: SyncUp,
+      transcript: String = ""
+    ) {
+      self.alert = alert
+      self.secondsElapsed = secondsElapsed
+      self.speakerIndex = speakerIndex
+      self.syncUp = syncUp
+      self.transcript = transcript
+    }
+
     var durationRemaining: Duration {
       self.syncUp.duration - .seconds(self.secondsElapsed)
     }
@@ -151,7 +166,7 @@ struct RecordMeetingView: View {
   @State var store: StoreOf<RecordMeeting>
 
   var body: some View {
-    ObservedView {
+    PerceptiveView {
       ZStack {
         RoundedRectangle(cornerRadius: 16)
           .fill(self.store.syncUp.theme.mainColor)

@@ -33,7 +33,7 @@ fileprivate extension Array {
       store.scope(
         state: { $0[id: id]! },
         id: { _ in id },
-        action: { .element(id: id, action: $1) },
+        action: { .element(id: id, action: $0) },
         isInvalid: { !$0.ids.contains(id) },
         removeDuplicates: nil
       )

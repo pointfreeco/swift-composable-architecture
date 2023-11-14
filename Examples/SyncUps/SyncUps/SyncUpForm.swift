@@ -65,7 +65,7 @@ struct SyncUpFormView: View {
   @FocusState var focus: SyncUpForm.State.Field?
 
   var body: some View {
-    ObservedView {
+    PerceptiveView {
       Form {
         Section {
           TextField("Title", text: self.$store.syncUp.title)

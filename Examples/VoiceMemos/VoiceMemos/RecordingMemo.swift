@@ -10,6 +10,19 @@ struct RecordingMemo {
     var mode: Mode = .recording
     var url: URL
 
+    // TODO: Why is this needed?
+    init(
+      date: Date,
+      duration: TimeInterval = 0,
+      mode: Mode = .recording,
+      url: URL
+    ) {
+      self.date = date
+      self.duration = duration
+      self.mode = mode
+      self.url = url
+    }
+
     enum Mode {
       case recording
       case encoding
@@ -17,7 +30,7 @@ struct RecordingMemo {
   }
 
   enum Action: Sendable {
-    case audioRecorderDidFinish(TaskResult<Bool>)
+    case audioRecorderDidFinish(Result<Bool, Error>)
     case delegate(DelegateAction)
     case finalRecordingTime(TimeInterval)
     case onTask
@@ -25,8 +38,8 @@ struct RecordingMemo {
     case stopButtonTapped
 
     @CasePathable
-  enum DelegateAction: Equatable, Sendable {
-    case didFinish(Result<State>)
+    enum DelegateAction: Sendable {
+      case didFinish(Result<State, Error>)
     }
   }
 
