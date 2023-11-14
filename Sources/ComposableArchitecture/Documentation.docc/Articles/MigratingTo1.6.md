@@ -11,6 +11,13 @@ in favor of newer ones. We recommend people update their code as quickly as poss
 APIs, and this article contains some tips for doing so.
 
 * [Using @ObservableState](#Using-ObservableState)
+* [Replacing IfLetStore with ‘if let’](#)
+* [Replacing ForEachStore with ForEach](#)
+* [Replacing SwitchStore and CaseLet with ‘switch’ and ‘case’](#)
+* [Replacing navigation view modifiers with SwiftUI modifiers](#)
+* [Replacing NavigationStackStore with NavigationStack](#)
+* [Bindings](#)
+* [View actions](#)
 
 ## Using @ObservableState
 
@@ -226,10 +233,10 @@ Then you would use ``SwitchStore`` and ``CaseLet`` in the view like this:
 
 ```swift
 SwitchStore(self.store) {
-  CaseLet(state: /Feature.State.activity, action: Feature.Action.activity) { store in
+  CaseLet(/Feature.State.activity, action: Feature.Action.activity) { store in
     ActivityView(store: store)
   }
-  CaseLet(state: /Feature.State.settings, action: Feature.Action.settings) { store in
+  CaseLet(/Feature.State.settings, action: Feature.Action.settings) { store in
     SettingsView(store: store)
   }
 }
@@ -329,6 +336,155 @@ This can now be shortened to this:
 }
 ```
 
+## Replacing NavigationStackStore with NavigationStack
+
+The ``NavigationStackStore`` view is a helper for driving a navigation stack from a ``Store``. For
+example, if your feature's reducer looks roughly like this:
+
+```swift
+@Reducer
+struct Feature {
+  @ObservableState
+  struct State {
+    var path: StackState<Path.State> = []
+  }
+  enum Action {
+    case path(StackAction<Path.State, Path.Action>)
+  }
+  var body: some ReducerOf<Self> { /* ... */ }
+}
+```
+
+Then you would make use of ``NavigationStackStore`` in the view like this:
+
+```swift
+NavigationStackStore(self.store.scope(state: \.path, action: \.path)) {
+  RootView()
+} destination: {
+  switch $0 {
+  case .activity:
+    CaseLet(/Feature.State.activity, action: Feature.Action.activity) { store in
+      ActivityView(store: store)
+    }
+  case .settings:
+    CaseLet(/Feature.State.settings, action: Feature.Action.settings) { store in
+      SettingsView(store: store)
+    }
+  }
+}
+```
+
+This can now be updated to use a vanilla `NavigationStack`:
+
+```swift
+NavigationStack(store: self.store.scope(state: \.path, action: \.path)) {
+  RootView()
+} destination: { store in
+  switch store.path {
+  case .activity:
+    if let store = store.scope(state: \.activity, action: \.activity) {
+      ActivityView(store: store)
+    }
+  case .settings:
+    if let store = store.scope(state: \.settings, action: \.settings) {
+      SettingsView(store: store)
+    }
+  }
+}
+```
+
 ## Bindings
 
+Bindings in the Composable Architecture are handled by a zoo of types, including
+``BindingState``, ``BindableAction``, ``BindingAction``, ``BindingViewState`` and 
+``BindingViewStore``. For example, if your view needs to be able to derive bindings to many fields
+on your state, you may have the reducer built somewhat like this:
+
+```swift
+@Reducer
+struct Feature {
+  struct State {
+    @BindingState var text = ""
+    @BindingState var isOn = false
+  }
+  enum Action: BindableAction {
+    case binding(BindingAction<State>)
+  }
+  var body: some ReducerOf<Self> { /* ... */ }
+}
+```
+
+And in the view you derive bindings using ``ViewStore/subscript(dynamicMember:)-3q4xh`` defined
+on ``ViewStore``:
+
+```swift
+WithViewStore(self.store, observe: { $0 }) { viewStore in
+  Form {
+    TextField("Text", text: viewStore.$text)
+    Toggle(isOn: viewStore.$isOn)
+  }
+}
+```
+
+But if you have view state in your view, then you have a lot more steps to take:
+
+```swift
+struct ViewState: Equatable {
+  @BindingViewState var text: String
+  @BindingViewState var isOn: Bool
+  init(store: BindingViewStore<Feature.State>) {
+    self._text = bindingViewStore.$text
+    self._isOn = bindingViewStore.$isOn
+  }
+}
+
+var body: some View {
+  WithViewStore(self.store, observe: ViewState.init) { viewStore in
+    Form {
+      TextField("Text", text: viewStore.$text)
+      Toggle(isOn: viewStore.$isOn)
+    }
+  }
+}
+```
+
+Most of this goes away when using the ``ObservableState()`` macro. You can start by annotating
+your feature's state with ``ObservableState()`` and remove all instances of ``BindingState``:
+
+```diff
++@ObservableState
+ struct State {
+-  @BindingState var text = ""
+-  @BindingState isOn = false
++  var text = ""
++  var isOn = false
+ }
+```
+
+In the view you needs to start holding onto the `store` as either `@State`:
+
+```swift
+@State var store: StoreOf<Feature>
+```
+
+…or with `@Bindable`:
+
+```swift
+@Bindable var store: StoreOf<Feature>
+```
+
+In the `body` of the view you can stop using ``WithViewStore`` and instead derive bindings directly
+from the store:
+
+```swift
+var body: some View {
+  Form {
+    TextField("Text", text: self.$store.text)
+    Toggle(isOn: self.$store.isOn)
+  }
+}
+```
+
 ## View actions
+
+TODO
