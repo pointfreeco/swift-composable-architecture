@@ -119,6 +119,7 @@ reducer looks roughly like this:
 ```swift
 @Reducer
 struct Feature {
+  @ObservableState
   struct State {
     var child: Child.State?
   }
@@ -157,6 +158,7 @@ example, if your feature's reducer looks roughly like this:
 ```swift
 @Reducer
 struct Feature {
+  @ObservableState
   struct State {
     var rows: IdentifiedArrayOf<Child.State> = []
   }
@@ -201,9 +203,132 @@ ForEach(
 
 ## Replacing SwitchStore and CaseLet with 'switch' and 'case'
 
+The ``SwitchStore`` and ``CaseLet`` views are helpers for driving a ``Store`` for each case of 
+an enum. For example, if your feature's reducer looks roughly like this:
+
+```swift
+@Reducer 
+struct Feature {
+  @ObservableState
+  enum State {
+    case activity(ActivityFeature.State)
+    case settings(SettingsFeature.State)
+  }
+  enum Action {
+    case activity(ActivityFeature.Action)
+    case settings(SettingsFeature.Action)
+  }
+  var body: some ReducerOf<Self> { /* ... */ }
+}
+```
+
+Then you would use ``SwitchStore`` and ``CaseLet`` in the view like this:
+
+```swift
+SwitchStore(self.store) {
+  CaseLet(state: /Feature.State.activity, action: Feature.Action.activity) { store in
+    ActivityView(store: store)
+  }
+  CaseLet(state: /Feature.State.settings, action: Feature.Action.settings) { store in
+    SettingsView(store: store)
+  }
+}
+```
+
+This can now be updated to use a vanilla `switch` and `case` in the view:
+
+```swift
+switch self.store.state {
+case .activity:
+  if let store = self.store.scope(state: \.activity, action: \.activity) {
+    ActivityView(store: store)
+  }
+case .settings:
+  if let store = self.store.scope(state: \.settings, action: \.settings) {
+    SettingsView(store: store)
+  }
+}
+```
+
 ## Replacing navigation view modifiers with SwiftUI modifiers
 
+The library ships with many navigation view modifiers that mimic what SwiftUI provides, but tuned
+specifically for driving navigation from a ``Store``. All of these view modifiers can be updated
+to instead use the vanilla SwiftUI version of the view modifier.
+
+For example, if your feature's reducer looks roughly like this:
+
+```swift
+@Reducer
+struct Feature {
+  @ObservableState
+  struct State {
+    @PresentationState var child: Child.State?
+  }
+  enum Action {
+    case child(PresentationAction<Child.State>
+  }
+  var body: some ReducerOf<Self> { /* ... */ }
+}
+```
+
+Then previously you could drive a sheet presentation from this feature like so:
+
+```swift
+.sheet(store: self.store.scope(state: \.child, action: \.child)) { store in
+  ChildView(store: store)
+}
+```
+
+You can now replace `sheet(store:)` with the vanilla SwiftUI modifier, `sheet(item:)`. First you
+must hold onto the store in your view in a bindable manner, either using `@State`:
+
+```swift
+@State var store: StoreOf<Feature>
+```
+
+…or using the `@Bindable` property wrapper:
+
+```swift
+@Bindable var store: StoreOf<Feature>
+```
+
+Then you can use `sheet(item:)` like so:
+
+```swift
+.sheet(item: self.$store.scope(state: \.child, action: \.child)) { store in
+  ChildView(store: store)
+}
+```
+
+This also applies to popovers, full screen covers, and navigation destinations.
+
+Also, if you are driving navigation from an enum of destinations, then currently your code may
+look something like this:
+
+```swift
+.sheet(
+  store: self.store.scope(state: \.$destination, action: \.destination),
+  state: \.editForm,
+  action: { .editFrom($0) }
+) { store in
+  ChildView(store: store)
+}
+```
+
+This can now be shortened to this:
+
+```swift
+.sheet(
+  item: self.$store.scope(
+    state: \.destination.editForm,
+    action: \.destination.editForm
+  )
+) { store in
+  ChildView(store: store)
+}
+```
+
+## Bindings
+
 ## View actions
-
-
-## TBD
