@@ -243,7 +243,7 @@ will need to insert a `.element` layer:
 
 ```diff
 -case let .row(id: id, action: .buttonTapped):
-+case let .rows(.elements(id: id, action: .buttonTapped)):
++case let .rows(.element(id: id, action: .buttonTapped)):
 ```
 
 [swift-case-paths]: http://github.com/pointfreeco/swift-case-paths
