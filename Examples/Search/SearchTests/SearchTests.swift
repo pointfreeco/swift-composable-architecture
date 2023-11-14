@@ -16,7 +16,7 @@ final class SearchTests: XCTestCase {
       $0.searchQuery = "S"
     }
     await store.send(.searchQueryChangeDebounced)
-    await store.receive(.searchResponse(.success(.mock))) {
+    await store.receive(\.searchResponse.success) {
       $0.results = GeocodingSearch.mock.results
     }
     await store.send(.searchQueryChanged("")) {
@@ -36,7 +36,7 @@ final class SearchTests: XCTestCase {
       $0.searchQuery = "S"
     }
     await store.send(.searchQueryChangeDebounced)
-    await store.receive(.searchResponse(.failure(SomethingWentWrong())))
+    await store.receive(\.searchResponse.failure)
   }
 
   func testClearQueryCancelsInFlightSearchRequest() async {
@@ -76,7 +76,7 @@ final class SearchTests: XCTestCase {
     await store.send(.searchResultTapped(specialResult)) {
       $0.resultForecastRequestInFlight = specialResult
     }
-    await store.receive(.forecastResponse(42, .success(.mock))) {
+    await store.receive(\.forecastResponse) {
       $0.resultForecastRequestInFlight = nil
       $0.weather = Search.State.Weather(
         id: 42,
@@ -137,7 +137,7 @@ final class SearchTests: XCTestCase {
       $0.resultForecastRequestInFlight = specialResult
     }
     await clock.advance()
-    await store.receive(.forecastResponse(42, .success(.mock))) {
+    await store.receive(\.forecastResponse) {
       $0.resultForecastRequestInFlight = nil
       $0.weather = Search.State.Weather(
         id: 42,
@@ -180,7 +180,7 @@ final class SearchTests: XCTestCase {
     await store.send(.searchResultTapped(results.first!)) {
       $0.resultForecastRequestInFlight = results.first!
     }
-    await store.receive(.forecastResponse(1, .failure(SomethingWentWrong()))) {
+    await store.receive(\.forecastResponse) {
       $0.resultForecastRequestInFlight = nil
     }
   }

@@ -17,7 +17,7 @@ struct RecordMeeting {
     }
   }
 
-  enum Action: Equatable {
+  enum Action {
     case alert(PresentationAction<Alert>)
     case delegate(Delegate)
     case endMeetingButtonTapped
@@ -31,7 +31,8 @@ struct RecordMeeting {
       case confirmDiscard
       case confirmSave
     }
-    enum Delegate: Equatable {
+    @CasePathable
+    enum Delegate {
       case save(transcript: String)
     }
   }

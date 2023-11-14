@@ -146,7 +146,7 @@ when we receive a response from the fact API request:
 @Reducer
 struct Feature {
   struct State: Equatable { /* ... */ }
-  enum Action: Equatable {
+  enum Action {
     case factAlertDismissed
     case decrementButtonTapped
     case incrementButtonTapped
@@ -165,7 +165,7 @@ execute effects, and they can return `.none` to represent that:
 @Reducer
 struct Feature {
   struct State: Equatable { /* ... */ }
-  enum Action: Equatable { /* ... */ }
+  enum Action { /* ... */ }
 
   var body: some Reducer<State, Action> {
     Reduce { state, action in
@@ -370,7 +370,7 @@ receive a fact response back with the fact, which then causes the alert to show:
 ```swift
 await store.send(.numberFactButtonTapped)
 
-await store.receive(.numberFactResponse(???)) {
+await store.receive(\.numberFactResponse) {
   $0.numberFactAlert = ???
 }
 ```
@@ -447,7 +447,7 @@ the alert:
 ```swift
 await store.send(.numberFactButtonTapped)
 
-await store.receive(.numberFactResponse("0 is a good number Brent")) {
+await store.receive(\.numberFactResponse) {
   $0.numberFactAlert = "0 is a good number Brent"
 }
 
@@ -558,14 +558,16 @@ advanced usages.
 
 The documentation for releases and `main` are available here:
 
-* [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture)
-* [1.2.0](https://pointfreeco.github.io/swift-composable-architecture/1.2.0/documentation/composablearchitecture/)
+* [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/)
+* [1.4.0](https://pointfreeco.github.io/swift-composable-architecture/1.4.0/documentation/composablearchitecture/)
 
 <details>
   <summary>
   Other versions
   </summary>
 
+  * [1.3.0](https://pointfreeco.github.io/swift-composable-architecture/1.1.0/documentation/composablearchitecture/)
+  * [1.2.0](https://pointfreeco.github.io/swift-composable-architecture/1.1.0/documentation/composablearchitecture/)
   * [1.1.0](https://pointfreeco.github.io/swift-composable-architecture/1.1.0/documentation/composablearchitecture/)
   * [1.0.0](https://pointfreeco.github.io/swift-composable-architecture/1.0.0/documentation/composablearchitecture/)
   * [0.59.0](https://pointfreeco.github.io/swift-composable-architecture/0.59.0/documentation/composablearchitecture/)
@@ -574,10 +576,6 @@ The documentation for releases and `main` are available here:
   * [0.56.0](https://pointfreeco.github.io/swift-composable-architecture/0.56.0/documentation/composablearchitecture/)
   * [0.55.0](https://pointfreeco.github.io/swift-composable-architecture/0.55.0/documentation/composablearchitecture/)
   * [0.54.0](https://pointfreeco.github.io/swift-composable-architecture/0.54.0/documentation/composablearchitecture/)
-  * [0.53.0](https://pointfreeco.github.io/swift-composable-architecture/0.53.0/documentation/composablearchitecture/)
-  * [0.52.0](https://pointfreeco.github.io/swift-composable-architecture/0.52.0/documentation/composablearchitecture/)
-  * [0.50.0](https://pointfreeco.github.io/swift-composable-architecture/0.50.0/documentation/composablearchitecture/)
-  * [0.49.0](https://pointfreeco.github.io/swift-composable-architecture/0.49.0/documentation/composablearchitecture/)
 </details>
 
 <br>
@@ -642,8 +640,8 @@ The following translations of this README have been contributed by members of th
 * [Hindi](https://gist.github.com/akashsoni01/b358ee0b3b747167964ef6946123c88d)
 * [Indonesian](https://gist.github.com/wendyliga/792ea9ac5cc887f59de70a9e39cc7343)
 * [Italian](https://gist.github.com/Bellaposa/5114e6d4d55fdb1388e8186886d48958)
-* [Japanese](https://gist.github.com/kalupas226/bdf577e4a7066377ea0a8aaeebcad428)
-* [Korean](https://gist.github.com/pilgwon/ea05e2207ab68bdd1f49dff97b293b17)
+* [Japanese](https://gist.github.com/Achoo-kr/2d0712deb77f78b3379551ac7baea3e4)
+* [Korean](https://gist.github.com/Achoo-kr/5d8936d12e71028fcc4a7c5e078ca038)
 * [Polish](https://gist.github.com/MarcelStarczyk/6b6153051f46912a665c32199f0d1d54)
 * [Portuguese](https://gist.github.com/SevioCorrea/2bbf337cd084a58c89f2f7f370626dc8)
 * [Russian](https://gist.github.com/artyom-ivanov/ed0417fd1f008f0492d3431c033175df)
@@ -670,7 +668,7 @@ to a [Gist](https://gist.github.com)!
 
     In other ways TCA is a little more lax than the other libraries. For example, Elm controls what 
     kinds of effects can be created via the `Cmd` type, but TCA allows an escape hatch to any kind 
-    of effect since `Effect` conforms to the Combine `Publisher` protocol.
+    of effect since `Effect` wraps around an async operation.
 
     And then there are certain things that TCA prioritizes highly that are not points of focus for 
     Redux, Elm, or most other libraries. For example, composition is very important aspect of TCA, 

@@ -30,11 +30,7 @@ final class TwoFactorCoreTests: XCTestCase {
     await store.send(.view(.submitButtonTapped)) {
       $0.isTwoFactorRequestInFlight = true
     }
-    await store.receive(
-      .twoFactorResponse(
-        .success(AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false))
-      )
-    ) {
+    await store.receive(\.twoFactorResponse.success) {
       $0.isTwoFactorRequestInFlight = false
     }
   }
@@ -55,7 +51,7 @@ final class TwoFactorCoreTests: XCTestCase {
     await store.send(.view(.submitButtonTapped)) {
       $0.isTwoFactorRequestInFlight = true
     }
-    await store.receive(.twoFactorResponse(.failure(AuthenticationError.invalidTwoFactor))) {
+    await store.receive(\.twoFactorResponse.failure) {
       $0.alert = AlertState {
         TextState(AuthenticationError.invalidTwoFactor.localizedDescription)
       }

@@ -24,7 +24,7 @@ final class NewGameCoreTests: XCTestCase {
       $0.game!.currentPlayer = .o
     }
     await self.store.send(.game(.presented(.quitButtonTapped)))
-    await self.store.receive(.game(.dismiss)) {
+    await self.store.receive(\.game.dismiss) {
       $0.game = nil
     }
     await self.store.send(.letsPlayButtonTapped) {

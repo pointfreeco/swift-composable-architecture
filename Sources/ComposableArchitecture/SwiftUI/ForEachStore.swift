@@ -122,7 +122,7 @@ public struct ForEachStore<
               return element
             },
             id: { _ in id },
-            action: { .element(id: id, action: $1) },
+            action: { .element(id: id, action: $0) },
             isInvalid: { !$0.ids.contains(id) },
             removeDuplicates: nil
           )
@@ -131,10 +131,30 @@ public struct ForEachStore<
     }
   }
 
-  @available(iOS, deprecated: 9999, message: "Use an 'IdentifiedAction', instead")
-  @available(macOS, deprecated: 9999, message: "Use an 'IdentifiedAction', instead")
-  @available(tvOS, deprecated: 9999, message: "Use an 'IdentifiedAction', instead")
-  @available(watchOS, deprecated: 9999, message: "Use an 'IdentifiedAction', instead")
+  @available(
+    iOS,
+    deprecated: 9999,
+    message:
+      "Use an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Identified-actions"
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message:
+      "Use an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Identified-actions"
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message:
+      "Use an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Identified-actions"
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message:
+      "Use an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Identified-actions"
+  )
   public init<EachContent>(
     _ store: Store<IdentifiedArray<ID, EachState>, (id: ID, action: EachAction)>,
     @ViewBuilder content: @escaping (_ store: Store<EachState, EachAction>) -> EachContent
@@ -162,7 +182,7 @@ public struct ForEachStore<
               return element
             },
             id: { _ in id },
-            action: { (id, $1) },
+            action: { (id, $0) },
             isInvalid: { !$0.ids.contains(id) },
             removeDuplicates: nil
           )

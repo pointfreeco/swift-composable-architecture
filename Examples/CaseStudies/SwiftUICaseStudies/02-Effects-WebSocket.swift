@@ -27,11 +27,11 @@ struct WebSocket {
     }
   }
 
-  enum Action: Equatable {
+  enum Action {
     case alert(PresentationAction<Alert>)
     case connectButtonTapped
     case messageToSendChanged(String)
-    case receivedSocketMessage(TaskResult<WebSocketClient.Message>)
+    case receivedSocketMessage(Result<WebSocketClient.Message, Error>)
     case sendButtonTapped
     case sendResponse(didSucceed: Bool)
     case webSocket(WebSocketClient.Action)
@@ -208,11 +208,13 @@ struct WebSocketClient {
     }
   }
 
-  enum Action: Equatable {
+  @CasePathable
+  enum Action {
     case didOpen(protocol: String?)
     case didClose(code: URLSessionWebSocketTask.CloseCode, reason: Data?)
   }
 
+  @CasePathable
   enum Message: Equatable {
     struct Unknown: Error {}
 
@@ -229,7 +231,7 @@ struct WebSocketClient {
   }
 
   var open: @Sendable (ID, URL, [String]) async -> AsyncStream<Action>
-  var receive: @Sendable (ID) async throws -> AsyncStream<TaskResult<Message>>
+  var receive: @Sendable (ID) async throws -> AsyncStream<Result<Message, Error>>
   var send: @Sendable (ID, URLSessionWebSocketTask.Message) async throws -> Void
   var sendPing: @Sendable (ID) async throws -> Void
 }
@@ -297,12 +299,12 @@ extension WebSocketClient: DependencyKey {
         try self.socket(id: id).cancel(with: closeCode, reason: reason)
       }
 
-      func receive(id: ID) throws -> AsyncStream<TaskResult<Message>> {
+      func receive(id: ID) throws -> AsyncStream<Result<Message, Error>> {
         let socket = try self.socket(id: id)
         return AsyncStream { continuation in
           let task = Task {
             while !Task.isCancelled {
-              continuation.yield(await TaskResult { try await Message(socket.receive()) })
+              continuation.yield(await Result { try await Message(socket.receive()) })
             }
             continuation.finish()
           }

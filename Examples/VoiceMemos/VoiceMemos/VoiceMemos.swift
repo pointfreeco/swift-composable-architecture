@@ -6,7 +6,7 @@ import SwiftUI
 struct VoiceMemos {
   @ObservableState
   struct State: Equatable {
-    @PresentationState var alert: AlertState<AlertAction>?
+    @PresentationState var alert: AlertState<Action.Alert>?
     var audioRecorderPermission = RecorderPermission.undetermined
     @PresentationState var recordingMemo: RecordingMemo.State?
     var voiceMemos: IdentifiedArrayOf<VoiceMemo.State> = []
@@ -18,17 +18,17 @@ struct VoiceMemos {
     }
   }
 
-  enum Action: Equatable, Sendable {
-    case alert(PresentationAction<AlertAction>)
+  enum Action: Sendable {
+    case alert(PresentationAction<Alert>)
     case onDelete(IndexSet)
     case openSettingsButtonTapped
     case recordButtonTapped
     case recordPermissionResponse(Bool)
     case recordingMemo(PresentationAction<RecordingMemo.Action>)
     case voiceMemos(IdentifiedActionOf<VoiceMemo>)
-  }
 
-  enum AlertAction: Equatable {}
+    enum Alert {}
+  }
 
   @Dependency(\.audioRecorder.requestRecordPermission) var requestRecordPermission
   @Dependency(\.date) var date

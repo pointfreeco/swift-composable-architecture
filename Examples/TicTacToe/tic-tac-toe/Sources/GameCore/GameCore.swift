@@ -23,7 +23,7 @@ public struct Game: Sendable {
     }
   }
 
-  public enum Action: Equatable, Sendable {
+  public enum Action: Sendable {
     case cellTapped(row: Int, column: Int)
     case playAgainButtonTapped
     case quitButtonTapped

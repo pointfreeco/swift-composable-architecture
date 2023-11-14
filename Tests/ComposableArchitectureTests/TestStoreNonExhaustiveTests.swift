@@ -858,7 +858,7 @@
       )
 
       let store = TestStore(initialState: State()) {
-        Reduce<State, Action> { state, action in 
+        Reduce<State, Action> { state, action in
           switch action {
           case .addButtonTapped:
             state.values.append(Model())

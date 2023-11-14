@@ -17,7 +17,7 @@ final class SpeechRecognitionTests: XCTestCase {
     await store.send(.recordButtonTapped) {
       $0.isRecording = true
     }
-    await store.receive(.speechRecognizerAuthorizationStatusResponse(.denied)) {
+    await store.receive(\.speechRecognizerAuthorizationStatusResponse) {
       $0.alert = AlertState {
         TextState(
           """
@@ -39,7 +39,7 @@ final class SpeechRecognitionTests: XCTestCase {
     await store.send(.recordButtonTapped) {
       $0.isRecording = true
     }
-    await store.receive(.speechRecognizerAuthorizationStatusResponse(.restricted)) {
+    await store.receive(\.speechRecognizerAuthorizationStatusResponse) {
       $0.alert = AlertState { TextState("Your device does not allow speech recognition.") }
       $0.isRecording = false
     }
@@ -69,15 +69,15 @@ final class SpeechRecognitionTests: XCTestCase {
       $0.isRecording = true
     }
 
-    await store.receive(.speechRecognizerAuthorizationStatusResponse(.authorized))
+    await store.receive(\.speechRecognizerAuthorizationStatusResponse)
 
     self.recognitionTask.continuation.yield(firstResult)
-    await store.receive(.speech(.success("Hello"))) {
+    await store.receive(\.speech.success) {
       $0.transcribedText = "Hello"
     }
 
     self.recognitionTask.continuation.yield(secondResult)
-    await store.receive(.speech(.success("Hello world"))) {
+    await store.receive(\.speech.success) {
       $0.transcribedText = "Hello world"
     }
 
@@ -100,10 +100,10 @@ final class SpeechRecognitionTests: XCTestCase {
       $0.isRecording = true
     }
 
-    await store.receive(.speechRecognizerAuthorizationStatusResponse(.authorized))
+    await store.receive(\.speechRecognizerAuthorizationStatusResponse)
 
     recognitionTask.continuation.finish(throwing: SpeechClient.Failure.couldntConfigureAudioSession)
-    await store.receive(.speech(.failure(SpeechClient.Failure.couldntConfigureAudioSession))) {
+    await store.receive(\.speech.failure) {
       $0.alert = AlertState { TextState("Problem with audio device. Please try again.") }
     }
   }
@@ -120,10 +120,10 @@ final class SpeechRecognitionTests: XCTestCase {
       $0.isRecording = true
     }
 
-    await store.receive(.speechRecognizerAuthorizationStatusResponse(.authorized))
+    await store.receive(\.speechRecognizerAuthorizationStatusResponse)
 
     recognitionTask.continuation.finish(throwing: SpeechClient.Failure.couldntStartAudioEngine)
-    await store.receive(.speech(.failure(SpeechClient.Failure.couldntStartAudioEngine))) {
+    await store.receive(\.speech.failure) {
       $0.alert = AlertState { TextState("Problem with audio device. Please try again.") }
     }
   }

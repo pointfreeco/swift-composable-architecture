@@ -4,7 +4,7 @@ struct ContactsFeature {
     @PresentationState var addContact: AddContactFeature.State?
     var contacts: IdentifiedArrayOf<Contact> = []
   }
-  enum Action: Equatable {
+  enum Action {
     case addButtonTapped
   }
   var body: some ReducerOf<Self> {

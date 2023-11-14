@@ -9,7 +9,7 @@ struct SyncUpDetail {
     var syncUp: SyncUp
   }
 
-  enum Action: Equatable, Sendable {
+  enum Action: Sendable {
     case cancelEditButtonTapped
     case delegate(Delegate)
     case deleteButtonTapped
@@ -19,7 +19,8 @@ struct SyncUpDetail {
     case editButtonTapped
     case startMeetingButtonTapped
 
-    enum Delegate: Equatable {
+    @CasePathable
+    enum Delegate {
       case deleteSyncUp
       case syncUpUpdated(SyncUp)
       case startMeeting
@@ -38,7 +39,7 @@ struct SyncUpDetail {
       case edit(SyncUpForm.State)
     }
 
-    enum Action: Equatable, Sendable {
+    enum Action: Sendable {
       case alert(Alert)
       case edit(SyncUpForm.Action)
 

@@ -4,8 +4,8 @@ import XCTest
 
 @MainActor
 final class iOS16_IdentifiedListTests: BaseIntegrationTests {
-  override func setUp() {
-    super.setUp()
+  override func setUpWithError() throws {
+    try super.setUpWithError()
     self.app.buttons["iOS 16"].tap()
     self.app.buttons["Identified list"].tap()
     self.clearLogs()
@@ -32,6 +32,23 @@ final class iOS16_IdentifiedListTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.init
       StoreOf<IdentifiedListView.Feature>.scope
       StoreOf<IdentifiedListView.Feature>.scope
+      ViewIdentifiedStoreOf<BasicsView.Feature>.deinit
+      ViewIdentifiedStoreOf<BasicsView.Feature>.init
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStore<IdentifiedArray<UUID, BasicsView.Feature.State>, IdentifiedAction<UUID, BasicsView.Feature.Action>>.deinit
+      ViewStore<IdentifiedArray<UUID, BasicsView.Feature.State>, IdentifiedAction<UUID, BasicsView.Feature.Action>>.init
+      ViewStore<IdentifiedListView.ViewState, IdentifiedListView.Feature.Action>.deinit
+      ViewStore<IdentifiedListView.ViewState, IdentifiedListView.Feature.Action>.init
+      ViewStore<UUID, BasicsView.Feature.Action>.deinit
+      ViewStore<UUID, BasicsView.Feature.Action>.init
+      ViewStore<UUID, BasicsView.Feature.Action>.init
+      ViewStore<UUID, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.init
+      WithViewIdentifiedStoreOf<BasicsView.Feature>.body
+      WithViewStore<IdentifiedListView.ViewState, IdentifiedListView.Feature.Action>.body
+      WithViewStore<UUID, BasicsView.Feature.Action>.body
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
   }
@@ -49,8 +66,8 @@ final class iOS16_IdentifiedListTests: BaseIntegrationTests {
       IdentifiedListView.body.ForEachStore
       IdentifiedListView.body.ForEachStore
       IdentifiedStoreOf<BasicsView.Feature>.deinit
+      IdentifiedStoreOf<BasicsView.Feature>.deinit
       IdentifiedStoreOf<BasicsView.Feature>.init
-      IdentifiedStoreOf<BasicsView.Feature>.scope
       IdentifiedStoreOf<BasicsView.Feature>.scope
       Store<UUID, Action>
       Store<UUID, Action>
@@ -65,6 +82,27 @@ final class iOS16_IdentifiedListTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<IdentifiedListView.Feature>.scope
+      ViewIdentifiedStoreOf<BasicsView.Feature>.deinit
+      ViewIdentifiedStoreOf<BasicsView.Feature>.init
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStore<IdentifiedArray<UUID, BasicsView.Feature.State>, IdentifiedAction<UUID, BasicsView.Feature.Action>>.deinit
+      ViewStore<IdentifiedArray<UUID, BasicsView.Feature.State>, IdentifiedAction<UUID, BasicsView.Feature.Action>>.init
+      ViewStore<IdentifiedListView.ViewState, IdentifiedListView.Feature.Action>.deinit
+      ViewStore<IdentifiedListView.ViewState, IdentifiedListView.Feature.Action>.init
+      ViewStore<UUID, BasicsView.Feature.Action>.deinit
+      ViewStore<UUID, BasicsView.Feature.Action>.deinit
+      ViewStore<UUID, BasicsView.Feature.Action>.deinit
+      ViewStore<UUID, BasicsView.Feature.Action>.deinit
+      ViewStore<UUID, BasicsView.Feature.Action>.init
+      ViewStore<UUID, BasicsView.Feature.Action>.init
+      ViewStore<UUID, BasicsView.Feature.Action>.init
+      ViewStore<UUID, BasicsView.Feature.Action>.init
+      WithViewIdentifiedStoreOf<BasicsView.Feature>.body
+      WithViewStore<IdentifiedListView.ViewState, IdentifiedListView.Feature.Action>.body
+      WithViewStore<UUID, BasicsView.Feature.Action>.body
+      WithViewStore<UUID, BasicsView.Feature.Action>.body
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
   }
@@ -87,6 +125,9 @@ final class iOS16_IdentifiedListTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<IdentifiedListView.Feature>.scope
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
   }

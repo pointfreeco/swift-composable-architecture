@@ -29,7 +29,7 @@ struct Animations {
     var isCircleScaled = false
   }
 
-  enum Action: Equatable, Sendable {
+  enum Action: Sendable {
     case alert(PresentationAction<Alert>)
     case circleScaleToggleChanged(Bool)
     case rainbowButtonTapped
@@ -37,7 +37,7 @@ struct Animations {
     case setColor(Color)
     case tapped(CGPoint)
 
-    enum Alert: Equatable, Sendable {
+    enum Alert: Sendable {
       case resetConfirmationButtonTapped
     }
   }

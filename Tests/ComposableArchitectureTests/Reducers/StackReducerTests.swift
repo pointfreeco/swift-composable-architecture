@@ -243,7 +243,7 @@ final class StackReducerTests: BaseTCATestCase {
         @Dependency(\.dismiss) var dismiss
         var body: some Reducer<State, Action> {
           Reduce { state, action in
-              .run { _ in await self.dismiss() }
+            .run { _ in await self.dismiss() }
           }
         }
       }
@@ -499,7 +499,7 @@ final class StackReducerTests: BaseTCATestCase {
       @Dependency(\.dismiss) var dismiss
       var body: some Reducer<State, Action> {
         Reduce { state, action in
-            .run { _ in try await Task.never() }
+          .run { _ in try await Task.never() }
         }
       }
     }

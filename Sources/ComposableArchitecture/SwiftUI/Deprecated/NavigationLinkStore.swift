@@ -74,7 +74,7 @@ public struct NavigationLinkStore<
     let store = store.scope(
       state: { $0 },
       id: nil,
-      action: { $1 },
+      action: { $0 },
       isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil },
       removeDuplicates: nil
     )
@@ -124,7 +124,7 @@ public struct NavigationLinkStore<
     let store = store.scope(
       state: { $0 },
       id: nil,
-      action: { $1 },
+      action: { $0 },
       isInvalid: { $0.wrappedValue.flatMap(toDestinationState)?.id != id },
       removeDuplicates: nil
     )

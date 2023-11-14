@@ -13,29 +13,22 @@ struct VoiceMemo {
 
     var id: URL { self.url }
 
+    @CasePathable
+    @dynamicMemberLookup
     enum Mode: Equatable {
       case notPlaying
       case playing(progress: Double)
-
-      var isPlaying: Bool {
-        if case .playing = self { return true }
-        return false
-      }
-
-      var progress: Double? {
-        if case let .playing(progress) = self { return progress }
-        return nil
-      }
     }
   }
 
-  enum Action: BindableAction, Equatable {
-    case audioPlayerClient(TaskResult<Bool>)
+  enum Action: BindableAction {
+    case audioPlayerClient(Result<Bool>)
     case binding(BindingAction<State>)
     case delegate(Delegate)
     case playButtonTapped
     case timerUpdated(TimeInterval)
 
+    @CasePathable
     enum Delegate {
       case playbackStarted
       case playbackFailed
@@ -76,7 +69,7 @@ struct VoiceMemo {
             await send(.delegate(.playbackStarted))
 
             async let playAudio: Void = send(
-              .audioPlayerClient(TaskResult { try await self.audioPlayer.play(url) })
+              .audioPlayerClient(Result { try await self.audioPlayer.play(url) })
             )
 
             var start: TimeInterval = 0

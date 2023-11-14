@@ -1,7 +1,9 @@
+import Accessibility
 import CustomDump
 import InlineSnapshotTesting
 import XCTest
 
+@MainActor
 class BaseIntegrationTests: XCTestCase {
   var app: XCUIApplication!
   var logs: XCUIElement!
@@ -11,12 +13,13 @@ class BaseIntegrationTests: XCTestCase {
     self._expectRuntimeWarnings = (file, line)
   }
 
-  override func setUp() {
+  override func setUp() async throws {
     // SnapshotTesting.isRecording = true
     // self.continueAfterFailure = false
     self.app = XCUIApplication()
     self.app.launchEnvironment["UI_TEST"] = "true"
     self.app.launch()
+    self.app.activate()
     self.logs = self.app.staticTexts["composable-architecture.debug.logs"]
   }
 

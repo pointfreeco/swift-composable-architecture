@@ -129,9 +129,9 @@ import XCTestDynamicOverlay
 ///     var results: [String] = []
 ///   }
 ///
-///   enum Action: Equatable {
+///   enum Action {
 ///     case queryChanged(String)
-///     case searchResponse(TaskResult<[String]>)
+///     case searchResponse(Result<[String], Error>)
 ///   }
 ///
 ///   @Dependency(\.apiClient) var apiClient
@@ -146,10 +146,7 @@ import XCTestDynamicOverlay
 ///         return .run { send in
 ///           try await self.clock.sleep(for: 0.5)
 ///
-///           guard let results = try? await self.apiClient.search(query)
-///           else { return }
-///
-///           await send(.response(results))
+///           await send(.searchResponse(Result { try await self.apiClient.search(query) }))
 ///         }
 ///         .cancellable(id: CancelID.search, cancelInFlight: true)
 ///
@@ -195,7 +192,7 @@ import XCTestDynamicOverlay
 /// await clock.advance(by: 0.5)
 ///
 /// // Assert that the expected response is received
-/// await store.receive(.searchResponse(.success(["Composable Architecture"]))) {
+/// await store.receive(\.searchResponse.success) {
 ///   $0.results = ["Composable Architecture"]
 /// }
 /// ```
@@ -265,10 +262,10 @@ import XCTestDynamicOverlay
 /// to ``Exhaustivity/off``. When that is done the ``TestStore``'s behavior changes:
 ///
 ///   * The trailing closures of ``send(_:assert:file:line:)`` and
-///     ``receive(_:timeout:assert:file:line:)-5awso`` no longer need to assert on all state
+///     ``receive(_:timeout:assert:file:line:)-6325h`` no longer need to assert on all state
 ///     changes. They can assert on any subset of changes, and only if they make an incorrect
 ///     mutation will a test failure be reported.
-///   * The ``send(_:assert:file:line:)`` and ``receive(_:timeout:assert:file:line:)-5awso``
+///   * The ``send(_:assert:file:line:)`` and ``receive(_:timeout:assert:file:line:)-6325h``
 ///     methods are allowed to be called even when actions have been received from effects that have
 ///     not been asserted on yet. Any pending actions will be cleared.
 ///   * Tests are allowed to finish with unasserted, received actions and in-flight effects. No test
@@ -316,7 +313,7 @@ import XCTestDynamicOverlay
 ///
 /// // 3️⃣ Login feature performs API request to login, and
 /// //    sends response back into system.
-/// await store.receive(.login(.loginResponse(.success))) {
+/// await store.receive(\.login.loginResponse.success) {
 /// // 4️⃣ Assert how all state changes in the login feature
 ///   $0.login?.isLoading = false
 ///   …
@@ -324,7 +321,7 @@ import XCTestDynamicOverlay
 ///
 /// // 5️⃣ Login feature sends a delegate action to let parent
 /// //    feature know it has successfully logged in.
-/// await store.receive(.login(.delegate(.didLogin))) {
+/// await store.receive(\.login.delegate.didLogin) {
 /// // 6️⃣ Assert how all of app state changes due to that action.
 ///   $0.authenticatedTab = .loggedIn(
 ///     Profile.State(...)
@@ -354,10 +351,10 @@ import XCTestDynamicOverlay
 /// let store = TestStore(App.State()) {
 ///   App()
 /// }
-/// store.exhaustivity = .off // ⬅️
+/// store.exhaustivity = .off  // ⬅️
 ///
 /// await store.send(.login(.submitButtonTapped))
-/// await store.receive(.login(.delegate(.didLogin))) {
+/// await store.receive(\.login.delegate.didLogin) {
 ///   $0.selectedTab = .activity
 /// }
 /// ```
@@ -376,10 +373,10 @@ import XCTestDynamicOverlay
 /// let store = TestStore(initialState: App.State()) {
 ///   App()
 /// }
-/// store.exhaustivity = .off(showSkippedAssertions: true) // ⬅️
+/// store.exhaustivity = .off(showSkippedAssertions: true)  // ⬅️
 ///
 /// await store.send(.login(.submitButtonTapped))
-/// await store.receive(.login(.delegate(.didLogin))) {
+/// await store.receive(\.login.delegate.didLogin) {
 ///   $0.selectedTab = .profile
 /// }
 /// ```
@@ -452,12 +449,12 @@ public final class TestStore<State, Action> {
   /// store.dependencies.apiClient = .failing
   ///
   /// store.send(.buttonTapped) { /* ... */ }
-  /// store.receive(.searchResponse(.failure)) { /* ... */ }
+  /// store.receive(\.searchResponse.failure) { /* ... */ }
   ///
   /// store.dependencies.apiClient = .mock
   ///
   /// store.send(.buttonTapped) { /* ... */ }
-  /// store.receive(.searchResponse(.success)) { /* ... */ }
+  /// store.receive(\.searchResponse.success) { /* ... */ }
   /// ```
   public var dependencies: DependencyValues {
     _read { yield self.reducer.dependencies }
@@ -477,7 +474,7 @@ public final class TestStore<State, Action> {
   /// The current state of the test store.
   ///
   /// When read from a trailing closure assertion in ``send(_:assert:file:line:)`` or
-  /// ``receive(_:timeout:assert:file:line:)-5awso``, it will equal the `inout` state passed to the
+  /// ``receive(_:timeout:assert:file:line:)-6325h``, it will equal the `inout` state passed to the
   /// closure.
   public var state: State {
     self.reducer.state
@@ -486,7 +483,7 @@ public final class TestStore<State, Action> {
   /// The default timeout used in all methods that take an optional timeout.
   ///
   /// This is the default timeout used in all methods that take an optional timeout, such as
-  /// ``receive(_:timeout:assert:file:line:)-5awso`` and ``finish(timeout:file:line:)-53gi5``.
+  /// ``receive(_:timeout:assert:file:line:)-6325h`` and ``finish(timeout:file:line:)-53gi5``.
   public var timeout: UInt64
 
   private let file: StaticString
@@ -926,29 +923,6 @@ extension TestStore where State: Equatable {
     }
   }
 
-  @MainActor
-  @discardableResult
-  public func send<Value>(
-    _ keyPath: CaseKeyPath<Action, Value>,
-    _ value: Value,
-    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-    file: StaticString = #file,
-    line: UInt = #line
-  ) async -> TestStoreTask {
-    await self.send(keyPath(value), assert: updateStateToExpectedResult)
-  }
-
-  @MainActor
-  @discardableResult
-  public func send(
-    _ keyPath: CaseKeyPath<Action, Void>,
-    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-    file: StaticString = #file,
-    line: UInt = #line
-  ) async -> TestStoreTask {
-    await self.send(keyPath(), assert: updateStateToExpectedResult)
-  }
-
   /// Assert against the current state of the store.
   ///
   /// The trailing closure provided is given a mutable argument that represents the current state,
@@ -1337,9 +1311,9 @@ extension TestStore where State: Equatable {
     /// Asserts an action was received from an effect that matches a predicate, and asserts how the
     /// state changes.
     ///
-    /// This method is similar to ``receive(_:timeout:assert:file:line:)-5awso``, except it allows
-    /// you to assert that an action was received that matches a predicate without asserting on all
-    /// the data in the action:
+    /// This method is similar to ``receive(_:timeout:assert:file:line:)-6325h``, except it allows
+    /// you to assert that an action was received that matches a predicate instead of a case key
+    /// path:
     ///
     /// ```swift
     /// await store.send(.buttonTapped)
@@ -1356,7 +1330,7 @@ extension TestStore where State: Equatable {
     /// data was in the effect that you chose not to assert on.
     ///
     /// If you only want to check that a particular action case was received, then you might find
-    /// the ``receive(_:timeout:assert:file:line:)-5awso`` overload of this method more useful.
+    /// the ``receive(_:timeout:assert:file:line:)-6325h`` overload of this method more useful.
     ///
     /// - Parameters:
     ///   - isMatching: A closure that attempts to match an action. If it returns `false`, a test
@@ -1389,9 +1363,9 @@ extension TestStore where State: Equatable {
   /// Asserts an action was received from an effect that matches a predicate, and asserts how the
   /// state changes.
   ///
-  /// This method is similar to ``receive(_:timeout:assert:file:line:)-5awso``, except it allows you
-  /// to assert that an action was received that matches a predicate without asserting on all the
-  /// data in the action:
+  /// This method is similar to ``receive(_:timeout:assert:file:line:)-6325h``, except it allows
+  /// you to assert that an action was received that matches a predicate instead of a case key
+  /// path:
   ///
   /// ```swift
   /// await store.send(.buttonTapped)
@@ -1445,9 +1419,8 @@ extension TestStore where State: Equatable {
 
   /// Asserts an action was received matching a case path and asserts how the state changes.
   ///
-  /// This method is similar to ``receive(_:timeout:assert:file:line:)-5awso``, except it allows you
-  /// to assert that an action was received that matches a particular case of the action enum
-  /// without asserting on all the data in the action.
+  /// This method is similar to ``receive(_:timeout:assert:file:line:)-7md3m``, except it allows
+  /// you to assert that an action was received that matches a case key path instead of a predicate.
   ///
   /// It can be useful to assert that a particular action was received without asserting on the data
   /// inside the action. For example:
@@ -1492,6 +1465,30 @@ extension TestStore where State: Equatable {
     )
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
+  )
   @MainActor
   @_disfavoredOverload
   public func receive<Value>(
@@ -1522,52 +1519,18 @@ extension TestStore where State: Equatable {
     }
   }
 
-  @MainActor
-  public func receive<Value: Equatable>(
-    _ keyPath: CaseKeyPath<Action, Value>,
-    _ value: Value,
-    timeout nanoseconds: UInt64? = nil,
-    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-    file: StaticString = #file,
-    line: UInt = #line
-  ) async where Action: CasePathable {
-    await XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
-      guard !self.reducer.inFlightEffects.isEmpty
-      else {
-        _ = {
-          self._receive(
-            AnyCasePath(keyPath), assert: updateStateToExpectedResult, file: file, line: line
-          )
-        }()
-        return
-      }
-      await self.receiveAction(
-        matching: { $0[case: keyPath] == value },
-        timeout: nanoseconds,
-        file: file,
-        line: line
-      )
-      _ = {
-        self._receive(
-          AnyCasePath(keyPath), assert: updateStateToExpectedResult, file: file, line: line
-        )
-      }()
-      await Task.megaYield()
-    }
-  }
-
   #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     /// Asserts an action was received matching a case path and asserts how the state changes.
     ///
-    /// This method is similar to ``receive(_:timeout:assert:file:line:)-5awso``, except it allows
-    /// you to assert that an action was received that matches a particular case of the action enum
-    /// without asserting on all the data in the action.
+    /// This method is similar to ``receive(_:timeout:assert:file:line:)-7md3m``, except it allows
+    /// you to assert that an action was received that matches a case key path instead of a
+    /// predicate.
     ///
     /// It can be useful to assert that a particular action was received without asserting
     /// on the data inside the action. For example:
     ///
     /// ```swift
-    /// await store.receive(/Search.Action.searchResponse) {
+    /// await store.receive(\.searchResponse) {
     ///   $0.results = [
     ///     "CasePaths",
     ///     "ComposableArchitecture",
@@ -1609,7 +1572,34 @@ extension TestStore where State: Equatable {
 
     @MainActor
     @_disfavoredOverload
-    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+    @available(
+      iOS,
+      introduced: 16,
+      deprecated: 9999,
+      message:
+        "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
+    )
+    @available(
+      macOS,
+      introduced: 13,
+      deprecated: 9999,
+      message:
+        "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
+    )
+    @available(
+      tvOS,
+      introduced: 16,
+      deprecated: 9999,
+      message:
+        "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
+    )
+    @available(
+      watchOS,
+      introduced: 9,
+      deprecated: 9999,
+      message:
+        "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
+    )
     public func receive<Value>(
       _ actionCase: AnyCasePath<Action, Value>,
       timeout duration: Duration,
@@ -1638,26 +1628,6 @@ extension TestStore where State: Equatable {
         }()
         await Task.megaYield()
       }
-    }
-
-    @MainActor
-    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
-    public func receive<Value: Equatable>(
-      _ keyPath: CaseKeyPath<Action, Value>,
-      _ value: Value,
-      timeout duration: Duration,
-      assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-      file: StaticString = #file,
-      line: UInt = #line
-    ) async where Action: CasePathable {
-      await self.receive(
-        keyPath,
-        value,
-        timeout: duration.nanoseconds,
-        assert: updateStateToExpectedResult,
-        file: file,
-        line: line
-      )
     }
   #endif
 
@@ -1830,7 +1800,7 @@ extension TestStore {
   /// await store.send(.buttonTapped) {
   ///   // Assert on how state changed
   /// }
-  /// await store.receive(.response(/* ... */)) {
+  /// await store.receive(\.response) {
   ///   // Assert on how state changed
   /// }
   ///
@@ -1895,7 +1865,7 @@ extension TestStore {
   /// await store.send(.buttonTapped) {
   ///   // Assert on how state changed
   /// }
-  /// await store.receive(.response(/* ... */)) {
+  /// await store.receive(\.response) {
   ///   // Assert on how state changed
   /// }
   ///
@@ -2018,6 +1988,30 @@ extension TestStore {
     )
   }
 
+  @available(
+    iOS,
+    deprecated: 9999,
+    message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Using-case-key-paths"
+  )
   public func bindings<ViewAction: BindableAction>(
     action toViewAction: AnyCasePath<Action, ViewAction>
   ) -> BindingViewStore<State> where State == ViewAction.State {
@@ -2076,7 +2070,7 @@ extension TestStore where Action: BindableAction, State == Action.State {
 /// store.send(.startTimerButtonTapped)
 ///
 /// await mainQueue.advance(by: .seconds(1))
-/// await store.receive(.timerTick) { $0.elapsed = 1 }
+/// await store.receive(\.timerTick) { $0.elapsed = 1 }
 ///
 /// // Wait for cleanup effects to finish before completing the test
 /// await store.send(.stopTimerButtonTapped).finish()

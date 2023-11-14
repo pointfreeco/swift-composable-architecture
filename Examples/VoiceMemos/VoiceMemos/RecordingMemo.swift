@@ -16,17 +16,18 @@ struct RecordingMemo {
     }
   }
 
-  enum Action: Equatable, Sendable {
+  enum Action: Sendable {
     case audioRecorderDidFinish(TaskResult<Bool>)
     case delegate(DelegateAction)
     case finalRecordingTime(TimeInterval)
     case onTask
     case timerUpdated
     case stopButtonTapped
-  }
 
+    @CasePathable
   enum DelegateAction: Equatable, Sendable {
-    case didFinish(TaskResult<State>)
+    case didFinish(Result<State>)
+    }
   }
 
   struct Failed: Equatable, Error {}
@@ -66,7 +67,7 @@ struct RecordingMemo {
         return .run { [url = state.url] send in
           async let startRecording: Void = send(
             .audioRecorderDidFinish(
-              TaskResult { try await self.audioRecorder.startRecording(url) }
+              Result { try await self.audioRecorder.startRecording(url) }
             )
           )
           for await _ in self.clock.timer(interval: .seconds(1)) {
@@ -74,7 +75,7 @@ struct RecordingMemo {
           }
           await startRecording
         }
-        
+
       case .timerUpdated:
         state.duration += 1
         return .none

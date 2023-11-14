@@ -74,6 +74,9 @@ struct NewOldSiblingsView: View {
   }
 }
 
-#Preview {
-  NewOldSiblingsView()
+struct NewOldSiblingsPreviews: PreviewProvider {
+  static var previews: some View {
+    let _ = Logger.shared.isEnabled = true
+    NewOldSiblingsView()
+  }
 }

@@ -28,8 +28,7 @@ struct IdentifiedListView: View {
             }
           }
         }
-        ForEachStore(self.store.scope(state: \.rows, action: \.rows)) {
-          store in
+        ForEachStore(self.store.scope(state: \.rows, action: \.rows)) { store in
           let _ = Logger.shared.log("\(Self.self).body.ForEachStore")
           let idStore = store.scope(state: \.id, action: \.self)
           WithViewStore(idStore, observe: { $0 }) { viewStore in
@@ -87,6 +86,15 @@ struct IdentifiedListView: View {
       .forEach(\.rows, action: \.rows) {
         BasicsView.Feature()
       }
+    }
+  }
+}
+
+struct IdentifiedListPreviews: PreviewProvider {
+  static var previews: some View {
+    let _ = Logger.shared.isEnabled = true
+    NavigationStack {
+      IdentifiedListView()
     }
   }
 }

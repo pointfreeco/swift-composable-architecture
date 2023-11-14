@@ -334,7 +334,7 @@ struct CounterFeature {
   struct State: Equatable {
     var count = 0
   }
-  enum Action: Equatable {
+  enum Action {
     case decrementButtonTapped
     case incrementButtonTapped
   }
@@ -367,14 +367,14 @@ struct Feature {
   struct State: Equatable {
     var path = StackState<Path.State>()
   }
-  enum Action: Equatable {
+  enum Action {
     case path(StackAction<Path.State, Path.Action>)
   }
 
   @Reducer  
   struct Path {
     enum State: Equatable { case counter(Counter.State) }
-    enum Action: Equatable { case counter(Counter.Action) }
+    enum Action { case counter(Counter.Action) }
     var body: some ReducerOf<Self> {
       Scope(state: \.counter, action: \.counter) { Counter() }
     }
@@ -478,11 +478,11 @@ await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) {
 
 And then we finally expect that the child dismisses itself, which manifests itself as the 
 ``StackAction/popFrom(id:)`` action being sent to pop the counter feature off the stack, which we 
-can assert using the ``TestStore/receive(_:timeout:assert:file:line:)-5awso`` method on 
+can assert using the ``TestStore/receive(_:timeout:assert:file:line:)-6325h`` method on
 ``TestStore``:
 
 ```swift
-await store.receive(.path(.popFrom(id: 0))) {
+await store.receive(\.path.popFrom) {
   $0.path[id: 0] = nil
 }
 ```
@@ -518,7 +518,7 @@ func testDismissal() {
 
   await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) 
   await store.send(.path(.element(id: 0, action: .incrementButtonTapped))) 
-  await store.receive(.path(.popFrom(id: 0)))
+  await store.receive(\.path.popFrom)
 }
 ```
 

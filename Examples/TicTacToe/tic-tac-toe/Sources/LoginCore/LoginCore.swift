@@ -17,19 +17,19 @@ public struct Login: Sendable {
     public init() {}
   }
 
-  public enum Action: Equatable, Sendable, ViewAction {
+  public enum Action: Sendable, ViewAction {
     case alert(PresentationAction<AlertAction>)
-    case loginResponse(TaskResult<AuthenticationResponse>)
+    case loginResponse(Result<AuthenticationResponse, Error>)
     case twoFactor(PresentationAction<TwoFactor.Action>)
     case view(View)
 
-    public enum View: BindableAction, Equatable, Sendable {
+    public enum Alert: Equatable, Sendable {}
+
+    public enum View: BindableAction, Sendable {
       case binding(BindingAction<State>)
       case loginButtonTapped
     }
   }
-
-  public enum AlertAction: Equatable, Sendable {}
 
   @Dependency(\.authenticationClient) var authenticationClient
 
@@ -66,7 +66,7 @@ public struct Login: Sendable {
         return .run { [email = state.email, password = state.password] send in
           await send(
             .loginResponse(
-              await TaskResult {
+              await Result {
                 try await self.authenticationClient.login(
                   .init(email: email, password: password)
                 )

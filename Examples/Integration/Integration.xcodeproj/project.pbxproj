@@ -11,8 +11,6 @@
 		CA487B2C2A15185300F54A79 /* BaseIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA487B2B2A15185300F54A79 /* BaseIntegrationTests.swift */; };
 		CA4BA5E929E76A7F0004FF9D /* NavigationStackTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4BA5E829E76A7F0004FF9D /* NavigationStackTestCase.swift */; };
 		CA4BA5EB29E76F110004FF9D /* LegacyNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4BA5EA29E76F110004FF9D /* LegacyNavigationTests.swift */; };
-		CA595273296DF46D00B5B695 /* NavigationStackBindingTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA595272296DF46D00B5B695 /* NavigationStackBindingTestCase.swift */; };
-		CA595275296DF55A00B5B695 /* NavigationStackBindingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA595274296DF55A00B5B695 /* NavigationStackBindingTests.swift */; };
 		CA595278296DF67E00B5B695 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = CA595277296DF67E00B5B695 /* ComposableArchitecture */; };
 		CA7BDDA12ADB543400277984 /* NewContainsOldTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7BDDA02ADB543400277984 /* NewContainsOldTestCase.swift */; };
 		CA7BDDA32ADB575F00277984 /* OldContainsNewTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7BDDA22ADB575F00277984 /* OldContainsNewTestCase.swift */; };
@@ -121,8 +119,6 @@
 		CA487B2B2A15185300F54A79 /* BaseIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseIntegrationTests.swift; sourceTree = "<group>"; };
 		CA4BA5E829E76A7F0004FF9D /* NavigationStackTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStackTestCase.swift; sourceTree = "<group>"; };
 		CA4BA5EA29E76F110004FF9D /* LegacyNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyNavigationTests.swift; sourceTree = "<group>"; };
-		CA595272296DF46D00B5B695 /* NavigationStackBindingTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStackBindingTestCase.swift; sourceTree = "<group>"; };
-		CA595274296DF55A00B5B695 /* NavigationStackBindingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStackBindingTests.swift; sourceTree = "<group>"; };
 		CA595276296DF66B00B5B695 /* swift-composable-architecture */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "swift-composable-architecture"; path = ../..; sourceTree = "<group>"; };
 		CA7BDDA02ADB543400277984 /* NewContainsOldTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewContainsOldTestCase.swift; sourceTree = "<group>"; };
 		CA7BDDA22ADB575F00277984 /* OldContainsNewTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OldContainsNewTestCase.swift; sourceTree = "<group>"; };
@@ -231,7 +227,6 @@
 				E9919D41296E47A400C8716B /* BindingsAnimationsTestBench.swift */,
 				E9919D3D296E28C800C8716B /* EscapedWithViewStoreTestCase.swift */,
 				CAA1CB1E296DEEAC000665B1 /* ForEachBindingTestCase.swift */,
-				CA595272296DF46D00B5B695 /* NavigationStackBindingTestCase.swift */,
 				CA4BA5E829E76A7F0004FF9D /* NavigationStackTestCase.swift */,
 				DC92799A2A1E59D500B2031A /* PresentationItemTestCase.swift */,
 				CAF5802429A5651D0042FB62 /* LegacyPresentationTestCase.swift */,
@@ -246,7 +241,6 @@
 				DCFFB8E82A15792C006AF839 /* BindingLocalTests.swift */,
 				E9919D3F296E3EF400C8716B /* EscapedWithViewStoreTests.swift */,
 				CAA1CB0F296DEE79000665B1 /* ForEachBindingTests.swift */,
-				CA595274296DF55A00B5B695 /* NavigationStackBindingTests.swift */,
 				CA4BA5EA29E76F110004FF9D /* LegacyNavigationTests.swift */,
 				CAF5802629A567BB0042FB62 /* LegacyPresentationTests.swift */,
 				DC140CC629E0E8F3006DF553 /* SwitchStoreTests.swift */,
@@ -714,7 +708,6 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -768,7 +761,6 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -976,16 +968,16 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/pointfreeco/swiftui-navigation.git";
 			requirement = {
-				branch = "case-key-paths";
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.0;
 			};
 		};
 		DC6268512AD1E06300F2E2EF /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing.git";
 			requirement = {
-				kind = revision;
-				revision = bbc9ec6e41ba964a5d04371af0acfb574cadafbd;
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

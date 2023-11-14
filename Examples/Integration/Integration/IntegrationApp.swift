@@ -71,9 +71,7 @@ struct IntegrationApp: App {
 
 struct ContentView: View {
   @State var isBindingLocalTestCasePresented = false
-  @State var isObservableNavigationTestCasePresented = false
   @State var isNavigationStackTestCasePresented = false
-  @State var isNavigationStackBindingTestCasePresented = false
   @State var isNavigationTestCasePresented = false
 
   var body: some View {
@@ -84,6 +82,7 @@ struct ContentView: View {
             Section {
               NavigationLink("Observable Basics") {
                 Form {
+                  // TODO: Don't use @State in this view
                   ObservableBasicsView(showExtraButtons: true)
                 }
               }
@@ -115,123 +114,92 @@ struct ContentView: View {
 
         NavigationLink("iOS 16") {
           List {
-            NavigationLink("Basics") {
-              Form {
-                BasicsView()
+            Section {
+              NavigationLink("Basics") {
+                Form {
+                  BasicsView(
+                    store: Store(initialState: BasicsView.Feature.State()) {
+                      BasicsView.Feature()
+                    }
+                  )
+                }
+              }
+              NavigationLink("Enum") {
+                EnumView()
+              }
+              NavigationLink("Optional") {
+                OptionalView()
+              }
+              NavigationLink("Identified list") {
+                IdentifiedListView()
+              }
+              Button("Navigation") {
+                self.isNavigationTestCasePresented = true
+              }
+              .sheet(isPresented: self.$isNavigationTestCasePresented) {
+                NavigationTestCaseView()
+              }
+              NavigationLink("Siblings") {
+                SiblingFeaturesView()
+              }
+              NavigationLink("Presentation") {
+                PresentationView()
               }
             }
-            NavigationLink("Enum") {
-              EnumView()
-            }
-            NavigationLink("Optional") {
-              OptionalView()
-            }
-            NavigationLink("Identified list") {
-              IdentifiedListView()
-            }
-            Button("Navigation") {
-              self.isNavigationTestCasePresented = true
-            }
-            .sheet(isPresented: self.$isNavigationTestCasePresented) {
-              NavigationTestCaseView()
-            }
-            NavigationLink("Siblings") {
-              SiblingFeaturesView()
-            }
-            NavigationLink("Presentation") {
-              PresentationView()
-            }
           }
-          .navigationTitle("iOS 16")
-        }
-
-        NavigationLink("iOS 16 + 17") {
-          List {
-            NavigationLink("New containing old") {
-              NewContainsOldTestCase()
-                .navigationTitle("New containing old")
-            }
-            NavigationLink("New presents old") {
-              NewPresentsOldTestCase()
-                .navigationTitle("New presents old")
-            }
-            NavigationLink("Old containing new") {
-              NewContainsOldTestCase()
-                .navigationTitle("Old containing new")
-            }
-            NavigationLink("Old presents new") {
-              OldPresentsNewTestCase()
-                .navigationTitle("Old presents new")
-            }
-            NavigationLink("Siblings") {
-              NewOldSiblingsView()
-                .navigationTitle("Siblings")
-            }
-          }
-          .navigationTitle("iOS 16 + 17")
+          .navigationTitle(Text("iOS 16"))
         }
 
         NavigationLink("Legacy") {
           List {
-            Section {
-              ForEach(TestCase.allCases) { test in
-                switch test {
-                case .escapedWithViewStore:
-                  NavigationLink(test.rawValue) {
-                    EscapedWithViewStoreTestCaseView()
-                  }
-                  
-                case .forEachBinding:
-                  NavigationLink(test.rawValue) {
-                    ForEachBindingTestCaseView()
-                  }
-                  
-                case .navigationStack:
-                  Button(test.rawValue) {
-                    self.isNavigationStackTestCasePresented = true
-                  }
-                  .foregroundColor(.black)
-                  .sheet(isPresented: self.$isNavigationStackTestCasePresented) {
-                    NavigationStackTestCaseView()
-                  }
-                  
-                case .navigationStackBinding:
-                  Button(test.rawValue) {
-                    self.isNavigationStackBindingTestCasePresented = true
-                  }
-                  .foregroundColor(.black)
-                  .sheet(isPresented: self.$isNavigationStackBindingTestCasePresented) {
-                    NavigationStackBindingTestCaseView()
-                  }
-                  
-                case .presentation:
-                  NavigationLink(test.rawValue) {
-                    PresentationTestCaseView()
-                  }
-                  
-                case .presentationItem:
-                  NavigationLink(test.rawValue) {
-                    PresentationItemTestCaseView()
-                  }
-                  
-                case .switchStore:
-                  NavigationLink(test.rawValue) {
-                    SwitchStoreTestCaseView()
-                  }
-                  
-                case .bindingLocal:
-                  Button(test.rawValue) {
-                    self.isBindingLocalTestCasePresented = true
-                  }
-                  .foregroundColor(.black)
-                  .sheet(isPresented: self.$isBindingLocalTestCasePresented) {
-                    BindingLocalTestCaseView()
-                  }
+            ForEach(TestCase.allCases) { test in
+              switch test {
+              case .escapedWithViewStore:
+                NavigationLink(test.rawValue) {
+                  EscapedWithViewStoreTestCaseView()
+                }
+
+              case .forEachBinding:
+                NavigationLink(test.rawValue) {
+                  ForEachBindingTestCaseView()
+                }
+
+              case .navigationStack:
+                Button(test.rawValue) {
+                  self.isNavigationStackTestCasePresented = true
+                }
+                .foregroundColor(.black)
+                .sheet(isPresented: self.$isNavigationStackTestCasePresented) {
+                  NavigationStackTestCaseView()
+                }
+
+              case .presentation:
+                NavigationLink(test.rawValue) {
+                  PresentationTestCaseView()
+                }
+
+              case .presentationItem:
+                NavigationLink(test.rawValue) {
+                  PresentationItemTestCaseView()
+                }
+
+              case .switchStore:
+                NavigationLink(test.rawValue) {
+                  SwitchStoreTestCaseView()
+                }
+
+              case .bindingLocal:
+                Button(test.rawValue) {
+                  self.isBindingLocalTestCasePresented = true
+                }
+                .foregroundColor(.black)
+                .sheet(isPresented: self.$isBindingLocalTestCasePresented) {
+                  BindingLocalTestCaseView()
                 }
               }
             }
           }
-          .navigationTitle("Legacy")
+          .navigationTitle(Text("Legacy"))
         }
 
         Section {
@@ -253,27 +221,20 @@ struct RuntimeWarnings: View {
   var body: some View {
     VStack {
       if !self.runtimeWarnings.isEmpty {
-        VStack(spacing: 10) {
-          ScrollView {
-            ForEach(self.runtimeWarnings, id: \.self) { warning in
-              HStack(alignment: .firstTextBaseline) {
-                Image(systemName: "exclamationmark.triangle.fill")
-                  .foregroundColor(.purple)
-                VStack(alignment: .leading, spacing: 4) {
-                  Text("Runtime warning")
-                    .font(.headline)
-                  Text(warning)
-                }
+        ScrollView {
+          ForEach(self.runtimeWarnings, id: \.self) { warning in
+            HStack(alignment: .firstTextBaseline) {
+              Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundColor(.purple)
+              VStack(alignment: .leading, spacing: 4) {
+                Text("Runtime warning")
+                  .font(.headline)
+                Text(warning)
               }
             }
           }
-          Button {
-            self.runtimeWarnings.removeAll()
-          } label: {
-            Text("Dismiss")
-          }
+          .padding(EdgeInsets(top: 16, leading: 10, bottom: 16, trailing: 10))
         }
-        .padding(EdgeInsets(top: 16, leading: 10, bottom: 16, trailing: 10))
         .frame(maxHeight: 160)
         .background(Color.white)
         .cornerRadius(4)

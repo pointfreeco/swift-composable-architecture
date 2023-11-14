@@ -113,8 +113,8 @@ private struct Child1 {
       case .decrementButtonTapped:
         state.count -= 1
         return state.count < 0
-        ? .run { await $0(.incrementButtonTapped) }
-        : .none
+          ? .run { await $0(.incrementButtonTapped) }
+          : .none
       case .incrementButtonTapped:
         state.count += 1
         return .none

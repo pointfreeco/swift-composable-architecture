@@ -84,10 +84,13 @@ extension ReducerMacro: MemberAttributeMacro {
         }
         return true
       }) {
+        let reduce = reduce.decl.cast(FunctionDeclSyntax.self)
+        let visitor = ReduceVisitor(viewMode: .all)
+        visitor.walk(declaration)
         context.diagnose(
           Diagnostic(
-            node: reduce.decl.cast(FunctionDeclSyntax.self).name,
-            message: MacroExpansionWarningMessage(
+            node: reduce.name,
+            message: MacroExpansionErrorMessage(
               """
               A 'reduce' method should not be defined in a reducer with a 'body'; it takes \
               precedence and 'body' will never be invoked
@@ -125,32 +128,6 @@ extension ReducerMacro: MemberAttributeMacro {
   }
 }
 
-extension DeclGroupSyntax {
-  var inheritanceClause: InheritanceClauseSyntax? {
-    if let decl = self.as(StructDeclSyntax.self) {
-      return decl.inheritanceClause
-    } else if let decl = self.as(ClassDeclSyntax.self) {
-      return decl.inheritanceClause
-    } else if let decl = self.as(EnumDeclSyntax.self) {
-      return decl.inheritanceClause
-    } else {
-      return nil
-    }
-  }
-
-  var memberBlock: MemberBlockSyntax? {
-    if let decl = self.as(StructDeclSyntax.self) {
-      return decl.memberBlock
-    } else if let decl = self.as(ClassDeclSyntax.self) {
-      return decl.memberBlock
-    } else if let decl = self.as(EnumDeclSyntax.self) {
-      return decl.memberBlock
-    } else {
-      return nil
-    }
-  }
-}
-
 extension Array where Element == String {
   var withQualified: Self {
     self.flatMap { [$0, "ComposableArchitecture.\($0)"] }
@@ -170,3 +147,27 @@ struct MacroExpansionNoteMessage: NoteMessage {
 }
 
 private let diagnosticDomain: String = "ComposableArchitectureMacros"
+
+private final class ReduceVisitor: SyntaxVisitor {
+  var changes: [FixIt.Change] = []
+
+  override func visit(_ node: DeclReferenceExprSyntax) -> SyntaxVisitorContinueKind {
+    guard node.baseName.text == "reduce" else { return super.visit(node) }
+    guard
+      node.argumentNames == nil
+        || node.argumentNames?.arguments.map(\.name.text) == ["into", "action"]
+    else { return super.visit(node) }
+    if let base = node.parent?.as(MemberAccessExprSyntax.self)?.base,
+      base.as(DeclReferenceExprSyntax.self)?.baseName.tokenKind != .keyword(Keyword.`self`)
+    {
+      return super.visit(node)
+    }
+    self.changes.append(
+      .replace(
+        oldNode: Syntax(node),
+        newNode: Syntax(node.with(\.baseName, "update"))
+      )
+    )
+    return .visitChildren
+  }
+}

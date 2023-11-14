@@ -146,18 +146,18 @@
       While this test does pass, it also isn't asserting on any of the timer behavior. We would
       like to assert that after some time a `timerTick` action is sent into the system and causes
       the `count` to increment. This can be done by using the 
-      ``ComposableArchitecture/TestStore/receive(_:timeout:assert:file:line:)-5awso`` method on
+      ``ComposableArchitecture/TestStore/receive(_:timeout:assert:file:line:)-6325h`` method on
       test store to assert that you expect to receive an action, and describe how state mutates
       upon receiving that action.
       
       @Step {
         Add a new assertion that shows you expect to receive a `timerTick` action and that the
         `count` state increases to 1.
-        
-        > Note: In order to use `receive` the `Action` type of your feature must be `Equatable`. 
-        This is because the test store needs to assert on the action received.
-        
+                
         @Code(name: "CounterFeatureTests.swift", file: 01-03-02-code-0005.swift)
+        
+        > Note: We use key path syntax for singling out the case of the `Action` enum we expect
+        to receive from the effect.
       }
       
       @Step {

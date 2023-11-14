@@ -10,7 +10,7 @@ struct Counter {
     var count = 0
   }
 
-  enum Action: Equatable {
+  enum Action {
     case decrementButtonTapped
     case incrementButtonTapped
   }

@@ -14,7 +14,7 @@ public struct TicTacToe {
     public init() { self = .login(Login.State()) }
   }
 
-  public enum Action: Equatable {
+  public enum Action {
     case login(Login.Action)
     case newGame(NewGame.Action)
   }

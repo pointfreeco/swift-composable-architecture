@@ -12,7 +12,7 @@ public struct NewGame {
     public init() {}
   }
 
-  public enum Action: Equatable, BindableAction {
+  public enum Action: BindableAction {
     case binding(BindingAction<State>)
     case game(PresentationAction<Game.Action>)
     case letsPlayButtonTapped

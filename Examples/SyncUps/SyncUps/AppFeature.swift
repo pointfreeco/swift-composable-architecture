@@ -9,7 +9,7 @@ struct AppFeature {
     var syncUpsList = SyncUpsList.State()
   }
 
-  enum Action: Equatable {
+  enum Action {
     case path(StackAction<Path.State, Path.Action>)
     case syncUpsList(SyncUpsList.Action)
   }
@@ -105,7 +105,7 @@ struct AppFeature {
       case record(RecordMeeting.State)
     }
 
-    enum Action: Equatable {
+    enum Action {
       case detail(SyncUpDetail.Action)
       case record(RecordMeeting.Action)
     }

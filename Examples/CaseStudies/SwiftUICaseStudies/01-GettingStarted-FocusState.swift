@@ -21,7 +21,7 @@ struct FocusDemo {
     }
   }
 
-  enum Action: BindableAction, Equatable {
+  enum Action: BindableAction {
     case binding(BindingAction<State>)
     case signInButtonTapped
   }

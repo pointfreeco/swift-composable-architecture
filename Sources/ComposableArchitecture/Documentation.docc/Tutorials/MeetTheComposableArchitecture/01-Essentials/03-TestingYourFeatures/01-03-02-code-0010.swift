@@ -16,7 +16,7 @@ final class CounterFeatureTests: XCTestCase {
       $0.isTimerRunning = true
     }
     await clock.advance(by: .seconds(1))
-    await store.receive(.timerTick) {
+    await store.receive(\.timerTick) {
       $0.count = 1
     }
     await store.send(.toggleTimerButtonTapped) {

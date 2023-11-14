@@ -7,7 +7,7 @@ import XCTest
 final class WebSocketTests: XCTestCase {
   func testWebSocketHappyPath() async {
     let actions = AsyncStream.makeStream(of: WebSocketClient.Action.self)
-    let messages = AsyncStream.makeStream(of: TaskResult<WebSocketClient.Message>.self)
+    let messages = AsyncStream.makeStream(of: Result<WebSocketClient.Message, Error>.self)
 
     let store = TestStore(initialState: WebSocket.State()) {
       WebSocket()
@@ -24,13 +24,13 @@ final class WebSocketTests: XCTestCase {
       $0.connectivityState = .connecting
     }
     actions.continuation.yield(.didOpen(protocol: nil))
-    await store.receive(.webSocket(.didOpen(protocol: nil))) {
+    await store.receive(\.webSocket.didOpen) {
       $0.connectivityState = .connected
     }
 
     // Receive a message
     messages.continuation.yield(.success(.string("Welcome to echo.pointfree.co")))
-    await store.receive(.receivedSocketMessage(.success(.string("Welcome to echo.pointfree.co")))) {
+    await store.receive(\.receivedSocketMessage.success) {
       $0.receivedMessages = ["Welcome to echo.pointfree.co"]
     }
 
@@ -41,11 +41,11 @@ final class WebSocketTests: XCTestCase {
     await store.send(.sendButtonTapped) {
       $0.messageToSend = ""
     }
-    await store.receive(.sendResponse(didSucceed: true))
+    await store.receive(\.sendResponse)
 
     // Receive a message
     messages.continuation.yield(.success(.string("Hi")))
-    await store.receive(.receivedSocketMessage(.success(.string("Hi")))) {
+    await store.receive(\.receivedSocketMessage.success) {
       $0.receivedMessages = ["Welcome to echo.pointfree.co", "Hi"]
     }
 
@@ -58,7 +58,7 @@ final class WebSocketTests: XCTestCase {
 
   func testWebSocketSendFailure() async {
     let actions = AsyncStream.makeStream(of: WebSocketClient.Action.self)
-    let messages = AsyncStream.makeStream(of: TaskResult<WebSocketClient.Message>.self)
+    let messages = AsyncStream.makeStream(of: Result<WebSocketClient.Message, Error>.self)
 
     let store = TestStore(initialState: WebSocket.State()) {
       WebSocket()
@@ -78,7 +78,7 @@ final class WebSocketTests: XCTestCase {
       $0.connectivityState = .connecting
     }
     actions.continuation.yield(.didOpen(protocol: nil))
-    await store.receive(.webSocket(.didOpen(protocol: nil))) {
+    await store.receive(\.webSocket.didOpen) {
       $0.connectivityState = .connected
     }
 
@@ -89,7 +89,7 @@ final class WebSocketTests: XCTestCase {
     await store.send(.sendButtonTapped) {
       $0.messageToSend = ""
     }
-    await store.receive(.sendResponse(didSucceed: false)) {
+    await store.receive(\.sendResponse) {
       $0.alert = AlertState {
         TextState("Could not send socket message. Connect to the server first, and try again.")
       }
@@ -121,7 +121,7 @@ final class WebSocketTests: XCTestCase {
       $0.connectivityState = .connecting
     }
     actions.continuation.yield(.didOpen(protocol: nil))
-    await store.receive(.webSocket(.didOpen(protocol: nil))) {
+    await store.receive(\.webSocket.didOpen) {
       $0.connectivityState = .connected
     }
 
@@ -153,7 +153,7 @@ final class WebSocketTests: XCTestCase {
       $0.connectivityState = .connecting
     }
     actions.continuation.yield(.didClose(code: .internalServerError, reason: nil))
-    await store.receive(.webSocket(.didClose(code: .internalServerError, reason: nil))) {
+    await store.receive(\.webSocket.didClose) {
       $0.connectivityState = .disconnected
     }
   }

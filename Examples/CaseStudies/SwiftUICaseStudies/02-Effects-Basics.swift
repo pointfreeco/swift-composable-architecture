@@ -35,12 +35,12 @@ struct EffectsBasics {
     var numberFact: String?
   }
 
-  enum Action: Equatable {
+  enum Action {
     case decrementButtonTapped
     case decrementDelayResponse
     case incrementButtonTapped
     case numberFactButtonTapped
-    case numberFactResponse(TaskResult<String>)
+    case numberFactResponse(Result<String, Error>)
   }
 
   @Dependency(\.continuousClock) var clock
@@ -55,12 +55,12 @@ struct EffectsBasics {
         state.numberFact = nil
         // Return an effect that re-increments the count after 1 second if the count is negative
         return state.count >= 0
-        ? .none
-        : .run { send in
-          try await self.clock.sleep(for: .seconds(1))
-          await send(.decrementDelayResponse)
-        }
-        .cancellable(id: CancelID.delay)
+          ? .none
+          : .run { send in
+            try await self.clock.sleep(for: .seconds(1))
+            await send(.decrementDelayResponse)
+          }
+          .cancellable(id: CancelID.delay)
 
       case .decrementDelayResponse:
         if state.count < 0 {
@@ -72,8 +72,8 @@ struct EffectsBasics {
         state.count += 1
         state.numberFact = nil
         return state.count >= 0
-        ? .cancel(id: CancelID.delay)
-        : .none
+          ? .cancel(id: CancelID.delay)
+          : .none
 
       case .numberFactButtonTapped:
         state.isNumberFactRequestInFlight = true
@@ -81,7 +81,7 @@ struct EffectsBasics {
         // Return an effect that fetches a number fact from the API and returns the
         // value back to the reducer's `numberFactResponse` action.
         return .run { [count = state.count] send in
-          await send(.numberFactResponse(TaskResult { try await self.factClient.fetch(count) }))
+          await send(.numberFactResponse(Result { try await self.factClient.fetch(count) }))
         }
 
       case let .numberFactResponse(.success(response)):

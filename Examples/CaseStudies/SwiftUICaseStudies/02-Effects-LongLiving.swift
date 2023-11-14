@@ -23,7 +23,7 @@ struct LongLivingEffects {
     var screenshotCount = 0
   }
 
-  enum Action: Equatable {
+  enum Action {
     case task
     case userDidTakeScreenshotNotification
   }

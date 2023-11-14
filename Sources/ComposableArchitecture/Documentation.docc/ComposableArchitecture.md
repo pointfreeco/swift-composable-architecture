@@ -53,7 +53,6 @@ day-to-day when building applications, such as:
 - <doc:Testing>
 - <doc:Navigation>
 - <doc:Performance>
-- <doc:MigrationGuides>
 
 ### State management
 
@@ -71,6 +70,11 @@ day-to-day when building applications, such as:
 - <doc:SwiftConcurrency>
 - <doc:SwiftUIIntegration>
 - <doc:UIKit>
+
+### Migration guides
+
+- <doc:MigratingTo1.4>
+- <doc:MigratingTo1.5>
 
 ## See Also
 

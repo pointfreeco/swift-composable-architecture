@@ -5,6 +5,6 @@ struct ContactDetailFeature {
   struct State: Equatable {
     let contact: Contact
   }
-  enum Action: Equatable {
+  enum Action {
   }
 }

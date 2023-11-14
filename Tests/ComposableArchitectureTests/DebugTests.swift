@@ -111,7 +111,7 @@
           state += action ? 1 : -1
           return .none
         })
-          ._printChanges(printer)
+        ._printChanges(printer)
       }
       store.send(true)
       try await Task.sleep(nanoseconds: 300_000_000)

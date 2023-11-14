@@ -4,8 +4,8 @@ import XCTest
 
 @MainActor
 final class iOS16_NavigationTests: BaseIntegrationTests {
-  override func setUp() {
-    super.setUp()
+  override func setUpWithError() throws {
+    try super.setUpWithError()
     self.app.buttons["iOS 16"].tap()
     self.app.buttons["Navigation"].tap()
     self.clearLogs()
@@ -19,6 +19,10 @@ final class iOS16_NavigationTests: BaseIntegrationTests {
       BasicsView.body
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.init
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
     self.app.buttons["Increment"].tap()
@@ -26,6 +30,9 @@ final class iOS16_NavigationTests: BaseIntegrationTests {
       """
       BasicsView.body
       StoreOf<BasicsView.Feature>.scope
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
   }
@@ -50,6 +57,9 @@ final class iOS16_NavigationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
   }

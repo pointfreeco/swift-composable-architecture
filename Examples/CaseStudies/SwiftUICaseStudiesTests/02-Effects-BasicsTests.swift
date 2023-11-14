@@ -34,7 +34,7 @@ final class EffectsBasicsTests: XCTestCase {
     await store.send(.numberFactButtonTapped) {
       $0.isNumberFactRequestInFlight = true
     }
-    await store.receive(.numberFactResponse(.success("1 is a good number Brent"))) {
+    await store.receive(\.numberFactResponse.success) {
       $0.isNumberFactRequestInFlight = false
       $0.numberFact = "1 is a good number Brent"
     }
@@ -50,7 +50,7 @@ final class EffectsBasicsTests: XCTestCase {
     await store.send(.decrementButtonTapped) {
       $0.count = -1
     }
-    await store.receive(.decrementDelayResponse) {
+    await store.receive(\.decrementDelayResponse) {
       $0.count = 0
     }
   }

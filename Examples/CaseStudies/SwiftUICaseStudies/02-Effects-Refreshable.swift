@@ -20,10 +20,10 @@ struct Refreshable {
     var fact: String?
   }
 
-  enum Action: Equatable {
+  enum Action {
     case cancelButtonTapped
     case decrementButtonTapped
-    case factResponse(TaskResult<String>)
+    case factResponse(Result<String, Error>)
     case incrementButtonTapped
     case refresh
   }
@@ -57,7 +57,7 @@ struct Refreshable {
         state.fact = nil
         return .run { [count = state.count] send in
           await send(
-            .factResponse(TaskResult { try await self.factClient.fetch(count) }),
+            .factResponse(Result { try await self.factClient.fetch(count) }),
             animation: .default
           )
         }

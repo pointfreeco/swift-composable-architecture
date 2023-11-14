@@ -9,7 +9,7 @@ struct CounterList {
     var counters: IdentifiedArrayOf<Counter.State> = []
   }
 
-  enum Action: Equatable {
+  enum Action {
     case counters(IdentifiedActionOf<Counter>)
   }
 

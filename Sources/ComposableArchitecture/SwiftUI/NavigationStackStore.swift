@@ -38,7 +38,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
               return state
             },
             id: nil,
-            action: { .element(id: component.id, action: $1) },
+            action: { .element(id: component.id, action: $0) },
             isInvalid: { !$0.ids.contains(component.id) },
             removeDuplicates: nil
           )
@@ -78,7 +78,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
               return state
             },
             id: nil,
-            action: { .element(id: component.id, action: $1) },
+            action: { .element(id: component.id, action: $0) },
             isInvalid: { !$0.ids.contains(component.id) },
             removeDuplicates: nil
           )

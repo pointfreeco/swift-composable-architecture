@@ -4,7 +4,7 @@ import SwiftUI
 @Reducer
 private struct PresentationItemTestCase {
   @Reducer
-  struct Destination  {
+  struct Destination {
     enum State: Equatable {
       case childA(Child.State)
       case childB(Child.State)
@@ -122,7 +122,7 @@ struct PresentationItemTestCaseView: View {
       }
       self.core
         .sheet(
-          store: self.store.scope(state: \.$destination.childA, action: \.destination.childB)
+          store: self.store.scope(state: \.$destination.childA, action: \.destination.childA)
         ) { store in
           Text("Child A")
           Button("Swap") {
