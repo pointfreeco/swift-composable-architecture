@@ -136,7 +136,7 @@ store.receive(\.rows[id: 0].response.success)
 And the same goes for ``StackAction`` too:
 
 ```swift
-store.receive(.\path[id: 0].response.success)
+store.receive(\.path[id: 0].response.success)
 ```
 
 ### Moving off of TaskResult
