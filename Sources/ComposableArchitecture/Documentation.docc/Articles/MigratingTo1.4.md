@@ -114,6 +114,12 @@ store.receive(.child(.presented(.response(.success("Hello!")))))
 store.receive(\.child.presented.response.success)
 ```
 
+And in the case of ``PresentationAction`` you can even omit the ``presented`` path component:
+
+```swift
+store.receive(\.child.response.success)
+```
+
 This does not assert on the _data_ received in the action, but typically that is already covered
 by the state assertion made inside the trailing closure of `receive`. And if you use this style of
 action receiving exclusively, you can even stop conforming your action types to `Equatable`.
