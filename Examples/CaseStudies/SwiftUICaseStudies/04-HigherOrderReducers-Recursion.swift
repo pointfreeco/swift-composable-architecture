@@ -18,7 +18,6 @@ struct Nested {
     var rows: IdentifiedArrayOf<State> = []
   }
 
-  @CasePathable
   enum Action {
     case addRowButtonTapped
     case nameTextFieldChanged(String)
