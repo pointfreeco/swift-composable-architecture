@@ -55,7 +55,7 @@ library and aim to allow one to abstract over the shape of enums just as key pat
 with structs.
 
 However, in conjunction with version 1.4 of this library we also released an update to CasePaths
-that massively improved ergnomics of using case paths. We introduced the `@CasePathable` macro for
+that massively improved ergonomics of using case paths. We introduced the `@CasePathable` macro for
 automatically deriving case paths so that we could stop using runtime reflection, and we introduced
 a way of using key paths to describe case paths. And so the old `CasePath` type has been deprecated,
 and the new `CaseKeyPath` type has taken its place.
@@ -114,6 +114,12 @@ store.receive(.child(.presented(.response(.success("Hello!")))))
 store.receive(\.child.presented.response.success)
 ```
 
+And in the case of ``PresentationAction`` you can even omit the ``presented`` path component:
+
+```swift
+store.receive(\.child.response.success)
+```
+
 This does not assert on the _data_ received in the action, but typically that is already covered
 by the state assertion made inside the trailing closure of `receive`. And if you use this style of
 action receiving exclusively, you can even stop conforming your action types to `Equatable`.
@@ -124,13 +130,13 @@ you can use the subscript ``IdentifiedAction/AllCasePaths-swift.struct/subscript
 receive a particular action for an element:
 
 ```swift
-store.receive(.rows[id: 0].response.success)
+store.receive(\.rows[id: 0].response.success)
 ```
 
 And the same goes for ``StackAction`` too:
 
 ```swift
-store.receive(.path[id: 0].response.success)
+store.receive(\.path[id: 0].response.success)
 ```
 
 ### Moving off of TaskResult
@@ -147,7 +153,7 @@ specify a concrete action:
 
 ```swift
 store.receive(.response(.success("Hello!"))) {
-  …
+  // ...
 }
 ```
 
@@ -159,7 +165,7 @@ tests:
 
 ```swift
 store.receive(.child(.response(.success("Hello!")))) {
-  …
+  // ...
 }
 ```
 
@@ -170,7 +176,7 @@ since typically that is covered in the state assertion:
 
 ```swift
 store.receive(\.child.response.success) {
-  …
+  // ...
 }
 ```
 
@@ -201,7 +207,7 @@ case:
 ```swift
 enum Action {
   // ...
-  rows(IdentifiedActionOf<Nested>)
+  case rows(IdentifiedActionOf<Nested>)
 }
 ```
 
@@ -222,7 +228,7 @@ identified action:
 
 ```swift
 Reduce { state, action in 
-// ...
+  // ...
 }
 .forEach(\.rows, action: \.rows) {
   RowFeature()
@@ -237,7 +243,7 @@ will need to insert a `.element` layer:
 
 ```diff
 -case let .row(id: id, action: .buttonTapped):
-+case let .rows(.elements(id: id, action: .buttonTapped)):
++case let .rows(.element(id: id, action: .buttonTapped)):
 ```
 
 [swift-case-paths]: http://github.com/pointfreeco/swift-case-paths
