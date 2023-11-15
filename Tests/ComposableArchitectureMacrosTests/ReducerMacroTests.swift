@@ -165,4 +165,77 @@ final class ReducerMacroTests: XCTestCase {
       """
     }
   }
+
+  func testPublicInit() {
+    assertMacro {
+      """
+      @Reducer
+      public struct Feature {
+        public struct State {
+        }
+        public enum Action {
+        }
+        public var body: some ReducerOf<Self> {
+          EmptyReducer()
+        }
+      }
+      """
+    } expansion: {
+      """
+      public struct Feature {
+        public struct State {
+        }
+        @CasePathable
+        public enum Action {
+        }
+        @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
+        public var body: some ReducerOf<Self> {
+          EmptyReducer()
+        }
+
+        public init() {
+        }
+      }
+
+      extension Feature: ComposableArchitecture.Reducer {
+      }
+      """
+    }
+  }
+
+  func testPublicInitAlreadyApplied() {
+    assertMacro {
+      """
+      @Reducer
+      public struct Feature {
+        public struct State {
+        }
+        public enum Action {
+        }
+        public init() {}
+        public var body: some ReducerOf<Self> {
+          EmptyReducer()
+        }
+      }
+      """
+    } expansion: {
+      """
+      public struct Feature {
+        public struct State {
+        }
+        @CasePathable
+        public enum Action {
+        }
+        public init() {}
+        @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
+        public var body: some ReducerOf<Self> {
+          EmptyReducer()
+        }
+      }
+
+      extension Feature: ComposableArchitecture.Reducer {
+      }
+      """
+    }
+  }
 }

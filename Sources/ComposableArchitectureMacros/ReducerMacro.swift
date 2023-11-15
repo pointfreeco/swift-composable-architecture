@@ -8,6 +8,20 @@ import SwiftSyntaxMacros
 public enum ReducerMacro {
 }
 
+extension ReducerMacro: MemberMacro {
+  public static func expansion<D: DeclGroupSyntax,C: MacroExpansionContext>(
+    of node: AttributeSyntax,
+    providingMembersOf declaration: D,
+    in context: C
+  ) throws -> [DeclSyntax] {
+    guard
+      declaration.modifiers.map(\.name.tokenKind).contains(.keyword(.public)),
+      !declaration.memberBlock.members.contains(where: { $0.decl.as(InitializerDeclSyntax.self) != nil })
+    else { return [] }
+    return ["public init() {}"]
+  }
+}
+
 extension ReducerMacro: ExtensionMacro {
   public static func expansion<D: DeclGroupSyntax, T: TypeSyntaxProtocol, C: MacroExpansionContext>(
     of node: AttributeSyntax,
