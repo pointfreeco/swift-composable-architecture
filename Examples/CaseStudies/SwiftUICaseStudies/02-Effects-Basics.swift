@@ -108,7 +108,7 @@ struct EffectsBasicsView: View {
   @Environment(\.openURL) var openURL
 
   var body: some View {
-    WithViewStore(self.store) {
+    WithPerceptionTracking {
       Form {
         Section {
           AboutView(readMe: readMe)

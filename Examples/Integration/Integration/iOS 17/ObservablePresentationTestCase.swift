@@ -8,7 +8,7 @@ struct ObservablePresentationView: View {
   }
 
   var body: some View {
-    WithViewStore(self.store) {
+    WithPerceptionTracking {
       let _ = Logger.shared.log("\(Self.self).body")
       Form {
         Section {

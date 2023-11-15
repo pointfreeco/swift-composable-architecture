@@ -1,3 +1,5 @@
+import Foundation
+
 #if canImport(Observation)
   import Observation
 #endif
@@ -39,6 +41,7 @@ public struct PerceptionRegistrar: Sendable {
     public func access<Subject: Observable, Member>(
       _ subject: Subject, keyPath: KeyPath<Subject, Member>
     ) {
+      perceptionCheck()
       self.registrar.access(subject, keyPath: keyPath)
     }
 
@@ -60,6 +63,7 @@ extension PerceptionRegistrar {
     _ subject: Subject,
     keyPath: KeyPath<Subject, Member>
   ) {
+    perceptionCheck()
     #if canImport(Observation)
       if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
         func `open`<T: Observable>(_ subject: T) {
@@ -125,4 +129,24 @@ extension PerceptionRegistrar: Hashable {
     // Don't include a registrar's transient state in its parent type's
     // hash value.
   }
+}
+
+@_transparent
+@inline(__always)
+private func perceptionCheck() {
+  #if DEBUG
+    if #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10),
+      !PerceptionLocals.isInPerceptionTracking,
+      Thread.callStackSymbols.contains(where: {
+        $0.split(separator: " ").dropFirst().first == "AttributeGraph"
+      })
+    {
+      runtimeWarn(
+        """
+        Perceptible state was accessed but is not being tracked. Track changes to state by wrapping
+        your view in a 'WithPerceptionTracking' view.
+        """
+      )
+    }
+  #endif
 }

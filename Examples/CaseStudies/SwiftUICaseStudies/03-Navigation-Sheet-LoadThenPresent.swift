@@ -61,7 +61,7 @@ struct LoadThenPresentView: View {
   }
 
   var body: some View {
-    WithViewStore(self.store) {
+    WithPerceptionTracking {
       Form {
         Section {
           AboutView(readMe: readMe)

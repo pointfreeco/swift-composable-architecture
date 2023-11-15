@@ -8,7 +8,7 @@ struct ObservableSiblingFeaturesView: View {
   }
 
   var body: some View {
-    WithViewStore(self.store) {
+    WithPerceptionTracking {
       let _ = Logger.shared.log("\(Self.self).body")
       VStack {
         Form {

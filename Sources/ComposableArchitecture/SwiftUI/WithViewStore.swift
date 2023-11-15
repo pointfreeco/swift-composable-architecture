@@ -1,5 +1,4 @@
 import CustomDump
-import Perception
 import SwiftUI
 
 /// A view helper that transforms a ``Store`` into a ``ViewStore`` so that its state can be observed
@@ -582,60 +581,3 @@ where
     self.viewStore.state
   }
 }
-
-extension WithViewStore where ViewState: ObservableState {
-  @available(
-    iOS,
-    deprecated: 17,
-    message:
-      "Use '@ObservableState', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6"
-  )
-  @available(
-    macOS,
-    deprecated: 14,
-    message:
-      "Use '@ObservableState', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6"
-  )
-  @available(
-    tvOS,
-    deprecated: 17,
-    message:
-      "Use '@ObservableState', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6"
-  )
-  @available(
-    watchOS,
-    deprecated: 10,
-    message:
-      "Use '@ObservableState', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6"
-  )
-  public init<NewContent>(
-    _ store: Store<ViewState, ViewAction>,
-    @ViewBuilder content: @escaping () -> NewContent,
-    file: StaticString = #fileID,
-    line: UInt = #line
-  )
-  where Content == WithPerceptionTracking<NewContent>
-  {
-#if DEBUG
-    self.file = file
-    self.line = line
-    var previousState: ViewState? = nil
-    self.previousState = { currentState in
-      defer { previousState = currentState }
-      return previousState
-    }
-    self.storeTypeName = ComposableArchitecture.storeTypeName(of: store)
-#endif
-    self.viewStore = ViewStore(
-      Store(initialState: store.stateSubject.value) {},
-      observe: { $0 },
-      removeDuplicates: { _, _ in true }
-    )
-    self.content = { _ in
-      WithPerceptionTracking {
-        content()
-      }
-    }
-  }
-}
-

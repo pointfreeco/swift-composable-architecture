@@ -78,7 +78,7 @@ code in the following way:
  
    var body: some View {
 -    WithViewStore(self.store, observe: ViewState.init) { store in
-+    WithViewStore(self.store) {  
++    WithPerceptionTracking  
        Form {
 -        Text(viewStore.count.description)
 -        Button("+") { viewStore.send(.incrementButtonTapped) }
@@ -94,8 +94,9 @@ In particular, the following changes must be made:
 
 * Mark your `State` with the ``ObservableState()`` macro.
 * Delete any view state type you have defined.
-* Do not pass the `observe` argument to ``WithViewStore`` and the trailing closure no longer takes
-an argument. The view will automatically observe only the state accessed in the view.
+* Replace the use of ``WithViewStore`` with `WithPerceptionTracking`, and the trailing closure does
+not take an argument. The view constructed inside the trailing closure will automatically observe 
+only the state accessed inside the closure.
 * Access state directly in the `store` rather than `viewStore`.
 * Send actions directly to the `store` rather than `viewStore`.
 
@@ -115,7 +116,7 @@ apply all of the updates above, but with one additional simplification to the `b
  }
 ```
 
-You no longer need the ``WithViewStore`` at all.
+You no longer need the ``WithViewStore`` or `WithPerceptionTracking` at all.
 
 ## Replacing IfLetStore with 'if let'
 

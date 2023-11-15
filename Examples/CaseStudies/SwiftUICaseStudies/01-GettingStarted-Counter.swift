@@ -44,7 +44,7 @@ struct CounterView: View {
   let store: StoreOf<Counter>
 
   var body: some View {
-    WithViewStore(self.store) {
+    WithPerceptionTracking {
       HStack {
         Button {
           self.store.send(.decrementButtonTapped)

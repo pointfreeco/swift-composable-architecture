@@ -8,7 +8,7 @@ struct ObservableNavigationTestCaseView: View {
   }
 
   var body: some View {
-    WithViewStore(self.store) {
+    WithPerceptionTracking {
       NavigationStack(store: self.store.scope(state: \.path, action: \.path)) {
         NavigationLink(state: ObservableBasicsView.Feature.State()) {
           Text("Push feature")
