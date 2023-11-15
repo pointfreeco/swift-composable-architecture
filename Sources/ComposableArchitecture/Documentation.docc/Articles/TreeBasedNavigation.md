@@ -36,6 +36,7 @@ form for adding a new item. We can integrate state and actions together by utili
 ```swift
 @Reducer
 struct InventoryFeature {
+  @ObservableState
   struct State: Equatable {
     @PresentationState var addItem: ItemFormFeature.State?
     var items: IdentifiedArrayOf<Item> = []
@@ -61,6 +62,7 @@ action in the parent domain for populating the child's state to drive navigation
 ```swift
 @Reducer
 struct InventoryFeature {
+  @ObservableState
   struct State: Equatable { /* ... */ }
   enum Action { /* ... */ }
   
@@ -88,23 +90,23 @@ struct InventoryFeature {
 > tuned for enums, and uses the forward slash syntax.
 
 That's all that it takes to integrate the domains and logic of the parent and child features. Next
-we need to integrate the features' views. This is done using view modifiers that look similar to
-SwiftUI's, but are tuned specifically to work with the Composable Architecture.
+we need to integrate the features' views. This is done by passing bindings of store to SwiftUI's
+view modifiers.
 
-For example, to show a sheet from the `addItem` state in the `InventoryFeature`, we can use
-the `sheet(store:)` modifier that takes a ``Store`` as an argument that is focused on presentation
+For example, to show a sheet from the `addItem` state in the `InventoryFeature`, we can hand
+the `sheet(item:)` modifier a binding of a ``Store`` as an argument that is focused on presentation
 state and actions:
 
 ```swift
 struct InventoryView: View {
-  let store: StoreOf<InventoryFeature>
+  @Bindable var store: StoreOf<InventoryFeature>
 
   var body: some View {
     List {
       // ...
     }
     .sheet(
-      store: self.store.scope(state: \.$addItem, action: \.addItem)
+      item: self.$store.scope(state: \.addItem, action: \.addItem)
     ) { store in
       ItemFormView(store: store)
     }
@@ -112,26 +114,17 @@ struct InventoryView: View {
 }
 ```
 
-> Note:  We again must specify a key path to the `@PresentationState` projected value, _i.e._
-`\.$addItem`.
+> Note: We use SwiftUI's `@Bindable` or `@State` property wrappers to produce a binding to a store,
+> which can be further scoped using ``SwiftUI/Binding/scope(state:action:)-4mj4d``.
 
 With those few steps completed the domains and views of the parent and child features are now
 integrated together, and when the `addItem` state flips to a non-`nil` value the sheet will be
 presented, and when it is `nil`'d out it will be dismissed.
 
-In this example we are using the `.sheet` view modifier, but the library ships with overloads for 
-all of SwiftUI's navigation APIs that take stores of presentation domain, including:
-
-  * `alert(store:)`
-  * `confirmationDialog(store:)`
-  * `sheet(store:)`
-  * `popover(store:)`
-  * `fullScreenCover(store:)`
-  * `navigationDestination(store:)`
-  * ``NavigationLinkStore``
-
-This should make it possible to use optional state to drive any kind of navigation in a SwiftUI
-application.
+In this example we are using the `.sheet` view modifier, but every view modifier SwiftUI ships can
+be handed a store in this fashion, including `popover(item:)`, `fullScreenCover(item:),
+`navigationDestination(item:)`, and more. This should make it possible to use optional state to
+drive any kind of navigation in a SwiftUI application.
 
 ## Enum state
 
@@ -140,6 +133,7 @@ modeled domains. In particular, if a feature can navigate to multiple screens th
 tempted to model that with multiple optional values:
 
 ```swift
+@ObservableState
 struct State {
   @PresentationState var detailItem: DetailFeature.State?
   @PresentationState var editItem: EditFeature.State?
@@ -188,6 +182,7 @@ struct InventoryFeature {
 
   @Reducer
   struct Destination {
+    @ObservableState
     enum State {
       case addItem(AddFeature.State)
       case detailItem(DetailFeature.State)
@@ -225,6 +220,7 @@ With that done we can now hold onto a _single_ piece of optional state in our fe
 ```swift
 @Reducer
 struct InventoryFeature {
+  @ObservableState
   struct State { 
     @PresentationState var destination: Destination.State?
     // ...
@@ -276,36 +272,37 @@ domain and further isolate a particular case of the state and action enums via d
 
 For example, suppose the "add" screen is presented as a sheet, the "edit" screen is presented 
 by a popover, and the "detail" screen is presented in a drill-down. Then we can use the 
-`.sheet(store:)`, `.popover(store:)`, and `.navigationDestination(store:)` view modifiers to have
-each of those styles of presentation powered by the respective case of the destination enum:
+`.sheet(item:)`, `.popover(item:)`, and `.navigationDestination(item:)` view modifiers that come
+from SwiftUI to have each of those styles of presentation powered by the respective case of the
+destination enum:
 
 ```swift
 struct InventoryView: View {
-  let store: StoreOf<InventoryFeature>
+  @Bindable var store: StoreOf<InventoryFeature>
 
   var body: some View {
     List {
       // ...
     }
     .sheet(
-      store: self.store.scope(
-        state: \.$destination.addItem,
+      item: self.$store.scope(
+        state: \.destination?.addItem,
         action: \.destination.addItem
       )
     ) { store in 
       AddFeatureView(store: store)
     }
     .popover(
-      store: self.store.scope(
-        state: \.$destination.editItem,
+      item: self.$store.scope(
+        state: \.destination?.editItem,
         action: \.destination.editItem
       )
     ) { store in 
       EditFeatureView(store: store)
     }
     .navigationDestination(
-      store: self.store.scope(
-        state: \.$destination.detailItem,
+      item: self.$store.scope(
+        state: \.destination?.detailItem,
         action: \.destination.detailItem
       )
     ) { store in 
@@ -340,17 +337,17 @@ forms of navigation could be as simple as this:
 
 ```swift
 .sheet(
-  store: self.store.scope(state: \.addItem, action: \.addItem)
+  item: self.$store.scope(state: \.addItem, action: \.addItem)
 ) { store in 
   AddFeatureView(store: store)
 }
 .popover(
-  store: self.store.scope(state: \.editItem, action: \.editItem)
+  item: self.$store.scope(state: \.editItem, action: \.editItem)
 ) { store in 
   EditFeatureView(store: store)
 }
 .navigationDestination(
-  store: self.store.scope(state: \.detailItem, action: \.detailItem)
+  item: self.$store.scope(state: \.detailItem, action: \.detailItem)
 ) { store in 
   DetailFeatureView(store: store)
 }
@@ -435,6 +432,7 @@ dependency management system (see <doc:DependencyManagement>) using ``DismissEff
 ```swift
 @Reducer
 struct Feature {
+  @ObservableState
   struct State { /* ... */ }
   enum Action { 
     case closeButtonTapped
@@ -491,6 +489,7 @@ count is greater than or equal to 5:
 ```swift
 @Reducer
 struct CounterFeature {
+  @ObservableState
   struct State: Equatable {
     var count = 0
   }
@@ -525,6 +524,7 @@ And then let's embed that feature into a parent feature using ``PresentationStat
 ```swift
 @Reducer
 struct Feature {
+  @ObservableState
   struct State: Equatable {
     @PresentationState var counter: CounterFeature.State?
   }

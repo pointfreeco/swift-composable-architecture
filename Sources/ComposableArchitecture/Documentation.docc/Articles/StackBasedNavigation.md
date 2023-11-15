@@ -266,6 +266,7 @@ dependency management system (see <doc:DependencyManagement>) using ``DismissEff
 ```swift
 @Reducer
 struct Feature {
+  @ObservableState
   struct State { /* ... */ }
   enum Action { 
     case closeButtonTapped
@@ -324,6 +325,7 @@ count is greater than or equal to 5:
 ```swift
 @Reducer
 struct CounterFeature {
+  @ObservableState
   struct State: Equatable {
     var count = 0
   }
@@ -357,6 +359,7 @@ And then let's embed that feature into a parent feature:
 ```swift
 @Reducer
 struct Feature {
+  @ObservableState
   struct State: Equatable {
     var path = StackState<Path.State>()
   }
