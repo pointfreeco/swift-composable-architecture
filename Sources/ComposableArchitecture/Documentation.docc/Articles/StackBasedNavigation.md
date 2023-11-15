@@ -24,7 +24,7 @@ The tools for this style of navigation include ``StackState``, ``StackAction`` a
 Composable Architecture.
 
 The process of integrating features into a navigation stack largely consists of 2 steps: 
-integrating the features' domains together, and constructing a ``NavigationStackStore`` for 
+integrating the features' domains together, and constructing a `NavigationStack` for a store
 describing all the views in the stack. One typically starts by integrating the features' domains 
 together. This consists of defining a new reducer, typically called `Path`, that holds the domains
 of all the features that can be pushed onto the stack:
@@ -36,6 +36,7 @@ struct RootFeature {
 
   @Reducer
   struct Path {
+    @ObservableState
     enum State {
       case addItem(AddFeature.State)
       case detailItem(DetailFeature.State)
@@ -70,6 +71,7 @@ feature that manages the navigation stack:
 ```swift
 @Reducer
 struct RootFeature {
+  @ObservableState
   struct State {
     var path = StackState<Path.State>()
     // ...
@@ -106,21 +108,20 @@ struct RootFeature {
 
 That completes the steps to integrate the child and parent features together for a navigation stack.
 
-Next we must integrate the child and parent views together. This is done by constructing a special
-version of SwiftUI's `NavigationStack` view that comes with this library, called 
-``NavigationStackStore``. This view takes 3 arguments: a store focused in on ``StackState``
-and ``StackAction`` in your domain, a trailing view builder for the root view of the stack, and
-another trailing view builder for all of the views that can be pushed onto the stack:
+Next we must integrate the child and parent views together. This is done by a `NavigationStack`
+using a special initializer that comes with this library, called
+``SwiftUI/NavigationStack/init(store:root:destination:)``. This initializer takes 3 arguments: a
+store focused in on ``StackState`` and ``StackAction`` in your domain, a trailing view builder for
+the root view of the stack, and another trailing view builder for all of the views that can be
+pushed onto the stack:
 
 ```swift
-NavigationStackStore(
-  // Store focused on StackState and StackAction
+NavigationStack(
+  store: // Store focused on StackState and StackAction
 ) {
   // Root view of the navigation stack
-} destination: { state in 
-  switch state {
-    // A view for each case of the Path.State enum
-  }
+} destination: { store in
+  // A view for each case of the Path.State enum
 }
 ```
 
@@ -132,8 +133,8 @@ struct RootView: View {
   let store: StoreOf<RootFeature>
 
   var body: some View {
-    NavigationStackStore(
-      self.store.scope(state: \.path, action: \.path)
+    NavigationStack(
+      store: self.store.scope(state: \.path, action: \.path)
     ) {
       // Root view of the navigation stack
     } destination: { state in
@@ -146,12 +147,11 @@ struct RootView: View {
 The root view can be anything you want, and would typically have some `NavigationLink`s or other
 buttons that push new data onto the ``StackState`` held in your domain.
 
-And the last trailing closure is provided a single piece of the `Path.State` enum so that you can 
-switch on it:
+And the last trailing closure is provided a store of `Path` domain so that you can switch on it:
 
 ```swift
-} destination: { state in
-  switch state {
+} destination: { store in
+  switch store.state {
   case .addItem:
   case .detailItem:
   case .editItem:
@@ -163,30 +163,23 @@ This will give you compile-time guarantees that you have handled each case of th
 which can be nice for when you add new types of destinations to the stack.
 
 In each of these cases you can return any kind of view that you want, but ultimately you want to
-make use of the library's ``CaseLet`` view in order to scope down to a specific case of the 
-`Path.State` enum:
+scope the store down to a specific case of the `Path.State` enum:
 
 ```swift
-} destination: { state in
-  switch state {
+} destination: { store in
+  switch store.state {
   case .addItem:
-    CaseLet(
-      /RootFeature.Path.State.addItem,
-      action: RootFeature.Path.Action.addItem,
-      then: AddView.init(store:)
-    )
+    if let store = store.scope(state: \.addItem, action: \.addItem) {
+      AddView(store: store)
+    }
   case .detailItem:
-    CaseLet(
-      /RootFeature.Path.State.detailItem,
-      action: RootFeature.Path.Action.detailItem,
-      then: DetailView.init(store:)
-    )
+    if let store = store.scope(state: \.detailItem, action: \.detailItem) {
+      DetailView(store: store)
+    }
   case .editItem:
-    CaseLet(
-      /RootFeature.Path.State.editItem,
-      action: RootFeature.Path.Action.editItem,
-      then: EditView.init(store:)
-    )
+    if let store = store.scope(state: \.editItem, action: \.editItem) {
+      EditView(store: store)
+    }
   }
 }
 ```

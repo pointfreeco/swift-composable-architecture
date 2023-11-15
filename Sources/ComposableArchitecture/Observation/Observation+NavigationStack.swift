@@ -3,6 +3,10 @@ import SwiftUI
 
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension NavigationStack {
+  /// Drives a navigation stack with a store.
+  ///
+  /// See the dedicated article on <doc:Navigation> for more information on the library's navigation
+  /// tools, and in particular see <doc:StackBasedNavigation> for information on using this view.
   public init<State: ObservableState, Action, Destination: View, R>(
     store: Store<StackState<State>, StackAction<State, Action>>,
     root: () -> R,
