@@ -146,50 +146,6 @@ extension Reducer {
   @warn_unqualified_access
   public func forEach<ElementState, ElementAction, ID: Hashable, Element: Reducer>(
     _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
-    action toElementAction: CaseKeyPath<Action, (id: ID, action: ElementAction)>,
-    @ReducerBuilder<ElementState, ElementAction> element: () -> Element,
-    fileID: StaticString = #fileID,
-    line: UInt = #line
-  ) -> _ForEachReducer<Self, ID, Element>
-  where ElementState == Element.State, ElementAction == Element.Action {
-    _ForEachReducer(
-      parent: self,
-      toElementsState: toElementsState,
-      toElementAction: AnyCasePath(toElementAction),
-      element: element(),
-      fileID: fileID,
-      line: line
-    )
-  }
-
-  @available(
-    iOS,
-    deprecated: 9999,
-    message:
-      "Use an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Identified-actions"
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message:
-      "Use an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Identified-actions"
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message:
-      "Use an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Identified-actions"
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message:
-      "Use an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Identified-actions"
-  )
-  @inlinable
-  @warn_unqualified_access
-  public func forEach<ElementState, ElementAction, ID: Hashable, Element: Reducer>(
-    _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
     action toElementAction: AnyCasePath<Action, (ID, ElementAction)>,
     @ReducerBuilder<ElementState, ElementAction> element: () -> Element,
     fileID: StaticString = #fileID,
@@ -203,50 +159,6 @@ extension Reducer {
         embed: toElementAction.embed,
         extract: toElementAction.extract
       ),
-      element: element(),
-      fileID: fileID,
-      line: line
-    )
-  }
-
-  @available(
-    iOS,
-    deprecated: 9999,
-    message:
-      "Use an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Identified-actions"
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message:
-      "Use an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Identified-actions"
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message:
-      "Use an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Identified-actions"
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message:
-      "Use an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/Migratingto14#Identified-actions"
-  )
-  @inlinable
-  @warn_unqualified_access
-  public func forEach<ElementState, ElementAction, ID: Hashable, Element: Reducer>(
-    _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
-    action toElementAction: AnyCasePath<Action, (id: ID, action: ElementAction)>,
-    @ReducerBuilder<ElementState, ElementAction> element: () -> Element,
-    fileID: StaticString = #fileID,
-    line: UInt = #line
-  ) -> _ForEachReducer<Self, ID, Element>
-  where ElementState == Element.State, ElementAction == Element.Action {
-    _ForEachReducer(
-      parent: self,
-      toElementsState: toElementsState,
-      toElementAction: toElementAction,
       element: element(),
       fileID: fileID,
       line: line
