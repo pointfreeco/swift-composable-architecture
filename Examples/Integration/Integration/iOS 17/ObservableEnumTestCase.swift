@@ -8,61 +8,59 @@ struct ObservableEnumView: View {
   }
 
   var body: some View {
-    PerceptiveView {
-      let _ = Logger.shared.log("\(Self.self).body")
-      Form {
-        Section {
-          switch store.destination {
-          case .feature1:
-            Button("Toggle feature 1 off") {
-              self.store.send(.toggle1ButtonTapped)
-            }
-            Button("Toggle feature 2 on") {
-              self.store.send(.toggle2ButtonTapped)
-            }
-          case .feature2:
-            Button("Toggle feature 1 on") {
-              self.store.send(.toggle1ButtonTapped)
-            }
-            Button("Toggle feature 2 off") {
-              self.store.send(.toggle2ButtonTapped)
-            }
-          case .none:
-            Button("Toggle feature 1 on") {
-              self.store.send(.toggle1ButtonTapped)
-            }
-            Button("Toggle feature 2 on") {
-              self.store.send(.toggle2ButtonTapped)
-            }
+    let _ = Logger.shared.log("\(Self.self).body")
+    Form {
+      Section {
+        switch store.destination {
+        case .feature1:
+          Button("Toggle feature 1 off") {
+            self.store.send(.toggle1ButtonTapped)
+          }
+          Button("Toggle feature 2 on") {
+            self.store.send(.toggle2ButtonTapped)
+          }
+        case .feature2:
+          Button("Toggle feature 1 on") {
+            self.store.send(.toggle1ButtonTapped)
+          }
+          Button("Toggle feature 2 off") {
+            self.store.send(.toggle2ButtonTapped)
+          }
+        case .none:
+          Button("Toggle feature 1 on") {
+            self.store.send(.toggle1ButtonTapped)
+          }
+          Button("Toggle feature 2 on") {
+            self.store.send(.toggle2ButtonTapped)
           }
         }
-        if let store = self.store.scope(state: \.destination, action: \.destination.presented) {
-          switch store.state {
-          case .feature1:
-            if let store = store.scope(state: \.feature1, action: \.feature1) {
-              Section {
-                ObservableBasicsView(store: store)
-              } header: {
-                Text("Feature 1")
-              }
+      }
+      if let store = self.store.scope(state: \.destination, action: \.destination.presented) {
+        switch store.state {
+        case .feature1:
+          if let store = store.scope(state: \.feature1, action: \.feature1) {
+            Section {
+              ObservableBasicsView(store: store)
+            } header: {
+              Text("Feature 1")
             }
-          case .feature2:
-            if let store = store.scope(state: \.feature2, action: \.feature2) {
-              Section {
-                ObservableBasicsView(store: store)
-              } header: {
-                Text("Feature 2")
-              }
+          }
+        case .feature2:
+          if let store = store.scope(state: \.feature2, action: \.feature2) {
+            Section {
+              ObservableBasicsView(store: store)
+            } header: {
+              Text("Feature 2")
             }
           }
         }
       }
-      // NB: Conditional child views of `Form` that use `@State` are stale when they reappear.
-      //     This `id` forces a refresh.
-      //
-      // Feedback filed: https://gist.github.com/stephencelis/fd078ca2d260c316b70dfc1e0f29883f
-      .id(UUID())
     }
+    // NB: Conditional child views of `Form` that use `@State` are stale when they reappear.
+    //     This `id` forces a refresh.
+    //
+    // Feedback filed: https://gist.github.com/stephencelis/fd078ca2d260c316b70dfc1e0f29883f
+    .id(UUID())
   }
 
   @Reducer

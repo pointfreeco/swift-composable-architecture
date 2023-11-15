@@ -109,6 +109,30 @@ import SwiftUI
 ///   ViewStore(self.store).send(.buttonTapped)
 /// }
 /// ```
+@available(
+  iOS,
+  deprecated: 9999,
+  message: 
+    "Use '@ObservableState', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6"
+)
+@available(
+  macOS,
+  deprecated: 9999,
+  message:
+    "Use '@ObservableState', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6"
+)
+@available(
+  tvOS,
+  deprecated: 9999,
+  message:
+    "Use '@ObservableState', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6"
+)
+@available(
+  watchOS,
+  deprecated: 9999,
+  message:
+    "Use '@ObservableState', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6"
+)
 public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   private let content: (ViewStore<ViewState, ViewAction>) -> Content
   #if DEBUG
@@ -119,6 +143,55 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
     private var storeTypeName: String
   #endif
   @ObservedObject private var viewStore: ViewStore<ViewState, ViewAction>
+
+  @available(
+    iOS,
+    deprecated: 17,
+    message:
+      "Use '@ObservableState', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6"
+  )
+  @available(
+    macOS,
+    deprecated: 14,
+    message:
+      "Use '@ObservableState', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6"
+  )
+  @available(
+    tvOS,
+    deprecated: 17,
+    message:
+      "Use '@ObservableState', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6"
+  )
+  @available(
+    watchOS,
+    deprecated: 10,
+    message:
+      "Use '@ObservableState', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6"
+  )
+  public init(
+    _ store: Store<ViewState, ViewAction>,
+    @ViewBuilder content: () -> Content,
+    file: StaticString = #fileID,
+    line: UInt = #line
+  ) where ViewState: ObservableState {
+    #if DEBUG
+      self.file = file
+      self.line = line
+      var previousState: ViewState? = nil
+      self.previousState = { currentState in
+        defer { previousState = currentState }
+        return previousState
+      }
+      self.storeTypeName = ComposableArchitecture.storeTypeName(of: store)
+    #endif
+    let content = content()
+    self.viewStore = ViewStore(
+      Store(initialState: store.stateSubject.value) {},
+      observe: { $0 },
+      removeDuplicates: { _, _ in true }
+    )
+    self.content = { _ in content }
+  }
 
   init(
     store: Store<ViewState, ViewAction>,

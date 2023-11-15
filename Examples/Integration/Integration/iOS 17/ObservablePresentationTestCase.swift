@@ -8,88 +8,86 @@ struct ObservablePresentationView: View {
   }
 
   var body: some View {
-    PerceptiveView {
-      let _ = Logger.shared.log("\(Self.self).body")
-      Form {
-        Section {
-          Button("Present full-screen cover") {
-            self.store.send(.presentFullScreenCoverButtonTapped)
-          }
-          Button("Present popover") {
-            self.store.send(.presentPopoverButtonTapped)
-          }
-        } header: {
-          Text("Enum")
+    let _ = Logger.shared.log("\(Self.self).body")
+    Form {
+      Section {
+        Button("Present full-screen cover") {
+          self.store.send(.presentFullScreenCoverButtonTapped)
         }
-        Section {
-          Button("Present sheet") {
-            self.store.send(.presentSheetButtonTapped)
-          }
-          if self.store.isObservingChildCount, let sheetCount = self.store.sheet?.count {
-            Text("Count: \(sheetCount)")
-          }
-        } header: {
-          Text("Optional")
+        Button("Present popover") {
+          self.store.send(.presentPopoverButtonTapped)
         }
+      } header: {
+        Text("Enum")
       }
-      .fullScreenCover(
-        item: self.$store.scope(
-          state: \.destination?.fullScreenCover,
-          action: \.destination.fullScreenCover
-        )
-      ) { store in
-        NavigationStack {
-          Form {
-            ObservableBasicsView(store: store)
-          }
-          .navigationTitle("Full-screen cover")
-          .toolbar {
-            ToolbarItem {
-              Button("Dismiss") {
-                self.store.send(.dismissButtonTapped)
-              }
+      Section {
+        Button("Present sheet") {
+          self.store.send(.presentSheetButtonTapped)
+        }
+        if self.store.isObservingChildCount, let sheetCount = self.store.sheet?.count {
+          Text("Count: \(sheetCount)")
+        }
+      } header: {
+        Text("Optional")
+      }
+    }
+    .fullScreenCover(
+      item: self.$store.scope(
+        state: \.destination?.fullScreenCover,
+        action: \.destination.fullScreenCover
+      )
+    ) { store in
+      NavigationStack {
+        Form {
+          ObservableBasicsView(store: store)
+        }
+        .navigationTitle("Full-screen cover")
+        .toolbar {
+          ToolbarItem {
+            Button("Dismiss") {
+              self.store.send(.dismissButtonTapped)
             }
           }
         }
       }
-      .popover(
-        item: self.$store.scope(state: \.destination?.popover, action: \.destination.popover)
-      ) { store in
-        NavigationStack {
-          Form {
-            ObservableBasicsView(store: store)
-          }
-          .navigationTitle("Popover")
-          .toolbar {
-            ToolbarItem {
-              Button("Dismiss") {
-                self.store.send(.dismissButtonTapped)
-              }
+    }
+    .popover(
+      item: self.$store.scope(state: \.destination?.popover, action: \.destination.popover)
+    ) { store in
+      NavigationStack {
+        Form {
+          ObservableBasicsView(store: store)
+        }
+        .navigationTitle("Popover")
+        .toolbar {
+          ToolbarItem {
+            Button("Dismiss") {
+              self.store.send(.dismissButtonTapped)
             }
           }
         }
       }
-      .sheet(item: self.$store.scope(state: \.sheet, action: \.sheet)) { store in
-        NavigationStack {
-          Form {
-            ObservableBasicsView(store: store)
-          }
-          .navigationTitle("Sheet")
-          .toolbar {
-            ToolbarItem {
-              Button("Dismiss") {
-                self.store.send(.dismissButtonTapped)
-              }
+    }
+    .sheet(item: self.$store.scope(state: \.sheet, action: \.sheet)) { store in
+      NavigationStack {
+        Form {
+          ObservableBasicsView(store: store)
+        }
+        .navigationTitle("Sheet")
+        .toolbar {
+          ToolbarItem {
+            Button("Dismiss") {
+              self.store.send(.dismissButtonTapped)
             }
-            ToolbarItem(placement: .cancellationAction) {
-              Button("Observe child count") {
-                self.store.send(.toggleObserveChildCountButtonTapped)
-              }
+          }
+          ToolbarItem(placement: .cancellationAction) {
+            Button("Observe child count") {
+              self.store.send(.toggleObserveChildCountButtonTapped)
             }
           }
         }
-        .presentationDetents([.medium])
       }
+      .presentationDetents([.medium])
     }
   }
 

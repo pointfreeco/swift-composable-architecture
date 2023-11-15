@@ -44,17 +44,7 @@ struct CounterView: View {
   let store: StoreOf<Counter>
 
   var body: some View {
-//    self.store.observing {
-//
-//    }
-
-
-    // iOS 16 SDK, iOS 17 SDK
-    // iOS 16 device, iOS 17 device
-    // Old style, new style, mixtures of styles
-
-    //WithViewStore(…) { viewStore in }
-    PerceptiveView {
+    WithViewStore(self.store) {
       HStack {
         Button {
           self.store.send(.decrementButtonTapped)
