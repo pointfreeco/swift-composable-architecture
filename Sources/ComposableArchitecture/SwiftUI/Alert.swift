@@ -25,12 +25,8 @@ extension View {
   ///     action.
   @available(
     *, deprecated,
-    message: """
-      Further scope the store into the 'state' and 'action' cases, instead. For more information, \
-      see the following article:
-
-      https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs
-      """
+    message:
+      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )
   public func alert<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
