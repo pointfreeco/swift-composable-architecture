@@ -78,7 +78,7 @@ code in the following way:
  
    var body: some View {
 -    WithViewStore(self.store, observe: ViewState.init) { store in
-+    WithPerceptionTracking  
++    WithPerceptionTracking {
        Form {
 -        Text(viewStore.count.description)
 -        Button("+") { viewStore.send(.incrementButtonTapped) }
@@ -92,20 +92,20 @@ code in the following way:
 
 In particular, the following changes must be made:
 
-* Mark your `State` with the ``ObservableState()`` macro.
-* Delete any view state type you have defined.
-* Replace the use of ``WithViewStore`` with `WithPerceptionTracking`, and the trailing closure does
-not take an argument. The view constructed inside the trailing closure will automatically observe 
-only the state accessed inside the closure.
-* Access state directly in the `store` rather than `viewStore`.
-* Send actions directly to the `store` rather than `viewStore`.
+  * Mark your `State` with the ``ObservableState()`` macro.
+  * Delete any view state type you have defined.
+  * Replace the use of ``WithViewStore`` with `WithPerceptionTracking`, and the trailing closure
+    does not take an argument. The view constructed inside the trailing closure will automatically
+    observe state accessed inside the closure.
+  * Access state directly in the `store` rather than `viewStore`.
+  * Send actions directly to the `store` rather than `viewStore`.
 
 If you are able to target iOS 17, macOS 14, tvOS 17, watchOS 10 or _higher_, then you will still
 apply all of the updates above, but with one additional simplification to the `body` of the view:
 
 ```diff
  var body: some View {
--  WithViewStore(self.store, observe: ViewState.init) { store in  
+-  WithViewStore(self.store, observe: ViewState.init) { store in
      Form {
 -      Text(viewStore.count.description)
 -      Button("+") { viewStore.send(.incrementButtonTapped) }
@@ -120,7 +120,7 @@ You no longer need the ``WithViewStore`` or `WithPerceptionTracking` at all.
 
 ## Replacing IfLetStore with 'if let'
 
-The ``IfLetStore`` view is a helper for transforming a ``Store`` of optional state into a store of
+The ``IfLetStore`` view was a helper for transforming a ``Store`` of optional state into a store of
 non-optional state so that it can be handed off to a child view. For example, if your feature's 
 reducer looks roughly like this:
 
@@ -160,7 +160,7 @@ if let childStore = self.store.scope(state: \.child, action: \.child)) {
 
 ## Replacing ForEachStore with ForEach
 
-The ``ForEachStore`` view is a helper for deriving a store for each element of a collection. For
+The ``ForEachStore`` view was a helper for deriving a store for each element of a collection. For
 example, if your feature's reducer looks roughly like this:
 
 ```swift
@@ -234,11 +234,15 @@ Then you would use ``SwitchStore`` and ``CaseLet`` in the view like this:
 
 ```swift
 SwitchStore(self.store) {
-  CaseLet(/Feature.State.activity, action: Feature.Action.activity) { store in
-    ActivityView(store: store)
-  }
-  CaseLet(/Feature.State.settings, action: Feature.Action.settings) { store in
-    SettingsView(store: store)
+  switch $0 {
+  case .activity:
+    CaseLet(/Feature.State.activity, action: Feature.Action.activity) { store in
+      ActivityView(store: store)
+    }
+  case .settings:
+    CaseLet(/Feature.State.settings, action: Feature.Action.settings) { store in
+      SettingsView(store: store)
+    }
   }
 }
 ```
@@ -260,9 +264,9 @@ case .settings:
 
 ## Replacing navigation view modifiers with SwiftUI modifiers
 
-The library ships with many navigation view modifiers that mimic what SwiftUI provides, but tuned
-specifically for driving navigation from a ``Store``. All of these view modifiers can be updated
-to instead use the vanilla SwiftUI version of the view modifier.
+The library has shipped many navigation view modifiers that mimic what SwiftUI provides, but are
+tuned specifically for driving navigation from a ``Store``. All of these view modifiers can be
+updated to instead use the vanilla SwiftUI version of the view modifier.
 
 For example, if your feature's reducer looks roughly like this:
 
@@ -283,7 +287,7 @@ struct Feature {
 Then previously you could drive a sheet presentation from this feature like so:
 
 ```swift
-.sheet(store: self.store.scope(state: \.child, action: \.child)) { store in
+.sheet(store: self.store.scope(state: \.$child, action: \.child)) { store in
   ChildView(store: store)
 }
 ```
@@ -309,6 +313,8 @@ Then you can use `sheet(item:)` like so:
 }
 ```
 
+Note that `state: \.$child` is now simply `state: \.child`.
+
 This also applies to popovers, full screen covers, and navigation destinations.
 
 Also, if you are driving navigation from an enum of destinations, then currently your code may
@@ -316,20 +322,8 @@ look something like this:
 
 ```swift
 .sheet(
-  store: self.store.scope(state: \.$destination, action: \.destination),
-  state: \.editForm,
-  action: { .editFrom($0) }
-) { store in
-  ChildView(store: store)
-}
-```
-
-This can now be shortened to this:
-
-```swift
-.sheet(
-  item: self.$store.scope(
-    state: \.destination.editForm,
+  store: self.store.scope(
+    state: \.$destination.editForm,
     action: \.destination.editForm
   )
 ) { store in
@@ -337,9 +331,24 @@ This can now be shortened to this:
 }
 ```
 
+This can now be changed to this:
+
+```swift
+.sheet(
+  item: self.$store.scope(
+    state: \.destination?.editForm,
+    action: \.destination.editForm
+  )
+) { store in
+  ChildView(store: store)
+}
+```
+
+Note that `state: \.$destination.editForm` is now simply `state: \.destination?.editForm`.
+
 ## Replacing NavigationStackStore with NavigationStack
 
-The ``NavigationStackStore`` view is a helper for driving a navigation stack from a ``Store``. For
+The ``NavigationStackStore`` view was a helper for driving a navigation stack from a ``Store``. For
 example, if your feature's reducer looks roughly like this:
 
 ```swift
@@ -375,13 +384,13 @@ NavigationStackStore(self.store.scope(state: \.path, action: \.path)) {
 }
 ```
 
-This can now be updated to use a vanilla `NavigationStack`:
+This can now be updated to use a custom initializer on `NavigationStack`:
 
 ```swift
 NavigationStack(store: self.store.scope(state: \.path, action: \.path)) {
   RootView()
 } destination: { store in
-  switch store.path {
+  switch store.state {
   case .activity:
     if let store = store.scope(state: \.activity, action: \.activity) {
       ActivityView(store: store)
@@ -396,7 +405,7 @@ NavigationStack(store: self.store.scope(state: \.path, action: \.path)) {
 
 ## Bindings
 
-Bindings in the Composable Architecture are handled by a zoo of types, including
+Bindings in the Composable Architecture have been handled by a zoo of types, including
 ``BindingState``, ``BindableAction``, ``BindingAction``, ``BindingViewState`` and 
 ``BindingViewStore``. For example, if your view needs to be able to derive bindings to many fields
 on your state, you may have the reducer built somewhat like this:
@@ -415,8 +424,8 @@ struct Feature {
 }
 ```
 
-And in the view you derive bindings using ``ViewStore/subscript(dynamicMember:)-3q4xh`` defined
-on ``ViewStore``:
+And in the view you derive bindings using ``ViewStore/subscript(dynamicMember:)-3q4xh`` defined on
+``ViewStore``:
 
 ```swift
 WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -450,7 +459,7 @@ var body: some View {
 ```
 
 Most of this goes away when using the ``ObservableState()`` macro. You can start by annotating
-your feature's state with ``ObservableState()`` and remove all instances of ``BindingState``:
+your feature's state with ``ObservableState()`` and removing all instances of ``BindingState``:
 
 ```diff
 +@ObservableState
@@ -462,13 +471,13 @@ your feature's state with ``ObservableState()`` and remove all instances of ``Bi
  }
 ```
 
-In the view you needs to start holding onto the `store` as either `@State`:
+In the view you must start holding onto the `store` as either `@State`:
 
 ```swift
 @State var store: StoreOf<Feature>
 ```
 
-…or with `@Bindable`:
+…or `@Bindable`:
 
 ```swift
 @Bindable var store: StoreOf<Feature>
