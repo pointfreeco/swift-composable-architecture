@@ -11,13 +11,13 @@ in favor of newer ones. We recommend people update their code as quickly as poss
 APIs, and this article contains some tips for doing so.
 
 * [Using @ObservableState](#Using-ObservableState)
-* [Replacing IfLetStore with ‘if let’](#)
-* [Replacing ForEachStore with ForEach](#)
-* [Replacing SwitchStore and CaseLet with ‘switch’ and ‘case’](#)
-* [Replacing navigation view modifiers with SwiftUI modifiers](#)
-* [Replacing NavigationStackStore with NavigationStack](#)
-* [Bindings](#)
-* [View actions](#)
+* [Replacing IfLetStore with ‘if let’](#Replacing-IfLetStore-with-if-let)
+* [Replacing ForEachStore with ForEach](#Replacing-ForEachStore-with-ForEach)
+* [Replacing SwitchStore and CaseLet with ‘switch’ and ‘case’](#Replacing-SwitchStore-and-CaseLet-with-switch-and-case)
+* [Replacing navigation view modifiers with SwiftUI modifiers](#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers)
+* [Replacing NavigationStackStore with NavigationStack](#Replacing-NavigationStackStore-with-NavigationStack)
+* [Bindings](#Bindings)
+* [View actions](#View-actions)
 
 ## Using @ObservableState
 

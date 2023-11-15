@@ -25,6 +25,7 @@ from within `@Sendable` closures:
 ```swift
 @Reducer
 struct Feature {
+  @ObservableState
   struct State { /* ... */ }
   enum Action { /* ... */ }
 

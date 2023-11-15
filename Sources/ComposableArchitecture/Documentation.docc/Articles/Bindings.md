@@ -4,6 +4,8 @@ Learn how to connect features written in the Composable Architecture to SwiftUI 
 
 ## Overview
 
+<!-- TODO: This should probably be completely scrapped and rewritten for observation -->
+
 Many APIs in SwiftUI use bindings to set up two-way communication between your application's state
 and a view. The Composable Architecture provides several tools for creating bindings that establish
 such communication with your application's store.
