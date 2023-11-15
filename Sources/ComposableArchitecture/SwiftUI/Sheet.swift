@@ -13,6 +13,26 @@ extension View {
   ///     system dismisses the currently displayed sheet.
   ///   - onDismiss: The closure to execute when dismissing the modal view.
   ///   - content: A closure returning the content of the modal view.
+  @available(
+    iOS, deprecated: 9999,
+    message:
+      "Pass a binding of a store to 'sheet(item:)' instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers]"
+  )
+  @available(
+    macOS, deprecated: 9999,
+    message:
+      "Pass a binding of a store to 'sheet(item:)' instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers]"
+  )
+  @available(
+    tvOS, deprecated: 9999,
+    message:
+      "Pass a binding of a store to 'sheet(item:)' instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers]"
+  )
+  @available(
+    watchOS, deprecated: 9999,
+    message:
+      "Pass a binding of a store to 'sheet(item:)' instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers]"
+  )
   public func sheet<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     onDismiss: (() -> Void)? = nil,
