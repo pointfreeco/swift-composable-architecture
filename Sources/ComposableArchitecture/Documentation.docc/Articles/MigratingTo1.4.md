@@ -55,7 +55,7 @@ library and aim to allow one to abstract over the shape of enums just as key pat
 with structs.
 
 However, in conjunction with version 1.4 of this library we also released an update to CasePaths
-that massively improved ergnomics of using case paths. We introduced the `@CasePathable` macro for
+that massively improved ergonomics of using case paths. We introduced the `@CasePathable` macro for
 automatically deriving case paths so that we could stop using runtime reflection, and we introduced
 a way of using key paths to describe case paths. And so the old `CasePath` type has been deprecated,
 and the new `CaseKeyPath` type has taken its place.
