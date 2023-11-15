@@ -207,7 +207,7 @@ case:
 ```swift
 enum Action {
   // ...
-  rows(IdentifiedActionOf<Nested>)
+  case rows(IdentifiedActionOf<Nested>)
 }
 ```
 
