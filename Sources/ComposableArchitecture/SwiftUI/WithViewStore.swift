@@ -614,7 +614,7 @@ extension WithViewStore where ViewState: ObservableState {
     file: StaticString = #fileID,
     line: UInt = #line
   )
-  where Content == PerceptiveView<NewContent>
+  where Content == WithPerceptionTracking<NewContent>
   {
 #if DEBUG
     self.file = file
@@ -632,7 +632,7 @@ extension WithViewStore where ViewState: ObservableState {
       removeDuplicates: { _, _ in true }
     )
     self.content = { _ in
-      PerceptiveView {
+      WithPerceptionTracking {
         content()
       }
     }

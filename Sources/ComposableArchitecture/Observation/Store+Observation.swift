@@ -16,7 +16,7 @@ extension Store: Perceptible {
       if State.self is ObservableState.Type {
         #if DEBUG
           if #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10),
-            !PerceptiveViewLocals.isInPerceptiveViewBody,
+            !PerceptionLocals.isInPerceptionTracking,
             Thread.callStackSymbols.contains(where: {
               $0.split(separator: " ").dropFirst().first == "AttributeGraph"
             })
@@ -117,11 +117,11 @@ extension Binding {
     action toChildAction: CaseKeyPath<Action, PresentationAction<ChildAction>>
   ) -> Binding<Store<ChildState, ChildAction>?>
   where Value == Store<State, Action> {
-    let isInViewBody = PerceptiveViewLocals.isInPerceptiveViewBody
+    let isInViewBody = PerceptionLocals.isInPerceptionTracking
     return Binding<Store<ChildState, ChildAction>?>(
       get: {
         // TODO: Is this right? Should we just be more forgiving in bindings?
-        PerceptiveViewLocals.$isInPerceptiveViewBody.withValue(isInViewBody) {
+        PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
           self.wrappedValue.scope(
             state: toChildState,
             action: toChildAction.appending(path: \.presented)

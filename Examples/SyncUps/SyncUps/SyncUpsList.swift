@@ -107,7 +107,7 @@ struct SyncUpsListView: View {
   @State var store: StoreOf<SyncUpsList>
 
   var body: some View {
-    PerceptiveView {
+    WithPerceptionTracking {
       List {
         ForEach(self.store.syncUps) { syncUp in
           NavigationLink(

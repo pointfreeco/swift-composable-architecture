@@ -166,7 +166,7 @@ struct RecordMeetingView: View {
   @State var store: StoreOf<RecordMeeting>
 
   var body: some View {
-    PerceptiveView {
+    WithPerceptionTracking {
       ZStack {
         RoundedRectangle(cornerRadius: 16)
           .fill(self.store.syncUp.theme.mainColor)

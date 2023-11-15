@@ -44,7 +44,7 @@ public struct _NavigationDestinationViewModifier<
       .environment(\.navigationDestinationType, State.self)
       .navigationDestination(for: StackState<State>.Component.self) { component in
         var state = component.element
-        PerceptiveView {
+        WithPerceptionTracking {
           self
             .destination(
               self.store.scope(

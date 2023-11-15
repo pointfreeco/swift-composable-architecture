@@ -146,7 +146,7 @@ struct SyncUpDetailView: View {
   @State var store: StoreOf<SyncUpDetail>
 
   var body: some View {
-    PerceptiveView {
+    WithPerceptionTracking {
       List {
         Section {
           Button {
@@ -222,7 +222,7 @@ struct SyncUpDetailView: View {
       .sheet(
         item: self.$store.scope(state: \.destination?.edit, action: \.destination.edit)
       ) { store in
-        PerceptiveView {
+        WithPerceptionTracking {
           NavigationStack {
             SyncUpFormView(store: store)
               .navigationTitle(self.store.syncUp.title)
