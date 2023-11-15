@@ -53,6 +53,26 @@ import SwiftUI
 /// See ``Reducer/ifCaseLet(_:action:then:fileID:line:)-3k4yb`` and
 /// ``Scope/init(state:action:child:fileID:line:)-7yj7l`` for embedding reducers that operate on
 /// each case of an enum in reducers that operate on the entire enum.
+@available(
+  iOS, deprecated: 9999,
+  message:
+    "Use 'switch' with a store of observable state, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6#Replacing-SwitchStore-with-switch]"
+)
+@available(
+  macOS, deprecated: 9999,
+  message:
+    "Use 'switch' with a store of observable state, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6#Replacing-SwitchStore-with-switch]"
+)
+@available(
+  tvOS, deprecated: 9999,
+  message:
+    "Use 'switch' with a store of observable state, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6#Replacing-SwitchStore-with-switch]"
+)
+@available(
+  watchOS, deprecated: 9999,
+  message:
+    "Use 'switch' with a store of observable state, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6#Replacing-SwitchStore-with-switch]"
+)
 public struct SwitchStore<State, Action, Content: View>: View {
   public let store: Store<State, Action>
   public let content: (State) -> Content
@@ -76,6 +96,26 @@ public struct SwitchStore<State, Action, Content: View>: View {
 }
 
 /// A view that handles a specific case of enum state in a ``SwitchStore``.
+@available(
+  iOS, deprecated: 9999,
+  message:
+    "Use 'switch' with a store of observable state, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6#Replacing-SwitchStore-with-switch]"
+)
+@available(
+  macOS, deprecated: 9999,
+  message:
+    "Use 'switch' with a store of observable state, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6#Replacing-SwitchStore-with-switch]"
+)
+@available(
+  tvOS, deprecated: 9999,
+  message:
+    "Use 'switch' with a store of observable state, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6#Replacing-SwitchStore-with-switch]"
+)
+@available(
+  watchOS, deprecated: 9999,
+  message:
+    "Use 'switch' with a store of observable state, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6#Replacing-SwitchStore-with-switch]"
+)
 public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: View>: View {
   public let toCaseState: (EnumState) -> CaseState?
   public let fromCaseAction: (CaseAction) -> EnumAction

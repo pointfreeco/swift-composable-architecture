@@ -8,6 +8,26 @@ import SwiftUI
 ///
 /// See the dedicated article on <doc:Navigation> for more information on the library's navigation
 /// tools, and in particular see <doc:StackBasedNavigation> for information on using this view.
+@available(
+  iOS, deprecated: 9999,
+  message:
+    "Use 'NavigationStack.init(store:)' with a store scoped from observable state, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6#Replacing-NavigationStackStore-with-NavigationStack]"
+)
+@available(
+  macOS, deprecated: 9999,
+  message:
+    "Use 'NavigationStack.init(store:)' with a store scoped from observable state, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6#Replacing-NavigationStackStore-with-NavigationStack]"
+)
+@available(
+  tvOS, deprecated: 9999,
+  message:
+    "Use 'NavigationStack.init(store:)' with a store scoped from observable state, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6#Replacing-NavigationStackStore-with-NavigationStack]"
+)
+@available(
+  watchOS, deprecated: 9999,
+  message:
+    "Use 'NavigationStack.init(store:)' with a store scoped from observable state, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6#Replacing-NavigationStackStore-with-NavigationStack]"
+)
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 public struct NavigationStackStore<State, Action, Root: View, Destination: View>: View {
   private let root: Root
