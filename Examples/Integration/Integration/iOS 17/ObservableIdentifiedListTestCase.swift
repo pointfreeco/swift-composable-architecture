@@ -8,38 +8,40 @@ struct ObservableIdentifiedListView: View {
   }
 
   var body: some View {
-    let _ = Logger.shared.log("\(Self.self).body")
-    List {
-      Section {
-        if let firstCount = self.store.rows.first?.count {
-          HStack {
-            Button("Increment First") {
-              self.store.send(.incrementFirstButtonTapped)
-            }
-            Spacer()
-            Text("Count: \(firstCount)")
-          }
-        }
-      }
-      ForEach(self.store.scope(state: \.rows, action: \.rows)) { store in
-        let _ = Logger.shared.log("\(Self.self).body.ForEach")
+    WithViewStore(self.store) {
+      let _ = Logger.shared.log("\(Self.self).body")
+      List {
         Section {
-          HStack {
-            VStack {
-              ObservableBasicsView(store: store)
-            }
-            Spacer()
-            Button(action: { self.store.send(.removeButtonTapped(id: store.state.id)) }) {
-              Image(systemName: "trash")
+          if let firstCount = self.store.rows.first?.count {
+            HStack {
+              Button("Increment First") {
+                self.store.send(.incrementFirstButtonTapped)
+              }
+              Spacer()
+              Text("Count: \(firstCount)")
             }
           }
         }
-        .buttonStyle(.borderless)
+        ForEach(self.store.scope(state: \.rows, action: \.rows)) { store in
+          let _ = Logger.shared.log("\(Self.self).body.ForEach")
+          Section {
+            HStack {
+              VStack {
+                ObservableBasicsView(store: store)
+              }
+              Spacer()
+              Button(action: { self.store.send(.removeButtonTapped(id: store.state.id)) }) {
+                Image(systemName: "trash")
+              }
+            }
+          }
+          .buttonStyle(.borderless)
+        }
       }
-    }
-    .toolbar {
-      ToolbarItem {
-        Button("Add") { self.store.send(.addButtonTapped) }
+      .toolbar {
+        ToolbarItem {
+          Button("Add") { self.store.send(.addButtonTapped) }
+        }
       }
     }
   }

@@ -8,18 +8,20 @@ struct ObservableNavigationTestCaseView: View {
   }
 
   var body: some View {
-    NavigationStack(store: self.store.scope(state: \.path, action: \.path)) {
-      NavigationLink(state: ObservableBasicsView.Feature.State()) {
-        Text("Push feature")
-      }
-    } destination: { store in
-      Form {
-        Section {
-          ObservableBasicsView(store: store)
+    WithViewStore(self.store) {
+      NavigationStack(store: self.store.scope(state: \.path, action: \.path)) {
+        NavigationLink(state: ObservableBasicsView.Feature.State()) {
+          Text("Push feature")
         }
-        Section {
-          NavigationLink(state: ObservableBasicsView.Feature.State()) {
-            Text("Push feature")
+      } destination: { store in
+        Form {
+          Section {
+            ObservableBasicsView(store: store)
+          }
+          Section {
+            NavigationLink(state: ObservableBasicsView.Feature.State()) {
+              Text("Push feature")
+            }
           }
         }
       }

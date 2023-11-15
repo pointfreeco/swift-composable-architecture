@@ -8,27 +8,29 @@ struct ObservableOptionalView: View {
   }
 
   var body: some View {
-    let _ = Logger.shared.log("\(Self.self).body")
-    Form {
-      Section {
-        Button("Toggle") {
-          self.store.send(.toggleButtonTapped)
-        }
-      }
-      if self.store.child != nil {
+    WithViewStore(self.store) {
+      let _ = Logger.shared.log("\(Self.self).body")
+      Form {
         Section {
-          if self.store.isObservingCount {
-            Button("Stop observing count") { self.store.send(.toggleIsObservingCount) }
-            Text("Count: \(self.store.child?.count ?? 0)")
-          } else {
-            Button("Observe count") { self.store.send(.toggleIsObservingCount) }
+          Button("Toggle") {
+            self.store.send(.toggleButtonTapped)
+          }
+        }
+        if self.store.child != nil {
+          Section {
+            if self.store.isObservingCount {
+              Button("Stop observing count") { self.store.send(.toggleIsObservingCount) }
+              Text("Count: \(self.store.child?.count ?? 0)")
+            } else {
+              Button("Observe count") { self.store.send(.toggleIsObservingCount) }
+            }
           }
         }
       }
-    }
-    if let store = self.store.scope(state: \.child, action: \.child.presented) {
-      Form {
-        ObservableBasicsView(store: store)
+      if let store = self.store.scope(state: \.child, action: \.child.presented) {
+        Form {
+          ObservableBasicsView(store: store)
+        }
       }
     }
   }

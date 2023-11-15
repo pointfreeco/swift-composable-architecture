@@ -9,15 +9,17 @@ struct ObservableBasicsView: View {
   }
 
   var body: some View {
-    let _ = Logger.shared.log("\(Self.self).body")
-    Text(self.store.count.description)
-    Button("Decrement") { self.store.send(.decrementButtonTapped) }
-    Button("Increment") { self.store.send(.incrementButtonTapped) }
-    Button("Dismiss") { self.store.send(.dismissButtonTapped) }
-    if self.showExtraButtons {
-      Button("Copy, increment, discard") { self.store.send(.copyIncrementDiscard) }
-      Button("Copy, increment, set") { self.store.send(.copyIncrementSet) }
-      Button("Reset") { self.store.send(.resetButtonTapped) }
+    WithViewStore(self.store) {
+      let _ = Logger.shared.log("\(Self.self).body")
+      Text(self.store.count.description)
+      Button("Decrement") { self.store.send(.decrementButtonTapped) }
+      Button("Increment") { self.store.send(.incrementButtonTapped) }
+      Button("Dismiss") { self.store.send(.dismissButtonTapped) }
+      if self.showExtraButtons {
+        Button("Copy, increment, discard") { self.store.send(.copyIncrementDiscard) }
+        Button("Copy, increment, set") { self.store.send(.copyIncrementSet) }
+        Button("Reset") { self.store.send(.resetButtonTapped) }
+      }
     }
   }
 
