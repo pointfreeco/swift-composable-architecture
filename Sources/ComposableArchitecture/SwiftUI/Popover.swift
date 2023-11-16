@@ -48,7 +48,22 @@ extension View {
   ///     arrow in macOS. iOS ignores this parameter.
   ///   - content: A closure returning the content of the popover.
   @available(
-    *, deprecated,
+    iOS, deprecated: 9999,
+    message:
+      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+  )
+  @available(
+    macOS, deprecated: 9999,
+    message:
+      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+  )
+  @available(
+    tvOS, deprecated: 9999,
+    message:
+      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+  )
+  @available(
+    watchOS, deprecated: 9999,
     message:
       "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )

@@ -107,7 +107,22 @@ public struct IfLetStore<State, Action, Content: View>: View {
   ///     is visible only when the optional state is non-`nil`.
   ///   - elseContent: A view that is only visible when the optional state is `nil`.
   @available(
-    *, deprecated,
+    iOS, deprecated: 9999,
+    message:
+      "Scope the store into the destination's wrapped 'state' and presented 'action', instead: 'store.scope(state: \\.destination, action: \\.destination.presented)'. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+  )
+  @available(
+    macOS, deprecated: 9999,
+    message:
+      "Scope the store into the destination's wrapped 'state' and presented 'action', instead: 'store.scope(state: \\.destination, action: \\.destination.presented)'. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+  )
+  @available(
+    tvOS, deprecated: 9999,
+    message:
+      "Scope the store into the destination's wrapped 'state' and presented 'action', instead: 'store.scope(state: \\.destination, action: \\.destination.presented)'. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+  )
+  @available(
+    iwatchOS, deprecated: 9999,
     message:
       "Scope the store into the destination's wrapped 'state' and presented 'action', instead: 'store.scope(state: \\.destination, action: \\.destination.presented)'. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )
@@ -131,7 +146,22 @@ public struct IfLetStore<State, Action, Content: View>: View {
   ///   - ifContent: A function that is given a store of non-optional state and returns a view that
   ///     is visible only when the optional state is non-`nil`.
   @available(
-    *, deprecated,
+    iOS, deprecated: 9999,
+    message:
+      "Scope the store into the destination's wrapped 'state' and presented 'action', instead: 'store.scope(state: \\.destination, action: \\.destination.presented)'. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+  )
+  @available(
+    macOS, deprecated: 9999,
+    message:
+      "Scope the store into the destination's wrapped 'state' and presented 'action', instead: 'store.scope(state: \\.destination, action: \\.destination.presented)'. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+  )
+  @available(
+    tvOS, deprecated: 9999,
+    message:
+      "Scope the store into the destination's wrapped 'state' and presented 'action', instead: 'store.scope(state: \\.destination, action: \\.destination.presented)'. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+  )
+  @available(
+    watchOS, deprecated: 9999,
     message:
       "Scope the store into the destination's wrapped 'state' and presented 'action', instead: 'store.scope(state: \\.destination, action: \\.destination.presented)'. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )
