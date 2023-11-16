@@ -1,39 +1,29 @@
 import Perception
 import SwiftUI
 
+extension Binding {
+  // TODO: Document
+  @_disfavoredOverload
+  public func scope<State: ObservableState, Action, ElementState, ElementAction>(
+    state: KeyPath<State, StackState<ElementState>>,
+    action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
+  ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
+  where Value == Store<State, Action> {
+    let isInViewBody = PerceptionLocals.isInPerceptionTracking
+    return Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>(
+      get: {
+        // TODO: Is this right? Should we just be more forgiving in bindings?
+        PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
+          self.wrappedValue.scope(state: state, action: action)
+        }
+      },
+      set: { _ in }
+    )
+  }
+}
+
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension NavigationStack {
-  // TODO: Should we somehow enforce observability of the parent state?
-  //   * Could require a binding of a store, instead, and constrain that interface.
-  //     ```
-  //     NavigationStack(path: $store.scope(state: \.path, action: \.path)) { … }
-  //     ```
-  //   * ```
-  //     NavigationStack(store: store, state: \.path, action: \.path) { … }
-  //     ```
-  //   * ```
-  //     protocol NavigableState: ObservableState {
-  //       associatedtype PathState
-  //       var path: StackState<PathState>
-  //     }
-  //     protocol NavigableAction {
-  //       associatedtype PathState
-  //       associatedtype PathAction
-  //
-  //       static func path(_: StackAction<PathState, PathAction>) -> Self
-  //       var path: StackAction<PathState, PathAction>?
-  //       // (Or somehow abstract over a case-pathable case key path.)
-  //     }
-  //
-  //     // Necessary?
-  //     protocol NavigableReducer: Reducer {
-  //       associatedtype State: NavigableState
-  //       associatedtype Action: NavigableAction
-  //     }
-  //     ...
-  //     NavigationStack(store: store) { … }
-  //     ```
-
   /// Drives a navigation stack with a store.
   ///
   /// > Warning: The feature state containing ``StackState`` must be annotated with
@@ -42,7 +32,7 @@ extension NavigationStack {
   /// See the dedicated article on <doc:Navigation> for more information on the library's navigation
   /// tools, and in particular see <doc:StackBasedNavigation> for information on using this view.
   public init<State, Action, Destination: View, R>(
-    store: Store<StackState<State>, StackAction<State, Action>>,
+    path: Binding<Store<StackState<State>, StackAction<State, Action>>>,
     root: () -> R,
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination
   )
@@ -52,18 +42,26 @@ extension NavigationStack {
   {
     self.init(
       path: Binding(
-        get: { store.observableState.path },
-        set: { pathView in
-          if pathView.count > store.withState({ $0 }).count, let component = pathView.last {
-            store.send(.push(id: component.id, state: component.element))
+        get: { path.wrappedValue.observableState.path },
+        set: { pathView, transaction in
+          if pathView.count > path.wrappedValue.withState({ $0 }).count,
+            let component = pathView.last
+          {
+            path.transaction(transaction).wrappedValue.send(
+              .push(id: component.id, state: component.element)
+            )
           } else {
-            store.send(.popFrom(id: store.withState { $0 }.ids[pathView.count]))
+            path.transaction(transaction).wrappedValue.send(
+              .popFrom(id: path.wrappedValue.withState { $0 }.ids[pathView.count])
+            )
           }
         }
       )
     ) {
       root()
-        .modifier(_NavigationDestinationViewModifier(store: store, destination: destination))
+        .modifier(
+          _NavigationDestinationViewModifier(store: path.wrappedValue, destination: destination)
+        )
     }
   }
 }

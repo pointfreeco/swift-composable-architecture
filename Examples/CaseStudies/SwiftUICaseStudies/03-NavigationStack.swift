@@ -7,6 +7,7 @@ private let readMe = """
 
 @Reducer
 struct NavigationDemo {
+  @ObservableState
   struct State: Equatable {
     var path = StackState<Path.State>()
   }
@@ -61,6 +62,7 @@ struct NavigationDemo {
 
   @Reducer
   struct Path {
+    @ObservableState
     enum State: Codable, Equatable, Hashable {
       case screenA(ScreenA.State = .init())
       case screenB(ScreenB.State = .init())
@@ -93,7 +95,7 @@ struct NavigationDemoView: View {
   }
 
   var body: some View {
-    NavigationStackStore(self.store.scope(state: \.path, action: \.path)) {
+    NavigationStack(path: self.$store.scope(state: \.path, action: \.path)) {
       Form {
         Section { Text(template: readMe) }
 
@@ -119,26 +121,20 @@ struct NavigationDemoView: View {
         }
       }
       .navigationTitle("Root")
-    } destination: {
-      switch $0 {
+    } destination: { store in
+      switch store.state {
       case .screenA:
-        CaseLet(
-          \NavigationDemo.Path.State.screenA,
-          action: NavigationDemo.Path.Action.screenA,
-          then: ScreenAView.init(store:)
-        )
+        if let store = store.scope(state: \.screenA, action: \.screenA) {
+          ScreenAView(store: store)
+        }
       case .screenB:
-        CaseLet(
-          \NavigationDemo.Path.State.screenB,
-          action: NavigationDemo.Path.Action.screenB,
-          then: ScreenBView.init(store:)
-        )
+        if let store = store.scope(state: \.screenB, action: \.screenB) {
+          ScreenBView(store: store)
+        }
       case .screenC:
-        CaseLet(
-          \NavigationDemo.Path.State.screenC,
-          action: NavigationDemo.Path.Action.screenC,
-          then: ScreenCView.init(store:)
-        )
+        if let store = store.scope(state: \.screenC, action: \.screenC) {
+          ScreenCView(store: store)
+        }
       }
     }
     .safeAreaInset(edge: .bottom) {

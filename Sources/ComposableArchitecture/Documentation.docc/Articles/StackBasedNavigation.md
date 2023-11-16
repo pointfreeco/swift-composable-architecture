@@ -110,10 +110,10 @@ That completes the steps to integrate the child and parent features together for
 
 Next we must integrate the child and parent views together. This is done by a `NavigationStack`
 using a special initializer that comes with this library, called
-``SwiftUI/NavigationStack/init(store:root:destination:)``. This initializer takes 3 arguments: a
-store focused in on ``StackState`` and ``StackAction`` in your domain, a trailing view builder for
-the root view of the stack, and another trailing view builder for all of the views that can be
-pushed onto the stack:
+``SwiftUI/NavigationStack/init(path:root:destination:)``. This initializer takes 3 arguments: a
+binding of a store focused in on ``StackState`` and ``StackAction`` in your domain, a trailing view
+builder for the root view of the stack, and another trailing view builder for all of the views that
+can be pushed onto the stack:
 
 ```swift
 NavigationStack(
@@ -125,16 +125,16 @@ NavigationStack(
 }
 ```
 
-To fill in the first argument you only need to scope your store to the `path` state and `path` 
-action you already hold in the root feature:
+To fill in the first argument you only need to scope a binding of your store to the `path` state and
+`path` action you already hold in the root feature:
 
 ```swift
 struct RootView: View {
-  let store: StoreOf<RootFeature>
+  @Bindable var store: StoreOf<RootFeature>
 
   var body: some View {
     NavigationStack(
-      store: self.store.scope(state: \.path, action: \.path)
+      store: self.$store.scope(state: \.path, action: \.path)
     ) {
       // Root view of the navigation stack
     } destination: { state in

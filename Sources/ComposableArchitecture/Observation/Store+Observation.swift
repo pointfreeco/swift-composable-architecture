@@ -67,7 +67,6 @@ extension Store where State: ObservableState {
   ///   - state: A key path to optional child state.
   ///   - action: A case key path to child actions.
   /// - Returns: An optional store of non-optional child state and actions.
-  @_disfavoredOverload
   public func scope<ChildState, ChildAction>(
     state: KeyPath<State, ChildState?>,
     action: CaseKeyPath<Action, ChildAction>
