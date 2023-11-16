@@ -36,7 +36,9 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
   }
 }
 
-public func _$isIdentityEqual<T>(_ lhs: IdentifiedArrayOf<T>, _ rhs: IdentifiedArrayOf<T>) -> Bool {
+public func _$isIdentityEqual<ID: Hashable, T>(
+  _ lhs: IdentifiedArray<ID, T>, _ rhs: IdentifiedArray<ID, T>
+) -> Bool {
   areOrderedSetsDuplicates(lhs.ids, rhs.ids)
 }
 
