@@ -36,7 +36,7 @@ final class ObservableStateMacroTests: MacroBaseTestCase {
             return _count
           }
           set {
-            if _isIdentityEqual(newValue, _count) == true {
+            if _$isIdentityEqual(newValue, _count) == true {
               _count = newValue
             } else {
               withMutation(keyPath: \.count) {
@@ -90,7 +90,7 @@ final class ObservableStateMacroTests: MacroBaseTestCase {
             return _count
           }
           set {
-            if _isIdentityEqual(newValue, _count) == true {
+            if _$isIdentityEqual(newValue, _count) == true {
               _count = newValue
             } else {
               withMutation(keyPath: \.count) {

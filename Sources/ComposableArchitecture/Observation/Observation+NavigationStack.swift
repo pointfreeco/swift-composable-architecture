@@ -3,11 +3,45 @@ import SwiftUI
 
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension NavigationStack {
+  // TODO: Should we somehow enforce observability of the parent state?
+  //   * Could require a binding of a store, instead, and constrain that interface.
+  //     ```
+  //     NavigationStack(path: $store.scope(state: \.path, action: \.path)) { … }
+  //     ```
+  //   * ```
+  //     NavigationStack(store: store, state: \.path, action: \.path) { … }
+  //     ```
+  //   * ```
+  //     protocol NavigableState: ObservableState {
+  //       associatedtype PathState
+  //       var path: StackState<PathState>
+  //     }
+  //     protocol NavigableAction {
+  //       associatedtype PathState
+  //       associatedtype PathAction
+  //
+  //       static func path(_: StackAction<PathState, PathAction>) -> Self
+  //       var path: StackAction<PathState, PathAction>?
+  //       // (Or somehow abstract over a case-pathable case key path.)
+  //     }
+  //
+  //     // Necessary?
+  //     protocol NavigableReducer: Reducer {
+  //       associatedtype State: NavigableState
+  //       associatedtype Action: NavigableAction
+  //     }
+  //     ...
+  //     NavigationStack(store: store) { … }
+  //     ```
+
   /// Drives a navigation stack with a store.
+  ///
+  /// > Warning: The feature state containing ``StackState`` must be annotated with
+  /// > ``ObservableObject`` for navigation to be observed.
   ///
   /// See the dedicated article on <doc:Navigation> for more information on the library's navigation
   /// tools, and in particular see <doc:StackBasedNavigation> for information on using this view.
-  public init<State: ObservableState, Action, Destination: View, R>(
+  public init<State, Action, Destination: View, R>(
     store: Store<StackState<State>, StackAction<State, Action>>,
     root: () -> R,
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination

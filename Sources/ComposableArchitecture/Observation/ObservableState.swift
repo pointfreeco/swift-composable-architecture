@@ -2,10 +2,16 @@ import Foundation
 import Perception
 
 /// A type that emits notifications to observers when underlying data changes.
+///
+/// Conforming to this protocol signals to other APIs that the value type supports observation.
+/// However, applying the ``ObservableState`` protocol by itself to a type doesn’t add observation
+/// functionality to the type. Instead, always use the ``ObservableState()`` macro when adding
+/// observation support to a type.
 public protocol ObservableState: Perceptible {
   var _$id: ObservableStateID { get }
 }
 
+/// A unique identifier for a observed value.
 public struct ObservableStateID: Equatable, Hashable, Sendable {
   private let uuid: UUID
   private var tag: Int?
@@ -30,23 +36,23 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
   }
 }
 
-public func _isIdentityEqual<T>(_ lhs: IdentifiedArrayOf<T>, _ rhs: IdentifiedArrayOf<T>) -> Bool {
+public func _$isIdentityEqual<T>(_ lhs: IdentifiedArrayOf<T>, _ rhs: IdentifiedArrayOf<T>) -> Bool {
   areOrderedSetsDuplicates(lhs.ids, rhs.ids)
 }
 
-public func _isIdentityEqual<T>(_ lhs: StackState<T>, _ rhs: StackState<T>) -> Bool {
+public func _$isIdentityEqual<T>(_ lhs: StackState<T>, _ rhs: StackState<T>) -> Bool {
   areOrderedSetsDuplicates(lhs.ids, rhs.ids)
 }
 
 // TODO: When is this hit?
 @_disfavoredOverload
-public func _isIdentityEqual<C: Collection>(_ lhs: C, _ rhs: C) -> Bool
+public func _$isIdentityEqual<C: Collection>(_ lhs: C, _ rhs: C) -> Bool
 where C.Element: ObservableState {
   fatalError("When is this hit??")
   //lhs.count == rhs.count && zip(lhs, rhs).allSatisfy { $0._$id == $1._$id }
 }
 
-public func _isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
+public func _$isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
   // TODO: Are these dynamic checks ever hit?
   func openCollection<C: Collection>(_ lhs: C, _ rhs: Any) -> Bool {
     guard C.Element.self is ObservableState.Type else { return false }
@@ -65,7 +71,7 @@ public func _isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
     {
       return result
     } else if let rhs = rhs as? C {
-      return lhs.count == rhs.count && zip(lhs, rhs).allSatisfy(_isIdentityEqual)
+      return lhs.count == rhs.count && zip(lhs, rhs).allSatisfy(_$isIdentityEqual)
     } else {
       return false
     }

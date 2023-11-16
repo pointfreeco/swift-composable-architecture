@@ -5,11 +5,6 @@ import SwiftUI
   import Observation
 #endif
 
-#if canImport(Observation)
-  @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
-  extension Store: Observable {}
-#endif
-
 extension Store: Perceptible {
   var observableState: State {
     get {
@@ -20,7 +15,7 @@ extension Store: Perceptible {
     }
     set {
       if State.self is ObservableState.Type,
-        !_isIdentityEqual(self.stateSubject.value, newValue)
+        !_$isIdentityEqual(self.stateSubject.value, newValue)
       {
         self._$observationRegistrar.withMutation(of: self, keyPath: \.observableState) {
           self.stateSubject.value = newValue
@@ -31,6 +26,11 @@ extension Store: Perceptible {
     }
   }
 }
+
+#if canImport(Observation)
+  @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
+  extension Store: Observable {}
+#endif
 
 extension Store where State: ObservableState {
   private(set) public var state: State {

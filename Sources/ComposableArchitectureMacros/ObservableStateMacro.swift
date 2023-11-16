@@ -408,7 +408,7 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
     let setAccessor: AccessorDeclSyntax =
       """
       set {
-        if _isIdentityEqual(newValue, _\(identifier)) == true {
+        if _$isIdentityEqual(newValue, _\(identifier)) == true {
           _\(identifier) = newValue
         } else {
           withMutation(keyPath: \\.\(identifier)) {
