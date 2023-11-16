@@ -52,7 +52,7 @@ private struct Root {
     case feature(Feature.Action)
     case optionalFeature(Feature.Action)
     case enumFeature(Features.Action)
-    case features(id: Feature.State.ID, action: Feature.Action)
+    case features(IdentifiedActionOf<Feature>)
   }
 
   @available(iOS, introduced: 9999)
@@ -188,7 +188,7 @@ private struct ForEachExample {
   }
 
   enum Action {
-    case value(id: Element.ID, action: Never)
+    case value(IdentifiedAction<Element.ID, Never>)
   }
 
   var body: some ReducerOf<Self> {
