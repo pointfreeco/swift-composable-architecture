@@ -10,6 +10,10 @@ simplify the library, and make it more powerful. As such, we often need to depre
 in favor of newer ones. We recommend people update their code as quickly as possible to the newest
 APIs, and this article contains some tips for doing so.
 
+> Important: Many APIs have been soft-deprecated in this release and will be hard-deprecated in
+a future minor release. We highly recommend updating your user of deprecated APIs to their newest
+versionas quickly as possible.
+
 * [Store scoping with key paths](#Store-scoping-with-key-paths)
 * [Enum-driven navigation APIs](#Enum-driven-navigation-APIs)
 
@@ -30,6 +34,7 @@ In practice you could typically use key paths for the `state` transformation sin
 can be promoted to closures. That means often scoping looked something like this:
 
 ```swift
+// ⚠️ Deprecated API
 ChildView(
   store: self.store.scope(
     state: \.child, 
@@ -39,15 +44,17 @@ ChildView(
 ```
 
 However, as of version 1.5 of the Composable Architecture, the version of 
-``ComposableArchitecture/Store/scope(state:action:)-9iai9`` that takes two closures is deprecated.
-Instead, you are to use the version of ``ComposableArchitecture/Store/scope(state:action:)-90255``
-that takes a key path for the `state` argument, and a case key path for the `action` argument.
+``ComposableArchitecture/Store/scope(state:action:)-9iai9`` that takes two closures is 
+**soft-deprecated**. Instead, you are to use the version of 
+``ComposableArchitecture/Store/scope(state:action:)-90255`` that takes a key path for the `state` 
+argument, and a case key path for the `action` argument.
 
 This is easiest to do when you are using the ``ComposableArchitecture/Reducer()`` macro with your
 feature because then case key paths are automatically generated for each case of your action enum.
 The above construction of `ChildView` now becomes:
 
 ```swift
+// ✅ New API
 ChildView(
   store: self.store.scope(
     state: \.child, 
@@ -148,6 +155,7 @@ case of the state enum to drive the navigation, as well as a transformation for 
 actions back into the destination domain:
 
 ```swift
+// ⚠️ Deprecated API
 .sheet(
   store: self.store.scope(state: \.$destination, action: { .destination($0) }),
   state: \.editForm,
@@ -159,7 +167,25 @@ The navigation view modifiers that take `store`, `state` and `action` arguments 
 and instead you can do it all with a single `store` argument:
 
 ```swift
+// ✅ New API
 .sheet(
-  store: self.store.scope(state: \.$destination.editForm, action: \.destination.editForm)
+  store: self.store.scope(
+    state: \.$destination.editForm, 
+    action: \.destination.editForm
+  )
 )
 ```
+
+All navigation APIs that take 3 arguments for the `store`, `state` and `action` have been
+**soft-deprecated** and instead you should make use of the version of the APIs that take a single
+`store` argument. This includes:
+
+* `alert(store:state:action:)`
+* `confirmationDialog(store:state:action:)`
+* `fullScreenCover(store:state:action:)`
+* `navigationDestination(store:state:action)`
+* `popover(store:state:action:)` 
+* `sheet(store:state:action:)`
+* ``IfLetStore``.``IfLetStore/init(_:state:action:then:)``
+* ``IfLetStore``.``IfLetStore/init(_:state:action:then:else:)``
+
