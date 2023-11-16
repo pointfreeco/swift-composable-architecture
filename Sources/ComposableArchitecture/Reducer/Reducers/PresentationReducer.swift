@@ -63,19 +63,18 @@ public struct PresentationState<State> {
   }
 
   public var wrappedValue: State? {
-    _read { yield self.storage.state }
-    _modify {
+    get { self.storage.state }
+    set {
       if !isKnownUniquelyReferenced(&self.storage) {
         self.storage = Storage(state: self.storage.state)
       }
-      yield &self.storage.state
+      self.storage.state = newValue
     }
   }
 
   public var projectedValue: Self {
     get { self }
     set { self = newValue }
-    _modify { yield &self }
   }
 
   public subscript<Case>(
