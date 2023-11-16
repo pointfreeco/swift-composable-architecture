@@ -34,6 +34,7 @@ In practice you could typically use key paths for the `state` transformation sin
 can be promoted to closures. That means often scoping looked something like this:
 
 ```swift
+// ⚠️ Deprecated API
 ChildView(
   store: self.store.scope(
     state: \.child, 
@@ -53,6 +54,7 @@ feature because then case key paths are automatically generated for each case of
 The above construction of `ChildView` now becomes:
 
 ```swift
+// ✅ New API
 ChildView(
   store: self.store.scope(
     state: \.child, 
@@ -153,6 +155,7 @@ case of the state enum to drive the navigation, as well as a transformation for 
 actions back into the destination domain:
 
 ```swift
+// ⚠️ Deprecated API
 .sheet(
   store: self.store.scope(state: \.$destination, action: { .destination($0) }),
   state: \.editForm,
@@ -164,8 +167,12 @@ The navigation view modifiers that take `store`, `state` and `action` arguments 
 and instead you can do it all with a single `store` argument:
 
 ```swift
+// ✅ New API
 .sheet(
-  store: self.store.scope(state: \.$destination.editForm, action: \.destination.editForm)
+  store: self.store.scope(
+    state: \.$destination.editForm, 
+    action: \.destination.editForm
+  )
 )
 ```
 
