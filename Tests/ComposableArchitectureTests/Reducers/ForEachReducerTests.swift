@@ -16,13 +16,13 @@ final class ForEachReducerTests: BaseTCATestCase {
       Elements()
     }
 
-    await store.send(.row(.element(id: 1, action: "Blob Esq."))) {
+    await store.send(.rows(.element(id: 1, action: "Blob Esq."))) {
       $0.rows[id: 1]?.value = "Blob Esq."
     }
-    await store.send(.row(.element(id: 2, action: ""))) {
+    await store.send(.rows(.element(id: 2, action: ""))) {
       $0.rows[id: 2]?.value = ""
     }
-    await store.receive(.row(.element(id: 2, action: "Empty"))) {
+    await store.receive(\.rows[id: 2]) {
       $0.rows[id: 2]?.value = "Empty"
     }
   }
@@ -39,7 +39,7 @@ final class ForEachReducerTests: BaseTCATestCase {
     func testMissingElement() async {
       let store = TestStore(initialState: Elements.State()) {
         EmptyReducer<Elements.State, Elements.Action>()
-          .forEach(\.rows, action: \.row) {}
+          .forEach(\.rows, action: \.rows) {}
       }
 
       XCTExpectFailure {
@@ -47,7 +47,7 @@ final class ForEachReducerTests: BaseTCATestCase {
           A "forEach" at "\(#fileID):\(#line - 5)" received an action for a missing element. …
 
             Action:
-              Elements.Action.row(.element(id:, action:))
+              Elements.Action.rows(.element(id:, action:))
 
           This is generally considered an application logic error, and can happen for a few reasons:
 
@@ -65,7 +65,7 @@ final class ForEachReducerTests: BaseTCATestCase {
           """
       }
 
-      await store.send(.row(.element(id: 1, action: "Blob Esq.")))
+      await store.send(.rows(.element(id: 1, action: "Blob Esq.")))
     }
   #endif
 
@@ -232,13 +232,13 @@ struct Elements {
   }
   enum Action: Equatable {
     case buttonTapped
-    case row(IdentifiedAction<Int, String>)
+    case rows(IdentifiedAction<Int, String>)
   }
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       .none
     }
-    .forEach(\.rows, action: \.row) {
+    .forEach(\.rows, action: \.rows) {
       Reduce { state, action in
         state.value = action
         return action.isEmpty
