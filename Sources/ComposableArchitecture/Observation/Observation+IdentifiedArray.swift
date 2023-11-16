@@ -27,7 +27,6 @@ extension Binding {
   ///   - state: A key path to an identified array of child state.
   ///   - action: A case key path to an identified child action.
   /// - Returns: An binding of an array of stores of child state.
-  @_disfavoredOverload
   public func scope<State, Action, ElementID, ElementState, ElementAction>(
     state: KeyPath<State, IdentifiedArray<ElementID, ElementState>>,
     action: CaseKeyPath<Action, IdentifiedAction<ElementID, ElementAction>>
