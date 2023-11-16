@@ -3,7 +3,6 @@ import SwiftUI
 
 extension Binding {
   // TODO: Document
-  @_disfavoredOverload
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
     state: KeyPath<State, StackState<ElementState>>,
     action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>

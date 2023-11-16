@@ -5,6 +5,32 @@ public protocol ViewAction<ViewAction> {
   static func view(_ action: ViewAction) -> Self
 }
 
+public struct StoreBinding<State, Action> {
+  let send: (CaseKeyPath<Action, State>) -> Binding<State>
+
+  public func callAsFunction(send action: CaseKeyPath<Action, State>) -> Binding<State> {
+    self.send(action)
+  }
+}
+
+extension Binding {
+  public subscript<State: ObservableState, Action, Member>(
+    dynamicMember keyPath: KeyPath<State, Member>
+  ) -> StoreBinding<Member, Action>
+  where Value == Store<State, Action> {
+    StoreBinding { action in
+      Binding<Member>(
+        get: { self.wrappedValue.state[keyPath: keyPath] },
+        set: { newValue, transaction in
+          BindingLocal.$isActive.withValue(true) {
+            _ = self.wrappedValue.send(action(newValue), transaction: transaction)
+          }
+        }
+      )
+    }
+  }
+}
+
 //extension Store: /* TODO: Legit conformance? */ ObservableObject where State: ObservableState {
 //  public func binding<Value>(
 //    get: @escaping (_ state: State) -> Value,
