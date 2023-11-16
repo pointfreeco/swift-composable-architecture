@@ -143,8 +143,8 @@ private func perceptionCheck() {
     {
       runtimeWarn(
         """
-        Perceptible state was accessed but is not being tracked. Track changes to state by wrapping
-        your view in a 'WithPerceptionTracking' view.
+        Perceptible state was accessed but is not being tracked. Track changes to state by \
+        wrapping your view in a 'WithPerceptionTracking' view.
         """
       )
     }
