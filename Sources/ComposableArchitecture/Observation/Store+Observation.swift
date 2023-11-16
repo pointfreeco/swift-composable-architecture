@@ -58,48 +58,52 @@ extension Store: Hashable {
 extension Store: Identifiable {}
 
 extension Store where State: ObservableState {
-  // TODO: Document that this should only be used with SwiftUI.
-  // TODO: ChildState: ObservableState?
+  /// Scopes the store to optional child state and actions.
+  ///
+  /// TODO: Example
+  /// TODO: Document that this should only be used with SwiftUI.
+  ///
+  /// - Parameters:
+  ///   - state: A key path to optional child state.
+  ///   - action: A case key path to child actions.
+  /// - Returns: An optional store of non-optional child state and actions.
   public func scope<ChildState, ChildAction>(
-    state toChildState: KeyPath<State, ChildState?>,
-    action toChildAction: CaseKeyPath<Action, ChildAction>
+    state: KeyPath<State, ChildState?>,
+    action: CaseKeyPath<Action, ChildAction>
   ) -> Store<ChildState, ChildAction>? {
-    guard var childState = self.observableState[keyPath: toChildState]
+    guard var childState = self.observableState[keyPath: state]
     else { return nil }
     return self.scope(
       state: {
-        childState = $0[keyPath: toChildState] ?? childState
+        childState = $0[keyPath: state] ?? childState
         return childState
       },
       id: {
         Scope(
-          state: toChildState,
-          action: toChildAction,
-          id: ($0[keyPath: toChildState] as? any ObservableState)?._$id
+          state: state,
+          action: action,
+          id: ($0[keyPath: state] as? any ObservableState)?._$id
         )
       },
-      action: { toChildAction($0) },
-      isInvalid: { $0[keyPath: toChildState] == nil },
+      action: { action($0) },
+      isInvalid: { $0[keyPath: state] == nil },
       removeDuplicates: nil
     )
   }
 }
 
 extension Binding {
+  /// Scopes the binding of a store to a binding of an optional presentation store.
+  ///
+  /// TODO: Example
+  ///
+  /// - Parameters:
+  ///   - state: A key path to optional child state.
+  ///   - action: A case key path to presentation child actions.
+  /// - Returns: A binding of an optional child store.
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
-    state toChildState: KeyPath<State, ChildState>,
-    action toChildAction: CaseKeyPath<Action, ChildAction>
-  ) -> Binding<Store<ChildState, ChildAction>>
-  where Value == Store<State, Action> {
-    Binding<Store<ChildState, ChildAction>>(
-      get: { self.wrappedValue.scope(state: toChildState, action: toChildAction) },
-      set: { _, _ in }
-    )
-  }
-
-  public func scope<State: ObservableState, Action, ChildState, ChildAction>(
-    state toChildState: KeyPath<State, ChildState?>,
-    action toChildAction: CaseKeyPath<Action, PresentationAction<ChildAction>>
+    state: KeyPath<State, ChildState?>,
+    action: CaseKeyPath<Action, PresentationAction<ChildAction>>
   ) -> Binding<Store<ChildState, ChildAction>?>
   where Value == Store<State, Action> {
     let isInViewBody = PerceptionLocals.isInPerceptionTracking
@@ -108,14 +112,14 @@ extension Binding {
         // TODO: Is this right? Should we just be more forgiving in bindings?
         PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
           self.wrappedValue.scope(
-            state: toChildState,
-            action: toChildAction.appending(path: \.presented)
+            state: state,
+            action: action.appending(path: \.presented)
           )
         }
       },
       set: {
-        if $0 == nil, self.wrappedValue.stateSubject.value[keyPath: toChildState] != nil {
-          self.transaction($1).wrappedValue.send(toChildAction(.dismiss))
+        if $0 == nil, self.wrappedValue.stateSubject.value[keyPath: state] != nil {
+          self.transaction($1).wrappedValue.send(action(.dismiss))
         }
       }
     )

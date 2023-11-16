@@ -59,7 +59,6 @@ day-to-day when building applications, such as:
 - ``Reducer()``
 - ``Effect``
 - ``Store``
-- ``ViewStore``
 
 ### Testing
 
@@ -67,6 +66,7 @@ day-to-day when building applications, such as:
 
 ### Integrations
 
+- <doc:ObservationBackport>
 - <doc:SwiftConcurrency>
 - <doc:SwiftUIIntegration>
 - <doc:UIKit>
@@ -75,6 +75,7 @@ day-to-day when building applications, such as:
 
 - <doc:MigratingTo1.4>
 - <doc:MigratingTo1.5>
+- <doc:MigratingTo1.6>
 
 ## See Also
 

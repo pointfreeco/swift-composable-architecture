@@ -1,6 +1,14 @@
 import SwiftUI
 
 extension Store {
+  /// Scopes the store to an identified array of child state and actions.
+  ///
+  /// TODO: Example
+  ///
+  /// - Parameters:
+  ///   - state: A key path to an identified array of child state.
+  ///   - action: A case key path to an identified child action.
+  /// - Returns: An array of stores of child state.
   @_disfavoredOverload
   public func scope<ElementID, ElementState, ElementAction>(
     state: KeyPath<State, IdentifiedArray<ElementID, ElementState>>,
@@ -11,6 +19,14 @@ extension Store {
 }
 
 extension Binding {
+  /// Scopes the binding of a store to an identified array of child state and actions.
+  ///
+  /// TODO: Example
+  ///
+  /// - Parameters:
+  ///   - state: A key path to an identified array of child state.
+  ///   - action: A case key path to an identified child action.
+  /// - Returns: An binding of an array of stores of child state.
   @_disfavoredOverload
   public func scope<State, Action, ElementID, ElementState, ElementAction>(
     state: KeyPath<State, IdentifiedArray<ElementID, ElementState>>,

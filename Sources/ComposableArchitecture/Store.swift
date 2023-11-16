@@ -411,26 +411,6 @@ public final class Store<State, Action> {
     )
   }
 
-  public func scope<ChildState, ChildAction>(
-    state: KeyPath<State, ChildState>,
-    action: CaseKeyPath<Action, ChildAction>,
-    isInvalid: @escaping (State) -> Bool
-  ) -> Store<ChildState, ChildAction> {
-    self.scope(
-      state: { $0[keyPath: state] },
-      id: {
-        Scope(
-          state: state,
-          action: action,
-          id: ($0[keyPath: state] as? any ObservableState)?._$id
-        )
-      },
-      action: { action($0) },
-      isInvalid: isInvalid,
-      removeDuplicates: nil
-    )
-  }
-
   @available(
     iOS, deprecated: 9999,
     message:

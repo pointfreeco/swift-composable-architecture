@@ -25,3 +25,8 @@ instead.
 - ``TestStore/receive(_:timeout:assert:file:line:)-7608x``
 - ``TestStore/receive(_:timeout:assert:file:line:)-42avx``
 - ``TestStore/bindings(action:)-7aomj``
+
+### Bindings
+
+- ``TestStore/bindings``
+- ``TestStore/bindings(action:)-2nhb5``

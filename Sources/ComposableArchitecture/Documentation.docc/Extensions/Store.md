@@ -10,6 +10,8 @@
 ### Scoping stores
 
 - ``scope(state:action:)-90255``
+- ``scope(state:action:)-36e72``
+- ``scope(state:action:)-88iqh``
 
 ### Accessing state
 
