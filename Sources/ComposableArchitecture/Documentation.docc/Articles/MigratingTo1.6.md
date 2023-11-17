@@ -16,7 +16,8 @@ APIs, and this article contains some tips for doing so.
 * [Replacing SwitchStore and CaseLet with ‘switch’ and ‘case’](#Replacing-SwitchStore-and-CaseLet-with-switch-and-case)
 * [Replacing navigation view modifiers with SwiftUI modifiers](#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers)
 * [Replacing NavigationStackStore with NavigationStack](#Replacing-NavigationStackStore-with-NavigationStack)
-* [Bindings](#Bindings)
+* [@BindingState](#BindingState)
+* [ViewStore.binding](#ViewStore_binding)
 * [View actions](#View-actions)
 
 ## Using @ObservableState
@@ -403,7 +404,7 @@ NavigationStack(store: self.store.scope(state: \.path, action: \.path)) {
 }
 ```
 
-## Bindings
+## @BindingState
 
 Bindings in the Composable Architecture have been handled by a zoo of types, including
 ``BindingState``, ``BindableAction``, ``BindingAction``, ``BindingViewState`` and 
@@ -494,6 +495,69 @@ var body: some View {
   }
 }
 ```
+
+## ViewStore.binding
+
+There's another way to derive bindings from a view store that involves fewer tools than 
+`@BindingState` as shown above, but does involve more boilerplate. You can add an explicit action
+for the binding to your domain, such as an action for setting the tab in a tab-based application:
+
+```swift
+@Reducer 
+Feature {
+  struct State {
+    var tab = 0
+  }
+  enum Action {
+    case tabChanged(Int)
+  }
+  var body: some ReducerOf<Self> {
+    Reduce { state, action in
+      switch action {
+      case let .tabChanged(tab):
+        state.tab = tab
+        return .none
+      }
+    }
+  }
+}
+```
+
+And then in the view you can use ``ViewStore/binding(get:send:)-65xes`` to derive a binding from
+the `tab` state and the `tabChanged` action:
+
+```swift
+TabView(
+  selection: viewStore.binding(get: \.tab, send: Feature.Action.tabChanged)
+) {
+  // ...
+}
+```
+
+Since the ``ViewStore`` type is no soft-deprecated, you can update this code to do something much
+simpler. If you make your feature's state observable with the ``ObservableState`` macro:
+
+```swift
+@Reducer 
+Feature {
+  @ObservableState
+  struct State {
+    // ...
+  }
+  // ...
+}
+```
+
+Then you can derive a binding directly from a ``Store`` like so:
+
+```swift
+TabView(selection: self.store.tab.send(\.tabChanged)) {
+  // ...
+}
+```
+
+
+
 
 ## View actions
 

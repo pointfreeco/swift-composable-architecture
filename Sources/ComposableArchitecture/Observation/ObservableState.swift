@@ -50,7 +50,7 @@ public func _$isIdentityEqual<T>(_ lhs: StackState<T>, _ rhs: StackState<T>) -> 
 @_disfavoredOverload
 public func _$isIdentityEqual<C: Collection>(_ lhs: C, _ rhs: C) -> Bool
 where C.Element: ObservableState {
-  fatalError("When is this hit??")
+  fatalError("TODO: When is this hit??")
   //lhs.count == rhs.count && zip(lhs, rhs).allSatisfy { $0._$id == $1._$id }
 }
 
@@ -85,6 +85,7 @@ public func _$isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
   if let lhs = lhs as? any ObservableState, let rhs = rhs as? any ObservableState {
     return lhs._$id == rhs._$id
   } else if let lhs = lhs as? any Collection {
+    fatalError("TODO: When is this hit??")
     return openCollection(lhs, rhs)
   } else {
     return false
