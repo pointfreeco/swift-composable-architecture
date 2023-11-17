@@ -47,6 +47,7 @@ public func _$isIdentityEqual<T>(_ lhs: StackState<T>, _ rhs: StackState<T>) -> 
 }
 
 // TODO: When is this hit?
+@_disfavoredOverload
 public func _$isIdentityEqual<C: Collection>(_ lhs: C, _ rhs: C) -> Bool
 where C.Element: ObservableState {
   fatalError("When is this hit??")
