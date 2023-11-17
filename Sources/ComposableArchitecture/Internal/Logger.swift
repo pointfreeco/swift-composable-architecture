@@ -3,7 +3,7 @@ import OSLog
 @_spi(Logging)
 public final class Logger {
   public static let shared = Logger()
-  public var isEnabled = isRunningForPreviews
+  public var isEnabled = false
   @Published public var logs: [String] = []
   #if DEBUG
     @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
