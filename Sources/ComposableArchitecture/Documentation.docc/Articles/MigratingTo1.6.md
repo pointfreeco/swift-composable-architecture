@@ -551,13 +551,10 @@ Feature {
 Then you can derive a binding directly from a ``Store`` like so:
 
 ```swift
-TabView(selection: self.$store.tab.send(\.tabChanged)) {
+TabView(selection: self.$store.tab.sending(\.tabChanged)) {
   // ...
 }
 ```
-
-
-
 
 ## View actions
 
