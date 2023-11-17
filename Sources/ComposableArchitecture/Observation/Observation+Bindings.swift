@@ -5,55 +5,30 @@ public protocol ViewAction<ViewAction> {
   static func view(_ action: ViewAction) -> Self
 }
 
-public struct StoreBinding<State, Action> {
-  let send: (CaseKeyPath<Action, State>) -> Binding<State>
-
-  public func callAsFunction(send action: CaseKeyPath<Action, State>) -> Binding<State> {
-    self.send(action)
-  }
-}
-
 extension Binding {
+  @_disfavoredOverload
   public subscript<State: ObservableState, Action, Member>(
     dynamicMember keyPath: KeyPath<State, Member>
-  ) -> StoreBinding<Member, Action>
+  ) -> Binding<Store<Member, Action>>
   where Value == Store<State, Action> {
-    StoreBinding { action in
-      Binding<Member>(
-        get: { self.wrappedValue.state[keyPath: keyPath] },
-        set: { newValue, transaction in
-          BindingLocal.$isActive.withValue(true) {
-            _ = self.wrappedValue.send(action(newValue), transaction: transaction)
-          }
+    Binding<Store<Member, Action>>(
+      get: { self.wrappedValue.scope(state: keyPath, action: \.self) },
+      set: { _ in }
+    )
+  }
+
+  public func send<State, Action>(_ action: CaseKeyPath<Action, State>) -> Binding<State> 
+  where Value == Store<State, Action> {
+    Binding<State>(
+      get: { self.wrappedValue.withState { $0 } },
+      set: { newValue, transaction in
+        BindingLocal.$isActive.withValue(true) {
+          _ = self.wrappedValue.send(action(newValue), transaction: transaction)
         }
-      )
-    }
+      }
+    )
   }
 }
-
-//extension Store: /* TODO: Legit conformance? */ ObservableObject where State: ObservableState {
-//  public func binding<Value>(
-//    get: @escaping (_ state: State) -> Value,
-//    send valueToAction: @escaping (_ value: Value) -> Action
-//  ) -> Binding<Value> {
-//    ObservedObject(wrappedValue: self)
-//      .projectedValue[get: .init(rawValue: get), send: .init(rawValue: valueToAction)]
-//  }
-//
-//  private subscript<Value>(
-//    get fromState: HashableWrapper<(State) -> Value>,
-//    send toAction: HashableWrapper<(Value) -> Action?>
-//  ) -> Value {
-//    get { fromState.rawValue(self.state) }
-//    set {
-//      BindingLocal.$isActive.withValue(true) {
-//        if let action = toAction.rawValue(newValue) {
-//          self.send(action)
-//        }
-//      }
-//    }
-//  }
-//}
 
 extension BindingAction {
   public static func set<Value: Equatable & Sendable>(
@@ -110,6 +85,7 @@ where
 }
 
 extension Binding {
+  @_disfavoredOverload
   public subscript<State: ObservableState, Action: BindableAction, Member: Equatable>(
     dynamicMember keyPath: WritableKeyPath<State, Member>
   ) -> Binding<Member>
@@ -125,6 +101,7 @@ extension Binding {
     )
   }
 
+  @_disfavoredOverload
   public subscript<State: ObservableState, Action: ViewAction, Member: Equatable>(
     dynamicMember keyPath: WritableKeyPath<State, Member>
   ) -> Binding<Member>
