@@ -531,34 +531,25 @@ public final class Store<State, Action> {
     let fromChildAction = {
       BindingLocal.isActive && isInvalid() ? nil : fromChildAction($0)
     }
-    var isSending = false
+    let scopedReducer = ScopedReducer<State, Action, ChildState, ChildAction>(
+      toChildState: toChildState,
+      fromChildAction: fromChildAction,
+      id: id,
+      isInvalid: isInvalid,
+      store: self
+    )
     let childStore = Store<ChildState, ChildAction>(
       initialState: toChildState(self.stateSubject.value)
     ) {
-      Reduce(internal: { [weak self] childState, childAction in
-        guard let self = self else { return .none }
-        if isInvalid(), let id = id {
-          self.invalidateChild(id: id)
-        }
-        guard let action = fromChildAction(childAction)
-        else { return .none }
-        isSending = true
-        defer { isSending = false }
-        let task = self.send(action)
-        childState = toChildState(self.stateSubject.value)
-        if let task = task.rawValue {
-          return .run { _ in await task.cancellableValue }
-        } else {
-          return .none
-        }
-      })
+      scopedReducer
     }
     childStore._isInvalidated = isInvalid
     childStore.parentCancellable = self.stateSubject
       .dropFirst()
-      .sink { [weak self, weak childStore] state in
+      .sink { [weak self, weak childStore, weak scopedReducer] state in
         guard
-          !isSending,
+          let scopedReducer,
+          !scopedReducer.isSending,
           let self = self,
           let childStore = childStore
         else { return }
@@ -588,7 +579,7 @@ public final class Store<State, Action> {
     }
   }
 
-  private func invalidateChild(id: AnyHashable) {
+  fileprivate func invalidateChild(id: AnyHashable) {
     guard self.children.keys.contains(id) else { return }
     (self.children[id] as? any AnyStore)?.invalidate()
     self.children[id] = nil
@@ -1034,3 +1025,62 @@ func typeName(
   }
   return name
 }
+
+class ScopedReducer<ParentState, ParentAction, ChildState, ChildAction>: Reducer {
+  var isSending = false
+  let toChildState: (ParentState) -> ChildState
+  let fromChildAction: (ChildAction) -> ParentAction?
+  let id: AnyHashable?
+  let isInvalid: () -> Bool
+  weak var store: Store<ParentState, ParentAction>?
+  init(
+    toChildState: @escaping (ParentState) -> ChildState,
+    fromChildAction: @escaping (ChildAction) -> ParentAction?,
+    id: AnyHashable?,
+    isInvalid: @escaping () -> Bool,
+    store: Store<ParentState, ParentAction>
+  ) {
+    self.toChildState = toChildState
+    self.fromChildAction = fromChildAction
+    self.id = id
+    self.isInvalid = isInvalid
+    self.store = store
+  }
+
+  func reduce(into childState: inout ChildState, action childAction: ChildAction) -> Effect<ChildAction> {
+    guard let store = self.store else { return .none }
+
+    if isInvalid(), let id = id {
+      store.invalidateChild(id: id)
+    }
+    guard let action = fromChildAction(childAction)
+    else { return .none }
+    isSending = true
+    defer { isSending = false }
+    let task = store.send(action)
+    childState = toChildState(store.stateSubject.value)
+    if let task = task.rawValue {
+      return .run { _ in await task.cancellableValue }
+    } else {
+      return .none
+    }
+  }
+}
+
+//Reduce(internal: { [weak self] childState, childAction in
+//  guard let self = self else { return .none }
+//  if isInvalid(), let id = id {
+//    self.invalidateChild(id: id)
+//  }
+//  guard let action = fromChildAction(childAction)
+//  else { return .none }
+//  isSending = true
+//  defer { isSending = false }
+//  let task = self.send(action)
+//  childState = toChildState(self.stateSubject.value)
+//  if let task = task.rawValue {
+//    return .run { _ in await task.cancellableValue }
+//  } else {
+//    return .none
+//  }
+//}
