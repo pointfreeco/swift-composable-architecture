@@ -133,7 +133,7 @@ import SwiftUI
 /// of the store are also checked to make sure that work is performed on the main thread.
 public final class Store<State, Action> {
   private var bufferedActions: [Action] = []
-  private var children: [AnyHashable: AnyObject] = [:]
+  var children: [AnyHashable: AnyObject] = [:]
   @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] = [:]
   var _isInvalidated = { false }
   private var isSending = false
@@ -470,76 +470,14 @@ public final class Store<State, Action> {
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
     self.threadCheck(status: .scope)
-
-    let id = id?(self.stateSubject.value)
-    if let id = id,
-      let childStore = self.children[id] as? Store<ChildState, ChildAction>
-    {
-      return childStore
-    }
-    // NB: This strong/weak self dance forces the child to retain the parent when the parent doesn't
-    //     retain the child.
-    let isInvalid =
-      id == nil
-      ? {
-        self._isInvalidated() || isInvalid?(self.stateSubject.value) == true
-      }
-      : { [weak self] in
-        guard let self = self else { return true }
-        return self._isInvalidated() || isInvalid?(self.stateSubject.value) == true
-      }
-    let fromChildAction = {
-      BindingLocal.isActive && isInvalid() ? nil : fromChildAction($0)
-    }
-    var isSending = false
-    let childStore = Store<ChildState, ChildAction>(
-      initialState: toChildState(self.stateSubject.value)
-    ) {
-      Reduce(internal: { [weak self] childState, childAction in
-        guard let self = self else { return .none }
-        if isInvalid(), let id = id {
-          self.invalidateChild(id: id)
-        }
-        guard let action = fromChildAction(childAction)
-        else { return .none }
-        isSending = true
-        defer { isSending = false }
-        let task = self.send(action)
-        childState = toChildState(self.stateSubject.value)
-        if let task = task.rawValue {
-          return .run { _ in await task.cancellableValue }
-        } else {
-          return .none
-        }
-      })
-    }
-    childStore._isInvalidated = isInvalid
-    childStore.parentCancellable = self.stateSubject
-      .dropFirst()
-      .sink { [weak self, weak childStore] state in
-        guard
-          !isSending,
-          let self = self,
-          let childStore = childStore
-        else { return }
-        if childStore._isInvalidated(), let id = id {
-          self.invalidateChild(id: id)
-          guard ChildState.self is _OptionalProtocol.Type
-          else {
-            return
-          }
-        }
-        let childState = toChildState(state)
-        guard isDuplicate.map({ !$0(childStore.stateSubject.value, childState) }) ?? true else {
-          return
-        }
-        childStore.stateSubject.value = childState
-        Logger.shared.log("\(storeTypeName(of: self)).scope")
-      }
-    if let id = id {
-      self.children[id] = childStore
-    }
-    return childStore
+    return self.reducer.scope(
+      store: self,
+      state: toChildState,
+      id: id,
+      action: fromChildAction,
+      isInvalid: isInvalid,
+      removeDuplicates: isDuplicate
+    )
   }
 
   fileprivate func invalidate() {
@@ -548,7 +486,7 @@ public final class Store<State, Action> {
     }
   }
 
-  private func invalidateChild(id: AnyHashable) {
+  func invalidateChild(id: AnyHashable) {
     guard self.children.keys.contains(id) else { return }
     (self.children[id] as? any AnyStore)?.invalidate()
     self.children[id] = nil
@@ -909,7 +847,7 @@ private protocol AnyStore {
   func invalidate()
 }
 
-private protocol _OptionalProtocol {}
+protocol _OptionalProtocol {}
 extension Optional: _OptionalProtocol {}
 
 func storeTypeName<State, Action>(of store: Store<State, Action>) -> String {
