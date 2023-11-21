@@ -113,6 +113,27 @@ struct ContentView: View {
           .navigationTitle("iOS 17")
         }
 
+        NavigationLink("iOS 16 + 17") {
+          List {
+            NavigationLink("New containing old") {
+              NewContainsOldTestCase()
+            }
+            NavigationLink("Siblings") {
+              NewOldSiblingsView()
+            }
+            NavigationLink("New presents old") {
+              NewPresentsOldTestCase()
+            }
+            NavigationLink("Old containing new") {
+              OldContainsNewTestCase()
+            }
+            NavigationLink("Old presents new") {
+              OldPresentsNewTestCase()
+            }
+          }
+          .navigationTitle(Text("iOS 16 + 17"))
+        }
+
         NavigationLink("iOS 16") {
           List {
             Section {
