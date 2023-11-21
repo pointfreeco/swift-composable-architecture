@@ -26,7 +26,10 @@ fileprivate extension Array {
     self = store.withState(\.ids).map { id in
       store.scope(
         state: { $0[id: id]! },
-        id: { _ in id },
+        id: ScopeID(
+          state: \IdentifiedArray<ElementID, State>.[id: id],
+          action: \IdentifiedAction<ElementID, Action>.Cases[id: id]
+        ),
         action: { .element(id: id, action: $0) },
         isInvalid: { !$0.ids.contains(id) },
         removeDuplicates: nil

@@ -87,7 +87,10 @@ public struct _NavigationDestinationViewModifier<
                   state = $0[id: component.id] ?? state
                   return state
                 },
-                id: { _ in component.id },
+                id: ScopeID(
+                  state: \StackState<State>.[id: component.id],
+                  action: \StackAction<State, Action>.Cases[id: component.id]
+                ),
                 action: { .element(id: component.id, action: $0) },
                 isInvalid: { !$0.ids.contains(component.id) },
                 removeDuplicates: nil

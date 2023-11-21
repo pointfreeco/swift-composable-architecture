@@ -398,13 +398,7 @@ public final class Store<State, Action> {
   ) -> Store<ChildState, ChildAction> {
     self.scope(
       state: { $0[keyPath: state] },
-      id: {
-        Scope(
-          state: state,
-          action: action,
-          id: ($0[keyPath: state] as? any ObservableState)?._$id
-        )
-      },
+      id: ScopeID(state: state, action: action),
       action: { action($0) },
       isInvalid: nil,
       removeDuplicates: nil
@@ -520,7 +514,7 @@ public final class Store<State, Action> {
 
   func scope<ChildState, ChildAction>(
     state toChildState: @escaping (State) -> ChildState,
-    id: ((State) -> AnyHashable)?,
+    id: AnyHashable?,
     action fromChildAction: @escaping (ChildAction) -> Action,
     isInvalid: ((State) -> Bool)?,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
@@ -529,7 +523,6 @@ public final class Store<State, Action> {
 
     let initialChildState = toChildState(self.observableState)
 
-    let id = id?(self.stateSubject.value)
     if let id = id,
       let childStore = self.children[id] as? Store<ChildState, ChildAction>
     {
@@ -862,12 +855,11 @@ public final class Store<State, Action> {
   public var publisher: StorePublisher<State> {
     StorePublisher(store: self, upstream: self.stateSubject)
   }
+}
 
-  struct Scope<ChildState, ChildAction>: Hashable {
-    let state: KeyPath<State, ChildState>
-    let action: CaseKeyPath<Action, ChildAction>
-    let id: ObservableStateID?
-  }
+struct ScopeID<State, Action, ChildState, ChildAction>: Hashable {
+  let state: KeyPath<State, ChildState>
+  let action: CaseKeyPath<Action, ChildAction>
 }
 
 /// A convenience type alias for referring to a store of a given reducer's domain.
