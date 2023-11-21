@@ -61,7 +61,8 @@ private final class ScopedStoreReducer<RootState, RootAction, State, Action>: Re
       state = self.toState(self.rootStore.stateSubject.value)
       self.isSending = false
     }
-    if let action = self.fromAction(action),
+    if 
+      let action = self.fromAction(action),
       let task = self.rootStore.send(action, originatingFrom: nil)
     {
       return .run { _ in await task.cancellableValue }
@@ -133,7 +134,9 @@ extension ScopedStoreReducer: AnyScopedStoreReducer {
           !reducer.isSending,
           let store = store,
           let childStore = childStore
-        else { return }
+        else {
+          return
+        }
         if childStore._isInvalidated(), let id = id {
           store.invalidateChild(id: id)
           guard ChildState.self is _OptionalProtocol.Type
