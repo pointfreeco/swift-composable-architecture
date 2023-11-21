@@ -13,15 +13,19 @@ public struct WithPerceptionTracking<Content: View>: View {
   public init(@ViewBuilder content: @escaping () -> Content) {
     self.content = content
   }
-  public var body: some View {
-    let _ = self.id
-    withPerceptionTracking {
-      PerceptionLocals.$isInPerceptionTracking.withValue(true) {
-        self.content()
-      }
-    } onChange: {
-      Task { @MainActor in
-        self.id += 1
+  public var body: Content {
+    if #available(iOS 17, *) {
+      return self.content()
+    } else {
+      let _ = self.id
+      return withPerceptionTracking {
+        PerceptionLocals.$isInPerceptionTracking.withValue(true) {
+          self.content()
+        }
+      } onChange: {
+        Task { @MainActor in
+          self.id += 1
+        }
       }
     }
   }
