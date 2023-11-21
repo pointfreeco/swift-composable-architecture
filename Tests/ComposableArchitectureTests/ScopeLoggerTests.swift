@@ -5,18 +5,27 @@ import SwiftUI
 class ScopeLoggerTests: XCTestCase {
   func testScoping() {
     Logger.shared.isEnabled = true
-    let store = Store(initialState: NavigationTestCaseView.Feature.State()) {
+    let store = Store(
+      initialState: NavigationTestCaseView.Feature.State(
+        path: StackState([
+          BasicsView.Feature.State()
+        ])
+      )
+    ) {
       NavigationTestCaseView.Feature()
     }
-    store.send(.path(.push(id: 0, state: BasicsView.Feature.State())))
-    let childStore1 = store.scope(state: \.path[id: 0]!, action: \.path[id: 0])
-    let childStore2 = childStore1.scope(state: \.self, action: \.self)
+    let viewStore = ViewStore(store, observe: { $0 })
+    let pathStore = store.scope(state: \.path, action: \.path)
+    let elementStore = pathStore.scope(state: \.[id: 0]!, action: \.[id: 0])
     Logger.shared.clear()
-    store.send(.path(.element(id: 0, action: .incrementButtonTapped)))
+    elementStore.send(.incrementButtonTapped)
     XCTAssertEqual(
       [],
       Logger.shared.logs
     )
+    let _ = viewStore
+    let _ = pathStore
+    let _ = elementStore
   }
 }
 
@@ -31,9 +40,9 @@ struct NavigationTestCaseView {
     }
     var body: some ReducerOf<Self> {
       EmptyReducer()
-      .forEach(\.path, action: \.path) {
-        BasicsView.Feature()
-      }
+        .forEach(\.path, action: \.path) {
+          BasicsView.Feature()
+        }
     }
   }
 }
