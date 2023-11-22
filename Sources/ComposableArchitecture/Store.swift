@@ -932,3 +932,9 @@ func typeName(
   }
   return name
 }
+
+extension Store: CustomDebugStringConvertible {
+  public var debugDescription: String {
+    storeTypeName(of: self)
+  }
+}
