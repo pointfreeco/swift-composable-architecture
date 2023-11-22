@@ -30,6 +30,9 @@ final class iOS16_17_NewContainsOldTests: BaseIntegrationTests {
       BasicsView.body
       NewContainsOldTestCase.body
       StoreOf<BasicsView.Feature>.scope
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
   }
@@ -57,6 +60,9 @@ final class iOS16_17_NewContainsOldTests: BaseIntegrationTests {
       BasicsView.body
       NewContainsOldTestCase.body
       StoreOf<BasicsView.Feature>.scope
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
   }
@@ -69,6 +75,7 @@ final class iOS16_17_NewContainsOldTests: BaseIntegrationTests {
     self.assertLogs {
       """
       StoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.deinit
       """
     }
   }

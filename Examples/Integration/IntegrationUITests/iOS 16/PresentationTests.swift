@@ -24,11 +24,11 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
       PresentationStoreOf<BasicsView.Feature>.scope
       PresentationStoreOf<BasicsView.Feature>.scope
       PresentationStoreOf<BasicsView.Feature>.scope
-      PresentationStoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
@@ -51,18 +51,43 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
+      BasicsView.body
       PresentationStoreOf<BasicsView.Feature>.scope
       PresentationStoreOf<BasicsView.Feature>.scope
       PresentationStoreOf<BasicsView.Feature>.scope
       PresentationStoreOf<BasicsView.Feature>.scope
+      PresentationStoreOf<BasicsView.Feature>.scope
+      PresentationStoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
+      StoreOf<PresentationView.Feature>.scope
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature?>.deinit
+      ViewStoreOf<BasicsView.Feature?>.init
       WithViewStoreOf<BasicsView.Feature>.body
+      WithViewStoreOf<BasicsView.Feature>.body
+      WithViewStoreOf<BasicsView.Feature?>.body
       """
     }
     self.app.buttons["Dismiss"].firstMatch.tap()
@@ -71,6 +96,9 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
       PresentationStoreOf<BasicsView.Feature>.init
       PresentationStoreOf<BasicsView.Feature>.init
       PresentationStoreOf<BasicsView.Feature>.init
+      PresentationStoreOf<BasicsView.Feature>.scope
+      PresentationStoreOf<BasicsView.Feature>.scope
+      PresentationStoreOf<BasicsView.Feature>.scope
       PresentationStoreOf<BasicsView.Feature>.scope
       PresentationStoreOf<BasicsView.Feature>.scope
       PresentationStoreOf<BasicsView.Feature>.scope
@@ -94,12 +122,21 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
       StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
+      ViewPresentationStoreOf<BasicsView.Feature>.init
+      ViewPresentationStoreOf<BasicsView.Feature>.init
+      ViewPresentationStoreOf<BasicsView.Feature>.init
+      ViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.deinit
+      ViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.init
+      ViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.init
       ViewStoreOf<BasicsView.Feature>.deinit
       ViewStoreOf<BasicsView.Feature?>.deinit
+      WithViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.body
       """
     }
   }
@@ -119,6 +156,7 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
@@ -165,22 +203,47 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
+      BasicsView.body
+      PresentationStoreOf<BasicsView.Feature>.scope
+      PresentationStoreOf<BasicsView.Feature>.scope
       PresentationStoreOf<BasicsView.Feature>.scope
       PresentationStoreOf<BasicsView.Feature>.scope
       PresentationStoreOf<BasicsView.Feature>.scope
       PresentationStoreOf<BasicsView.Feature>.scope
       PresentationView.body
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
+      StoreOf<PresentationView.Feature>.scope
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.init
       ViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.deinit
       ViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature?>.deinit
+      ViewStoreOf<BasicsView.Feature?>.init
       WithViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.body
       WithViewStoreOf<BasicsView.Feature>.body
+      WithViewStoreOf<BasicsView.Feature>.body
+      WithViewStoreOf<BasicsView.Feature?>.body
       """
     }
     XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
@@ -199,8 +262,6 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
       PresentationStoreOf<BasicsView.Feature>.scope
       PresentationStoreOf<BasicsView.Feature>.scope
       PresentationStoreOf<BasicsView.Feature>.scope
-      PresentationStoreOf<BasicsView.Feature>.scope
-      PresentationStoreOf<BasicsView.Feature>.scope
       PresentationView.body
       Store<PresentationView.ViewState, PresentationView.Feature.Action>.init
       StoreOf<BasicsView.Feature>.deinit
@@ -210,10 +271,6 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
@@ -222,11 +279,17 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
       StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
       StoreOf<PresentationView.Feature>.scope
+      ViewPresentationStoreOf<BasicsView.Feature>.init
+      ViewPresentationStoreOf<BasicsView.Feature>.init
+      ViewPresentationStoreOf<BasicsView.Feature>.init
       ViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.deinit
+      ViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.init
       ViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.init
       ViewStoreOf<BasicsView.Feature>.deinit
       ViewStoreOf<BasicsView.Feature?>.deinit

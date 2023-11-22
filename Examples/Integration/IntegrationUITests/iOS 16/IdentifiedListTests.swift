@@ -66,8 +66,8 @@ final class iOS16_IdentifiedListTests: BaseIntegrationTests {
       IdentifiedListView.body.ForEachStore
       IdentifiedListView.body.ForEachStore
       IdentifiedStoreOf<BasicsView.Feature>.deinit
-      IdentifiedStoreOf<BasicsView.Feature>.deinit
       IdentifiedStoreOf<BasicsView.Feature>.init
+      IdentifiedStoreOf<BasicsView.Feature>.scope
       IdentifiedStoreOf<BasicsView.Feature>.scope
       Store<UUID, Action>
       Store<UUID, Action>
@@ -81,6 +81,7 @@ final class iOS16_IdentifiedListTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
+      StoreOf<IdentifiedListView.Feature>.scope
       StoreOf<IdentifiedListView.Feature>.scope
       ViewIdentifiedStoreOf<BasicsView.Feature>.deinit
       ViewIdentifiedStoreOf<BasicsView.Feature>.init
@@ -124,6 +125,7 @@ final class iOS16_IdentifiedListTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
+      StoreOf<IdentifiedListView.Feature>.scope
       StoreOf<IdentifiedListView.Feature>.scope
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init

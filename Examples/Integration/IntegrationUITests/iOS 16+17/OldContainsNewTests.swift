@@ -17,9 +17,12 @@ final class iOS16_17_OldContainsNewTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["1"].exists, true)
     self.assertLogs {
       """
-      NewContainsOldTestCase.body
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<NewContainsOldTestCase.Feature>.scope
+      OldContainsNewTestCase.body
+      StoreOf<OldContainsNewTestCase.Feature>.scope
+      StoreOf<OldContainsNewTestCase.Feature>.scope
+      ViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.deinit
+      ViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.init
+      WithViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.body
       """
     }
 
@@ -27,9 +30,20 @@ final class iOS16_17_OldContainsNewTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["-1"].exists, true)
     self.assertLogs {
       """
-      BasicsView.body
-      NewContainsOldTestCase.body
-      StoreOf<BasicsView.Feature>.scope
+      ObservableBasicsView.body
+      OldContainsNewTestCase.body
+      OldContainsNewTestCase.body
+      Store<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.deinit
+      Store<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.init
+      StoreOf<OldContainsNewTestCase.Feature>.scope
+      ViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.deinit
+      ViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.deinit
+      ViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.deinit
+      ViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.init
+      ViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.init
+      ViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.init
+      WithViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.body
+      WithViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.body
       """
     }
   }

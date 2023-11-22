@@ -30,6 +30,7 @@ final class iOS16_NavigationTests: BaseIntegrationTests {
       """
       BasicsView.body
       StoreOf<BasicsView.Feature>.scope
+      StoreOf<NavigationTestCaseView.Feature>.scope
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
       WithViewStoreOf<BasicsView.Feature>.body
@@ -57,6 +58,7 @@ final class iOS16_NavigationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
+      StoreOf<NavigationTestCaseView.Feature>.scope
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
       WithViewStoreOf<BasicsView.Feature>.body
