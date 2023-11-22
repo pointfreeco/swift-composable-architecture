@@ -56,10 +56,16 @@ final class EnumTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
+      PresentationStoreOf<EnumView.Feature.Destination>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<EnumView.Feature.Destination>.scope
       StoreOf<EnumView.Feature.Destination>.scope
       StoreOf<EnumView.Feature.Destination?>.scope
+      StoreOf<EnumView.Feature.Destination?>.scope
+      StoreOf<EnumView.Feature.Destination?>.scope
+      StoreOf<EnumView.Feature>.scope
       StoreOf<EnumView.Feature>.scope
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
@@ -229,19 +235,25 @@ final class EnumTests: BaseIntegrationTests {
       """
       EnumView.body
       PresentationStoreOf<EnumView.Feature.Destination>.scope
+      PresentationStoreOf<EnumView.Feature.Destination>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
       StoreOf<EnumView.Feature.Destination>.scope
       StoreOf<EnumView.Feature.Destination>.scope
       StoreOf<EnumView.Feature.Destination>.scope
+      StoreOf<EnumView.Feature.Destination>.scope
       StoreOf<EnumView.Feature.Destination?>.scope
       StoreOf<EnumView.Feature.Destination?>.scope
       StoreOf<EnumView.Feature.Destination?>.scope
       StoreOf<EnumView.Feature.Destination?>.scope
+      StoreOf<EnumView.Feature.Destination?>.scope
+      StoreOf<EnumView.Feature.Destination?>.scope
+      StoreOf<EnumView.Feature>.scope
       StoreOf<EnumView.Feature>.scope
       StoreOf<EnumView.Feature>.scope
       StoreOf<EnumView.Feature>.scope
