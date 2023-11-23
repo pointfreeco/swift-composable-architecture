@@ -20,6 +20,9 @@ final class iOS16_17_NewOldSiblingsTests: BaseIntegrationTests {
       BasicsView.body
       StoreOf<BasicsView.Feature>.scope
       StoreOf<NewOldSiblingsView.Feature>.scope
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
 
@@ -50,6 +53,9 @@ final class iOS16_17_NewOldSiblingsTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.scope
       StoreOf<NewOldSiblingsView.Feature>.scope
       StoreOf<NewOldSiblingsView.Feature>.scope
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
   }
@@ -70,6 +76,9 @@ final class iOS16_17_NewOldSiblingsTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.scope
       StoreOf<NewOldSiblingsView.Feature>.scope
       StoreOf<NewOldSiblingsView.Feature>.scope
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
+      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      WithViewStoreOf<BasicsView.Feature>.body
       """
     }
   }

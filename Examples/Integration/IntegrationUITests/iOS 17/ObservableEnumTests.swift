@@ -59,7 +59,6 @@ final class iOS17_ObservableEnumTests: BaseIntegrationTests {
       ObservableEnumView.body
       StoreOf<ObservableBasicsView.Feature>.deinit
       StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableEnumView.Feature.Destination>.init
       StoreOf<ObservableEnumView.Feature>.scope
       """
     }
