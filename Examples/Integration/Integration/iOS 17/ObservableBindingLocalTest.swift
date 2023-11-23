@@ -106,21 +106,19 @@ struct ObservableBindingLocalTestCaseView: View {
         }
       }
       .fullScreenCover(
-        store: self.store.scope(state: \.$fullScreenCover, action: \.fullScreenCover)
+        item: self.$store.scope(state: \.fullScreenCover, action: \.fullScreenCover)
       ) { store in
         ChildView(store: store)
       }
       .navigationDestination(
-        store: self.store.scope(
-          state: \.$navigationDestination, action: \.navigationDestination
-        )
+        store: self.store.scope(state: \.$navigationDestination, action: \.navigationDestination)
       ) { store in
         ChildView(store: store)
       }
-      .popover(store: self.store.scope(state: \.$popover, action: \.popover)) { store in
+      .popover(item: self.$store.scope(state: \.popover, action: \.popover)) { store in
         ChildView(store: store)
       }
-      .sheet(store: self.store.scope(state: \.$sheet, action: \.sheet)) { store in
+      .sheet(item: self.$store.scope(state: \.sheet, action: \.sheet)) { store in
         ChildView(store: store)
       }
     } destination: { store in
