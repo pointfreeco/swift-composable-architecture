@@ -73,6 +73,7 @@ struct ContentView: View {
   @State var isBindingLocalTestCasePresented = false
   @State var isNavigationStackTestCasePresented = false
   @State var isNavigationTestCasePresented = false
+  @State var isObservableBindingLocalTestCasePresented = false
   @State var isObservableNavigationTestCasePresented = false
 
   var body: some View {
@@ -81,31 +82,37 @@ struct ContentView: View {
         NavigationLink("iOS 17") {
           List {
             Section {
-              NavigationLink("Observable Basics") {
+              NavigationLink("Basics") {
                 Form {
                   // TODO: Don't use @State in this view
                   ObservableBasicsView(showExtraButtons: true)
                 }
               }
-              NavigationLink("Observable Enum") {
+              Button("Binding local") {
+                self.isObservableBindingLocalTestCasePresented.toggle()
+              }
+              .sheet(isPresented: self.$isObservableBindingLocalTestCasePresented) {
+                ObservableBindingLocalTestCaseView()
+              }
+              NavigationLink("Enum") {
                 ObservableEnumView()
               }
-              NavigationLink("Observable Optional") {
+              NavigationLink("Optional") {
                 ObservableOptionalView()
               }
-              NavigationLink("Observable Identified list") {
+              NavigationLink("Identified list") {
                 ObservableIdentifiedListView()
               }
-              Button("Observable Navigation") {
+              Button("Navigation") {
                 self.isObservableNavigationTestCasePresented = true
               }
               .sheet(isPresented: self.$isObservableNavigationTestCasePresented) {
                 ObservableNavigationTestCaseView()
               }
-              NavigationLink("Observable Siblings") {
+              NavigationLink("Siblings") {
                 ObservableSiblingFeaturesView()
               }
-              NavigationLink("Observable Presentation") {
+              NavigationLink("Presentation") {
                 ObservablePresentationView()
               }
             }

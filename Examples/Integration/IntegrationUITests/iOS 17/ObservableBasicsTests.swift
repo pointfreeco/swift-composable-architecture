@@ -7,7 +7,7 @@ final class iOS17_ObservableBasicsTests: BaseIntegrationTests {
   override func setUp() {
     super.setUp()
     self.app.buttons["iOS 17"].tap()
-    self.app.buttons["Observable Basics"].tap()
+    self.app.buttons["Basics"].tap()
     self.clearLogs()
     // SnapshotTesting.isRecording = true
   }

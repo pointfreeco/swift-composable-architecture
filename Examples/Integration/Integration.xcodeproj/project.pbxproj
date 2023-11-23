@@ -41,6 +41,8 @@
 		CAA6BEB52ADAE08A00FF83BC /* NewPresentsOldTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA6BEB42ADAE08A00FF83BC /* NewPresentsOldTestCase.swift */; };
 		CAA6BEB72ADAF0DF00FF83BC /* NewPresentsOldTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA6BEB62ADAF0DF00FF83BC /* NewPresentsOldTests.swift */; };
 		CAA6BEB92ADAF61A00FF83BC /* OldPresentsNewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA6BEB82ADAF61A00FF83BC /* OldPresentsNewTests.swift */; };
+		CAE961792B0EE0A8007A66F5 /* ObservableBindingLocalTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAE961782B0EE0A8007A66F5 /* ObservableBindingLocalTest.swift */; };
+		CAE9617B2B0EE169007A66F5 /* ObservableBindingLocalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAE9617A2B0EE169007A66F5 /* ObservableBindingLocalTests.swift */; };
 		CAF5801B29A5642B0042FB62 /* TestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF5801A29A5642B0042FB62 /* TestCase.swift */; };
 		CAF5801C29A564440042FB62 /* TestCases.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CAF57FFC29A564210042FB62 /* TestCases.framework */; };
 		CAF5801D29A564440042FB62 /* TestCases.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = CAF57FFC29A564210042FB62 /* TestCases.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -151,6 +153,8 @@
 		CAA6BEB42ADAE08A00FF83BC /* NewPresentsOldTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewPresentsOldTestCase.swift; sourceTree = "<group>"; };
 		CAA6BEB62ADAF0DF00FF83BC /* NewPresentsOldTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewPresentsOldTests.swift; sourceTree = "<group>"; };
 		CAA6BEB82ADAF61A00FF83BC /* OldPresentsNewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OldPresentsNewTests.swift; sourceTree = "<group>"; };
+		CAE961782B0EE0A8007A66F5 /* ObservableBindingLocalTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableBindingLocalTest.swift; sourceTree = "<group>"; };
+		CAE9617A2B0EE169007A66F5 /* ObservableBindingLocalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableBindingLocalTests.swift; sourceTree = "<group>"; };
 		CAF57FFC29A564210042FB62 /* TestCases.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TestCases.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		CAF5801A29A5642B0042FB62 /* TestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestCase.swift; sourceTree = "<group>"; };
 		CAF5802429A5651D0042FB62 /* LegacyPresentationTestCase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LegacyPresentationTestCase.swift; sourceTree = "<group>"; };
@@ -362,6 +366,7 @@
 			isa = PBXGroup;
 			children = (
 				DC6E2D8E2AD5C56F005ACC26 /* ObservableBasicsTestCase.swift */,
+				CAE961782B0EE0A8007A66F5 /* ObservableBindingLocalTest.swift */,
 				DC6E2D932AD5C56F005ACC26 /* ObservableEnumTestCase.swift */,
 				DC6E2D8D2AD5C56F005ACC26 /* ObservableIdentifiedListTestCase.swift */,
 				DC6E2D8F2AD5C56F005ACC26 /* ObservableNavigationTestCase.swift */,
@@ -390,6 +395,7 @@
 			isa = PBXGroup;
 			children = (
 				DC6E2DA32AD5C677005ACC26 /* ObservableBasicsTests.swift */,
+				CAE9617A2B0EE169007A66F5 /* ObservableBindingLocalTests.swift */,
 				DC6E2D9E2AD5C677005ACC26 /* ObservableEnumTests.swift */,
 				DC6E2D9F2AD5C677005ACC26 /* ObservableIdentifiedListTests.swift */,
 				DC6E2DA02AD5C677005ACC26 /* ObservableNavigationTests.swift */,
@@ -585,6 +591,7 @@
 				DC6E2D982AD5C56F005ACC26 /* ObservablePresentationTestCase.swift in Sources */,
 				CAA6BEB12ADADE7700FF83BC /* NewOldSiblingsTestCase.swift in Sources */,
 				CAA6BEB52ADAE08A00FF83BC /* NewPresentsOldTestCase.swift in Sources */,
+				CAE961792B0EE0A8007A66F5 /* ObservableBindingLocalTest.swift in Sources */,
 				CAA1CAF5296DEE78000665B1 /* IntegrationApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -619,6 +626,7 @@
 				DC6E2DA82AD5C677005ACC26 /* ObservableSiblingTests.swift in Sources */,
 				CAA6BEAE2ADADE5900FF83BC /* NewOldSiblingsTests.swift in Sources */,
 				CAA6BEB72ADAF0DF00FF83BC /* NewPresentsOldTests.swift in Sources */,
+				CAE9617B2B0EE169007A66F5 /* ObservableBindingLocalTests.swift in Sources */,
 				CAA6BEB92ADAF61A00FF83BC /* OldPresentsNewTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

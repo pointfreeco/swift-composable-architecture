@@ -7,7 +7,7 @@ final class iOS17_ObservableEnumTests: BaseIntegrationTests {
   override func setUp() {
     super.setUp()
     self.app.buttons["iOS 17"].tap()
-    self.app.buttons["Observable Enum"].tap()
+    self.app.buttons["Enum"].tap()
     self.clearLogs()
     // SnapshotTesting.isRecording = true
   }

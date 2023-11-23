@@ -7,7 +7,7 @@ final class iOS17_ObservableIdentifiedListTests: BaseIntegrationTests {
   override func setUp() {
     super.setUp()
     self.app.buttons["iOS 17"].tap()
-    self.app.buttons["Observable Identified list"].tap()
+    self.app.buttons["Identified list"].tap()
     self.clearLogs()
     // SnapshotTesting.isRecording = true
   }

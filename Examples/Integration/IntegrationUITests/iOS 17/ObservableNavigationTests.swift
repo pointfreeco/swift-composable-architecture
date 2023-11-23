@@ -7,7 +7,7 @@ final class iOS17_ObservableNavigationTests: BaseIntegrationTests {
   override func setUp() {
     super.setUp()
     self.app.buttons["iOS 17"].tap()
-    self.app.buttons["Observable Navigation"].tap()
+    self.app.buttons["Navigation"].tap()
     self.clearLogs()
     // SnapshotTesting.isRecording = true
   }
