@@ -105,47 +105,45 @@ struct SyncUpsList {
 
 struct SyncUpsListView: View {
   @State var store: StoreOf<SyncUpsList>
-
+  
   var body: some View {
-    WithPerceptionTracking {
-      List {
-        ForEach(self.store.syncUps) { syncUp in
-          NavigationLink(
-            state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: syncUp))
-          ) {
-            CardView(syncUp: syncUp)
-          }
-          .listRowBackground(syncUp.theme.mainColor)
+    List {
+      ForEach(self.store.syncUps) { syncUp in
+        NavigationLink(
+          state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: syncUp))
+        ) {
+          CardView(syncUp: syncUp)
         }
+        .listRowBackground(syncUp.theme.mainColor)
       }
-      .toolbar {
-        Button {
-          self.store.send(.addSyncUpButtonTapped)
-        } label: {
-          Image(systemName: "plus")
-        }
+    }
+    .toolbar {
+      Button {
+        self.store.send(.addSyncUpButtonTapped)
+      } label: {
+        Image(systemName: "plus")
       }
-      .navigationTitle("Daily Sync-ups")
-      .alert(store: self.store.scope(state: \.$destination.alert, action: \.destination.alert))
-      .sheet(
-        item: self.$store.scope(state: \.destination?.add, action: \.destination.add)
-      ) { store in
-        NavigationStack {
-          SyncUpFormView(store: store)
-            .navigationTitle("New sync-up")
-            .toolbar {
-              ToolbarItem(placement: .cancellationAction) {
-                Button("Dismiss") {
-                  self.store.send(.dismissAddSyncUpButtonTapped)
-                }
-              }
-              ToolbarItem(placement: .confirmationAction) {
-                Button("Add") {
-                  self.store.send(.confirmAddSyncUpButtonTapped)
-                }
+    }
+    .navigationTitle("Daily Sync-ups")
+    .alert(store: self.store.scope(state: \.$destination.alert, action: \.destination.alert))
+    .sheet(
+      item: self.$store.scope(state: \.destination?.add, action: \.destination.add)
+    ) { store in
+      NavigationStack {
+        SyncUpFormView(store: store)
+          .navigationTitle("New sync-up")
+          .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+              Button("Dismiss") {
+                self.store.send(.dismissAddSyncUpButtonTapped)
               }
             }
-        }
+            ToolbarItem(placement: .confirmationAction) {
+              Button("Add") {
+                self.store.send(.confirmAddSyncUpButtonTapped)
+              }
+            }
+          }
       }
     }
   }

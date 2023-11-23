@@ -146,100 +146,96 @@ struct SyncUpDetailView: View {
   @State var store: StoreOf<SyncUpDetail>
 
   var body: some View {
-    WithPerceptionTracking {
-      List {
-        Section {
-          Button {
-            self.store.send(.startMeetingButtonTapped)
-          } label: {
-            Label("Start Meeting", systemImage: "timer")
-              .font(.headline)
-              .foregroundColor(.accentColor)
-          }
-          HStack {
-            Label("Length", systemImage: "clock")
-            Spacer()
-            Text(self.store.syncUp.duration.formatted(.units()))
-          }
-
-          HStack {
-            Label("Theme", systemImage: "paintpalette")
-            Spacer()
-            Text(self.store.syncUp.theme.name)
-              .padding(4)
-              .foregroundColor(self.store.syncUp.theme.accentColor)
-              .background(self.store.syncUp.theme.mainColor)
-              .cornerRadius(4)
-          }
-        } header: {
-          Text("Sync-up Info")
+    List {
+      Section {
+        Button {
+          self.store.send(.startMeetingButtonTapped)
+        } label: {
+          Label("Start Meeting", systemImage: "timer")
+            .font(.headline)
+            .foregroundColor(.accentColor)
+        }
+        HStack {
+          Label("Length", systemImage: "clock")
+          Spacer()
+          Text(self.store.syncUp.duration.formatted(.units()))
         }
 
-        if !self.store.syncUp.meetings.isEmpty {
-          Section {
-            ForEach(self.store.syncUp.meetings) { meeting in
-              NavigationLink(
-                state: AppFeature.Path.State.meeting(meeting, syncUp: self.store.syncUp)
-              ) {
-                HStack {
-                  Image(systemName: "calendar")
-                  Text(meeting.date, style: .date)
-                  Text(meeting.date, style: .time)
-                }
+        HStack {
+          Label("Theme", systemImage: "paintpalette")
+          Spacer()
+          Text(self.store.syncUp.theme.name)
+            .padding(4)
+            .foregroundColor(self.store.syncUp.theme.accentColor)
+            .background(self.store.syncUp.theme.mainColor)
+            .cornerRadius(4)
+        }
+      } header: {
+        Text("Sync-up Info")
+      }
+
+      if !self.store.syncUp.meetings.isEmpty {
+        Section {
+          ForEach(self.store.syncUp.meetings) { meeting in
+            NavigationLink(
+              state: AppFeature.Path.State.meeting(meeting, syncUp: self.store.syncUp)
+            ) {
+              HStack {
+                Image(systemName: "calendar")
+                Text(meeting.date, style: .date)
+                Text(meeting.date, style: .time)
               }
             }
-            .onDelete { indices in
-              self.store.send(.deleteMeetings(atOffsets: indices))
-            }
-          } header: {
-            Text("Past meetings")
           }
-        }
-
-        Section {
-          ForEach(self.store.syncUp.attendees) { attendee in
-            Label(attendee.name, systemImage: "person")
+          .onDelete { indices in
+            self.store.send(.deleteMeetings(atOffsets: indices))
           }
         } header: {
-          Text("Attendees")
+          Text("Past meetings")
         }
+      }
 
-        Section {
-          Button("Delete") {
-            self.store.send(.deleteButtonTapped)
-          }
-          .foregroundColor(.red)
-          .frame(maxWidth: .infinity)
+      Section {
+        ForEach(self.store.syncUp.attendees) { attendee in
+          Label(attendee.name, systemImage: "person")
         }
+      } header: {
+        Text("Attendees")
       }
-      .navigationTitle(self.store.syncUp.title)
-      .toolbar {
-        Button("Edit") {
-          self.store.send(.editButtonTapped)
+
+      Section {
+        Button("Delete") {
+          self.store.send(.deleteButtonTapped)
         }
+        .foregroundColor(.red)
+        .frame(maxWidth: .infinity)
       }
-      .alert(store: self.store.scope(state: \.$destination.alert, action: \.destination.alert))
-      .sheet(
-        item: self.$store.scope(state: \.destination?.edit, action: \.destination.edit)
-      ) { store in
-        WithPerceptionTracking {
-          NavigationStack {
-            SyncUpFormView(store: store)
-              .navigationTitle(self.store.syncUp.title)
-              .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                  Button("Cancel") {
-                    self.store.send(.cancelEditButtonTapped)
-                  }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                  Button("Done") {
-                    self.store.send(.doneEditingButtonTapped)
-                  }
-                }
+    }
+    .navigationTitle(self.store.syncUp.title)
+    .toolbar {
+      Button("Edit") {
+        self.store.send(.editButtonTapped)
+      }
+    }
+    .alert(store: self.store.scope(state: \.$destination.alert, action: \.destination.alert))
+    .sheet(
+      item: self.$store.scope(state: \.destination?.edit, action: \.destination.edit)
+    ) { store in
+      NavigationStack {
+        SyncUpFormView(store: store)
+          .navigationTitle(self.store.syncUp.title)
+          .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+              Button("Cancel") {
+                self.store.send(.cancelEditButtonTapped)
               }
+            }
+            ToolbarItem(placement: .confirmationAction) {
+              Button("Done") {
+                self.store.send(.doneEditingButtonTapped)
+              }
+            }
           }
-        }
       }
     }
   }

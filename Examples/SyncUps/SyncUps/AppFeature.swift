@@ -125,7 +125,7 @@ struct AppView: View {
   @State var store: StoreOf<AppFeature>
 
   var body: some View {
-    NavigationStack(store: self.store.scope(state: \.path, action: \.path)) {
+    NavigationStack(path: self.$store.scope(state: \.path, action: \.path)) {
       SyncUpsListView(
         store: self.store.scope(state: \.syncUpsList, action: \.syncUpsList)
       )

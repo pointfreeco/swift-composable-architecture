@@ -65,40 +65,38 @@ struct SyncUpFormView: View {
   @FocusState var focus: SyncUpForm.State.Field?
 
   var body: some View {
-    WithPerceptionTracking {
-      Form {
-        Section {
-          TextField("Title", text: self.$store.syncUp.title)
-            .focused(self.$focus, equals: .title)
-          HStack {
-            Slider(value: self.$store.syncUp.duration.minutes, in: 5...30, step: 1) {
-              Text("Length")
-            }
-            Spacer()
-            Text(self.store.syncUp.duration.formatted(.units()))
+    Form {
+      Section {
+        TextField("Title", text: self.$store.syncUp.title)
+          .focused(self.$focus, equals: .title)
+        HStack {
+          Slider(value: self.$store.syncUp.duration.minutes, in: 5...30, step: 1) {
+            Text("Length")
           }
-          ThemePicker(selection: self.$store.syncUp.theme)
-        } header: {
-          Text("Sync-up Info")
+          Spacer()
+          Text(self.store.syncUp.duration.formatted(.units()))
         }
-        Section {
-          ForEach(self.$store.syncUp.attendees) { $attendee in
-            TextField("Name", text: $attendee.name)
-              .focused(self.$focus, equals: .attendee(attendee.id))
-          }
-          .onDelete { indices in
-            self.store.send(.deleteAttendees(atOffsets: indices))
-          }
-
-          Button("New attendee") {
-            self.store.send(.addAttendeeButtonTapped)
-          }
-        } header: {
-          Text("Attendees")
-        }
+        ThemePicker(selection: self.$store.syncUp.theme)
+      } header: {
+        Text("Sync-up Info")
       }
-      .bind(self.$store.focus, to: self.$focus)
+      Section {
+        ForEach(self.$store.syncUp.attendees) { $attendee in
+          TextField("Name", text: $attendee.name)
+            .focused(self.$focus, equals: .attendee(attendee.id))
+        }
+        .onDelete { indices in
+          self.store.send(.deleteAttendees(atOffsets: indices))
+        }
+        
+        Button("New attendee") {
+          self.store.send(.addAttendeeButtonTapped)
+        }
+      } header: {
+        Text("Attendees")
+      }
     }
+    .bind(self.$store.focus, to: self.$focus)
   }
 }
 

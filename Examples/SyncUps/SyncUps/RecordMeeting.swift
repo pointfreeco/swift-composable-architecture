@@ -166,44 +166,42 @@ struct RecordMeetingView: View {
   @State var store: StoreOf<RecordMeeting>
 
   var body: some View {
-    WithPerceptionTracking {
-      ZStack {
-        RoundedRectangle(cornerRadius: 16)
-          .fill(self.store.syncUp.theme.mainColor)
-
-        VStack {
-          MeetingHeaderView(
-            secondsElapsed: self.store.secondsElapsed,
-            durationRemaining: self.store.durationRemaining,
-            theme: self.store.syncUp.theme
-          )
-          MeetingTimerView(
-            syncUp: self.store.syncUp,
-            speakerIndex: self.store.speakerIndex
-          )
-          MeetingFooterView(
-            syncUp: self.store.syncUp,
-            nextButtonTapped: {
-              self.store.send(.nextButtonTapped)
-            },
-            speakerIndex: self.store.speakerIndex
-          )
-        }
+    ZStack {
+      RoundedRectangle(cornerRadius: 16)
+        .fill(self.store.syncUp.theme.mainColor)
+      
+      VStack {
+        MeetingHeaderView(
+          secondsElapsed: self.store.secondsElapsed,
+          durationRemaining: self.store.durationRemaining,
+          theme: self.store.syncUp.theme
+        )
+        MeetingTimerView(
+          syncUp: self.store.syncUp,
+          speakerIndex: self.store.speakerIndex
+        )
+        MeetingFooterView(
+          syncUp: self.store.syncUp,
+          nextButtonTapped: {
+            self.store.send(.nextButtonTapped)
+          },
+          speakerIndex: self.store.speakerIndex
+        )
       }
-      .padding()
-      .foregroundColor(self.store.syncUp.theme.accentColor)
-      .navigationBarTitleDisplayMode(.inline)
-      .toolbar {
-        ToolbarItem(placement: .cancellationAction) {
-          Button("End meeting") {
-            self.store.send(.endMeetingButtonTapped)
-          }
-        }
-      }
-      .navigationBarBackButtonHidden(true)
-      .alert(store: self.store.scope(state: \.$alert, action: \.alert))
-      .task { await self.store.send(.onTask).finish() }
     }
+    .padding()
+    .foregroundColor(self.store.syncUp.theme.accentColor)
+    .navigationBarTitleDisplayMode(.inline)
+    .toolbar {
+      ToolbarItem(placement: .cancellationAction) {
+        Button("End meeting") {
+          self.store.send(.endMeetingButtonTapped)
+        }
+      }
+    }
+    .navigationBarBackButtonHidden(true)
+    .alert(store: self.store.scope(state: \.$alert, action: \.alert))
+    .task { await self.store.send(.onTask).finish() }
   }
 }
 
