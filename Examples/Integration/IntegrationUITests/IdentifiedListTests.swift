@@ -82,6 +82,7 @@ final class IdentifiedListTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<IdentifiedListView.Feature>.scope
+      StoreOf<IdentifiedListView.Feature>.scope
       ViewIdentifiedStoreOf<BasicsView.Feature>.deinit
       ViewIdentifiedStoreOf<BasicsView.Feature>.init
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
@@ -124,6 +125,7 @@ final class IdentifiedListTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
+      StoreOf<IdentifiedListView.Feature>.scope
       StoreOf<IdentifiedListView.Feature>.scope
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
