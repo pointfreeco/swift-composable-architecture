@@ -23,8 +23,8 @@ APIs, and this article contains some tips for doing so.
 ## Using @ObservableState
 
 There are two ways to update existing code to use the new ``ObservableState()`` macro depending on
-your minimum deployment target. Take the following scaffolding of a typical feature built with
-the Composable Architecture prior to version 1.6 and the new observation tools:
+your minimum deployment target. Take, for example, the following scaffolding of a typical feature 
+built with the Composable Architecture prior to version 1.6 and the new observation tools:
 
 ```swift
 @Reducer
@@ -55,13 +55,16 @@ struct FeatureView: View {
 }
 ```
 
+This feature is manually managing a `ViewState` struct and using ``WithViewStore`` in order to
+minimize the state being observed in the view.
+
 If you are still targeting iOS 16, macOS 13, tvOS 16, watchOS 9 or _lower_, then you can update the
 code in the following way:
 
 ```diff
  @Reducer
  struct Feature {
-+  @Observable
++  @ObservableState
    struct State { /* ... */ }
    enum Action { /* ... */ }
    var body: some ReducerOf<Self> {
@@ -122,7 +125,10 @@ You no longer need the ``WithViewStore`` or `WithPerceptionTracking` at all.
 ## Replacing IfLetStore with 'if let'
 
 The ``IfLetStore`` view was a helper for transforming a ``Store`` of optional state into a store of
-non-optional state so that it can be handed off to a child view. For example, if your feature's 
+non-optional state so that it can be handed off to a child view. It is no longer needed when using
+the new observation tools, and so it is **soft-deprecated**.
+
+For example, if your feature's 
 reducer looks roughly like this:
 
 ```swift
@@ -139,7 +145,7 @@ struct Feature {
 }
 ```
 
-Then you would make use of ``IfLetStore`` in the view like this:
+Then previously you would make use of ``IfLetStore`` in the view like this:
 
 ```swift
 IfLetStore(store: self.store.scope(state: \.child, action: \.child)) { childStore in
@@ -161,8 +167,10 @@ if let childStore = self.store.scope(state: \.child, action: \.child)) {
 
 ## Replacing ForEachStore with ForEach
 
-The ``ForEachStore`` view was a helper for deriving a store for each element of a collection. For
-example, if your feature's reducer looks roughly like this:
+The ``ForEachStore`` view was a helper for deriving a store for each element of a collection. It is 
+no longer needed when using the new observation tools, and so it is **soft-deprecated**.
+
+For example, if your feature's reducer looks roughly like this:
 
 ```swift
 @Reducer
@@ -178,7 +186,7 @@ struct Feature {
 }
 ```
 
-Then you would make use of ``ForEachStore`` in the view like this:
+Then you would have made use of ``ForEachStore`` in the view like this:
 
 ```swift
 ForEachStore(self.store.scope(state: \.rows, action: \.rows)) { childStore in
@@ -213,7 +221,10 @@ ForEach(
 ## Replacing SwitchStore and CaseLet with 'switch' and 'case'
 
 The ``SwitchStore`` and ``CaseLet`` views are helpers for driving a ``Store`` for each case of 
-an enum. For example, if your feature's reducer looks roughly like this:
+an enum. These views are no longer needed when using the new observation tools, and so they are
+**soft-deprecated**. 
+
+For example, if your feature's reducer looks roughly like this:
 
 ```swift
 @Reducer 
@@ -231,7 +242,7 @@ struct Feature {
 }
 ```
 
-Then you would use ``SwitchStore`` and ``CaseLet`` in the view like this:
+Then you would have used ``SwitchStore`` and ``CaseLet`` in the view like this:
 
 ```swift
 SwitchStore(self.store) {
@@ -267,7 +278,8 @@ case .settings:
 
 The library has shipped many navigation view modifiers that mimic what SwiftUI provides, but are
 tuned specifically for driving navigation from a ``Store``. All of these view modifiers can be
-updated to instead use the vanilla SwiftUI version of the view modifier.
+updated to instead use the vanilla SwiftUI version of the view modifier, and so the modifier that
+ship with this library are now soft-deprecated.
 
 For example, if your feature's reducer looks roughly like this:
 
@@ -285,7 +297,7 @@ struct Feature {
 }
 ```
 
-Then previously you could drive a sheet presentation from this feature like so:
+Then previously you would drive a sheet presentation from this feature like so:
 
 ```swift
 .sheet(store: self.store.scope(state: \.$child, action: \.child)) { store in
@@ -314,7 +326,8 @@ Then you can use `sheet(item:)` like so:
 }
 ```
 
-Note that `state: \.$child` is now simply `state: \.child`.
+Note that the state key path is simply `state: \.child`, and not `state: \.$child`. The projected
+value of the presentation state is no longer needed.
 
 This also applies to popovers, full screen covers, and navigation destinations.
 
@@ -345,12 +358,15 @@ This can now be changed to this:
 }
 ```
 
-Note that `state: \.$destination.editForm` is now simply `state: \.destination?.editForm`.
+Note that the state key path is simply `state: \.destination?.editForm`, and not 
+`state: \.$destination.editForm`.
 
 ## Replacing NavigationStackStore with NavigationStack
 
-The ``NavigationStackStore`` view was a helper for driving a navigation stack from a ``Store``. For
-example, if your feature's reducer looks roughly like this:
+The ``NavigationStackStore`` view was a helper for driving a navigation stack from a ``Store``. It 
+is no longer needed when using the new observation tools, and so it is **soft-deprecated**.
+
+For example, if your feature's reducer looks roughly like this:
 
 ```swift
 @Reducer
@@ -366,7 +382,7 @@ struct Feature {
 }
 ```
 
-Then you would make use of ``NavigationStackStore`` in the view like this:
+Then you would have made use of ``NavigationStackStore`` in the view like this:
 
 ```swift
 NavigationStackStore(self.store.scope(state: \.path, action: \.path)) {
@@ -388,7 +404,7 @@ NavigationStackStore(self.store.scope(state: \.path, action: \.path)) {
 This can now be updated to use a custom initializer on `NavigationStack`:
 
 ```swift
-NavigationStack(store: self.store.scope(state: \.path, action: \.path)) {
+NavigationStack(path: self.$store.scope(state: \.path, action: \.path)) {
   RootView()
 } destination: { store in
   switch store.state {
@@ -406,7 +422,7 @@ NavigationStack(store: self.store.scope(state: \.path, action: \.path)) {
 
 ## @BindingState
 
-Bindings in the Composable Architecture have been handled by a zoo of types, including
+Bindings in the Composable Architecture have historically been handled by a zoo of types, including
 ``BindingState``, ``BindableAction``, ``BindingAction``, ``BindingViewState`` and 
 ``BindingViewStore``. For example, if your view needs to be able to derive bindings to many fields
 on your state, you may have the reducer built somewhat like this:
