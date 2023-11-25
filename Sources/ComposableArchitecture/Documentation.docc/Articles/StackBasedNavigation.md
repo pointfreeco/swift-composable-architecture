@@ -117,7 +117,7 @@ can be pushed onto the stack:
 
 ```swift
 NavigationStack(
-  store: // Store focused on StackState and StackAction
+  path: // Store focused on StackState and StackAction
 ) {
   // Root view of the navigation stack
 } destination: { store in
@@ -134,7 +134,7 @@ struct RootView: View {
 
   var body: some View {
     NavigationStack(
-      store: self.$store.scope(state: \.path, action: \.path)
+      path: self.$store.scope(state: \.path, action: \.path)
     ) {
       // Root view of the navigation stack
     } destination: { state in
