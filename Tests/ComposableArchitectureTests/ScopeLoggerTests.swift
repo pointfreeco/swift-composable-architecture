@@ -4,29 +4,31 @@ import SwiftUI
 
 class ScopeLoggerTests: XCTestCase {
   func testScoping() {
-    Logger.shared.isEnabled = true
-    let store = Store(
-      initialState: NavigationTestCaseView.Feature.State(
-        path: StackState([
-          BasicsView.Feature.State()
-        ])
+    #if DEBUG
+      Logger.shared.isEnabled = true
+      let store = Store(
+        initialState: NavigationTestCaseView.Feature.State(
+          path: StackState([
+            BasicsView.Feature.State()
+          ])
+        )
+      ) {
+        NavigationTestCaseView.Feature()
+      }
+      let viewStore = ViewStore(store, observe: { $0 })
+      let pathStore = store.scope(state: \.path, action: \.path)
+      let elementStore = pathStore.scope(state: \.[id: 0]!, action: \.[id: 0])
+      Logger.shared.clear()
+      elementStore.send(.incrementButtonTapped)
+      // TODO: This extra scope should go away once we get rid of store/reducer rescoping
+      XCTAssertEqual(
+        ["StoreOf<NavigationTestCaseView.Feature>.scope"],
+        Logger.shared.logs
       )
-    ) {
-      NavigationTestCaseView.Feature()
-    }
-    let viewStore = ViewStore(store, observe: { $0 })
-    let pathStore = store.scope(state: \.path, action: \.path)
-    let elementStore = pathStore.scope(state: \.[id: 0]!, action: \.[id: 0])
-    Logger.shared.clear()
-    elementStore.send(.incrementButtonTapped)
-    // TODO: This extra scope should go away once we get rid of store/reducer rescoping
-    XCTAssertEqual(
-      ["StoreOf<NavigationTestCaseView.Feature>.scope"],
-      Logger.shared.logs
-    )
-    let _ = viewStore
-    let _ = pathStore
-    let _ = elementStore
+      let _ = viewStore
+      let _ = pathStore
+      let _ = elementStore
+    #endif
   }
 }
 
