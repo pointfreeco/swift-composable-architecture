@@ -247,10 +247,13 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       PresentationStoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.init
@@ -278,7 +281,9 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
       ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.init
       ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.deinit
       ViewStoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature?>.deinit
       ViewStoreOf<BasicsView.Feature?>.deinit
       ViewStoreOf<BasicsView.Feature?>.init
       WithViewStoreOf<BasicsView.Feature>.body

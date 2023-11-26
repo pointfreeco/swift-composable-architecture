@@ -753,17 +753,22 @@ public final class Store<State, Action> {
   public var publisher: StorePublisher<State> {
     StorePublisher(store: self, upstream: self.stateSubject)
   }
-}
 
-struct ScopeID<State, Action, ChildState, ChildAction>: Hashable {
-  let state: KeyPath<State, ChildState>
-  let action: CaseKeyPath<Action, ChildAction>
+  private struct Scope<ChildState, ChildAction>: Hashable {
+    let state: KeyPath<State, ChildState>
+    let action: CaseKeyPath<Action, ChildAction>
+  }
 }
 
 extension Store: CustomDebugStringConvertible {
   public var debugDescription: String {
     storeTypeName(of: self)
   }
+}
+
+struct ScopeID<State, Action, ChildState, ChildAction>: Hashable {
+  let state: KeyPath<State, ChildState>
+  let action: CaseKeyPath<Action, ChildAction>
 }
 
 /// A convenience type alias for referring to a store of a given reducer's domain.
@@ -949,8 +954,8 @@ func typeName(
   return name
 }
 
-private extension Reducer {
-  func scope<ChildState, ChildAction>(
+extension Reducer {
+  fileprivate func scope<ChildState, ChildAction>(
     store: Store<State, Action>,
     state toChildState: @escaping (State) -> ChildState,
     id: AnyHashable?,

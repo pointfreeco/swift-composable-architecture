@@ -37,6 +37,10 @@ also access it directly throughout a test.
 
 - ``state``
 
+### Supporting types
+
+- ``TestStoreOf``
+
 ### Deprecations
 
 - <doc:TestStoreDeprecations>

@@ -8,3 +8,7 @@
 @_exported import Observation
 @_exported import Perception
 @_exported import SwiftUINavigationCore
+
+#if swift(>=5.9)
+  @_exported import DependenciesMacros
+#endif
