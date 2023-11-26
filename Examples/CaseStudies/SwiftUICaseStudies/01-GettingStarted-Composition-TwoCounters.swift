@@ -11,6 +11,7 @@ private let readMe = """
 
 @Reducer
 struct TwoCounters {
+  @ObservableState
   struct State: Equatable {
     var counter1 = Counter.State()
     var counter2 = Counter.State()
@@ -47,13 +48,13 @@ struct TwoCountersView: View {
       HStack {
         Text("Counter 1")
         Spacer()
-        CounterView(store: self.store.scope(state: \.counter1, action: \.counter1))
+        CounterView(store: store.scope(state: \.counter1, action: \.counter1))
       }
 
       HStack {
         Text("Counter 2")
         Spacer()
-        CounterView(store: self.store.scope(state: \.counter2, action: \.counter2))
+        CounterView(store: store.scope(state: \.counter2, action: \.counter2))
       }
     }
     .buttonStyle(.borderless)

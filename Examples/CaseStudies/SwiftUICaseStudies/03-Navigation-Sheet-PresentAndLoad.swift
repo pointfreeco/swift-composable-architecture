@@ -12,6 +12,7 @@ private let readMe = """
 
 @Reducer
 struct PresentAndLoad {
+  @ObservableState
   struct State: Equatable {
     var optionalCounter: Counter.State?
     var isSheetPresented = false
@@ -64,29 +65,22 @@ struct PresentAndLoadView: View {
   }
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
-        Button("Load optional counter") {
-          viewStore.send(.setSheet(isPresented: true))
-        }
+    Form {
+      Section {
+        AboutView(readMe: readMe)
       }
-      .sheet(
-        isPresented: viewStore.binding(
-          get: \.isSheetPresented,
-          send: { .setSheet(isPresented: $0) }
-        )
-      ) {
-        IfLetStore(self.store.scope(state: \.optionalCounter, action: \.optionalCounter)) {
-          CounterView(store: $0)
-        } else: {
-          ProgressView()
-        }
+      Button("Load optional counter") {
+        store.send(.setSheet(isPresented: true))
       }
-      .navigationTitle("Present and load")
     }
+    .sheet(isPresented: $store.isSheetPresented.sending(\.setSheet)) {
+      if let store = store.scope(state: \.optionalCounter, action: \.optionalCounter) {
+        CounterView(store: store)
+      } else {
+        ProgressView()
+      }
+    }
+    .navigationTitle("Present and load")
   }
 }
 

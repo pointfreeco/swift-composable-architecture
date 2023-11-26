@@ -16,6 +16,7 @@ private let readMe = """
 
 @Reducer
 struct OptionalBasics {
+  @ObservableState
   struct State: Equatable {
     var optionalCounter: Counter.State?
   }
@@ -58,17 +59,15 @@ struct OptionalBasicsView: View {
       }
 
       Button("Toggle counter state") {
-        self.store.send(.toggleCounterButtonTapped)
+        store.send(.toggleCounterButtonTapped)
       }
 
-      IfLetStore(
-        self.store.scope(state: \.optionalCounter, action: \.optionalCounter)
-      ) { store in
+      if let store = store.scope(state: \.optionalCounter, action: \.optionalCounter) {
         Text(template: "`Counter.State` is non-`nil`")
         CounterView(store: store)
           .buttonStyle(.borderless)
           .frame(maxWidth: .infinity)
-      } else: {
+      } else {
         Text(template: "`Counter.State` is `nil`")
       }
     }

@@ -25,11 +25,6 @@ private let readMe = """
 struct EffectsBasics {
   @ObservableState
   struct State: Equatable {
-
-//    func foo() {
-//      _$observationRegistrar.access(self, keyPath: \.count)
-//    }
-
     var count = 0
     var isNumberFactRequestInFlight = false
     var numberFact: String?
@@ -100,7 +95,6 @@ struct EffectsBasics {
 
 // MARK: - Feature view
 
-//@WithViewStore(send:)
 struct EffectsBasicsView: View {
   @State var store = Store(initialState: EffectsBasics.State()) {
     EffectsBasics()
@@ -108,58 +102,56 @@ struct EffectsBasicsView: View {
   @Environment(\.openURL) var openURL
 
   var body: some View {
-    WithPerceptionTracking {
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
+    Form {
+      Section {
+        AboutView(readMe: readMe)
+      }
 
-        Section {
-          HStack {
-            Button {
-              self.store.send(.decrementButtonTapped)
-            } label: {
-              Image(systemName: "minus")
-            }
-
-            Text("\(self.store.count)")
-              .monospacedDigit()
-
-            Button {
-              self.store.send(.incrementButtonTapped)
-            } label: {
-              Image(systemName: "plus")
-            }
+      Section {
+        HStack {
+          Button {
+            store.send(.decrementButtonTapped)
+          } label: {
+            Image(systemName: "minus")
           }
+
+          Text("\(store.count)")
+            .monospacedDigit()
+
+          Button {
+            store.send(.incrementButtonTapped)
+          } label: {
+            Image(systemName: "plus")
+          }
+        }
+        .frame(maxWidth: .infinity)
+
+        Button("Number fact") { store.send(.numberFactButtonTapped) }
           .frame(maxWidth: .infinity)
 
-          Button("Number fact") { self.store.send(.numberFactButtonTapped) }
+        if store.isNumberFactRequestInFlight {
+          ProgressView()
             .frame(maxWidth: .infinity)
-
-          if self.store.isNumberFactRequestInFlight {
-            ProgressView()
-              .frame(maxWidth: .infinity)
             // NB: There seems to be a bug in SwiftUI where the progress view does not show
             // a second time unless it is given a new identity.
-              .id(UUID())
-          }
-
-          if let numberFact = self.store.numberFact {
-            Text(numberFact)
-          }
+            .id(UUID())
         }
 
-        Section {
-          Button("Number facts provided by numbersapi.com") {
-            self.openURL(URL(string: "http://numbersapi.com")!)
-          }
-          .foregroundStyle(.secondary)
-          .frame(maxWidth: .infinity)
+        if let numberFact = store.numberFact {
+          Text(numberFact)
         }
       }
-      .buttonStyle(.borderless)
-      .navigationTitle("Effects")
+
+      Section {
+        Button("Number facts provided by numbersapi.com") {
+          openURL(URL(string: "http://numbersapi.com")!)
+        }
+        .foregroundStyle(.secondary)
+        .frame(maxWidth: .infinity)
+      }
     }
+    .buttonStyle(.borderless)
+    .navigationTitle("Effects")
   }
 }
 

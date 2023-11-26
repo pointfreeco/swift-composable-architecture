@@ -75,7 +75,7 @@ struct BindingBasicsView: View {
       }
 
       HStack {
-        TextField("Type here", text: $store.text.send(\.textChanged))
+        TextField("Type here", text: $store.text.sending(\.textChanged))
           .disableAutocorrection(true)
           .foregroundStyle(store.toggleIsOn ? Color.secondary : .primary)
         Text(alternate(store.text))
@@ -84,12 +84,12 @@ struct BindingBasicsView: View {
 
       Toggle(
         "Disable other controls",
-        isOn: $store.toggleIsOn.send(\.toggleChanged).resignFirstResponder()
+        isOn: $store.toggleIsOn.sending(\.toggleChanged).resignFirstResponder()
       )
 
       Stepper(
         "Max slider value: \(store.stepCount)",
-        value: $store.stepCount.send(\.stepCountChanged),
+        value: $store.stepCount.sending(\.stepCountChanged),
         in: 0...100
       )
       .disabled(store.toggleIsOn)
@@ -97,7 +97,7 @@ struct BindingBasicsView: View {
       HStack {
         Text("Slider value: \(Int(store.sliderValue))")
         Slider(
-          value: $store.sliderValue.send(\.sliderValueChanged),
+          value: $store.sliderValue.sending(\.sliderValueChanged),
           in: 0...Double(store.stepCount)
         )
         .tint(.accentColor)

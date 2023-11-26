@@ -23,6 +23,7 @@ private let readMe = """
 
 @Reducer
 struct AlertAndConfirmationDialog {
+  @ObservableState
   struct State: Equatable {
     @PresentationState var alert: AlertState<Action.Alert>?
     @PresentationState var confirmationDialog: ConfirmationDialogState<Action.ConfirmationDialog>?
@@ -111,23 +112,19 @@ struct AlertAndConfirmationDialogView: View {
   }
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
-
-        Text("Count: \(viewStore.count)")
-        Button("Alert") { viewStore.send(.alertButtonTapped) }
-        Button("Confirmation Dialog") { viewStore.send(.confirmationDialogButtonTapped) }
+    Form {
+      Section {
+        AboutView(readMe: readMe)
       }
+
+      Text("Count: \(store.count)")
+      Button("Alert") { store.send(.alertButtonTapped) }
+      Button("Confirmation Dialog") { store.send(.confirmationDialogButtonTapped) }
     }
     .navigationTitle("Alerts & Dialogs")
-    .alert(
-      store: self.store.scope(state: \.$alert, action: \.alert)
-    )
+    .alert(store: store.scope(state: \.$alert, action: \.alert))
     .confirmationDialog(
-      store: self.store.scope(state: \.$confirmationDialog, action: \.confirmationDialog)
+      store: store.scope(state: \.$confirmationDialog, action: \.confirmationDialog)
     )
   }
 }

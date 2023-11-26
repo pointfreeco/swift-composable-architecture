@@ -12,6 +12,7 @@ private let readMe = """
 
 @Reducer
 struct NavigateAndLoad {
+  @ObservableState
   struct State: Equatable {
     var isNavigationActive = false
     var optionalCounter: Counter.State?
@@ -64,25 +65,18 @@ struct NavigateAndLoadView: View {
   }
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
-        NavigationLink(
-          "Load optional counter",
-          isActive: viewStore.binding(
-            get: \.isNavigationActive,
-            send: { .setNavigation(isActive: $0) }
-          )
-        ) {
-          IfLetStore(
-            self.store.scope(state: \.optionalCounter, action: \.optionalCounter)
-          ) {
-            CounterView(store: $0)
-          } else: {
-            ProgressView()
-          }
+    Form {
+      Section {
+        AboutView(readMe: readMe)
+      }
+      NavigationLink(
+        "Load optional counter",
+        isActive: $store.isNavigationActive.sending(\.setNavigation)
+      ) {
+        if let store = store.scope(state: \.optionalCounter, action: \.optionalCounter) {
+          CounterView(store: store)
+        } else {
+          ProgressView()
         }
       }
     }

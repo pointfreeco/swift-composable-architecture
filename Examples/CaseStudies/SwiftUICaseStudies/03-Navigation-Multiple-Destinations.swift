@@ -35,6 +35,7 @@ struct MultipleDestinations {
     }
   }
 
+  @ObservableState
   struct State: Equatable {
     @PresentationState var destination: Destination.State?
   }
@@ -74,36 +75,34 @@ struct MultipleDestinationsView: View {
   }
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
-        Button("Show drill-down") {
-          viewStore.send(.showDrillDown)
-        }
-        Button("Show popover") {
-          viewStore.send(.showPopover)
-        }
-        Button("Show sheet") {
-          viewStore.send(.showSheet)
-        }
+    Form {
+      Section {
+        AboutView(readMe: readMe)
       }
-      .navigationDestination(
-        store: self.store.scope(state: \.$destination.drillDown, action: \.destination.drillDown)
-      ) { store in
-        CounterView(store: store)
+      Button("Show drill-down") {
+        store.send(.showDrillDown)
       }
-      .popover(
-        store: self.store.scope(state: \.$destination.popover, action: \.destination.popover)
-      ) { store in
-        CounterView(store: store)
+      Button("Show popover") {
+        store.send(.showPopover)
       }
-      .sheet(
-        store: self.store.scope(state: \.$destination.sheet, action: \.destination.sheet)
-      ) { store in
-        CounterView(store: store)
+      Button("Show sheet") {
+        store.send(.showSheet)
       }
+    }
+    .navigationDestination(
+      item: $store.scope(state: \.destination?.drillDown, action: \.destination.drillDown)
+    ) { store in
+      CounterView(store: store)
+    }
+    .popover(
+      item: $store.scope(state: \.destination?.popover, action: \.destination.popover)
+    ) { store in
+      CounterView(store: store)
+    }
+    .sheet(
+      item: $store.scope(state: \.destination?.sheet, action: \.destination.sheet)
+    ) { store in
+      CounterView(store: store)
     }
   }
 }

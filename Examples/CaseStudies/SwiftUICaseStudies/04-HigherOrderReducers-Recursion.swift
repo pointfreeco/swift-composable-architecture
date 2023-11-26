@@ -12,6 +12,7 @@ private let readMe = """
 
 @Reducer
 struct Nested {
+  @ObservableState
   struct State: Equatable, Identifiable {
     let id: UUID
     var name: String = ""
@@ -60,36 +61,30 @@ struct NestedView: View {
   }
 
   var body: some View {
-    WithViewStore(self.store, observe: \.name) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
+    Form {
+      Section {
+        AboutView(readMe: readMe)
+      }
 
-        ForEachStore(self.store.scope(state: \.rows, action: \.rows)) { rowStore in
-          WithViewStore(rowStore, observe: \.name) { rowViewStore in
-            NavigationLink(
-              destination: NestedView(store: rowStore)
-            ) {
-              HStack {
-                TextField(
-                  "Untitled",
-                  text: rowViewStore.binding(send: { .nameTextFieldChanged($0) })
-                )
-                Text("Next")
-                  .font(.callout)
-                  .foregroundStyle(.secondary)
-              }
-            }
+      ForEach(store.scope(state: \.rows, action: \.rows) as Array) { rowStore in
+        @Bindable var rowStore = rowStore
+        NavigationLink {
+          NestedView(store: rowStore)
+        } label: {
+          HStack {
+            TextField("Untitled", text: $rowStore.name.sending(\.nameTextFieldChanged))
+            Text("Next")
+              .font(.callout)
+              .foregroundStyle(.secondary)
           }
         }
-        .onDelete { viewStore.send(.onDelete($0)) }
       }
-      .navigationTitle(viewStore.state.isEmpty ? "Untitled" : viewStore.state)
-      .toolbar {
-        ToolbarItem(placement: .navigationBarTrailing) {
-          Button("Add row") { viewStore.send(.addRowButtonTapped) }
-        }
+      .onDelete { store.send(.onDelete($0)) }
+    }
+    .navigationTitle(store.name.isEmpty ? "Untitled" : store.name)
+    .toolbar {
+      ToolbarItem(placement: .navigationBarTrailing) {
+        Button("Add row") { store.send(.addRowButtonTapped) }
       }
     }
   }
