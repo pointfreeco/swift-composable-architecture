@@ -61,6 +61,30 @@ import SwiftUI
 /// > store it was derived from) must happen on the same thread. Further, for SwiftUI applications,
 /// > all interactions must happen on the _main_ thread. See the documentation of the ``Store``
 /// > class for more information as to why this decision was made.
+@available(
+  iOS,
+  deprecated: 9999,
+  message:
+    "Use '@ObservableState', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6#Using-ObservableState"
+)
+@available(
+  macOS,
+  deprecated: 9999,
+  message:
+    "Use '@ObservableState', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6#Using-ObservableState"
+)
+@available(
+  tvOS,
+  deprecated: 9999,
+  message:
+    "Use '@ObservableState', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6#Using-ObservableState"
+)
+@available(
+  watchOS,
+  deprecated: 9999,
+  message:
+    "Use '@ObservableState', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6#Using-ObservableState"
+)
 @dynamicMemberLookup
 public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   // N.B. `ViewStore` does not use a `@Published` property, so `objectWillChange`
