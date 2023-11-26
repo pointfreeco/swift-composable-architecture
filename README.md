@@ -502,7 +502,7 @@ With that little bit of upfront work done you can instantly start making use of 
 any feature by using the `@Dependency` property wrapper:
 
 ```diff
-@Reducer
+ @Reducer
  struct Feature {
 -  let numberFact: (Int) async throws -> String
 +  @Dependency(\.numberFact) var numberFact
