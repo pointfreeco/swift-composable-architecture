@@ -410,7 +410,7 @@ NavigationStackStore(self.store.scope(state: \.path, action: \.path)) {
 }
 ```
 
-This can now be updated to use a custom initializer on `NavigationStack`:
+This can now be updated to our custom initializer on `NavigationStack`:
 
 ```swift
 NavigationStack(path: self.$store.scope(state: \.path, action: \.path)) {
@@ -529,7 +529,7 @@ for the binding to your domain, such as an action for setting the tab in a tab-b
 
 ```swift
 @Reducer 
-Feature {
+struct Feature {
   struct State {
     var tab = 0
   }
@@ -559,7 +559,7 @@ TabView(
 }
 ```
 
-Since the ``ViewStore`` type is no soft-deprecated, you can update this code to do something much
+Since the ``ViewStore`` type is now soft-deprecated, you can update this code to do something much
 simpler. If you make your feature's state observable with the ``ObservableState`` macro:
 
 ```swift
@@ -573,7 +573,7 @@ Feature {
 }
 ```
 
-Then you can derive a binding directly from a ``Store`` like so:
+Then you can derive a binding directly from a ``Store`` binding like so:
 
 ```swift
 TabView(selection: self.$store.tab.sending(\.tabChanged)) {
@@ -581,16 +581,15 @@ TabView(selection: self.$store.tab.sending(\.tabChanged)) {
 }
 ```
 
-## View actions
-
-TODO
+<!--## View actions-->
+<!--TODO-->
 
 ## Incrementally migrating
 
 You are most likely going to want to incrementally your application to the new observation tools, 
 rather than doing everything all at once. That is possible, but there are some gotchas to be aware
-of when mixing "legacy" features (i.e. features using ``ViewStore`` and ``WithViewStore``) with
-"modern" features (i.e. features using ``ObservableState()``).
+of when mixing "legacy" features (_i.e._ features using ``ViewStore`` and ``WithViewStore``) with
+"modern" features (_i.e._ features using ``ObservableState()``).
 
 The most common problem one will encounter is that when legacy and modern features are mixed
 together, their view bodies can be re-computed more often than necessary. This is due to the 
