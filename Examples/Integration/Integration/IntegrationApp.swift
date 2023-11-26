@@ -84,7 +84,6 @@ struct ContentView: View {
             Section {
               NavigationLink("Basics") {
                 Form {
-                  // TODO: Don't use @State in this view
                   ObservableBasicsView(showExtraButtons: true)
                 }
               }

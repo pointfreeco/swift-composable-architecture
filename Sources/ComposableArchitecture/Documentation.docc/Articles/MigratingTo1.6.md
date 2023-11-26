@@ -13,8 +13,8 @@ APIs, and this article contains some tips for doing so.
 > Important: Before following this migration guide be sure you have fully migrated to the newest
 tools of version 1.5. See <doc:MigratingTo1.4> and <doc:MigratingTo1.5> for more information.
 
-> Note: The following migration guide assumes you are targeting iOS 17, macOS 14, tvOS 17, watchOS 
-10 or higher, but the tools do work for older platforms too. See the dedicated 
+> Note: The following migration guide mostly assumes you are targeting iOS 17, macOS 14, tvOS 17, 
+watchOS 10 or higher, but the tools do work for older platforms too. See the dedicated 
 <doc:ObservationBackport> article for more information on how to use the new observation tools if
 you are targeting older platforms.
 
