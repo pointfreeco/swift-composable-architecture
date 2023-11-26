@@ -939,8 +939,8 @@ func typeName(
   return name
 }
 
-private extension Reducer {
-  func scope<ChildState, ChildAction>(
+extension Reducer {
+  fileprivate func scope<ChildState, ChildAction>(
     store: Store<State, Action>,
     state toChildState: @escaping (State) -> ChildState,
     id: ((State) -> AnyHashable)?,
@@ -1002,8 +1002,7 @@ private final class ScopedStoreReducer<RootState, RootAction, State, Action>: Re
       state = self.toState(self.rootStore.stateSubject.value)
       self.isSending = false
     }
-    if
-      let action = self.fromAction(action),
+    if let action = self.fromAction(action),
       let task = self.rootStore.send(action, originatingFrom: nil)
     {
       return .run { _ in await task.cancellableValue }

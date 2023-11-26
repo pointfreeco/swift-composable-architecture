@@ -70,7 +70,7 @@ final class CountersTableViewController: UITableViewController {
       CounterViewController(
         store: self.store.scope(
           state: \.counters[indexPathRow],
-          action: \.counters[id: counter.id]
+          action: \.counters[id:counter.id]
         )
       ),
       animated: true

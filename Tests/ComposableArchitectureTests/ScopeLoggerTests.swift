@@ -1,6 +1,6 @@
-import XCTest
-import SwiftUI
 @_spi(Logging) import ComposableArchitecture
+import SwiftUI
+import XCTest
 
 class ScopeLoggerTests: XCTestCase {
   func testScoping() {
@@ -17,7 +17,7 @@ class ScopeLoggerTests: XCTestCase {
       }
       let viewStore = ViewStore(store, observe: { $0 })
       let pathStore = store.scope(state: \.path, action: \.path)
-      let elementStore = pathStore.scope(state: \.[id: 0]!, action: \.[id: 0])
+      let elementStore = pathStore.scope(state: \.[id:0]!, action: \.[id:0])
       Logger.shared.clear()
       elementStore.send(.incrementButtonTapped)
       // TODO: This extra scope should go away once we get rid of store/reducer rescoping
