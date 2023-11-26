@@ -108,7 +108,7 @@ struct SyncUpsListView: View {
   
   var body: some View {
     List {
-      ForEach(self.store.syncUps) { syncUp in
+      ForEach(store.syncUps) { syncUp in
         NavigationLink(
           state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: syncUp))
         ) {
@@ -119,16 +119,14 @@ struct SyncUpsListView: View {
     }
     .toolbar {
       Button {
-        self.store.send(.addSyncUpButtonTapped)
+        store.send(.addSyncUpButtonTapped)
       } label: {
         Image(systemName: "plus")
       }
     }
     .navigationTitle("Daily Sync-ups")
-    .alert(store: self.store.scope(state: \.$destination.alert, action: \.destination.alert))
-    .sheet(
-      item: self.$store.scope(state: \.destination?.add, action: \.destination.add)
-    ) { store in
+    .alert(store: store.scope(state: \.$destination.alert, action: \.destination.alert))
+    .sheet(item: $store.scope(state: \.destination?.add, action: \.destination.add)) { store in
       NavigationStack {
         SyncUpFormView(store: store)
           .navigationTitle("New sync-up")

@@ -127,7 +127,7 @@ struct SearchView: View {
 
         HStack {
           Image(systemName: "magnifyingglass")
-          TextField("New York, San Francisco, ...", text: self.$store.searchQuery)
+          TextField("New York, San Francisco, ...", text: $store.searchQuery)
             .textFieldStyle(.roundedBorder)
             .autocapitalization(.none)
             .disableAutocorrection(true)
@@ -135,22 +135,22 @@ struct SearchView: View {
         .padding(.horizontal, 16)
 
         List {
-          ForEach(self.store.results) { location in
+          ForEach(store.results) { location in
             VStack(alignment: .leading) {
               Button {
-                self.store.send(.searchResultTapped(location))
+                store.send(.searchResultTapped(location))
               } label: {
                 HStack {
                   Text(location.name)
 
-                  if self.store.resultForecastRequestInFlight?.id == location.id {
+                  if store.resultForecastRequestInFlight?.id == location.id {
                     ProgressView()
                   }
                 }
               }
 
-              if location.id == self.store.weather?.id {
-                self.weatherView(locationWeather: self.store.weather)
+              if location.id == store.weather?.id {
+                weatherView(locationWeather: store.weather)
               }
             }
           }
@@ -164,10 +164,10 @@ struct SearchView: View {
       }
       .navigationTitle("Search")
     }
-    .task(id: self.store.searchQuery) {
+    .task(id: store.searchQuery) {
       do {
         try await Task.sleep(for: .milliseconds(300))
-        await self.store.send(.searchQueryChangeDebounced).finish()
+        await store.send(.searchQueryChangeDebounced).finish()
       } catch {}
     }
   }

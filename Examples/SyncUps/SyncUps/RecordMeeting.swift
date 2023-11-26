@@ -168,40 +168,40 @@ struct RecordMeetingView: View {
   var body: some View {
     ZStack {
       RoundedRectangle(cornerRadius: 16)
-        .fill(self.store.syncUp.theme.mainColor)
+        .fill(store.syncUp.theme.mainColor)
       
       VStack {
         MeetingHeaderView(
-          secondsElapsed: self.store.secondsElapsed,
-          durationRemaining: self.store.durationRemaining,
-          theme: self.store.syncUp.theme
+          secondsElapsed: store.secondsElapsed,
+          durationRemaining: store.durationRemaining,
+          theme: store.syncUp.theme
         )
         MeetingTimerView(
-          syncUp: self.store.syncUp,
-          speakerIndex: self.store.speakerIndex
+          syncUp: store.syncUp,
+          speakerIndex: store.speakerIndex
         )
         MeetingFooterView(
-          syncUp: self.store.syncUp,
+          syncUp: store.syncUp,
           nextButtonTapped: {
-            self.store.send(.nextButtonTapped)
+            store.send(.nextButtonTapped)
           },
-          speakerIndex: self.store.speakerIndex
+          speakerIndex: store.speakerIndex
         )
       }
     }
     .padding()
-    .foregroundColor(self.store.syncUp.theme.accentColor)
+    .foregroundColor(store.syncUp.theme.accentColor)
     .navigationBarTitleDisplayMode(.inline)
     .toolbar {
       ToolbarItem(placement: .cancellationAction) {
         Button("End meeting") {
-          self.store.send(.endMeetingButtonTapped)
+          store.send(.endMeetingButtonTapped)
         }
       }
     }
     .navigationBarBackButtonHidden(true)
-    .alert(store: self.store.scope(state: \.$alert, action: \.alert))
-    .task { await self.store.send(.onTask).finish() }
+    .alert(store: store.scope(state: \.$alert, action: \.alert))
+    .task { await store.send(.onTask).finish() }
   }
 }
 

@@ -70,7 +70,7 @@
   ///
   /// ```swift
   /// .sheet(
-  ///   item: self.$store.scope(state: \.destination?.editForm, action: \.destination.editForm)
+  ///   item: $store.scope(state: \.destination?.editForm, action: \.destination.editForm)
   /// )
   /// ```
   ///

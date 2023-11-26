@@ -67,36 +67,36 @@ struct SyncUpFormView: View {
   var body: some View {
     Form {
       Section {
-        TextField("Title", text: self.$store.syncUp.title)
-          .focused(self.$focus, equals: .title)
+        TextField("Title", text: $store.syncUp.title)
+          .focused($focus, equals: .title)
         HStack {
-          Slider(value: self.$store.syncUp.duration.minutes, in: 5...30, step: 1) {
+          Slider(value: $store.syncUp.duration.minutes, in: 5...30, step: 1) {
             Text("Length")
           }
           Spacer()
-          Text(self.store.syncUp.duration.formatted(.units()))
+          Text(store.syncUp.duration.formatted(.units()))
         }
-        ThemePicker(selection: self.$store.syncUp.theme)
+        ThemePicker(selection: $store.syncUp.theme)
       } header: {
         Text("Sync-up Info")
       }
       Section {
-        ForEach(self.$store.syncUp.attendees) { $attendee in
+        ForEach($store.syncUp.attendees) { $attendee in
           TextField("Name", text: $attendee.name)
-            .focused(self.$focus, equals: .attendee(attendee.id))
+            .focused($focus, equals: .attendee(attendee.id))
         }
         .onDelete { indices in
-          self.store.send(.deleteAttendees(atOffsets: indices))
+          store.send(.deleteAttendees(atOffsets: indices))
         }
         
         Button("New attendee") {
-          self.store.send(.addAttendeeButtonTapped)
+          store.send(.addAttendeeButtonTapped)
         }
       } header: {
         Text("Attendees")
       }
     }
-    .bind(self.$store.focus, to: self.$focus)
+    .bind($store.focus, to: $focus)
   }
 }
 

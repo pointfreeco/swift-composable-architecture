@@ -120,11 +120,11 @@ struct VoiceMemoView: View {
 
   var body: some View {
     let currentTime =
-      self.store.mode.playing.map { $0 * self.store.duration } ?? self.store.duration
+      store.mode.playing.map { $0 * store.duration } ?? store.duration
     HStack {
       TextField(
-        "Untitled, \(self.store.date.formatted(date: .numeric, time: .shortened))",
-        text: self.$store.title
+        "Untitled, \(store.date.formatted(date: .numeric, time: .shortened))",
+        text: $store.title
       )
 
       Spacer()
@@ -136,23 +136,23 @@ struct VoiceMemoView: View {
       }
 
       Button {
-        self.store.send(.playButtonTapped)
+        store.send(.playButtonTapped)
       } label: {
-        Image(systemName: self.store.mode.is(\.playing) ? "stop.circle" : "play.circle")
+        Image(systemName: store.mode.is(\.playing) ? "stop.circle" : "play.circle")
           .font(.system(size: 22))
       }
     }
     .buttonStyle(.borderless)
     .frame(maxHeight: .infinity, alignment: .center)
     .padding(.horizontal)
-    .listRowBackground(self.store.mode.is(\.playing) ? Color(.systemGray6) : .clear)
+    .listRowBackground(store.mode.is(\.playing) ? Color(.systemGray6) : .clear)
     .listRowInsets(EdgeInsets())
     .background(
       Color(.systemGray5)
-        .frame(maxWidth: self.store.mode.is(\.playing) ? .infinity : 0)
+        .frame(maxWidth: store.mode.is(\.playing) ? .infinity : 0)
         .animation(
-          self.store.mode.is(\.playing) ? .linear(duration: self.store.duration) : nil,
-          value: self.store.mode.is(\.playing)
+          store.mode.is(\.playing) ? .linear(duration: store.duration) : nil,
+          value: store.mode.is(\.playing)
         ),
       alignment: .leading
     )

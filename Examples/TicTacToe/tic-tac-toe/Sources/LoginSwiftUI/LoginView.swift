@@ -23,12 +23,12 @@ public struct LoginView: View {
       )
 
       Section {
-        TextField("blob@pointfree.co", text: self.$store.email)
+        TextField("blob@pointfree.co", text: $store.email)
           .autocapitalization(.none)
           .keyboardType(.emailAddress)
           .textContentType(.emailAddress)
 
-        SecureField("••••••••", text: self.$store.password)
+        SecureField("••••••••", text: $store.password)
       }
 
       Button {
@@ -39,23 +39,21 @@ public struct LoginView: View {
         _ = UIApplication.shared.sendAction(
           #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
         )
-        self.store.send(.view(.loginButtonTapped))
+        store.send(.view(.loginButtonTapped))
       } label: {
         HStack {
           Text("Log in")
-          if self.store.isActivityIndicatorVisible {
+          if store.isActivityIndicatorVisible {
             Spacer()
             ProgressView()
           }
         }
       }
-      .disabled(self.store.isLoginButtonDisabled)
+      .disabled(store.isLoginButtonDisabled)
     }
-    .disabled(self.store.isFormDisabled)
-    .alert(store: self.store.scope(state: \.$alert, action: \.alert))
-    .navigationDestination(
-      item: self.$store.scope(state: \.twoFactor, action: \.twoFactor)
-    ) { store in
+    .disabled(store.isFormDisabled)
+    .alert(store: store.scope(state: \.$alert, action: \.alert))
+    .navigationDestination(item: $store.scope(state: \.twoFactor, action: \.twoFactor)) { store in
       TwoFactorView(store: store)
     }
     .navigationTitle("Login")

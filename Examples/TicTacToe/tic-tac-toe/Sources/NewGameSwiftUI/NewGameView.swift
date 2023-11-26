@@ -14,7 +14,7 @@ public struct NewGameView: View {
   public var body: some View {
     Form {
       Section {
-        TextField("Blob Sr.", text: self.$store.xPlayerName)
+        TextField("Blob Sr.", text: $store.xPlayerName)
           .autocapitalization(.words)
           .disableAutocorrection(true)
           .textContentType(.name)
@@ -23,7 +23,7 @@ public struct NewGameView: View {
       }
 
       Section {
-        TextField("Blob Jr.", text: self.$store.oPlayerName)
+        TextField("Blob Jr.", text: $store.oPlayerName)
           .autocapitalization(.words)
           .disableAutocorrection(true)
           .textContentType(.name)
@@ -32,13 +32,13 @@ public struct NewGameView: View {
       }
 
       Button("Let's play!") {
-        self.store.send(.letsPlayButtonTapped)
+        store.send(.letsPlayButtonTapped)
       }
-      .disabled(self.store.isLetsPlayButtonDisabled)
+      .disabled(store.isLetsPlayButtonDisabled)
     }
     .navigationTitle("New Game")
-    .navigationBarItems(trailing: Button("Logout") { self.store.send(.logoutButtonTapped) })
-    .navigationDestination(item: self.$store.scope(state: \.game, action: \.game)) { store in
+    .navigationBarItems(trailing: Button("Logout") { store.send(.logoutButtonTapped) })
+    .navigationDestination(item: $store.scope(state: \.game, action: \.game)) { store in
       GameView(store: store)
     }
   }

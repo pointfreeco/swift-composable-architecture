@@ -104,10 +104,10 @@ struct RecordingMemoView: View {
     VStack(spacing: 12) {
       Text("Recording")
         .font(.title)
-        .colorMultiply(Color(Int(self.store.duration).isMultiple(of: 2) ? .systemRed : .label))
-        .animation(.easeInOut(duration: 0.5), value: self.store.duration)
+        .colorMultiply(Color(Int(store.duration).isMultiple(of: 2) ? .systemRed : .label))
+        .animation(.easeInOut(duration: 0.5), value: store.duration)
 
-      if let formattedDuration = dateComponentsFormatter.string(from: self.store.duration) {
+      if let formattedDuration = dateComponentsFormatter.string(from: store.duration) {
         Text(formattedDuration)
           .font(.body.monospacedDigit().bold())
           .foregroundColor(.black)
@@ -119,7 +119,7 @@ struct RecordingMemoView: View {
           .frame(width: 74, height: 74)
 
         Button {
-          self.store.send(.stopButtonTapped, animation: .default)
+          store.send(.stopButtonTapped, animation: .default)
         } label: {
           RoundedRectangle(cornerRadius: 4)
             .foregroundColor(Color(.systemRed))
@@ -129,7 +129,7 @@ struct RecordingMemoView: View {
       }
     }
     .task {
-      await self.store.send(.onTask).finish()
+      await store.send(.onTask).finish()
     }
   }
 }

@@ -106,7 +106,7 @@ struct InventoryView: View {
       // ...
     }
     .sheet(
-      item: self.$store.scope(state: \.addItem, action: \.addItem)
+      item: $store.scope(state: \.addItem, action: \.addItem)
     ) { store in
       ItemFormView(store: store)
     }
@@ -285,7 +285,7 @@ struct InventoryView: View {
       // ...
     }
     .sheet(
-      item: self.$store.scope(
+      item: $store.scope(
         state: \.destination?.addItem,
         action: \.destination.addItem
       )
@@ -293,7 +293,7 @@ struct InventoryView: View {
       AddFeatureView(store: store)
     }
     .popover(
-      item: self.$store.scope(
+      item: $store.scope(
         state: \.destination?.editItem,
         action: \.destination.editItem
       )
@@ -301,7 +301,7 @@ struct InventoryView: View {
       EditFeatureView(store: store)
     }
     .navigationDestination(
-      item: self.$store.scope(
+      item: $store.scope(
         state: \.destination?.detailItem,
         action: \.destination.detailItem
       )

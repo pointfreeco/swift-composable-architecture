@@ -40,15 +40,15 @@ struct RootView: View {
         Text(readMe)
 
         Section {
-          Button("SwiftUI version") { self.showGame = .swiftui }
-          Button("UIKit version") { self.showGame = .uikit }
+          Button("SwiftUI version") { showGame = .swiftui }
+          Button("UIKit version") { showGame = .uikit }
         }
       }
-      .sheet(item: self.$showGame) { gameType in
+      .sheet(item: $showGame) { gameType in
         if gameType == .swiftui {
-          AppView(store: self.store)
+          AppView(store: store)
         } else {
-          UIKitAppView(store: self.store)
+          UIKitAppView(store: store)
         }
       }
       .navigationTitle("Tic-Tac-Toe")

@@ -15,7 +15,7 @@ public struct TwoFactorView: View {
       Text(#"To confirm the second factor enter "1234" into the form."#)
 
       Section {
-        TextField("1234", text: self.$store.code)
+        TextField("1234", text: $store.code)
           .keyboardType(.numberPad)
       }
 
@@ -28,18 +28,18 @@ public struct TwoFactorView: View {
           UIApplication.shared.sendAction(
             #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
           )
-          self.store.send(.view(.submitButtonTapped))
+          store.send(.view(.submitButtonTapped))
         }
-        .disabled(self.store.isSubmitButtonDisabled)
+        .disabled(store.isSubmitButtonDisabled)
 
-        if self.store.isActivityIndicatorVisible {
+        if store.isActivityIndicatorVisible {
           Spacer()
           ProgressView()
         }
       }
     }
-    .alert(store: self.store.scope(state: \.$alert, action: \.alert))
-    .disabled(self.store.isFormDisabled)
+    .alert(store: store.scope(state: \.$alert, action: \.alert))
+    .disabled(store.isFormDisabled)
     .navigationTitle("Confirmation Code")
   }
 }

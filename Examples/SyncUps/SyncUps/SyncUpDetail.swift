@@ -149,7 +149,7 @@ struct SyncUpDetailView: View {
     List {
       Section {
         Button {
-          self.store.send(.startMeetingButtonTapped)
+          store.send(.startMeetingButtonTapped)
         } label: {
           Label("Start Meeting", systemImage: "timer")
             .font(.headline)
@@ -158,27 +158,27 @@ struct SyncUpDetailView: View {
         HStack {
           Label("Length", systemImage: "clock")
           Spacer()
-          Text(self.store.syncUp.duration.formatted(.units()))
+          Text(store.syncUp.duration.formatted(.units()))
         }
 
         HStack {
           Label("Theme", systemImage: "paintpalette")
           Spacer()
-          Text(self.store.syncUp.theme.name)
+          Text(store.syncUp.theme.name)
             .padding(4)
-            .foregroundColor(self.store.syncUp.theme.accentColor)
-            .background(self.store.syncUp.theme.mainColor)
+            .foregroundColor(store.syncUp.theme.accentColor)
+            .background(store.syncUp.theme.mainColor)
             .cornerRadius(4)
         }
       } header: {
         Text("Sync-up Info")
       }
 
-      if !self.store.syncUp.meetings.isEmpty {
+      if !store.syncUp.meetings.isEmpty {
         Section {
-          ForEach(self.store.syncUp.meetings) { meeting in
+          ForEach(store.syncUp.meetings) { meeting in
             NavigationLink(
-              state: AppFeature.Path.State.meeting(meeting, syncUp: self.store.syncUp)
+              state: AppFeature.Path.State.meeting(meeting, syncUp: store.syncUp)
             ) {
               HStack {
                 Image(systemName: "calendar")
@@ -188,7 +188,7 @@ struct SyncUpDetailView: View {
             }
           }
           .onDelete { indices in
-            self.store.send(.deleteMeetings(atOffsets: indices))
+            store.send(.deleteMeetings(atOffsets: indices))
           }
         } header: {
           Text("Past meetings")
@@ -196,7 +196,7 @@ struct SyncUpDetailView: View {
       }
 
       Section {
-        ForEach(self.store.syncUp.attendees) { attendee in
+        ForEach(store.syncUp.attendees) { attendee in
           Label(attendee.name, systemImage: "person")
         }
       } header: {
@@ -205,22 +205,20 @@ struct SyncUpDetailView: View {
 
       Section {
         Button("Delete") {
-          self.store.send(.deleteButtonTapped)
+          store.send(.deleteButtonTapped)
         }
         .foregroundColor(.red)
         .frame(maxWidth: .infinity)
       }
     }
-    .navigationTitle(self.store.syncUp.title)
+    .navigationTitle(store.syncUp.title)
     .toolbar {
       Button("Edit") {
-        self.store.send(.editButtonTapped)
+        store.send(.editButtonTapped)
       }
     }
-    .alert(store: self.store.scope(state: \.$destination.alert, action: \.destination.alert))
-    .sheet(
-      item: self.$store.scope(state: \.destination?.edit, action: \.destination.edit)
-    ) { store in
+    .alert(store: store.scope(state: \.$destination.alert, action: \.destination.alert))
+    .sheet(item: $store.scope(state: \.destination?.edit, action: \.destination.edit)) { store in
       NavigationStack {
         SyncUpFormView(store: store)
           .navigationTitle(self.store.syncUp.title)

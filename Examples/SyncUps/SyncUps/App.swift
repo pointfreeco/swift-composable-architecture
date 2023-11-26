@@ -22,7 +22,7 @@ struct SyncUpsApp: App {
         // NB: Don't run application when testing so that it doesn't interfere with tests.
         EmptyView()
       } else {
-        AppView(store: self.store)
+        AppView(store: store)
       }
     }
   }

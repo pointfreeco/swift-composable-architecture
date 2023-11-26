@@ -139,22 +139,22 @@ struct VoiceMemosView: View {
     NavigationStack {
       VStack {
         List {
-          ForEach(self.store.scope(state: \.voiceMemos, action: \.voiceMemos)) { store in
+          ForEach(store.scope(state: \.voiceMemos, action: \.voiceMemos)) { store in
             VoiceMemoView(store: store)
           }
-          .onDelete { self.store.send(.onDelete($0)) }
+          .onDelete { store.send(.onDelete($0)) }
         }
 
         Group {
-          if let store = self.store.scope(
+          if let store = store.scope(
             state: \.recordingMemo, action: \.recordingMemo.presented
           ) {
             RecordingMemoView(store: store)
           } else {
-            RecordButton(permission: self.store.audioRecorderPermission) {
-              self.store.send(.recordButtonTapped, animation: .spring())
+            RecordButton(permission: store.audioRecorderPermission) {
+              store.send(.recordButtonTapped, animation: .spring())
             } settingsAction: {
-              self.store.send(.openSettingsButtonTapped)
+              store.send(.openSettingsButtonTapped)
             }
           }
         }
@@ -162,7 +162,7 @@ struct VoiceMemosView: View {
         .frame(maxWidth: .infinity)
         .background(Color.init(white: 0.95))
       }
-      .alert(store: self.store.scope(state: \.$alert, action: \.alert))
+      .alert(store: store.scope(state: \.$alert, action: \.alert))
       .navigationTitle("Voice memos")
     }
   }

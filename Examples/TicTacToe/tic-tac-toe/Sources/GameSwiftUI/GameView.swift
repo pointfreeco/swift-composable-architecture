@@ -13,12 +13,12 @@ public struct GameView: View {
     GeometryReader { proxy in
       VStack(spacing: 0.0) {
         VStack {
-          Text(self.store.title)
+          Text(store.title)
             .font(.title)
 
-          if self.store.isPlayAgainButtonVisible {
+          if store.isPlayAgainButtonVisible {
             Button("Play again?") {
-              self.store.send(.playAgainButtonTapped)
+              store.send(.playAgainButtonTapped)
             }
             .padding(.top, 12)
             .font(.title)
@@ -27,14 +27,14 @@ public struct GameView: View {
         .padding(.bottom, 48)
 
         VStack {
-          self.rowView(row: 0, proxy: proxy)
-          self.rowView(row: 1, proxy: proxy)
-          self.rowView(row: 2, proxy: proxy)
+          rowView(row: 0, proxy: proxy)
+          rowView(row: 1, proxy: proxy)
+          rowView(row: 2, proxy: proxy)
         }
-        .disabled(self.store.isGameDisabled)
+        .disabled(store.isGameDisabled)
       }
       .navigationTitle("Tic-tac-toe")
-      .navigationBarItems(leading: Button("Quit") { self.store.send(.quitButtonTapped) })
+      .navigationBarItems(leading: Button("Quit") { store.send(.quitButtonTapped) })
       .navigationBarBackButtonHidden(true)
     }
   }
@@ -44,9 +44,9 @@ public struct GameView: View {
     proxy: GeometryProxy
   ) -> some View {
     HStack(spacing: 0.0) {
-      self.cellView(row: row, column: 0, proxy: proxy)
-      self.cellView(row: row, column: 1, proxy: proxy)
-      self.cellView(row: row, column: 2, proxy: proxy)
+      cellView(row: row, column: 0, proxy: proxy)
+      cellView(row: row, column: 1, proxy: proxy)
+      cellView(row: row, column: 2, proxy: proxy)
     }
   }
 
@@ -56,9 +56,9 @@ public struct GameView: View {
     proxy: GeometryProxy
   ) -> some View {
     Button {
-      self.store.send(.cellTapped(row: row, column: column))
+      store.send(.cellTapped(row: row, column: column))
     } label: {
-      Text(self.store.rows[row][column])
+      Text(store.rows[row][column])
         .frame(width: proxy.size.width / 3, height: proxy.size.width / 3)
         .background(
           (row + column).isMultiple(of: 2)
