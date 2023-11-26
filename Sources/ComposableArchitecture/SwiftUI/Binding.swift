@@ -155,6 +155,15 @@ public struct BindingAction<Root>: CasePathable, Equatable, @unchecked Sendable 
   @dynamicMemberLookup
   public struct AllCasePaths {
     public subscript<Value: Equatable>(
+      dynamicMember keyPath: WritableKeyPath<Root, Value>
+    ) -> AnyCasePath<BindingAction, Value> where Root: ObservableState {
+      AnyCasePath(
+        embed: { .set(keyPath, $0) },
+        extract: { $0.keyPath == keyPath ? $0.value as? Value : nil }
+      )
+    }
+
+    public subscript<Value: Equatable>(
       dynamicMember keyPath: WritableKeyPath<Root, BindingState<Value>>
     ) -> AnyCasePath<BindingAction, Value> {
       AnyCasePath(
