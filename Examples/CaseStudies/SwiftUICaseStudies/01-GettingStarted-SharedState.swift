@@ -180,13 +180,13 @@ struct SharedStateView: View {
 
         if viewStore.state == .counter {
           SharedStateCounterView(
-            store: self.store.scope(state: \.counter, action: { .counter($0) })
+            store: self.store.scope(state: \.counter, action: \.counter)
           )
         }
 
         if viewStore.state == .profile {
           SharedStateProfileView(
-            store: self.store.scope(state: \.profile, action: { .profile($0) })
+            store: self.store.scope(state: \.profile, action: \.profile)
           )
         }
 
@@ -228,7 +228,7 @@ struct SharedStateCounterView: View {
       }
       .padding(.top)
       .navigationTitle("Shared State Demo")
-      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
+      .alert(store: self.store.scope(state: \.$alert, action: \.alert))
     }
   }
 }

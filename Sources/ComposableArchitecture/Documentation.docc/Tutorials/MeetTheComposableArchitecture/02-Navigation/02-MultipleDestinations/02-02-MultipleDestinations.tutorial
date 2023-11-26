@@ -233,10 +233,11 @@
       enum drives the sheet and alert.
       
       @Step {
-        There is an additional overload of `sheet(store:)` and `alert(store:)` that takes two extra
-        arguments: a state transformation for extracting a particular case from the 
-        `Destination.State` enum, and an action transformation for embedding a child action into
-        a particular case of the `Destination.Action` enum.
+        When you model all of your destinations in a single optional values, you start by scoping to
+        the destination domain and then you further scope into the the state and action cases
+        associated with the specific destination. This can be done with familiar dot syntax because
+        the ``ComposableArchitecture/Reducer()`` macro applies the `@CasePathable` macro to each
+        enum.
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0015, previousFile: 02-02-02-code-0015-previous)
       }

@@ -74,6 +74,7 @@ day-to-day when building applications, such as:
 ### Migration guides
 
 - <doc:MigratingTo1.4>
+- <doc:MigratingTo1.5>
 
 ## See Also
 

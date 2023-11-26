@@ -11,7 +11,7 @@ extension View {
   public func alert<ButtonAction>(
     store: Store<PresentationState<AlertState<ButtonAction>>, PresentationAction<ButtonAction>>
   ) -> some View {
-    self.alert(store: store, state: { $0 }, action: { $0 })
+    self._alert(store: store, state: { $0 }, action: { $0 })
   }
 
   /// Displays an alert when then store's state becomes non-`nil`, and dismisses it when it becomes
@@ -23,7 +23,35 @@ extension View {
   ///   - toDestinationState: A transformation to extract alert state from the presentation state.
   ///   - fromDestinationAction: A transformation to embed alert actions into the presentation
   ///     action.
+  @available(
+    iOS, deprecated: 9999,
+    message:
+      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+  )
+  @available(
+    macOS, deprecated: 9999,
+    message:
+      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+  )
+  @available(
+    tvOS, deprecated: 9999,
+    message:
+      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+  )
+  @available(
+    watchOS, deprecated: 9999,
+    message:
+      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+  )
   public func alert<State, Action, ButtonAction>(
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
+    state toDestinationState: @escaping (_ state: State) -> AlertState<ButtonAction>?,
+    action fromDestinationAction: @escaping (_ alertAction: ButtonAction) -> Action
+  ) -> some View {
+    self._alert(store: store, state: toDestinationState, action: fromDestinationAction)
+  }
+
+  private func _alert<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> AlertState<ButtonAction>?,
     action fromDestinationAction: @escaping (_ alertAction: ButtonAction) -> Action

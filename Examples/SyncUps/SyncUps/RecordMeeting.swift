@@ -198,7 +198,7 @@ struct RecordMeetingView: View {
         }
       }
       .navigationBarBackButtonHidden(true)
-      .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
+      .alert(store: self.store.scope(state: \.$alert, action: \.alert))
       .task { await viewStore.send(.onTask).finish() }
     }
   }

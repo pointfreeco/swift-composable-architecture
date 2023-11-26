@@ -7,7 +7,7 @@ struct NavigationTestCaseView: View {
   }
 
   var body: some View {
-    NavigationStackStore(self.store.scope(state: \.path, action: { .path($0) })) {
+    NavigationStackStore(self.store.scope(state: \.path, action: \.path)) {
       NavigationLink(state: BasicsView.Feature.State()) {
         Text("Push feature")
       }

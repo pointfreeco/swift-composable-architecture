@@ -312,12 +312,7 @@ struct PresentationTestCaseView: View {
       Button("Open alert") {
         self.viewStore.send(.alertButtonTapped)
       }
-      .alert(
-        store: self.store.scope(
-          state: \.$destination, action: PresentationTestCase.Action.destination),
-        state: \.alert,
-        action: { .alert($0) }
-      )
+      .alert(store: self.store.scope(state: \.$destination.alert, action: \.destination.alert))
 
       Button("Open custom alert") {
         self.viewStore.send(.customAlertButtonTapped)
@@ -326,8 +321,8 @@ struct PresentationTestCaseView: View {
         "Custom alert!",
         isPresented:
           viewStore
-          .binding(get: \.destination, send: PresentationTestCase.Action.destination(.dismiss))
-          .case(/PresentationTestCase.Destination.State.customAlert)
+          .binding(get: \.destination, send: .destination(.dismiss))
+          .customAlert
           .isPresent()
       ) {
         TextField("Message", text: self.$alertMessage)
@@ -339,10 +334,7 @@ struct PresentationTestCaseView: View {
         self.viewStore.send(.dialogButtonTapped)
       }
       .confirmationDialog(
-        store: self.store.scope(
-          state: \.$destination, action: PresentationTestCase.Action.destination),
-        state: \.dialog,
-        action: { .dialog($0) }
+        store: self.store.scope(state: \.$destination.dialog, action: \.destination.dialog)
       )
 
       Button("Open full screen cover") {
@@ -350,9 +342,9 @@ struct PresentationTestCaseView: View {
       }
       .fullScreenCover(
         store: self.store.scope(
-          state: \.$destination, action: PresentationTestCase.Action.destination),
-        state: \.fullScreenCover,
-        action: { .fullScreenCover($0) }
+          state: \.$destination.fullScreenCover,
+          action: \.destination.fullScreenCover
+        )
       ) { store in
         ChildView(store: store)
       }
@@ -366,9 +358,8 @@ struct PresentationTestCaseView: View {
       }
       .sheet(
         store: self.store.scope(
-          state: \.$destination, action: PresentationTestCase.Action.destination),
-        state: \.navigationLinkDemo,
-        action: { .navigationLinkDemo($0) }
+          state: \.$destination.navigationLinkDemo, action: \.destination.navigationLinkDemo
+        )
       ) { store in
         NavigationLinkDemoView(store: store)
       }
@@ -378,9 +369,8 @@ struct PresentationTestCaseView: View {
       }
       .navigationDestination(
         store: self.store.scope(
-          state: \.$destination, action: PresentationTestCase.Action.destination),
-        state: \.navigationDestination,
-        action: { .navigationDestination($0) }
+          state: \.$destination.navigationDestination, action: \.destination.navigationDestination
+        )
       ) { store in
         ChildView(store: store)
       }
@@ -389,10 +379,7 @@ struct PresentationTestCaseView: View {
         self.viewStore.send(.popoverButtonTapped)
       }
       .popover(
-        store: self.store.scope(
-          state: \.$destination, action: PresentationTestCase.Action.destination),
-        state: \.popover,
-        action: { .popover($0) }
+        store: self.store.scope(state: \.$destination.popover, action: \.destination.popover)
       ) { store in
         ChildView(store: store)
       }
@@ -401,10 +388,7 @@ struct PresentationTestCaseView: View {
         self.viewStore.send(.sheetButtonTapped)
       }
       .sheet(
-        store: self.store.scope(
-          state: \.$destination, action: PresentationTestCase.Action.destination),
-        state: \.sheet,
-        action: { .sheet($0) }
+        store: self.store.scope(state: \.$destination.sheet, action: \.destination.sheet)
       ) { store in
         ChildView(store: store)
       }
@@ -462,7 +446,7 @@ private struct NavigationLinkDemoFeature {
     case nonDeadbeefIdentifiedNavigationLinkButtonTapped
   }
   var body: some ReducerOf<Self> {
-    Reduce<State, Action> { state, action in
+    Reduce { state, action in
       switch action {
       case .child(.presented) where state.child == nil:
         state.message = "Action sent while state nil."
@@ -471,7 +455,7 @@ private struct NavigationLinkDemoFeature {
         return .none
       }
     }
-    Reduce<State, Action> { state, action in
+    Reduce { state, action in
       switch action {
       case .child(.presented(.parentSendDismissActionButtonTapped)):
         state.child = nil
@@ -513,7 +497,7 @@ private struct NavigationLinkDemoView: View {
           Text(viewStore.state)
 
           NavigationLinkStore(
-            self.store.scope(state: \.$child, action: NavigationLinkDemoFeature.Action.child)
+            self.store.scope(state: \.$child, action: \.child)
           ) {
             viewStore.send(.navigationLinkButtonTapped)
           } destination: { store in
@@ -523,10 +507,7 @@ private struct NavigationLinkDemoView: View {
           }
 
           NavigationLinkStore(
-            self.store.scope(
-              state: \.$identifiedChild,
-              action: NavigationLinkDemoFeature.Action.identifiedChild
-            ),
+            self.store.scope(state: \.$identifiedChild, action: \.identifiedChild),
             id: UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
           ) {
             viewStore.send(.identifiedNavigationLinkButtonTapped)

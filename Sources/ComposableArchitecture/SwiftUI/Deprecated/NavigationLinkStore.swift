@@ -13,7 +13,7 @@ import SwiftUI
 ///
 /// ```swift
 /// NavigationLinkStore(
-///   self.store.scope(state: \.$child, action: { .child($0) })
+///   self.store.scope(state: \.$child, action: \.child)
 /// ) {
 ///   viewStore.send(.linkTapped)
 /// } destination: { store in
@@ -71,7 +71,13 @@ public struct NavigationLinkStore<
       Destination,
     @ViewBuilder label: () -> Label
   ) {
-    let store = store.invalidate { $0.wrappedValue.flatMap(toDestinationState) == nil }
+    let store = store.scope(
+      state: { $0 },
+      id: nil,
+      action: { $0 },
+      isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil },
+      removeDuplicates: nil
+    )
     self.store = store
     self.viewStore = ViewStore(
       store.scope(
@@ -115,7 +121,13 @@ public struct NavigationLinkStore<
       Destination,
     @ViewBuilder label: () -> Label
   ) where DestinationState: Identifiable {
-    let store = store.invalidate { $0.wrappedValue.flatMap(toDestinationState)?.id != id }
+    let store = store.scope(
+      state: { $0 },
+      id: nil,
+      action: { $0 },
+      isInvalid: { $0.wrappedValue.flatMap(toDestinationState)?.id != id },
+      removeDuplicates: nil
+    )
     self.store = store
     self.viewStore = ViewStore(
       store.scope(

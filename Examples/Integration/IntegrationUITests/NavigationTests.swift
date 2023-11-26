@@ -17,7 +17,6 @@ final class NavigationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      StackStoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
@@ -30,7 +29,6 @@ final class NavigationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      StackStoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.scope
       StoreOf<NavigationTestCaseView.Feature>.scope
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
@@ -51,11 +49,6 @@ final class NavigationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      StackStoreOf<BasicsView.Feature>.scope
-      StackStoreOf<BasicsView.Feature>.scope
-      StackStoreOf<BasicsView.Feature>.scope
-      StackStoreOf<BasicsView.Feature>.scope
-      StackStoreOf<BasicsView.Feature>.scope
       StackStoreOf<BasicsView.Feature>.scope
       StackStoreOf<BasicsView.Feature>.scope
       StackStoreOf<BasicsView.Feature>.scope

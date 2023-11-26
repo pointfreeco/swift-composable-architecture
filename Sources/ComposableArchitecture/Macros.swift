@@ -68,14 +68,12 @@
   ///
   /// ```swift
   /// .sheet(
-  ///   store: self.store.scope(state: \.destination, action: \.destination)
-  ///   state: \.editForm,
-  ///   action: { .editForm($0) }
+  ///   store: self.store.scope(state: \.$destination.editForm, action: \.destination.editForm)
   /// )
   /// ```
   ///
-  /// The syntax `state: \.editForm` is only possible due to both `@dynamicMemberLookup` and
-  /// `@CasePathable` being applied to the `State` enum.
+  /// The syntax `state: \.$destination.editForm` is only possible due to both
+  /// `@dynamicMemberLookup` and `@CasePathable` being applied to the `State` enum.
   ///
   /// ## Gotchas
   ///
@@ -125,6 +123,32 @@
   /// [known issue](https://github.com/apple/swift/issues/66450), and the only workaround is to
   /// either move the extension to a separate file, or move the code from the extension to be
   /// directly inside the `State` type.
+  ///
+  /// ### CI build failures
+  ///
+  /// When testing your code on an external CI server you may run into errors such as the following:
+  ///
+  /// > Error: CasePathsMacros Target 'CasePathsMacros' must be enabled before it can be used.
+  /// >
+  /// >
+  /// > ComposableArchitectureMacros Target 'ComposableArchitectureMacros' must be enabled
+  /// before it can be used.
+  ///
+  ///
+  ///
+  /// You can fix this in one of two ways. You can write a default to the CI machine that allows
+  /// Xcode to skip macro validation:
+  ///
+  /// ```shell
+  /// defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
+  /// ```
+  ///
+  /// Or if you are invoking `xcodebuild` directly in your CI scripts, you can pass the
+  ///  `-skipMacroValidation` flag to `xcodebuild` when building your project:
+  ///
+  /// ```shell
+  /// xcodebuild -skipMacroValidation …
+  /// ```
   @attached(memberAttribute)
   @attached(extension, conformances: Reducer)
   public macro Reducer() =

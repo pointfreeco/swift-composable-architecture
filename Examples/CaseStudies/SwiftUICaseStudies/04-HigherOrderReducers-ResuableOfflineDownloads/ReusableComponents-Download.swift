@@ -94,7 +94,7 @@ struct CityMapRowView: View {
           Spacer()
 
           DownloadComponentView(
-            store: self.store.scope(state: \.downloadComponent, action: { .downloadComponent($0) })
+            store: self.store.scope(state: \.downloadComponent, action: \.downloadComponent)
           )
           .padding(.trailing, 8)
         }
@@ -123,7 +123,7 @@ struct CityMapDetailView: View {
           Spacer()
 
           DownloadComponentView(
-            store: self.store.scope(state: \.downloadComponent, action: { .downloadComponent($0) })
+            store: self.store.scope(state: \.downloadComponent, action: \.downloadComponent)
           )
         }
 
@@ -162,7 +162,7 @@ struct CitiesView: View {
       Section {
         AboutView(readMe: readMe)
       }
-      ForEachStore(self.store.scope(state: \.cityMaps, action: { .cityMaps($0) })) { cityMapStore in
+      ForEachStore(self.store.scope(state: \.cityMaps, action: \.cityMaps)) { cityMapStore in
         CityMapRowView(store: cityMapStore)
           .buttonStyle(.borderless)
       }

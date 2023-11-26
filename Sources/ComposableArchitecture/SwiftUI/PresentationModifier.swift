@@ -201,7 +201,13 @@ public struct PresentationStore<
       _ destination: DestinationContent<DestinationState, DestinationAction>
     ) -> Content
   ) {
-    let store = store.invalidate { $0.wrappedValue.flatMap(toDestinationState) == nil }
+    let store = store.scope(
+      state: { $0 },
+      id: nil,
+      action: { $0 },
+      isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil },
+      removeDuplicates: nil
+    )
     let viewStore = ViewStore(store, observe: { $0 }, removeDuplicates: { toID($0) == toID($1) })
 
     self.store = store

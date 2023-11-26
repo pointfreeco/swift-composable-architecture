@@ -121,7 +121,10 @@ public struct ForEachStore<
               element = $0[id: id] ?? element
               return element
             },
-            action: { .element(id: id, action: $0) }
+            id: { _ in id },
+            action: { .element(id: id, action: $0) },
+            isInvalid: { !$0.ids.contains(id) },
+            removeDuplicates: nil
           )
         )
       }
@@ -178,7 +181,10 @@ public struct ForEachStore<
               element = $0[id: id] ?? element
               return element
             },
-            action: { (id, $0) }
+            id: { _ in id },
+            action: { (id, $0) },
+            isInvalid: { !$0.ids.contains(id) },
+            removeDuplicates: nil
           )
         )
       }
