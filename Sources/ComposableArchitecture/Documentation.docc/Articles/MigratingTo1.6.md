@@ -24,6 +24,7 @@ you are targeting older platforms.
 * [@BindingState](#BindingState)
 * [ViewStore.binding](#ViewStorebinding)
 * [View actions](#View-actions)
+* [Incrementally migrating](#Incrementally-migrating)
 
 ## Using @ObservableState
 
@@ -580,3 +581,7 @@ TabView(selection: self.$store.tab.sending(\.tabChanged)) {
 ## View actions
 
 TODO
+
+## Incrementally migrating
+
+Todo
