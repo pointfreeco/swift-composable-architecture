@@ -90,23 +90,17 @@ struct MultipleDestinationsView: View {
         }
       }
       .navigationDestination(
-        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: \.drillDown,
-        action: { .drillDown($0) }
+        store: self.store.scope(state: \.$destination.drillDown, action: \.destination.drillDown)
       ) { store in
         CounterView(store: store)
       }
       .popover(
-        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: \.popover,
-        action: { .popover($0) }
+        store: self.store.scope(state: \.$destination.popover, action: \.destination.popover)
       ) { store in
         CounterView(store: store)
       }
       .sheet(
-        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: \.sheet,
-        action: { .sheet($0) }
+        store: self.store.scope(state: \.$destination.sheet, action: \.destination.sheet)
       ) { store in
         CounterView(store: store)
       }

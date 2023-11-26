@@ -124,6 +124,6 @@ final class BindingTests: BaseTCATestCase {
       case fizz(BindingAction<Void>)
       case buzz(Bool)
     }
-    _ = (/Foo.bar).extract(from: .bar(.buzz(true)))
+    _ = AnyCasePath(unsafe: Foo.bar).extract(from: .bar(.buzz(true)))
   }
 }

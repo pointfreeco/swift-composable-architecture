@@ -93,7 +93,7 @@ struct NavigateAndLoadListView: View {
               send: { .setNavigation(selection: $0) }
             )
           ) {
-            IfLetStore(self.store.scope(state: \.selection?.value, action: { .counter($0) })) {
+            IfLetStore(self.store.scope(state: \.selection?.value, action: \.counter)) {
               CounterView(store: $0)
             } else: {
               ProgressView()

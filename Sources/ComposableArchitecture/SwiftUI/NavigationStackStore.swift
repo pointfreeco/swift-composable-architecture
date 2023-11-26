@@ -32,13 +32,15 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
       var state = component.element
       return destination(
         store
-          .invalidate { !$0.ids.contains(component.id) }
           .scope(
             state: {
               state = $0[id: component.id] ?? state
               return state
             },
-            action: { .element(id: component.id, action: $0) }
+            id: nil,
+            action: { .element(id: component.id, action: $0) },
+            isInvalid: { !$0.ids.contains(component.id) },
+            removeDuplicates: nil
           )
       )
     }
@@ -70,13 +72,15 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
       var state = component.element
       return SwitchStore(
         store
-          .invalidate { !$0.ids.contains(component.id) }
           .scope(
             state: {
               state = $0[id: component.id] ?? state
               return state
             },
-            action: { .element(id: component.id, action: $0) }
+            id: nil,
+            action: { .element(id: component.id, action: $0) },
+            isInvalid: { !$0.ids.contains(component.id) },
+            removeDuplicates: nil
           )
       ) { _ in
         destination(component.element)

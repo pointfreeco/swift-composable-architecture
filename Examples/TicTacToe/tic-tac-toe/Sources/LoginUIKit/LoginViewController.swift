@@ -157,7 +157,7 @@ public class LoginViewController: UIViewController {
       .store(in: &self.cancellables)
 
     self.store
-      .scope(state: \.twoFactor, action: { .twoFactor(.presented($0)) })
+      .scope(state: \.twoFactor, action: \.twoFactor.presented)
       .ifLet(
         then: { [weak self] twoFactorStore in
           self?.navigationController?.pushViewController(

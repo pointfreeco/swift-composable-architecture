@@ -11,7 +11,7 @@ struct OptionalView: View {
     var isChildNonNil: Bool
     var isObservingCount: Bool
     init(state: Feature.State) {
-      self.childCount = state.child?.count
+      self.childCount = state.isObservingCount ? state.child?.count : nil
       self.isChildNonNil = state.child != nil
       self.isObservingCount = state.isObservingCount
     }
@@ -38,7 +38,7 @@ struct OptionalView: View {
         }
       }
     }
-    IfLetStore(self.store.scope(state: \.$child, action: { .child($0) })) { store in
+    IfLetStore(self.store.scope(state: \.$child, action: \.child)) { store in
       Form {
         BasicsView(store: store)
       }

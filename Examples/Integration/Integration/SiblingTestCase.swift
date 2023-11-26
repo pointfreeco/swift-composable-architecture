@@ -10,12 +10,12 @@ struct SiblingFeaturesView: View {
     VStack {
       Form {
         BasicsView(
-          store: self.store.scope(state: \.child1, action: { .child1($0) })
+          store: self.store.scope(state: \.child1, action: \.child1)
         )
       }
       Form {
         BasicsView(
-          store: self.store.scope(state: \.child2, action: { .child2($0) })
+          store: self.store.scope(state: \.child2, action: \.child2)
         )
       }
       Spacer()

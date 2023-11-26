@@ -45,6 +45,7 @@ import Combine
 /// See the dedicated article on <doc:Navigation> for more information on the library's navigation
 /// tools, and in particular see <doc:TreeBasedNavigation> for information on modeling navigation
 /// using optionals and enums.
+@dynamicMemberLookup
 @propertyWrapper
 public struct PresentationState<State> {
   private class Storage: @unchecked Sendable {
@@ -62,19 +63,31 @@ public struct PresentationState<State> {
   }
 
   public var wrappedValue: State? {
-    _read { yield self.storage.state }
-    _modify {
+    get { self.storage.state }
+    set {
       if !isKnownUniquelyReferenced(&self.storage) {
         self.storage = Storage(state: self.storage.state)
       }
-      yield &self.storage.state
+      self.storage.state = newValue
     }
   }
 
   public var projectedValue: Self {
     get { self }
     set { self = newValue }
-    _modify { yield &self }
+  }
+
+  public subscript<Case>(
+    dynamicMember keyPath: CaseKeyPath<State, Case>
+  ) -> PresentationState<Case>
+  where State: CasePathable {
+    PresentationState<Case>(wrappedValue: self.wrappedValue.flatMap { $0[case: keyPath] })
+  }
+
+  public subscript<Member>(
+    dynamicMember keyPath: KeyPath<State, Member>
+  ) -> PresentationState<Member> {
+    PresentationState<Member>(wrappedValue: self.wrappedValue?[keyPath: keyPath])
   }
 
   /// Accesses the value associated with the given case for reading and writing.

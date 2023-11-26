@@ -5,13 +5,18 @@
   @testable import ComposableArchitecture
 
   @MainActor
-  final class StoreFilterTests: BaseTCATestCase {
+  final class StoreInvalidationTests: BaseTCATestCase {
     var cancellables: Set<AnyCancellable> = []
 
-    func testFilter() {
+    func testInvalidation() {
       let store = Store<Int?, Void>(initialState: nil) {}
-        .invalidate { $0 != nil }
-
+        .scope(
+          state: { $0 },
+          id: nil,
+          action: { $0 },
+          isInvalid: { $0 != nil },
+          removeDuplicates: nil
+        )
       let viewStore = ViewStore(store, observe: { $0 })
       var count = 0
       viewStore.publisher

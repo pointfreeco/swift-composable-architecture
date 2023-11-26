@@ -129,8 +129,8 @@ struct AppView: View {
           .padding(.horizontal)
 
           List {
-            ForEachStore(self.store.scope(state: \.filteredTodos, action: { .todos($0) })) {
-              TodoView(store: $0)
+            ForEachStore(self.store.scope(state: \.filteredTodos, action: \.todos)) { store in
+              TodoView(store: store)
             }
             .onDelete { viewStore.send(.delete($0)) }
             .onMove { viewStore.send(.move($0, $1)) }

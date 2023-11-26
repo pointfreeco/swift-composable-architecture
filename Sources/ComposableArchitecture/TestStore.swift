@@ -1984,7 +1984,7 @@ extension TestStore {
       store: Store(initialState: self.state) {
         BindingReducer(action: toViewAction)
       }
-      .scope(state: { $0 }, action: { toViewAction($0) })
+      .scope(state: \.self, action: toViewAction)
     )
   }
 

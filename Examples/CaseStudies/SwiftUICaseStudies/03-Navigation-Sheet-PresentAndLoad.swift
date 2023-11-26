@@ -79,7 +79,7 @@ struct PresentAndLoadView: View {
           send: { .setSheet(isPresented: $0) }
         )
       ) {
-        IfLetStore(self.store.scope(state: \.optionalCounter, action: { .optionalCounter($0) })) {
+        IfLetStore(self.store.scope(state: \.optionalCounter, action: \.optionalCounter)) {
           CounterView(store: $0)
         } else: {
           ProgressView()

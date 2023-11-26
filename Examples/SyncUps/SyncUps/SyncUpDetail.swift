@@ -214,15 +214,9 @@ struct SyncUpDetailView: View {
           viewStore.send(.editButtonTapped)
         }
       }
-      .alert(
-        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: \.alert,
-        action: { .alert($0) }
-      )
+      .alert(store: self.store.scope(state: \.$destination.alert, action: \.destination.alert))
       .sheet(
-        store: self.store.scope(state: \.$destination, action: { .destination($0) }),
-        state: \.edit,
-        action: { .edit($0) }
+        store: self.store.scope(state: \.$destination.edit, action: \.destination.edit)
       ) { store in
         NavigationStack {
           SyncUpFormView(store: store)

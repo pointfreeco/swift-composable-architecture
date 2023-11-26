@@ -28,8 +28,14 @@ designed with SwiftUI in mind, and comes with many powerful tools to integrate i
 - ``BindingViewState``
 - ``BindingViewStore``
 
-<!--DocC: Can't currently document `View` extensions-->
-<!--### View Modifiers-->
+### View Modifiers
+
+- ``SwiftUI/View/alert(store:)``
+- ``SwiftUI/View/confirmationDialog(store:)``
+- ``SwiftUI/View/fullScreenCover(store:onDismiss:content:)``
+- ``SwiftUI/View/navigationDestination(store:destination:)``
+- ``SwiftUI/View/popover(store:attachmentAnchor:arrowEdge:content:)``
+- ``SwiftUI/View/sheet(store:onDismiss:content:)``
 
 ### Deprecations
 

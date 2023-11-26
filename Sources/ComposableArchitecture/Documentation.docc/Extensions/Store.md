@@ -9,7 +9,7 @@
 
 ### Scoping stores
 
-- ``scope(state:action:)-9iai9``
+- ``scope(state:action:)-90255``
 
 ### Accessing state
 
@@ -29,3 +29,7 @@
 ### UIKit integration
 
 - ``ifLet(then:else:)``
+
+### Deprecated interfaces
+
+- <doc:StoreDeprecations>

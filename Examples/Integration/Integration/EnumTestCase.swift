@@ -51,12 +51,12 @@ struct EnumView: View {
           }
         }
       }
-      IfLetStore(self.store.scope(state: \.$destination, action: { .destination($0) })) { store in
+      IfLetStore(self.store.scope(state: \.$destination, action: \.destination)) { store in
         SwitchStore(store) {
           switch $0 {
           case .feature1:
             CaseLet(
-              /Feature.Destination.State.feature1, action: Feature.Destination.Action.feature1
+              \Feature.Destination.State.feature1, action: Feature.Destination.Action.feature1
             ) { store in
               Section {
                 BasicsView(store: store)
@@ -66,7 +66,7 @@ struct EnumView: View {
             }
           case .feature2:
             CaseLet(
-              /Feature.Destination.State.feature2, action: Feature.Destination.Action.feature2
+              \Feature.Destination.State.feature2, action: Feature.Destination.Action.feature2
             ) { store in
               Section {
                 BasicsView(store: store)

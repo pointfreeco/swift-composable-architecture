@@ -38,6 +38,10 @@ also access it directly throughout a test.
 - ``bindings``
 - ``bindings(action:)-2nhb5``
 
+### Supporting types
+
+- ``TestStoreOf``
+
 ### Deprecations
 
 - <doc:TestStoreDeprecations>

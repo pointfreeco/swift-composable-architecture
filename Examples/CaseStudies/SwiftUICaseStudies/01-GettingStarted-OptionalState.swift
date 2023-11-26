@@ -5,7 +5,7 @@ private let readMe = """
   This screen demonstrates how to show and hide views based on the presence of some optional child \
   state.
 
-  The parent state holds a `CounterState?` value. When it is `nil` we will default to a plain text \
+  The parent state holds a `Counter.State?` value. When it is `nil` we will default to a plain text \
   view. But when it is non-`nil` we will show a view fragment for a counter that operates on the \
   non-optional counter state.
 
@@ -62,14 +62,14 @@ struct OptionalBasicsView: View {
       }
 
       IfLetStore(
-        self.store.scope(state: \.optionalCounter, action: { .optionalCounter($0) })
+        self.store.scope(state: \.optionalCounter, action: \.optionalCounter)
       ) { store in
-        Text(template: "`CounterState` is non-`nil`")
+        Text(template: "`Counter.State` is non-`nil`")
         CounterView(store: store)
           .buttonStyle(.borderless)
           .frame(maxWidth: .infinity)
       } else: {
-        Text(template: "`CounterState` is `nil`")
+        Text(template: "`Counter.State` is `nil`")
       }
     }
     .navigationTitle("Optional state")

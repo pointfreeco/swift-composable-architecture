@@ -235,15 +235,15 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   ///     WithViewStore(self.store, observe: \.selectedTab) { viewStore in
   ///       TabView(selection: viewStore.binding(send: { .tabSelected($0) }) {
   ///         ActivityView(
-  ///           store: self.store.scope(state: \.activity, action: { .activity($0) })
+  ///           store: self.store.scope(state: \.activity, action: \.activity)
   ///         )
   ///         .tag(AppFeature.Tab.activity)
   ///         SearchView(
-  ///           store: self.store.scope(state: \.search, action: { .search($0) })
+  ///           store: self.store.scope(state: \.search, action: \.search)
   ///         )
   ///         .tag(AppFeature.Tab.search)
   ///         ProfileView(
-  ///           store: self.store.scope(state: \.profile, action: { .profile($0) })
+  ///           store: self.store.scope(state: \.profile, action: \.profile)
   ///         )
   ///         .tag(AppFeature.Tab.profile)
   ///       }
@@ -326,15 +326,15 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   ///     WithViewStore(self.store, observe: \.selectedTab) { viewStore in
   ///       TabView(selection: viewStore.binding(send: { .tabSelected($0) }) {
   ///         ActivityView(
-  ///           store: self.store.scope(state: \.activity, action: { .activity($0) })
+  ///           store: self.store.scope(state: \.activity, action: \.activity)
   ///         )
   ///         .tag(AppFeature.Tab.activity)
   ///         SearchView(
-  ///           store: self.store.scope(state: \.search, action: { .search($0) })
+  ///           store: self.store.scope(state: \.search, action: \.search)
   ///         )
   ///         .tag(AppFeature.Tab.search)
   ///         ProfileView(
-  ///           store: self.store.scope(state: \.profile, action: { .profile($0) })
+  ///           store: self.store.scope(state: \.profile, action: \.profile)
   ///         )
   ///         .tag(AppFeature.Tab.profile)
   ///       }
@@ -417,15 +417,15 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   ///     WithViewStore(self.store, observe: \.selectedTab) { viewStore in
   ///       TabView(selection: viewStore.binding(send: { .tabSelected($0) }) {
   ///         ActivityView(
-  ///           store: self.store.scope(state: \.activity, action: { .activity($0) })
+  ///           store: self.store.scope(state: \.activity, action: \.activity)
   ///         )
   ///         .tag(AppFeature.Tab.activity)
   ///         SearchView(
-  ///           store: self.store.scope(state: \.search, action: { .search($0) })
+  ///           store: self.store.scope(state: \.search, action: \.search)
   ///         )
   ///         .tag(AppFeature.Tab.search)
   ///         ProfileView(
-  ///           store: self.store.scope(state: \.profile, action: { .profile($0) })
+  ///           store: self.store.scope(state: \.profile, action: \.profile)
   ///         )
   ///         .tag(AppFeature.Tab.profile)
   ///       }
@@ -505,15 +505,15 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   ///     WithViewStore(self.store, observe: \.selectedTab) { viewStore in
   ///       TabView(selection: viewStore.binding(send: { .tabSelected($0) }) {
   ///         ActivityView(
-  ///           store: self.store.scope(state: \.activity, action: { .activity($0) })
+  ///           store: self.store.scope(state: \.activity, action: \.activity)
   ///         )
   ///         .tag(AppFeature.Tab.activity)
   ///         SearchView(
-  ///           store: self.store.scope(state: \.search, action: { .search($0) })
+  ///           store: self.store.scope(state: \.search, action: \.search)
   ///         )
   ///         .tag(AppFeature.Tab.search)
   ///         ProfileView(
-  ///           store: self.store.scope(state: \.profile, action: { .profile($0) })
+  ///           store: self.store.scope(state: \.profile, action: \.profile)
   ///         )
   ///         .tag(AppFeature.Tab.profile)
   ///       }

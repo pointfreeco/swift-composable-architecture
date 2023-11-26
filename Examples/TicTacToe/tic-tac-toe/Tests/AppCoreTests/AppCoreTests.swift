@@ -18,18 +18,18 @@ final class AppCoreTests: XCTestCase {
     }
 
     await store.send(.login(.view(.set(\.$email, "blob@pointfree.co")))) {
-      try (/TicTacToe.State.login).modify(&$0) {
+      $0.modify(\.login) {
         $0.email = "blob@pointfree.co"
       }
     }
     await store.send(.login(.view(.set(\.$password, "bl0bbl0b")))) {
-      try (/TicTacToe.State.login).modify(&$0) {
+      $0.modify(\.login) {
         $0.password = "bl0bbl0b"
         $0.isFormValid = true
       }
     }
     await store.send(.login(.view(.loginButtonTapped))) {
-      try (/TicTacToe.State.login).modify(&$0) {
+      $0.modify(\.login) {
         $0.isLoginRequestInFlight = true
       }
     }
@@ -37,7 +37,7 @@ final class AppCoreTests: XCTestCase {
       $0 = .newGame(NewGame.State())
     }
     await store.send(.newGame(.oPlayerNameChanged("Blob Sr."))) {
-      try (/TicTacToe.State.newGame).modify(&$0) {
+      $0.modify(\.newGame) {
         $0.oPlayerName = "Blob Sr."
       }
     }
@@ -59,39 +59,39 @@ final class AppCoreTests: XCTestCase {
     }
 
     await store.send(.login(.view(.set(\.$email, "blob@pointfree.co")))) {
-      try (/TicTacToe.State.login).modify(&$0) {
+      $0.modify(\.login) {
         $0.email = "blob@pointfree.co"
       }
     }
 
     await store.send(.login(.view(.set(\.$password, "bl0bbl0b")))) {
-      try (/TicTacToe.State.login).modify(&$0) {
+      $0.modify(\.login) {
         $0.password = "bl0bbl0b"
         $0.isFormValid = true
       }
     }
 
     await store.send(.login(.view(.loginButtonTapped))) {
-      try (/TicTacToe.State.login).modify(&$0) {
+      $0.modify(\.login) {
         $0.isLoginRequestInFlight = true
       }
     }
     await store.receive(\.login.loginResponse.success) {
-      try (/TicTacToe.State.login).modify(&$0) {
+      $0.modify(\.login) {
         $0.isLoginRequestInFlight = false
         $0.twoFactor = TwoFactor.State(token: "deadbeef")
       }
     }
 
     await store.send(.login(.twoFactor(.presented(.view(.set(\.$code, "1234")))))) {
-      try (/TicTacToe.State.login).modify(&$0) {
+      $0.modify(\.login) {
         $0.twoFactor?.code = "1234"
         $0.twoFactor?.isFormValid = true
       }
     }
 
     await store.send(.login(.twoFactor(.presented(.view(.submitButtonTapped))))) {
-      try (/TicTacToe.State.login).modify(&$0) {
+      $0.modify(\.login) {
         $0.twoFactor?.isTwoFactorRequestInFlight = true
       }
     }

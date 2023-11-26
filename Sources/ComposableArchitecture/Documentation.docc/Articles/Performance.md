@@ -62,15 +62,15 @@ struct AppView: View {
     TabView {
       ActivityView(
         store: self.store
-          .scope(state: \.activity, action: { .activity($0) })
+          .scope(state: \.activity, action: \.activity)
       )
       SearchView(
         store: self.store
-          .scope(state: \.search, action: { .search($0) })
+          .scope(state: \.search, action: \.search)
       )
       ProfileView(
         store: self.store
-          .scope(state: \.profile, action: { .profile($0) })
+          .scope(state: \.profile, action: \.profile)
       )
     }
   }
@@ -111,15 +111,15 @@ struct AppView: View {
         selection: viewStore.binding(get: \.selectedTab, send: { .tabSelected($0) })
       ) {
         ActivityView(
-          store: self.store.scope(state: \.activity, action: { .activity($0) })
+          store: self.store.scope(state: \.activity, action: \.activity)
         )
         .tag(AppFeature.Tab.activity)
         SearchView(
-          store: self.store.scope(state: \.search, action: { .search($0) })
+          store: self.store.scope(state: \.search, action: \.search)
         )
         .tag(AppFeature.Tab.search)
         ProfileView(
-          store: self.store.scope(state: \.profile, action: { .profile($0) })
+          store: self.store.scope(state: \.profile, action: \.profile)
         )
         .tag(AppFeature.Tab.profile)
       }
@@ -161,7 +161,7 @@ WithViewStore(
 ) { viewStore in 
   TabView(selection: viewStore.binding(get: \.selectedTab, send: { .tabSelected($0) }) {
     ActivityView(
-      store: self.store.scope(state: \.activity, action: { .activity($0) })
+      store: self.store.scope(state: \.activity, action: \.activity)
     )
     .tag(AppFeature.Tab.activity)
     .badge("\(viewStore.unreadActivityCount)")
@@ -193,7 +193,7 @@ struct AppView: View {
       TabView {
         ActivityView(
           store: self.store
-            .scope(state: \.activity, action: { .activity($0) })
+            .scope(state: \.activity, action: \.activity)
         )
         .badge("\(viewStore.unreadActivityCount)")
 

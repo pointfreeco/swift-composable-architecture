@@ -52,8 +52,8 @@ final class ForEachReducerTests: BaseTCATestCase {
           This is generally considered an application logic error, and can happen for a few reasons:
 
           • A parent reducer removed an element with this ID before this reducer ran. This reducer \
-          must run before any other reducer removes an element, which ensures that element reducers \
-          can handle their actions while their state is still available.
+          must run before any other reducer removes an element, which ensures that element \
+          reducers can handle their actions while their state is still available.
 
           • An in-flight effect emitted this action when state contained no element at this ID. \
           While it may be perfectly reasonable to ignore this action, consider canceling the \

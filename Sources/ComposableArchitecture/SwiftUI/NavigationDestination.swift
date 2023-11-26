@@ -1,6 +1,7 @@
 @_spi(Reflection) import CasePaths
 import SwiftUI
 
+@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension View {
   /// Associates a destination view with a store that can be used to push the view onto a
   /// `NavigationStack`.
@@ -15,12 +16,11 @@ extension View {
   ///     in a view that the system pushes onto the navigation stack. If `store`'s state is
   ///     `nil`-ed out, the system pops the view from the stack.
   ///   - destination: A closure returning the content of the destination view.
-  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func navigationDestination<State, Action, Destination: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder destination: @escaping (_ store: Store<State, Action>) -> Destination
   ) -> some View {
-    self.navigationDestination(
+    self._navigationDestination(
       store: store,
       state: { $0 },
       action: { $0 },
@@ -45,8 +45,44 @@ extension View {
   ///   - fromDestinationAction: A transformation to embed screen actions into the presentation
   ///     action.
   ///   - destination: A closure returning the content of the destination view.
-  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+  @available(
+    iOS, deprecated: 9999,
+    message:
+      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+  )
+  @available(
+    macOS, deprecated: 9999,
+    message:
+      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+  )
+  @available(
+    tvOS, deprecated: 9999,
+    message:
+      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+  )
+  @available(
+    watchOS, deprecated: 9999,
+    message:
+      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+  )
   public func navigationDestination<
+    State, Action, DestinationState, DestinationAction, Destination: View
+  >(
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
+    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
+    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
+    @ViewBuilder destination: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
+      Destination
+  ) -> some View {
+    self._navigationDestination(
+      store: store,
+      state: toDestinationState,
+      action: fromDestinationAction,
+      destination: destination
+    )
+  }
+
+  private func _navigationDestination<
     State, Action, DestinationState, DestinationAction, Destination: View
   >(
     store: Store<PresentationState<State>, PresentationAction<Action>>,

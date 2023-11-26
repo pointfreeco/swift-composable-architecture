@@ -65,7 +65,7 @@ public struct NewGameView: View {
       .navigationTitle("New Game")
       .navigationBarItems(trailing: Button("Logout") { viewStore.send(.logoutButtonTapped) })
       .navigationDestination(
-        store: self.store.scope(state: \.$game, action: { .game($0) }),
+        store: self.store.scope(state: \.$game, action: \.game),
         destination: GameView.init
       )
     }
