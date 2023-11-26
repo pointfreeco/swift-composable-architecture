@@ -22,7 +22,7 @@ you are targeting older platforms.
 * [Replacing navigation view modifiers with SwiftUI modifiers](#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers)
 * [Replacing NavigationStackStore with NavigationStack](#Replacing-NavigationStackStore-with-NavigationStack)
 * [@BindingState](#BindingState)
-* [ViewStore.binding](#ViewStore_binding)
+* [ViewStore.binding](#ViewStorebinding)
 * [View actions](#View-actions)
 
 ## Using @ObservableState
