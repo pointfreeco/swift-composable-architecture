@@ -564,7 +564,7 @@ simpler. If you make your feature's state observable with the ``ObservableState`
 
 ```swift
 @Reducer 
-Feature {
+struct Feature {
   @ObservableState
   struct State {
     // ...
