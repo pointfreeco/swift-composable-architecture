@@ -19,6 +19,7 @@ private let readMe = """
 
 // MARK: - Reusable favorite component
 
+@ObservableState
 struct FavoritingState<ID: Hashable & Sendable>: Equatable {
   @PresentationState var alert: AlertState<FavoritingAction.Alert>?
   let id: ID
@@ -74,15 +75,14 @@ struct FavoriteButton<ID: Hashable & Sendable>: View {
   let store: Store<FavoritingState<ID>, FavoritingAction>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Button {
-        viewStore.send(.buttonTapped)
-      } label: {
-        Image(systemName: "heart")
-          .symbolVariant(viewStore.isFavorite ? .fill : .none)
-      }
-      .alert(store: self.store.scope(state: \.$alert, action: \.alert))
+    let _ = Self._printChanges()
+    Button {
+      store.send(.buttonTapped)
+    } label: {
+      Image(systemName: "heart")
+        .symbolVariant(store.isFavorite ? .fill : .none)
     }
+    .alert(store: store.scope(state: \.$alert, action: \.alert))
   }
 }
 
@@ -90,16 +90,14 @@ struct FavoriteButton<ID: Hashable & Sendable>: View {
 
 @Reducer
 struct Episode {
+  @ObservableState
   struct State: Equatable, Identifiable {
-    var alert: AlertState<FavoritingAction.Alert>?
-    let id: UUID
-    var isFavorite: Bool
+    var favorite: FavoritingState<ID>
     let title: String
 
-    var favorite: FavoritingState<ID> {
-      get { .init(alert: self.alert, id: self.id, isFavorite: self.isFavorite) }
-      set { (self.alert, self.isFavorite) = (newValue.alert, newValue.isFavorite) }
-    }
+    var alert: AlertState<FavoritingAction.Alert>? { self.favorite.alert }
+    var id: UUID { self.favorite.id }
+    var isFavorite: Bool { self.favorite.isFavorite }
   }
 
   enum Action {
@@ -121,20 +119,19 @@ struct EpisodeView: View {
   let store: StoreOf<Episode>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      HStack(alignment: .firstTextBaseline) {
-        Text(viewStore.title)
+    HStack(alignment: .firstTextBaseline) {
+      Text(store.title)
 
-        Spacer()
+      Spacer()
 
-        FavoriteButton(store: self.store.scope(state: \.favorite, action: \.favorite))
-      }
+      FavoriteButton(store: store.scope(state: \.favorite, action: \.favorite))
     }
   }
 }
 
 @Reducer
 struct Episodes {
+  @ObservableState
   struct State: Equatable {
     var episodes: IdentifiedArrayOf<Episode.State> = []
   }
@@ -165,7 +162,7 @@ struct EpisodesView: View {
       Section {
         AboutView(readMe: readMe)
       }
-      ForEachStore(self.store.scope(state: \.episodes, action: \.episodes)) { rowStore in
+      ForEach(store.scope(state: \.episodes, action: \.episodes)) { rowStore in
         EpisodeView(store: rowStore)
       }
       .buttonStyle(.borderless)
@@ -209,11 +206,11 @@ struct FavoriteError: LocalizedError, Equatable {
 
 extension IdentifiedArray where ID == Episode.State.ID, Element == Episode.State {
   static let mocks: Self = [
-    Episode.State(id: UUID(), isFavorite: false, title: "Functions"),
-    Episode.State(id: UUID(), isFavorite: false, title: "Side Effects"),
-    Episode.State(id: UUID(), isFavorite: false, title: "Algebraic Data Types"),
-    Episode.State(id: UUID(), isFavorite: false, title: "DSLs"),
-    Episode.State(id: UUID(), isFavorite: false, title: "Parsers"),
-    Episode.State(id: UUID(), isFavorite: false, title: "Composable Architecture"),
+    Episode.State(favorite: .init(id: UUID(), isFavorite: false), title: "Functions"),
+    Episode.State(favorite: .init(id: UUID(), isFavorite: false), title: "Side Effects"),
+    Episode.State(favorite: .init(id: UUID(), isFavorite: false), title: "Algebraic Data Types"),
+    Episode.State(favorite: .init(id: UUID(), isFavorite: false), title: "DSLs"),
+    Episode.State(favorite: .init(id: UUID(), isFavorite: false), title: "Parsers"),
+    Episode.State(favorite: .init(id: UUID(), isFavorite: false), title: "Composable Architecture"),
   ]
 }
