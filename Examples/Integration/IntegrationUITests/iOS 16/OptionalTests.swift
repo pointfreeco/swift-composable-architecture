@@ -18,10 +18,11 @@ final class iOS16_OptionalTests: BaseIntegrationTests {
       """
       BasicsView.body
       OptionalView.body
-      OptionalView.body
       PresentationStoreOf<BasicsView.Feature>.scope
       Store<OptionalView.ViewState, OptionalView.Feature.Action>.deinit
       Store<OptionalView.ViewState, OptionalView.Feature.Action>.init
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature?>.deinit
@@ -32,7 +33,6 @@ final class iOS16_OptionalTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
-      StoreOf<OptionalView.Feature>.scope
       StoreOf<OptionalView.Feature>.scope
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
@@ -42,14 +42,11 @@ final class iOS16_OptionalTests: BaseIntegrationTests {
       ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.init
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.deinit
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.deinit
-      ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.deinit
-      ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.init
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.init
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.init
       ViewStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature?>.deinit
       ViewStoreOf<BasicsView.Feature?>.init
-      WithViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.body
       WithViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.body
       WithViewStoreOf<BasicsView.Feature>.body
       WithViewStoreOf<BasicsView.Feature?>.body
@@ -126,7 +123,6 @@ final class iOS16_OptionalTests: BaseIntegrationTests {
       OptionalView.body
       OptionalView.body
       PresentationStoreOf<BasicsView.Feature>.scope
-      PresentationStoreOf<BasicsView.Feature>.scope
       Store<OptionalView.ViewState, OptionalView.Feature.Action>.deinit
       Store<OptionalView.ViewState, OptionalView.Feature.Action>.init
       StoreOf<BasicsView.Feature>.deinit
@@ -140,8 +136,6 @@ final class iOS16_OptionalTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<OptionalView.Feature>.scope

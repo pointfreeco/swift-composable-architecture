@@ -10,6 +10,11 @@ simplify the library, and make it more powerful. As such, we often need to depre
 in favor of newer ones. We recommend people update their code as quickly as possible to the newest
 APIs, and this article contains some tips for doing so.
 
+> Note: The following migration guide assumes you are targeting iOS 17, macOS 14, tvOS 17, watchOS 
+10 or higher, but the tools do work for older platforms too. See the dedicated 
+<doc:ObservationBackport> article for more information on how to use the new observation tools if
+you are targeting older platforms.
+
 * [Using @ObservableState](#Using-ObservableState)
 * [Replacing IfLetStore with ‘if let’](#Replacing-IfLetStore-with-if-let)
 * [Replacing ForEachStore with ForEach](#Replacing-ForEachStore-with-ForEach)
