@@ -14,7 +14,7 @@ public struct WithPerceptionTracking<Content: View>: View {
     self.content = content
   }
   public var body: Content {
-    if #available(iOS 17, *) {
+    if #available(iOS 17, *) {  // TODO: other platforms
       return self.content()
     } else {
       let _ = self.id
