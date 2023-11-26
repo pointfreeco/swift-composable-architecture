@@ -180,20 +180,20 @@ struct RecordButton: View {
           .foregroundColor(Color(.label))
           .frame(width: 74, height: 74)
 
-        Button(action: self.action) {
+        Button(action: action) {
           RoundedRectangle(cornerRadius: 35)
             .foregroundColor(Color(.systemRed))
             .padding(2)
         }
         .frame(width: 70, height: 70)
       }
-      .opacity(self.permission == .denied ? 0.1 : 1)
+      .opacity(permission == .denied ? 0.1 : 1)
 
-      if self.permission == .denied {
+      if permission == .denied {
         VStack(spacing: 10) {
           Text("Recording requires microphone access.")
             .multilineTextAlignment(.center)
-          Button("Open Settings", action: self.settingsAction)
+          Button("Open Settings", action: settingsAction)
         }
         .frame(maxWidth: .infinity, maxHeight: 74)
       }
