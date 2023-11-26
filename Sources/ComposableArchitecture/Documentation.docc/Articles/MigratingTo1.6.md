@@ -10,6 +10,9 @@ simplify the library, and make it more powerful. As such, we often need to depre
 in favor of newer ones. We recommend people update their code as quickly as possible to the newest
 APIs, and this article contains some tips for doing so.
 
+> Important: Before following this migration guide be sure you have fully migrated to the newest
+tools of version 1.5. See <doc:MigratingTo1.4> and <doc:MigratingTo1.5> for more information.
+
 > Note: The following migration guide assumes you are targeting iOS 17, macOS 14, tvOS 17, watchOS 
 10 or higher, but the tools do work for older platforms too. See the dedicated 
 <doc:ObservationBackport> article for more information on how to use the new observation tools if
@@ -584,4 +587,29 @@ TODO
 
 ## Incrementally migrating
 
-Todo
+You are most likely going to want to incrementally your application to the new observation tools, 
+rather than doing everything all at once. That is possible, but there are some gotchas to be aware
+of when mixing "legacy" features (i.e. features using ``ViewStore`` and ``WithViewStore``) with
+"modern" features (i.e. features using ``ObservableState()``).
+
+The most common problem one will encounter is that when legacy and modern features are mixed
+together, their view bodies can be re-computed more often than necessary. This is due to the 
+mixed modes of observation. Legacy features use the `objectWillChange` publisher to synchronously 
+invalidate the view, whereas modern features use 
+[`withObservationTracking`][with-obs-tracking-docs]. These are two fundamentally different tools,
+and it can create a situation where views are invalidated multiple times separated by a thread hop,
+making it impossible to coalesce the validations into a single one. That is what causes the body
+to re-compute multiple times.
+
+Typically a few extra body re-computations shouldn't be a big deal, but they can put strain on
+SwiftUI's ability to figure out what state changed in a view, and can cause glitchiness and 
+exacerbate navigation bugs. If you are noticing problems after converting one feature to use 
+``ObservableState()``, then we recommend trying to convert a few more features that it interacts
+with to see if the problems go away.
+
+We have also found that modern features that contain legacy features as child features tend to 
+behave better than the opposite. For this reason we recommend updating your features to use 
+``ObservableState()`` from the outside in. That is, start with the root feature, update it to
+use the new observation tools, and then work you way towards the leaf features.
+
+[with-obs-tracking-docs]: https://developer.apple.com/documentation/observation/withobservationtracking(_:onchange:)
