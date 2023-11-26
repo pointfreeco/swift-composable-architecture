@@ -191,12 +191,12 @@ struct SharedStateView: View {
       switch store.currentTab {
       case .counter:
         SharedStateCounterView(
-          store: self.store.scope(state: \.counter, action: \.counter)
+          store: store.scope(state: \.counter, action: \.counter)
         )
 
       case .profile:
         SharedStateProfileView(
-          store: self.store.scope(state: \.profile, action: \.profile)
+          store: store.scope(state: \.profile, action: \.profile)
         )
       }
 

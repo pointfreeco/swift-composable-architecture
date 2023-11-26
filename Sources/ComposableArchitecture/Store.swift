@@ -65,17 +65,17 @@ import SwiftUI
 ///   var body: some View {
 ///     TabView {
 ///       ActivityView(
-///         store: self.store.scope(state: \.activity, action: \.activity)
+///         store: store.scope(state: \.activity, action: \.activity)
 ///       )
 ///       .tabItem { Text("Activity") }
 ///
 ///       SearchView(
-///         store: self.store.scope(state: \.search, action: \.search)
+///         store: store.scope(state: \.search, action: \.search)
 ///       )
 ///       .tabItem { Text("Search") }
 ///
 ///       ProfileView(
-///         store: self.store.scope(state: \.profile, action: \.profile)
+///         store: store.scope(state: \.profile, action: \.profile)
 ///       )
 ///       .tabItem { Text("Profile") }
 ///     }

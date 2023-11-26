@@ -77,7 +77,7 @@ struct CounterDemoView: View {
       }
 
       Section {
-        CounterView(store: self.store)
+        CounterView(store: store)
           .frame(maxWidth: .infinity)
       }
     }

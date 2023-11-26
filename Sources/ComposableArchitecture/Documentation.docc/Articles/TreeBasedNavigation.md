@@ -337,25 +337,25 @@ forms of navigation could be as simple as this:
 
 ```swift
 .sheet(
-  item: self.$store.scope(state: \.addItem, action: \.addItem)
+  item: $store.scope(state: \.addItem, action: \.addItem)
 ) { store in 
   AddFeatureView(store: store)
 }
 .popover(
-  item: self.$store.scope(state: \.editItem, action: \.editItem)
+  item: $store.scope(state: \.editItem, action: \.editItem)
 ) { store in 
   EditFeatureView(store: store)
 }
 .navigationDestination(
-  item: self.$store.scope(state: \.detailItem, action: \.detailItem)
+  item: $store.scope(state: \.detailItem, action: \.detailItem)
 ) { store in 
   DetailFeatureView(store: store)
 }
 .alert(
-  store: self.store.scope(state: \.alert, action: \.alert)
+  store: store.scope(state: \.alert, action: \.alert)
 )
 .confirmationDialog(
-  store: self.store.scope(state: \.confirmationDialog, action: \.confirmationDialog)
+  store: store.scope(state: \.confirmationDialog, action: \.confirmationDialog)
 )
 ```
 

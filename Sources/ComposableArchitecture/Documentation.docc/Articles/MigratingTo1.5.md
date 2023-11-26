@@ -36,7 +36,7 @@ can be promoted to closures. That means often scoping looked something like this
 ```swift
 // ⚠️ Deprecated API
 ChildView(
-  store: self.store.scope(
+  store: store.scope(
     state: \.child, 
     action: { .child($0) }
   )
@@ -56,7 +56,7 @@ The above construction of `ChildView` now becomes:
 ```swift
 // ✅ New API
 ChildView(
-  store: self.store.scope(
+  store: store.scope(
     state: \.child, 
     action: \.child
   )
@@ -74,7 +74,7 @@ you perform additional work in your scoping closure so that a simple key path do
 
 ```swift
 ChildView(
-  store: self.store.scope(
+  store: store.scope(
     state: { ChildFeature(state: $0.child) }, 
     action: { .child($0) }
   )
@@ -95,7 +95,7 @@ And now the key path syntax works just fine:
 
 ```swift
 ChildView(
-  store: self.store.scope(
+  store: store.scope(
     state: \.childFeature, 
     action: \.child
   )
@@ -106,7 +106,7 @@ Another complication is if you are using data from _outside_ the closure, _insid
 
 ```swift
 ChildView(
-  store: self.store.scope(
+  store: store.scope(
     state: { 
       ChildFeature(
         settings: viewStore.settings,
@@ -135,7 +135,7 @@ Then you can use a subscript key path to perform the scoping:
 
 ```swift
 ChildView(
-  store: self.store.scope(
+  store: store.scope(
     state: \.[settings: viewStore.settings], 
     action: \.child
   )
@@ -157,7 +157,7 @@ actions back into the destination domain:
 ```swift
 // ⚠️ Deprecated API
 .sheet(
-  store: self.store.scope(state: \.$destination, action: { .destination($0) }),
+  store: store.scope(state: \.$destination, action: { .destination($0) }),
   state: \.editForm,
   action: { .editForm($0) }
 )
@@ -169,7 +169,7 @@ and instead you can do it all with a single `store` argument:
 ```swift
 // ✅ New API
 .sheet(
-  store: self.store.scope(
+  store: store.scope(
     state: \.$destination.editForm, 
     action: \.destination.editForm
   )
