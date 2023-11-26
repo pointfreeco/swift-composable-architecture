@@ -20,6 +20,7 @@ private let readMe = """
 struct SharedState {
   enum Tab { case counter, profile }
 
+  @ObservableState
   struct State: Equatable {
     var counter = Counter.State()
     var currentTab = Tab.counter
@@ -75,6 +76,7 @@ struct SharedState {
 
   @Reducer
   struct Counter {
+    @ObservableState
     struct State: Equatable {
       @PresentationState var alert: AlertState<Action.Alert>?
       var count = 0
@@ -127,12 +129,21 @@ struct SharedState {
 
   @Reducer
   struct Profile {
+    @ObservableState
     struct State: Equatable {
       private(set) var currentTab: Tab
       private(set) var count = 0
       private(set) var maxCount: Int
       private(set) var minCount: Int
       private(set) var numberOfCounts: Int
+
+      init(currentTab: Tab, count: Int = 0, maxCount: Int, minCount: Int, numberOfCounts: Int) {
+        self.currentTab = currentTab
+        self.count = count
+        self.maxCount = maxCount
+        self.minCount = minCount
+        self.numberOfCounts = numberOfCounts
+      }
 
       fileprivate mutating func resetCount() {
         self.currentTab = .counter
@@ -167,31 +178,29 @@ struct SharedStateView: View {
   }
 
   var body: some View {
-    WithViewStore(self.store, observe: \.currentTab) { viewStore in
-      VStack {
-        Picker("Tab", selection: viewStore.binding(send: { .selectTab($0) })) {
-          Text("Counter")
-            .tag(SharedState.Tab.counter)
+    VStack {
+      Picker("Tab", selection: $store.currentTab.sending(\.selectTab)) {
+        Text("Counter")
+          .tag(SharedState.Tab.counter)
 
-          Text("Profile")
-            .tag(SharedState.Tab.profile)
-        }
-        .pickerStyle(.segmented)
-
-        if viewStore.state == .counter {
-          SharedStateCounterView(
-            store: self.store.scope(state: \.counter, action: \.counter)
-          )
-        }
-
-        if viewStore.state == .profile {
-          SharedStateProfileView(
-            store: self.store.scope(state: \.profile, action: \.profile)
-          )
-        }
-
-        Spacer()
+        Text("Profile")
+          .tag(SharedState.Tab.profile)
       }
+      .pickerStyle(.segmented)
+
+      switch store.currentTab {
+      case .counter:
+        SharedStateCounterView(
+          store: self.store.scope(state: \.counter, action: \.counter)
+        )
+
+      case .profile:
+        SharedStateProfileView(
+          store: self.store.scope(state: \.profile, action: \.profile)
+        )
+      }
+
+      Spacer()
     }
     .padding()
   }
@@ -201,35 +210,33 @@ struct SharedStateCounterView: View {
   let store: StoreOf<SharedState.Counter>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      VStack(spacing: 64) {
-        Text(template: readMe, .caption)
+    VStack(spacing: 64) {
+      Text(template: readMe, .caption)
 
-        VStack(spacing: 16) {
-          HStack {
-            Button {
-              viewStore.send(.decrementButtonTapped)
-            } label: {
-              Image(systemName: "minus")
-            }
-
-            Text("\(viewStore.count)")
-              .monospacedDigit()
-
-            Button {
-              viewStore.send(.incrementButtonTapped)
-            } label: {
-              Image(systemName: "plus")
-            }
+      VStack(spacing: 16) {
+        HStack {
+          Button {
+            store.send(.decrementButtonTapped)
+          } label: {
+            Image(systemName: "minus")
           }
 
-          Button("Is this prime?") { viewStore.send(.isPrimeButtonTapped) }
+          Text("\(store.count)")
+            .monospacedDigit()
+
+          Button {
+            store.send(.incrementButtonTapped)
+          } label: {
+            Image(systemName: "plus")
+          }
         }
+
+        Button("Is this prime?") { store.send(.isPrimeButtonTapped) }
       }
-      .padding(.top)
-      .navigationTitle("Shared State Demo")
-      .alert(store: self.store.scope(state: \.$alert, action: \.alert))
     }
+    .padding(.top)
+    .navigationTitle("Shared State Demo")
+    .alert(store: store.scope(state: \.$alert, action: \.alert))
   }
 }
 
@@ -237,31 +244,29 @@ struct SharedStateProfileView: View {
   let store: StoreOf<SharedState.Profile>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      VStack(spacing: 64) {
-        Text(
-          template: """
-            This tab shows state from the previous tab, and it is capable of reseting all of the \
-            state back to 0.
+    VStack(spacing: 64) {
+      Text(
+        template: """
+          This tab shows state from the previous tab, and it is capable of reseting all of the \
+          state back to 0.
 
-            This shows that it is possible for each screen to model its state in the way that makes \
-            the most sense for it, while still allowing the state and mutations to be shared \
-            across independent screens.
-            """,
-          .caption
-        )
+          This shows that it is possible for each screen to model its state in the way that makes \
+          the most sense for it, while still allowing the state and mutations to be shared \
+          across independent screens.
+          """,
+        .caption
+      )
 
-        VStack(spacing: 16) {
-          Text("Current count: \(viewStore.count)")
-          Text("Max count: \(viewStore.maxCount)")
-          Text("Min count: \(viewStore.minCount)")
-          Text("Total number of count events: \(viewStore.numberOfCounts)")
-          Button("Reset") { viewStore.send(.resetCounterButtonTapped) }
-        }
+      VStack(spacing: 16) {
+        Text("Current count: \(store.count)")
+        Text("Max count: \(store.maxCount)")
+        Text("Min count: \(store.minCount)")
+        Text("Total number of count events: \(store.numberOfCounts)")
+        Button("Reset") { store.send(.resetCounterButtonTapped) }
       }
-      .padding(.top)
-      .navigationTitle("Profile")
     }
+    .padding(.top)
+    .navigationTitle("Profile")
   }
 }
 
