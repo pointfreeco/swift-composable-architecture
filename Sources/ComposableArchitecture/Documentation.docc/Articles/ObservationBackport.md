@@ -100,4 +100,4 @@ Some problems can arise when mixing together features built in the "legacy" styl
 more often than necessary, but that can also put strain on SwiftUI's ability to figure out what
 state changed, and can cause glitchiness or exacerbate navigation bugs.
 
-It is our recommendation 
+See <doc:MigratingTo1.6#Incrementally-migrating> for more information about this.
