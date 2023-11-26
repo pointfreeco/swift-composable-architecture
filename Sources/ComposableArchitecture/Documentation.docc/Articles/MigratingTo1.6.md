@@ -410,7 +410,19 @@ NavigationStackStore(store.scope(state: \.path, action: \.path)) {
 }
 ```
 
-This can now be updated to our custom initializer on `NavigationStack`:
+In the view you must start holding onto the `store` as either `@State`:
+
+```swift
+@State var store: StoreOf<Feature>
+```
+
+…or `@Bindable`:
+
+```swift
+@Bindable var store: StoreOf<Feature>
+```
+
+And the original code can now be updated to our custom initializer on `NavigationStack`:
 
 ```swift
 NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
@@ -571,6 +583,18 @@ struct Feature {
   }
   // ...
 }
+```
+
+In the view you must start holding onto the `store` as either `@State`:
+
+```swift
+@State var store: StoreOf<Feature>
+```
+
+…or `@Bindable`:
+
+```swift
+@Bindable var store: StoreOf<Feature>
 ```
 
 Then you can derive a binding directly from a ``Store`` binding like so:
