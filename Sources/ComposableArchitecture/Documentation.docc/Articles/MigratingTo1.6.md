@@ -54,7 +54,7 @@ struct FeatureView: View {
   }
 
   var body: some View {
-    WithViewStore(self.store, observe: ViewState.init) { viewStore in
+    WithViewStore(store, observe: ViewState.init) { viewStore in
       Form {
         Text(viewStore.count.description)
         Button("+") { viewStore.send(.incrementButtonTapped) }
@@ -90,13 +90,13 @@ code in the following way:
 -  }
  
    var body: some View {
--    WithViewStore(self.store, observe: ViewState.init) { store in
+-    WithViewStore(store, observe: ViewState.init) { store in
 +    WithPerceptionTracking {
        Form {
 -        Text(viewStore.count.description)
 -        Button("+") { viewStore.send(.incrementButtonTapped) }
-+        Text(self.store.count.description)
-+        Button("+") { self.store.send(.incrementButtonTapped) }
++        Text(store.count.description)
++        Button("+") { store.send(.incrementButtonTapped) }
        }
      }
    }
@@ -118,12 +118,12 @@ apply all of the updates above, but with one additional simplification to the `b
 
 ```diff
  var body: some View {
--  WithViewStore(self.store, observe: ViewState.init) { store in
+-  WithViewStore(store, observe: ViewState.init) { store in
      Form {
 -      Text(viewStore.count.description)
 -      Button("+") { viewStore.send(.incrementButtonTapped) }
-+      Text(self.store.count.description)
-+      Button("+") { self.store.send(.incrementButtonTapped) }
++      Text(store.count.description)
++      Button("+") { store.send(.incrementButtonTapped) }
      }
 -  }
  }
@@ -157,7 +157,7 @@ struct Feature {
 Then previously you would make use of ``IfLetStore`` in the view like this:
 
 ```swift
-IfLetStore(store: self.store.scope(state: \.child, action: \.child)) { childStore in
+IfLetStore(store: store.scope(state: \.child, action: \.child)) { childStore in
   ChildView(store: childStore)
 } else: {
   Text("Nothing to show")
@@ -167,7 +167,7 @@ IfLetStore(store: self.store.scope(state: \.child, action: \.child)) { childStor
 This can now be updated to use plain `if let` syntax with ``Store/scope(state:action:)-36e72``:
 
 ```swift
-if let childStore = self.store.scope(state: \.child, action: \.child)) {
+if let childStore = store.scope(state: \.child, action: \.child)) {
   ChildView(store: childStore)
 } else {
   Text("Nothing to show")
@@ -198,7 +198,7 @@ struct Feature {
 Then you would have made use of ``ForEachStore`` in the view like this:
 
 ```swift
-ForEachStore(self.store.scope(state: \.rows, action: \.rows)) { childStore in
+ForEachStore(store.scope(state: \.rows, action: \.rows)) { childStore in
   ChildView(store: childStore)
 }
 ```
@@ -207,7 +207,7 @@ This can now be updated to use the vanilla `ForEach` view in SwiftUI, along with
 ``Store/scope(state:action:)-88iqh``:
 
 ```swift
-ForEach(self.store.scope(state: \.rows, action: \.rows)) { childStore in
+ForEach(store.scope(state: \.rows, action: \.rows)) { childStore in
   ChildView(store: childStore)
 }
 ```
@@ -217,7 +217,7 @@ custom styling based on the row being even or odd:
 
 ```swift
 ForEach(
-  Array(self.store.scope(state: \.rows, action: \.rows).enumerated()),
+  Array(store.scope(state: \.rows, action: \.rows).enumerated()),
   id: \.element
 ) { position, childStore in
   ChildView(store: childStore)
@@ -254,7 +254,7 @@ struct Feature {
 Then you would have used ``SwitchStore`` and ``CaseLet`` in the view like this:
 
 ```swift
-SwitchStore(self.store) {
+SwitchStore(store) {
   switch $0 {
   case .activity:
     CaseLet(/Feature.State.activity, action: Feature.Action.activity) { store in
@@ -271,13 +271,13 @@ SwitchStore(self.store) {
 This can now be updated to use a vanilla `switch` and `case` in the view:
 
 ```swift
-switch self.store.state {
+switch store.state {
 case .activity:
-  if let store = self.store.scope(state: \.activity, action: \.activity) {
+  if let store = store.scope(state: \.activity, action: \.activity) {
     ActivityView(store: store)
   }
 case .settings:
-  if let store = self.store.scope(state: \.settings, action: \.settings) {
+  if let store = store.scope(state: \.settings, action: \.settings) {
     SettingsView(store: store)
   }
 }
@@ -309,7 +309,7 @@ struct Feature {
 Then previously you would drive a sheet presentation from this feature like so:
 
 ```swift
-.sheet(store: self.store.scope(state: \.$child, action: \.child)) { store in
+.sheet(store: store.scope(state: \.$child, action: \.child)) { store in
   ChildView(store: store)
 }
 ```
@@ -330,7 +330,7 @@ must hold onto the store in your view in a bindable manner, either using `@State
 Then you can use `sheet(item:)` like so:
 
 ```swift
-.sheet(item: self.$store.scope(state: \.child, action: \.child)) { store in
+.sheet(item: $store.scope(state: \.child, action: \.child)) { store in
   ChildView(store: store)
 }
 ```
@@ -345,7 +345,7 @@ look something like this:
 
 ```swift
 .sheet(
-  store: self.store.scope(
+  store: store.scope(
     state: \.$destination.editForm,
     action: \.destination.editForm
   )
@@ -358,7 +358,7 @@ This can now be changed to this:
 
 ```swift
 .sheet(
-  item: self.$store.scope(
+  item: $store.scope(
     state: \.destination?.editForm,
     action: \.destination.editForm
   )
@@ -394,7 +394,7 @@ struct Feature {
 Then you would have made use of ``NavigationStackStore`` in the view like this:
 
 ```swift
-NavigationStackStore(self.store.scope(state: \.path, action: \.path)) {
+NavigationStackStore(store.scope(state: \.path, action: \.path)) {
   RootView()
 } destination: {
   switch $0 {
@@ -413,7 +413,7 @@ NavigationStackStore(self.store.scope(state: \.path, action: \.path)) {
 This can now be updated to our custom initializer on `NavigationStack`:
 
 ```swift
-NavigationStack(path: self.$store.scope(state: \.path, action: \.path)) {
+NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
   RootView()
 } destination: { store in
   switch store.state {
@@ -454,7 +454,7 @@ And in the view you derive bindings using ``ViewStore/subscript(dynamicMember:)-
 ``ViewStore``:
 
 ```swift
-WithViewStore(self.store, observe: { $0 }) { viewStore in
+WithViewStore(store, observe: { $0 }) { viewStore in
   Form {
     TextField("Text", text: viewStore.$text)
     Toggle(isOn: viewStore.$isOn)
@@ -475,7 +475,7 @@ struct ViewState: Equatable {
 }
 
 var body: some View {
-  WithViewStore(self.store, observe: ViewState.init) { viewStore in
+  WithViewStore(store, observe: ViewState.init) { viewStore in
     Form {
       TextField("Text", text: viewStore.$text)
       Toggle(isOn: viewStore.$isOn)
@@ -515,8 +515,8 @@ from the store:
 ```swift
 var body: some View {
   Form {
-    TextField("Text", text: self.$store.text)
-    Toggle(isOn: self.$store.isOn)
+    TextField("Text", text: $store.text)
+    Toggle(isOn: $store.isOn)
   }
 }
 ```
@@ -576,7 +576,7 @@ Feature {
 Then you can derive a binding directly from a ``Store`` binding like so:
 
 ```swift
-TabView(selection: self.$store.tab.sending(\.tabChanged)) {
+TabView(selection: $store.tab.sending(\.tabChanged)) {
   // ...
 }
 ```
