@@ -80,7 +80,8 @@ let package = Package(
     .target(
       name: "Perception",
       dependencies: [
-        "PerceptionMacros"
+        "PerceptionMacros",
+        .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
       ]
     ),
     .testTarget(name: "PerceptionTests", dependencies: ["Perception"]),
