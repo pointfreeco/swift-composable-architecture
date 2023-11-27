@@ -95,41 +95,42 @@ where
   }
 }
 
-//extension Binding {
-//  @_disfavoredOverload
-//  public subscript<State: ObservableState, Action: BindableAction, Member: Equatable>(
-//    dynamicMember keyPath: WritableKeyPath<State, Member>
-//  ) -> Binding<Member>
-//  where Value == Store<State, Action>, Action.State == State {
-//    Binding<Member>(
-//      // TODO: Should this use `state/observableState`? It warns but could wrap with task local.
-//      get: { self.wrappedValue.stateSubject.value[keyPath: keyPath] },
-//      set: { newValue, transaction in
-//        BindingLocal.$isActive.withValue(true) {
-//          _ = self.transaction(transaction).wrappedValue.send(.binding(.set(keyPath, newValue)))
-//        }
-//      }
-//    )
-//  }
-//
-//  @_disfavoredOverload
-//  public subscript<State: ObservableState, Action: ViewAction, Member: Equatable>(
-//    dynamicMember keyPath: WritableKeyPath<State, Member>
-//  ) -> Binding<Member>
-//  where
-//    Value == Store<State, Action>,
-//    Action.ViewAction: BindableAction,
-//    Action.ViewAction.State == State
-//  {
-//    Binding<Member>(
-//      get: { self.wrappedValue.state[keyPath: keyPath] },
-//      set: { newValue, transaction in
-//        BindingLocal.$isActive.withValue(true) {
-//          _ = self.transaction(transaction).wrappedValue.send(
-//            .view(.binding(.set(keyPath, newValue)))
-//          )
-//        }
-//      }
-//    )
-//  }
-//}
+// TODO: Incorporate these checks into the properties above, instead.
+extension Binding {
+  @_disfavoredOverload
+  public subscript<State: ObservableState, Action: BindableAction, Member: Equatable>(
+    dynamicMember keyPath: WritableKeyPath<State, Member>
+  ) -> Binding<Member>
+  where Value == Store<State, Action>, Action.State == State {
+    Binding<Member>(
+      // TODO: Should this use `state/observableState`? It warns but could wrap with task local.
+      get: { self.wrappedValue.stateSubject.value[keyPath: keyPath] },
+      set: { newValue, transaction in
+        BindingLocal.$isActive.withValue(true) {
+          _ = self.transaction(transaction).wrappedValue.send(.binding(.set(keyPath, newValue)))
+        }
+      }
+    )
+  }
+
+  @_disfavoredOverload
+  public subscript<State: ObservableState, Action: ViewAction, Member: Equatable>(
+    dynamicMember keyPath: WritableKeyPath<State, Member>
+  ) -> Binding<Member>
+  where
+    Value == Store<State, Action>,
+    Action.ViewAction: BindableAction,
+    Action.ViewAction.State == State
+  {
+    Binding<Member>(
+      get: { self.wrappedValue.state[keyPath: keyPath] },
+      set: { newValue, transaction in
+        BindingLocal.$isActive.withValue(true) {
+          _ = self.transaction(transaction).wrappedValue.send(
+            .view(.binding(.set(keyPath, newValue)))
+          )
+        }
+      }
+    )
+  }
+}

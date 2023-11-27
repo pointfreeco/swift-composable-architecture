@@ -21,6 +21,27 @@ extension Binding {
   }
 }
 
+@available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
+extension Bindable {
+  // TODO: Document
+  public func scope<State: ObservableState, Action, ElementState, ElementAction>(
+    state: KeyPath<State, StackState<ElementState>>,
+    action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
+  ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
+  where Value == Store<State, Action> {
+    let isInViewBody = PerceptionLocals.isInPerceptionTracking
+    return Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>(
+      get: {
+        // TODO: Is this right? Should we just be more forgiving in bindings?
+        PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
+          self.wrappedValue.scope(state: state, action: action)
+        }
+      },
+      set: { _ in }
+    )
+  }
+}
+
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension NavigationStack {
   /// Drives a navigation stack with a store.
