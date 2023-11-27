@@ -5,8 +5,17 @@ public protocol ViewAction<ViewAction> {
   static func view(_ action: ViewAction) -> Self
 }
 
+@dynamicMemberLookup
 public struct _StoreBinding<State, Action> {
   fileprivate let wrappedValue: Store<State, Action>
+
+  public subscript<Member>(
+    dynamicMember keyPath: KeyPath<State, Member>
+  ) -> _StoreBinding<Member, Action> {
+    _StoreBinding<Member, Action>(
+      wrappedValue: self.wrappedValue.scope(state: keyPath, action: \.self)
+    )
+  }
 
   public func sending(_ action: CaseKeyPath<Action, State>) -> Binding<State> {
     Binding(
