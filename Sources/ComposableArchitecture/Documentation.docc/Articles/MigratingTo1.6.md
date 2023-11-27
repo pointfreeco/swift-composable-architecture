@@ -315,16 +315,10 @@ Then previously you would drive a sheet presentation from this feature like so:
 ```
 
 You can now replace `sheet(store:)` with the vanilla SwiftUI modifier, `sheet(item:)`. First you
-must hold onto the store in your view in a bindable manner, either using `@State`:
+must hold onto the store in your view in a bindable manner, using `@State`:
 
 ```swift
 @State var store: StoreOf<Feature>
-```
-
-…or using the `@Bindable` property wrapper:
-
-```swift
-@Bindable var store: StoreOf<Feature>
 ```
 
 Then you can use `sheet(item:)` like so:
@@ -410,16 +404,10 @@ NavigationStackStore(store.scope(state: \.path, action: \.path)) {
 }
 ```
 
-In the view you must start holding onto the `store` as either `@State`:
+In the view you must start holding onto the `store` as `@State`:
 
 ```swift
 @State var store: StoreOf<Feature>
-```
-
-…or `@Bindable`:
-
-```swift
-@Bindable var store: StoreOf<Feature>
 ```
 
 And the original code can now be updated to our custom initializer on `NavigationStack`:
@@ -509,16 +497,10 @@ your feature's state with ``ObservableState()`` and removing all instances of ``
  }
 ```
 
-In the view you must start holding onto the `store` as either `@State`:
+In the view you must start holding onto the `store` as `@State`:
 
 ```swift
 @State var store: StoreOf<Feature>
-```
-
-…or `@Bindable`:
-
-```swift
-@Bindable var store: StoreOf<Feature>
 ```
 
 In the `body` of the view you can stop using ``WithViewStore`` and instead derive bindings directly
@@ -585,16 +567,10 @@ struct Feature {
 }
 ```
 
-In the view you must start holding onto the `store` as either `@State`:
+In the view you must start holding onto the `store` as `@State`:
 
 ```swift
 @State var store: StoreOf<Feature>
-```
-
-…or `@Bindable`:
-
-```swift
-@Bindable var store: StoreOf<Feature>
 ```
 
 Then you can derive a binding directly from a ``Store`` binding like so:
