@@ -588,7 +588,7 @@ public final class Store<State, Action> {
       case let .send(action, originatingAction: nil):
         runtimeWarn(
           """
-          "ViewStore.send" was called on a non-main thread with: \(debugCaseOutput(action)) …
+          "Store.send" was called on a non-main thread with: \(debugCaseOutput(action)) …
 
           The "Store" class is not thread-safe, and so all interactions with an instance of \
           "Store" (including all of its scopes and derived view stores) must be done on the main \
