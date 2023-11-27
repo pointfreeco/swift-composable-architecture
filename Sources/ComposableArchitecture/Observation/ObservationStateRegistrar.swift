@@ -1,6 +1,6 @@
 import Perception
 
-public struct ObservationStateRegistrar {
+public struct ObservationStateRegistrar: Sendable {
   public let id = ObservableStateID()
   private let registrar = PerceptionRegistrar()
 
