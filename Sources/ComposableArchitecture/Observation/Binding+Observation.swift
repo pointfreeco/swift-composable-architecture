@@ -106,7 +106,6 @@ where
 
 // TODO: Incorporate these checks into the properties above, instead.
 extension Binding {
-  @_disfavoredOverload
   public subscript<State: ObservableState, Action: BindableAction, Member: Equatable>(
     dynamicMember keyPath: WritableKeyPath<State, Member>
   ) -> Binding<Member>
@@ -122,7 +121,6 @@ extension Binding {
     )
   }
 
-  @_disfavoredOverload
   public subscript<State: ObservableState, Action: ViewAction, Member: Equatable>(
     dynamicMember keyPath: WritableKeyPath<State, Member>
   ) -> Binding<Member>
