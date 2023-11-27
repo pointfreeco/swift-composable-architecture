@@ -12,7 +12,7 @@ APIs, and this article contains some tips for doing so.
 
 > Important: Many APIs have been soft-deprecated in this release and will be hard-deprecated in
 a future minor release. We highly recommend updating your user of deprecated APIs to their newest
-versionas quickly as possible.
+version as quickly as possible.
 
 * [Store scoping with key paths](#Store-scoping-with-key-paths)
 * [Enum-driven navigation APIs](#Enum-driven-navigation-APIs)
