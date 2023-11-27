@@ -44,6 +44,7 @@ struct Search {
   private enum CancelID { case location, weather }
 
   var body: some Reducer<State, Action> {
+    BindingReducer()
     Reduce { state, action in
       switch action {
       case .binding(\.searchQuery):
