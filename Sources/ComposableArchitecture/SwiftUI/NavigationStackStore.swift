@@ -12,7 +12,7 @@ import SwiftUI
 public struct NavigationStackStore<State, Action, Root: View, Destination: View>: View {
   private let root: Root
   private let destination: (Component<State>) -> Destination
-  @StateObject private var viewStore: ViewStore<StackState<State>, StackAction<State, Action>>
+  @ObservedObject private var viewStore: ViewStore<StackState<State>, StackAction<State, Action>>
 
   /// Creates a navigation stack with a store of stack state and actions.
   ///
@@ -37,14 +37,14 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
               state = $0[id: component.id] ?? state
               return state
             },
-            id: nil,
+            id: { _ in component.id },
             action: { .element(id: component.id, action: $0) },
             isInvalid: { !$0.ids.contains(component.id) },
             removeDuplicates: nil
           )
       )
     }
-    self._viewStore = StateObject(
+    self._viewStore = ObservedObject(
       wrappedValue: ViewStore(
         store,
         observe: { $0 },
@@ -77,7 +77,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
               state = $0[id: component.id] ?? state
               return state
             },
-            id: nil,
+            id: { _ in component.id },
             action: { .element(id: component.id, action: $0) },
             isInvalid: { !$0.ids.contains(component.id) },
             removeDuplicates: nil
@@ -86,7 +86,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
         destination(component.element)
       }
     }
-    self._viewStore = StateObject(
+    self._viewStore = ObservedObject(
       wrappedValue: ViewStore(
         store,
         observe: { $0 },
@@ -99,11 +99,13 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
     NavigationStack(
       path: self.viewStore.binding(
         get: { $0.path },
-        send: { newPath in
+        compactSend: { newPath in
           if newPath.count > self.viewStore.path.count, let component = newPath.last {
             return .push(id: component.id, state: component.element)
-          } else {
+          } else if newPath.count < self.viewStore.path.count {
             return .popFrom(id: self.viewStore.path[newPath.count].id)
+          } else {
+            return nil
           }
         }
       )
