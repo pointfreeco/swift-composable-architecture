@@ -221,11 +221,11 @@ extension ObservableStateMacro: MemberMacro {
 
     if declaration.isClass {
       // classes are not supported
-      throw DiagnosticsError(syntax: node, message: "'@Observable' cannot be applied to class type '\(observableType.text)'", id: .invalidApplication)
+      throw DiagnosticsError(syntax: node, message: "'@ObservableState' cannot be applied to class type '\(observableType.text)'", id: .invalidApplication)
     }
     if declaration.isActor {
       // actors cannot yet be supported for their isolation
-      throw DiagnosticsError(syntax: node, message: "'@Observable' cannot be applied to actor type '\(observableType.text)'", id: .invalidApplication)
+      throw DiagnosticsError(syntax: node, message: "'@ObservableState' cannot be applied to actor type '\(observableType.text)'", id: .invalidApplication)
     }
 
     var declarations = [DeclSyntax]()
