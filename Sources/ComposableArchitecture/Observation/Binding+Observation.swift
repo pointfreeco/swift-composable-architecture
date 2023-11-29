@@ -100,6 +100,19 @@ extension Store where State: ObservableState, Action: BindableAction, Action.Sta
 
 extension Store
 where
+  State: Equatable,
+  State: ObservableState,
+  Action: BindableAction,
+  Action.State == State
+{
+  public var state: State {
+    get { self.observableState }
+    set { self.send(.binding(.set(\.self, newValue))) }
+  }
+}
+
+extension Store
+where
   State: ObservableState,
   Action: ViewAction,
   Action.ViewAction: BindableAction,
