@@ -175,7 +175,7 @@ public final class Store<State, Action> {
     }
   }
 
-  init() {
+  fileprivate init() {
     self._isInvalidated = { true }
     self.reducer = EmptyReducer()
     #if DEBUG
@@ -1047,7 +1047,6 @@ extension ScopedStoreReducer: AnyScopedStoreReducer {
     else {
       return Store()
     }
-
     let id = id?(store.stateSubject.value)
     if let id = id,
       let childStore = store.children[id] as? Store<ChildState, ChildAction>
