@@ -126,4 +126,18 @@ final class BindingTests: BaseTCATestCase {
     }
     _ = AnyCasePath(unsafe: Foo.bar).extract(from: .bar(.buzz(true)))
   }
+
+  struct TestMatching {
+    struct CounterState {
+      @BindingState var count = 0
+    }
+    @CasePathable
+    enum CounterAction: CasePathable {
+      case binding(BindingAction<CounterState>)
+    }
+  }
+  func testMatching() {
+    let action = TestMatching.CounterAction.binding(.set(\.$count, 42))
+    XCTAssertEqual(action[case: \.binding.$count], 42)
+  }
 }
