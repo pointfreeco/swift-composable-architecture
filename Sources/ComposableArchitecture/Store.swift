@@ -139,7 +139,7 @@ public final class Store<State, Action> {
   private var isSending = false
   var parentCancellable: AnyCancellable?
   private let reducer: any Reducer<State, Action>
-  @_spi(Internals) public var stateSubject: CurrentValueSubject<State, Never>
+  @_spi(Internals) public var stateSubject: CurrentValueSubject<State, Never>!
   #if DEBUG
     private let mainThreadChecksEnabled: Bool
   #endif
@@ -173,6 +173,14 @@ public final class Store<State, Action> {
         mainThreadChecksEnabled: true
       )
     }
+  }
+
+  init() {
+    self._isInvalidated = { true }
+    self.reducer = EmptyReducer()
+    #if DEBUG
+      self.mainThreadChecksEnabled = true
+    #endif
   }
 
   deinit {
@@ -994,12 +1002,15 @@ private final class ScopedStoreReducer<RootState, RootAction, State, Action>: Re
 
   @inlinable
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    if self.isInvalid() {
+    let isInvalid = self.isInvalid()
+    if isInvalid {
       self.onInvalidate()
     }
     self.isSending = true
     defer {
-      state = self.toState(self.rootStore.stateSubject.value)
+      if !isInvalid || state is _OptionalProtocol {
+        state = self.toState(self.rootStore.stateSubject.value)
+      }
       self.isSending = false
     }
     if let action = self.fromAction(action),
@@ -1032,6 +1043,11 @@ extension ScopedStoreReducer: AnyScopedStoreReducer {
     isInvalid: ((S) -> Bool)?,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
+    guard isInvalid.map({ $0(store.stateSubject.value) == false }) ?? true
+    else {
+      return Store()
+    }
+
     let id = id?(store.stateSubject.value)
     if let id = id,
       let childStore = store.children[id] as? Store<ChildState, ChildAction>
@@ -1053,7 +1069,7 @@ extension ScopedStoreReducer: AnyScopedStoreReducer {
     }
     let reducer = ScopedStoreReducer<RootState, RootAction, ChildState, ChildAction>(
       rootStore: self.rootStore,
-      state: { [stateSubject = store.stateSubject] _ in toChildState(stateSubject.value) },
+      state: { [stateSubject = store.stateSubject!] _ in toChildState(stateSubject.value) },
       action: { fromChildAction($0).flatMap(fromAction) },
       isInvalid: isInvalid,
       onInvalidate: { [weak store] in
