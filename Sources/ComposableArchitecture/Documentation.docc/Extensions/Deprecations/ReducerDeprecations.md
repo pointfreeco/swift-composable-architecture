@@ -16,6 +16,5 @@ instead.
 - ``Reducer/ifLet(_:action:destination:fileID:line:)-8qzye``
 - ``Reducer/ifLet(_:action:fileID:line:)-3cdm4``
 - ``Reducer/ifCaseLet(_:action:then:fileID:line:)-36dz4``
-- ``Reducer/forEach(_:action:element:fileID:line:)-8ujke``
-- ``Reducer/forEach(_:action:element:fileID:line:)-7ecbl``
+- ``Reducer/forEach(_:action:element:fileID:line:)-65nr1``
 - ``Reducer/forEach(_:action:destination:fileID:line:)-51zt9``
