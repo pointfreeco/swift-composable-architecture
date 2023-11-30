@@ -374,7 +374,6 @@ For example, if your feature's reducer looks roughly like this:
 ```swift
 @Reducer
 struct Feature {
-  @ObservableState
   struct State {
     var path: StackState<Path.State> = []
   }
@@ -404,7 +403,33 @@ NavigationStackStore(store.scope(state: \.path, action: \.path)) {
 }
 ```
 
-In the view you must start holding onto the `store` as `@State`:
+To update this code, first mark your feature's state with ``ObservableState()``:
+
+```swift
+@Reducer
+struct Feature {
+  @ObservableState
+  struct State {
+    // ...
+  }
+  // ...
+}
+```
+
+As well as the `Path` reducer's state:
+
+```swift
+@Reducer
+struct Path {
+  @ObservableState
+  enum State {
+    // ...
+  }
+  // ...
+}
+```
+
+Then in the view you must start holding onto the `store` as `@State`:
 
 ```swift
 @State var store: StoreOf<Feature>
