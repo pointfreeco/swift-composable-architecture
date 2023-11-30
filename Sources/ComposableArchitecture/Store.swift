@@ -863,6 +863,7 @@ private protocol AnyStore {
 
 private protocol _OptionalProtocol {}
 extension Optional: _OptionalProtocol {}
+extension PresentationState: _OptionalProtocol {}
 
 func storeTypeName<State, Action>(of store: Store<State, Action>) -> String {
   let stateType = typeName(State.self, genericsAbbreviated: false)
@@ -1043,7 +1044,7 @@ extension ScopedStoreReducer: AnyScopedStoreReducer {
     isInvalid: ((S) -> Bool)?,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
-    guard isInvalid.map({ $0(store.stateSubject.value) == false }) ?? true
+    guard isInvalid?(store.stateSubject.value) != true || ChildState.self is _OptionalProtocol.Type
     else {
       return Store()
     }
