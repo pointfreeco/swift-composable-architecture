@@ -761,6 +761,7 @@ private protocol AnyStore {
 
 private protocol _OptionalProtocol {}
 extension Optional: _OptionalProtocol {}
+extension PresentationState: _OptionalProtocol {}
 
 func storeTypeName<State, Action>(of store: Store<State, Action>) -> String {
   let stateType = typeName(State.self, genericsAbbreviated: false)
@@ -900,12 +901,15 @@ private final class ScopedStoreReducer<RootState, RootAction, State, Action>: Re
 
   @inlinable
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    if self.isInvalid() {
+    let isInvalid = self.isInvalid()
+    if isInvalid {
       self.onInvalidate()
     }
     self.isSending = true
     defer {
-      state = self.toState(self.rootStore.stateSubject.value)
+      if !isInvalid || state is _OptionalProtocol {
+        state = self.toState(self.rootStore.stateSubject.value)
+      }
       self.isSending = false
     }
     if
@@ -939,6 +943,10 @@ extension ScopedStoreReducer: AnyScopedStoreReducer {
     isInvalid: ((S) -> Bool)?,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
+    guard isInvalid?(store.stateSubject.value) != true || ChildState.self is _OptionalProtocol.Type
+    else {
+      return Store()
+    }
 
     let initialChildState = toChildState(store.observableState)
 
