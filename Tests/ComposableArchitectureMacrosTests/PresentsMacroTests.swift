@@ -7,7 +7,7 @@ import XCTest
 final class PresentsMacroTests: XCTestCase {
   override func invokeTest() {
     withMacroTesting(
-      isRecording: true,
+      // isRecording: true,
       macros: [PresentsMacro.self]
     ) {
       super.invokeTest()
@@ -46,10 +46,17 @@ final class PresentsMacroTests: XCTestCase {
 
         var $destination: ComposableArchitecture.PresentationState<Destination.State> {
           get {
-            _destination.projectedValue
+            access(keyPath: \.destination)
+            return _destination.projectedValue
           }
           set {
-            _destination.projectedValue = newValue
+            if _$isIdentityEqual(newValue, _destination) == true {
+              _destination.projectedValue = newValue
+            } else {
+              withMutation(keyPath: \.destination) {
+                _destination.projectedValue = newValue
+              }
+            }
           }
         }
 
@@ -91,10 +98,17 @@ final class PresentsMacroTests: XCTestCase {
 
         public var $destination: ComposableArchitecture.PresentationState<Destination.State> {
           get {
-            _destination.projectedValue
+            access(keyPath: \.destination)
+            return _destination.projectedValue
           }
           set {
-            _destination.projectedValue = newValue
+            if _$isIdentityEqual(newValue, _destination) == true {
+              _destination.projectedValue = newValue
+            } else {
+              withMutation(keyPath: \.destination) {
+                _destination.projectedValue = newValue
+              }
+            }
           }
         }
 

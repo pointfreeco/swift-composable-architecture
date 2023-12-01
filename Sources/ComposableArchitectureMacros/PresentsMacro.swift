@@ -193,10 +193,21 @@ extension PatternBindingListSyntax {
           accessorBlock: AccessorBlockSyntax(
             accessors: .accessors([
               """
-              get { _\(identifier.identifier).projectedValue }
+              get {
+              access(keyPath: \\.\(identifier))
+              return _\(identifier.identifier).projectedValue
+              }
               """,
               """
-              set { _\(identifier.identifier).projectedValue = newValue }
+              set {
+              if _$isIdentityEqual(newValue, _\(identifier)) == true {
+              _\(identifier).projectedValue = newValue
+              } else {
+              withMutation(keyPath: \\.\(identifier)) {
+              _\(identifier).projectedValue = newValue
+              }
+              }
+              }
               """
             ])
           )
