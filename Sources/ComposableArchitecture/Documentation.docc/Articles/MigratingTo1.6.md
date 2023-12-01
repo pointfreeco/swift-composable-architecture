@@ -131,6 +131,11 @@ apply all of the updates above, but with one additional simplification to the `b
 
 You no longer need the ``WithViewStore`` or `WithPerceptionTracking` at all.
 
+> When you apply the ``ObservableState()`` macro to state that presents child state via the
+> ``PresentationState`` property wrapper, you will encounter a diagnostic directing you to use the
+> ``Presents()`` macro instead, which will wrap the given field with ``PresentationState`` _and_
+> instrument it with observation.
+
 ## Replacing IfLetStore with 'if let'
 
 The ``IfLetStore`` view was a helper for transforming a ``Store`` of optional state into a store of
@@ -297,7 +302,7 @@ For example, if your feature's reducer looks roughly like this:
 struct Feature {
   @ObservableState
   struct State {
-    @PresentationState var child: Child.State?
+    @Presents var child: Child.State?
   }
   enum Action {
     case child(PresentationAction<Child.State>
