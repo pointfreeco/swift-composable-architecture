@@ -998,7 +998,7 @@ extension ScopedStoreReducer: AnyScopedStoreReducer {
         guard isDuplicate.map({ !$0(childStore.stateSubject.value, childState) }) ?? true else {
           return
         }
-        childStore.stateSubject.value = childState
+        childStore.observableState = childState
         Logger.shared.log("\(storeTypeName(of: store)).scope")
       }
     if let id = id {
