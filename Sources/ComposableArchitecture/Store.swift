@@ -1098,8 +1098,6 @@ extension ScopedStoreReducer: AnyScopedStoreReducer {
     if let id = id {
       if store.canCacheChildren {
         store.children[id] = childStore
-      } else {
-        // runtimeWarn("Can't cache child store at '\(id)' in an uncached store")
       }
     }
     return childStore
