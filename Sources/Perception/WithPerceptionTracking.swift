@@ -1,11 +1,17 @@
 import SwiftUI
 
 @available(iOS, deprecated: 17, message: "TODO")
+@available(macOS, deprecated: 14, message: "TODO")
+@available(tvOS, deprecated: 17, message: "TODO")
+@available(watchOS, deprecated: 10, message: "TODO")
 public enum PerceptionLocals {
   @TaskLocal public static var isInPerceptionTracking = false
 }
 
 @available(iOS, deprecated: 17, message: "TODO")
+@available(macOS, deprecated: 14, message: "TODO")
+@available(tvOS, deprecated: 17, message: "TODO")
+@available(watchOS, deprecated: 10, message: "TODO")
 @MainActor
 public struct WithPerceptionTracking<Content: View>: View {
   @State var id = 0
@@ -14,7 +20,7 @@ public struct WithPerceptionTracking<Content: View>: View {
     self.content = content
   }
   public var body: Content {
-    if #available(iOS 17, *) {  // TODO: other platforms
+    if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {  // TODO: other platforms
       return self.content()
     } else {
       let _ = self.id

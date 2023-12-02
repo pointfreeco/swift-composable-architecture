@@ -11,7 +11,7 @@ extension Binding {
     let isInViewBody = PerceptionLocals.isInPerceptionTracking
     return Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>(
       get: {
-        // TODO: Is this right? Should we just be more forgiving in bindings?
+        // TODO: Can this be localized to the `Perception` framework?
         PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
           self.wrappedValue.scope(state: state, action: action)
         }
@@ -29,14 +29,8 @@ extension Bindable {
     action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
   ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
   where Value == Store<State, Action> {
-    let isInViewBody = PerceptionLocals.isInPerceptionTracking
-    return Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>(
-      get: {
-        // TODO: Is this right? Should we just be more forgiving in bindings?
-        PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
-          self.wrappedValue.scope(state: state, action: action)
-        }
-      },
+    Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>(
+      get: { self.wrappedValue.scope(state: state, action: action) },
       set: { _ in }
     )
   }
