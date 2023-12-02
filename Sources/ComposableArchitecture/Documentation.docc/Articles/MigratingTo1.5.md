@@ -11,7 +11,7 @@ in favor of newer ones. We recommend people update their code as quickly as poss
 APIs, and this article contains some tips for doing so.
 
 > Important: Many APIs have been soft-deprecated in this release and will be hard-deprecated in
-a future minor release. We highly recommend updating your user of deprecated APIs to their newest
+a future minor release. We highly recommend updating your use of deprecated APIs to their newest
 version as quickly as possible.
 
 * [Store scoping with key paths](#Store-scoping-with-key-paths)
