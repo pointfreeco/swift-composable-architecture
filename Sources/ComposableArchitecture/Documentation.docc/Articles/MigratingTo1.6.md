@@ -300,7 +300,7 @@ struct Feature {
     @PresentationState var child: Child.State?
   }
   enum Action {
-    case child(PresentationAction<Child.State>
+    case child(PresentationAction<Child.Action>)
   }
   var body: some ReducerOf<Self> { /* ... */ }
 }
