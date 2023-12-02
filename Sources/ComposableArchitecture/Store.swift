@@ -860,6 +860,7 @@ public struct StoreTask: Hashable, Sendable {
 private protocol AnyStore {
   func invalidate()
 }
+extension Store: AnyStore {}
 
 private protocol _OptionalProtocol {}
 extension Optional: _OptionalProtocol {}
