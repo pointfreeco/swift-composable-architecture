@@ -131,8 +131,8 @@ extension PerceptionRegistrar: Hashable {
   }
 }
 
-//@_transparent
-//@inline(__always)
+@_transparent
+@inline(__always)
 private func perceptionCheck() {
   #if DEBUG
     if #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10),
