@@ -19,21 +19,15 @@ final class PerceptionTests: XCTestCase {
   }
 
   func testRuntimeWarning_NotInPerceptionBody_InSwiftUIBody() {
-    if #unavailable(iOS 17) {
-      XCTExpectFailure {
-        $0.compactDescription == """
-          Perceptible state was accessed but is not being tracked. Track changes to state by \
-          wrapping your view in a 'WithPerceptionTracking' view.
-          """
-      }
-    }
+    self.expectFailure()
+
     struct FeatureView: View {
       let model = Model()
       var body: some View {
         Text(self.model.count.description)
       }
     }
-    _ = ImageRenderer(content: FeatureView()).uiImage
+    self.render(FeatureView())
   }
 
   func testRuntimeWarning_InPerceptionBody_InSwiftUIBody() {
@@ -45,7 +39,7 @@ final class PerceptionTests: XCTestCase {
         }
       }
     }
-    _ = ImageRenderer(content: FeatureView()).uiImage
+    self.render(FeatureView())
   }
 
   func testRuntimeWarning_NotInPerceptionBody_SwiftUIBinding() {
@@ -57,7 +51,7 @@ final class PerceptionTests: XCTestCase {
         TextField("", text: self.$model.text)
       }
     }
-    _ = ImageRenderer(content: FeatureView()).uiImage
+    self.render(FeatureView())
   }
 
   func testRuntimeWarning_InPerceptionBody_SwiftUIBinding() {
@@ -71,7 +65,7 @@ final class PerceptionTests: XCTestCase {
         }
       }
     }
-    _ = ImageRenderer(content: FeatureView()).uiImage
+    self.render(FeatureView())
   }
 
   private func expectFailure() {
@@ -83,6 +77,10 @@ final class PerceptionTests: XCTestCase {
           """
       }
     }
+  }
+
+  private func render(_ view: some View) {
+    _ = ImageRenderer(content: view).cgImage
   }
 }
 
