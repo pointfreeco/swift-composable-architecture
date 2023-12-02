@@ -2,7 +2,7 @@ struct ContactsView: View {
   let store: StoreOf<ContactsFeature>
 
   var body: some View {
-    NavigationStackStore(self.store.scope(state: \.path, action: { .path($0) })) {
+    NavigationStackStore(self.store.scope(state: \.path, action: \.path)) {
       WithViewStore(self.store, observe: \.contacts) { viewStore in
         List {
           ForEach(viewStore.state) { contact in

@@ -20,7 +20,7 @@ extension Store {
   ///   func viewDidLoad() {
   ///     // ...
   ///     self.store
-  ///       .scope(state: \.optionalChild, action: { .child($0) })
+  ///       .scope(state: \.optionalChild, action: \.child)
   ///       .ifLet(
   ///         then: { [weak self] childStore in
   ///           self?.navigationController?.pushViewController(
