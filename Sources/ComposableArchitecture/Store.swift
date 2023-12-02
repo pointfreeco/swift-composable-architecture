@@ -133,6 +133,7 @@ import SwiftUI
 /// of the store are also checked to make sure that work is performed on the main thread.
 public final class Store<State, Action> {
   private var bufferedActions: [Action] = []
+  fileprivate var canCacheChildren = true
   fileprivate var children: [AnyHashable: AnyObject] = [:]
   @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] = [:]
   var _isInvalidated = { false }
@@ -1033,14 +1034,16 @@ extension ScopedStoreReducer: AnyScopedStoreReducer {
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
     let id = id?(store.stateSubject.value)
-    if let id = id,
+    if
+      store.canCacheChildren,
+      let id = id,
       let childStore = store.children[id] as? Store<ChildState, ChildAction>
     {
       return childStore
     }
     let fromAction = self.fromAction as! (A) -> RootAction?
     let isInvalid =
-      id == nil
+      id == nil || !store.canCacheChildren
       ? {
         store._isInvalidated() || isInvalid?(store.stateSubject.value) == true
       }
@@ -1067,6 +1070,7 @@ extension ScopedStoreReducer: AnyScopedStoreReducer {
       reducer
     }
     childStore._isInvalidated = isInvalid
+    childStore.canCacheChildren = store.canCacheChildren && id != nil
     childStore.parentCancellable = store.stateSubject
       .dropFirst()
       .sink { [weak store, weak childStore] state in
@@ -1092,7 +1096,9 @@ extension ScopedStoreReducer: AnyScopedStoreReducer {
         Logger.shared.log("\(storeTypeName(of: store)).scope")
       }
     if let id = id {
-      store.children[id] = childStore
+      if store.canCacheChildren {
+        store.children[id] = childStore
+      }
     }
     return childStore
   }
