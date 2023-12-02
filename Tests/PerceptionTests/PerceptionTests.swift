@@ -18,7 +18,7 @@ final class PerceptionTests: XCTestCase {
     }
   }
 
-  func testRuntimeWarning_NotInPerceptionBody_InSwiftUIBody() async {
+  func testRuntimeWarning_NotInPerceptionBody_InSwiftUIBody() {
     if #unavailable(iOS 17) {
       XCTExpectFailure {
         $0.compactDescription == """
@@ -36,7 +36,7 @@ final class PerceptionTests: XCTestCase {
     _ = ImageRenderer(content: FeatureView()).uiImage
   }
 
-  func testRuntimeWarning_InPerceptionBody_InSwiftUIBody() async {
+  func testRuntimeWarning_InPerceptionBody_InSwiftUIBody() {
     struct FeatureView: View {
       let model = Model()
       var body: some View {
@@ -48,7 +48,7 @@ final class PerceptionTests: XCTestCase {
     _ = ImageRenderer(content: FeatureView()).uiImage
   }
 
-  func testRuntimeWarning_NotInPerceptionBody_SwiftUIBinding() async {
+  func testRuntimeWarning_NotInPerceptionBody_SwiftUIBinding() {
     self.expectFailure()
 
     struct FeatureView: View {
@@ -60,7 +60,7 @@ final class PerceptionTests: XCTestCase {
     _ = ImageRenderer(content: FeatureView()).uiImage
   }
 
-  func testRuntimeWarning_InPerceptionBody_SwiftUIBinding() async {
+  func testRuntimeWarning_InPerceptionBody_SwiftUIBinding() {
     self.expectFailure()
 
     struct FeatureView: View {
