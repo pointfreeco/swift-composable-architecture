@@ -141,7 +141,7 @@ private func perceptionCheck() {
     if #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10),
       !PerceptionLocals.isInPerceptionTracking,
       isInSwiftUIStack,
-      !isInSwiftUIBindingGetter
+      !isInKeyPathAccess
     {
       runtimeWarn(
         """
@@ -158,10 +158,7 @@ var isInSwiftUIStack: Bool {
     .contains { $0.contains(" AttributeGraph ") }
 }
 
-var isInSwiftUIBindingGetter: Bool {
-  zip(Thread.callStackSymbols, Thread.callStackSymbols.dropFirst())
-    .contains { previousSymbol, symbol in
-      symbol.contains("SwiftUI7Binding")
-        && previousSymbol.contains("swift_readAtKeyPath")
-    }
+var isInKeyPathAccess: Bool {
+  Thread.callStackSymbols
+    .contains { $0.contains("swift_getAtKeyPath") }
 }

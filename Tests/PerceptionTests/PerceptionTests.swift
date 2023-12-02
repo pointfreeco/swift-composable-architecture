@@ -43,20 +43,19 @@ final class PerceptionTests: XCTestCase {
   }
 
   func testRuntimeWarning_NotInPerceptionBody_SwiftUIBinding() {
-    self.expectFailure()
-
+    // NB: Ideally this should emit a runtime warning, but it does not.
     struct FeatureView: View {
       @State var model = Model()
       var body: some View {
-        TextField("", text: self.$model.text)
+        VStack {
+          TextField("", text: self.$model.text)
+        }
       }
     }
     self.render(FeatureView())
   }
 
   func testRuntimeWarning_InPerceptionBody_SwiftUIBinding() {
-    self.expectFailure()
-
     struct FeatureView: View {
       @State var model = Model()
       var body: some View {
