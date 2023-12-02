@@ -131,15 +131,14 @@ extension PerceptionRegistrar: Hashable {
   }
 }
 
-@_transparent
-@inline(__always)
+//@_transparent
+//@inline(__always)
 private func perceptionCheck() {
   #if DEBUG
     if #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10),
       !PerceptionLocals.isInPerceptionTracking,
-      Thread.callStackSymbols.contains(where: {
-        $0.split(separator: " ").dropFirst().first == "AttributeGraph"
-      })
+      isInSwiftUIStack,
+      !isInSwiftUIBindingGetter
     {
       runtimeWarn(
         """
@@ -149,4 +148,17 @@ private func perceptionCheck() {
       )
     }
   #endif
+}
+
+var isInSwiftUIStack: Bool {
+  Thread.callStackSymbols
+    .contains { $0.contains(" AttributeGraph ") }
+}
+
+var isInSwiftUIBindingGetter: Bool {
+  zip(Thread.callStackSymbols, Thread.callStackSymbols.dropFirst())
+    .contains { previousSymbol, symbol in
+      symbol.contains("SwiftUI7Binding")
+        && previousSymbol.contains("swift_readAtKeyPath")
+    }
 }
