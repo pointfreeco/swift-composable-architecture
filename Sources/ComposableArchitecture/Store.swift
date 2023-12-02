@@ -1034,8 +1034,7 @@ extension ScopedStoreReducer: AnyScopedStoreReducer {
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
     let id = id?(store.stateSubject.value)
-    if
-      store.canCacheChildren,
+    if store.canCacheChildren,
       let id = id,
       let childStore = store.children[id] as? Store<ChildState, ChildAction>
     {

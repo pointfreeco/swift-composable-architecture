@@ -1,5 +1,5 @@
-import XCTest
 import ComposableArchitecture
+import XCTest
 
 @MainActor
 final class StoreLifetimeTests: BaseTCATestCase {
@@ -47,7 +47,7 @@ final class StoreLifetimeTests: BaseTCATestCase {
 }
 
 @Reducer
-fileprivate struct Child {
+private struct Child {
   struct State: Equatable {
     var count = 0
   }
@@ -66,7 +66,7 @@ fileprivate struct Child {
 }
 
 @Reducer
-fileprivate struct Parent {
+private struct Parent {
   struct State: Equatable {
     var child = Child.State()
   }
@@ -81,7 +81,7 @@ fileprivate struct Parent {
 }
 
 @Reducer
-fileprivate struct Grandparent {
+private struct Grandparent {
   struct State: Equatable {
     var child = Parent.State()
   }
