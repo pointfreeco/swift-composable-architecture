@@ -6,7 +6,7 @@ import TwoFactorCore
 import TwoFactorSwiftUI
 
 public struct LoginView: View {
-  @State var store: StoreOf<Login>
+  @Bindable var store: StoreOf<Login>
 
   public init(store: StoreOf<Login>) {
     self.store = store

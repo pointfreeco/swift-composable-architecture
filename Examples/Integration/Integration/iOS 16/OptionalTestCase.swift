@@ -2,7 +2,7 @@
 import SwiftUI
 
 struct OptionalView: View {
-  @State var store = Store(initialState: Feature.State()) {
+  @BindableStore var store = Store(initialState: Feature.State()) {
     Feature()
   }
 

@@ -133,7 +133,7 @@ struct VoiceMemos {
 }
 
 struct VoiceMemosView: View {
-  @State var store: StoreOf<VoiceMemos>
+  @Bindable var store: StoreOf<VoiceMemos>
 
   var body: some View {
     NavigationStack {

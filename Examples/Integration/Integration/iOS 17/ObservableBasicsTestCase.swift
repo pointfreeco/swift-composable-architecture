@@ -4,7 +4,7 @@ import SwiftUI
 
 struct ObservableBasicsView: View {
   var showExtraButtons = false
-  @State var store = Store(initialState: Feature.State()) {
+  @BindableStore var store = Store(initialState: Feature.State()) {
     Feature()
   }
 

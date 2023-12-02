@@ -118,7 +118,7 @@ struct Search {
 // MARK: - Search feature view
 
 struct SearchView: View {
-  @State var store: StoreOf<Search>
+  @Bindable var store: StoreOf<Search>
 
   var body: some View {
     NavigationStack {

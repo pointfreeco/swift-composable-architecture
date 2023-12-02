@@ -61,7 +61,7 @@ struct SyncUpForm {
 }
 
 struct SyncUpFormView: View {
-  @State var store: StoreOf<SyncUpForm>
+  @BindableStore var store: StoreOf<SyncUpForm>
   @FocusState var focus: SyncUpForm.State.Field?
 
   var body: some View {

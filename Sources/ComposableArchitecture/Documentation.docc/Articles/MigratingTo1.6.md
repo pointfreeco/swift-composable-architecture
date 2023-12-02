@@ -536,14 +536,21 @@ your feature's state with ``ObservableState()`` and removing all instances of ``
  }
 ```
 
-In the view you must start holding onto the `store` as `@State`:
+In the view you must start holding onto the `store` in a bindable manner, which means using 
+``BindableStore`` if targeting older platforms:
 
 ```swift
-@State var store: StoreOf<Feature>
+@BindableStore var store: StoreOf<Feature>
 ```
 
-In the `body` of the view you can stop using ``WithViewStore`` and instead derive bindings directly
-from the store:
+…or using `@Bindable` if targeting newer platforms:
+
+```swift
+@Bindable var store: StoreOf<Feature>
+```
+
+Then in the `body` of the view you can stop using ``WithViewStore`` and instead derive bindings 
+directly from the store:
 
 ```swift
 var body: some View {
@@ -606,10 +613,17 @@ struct Feature {
 }
 ```
 
-In the view you must start holding onto the `store` as `@State`:
+In the view you must start holding onto the `store` in a bindable manner, which means using 
+``BindableStore`` if targeting older platforms:
 
 ```swift
-@State var store: StoreOf<Feature>
+@BindableStore var store: StoreOf<Feature>
+```
+
+…or using `@Bindable` if targeting newer platforms:
+
+```swift
+@Bindable var store: StoreOf<Feature>
 ```
 
 Then you can derive a binding directly from a ``Store`` binding like so:

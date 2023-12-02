@@ -122,7 +122,7 @@ struct AppFeature {
 }
 
 struct AppView: View {
-  @State var store: StoreOf<AppFeature>
+  @BindableStore var store: StoreOf<AppFeature>
 
   var body: some View {
     NavigationStack(path: $store.scope(state: \.path, action: \.path)) {

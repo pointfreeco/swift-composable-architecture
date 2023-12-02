@@ -104,7 +104,7 @@ struct SyncUpsList {
 }
 
 struct SyncUpsListView: View {
-  @State var store: StoreOf<SyncUpsList>
+  @BindableStore var store: StoreOf<SyncUpsList>
   
   var body: some View {
     List {

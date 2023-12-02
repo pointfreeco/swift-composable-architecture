@@ -116,7 +116,7 @@ struct VoiceMemo {
 }
 
 struct VoiceMemoView: View {
-  @State var store: StoreOf<VoiceMemo>
+  @Bindable var store: StoreOf<VoiceMemo>
 
   var body: some View {
     let currentTime =

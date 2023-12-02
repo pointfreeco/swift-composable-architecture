@@ -143,7 +143,7 @@ struct SyncUpDetail {
 }
 
 struct SyncUpDetailView: View {
-  @State var store: StoreOf<SyncUpDetail>
+  @BindableStore var store: StoreOf<SyncUpDetail>
 
   var body: some View {
     List {

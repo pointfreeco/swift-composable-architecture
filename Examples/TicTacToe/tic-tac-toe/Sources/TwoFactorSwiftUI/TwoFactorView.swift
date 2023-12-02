@@ -4,7 +4,7 @@ import SwiftUI
 import TwoFactorCore
 
 public struct TwoFactorView: View {
-  @State var store: StoreOf<TwoFactor>
+  @Bindable var store: StoreOf<TwoFactor>
 
   public init(store: StoreOf<TwoFactor>) {
     self.store = store
