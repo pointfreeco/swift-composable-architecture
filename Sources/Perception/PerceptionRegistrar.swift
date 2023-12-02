@@ -140,8 +140,7 @@ private func perceptionCheck() {
   #if DEBUG
     if #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10),
       !PerceptionLocals.isInPerceptionTracking,
-      isInSwiftUIStack,
-      !isInKeyPathAccess
+      isInSwiftUIStack
     {
       runtimeWarn(
         """
@@ -154,11 +153,42 @@ private func perceptionCheck() {
 }
 
 var isInSwiftUIStack: Bool {
-  Thread.callStackSymbols
-    .contains { $0.contains(" AttributeGraph ") }
+  for callStackSymbol in Thread.callStackSymbols {
+    guard
+      let symbol = callStackSymbol.split(separator: " ").dropFirst(3).first,
+      symbol.hasPrefix("$"),
+      String(symbol).demangled.hasPrefix("protocol witness for SwiftUI.View.body.getter : ")
+    else { continue }
+    return true
+  }
+  return false
 }
 
-var isInKeyPathAccess: Bool {
-  Thread.callStackSymbols
-    .contains { $0.contains("swift_getAtKeyPath") }
+extension String {
+  fileprivate var demangled: String {
+    return self.utf8CString.withUnsafeBufferPointer { mangledNameUTF8CStr in
+      let demangledNamePtr = swift_demangle(
+        mangledName: mangledNameUTF8CStr.baseAddress,
+        mangledNameLength: UInt(mangledNameUTF8CStr.count - 1),
+        outputBuffer: nil,
+        outputBufferSize: nil,
+        flags: 0
+      )
+      if let demangledNamePtr = demangledNamePtr {
+        let demangledName = String(cString: demangledNamePtr)
+        free(demangledNamePtr)
+        return demangledName
+      }
+      return self
+    }
+  }
 }
+
+@_silgen_name("swift_demangle")
+private func swift_demangle(
+    mangledName: UnsafePointer<CChar>?,
+    mangledNameLength: UInt,
+    outputBuffer: UnsafeMutablePointer<CChar>?,
+    outputBufferSize: UnsafeMutablePointer<UInt>?,
+    flags: UInt32
+) -> UnsafeMutablePointer<CChar>?
