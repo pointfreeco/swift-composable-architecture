@@ -65,9 +65,7 @@ public struct PresentationState<State> {
 
   public var wrappedValue: State? {
     get {
-      if State.self is ObservableState {
-        self._$observationRegistrar.access(self, keyPath: \.wrappedValue)
-      }
+      self._$observationRegistrar.access(self, keyPath: \.wrappedValue)
       return self.storage.state
     }
     set {
@@ -78,10 +76,7 @@ public struct PresentationState<State> {
           self.storage.state = newValue
         }
       }
-      if
-        State.self is ObservableState,
-        !_$isIdentityEqual(self.storage.state, newValue)
-      {
+      if !_$isIdentityEqual(self.storage.state, newValue) {
         self._$observationRegistrar.withMutation(of: self, keyPath: \.wrappedValue) {
           update()
         }
