@@ -81,20 +81,12 @@ extension BindableAction where State: ObservableState {
 }
 
 extension Store where State: ObservableState, Action: BindableAction, Action.State == State {
+  @_disfavoredOverload
   public subscript<Value: Equatable>(
     dynamicMember keyPath: WritableKeyPath<State, Value>
   ) -> Value {
     get { self.observableState[keyPath: keyPath] }
-    set {
-      #if DEBUG
-        if Thread.isDismissing {
-          return BindingLocal.$isActive.withValue(true) {
-            self.send(.binding(.set(keyPath, newValue)))
-          }
-        }
-      #endif
-      self.send(.binding(.set(keyPath, newValue)))
-    }
+    set { self.send(.binding(.set(keyPath, newValue))) }
   }
 }
 
@@ -105,6 +97,7 @@ where
   Action: BindableAction,
   Action.State == State
 {
+  @_disfavoredOverload
   public var state: State {
     get { self.observableState }
     set { self.send(.binding(.set(\.self, newValue))) }
@@ -118,41 +111,100 @@ where
   Action.ViewAction: BindableAction,
   Action.ViewAction.State == State
 {
+  @_disfavoredOverload
   public subscript<Value: Equatable>(
     dynamicMember keyPath: WritableKeyPath<State, Value>
   ) -> Value {
     get { self.observableState[keyPath: keyPath] }
-    set {
-      #if DEBUG
-        if Thread.isDismissing {
-          return BindingLocal.$isActive.withValue(true) {
-            self.send(.view(.binding(.set(keyPath, newValue))))
-          }
-        }
-      #endif
-      self.send(.view(.binding(.set(keyPath, newValue))))
-    }
+    set { self.send(.view(.binding(.set(keyPath, newValue)))) }
   }
 }
 
+extension Store
+where
+  State: Equatable,
+  State: ObservableState,
+  Action: ViewAction,
+  Action.ViewAction: BindableAction,
+  Action.ViewAction.State == State
+{
+  @_disfavoredOverload
+  public var state: State {
+    get { self.observableState }
+    set { self.send(.view(.binding(.set(\.self, newValue)))) }
+  }
+}
+
+// NB: These overloads ensure runtime warnings aren't emitted for errant SwiftUI bindings.
 #if DEBUG
-  extension Thread {
-    fileprivate static var isDismissing: Bool {
-      var isResigning = false
-      for callStackSymbol in self.callStackSymbols {
-        guard let symbol = callStackSymbol.split(separator: " ", maxSplits: 3).last
-        else { continue }
-        if isResigning {
-          if symbol.hasPrefix("-[UIViewController dismiss") {
-            return true
-          }
-        } else {
-          if symbol.hasPrefix("-[UITextField resignFirstResponder") {
-            isResigning = true
+  extension Binding {
+    public subscript<State: ObservableState, Action: BindableAction, Member: Equatable>(
+      dynamicMember keyPath: WritableKeyPath<State, Member>
+    ) -> Binding<Member>
+    where Value == Store<State, Action>, Action.State == State {
+      Binding<Member>(
+        get: { self.wrappedValue.stateSubject.value[keyPath: keyPath] },
+        set: { newValue, transaction in
+          BindingLocal.$isActive.withValue(true) {
+            _ = self.transaction(transaction).wrappedValue.send(.binding(.set(keyPath, newValue)))
           }
         }
-      }
-      return false
+      )
+    }
+
+    public subscript<State: ObservableState, Action: ViewAction, Member: Equatable>(
+      dynamicMember keyPath: WritableKeyPath<State, Member>
+    ) -> Binding<Member>
+    where
+      Value == Store<State, Action>,
+      Action.ViewAction: BindableAction,
+      Action.ViewAction.State == State
+    {
+      Binding<Member>(
+        get: { self.wrappedValue.state[keyPath: keyPath] },
+        set: { newValue, transaction in
+          BindingLocal.$isActive.withValue(true) {
+            _ = self.transaction(transaction).wrappedValue.send(
+              .view(.binding(.set(keyPath, newValue)))
+            )
+          }
+        }
+      )
+    }
+  }
+
+  @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
+  extension Bindable {
+    public subscript<State: ObservableState, Action: BindableAction, Member: Equatable>(
+      dynamicMember keyPath: WritableKeyPath<State, Member>
+    ) -> Binding<Member>
+    where Value == Store<State, Action>, Action.State == State {
+      Binding<Member>(
+        get: { self.wrappedValue.stateSubject.value[keyPath: keyPath] },
+        set: { newValue, transaction in
+          BindingLocal.$isActive.withValue(true) {
+            _ = self.wrappedValue.send(.binding(.set(keyPath, newValue)))
+          }
+        }
+      )
+    }
+
+    public subscript<State: ObservableState, Action: ViewAction, Member: Equatable>(
+      dynamicMember keyPath: WritableKeyPath<State, Member>
+    ) -> Binding<Member>
+    where
+      Value == Store<State, Action>,
+      Action.ViewAction: BindableAction,
+      Action.ViewAction.State == State
+    {
+      Binding<Member>(
+        get: { self.wrappedValue.state[keyPath: keyPath] },
+        set: { newValue, transaction in
+          BindingLocal.$isActive.withValue(true) {
+            _ = self.wrappedValue.send(.view(.binding(.set(keyPath, newValue))))
+          }
+        }
+      )
     }
   }
 #endif
