@@ -156,8 +156,9 @@ var isInSwiftUIStack: Bool {
   for callStackSymbol in Thread.callStackSymbols {
     guard
       let symbol = callStackSymbol.split(separator: " ").dropFirst(3).first,
-      symbol.hasPrefix("$"),
-      String(symbol).demangled.hasPrefix("protocol witness for SwiftUI.View.body.getter : ")
+      symbol.utf8.first == .init(ascii: "$"),
+      let demangled = String(symbol).demangled,
+      demangled.hasPrefix("protocol witness for SwiftUI.View.body.getter : ")
     else { continue }
     return true
   }
@@ -165,7 +166,7 @@ var isInSwiftUIStack: Bool {
 }
 
 extension String {
-  fileprivate var demangled: String {
+  fileprivate var demangled: String? {
     return self.utf8CString.withUnsafeBufferPointer { mangledNameUTF8CStr in
       let demangledNamePtr = swift_demangle(
         mangledName: mangledNameUTF8CStr.baseAddress,
@@ -179,7 +180,7 @@ extension String {
         free(demangledNamePtr)
         return demangledName
       }
-      return self
+      return nil
     }
   }
 }
