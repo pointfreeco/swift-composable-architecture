@@ -136,6 +136,7 @@ where
 }
 
 // NB: These overloads ensure runtime warnings aren't emitted for errant SwiftUI bindings.
+// TODO: Should the above disfavored overloads be non-disfavored in release builds?
 #if DEBUG
   extension Binding {
     public subscript<State: ObservableState, Action: BindableAction, Member: Equatable>(

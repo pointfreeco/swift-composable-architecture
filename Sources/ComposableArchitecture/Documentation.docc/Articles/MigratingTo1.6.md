@@ -305,7 +305,7 @@ struct Feature {
     @Presents var child: Child.State?
   }
   enum Action {
-    case child(PresentationAction<Child.State>
+    case child(PresentationAction<Child.Action>)
   }
   var body: some ReducerOf<Self> { /* ... */ }
 }
@@ -499,8 +499,8 @@ struct ViewState: Equatable {
   @BindingViewState var text: String
   @BindingViewState var isOn: Bool
   init(store: BindingViewStore<Feature.State>) {
-    self._text = bindingViewStore.$text
-    self._isOn = bindingViewStore.$isOn
+    self._text = store.$text
+    self._isOn = store.$isOn
   }
 }
 
