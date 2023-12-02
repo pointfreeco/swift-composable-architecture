@@ -5,7 +5,7 @@ import GameCore
 public struct NewGame {
   @ObservableState
   public struct State: Equatable {
-    @PresentationState public var game: Game.State?
+    @Presents public var game: Game.State?
     public var oPlayerName = ""
     public var xPlayerName = ""
 

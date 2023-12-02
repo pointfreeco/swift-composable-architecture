@@ -1,6 +1,5 @@
 @_spi(Reflection) import CasePaths
 import Combine
-import Perception
 
 /// A property wrapper for state that can be presented.
 ///
@@ -64,26 +63,12 @@ public struct PresentationState<State> {
   }
 
   public var wrappedValue: State? {
-    get {
-      self._$observationRegistrar.access(self, keyPath: \.wrappedValue)
-      return self.storage.state
-    }
+    get { self.storage.state }
     set {
-      func update() {
-        if !isKnownUniquelyReferenced(&self.storage) {
-          self.storage = Storage(state: newValue)
-        } else {
-          self.storage.state = newValue
-        }
-      }
-      if
-        !_$isIdentityEqual(self.storage.state, newValue)
-      {
-        self._$observationRegistrar.withMutation(of: self, keyPath: \.wrappedValue) {
-          update()
-        }
+      if !isKnownUniquelyReferenced(&self.storage) {
+        self.storage = Storage(state: newValue)
       } else {
-        update()
+        self.storage.state = newValue
       }
     }
   }
@@ -168,16 +153,7 @@ public struct PresentationState<State> {
   func sharesStorage(with other: Self) -> Bool {
     self.storage === other.storage
   }
-
-  private let _$observationRegistrar = ObservationRegistrarWrapper()
 }
-
-#if canImport(Observation)
-  @available(macOS 14, iOS 17, watchOS 10, tvOS 17, *)
-  extension PresentationState: Observable {}
-#endif
-
-extension PresentationState: Perceptible {}
 
 extension PresentationState: Equatable where State: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {

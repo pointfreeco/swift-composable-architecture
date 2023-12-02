@@ -38,7 +38,7 @@ form for adding a new item. We can integrate state and actions together by utili
 struct InventoryFeature {
   @ObservableState
   struct State: Equatable {
-    @PresentationState var addItem: ItemFormFeature.State?
+    @Presents var addItem: ItemFormFeature.State?
     var items: IdentifiedArrayOf<Item> = []
     // ...
   }
@@ -135,9 +135,9 @@ tempted to model that with multiple optional values:
 ```swift
 @ObservableState
 struct State {
-  @PresentationState var detailItem: DetailFeature.State?
-  @PresentationState var editItem: EditFeature.State?
-  @PresentationState var addItem: AddFeature.State?
+  @Presents var detailItem: DetailFeature.State?
+  @Presents var editItem: EditFeature.State?
+  @Presents var addItem: AddFeature.State?
   // ...
 }
 ```
@@ -222,7 +222,7 @@ With that done we can now hold onto a _single_ piece of optional state in our fe
 struct InventoryFeature {
   @ObservableState
   struct State { 
-    @PresentationState var destination: Destination.State?
+    @Presents var destination: Destination.State?
     // ...
   }
   enum Action {
@@ -526,7 +526,7 @@ And then let's embed that feature into a parent feature using ``PresentationStat
 struct Feature {
   @ObservableState
   struct State: Equatable {
-    @PresentationState var counter: CounterFeature.State?
+    @Presents var counter: CounterFeature.State?
   }
   enum Action {
     case counter(PresentationAction<CounterFeature.Action>)

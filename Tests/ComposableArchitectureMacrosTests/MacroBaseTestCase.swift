@@ -13,6 +13,7 @@
           ObservableStateMacro.self,
           ObservationStateTrackedMacro.self,
           ObservationStateIgnoredMacro.self,
+          PresentsMacro.self,
           // WithViewStoreMacro.self,
         ]
       ) {
