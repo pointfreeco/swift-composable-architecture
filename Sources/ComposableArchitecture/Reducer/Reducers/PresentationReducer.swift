@@ -76,7 +76,9 @@ public struct PresentationState<State> {
           self.storage.state = newValue
         }
       }
-      if !_$isIdentityEqual(self.storage.state, newValue) {
+      if
+        !_$isIdentityEqual(self.storage.state, newValue)
+      {
         self._$observationRegistrar.withMutation(of: self, keyPath: \.wrappedValue) {
           update()
         }

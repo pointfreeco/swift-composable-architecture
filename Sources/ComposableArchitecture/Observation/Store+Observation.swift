@@ -8,11 +8,15 @@ import SwiftUI
 extension Store: Perceptible {
   var observableState: State {
     get {
-      self._$observationRegistrar.access(self, keyPath: \.observableState)
+      if State.self is ObservableState.Type {
+        self._$observationRegistrar.access(self, keyPath: \.observableState)
+      }
       return self.stateSubject.value
     }
     set {
-      if !_$isIdentityEqual(self.stateSubject.value, newValue) {
+      if State.self is ObservableState.Type,
+        !_$isIdentityEqual(self.stateSubject.value, newValue)
+      {
         self._$observationRegistrar.withMutation(of: self, keyPath: \.observableState) {
           self.stateSubject.value = newValue
         }
