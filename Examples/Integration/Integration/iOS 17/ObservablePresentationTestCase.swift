@@ -98,8 +98,8 @@ struct ObservablePresentationView: View {
     @ObservableState
     struct State: Equatable {
       var isObservingChildCount = false
-      @PresentationState var destination: Destination.State?
-      @PresentationState var sheet: ObservableBasicsView.Feature.State?
+      @Presents var destination: Destination.State?
+      @Presents var sheet: ObservableBasicsView.Feature.State?
     }
     enum Action {
       case destination(PresentationAction<Destination.Action>)

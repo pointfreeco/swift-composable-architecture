@@ -7,12 +7,12 @@ import TwoFactorCore
 public struct Login: Sendable {
   @ObservableState
   public struct State: Equatable {
-    @PresentationState public var alert: AlertState<Action.Alert>?
+    @Presents public var alert: AlertState<Action.Alert>?
     public var email = ""
     public var isFormValid = false
     public var isLoginRequestInFlight = false
     public var password = ""
-    @PresentationState public var twoFactor: TwoFactor.State?
+    @Presents public var twoFactor: TwoFactor.State?
 
     public init() {}
   }

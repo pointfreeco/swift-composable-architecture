@@ -173,14 +173,12 @@
   public macro ObservationStateIgnored() =
   #externalMacro(module: "ComposableArchitectureMacros", type: "ObservationStateIgnoredMacro")
 
-  //@attached(member, names: named(send))
-  //public macro WithViewStore<R: Reducer>(for: R.Type) = #externalMacro(
-  //  module: "ComposableArchitectureMacros", type: "WithViewStoreMacro"
-  //) where R.Action: ViewAction
-  //
-  //public protocol ViewAction<ViewAction> {
-  //  associatedtype ViewAction
-  //  static func view(_ action: ViewAction) -> Self
-  //  var view: ViewAction? { get }
-  //}
+  /// Wraps a property with ``PresentationState`` and observes it.
+  ///
+  /// Use this macro instead of ``PresentationState`` when you adopt the ``ObservableState()``
+  /// macro, which is incompatible with property wrappers like ``PresentationState``.
+  @attached(accessor, names: named(init), named(get), named(set))
+  @attached(peer, names: prefixed(`$`), prefixed(_))
+  public macro Presents() =
+  #externalMacro(module: "ComposableArchitectureMacros", type: "PresentsMacro")
 #endif
