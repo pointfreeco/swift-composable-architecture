@@ -103,19 +103,14 @@ extension Binding {
     let isInViewBody = PerceptionLocals.isInPerceptionTracking
     return Binding<Store<ChildState, ChildAction>?>(
       get: {
-        // TODO: Is this right? Should we just be more forgiving in bindings?
+        // TODO: Can this be localized to the `Perception` framework?
         PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
-          self.wrappedValue.scope(
-            state: state,
-            action: action.appending(path: \.presented)
-          )
+          self.wrappedValue.scope(state: state, action: action.appending(path: \.presented))
         }
       },
       set: {
         if $0 == nil, self.wrappedValue.stateSubject.value[keyPath: state] != nil {
-          // TODO: Is `transaction($1)` needed and does it do what we want?
-          // TODO: Should it be `send(action(.dismiss), transaction: $1)`, instead?
-          self.transaction($1).wrappedValue.send(action(.dismiss))
+          self.wrappedValue.send(action(.dismiss), transaction: $1)
         }
       }
     )
@@ -137,17 +132,8 @@ extension Bindable {
     action: CaseKeyPath<Action, PresentationAction<ChildAction>>
   ) -> Binding<Store<ChildState, ChildAction>?>
   where Value == Store<State, Action> {
-    let isInViewBody = PerceptionLocals.isInPerceptionTracking
-    return Binding<Store<ChildState, ChildAction>?>(
-      get: {
-        // TODO: Is this right? Should we just be more forgiving in bindings?
-        PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
-          self.wrappedValue.scope(
-            state: state,
-            action: action.appending(path: \.presented)
-          )
-        }
-      },
+    Binding<Store<ChildState, ChildAction>?>(
+      get: { self.wrappedValue.scope(state: state, action: action.appending(path: \.presented)) },
       set: {
         if $0 == nil, self.wrappedValue.stateSubject.value[keyPath: state] != nil {
           self.wrappedValue.send(action(.dismiss))

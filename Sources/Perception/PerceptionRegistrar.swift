@@ -9,6 +9,9 @@ import Foundation
 /// You don't need to create an instance of `PerceptionRegistrar` when using
 /// the ``Perception/Perceptible()`` macro to indicate observability of a type.
 @available(iOS, deprecated: 17, message: "TODO")
+@available(macOS, deprecated: 14, message: "TODO")
+@available(tvOS, deprecated: 17, message: "TODO")
+@available(watchOS, deprecated: 10, message: "TODO")
 public struct PerceptionRegistrar: Sendable {
   private let _rawValue: AnySendable
 
