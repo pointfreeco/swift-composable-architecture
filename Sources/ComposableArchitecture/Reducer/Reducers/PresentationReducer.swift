@@ -2,6 +2,16 @@
 import Combine
 import Perception
 
+
+/*
+ @ObservableState
+ struct Foo {
+   @ObservationTracked
+   @PresentationState var child
+
+   @Presents var child
+ */
+
 /// A property wrapper for state that can be presented.
 ///
 /// Use this property wrapper for modeling a feature's domain that needs to present a child feature
@@ -65,7 +75,9 @@ public struct PresentationState<State> {
 
   public var wrappedValue: State? {
     get {
-      self._$observationRegistrar.access(self, keyPath: \.wrappedValue)
+      if State.self is ObservableState {
+        self._$observationRegistrar.access(self, keyPath: \.wrappedValue)
+      }
       return self.storage.state
     }
     set {
@@ -77,6 +89,7 @@ public struct PresentationState<State> {
         }
       }
       if
+        State.self is ObservableState,
         !_$isIdentityEqual(self.storage.state, newValue)
       {
         self._$observationRegistrar.withMutation(of: self, keyPath: \.wrappedValue) {

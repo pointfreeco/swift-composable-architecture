@@ -71,7 +71,7 @@ struct Refreshable {
 // MARK: - Feature view
 
 struct RefreshableView: View {
-  @State var store = Store(initialState: Refreshable.State()) {
+  @Bindable var store = Store(initialState: Refreshable.State()) {
     Refreshable()
   }
   @State var isLoading = false

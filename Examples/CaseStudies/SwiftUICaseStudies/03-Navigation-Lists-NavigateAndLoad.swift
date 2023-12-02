@@ -74,7 +74,7 @@ struct NavigateAndLoadList {
 // MARK: - Feature view
 
 struct NavigateAndLoadListView: View {
-  @State var store = Store(initialState: NavigateAndLoadList.State()) {
+  @Bindable var store = Store(initialState: NavigateAndLoadList.State()) {
     NavigateAndLoadList()
   }
 

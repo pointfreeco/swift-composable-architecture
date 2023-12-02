@@ -70,7 +70,7 @@ struct MultipleDestinations {
 }
 
 struct MultipleDestinationsView: View {
-  @State var store = Store(initialState: MultipleDestinations.State()) {
+  @Bindable var store = Store(initialState: MultipleDestinations.State()) {
     MultipleDestinations()
   }
 

@@ -315,10 +315,17 @@ Then previously you would drive a sheet presentation from this feature like so:
 ```
 
 You can now replace `sheet(store:)` with the vanilla SwiftUI modifier, `sheet(item:)`. First you
-must hold onto the store in your view in a bindable manner, using `@State`:
+must hold onto the store in your view in a bindable manner, using ``BindableStore`` if targeting
+older platforms:
 
 ```swift
-@State var store: StoreOf<Feature>
+@BindableStore var store: StoreOf<Feature>
+```
+
+…or using `@Bindable` if targeting newer platforms:
+
+```swift
+@Bindable var store: StoreOf<Feature>
 ```
 
 Then you can use `sheet(item:)` like so:
@@ -429,10 +436,17 @@ struct Path {
 }
 ```
 
-Then in the view you must start holding onto the `store` as `@State`:
+Then in the view you must start holding onto the `store` in a bindable manner, using 
+``BindableStore`` if targeting older platforms:
 
 ```swift
-@State var store: StoreOf<Feature>
+@BindableStore var store: StoreOf<Feature>
+```
+
+…or using `@Bindable` if targeting newer platforms:
+
+```swift
+@Bindable var store: StoreOf<Feature>
 ```
 
 And the original code can now be updated to our custom initializer on `NavigationStack`:

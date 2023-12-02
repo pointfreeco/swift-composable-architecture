@@ -66,7 +66,7 @@ struct CounterView: View {
 }
 
 struct CounterDemoView: View {
-  @State var store = Store(initialState: Counter.State()) {
+  @Bindable var store = Store(initialState: Counter.State()) {
     Counter()
   }
 

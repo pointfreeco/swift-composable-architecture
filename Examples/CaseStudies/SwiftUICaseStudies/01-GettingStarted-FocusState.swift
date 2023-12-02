@@ -49,7 +49,7 @@ struct FocusDemo {
 // MARK: - Feature view
 
 struct FocusDemoView: View {
-  @State var store = Store(initialState: FocusDemo.State()) {
+  @Bindable var store = Store(initialState: FocusDemo.State()) {
     FocusDemo()
   }
   @FocusState var focusedField: FocusDemo.State.Field?
