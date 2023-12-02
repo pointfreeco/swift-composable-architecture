@@ -2,7 +2,7 @@ import Perception
 import SwiftUI
 import XCTest
 
-@available(iOS 16.0, *)
+@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 @MainActor
 final class PerceptionTests: XCTestCase {
   func testRuntimeWarning_NotInPerceptionBody() {
@@ -49,14 +49,8 @@ final class PerceptionTests: XCTestCase {
   }
 
   func testRuntimeWarning_NotInPerceptionBody_SwiftUIBinding() async {
-    if #unavailable(iOS 17) {
-      XCTExpectFailure {
-        $0.compactDescription == """
-          Perceptible state was accessed but is not being tracked. Track changes to state by \
-          wrapping your view in a 'WithPerceptionTracking' view.
-          """
-      }
-    }
+    self.expectFailure()
+
     struct FeatureView: View {
       @State var model = Model()
       var body: some View {
@@ -67,14 +61,8 @@ final class PerceptionTests: XCTestCase {
   }
 
   func testRuntimeWarning_InPerceptionBody_SwiftUIBinding() async {
-    if #unavailable(iOS 17) {
-      XCTExpectFailure {
-        $0.compactDescription == """
-          Perceptible state was accessed but is not being tracked. Track changes to state by \
-          wrapping your view in a 'WithPerceptionTracking' view.
-          """
-      }
-    }
+    self.expectFailure()
+
     struct FeatureView: View {
       @State var model = Model()
       var body: some View {
@@ -84,6 +72,17 @@ final class PerceptionTests: XCTestCase {
       }
     }
     _ = ImageRenderer(content: FeatureView()).uiImage
+  }
+
+  private func expectFailure() {
+    if #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10) {
+      XCTExpectFailure {
+        $0.compactDescription == """
+          Perceptible state was accessed but is not being tracked. Track changes to state by \
+          wrapping your view in a 'WithPerceptionTracking' view.
+          """
+      }
+    }
   }
 }
 
