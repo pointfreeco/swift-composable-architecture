@@ -2,16 +2,6 @@
 import Combine
 import Perception
 
-
-/*
- @ObservableState
- struct Foo {
-   @ObservationTracked
-   @PresentationState var child
-
-   @Presents var child
- */
-
 /// A property wrapper for state that can be presented.
 ///
 /// Use this property wrapper for modeling a feature's domain that needs to present a child feature
