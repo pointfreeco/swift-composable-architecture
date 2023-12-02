@@ -64,13 +64,14 @@ of navigation are nested they form a tree-like structure.
 
 For example, suppose you have an inventory feature with a list of items such that tapping one of
 those items performs a drill-down navigation to a detail screen for the item. Then that can be
-modeled with the ``PresentationState`` property wrapper pointing to some optional state:
+modeled with the ``Presents()`` macro pointing to some optional state:
 
 ```swift
 @Reducer
 struct InventoryFeature {
+  @ObservableState
   struct State {
-    @PresentationState var detailItem: DetailItemFeature.State?
+    @Presents var detailItem: DetailItemFeature.State?
     // ...
   }
   // ...
@@ -78,13 +79,14 @@ struct InventoryFeature {
 ```
 
 Then, inside that detail screen there may be a button to edit the item in a sheet, and that too can
-be modeled with a ``PresentationState`` property wrapper pointing to a piece of optional state:
+be modeled with the ``Presents()`` macro pointing to a piece of optional state:
 
 ```swift
 @Reducer
 struct DetailItemFeature {
+  @ObservableState
   struct State {
-    @PresentationState var editItem: EditItemFeature.State?
+    @Presents var editItem: EditItemFeature.State?
     // ...
   }
   // ...
@@ -98,7 +100,7 @@ whether or not an alert is displayed:
 @Reducer
 struct EditItemFeature {
   struct State {
-    @PresentationState var alert: AlertState<AlertAction>?
+    @Presents var alert: AlertState<AlertAction>?
     // ...
   }
   // ...
@@ -198,8 +200,9 @@ be aware of their differences when modeling your domains.
     feature needs only to hold onto a piece of optional edit state:
 
     ```swift
+    @ObservableState
     struct State {
-      @PresentationState var editItem: EditItemFeature.State?
+      @Presents var editItem: EditItemFeature.State?
       // ...
     }
     ```

@@ -14,6 +14,7 @@ import SwiftSyntaxMacros
 import SwiftDiagnostics
 import SwiftOperators
 import SwiftSyntaxBuilder
+import SwiftSyntaxMacroExpansion
 
 public struct ObservableStateMacro {
   static let moduleName = "ComposableArchitecture"
@@ -43,7 +44,8 @@ public struct ObservableStateMacro {
 
   static let trackedMacroName = "ObservationStateTracked"
   static let ignoredMacroName = "ObservationStateIgnored"
-  static let presentationStateMacroName = "PresentationState"
+  static let presentsMacroName = "Presents"
+  static let presentationStatePropertyWrapperName = "PresentationState"
 
   static let registrarVariableName = "_$observationRegistrar"
 
@@ -318,9 +320,52 @@ extension ObservableStateMacro: MemberAttributeMacro {
 
     // dont apply to ignored properties or properties that are already flagged as tracked
     if property.hasMacroApplication(ObservableStateMacro.ignoredMacroName)
-      || property.hasMacroApplication(ObservableStateMacro.presentationStateMacroName)
       || property.hasMacroApplication(ObservableStateMacro.trackedMacroName) {
       return []
+    }
+
+    if let attribute = property.firstAttribute(
+      for: ObservableStateMacro.presentationStatePropertyWrapperName
+    ) {
+      context.diagnose(
+        Diagnostic(
+          node: attribute,
+          message: MacroExpansionErrorMessage(
+            """
+            '@PresentationState' property wrapper cannot be used directly in '@ObservableState'
+            """
+          ),
+          fixIt: FixIt(
+            message: MacroExpansionFixItMessage(
+              """
+              Use '@\(ObservableStateMacro.presentsMacroName)' instead
+              """
+            ),
+            changes: [
+              .replace(
+                oldNode: Syntax(attribute),
+                newNode: Syntax(
+                  attribute.with(
+                    \.attributeName,
+                    TypeSyntax(
+                      IdentifierTypeSyntax(
+                        name: .identifier(ObservableStateMacro.presentsMacroName)
+                      )
+                    )
+                  )
+                )
+              )
+            ]
+          )
+        )
+      )
+      return []
+    }
+
+    if property.hasMacroApplication(ObservableStateMacro.presentsMacroName) {
+      return [
+        AttributeSyntax(attributeName: IdentifierTypeSyntax(name: .identifier(ObservableStateMacro.ignoredMacroName)))
+      ]
     }
 
     return [
@@ -384,7 +429,8 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
     }
 
     if property.hasMacroApplication(ObservableStateMacro.ignoredMacroName)
-      || property.hasMacroApplication(ObservableStateMacro.presentationStateMacroName)
+      || property.hasMacroApplication(ObservableStateMacro.presentationStatePropertyWrapperName)
+      || property.hasMacroApplication(ObservableStateMacro.presentsMacroName)
     {
       return []
     }
@@ -437,7 +483,8 @@ extension ObservationStateTrackedMacro: PeerMacro {
     }
 
     if property.hasMacroApplication(ObservableStateMacro.ignoredMacroName)
-      || property.hasMacroApplication(ObservableStateMacro.presentationStateMacroName)
+      || property.hasMacroApplication(ObservableStateMacro.presentationStatePropertyWrapperName)
+      || property.hasMacroApplication(ObservableStateMacro.presentsMacroName)
       || property.hasMacroApplication(ObservableStateMacro.trackedMacroName)
     {
       return []

@@ -25,8 +25,8 @@ private let readMe = """
 struct AlertAndConfirmationDialog {
   @ObservableState
   struct State: Equatable {
-    @PresentationState var alert: AlertState<Action.Alert>?
-    @PresentationState var confirmationDialog: ConfirmationDialogState<Action.ConfirmationDialog>?
+    @Presents var alert: AlertState<Action.Alert>?
+    @Presents var confirmationDialog: ConfirmationDialogState<Action.ConfirmationDialog>?
     var count = 0
   }
 

@@ -5,11 +5,11 @@ import SwiftUI
 private struct ObservableBindingLocalTestCase {
   @ObservableState
   struct State: Equatable {
-    @PresentationState var fullScreenCover: Child.State?
-    @PresentationState var navigationDestination: Child.State?
+    @Presents var fullScreenCover: Child.State?
+    @Presents var navigationDestination: Child.State?
     var path = StackState<Child.State>()
-    @PresentationState var popover: Child.State?
-    @PresentationState var sheet: Child.State?
+    @Presents var popover: Child.State?
+    @Presents var sheet: Child.State?
   }
   enum Action {
     case fullScreenCover(PresentationAction<Child.Action>)

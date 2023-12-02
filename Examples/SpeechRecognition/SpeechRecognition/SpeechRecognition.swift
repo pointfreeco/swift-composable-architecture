@@ -12,7 +12,7 @@ private let readMe = """
 struct SpeechRecognition {
   @ObservableState
   struct State: Equatable {
-    @PresentationState var alert: AlertState<Action.Alert>?
+    @Presents var alert: AlertState<Action.Alert>?
     var isRecording = false
     var transcribedText = ""
   }
