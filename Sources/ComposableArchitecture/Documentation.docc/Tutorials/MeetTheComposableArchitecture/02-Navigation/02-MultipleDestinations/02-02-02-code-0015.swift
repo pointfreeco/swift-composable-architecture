@@ -42,8 +42,8 @@ struct ContactsView: View {
     }
     .alert(
       store: self.store.scope(
-        state: \.$destination.alert,
-        action: \.destination.alert
+        state: \.$alert,
+        action: \.alert
       )
     )
   }
