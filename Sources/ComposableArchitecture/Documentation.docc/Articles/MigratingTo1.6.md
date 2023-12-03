@@ -26,6 +26,7 @@ you are targeting older platforms.
 * [Replacing NavigationStackStore with NavigationStack](#Replacing-NavigationStackStore-with-NavigationStack)
 * [@BindingState](#BindingState)
 * [ViewStore.binding](#ViewStorebinding)
+* [Computed view state](#Computed-view-state)
 * [View actions](#View-actions)
 * [Incrementally migrating](#Incrementally-migrating)
 
@@ -608,6 +609,33 @@ Then you can derive a binding directly from a ``Store`` binding like so:
 ```swift
 TabView(selection: $store.tab.sending(\.tabChanged)) {
   // ...
+}
+```
+
+## Computed view state
+
+If you are using the `ViewState` pattern in your application, then you may be computing values 
+inside the initializer to be used in the view like so:
+
+```swift
+struct ViewState: Equatable {
+  let fullName: String
+  init(state: Feature.State) {
+    self.fullName = "\(state.firstName) \(state.lastName)"
+  }
+}
+```
+
+In version 1.6 of the library the `ViewState` struct goes away, and so you can move these kinds of 
+computations to be directly on your feature's state:
+
+```swift
+struct State {
+  // State fields
+  
+  var fullName: String {
+    "\(self.firstName) \(self.lastName)"
+  }
 }
 ```
 
