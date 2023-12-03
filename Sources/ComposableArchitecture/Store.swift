@@ -901,12 +901,12 @@ private final class ScopedStoreReducer<RootState, RootAction, State, Action>: Re
 
   @inlinable
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    let isInvalid = self.isInvalid()
-    if isInvalid {
-      self.onInvalidate()
-    }
     self.isSending = true
     defer {
+      let isInvalid = self.isInvalid()
+      if isInvalid {
+        self.onInvalidate()
+      }
       if !isInvalid || state is _OptionalProtocol {
         state = self.toState(self.rootStore.stateSubject.value)
       }
