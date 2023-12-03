@@ -181,4 +181,9 @@
   @attached(peer, names: prefixed(`$`), prefixed(_))
   public macro Presents() =
   #externalMacro(module: "ComposableArchitectureMacros", type: "PresentsMacro")
+
+  @attached(member, names: named(send))
+  public macro ViewAction<R: Reducer>(for: R.Type) = #externalMacro(
+    module: "ComposableArchitectureMacros", type: "ViewActionMacro"
+  ) where R.Action: ViewAction
 #endif
