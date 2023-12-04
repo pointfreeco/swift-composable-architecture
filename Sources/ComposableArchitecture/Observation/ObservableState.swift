@@ -68,6 +68,7 @@ where C.Element: ObservableState {
   // lhs.count == rhs.count && zip(lhs, rhs).allSatisfy { $0._$id == $1._$id }
 }
 
+// NB: Add this fast path so that String is not checked as a collection.
 public func _$isIdentityEqual(_ lhs: String, _ rhs: String) -> Bool {
   false
 }

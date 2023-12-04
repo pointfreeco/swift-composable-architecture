@@ -193,12 +193,6 @@ extension PatternBindingListSyntax {
           accessorBlock: AccessorBlockSyntax(
             accessors: .accessors([
               """
-              @storageRestrictions(initializes: _\(identifier))
-              init(initialValue) {
-              _\(identifier) = initialValue
-              }
-              """,
-              """
               get {
               access(keyPath: \\.\(identifier))
               return _\(identifier.identifier).projectedValue
