@@ -1,10 +1,5 @@
 import SwiftUI
 
-public protocol ViewAction<ViewAction> {
-  associatedtype ViewAction
-  static func view(_ action: ViewAction) -> Self
-}
-
 @dynamicMemberLookup
 public struct _StoreBinding<State, Action> {
   fileprivate let wrappedValue: Store<State, Action>
