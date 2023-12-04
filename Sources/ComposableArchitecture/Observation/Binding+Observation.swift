@@ -219,41 +219,42 @@ where
     }
   }
 
-extension BindableStore {
-  public subscript<Member: Equatable>(
-    dynamicMember keyPath: WritableKeyPath<State, Member>
-  ) -> Binding<Member>
-  where
-  Action.State == State,
-Action: BindableAction {
-    Binding<Member>(
-      get: { self.wrappedValue.stateSubject.value[keyPath: keyPath] },
-      set: { newValue, transaction in
-        BindingLocal.$isActive.withValue(true) {
-          _ = self.wrappedValue.send(.binding(.set(keyPath, newValue)), transaction: transaction)
+  extension BindableStore {
+    public subscript<Member: Equatable>(
+      dynamicMember keyPath: WritableKeyPath<State, Member>
+    ) -> Binding<Member>
+    where
+      Action.State == State,
+      Action: BindableAction
+    {
+      Binding<Member>(
+        get: { self.wrappedValue.stateSubject.value[keyPath: keyPath] },
+        set: { newValue, transaction in
+          BindingLocal.$isActive.withValue(true) {
+            _ = self.wrappedValue.send(.binding(.set(keyPath, newValue)), transaction: transaction)
+          }
         }
-      }
-    )
-  }
+      )
+    }
 
-  public subscript<Member: Equatable>(
-    dynamicMember keyPath: WritableKeyPath<State, Member>
-  ) -> Binding<Member>
-  where
-  Action.ViewAction: BindableAction,
-  Action.ViewAction.State == State,
-Action: ViewAction
-  {
-    Binding<Member>(
-      get: { self.wrappedValue.state[keyPath: keyPath] },
-      set: { newValue, transaction in
-        BindingLocal.$isActive.withValue(true) {
-          _ = self.wrappedValue.send(
-            .view(.binding(.set(keyPath, newValue))), transaction: transaction
-          )
+    public subscript<Member: Equatable>(
+      dynamicMember keyPath: WritableKeyPath<State, Member>
+    ) -> Binding<Member>
+    where
+      Action.ViewAction: BindableAction,
+      Action.ViewAction.State == State,
+      Action: ViewAction
+    {
+      Binding<Member>(
+        get: { self.wrappedValue.state[keyPath: keyPath] },
+        set: { newValue, transaction in
+          BindingLocal.$isActive.withValue(true) {
+            _ = self.wrappedValue.send(
+              .view(.binding(.set(keyPath, newValue))), transaction: transaction
+            )
+          }
         }
-      }
-    )
+      )
+    }
   }
-}
 #endif
