@@ -173,7 +173,7 @@ struct SharedState {
 // MARK: - Feature view
 
 struct SharedStateView: View {
-  @State var store = Store(initialState: SharedState.State()) {
+  @Bindable var store = Store(initialState: SharedState.State()) {
     SharedState()
   }
 

@@ -45,6 +45,15 @@ extension Bindable {
   }
 }
 
+extension BindableStore {
+  @_disfavoredOverload
+  public subscript<Member>(
+    dynamicMember keyPath: KeyPath<State, Member>
+  ) -> _StoreBinding<Member, Action> {
+    _StoreBinding(wrappedValue: self.wrappedValue.scope(state: keyPath, action: \.self))
+  }
+}
+
 extension BindingAction {
   public static func set<Value: Equatable & Sendable>(
     _ keyPath: WritableKeyPath<Root, Value>,
@@ -191,6 +200,45 @@ where
       Value == Store<State, Action>,
       Action.ViewAction: BindableAction,
       Action.ViewAction.State == State
+    {
+      Binding<Member>(
+        get: { self.wrappedValue.state[keyPath: keyPath] },
+        set: { newValue, transaction in
+          BindingLocal.$isActive.withValue(true) {
+            _ = self.wrappedValue.send(
+              .view(.binding(.set(keyPath, newValue))), transaction: transaction
+            )
+          }
+        }
+      )
+    }
+  }
+
+  extension BindableStore {
+    public subscript<Member: Equatable>(
+      dynamicMember keyPath: WritableKeyPath<State, Member>
+    ) -> Binding<Member>
+    where
+      Action.State == State,
+      Action: BindableAction
+    {
+      Binding<Member>(
+        get: { self.wrappedValue.stateSubject.value[keyPath: keyPath] },
+        set: { newValue, transaction in
+          BindingLocal.$isActive.withValue(true) {
+            _ = self.wrappedValue.send(.binding(.set(keyPath, newValue)), transaction: transaction)
+          }
+        }
+      )
+    }
+
+    public subscript<Member: Equatable>(
+      dynamicMember keyPath: WritableKeyPath<State, Member>
+    ) -> Binding<Member>
+    where
+      Action.ViewAction: BindableAction,
+      Action.ViewAction.State == State,
+      Action: ViewAction
     {
       Binding<Member>(
         get: { self.wrappedValue.state[keyPath: keyPath] },

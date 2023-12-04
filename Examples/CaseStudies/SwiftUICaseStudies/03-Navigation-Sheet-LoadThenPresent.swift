@@ -56,7 +56,7 @@ struct LoadThenPresent {
 // MARK: - Feature view
 
 struct LoadThenPresentView: View {
-  @State var store = Store(initialState: LoadThenPresent.State()) {
+  @Bindable var store = Store(initialState: LoadThenPresent.State()) {
     LoadThenPresent()
   }
 

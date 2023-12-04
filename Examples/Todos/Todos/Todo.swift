@@ -20,7 +20,7 @@ struct Todo {
 }
 
 struct TodoView: View {
-  @State var store: StoreOf<Todo>
+  @Bindable var store: StoreOf<Todo>
 
   var body: some View {
     HStack {

@@ -3,7 +3,7 @@ import Perception
 import SwiftUI
 
 struct ObservableSiblingFeaturesView: View {
-  @State var store = Store(initialState: Feature.State()) {
+  @BindableStore var store = Store(initialState: Feature.State()) {
     Feature()
   }
 

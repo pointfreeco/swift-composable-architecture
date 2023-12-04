@@ -71,7 +71,7 @@ struct EffectsCancellation {
 // MARK: - Feature view
 
 struct EffectsCancellationView: View {
-  @State var store = Store(initialState: EffectsCancellation.State()) {
+  @Bindable var store = Store(initialState: EffectsCancellation.State()) {
     EffectsCancellation()
   }
   @Environment(\.openURL) var openURL

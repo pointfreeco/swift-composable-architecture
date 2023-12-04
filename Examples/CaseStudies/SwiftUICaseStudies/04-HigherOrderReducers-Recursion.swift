@@ -56,7 +56,7 @@ struct Nested {
 // MARK: - Feature view
 
 struct NestedView: View {
-  @State var store = Store(initialState: Nested.State(id: UUID())) {
+  @Bindable var store = Store(initialState: Nested.State(id: UUID())) {
     Nested()
   }
 
