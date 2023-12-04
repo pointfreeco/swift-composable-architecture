@@ -3,7 +3,7 @@ import Perception
 import SwiftUI
 
 struct ObservableSiblingFeaturesView: View {
-  @State var store = Store(initialState: Feature.State()) {
+  @BindableStore var store = Store(initialState: Feature.State()) {
     Feature()
   }
 
@@ -36,9 +36,6 @@ struct ObservableSiblingFeaturesView: View {
             Button("Swap") {
               self.store.send(.swapButtonTapped)
             }
-            Button("Swap w/ replacements") {
-              self.store.send(.swapWithReplacementsButtonTapped)
-            }
           }
         }
         // NB: Conditional child views of `Form` that use `@State` are stale when they reappear.
@@ -51,7 +48,7 @@ struct ObservableSiblingFeaturesView: View {
   }
 
   @Reducer
-  struct Feature: Reducer {
+  struct Feature {
     @ObservableState
     struct State: Equatable {
       var child1 = ObservableBasicsView.Feature.State()
@@ -63,7 +60,6 @@ struct ObservableSiblingFeaturesView: View {
       case resetAllButtonTapped
       case resetSelfButtonTapped
       case swapButtonTapped
-      case swapWithReplacementsButtonTapped
     }
     var body: some ReducerOf<Self> {
       Scope(state: \.child1, action: \.child1) {
@@ -89,11 +85,6 @@ struct ObservableSiblingFeaturesView: View {
           let copy = state.child1
           state.child1 = state.child2
           state.child2 = copy
-          return .none
-        case .swapWithReplacementsButtonTapped:
-          let copy = state.child1
-          state.child1.replace(with: .init())
-          state.child2.replace(with: .init())
           return .none
         }
       }

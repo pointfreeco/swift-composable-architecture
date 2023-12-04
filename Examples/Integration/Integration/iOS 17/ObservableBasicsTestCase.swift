@@ -4,7 +4,7 @@ import SwiftUI
 
 struct ObservableBasicsView: View {
   var showExtraButtons = false
-  @State var store = Store(initialState: Feature.State()) {
+  @BindableStore var store = Store(initialState: Feature.State()) {
     Feature()
   }
 
@@ -19,8 +19,6 @@ struct ObservableBasicsView: View {
         Button("Copy, increment, discard") { self.store.send(.copyIncrementDiscard) }
         Button("Copy, increment, set") { self.store.send(.copyIncrementSet) }
         Button("Reset") { self.store.send(.resetButtonTapped) }
-        Button("Reset w/ mutating func") { self.store.send(.resetMutatingMethodButtonTapped) }
-        Button("Replace") { self.store.send(.replaceButtonTapped) }
       }
     }
   }
@@ -31,12 +29,6 @@ struct ObservableBasicsView: View {
     struct State: Equatable, Identifiable {
       let id = UUID()
       var count = 0
-      mutating func reset() {
-        self = Self()
-      }
-      mutating func replace(with other: Self) {
-        self = other
-      }
     }
     enum Action {
       case copyIncrementDiscard
@@ -44,9 +36,7 @@ struct ObservableBasicsView: View {
       case decrementButtonTapped
       case dismissButtonTapped
       case incrementButtonTapped
-      case replaceButtonTapped
       case resetButtonTapped
-      case resetMutatingMethodButtonTapped
     }
     @Dependency(\.dismiss) var dismiss
     var body: some ReducerOf<Self> {
@@ -69,14 +59,8 @@ struct ObservableBasicsView: View {
         case .incrementButtonTapped:
           state.count += 1
           return .none
-        case .replaceButtonTapped:
-          state.replace(with: State())
-          return .none
         case .resetButtonTapped:
           state = State()
-          return .none
-        case .resetMutatingMethodButtonTapped:
-          state.reset()
           return .none
         }
       }
