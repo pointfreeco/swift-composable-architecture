@@ -464,12 +464,12 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
         if _$isObservableState(_\(identifier)) {
           let oldValue = _\(identifier)
           yield &_\(identifier)
-          if !_$isIdentityEqual(oldValue, _\(identifier)) {
-            let newValue = _\(identifier)
-            _\(identifier) = oldValue
-            withMutation(keyPath: \\.\(identifier)) {
-              _\(identifier) = newValue
-            }
+          guard !_$isIdentityEqual(oldValue, _\(identifier))
+          else { return }
+          let newValue = _\(identifier)
+          _\(identifier) = oldValue
+          withMutation(keyPath: \\.\(identifier)) {
+            _\(identifier) = newValue
           }
         } else {
           _$observationRegistrar.willSet(self, keyPath: \\.\(identifier))

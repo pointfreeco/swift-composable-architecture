@@ -43,7 +43,7 @@ final class ObservableTests: BaseTCATestCase {
     var state = ParentState()
     let childDidChange = self.expectation(description: "child.didChange")
 
-    var child = state.child
+    let child = state.child
     withPerceptionTracking {
       _ = child.count
     } onChange: {
@@ -271,7 +271,7 @@ private struct ParentState: Equatable {
   @Presents var optional: ChildState?
   var sibling = ChildState()
   mutating func swap() {
-    var childCopy = child
+    let childCopy = child
     self.child = self.sibling
     self.sibling = childCopy
   }
