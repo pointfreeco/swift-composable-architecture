@@ -37,12 +37,29 @@
               return _count
             }
             set {
-              if _$isIdentityEqual(newValue, _count) == true {
+              withMutation(keyPath: \.count) {
                 _count = newValue
-              } else {
+              }
+            }
+            _modify {
+              if _$isObservableState(_count) {
+                let oldValue = _count
+                yield &_count
+                guard !_$isIdentityEqual(oldValue, _count)
+                else {
+                  return
+                }
+                let newValue = _count
+                _count = oldValue
                 withMutation(keyPath: \.count) {
                   _count = newValue
                 }
+              } else {
+                _$observationRegistrar.willSet(self, keyPath: \.count)
+                defer {
+                  _$observationRegistrar.didSet(self, keyPath: \.count)
+                }
+                yield &_count
               }
             }
           }
@@ -91,12 +108,29 @@
               return _count
             }
             set {
-              if _$isIdentityEqual(newValue, _count) == true {
+              withMutation(keyPath: \.count) {
                 _count = newValue
-              } else {
+              }
+            }
+            _modify {
+              if _$isObservableState(_count) {
+                let oldValue = _count
+                yield &_count
+                guard !_$isIdentityEqual(oldValue, _count)
+                else {
+                  return
+                }
+                let newValue = _count
+                _count = oldValue
                 withMutation(keyPath: \.count) {
                   _count = newValue
                 }
+              } else {
+                _$observationRegistrar.willSet(self, keyPath: \.count)
+                defer {
+                  _$observationRegistrar.didSet(self, keyPath: \.count)
+                }
+                yield &_count
               }
             }
           }
