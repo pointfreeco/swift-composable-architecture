@@ -4,7 +4,6 @@ import SwiftSyntaxMacroExpansion
 import SwiftSyntaxMacros
 
 public struct ViewActionMacro: ExtensionMacro {
-
   public static func expansion<D: DeclGroupSyntax, T: TypeSyntaxProtocol, C: MacroExpansionContext>(
     of node: AttributeSyntax,
     attachedTo declaration: D,
@@ -27,7 +26,10 @@ public struct ViewActionMacro: ExtensionMacro {
           leadingTrivia: declarationWithStoreVariable.memberBlock.members.first?.leadingTrivia
             ?? "\n    ",
           decl: VariableDeclSyntax(
-            bindingSpecifier: .keyword(.let),
+            bindingSpecifier: declaration.modifiers
+              .contains(where: { $0.name.tokenKind == .keyword(.public) })
+              ? "public let"
+              : "let",
             bindings: [
               PatternBindingSyntax(
                 pattern: " store" as PatternSyntax,

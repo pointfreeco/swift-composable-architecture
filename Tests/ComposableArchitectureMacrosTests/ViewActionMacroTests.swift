@@ -169,6 +169,54 @@ final class ViewActionMacroTests: XCTestCase {
     }
   }
 
+  func testNoStore_Public() {
+    assertMacro {
+      """
+      @ViewAction(for: Feature.self)
+      public struct FeatureView: View {
+        public var body: some View {
+          EmptyView()
+        }
+      }
+      """
+    } diagnostics: {
+      """
+      @ViewAction(for: Feature.self)
+      ╰─ 🛑 '@ViewAction' requires 'FeatureView' to have a 'store' property of type 'Store'.
+         ✏️ Add 'store'
+      public struct FeatureView: View {
+        public var body: some View {
+          EmptyView()
+        }
+      }
+      """
+    } fixes: {
+      """
+      @ViewAction(for: Feature.self)
+      public struct FeatureView: View {
+        public let store: StoreOf<Feature>
+
+        public var body: some View {
+          EmptyView()
+        }
+      }
+      """
+    } expansion: {
+      """
+      public struct FeatureView: View {
+        public let store: StoreOf<Feature>
+
+        public var body: some View {
+          EmptyView()
+        }
+      }
+
+      extension FeatureView: ComposableArchitecture.ViewActionSending {
+      }
+      """
+    }
+  }
+
   func testWarning_StoreSend() {
     assertMacro {
       """
@@ -324,7 +372,7 @@ final class ViewActionMacroTests: XCTestCase {
       struct FeatureView: View {
         var store: StoreOf<Feature>
         var body: some View {
-          Button("Tap") { send(.tap) }
+          Button("Tap") { self.send(.tap) }
         }
       }
       """
@@ -333,7 +381,7 @@ final class ViewActionMacroTests: XCTestCase {
       struct FeatureView: View {
         var store: StoreOf<Feature>
         var body: some View {
-          Button("Tap") { send(.tap) }
+          Button("Tap") { self.send(.tap) }
         }
       }
 
