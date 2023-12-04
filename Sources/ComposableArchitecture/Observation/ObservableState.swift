@@ -105,3 +105,11 @@ public func _$isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
     return false
   }
 }
+
+public func _$isObservableState<T>(_: T) -> Bool {
+  T.self is ObservableState.Type
+}
+
+public func _$isObservableState(_: some ObservableState) -> Bool {
+  true
+}
