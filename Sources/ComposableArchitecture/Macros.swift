@@ -158,6 +158,7 @@
     module: "ComposableArchitectureMacros", type: "ReducerMacro"
   )
 
+  /// Defines and implements conformance of the Observable protocol.
   @attached(extension, conformances: Observable, ObservableState)
   @attached(member, names: named(_$id), named(_$observationRegistrar), named(access), named(withMutation))
   @attached(memberAttribute)
@@ -181,4 +182,61 @@
   @attached(peer, names: prefixed(`$`), prefixed(_))
   public macro Presents() =
   #externalMacro(module: "ComposableArchitectureMacros", type: "PresentsMacro")
+
+  /// Provides a view with access to a feature's ``ViewAction``s.
+  ///
+  /// If you want to restrict what actions can be sent from the view you can use this macro along
+  /// the ``ViewAction`` protocol. You start by conforming your reducer's `Action` enum to the
+  /// ``ViewAction`` protocol, and moving view-specific actions to its own inner enum:
+  ///
+  /// ```swift
+  /// @Reducer
+  /// struct Feature {
+  ///   struct State { /* ... */ }
+  ///   enum Action: ViewAction {
+  ///     case loginResponse(Bool)
+  ///     case view(View)
+  ///
+  ///     enum View {
+  ///       case loginButtonTapped
+  ///     }
+  ///   }
+  ///   // ...
+  /// }
+  /// ```
+  ///
+  /// Then you can apply the ``ViewAction(for:)`` macro to your view by specifying the type of the
+  /// reducer that powers the view:
+  ///
+  /// ```swift
+  /// @ViewAction(for: Feature.self)
+  /// struct FeatureView: View {
+  ///   let store: StoreOf<Feature>
+  ///   // ...
+  /// }
+  /// ```
+  ///
+  /// The macro does two things:
+  ///
+  /// * It adds a `send` method to the view that you can use instead of `store.send`. This allows
+  /// you to send view actions more simply, without wrapping the action in `.view(…)`:
+  ///   ```diff
+  ///    Button("Login") {
+  ///   -  store.send(.view(.loginButtonTapped))
+  ///   +  send(.loginButtonTapped)
+  ///    }
+  ///   ```
+  /// * It creates warning diagnostics if you try sending actions through `store.send` rather than
+  /// using the `send` method on the view:
+  ///   ```swift
+  ///   Button("Login") {
+  ///     store.send(.view(.loginButtonTapped))
+  ///   //┬─────────
+  ///   //╰─ ⚠️ Do not use 'store.send' directly when using '@ViewAction'
+  ///   }
+  ///   ```
+  @attached(extension, conformances: ViewActionSending)
+  public macro ViewAction<R: Reducer>(for: R.Type) = #externalMacro(
+    module: "ComposableArchitectureMacros", type: "ViewActionMacro"
+  ) where R.Action: ViewAction
 #endif

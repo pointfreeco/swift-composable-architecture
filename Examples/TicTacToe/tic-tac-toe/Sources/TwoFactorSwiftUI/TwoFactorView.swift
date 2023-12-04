@@ -3,8 +3,9 @@ import ComposableArchitecture
 import SwiftUI
 import TwoFactorCore
 
+@ViewAction(for: TwoFactor.self)
 public struct TwoFactorView: View {
-  @Bindable var store: StoreOf<TwoFactor>
+  @Bindable public var store: StoreOf<TwoFactor>
 
   public init(store: StoreOf<TwoFactor>) {
     self.store = store
@@ -28,7 +29,7 @@ public struct TwoFactorView: View {
           UIApplication.shared.sendAction(
             #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
           )
-          store.send(.view(.submitButtonTapped))
+          send(.submitButtonTapped)
         }
         .disabled(store.isSubmitButtonDisabled)
 

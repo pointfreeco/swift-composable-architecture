@@ -3,7 +3,7 @@ import GameCore
 import SwiftUI
 
 public struct GameView: View {
-  @Bindable var store: StoreOf<Game>
+  let store: StoreOf<Game>
 
   public init(store: StoreOf<Game>) {
     self.store = store

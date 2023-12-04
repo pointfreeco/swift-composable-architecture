@@ -5,8 +5,9 @@ import SwiftUI
 import TwoFactorCore
 import TwoFactorSwiftUI
 
+@ViewAction(for: Login.self)
 public struct LoginView: View {
-  @Bindable var store: StoreOf<Login>
+  @Bindable public var store: StoreOf<Login>
 
   public init(store: StoreOf<Login>) {
     self.store = store
@@ -39,7 +40,7 @@ public struct LoginView: View {
         _ = UIApplication.shared.sendAction(
           #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
         )
-        store.send(.view(.loginButtonTapped))
+        send(.loginButtonTapped)
       } label: {
         HStack {
           Text("Log in")

@@ -667,8 +667,97 @@ struct State {
 }
 ```
 
-<!--## View actions-->
-<!--TODO-->
+## View actions
+
+There is a common pattern in the Composable Architecture community to separate actions that are
+sent in the view from actions that are used internally in the feature, such as emissions of effects.
+Typically this looks like the following:
+
+```swift
+@Reducer
+struct Feature
+  struct State { /* ... */ }
+  enum Action {
+    case loginResponse(Bool)
+    case view(View)
+
+    enum View {
+      case loginButtonTapped
+    }
+  }
+  // ...
+}
+```
+
+And then in the view you would use ``WithViewStore`` with the `send` argument to specify which 
+actions the view has access to:
+
+```swift
+struct FeatureView: View {
+  let store: StoreOf<Feature>
+
+  var body: some View {
+    WithViewStore(
+      store, 
+      observe: { $0 }, 
+      send: Feature.Action.view  // 👈
+    ) { viewStore in
+      Button("Login") {
+        viewStore.send(.loginButtonTapped) 
+      }
+    }
+  }
+}
+```
+
+That makes it so that you can send `view` actions without wrapping the action in `.view(…)`, and
+it makes it so that you can only send `view` actions. For example, the view cannot send the
+`loginResponse` action:
+
+```swift
+viewStore.send(.loginResponse(false))
+// 🛑 Type 'Feature.Action.View' has no member 'loginResponse'
+```
+
+This pattern is still possible with version 1.6 of the library, but requires a few small changes.
+First, you must make your `View` action enum conform to the ``ViewAction`` protocol:
+
+```swift
+@Reducer
+struct Feature
+  // ...
+  enum Action: ViewAction {  // 👈
+    // ...
+  }
+  // ...
+}
+```
+
+And second, you can use the ``ViewAction(for:)`` macro on your view by specifying the reducer that
+powers the view. This gives you access to a `send` method in the view for sending view actions
+rather than going through ``Store/send(_:)``:
+
+```diff
++@ViewAction(for: Feature.self)
+ struct FeatureView: View {
+   let store: StoreOf<Feature>
+ 
+   var body: some View {
+-    WithViewStore(
+-      store, 
+-      observe: { $0 }, 
+-      send: Feature.Action.view
+-    ) { viewStore in
+       Button("Login") { 
+-        viewStore.send(.loginButtonTapped) 
++        send(.loginButtonTapped)
+       }
+     }
+-  }
+ }
+```
+
+
 
 ## Incrementally migrating
 
