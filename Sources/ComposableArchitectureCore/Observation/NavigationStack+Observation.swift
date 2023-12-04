@@ -94,6 +94,121 @@ extension NavigationStack {
 }
 
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+extension NavigationLink where Destination == Never {
+  /// Creates a navigation link that presents the view corresponding to an element of
+  /// ``StackState``.
+  ///
+  /// When someone activates the navigation link that this initializer creates, SwiftUI looks for a
+  /// parent ``NavigationStackStore`` view with a store of ``StackState`` containing elements that
+  /// matches the type of this initializer's `state` input.
+  ///
+  /// See SwiftUI's documentation for `NavigationLink.init(value:label:)` for more.
+  ///
+  /// - Parameters:
+  ///   - state: An optional value to present. When the user selects the link, SwiftUI stores a copy
+  ///     of the value. Pass a `nil` value to disable the link.
+  ///   - label: A label that describes the view that this link presents.
+  public init<P, L: View>(
+    state: P?,
+    @ViewBuilder label: () -> L,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  )
+  where Label == _NavigationLinkStoreContent<P, L> {
+    @Dependency(\.stackElementID) var stackElementID
+    self.init(value: state.map { StackState.Component(id: stackElementID(), element: $0) }) {
+      _NavigationLinkStoreContent<P, L>(
+        state: state, label: { label() }, fileID: fileID, line: line
+      )
+    }
+  }
+
+  /// Creates a navigation link that presents the view corresponding to an element of
+  /// ``StackState``, with a text label that the link generates from a localized string key.
+  ///
+  /// When someone activates the navigation link that this initializer creates, SwiftUI looks for a
+  /// parent ``NavigationStackStore`` view with a store of ``StackState`` containing elements that
+  /// matches the type of this initializer's `state` input.
+  ///
+  /// See SwiftUI's documentation for `NavigationLink.init(_:value:)` for more.
+  ///
+  /// - Parameters:
+  ///   - titleKey: A localized string that describes the view that this link
+  ///     presents.
+  ///   - state: An optional value to present. When the user selects the link, SwiftUI stores a copy
+  ///     of the value. Pass a `nil` value to disable the link.
+  public init<P>(
+    _ titleKey: LocalizedStringKey, state: P?, fileID: StaticString = #fileID, line: UInt = #line
+  )
+  where Label == _NavigationLinkStoreContent<P, Text> {
+    self.init(state: state, label: { Text(titleKey) }, fileID: fileID, line: line)
+  }
+
+  /// Creates a navigation link that presents the view corresponding to an element of
+  /// ``StackState``, with a text label that the link generates from a title string.
+  ///
+  /// When someone activates the navigation link that this initializer creates, SwiftUI looks for a
+  /// parent ``NavigationStackStore`` view with a store of ``StackState`` containing elements that
+  /// matches the type of this initializer's `state` input.
+  ///
+  /// See SwiftUI's documentation for `NavigationLink.init(_:value:)` for more.
+  ///
+  /// - Parameters:
+  ///   - title: A string that describes the view that this link presents.
+  ///   - state: An optional value to present. When the user selects the link, SwiftUI stores a copy
+  ///     of the value. Pass a `nil` value to disable the link.
+  @_disfavoredOverload
+  public init<S: StringProtocol, P>(
+    _ title: S, state: P?, fileID: StaticString = #fileID, line: UInt = #line
+  )
+  where Label == _NavigationLinkStoreContent<P, Text> {
+    self.init(state: state, label: { Text(title) }, fileID: fileID, line: line)
+  }
+}
+
+public struct _NavigationLinkStoreContent<State, Label: View>: View {
+  let state: State?
+  @ViewBuilder let label: Label
+  let fileID: StaticString
+  let line: UInt
+  @Environment(\.navigationDestinationType) var navigationDestinationType
+
+  public var body: some View {
+    #if DEBUG
+      self.label.onAppear {
+        if self.navigationDestinationType != State.self {
+          runtimeWarn(
+            """
+            A navigation link at "\(self.fileID):\(self.line)" is unpresentable. …
+
+              NavigationStackStore element type:
+                \(self.navigationDestinationType.map(typeName) ?? "(None found in view hierarchy)")
+              NavigationLink state type:
+                \(typeName(State.self))
+              NavigationLink state value:
+              \(String(customDumping: self.state).indent(by: 2))
+            """
+          )
+        }
+      }
+    #else
+      self.label
+    #endif
+  }
+}
+
+private struct NavigationDestinationTypeKey: EnvironmentKey {
+  static var defaultValue: Any.Type? { nil }
+}
+
+extension EnvironmentValues {
+  var navigationDestinationType: Any.Type? {
+    get { self[NavigationDestinationTypeKey.self] }
+    set { self[NavigationDestinationTypeKey.self] = newValue }
+  }
+}
+
+@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 public struct _NavigationDestinationViewModifier<
   State: ObservableState, Action, Destination: View
 >:
@@ -129,3 +244,75 @@ public struct _NavigationDestinationViewModifier<
       }
   }
 }
+
+extension StackState {
+  var path: PathView {
+    _read { yield PathView(base: self) }
+    _modify {
+      var path = PathView(base: self)
+      yield &path
+      self = path.base
+    }
+    set { self = newValue.base }
+  }
+
+  public struct Component: Hashable {
+    let id: StackElementID
+    var element: Element
+
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+      lhs.id == rhs.id
+    }
+
+    public func hash(into hasher: inout Hasher) {
+      hasher.combine(self.id)
+    }
+  }
+
+  public struct PathView: MutableCollection, RandomAccessCollection,
+    RangeReplaceableCollection
+  {
+    var base: StackState
+
+    public var startIndex: Int { self.base.startIndex }
+    public var endIndex: Int { self.base.endIndex }
+    public func index(after i: Int) -> Int { self.base.index(after: i) }
+    public func index(before i: Int) -> Int { self.base.index(before: i) }
+
+    public subscript(position: Int) -> Component {
+      _read {
+        yield Component(id: self.base.ids[position], element: self.base[position])
+      }
+      _modify {
+        let id = self.base.ids[position]
+        var component = Component(id: id, element: self.base[position])
+        yield &component
+        self.base[id: id] = component.element
+      }
+      set {
+        self.base[id: newValue.id] = newValue.element
+      }
+    }
+
+    init(base: StackState) {
+      self.base = base
+    }
+
+    public init() {
+      self.init(base: StackState())
+    }
+
+    public mutating func replaceSubrange<C: Collection>(
+      _ subrange: Range<Int>, with newElements: C
+    ) where C.Element == Component {
+      for id in self.base.ids[subrange] {
+        self.base[id: id] = nil
+      }
+      for component in newElements.reversed() {
+        self.base._dictionary
+          .updateValue(component.element, forKey: component.id, insertingAt: subrange.lowerBound)
+      }
+    }
+  }
+}
+
