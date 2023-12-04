@@ -454,17 +454,28 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
     let setAccessor: AccessorDeclSyntax =
       """
       set {
-        if _$isIdentityEqual(newValue, _\(identifier)) == true {
-          _\(identifier) = newValue
-        } else {
+        //if _$isIdentityEqual(newValue, _\(identifier)) == true {
+        //  _\(identifier) = newValue
+        //} else {
           withMutation(keyPath: \\.\(identifier)) {
             _\(identifier) = newValue
           }
+        //}
+      }
+      """
+    let modifyAccessor: AccessorDeclSyntax = """
+      _modify {
+        if _\(identifier) is ObservableState {
+          yield &_\(identifier)
+        } else {
+          _$observationRegistrar.willSet(self, keyPath: \\.\(identifier))
+          yield &_\(identifier)
+          _$observationRegistrar.didSet(self, keyPath: \\.\(identifier))
         }
       }
       """
 
-    return [initAccessor, getAccessor, setAccessor]
+    return [initAccessor, getAccessor, setAccessor, modifyAccessor]
   }
 }
 
