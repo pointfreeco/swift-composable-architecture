@@ -52,7 +52,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
       var state = component.element
       return destination(
         store
-          .scope(
+          ._scope(
             state: {
               state = $0[id: component.id] ?? state
               return state
@@ -71,7 +71,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
       wrappedValue: ViewStore(
         store,
         observe: { $0 },
-        removeDuplicates: { areOrderedSetsDuplicates($0.ids, $1.ids) }
+        removeDuplicates: { _areOrderedSetsDuplicates($0.ids, $1.ids) }
       )
     )
   }
@@ -95,7 +95,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
       var state = component.element
       return SwitchStore(
         store
-          .scope(
+          ._scope(
             state: {
               state = $0[id: component.id] ?? state
               return state
@@ -116,7 +116,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
       wrappedValue: ViewStore(
         store,
         observe: { $0 },
-        removeDuplicates: { areOrderedSetsDuplicates($0.ids, $1.ids) }
+        removeDuplicates: { _areOrderedSetsDuplicates($0.ids, $1.ids) }
       )
     )
   }

@@ -34,7 +34,7 @@ public struct _StoreCollection<ID: Hashable, State, Action>: RandomAccessCollect
   public var endIndex: Int { self.ids.endIndex }
   public subscript(position: Int) -> Store<State, Action> {
     let id = self.ids[position]
-    return self.store.scope(
+    return self.store._scope(
       state: { $0[id: id]! },
       id: ScopeID(
         state: \IdentifiedArray<ID, State>.[id: id],

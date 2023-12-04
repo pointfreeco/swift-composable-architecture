@@ -39,7 +39,7 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
 public func _$isIdentityEqual<ID: Hashable, T: ObservableState>(
   _ lhs: IdentifiedArray<ID, T>, _ rhs: IdentifiedArray<ID, T>
 ) -> Bool {
-  areOrderedSetsDuplicates(lhs.ids, rhs.ids)
+  _areOrderedSetsDuplicates(lhs.ids, rhs.ids)
 }
 
 public func _$isIdentityEqual<T: ObservableState>(
@@ -51,7 +51,7 @@ public func _$isIdentityEqual<T: ObservableState>(
 public func _$isIdentityEqual<T: ObservableState>(
   _ lhs: StackState<T>, _ rhs: StackState<T>
 ) -> Bool {
-  areOrderedSetsDuplicates(lhs.ids, rhs.ids)
+  _areOrderedSetsDuplicates(lhs.ids, rhs.ids)
 }
 
 // TODO: When is this hit?
@@ -82,7 +82,7 @@ public func _$isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
         let lhs = lhs as? IdentifiedArrayOf<Element>,
         let rhs = rhs as? IdentifiedArrayOf<Element>
       else { return nil }
-      return areOrderedSetsDuplicates(lhs.ids, rhs.ids)
+      return _areOrderedSetsDuplicates(lhs.ids, rhs.ids)
     }
 
     if

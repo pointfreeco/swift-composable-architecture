@@ -71,7 +71,7 @@ public struct NavigationLinkStore<
       Destination,
     @ViewBuilder label: () -> Label
   ) {
-    let store = store.scope(
+    let store = store._scope(
       state: { $0 },
       id: nil,
       action: { $0 },
@@ -121,7 +121,7 @@ public struct NavigationLinkStore<
       Destination,
     @ViewBuilder label: () -> Label
   ) where DestinationState: Identifiable {
-    let store = store.scope(
+    let store = store._scope(
       state: { $0 },
       id: nil,
       action: { $0 },

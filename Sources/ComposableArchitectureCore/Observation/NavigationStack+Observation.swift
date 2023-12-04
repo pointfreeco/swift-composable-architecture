@@ -110,7 +110,7 @@ public struct _NavigationDestinationViewModifier<
         WithPerceptionTracking {
           self
             .destination(
-              self.store.scope(
+              self.store._scope(
                 state: {
                   state = $0[id: component.id] ?? state
                   return state

@@ -201,7 +201,7 @@ public struct PresentationStore<
       _ destination: DestinationContent<DestinationState, DestinationAction>
     ) -> Content
   ) {
-    let store = store.scope(
+    let store = store._scope(
       state: { $0 },
       id: nil,
       action: { $0 },

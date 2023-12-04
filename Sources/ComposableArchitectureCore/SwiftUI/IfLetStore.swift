@@ -54,7 +54,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
     @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent,
     @ViewBuilder else elseContent: () -> ElseContent
   ) where Content == _ConditionalContent<IfContent, ElseContent> {
-    let store = store.scope(
+    let store = store._scope(
       state: { $0 },
       id: nil,
       action: { $0 },
@@ -93,7 +93,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
     _ store: Store<State?, Action>,
     @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent
   ) where Content == IfContent? {
-    let store = store.scope(
+    let store = store._scope(
       state: { $0 },
       id: nil,
       action: { $0 },

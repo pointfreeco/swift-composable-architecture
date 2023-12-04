@@ -73,7 +73,7 @@ extension Store where State: ObservableState {
   ) -> Store<ChildState, ChildAction>? {
     guard var childState = self.observableState[keyPath: state]
     else { return nil }
-    return self.scope(
+    return self._scope(
       state: {
         childState = $0[keyPath: state] ?? childState
         return childState

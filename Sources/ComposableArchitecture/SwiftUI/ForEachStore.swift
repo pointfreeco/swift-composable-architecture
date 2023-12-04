@@ -130,21 +130,18 @@ public struct ForEachStore<
     self.content = WithViewStore(
       store,
       observe: { $0 },
-      removeDuplicates: { areOrderedSetsDuplicates($0.ids, $1.ids) }
+      removeDuplicates: { _areOrderedSetsDuplicates($0.ids, $1.ids) }
     ) { viewStore in
       ForEach(viewStore.state, id: viewStore.state.id) { element in
         var element = element
         let id = element[keyPath: viewStore.state.id]
         content(
-          store.scope(
+          store._scope(
             state: {
               element = $0[id: id] ?? element
               return element
             },
-            id: ScopeID(
-              state: \IdentifiedArray<ID, EachState>.[id: id],
-              action: \IdentifiedAction<ID, EachAction>.Cases[id: id]
-            ),
+            id: nil,
             action: { .element(id: id, action: $0) },
             isInvalid: { !$0.ids.contains(id) },
             removeDuplicates: nil
@@ -193,18 +190,18 @@ public struct ForEachStore<
     self.content = WithViewStore(
       store,
       observe: { $0 },
-      removeDuplicates: { areOrderedSetsDuplicates($0.ids, $1.ids) }
+      removeDuplicates: { _areOrderedSetsDuplicates($0.ids, $1.ids) }
     ) { viewStore in
       ForEach(viewStore.state, id: viewStore.state.id) { element in
         var element = element
         let id = element[keyPath: viewStore.state.id]
         content(
-          store.scope(
+          store._scope(
             state: {
               element = $0[id: id] ?? element
               return element
             },
-            id: id,
+            id: nil,
             action: { (id, $0) },
             isInvalid: { !$0.ids.contains(id) },
             removeDuplicates: nil

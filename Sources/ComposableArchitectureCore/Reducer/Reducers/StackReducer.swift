@@ -540,7 +540,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
     let idsAfter = state[keyPath: self.toStackState].ids
 
     let cancelEffects: Effect<Base.Action> =
-      areOrderedSetsDuplicates(idsBefore, idsAfter)
+      _areOrderedSetsDuplicates(idsBefore, idsAfter)
       ? .none
       : .merge(
         idsBefore.subtracting(idsAfter).map {
@@ -548,7 +548,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
         }
       )
     let presentEffects: Effect<Base.Action> =
-      areOrderedSetsDuplicates(idsBefore, idsAfter)
+      _areOrderedSetsDuplicates(idsBefore, idsAfter)
       ? .none
       : .merge(
         idsAfter.subtracting(idsBefore).map { elementID in

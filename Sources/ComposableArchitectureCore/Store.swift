@@ -288,7 +288,7 @@ public final class Store<State, Action> {
     state: KeyPath<State, ChildState>,
     action: CaseKeyPath<Action, ChildAction>
   ) -> Store<ChildState, ChildAction> {
-    self.scope(
+    self._scope(
       state: { $0[keyPath: state] },
       id: ScopeID(state: state, action: action),
       action: { action($0) },
@@ -321,7 +321,7 @@ public final class Store<State, Action> {
     state toChildState: @escaping (_ state: State) -> ChildState,
     action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction> {
-    self.scope(
+    self._scope(
       state: toChildState,
       id: nil,
       action: fromChildAction,
@@ -355,7 +355,7 @@ public final class Store<State, Action> {
     action fromChildAction: @escaping (_ presentationAction: PresentationAction<ChildAction>) ->
       Action
   ) -> Store<PresentationState<ChildState>, PresentationAction<ChildAction>> {
-    self.scope(
+    self._scope(
       state: toChildState,
       id: nil,
       action: fromChildAction,
@@ -364,7 +364,7 @@ public final class Store<State, Action> {
     )
   }
 
-  func scope<ChildState, ChildAction>(
+  public func _scope<ChildState, ChildAction>(
     state toChildState: @escaping (State) -> ChildState,
     id: AnyHashable?,
     action fromChildAction: @escaping (ChildAction) -> Action,

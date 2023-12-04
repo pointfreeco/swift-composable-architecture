@@ -216,7 +216,7 @@ public struct _ForEachReducer<
     let idsAfter = state[keyPath: self.toElementsState].ids
 
     let elementCancelEffects: Effect<Parent.Action> =
-      areOrderedSetsDuplicates(idsBefore, idsAfter)
+      _areOrderedSetsDuplicates(idsBefore, idsAfter)
       ? .none
       : .merge(
         idsBefore.subtracting(idsAfter).map {
