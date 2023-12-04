@@ -6,9 +6,9 @@ import SwiftUI
 struct VoiceMemos {
   @ObservableState
   struct State: Equatable {
-    @PresentationState var alert: AlertState<Action.Alert>?
+    @Presents var alert: AlertState<Action.Alert>?
     var audioRecorderPermission = RecorderPermission.undetermined
-    @PresentationState var recordingMemo: RecordingMemo.State?
+    @Presents var recordingMemo: RecordingMemo.State?
     var voiceMemos: IdentifiedArrayOf<VoiceMemo.State> = []
 
     enum RecorderPermission {

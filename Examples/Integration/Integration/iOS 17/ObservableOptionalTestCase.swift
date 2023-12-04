@@ -39,7 +39,7 @@ struct ObservableOptionalView: View {
   struct Feature {
     @ObservableState
     struct State: Equatable {
-      @PresentationState var child: ObservableBasicsView.Feature.State?
+      @Presents var child: ObservableBasicsView.Feature.State?
       var isObservingCount = false
     }
     enum Action {

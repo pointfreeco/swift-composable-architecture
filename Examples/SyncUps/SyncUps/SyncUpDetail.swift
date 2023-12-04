@@ -5,7 +5,7 @@ import SwiftUI
 struct SyncUpDetail {
   @ObservableState
   struct State: Equatable {
-    @PresentationState var destination: Destination.State?
+    @Presents var destination: Destination.State?
     var syncUp: SyncUp
 
     // TODO: Why is this needed?

@@ -7,7 +7,7 @@ final class CounterFeatureTests: XCTestCase {
     let store = TestStore(initialState: CounterFeature.State()) {
       CounterFeature()
     }
-
+    
     await store.send(.factButtonTapped) {
       $0.isLoading = true
     }

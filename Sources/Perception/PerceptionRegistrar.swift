@@ -9,6 +9,9 @@ import Foundation
 /// You don't need to create an instance of `PerceptionRegistrar` when using
 /// the ``Perception/Perceptible()`` macro to indicate observability of a type.
 @available(iOS, deprecated: 17, message: "TODO")
+@available(macOS, deprecated: 14, message: "TODO")
+@available(tvOS, deprecated: 17, message: "TODO")
+@available(watchOS, deprecated: 10, message: "TODO")
 public struct PerceptionRegistrar: Sendable {
   private let _rawValue: AnySendable
 
@@ -49,6 +52,16 @@ public struct PerceptionRegistrar: Sendable {
       of subject: Subject, keyPath: KeyPath<Subject, Member>, _ mutation: () throws -> T
     ) rethrows -> T {
       try self.registrar.withMutation(of: subject, keyPath: keyPath, mutation)
+    }
+    public func willSet<Subject: Observable, Member>(
+      _ subject: Subject, keyPath: KeyPath<Subject, Member>
+    ) {
+      self.registrar.willSet(subject, keyPath: keyPath)
+    }
+    public func didSet<Subject: Observable, Member>(
+      _ subject: Subject, keyPath: KeyPath<Subject, Member>
+    ) {
+      self.registrar.didSet(subject, keyPath: keyPath)
     }
   }
 #endif
@@ -106,6 +119,52 @@ extension PerceptionRegistrar {
       return try mutation()
     #endif
   }
+
+  @_disfavoredOverload
+  public func willSet<Subject: Perceptible, Member>(
+    _ subject: Subject,
+    keyPath: KeyPath<Subject, Member>
+  ) {
+#if canImport(Observation)
+    if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *),
+       let subject = subject as? any Observable
+    {
+      func `open`<S: Observable>(_ subject: S) {
+        return self.registrar.willSet(
+          subject,
+          keyPath: unsafeDowncast(keyPath, to: KeyPath<S, Member>.self)
+        )
+      }
+      return open(subject)
+    } else {
+      return self.perceptionRegistrar.willSet(subject, keyPath: keyPath)
+    }
+#else
+#endif
+  }
+
+  @_disfavoredOverload
+  public func didSet<Subject: Perceptible, Member>(
+    _ subject: Subject,
+    keyPath: KeyPath<Subject, Member>
+  ) {
+#if canImport(Observation)
+    if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *),
+       let subject = subject as? any Observable
+    {
+      func `open`<S: Observable>(_ subject: S) {
+        return self.registrar.didSet(
+          subject,
+          keyPath: unsafeDowncast(keyPath, to: KeyPath<S, Member>.self)
+        )
+      }
+      return open(subject)
+    } else {
+      return self.perceptionRegistrar.didSet(subject, keyPath: keyPath)
+    }
+#else
+#endif
+  }
 }
 
 extension PerceptionRegistrar: Codable {
@@ -131,15 +190,11 @@ extension PerceptionRegistrar: Hashable {
   }
 }
 
-@_transparent
-@inline(__always)
-private func perceptionCheck() {
-  #if DEBUG
+#if DEBUG
+  private func perceptionCheck() {
     if #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10),
       !PerceptionLocals.isInPerceptionTracking,
-      Thread.callStackSymbols.contains(where: {
-        $0.split(separator: " ").dropFirst().first == "AttributeGraph"
-      })
+      isInSwiftUIBody
     {
       runtimeWarn(
         """
@@ -148,5 +203,51 @@ private func perceptionCheck() {
         """
       )
     }
-  #endif
-}
+  }
+
+  var isInSwiftUIBody: Bool {
+    for callStackSymbol in Thread.callStackSymbols {
+      guard
+        let symbol = callStackSymbol.split(separator: " ").dropFirst(3).first,
+        symbol.utf8.first == .init(ascii: "$"),
+        let demangled = String(symbol).demangled,
+        demangled.hasPrefix("protocol witness for SwiftUI.View.body.getter : ")
+      else { continue }
+      return true
+    }
+    return false
+  }
+
+  extension String {
+    fileprivate var demangled: String? {
+      return self.utf8CString.withUnsafeBufferPointer { mangledNameUTF8CStr in
+        let demangledNamePtr = swift_demangle(
+          mangledName: mangledNameUTF8CStr.baseAddress,
+          mangledNameLength: UInt(mangledNameUTF8CStr.count - 1),
+          outputBuffer: nil,
+          outputBufferSize: nil,
+          flags: 0
+        )
+        if let demangledNamePtr = demangledNamePtr {
+          let demangledName = String(cString: demangledNamePtr)
+          free(demangledNamePtr)
+          return demangledName
+        }
+        return nil
+      }
+    }
+  }
+
+  @_silgen_name("swift_demangle")
+  private func swift_demangle(
+    mangledName: UnsafePointer<CChar>?,
+    mangledNameLength: UInt,
+    outputBuffer: UnsafeMutablePointer<CChar>?,
+    outputBufferSize: UnsafeMutablePointer<UInt>?,
+    flags: UInt32
+  ) -> UnsafeMutablePointer<CChar>?
+#else
+  @_transparent
+  @inline(__always)
+  private func perceptionCheck() {}
+#endif

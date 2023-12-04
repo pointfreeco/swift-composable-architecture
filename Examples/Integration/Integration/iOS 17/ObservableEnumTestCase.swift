@@ -69,7 +69,7 @@ struct ObservableEnumView: View {
   struct Feature {
     @ObservableState
     struct State: Equatable {
-      @PresentationState var destination: Destination.State?
+      @Presents var destination: Destination.State?
     }
     enum Action {
       case destination(PresentationAction<Destination.Action>)

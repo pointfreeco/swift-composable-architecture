@@ -10,6 +10,7 @@ private let readMe = """
 struct MultipleDestinations {
   @Reducer
   public struct Destination {
+    @ObservableState
     public enum State: Equatable {
       case drillDown(Counter.State)
       case popover(Counter.State)
@@ -37,7 +38,7 @@ struct MultipleDestinations {
 
   @ObservableState
   struct State: Equatable {
-    @PresentationState var destination: Destination.State?
+    @Presents var destination: Destination.State?
   }
 
   enum Action {

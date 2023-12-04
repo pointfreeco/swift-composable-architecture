@@ -24,7 +24,7 @@ private let readMe = """
 struct Animations {
   @ObservableState
   struct State: Equatable {
-    @PresentationState var alert: AlertState<Action.Alert>?
+    @Presents var alert: AlertState<Action.Alert>?
     var circleCenter: CGPoint?
     var circleColor = Color.black
     var isCircleScaled = false

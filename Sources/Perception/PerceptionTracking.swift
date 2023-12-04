@@ -11,6 +11,9 @@
 
 @_spi(SwiftUI)
 @available(iOS, deprecated: 17, message: "TODO")
+@available(macOS, deprecated: 14, message: "TODO")
+@available(tvOS, deprecated: 17, message: "TODO")
+@available(watchOS, deprecated: 10, message: "TODO")
 public struct PerceptionTracking: Sendable {
   enum Id {
     case willSet(Int)
@@ -51,6 +54,9 @@ public struct PerceptionTracking: Sendable {
 
   @_spi(SwiftUI)
   @available(iOS, deprecated: 17, message: "TODO")
+  @available(macOS, deprecated: 14, message: "TODO")
+  @available(tvOS, deprecated: 17, message: "TODO")
+  @available(watchOS, deprecated: 10, message: "TODO")
   public struct _AccessList: Sendable {
     internal var entries = [ObjectIdentifier : Entry]()
 
@@ -72,6 +78,9 @@ public struct PerceptionTracking: Sendable {
 
   @_spi(SwiftUI)
   @available(iOS, deprecated: 17, message: "TODO")
+  @available(macOS, deprecated: 14, message: "TODO")
+  @available(tvOS, deprecated: 17, message: "TODO")
+  @available(watchOS, deprecated: 10, message: "TODO")
   public static func _installTracking(
     _ tracking: PerceptionTracking,
     willSet: (@Sendable (PerceptionTracking) -> Void)? = nil,
@@ -201,6 +210,9 @@ fileprivate func generateAccessList<T>(_ apply: () -> T) -> (T, PerceptionTracki
 /// - Returns: The value that the `apply` closure returns if it has a return
 /// value; otherwise, there is no return value.
 @available(iOS, deprecated: 17, message: "TODO")
+@available(macOS, deprecated: 14, message: "TODO")
+@available(tvOS, deprecated: 17, message: "TODO")
+@available(watchOS, deprecated: 10, message: "TODO")
 public func withPerceptionTracking<T>(
   _ apply: () -> T,
   onChange: @autoclosure () -> @Sendable () -> Void
@@ -214,6 +226,9 @@ public func withPerceptionTracking<T>(
 
 @_spi(SwiftUI)
 @available(iOS, deprecated: 17, message: "TODO")
+@available(macOS, deprecated: 14, message: "TODO")
+@available(tvOS, deprecated: 17, message: "TODO")
+@available(watchOS, deprecated: 10, message: "TODO")
 public func withPerceptionTracking<T>(
   _ apply: () -> T,
   willSet: @escaping @Sendable (PerceptionTracking) -> Void,
@@ -226,6 +241,9 @@ public func withPerceptionTracking<T>(
 
 @_spi(SwiftUI)
 @available(iOS, deprecated: 17, message: "TODO")
+@available(macOS, deprecated: 14, message: "TODO")
+@available(tvOS, deprecated: 17, message: "TODO")
+@available(watchOS, deprecated: 10, message: "TODO")
 public func withPerceptionTracking<T>(
   _ apply: () -> T,
   willSet: @escaping @Sendable (PerceptionTracking) -> Void
@@ -237,6 +255,9 @@ public func withPerceptionTracking<T>(
 
 @_spi(SwiftUI)
 @available(iOS, deprecated: 17, message: "TODO")
+@available(macOS, deprecated: 14, message: "TODO")
+@available(tvOS, deprecated: 17, message: "TODO")
+@available(watchOS, deprecated: 10, message: "TODO")
 public func withPerceptionTracking<T>(
   _ apply: () -> T,
   didSet: @escaping @Sendable (PerceptionTracking) -> Void

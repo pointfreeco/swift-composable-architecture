@@ -7,7 +7,7 @@ import Dispatch
 public struct TwoFactor: Sendable {
   @ObservableState
   public struct State: Equatable {
-    @PresentationState public var alert: AlertState<Action.Alert>?
+    @Presents public var alert: AlertState<Action.Alert>?
     public var code = ""
     public var isFormValid = false
     public var isTwoFactorRequestInFlight = false

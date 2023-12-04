@@ -37,7 +37,7 @@ struct NewPresentsOldTestCase: View {
   struct Feature {
     @ObservableState
     struct State {
-      @PresentationState var child: BasicsView.Feature.State?
+      @Presents var child: BasicsView.Feature.State?
       var count = 0
       var isObservingChildCount = false
     }

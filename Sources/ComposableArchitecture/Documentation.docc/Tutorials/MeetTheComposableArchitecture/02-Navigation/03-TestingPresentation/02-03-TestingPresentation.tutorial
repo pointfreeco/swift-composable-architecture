@@ -136,10 +136,17 @@
       }
       
       @Step {
-        Assert that when the `saveContact` delegate action is received that state mutates by adding
-        a contact to the array.
+        Assert that when a delegate action is received that state mutates by adding a contact to the
+        array.
         
         @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0014)
+      }
+      
+      @Step {
+        To further assert that when the `saveContact` delegate action was received, you can annotate
+        `AddContactFeature.Action.Delegate` with the `@CasePathable` macro.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0015)
       }
       
       @Step {
@@ -147,7 +154,7 @@
         ``ComposableArchitecture/PresentationAction/dismiss`` action, which causes the "Add Contact"
         feature to be dismissed.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0015)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0016)
       }
       
       This is a fully passing test, and proves the end-to-end lifecycle of presenting a child

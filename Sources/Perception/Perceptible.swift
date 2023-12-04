@@ -17,6 +17,9 @@
 /// the ``Perception/Perceptible()`` macro when adding observation
 /// support to a type.
 @available(iOS, deprecated: 17, message: "TODO")
+@available(macOS, deprecated: 14, message: "TODO")
+@available(tvOS, deprecated: 17, message: "TODO")
+@available(watchOS, deprecated: 10, message: "TODO")
 public protocol Perceptible { }
 
 // TODO: Rename to Perceptive?

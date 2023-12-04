@@ -16,10 +16,22 @@ private let readMe = """
 struct WebSocket {
   @ObservableState
   struct State: Equatable {
-    @PresentationState var alert: AlertState<Action.Alert>?
+    @Presents var alert: AlertState<Action.Alert>?
     var connectivityState = ConnectivityState.disconnected
     var messageToSend = ""
     var receivedMessages: [String] = []
+
+    init(
+      alert: AlertState<Action.Alert>? = nil,
+      connectivityState: ConnectivityState = .disconnected,
+      messageToSend: String = "",
+      receivedMessages: [String] = []
+    ) {
+      self.alert = alert
+      self.connectivityState = connectivityState
+      self.messageToSend = messageToSend
+      self.receivedMessages = receivedMessages
+    }
 
     enum ConnectivityState: String {
       case connected

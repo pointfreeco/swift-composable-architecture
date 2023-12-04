@@ -15,7 +15,7 @@ private let readMe = """
 struct LoadThenPresent {
   @ObservableState
   struct State: Equatable {
-    @PresentationState var counter: Counter.State?
+    @Presents var counter: Counter.State?
     var isActivityIndicatorVisible = false
   }
 

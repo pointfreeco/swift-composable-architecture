@@ -146,7 +146,7 @@ where
         get: { self.wrappedValue.stateSubject.value[keyPath: keyPath] },
         set: { newValue, transaction in
           BindingLocal.$isActive.withValue(true) {
-            _ = self.transaction(transaction).wrappedValue.send(.binding(.set(keyPath, newValue)))
+            _ = self.wrappedValue.send(.binding(.set(keyPath, newValue)), transaction: transaction)
           }
         }
       )
@@ -164,8 +164,8 @@ where
         get: { self.wrappedValue.state[keyPath: keyPath] },
         set: { newValue, transaction in
           BindingLocal.$isActive.withValue(true) {
-            _ = self.transaction(transaction).wrappedValue.send(
-              .view(.binding(.set(keyPath, newValue)))
+            _ = self.wrappedValue.send(
+              .view(.binding(.set(keyPath, newValue))), transaction: transaction
             )
           }
         }
@@ -183,7 +183,7 @@ where
         get: { self.wrappedValue.stateSubject.value[keyPath: keyPath] },
         set: { newValue, transaction in
           BindingLocal.$isActive.withValue(true) {
-            _ = self.wrappedValue.send(.binding(.set(keyPath, newValue)))
+            _ = self.wrappedValue.send(.binding(.set(keyPath, newValue)), transaction: transaction)
           }
         }
       )
@@ -201,7 +201,9 @@ where
         get: { self.wrappedValue.state[keyPath: keyPath] },
         set: { newValue, transaction in
           BindingLocal.$isActive.withValue(true) {
-            _ = self.wrappedValue.send(.view(.binding(.set(keyPath, newValue))))
+            _ = self.wrappedValue.send(
+              .view(.binding(.set(keyPath, newValue))), transaction: transaction
+            )
           }
         }
       )
