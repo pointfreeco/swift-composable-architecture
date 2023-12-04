@@ -16,7 +16,7 @@ final class ViewActionMacroTests: XCTestCase {
   func testLetStore() {
     assertMacro {
       """
-      @ViewAction(of: Feature.self)
+      @ViewAction(for: Feature.self)
       struct FeatureView: View {
         let store: StoreOf<Feature>
         var body: some View {
@@ -35,7 +35,7 @@ final class ViewActionMacroTests: XCTestCase {
         fileprivate func send(_ action: Feature.Action.View) {
           self.store.send(.view(action))
         }
-        fileprivate send(_ action: Feature.Action.View, animation: Animation?) {
+        fileprivate func send(_ action: Feature.Action.View, animation: Animation?) {
           self.store.send(.view(action), animation: animation)
         }
       }
@@ -46,7 +46,7 @@ final class ViewActionMacroTests: XCTestCase {
   func testStateStore() {
     assertMacro {
       """
-      @ViewAction(of: Feature.self)
+      @ViewAction(for: Feature.self)
       struct FeatureView: View {
         @State var store: StoreOf<Feature>
         var body: some View {
@@ -65,7 +65,7 @@ final class ViewActionMacroTests: XCTestCase {
         fileprivate func send(_ action: Feature.Action.View) {
           self.store.send(.view(action))
         }
-        fileprivate send(_ action: Feature.Action.View, animation: Animation?) {
+        fileprivate func send(_ action: Feature.Action.View, animation: Animation?) {
           self.store.send(.view(action), animation: animation)
         }
       }
@@ -76,7 +76,7 @@ final class ViewActionMacroTests: XCTestCase {
   func testStateStore_WithDefault() {
     assertMacro {
       """
-      @ViewAction(of: Feature.self)
+      @ViewAction(for: Feature.self)
       struct FeatureView: View {
         @State var store = Store(initialState: Feature.State()) {
           Feature()
@@ -99,7 +99,7 @@ final class ViewActionMacroTests: XCTestCase {
         fileprivate func send(_ action: Feature.Action.View) {
           self.store.send(.view(action))
         }
-        fileprivate send(_ action: Feature.Action.View, animation: Animation?) {
+        fileprivate func send(_ action: Feature.Action.View, animation: Animation?) {
           self.store.send(.view(action), animation: animation)
         }
       }
@@ -110,7 +110,7 @@ final class ViewActionMacroTests: XCTestCase {
   func testBindableStore() {
     assertMacro {
       """
-      @ViewAction(of: Feature.self)
+      @ViewAction(for: Feature.self)
       struct FeatureView: View {
         @Bindable var store: StoreOf<Feature>
         var body: some View {
@@ -129,7 +129,7 @@ final class ViewActionMacroTests: XCTestCase {
         fileprivate func send(_ action: Feature.Action.View) {
           self.store.send(.view(action))
         }
-        fileprivate send(_ action: Feature.Action.View, animation: Animation?) {
+        fileprivate func send(_ action: Feature.Action.View, animation: Animation?) {
           self.store.send(.view(action), animation: animation)
         }
       }
@@ -140,7 +140,7 @@ final class ViewActionMacroTests: XCTestCase {
   func testNoStore() {
     assertMacro {
       """
-      @ViewAction(of: Feature.self)
+      @ViewAction(for: Feature.self)
       struct FeatureView: View {
         var body: some View {
           EmptyView()
@@ -149,7 +149,7 @@ final class ViewActionMacroTests: XCTestCase {
       """
     } diagnostics: {
       """
-      @ViewAction(of: Feature.self)
+      @ViewAction(for: Feature.self)
       ╰─ 🛑 @ViewAction macro requires 'FeatureView'  to have a 'store' property of type 'Store'.
       struct FeatureView: View {
         var body: some View {
@@ -163,9 +163,9 @@ final class ViewActionMacroTests: XCTestCase {
   func testWarning_StoreSend() {
     assertMacro {
       """
-      @ViewAction(of: Feature.self)
+      @ViewAction(for: Feature.self)
       struct FeatureView: View {
-        @Bindable var store: StoreOf<Feature>
+        var store: StoreOf<Feature>
         var body: some View {
           Button("Tap") { store.send(.tap) }
         }
@@ -173,9 +173,9 @@ final class ViewActionMacroTests: XCTestCase {
       """
     } diagnostics: {
       """
-      @ViewAction(of: Feature.self)
+      @ViewAction(for: Feature.self)
       struct FeatureView: View {
-        @Bindable var store: StoreOf<Feature>
+        var store: StoreOf<Feature>
         var body: some View {
           Button("Tap") { store.send(.tap) }
                           ┬─────────
@@ -184,11 +184,11 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
       """
-    } fixes: {
+    }fixes: {
       """
-      @ViewAction(of: Feature.self)
+      @ViewAction(for: Feature.self)
       struct FeatureView: View {
-        @Bindable var store: StoreOf<Feature>
+        var store: StoreOf<Feature>
         var body: some View {
           Button("Tap") { send}
         }
@@ -197,7 +197,7 @@ final class ViewActionMacroTests: XCTestCase {
     }expansion: {
       """
       struct FeatureView: View {
-        @Bindable var store: StoreOf<Feature>
+        var store: StoreOf<Feature>
         var body: some View {
           Button("Tap") { send}
         }
@@ -205,7 +205,7 @@ final class ViewActionMacroTests: XCTestCase {
         fileprivate func send(_ action: Feature.Action.View) {
           self.store.send(.view(action))
         }
-        fileprivate send(_ action: Feature.Action.View, animation: Animation?) {
+        fileprivate func send(_ action: Feature.Action.View, animation: Animation?) {
           self.store.send(.view(action), animation: animation)
         }
       }
@@ -216,9 +216,9 @@ final class ViewActionMacroTests: XCTestCase {
   func testWarning_SelfStoreSend() {
     assertMacro {
       """
-      @ViewAction(of: Feature.self)
+      @ViewAction(for: Feature.self)
       struct FeatureView: View {
-        @Bindable var store: StoreOf<Feature>
+        var store: StoreOf<Feature>
         var body: some View {
           Button("Tap") { self.store.send(.tap) }
         }
@@ -226,9 +226,9 @@ final class ViewActionMacroTests: XCTestCase {
       """
     } diagnostics: {
       """
-      @ViewAction(of: Feature.self)
+      @ViewAction(for: Feature.self)
       struct FeatureView: View {
-        @Bindable var store: StoreOf<Feature>
+        var store: StoreOf<Feature>
         var body: some View {
           Button("Tap") { self.store.send(.tap) }
                           ┬──────────────
@@ -239,9 +239,9 @@ final class ViewActionMacroTests: XCTestCase {
       """
     }fixes: {
       """
-      @ViewAction(of: Feature.self)
+      @ViewAction(for: Feature.self)
       struct FeatureView: View {
-        @Bindable var store: StoreOf<Feature>
+        var store: StoreOf<Feature>
         var body: some View {
           Button("Tap") { self.send}
         }
@@ -250,7 +250,7 @@ final class ViewActionMacroTests: XCTestCase {
     }expansion: {
       """
       struct FeatureView: View {
-        @Bindable var store: StoreOf<Feature>
+        var store: StoreOf<Feature>
         var body: some View {
           Button("Tap") { self.send}
         }
@@ -258,7 +258,7 @@ final class ViewActionMacroTests: XCTestCase {
         fileprivate func send(_ action: Feature.Action.View) {
           self.store.send(.view(action))
         }
-        fileprivate send(_ action: Feature.Action.View, animation: Animation?) {
+        fileprivate func send(_ action: Feature.Action.View, animation: Animation?) {
           self.store.send(.view(action), animation: animation)
         }
       }
