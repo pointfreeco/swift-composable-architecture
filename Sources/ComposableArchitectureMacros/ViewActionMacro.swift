@@ -1,4 +1,4 @@
-@preconcurrency import SwiftDiagnostics
+import SwiftDiagnostics
 import SwiftSyntax
 import SwiftSyntaxMacroExpansion
 import SwiftSyntaxMacros
