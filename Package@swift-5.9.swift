@@ -15,7 +15,11 @@ let package = Package(
     .library(
       name: "ComposableArchitecture",
       targets: ["ComposableArchitecture"]
-    )
+    ),
+    .library(
+      name: "ComposableArchitectureEdge",
+      targets: ["ComposableArchitectureEdge"]
+    ),
   ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-collections", from: "1.0.2"),
@@ -34,7 +38,7 @@ let package = Package(
   ],
   targets: [
     .target(
-      name: "ComposableArchitecture",
+      name: "ComposableArchitectureCore",
       dependencies: [
         "ComposableArchitectureMacros",
         "Perception",
@@ -48,6 +52,18 @@ let package = Package(
         .product(name: "OrderedCollections", package: "swift-collections"),
         .product(name: "SwiftUINavigationCore", package: "swiftui-navigation"),
         .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
+      ]
+    ),
+    .target(
+      name: "ComposableArchitecture",
+      dependencies: [
+        "ComposableArchitectureCore",
+      ]
+    ),
+    .target(
+      name: "ComposableArchitectureEdge",
+      dependencies: [
+        "ComposableArchitectureCore",
       ]
     ),
     .testTarget(

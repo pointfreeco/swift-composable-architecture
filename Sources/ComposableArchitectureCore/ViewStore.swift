@@ -122,7 +122,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     self._state = CurrentValueRelay(toViewState(store.stateSubject.value))
     self._isInvalidated = store._isInvalidated
     #if DEBUG
-      self.storeTypeName = ComposableArchitecture.storeTypeName(of: store)
+      self.storeTypeName = "\(store)"
       Logger.shared.log("View\(self.storeTypeName).init")
     #endif
     self.viewCancellable = store.stateSubject
@@ -166,7 +166,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     self._state = CurrentValueRelay(toViewState(store.stateSubject.value))
     self._isInvalidated = store._isInvalidated
     #if DEBUG
-      self.storeTypeName = ComposableArchitecture.storeTypeName(of: store)
+      self.storeTypeName = "\(store)"
       Logger.shared.log("View\(self.storeTypeName).init")
     #endif
     self.viewCancellable = store.stateSubject

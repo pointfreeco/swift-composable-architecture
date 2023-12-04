@@ -160,7 +160,7 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
         defer { previousState = currentState }
         return previousState
       }
-      self.storeTypeName = ComposableArchitecture.storeTypeName(of: store)
+      self.storeTypeName = "\(store)"
     #endif
     self.viewStore = ViewStore(store, observe: { $0 }, removeDuplicates: isDuplicate)
   }
