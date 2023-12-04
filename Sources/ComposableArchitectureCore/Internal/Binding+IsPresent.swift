@@ -1,7 +1,7 @@
 import SwiftUI
 
 extension Binding {
-  func isPresent<Wrapped>() -> Binding<Bool> where Value == Wrapped? {
+  public func _isPresent<Wrapped>() -> Binding<Bool> where Value == Wrapped? {
     .init(
       get: { self.wrappedValue != nil },
       set: { isPresent, transaction in

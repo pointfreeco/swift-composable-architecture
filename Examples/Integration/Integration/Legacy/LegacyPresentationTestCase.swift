@@ -323,7 +323,7 @@ struct PresentationTestCaseView: View {
           viewStore
           .binding(get: \.destination, send: .destination(.dismiss))
           .customAlert
-          .isPresent()
+          ._isPresent()
       ) {
         TextField("Message", text: self.$alertMessage)
         Button("Submit") {}

@@ -11,7 +11,7 @@ extension View {
     ) -> Content
   ) -> some View {
     self.presentation(store: store) { `self`, $item, destination in
-      body(self, $item.isPresent(), destination)
+      body(self, $item._isPresent(), destination)
     }
   }
 
@@ -54,7 +54,7 @@ extension View {
     self.presentation(
       store: store, state: toDestinationState, action: fromDestinationAction
     ) { `self`, $item, destination in
-      body(self, $item.isPresent(), destination)
+      body(self, $item._isPresent(), destination)
     }
   }
 
@@ -136,7 +136,7 @@ public struct PresentationStore<
     ) -> Content
   ) where State == DestinationState, Action == DestinationAction {
     self.init(store) { $item, destination in
-      content($item.isPresent(), destination)
+      content($item._isPresent(), destination)
     }
   }
 
@@ -168,7 +168,7 @@ public struct PresentationStore<
     self.init(
       store, state: toDestinationState, action: fromDestinationAction
     ) { $item, destination in
-      content($item.isPresent(), destination)
+      content($item._isPresent(), destination)
     }
   }
 

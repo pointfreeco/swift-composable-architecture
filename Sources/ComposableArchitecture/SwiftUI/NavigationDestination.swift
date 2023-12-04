@@ -1,3 +1,4 @@
+@_spi(Presentation) import ComposableArchitectureCore
 @_spi(Reflection) import CasePaths
 import SwiftUI
 
@@ -117,7 +118,7 @@ extension View {
       id: { $0.wrappedValue.map(NavigationDestinationID.init) },
       action: fromDestinationAction
     ) { `self`, $item, destinationContent in
-      self.navigationDestination(isPresented: $item.isPresent()) {
+      self.navigationDestination(isPresented: $item._isPresent()) {
         destinationContent(destination)
       }
     }

@@ -1,3 +1,4 @@
+@_spi(Presentation) import ComposableArchitectureCore
 import SwiftUI
 
 extension View {
