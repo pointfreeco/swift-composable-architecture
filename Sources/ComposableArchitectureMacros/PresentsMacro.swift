@@ -41,7 +41,7 @@ extension PresentsMacro: AccessorMacro {
     let setAccessor: AccessorDeclSyntax =
       """
       set {
-      if _$isIdentityEqual(newValue, _\(identifier).wrappedValue) == true {
+      if _$isIdentityEqual(newValue, _\(identifier).wrappedValue) {
       _\(identifier).wrappedValue = newValue
       } else {
       withMutation(keyPath: \\.\(identifier)) {
@@ -193,12 +193,6 @@ extension PatternBindingListSyntax {
           accessorBlock: AccessorBlockSyntax(
             accessors: .accessors([
               """
-              @storageRestrictions(initializes: _\(identifier))
-              init(initialValue) {
-              _\(identifier) = initialValue
-              }
-              """,
-              """
               get {
               access(keyPath: \\.\(identifier))
               return _\(identifier.identifier).projectedValue
@@ -206,7 +200,7 @@ extension PatternBindingListSyntax {
               """,
               """
               set {
-              if _$isIdentityEqual(newValue, _\(identifier)) == true {
+              if _$isIdentityEqual(newValue, _\(identifier).projectedValue) {
               _\(identifier).projectedValue = newValue
               } else {
               withMutation(keyPath: \\.\(identifier)) {

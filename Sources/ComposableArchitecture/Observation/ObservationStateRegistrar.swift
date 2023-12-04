@@ -28,6 +28,16 @@ extension ObservationStateRegistrar: Equatable, Hashable, Codable {
     ) rethrows -> T {
       try self.registrar.withMutation(of: subject, keyPath: keyPath, mutation)
     }
+    public func willSet<Subject: Observable, Member>(
+      _ subject: Subject, keyPath: KeyPath<Subject, Member>
+    ) {
+      self.registrar.willSet(subject, keyPath: keyPath)
+    }
+    public func didSet<Subject: Observable, Member>(
+      _ subject: Subject, keyPath: KeyPath<Subject, Member>
+    ) {
+      self.registrar.didSet(subject, keyPath: keyPath)
+    }
   }
 #endif
 
@@ -47,5 +57,19 @@ extension ObservationStateRegistrar {
     _ mutation: () throws -> T
   ) rethrows -> T {
     try self.registrar.withMutation(of: subject, keyPath: keyPath, mutation)
+  }
+  @_disfavoredOverload
+  public func willSet<Subject: Perceptible, Member>(
+    _ subject: Subject,
+    keyPath: KeyPath<Subject, Member>
+  ) {
+    self.registrar.willSet(subject, keyPath: keyPath)
+  }
+  @_disfavoredOverload
+  public func didSet<Subject: Perceptible, Member>(
+    _ subject: Subject,
+    keyPath: KeyPath<Subject, Member>
+  ) {
+    self.registrar.didSet(subject, keyPath: keyPath)
   }
 }

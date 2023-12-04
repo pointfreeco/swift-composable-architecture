@@ -45,7 +45,7 @@ public func _$isIdentityEqual<ID: Hashable, T: ObservableState>(
 public func _$isIdentityEqual<T: ObservableState>(
   _ lhs: PresentationState<T>, _ rhs: PresentationState<T>
 ) -> Bool {
-  lhs.id == rhs.id
+  lhs.wrappedValue?._$id == rhs.wrappedValue?._$id
 }
 
 public func _$isIdentityEqual<T: ObservableState>(
@@ -68,6 +68,7 @@ where C.Element: ObservableState {
   // lhs.count == rhs.count && zip(lhs, rhs).allSatisfy { $0._$id == $1._$id }
 }
 
+// NB: Add this fast path so that String is not checked as a collection.
 public func _$isIdentityEqual(_ lhs: String, _ rhs: String) -> Bool {
   false
 }
