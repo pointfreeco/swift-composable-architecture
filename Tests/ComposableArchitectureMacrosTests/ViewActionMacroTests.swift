@@ -6,7 +6,7 @@ import XCTest
 final class ViewActionMacroTests: XCTestCase {
   override func invokeTest() {
     withMacroTesting(
-      isRecording: true,
+      // isRecording: true,
       macros: [ViewActionMacro.self]
     ) {
       super.invokeTest()
@@ -134,7 +134,7 @@ final class ViewActionMacroTests: XCTestCase {
     } diagnostics: {
       """
       @ViewAction(for: Feature.self)
-      ╰─ 🛑 @ViewAction macro requires 'FeatureView'  to have a 'store' property of type 'Store'.
+      ╰─ 🛑 '@ViewAction' requires 'FeatureView' to have a 'store' property of type 'Store'.
          ✏️ Add 'store'
       struct FeatureView: View {
         var body: some View {
@@ -142,11 +142,11 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
       """
-    }fixes: {
+    } fixes: {
       """
       @ViewAction(for: Feature.self)
       struct FeatureView: View {
-      let store: StoreOf<Feature>
+        let store: StoreOf<Feature>
 
         var body: some View {
           EmptyView()
@@ -156,7 +156,7 @@ final class ViewActionMacroTests: XCTestCase {
     } expansion: {
       """
       struct FeatureView: View {
-      let store: StoreOf<Feature>
+        let store: StoreOf<Feature>
 
         var body: some View {
           EmptyView()
@@ -187,28 +187,17 @@ final class ViewActionMacroTests: XCTestCase {
         var store: StoreOf<Feature>
         var body: some View {
           Button("Tap") { store.send(.tap) }
-                          ┬─────────
-                          ╰─ ⚠️ Do not use 'store.send' directly when using @ViewAction. Instead, use 'send'.
-                             ✏️ Use 'send'
+                          ┬───────────────
+                          ╰─ ⚠️ Do not use 'store.send' directly when using '@ViewAction'
         }
       }
       """
-    }fixes: {
-      """
-      @ViewAction(for: Feature.self)
-      struct FeatureView: View {
-        var store: StoreOf<Feature>
-        var body: some View {
-          Button("Tap") { send}
-        }
-      }
-      """
-    }expansion: {
+    } expansion: {
       """
       struct FeatureView: View {
         var store: StoreOf<Feature>
         var body: some View {
-          Button("Tap") { send}
+          Button("Tap") { store.send(.tap) }
         }
       }
 
@@ -236,28 +225,115 @@ final class ViewActionMacroTests: XCTestCase {
         var store: StoreOf<Feature>
         var body: some View {
           Button("Tap") { self.store.send(.tap) }
-                          ┬──────────────
-                          ╰─ ⚠️ Do not use 'self.store.send' directly when using @ViewAction. Instead, use 'self.send'.
-                             ✏️ Use 'self.send'
+                          ┬────────────────────
+                          ╰─ ⚠️ Do not use 'store.send' directly when using '@ViewAction'
         }
       }
       """
-    }fixes: {
+    } expansion: {
+      """
+      struct FeatureView: View {
+        var store: StoreOf<Feature>
+        var body: some View {
+          Button("Tap") { self.store.send(.tap) }
+        }
+      }
+
+      extension FeatureView: ComposableArchitecture.ViewActionSending {
+      }
+      """
+    }
+  }
+
+  func testWarning_StoreSend_ViewAction() {
+    assertMacro {
       """
       @ViewAction(for: Feature.self)
       struct FeatureView: View {
         var store: StoreOf<Feature>
         var body: some View {
-          Button("Tap") { self.send}
+          Button("Tap") { store.send(.view(.tap)) }
         }
       }
       """
-    }expansion: {
+    } diagnostics: {
+      """
+      @ViewAction(for: Feature.self)
+      struct FeatureView: View {
+        var store: StoreOf<Feature>
+        var body: some View {
+          Button("Tap") { store.send(.view(.tap)) }
+                          ┬──────────────────────
+                          ╰─ ⚠️ Do not use 'store.send' directly when using '@ViewAction'
+                             ✏️ Call 'send' directly with a view action
+        }
+      }
+      """
+    } fixes: {
+      """
+      @ViewAction(for: Feature.self)
+      struct FeatureView: View {
+        var store: StoreOf<Feature>
+        var body: some View {
+          Button("Tap") { send(.tap) }
+        }
+      }
+      """
+    } expansion: {
       """
       struct FeatureView: View {
         var store: StoreOf<Feature>
         var body: some View {
-          Button("Tap") { self.send}
+          Button("Tap") { send(.tap) }
+        }
+      }
+
+      extension FeatureView: ComposableArchitecture.ViewActionSending {
+      }
+      """
+    }
+  }
+
+  func testWarning_SelfStoreSend_ViewAction() {
+    assertMacro {
+      """
+      @ViewAction(for: Feature.self)
+      struct FeatureView: View {
+        var store: StoreOf<Feature>
+        var body: some View {
+          Button("Tap") { self.store.send(.view(.tap)) }
+        }
+      }
+      """
+    } diagnostics: {
+      """
+      @ViewAction(for: Feature.self)
+      struct FeatureView: View {
+        var store: StoreOf<Feature>
+        var body: some View {
+          Button("Tap") { self.store.send(.view(.tap)) }
+                          ┬───────────────────────────
+                          ╰─ ⚠️ Do not use 'store.send' directly when using '@ViewAction'
+                             ✏️ Call 'send' directly with a view action
+        }
+      }
+      """
+    } fixes: {
+      """
+      @ViewAction(for: Feature.self)
+      struct FeatureView: View {
+        var store: StoreOf<Feature>
+        var body: some View {
+          Button("Tap") { send(.tap) }
+        }
+      }
+      """
+    } expansion: {
+      """
+      struct FeatureView: View {
+        var store: StoreOf<Feature>
+        var body: some View {
+          Button("Tap") { send(.tap) }
         }
       }
 

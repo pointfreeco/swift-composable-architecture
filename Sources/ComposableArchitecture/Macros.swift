@@ -232,7 +232,7 @@
   ///   Button("Login") {
   ///     store.send(.view(.loginButtonTapped))
   ///   //┬─────────
-  ///   //╰─ ⚠️ Do not use 'store.send' directly when using @ViewAction. Instead, use 'send'.
+  ///   //╰─ ⚠️ Do not use 'store.send' directly when using '@ViewAction'
   ///   }
   ///   ```
   @attached(extension, conformances: ViewActionSending)

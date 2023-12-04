@@ -24,10 +24,18 @@ public struct ViewActionMacro: ExtensionMacro {
       var declarationWithStoreVariable = declaration
       declarationWithStoreVariable.memberBlock.members.insert(
         MemberBlockItemSyntax(
-          leadingTrivia: .newline,
+          leadingTrivia: declarationWithStoreVariable.memberBlock.members.first?.leadingTrivia
+            ?? "\n    ",
           decl: VariableDeclSyntax(
-            .let,
-            name: " store: StoreOf<\(raw: inputType)>"
+            bindingSpecifier: .keyword(.let),
+            bindings: [
+              PatternBindingSyntax(
+                pattern: " store" as PatternSyntax,
+                typeAnnotation: TypeAnnotationSyntax(
+                  type: " StoreOf<\(raw: inputType)>" as TypeSyntax
+                )
+              )
+            ]
           ),
           trailingTrivia: .newline
         ),
@@ -39,8 +47,8 @@ public struct ViewActionMacro: ExtensionMacro {
           node: declaration,
           message: MacroExpansionErrorMessage(
             """
-            @ViewAction macro requires \
-            \(declaration.identifierDescription.map { "'\($0)' " } ?? "") to have a 'store' \
+            '@ViewAction' requires \
+            \(declaration.identifierDescription.map { "'\($0)' " } ?? " ")to have a 'store' \
             property of type 'Store'.
             """
           ),
@@ -73,49 +81,39 @@ extension SyntaxProtocol {
     context: some MacroExpansionContext
   ) {
     for decl in declaration.children(viewMode: .fixedUp) {
-      if let memberAccess = decl.as(MemberAccessExprSyntax.self),
-        let identifierSyntax = memberAccess.base?.as(DeclReferenceExprSyntax.self),
-        identifierSyntax.baseName.text == "store",
-        memberAccess.declName.baseName.text == "send"
-      {
-        context.diagnose(
-          Diagnostic(
-            node: decl,
-            message: MacroExpansionWarningMessage(
-              """
-              Do not use 'store.send' directly when using @ViewAction. Instead, use 'send'.
-              """
-            ),
-            highlights: [decl],
-            fixIt: .replace(
-              message: MacroExpansionFixItMessage("Use 'send'"),
-              oldNode: decl,
-              newNode: DeclReferenceExprSyntax(baseName: "send")
+      if let functionCall = decl.as(FunctionCallExprSyntax.self) {
+        if let sendExpression = functionCall.sendExpression {
+          var fixIt: FixIt?
+          if let outer = functionCall.arguments.first,
+            let inner = outer
+              .as(LabeledExprSyntax.self)?.expression
+              .as(FunctionCallExprSyntax.self),
+            inner.calledExpression
+              .as(MemberAccessExprSyntax.self)?.declName.baseName.text == "view",
+            inner.arguments.count == 1
+          {
+            var newFunctionCall = functionCall
+            newFunctionCall.calledExpression = sendExpression
+            newFunctionCall.arguments = inner.arguments
+            fixIt = .replace(
+              message: MacroExpansionFixItMessage("Call 'send' directly with a view action"),
+              oldNode: functionCall,
+              newNode: newFunctionCall
+            )
+          }
+          context.diagnose(
+            Diagnostic(
+              node: decl,
+              message: MacroExpansionWarningMessage(
+                """
+                Do not use 'store.send' directly when using '@ViewAction'
+                """
+              ),
+              highlights: [decl],
+              fixIts: fixIt.map { [$0] } ?? []
             )
           )
-        )
-      }
-      if let memberAccess = decl.as(MemberAccessExprSyntax.self),
-        let selfMemberAccess = memberAccess.base?.as(MemberAccessExprSyntax.self),
-        selfMemberAccess.declName.baseName.text == "store",
-        memberAccess.declName.baseName.text == "send"
-      {
-        context.diagnose(
-          Diagnostic(
-            node: decl,
-            message: MacroExpansionWarningMessage(
-              """
-              Do not use 'self.store.send' directly when using @ViewAction. Instead, use 'self.send'.
-              """
-            ),
-            highlights: [decl],
-            fixIt: .replace(
-              message: MacroExpansionFixItMessage("Use 'self.send'"),
-              oldNode: decl,
-              newNode: DeclReferenceExprSyntax(baseName: "self.send")
-            )
-          )
-        )
+        }
       }
       decl.diagnoseDirectStoreDotSend(declaration: decl, context: context)
     }
@@ -156,5 +154,29 @@ extension DeclGroupSyntax {
     default:
       return nil
     }
+  }
+}
+
+extension FunctionCallExprSyntax {
+  fileprivate var sendExpression: ExprSyntax? {
+    guard
+      let memberAccess = self.calledExpression.as(MemberAccessExprSyntax.self),
+      memberAccess.declName.baseName.text == "send"
+    else { return nil }
+
+    if memberAccess.base?.as(DeclReferenceExprSyntax.self)?.baseName.text == "store" {
+      return ExprSyntax(DeclReferenceExprSyntax(baseName: "send"))
+    }
+
+    if let innerMemberAccess = memberAccess.base?.as(MemberAccessExprSyntax.self),
+      innerMemberAccess.base?.as(DeclReferenceExprSyntax.self)?.baseName.text == "self",
+      innerMemberAccess.declName.baseName.text == "store"
+    {
+      return ExprSyntax(
+        MemberAccessExprSyntax(base: DeclReferenceExprSyntax(baseName: "self"), name: "send")
+      )
+    }
+
+    return nil
   }
 }
