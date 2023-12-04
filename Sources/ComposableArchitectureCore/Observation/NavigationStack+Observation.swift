@@ -230,7 +230,7 @@ public struct _NavigationDestinationViewModifier<
                   state = $0[id: component.id] ?? state
                   return state
                 },
-                id: ScopeID(
+                id: _ScopeID(
                   state: \StackState<State>.[id: component.id],
                   action: \StackAction<State, Action>.Cases[id: component.id]
                 ),

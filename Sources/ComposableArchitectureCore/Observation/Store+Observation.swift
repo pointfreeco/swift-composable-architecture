@@ -78,7 +78,7 @@ extension Store where State: ObservableState {
         childState = $0[keyPath: state] ?? childState
         return childState
       },
-      id: ScopeID(state: state, action: action),
+      id: _ScopeID(state: state, action: action),
       action: { action($0) },
       isInvalid: { $0[keyPath: state] == nil },
       removeDuplicates: nil

@@ -57,7 +57,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
               state = $0[id: component.id] ?? state
               return state
             },
-            id: ScopeID(
+            id: _ScopeID(
               state: \StackState<State>.[id: component.id],
               action: \StackAction<State, Action>.Cases.[id: component.id]
             ),
@@ -100,7 +100,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
               state = $0[id: component.id] ?? state
               return state
             },
-            id: ScopeID(
+            id: _ScopeID(
               state: \StackState<State>.[id: component.id],
               action: \StackAction<State, Action>.Cases.[id: component.id]
             ),

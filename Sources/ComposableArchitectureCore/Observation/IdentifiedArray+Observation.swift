@@ -36,7 +36,7 @@ public struct _StoreCollection<ID: Hashable, State, Action>: RandomAccessCollect
     let id = self.ids[position]
     return self.store._scope(
       state: { $0[id: id]! },
-      id: ScopeID(
+      id: _ScopeID(
         state: \IdentifiedArray<ID, State>.[id: id],
         action: \IdentifiedAction<ID, Action>.Cases[id: id]
       ),
