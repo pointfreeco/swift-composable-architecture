@@ -240,13 +240,13 @@
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0015, previousFile: 02-02-02-code-0015-previous)
       }
-      
+
       @Step {
         The same can be done for the `alert(store:)` view modifier.
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0016)
       }
-      
+
       That completes the refactor of the reducer and view to use a single piece of optional enum
       state instead using multiple optional values. The application works exactly as it did before,
       but now its domain is more concisely modeled.
