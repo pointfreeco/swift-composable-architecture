@@ -22,11 +22,6 @@ public struct ViewActionMacro: MemberMacro {
             \(declaration.identifierDescription.map { "'\($0)' " } ?? "") to have a 'store' \
             property of type 'Store'.
             """
-          ),
-          fixIt: .replace(
-            message: MacroExpansionFixItMessage("Add 'let store'"),
-            oldNode: declaration,
-            newNode: DeclReferenceExprSyntax(baseName: "send")
           )
         )
       )
@@ -64,16 +59,6 @@ public struct ViewActionMacro: MemberMacro {
       """
     ]
   }
-}
-
-struct SimpleDiagnosticMessage: DiagnosticMessage, Error {
-  let message: String
-  let diagnosticID: MessageID
-  let severity: DiagnosticSeverity
-}
-
-extension SimpleDiagnosticMessage: FixItMessage {
-  var fixItID: MessageID { diagnosticID }
 }
 
 extension SyntaxProtocol {
