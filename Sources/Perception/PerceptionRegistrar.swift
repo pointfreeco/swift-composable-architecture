@@ -53,6 +53,16 @@ public struct PerceptionRegistrar: Sendable {
     ) rethrows -> T {
       try self.registrar.withMutation(of: subject, keyPath: keyPath, mutation)
     }
+    public func willSet<Subject: Observable, Member>(
+      _ subject: Subject, keyPath: KeyPath<Subject, Member>
+    ) {
+      self.registrar.willSet(subject, keyPath: keyPath)
+    }
+    public func didSet<Subject: Observable, Member>(
+      _ subject: Subject, keyPath: KeyPath<Subject, Member>
+    ) {
+      self.registrar.didSet(subject, keyPath: keyPath)
+    }
   }
 #endif
 
@@ -109,6 +119,52 @@ extension PerceptionRegistrar {
       return try mutation()
     #endif
   }
+
+  @_disfavoredOverload
+  public func willSet<Subject: Perceptible, Member>(
+    _ subject: Subject,
+    keyPath: KeyPath<Subject, Member>
+  ) {
+#if canImport(Observation)
+    if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *),
+       let subject = subject as? any Observable
+    {
+      func `open`<S: Observable>(_ subject: S) {
+        return self.registrar.willSet(
+          subject,
+          keyPath: unsafeDowncast(keyPath, to: KeyPath<S, Member>.self)
+        )
+      }
+      return open(subject)
+    } else {
+      return self.perceptionRegistrar.willSet(subject, keyPath: keyPath)
+    }
+#else
+#endif
+  }
+
+  @_disfavoredOverload
+  public func didSet<Subject: Perceptible, Member>(
+    _ subject: Subject,
+    keyPath: KeyPath<Subject, Member>
+  ) {
+#if canImport(Observation)
+    if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *),
+       let subject = subject as? any Observable
+    {
+      func `open`<S: Observable>(_ subject: S) {
+        return self.registrar.didSet(
+          subject,
+          keyPath: unsafeDowncast(keyPath, to: KeyPath<S, Member>.self)
+        )
+      }
+      return open(subject)
+    } else {
+      return self.perceptionRegistrar.didSet(subject, keyPath: keyPath)
+    }
+#else
+#endif
+  }
 }
 
 extension PerceptionRegistrar: Codable {
@@ -152,11 +208,26 @@ extension PerceptionRegistrar: Hashable {
   var isInSwiftUIBody: Bool {
     for callStackSymbol in Thread.callStackSymbols {
       guard
-        let symbol = callStackSymbol.split(separator: " ").dropFirst(3).first,
-        symbol.utf8.first == .init(ascii: "$"),
-        let demangled = String(symbol).demangled,
+        let symbol = callStackSymbol.split(separator: " ").dropFirst(3).first
+      else {
+        continue
+      }
+      guard
+        symbol.utf8.first == .init(ascii: "$")
+      else {
+        continue
+      }
+      guard
+        let demangled = String(symbol).demangled
+      else {
+        continue
+      }
+      guard
         demangled.hasPrefix("protocol witness for SwiftUI.View.body.getter : ")
-      else { continue }
+          || demangled.contains(" SwiftUI.") && demangled.contains("body.getter : some")
+      else {
+        continue
+      }
       return true
     }
     return false

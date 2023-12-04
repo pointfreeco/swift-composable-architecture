@@ -46,9 +46,13 @@
         to do its job, typically a struct. Then you will create an `Action` type that holds all 
         the actions the user can perform in the feature, typically an enum. 
         
+        Further, if your feature is to be observed by SwiftUI, you must annotate its state with the
+        ``ObservableState()`` macro, which is the Composable Architecture's version of
+        `@Observable`, but tuned to value types.
+
         @Code(name: "CounterFeature.swift", file: 01-01-01-code-0003.swift)
       }
-      
+            
       @Step {
         For the purpose of a simple counter feature, the state consists of just a single integer,
         the current count, and the actions consist of tapping buttons to either increment or 
@@ -128,11 +132,7 @@
       @Step {
         Next, we can implement some basic view hierarchy for displaying the count and providing 
         buttons for incrementing and decrementing. 
-        
-        > Note: You cannot read state from a ``ComposableArchitecture/Store`` directly, nor can you 
-        send actions to it directly. So, for now we will provide stubs for that behavior, but once
-        a ``ComposableArchitecture/ViewStore`` is added we can provide the real implementations.
-        
+
         @Code(name: "CounterFeature.swift", file: 01-01-02-code-0003.swift) {
           @Image(
             source: "01-02-image-0003.png", 
@@ -141,22 +141,14 @@
         }
       }
       
-      With some basic view scaffolding in place we can now start actually observing state in the
-      `store`. This is done by constructing a ``ComposableArchitecture/ViewStore``, and for 
-      SwiftUI views there is a convenience view called a ``ComposableArchitecture/WithViewStore``
-      that provides a lightweight syntax for constructing a view store.
+      With some basic view scaffolding in place we can now start actually reading state from, and
+      sending actions to, the `store`.
       
       @Step {  
-        View stores require that `State` be `Equatable`, so we must do that first. Once the view 
-        store is constructed we can access the feature's state and send it actions when the user 
-        taps on buttons.
-        
-        > Tip: Currently we are observing _all_ state in the store by using `observe: { $0 }`, 
-        > but typically features hold onto a lot more state than what is needed in the view. See
-        > our article <doc:Performance> for more information on how to best observe only the bare
-        > essentials a view needs to do its job.
-        
-        @Code(name: "CounterFeature.swift", file: 01-01-02-code-0004.swift, previousFile: 01-01-02-code-0004-previous.swift)
+        We can read read a property of state directly from the `store` via dynamic member lookup,
+        and we can send actions to the `store` via ``Store/send(_:)``.
+
+        @Code(name: "CounterFeature.swift", file: 01-01-02-code-0004.swift)
       }
       
       @Step {

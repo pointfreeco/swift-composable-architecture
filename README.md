@@ -559,15 +559,16 @@ advanced usages.
 The documentation for releases and `main` are available here:
 
 * [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/)
-* [1.4.0](https://pointfreeco.github.io/swift-composable-architecture/1.4.0/documentation/composablearchitecture/)
+* [1.5.0](https://pointfreeco.github.io/swift-composable-architecture/1.5.0/documentation/composablearchitecture/)
 
 <details>
   <summary>
   Other versions
   </summary>
 
-  * [1.3.0](https://pointfreeco.github.io/swift-composable-architecture/1.1.0/documentation/composablearchitecture/)
-  * [1.2.0](https://pointfreeco.github.io/swift-composable-architecture/1.1.0/documentation/composablearchitecture/)
+  * [1.4.0](https://pointfreeco.github.io/swift-composable-architecture/1.4.0/documentation/composablearchitecture/)
+  * [1.3.0](https://pointfreeco.github.io/swift-composable-architecture/1.3.0/documentation/composablearchitecture/)
+  * [1.2.0](https://pointfreeco.github.io/swift-composable-architecture/1.2.0/documentation/composablearchitecture/)
   * [1.1.0](https://pointfreeco.github.io/swift-composable-architecture/1.1.0/documentation/composablearchitecture/)
   * [1.0.0](https://pointfreeco.github.io/swift-composable-architecture/1.0.0/documentation/composablearchitecture/)
   * [0.59.0](https://pointfreeco.github.io/swift-composable-architecture/0.59.0/documentation/composablearchitecture/)

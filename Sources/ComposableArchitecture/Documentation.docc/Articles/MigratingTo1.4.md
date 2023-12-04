@@ -114,7 +114,8 @@ store.receive(.child(.presented(.response(.success("Hello!")))))
 store.receive(\.child.presented.response.success)
 ```
 
-And in the case of ``PresentationAction`` you can even omit the ``presented`` path component:
+And in the case of ``PresentationAction`` you can even omit the ``PresentationAction/presented(_:)``
+path component:
 
 ```swift
 store.receive(\.child.response.success)

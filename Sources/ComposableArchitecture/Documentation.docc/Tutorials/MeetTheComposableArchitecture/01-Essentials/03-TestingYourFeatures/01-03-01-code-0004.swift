@@ -7,7 +7,7 @@ final class CounterFeatureTests: XCTestCase {
     let store = TestStore(initialState: CounterFeature.State()) {
       CounterFeature()
     }
-
+    
     await store.send(.incrementButtonTapped)
     // ❌ State was not expected to change, but a change occurred: …
     //
