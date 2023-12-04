@@ -45,7 +45,7 @@ public func _$isIdentityEqual<ID: Hashable, T: ObservableState>(
 public func _$isIdentityEqual<T: ObservableState>(
   _ lhs: PresentationState<T>, _ rhs: PresentationState<T>
 ) -> Bool {
-  lhs.id == rhs.id
+  lhs.wrappedValue?._$id == rhs.wrappedValue?._$id
 }
 
 public func _$isIdentityEqual<T: ObservableState>(
