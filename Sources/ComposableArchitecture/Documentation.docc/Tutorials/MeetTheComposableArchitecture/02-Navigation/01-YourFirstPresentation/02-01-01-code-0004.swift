@@ -1,21 +1,19 @@
 import SwiftUI
 
 struct AddContactView: View {
-  let store: StoreOf<AddContactFeature>
-
+  @Bindable var store: StoreOf<AddContactFeature>
+  
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        TextField("Name", text: viewStore.binding(get: \.contact.name, send: { .setName($0) }))
-        Button("Save") {
-          viewStore.send(.saveButtonTapped)
-        }
+    Form {
+      TextField("Name", text: $store.contact.name.sending(\.setName))
+      Button("Save") {
+        store.send(.saveButtonTapped)
       }
-      .toolbar {
-        ToolbarItem {
-          Button("Cancel") {
-            viewStore.send(.cancelButtonTapped)
-          }
+    }
+    .toolbar {
+      ToolbarItem {
+        Button("Cancel") {
+          store.send(.cancelButtonTapped)
         }
       }
     }

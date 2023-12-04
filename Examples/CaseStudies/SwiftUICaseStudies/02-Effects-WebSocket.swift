@@ -21,6 +21,18 @@ struct WebSocket {
     var messageToSend = ""
     var receivedMessages: [String] = []
 
+    init(
+      alert: AlertState<Action.Alert>? = nil,
+      connectivityState: ConnectivityState = .disconnected,
+      messageToSend: String = "",
+      receivedMessages: [String] = []
+    ) {
+      self.alert = alert
+      self.connectivityState = connectivityState
+      self.messageToSend = messageToSend
+      self.receivedMessages = receivedMessages
+    }
+
     enum ConnectivityState: String {
       case connected
       case connecting
