@@ -19,6 +19,40 @@ final class ObservableTests: BaseTCATestCase {
     XCTAssertEqual(state.count, 1)
   }
 
+  func testReplace() async {
+    XCTTODO("Ideally this would pass but we cannot detect this kind of mutation currently.")
+
+    var state = ChildState(count: 42)
+    let countDidChange = self.expectation(description: "count.didChange")
+
+    withPerceptionTracking {
+      _ = state.count
+    } onChange: {
+      countDidChange.fulfill()
+    }
+
+    state.replace(with: ChildState())
+    await self.fulfillment(of: [countDidChange], timeout: 0)
+    XCTAssertEqual(state.count, 0)
+  }
+
+  func testReset() async {
+    XCTTODO("Ideally this would pass but we cannot detect this kind of mutation currently.")
+
+    var state = ChildState(count: 42)
+    let countDidChange = self.expectation(description: "count.didChange")
+
+    withPerceptionTracking {
+      _ = state.count
+    } onChange: {
+      countDidChange.fulfill()
+    }
+
+    state.reset()
+    await self.fulfillment(of: [countDidChange], timeout: 0)
+    XCTAssertEqual(state.count, 0)
+  }
+
   func testChildCountMutation() async {
     var state = ParentState()
     let childCountDidChange = self.expectation(description: "child.count.didChange")
@@ -233,6 +267,26 @@ final class ObservableTests: BaseTCATestCase {
     XCTAssertEqual(store.child.count, 42)
   }
 
+  func testReplace_Store() async {
+    let store = Store<ChildState, Void>(initialState: ChildState()) {
+      Reduce { state, _ in
+        state.replace(with: ChildState(count: 42))
+        return .none
+      }
+    }
+    let countDidChange = self.expectation(description: "child.didChange")
+
+    withPerceptionTracking {
+      _ = store.count
+    } onChange: {
+      countDidChange.fulfill()
+    }
+
+    store.send(())
+    await self.fulfillment(of: [countDidChange], timeout: 0)
+    XCTAssertEqual(store.count, 42)
+  }
+
   func testResetChild_Store() async {
     let store = Store<ParentState, Void>(initialState: ParentState(child: ChildState(count: 42))) {
       Reduce { state, _ in
@@ -251,6 +305,26 @@ final class ObservableTests: BaseTCATestCase {
     store.send(())
     await self.fulfillment(of: [childDidChange], timeout: 0)
     XCTAssertEqual(store.child.count, 0)
+  }
+
+  func testReset_Store() async {
+    let store = Store<ChildState, Void>(initialState: ChildState(count: 42)) {
+      Reduce { state, _ in
+        state.reset()
+        return .none
+      }
+    }
+    let countDidChange = self.expectation(description: "child.didChange")
+
+    withPerceptionTracking {
+      _ = store.count
+    } onChange: {
+      countDidChange.fulfill()
+    }
+
+    store.send(())
+    await self.fulfillment(of: [countDidChange], timeout: 0)
+    XCTAssertEqual(store.count, 0)
   }
 }
 
