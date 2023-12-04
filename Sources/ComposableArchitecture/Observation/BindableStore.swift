@@ -44,11 +44,11 @@ import SwiftUI
 @propertyWrapper
 @dynamicMemberLookup
 public struct BindableStore<State: ObservableState, Action> {
-  public let wrappedValue: Store<State, Action>
+  public var wrappedValue: Store<State, Action>
   public init(wrappedValue: Store<State, Action>) {
     self.wrappedValue = wrappedValue
   }
   public var projectedValue: BindableStore<State, Action> {
-    self
+    self 
   }
 }

@@ -2,7 +2,7 @@
 import SwiftUI
 
 struct OldPresentsNewTestCase: View {
-  @BindableStore var store = Store(initialState: Feature.State()) {
+  @State var store = Store(initialState: Feature.State()) {
     Feature()
   }
 

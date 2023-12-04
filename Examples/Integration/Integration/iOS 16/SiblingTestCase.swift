@@ -2,7 +2,7 @@
 import SwiftUI
 
 struct SiblingFeaturesView: View {
-  @BindableStore var store = Store(initialState: Feature.State()) {
+  let store = Store(initialState: Feature.State()) {
     Feature()
   }
 
