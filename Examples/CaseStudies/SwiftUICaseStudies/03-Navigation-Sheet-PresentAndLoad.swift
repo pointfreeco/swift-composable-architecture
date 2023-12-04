@@ -60,7 +60,7 @@ struct PresentAndLoad {
 // MARK: - Feature view
 
 struct PresentAndLoadView: View {
-  @State var store = Store(initialState: PresentAndLoad.State()) {
+  @Bindable var store = Store(initialState: PresentAndLoad.State()) {
     PresentAndLoad()
   }
 

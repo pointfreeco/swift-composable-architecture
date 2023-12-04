@@ -99,7 +99,7 @@ state and actions:
 
 ```swift
 struct InventoryView: View {
-  @State var store: StoreOf<InventoryFeature>
+  @BindableStore var store: StoreOf<InventoryFeature>
 
   var body: some View {
     List {
@@ -278,7 +278,7 @@ destination enum:
 
 ```swift
 struct InventoryView: View {
-  @State var store: StoreOf<InventoryFeature>
+  @BindableStore var store: StoreOf<InventoryFeature>
 
   var body: some View {
     List {

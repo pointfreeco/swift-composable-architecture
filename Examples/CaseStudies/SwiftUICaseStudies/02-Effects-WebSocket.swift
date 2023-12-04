@@ -151,7 +151,7 @@ struct WebSocket {
 // MARK: - Feature view
 
 struct WebSocketView: View {
-  @State var store = Store(initialState: WebSocket.State()) {
+  @Bindable var store = Store(initialState: WebSocket.State()) {
     WebSocket()
   }
 

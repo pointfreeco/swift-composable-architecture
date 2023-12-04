@@ -107,7 +107,7 @@ struct AlertAndConfirmationDialog {
 // MARK: - Feature view
 
 struct AlertAndConfirmationDialogView: View {
-  @State var store = Store(initialState: AlertAndConfirmationDialog.State()) {
+  @Bindable var store = Store(initialState: AlertAndConfirmationDialog.State()) {
     AlertAndConfirmationDialog()
   }
 

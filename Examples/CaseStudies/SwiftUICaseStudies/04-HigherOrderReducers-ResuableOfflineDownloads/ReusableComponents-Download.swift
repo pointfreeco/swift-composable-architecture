@@ -153,7 +153,7 @@ struct MapApp {
 }
 
 struct CitiesView: View {
-  @State var store = Store(initialState: MapApp.State(cityMaps: .mocks)) {
+  @Bindable var store = Store(initialState: MapApp.State(cityMaps: .mocks)) {
     MapApp()
   }
 

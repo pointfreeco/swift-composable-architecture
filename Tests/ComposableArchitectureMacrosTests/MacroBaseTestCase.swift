@@ -14,7 +14,7 @@
           ObservationStateTrackedMacro.self,
           ObservationStateIgnoredMacro.self,
           PresentsMacro.self,
-          // WithViewStoreMacro.self,
+          ViewActionMacro.self,
         ]
       ) {
         super.invokeTest()

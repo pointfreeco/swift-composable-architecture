@@ -5,7 +5,7 @@ import NewGameSwiftUI
 import SwiftUI
 
 public struct AppView: View {
-  @State var store: StoreOf<TicTacToe>
+  let store: StoreOf<TicTacToe>
 
   public init(store: StoreOf<TicTacToe>) {
     self.store = store

@@ -102,7 +102,7 @@ struct Animations {
 // MARK: - Feature view
 
 struct AnimationsView: View {
-  @State var store = Store(initialState: Animations.State()) {
+  @Bindable var store = Store(initialState: Animations.State()) {
     Animations()
   }
 

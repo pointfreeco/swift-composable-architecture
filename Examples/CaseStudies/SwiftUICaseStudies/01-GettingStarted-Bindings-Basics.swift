@@ -64,7 +64,7 @@ struct BindingBasics {
 // MARK: - Feature view
 
 struct BindingBasicsView: View {
-  @State var store = Store(initialState: BindingBasics.State()) {
+  @Bindable var store = Store(initialState: BindingBasics.State()) {
     BindingBasics()
   }
 

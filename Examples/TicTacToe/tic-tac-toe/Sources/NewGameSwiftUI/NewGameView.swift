@@ -5,7 +5,7 @@ import NewGameCore
 import SwiftUI
 
 public struct NewGameView: View {
-  @State var store: StoreOf<NewGame>
+  @Bindable var store: StoreOf<NewGame>
 
   public init(store: StoreOf<NewGame>) {
     self.store = store

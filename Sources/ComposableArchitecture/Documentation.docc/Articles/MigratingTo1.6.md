@@ -321,10 +321,17 @@ Then previously you would drive a sheet presentation from this feature like so:
 ```
 
 You can now replace `sheet(store:)` with the vanilla SwiftUI modifier, `sheet(item:)`. First you
-must hold onto the store in your view in a bindable manner, using `@State`:
+must hold onto the store in your view in a bindable manner, using ``BindableStore`` if targeting
+older platforms:
 
 ```swift
-@State var store: StoreOf<Feature>
+@BindableStore var store: StoreOf<Feature>
+```
+
+…or using `@Bindable` if targeting newer platforms:
+
+```swift
+@Bindable var store: StoreOf<Feature>
 ```
 
 Then you can use `sheet(item:)` like so:
@@ -435,10 +442,17 @@ struct Path {
 }
 ```
 
-Then in the view you must start holding onto the `store` as `@State`:
+Then in the view you must start holding onto the `store` in a bindable manner, using 
+``BindableStore`` if targeting older platforms:
 
 ```swift
-@State var store: StoreOf<Feature>
+@BindableStore var store: StoreOf<Feature>
+```
+
+…or using `@Bindable` if targeting newer platforms:
+
+```swift
+@Bindable var store: StoreOf<Feature>
 ```
 
 And the original code can now be updated to our custom initializer on `NavigationStack`:
@@ -528,14 +542,21 @@ your feature's state with ``ObservableState()`` and removing all instances of ``
  }
 ```
 
-In the view you must start holding onto the `store` as `@State`:
+In the view you must start holding onto the `store` in a bindable manner, which means using 
+``BindableStore`` if targeting older platforms:
 
 ```swift
-@State var store: StoreOf<Feature>
+@BindableStore var store: StoreOf<Feature>
 ```
 
-In the `body` of the view you can stop using ``WithViewStore`` and instead derive bindings directly
-from the store:
+…or using `@Bindable` if targeting newer platforms:
+
+```swift
+@Bindable var store: StoreOf<Feature>
+```
+
+Then in the `body` of the view you can stop using ``WithViewStore`` and instead derive bindings 
+directly from the store:
 
 ```swift
 var body: some View {
@@ -598,10 +619,17 @@ struct Feature {
 }
 ```
 
-In the view you must start holding onto the `store` as `@State`:
+In the view you must start holding onto the `store` in a bindable manner, which means using 
+``BindableStore`` if targeting older platforms:
 
 ```swift
-@State var store: StoreOf<Feature>
+@BindableStore var store: StoreOf<Feature>
+```
+
+…or using `@Bindable` if targeting newer platforms:
+
+```swift
+@Bindable var store: StoreOf<Feature>
 ```
 
 Then you can derive a binding directly from a ``Store`` binding like so:
@@ -639,8 +667,97 @@ struct State {
 }
 ```
 
-<!--## View actions-->
-<!--TODO-->
+## View actions
+
+There is a common pattern in the Composable Architecture community to separate actions that are
+sent in the view from actions that are used internally in the feature, such as emissions of effects.
+Typically this looks like the following:
+
+```swift
+@Reducer
+struct Feature
+  struct State { /* ... */ }
+  enum Action {
+    case loginResponse(Bool)
+    case view(View)
+
+    enum View {
+      case loginButtonTapped
+    }
+  }
+  // ...
+}
+```
+
+And then in the view you would use ``WithViewStore`` with the `send` argument to specify which 
+actions the view has access to:
+
+```swift
+struct FeatureView: View {
+  let store: StoreOf<Feature>
+
+  var body: some View {
+    WithViewStore(
+      store, 
+      observe: { $0 }, 
+      send: Feature.Action.view  // 👈
+    ) { viewStore in
+      Button("Login") {
+        viewStore.send(.loginButtonTapped) 
+      }
+    }
+  }
+}
+```
+
+That makes it so that you can send `view` actions without wrapping the action in `.view(…)`, and
+it makes it so that you can only send `view` actions. For example, the view cannot send the
+`loginResponse` action:
+
+```swift
+viewStore.send(.loginResponse(false))
+// 🛑 Type 'Feature.Action.View' has no member 'loginResponse'
+```
+
+This pattern is still possible with version 1.6 of the library, but requires a few small changes.
+First, you must make your `View` action enum conform to the ``ViewAction`` protocol:
+
+```swift
+@Reducer
+struct Feature
+  // ...
+  enum Action: ViewAction {  // 👈
+    // ...
+  }
+  // ...
+}
+```
+
+And second, you can use the ``ViewAction(for:)`` macro on your view by specifying the reducer that
+powers the view. This gives you access to a `send` method in the view for sending view actions
+rather than going through ``Store/send(_:)``:
+
+```diff
++@ViewAction(for: Feature.self)
+ struct FeatureView: View {
+   let store: StoreOf<Feature>
+ 
+   var body: some View {
+-    WithViewStore(
+-      store, 
+-      observe: { $0 }, 
+-      send: Feature.Action.view
+-    ) { viewStore in
+       Button("Login") { 
+-        viewStore.send(.loginButtonTapped) 
++        send(.loginButtonTapped)
+       }
+     }
+-  }
+ }
+```
+
+
 
 ## Incrementally migrating
 

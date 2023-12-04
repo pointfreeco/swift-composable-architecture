@@ -98,7 +98,7 @@ struct RecordingMemo {
 }
 
 struct RecordingMemoView: View {
-  @State var store: StoreOf<RecordingMemo>
+  @Bindable var store: StoreOf<RecordingMemo>
 
   var body: some View {
     VStack(spacing: 12) {

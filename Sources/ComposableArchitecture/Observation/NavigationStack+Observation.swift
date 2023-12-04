@@ -36,6 +36,19 @@ extension Bindable {
   }
 }
 
+extension BindableStore {
+  // TODO: Document
+  public func scope<ElementState, ElementAction>(
+    state: KeyPath<State, StackState<ElementState>>,
+    action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
+  ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>> {
+    Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>(
+      get: { self.wrappedValue.scope(state: state, action: action) },
+      set: { _ in }
+    )
+  }
+}
+
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension NavigationStack {
   /// Drives a navigation stack with a store.

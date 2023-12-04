@@ -52,7 +52,7 @@ struct BindingForm {
 // MARK: - Feature view
 
 struct BindingFormView: View {
-  @State var store = Store(initialState: BindingForm.State()) {
+  @Bindable var store = Store(initialState: BindingForm.State()) {
     BindingForm()
   }
 

@@ -103,7 +103,7 @@ struct Todos {
 }
 
 struct AppView: View {
-  @State var store: StoreOf<Todos>
+  @Bindable var store: StoreOf<Todos>
 
   var body: some View {
     NavigationStack {
