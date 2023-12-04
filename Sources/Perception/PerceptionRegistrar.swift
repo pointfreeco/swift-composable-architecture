@@ -168,7 +168,7 @@ extension PerceptionRegistrar: Hashable {
       }
       guard
         demangled.hasPrefix("protocol witness for SwiftUI.View.body.getter : ")
-          || demangled.contains("SwiftUI.ForEach") && demangled.contains("body.getter : some")
+          || demangled.contains(" SwiftUI.") && demangled.contains("body.getter : some")
       else {
         continue
       }

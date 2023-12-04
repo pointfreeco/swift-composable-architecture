@@ -112,7 +112,7 @@ final class PerceptionTests: XCTestCase {
     self.render(FeatureView())
   }
 
-  func testRuntimeWarning_OuterInPerceptionBodyForEach() {
+  func testRuntimeWarning_OuterInPerceptionBody_ForEach() {
     self.expectFailure()
 
     struct FeatureView: View {
@@ -158,6 +158,75 @@ final class PerceptionTests: XCTestCase {
     self.render(FeatureView())
   }
 
+  func testRuntimeWarning_NotInPerceptionBody_Sheet() {
+    self.expectFailure()
+
+    struct FeatureView: View {
+      @State var model = Model(child: Model())
+      var body: some View {
+        Text("Parent")
+          .sheet(item: $model.child) { child in
+            Text(child.count.description)
+          }
+      }
+    }
+
+    self.render(FeatureView())
+  }
+
+  func testRuntimeWarning_InnerInPerceptionBody_Sheet() {
+    self.expectFailure()
+
+    struct FeatureView: View {
+      @State var model = Model(child: Model())
+      var body: some View {
+        Text("Parent")
+          .sheet(item: $model.child) { child in
+            WithPerceptionTracking {
+              Text(child.count.description)
+            }
+          }
+      }
+    }
+
+    self.render(FeatureView())
+  }
+
+  func testRuntimeWarning_OuterInPerceptionBody_Sheet() {
+    self.expectFailure()
+
+    struct FeatureView: View {
+      @State var model = Model(child: Model())
+      var body: some View {
+        WithPerceptionTracking {
+          Text("Parent")
+            .sheet(item: $model.child) { child in
+              Text(child.count.description)
+            }
+        }
+      }
+    }
+
+    self.render(FeatureView())
+  }
+
+  func testRuntimeWarning_OuterAndInnerInPerceptionBody_Sheet() {
+    struct FeatureView: View {
+      @State var model = Model(child: Model())
+      var body: some View {
+        WithPerceptionTracking {
+          Text("Parent")
+            .sheet(item: $model.child) { child in
+              WithPerceptionTracking {
+                Text(child.count.description)
+              }
+            }
+        }
+      }
+    }
+
+    self.render(FeatureView())
+  }
   private func expectFailure() {
     if #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10) {
       XCTExpectFailure {
@@ -177,15 +246,18 @@ final class PerceptionTests: XCTestCase {
 
 @Perceptible
 private class Model: Identifiable {
+  var child: Model?
   var count: Int
   var list: [Model]
   var text: String
 
   init(
+    child: Model? = nil,
     count: Int = 0,
     list: [Model] = [],
     text: String = ""
   ) {
+    self.child = child
     self.count = count
     self.list = list
     self.text = text
