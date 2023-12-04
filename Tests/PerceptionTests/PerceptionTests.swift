@@ -68,6 +68,165 @@ final class PerceptionTests: XCTestCase {
     self.render(FeatureView())
   }
 
+  func testRuntimeWarning_NotInPerceptionBody_ForEach() {
+    self.expectFailure()
+
+    struct FeatureView: View {
+      @State var model = Model(
+        list: [
+          Model(count: 1),
+          Model(count: 2),
+          Model(count: 3),
+        ]
+      )
+      var body: some View {
+        ForEach(model.list) { model in
+          Text(model.count.description)
+        }
+      }
+    }
+
+    self.render(FeatureView())
+  }
+
+  func testRuntimeWarning_InnerInPerceptionBody_ForEach() {
+    self.expectFailure()
+
+    struct FeatureView: View {
+      @State var model = Model(
+        list: [
+          Model(count: 1),
+          Model(count: 2),
+          Model(count: 3),
+        ]
+      )
+      var body: some View {
+        ForEach(model.list) { model in
+          WithPerceptionTracking {
+            Text(model.count.description)
+          }
+        }
+      }
+    }
+
+    self.render(FeatureView())
+  }
+
+  func testRuntimeWarning_OuterInPerceptionBody_ForEach() {
+    self.expectFailure()
+
+    struct FeatureView: View {
+      @State var model = Model(
+        list: [
+          Model(count: 1),
+          Model(count: 2),
+          Model(count: 3),
+        ]
+      )
+      var body: some View {
+        WithPerceptionTracking {
+          ForEach(model.list) { model in
+            Text(model.count.description)
+          }
+        }
+      }
+    }
+
+    self.render(FeatureView())
+  }
+
+  func testRuntimeWarning_OuterAndInnerInPerceptionBody_ForEach() {
+    struct FeatureView: View {
+      @State var model = Model(
+        list: [
+          Model(count: 1),
+          Model(count: 2),
+          Model(count: 3),
+        ]
+      )
+      var body: some View {
+        WithPerceptionTracking {
+          ForEach(model.list) { model in
+            WithPerceptionTracking {
+              Text(model.count.description)
+            }
+          }
+        }
+      }
+    }
+
+    self.render(FeatureView())
+  }
+
+  func testRuntimeWarning_NotInPerceptionBody_Sheet() {
+    self.expectFailure()
+
+    struct FeatureView: View {
+      @State var model = Model(child: Model())
+      var body: some View {
+        Text("Parent")
+          .sheet(item: $model.child) { child in
+            Text(child.count.description)
+          }
+      }
+    }
+
+    self.render(FeatureView())
+  }
+
+  func testRuntimeWarning_InnerInPerceptionBody_Sheet() {
+    self.expectFailure()
+
+    struct FeatureView: View {
+      @State var model = Model(child: Model())
+      var body: some View {
+        Text("Parent")
+          .sheet(item: $model.child) { child in
+            WithPerceptionTracking {
+              Text(child.count.description)
+            }
+          }
+      }
+    }
+
+    self.render(FeatureView())
+  }
+
+  func testRuntimeWarning_OuterInPerceptionBody_Sheet() {
+    self.expectFailure()
+
+    struct FeatureView: View {
+      @State var model = Model(child: Model())
+      var body: some View {
+        WithPerceptionTracking {
+          Text("Parent")
+            .sheet(item: $model.child) { child in
+              Text(child.count.description)
+            }
+        }
+      }
+    }
+
+    self.render(FeatureView())
+  }
+
+  func testRuntimeWarning_OuterAndInnerInPerceptionBody_Sheet() {
+    struct FeatureView: View {
+      @State var model = Model(child: Model())
+      var body: some View {
+        WithPerceptionTracking {
+          Text("Parent")
+            .sheet(item: $model.child) { child in
+              WithPerceptionTracking {
+                Text(child.count.description)
+              }
+            }
+        }
+      }
+    }
+
+    self.render(FeatureView())
+  }
   private func expectFailure() {
     if #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10) {
       XCTExpectFailure {
@@ -80,12 +239,27 @@ final class PerceptionTests: XCTestCase {
   }
 
   private func render(_ view: some View) {
-    _ = ImageRenderer(content: view).cgImage
+    let image = ImageRenderer(content: view).cgImage
+    _ = image
   }
 }
 
 @Perceptible
-private class Model {
-  var count = 0
-  var text = ""
+private class Model: Identifiable {
+  var child: Model?
+  var count: Int
+  var list: [Model]
+  var text: String
+
+  init(
+    child: Model? = nil,
+    count: Int = 0,
+    list: [Model] = [],
+    text: String = ""
+  ) {
+    self.child = child
+    self.count = count
+    self.list = list
+    self.text = text
+  }
 }
