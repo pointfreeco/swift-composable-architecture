@@ -468,7 +468,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   }
 
   @_disfavoredOverload
-  func binding<Value>(
+  public func _binding<Value>(
     get: @escaping (_ state: ViewState) -> Value,
     compactSend valueToAction: @escaping (_ value: Value) -> ViewAction?
   ) -> Binding<Value> {

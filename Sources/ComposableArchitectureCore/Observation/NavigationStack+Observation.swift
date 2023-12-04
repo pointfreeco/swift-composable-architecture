@@ -69,17 +69,19 @@ extension NavigationStack {
   {
     self.init(
       path: Binding(
-        get: { path.wrappedValue.observableState.path },
+        get: { path.wrappedValue.observableState._path },
         set: { pathView, transaction in
           if pathView.count > path.wrappedValue.withState({ $0 }).count,
             let component = pathView.last
           {
-            path.transaction(transaction).wrappedValue.send(
-              .push(id: component.id, state: component.element)
+            path.wrappedValue.send(
+              .push(id: component.id, state: component.element),
+              transaction: transaction
             )
           } else {
-            path.transaction(transaction).wrappedValue.send(
-              .popFrom(id: path.wrappedValue.withState { $0 }.ids[pathView.count])
+            path.wrappedValue.send(
+              .popFrom(id: path.wrappedValue.withState { $0 }.ids[pathView.count]),
+              transaction: transaction
             )
           }
         }
@@ -171,7 +173,7 @@ public struct _NavigationLinkStoreContent<State, Label: View>: View {
   @ViewBuilder let label: Label
   let fileID: StaticString
   let line: UInt
-  @Environment(\.navigationDestinationType) var navigationDestinationType
+  @Environment(\._navigationDestinationType) var navigationDestinationType
 
   public var body: some View {
     #if DEBUG
@@ -202,7 +204,7 @@ private struct NavigationDestinationTypeKey: EnvironmentKey {
 }
 
 extension EnvironmentValues {
-  var navigationDestinationType: Any.Type? {
+  public var _navigationDestinationType: Any.Type? {
     get { self[NavigationDestinationTypeKey.self] }
     set { self[NavigationDestinationTypeKey.self] = newValue }
   }
@@ -219,7 +221,7 @@ public struct _NavigationDestinationViewModifier<
 
   public func body(content: Content) -> some View {
     content
-      .environment(\.navigationDestinationType, State.self)
+      .environment(\._navigationDestinationType, State.self)
       .navigationDestination(for: StackState<State>.Component.self) { component in
         var state = component.element
         WithPerceptionTracking {
@@ -239,14 +241,14 @@ public struct _NavigationDestinationViewModifier<
                 removeDuplicates: nil
               )
             )
-            .environment(\.navigationDestinationType, State.self)
+            .environment(\._navigationDestinationType, State.self)
         }
       }
   }
 }
 
 extension StackState {
-  var path: PathView {
+  public var _path: PathView {
     _read { yield PathView(base: self) }
     _modify {
       var path = PathView(base: self)
@@ -257,8 +259,8 @@ extension StackState {
   }
 
   public struct Component: Hashable {
-    let id: StackElementID
-    var element: Element
+    public let id: StackElementID
+    public internal(set) var element: Element
 
     public static func == (lhs: Self, rhs: Self) -> Bool {
       lhs.id == rhs.id

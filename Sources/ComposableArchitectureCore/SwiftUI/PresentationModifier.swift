@@ -221,7 +221,7 @@ public struct PresentationStore<
   public var body: some View {
     let id = self.toID(self.viewStore.state)
     self.content(
-      self.viewStore.binding(
+      self.viewStore._binding(
         get: {
           $0.wrappedValue.flatMap(toDestinationState) != nil
             ? toID($0).map { AnyIdentifiable(Identified($0) { $0 }) }

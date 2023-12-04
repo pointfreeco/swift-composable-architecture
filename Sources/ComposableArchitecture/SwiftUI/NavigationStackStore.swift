@@ -123,13 +123,13 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
 
   public var body: some View {
     NavigationStack(
-      path: self.viewStore.binding(
-        get: { $0.path },
+      path: self.viewStore._binding(
+        get: { $0._path },
         compactSend: { newPath in
-          if newPath.count > self.viewStore.path.count, let component = newPath.last {
+          if newPath.count > self.viewStore._path.count, let component = newPath.last {
             return .push(id: component.id, state: component.element)
-          } else if newPath.count < self.viewStore.path.count {
-            return .popFrom(id: self.viewStore.path[newPath.count].id)
+          } else if newPath.count < self.viewStore._path.count {
+            return .popFrom(id: self.viewStore._path[newPath.count].id)
           } else {
             return nil
           }
@@ -137,7 +137,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
       )
     ) {
       self.root
-        .environment(\.navigationDestinationType, State.self)
+        .environment(\._navigationDestinationType, State.self)
         .navigationDestination(for: StackState<State>.Component.self) { component in
           NavigationDestinationView(component: component, destination: self.destination)
         }
@@ -150,7 +150,7 @@ private struct NavigationDestinationView<State, Destination: View>: View {
   let destination: (StackState<State>.Component) -> Destination
   var body: some View {
     self.destination(self.component)
-      .environment(\.navigationDestinationType, State.self)
+      .environment(\._navigationDestinationType, State.self)
       .id(self.component.id)
   }
 }
