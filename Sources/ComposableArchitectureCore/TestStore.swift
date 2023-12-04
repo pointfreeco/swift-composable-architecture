@@ -646,7 +646,7 @@ public final class TestStore<State, Action> {
     if !self.reducer.receivedActions.isEmpty {
       let actions = self.reducer.receivedActions
         .map(\.action)
-        .map { "    • " + debugCaseOutput($0, abbreviated: true) }
+        .map { "    • " + _debugCaseOutput($0, abbreviated: true) }
         .joined(separator: "\n")
       XCTFailHelper(
         """

@@ -158,7 +158,7 @@ public struct NavigationLinkStore<
     ) {
       IfLetStore(
         self.store.scope(
-          state: returningLastNonNilValue { $0.wrappedValue.flatMap(self.toDestinationState) },
+          state: _returningLastNonNilValue { $0.wrappedValue.flatMap(self.toDestinationState) },
           action: { .presented(self.fromDestinationAction($0)) }
         ),
         then: self.destination

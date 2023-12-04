@@ -328,9 +328,9 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
           different case. …
 
             Action:
-              \(debugCaseOutput(action))
+              \(_debugCaseOutput(action))
             State:
-              \(debugCaseOutput(state))
+              \(_debugCaseOutput(state))
 
           This is generally considered an application logic error, and can happen for a few \
           reasons:

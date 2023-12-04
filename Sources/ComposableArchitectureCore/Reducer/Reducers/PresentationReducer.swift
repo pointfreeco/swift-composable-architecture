@@ -573,7 +573,7 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
         destination state was absent. …
 
           Action:
-            \(debugCaseOutput(action))
+            \(_debugCaseOutput(action))
 
         This is generally considered an application logic error, and can happen for a few \
         reasons:

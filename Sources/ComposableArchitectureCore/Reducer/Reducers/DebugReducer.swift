@@ -63,7 +63,7 @@ extension _ReducerPrinter {
 
   public static var actionLabels: Self {
     Self { receivedAction, _, _ in
-      print("received action: \(debugCaseOutput(receivedAction))")
+      print("received action: \(_debugCaseOutput(receivedAction))")
     }
   }
 }

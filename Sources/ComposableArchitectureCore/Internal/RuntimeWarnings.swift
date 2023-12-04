@@ -5,6 +5,15 @@ extension Notification.Name {
 }
 
 @_transparent
+@inline(__always)
+public func _runtimeWarn(
+  _ message: @autoclosure () -> String,
+  category: String? = "ComposableArchitecture"
+) {
+  runtimeWarn(message(), category: category)
+}
+
+@_transparent
 @usableFromInline
 @inline(__always)
 func runtimeWarn(

@@ -263,7 +263,7 @@ public struct DestinationContent<State, Action> {
     @ViewBuilder _ body: @escaping (_ store: Store<State, Action>) -> Content
   ) -> some View {
     IfLetStore(
-      self.store.scope(state: returningLastNonNilValue { $0 }, action: { $0 }), then: body
+      self.store.scope(state: _returningLastNonNilValue { $0 }, action: { $0 }), then: body
     )
   }
 }

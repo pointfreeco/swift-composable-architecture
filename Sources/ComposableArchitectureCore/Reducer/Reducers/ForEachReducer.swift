@@ -244,7 +244,7 @@ public struct _ForEachReducer<
         A "forEach" at "\(self.fileID):\(self.line)" received an action for a missing element. …
 
           Action:
-            \(debugCaseOutput(action))
+            \(_debugCaseOutput(action))
 
         This is generally considered an application logic error, and can happen for a few reasons:
 

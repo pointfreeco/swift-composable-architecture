@@ -487,10 +487,10 @@ public final class Store<State, Action> {
                         An action was sent from a completed effect:
 
                           Action:
-                            \(debugCaseOutput(effectAction))
+                            \(_debugCaseOutput(effectAction))
 
                           Effect returned from:
-                            \(debugCaseOutput(action))
+                            \(_debugCaseOutput(action))
 
                         Avoid sending actions using the 'send' argument from 'Effect.run' after \
                         the effect has completed. This can happen if you escape the 'send' \
@@ -553,7 +553,7 @@ public final class Store<State, Action> {
           An effect completed on a non-main thread. …
 
             Effect returned from:
-              \(debugCaseOutput(action))
+              \(_debugCaseOutput(action))
 
           Make sure to use ".receive(on:)" on any effects that execute on background threads to \
           receive their output on the main thread.
@@ -589,7 +589,7 @@ public final class Store<State, Action> {
       case let .send(action, originatingAction: nil):
         runtimeWarn(
           """
-          "Store.send" was called on a non-main thread with: \(debugCaseOutput(action)) …
+          "Store.send" was called on a non-main thread with: \(_debugCaseOutput(action)) …
 
           The "Store" class is not thread-safe, and so all interactions with an instance of \
           "Store" (including all of its scopes and derived view stores) must be done on the main \
@@ -603,10 +603,10 @@ public final class Store<State, Action> {
           An effect published an action on a non-main thread. …
 
             Effect published:
-              \(debugCaseOutput(action))
+              \(_debugCaseOutput(action))
 
             Effect returned from:
-              \(debugCaseOutput(originatingAction))
+              \(_debugCaseOutput(originatingAction))
 
           Make sure to use ".receive(on:)" on any effects that execute on background threads to \
           receive their output on the main thread.

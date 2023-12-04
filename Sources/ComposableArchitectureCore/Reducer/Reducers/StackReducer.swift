@@ -452,7 +452,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
           A "forEach" at "\(self.fileID):\(self.line)" received an action for a missing element. …
 
             Action:
-              \(debugCaseOutput(destinationAction))
+              \(_debugCaseOutput(destinationAction))
 
           This is generally considered an application logic error, and can happen for a few reasons:
 
