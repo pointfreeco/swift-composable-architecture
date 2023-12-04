@@ -22,6 +22,11 @@ public struct ViewActionMacro: MemberMacro {
             \(declaration.identifierDescription.map { "'\($0)' " } ?? "") to have a 'store' \
             property of type 'Store'.
             """
+          ),
+          fixIt: .replace(
+            message: MacroExpansionFixItMessage("Add 'let store'"),
+            oldNode: declaration,
+            newNode: DeclReferenceExprSyntax(baseName: "send")
           )
         )
       )
@@ -44,11 +49,17 @@ public struct ViewActionMacro: MemberMacro {
 
     return [
       """
-      fileprivate func send(_ action: \(raw: rawType).Action.View) {
-        self.store.send(.view(action))
+      @discardableResult
+      fileprivate func send(_ action: \(raw: rawType).Action.View) -> StoreTask {
+        store.send(.view(action))
       }
-      fileprivate func send(_ action: \(raw: rawType).Action.View, animation: Animation?) {
-        self.store.send(.view(action), animation: animation)
+      @discardableResult
+      fileprivate func send(_ action: \(raw: rawType).Action.View, animation: Animation?) -> StoreTask {
+        store.send(.view(action), animation: animation)
+      }
+      @discardableResult
+      fileprivate func send(_ action: \(raw: rawType).Action.View, transaction: Transaction) -> StoreTask {
+        store.send(.view(action), transaction: transaction)
       }
       """
     ]

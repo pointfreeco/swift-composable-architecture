@@ -6,7 +6,7 @@ import XCTest
 final class ViewActionMacroTests: XCTestCase {
   override func invokeTest() {
     withMacroTesting(
-      isRecording: true,
+      //isRecording: true,
       macros: [ViewActionMacro.self]
     ) {
       super.invokeTest()
@@ -32,11 +32,17 @@ final class ViewActionMacroTests: XCTestCase {
           EmptyView()
         }
 
-        fileprivate func send(_ action: Feature.Action.View) {
-          self.store.send(.view(action))
+        @discardableResult
+        fileprivate func send(_ action: Feature.Action.View) -> StoreTask {
+          store.send(.view(action))
         }
-        fileprivate func send(_ action: Feature.Action.View, animation: Animation?) {
-          self.store.send(.view(action), animation: animation)
+        @discardableResult
+        fileprivate func send(_ action: Feature.Action.View, animation: Animation?) -> StoreTask {
+          store.send(.view(action), animation: animation)
+        }
+        @discardableResult
+        fileprivate func send(_ action: Feature.Action.View, transaction: Transaction) -> StoreTask {
+          store.send(.view(action), transaction: transaction)
         }
       }
       """
@@ -62,11 +68,17 @@ final class ViewActionMacroTests: XCTestCase {
           EmptyView()
         }
 
-        fileprivate func send(_ action: Feature.Action.View) {
-          self.store.send(.view(action))
+        @discardableResult
+        fileprivate func send(_ action: Feature.Action.View) -> StoreTask {
+          store.send(.view(action))
         }
-        fileprivate func send(_ action: Feature.Action.View, animation: Animation?) {
-          self.store.send(.view(action), animation: animation)
+        @discardableResult
+        fileprivate func send(_ action: Feature.Action.View, animation: Animation?) -> StoreTask {
+          store.send(.view(action), animation: animation)
+        }
+        @discardableResult
+        fileprivate func send(_ action: Feature.Action.View, transaction: Transaction) -> StoreTask {
+          store.send(.view(action), transaction: transaction)
         }
       }
       """
@@ -96,11 +108,17 @@ final class ViewActionMacroTests: XCTestCase {
           EmptyView()
         }
 
-        fileprivate func send(_ action: Feature.Action.View) {
-          self.store.send(.view(action))
+        @discardableResult
+        fileprivate func send(_ action: Feature.Action.View) -> StoreTask {
+          store.send(.view(action))
         }
-        fileprivate func send(_ action: Feature.Action.View, animation: Animation?) {
-          self.store.send(.view(action), animation: animation)
+        @discardableResult
+        fileprivate func send(_ action: Feature.Action.View, animation: Animation?) -> StoreTask {
+          store.send(.view(action), animation: animation)
+        }
+        @discardableResult
+        fileprivate func send(_ action: Feature.Action.View, transaction: Transaction) -> StoreTask {
+          store.send(.view(action), transaction: transaction)
         }
       }
       """
@@ -126,11 +144,17 @@ final class ViewActionMacroTests: XCTestCase {
           EmptyView()
         }
 
-        fileprivate func send(_ action: Feature.Action.View) {
-          self.store.send(.view(action))
+        @discardableResult
+        fileprivate func send(_ action: Feature.Action.View) -> StoreTask {
+          store.send(.view(action))
         }
-        fileprivate func send(_ action: Feature.Action.View, animation: Animation?) {
-          self.store.send(.view(action), animation: animation)
+        @discardableResult
+        fileprivate func send(_ action: Feature.Action.View, animation: Animation?) -> StoreTask {
+          store.send(.view(action), animation: animation)
+        }
+        @discardableResult
+        fileprivate func send(_ action: Feature.Action.View, transaction: Transaction) -> StoreTask {
+          store.send(.view(action), transaction: transaction)
         }
       }
       """
@@ -151,11 +175,20 @@ final class ViewActionMacroTests: XCTestCase {
       """
       @ViewAction(for: Feature.self)
       ╰─ 🛑 @ViewAction macro requires 'FeatureView'  to have a 'store' property of type 'Store'.
+         ✏️ Add 'let store'
       struct FeatureView: View {
         var body: some View {
           EmptyView()
         }
       }
+      """
+    } fixes: {
+      """
+      send
+      """
+    } expansion: {
+      """
+      send
       """
     }
   }
@@ -202,11 +235,17 @@ final class ViewActionMacroTests: XCTestCase {
           Button("Tap") { send}
         }
 
-        fileprivate func send(_ action: Feature.Action.View) {
-          self.store.send(.view(action))
+        @discardableResult
+        fileprivate func send(_ action: Feature.Action.View) -> StoreTask {
+          store.send(.view(action))
         }
-        fileprivate func send(_ action: Feature.Action.View, animation: Animation?) {
-          self.store.send(.view(action), animation: animation)
+        @discardableResult
+        fileprivate func send(_ action: Feature.Action.View, animation: Animation?) -> StoreTask {
+          store.send(.view(action), animation: animation)
+        }
+        @discardableResult
+        fileprivate func send(_ action: Feature.Action.View, transaction: Transaction) -> StoreTask {
+          store.send(.view(action), transaction: transaction)
         }
       }
       """
@@ -255,11 +294,17 @@ final class ViewActionMacroTests: XCTestCase {
           Button("Tap") { self.send}
         }
 
-        fileprivate func send(_ action: Feature.Action.View) {
-          self.store.send(.view(action))
+        @discardableResult
+        fileprivate func send(_ action: Feature.Action.View) -> StoreTask {
+          store.send(.view(action))
         }
-        fileprivate func send(_ action: Feature.Action.View, animation: Animation?) {
-          self.store.send(.view(action), animation: animation)
+        @discardableResult
+        fileprivate func send(_ action: Feature.Action.View, animation: Animation?) -> StoreTask {
+          store.send(.view(action), animation: animation)
+        }
+        @discardableResult
+        fileprivate func send(_ action: Feature.Action.View, transaction: Transaction) -> StoreTask {
+          store.send(.view(action), transaction: transaction)
         }
       }
       """
