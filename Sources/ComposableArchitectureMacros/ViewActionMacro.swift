@@ -136,49 +136,6 @@ extension DeclGroupSyntax {
   }
 }
 
-enum ViewActionDiagnostic {
-  case hasDirectStoreDotSend
-  case noStoreVariable(DeclGroupSyntax)
-}
-
-extension ViewActionDiagnostic: DiagnosticMessage {
-  var message: String {
-    switch self {
-    case .hasDirectStoreDotSend:
-      return """
-        Do not use 'store.send' directly when using @ViewAction. Instead, use 'send'.
-        """
-    case let .noStoreVariable(decl):
-      return """
-        @ViewAction macro requires \(decl.identifierDescription.map { "'\($0)' " } ?? "")\
-        to have a 'store' property of type 'Store'.
-        """
-    }
-  }
-
-  var diagnosticID: MessageID {
-    switch self {
-    case .hasDirectStoreDotSend:
-      return MessageID(domain: "ViewActionDiagnostic", id: "hasDirectStoreDotSend")
-    case .noStoreVariable:
-      return MessageID(domain: "ViewActionDiagnostic", id: "noStoreVariable")
-    }
-  }
-
-  var severity: DiagnosticSeverity {
-    switch self {
-    case .hasDirectStoreDotSend:
-      return .warning
-    case .noStoreVariable:
-      return .error
-    }
-  }
-
-  func diagnose(at node: Syntax) -> Diagnostic {
-    Diagnostic(node: node, message: self)
-  }
-}
-
 extension DeclGroupSyntax {
   var identifierDescription: String? {
     switch self {
