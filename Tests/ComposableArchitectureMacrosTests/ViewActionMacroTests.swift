@@ -171,6 +171,16 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
       """
+    } diagnostics: {
+      """
+      @ViewAction(for: Feature.self)
+      ╰─ 🛑 @ViewAction macro requires 'FeatureView'  to have a 'store' property of type 'Store'.
+      struct FeatureView: View {
+        var body: some View {
+          EmptyView()
+        }
+      }
+      """
     }
   }
 
