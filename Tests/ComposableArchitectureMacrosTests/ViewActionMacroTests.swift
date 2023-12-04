@@ -6,7 +6,7 @@ import XCTest
 final class ViewActionMacroTests: XCTestCase {
   override func invokeTest() {
     withMacroTesting(
-      //isRecording: true,
+      isRecording: true,
       macros: [ViewActionMacro.self]
     ) {
       super.invokeTest()
@@ -135,10 +135,35 @@ final class ViewActionMacroTests: XCTestCase {
       """
       @ViewAction(for: Feature.self)
       ╰─ 🛑 @ViewAction macro requires 'FeatureView'  to have a 'store' property of type 'Store'.
+         ✏️ Add 'store'
       struct FeatureView: View {
         var body: some View {
           EmptyView()
         }
+      }
+      """
+    }fixes: {
+      """
+      @ViewAction(for: Feature.self)
+      struct FeatureView: View {
+      let store: StoreOf<Feature>
+
+        var body: some View {
+          EmptyView()
+        }
+      }
+      """
+    } expansion: {
+      """
+      struct FeatureView: View {
+      let store: StoreOf<Feature>
+
+        var body: some View {
+          EmptyView()
+        }
+      }
+
+      extension FeatureView: ComposableArchitecture.ViewActionable {
       }
       """
     }

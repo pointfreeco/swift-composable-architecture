@@ -1,3 +1,4 @@
+#if canImport(ComposableArchitectureMacros)
 import ComposableArchitecture
 import SwiftUI
 
@@ -19,3 +20,4 @@ private struct Feature_ViewAction_View: View {
     Button("Tap") { send(.tap, transaction: Transaction(animation: .default)) }
   }
 }
+#endif

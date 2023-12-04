@@ -12,9 +12,28 @@ public struct ViewActionMacro: ExtensionMacro {
     conformingTo protocols: [TypeSyntax],
     in context: C
   ) throws -> [ExtensionDeclSyntax] {
+    guard
+      case let .argumentList(arguments) = node.arguments,
+      arguments.count == 1,
+      let memberAccessExpr = arguments.first?.expression.as(MemberAccessExprSyntax.self)
+    else { return [] }
+    let inputType = String("\(memberAccessExpr)".dropLast(5))
+
     guard declaration.hasStoreVariable
     else {
-      // TODO: Fix it to add `let store: StoreOf<<#Feature#>>`?
+      var declarationWithStoreVariable = declaration
+      declarationWithStoreVariable.memberBlock.members.insert(
+        MemberBlockItemSyntax(
+          leadingTrivia: .newline,
+          decl: VariableDeclSyntax(
+            .let,
+            name: " store: StoreOf<\(raw: inputType)>"
+          ),
+          trailingTrivia: .newline
+        ),
+        at: declarationWithStoreVariable.memberBlock.members.startIndex
+      )
+
       context.diagnose(
         Diagnostic(
           node: declaration,
@@ -24,6 +43,11 @@ public struct ViewActionMacro: ExtensionMacro {
             \(declaration.identifierDescription.map { "'\($0)' " } ?? "") to have a 'store' \
             property of type 'Store'.
             """
+          ),
+          fixIt: .replace(
+            message: MacroExpansionFixItMessage("Add 'store'"),
+            oldNode: declaration,
+            newNode: declarationWithStoreVariable
           )
         )
       )
@@ -34,15 +58,6 @@ public struct ViewActionMacro: ExtensionMacro {
       declaration: declaration,
       context: context
     )
-
-//    guard
-//      case let .argumentList(arguments) = node.arguments,
-//      arguments.count == 1
-//    else { return [] }
-//    guard
-//      let memberAccessExpr = arguments.first?.expression.as(MemberAccessExprSyntax.self)
-//    else { return [] }
-//    let rawType = String("\(memberAccessExpr)".dropLast(5))
 
     let ext: DeclSyntax =
       """
