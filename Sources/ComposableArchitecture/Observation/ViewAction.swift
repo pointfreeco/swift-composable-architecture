@@ -8,13 +8,13 @@ public protocol ViewAction<ViewAction> {
   static func view(_ action: ViewAction) -> Self
 }
 
-public protocol ViewActionable<State, Action> {
+public protocol ViewActionSending<State, Action> {
   associatedtype State
   associatedtype Action: ViewAction
   var store: Store<State, Action> { get }
 }
 
-extension ViewActionable {
+extension ViewActionSending {
   @discardableResult
   public func send(_ action: Action.ViewAction) -> StoreTask {
     self.store.send(.view(action))

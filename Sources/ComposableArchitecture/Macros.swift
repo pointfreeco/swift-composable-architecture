@@ -235,7 +235,7 @@
   ///   //╰─ ⚠️ Do not use 'store.send' directly when using @ViewAction. Instead, use 'send'.
   ///   }
   ///   ```
-  @attached(extension, conformances: ViewActionable)
+  @attached(extension, conformances: ViewActionSending)
   public macro ViewAction<R: Reducer>(for: R.Type) = #externalMacro(
     module: "ComposableArchitectureMacros", type: "ViewActionMacro"
   ) where R.Action: ViewAction

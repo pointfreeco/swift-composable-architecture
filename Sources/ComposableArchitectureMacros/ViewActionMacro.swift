@@ -61,7 +61,7 @@ public struct ViewActionMacro: ExtensionMacro {
 
     let ext: DeclSyntax =
       """
-      extension \(type.trimmed): ComposableArchitecture.ViewActionable {}
+      extension \(type.trimmed): ComposableArchitecture.ViewActionSending {}
       """
     return [ext.cast(ExtensionDeclSyntax.self)]
   }

@@ -33,7 +33,7 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
 
-      extension FeatureView: ComposableArchitecture.ViewActionable {
+      extension FeatureView: ComposableArchitecture.ViewActionSending {
       }
       """
     }
@@ -59,7 +59,7 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
 
-      extension FeatureView: ComposableArchitecture.ViewActionable {
+      extension FeatureView: ComposableArchitecture.ViewActionSending {
       }
       """
     }
@@ -89,7 +89,7 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
 
-      extension FeatureView: ComposableArchitecture.ViewActionable {
+      extension FeatureView: ComposableArchitecture.ViewActionSending {
       }
       """
     }
@@ -115,7 +115,7 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
 
-      extension FeatureView: ComposableArchitecture.ViewActionable {
+      extension FeatureView: ComposableArchitecture.ViewActionSending {
       }
       """
     }
@@ -163,7 +163,7 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
 
-      extension FeatureView: ComposableArchitecture.ViewActionable {
+      extension FeatureView: ComposableArchitecture.ViewActionSending {
       }
       """
     }
@@ -212,7 +212,7 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
 
-      extension FeatureView: ComposableArchitecture.ViewActionable {
+      extension FeatureView: ComposableArchitecture.ViewActionSending {
       }
       """
     }
@@ -261,7 +261,7 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
 
-      extension FeatureView: ComposableArchitecture.ViewActionable {
+      extension FeatureView: ComposableArchitecture.ViewActionSending {
       }
       """
     }
