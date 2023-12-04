@@ -31,19 +31,9 @@ final class ViewActionMacroTests: XCTestCase {
         var body: some View {
           EmptyView()
         }
+      }
 
-        @discardableResult
-        fileprivate func send(_ action: Feature.Action.View) -> StoreTask {
-          store.send(.view(action))
-        }
-        @discardableResult
-        fileprivate func send(_ action: Feature.Action.View, animation: Animation?) -> StoreTask {
-          store.send(.view(action), animation: animation)
-        }
-        @discardableResult
-        fileprivate func send(_ action: Feature.Action.View, transaction: Transaction) -> StoreTask {
-          store.send(.view(action), transaction: transaction)
-        }
+      extension FeatureView: ComposableArchitecture.ViewActionable {
       }
       """
     }
@@ -67,19 +57,9 @@ final class ViewActionMacroTests: XCTestCase {
         var body: some View {
           EmptyView()
         }
+      }
 
-        @discardableResult
-        fileprivate func send(_ action: Feature.Action.View) -> StoreTask {
-          store.send(.view(action))
-        }
-        @discardableResult
-        fileprivate func send(_ action: Feature.Action.View, animation: Animation?) -> StoreTask {
-          store.send(.view(action), animation: animation)
-        }
-        @discardableResult
-        fileprivate func send(_ action: Feature.Action.View, transaction: Transaction) -> StoreTask {
-          store.send(.view(action), transaction: transaction)
-        }
+      extension FeatureView: ComposableArchitecture.ViewActionable {
       }
       """
     }
@@ -107,19 +87,9 @@ final class ViewActionMacroTests: XCTestCase {
         var body: some View {
           EmptyView()
         }
+      }
 
-        @discardableResult
-        fileprivate func send(_ action: Feature.Action.View) -> StoreTask {
-          store.send(.view(action))
-        }
-        @discardableResult
-        fileprivate func send(_ action: Feature.Action.View, animation: Animation?) -> StoreTask {
-          store.send(.view(action), animation: animation)
-        }
-        @discardableResult
-        fileprivate func send(_ action: Feature.Action.View, transaction: Transaction) -> StoreTask {
-          store.send(.view(action), transaction: transaction)
-        }
+      extension FeatureView: ComposableArchitecture.ViewActionable {
       }
       """
     }
@@ -143,19 +113,9 @@ final class ViewActionMacroTests: XCTestCase {
         var body: some View {
           EmptyView()
         }
+      }
 
-        @discardableResult
-        fileprivate func send(_ action: Feature.Action.View) -> StoreTask {
-          store.send(.view(action))
-        }
-        @discardableResult
-        fileprivate func send(_ action: Feature.Action.View, animation: Animation?) -> StoreTask {
-          store.send(.view(action), animation: animation)
-        }
-        @discardableResult
-        fileprivate func send(_ action: Feature.Action.View, transaction: Transaction) -> StoreTask {
-          store.send(.view(action), transaction: transaction)
-        }
+      extension FeatureView: ComposableArchitecture.ViewActionable {
       }
       """
     }
@@ -225,19 +185,9 @@ final class ViewActionMacroTests: XCTestCase {
         var body: some View {
           Button("Tap") { send}
         }
+      }
 
-        @discardableResult
-        fileprivate func send(_ action: Feature.Action.View) -> StoreTask {
-          store.send(.view(action))
-        }
-        @discardableResult
-        fileprivate func send(_ action: Feature.Action.View, animation: Animation?) -> StoreTask {
-          store.send(.view(action), animation: animation)
-        }
-        @discardableResult
-        fileprivate func send(_ action: Feature.Action.View, transaction: Transaction) -> StoreTask {
-          store.send(.view(action), transaction: transaction)
-        }
+      extension FeatureView: ComposableArchitecture.ViewActionable {
       }
       """
     }
@@ -284,19 +234,9 @@ final class ViewActionMacroTests: XCTestCase {
         var body: some View {
           Button("Tap") { self.send}
         }
+      }
 
-        @discardableResult
-        fileprivate func send(_ action: Feature.Action.View) -> StoreTask {
-          store.send(.view(action))
-        }
-        @discardableResult
-        fileprivate func send(_ action: Feature.Action.View, animation: Animation?) -> StoreTask {
-          store.send(.view(action), animation: animation)
-        }
-        @discardableResult
-        fileprivate func send(_ action: Feature.Action.View, transaction: Transaction) -> StoreTask {
-          store.send(.view(action), transaction: transaction)
-        }
+      extension FeatureView: ComposableArchitecture.ViewActionable {
       }
       """
     }

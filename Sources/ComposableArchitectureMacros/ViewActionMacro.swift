@@ -3,13 +3,15 @@ import SwiftSyntax
 import SwiftSyntaxMacroExpansion
 import SwiftSyntaxMacros
 
-public struct ViewActionMacro: MemberMacro {
-  public static func expansion<Declaration, Context>(
-    of node: SwiftSyntax.AttributeSyntax,
-    providingMembersOf declaration: Declaration,
-    in context: Context
-  ) throws -> [SwiftSyntax.DeclSyntax]
-  where Declaration: SwiftSyntax.DeclGroupSyntax, Context: SwiftSyntaxMacros.MacroExpansionContext {
+public struct ViewActionMacro: ExtensionMacro {
+
+  public static func expansion<D: DeclGroupSyntax, T: TypeSyntaxProtocol, C: MacroExpansionContext>(
+    of node: AttributeSyntax,
+    attachedTo declaration: D,
+    providingExtensionsOf type: T,
+    conformingTo protocols: [TypeSyntax],
+    in context: C
+  ) throws -> [ExtensionDeclSyntax] {
     guard declaration.hasStoreVariable
     else {
       // TODO: Fix it to add `let store: StoreOf<<#Feature#>>`?
@@ -33,31 +35,20 @@ public struct ViewActionMacro: MemberMacro {
       context: context
     )
 
-    guard
-      case let .argumentList(arguments) = node.arguments,
-      arguments.count == 1
-    else { return [] }
-    guard
-      let memberAccessExpr = arguments.first?.expression.as(MemberAccessExprSyntax.self)
-    else { return [] }
-    let rawType = String("\(memberAccessExpr)".dropLast(5))
+//    guard
+//      case let .argumentList(arguments) = node.arguments,
+//      arguments.count == 1
+//    else { return [] }
+//    guard
+//      let memberAccessExpr = arguments.first?.expression.as(MemberAccessExprSyntax.self)
+//    else { return [] }
+//    let rawType = String("\(memberAccessExpr)".dropLast(5))
 
-    return [
+    let ext: DeclSyntax =
       """
-      @discardableResult
-      fileprivate func send(_ action: \(raw: rawType).Action.View) -> StoreTask {
-        store.send(.view(action))
-      }
-      @discardableResult
-      fileprivate func send(_ action: \(raw: rawType).Action.View, animation: Animation?) -> StoreTask {
-        store.send(.view(action), animation: animation)
-      }
-      @discardableResult
-      fileprivate func send(_ action: \(raw: rawType).Action.View, transaction: Transaction) -> StoreTask {
-        store.send(.view(action), transaction: transaction)
-      }
+      extension \(type.trimmed): ComposableArchitecture.ViewActionable {}
       """
-    ]
+    return [ext.cast(ExtensionDeclSyntax.self)]
   }
 }
 
