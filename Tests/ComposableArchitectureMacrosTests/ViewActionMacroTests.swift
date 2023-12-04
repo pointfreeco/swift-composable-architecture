@@ -179,7 +179,7 @@ final class ViewActionMacroTests: XCTestCase {
         var body: some View {
           Button("Tap") { store.send(.tap) }
                           ┬─────────
-                          ╰─ 🛑 Do not use 'store.send' directly when using @ViewAction. Instead, use 'send'.
+                          ╰─ ⚠️ Do not use 'store.send' directly when using @ViewAction. Instead, use 'send'.
                              ✏️ Use 'send'
         }
       }
@@ -232,7 +232,7 @@ final class ViewActionMacroTests: XCTestCase {
         var body: some View {
           Button("Tap") { self.store.send(.tap) }
                           ┬──────────────
-                          ╰─ 🛑 Do not use 'self.store.send' directly when using @ViewAction. Instead, use 'self.send'.
+                          ╰─ ⚠️ Do not use 'self.store.send' directly when using @ViewAction. Instead, use 'self.send'.
                              ✏️ Use 'self.send'
         }
       }

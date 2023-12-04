@@ -79,7 +79,7 @@ extension SyntaxProtocol {
         context.diagnose(
           Diagnostic(
             node: decl,
-            message: MacroExpansionErrorMessage(
+            message: MacroExpansionWarningMessage(
               """
               Do not use 'store.send' directly when using @ViewAction. Instead, use 'send'.
               """
@@ -101,7 +101,7 @@ extension SyntaxProtocol {
         context.diagnose(
           Diagnostic(
             node: decl,
-            message: MacroExpansionErrorMessage(
+            message: MacroExpansionWarningMessage(
               """
               Do not use 'self.store.send' directly when using @ViewAction. Instead, use 'self.send'.
               """
