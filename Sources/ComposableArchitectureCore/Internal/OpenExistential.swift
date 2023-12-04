@@ -12,7 +12,7 @@ extension Equatable {
 
 // MARK: Identifiable
 
-func _identifiableID(_ value: Any) -> AnyHashable? {
+public func _identifiableID(_ value: Any) -> AnyHashable? {
   func open(_ value: some Identifiable) -> AnyHashable {
     value.id
   }

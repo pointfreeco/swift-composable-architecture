@@ -1,7 +1,8 @@
 @_spi(Reflection) import CasePaths
+@_spi(Internals) import ComposableArchitectureCore
 
 extension PresentationState {
-  var id: PresentationID? {
+  public var id: AnyHashable? {
     self.wrappedValue.map(PresentationID.init(base:))
   }
 }
