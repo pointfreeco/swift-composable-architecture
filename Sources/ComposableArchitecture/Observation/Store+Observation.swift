@@ -142,3 +142,27 @@ extension Bindable {
     )
   }
 }
+
+extension BindableStore {
+  /// Scopes the binding of a store to a binding of an optional presentation store.
+  ///
+  /// TODO: Example
+  ///
+  /// - Parameters:
+  ///   - state: A key path to optional child state.
+  ///   - action: A case key path to presentation child actions.
+  /// - Returns: A binding of an optional child store.
+  public func scope<ChildState, ChildAction>(
+    state: KeyPath<State, ChildState?>,
+    action: CaseKeyPath<Action, PresentationAction<ChildAction>>
+  ) -> Binding<Store<ChildState, ChildAction>?> {
+    Binding<Store<ChildState, ChildAction>?>(
+      get: { self.wrappedValue.scope(state: state, action: action.appending(path: \.presented)) },
+      set: {
+        if $0 == nil, self.wrappedValue.stateSubject.value[keyPath: state] != nil {
+          self.wrappedValue.send(action(.dismiss))
+        }
+      }
+    )
+  }
+}

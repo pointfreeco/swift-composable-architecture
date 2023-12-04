@@ -42,16 +42,13 @@ import SwiftUI
 @available(tvOS, deprecated: 17, renamed: "Bindable")
 @available(watchOS, deprecated: 10, renamed: "Bindable")
 @propertyWrapper
-public struct BindableStore<State, Action> {
+@dynamicMemberLookup
+public struct BindableStore<State: ObservableState, Action> {
   public let wrappedValue: Store<State, Action>
   public init(wrappedValue: Store<State, Action>) {
     self.wrappedValue = wrappedValue
   }
-
-  public var projectedValue: Binding<Store<State, Action>> {
-    Binding(
-      get: { self.wrappedValue },
-      set: { _ in }  // TODO: Should this technically allow assignment?
-    )
+  public var projectedValue: BindableStore<State, Action> {
+    self
   }
 }
