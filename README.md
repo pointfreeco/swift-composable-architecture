@@ -20,11 +20,6 @@ SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, tvOS, and watch
 
 ## What is the Composable Architecture?
 
-> [!Important]
-> We are currently running a [public beta](https://github.com/pointfreeco/swift-composable-architecture/discussions/2594)
-> for the new observation tools being introduced to the library. Be sure to check it out to get a peek
-> at what the future of the library looks like.
-
 This library provides a few core tools that can be used to build applications of varying purpose and 
 complexity. It provides compelling stories that you can follow to solve many problems you encounter 
 day-to-day when building applications, such as:
