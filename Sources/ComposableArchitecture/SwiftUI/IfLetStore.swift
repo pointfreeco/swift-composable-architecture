@@ -72,7 +72,10 @@ public struct IfLetStore<State, Action, Content: View>: View {
                 state = $0 ?? state
                 return state
               },
-              action: { $0 }
+              id: nil,
+              action: { $0 },
+              isInvalid: nil,
+              removeDuplicates: nil
             )
           )
         )
@@ -109,7 +112,10 @@ public struct IfLetStore<State, Action, Content: View>: View {
               state = $0 ?? state
               return state
             },
-            action: { $0 }
+            id: nil,
+            action: { $0 },
+            isInvalid: nil,
+            removeDuplicates: nil
           )
         )
       } else {
@@ -152,7 +158,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
     @ViewBuilder else elseContent: @escaping () -> ElseContent
   ) where Content == _ConditionalContent<IfContent, ElseContent> {
     self.init(
-      store.scope(state: { $0.wrappedValue }, action: PresentationAction.presented),
+      store.scope(state: \.wrappedValue, action: \.presented),
       then: ifContent,
       else: elseContent
     )
@@ -190,7 +196,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
     @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent
   ) where Content == IfContent? {
     self.init(
-      store.scope(state: { $0.wrappedValue }, action: PresentationAction.presented),
+      store.scope(state: \.wrappedValue, action: \.presented),
       then: ifContent
     )
   }

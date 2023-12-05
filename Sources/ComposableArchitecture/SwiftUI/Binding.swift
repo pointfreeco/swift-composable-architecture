@@ -400,7 +400,13 @@ public struct BindingViewStore<State> {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) where Action.State == State {
-    self.store = store.scope(state: { $0 }, action: Action.binding)
+    self.store = store.scope(
+      state: { $0 },
+      id: nil,
+      action: Action.binding,
+      isInvalid: nil,
+      removeDuplicates: nil
+    )
     #if DEBUG
       self.bindableActionType = type(of: Action.self)
       self.fileID = fileID
@@ -479,7 +485,17 @@ extension ViewStore {
     self.init(
       store,
       observe: { (_: State) in
-        toViewState(BindingViewStore(store: store.scope(state: { $0 }, action: fromViewAction)))
+        toViewState(
+          BindingViewStore(
+            store: store.scope(
+              state: { $0 },
+              id: nil,
+              action: fromViewAction,
+              isInvalid: nil,
+              removeDuplicates: nil
+            )
+          )
+        )
       },
       send: fromViewAction,
       removeDuplicates: isDuplicate
@@ -587,7 +603,17 @@ extension WithViewStore where Content: View {
     self.init(
       store,
       observe: { (_: State) in
-        toViewState(BindingViewStore(store: store.scope(state: { $0 }, action: fromViewAction)))
+        toViewState(
+          BindingViewStore(
+            store: store.scope(
+              state: { $0 },
+              id: nil,
+              action: fromViewAction,
+              isInvalid: nil,
+              removeDuplicates: nil
+            )
+          )
+        )
       },
       send: fromViewAction,
       removeDuplicates: isDuplicate,

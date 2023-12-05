@@ -239,7 +239,10 @@ public struct PresentationStore<
       DestinationContent(
         store: self.store.scope(
           state: { $0.wrappedValue.flatMap(self.toDestinationState) },
-          action: { .presented(fromDestinationAction($0)) }
+          id: nil,
+          action: { .presented(fromDestinationAction($0)) },
+          isInvalid: nil,
+          removeDuplicates: nil
         )
       )
     )
@@ -263,7 +266,14 @@ public struct DestinationContent<State, Action> {
     @ViewBuilder _ body: @escaping (_ store: Store<State, Action>) -> Content
   ) -> some View {
     IfLetStore(
-      self.store.scope(state: returningLastNonNilValue { $0 }, action: { $0 }), then: body
+      self.store.scope(
+        state: returningLastNonNilValue { $0 },
+        id: nil,
+        action: { $0 },
+        isInvalid: nil,
+        removeDuplicates: nil
+      ),
+      then: body
     )
   }
 }

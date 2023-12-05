@@ -15,7 +15,18 @@ extension Store {
     state: KeyPath<State, IdentifiedArray<ElementID, ElementState>>,
     action: CaseKeyPath<Action, IdentifiedAction<ElementID, ElementAction>>
   ) -> some RandomAccessCollection<Store<ElementState, ElementAction>> {
-    _StoreCollection(self.scope(state: state, action: action))
+    #if DEBUG
+      if !self.canCacheChildren {
+        runtimeWarn(
+          """
+          Scoping from uncached \(self) is not compatible with observation. Ensure all store \
+          scoping operations in your application have been updated to take key paths and case key \
+          paths instead of transform functions, which have been deprecated.
+          """
+        )
+      }
+    #endif
+    return _StoreCollection(self.scope(state: state, action: action))
   }
 }
 
