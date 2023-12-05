@@ -134,7 +134,7 @@ import SwiftUI
 @dynamicMemberLookup
 public final class Store<State, Action> {
   private var bufferedActions: [Action] = []
-  fileprivate var canCacheChildren = true
+  var canCacheChildren = true
   fileprivate var children: [AnyHashable: AnyObject] = [:]
   @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] = [:]
   var _isInvalidated = { false }
@@ -298,22 +298,7 @@ public final class Store<State, Action> {
   }
 
   @available(
-    iOS, deprecated: 9999,
-    message:
-      "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
-  )
-  @available(
-    macOS, deprecated: 9999,
-    message:
-      "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
-  )
-  @available(
-    tvOS, deprecated: 9999,
-    message:
-      "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
-  )
-  @available(
-    watchOS, deprecated: 9999,
+    *, deprecated,
     message:
       "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
   )
@@ -331,22 +316,7 @@ public final class Store<State, Action> {
   }
 
   @available(
-    iOS, deprecated: 9999,
-    message:
-      "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
-  )
-  @available(
-    macOS, deprecated: 9999,
-    message:
-      "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
-  )
-  @available(
-    tvOS, deprecated: 9999,
-    message:
-      "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
-  )
-  @available(
-    watchOS, deprecated: 9999,
+    *, deprecated,
     message:
       "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
   )

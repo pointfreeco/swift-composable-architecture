@@ -163,7 +163,7 @@ struct RecordMeeting {
 }
 
 struct RecordMeetingView: View {
-  @BindableStore var store: StoreOf<RecordMeeting>
+  @Bindable var store: StoreOf<RecordMeeting>
 
   var body: some View {
     ZStack {

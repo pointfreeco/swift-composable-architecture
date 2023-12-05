@@ -153,7 +153,10 @@ public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: Vie
     IfLetStore(
       self.store.wrappedValue.scope(
         state: self.toCaseState,
-        action: self.fromCaseAction
+        id: nil,
+        action: self.fromCaseAction,
+        isInvalid: nil,
+        removeDuplicates: nil
       ),
       then: self.content,
       else: {
