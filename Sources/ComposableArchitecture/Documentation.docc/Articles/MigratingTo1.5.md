@@ -144,8 +144,9 @@ ChildView(
 
 Another common case you may encounter is when dealing with collections. It is common in the 
 Composable Architecture to use an `IdentifiedArray` in your feature's state and an
-``IdentifiedAction`` in your feature's actions. If you needed to scope your store down to one 
-specific row of the identified domain, previously you would have done so like this:
+``IdentifiedAction`` in your feature's actions (see <doc:MigratingTo1.4#Identified-actions> for more
+info on ``IdentifiedAction``). If you needed to scope your store down to one specific row of the
+identified domain, previously you would have done so like this:
 
 ```swift
 store.scope(
