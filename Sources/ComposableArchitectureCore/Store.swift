@@ -137,7 +137,7 @@ public final class Store<State, Action> {
   fileprivate var canCacheChildren = true
   fileprivate var children: [AnyHashable: AnyObject] = [:]
   @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] = [:]
-  var _isInvalidated = { false }
+  @_spi(Internals) public internal(set) var _isInvalidated = { false }
   private var isSending = false
   var parentCancellable: AnyCancellable?
   private let reducer: any Reducer<State, Action>

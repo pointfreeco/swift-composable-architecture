@@ -184,7 +184,7 @@ public struct _NavigationLinkStoreContent<State, Label: View>: View {
             A navigation link at "\(self.fileID):\(self.line)" is unpresentable. …
 
               NavigationStackStore element type:
-                \(self.navigationDestinationType.map(typeName) ?? "(None found in view hierarchy)")
+                \(self.navigationDestinationType.map(_typeName) ?? "(None found in view hierarchy)")
               NavigationLink state type:
                 \(typeName(State.self))
               NavigationLink state value:

@@ -335,7 +335,7 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
           This is generally considered an application logic error, and can happen for a few \
           reasons:
 
-          • A parent reducer set "\(typeName(ParentState.self))" to a different case before the \
+          • A parent reducer set "\(_typeName(ParentState.self))" to a different case before the \
           scoped reducer ran. Child reducers must run before any parent reducer sets child state \
           to a different case. This ensures that child reducers can handle their actions while \
           their state is still available. Consider using "Reducer.ifCaseLet" to embed this \
