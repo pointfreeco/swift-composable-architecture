@@ -33,6 +33,10 @@ public struct _StoreCollection<ID: Hashable, State, Action>: RandomAccessCollect
   public var startIndex: Int { self.ids.startIndex }
   public var endIndex: Int { self.ids.endIndex }
   public subscript(position: Int) -> Store<State, Action> {
+    guard self.ids.indices.contains(position)
+    else {
+      return Store()
+    }
     let id = self.ids[position]
     return self.store.scope(
       state: { $0[id: id]! },

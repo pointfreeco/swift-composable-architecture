@@ -944,19 +944,14 @@ extension ScopedStoreReducer: AnyScopedStoreReducer {
     isInvalid: ((S) -> Bool)?,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
-    guard isInvalid?(store.stateSubject.value) != true || ChildState.self is _OptionalProtocol.Type
-    else {
-      return Store()
-    }
-
-    let initialChildState = toChildState(store.observableState)
-
     if store.canCacheChildren,
       let id = id,
       let childStore = store.children[id] as? Store<ChildState, ChildAction>
     {
+      _ = toChildState(store.observableState)
       return childStore
     }
+
     let fromAction = self.fromAction as! (A) -> RootAction?
 
     // NB: This strong/weak self dance forces the child to retain the parent when the parent doesn't
@@ -983,7 +978,9 @@ extension ScopedStoreReducer: AnyScopedStoreReducer {
         store?.invalidateChild(id: id)
       }
     )
-    let childStore = Store<ChildState, ChildAction>(initialState: initialChildState) {
+    let childStore = Store<ChildState, ChildAction>(
+      initialState: toChildState(store.observableState)
+    ) {
       reducer
     }
     childStore._isInvalidated = isInvalid
