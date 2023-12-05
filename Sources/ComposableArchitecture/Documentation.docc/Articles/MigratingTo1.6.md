@@ -218,20 +218,33 @@ ForEach(store.scope(state: \.rows, action: \.rows)) { childStore in
 }
 ```
 
-Note that you can even use `Array.enumerated` in order to enumerate the rows so that you can provide
-custom styling based on the row being even or odd:
+If your usage of `ForEachStore` relied on the identity of the state of each row (_e.g._, the state's
+`id` is also associated with a selection binding), you must explicitly use the `id` parameter:
 
-```swift
-ForEach(
-  Array(store.scope(state: \.rows, action: \.rows).enumerated()),
-  id: \.element
-) { position, childStore in
-  ChildView(store: childStore)
-    .background {
-      position.isMultiple(of: 2) ? Color.white : Color.gray
-    }
-}
+```diff
+ ForEach(
+   store.scope(state: \.rows, action: \.rows),
++  id: \.state.id
+ ) { childStore in
+   ChildView(store: childStore)
+ }
 ```
+
+> Tip: You can now use collection-based operators with store scoping. For example, use
+> `Array.enumerated` in order to enumerate the rows so that you can provide custom styling based on
+> the row being even or odd:
+>
+> ```swift
+> ForEach(
+>   Array(store.scope(state: \.rows, action: \.rows).enumerated()),
+>   id: \.element
+> ) { position, childStore in
+>   ChildView(store: childStore)
+>     .background {
+>       position.isMultiple(of: 2) ? Color.white : Color.gray
+>     }
+> }
+> ```
 
 ## Replacing SwitchStore and CaseLet with 'switch' and 'case'
 
