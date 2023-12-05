@@ -222,9 +222,15 @@ extension PerceptionRegistrar: Hashable {
       else {
         continue
       }
+      let demangledParts = demangled.split(separator: " ")
       guard
         demangled.hasPrefix("protocol witness for SwiftUI.View.body.getter : ")
-          || demangled.contains(" SwiftUI.") && demangled.contains("body.getter : some")
+          || demangled.contains(" SwiftUI.")
+          && demangled.contains("body.getter : some")
+          && !(
+            demangledParts.first == "closure"
+            && demangledParts.dropFirst(2).prefix(3).joined(separator: " ") == "() -> ()"
+          )
       else {
         continue
       }
