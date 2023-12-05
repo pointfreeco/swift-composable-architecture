@@ -42,6 +42,19 @@ extension IdentifiedAction: Sendable where ID: Sendable, Action: Sendable {}
 extension IdentifiedAction: Decodable where ID: Decodable, Action: Decodable {}
 extension IdentifiedAction: Encodable where ID: Encodable, Action: Encodable {}
 
+/// A convenience type alias for referring to an identified action of a given reducer's domain.
+///
+/// Instead of specifying the action like this:
+///
+/// ```swift
+/// case rows(IdentifiedAction<ChildFeature.State.ID, ChildFeature.Action>)
+/// ```
+///
+/// You can specify the reducer:
+///
+/// ```swift
+/// case rows(IdentifiedActionOf<ChildFeature>)
+/// ```
 public typealias IdentifiedActionOf<R: Reducer> = IdentifiedAction<R.State.ID, R.Action>
 where R.State: Identifiable
 
