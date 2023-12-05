@@ -107,25 +107,23 @@ public struct _NavigationDestinationViewModifier<
       .environment(\.navigationDestinationType, State.self)
       .navigationDestination(for: StackState<State>.Component.self) { component in
         var state = component.element
-        WithPerceptionTracking {
-          self
-            .destination(
-              self.store.scope(
-                state: {
-                  state = $0[id: component.id] ?? state
-                  return state
-                },
-                id: ScopeID(
-                  state: \StackState<State>.[id: component.id],
-                  action: \StackAction<State, Action>.Cases[id: component.id]
-                ),
-                action: { .element(id: component.id, action: $0) },
-                isInvalid: { !$0.ids.contains(component.id) },
-                removeDuplicates: nil
-              )
+        self
+          .destination(
+            self.store.scope(
+              state: {
+                state = $0[id: component.id] ?? state
+                return state
+              },
+              id: ScopeID(
+                state: \StackState<State>.[id: component.id],
+                action: \StackAction<State, Action>.Cases[id: component.id]
+              ),
+              action: { .element(id: component.id, action: $0) },
+              isInvalid: { !$0.ids.contains(component.id) },
+              removeDuplicates: nil
             )
-            .environment(\.navigationDestinationType, State.self)
-        }
+          )
+          .environment(\.navigationDestinationType, State.self)
       }
   }
 }
