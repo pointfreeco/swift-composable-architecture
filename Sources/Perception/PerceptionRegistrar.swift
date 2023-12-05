@@ -213,7 +213,7 @@ extension PerceptionRegistrar: Hashable {
         continue
       }
       guard
-        symbol.first == "$"
+        symbol.utf8.first == .init(ascii: "$")
       else {
         continue
       }
@@ -237,10 +237,10 @@ extension PerceptionRegistrar: Hashable {
 
   extension String {
     fileprivate var isActionClosure: Bool {
-      var substring = self[...]
-      guard substring.hasPrefix("closure #") else { return false }
-      substring = substring.drop(while: { $0 != "-" })
-      return substring.hasPrefix("-> () in ")
+      var view = self[...].utf8
+      guard view.starts(with: "closure #".utf8) else { return false }
+      view = view.drop(while: { $0 != .init(ascii: "-") })
+      return view.starts(with: "-> () in ".utf8)
     }
 
     fileprivate var demangled: String? {
