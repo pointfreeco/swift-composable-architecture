@@ -3,7 +3,7 @@
   import CustomDump
   import XCTest
 
-  @testable import ComposableArchitecture
+  @testable import ComposableArchitectureCore
 
   final class DebugTests: BaseTCATestCase {
     func testDebugCaseOutput() {
@@ -23,22 +23,22 @@
       }
 
       XCTAssertEqual(
-        debugCaseOutput(Action.action1(true, label: "Blob")),
+        _debugCaseOutput(Action.action1(true, label: "Blob")),
         "DebugTests.Action.action1(_:, label:)"
       )
 
       XCTAssertEqual(
-        debugCaseOutput(Action.action2(true, 1, "Blob")),
+        _debugCaseOutput(Action.action2(true, 1, "Blob")),
         "DebugTests.Action.action2(_:, _:, _:)"
       )
 
       XCTAssertEqual(
-        debugCaseOutput(Action.screenA(.row(index: 1, action: .tapped))),
+        _debugCaseOutput(Action.screenA(.row(index: 1, action: .tapped))),
         "DebugTests.Action.screenA(.row(index:, action: .tapped))"
       )
 
       XCTAssertEqual(
-        debugCaseOutput(Action.screenA(.row(index: 1, action: .textChanged(query: "Hi")))),
+        _debugCaseOutput(Action.screenA(.row(index: 1, action: .textChanged(query: "Hi")))),
         "DebugTests.Action.screenA(.row(index:, action: .textChanged(query:)))"
       )
     }

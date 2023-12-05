@@ -1,5 +1,5 @@
 import Combine
-@_spi(Internals) import ComposableArchitecture
+@_spi(Internals) @testable import ComposableArchitectureCore
 import XCTest
 
 final class EffectCancellationTests: BaseTCATestCase {

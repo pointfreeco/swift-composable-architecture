@@ -1,4 +1,4 @@
-@_spi(Internals) import ComposableArchitecture
+@_spi(Internals) import ComposableArchitectureCore
 import XCTest
 
 class BaseTCATestCase: XCTestCase {

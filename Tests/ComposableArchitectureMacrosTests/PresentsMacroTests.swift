@@ -35,7 +35,7 @@
               return _destination.wrappedValue
             }
             set {
-              if _$isIdentityEqual(newValue, _destination.wrappedValue) == true {
+              if _$isIdentityEqual(newValue, _destination.wrappedValue) {
                 _destination.wrappedValue = newValue
               } else {
                 withMutation(keyPath: \.destination) {
@@ -55,7 +55,7 @@
               return _destination.projectedValue
             }
             set {
-              if _$isIdentityEqual(newValue, _destination) == true {
+              if _$isIdentityEqual(newValue, _destination) {
                 _destination.projectedValue = newValue
               } else {
                 withMutation(keyPath: \.destination) {
@@ -91,7 +91,7 @@
               return _destination.wrappedValue
             }
             set {
-              if _$isIdentityEqual(newValue, _destination.wrappedValue) == true {
+              if _$isIdentityEqual(newValue, _destination.wrappedValue) {
                 _destination.wrappedValue = newValue
               } else {
                 withMutation(keyPath: \.destination) {
@@ -111,7 +111,7 @@
               return _destination.projectedValue
             }
             set {
-              if _$isIdentityEqual(newValue, _destination) == true {
+              if _$isIdentityEqual(newValue, _destination) {
                 _destination.projectedValue = newValue
               } else {
                 withMutation(keyPath: \.destination) {

@@ -1,5 +1,6 @@
 import Combine
-@_spi(Canary) @_spi(Internals) import ComposableArchitecture
+import ComposableArchitecture
+@_spi(Canary) @_spi(Internals) import ComposableArchitectureCore
 import XCTest
 
 @MainActor

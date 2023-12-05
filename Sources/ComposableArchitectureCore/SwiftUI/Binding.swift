@@ -115,16 +115,17 @@ extension BindingState: Sendable where Value: Sendable {}
 /// Read <doc:Bindings> for more information.
 public struct BindingAction<Root>: CasePathable, Equatable, @unchecked Sendable {
   public let keyPath: PartialKeyPath<Root>
+  public var value: Any { self._value.base }
 
   @usableFromInline
   let set: @Sendable (inout Root) -> Void
   // NB: swift(<5.8) has an enum existential layout bug that can cause crashes when extracting
   //     payloads. We can box the existential to work around the bug.
   #if swift(<5.8)
-    private let _value: [AnySendable]
-    var value: AnySendable { self._value[0] }
+    private let _valueBox: [AnySendable]
+    var _value: AnySendable { self._valueBox[0] }
   #else
-    let value: AnySendable
+    let _value: AnySendable
   #endif
   let valueIsEqualTo: @Sendable (Any) -> Bool
 
@@ -137,9 +138,9 @@ public struct BindingAction<Root>: CasePathable, Equatable, @unchecked Sendable 
     self.keyPath = keyPath
     self.set = set
     #if swift(<5.8)
-      self._value = [value]
+      self._valueBox = [value]
     #else
-      self.value = value
+      self._value = value
     #endif
     self.valueIsEqualTo = valueIsEqualTo
   }
@@ -168,7 +169,7 @@ public struct BindingAction<Root>: CasePathable, Equatable, @unchecked Sendable 
     ) -> AnyCasePath<BindingAction, Value> {
       AnyCasePath(
         embed: { .set(keyPath, $0) },
-        extract: { $0.keyPath == keyPath ? $0.value.base as? Value : nil }
+        extract: { $0.keyPath == keyPath ? $0.value as? Value : nil }
       )
     }
   }
@@ -231,7 +232,7 @@ extension BindingAction {
       keyPath: keyPath,
       set: set,
       value: AnySendable(value),
-      valueIsEqualTo: { ($0 as? AnySendable)?.base as? Value == value }
+      valueIsEqualTo: { $0 as? Value == value }
     )
   }
 }
@@ -241,7 +242,7 @@ extension BindingAction: CustomDumpStringConvertible {
     var description = ".set("
     customDump(self.keyPath, to: &description, maxDepth: 0)
     description.append(", ")
-    customDump(self.value.base, to: &description, maxDepth: 0)
+    customDump(self.value, to: &description, maxDepth: 0)
     description.append(")")
     return description
   }

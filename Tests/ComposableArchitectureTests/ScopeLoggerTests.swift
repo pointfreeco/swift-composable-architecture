@@ -1,4 +1,5 @@
-@_spi(Logging) import ComposableArchitecture
+import ComposableArchitecture
+@_spi(Logging) import ComposableArchitectureCore
 import SwiftUI
 import XCTest
 

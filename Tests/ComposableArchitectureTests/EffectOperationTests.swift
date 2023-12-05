@@ -1,7 +1,7 @@
 #if DEBUG
   import XCTest
 
-  @testable import ComposableArchitecture
+  @testable import ComposableArchitectureCore
 
   @MainActor
   class EffectOperationTests: BaseTCATestCase {

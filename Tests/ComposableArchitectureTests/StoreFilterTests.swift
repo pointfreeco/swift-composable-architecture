@@ -10,7 +10,7 @@
 
     func testInvalidation() {
       let store = Store<Int?, Void>(initialState: nil) {}
-        .scope(
+        ._scope(
           state: { $0 },
           id: nil,
           action: { $0 },
