@@ -213,7 +213,7 @@ extension PerceptionRegistrar: Hashable {
         continue
       }
       guard
-        symbol.utf8.first == .init(ascii: "$")
+        symbol.first == "$"
       else {
         continue
       }
@@ -222,15 +222,11 @@ extension PerceptionRegistrar: Hashable {
       else {
         continue
       }
-      let demangledParts = demangled.split(separator: " ")
+
       guard
-        demangled.hasPrefix("protocol witness for SwiftUI.View.body.getter : ")
-          || demangled.contains(" SwiftUI.")
-          && demangled.contains("body.getter : some")
-          && !(
-            demangledParts.first == "closure"
-            && demangledParts.dropFirst(2).prefix(3).joined(separator: " ") == "() -> ()"
-          )
+        demangled.contains(" SwiftUI.")
+          && demangled.contains(".body.getter : some")
+          && !demangled.isActionClosure
       else {
         continue
       }
@@ -240,6 +236,13 @@ extension PerceptionRegistrar: Hashable {
   }
 
   extension String {
+    fileprivate var isActionClosure: Bool {
+      var substring = self[...]
+      guard substring.hasPrefix("closure #") else { return false }
+      substring = substring.drop(while: { $0 != "-" })
+      return substring.hasPrefix("-> () in ")
+    }
+
     fileprivate var demangled: String? {
       return self.utf8CString.withUnsafeBufferPointer { mangledNameUTF8CStr in
         let demangledNamePtr = swift_demangle(
