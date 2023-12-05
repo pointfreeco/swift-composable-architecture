@@ -542,6 +542,9 @@ your feature's state with ``ObservableState()`` and removing all instances of ``
  }
 ```
 
+> Important: Do not remove the ``BindableAction`` conformance from your feature's `Action` or the
+``BindingReducer`` from your reducer. Those are still required for bindings.
+
 In the view you must start holding onto the `store` in a bindable manner, which means using 
 ``BindableStore`` if targeting older platforms:
 
