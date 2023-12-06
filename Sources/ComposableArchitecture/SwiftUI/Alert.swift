@@ -11,8 +11,35 @@ extension View {
   public func alert<ButtonAction>(
     store: Store<PresentationState<AlertState<ButtonAction>>, PresentationAction<ButtonAction>>
   ) -> some View {
-    self._alert(store: store, state: { $0 }, action: { $0 })
-  }
+    self.presentation(store: store) { `self`, $isPresented, destination in
+      let alertState = store.withState { $0.wrappedValue }
+      self.alert(
+        (alertState?.title).map(Text.init) ?? Text(verbatim: ""),
+        isPresented: $isPresented,
+        presenting: alertState,
+        actions: { alertState in
+          ForEach(alertState.buttons) { button in
+            Button(role: button.role.map(ButtonRole.init)) {
+              switch button.action.type {
+              case let .send(action):
+                if let action = action {
+                  store.send(.presented(action))
+                }
+              case let .animatedSend(action, animation):
+                if let action = action {
+                  store.send(.presented(action), animation: animation)
+                }
+              }
+            } label: {
+              Text(button.label)
+            }
+          }
+        },
+        message: {
+          $0.message.map(Text.init)
+        }
+      )
+    }  }
 
   /// Displays an alert when then store's state becomes non-`nil`, and dismisses it when it becomes
   /// `nil`.
@@ -44,14 +71,6 @@ extension View {
       "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )
   public func alert<State, Action, ButtonAction>(
-    store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping (_ state: State) -> AlertState<ButtonAction>?,
-    action fromDestinationAction: @escaping (_ alertAction: ButtonAction) -> Action
-  ) -> some View {
-    self._alert(store: store, state: toDestinationState, action: fromDestinationAction)
-  }
-
-  private func _alert<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> AlertState<ButtonAction>?,
     action fromDestinationAction: @escaping (_ alertAction: ButtonAction) -> Action

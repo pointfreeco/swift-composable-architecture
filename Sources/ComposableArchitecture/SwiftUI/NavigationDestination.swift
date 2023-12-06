@@ -20,12 +20,14 @@ extension View {
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder destination: @escaping (_ store: Store<State, Action>) -> Destination
   ) -> some View {
-    self._navigationDestination(
+    self.presentation(
       store: store,
-      state: { $0 },
-      action: { $0 },
-      destination: destination
-    )
+      id: { $0.wrappedValue.map(NavigationDestinationID.init) }
+    ) { `self`, $item, destinationContent in
+      self.navigationDestination(isPresented: $item.isPresent()) {
+        destinationContent(destination)
+      }
+    }
   }
 
   /// Associates a destination view with a store that can be used to push the view onto a
@@ -66,23 +68,6 @@ extension View {
       "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )
   public func navigationDestination<
-    State, Action, DestinationState, DestinationAction, Destination: View
-  >(
-    store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
-    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
-    @ViewBuilder destination: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
-      Destination
-  ) -> some View {
-    self._navigationDestination(
-      store: store,
-      state: toDestinationState,
-      action: fromDestinationAction,
-      destination: destination
-    )
-  }
-
-  private func _navigationDestination<
     State, Action, DestinationState, DestinationAction, Destination: View
   >(
     store: Store<PresentationState<State>, PresentationAction<Action>>,

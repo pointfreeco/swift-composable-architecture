@@ -25,12 +25,26 @@ extension View {
       _ destination: DestinationContent<State, Action>
     ) -> Content
   ) -> some View {
-    PresentationStore(
-      store,
-//      state: { $0 },
-      id: { $0.wrappedValue.map { _ in ObjectIdentifier(State.self) } }//,
-//      action: { $0 }
-    ) { $item, destination in
+    self.presentation(
+      store: store,
+      id: { $0.wrappedValue.map { _ in ObjectIdentifier(State.self) } }
+    ) { `self`, $item, destination in
+      body(self, $item, destination)
+    }
+  }
+
+  @_disfavoredOverload
+  @_spi(Presentation)
+  public func presentation<State, Action, Content: View>(
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
+    id toID: @escaping (PresentationState<State>) -> AnyHashable?,
+    @ViewBuilder body: @escaping (
+      _ content: Self,
+      _ item: Binding<AnyIdentifiable?>,
+      _ destination: DestinationContent<State, Action>
+    ) -> Content
+  ) -> some View {
+    PresentationStore(store, id: toID) { $item, destination in
       body(self, $item, destination)
     }
   }
@@ -266,11 +280,6 @@ public struct PresentationStore<
   }
 
   public var body: some View {
-    if #available(iOS 15.0, *) {
-      let _ = Self._printChanges()
-    } else {
-      // Fallback on earlier versions
-    }
     let id = self.toID(self.viewStore.state)
     self.content(
       self.viewStore.binding(
@@ -310,7 +319,13 @@ public struct DestinationContent<State, Action> {
     @ViewBuilder _ body: @escaping (_ store: Store<State, Action>) -> Content
   ) -> some View {
     IfLetStore(
-      self.store.scope(state: returningLastNonNilValue { $0 }, action: { $0 }),
+      self.store.scope(
+        state: returningLastNonNilValue { $0 },
+        id: self.store.id(state: \.self, action: \.self),
+        action: { $0 },
+        isInvalid: nil,
+        removeDuplicates: nil
+      ),
       then: body
     )
   }
