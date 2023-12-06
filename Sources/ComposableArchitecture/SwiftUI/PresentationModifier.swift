@@ -25,13 +25,14 @@ extension View {
       _ destination: DestinationContent<State, Action>
     ) -> Content
   ) -> some View {
-    self.presentation(
-      store: store,
-      state: { $0 },
-      id: { $0.wrappedValue.map { _ in ObjectIdentifier(State.self) } },
-      action: { $0 },
-      body: body
-    )
+    PresentationStore(
+      store,
+//      state: { $0 },
+      id: { $0.wrappedValue.map { _ in ObjectIdentifier(State.self) } }//,
+//      action: { $0 }
+    ) { $item, destination in
+      body(self, $item, destination)
+    }
   }
 
   @_spi(Presentation)
@@ -120,6 +121,7 @@ public struct PresentationStore<
   let toDestinationState: (State) -> DestinationState?
   let toID: (PresentationState<State>) -> AnyHashable?
   let fromDestinationAction: (DestinationAction) -> Action
+  let destinationStore: Store<DestinationState?, DestinationAction>
   let content:
     (
       Binding<AnyIdentifiable?>,
@@ -150,8 +152,7 @@ public struct PresentationStore<
   ) where State == DestinationState, Action == DestinationAction {
     self.init(
       store,
-      state: { $0 },
-      action: { $0 },
+      id: { $0.id },
       content: content
     )
   }
@@ -193,6 +194,42 @@ public struct PresentationStore<
 
   fileprivate init<ID: Hashable>(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
+    id toID: @escaping (PresentationState<State>) -> ID?,
+    content: @escaping (
+      _ item: Binding<AnyIdentifiable?>,
+      _ destination: DestinationContent<DestinationState, DestinationAction>
+    ) -> Content
+  ) where State == DestinationState, Action == DestinationAction {
+    let viewStore = ViewStore(
+      store.scope(
+        state: { $0 },
+        id: nil,
+//        id: store.id(state: \.self, action: \.self),
+        action: { $0 },
+        isInvalid: { $0.wrappedValue == nil },
+        removeDuplicates: nil
+      ),
+      observe: { $0 },
+      removeDuplicates: { toID($0) == toID($1) }
+    )
+
+    self.store = store
+    self.toDestinationState = { $0 }
+    self.toID = toID
+    self.fromDestinationAction = { $0 }
+    self.destinationStore = store.scope(
+      state: { $0.wrappedValue },
+      id: store.id(state: \.wrappedValue, action: \.presented),
+      action: { .presented($0) },
+      isInvalid: { $0.wrappedValue == nil },
+      removeDuplicates: nil
+    )
+    self.content = content
+    self.viewStore = viewStore
+  }
+
+  fileprivate init<ID: Hashable>(
+    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (State) -> DestinationState?,
     id toID: @escaping (PresentationState<State>) -> ID?,
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
@@ -208,17 +245,32 @@ public struct PresentationStore<
       isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil },
       removeDuplicates: nil
     )
-    let viewStore = ViewStore(store, observe: { $0 }, removeDuplicates: { toID($0) == toID($1) })
+    let viewStore = ViewStore(
+      store,
+      observe: { $0 },
+      removeDuplicates: {
+        toID($0) == toID($1)
+      }
+    )
 
     self.store = store
     self.toDestinationState = toDestinationState
     self.toID = toID
     self.fromDestinationAction = fromDestinationAction
+    self.destinationStore = store.scope(
+      state: { $0.wrappedValue.flatMap(toDestinationState) },
+      action: { .presented(fromDestinationAction($0)) }
+    )
     self.content = content
     self.viewStore = viewStore
   }
 
   public var body: some View {
+    if #available(iOS 15.0, *) {
+      let _ = Self._printChanges()
+    } else {
+      // Fallback on earlier versions
+    }
     let id = self.toID(self.viewStore.state)
     self.content(
       self.viewStore.binding(
@@ -236,12 +288,7 @@ public struct PresentationStore<
           return .dismiss
         }
       ),
-      DestinationContent(
-        store: self.store.scope(
-          state: { $0.wrappedValue.flatMap(self.toDestinationState) },
-          action: { .presented(fromDestinationAction($0)) }
-        )
-      )
+      DestinationContent(store: self.destinationStore)
     )
   }
 }
@@ -263,7 +310,8 @@ public struct DestinationContent<State, Action> {
     @ViewBuilder _ body: @escaping (_ store: Store<State, Action>) -> Content
   ) -> some View {
     IfLetStore(
-      self.store.scope(state: returningLastNonNilValue { $0 }, action: { $0 }), then: body
+      self.store.scope(state: returningLastNonNilValue { $0 }, action: { $0 }),
+      then: body
     )
   }
 }
