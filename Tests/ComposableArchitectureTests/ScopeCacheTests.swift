@@ -48,14 +48,12 @@ final class ScopeCacheTests: BaseTCATestCase {
     let store = StoreOf<Feature>(initialState: Feature.State(rows: [Feature.State()])) {
       Feature()
     }
-
-    let rowsStore = Array(
-      store
-        .scope(state: { $0 }, action: { $0 })
-        .scope(state: \.rows, action: \.rows)
-    )
     XCTExpectFailure {
-      rowsStore[0].send(.tap)
+      _ = Array(
+        store
+          .scope(state: { $0 }, action: { $0 })
+          .scope(state: \.rows, action: \.rows)
+      )
     } issueMatcher: {
       $0.compactDescription == """
         Scoping from uncached StoreOf<Feature> is not compatible with observation. Ensure all \
