@@ -285,6 +285,8 @@ public func withoutPerceptionChecking<T>(
 @available(macOS, deprecated: 14, message: "TODO")
 @available(tvOS, deprecated: 17, message: "TODO")
 @available(watchOS, deprecated: 10, message: "TODO")
+@_transparent
+@inline(__always)
 public func withoutPerceptionChecking<T>(
   _ apply: () -> T
 ) -> T {
