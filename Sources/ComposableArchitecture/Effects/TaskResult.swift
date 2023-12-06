@@ -332,3 +332,20 @@ extension TaskResult {
     try self.value
   }
 }
+
+public extension Result where Failure == any Error {
+  /// Creates a new task result by evaluating an async throwing closure, capturing the returned
+  /// value as a success, or any thrown error as a failure.
+  ///
+  /// This initializer is most often used in an async effect being returned from a reducer.
+  ///
+  /// - Parameter body: An async, throwing closure.
+  @inlinable
+  init(catching body: @Sendable () async throws -> Success) async {
+    do {
+      self = try .success(await body())
+    } catch {
+      self = .failure(error)
+    }
+  }
+}
