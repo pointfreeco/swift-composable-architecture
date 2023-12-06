@@ -206,26 +206,14 @@ extension PerceptionRegistrar: Hashable {
 
   var isInSwiftUIBody: Bool {
     for callStackSymbol in Thread.callStackSymbols {
+      let mangledSymbol = callStackSymbol.utf8
+        .drop(while: { $0 != .init(ascii: "$") })
+        .prefix(while: { $0 != .init(ascii: " ") })
       guard
-        let symbol = callStackSymbol.split(separator: " ").dropFirst(3).first
-      else {
-        continue
-      }
-      guard
-        symbol.utf8.first == .init(ascii: "$")
-      else {
-        continue
-      }
-      guard
-        let demangled = String(symbol).demangled
-      else {
-        continue
-      }
-
-      guard
-        demangled.contains(" SwiftUI.")
-          && demangled.contains(".body.getter : some")
-          && !demangled.isActionClosure
+        let demangled = String(Substring(mangledSymbol)).demangled,
+        demangled.contains(" SwiftUI."),
+        demangled.contains(".body.getter : some"),
+        !demangled.isActionClosure
       else {
         continue
       }
