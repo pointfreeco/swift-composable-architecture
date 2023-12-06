@@ -217,8 +217,8 @@ public struct PresentationStore<
     let viewStore = ViewStore(
       store.scope(
         state: { $0 },
+        // NB: Introducing a `\.self` cache key here prevents dismissal from working.
         id: nil,
-//        id: store.id(state: \.self, action: \.self),
         action: { $0 },
         isInvalid: { $0.wrappedValue == nil },
         removeDuplicates: nil

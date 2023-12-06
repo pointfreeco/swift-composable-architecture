@@ -44,17 +44,14 @@ public struct IfLetStore<State, Action, Content: View>: View {
     self.store = store
     let elseContent = elseContent()
     self.content = { viewStore in
-      if var state = viewStore.state {
+      if viewStore.state != nil {
         return ViewBuilder.buildEither(
           first: ifContent(
             store.scope(
-              state: {
-                state = $0 ?? state
-                return state
-              },
+              state: { $0! },
               id: store.id(state: \.!, action: \.self),
               action: { $0 },
-              isInvalid: nil,
+              isInvalid: { $0 == nil },
               removeDuplicates: nil
             )
           )
@@ -85,16 +82,13 @@ public struct IfLetStore<State, Action, Content: View>: View {
     )
     self.store = store
     self.content = { viewStore in
-      if var state = viewStore.state {
+      if viewStore.state != nil {
         return ifContent(
           store.scope(
-            state: {
-              state = $0 ?? state
-              return state
-            },
+            state: { $0! },
             id: store.id(state: \.!, action: \.self),
             action: { $0 },
-            isInvalid: nil,
+            isInvalid: { $0 == nil },
             removeDuplicates: nil
           )
         )
