@@ -396,7 +396,9 @@ public final class Store<State, Action> {
     while index < self.bufferedActions.endIndex {
       defer { index += 1 }
       let action = self.bufferedActions[index]
-      let effect = self.reducer.reduce(into: &currentState, action: action)
+      let effect = withoutPerceptionChecking {
+        self.reducer.reduce(into: &currentState, action: action)
+      }
 
       switch effect.operation {
       case .none:
