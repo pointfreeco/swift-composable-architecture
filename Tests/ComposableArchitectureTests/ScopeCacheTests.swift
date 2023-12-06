@@ -15,7 +15,7 @@ final class ScopeCacheTests: BaseTCATestCase {
     _ = cancellable
   }
 
-  func testOptionalScope_UncachedStore() {
+  func testOptionalScope_StoreIfLet_UncachedStore() {
     let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
       Feature()
     }
@@ -34,16 +34,49 @@ final class ScopeCacheTests: BaseTCATestCase {
         """
     }
   }
+
+  func testIdentifiedArrayScope_CachedStore() {
+    let store = StoreOf<Feature>(initialState: Feature.State(rows: [Feature.State()])) {
+      Feature()
+    }
+
+    let rowsStore = Array(store.scope(state: \.rows, action: \.rows))
+    rowsStore[0].send(.tap)
+  }
+
+  func testIdentifiedArrayScope_UncachedStore() {
+    let store = StoreOf<Feature>(initialState: Feature.State(rows: [Feature.State()])) {
+      Feature()
+    }
+
+    let rowsStore = Array(
+      store
+        .scope(state: { $0 }, action: { $0 })
+        .scope(state: \.rows, action: \.rows)
+    )
+    XCTExpectFailure {
+      rowsStore[0].send(.tap)
+    } issueMatcher: {
+      $0.compactDescription == """
+        Scoping from uncached StoreOf<Feature> is not compatible with observation. Ensure all \
+        store scoping operations in your application have been updated to take key paths and case \
+        key paths instead of transform functions, which have been deprecated.
+        """
+    }
+  }
 }
 
 @Reducer
 private struct Feature {
   @ObservableState
-  struct State {
+  struct State: Identifiable {
+    let id = UUID()
     @Presents var child: Feature.State?
+    var rows: IdentifiedArrayOf<Feature.State> = []
   }
   indirect enum Action {
     case child(Feature.Action)
+    case rows(IdentifiedActionOf<Feature>)
     case tap
   }
   func reduce(into state: inout State, action: Action) -> Effect<Action> { .none }
