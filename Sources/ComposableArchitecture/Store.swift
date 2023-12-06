@@ -134,7 +134,7 @@ import SwiftUI
 public final class Store<State, Action> {
   private var bufferedActions: [Action] = []
   fileprivate var canCacheChildren = true
-  fileprivate var children: [AnyHashable: AnyObject] = [:]
+  fileprivate var children: [ScopeID<State, Action>: AnyObject] = [:]
   @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] = [:]
   var _isInvalidated = { false }
   private var isSending = false
@@ -389,7 +389,7 @@ public final class Store<State, Action> {
   ) -> Store<ChildState, ChildAction> {
     self.scope(
       state: { $0[keyPath: state] },
-      id: { _ in Scope(state: state, action: action) },
+      id: self.id(state: state, action: action),
       action: { action($0) },
       isInvalid: nil,
       removeDuplicates: nil
@@ -465,7 +465,7 @@ public final class Store<State, Action> {
 
   func scope<ChildState, ChildAction>(
     state toChildState: @escaping (State) -> ChildState,
-    id: ((State) -> AnyHashable)?,
+    id: ScopeID<State, Action>?,
     action fromChildAction: @escaping (ChildAction) -> Action,
     isInvalid: ((State) -> Bool)?,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
@@ -487,7 +487,7 @@ public final class Store<State, Action> {
     }
   }
 
-  fileprivate func invalidateChild(id: AnyHashable) {
+  fileprivate func invalidateChild(id: ScopeID<State, Action>) {
     guard self.children.keys.contains(id) else { return }
     (self.children[id] as? any AnyStore)?.invalidate()
     self.children[id] = nil
@@ -745,10 +745,17 @@ public final class Store<State, Action> {
     StorePublisher(store: self, upstream: self.stateSubject)
   }
 
-  private struct Scope<ChildState, ChildAction>: Hashable {
-    let state: KeyPath<State, ChildState>
-    let action: CaseKeyPath<Action, ChildAction>
+  func id<ChildState, ChildAction>(
+    state: KeyPath<State, ChildState>,
+    action: CaseKeyPath<Action, ChildAction>
+  ) -> ScopeID<State, Action> {
+    ScopeID(state: state, action: action)
   }
+}
+
+struct ScopeID<State, Action>: Hashable {
+  let state: PartialKeyPath<State>
+  let action: PartialCaseKeyPath<Action>
 }
 
 extension Store: CustomDebugStringConvertible {
@@ -944,7 +951,7 @@ extension Reducer {
   fileprivate func scope<ChildState, ChildAction>(
     store: Store<State, Action>,
     state toChildState: @escaping (State) -> ChildState,
-    id: ((State) -> AnyHashable)?,
+    id: ScopeID<State, Action>?,
     action fromChildAction: @escaping (ChildAction) -> Action,
     isInvalid: ((State) -> Bool)?,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
@@ -1017,7 +1024,7 @@ private protocol AnyScopedStoreReducer {
   func scope<S, A, ChildState, ChildAction>(
     store: Store<S, A>,
     state toChildState: @escaping (S) -> ChildState,
-    id: ((S) -> AnyHashable)?,
+    id: ScopeID<S, A>?,
     action fromChildAction: @escaping (ChildAction) -> A,
     isInvalid: ((S) -> Bool)?,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
@@ -1028,12 +1035,11 @@ extension ScopedStoreReducer: AnyScopedStoreReducer {
   func scope<S, A, ChildState, ChildAction>(
     store: Store<S, A>,
     state toChildState: @escaping (S) -> ChildState,
-    id: ((S) -> AnyHashable)?,
+    id: ScopeID<S, A>?,
     action fromChildAction: @escaping (ChildAction) -> A,
     isInvalid: ((S) -> Bool)?,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
-    let id = id?(store.stateSubject.value)
     if store.canCacheChildren,
       let id = id,
       let childStore = store.children[id] as? Store<ChildState, ChildAction>
