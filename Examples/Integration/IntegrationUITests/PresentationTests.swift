@@ -9,7 +9,7 @@ final class PresentationTests: BaseIntegrationTests {
     self.app.buttons["iOS 16"].tap()
     self.app.buttons["Presentation"].tap()
     self.clearLogs()
-    //SnapshotTesting.isRecording = true
+    // SnapshotTesting.isRecording = true
   }
 
   func testOptional() throws {
@@ -27,8 +27,6 @@ final class PresentationTests: BaseIntegrationTests {
       PresentationStoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
@@ -80,10 +78,8 @@ final class PresentationTests: BaseIntegrationTests {
       PresentationStoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
@@ -110,8 +106,6 @@ final class PresentationTests: BaseIntegrationTests {
       PresentationStoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
@@ -193,10 +187,8 @@ final class PresentationTests: BaseIntegrationTests {
       PresentationView.body
       StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope

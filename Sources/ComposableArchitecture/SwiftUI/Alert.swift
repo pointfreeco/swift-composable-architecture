@@ -39,7 +39,8 @@ extension View {
           $0.message.map(Text.init)
         }
       )
-    }  }
+    }
+  }
 
   /// Displays an alert when then store's state becomes non-`nil`, and dismisses it when it becomes
   /// `nil`.
