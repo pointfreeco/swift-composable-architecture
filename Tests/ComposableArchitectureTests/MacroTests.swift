@@ -13,7 +13,7 @@ private struct Feature_ViewAction {
 }
 @ViewAction(for: Feature_ViewAction.self)
 private struct Feature_ViewAction_View: View {
-  let store: StoreOf<Feature_ViewAction>
+  @State var store: StoreOf<Feature_ViewAction>
   var body: some View {
     Button("Tap") { send(.tap) }
     Button("Tap") { send(.tap, animation: .default) }

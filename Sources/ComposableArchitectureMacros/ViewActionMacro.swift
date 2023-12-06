@@ -18,7 +18,22 @@ public struct ViewActionMacro: ExtensionMacro {
     else { return [] }
     let inputType = String("\(memberAccessExpr)".dropLast(5))
 
-    guard declaration.hasStoreVariable
+    let typeAccessLevel = declaration.modifiers.compactMap {
+      switch $0.name.tokenKind {
+      case
+          .keyword(.public),
+          .keyword(.internal),
+          .keyword(.private),
+          .keyword(.fileprivate),
+          .keyword(.package):
+        return $0.name.text
+      default:
+        return nil
+      }
+    }
+    .first
+
+    guard let storeVariable = declaration.storeVariable
     else {
       var declarationWithStoreVariable = declaration
       declarationWithStoreVariable.memberBlock.members.insert(
@@ -61,6 +76,46 @@ public struct ViewActionMacro: ExtensionMacro {
           )
         )
       )
+      return []
+    }
+
+    let accessLevelHierarchy = ["public", "package", "internal", "fileprivate", "private"]
+    guard
+      let storeAccessLevelIndex = accessLevelHierarchy
+        .firstIndex(of: storeVariable.modifiers.accessLevelToken?.text ?? "internal"),
+      let typeAccessLevelIndex = accessLevelHierarchy
+        .firstIndex(of: typeAccessLevel ?? "internal"),
+      storeAccessLevelIndex.distance(to: typeAccessLevelIndex) >= 0
+    else {
+      var newStoreVariable = storeVariable
+      newStoreVariable.modifiers = [
+        DeclModifierListSyntax.Element(name: .keyword(.public))
+      ]
+
+      if let accessLevelToken = storeVariable.modifiers.accessLevelToken {
+        context.diagnose(
+          Diagnostic(
+            node: accessLevelToken,
+            message: MacroExpansionErrorMessage(
+              "'store' variable must be same access level as enclosing type."
+            ),
+            fixIt: .replace(
+              message: MacroExpansionFixItMessage("Add public"),
+              oldNode: storeVariable,
+              newNode: newStoreVariable
+            )
+          )
+        )
+      } else {
+        context.diagnose(
+          Diagnostic(
+            node: storeVariable.bindingSpecifier,
+            message: MacroExpansionErrorMessage(
+              "'store' variable must be same access level as enclosing type."
+            )
+          )
+        )
+      }
       return []
     }
 
@@ -123,18 +178,36 @@ extension SyntaxProtocol {
 }
 
 extension DeclGroupSyntax {
-  fileprivate var hasStoreVariable: Bool {
-    self.memberBlock.members.contains(where: { member in
-      if let variableDecl = member.decl.as(VariableDeclSyntax.self),
-        let firstBinding = variableDecl.bindings.first,
-        let identifierPattern = firstBinding.pattern.as(IdentifierPatternSyntax.self),
-        identifierPattern.identifier.text == "store"
-      {
-        return true
-      } else {
-        return false
+  fileprivate var storeVariable: VariableDeclSyntax? {
+    for member in self.memberBlock.members {
+      guard let variableDecl = member.decl.as(VariableDeclSyntax.self),
+         let firstBinding = variableDecl.bindings.first,
+         let identifierPattern = firstBinding.pattern.as(IdentifierPatternSyntax.self),
+         identifierPattern.identifier.text == "store"
+      else {
+        continue
       }
-    })
+      return variableDecl
+    }
+    return nil
+  }
+}
+
+extension DeclModifierListSyntax {
+  var accessLevelToken: TokenSyntax? {
+    self.compactMap {
+      switch $0.name.tokenKind {
+      case
+          .keyword(.public),
+          .keyword(.internal),
+          .keyword(.private),
+          .keyword(.fileprivate),
+          .keyword(.package):
+        return $0.name
+      default:
+        return nil
+      }
+    }.first
   }
 }
 
