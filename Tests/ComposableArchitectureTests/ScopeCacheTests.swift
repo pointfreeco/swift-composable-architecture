@@ -3,20 +3,7 @@ import XCTest
 
 @MainActor
 final class ScopeCacheTests: BaseTCATestCase {
-  func testOptionalScope_StoreIfLet() {
-    let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
-      Feature()
-    }
-    let cancellable = store
-      .scope(state: \.child, action: \.child)
-      .ifLet { store in
-        store.scope(state: \.child, action: \.child)?.send(.tap)
-      }
-    _ = cancellable
-  }
-
-
-  func testOptionalScope_StoreIfLet_UncachedStore_XYZ() {
+  func testOptionalScope_UncachedStore() {
     let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
       Feature()
     }
@@ -34,7 +21,7 @@ final class ScopeCacheTests: BaseTCATestCase {
     }
   }
 
-  func testOptionalScope_StoreIfLet_UncachedStore_XYZ111() {
+  func testOptionalScope_CachedStore() {
     let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
       Feature()
     }
@@ -44,7 +31,17 @@ final class ScopeCacheTests: BaseTCATestCase {
       .send(.tap)
   }
 
-
+  func testOptionalScope_StoreIfLet() {
+    let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
+      Feature()
+    }
+    let cancellable = store
+      .scope(state: \.child, action: \.child)
+      .ifLet { store in
+        store.scope(state: \.child, action: \.child)?.send(.tap)
+      }
+    _ = cancellable
+  }
 
   func testOptionalScope_StoreIfLet_UncachedStore() {
     let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
