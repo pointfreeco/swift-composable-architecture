@@ -211,8 +211,7 @@ extension PerceptionRegistrar: Hashable {
         .prefix(while: { $0 != .init(ascii: " ") })
       guard
         let demangled = String(Substring(mangledSymbol)).demangled,
-        demangled.contains(" SwiftUI."),
-        demangled.contains(".body.getter : some"),
+        demangled.contains("body.getter : "),
         !demangled.isActionClosure
       else {
         continue
