@@ -75,9 +75,9 @@ extension Store where State: ObservableState {
       if !self.canCacheChildren {
         runtimeWarn(
           """
-          Scoping from uncached \(self) is not compatible with observation. Ensure all store \
-          scoping operations in your application have been updated to take key paths and case key \
-          paths instead of transform functions, which have been deprecated.
+          Scoping from uncached \(self) is not compatible with observation. Ensure that all parent \
+          store scoping operations take key paths and case key paths instead of transform \
+          functions, which have been deprecated.
           """
         )
       }
