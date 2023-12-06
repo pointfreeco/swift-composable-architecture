@@ -14,37 +14,7 @@ extension View {
       PresentationAction<ButtonAction>
     >
   ) -> some View {
-    self.presentation(store: store) { `self`, $isPresented, destination in
-      let confirmationDialogState = store.withState { $0.wrappedValue }
-      self.confirmationDialog(
-        (confirmationDialogState?.title).map(Text.init) ?? Text(verbatim: ""),
-        isPresented: $isPresented,
-        titleVisibility: (confirmationDialogState?.titleVisibility).map(Visibility.init)
-        ?? .automatic,
-        presenting: confirmationDialogState,
-        actions: { confirmationDialogState in
-          ForEach(confirmationDialogState.buttons) { button in
-            Button(role: button.role.map(ButtonRole.init)) {
-              switch button.action.type {
-              case let .send(action):
-                if let action = action {
-                  store.send(.presented(action))
-                }
-              case let .animatedSend(action, animation):
-                if let action = action {
-                  store.send(.presented(action), animation: animation)
-                }
-              }
-            } label: {
-              Text(button.label)
-            }
-          }
-        },
-        message: {
-          $0.message.map(Text.init)
-        }
-      )
-    }
+    self._confirmationDialog(store: store, state: { $0 }, action: { $0 })
   }
 
   /// Displays a dialog when then store's state becomes non-`nil`, and dismisses it when it becomes
@@ -77,6 +47,14 @@ extension View {
       "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )
   public func confirmationDialog<State, Action, ButtonAction>(
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
+    state toDestinationState: @escaping (_ state: State) -> ConfirmationDialogState<ButtonAction>?,
+    action fromDestinationAction: @escaping (_ confirmationDialogAction: ButtonAction) -> Action
+  ) -> some View {
+    self._confirmationDialog(store: store, state: toDestinationState, action: fromDestinationAction)
+  }
+
+  private func _confirmationDialog<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> ConfirmationDialogState<ButtonAction>?,
     action fromDestinationAction: @escaping (_ confirmationDialogAction: ButtonAction) -> Action
