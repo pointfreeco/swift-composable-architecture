@@ -60,7 +60,7 @@ extension Store {
                 state = $0 ?? state
                 return state
               },
-              id: nil,
+              id: \State.self,
               action: { $0 },
               isInvalid: nil,
               removeDuplicates: nil
